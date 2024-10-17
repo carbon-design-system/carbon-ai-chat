@@ -1,0 +1,33 @@
+{
+  "name": "@carbon/ai-chat-examples-demo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A demo and testing framework using @carbon/ai-chat as a React component.",
+  "scripts": {
+    "start": "npm run clean && parcel index.html --no-cache",
+    "dev": "npm run clean && parcel index.html --public-url ./ --no-cache",
+    "build": "npm run clean && parcel build index.html --public-url ./ --no-cache",
+    "analyze": "npm run clean && parcel build index.html --public-url ./ --reporter @parcel/reporter-bundle-analyzer --no-cache",
+    "clean": "mkdirp ./dist && rimraf ./dist"
+  },
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "peerDependencies": {
+    "@carbon/web-components": "^2.15.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@carbon/ai-chat": "*",
+    "lit": "^2.8.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.7",
+    "@parcel/reporter-bundle-analyzer": "^2.12.0",
+    "buffer": "^6.0.3",
+    "parcel": "^2.12.0",
+    "process": "^0.11.10",
+    "rimraf": "^5.0.10"
+  }
+}

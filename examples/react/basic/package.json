@@ -1,0 +1,25 @@
+{
+  "name": "@carbon/ai-chat-examples-react-basic",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A basic example using @carbon/ai-chat as a React component.",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html",
+    "analyze": "parcel build index.html --reporter @parcel/reporter-bundle-analyzer"
+  },
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@carbon/ai-chat": "*"
+  },
+  "devDependencies": {
+    "@parcel/reporter-bundle-analyzer": "^2.12.0",
+    "buffer": "^6.0.3",
+    "parcel": "^2.12.0",
+    "process": "^0.11.10"
+  }
+}

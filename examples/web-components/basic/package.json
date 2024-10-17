@@ -1,0 +1,22 @@
+{
+  "name": "@carbon/ai-chat-examples-web-components-basic",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A basic example using @carbon/ai-chat as a web component.",
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html",
+    "analyze": "parcel build index.html --reporter @parcel/reporter-bundle-analyzer"
+  },
+  "dependencies": {
+    "@carbon/ai-chat": "*",
+    "lit": "^2.8.0"
+  },
+  "devDependencies": {
+    "@parcel/reporter-bundle-analyzer": "^2.12.0",
+    "parcel": "^2.12.0"
+  }
+}

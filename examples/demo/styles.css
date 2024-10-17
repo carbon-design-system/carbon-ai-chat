@@ -1,0 +1,33 @@
+.external {
+  background: green;
+}
+
+.fullScreen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: calc(100vw - 320px - 2rem);
+  z-index: 9999;
+}
+
+.sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 320px;
+  z-index: 9999;
+  transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
+  visibility: visible; /* Visible by default */
+}
+
+.sidebar--closed {
+  right: -320px;
+  transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
+  visibility: hidden; /* Hidden after right transition */
+}
+
+.padding {
+  padding-top: 1rem;
+}
