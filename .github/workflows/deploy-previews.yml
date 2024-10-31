@@ -28,9 +28,9 @@ jobs:
         if: github.event.action != 'closed'
         run: |
           cd packages/ai-chat
-          yarn install
-          yarn build
-          yarn storybook:build
+          npm install
+          npm run build
+          npm run storybook:build
 
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
