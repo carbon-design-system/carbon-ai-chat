@@ -15,6 +15,98 @@
   "workspaces": [
     "examples/demo",
     "examples/react/basic",
-    "examples/web-components/basic"
-  ]
+    "examples/web-components/basic",
+    "packages/ai-chat"
+  ],
+  "scripts": {
+    "build": "lerna run build --stream",
+    "ci-check": "npm run format:staged && npm lint:license && npm lint && npm lint:styles",
+    "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
+    "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
+    "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
+    "format:staged": "prettier --list-different '**/*.{js,md,scss,ts,tsx}' '!**/{build,es,lib,storybook,ts,umd}/**' '!packages/components/**'",
+    "lint": "eslint packages --ext .js,.ts",
+    "lint:license": "tools/check-license.js -a",
+    "lint:license:staged": "tools/check-license.js -w",
+    "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "babel-preset-carbon": "^0.0.14",
+    "commander": "^12.1.0",
+    "eslint": "^8.53.0",
+    "eslint-config-carbon": "3.10.0",
+    "gitignore-to-glob": "^0.3.0",
+    "husky": "^9.1.6",
+    "lerna": "^8.1.8",
+    "lint-staged": "^15.2.10",
+    "prettier": "^2.8.8",
+    "prettier-config-carbon": "^0.11.0",
+    "stylelint": "^16.0.0",
+    "stylelint-config-carbon": "^1.19.0"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "header-max-length": [
+        2,
+        "always",
+        72
+      ],
+      "body-max-line-length": [
+        2,
+        "always",
+        80
+      ],
+      "scope-case": [
+        0,
+        "always",
+        "lower-case"
+      ],
+      "type-enum": [
+        2,
+        "always",
+        [
+          "build",
+          "ci",
+          "chore",
+          "docs",
+          "feat",
+          "fix",
+          "perf",
+          "refactor",
+          "revert",
+          "test",
+          "style"
+        ]
+      ]
+    }
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "prettier --cache --write",
+      "eslint"
+    ],
+    "**/*.scss": [
+      "prettier --cache --write",
+      "stylelint --report-needless-disables --report-invalid-scope-disables --allow-empty-input"
+    ],
+    "!(*sass).md": [
+      "prettier --cache --write"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint-config-carbon"
+    ]
+  },
+  "stylelint": {
+    "extends": [
+      "stylelint-config-carbon"
+    ]
+  }
 }
