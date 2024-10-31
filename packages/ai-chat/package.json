@@ -1,0 +1,78 @@
+{
+  "name": "@carbon/ai-chat",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carbon-design-system/carbon-ai-chat",
+    "directory": "packages/ai-chat"
+  },
+  "exports": {
+    "./es/": "./es/",
+    "./dist/": "./dist/",
+    "./custom-elements.json": "./custom-elements.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "es/**/*",
+    "dist/**/*",
+    "custom-elements.json",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run custom-elements && node tasks/build.js && node tasks/build-dist.js",
+    "clean": "rimraf es dist storybook-static",
+    "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
+    "storybook": "npm run custom-elements && storybook dev -p 6006",
+    "storybook:build": "npm run custom-elements && storybook build",
+    "test": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
+    "test:updateSnapshot": "npm run build && web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots"
+  },
+  "dependencies": {
+    "@carbon/styles": "^1.39.0",
+    "@carbon/web-components": "^2.13.0",
+    "lit": "^3.0.0",
+    "tslib": "^2.6.3"
+  },
+  "devDependencies": {
+    "@carbon/grid": "^11.20.0",
+    "@carbon/icon-helpers": "^10.44.0",
+    "@carbon/icons": "^11.28.0",
+    "@carbon/layout": "^11.19.0",
+    "@carbon/themes": "^11.25.0",
+    "@custom-elements-manifest/analyzer": "^0.10.0",
+    "@open-wc/testing": "2.5.33",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@storybook/addon-a11y": "^8.4.0",
+    "@storybook/addon-essentials": "^7.4.5",
+    "@storybook/addon-links": "^7.4.5",
+    "@storybook/web-components": "^7.5.1",
+    "@storybook/web-components-vite": "^7.5.1",
+    "@types/jest": "^29.5.14",
+    "@web/dev-server": "0.4.6",
+    "@web/dev-server-esbuild": "0.4.4",
+    "@web/test-runner": "0.16.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "autoprefixer": "^10.4.20",
+    "globby": "^14.0.2",
+    "playwright": "^1.48.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "read-package-up": "^11.0.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^3.29.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-postcss-lit": "^2.1.0",
+    "sass": "~1.69.0",
+    "storybook": "^8.0.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.5",
+    "web-dev-server-plugin-lit-css": "^3.0.1"
+  }
+}
