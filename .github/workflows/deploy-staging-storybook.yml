@@ -26,12 +26,12 @@ jobs:
         with:
           node-version: "20.x"
           registry-url: https://registry.npmjs.org
-          cache: "yarn"
+          cache: "npm"
       - name: Install dependencies and build storybook
         run: |
-          yarn install
+          npm install
           cd packages/ai-chat
-          yarn storybook:build
+          npm run storybook:build
 
       # Deploy to staging Github Pages using `gh-pages` package
       - name: Deploy

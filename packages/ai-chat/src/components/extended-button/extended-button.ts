@@ -14,6 +14,7 @@ import prefix from "../../globals/settings.js";
 /**
  * Component extending the @carbon/web-components' button
  */
+//@ts-ignore
 @customElement(`${prefix}-extended-button`)
 class ExtendedButton extends extendedButton {}
 
