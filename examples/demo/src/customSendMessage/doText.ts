@@ -13,15 +13,21 @@
  *
  */
 
-import { ChatInstance, MessageResponseTypes, OptionItem, StreamChunk, TextItem } from '@carbon/ai-chat';
-import { sleep } from '../framework/utils';
+import {
+  ChatInstance,
+  MessageResponseTypes,
+  OptionItem,
+  StreamChunk,
+  TextItem,
+} from "@carbon/ai-chat";
+import { sleep } from "../framework/utils";
 
-import { TEXT, WELCOME_TEXT, WORD_DELAY } from './constants';
-import { RESPONSE_MAP } from './responseMap';
+import { TEXT, WELCOME_TEXT, WORD_DELAY } from "./constants";
+import { RESPONSE_MAP } from "./responseMap";
 
 async function doTextStreaming(instance: ChatInstance, text: string = TEXT) {
   const responseID = crypto.randomUUID();
-  const words = text.split(' ');
+  const words = text.split(" ");
 
   words.forEach((word, index) => {
     setTimeout(() => {
@@ -35,7 +41,7 @@ async function doTextStreaming(instance: ChatInstance, text: string = TEXT) {
             // This is the id of the item inside the response. If you have multiple items in this message they will be
             // ordered in the view in the order of the first message chunk received. If you want message item 1 to
             // appear above message item 2, be sure to seed it with a chunk first, even if its empty to start.
-            id: '1',
+            id: "1",
           },
         } as TextItem,
         streaming_metadata: {
@@ -56,7 +62,7 @@ async function doTextStreaming(instance: ChatInstance, text: string = TEXT) {
     text,
     streaming_metadata: {
       // This is the id of the item inside the response.
-      id: '1',
+      id: "1",
     },
   };
   instance.messaging.addMessageChunk({
@@ -83,7 +89,10 @@ async function doTextStreaming(instance: ChatInstance, text: string = TEXT) {
 }
 
 function doWelcomeText(instance: ChatInstance) {
-  const options = Object.keys(RESPONSE_MAP).map(key => ({ label: key, value: { input: { text: key } } }));
+  const options = Object.keys(RESPONSE_MAP).map((key) => ({
+    label: key,
+    value: { input: { text: key } },
+  }));
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -93,7 +102,7 @@ function doWelcomeText(instance: ChatInstance) {
         } as TextItem,
         {
           response_type: MessageResponseTypes.OPTION,
-          title: 'Select a response to view it in action.',
+          title: "Select a response to view it in action.",
           options,
         } as OptionItem,
       ],

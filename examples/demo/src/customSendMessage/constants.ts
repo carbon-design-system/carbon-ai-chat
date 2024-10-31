@@ -60,21 +60,29 @@ const TEXT = `Lorem **bold text** *italics text* ipsum odor amet, consectetuer a
 Quam [link with target blank](https://ibm.com) scelerisque platea [link with target self](https://ibm.com){{target="_self"}} sem placerat pharetra sed. Porttitor per massa venenatis fusce fusce ad cras. Vel congue semper, rhoncus tempus nisl nam. Purus molestie tristique diam himenaeos sapien lacus.`;
 
 const CHART_DATA = JSON.stringify({
-  $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+  $schema: "https://vega.github.io/schema/vega-lite/v5.json",
   data: {
     values: [
-      { category: 'A', value: 20 },
-      { category: 'B', value: 40 },
-      { category: 'C', value: 60 },
+      { category: "A", value: 20 },
+      { category: "B", value: 40 },
+      { category: "C", value: 60 },
     ],
   },
-  mark: 'bar',
+  mark: "bar",
   encoding: {
-    x: { field: 'category', type: 'nominal', axis: { title: 'Category' } },
-    y: { field: 'value', type: 'quantitative', axis: { title: 'Value' } },
+    x: { field: "category", type: "nominal", axis: { title: "Category" } },
+    y: { field: "value", type: "quantitative", axis: { title: "Value" } },
   },
 });
 
 const WORD_DELAY = 50;
 
-export { WELCOME_TEXT, TEXT, WORD_DELAY, CHART_DATA, TABLE, ORDERED_LIST, UNORDERED_LIST };
+export {
+  WELCOME_TEXT,
+  TEXT,
+  WORD_DELAY,
+  CHART_DATA,
+  TABLE,
+  ORDERED_LIST,
+  UNORDERED_LIST,
+};

@@ -13,23 +13,29 @@
  *
  */
 
-import { BusEventType, BusEventViewChange, ChatInstance, PublicConfig, ViewType } from '@carbon/ai-chat';
-import rightPanelOpen from '@carbon/web-components/es/icons/right-panel--open/16.js';
-import { css, html, LitElement, PropertyValues } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import React from 'react';
-import { DemoApp } from '../react/DemoApp';
-import { createRoot, Root } from 'react-dom/client';
+import {
+  BusEventType,
+  BusEventViewChange,
+  ChatInstance,
+  PublicConfig,
+  ViewType,
+} from "@carbon/ai-chat";
+import rightPanelOpen from "@carbon/web-components/es/icons/right-panel--open/16.js";
+import { css, html, LitElement, PropertyValues } from "lit";
+import { customElement, state } from "lit/decorators.js";
+import React from "react";
+import { DemoApp } from "../react/DemoApp";
+import { createRoot, Root } from "react-dom/client";
 
-import { Settings } from './types';
-import { getSettings } from './utils';
+import { Settings } from "./types";
+import { getSettings } from "./utils";
 
 const { defaultConfig, defaultSettings } = getSettings();
 
 /**
  * `DemoBody` is a custom Lit element representing the body component.
  */
-@customElement('demo-body')
+@customElement("demo-body")
 export class DemoBody extends LitElement {
   static styles = css`
     :host {
@@ -80,17 +86,13 @@ export class DemoBody extends LitElement {
       height: 100vh;
       width: 320px;
       z-index: 9999;
-      transition:
-        right 100ms,
-        visibility 0s 100ms; /* Delay visibility change */
+      transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
       visibility: visible; /* Visible by default */
     }
 
     .sidebar--closed {
       right: -320px;
-      transition:
-        right 100ms,
-        visibility 0s 0s; /* Immediately hide after transition */
+      transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
       visibility: hidden; /* Hidden after right transition */
     }
 
@@ -129,7 +131,7 @@ export class DemoBody extends LitElement {
   };
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
-    if (this.settings.framework === 'react') {
+    if (this.settings.framework === "react") {
       this._renderReactApp();
     }
   }
@@ -140,12 +142,18 @@ export class DemoBody extends LitElement {
     function customButtonHandler(event: any) {
       const { customEventType, messageItem } = event;
       // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
-      if (customEventType === 'buttonItemClicked' && messageItem.custom_event_name === 'alert_button') {
+      if (
+        customEventType === "buttonItemClicked" &&
+        messageItem.custom_event_name === "alert_button"
+      ) {
         // eslint-disable-next-line no-alert
         window.alert(messageItem.user_defined.text);
       }
     }
-    this._instance.on({ type: 'messageItemCustom' as BusEventType, handler: customButtonHandler });
+    this._instance.on({
+      type: "messageItemCustom" as BusEventType,
+      handler: customButtonHandler,
+    });
   };
 
   openSideBar = () => {
@@ -158,13 +166,19 @@ export class DemoBody extends LitElement {
   _root: Root;
 
   private _renderReactApp() {
-    const container: HTMLElement = document.querySelector('#root');
+    const container: HTMLElement = document.querySelector("#root");
     // If a root already exists, unmount it to avoid memory leaks
     if (this._root) {
       this._root.unmount();
     }
     this._root = createRoot(container);
-    this._root.render(<DemoApp config={this.config} settings={this.settings} onBeforeRender={this.onBeforeRender} />);
+    this._root.render(
+      <DemoApp
+        config={this.config}
+        settings={this.settings}
+        onBeforeRender={this.onBeforeRender}
+      />
+    );
   }
 
   // Define the element's render template
@@ -172,28 +186,36 @@ export class DemoBody extends LitElement {
     return html` <div class="page">
       <div class="nav-block">
         <cds-layer>
-          <demo-version-switcher .settings=${this.settings}></demo-version-switcher>
-          <demo-layout-switcher .settings=${this.settings}></demo-layout-switcher>
+          <demo-version-switcher
+            .settings=${this.settings}
+          ></demo-version-switcher>
+          <demo-layout-switcher
+            .settings=${this.settings}
+          ></demo-layout-switcher>
           <demo-theme-switcher .config=${this.config}></demo-theme-switcher>
-          <!-- <demo-homescreen-switcher .settings=${this.settings}></demo-homescreen-switcher> -->
+          <!-- <demo-homescreen-switcher .settings=${this
+            .settings}></demo-homescreen-switcher> -->
         </cds-layer>
       </div>
       <div class="main">
-        ${this.settings.framework === 'web-component' && this.settings.layout === 'float'
+        ${this.settings.framework === "web-component" &&
+        this.settings.layout === "float"
           ? html`<cds-aichat-container
               .config=${this.config}
               .onBeforeRender=${this.onBeforeRender}
             ></cds-aichat-container>`
           : html``}
-        ${this.settings.framework === 'web-component' && this.settings.layout === 'sidebar'
+        ${this.settings.framework === "web-component" &&
+        this.settings.layout === "sidebar"
           ? html`<cds-aichat-custom-element
-              class="sidebar${this.sideBarOpen ? '' : ' sidebar--closed'}"
+              class="sidebar${this.sideBarOpen ? "" : " sidebar--closed"}"
               .config=${this.config}
               .onBeforeRender=${this.onBeforeRender}
               .onViewChange=${this.onViewChange}
             ></cds-aichat-custom-element>`
           : html``}
-        ${this.settings.framework === 'web-component' && this.settings.layout === 'fullscreen'
+        ${this.settings.framework === "web-component" &&
+        this.settings.layout === "fullscreen"
           ? html`<cds-aichat-custom-element
               class="fullScreen"
               .config=${this.config}
@@ -202,13 +224,13 @@ export class DemoBody extends LitElement {
           : html``}
         <slot></slot>
       </div>
-      ${this.settings.layout === 'sidebar' && !this.sideBarOpen
+      ${this.settings.layout === "sidebar" && !this.sideBarOpen
         ? html`<div class="sidebar-nav">
           <cds-icon-button kind="ghost" @click="${this.openSideBar}">
-            ${rightPanelOpen({ slot: 'icon' })}
+            ${rightPanelOpen({ slot: "icon" })}
           </cds-icon-bottom>
         </div>`
-        : ''}
+        : ""}
     </div>`;
   }
 }
@@ -216,6 +238,6 @@ export class DemoBody extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    'demo-body': DemoBody;
+    "demo-body": DemoBody;
   }
 }

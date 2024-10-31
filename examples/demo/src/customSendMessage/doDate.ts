@@ -13,7 +13,7 @@
  *
  */
 
-import { ChatInstance, DateItem, MessageResponseTypes } from '@carbon/ai-chat';
+import { ChatInstance, DateItem, MessageResponseTypes } from "@carbon/ai-chat";
 
 function doDate(instance: ChatInstance) {
   instance.messaging.addMessage({

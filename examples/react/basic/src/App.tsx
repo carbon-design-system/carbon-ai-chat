@@ -13,13 +13,18 @@
  *
  */
 
-import './styles.css';
+import "./styles.css";
 
-import { BusEventUserDefinedResponse, ChatContainer, ChatInstance, PublicConfig } from '@carbon/ai-chat';
-import React from 'react';
-import { createRoot } from 'react-dom/client';
+import {
+  BusEventUserDefinedResponse,
+  ChatContainer,
+  ChatInstance,
+  PublicConfig,
+} from "@carbon/ai-chat";
+import React from "react";
+import { createRoot } from "react-dom/client";
 
-import { customSendMessage } from './customSendMessage';
+import { customSendMessage } from "./customSendMessage";
 
 const config: PublicConfig = {
   messaging: {
@@ -29,19 +34,27 @@ const config: PublicConfig = {
 } as PublicConfig;
 
 function App() {
-  return <ChatContainer config={config} renderUserDefinedResponse={renderUserDefinedResponse} />;
+  return (
+    <ChatContainer
+      config={config}
+      renderUserDefinedResponse={renderUserDefinedResponse}
+    />
+  );
 }
 
-function renderUserDefinedResponse(event: BusEventUserDefinedResponse, instance: ChatInstance) {
+function renderUserDefinedResponse(
+  event: BusEventUserDefinedResponse,
+  instance: ChatInstance
+) {
   // The event here will contain details for each user defined response that needs to be rendered.
 
-  if (event.data.message.user_defined?.type === 'my_unique_identifier') {
+  if (event.data.message.user_defined?.type === "my_unique_identifier") {
     return <div className="padding">Any component you want.</div>;
   }
 
   return undefined;
 }
 
-const root = createRoot(document.querySelector('#root'));
+const root = createRoot(document.querySelector("#root"));
 
 root.render(<App />);

@@ -13,21 +13,21 @@
  *
  */
 
-import { ChatInstance, MessageResponseTypes, VideoItem } from '@carbon/ai-chat';
+import { ChatInstance, MessageResponseTypes, VideoItem } from "@carbon/ai-chat";
 
 function doVideo(instance: ChatInstance) {
   instance.messaging.addMessage({
     output: {
       generic: [
         {
-          source: 'https://vimeo.com/118761396',
+          source: "https://vimeo.com/118761396",
           response_type: MessageResponseTypes.VIDEO,
           dimensions: {
             base_height: 126,
           },
         } as VideoItem,
         {
-          source: 'https://www.youtube.com/watch?v=y_6hQOUx-dg',
+          source: "https://www.youtube.com/watch?v=y_6hQOUx-dg",
           response_type: MessageResponseTypes.VIDEO,
         } as VideoItem,
       ],

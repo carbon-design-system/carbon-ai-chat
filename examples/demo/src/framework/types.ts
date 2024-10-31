@@ -14,9 +14,9 @@
  */
 
 interface Settings {
-  framework: 'react' | 'web-component';
-  layout: 'float' | 'sidebar' | 'fullscreen';
-  homescreen: 'none' | 'default' | 'custom';
+  framework: "react" | "web-component";
+  layout: "float" | "sidebar" | "fullscreen";
+  homescreen: "none" | "default" | "custom";
 }
 
 interface KeyPairs {

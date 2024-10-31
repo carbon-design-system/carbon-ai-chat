@@ -13,7 +13,12 @@
  *
  */
 
-import { ChatInstance, GenericItem, MessageResponseTypes, TextItem } from '@carbon/ai-chat';
+import {
+  ChatInstance,
+  GenericItem,
+  MessageResponseTypes,
+  TextItem,
+} from "@carbon/ai-chat";
 
 function doGrid(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -21,7 +26,7 @@ function doGrid(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: '#### Grid alignment example:',
+          text: "#### Grid alignment example:",
         } as TextItem,
         {
           rows: [
@@ -30,77 +35,36 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: '**top**\ncenter\nbottom',
+                      response_type: "text",
+                      text: "**top**\ncenter\nbottom",
                     },
                   ],
                 },
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'left',
+                      response_type: "text",
+                      text: "left",
                     },
                   ],
                 },
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'center',
+                      response_type: "text",
+                      text: "center",
                     },
                   ],
-                  horizontal_alignment: 'center',
+                  horizontal_alignment: "center",
                 },
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'right',
+                      response_type: "text",
+                      text: "right",
                     },
                   ],
-                  horizontal_alignment: 'right',
-                },
-              ],
-            },
-            {
-              cells: [
-                {
-                  items: [
-                    {
-                      response_type: 'text',
-                      text: 'top\n**center**\nbottom',
-                    },
-                  ],
-                },
-                {
-                  items: [
-                    {
-                      response_type: 'text',
-                      text: 'left',
-                    },
-                  ],
-                  vertical_alignment: 'center',
-                },
-                {
-                  items: [
-                    {
-                      response_type: 'text',
-                      text: 'center',
-                    },
-                  ],
-                  vertical_alignment: 'center',
-                  horizontal_alignment: 'center',
-                },
-                {
-                  items: [
-                    {
-                      response_type: 'text',
-                      text: 'right',
-                    },
-                  ],
-                  vertical_alignment: 'center',
-                  horizontal_alignment: 'right',
+                  horizontal_alignment: "right",
                 },
               ],
             },
@@ -109,62 +73,103 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'top\ncenter\n**bottom**',
+                      response_type: "text",
+                      text: "top\n**center**\nbottom",
                     },
                   ],
                 },
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'left',
+                      response_type: "text",
+                      text: "left",
                     },
                   ],
-                  vertical_alignment: 'bottom',
+                  vertical_alignment: "center",
                 },
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'center',
+                      response_type: "text",
+                      text: "center",
                     },
                   ],
-                  vertical_alignment: 'bottom',
-                  horizontal_alignment: 'center',
+                  vertical_alignment: "center",
+                  horizontal_alignment: "center",
                 },
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'right',
+                      response_type: "text",
+                      text: "right",
                     },
                   ],
-                  vertical_alignment: 'bottom',
-                  horizontal_alignment: 'right',
+                  vertical_alignment: "center",
+                  horizontal_alignment: "right",
+                },
+              ],
+            },
+            {
+              cells: [
+                {
+                  items: [
+                    {
+                      response_type: "text",
+                      text: "top\ncenter\n**bottom**",
+                    },
+                  ],
+                },
+                {
+                  items: [
+                    {
+                      response_type: "text",
+                      text: "left",
+                    },
+                  ],
+                  vertical_alignment: "bottom",
+                },
+                {
+                  items: [
+                    {
+                      response_type: "text",
+                      text: "center",
+                    },
+                  ],
+                  vertical_alignment: "bottom",
+                  horizontal_alignment: "center",
+                },
+                {
+                  items: [
+                    {
+                      response_type: "text",
+                      text: "right",
+                    },
+                  ],
+                  vertical_alignment: "bottom",
+                  horizontal_alignment: "right",
                 },
               ],
             },
           ],
           columns: [
             {
-              width: '50px',
+              width: "50px",
             },
             {
-              width: '1',
+              width: "1",
             },
             {
-              width: '1',
+              width: "1",
             },
             {
-              width: '1',
+              width: "1",
             },
           ],
-          response_type: 'grid',
+          response_type: "grid",
         } as unknown as GenericItem,
         {
           response_type: MessageResponseTypes.TEXT,
-          text: '#### Grid Lendyr example:',
+          text: "#### Grid Lendyr example:",
         } as TextItem,
         {
           rows: [
@@ -180,32 +185,32 @@ function doGrid(instance: ChatInstance) {
                               items: [
                                 {
                                   source:
-                                    'https://web-chat.global.assistant.watson.appdomain.cloud/assets/Lendyr-Avatar.png',
-                                  response_type: 'image',
+                                    "https://web-chat.global.assistant.watson.appdomain.cloud/assets/Lendyr-Avatar.png",
+                                  response_type: "image",
                                 },
                               ],
                             },
                             {
                               items: [
                                 {
-                                  response_type: 'text',
-                                  text: 'IBM **watsonx Assistant Demo Site**\n[https://lendyr.com](https://lendyr.com)',
+                                  response_type: "text",
+                                  text: "IBM **watsonx Assistant Demo Site**\n[https://lendyr.com](https://lendyr.com)",
                                 },
                               ],
-                              vertical_alignment: 'center',
+                              vertical_alignment: "center",
                             },
                           ],
                         },
                       ],
                       columns: [
                         {
-                          width: '40px',
+                          width: "40px",
                         },
                         {
-                          width: '1',
+                          width: "1",
                         },
                       ],
-                      response_type: 'grid',
+                      response_type: "grid",
                     },
                   ],
                 },
@@ -216,8 +221,8 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: 'text',
-                      text: 'Learn how IBM watsonx Assistant can be used to create powerful experiences that help customers actually resolve their problems.',
+                      response_type: "text",
+                      text: "Learn how IBM watsonx Assistant can be used to create powerful experiences that help customers actually resolve their problems.",
                     },
                   ],
                 },
@@ -226,10 +231,10 @@ function doGrid(instance: ChatInstance) {
           ],
           columns: [
             {
-              width: '1',
+              width: "1",
             },
           ],
-          response_type: 'grid',
+          response_type: "grid",
         } as unknown as GenericItem,
       ],
     },

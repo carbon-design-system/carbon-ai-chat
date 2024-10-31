@@ -13,10 +13,10 @@
  *
  */
 
-import { ChatInstance } from '@carbon/ai-chat';
+import { ChatInstance } from "@carbon/ai-chat";
 
-import { UNORDERED_LIST } from './constants';
-import { doText } from './doText';
+import { UNORDERED_LIST } from "./constants";
+import { doText } from "./doText";
 
 function doList(instance: ChatInstance) {
   doText(instance, UNORDERED_LIST);

@@ -13,18 +13,20 @@
  *
  */
 
-import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { html, LitElement } from "lit";
+import { customElement } from "lit/decorators.js";
 
 /**
  * `DemoHeader` is a custom Lit element representing a header component.
  */
-@customElement('demo-header')
+@customElement("demo-header")
 export class DemoHeader extends LitElement {
   render() {
     return html`
       <cds-header aria-label="Carbon AI Chat">
-        <cds-header-name href="https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html" prefix="Carbon"
+        <cds-header-name
+          href="https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html"
+          prefix="Carbon"
           >AI Chat</cds-header-name
         >
       </cds-header>
@@ -35,6 +37,6 @@ export class DemoHeader extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    'demo-header': DemoHeader;
+    "demo-header": DemoHeader;
   }
 }

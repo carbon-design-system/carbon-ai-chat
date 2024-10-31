@@ -22,7 +22,6 @@ yarn add @carbon/ai-chat
 
 This will install the package that contains both the web component and React versions of the chat application.
 
-
 ## Documentation
 
 - [See our documentation site](https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html).

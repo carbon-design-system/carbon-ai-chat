@@ -13,12 +13,12 @@
  *
  */
 
-import { ChatInstance, MessageResponseTypes, TextItem } from '@carbon/ai-chat';
+import { ChatInstance, MessageResponseTypes, TextItem } from "@carbon/ai-chat";
 
-import { doTextStreaming } from './doText';
+import { doTextStreaming } from "./doText";
 
 const CODE =
-  '\n```python\n' +
+  "\n```python\n" +
   `import random
 
 def generate_lorem_ipsum(paragraphs=1):
@@ -49,7 +49,7 @@ def generate_lorem_ipsum(paragraphs=1):
 # Example usage
 print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 ` +
-  '\n\n```';
+  "\n\n```";
 
 function doCode(instance: ChatInstance) {
   instance.messaging.addMessage({
