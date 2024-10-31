@@ -73,7 +73,12 @@ const check = async (paths, options) => {
     checkPaths = await globby(
       gitIgnorePath.reduce(
         (acc, item) => acc.concat(gitignoreToGlob(item)),
-        ["**/*.{js,ts,tsx,scss,html}", "!**/*.snap.js"]
+        [
+          "**/*.{js,ts,tsx,scss,html}",
+          "!**/*.snap.js",
+          "!examples",
+          "!docs/index.html",
+        ]
       )
     );
   } else if (options.writeCurrentYear) {
