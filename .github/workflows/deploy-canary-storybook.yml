@@ -1,4 +1,5 @@
-name: Deploy Web Components Storybook - Canary
+# Deploy canary storybook environment from `main` branch to Github Pages
+name: Deploy canary storybook
 
 # occurs on every push to the `main` branch or can be manually triggered
 on:
@@ -29,11 +30,8 @@ jobs:
         run: |
           cd packages/ai-chat
           npm run storybook:build
-      - name: Create CNAME
-        run: |
-          touch packages/ai-chat/storybook-static/.nojekyll
       # Deploy to canary folder in Github Pages using `gh-pages` package
-      - name: Deploy to latest
+      - name: Deploy to canary
         run: |
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           npx gh-pages -d packages/ai-chat/storybook-static -u "github-actions-bot <support+actions@github.com>" --dest canary --message "chore(deploy): deploy to gh-pages canary"

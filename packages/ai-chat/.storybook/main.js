@@ -2,16 +2,15 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2023
+ * Copyright IBM Corp. 2024
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
 import { mergeConfig } from "vite";
-import postcss from "rollup-plugin-postcss";
-import postcssLit from "rollup-plugin-postcss-lit";
-import sass from "sass";
+import { litStyleLoader, litTemplateLoader } from "@mordech/vite-lit-loader";
+import remarkGfm from "remark-gfm";
 
 const config = {
   stories: [
@@ -19,6 +18,16 @@ const config = {
     "../src/**/__stories__/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
   addons: [
+    {
+      name: "@storybook/addon-docs",
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        },
+      },
+    },
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-a11y",
@@ -34,20 +43,17 @@ const config = {
     storyStoreV7: true,
   },
   async viteFinal(config) {
+    // Merge custom configuration into the default config
     return mergeConfig(config, {
-      css: {
-        preprocessorOptions: {
-          scss: {
-            implementation: sass,
-          },
-        },
+      plugins: [litStyleLoader(), litTemplateLoader()],
+      optimizeDeps: {
+        include: ["@storybook/web-components"],
+        exclude: ["lit", "lit-html"],
       },
-      plugins: [
-        postcss(),
-        postcssLit({
-          include: ["../node_modules", "../**/*.scss", "../**/*.scss?*"],
-        }),
-      ],
+      define: {
+        "process.env": process.env,
+      },
+      sourcemap: true,
     });
   },
 };

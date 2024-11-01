@@ -1,4 +1,5 @@
-name: Publish Web Components CDN artifacts to Cloud Object Storage
+# Publish the staging / latest / versioned CDN artifacts to Cloud Object Storage
+name: Publish CDN artifacts
 
 # occurs when a new tag has been pushed or can be manually triggered with tag provided
 on:

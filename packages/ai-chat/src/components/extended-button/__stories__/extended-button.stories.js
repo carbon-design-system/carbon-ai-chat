@@ -15,7 +15,6 @@ import { html } from "lit";
  */
 export default {
   title: "Components/Extended button",
-  tags: ["autodocs"],
 };
 
 /**

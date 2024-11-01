@@ -1,4 +1,5 @@
-name: Publish Web Components canary CDN artifacts to Cloud Object Storage
+# Publish the canary CDN artifacts to Cloud Object Storage
+name: Publish canary CDN artifacts
 
 # occurs on every push to the `main` branch or can be manually triggered
 on:
