@@ -60,7 +60,7 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist"
-          DEST_DIR: "carbon/ai-chat/tag/next" # Replace with intended url structure here
+          DEST_DIR: "common/carbon/ai-chat/tag/next"
 
       # If tag is a full release, upload the CDN artifacts to the `latest` tag folder
       # ie. https://1.www.s81c.com/common/carbon/web-components/tag/v2/latest/breadcrumb.min.js
@@ -76,7 +76,7 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist"
-          DEST_DIR: "carbon/ai-chat/tag/v2/latest" # Replace with intended url structure here
+          DEST_DIR: "common/carbon/ai-chat/tag/v2/latest"
 
       # Upload the CDN artifacts to versioned folder
       # ie. https://1.www.s81c.com/common/carbon/web-components/version/v2.12.0/breadcrumb.min.js
@@ -91,4 +91,4 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist"
-          DEST_DIR: "carbon/ai-chat/version/v${{steps.package-version.outputs.current-version}}" # Replace with intended url structure here
+          DEST_DIR: "common/carbon/ai-chat/version/v${{steps.package-version.outputs.current-version}}"
