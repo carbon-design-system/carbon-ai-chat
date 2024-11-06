@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "lerna run build --stream",
-    "ci-check": "npm run format:staged && npm lint:license && npm lint && npm lint:styles",
+    "ci-check": "npm run format:staged && npm lint:license && npm lint && npm lint:styles && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
     "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
     "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
@@ -28,7 +28,8 @@
     "lint": "eslint packages --ext .js,.ts",
     "lint:license": "tools/check-license.js -a",
     "lint:license:staged": "tools/check-license.js -w",
-    "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables"
+    "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
+    "test": "lerna run test --stream"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",

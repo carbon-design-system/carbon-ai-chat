@@ -27,7 +27,7 @@
     "storybook": "npm run custom-elements && storybook dev -p 6006",
     "storybook:build": "npm run custom-elements && storybook build",
     "test": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
-    "test:updateSnapshot": "npm run build && web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots"
+    "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots"
   },
   "dependencies": {
     "@carbon/styles": "^1.39.0",

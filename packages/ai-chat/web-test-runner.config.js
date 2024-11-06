@@ -6,6 +6,7 @@
 //
 import { esbuildPlugin } from "@web/dev-server-esbuild";
 import litcss from "web-dev-server-plugin-lit-css";
+import { playwrightLauncher } from "@web/test-runner-playwright";
 
 export default {
   files: ["src/**/*.test.ts"],
@@ -15,5 +16,10 @@ export default {
       cssnano: true,
     }),
     esbuildPlugin({ ts: true }),
+  ],
+  browsers: [
+    playwrightLauncher({ product: "chromium" }),
+    playwrightLauncher({ product: "firefox" }),
+    playwrightLauncher({ product: "webkit" }),
   ],
 };
