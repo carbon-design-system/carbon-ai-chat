@@ -1,6 +1,6 @@
 # Release
 
-> How we version and release packages in the Carbon Monorepo Template
+> How we version and release packages in the Carbon AI Chat monorepo
 
 ## Table of Contents
 
@@ -95,8 +95,7 @@ release team will need to do the following:
       inputs as above, but this time with dry run unchecked.
 - [ ] Once job has completed, check the packages on npm to ensure they have been
       published under the `next` tag:
-  - [ ] `@carbon/monorepo-template`:
-        [replace link here with npm versions page]
+  - [ ] `@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
 - [ ] Run the
       [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml).
       This workflow creates the release tag, generates the release with notes,
@@ -117,8 +116,8 @@ release team will need to do the following:
           Once this workflow has completed, check the
           staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
     - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the staging tag and version has been published.
-- [ ] Post a message to the `#support-channel` Slack channel to announce the
-      new version of `@carbon/monorepo-template`.
+- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
+      new version of `@carbon/ai-chat`.
 
 ### Subsequent Prerelease
 
@@ -143,8 +142,7 @@ from the release branch for further testing. To publish subsequent prereleases,
       inputs as above, but this time with dry run unchecked.
 - [ ] Once job has completed, check the packages on npm to ensure they have been
       published under the `next` tag:
-  - [ ]`@carbon/monorepo-template`:
-    [replace link here with npm versions page]
+  - [ ]`@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
 - [ ] Run the
       [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml).
       This workflow creates the release tag, generates the release with notes,
@@ -165,7 +163,7 @@ from the release branch for further testing. To publish subsequent prereleases,
           Once this workflow has completed, check the
           staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
     - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the staging tag and version has been published.
-- [ ] Post a message to the `#support-channel` Slack channel to announce the
+- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
       new version of `@carbon/monorepo-template`.
 
 ### Stable release
@@ -191,10 +189,14 @@ validated. During this stage, the release team will do the following:
       `v0.10.0-rc.1 ---> v0.10.0`).
 - [ ] If the version bumps are expected, run the workflow again with the same
       inputs as above, but this time with dry run unchecked.
+      **Note:**If you run into an issue where Lerna detects no changes (usually when bumping from release candidate to full release), you can run with the `force publish` option.
+      ![Screenshot of lerna not updating due to no changes detected](https://github.com/user-attachments/assets/8c43bd62-f440-45c7-be8d-55daca9a9e4f)
+      Run the workflow again with both `dry run` and `force publish` options set to true so you can confirm the version bump before re-running with `force publish` set to true and `dry run` set to false.
+      ![Screenshot of minor release workflow with force publish option](https://github.com/user-attachments/assets/a1535d5c-058d-4784-a46f-ae65fed3b286)
+
 - [ ] Once job has completed, check the packages on npm to ensure they have been
       published under the `latest` tag:
-  - [ ]`@carbon/monorepo-template`:
-    [replace link here with npm versions page]
+  - [ ]`@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
 - [ ] Run the
       [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml).
       This workflow creates the release tag, generates the release with notes,
@@ -220,8 +222,8 @@ validated. During this stage, the release team will do the following:
         `latest`.
         ![Screenshot of release label with latest option selected](https://github.com/user-attachments/assets/f3afc692-d691-4c04-b891-73d0406be7b0)
 
-- [ ] Post a message to the `#support-channel` Slack channel to announce the
-      new version of `@carbon/monorepo-template`.
+- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
+      new version of `@carbon/ai-chat`.
 
 - [ ] Remove the branch protections for `release/v.*` by changing the branch
       name pattern to `released/v*`

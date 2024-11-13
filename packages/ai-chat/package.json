@@ -8,6 +8,10 @@
     "url": "https://github.com/carbon-design-system/carbon-ai-chat",
     "directory": "packages/ai-chat"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "exports": {
     "./es/": "./es/",
     "./dist/": "./dist/",

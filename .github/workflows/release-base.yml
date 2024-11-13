@@ -18,6 +18,10 @@ on:
         description: "Run dry run?"
         type: boolean
         default: true
+      force-publish:
+        description: "Force publish?"
+        type: boolean
+        default: false
 
 jobs:
   release:
@@ -64,27 +68,37 @@ jobs:
             echo "PUBLISH=--yes" >> $GITHUB_ENV
           fi
 
+      # Set the FORCE environment variable to be used later in the Lerna publish command.
+      # Lerna has force-publish off by default, but is to be used in circumstances when Lerna doesn't detect changes
+      # and we want to bump the version up regardless.
+      # Use with dry-run set to true first to confirm the version bump before running again with dry-run set to false
+      - name: Set force publish env variable
+        run: |
+          if [ "${{ github.event.inputs.force-publish }}" == "true"  ]; then
+            echo "FORCE=--force-publish" >> $GITHUB_ENV
+          fi
+
       - name: Publish full minor release (ie. v1.x.0)
         if: github.event.inputs.type == 'full minor release'
         run: |
-          npm lerna publish minor --conventional-graduate $(echo "${{ env.PUBLISH }}")
+          npm lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
         if: github.event.inputs.type == 'first minor rc'
         run: |
-          npm lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next $(echo "${{ env.PUBLISH }}")
+          npm lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish full patch release (ie. v1.0.x)
         if: github.event.inputs.type == 'full patch release'
         run: |
-          npm run lerna publish patch --conventional-graduate $(echo "${{ env.PUBLISH }}")
+          npm run lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first patch RC (ie. v1.0.x-rc.0)
         if: github.event.inputs.type == 'first patch rc'
         run: |
-          npm lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next $(echo "${{ env.PUBLISH }}")
+          npm lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish subsequent RC (ie. v1.0.0-rc.x)
         if: github.event.inputs.type == 'subsequent rc'
         run: |
-          npm lerna publish --conventional-prerelease --preid rc --pre-dist-tag next $(echo "${{ env.PUBLISH }}")
+          npm lerna publish --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}

@@ -1,16 +1,12 @@
 # Deploy staging storybook environment from release branch to Github Pages
 name: Deploy staging storybook
 
-# Gets triggered every time a release candidate has been published from the `release-base` workflow
-# or can be manually triggered
+# Gets triggered every time a release candidate tag has been published from the
+# `create-release-tag-and-pr` workflow or can be manually triggered
 on:
   workflow_dispatch:
-  push:
-    tags:
-      # Matches tags that have the shape `vX.Y.Z` or `vX.Y.Z-rc.X` Reference:
-      # https://help.github.com/en/articles/workflow-syntax-for-github-actions#onpushpull_requesttagsbranches
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  repository_dispatch:
+    types: [deploy-staging-storybook]
 
 jobs:
   deploy-staging-storybook:
@@ -20,6 +16,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
         with:
           fetch-depth: "0"
+          ref: ${{ github.event.client_payload.branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

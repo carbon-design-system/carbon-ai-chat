@@ -109,3 +109,40 @@ jobs:
           name: "${{ github.event.inputs.tag }}"
           prerelease: true
           bodyFile: "./changelog.txt"
+
+  # This job dispatches workflow to push to staging / latest environments
+  dispatch-storybook-workflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: create-release-tag
+    steps:
+      # After successfully creating tag for release candidate, trigger the staging storybook environment deployment workflow.
+      # Pass in the release branch name to the storybook deployment job so it build off the release branch
+      - name: Dispatch staging storybook deployment workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: deploy-staging-storybook
+          client-payload: '{"branch": "${{ github.ref_name }}"}'
+
+      # After successfully creating a tag for full release, trigger the production storybook environment deployment workflow.
+      # Pass in the release branch name to the storybook deployment job so it build off the release branch
+      - name: Dispatch production storybook deployment workflow
+        if: contains(github.event.inputs.tag, '-rc.') == false
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: deploy-latest-storybook
+          client-payload: '{"branch": "${{ github.ref_name }}"}'
+
+  # This job dispatches workflow to publish staging / latest CDN artifacts
+  dispatch-cdn-workflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: create-release-tag
+    steps:
+      # After successfully creating tag for the release candidate / full release, trigger the workflow to publish the CDN artifacts.
+      # Pass in the tag to the CDN publishing workflow.
+      - name: Dispatch CDN publishing workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: publish-cdn-artifacts
+          client-payload: '{"tag": "${{ github.event.inputs.tag }}", "branch": "${{ github.ref_name }}"}'

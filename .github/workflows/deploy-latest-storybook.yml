@@ -1,19 +1,12 @@
 # Deploy production storybook environment from release branch to Github Pages
 name: Deploy production storybook
 
-# This workflow is triggered from the `release-base` workflow when a full release
+# This workflow is triggered from the `create-release-tag-and-pr` workflow when a full release
 # has been successfully completed
 on:
   workflow_dispatch:
-  push:
-    tags:
-      # Matches tags that have the shape `vX.Y.Z`
-      # Reference: https://help.github.com/en/articles/workflow-syntax-for-github-actions#onpushpull_requesttagsbranches
-      - "v[0-9]+.[0-9]+.[0-9]+"
-
-      # Ignore tags that use a preid after `vX.Y.Z`, for example: vX.Y.Z-rc.0
-      # https://help.github.com/en/articles/workflow-syntax-for-github-actions#example-using-positive-and-negative-patterns
-      - "!v[0-9]+.[0-9]+.[0-9]+-*"
+  repository_dispatch:
+    types: [deploy-latest-storybook]
 
 jobs:
   deploy-latest-storybook:
@@ -23,6 +16,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
         with:
           fetch-depth: "0"
+          ref: ${{ github.event.client_payload.branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

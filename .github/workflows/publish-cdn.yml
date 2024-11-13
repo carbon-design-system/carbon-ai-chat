@@ -1,7 +1,8 @@
 # Publish the staging / latest / versioned CDN artifacts to Cloud Object Storage
 name: Publish CDN artifacts
 
-# occurs when a new tag has been pushed or can be manually triggered with tag provided
+# This workflow is triggered from the `create-release-tag-and-pr` workflow when a new tag is created
+# Or can be manually triggered with tag provided
 on:
   workflow_dispatch:
     inputs:
@@ -11,12 +12,8 @@ on:
         description: "release tag (ie. v1.1.0-rc.0 or v1.1.0)"
         type: string
         default: "v1.1.0-rc.0"
-  push:
-    tags:
-      # Matches tags that have the shape `vX.Y.Z` or `vX.Y.Z-rc.X` Reference:
-      # https://help.github.com/en/articles/workflow-syntax-for-github-actions#onpushpull_requesttagsbranches
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  repository_dispatch:
+    types: [publish-cdn-artifacts]
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -29,6 +26,7 @@ jobs:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
         with:
           fetch-depth: "0"
+          ref: ${{ github.event.client_payload.branch }}
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
