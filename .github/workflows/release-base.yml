@@ -32,7 +32,7 @@ jobs:
       contents: write
     timeout-minutes: 60
     env:
-      GH_TOKEN: ${{ secrets.MERGE_ACTION }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
         with:
@@ -54,7 +54,7 @@ jobs:
           npm install
           npm run build
       - name: Continuous integration check
-        run: npm ci-check
+        run: npm run ci-check
 
       - name: Set NPM token
         run: |
@@ -81,24 +81,24 @@ jobs:
       - name: Publish full minor release (ie. v1.x.0)
         if: github.event.inputs.type == 'full minor release'
         run: |
-          npm lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
         if: github.event.inputs.type == 'first minor rc'
         run: |
-          npm lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish full patch release (ie. v1.0.x)
         if: github.event.inputs.type == 'full patch release'
         run: |
-          npm run lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first patch RC (ie. v1.0.x-rc.0)
         if: github.event.inputs.type == 'first patch rc'
         run: |
-          npm lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish subsequent RC (ie. v1.0.0-rc.x)
         if: github.event.inputs.type == 'subsequent rc'
         run: |
-          npm lerna publish --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}

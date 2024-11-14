@@ -85,7 +85,7 @@ release team will need to do the following:
         `first minor rc` (rc stands for release candidate)
   - [ ] Ensure the dry run is checked
 
-  ![Screenshot of minor release workflow](https://github.com/user-attachments/assets/d3dfb0a8-077f-4bf2-b2a4-887e68b7d578)
+  ![Screenshot of minor release workflow](https://github.com/user-attachments/assets/ca511efa-47a4-41a7-95b5-c00b7688eee1)
 
 - [ ] Once the job has completed, which it should have failed, check the
       action's log. Lerna should have logged what versions it is bumping the
@@ -129,7 +129,7 @@ from the release branch for further testing. To publish subsequent prereleases,
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
       to generate the prerelease versions for the packages
-      ![Screenshot of minor release workflow with subsequent release selected](https://github.com/user-attachments/assets/f13e5f65-ce66-444a-ab91-b74d82c60f28)
+      ![Screenshot of minor release workflow with subsequent release selected](https://github.com/user-attachments/assets/83feed4e-bd44-45e6-881e-e200d11c2cb0)
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `subsequent rc`
@@ -176,7 +176,7 @@ validated. During this stage, the release team will do the following:
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
       to generate the full minor versions for the packages
 
-  ![Screenshot of minor release workflow with full minor release selected](https://github.com/user-attachments/assets/3c174a96-c685-4481-bd65-4ce0dfb1425c)
+  ![Screenshot of minor release workflow with full minor release selected](https://github.com/user-attachments/assets/9ab859fc-f25d-4c52-8f0c-71ee7adacf48)
 
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select

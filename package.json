@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "lerna run build --stream",
-    "ci-check": "npm run format:staged && npm lint:license && npm lint && npm lint:styles && npm run test",
+    "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
     "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
     "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",

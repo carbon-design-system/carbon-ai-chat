@@ -8,6 +8,10 @@ on:
   repository_dispatch:
     types: [deploy-latest-storybook]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy-latest-storybook:
     runs-on: ubuntu-latest

@@ -15,10 +15,6 @@ on:
   repository_dispatch:
     types: [publish-cdn-artifacts]
 
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   publish-cdn:
     runs-on: ubuntu-latest
@@ -37,7 +33,7 @@ jobs:
           npm install
           npm run build
       - name: Check release type
-        if: contains(github.ref_name, '-rc.') || contains(github.event.inputs.tag, '-rc.')
+        if: contains(github.event.client_payload.tag, '-rc.') || contains(github.event.inputs.tag, '-rc.')
         run: echo "PRE_RELEASE=true" >> $GITHUB_ENV
       - name: Get version of web components from package.json
         id: package-version
