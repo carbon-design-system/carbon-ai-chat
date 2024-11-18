@@ -20,10 +20,10 @@ import {
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useState } from "react";
+} from '@carbon/ai-chat';
+import React, { useState } from 'react';
 
-import { Settings } from "../framework/types";
+import { Settings } from '../framework/types';
 
 interface AppProps {
   config: PublicConfig;
@@ -34,24 +34,24 @@ interface AppProps {
 function DemoApp({ config, settings, onBeforeRender }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const onViewChange =
-    settings.layout === "sidebar"
+    settings.layout === 'sidebar'
       ? (event: BusEventViewChange, instance: ChatInstance) => {
           setSideBarOpen(event.newViewState.mainWindow);
         }
       : undefined;
   let className;
-  if (settings.layout === "fullscreen") {
-    className = "fullScreen";
-  } else if (settings.layout === "sidebar") {
+  if (settings.layout === 'fullscreen') {
+    className = 'fullScreen';
+  } else if (settings.layout === 'sidebar') {
     if (sideBarOpen) {
-      className = "sidebar";
+      className = 'sidebar';
     } else {
-      className = "sidebar sidebar--closed";
+      className = 'sidebar sidebar--closed';
     }
   }
   return (
     <>
-      {settings.layout === "float" ? (
+      {settings.layout === 'float' ? (
         <ChatContainer
           config={config}
           onBeforeRender={onBeforeRender}
@@ -70,13 +70,10 @@ function DemoApp({ config, settings, onBeforeRender }: AppProps) {
   );
 }
 
-function renderUserDefinedResponse(
-  event: BusEventUserDefinedResponse,
-  instance: ChatInstance
-) {
+function renderUserDefinedResponse(event: BusEventUserDefinedResponse, instance: ChatInstance) {
   // The event here will contain details for each user defined response that needs to be rendered.
 
-  if (event.data.message.user_defined?.type === "chart") {
+  if (event.data.message.user_defined?.type === 'chart') {
     return <div className="padding">Any component you want.</div>;
   }
 

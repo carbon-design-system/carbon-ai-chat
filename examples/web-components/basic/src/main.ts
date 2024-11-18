@@ -13,14 +13,14 @@
  *
  */
 
-import "./styles.css";
+import './styles.css';
 
-import "@carbon/ai-chat/dist/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/web-components/cds-aichat-container/index.js';
 
-import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config = {
   messaging: {
@@ -29,7 +29,7 @@ const config = {
   debug: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   render() {
     return html`

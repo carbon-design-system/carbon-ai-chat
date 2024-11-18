@@ -13,13 +13,7 @@
  *
  */
 
-import {
-  ChatInstance,
-  CustomSendMessageOptions,
-  GenericItem,
-  MessageRequest,
-  StreamChunk,
-} from "@carbon/ai-chat";
+import { ChatInstance, CustomSendMessageOptions, GenericItem, MessageRequest, StreamChunk } from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to this example of a custom backend. This backend is mocked entirely on the client side. It does not show all potential functionality.
 
@@ -48,7 +42,7 @@ Quam scelerisque platea ridiculus sem placerat pharetra sed. Porttitor per massa
 - Venenatis
 
 ` +
-  "\n```python\n" +
+  '\n```python\n' +
   `import random
 
 def generate_lorem_ipsum(paragraphs=1):
@@ -79,22 +73,22 @@ def generate_lorem_ipsum(paragraphs=1):
 # Example usage
 print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 ` +
-  "\n\n```";
+  '\n\n```';
 
 const WORD_DELAY = 40;
 
 async function doFakeTextStreaming(instance: ChatInstance) {
   const responseID = crypto.randomUUID();
-  const words = TEXT.split(" ");
+  const words = TEXT.split(' ');
 
   words.forEach((word, index) => {
     setTimeout(() => {
       instance.messaging.addMessageChunk({
         partial_item: {
-          response_type: "text",
+          response_type: 'text',
           text: `${word} `,
           streaming_metadata: {
-            id: "1",
+            id: '1',
           },
         } as GenericItem,
         streaming_metadata: {
@@ -107,10 +101,10 @@ async function doFakeTextStreaming(instance: ChatInstance) {
   await sleep(words.length * WORD_DELAY);
 
   const completeItem = {
-    response_type: "text",
+    response_type: 'text',
     text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
     streaming_metadata: {
-      id: "1",
+      id: '1',
     },
   };
   instance.messaging.addMessageChunk({
@@ -133,7 +127,7 @@ async function doFakeTextStreaming(instance: ChatInstance) {
 }
 
 async function sleep(milliseconds: number) {
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     setTimeout(resolve, milliseconds);
   });
 }
@@ -141,14 +135,14 @@ async function sleep(milliseconds: number) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) {
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
           {
-            response_type: "text",
+            response_type: 'text',
             text: WELCOME_TEXT,
           } as GenericItem,
         ],
@@ -156,26 +150,26 @@ async function customSendMessage(
     });
   } else {
     switch (request.input.text) {
-      case "text":
+      case 'text':
         instance.messaging.addMessage({
           output: {
             generic: [
               {
-                response_type: "text",
+                response_type: 'text',
                 text: TEXT,
               } as GenericItem,
             ],
           },
         });
         break;
-      case "user_defined":
+      case 'user_defined':
         instance.messaging.addMessage({
           output: {
             generic: [
               {
-                response_type: "user_defined",
+                response_type: 'user_defined',
                 user_defined: {
-                  type: "my_unique_identifier",
+                  type: 'my_unique_identifier',
                   my_data: {},
                 },
               } as GenericItem,
@@ -183,7 +177,7 @@ async function customSendMessage(
           },
         });
         break;
-      case "stream text":
+      case 'stream text':
         doFakeTextStreaming(instance as ChatInstance);
         break;
       default:
@@ -191,7 +185,7 @@ async function customSendMessage(
           output: {
             generic: [
               {
-                response_type: "text",
+                response_type: 'text',
                 text: WELCOME_TEXT,
               } as GenericItem,
             ],

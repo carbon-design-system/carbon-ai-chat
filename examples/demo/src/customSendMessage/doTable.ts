@@ -13,10 +13,10 @@
  *
  */
 
-import { ChatInstance } from "@carbon/ai-chat";
+import { ChatInstance } from '@carbon/ai-chat';
 
-import { TABLE } from "./constants";
-import { doText, doTextStreaming } from "./doText";
+import { TABLE } from './constants';
+import { doText, doTextStreaming } from './doText';
 
 function doTable(instance: ChatInstance) {
   doText(instance, `A markdown table.\n\n${TABLE}`);

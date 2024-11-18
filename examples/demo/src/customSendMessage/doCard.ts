@@ -13,7 +13,7 @@
  *
  */
 
-import { ChatInstance, GenericItem } from "@carbon/ai-chat";
+import { ChatInstance, GenericItem } from '@carbon/ai-chat';
 
 function doCard(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -22,8 +22,8 @@ function doCard(instance: ChatInstance) {
         {
           body: [
             {
-              response_type: "text",
-              text: "##### Publish Adaptive Card Schema",
+              response_type: 'text',
+              text: '##### Publish Adaptive Card Schema',
             },
             {
               rows: [
@@ -32,38 +32,37 @@ function doCard(instance: ChatInstance) {
                     {
                       items: [
                         {
-                          source:
-                            "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/example_avatar_1.png",
-                          response_type: "image",
+                          source: 'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/example_avatar_1.png',
+                          response_type: 'image',
                         },
                       ],
-                      vertical_alignment: "center",
+                      vertical_alignment: 'center',
                     },
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "**Matt Hidinger**\nCreated Tue, Feb 14, 2017",
+                          response_type: 'text',
+                          text: '**Matt Hidinger**\nCreated Tue, Feb 14, 2017',
                         },
                       ],
-                      vertical_alignment: "center",
+                      vertical_alignment: 'center',
                     },
                   ],
                 },
               ],
               columns: [
                 {
-                  width: "40px",
+                  width: '40px',
                 },
                 {
-                  width: "1",
+                  width: '1',
                 },
               ],
-              response_type: "grid",
+              response_type: 'grid',
             },
             {
-              response_type: "text",
-              text: "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+              response_type: 'text',
+              text: 'Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.',
             },
             {
               rows: [
@@ -72,16 +71,16 @@ function doCard(instance: ChatInstance) {
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "**Board:**\n**List:**\n**Assigned to:**\n**Due date:**",
+                          response_type: 'text',
+                          text: '**Board:**\n**List:**\n**Assigned to:**\n**Due date:**',
                         },
                       ],
                     },
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "Adaptive Cards\nBacklog\nMatt Hidinger\nNot set",
+                          response_type: 'text',
+                          text: 'Adaptive Cards\nBacklog\nMatt Hidinger\nNot set',
                         },
                       ],
                     },
@@ -90,25 +89,25 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "84px",
+                  width: '84px',
                 },
                 {
-                  width: "1",
+                  width: '1',
                 },
               ],
-              response_type: "grid",
+              response_type: 'grid',
             },
           ],
           footer: [
             {
-              url: "https://adaptivecards.io/",
-              kind: "secondary",
-              label: "View",
-              button_type: "url",
-              response_type: "button",
+              url: 'https://adaptivecards.io/',
+              kind: 'secondary',
+              label: 'View',
+              button_type: 'url',
+              response_type: 'button',
             },
           ],
-          response_type: "card",
+          response_type: 'card',
         } as unknown as GenericItem,
       ],
     },

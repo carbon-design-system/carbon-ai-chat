@@ -13,14 +13,9 @@
  *
  */
 
-import {
-  ChatInstance,
-  MessageResponseTypes,
-  TextItem,
-  UserDefinedItem,
-} from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes, TextItem, UserDefinedItem } from '@carbon/ai-chat';
 
-import { CHART_DATA } from "./constants";
+import { CHART_DATA } from './constants';
 
 function doUserDefined(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -29,7 +24,7 @@ function doUserDefined(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
-            type: "chart",
+            type: 'chart',
             chart_data: CHART_DATA,
           },
         } as UserDefinedItem,

@@ -10,6 +10,7 @@
         "decoratorsBeforeExport": true
       }
     ],
-    "@babel/plugin-proposal-class-properties"
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-private-methods"
   ]
 }

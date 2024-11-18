@@ -13,21 +13,17 @@
  *
  */
 
-import {
-  ChatInstance,
-  CustomSendMessageOptions,
-  MessageRequest,
-} from "@carbon/ai-chat";
+import { ChatInstance, CustomSendMessageOptions, MessageRequest } from '@carbon/ai-chat';
 
-import { doWelcomeText } from "./doText";
-import { RESPONSE_MAP } from "./responseMap";
+import { doWelcomeText } from './doText';
+import { RESPONSE_MAP } from './responseMap';
 
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) {
-  if (request.input.message_type !== "event") {
+  if (request.input.message_type !== 'event') {
     if (request.input.text in RESPONSE_MAP) {
       await RESPONSE_MAP[request.input.text](instance);
     } else {

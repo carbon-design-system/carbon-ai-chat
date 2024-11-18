@@ -13,39 +13,34 @@
  *
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-import { Settings } from "./types";
+import { Settings } from './types';
 
-@customElement("demo-homescreen-switcher")
+@customElement('demo-homescreen-switcher')
 export class DemoHomeScreenSwitcher extends LitElement {
   @property({ type: Object })
   settings: Settings;
 
   firstUpdated() {
     // Listen for the `cds-dropdown-selected` event to handle changes in the dropdown
-    this.shadowRoot
-      ?.querySelector("cds-dropdown")
-      ?.addEventListener("cds-dropdown-selected", (event: CustomEvent) => {
-        // Emit a custom event `settings-changed` with the new framework value
-        this.dispatchEvent(
-          new CustomEvent("settings-changed", {
-            detail: { ...this.settings, homescreen: event.detail.item.value },
-            bubbles: true, // Ensure the event bubbles up to `demo-container`
-            composed: true, // Allows event to pass through shadow DOM boundaries
-          })
-        );
-      });
+    this.shadowRoot?.querySelector('cds-dropdown')?.addEventListener('cds-dropdown-selected', (event: CustomEvent) => {
+      // Emit a custom event `settings-changed` with the new framework value
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          detail: { ...this.settings, homescreen: event.detail.item.value },
+          bubbles: true, // Ensure the event bubbles up to `demo-container`
+          composed: true, // Allows event to pass through shadow DOM boundaries
+        }),
+      );
+    });
   }
 
   render() {
-    return html`<cds-dropdown
-      value="${this.settings.homescreen}"
-      title-text="Homescreen"
-    >
+    return html`<cds-dropdown value="${this.settings.homescreen}" title-text="Homescreen">
       <cds-dropdown-item value="none">None</cds-dropdown-item>
       <cds-dropdown-item value="default">Default</cds-dropdown-item>
       <cds-dropdown-item value="custom">Custom</cds-dropdown-item>
@@ -56,6 +51,6 @@ export class DemoHomeScreenSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-homescreen-switcher": DemoHomeScreenSwitcher;
+    'demo-homescreen-switcher': DemoHomeScreenSwitcher;
   }
 }

@@ -13,17 +13,13 @@
  *
  */
 
-import {
-  CornersType,
-  MinimizeButtonIconType,
-  PublicConfig,
-} from "@carbon/ai-chat";
+import { CornersType, MinimizeButtonIconType, PublicConfig } from '@carbon/ai-chat';
 
-import { customSendMessage } from "../customSendMessage/customSendMessage";
-import { KeyPairs, Settings } from "./types";
+import { customSendMessage } from '../customSendMessage/customSendMessage';
+import { KeyPairs, Settings } from './types';
 
 async function sleep(milliseconds: number) {
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     setTimeout(resolve, milliseconds);
   });
 }
@@ -42,12 +38,8 @@ function updateQueryParams(items: KeyPairs[]) {
 
 function getSettings() {
   const urlParams = new URLSearchParams(window.location.search);
-  const settings: Partial<Settings> = urlParams.has("settings")
-    ? JSON.parse(urlParams.get("settings"))
-    : {};
-  const config: Partial<PublicConfig> = urlParams.has("config")
-    ? JSON.parse(urlParams.get("config"))
-    : {};
+  const settings: Partial<Settings> = urlParams.has('settings') ? JSON.parse(urlParams.get('settings')) : {};
+  const config: Partial<PublicConfig> = urlParams.has('config') ? JSON.parse(urlParams.get('config')) : {};
 
   // eslint-disable-next-line import/no-mutable-exports
   let defaultConfig: PublicConfig = {
@@ -59,21 +51,18 @@ function getSettings() {
   };
 
   const defaultSettings: Settings = {
-    framework: "react",
-    layout: "float",
-    homescreen: "none",
+    framework: 'react',
+    layout: 'float',
+    homescreen: 'none',
     ...settings,
   };
 
   // eslint-disable-next-line default-case
   switch (defaultSettings.layout) {
-    case "float":
+    case 'float':
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
-          hideMinimizeButton: undefined,
-        },
+        headerConfig: { ...defaultConfig.headerConfig, hideMinimizeButton: undefined },
         themeConfig: { ...defaultConfig.themeConfig, corners: undefined },
         layout: { ...defaultConfig.layout, showFrame: undefined },
         element: undefined,
@@ -85,7 +74,7 @@ function getSettings() {
       delete defaultConfig.element;
       delete defaultConfig.openChatByDefault;
       break;
-    case "sidebar":
+    case 'sidebar':
       defaultConfig = {
         ...defaultConfig,
         headerConfig: {
@@ -93,27 +82,18 @@ function getSettings() {
           hideMinimizeButton: undefined,
           minimizeButtonIconType: MinimizeButtonIconType.SIDE_PANEL_RIGHT,
         },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
-        },
+        themeConfig: { ...defaultConfig.themeConfig, corners: CornersType.SQUARE },
         layout: { ...defaultConfig.layout, showFrame: undefined },
         openChatByDefault: undefined,
       };
       delete defaultConfig.layout.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
-    case "fullscreen":
+    case 'fullscreen':
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
-          hideMinimizeButton: true,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
-        },
+        headerConfig: { ...defaultConfig.headerConfig, hideMinimizeButton: true },
+        themeConfig: { ...defaultConfig.themeConfig, corners: CornersType.SQUARE },
         layout: { ...defaultConfig.layout, showFrame: false },
         openChatByDefault: true,
       };

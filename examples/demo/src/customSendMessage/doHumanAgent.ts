@@ -13,11 +13,7 @@
  *
  */
 
-import {
-  ChatInstance,
-  ConnectToAgentItem,
-  MessageResponseTypes,
-} from "@carbon/ai-chat";
+import { ChatInstance, ConnectToAgentItem, MessageResponseTypes } from '@carbon/ai-chat';
 
 function doHumanAgent(instance: ChatInstance) {
   instance.messaging.addMessage({
