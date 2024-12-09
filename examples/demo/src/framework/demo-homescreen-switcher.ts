@@ -23,28 +23,32 @@ import { Settings } from "./types";
 @customElement("demo-homescreen-switcher")
 export class DemoHomeScreenSwitcher extends LitElement {
   @property({ type: Object })
-  settings: Settings;
+  accessor settings!: Settings;
 
-  firstUpdated() {
-    // Listen for the `cds-dropdown-selected` event to handle changes in the dropdown
-    this.shadowRoot
-      ?.querySelector("cds-dropdown")
-      ?.addEventListener("cds-dropdown-selected", (event: CustomEvent) => {
-        // Emit a custom event `settings-changed` with the new framework value
-        this.dispatchEvent(
-          new CustomEvent("settings-changed", {
-            detail: { ...this.settings, homescreen: event.detail.item.value },
-            bubbles: true, // Ensure the event bubbles up to `demo-container`
-            composed: true, // Allows event to pass through shadow DOM boundaries
-          })
-        );
-      });
-  }
+  dropdownSelected = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    // Emit a custom event `settings-changed` with the new framework value
+    this.dispatchEvent(
+      new CustomEvent("settings-changed", {
+        detail: {
+          ...this.settings,
+          homescreen: customEvent.detail.item.value,
+          writeableElements:
+            customEvent.detail.item.value === "custom"
+              ? "true"
+              : this.settings.writeableElements,
+        },
+        bubbles: true, // Ensure the event bubbles up to `demo-container`
+        composed: true, // Allows event to pass through shadow DOM boundaries
+      })
+    );
+  };
 
   render() {
     return html`<cds-dropdown
       value="${this.settings.homescreen}"
       title-text="Homescreen"
+      @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="none">None</cds-dropdown-item>
       <cds-dropdown-item value="default">Default</cds-dropdown-item>

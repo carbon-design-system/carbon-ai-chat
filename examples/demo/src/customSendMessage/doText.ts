@@ -22,12 +22,12 @@ import {
 } from "@carbon/ai-chat";
 
 import { sleep } from "../framework/utils";
-import { MARKDOWN_WITH_SOURCE, WELCOME_TEXT, WORD_DELAY } from "./constants";
+import { MARKDOWN, WELCOME_TEXT, WORD_DELAY } from "./constants";
 import { RESPONSE_MAP } from "./responseMap";
 
 async function doTextStreaming(
   instance: ChatInstance,
-  text: string = MARKDOWN_WITH_SOURCE
+  text: string = MARKDOWN
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
@@ -113,7 +113,7 @@ function doWelcomeText(instance: ChatInstance) {
   });
 }
 
-function doText(instance: ChatInstance, text: string = MARKDOWN_WITH_SOURCE) {
+function doText(instance: ChatInstance, text: string = MARKDOWN) {
   instance.messaging.addMessage({
     output: {
       generic: [

@@ -1,7 +1,5 @@
 .external {
   background: green;
-}
-
-.padding {
-  padding-top: 1rem;
+  color: #fff;
+  padding: 1rem;
 }

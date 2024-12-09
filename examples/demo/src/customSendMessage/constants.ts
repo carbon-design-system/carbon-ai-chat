@@ -13,9 +13,9 @@
  *
  */
 
-const WELCOME_TEXT = `Welcome to this example of a custom backend.
+const WELCOME_TEXT = `Welcome to this example of a custom back-end.
 
-This backend is mocked entirely on the client side. It does **not** show all potential functionality.
+This back-end is mocked entirely on the client side. It does **not** show all potential functionality.
 
 You can type **help** to see this message again.`;
 
@@ -169,5 +169,5 @@ export {
   UNORDERED_LIST,
   CODE,
   BLOCKQUOTE,
-  MARKDOWN_WITH_SOURCE,
+  MARKDOWN,
 };

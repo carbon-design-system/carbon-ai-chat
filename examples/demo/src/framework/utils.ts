@@ -43,10 +43,10 @@ function updateQueryParams(items: KeyPairs[]) {
 function getSettings() {
   const urlParams = new URLSearchParams(window.location.search);
   const settings: Partial<Settings> = urlParams.has("settings")
-    ? JSON.parse(urlParams.get("settings"))
+    ? JSON.parse(urlParams.get("settings") as string)
     : {};
   const config: Partial<PublicConfig> = urlParams.has("config")
-    ? JSON.parse(urlParams.get("config"))
+    ? JSON.parse(urlParams.get("config") as string)
     : {};
 
   // eslint-disable-next-line import/no-mutable-exports
@@ -62,6 +62,7 @@ function getSettings() {
     framework: "react",
     layout: "float",
     homescreen: "none",
+    writeableElements: "false",
     ...settings,
   };
 
@@ -73,15 +74,17 @@ function getSettings() {
         headerConfig: {
           ...defaultConfig.headerConfig,
           hideMinimizeButton: undefined,
+          minimizeButtonIconType: undefined,
         },
         themeConfig: { ...defaultConfig.themeConfig, corners: undefined },
         layout: { ...defaultConfig.layout, showFrame: undefined },
         element: undefined,
         openChatByDefault: undefined,
       };
-      delete defaultConfig.headerConfig.hideMinimizeButton;
-      delete defaultConfig.themeConfig.corners;
-      delete defaultConfig.layout.showFrame;
+      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      delete defaultConfig.headerConfig?.hideMinimizeButton;
+      delete defaultConfig.themeConfig?.corners;
+      delete defaultConfig.layout?.showFrame;
       delete defaultConfig.element;
       delete defaultConfig.openChatByDefault;
       break;
@@ -100,7 +103,7 @@ function getSettings() {
         layout: { ...defaultConfig.layout, showFrame: undefined },
         openChatByDefault: undefined,
       };
-      delete defaultConfig.layout.showFrame;
+      delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
     case "fullscreen":
@@ -109,6 +112,7 @@ function getSettings() {
         headerConfig: {
           ...defaultConfig.headerConfig,
           hideMinimizeButton: true,
+          minimizeButtonIconType: undefined,
         },
         themeConfig: {
           ...defaultConfig.themeConfig,
@@ -117,6 +121,7 @@ function getSettings() {
         layout: { ...defaultConfig.layout, showFrame: false },
         openChatByDefault: true,
       };
+      delete defaultConfig.headerConfig?.minimizeButtonIconType;
       break;
   }
   return { defaultConfig, defaultSettings };

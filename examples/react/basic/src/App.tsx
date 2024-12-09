@@ -13,48 +13,34 @@
  *
  */
 
-import "./styles.css";
-
-import {
-  BusEventUserDefinedResponse,
-  ChatContainer,
-  ChatInstance,
-  PublicConfig,
-} from "@carbon/ai-chat";
-import React from "react";
+import { ChatContainer, ChatInstance, PublicConfig } from "@carbon/ai-chat";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
+// This function hooks up to your back-end.
 import { customSendMessage } from "./customSendMessage";
+// This function returns a React component for user defined responses.
+import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  debug: true,
 } as PublicConfig;
 
 function App() {
+  const [chatInstance, setChatInstance] = useState<ChatInstance>();
+  console.log({ chatInstance });
   return (
     <ChatContainer
       config={config}
+      // Set the instance into state for usage.
+      onBeforeRender={(instance) => setChatInstance(instance)}
       renderUserDefinedResponse={renderUserDefinedResponse}
     />
   );
 }
 
-function renderUserDefinedResponse(
-  event: BusEventUserDefinedResponse,
-  instance: ChatInstance
-) {
-  // The event here will contain details for each user defined response that needs to be rendered.
-
-  if (event.data.message.user_defined?.type === "my_unique_identifier") {
-    return <div className="padding">Any component you want.</div>;
-  }
-
-  return undefined;
-}
-
-const root = createRoot(document.querySelector("#root"));
+const root = createRoot(document.querySelector("#root") as Element);
 
 root.render(<App />);

@@ -20,8 +20,8 @@ import { customElement, property } from "lit/decorators.js";
 
 import { Settings } from "./types";
 
-@customElement("demo-version-switcher")
-export class DemoVersionSwitcher extends LitElement {
+@customElement("demo-writeable-elements-switcher")
+export class DemoWriteableElementsSwitcher extends LitElement {
   @property({ type: Object })
   accessor settings!: Settings;
 
@@ -30,7 +30,10 @@ export class DemoVersionSwitcher extends LitElement {
     // Emit a custom event `settings-changed` with the new framework value
     this.dispatchEvent(
       new CustomEvent("settings-changed", {
-        detail: { ...this.settings, framework: customEvent.detail.item.value },
+        detail: {
+          ...this.settings,
+          writeableElements: customEvent.detail.item.value,
+        },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
       })
@@ -39,12 +42,12 @@ export class DemoVersionSwitcher extends LitElement {
 
   render() {
     return html`<cds-dropdown
-      value="${this.settings.framework}"
-      title-text="Component framework"
+      value="${this.settings.writeableElements}"
+      title-text="Show writeable elements"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
-      <cds-dropdown-item value="react">React</cds-dropdown-item>
-      <cds-dropdown-item value="web-component">Web component</cds-dropdown-item>
+      <cds-dropdown-item value="false">False</cds-dropdown-item>
+      <cds-dropdown-item value="true">True</cds-dropdown-item>
     </cds-dropdown>`;
   }
 }
@@ -52,6 +55,6 @@ export class DemoVersionSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-version-switcher": DemoVersionSwitcher;
+    "demo-writeable-elements-switcher": DemoWriteableElementsSwitcher;
   }
 }

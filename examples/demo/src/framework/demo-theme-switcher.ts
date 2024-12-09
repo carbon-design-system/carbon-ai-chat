@@ -22,34 +22,31 @@ import { customElement, property } from "lit/decorators.js";
 @customElement("demo-theme-switcher")
 export class DemoThemeSwitcher extends LitElement {
   @property({ type: Object })
-  config: PublicConfig;
+  accessor config!: PublicConfig;
 
-  firstUpdated() {
-    // Listen for the `cds-dropdown-selected` event to handle changes in the dropdown
-    this.shadowRoot
-      ?.querySelector("cds-dropdown")
-      ?.addEventListener("cds-dropdown-selected", (event: CustomEvent) => {
-        // Emit a custom event `settings-changed` with the new framework value
-        this.dispatchEvent(
-          new CustomEvent("config-changed", {
-            detail: {
-              ...this.config,
-              themeConfig: {
-                ...this.config.themeConfig,
-                carbonTheme: event.detail.item.value,
-              },
-            },
-            bubbles: true, // Ensure the event bubbles up to `demo-container`
-            composed: true, // Allows event to pass through shadow DOM boundaries
-          })
-        );
-      });
-  }
+  dropdownSelected = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    // Emit a custom event `settings-changed` with the new framework value
+    this.dispatchEvent(
+      new CustomEvent("config-changed", {
+        detail: {
+          ...this.config,
+          themeConfig: {
+            ...this.config.themeConfig,
+            carbonTheme: customEvent.detail.item.value,
+          },
+        },
+        bubbles: true, // Ensure the event bubbles up to `demo-container`
+        composed: true, // Allows event to pass through shadow DOM boundaries
+      })
+    );
+  };
 
   render() {
     return html`<cds-dropdown
-      value="${this.config.themeConfig.carbonTheme || CarbonTheme.G10}"
+      value="${this.config?.themeConfig?.carbonTheme || CarbonTheme.G10}"
       title-text="Carbon theme"
+      @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="g10">Light (g10)</cds-dropdown-item>
       <cds-dropdown-item value="g100">Dark (g100)</cds-dropdown-item>

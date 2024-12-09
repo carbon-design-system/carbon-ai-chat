@@ -31,9 +31,6 @@ export default (env, args) => {
       clean: true,
     },
     resolve: {
-      alias: {
-        lit: path.resolve(__dirname, "../../node_modules/lit"), // Ensure all references point to the same Lit instance
-      },
       extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
     },
     module: {
@@ -50,12 +47,8 @@ export default (env, args) => {
                 "@babel/preset-typescript",
               ],
               plugins: [
-                [
-                  "@babel/plugin-proposal-decorators",
-                  {
-                    decoratorsBeforeExport: true,
-                  },
-                ],
+                ["@babel/plugin-proposal-decorators", { version: "2023-05" }],
+                "@babel/plugin-proposal-class-properties",
                 "@babel/plugin-transform-private-methods",
               ],
             },

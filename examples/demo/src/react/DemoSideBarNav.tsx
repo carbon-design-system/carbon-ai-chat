@@ -13,16 +13,15 @@
  *
  */
 
-interface Settings {
-  framework: "react" | "web-component";
-  layout: "float" | "sidebar" | "fullscreen";
-  homescreen: "none" | "default" | "custom";
-  writeableElements: "true" | "false";
-}
+import { createComponent } from "@lit/react";
+import React from "react";
 
-interface KeyPairs {
-  key: string;
-  value: string;
-}
+import DemoSideBarNav from "../framework/demo-side-bar-nav";
 
-export { KeyPairs, Settings };
+const SideBar = createComponent({
+  tagName: "demo-side-bar-nav",
+  elementClass: DemoSideBarNav,
+  react: React,
+});
+
+export { SideBar };

@@ -21,7 +21,7 @@ import {
   StreamChunk,
 } from "@carbon/ai-chat";
 
-const WELCOME_TEXT = `Welcome to this example of a custom backend. This backend is mocked entirely on the client side. It does not show all potential functionality.
+const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is mocked entirely on the client side. It does not show all potential functionality.
 
 You can try the following responses:
 
@@ -175,8 +175,8 @@ async function customSendMessage(
               {
                 response_type: "user_defined",
                 user_defined: {
-                  type: "my_unique_identifier",
-                  my_data: {},
+                  user_defined_type: "my_unique_identifier",
+                  text: "Some text from your back-end.",
                 },
               } as GenericItem,
             ],

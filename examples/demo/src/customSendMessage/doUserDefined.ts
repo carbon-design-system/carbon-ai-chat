@@ -15,11 +15,14 @@
 
 import {
   ChatInstance,
+  GenericItem,
   MessageResponseTypes,
+  StreamChunk,
   TextItem,
   UserDefinedItem,
 } from "@carbon/ai-chat";
 
+import { sleep } from "../framework/utils";
 import { CHART_DATA } from "./constants";
 
 function doUserDefined(instance: ChatInstance) {
@@ -27,10 +30,21 @@ function doUserDefined(instance: ChatInstance) {
     output: {
       generic: [
         {
+          response_type: MessageResponseTypes.TEXT,
+          text: "The following response is an external component brought in from [Carbon Labs](https://labs-canary.carbondesignsystem.com/?path=/docs/components-chart--docs).",
+        } as TextItem,
+        {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
             type: "chart",
             chart_data: CHART_DATA,
+          },
+        } as UserDefinedItem,
+        {
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: {
+            user_defined_type: "green",
+            text: "Some text that came from the server inside the user_defined object.",
           },
         } as UserDefinedItem,
       ],
@@ -38,4 +52,78 @@ function doUserDefined(instance: ChatInstance) {
   });
 }
 
-export { doUserDefined };
+async function doUserDefinedStreaming(instance: ChatInstance) {
+  const WORD_DELAY = 500;
+  const responseID = crypto.randomUUID();
+  const words = CHART_DATA.split(",");
+
+  words.forEach((word, index) => {
+    setTimeout(() => {
+      // Each time you get a chunk back, you can call `addMessageChunk`.
+      instance.messaging.addMessageChunk({
+        partial_item: {
+          response_type: "user_defined",
+          // The next chunk, the chat component will deal with appending these chunks.
+          user_defined: {
+            user_defined_type: "chart",
+            // Currently, AI chat only accepts streaming of a string. If, like in this use case, you are sending back
+            // JSON, make sure its stringified and unstringify it in your component. You can make use of something like
+            // https://www.npmjs.com/package/best-effort-json-parser to optimistically parse the incomplete JSON or just
+            // do JSON.parse in a try/catch and show a loading state in your catch scenario.
+            chart_data: `${word},`,
+          },
+          streaming_metadata: {
+            // This is the id of the item inside the response. If you have multiple items in this message they will be
+            // ordered in the view in the order of the first message chunk received. If you want message item 1 to
+            // appear above message item 2, be sure to seed it with a chunk first, even if its empty to start.
+            id: "1",
+          },
+        } as unknown as GenericItem,
+        streaming_metadata: {
+          // This is the id of the entire message response.
+          response_id: responseID,
+        },
+      });
+    }, index * WORD_DELAY);
+  });
+
+  await sleep((words.length + 1) * WORD_DELAY);
+
+  // When you are done streaming this item in the response, you should call the complete item.
+  // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
+  // else that mutates the data, you can do so here.
+  const completeItem = {
+    response_type: "user_defined",
+    user_defined: {
+      user_defined_type: "chart",
+      chart_data: CHART_DATA,
+    },
+    streaming_metadata: {
+      // This is the id of the item inside the response.
+      id: "1",
+    },
+  };
+  instance.messaging.addMessageChunk({
+    complete_item: completeItem,
+    streaming_metadata: {
+      // This is the id of the entire message response.
+      response_id: responseID,
+    },
+  } as StreamChunk);
+
+  // When all and any chunks are complete, you send a final response.
+  // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
+  // has been completed.
+  const finalResponse = {
+    id: responseID,
+    output: {
+      generic: [completeItem],
+    },
+  };
+
+  await instance.messaging.addMessageChunk({
+    final_response: finalResponse,
+  } as StreamChunk);
+}
+
+export { doUserDefined, doUserDefinedStreaming };

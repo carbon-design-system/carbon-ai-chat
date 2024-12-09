@@ -23,11 +23,11 @@ import { customElement } from "lit/decorators.js";
 export class DemoHeader extends LitElement {
   render() {
     return html`
-      <cds-header aria-label="Carbon AI Chat">
+      <cds-header aria-label="Carbon AI chat">
         <cds-header-name
           href="https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html"
           prefix="Carbon"
-          >AI Chat</cds-header-name
+          >AI chat</cds-header-name
         >
       </cds-header>
     `;

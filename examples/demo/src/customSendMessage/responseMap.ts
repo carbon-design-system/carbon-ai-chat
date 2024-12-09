@@ -35,7 +35,7 @@ import { doOption } from "./doOption";
 import { doOrderedList } from "./doOrderedList";
 import { doTable, doTableStreaming } from "./doTable";
 import { doText, doTextStreaming } from "./doText";
-import { doUserDefined } from "./doUserDefined";
+import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
 
 const RESPONSE_MAP: Record<
@@ -65,6 +65,7 @@ const RESPONSE_MAP: Record<
   text: doText,
   "text (stream)": doTextStreaming,
   user_defined: doUserDefined,
+  "user_defined (stream)": doUserDefinedStreaming,
   video: doVideo,
 };
 

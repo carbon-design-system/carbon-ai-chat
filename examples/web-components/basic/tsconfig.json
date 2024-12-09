@@ -4,10 +4,12 @@
     "module": "esnext",
     "strict": true,
     "esModuleInterop": true,
+    "declaration": false,
+    "sourceMap": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
-    "declaration": false,
-    "sourceMap": true
+    "preserveConstEnums": true,
+    "moduleResolution": "node",
   },
   "include": ["src/**/*"]
 }

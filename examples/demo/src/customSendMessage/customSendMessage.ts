@@ -24,11 +24,11 @@ import { RESPONSE_MAP } from "./responseMap";
 
 async function customSendMessage(
   request: MessageRequest,
-  requestOptions: CustomSendMessageOptions,
+  _requestOptions: CustomSendMessageOptions,
   instance: ChatInstance
 ) {
   if (request.input.message_type !== "event") {
-    if (request.input.text in RESPONSE_MAP) {
+    if (request.input.text && request.input.text in RESPONSE_MAP) {
       await RESPONSE_MAP[request.input.text](instance);
     } else {
       doWelcomeText(instance);

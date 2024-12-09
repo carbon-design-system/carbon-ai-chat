@@ -2,12 +2,15 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
+    "jsx": "react",
     "strict": true,
     "esModuleInterop": true,
+    "declaration": false,
+    "sourceMap": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
-    "declaration": false,
-    "sourceMap": true
+    "moduleResolution": "node",
+    "preserveConstEnums": true,
   },
   "include": ["src/**/*"]
 }

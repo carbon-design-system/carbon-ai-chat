@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "esnext",
     "module": "esnext",
     "jsx": "react",
     "strict": true,
     "esModuleInterop": true,
+    "declaration": false,
+    "sourceMap": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
-    "declaration": false,
-    "sourceMap": true
+    "preserveConstEnums": true,
+    "moduleResolution": "node",
   },
   "include": ["src/**/*"]
 }
