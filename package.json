@@ -110,5 +110,8 @@
     "extends": [
       "stylelint-config-carbon"
     ]
+  },
+  "dependencies": {
+    "@carbon/ai-chat": "^0.0.0"
   }
 }

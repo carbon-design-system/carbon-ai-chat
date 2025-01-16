@@ -15,8 +15,8 @@
 
 import "@carbon-labs/ai-chat/es/components/chartElement/chartElement.js";
 import "@carbon/web-components/es/components/ai-skeleton/index.js";
-import "@carbon/ai-chat/dist/web-components/cds-aichat-container/index.js";
-import "@carbon/ai-chat/dist/web-components/cds-aichat-custom-element/index.js";
+import "@carbon/ai-chat/dist/es/cds-aichat-container.js";
+import "@carbon/ai-chat/dist/es/cds-aichat-custom-element.js";
 import "./user-defined-response-example";
 import "./writeable-element-example";
 

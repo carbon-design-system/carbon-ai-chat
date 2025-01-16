@@ -36,7 +36,7 @@ function doUserDefined(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
-            type: "chart",
+            user_defined_type: "chart",
             chart_data: CHART_DATA,
           },
         } as UserDefinedItem,

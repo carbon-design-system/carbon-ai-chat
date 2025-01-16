@@ -28,6 +28,8 @@ You can try the following responses:
 - stream text
 - text
 - user_defined
+
+The "text" response includes the configuration to include user feedback (thumbs up/down, etc) in this example. You can apply feedback to any response type.
 `;
 
 const TEXT =
@@ -163,6 +165,34 @@ async function customSendMessage(
               {
                 response_type: "text",
                 text: TEXT,
+                message_options: {
+                  feedback: {
+                    /**
+                     * Indicates if a request for feedback should be displayed.
+                     */
+                    is_on: true,
+
+                    /**
+                     * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
+                     */
+                    id: "1",
+
+                    /**
+                     * Indicates if the user should be asked for additional detailed information when providing positive feedback.
+                     */
+                    show_positive_details: false,
+
+                    /**
+                     * Indicates if the user should be asked for additional detailed information when providing negative feedback.
+                     */
+                    show_negative_details: true,
+
+                    /**
+                     * Indicates whether the prompt line should be shown.
+                     */
+                    show_prompt: true,
+                  },
+                },
               } as GenericItem,
             ],
           },

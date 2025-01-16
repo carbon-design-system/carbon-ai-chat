@@ -14,11 +14,12 @@
  */
 
 import "./styles.css";
-import "@carbon/ai-chat/dist/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es/cds-aichat-container.js";
 
 import {
   BusEventType,
   type ChatInstance,
+  FeedbackInteractionType,
   type GenericItem,
   type MessageResponse,
   type PublicConfig,
@@ -55,10 +56,28 @@ export class Demo extends LitElement {
   onBeforeRender = (instance: ChatInstance) => {
     // Set the instance in state.
     this.instance = instance;
+
+    // Register user defined response handler.
     instance.on({
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
+
+    // Register feedback handler.
+    instance.on({ type: BusEventType.FEEDBACK, handler: this.feedbackHandler });
+  };
+
+  /**
+   * Handles when the user submits feedback.
+   */
+  feedbackHandler = (event: any) => {
+    if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
+      const { message, messageItem, ...reportData } = event;
+      setTimeout(() => {
+        // eslint-disable-next-line no-alert
+        window.alert(JSON.stringify(reportData, null, 2));
+      });
+    }
   };
 
   /**

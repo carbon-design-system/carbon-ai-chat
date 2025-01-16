@@ -13,7 +13,13 @@
  *
  */
 
-import { ChatContainer, ChatInstance, PublicConfig } from "@carbon/ai-chat";
+import {
+  BusEventType,
+  ChatContainer,
+  ChatInstance,
+  FeedbackInteractionType,
+  PublicConfig,
+} from "@carbon/ai-chat";
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -30,12 +36,33 @@ const config: PublicConfig = {
 
 function App() {
   const [chatInstance, setChatInstance] = useState<ChatInstance>();
-  console.log({ chatInstance });
+
+  function onBeforeRender(instance: ChatInstance) {
+    // Handle feedback event.
+    instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
+
+    // For usage later.
+    setChatInstance(instance);
+  }
+
+  /**
+   * Handles when the user submits feedback.
+   */
+  function feedbackHandler(event: any) {
+    if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
+      const { message, messageItem, ...reportData } = event;
+      setTimeout(() => {
+        // eslint-disable-next-line no-alert
+        window.alert(JSON.stringify(reportData, null, 2));
+      });
+    }
+  }
+
   return (
     <ChatContainer
       config={config}
       // Set the instance into state for usage.
-      onBeforeRender={(instance) => setChatInstance(instance)}
+      onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
     />
   );

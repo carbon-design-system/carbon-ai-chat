@@ -17,11 +17,13 @@ import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
 
 import {
+  BusEventFeedback,
   BusEventType,
   BusEventViewChange,
   ChatContainer,
   ChatCustomElement,
   ChatInstance,
+  FeedbackInteractionType,
   PublicConfig,
   RenderUserDefinedState,
   ViewType,
@@ -54,6 +56,9 @@ function DemoApp({ config, settings }: AppProps) {
       type: BusEventType.MESSAGE_ITEM_CUSTOM,
       handler: customButtonHandler,
     });
+
+    // Handle feedback event.
+    instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
 
     switch (settings.homescreen) {
       case "default":
@@ -186,6 +191,19 @@ const renderWriteableElements = {
     <WriteableElementExample location="aiTooltipAfterDescriptionElement" />
   ),
 };
+
+/**
+ * Handles when the user submits feedback.
+ */
+function feedbackHandler(event: any) {
+  if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
+    const { message, messageItem, ...reportData } = event;
+    setTimeout(() => {
+      // eslint-disable-next-line no-alert
+      window.alert(JSON.stringify(reportData, null, 2));
+    });
+  }
+}
 
 /**
  * Listens for clicks from buttons with custom events attached.

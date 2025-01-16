@@ -105,7 +105,8 @@ function doWelcomeText(instance: ChatInstance) {
         } as TextItem,
         {
           response_type: MessageResponseTypes.OPTION,
-          title: "Select a response to view it in action.",
+          title:
+            'Select a response to view it in action. The "text" response includes configuration to send feedback (thumbs up/down). This can be applied to any response.',
           options,
         } as OptionItem,
       ],
@@ -120,6 +121,34 @@ function doText(instance: ChatInstance, text: string = MARKDOWN) {
         {
           response_type: MessageResponseTypes.TEXT,
           text,
+          message_options: {
+            feedback: {
+              /**
+               * Indicates if a request for feedback should be displayed.
+               */
+              is_on: true,
+
+              /**
+               * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
+               */
+              id: "1",
+
+              /**
+               * Indicates if the user should be asked for additional detailed information when providing positive feedback.
+               */
+              show_positive_details: false,
+
+              /**
+               * Indicates if the user should be asked for additional detailed information when providing negative feedback.
+               */
+              show_negative_details: true,
+
+              /**
+               * Indicates whether the prompt line should be shown.
+               */
+              show_prompt: true,
+            },
+          },
         } as TextItem,
       ],
     },

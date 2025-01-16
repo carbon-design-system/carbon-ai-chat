@@ -2,6 +2,8 @@
   Carbon AI Chat (Beta)
 </h1>
 
+**Currently, the source code of this project is unpublished and this repo is a placeholder. You can use the examples in [./examples](./examples).***
+
 > Carbon AI Chat is an opinionated but extensible full fledged chat application. It is available as a React or web component.
 >
 > The Carbon AI Chat is a combination of the watsonx Assistant, watsonx Orchestrate and Carbon Labs AI Chat projects. As this combination matures and as feedback from other implementing teams is gather, this project will be labeled as "beta" status.

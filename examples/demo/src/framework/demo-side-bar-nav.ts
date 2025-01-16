@@ -13,9 +13,19 @@
  *
  */
 
-import rightPanelOpen from "@carbon/web-components/es/icons/right-panel--open/16.js";
+import { toString } from "@carbon/icon-helpers";
+import { RightPanelOpen16 } from "@carbon/icons";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+
+const RightPanelOpen16svg = toString({
+  ...RightPanelOpen16,
+  attrs: {
+    ...RightPanelOpen16.attrs,
+    slot: "icon",
+  },
+});
 
 @customElement("demo-side-bar-nav")
 class DemoSideBarNav extends LitElement {
@@ -37,7 +47,7 @@ class DemoSideBarNav extends LitElement {
   render() {
     return html`<div class="demo-sidebar-nav">
       <cds-icon-button kind="ghost" @click="${this.openSideBar}">
-        ${rightPanelOpen({ slot: "icon" })}
+        ${unsafeSVG(RightPanelOpen16svg)}
       </cds-icon-button>
     </div>`;
   }
