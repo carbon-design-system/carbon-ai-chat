@@ -32,7 +32,7 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-} as PublicConfig;
+};
 
 function App() {
   const [chatInstance, setChatInstance] = useState<ChatInstance>();

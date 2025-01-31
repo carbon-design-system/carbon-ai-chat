@@ -248,6 +248,8 @@ function renderUserDefinedResponse(
             text={messageItem.user_defined.text as string}
           />
         );
+      case "response-stopped":
+        return <>Custom user_defined response stopped message.</>;
       default:
         return undefined;
     }

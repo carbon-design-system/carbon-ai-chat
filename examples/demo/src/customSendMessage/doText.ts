@@ -14,6 +14,7 @@
  */
 
 import {
+  BusEventType,
   ChatInstance,
   MessageResponseTypes,
   OptionItem,
@@ -27,13 +28,29 @@ import { RESPONSE_MAP } from "./responseMap";
 
 async function doTextStreaming(
   instance: ChatInstance,
-  text: string = MARKDOWN
+  text: string = MARKDOWN,
+  cancellable: boolean = true
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
+  let isCanceled = false;
+  let lastWordIndex = 0;
 
-  words.forEach((word, index) => {
-    setTimeout(() => {
+  const stopGeneratingEvent = {
+    type: BusEventType.STOP_STREAMING,
+    handler: () => {
+      isCanceled = true;
+      instance.off(stopGeneratingEvent);
+    },
+  };
+  instance.on(stopGeneratingEvent);
+
+  try {
+    for (let index = 0; index < words.length && !isCanceled; index++) {
+      const word = words[index];
+      lastWordIndex = index;
+
+      await sleep(WORD_DELAY);
       // Each time you get a chunk back, you can call `addMessageChunk`.
       instance.messaging.addMessageChunk({
         partial_item: {
@@ -45,6 +62,7 @@ async function doTextStreaming(
             // ordered in the view in the order of the first message chunk received. If you want message item 1 to
             // appear above message item 2, be sure to seed it with a chunk first, even if its empty to start.
             id: "1",
+            cancellable,
           },
         } as TextItem,
         streaming_metadata: {
@@ -52,43 +70,45 @@ async function doTextStreaming(
           response_id: responseID,
         },
       });
-    }, index * WORD_DELAY);
-  });
+    }
 
-  await sleep((words.length + 1) * WORD_DELAY);
+    // When you are done streaming this item in the response, you should call the complete item.
+    // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
+    // else that mutates the data, you can do so here.
+    const completeItem = {
+      response_type: MessageResponseTypes.TEXT,
+      text: isCanceled ? words.splice(0, lastWordIndex).join(" ") : text,
+      streaming_metadata: {
+        // This is the id of the item inside the response.
+        id: "1",
+        stream_stopped: isCanceled,
+      },
+    };
+    instance.messaging.addMessageChunk({
+      complete_item: completeItem,
+      streaming_metadata: {
+        // This is the id of the entire message response.
+        response_id: responseID,
+        stream_stopped: isCanceled,
+      },
+    } as StreamChunk);
 
-  // When you are done streaming this item in the response, you should call the complete item.
-  // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
-  // else that mutates the data, you can do so here.
-  const completeItem = {
-    response_type: MessageResponseTypes.TEXT,
-    text,
-    streaming_metadata: {
-      // This is the id of the item inside the response.
-      id: "1",
-    },
-  };
-  instance.messaging.addMessageChunk({
-    complete_item: completeItem,
-    streaming_metadata: {
-      // This is the id of the entire message response.
-      response_id: responseID,
-    },
-  } as StreamChunk);
+    // When all and any chunks are complete, you send a final response.
+    // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
+    // has been completed.
+    const finalResponse = {
+      id: responseID,
+      output: {
+        generic: [completeItem],
+      },
+    };
 
-  // When all and any chunks are complete, you send a final response.
-  // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
-  // has been completed.
-  const finalResponse = {
-    id: responseID,
-    output: {
-      generic: [completeItem],
-    },
-  };
-
-  await instance.messaging.addMessageChunk({
-    final_response: finalResponse,
-  } as StreamChunk);
+    await instance.messaging.addMessageChunk({
+      final_response: finalResponse,
+    } as StreamChunk);
+  } finally {
+    instance.off(stopGeneratingEvent);
+  }
 }
 
 function doWelcomeText(instance: ChatInstance) {

@@ -23,7 +23,7 @@ function doTable(instance: ChatInstance) {
 }
 
 async function doTableStreaming(instance: ChatInstance) {
-  await doTextStreaming(instance, `A markdown table.\n\n${TABLE}`);
+  await doTextStreaming(instance, `A markdown table.\n\n${TABLE}`, true);
 }
 
 export { doTable, doTableStreaming };

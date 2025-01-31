@@ -127,4 +127,26 @@ function getSettings() {
   return { defaultConfig, defaultSettings };
 }
 
-export { updateQueryParams, getSettings, sleep };
+/**
+ * This function runs a for loop asynchornously for each item. This provides the ability to loop through a list
+ * of items at a custom pace and stop at any point in the loop.
+ *
+ * @param list The list of items to loop over.
+ * @param condition This function determines if the for loop should continue. Returning false will stop the for loop.
+ * @param callback The function to call for each item in the list.
+ */
+async function asyncForEach<T>(
+  list: T[],
+  condition: (item: T, index: number) => boolean | Promise<boolean>,
+  callback: (item: T, index: number) => Promise<void>
+) {
+  for (let index = 0; index < list.length; index++) {
+    if (await condition(list[index], index)) {
+      await callback(list[index], index);
+    } else {
+      break;
+    }
+  }
+}
+
+export { updateQueryParams, getSettings, sleep, asyncForEach };

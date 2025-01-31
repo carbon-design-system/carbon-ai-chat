@@ -32,7 +32,7 @@ function doCode(instance: ChatInstance) {
 }
 
 function doCodeStreaming(instance: ChatInstance) {
-  doTextStreaming(instance, CODE);
+  doTextStreaming(instance, CODE, true);
 }
 
 export { doCode, doCodeStreaming };

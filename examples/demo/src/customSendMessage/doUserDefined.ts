@@ -14,6 +14,7 @@
  */
 
 import {
+  BusEventType,
   ChatInstance,
   GenericItem,
   MessageResponseTypes,
@@ -56,9 +57,22 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
   const WORD_DELAY = 500;
   const responseID = crypto.randomUUID();
   const words = CHART_DATA.split(",");
+  let isCanceled = false;
 
-  words.forEach((word, index) => {
-    setTimeout(() => {
+  const stopGeneratingEvent = {
+    type: BusEventType.STOP_STREAMING,
+    handler: () => {
+      isCanceled = true;
+      instance.off(stopGeneratingEvent);
+    },
+  };
+  instance.on(stopGeneratingEvent);
+
+  try {
+    for (let index = 0; index < words.length && !isCanceled; index++) {
+      const word = words[index];
+
+      await sleep(WORD_DELAY);
       // Each time you get a chunk back, you can call `addMessageChunk`.
       instance.messaging.addMessageChunk({
         partial_item: {
@@ -77,6 +91,7 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
             // ordered in the view in the order of the first message chunk received. If you want message item 1 to
             // appear above message item 2, be sure to seed it with a chunk first, even if its empty to start.
             id: "1",
+            cancellable: true,
           },
         } as unknown as GenericItem,
         streaming_metadata: {
@@ -84,46 +99,50 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
           response_id: responseID,
         },
       });
-    }, index * WORD_DELAY);
-  });
+    }
 
-  await sleep((words.length + 1) * WORD_DELAY);
+    // When you are done streaming this item in the response, you should call the complete item.
+    // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
+    // else that mutates the data, you can do so here.
+    const completeItem = {
+      response_type: "user_defined",
+      user_defined: {
+        user_defined_type: isCanceled ? "" : "chart",
+        chart_data: CHART_DATA,
+      },
+      streaming_metadata: {
+        // This is the id of the item inside the response.
+        id: "1",
+        stream_stopped: isCanceled,
+      },
+    };
 
-  // When you are done streaming this item in the response, you should call the complete item.
-  // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
-  // else that mutates the data, you can do so here.
-  const completeItem = {
-    response_type: "user_defined",
-    user_defined: {
-      user_defined_type: "chart",
-      chart_data: CHART_DATA,
-    },
-    streaming_metadata: {
-      // This is the id of the item inside the response.
-      id: "1",
-    },
-  };
-  instance.messaging.addMessageChunk({
-    complete_item: completeItem,
-    streaming_metadata: {
-      // This is the id of the entire message response.
-      response_id: responseID,
-    },
-  } as StreamChunk);
+    if (!isCanceled) {
+      instance.messaging.addMessageChunk({
+        complete_item: completeItem,
+        streaming_metadata: {
+          // This is the id of the entire message response.
+          response_id: responseID,
+        },
+      } as StreamChunk);
+    }
 
-  // When all and any chunks are complete, you send a final response.
-  // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
-  // has been completed.
-  const finalResponse = {
-    id: responseID,
-    output: {
-      generic: [completeItem],
-    },
-  };
+    // When all and any chunks are complete, you send a final response.
+    // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
+    // has been completed.
+    const finalResponse = {
+      id: responseID,
+      output: {
+        generic: [completeItem],
+      },
+    };
 
-  await instance.messaging.addMessageChunk({
-    final_response: finalResponse,
-  } as StreamChunk);
+    await instance.messaging.addMessageChunk({
+      final_response: finalResponse,
+    } as StreamChunk);
+  } finally {
+    instance.off(stopGeneratingEvent);
+  }
 }
 
 export { doUserDefined, doUserDefinedStreaming };

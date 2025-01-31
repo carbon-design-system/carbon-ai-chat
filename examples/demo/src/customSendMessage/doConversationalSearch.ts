@@ -13,7 +13,12 @@
  *
  */
 
-import { ChatInstance, GenericItem, StreamChunk } from "@carbon/ai-chat";
+import {
+  BusEventType,
+  ChatInstance,
+  GenericItem,
+  StreamChunk,
+} from "@carbon/ai-chat";
 
 import { sleep } from "../framework/utils";
 import { WORD_DELAY } from "./constants";
@@ -190,9 +195,24 @@ async function doConversationalSearchStreaming(
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
+  let isCanceled = false;
+  let lastWordIndex = 0;
 
-  words.forEach((word, index) => {
-    setTimeout(() => {
+  const stopGeneratingEvent = {
+    type: BusEventType.STOP_STREAMING,
+    handler: () => {
+      isCanceled = false;
+      instance.off(stopGeneratingEvent);
+    },
+  };
+  instance.on(stopGeneratingEvent);
+
+  try {
+    for (let index = 0; index < words.length && !isCanceled; index++) {
+      const word = words[index];
+      lastWordIndex = index;
+
+      await sleep(WORD_DELAY);
       // Each time you get a chunk back, you can call `addMessageChunk`.
       instance.messaging.addMessageChunk({
         partial_item: {
@@ -204,6 +224,7 @@ async function doConversationalSearchStreaming(
             // ordered in the view in the order of the first message chunk received. If you want message item 1 to
             // appear above message item 2, be sure to seed it with a chunk first, even if its empty to start.
             id: "1",
+            cancellable: true,
           },
         } as unknown as GenericItem,
         streaming_metadata: {
@@ -211,44 +232,52 @@ async function doConversationalSearchStreaming(
           response_id: responseID,
         },
       });
-    }, index * WORD_DELAY);
-  });
+    }
 
-  await sleep((words.length + 1) * WORD_DELAY);
+    // When you are done streaming this item in the response, you should call the complete item.
+    // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
+    // else that mutates the data, you can do so here.
+    let completeItem = {
+      response_type: "conversational_search",
+      text: isCanceled ? words.splice(0, lastWordIndex).join(" ") : text,
+      streaming_metadata: {
+        // This is the id of the item inside the response.
+        id: "1",
+        stream_stopped: isCanceled,
+      },
+    };
 
-  // When you are done streaming this item in the response, you should call the complete item.
-  // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
-  // else that mutates the data, you can do so here.
-  const completeItem = {
-    response_type: "conversational_search",
-    text,
-    ...META,
-    streaming_metadata: {
-      // This is the id of the item inside the response.
-      id: "1",
-    },
-  };
-  instance.messaging.addMessageChunk({
-    complete_item: completeItem,
-    streaming_metadata: {
-      // This is the id of the entire message response.
-      response_id: responseID,
-    },
-  } as StreamChunk);
+    if (!isCanceled) {
+      completeItem = {
+        ...completeItem,
+        ...META,
+      };
+      instance.messaging.addMessageChunk({
+        complete_item: completeItem,
+        streaming_metadata: {
+          // This is the id of the entire message response.
+          response_id: responseID,
+        },
+      } as StreamChunk);
+    }
 
-  // When all and any chunks are complete, you send a final response.
-  // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
-  // has been completed.
-  const finalResponse = {
-    id: responseID,
-    output: {
-      generic: [completeItem],
-    },
-  };
+    // When all and any chunks are complete, you send a final response.
+    // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
+    // has been completed.
+    const finalResponse = {
+      id: responseID,
+      output: {
+        generic: [completeItem],
+      },
+    };
 
-  await instance.messaging.addMessageChunk({
-    final_response: finalResponse,
-  } as StreamChunk);
+    instance.off(stopGeneratingEvent);
+    await instance.messaging.addMessageChunk({
+      final_response: finalResponse,
+    } as StreamChunk);
+  } finally {
+    instance.off(stopGeneratingEvent);
+  }
 }
 
 export { doConversationalSearch, doConversationalSearchStreaming };
