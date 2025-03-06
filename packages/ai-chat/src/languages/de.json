@@ -174,6 +174,7 @@
   "conversationalSearch_viewPDF": "PDF anzeigen",
   "conversationalSearch_viewSourceDocument": "Quelle anzeigen",
   "conversationalSearch_toggleCitations": "Liste der Quellen öffnen oder schließen",
+  "conversationalSearch_responseStopped": "Antwort beendet",
   "launcher_chatNow": "Chat starten",
   "iframe_ariaSourceLoaded": "Die Webseite wurde geladen.",
   "iframe_ariaImageAltText": "Vorschaubild für die Webseite.",
@@ -243,5 +244,15 @@
   "feedback_defaultPrompt": "Warum haben Sie diese Bewertung gewählt?",
   "feedback_defaultPlaceholder": "Kommentar hinzufügen",
   "feedback_submitLabel": "Übergeben",
-  "feedback_cancelLabel": "Abbrechen"
+  "feedback_cancelLabel": "Abbrechen",
+  "input_stopResponse": "Stoppreaktion",
+  "messages_responseStopped": "Antwort beendet",
+  "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
+  "chainOfThought_inputLabel": "Eingabe",
+  "chainOfThought_outputLabel": "Ausgabe",
+  "chainOfThought_toolLabel": "Tool",
+  "chainOfThought_statusSucceededLabel": "Erfolgreich",
+  "chainOfThought_statusFailedLabel": "Fehlgeschlagen",
+  "chainOfThought_statusProcessingLabel": "Verarbeitung läuft",
+  "chainOfThought_explainabilityLabel": "Wie habe ich diese Antwort erhalten?"
 }

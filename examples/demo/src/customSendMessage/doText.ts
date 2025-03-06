@@ -142,6 +142,57 @@ function doText(instance: ChatInstance, text: string = MARKDOWN) {
           response_type: MessageResponseTypes.TEXT,
           text,
           message_options: {
+            chain_of_thought: [
+              {
+                title: "A step we are marking as successful with a description",
+                tool_name: "boom_bam",
+                description: `This is an optional description.\n\n*boom_bam* queries the *BAM* database run by the *BOOM* group. This contains blerg data used to identify customers borps.\n\nSee more information on [borps](https://ibm.com).`,
+                request: {
+                  args: {
+                    foo: "bar",
+                    bar: "baz",
+                    boom: {
+                      bam: "bow",
+                    },
+                    fizz: [
+                      "i",
+                      "guess",
+                      "fizz",
+                      {
+                        name: "oh no a deep object",
+                      },
+                    ],
+                  },
+                },
+                response: {
+                  content: `{ "title": "I am some stringified JSON" }`,
+                },
+              },
+              {
+                title: "A second step with a really really long title",
+                tool_name: "bam_bo",
+                request: {
+                  args: {
+                    foo: "bar",
+                  },
+                },
+                response: {
+                  content: `I am just **text** this time. I support markdown formatting.`,
+                },
+              },
+              {
+                title: "Third step",
+                tool_name: "bam_bo",
+                request: {
+                  args: {
+                    foo: "bar",
+                  },
+                },
+                response: {
+                  content: { title: "I am some actual JSON" },
+                },
+              },
+            ],
             feedback: {
               /**
                * Indicates if a request for feedback should be displayed.

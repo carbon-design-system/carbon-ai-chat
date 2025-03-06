@@ -174,6 +174,7 @@
   "conversationalSearch_viewPDF": "PDF bekijken",
   "conversationalSearch_viewSourceDocument": "Bron bekijken",
   "conversationalSearch_toggleCitations": "De lijst van bronnen openen of sluiten",
+  "conversationalSearch_responseStopped": "Respons gestopt",
   "launcher_chatNow": "Nu chatten",
   "iframe_ariaSourceLoaded": "De webpagina is geladen.",
   "iframe_ariaImageAltText": "Previewafbeelding voor het venster van de webpagina.",
@@ -243,5 +244,15 @@
   "feedback_defaultPrompt": "Waarom hebt u voor deze beoordeling gekozen?",
   "feedback_defaultPlaceholder": "Voeg een opmerking toe",
   "feedback_submitLabel": "Indienen",
-  "feedback_cancelLabel": "Annuleren"
+  "feedback_cancelLabel": "Annuleren",
+  "input_stopResponse": "Respons stoppen",
+  "messages_responseStopped": "Respons gestopt",
+  "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
+  "chainOfThought_inputLabel": "Invoer",
+  "chainOfThought_outputLabel": "Uitvoer",
+  "chainOfThought_toolLabel": "Tool",
+  "chainOfThought_statusSucceededLabel": "Geslaagd",
+  "chainOfThought_statusFailedLabel": "Mislukt",
+  "chainOfThought_statusProcessingLabel": "Bezig met verwerken",
+  "chainOfThought_explainabilityLabel": "Hoe kom ik aan dit antwoord?"
 }

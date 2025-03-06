@@ -174,6 +174,7 @@
   "conversationalSearch_viewPDF": "Afficher au format PDF",
   "conversationalSearch_viewSourceDocument": "Afficher la source",
   "conversationalSearch_toggleCitations": "Ouvrir ou fermer la liste des sources",
+  "conversationalSearch_responseStopped": "Réponse arrêtée",
   "launcher_chatNow": "Discuter maintenant",
   "iframe_ariaSourceLoaded": "La page Web s'est chargée.",
   "iframe_ariaImageAltText": "Prévisualiser l'image du panneau de la page Web.",
@@ -243,5 +244,15 @@
   "feedback_defaultPrompt": "Pourquoi avez-vous choisi cette évaluation ?",
   "feedback_defaultPlaceholder": "Ajouter un commentaire",
   "feedback_submitLabel": "Soumettre",
-  "feedback_cancelLabel": "Annuler"
+  "feedback_cancelLabel": "Annuler",
+  "input_stopResponse": "Arrêter la réponse",
+  "messages_responseStopped": "Réponse arrêtée",
+  "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
+  "chainOfThought_inputLabel": "Entrée",
+  "chainOfThought_outputLabel": "Sortie",
+  "chainOfThought_toolLabel": "Outil",
+  "chainOfThought_statusSucceededLabel": "Réussite",
+  "chainOfThought_statusFailedLabel": "Echec",
+  "chainOfThought_statusProcessingLabel": "Traitement",
+  "chainOfThought_explainabilityLabel": "Comment ai-je obtenu cette réponse ?"
 }

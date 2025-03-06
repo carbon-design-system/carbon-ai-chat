@@ -174,6 +174,7 @@
   "conversationalSearch_viewPDF": "PDF 보기",
   "conversationalSearch_viewSourceDocument": "소스 보기",
   "conversationalSearch_toggleCitations": "소스 목록 열기 또는 닫기",
+  "conversationalSearch_responseStopped": "응답이 중지됨",
   "launcher_chatNow": "지금 대화하기",
   "iframe_ariaSourceLoaded": "웹 페이지가 로드되었습니다.",
   "iframe_ariaImageAltText": "웹 페이지 패널의 미리보기 이미지입니다.",
@@ -243,5 +244,15 @@
   "feedback_defaultPrompt": "이 등급을 선택한 이유가 무엇입니까?",
   "feedback_defaultPlaceholder": "주석 추가",
   "feedback_submitLabel": "제출",
-  "feedback_cancelLabel": "취소"
+  "feedback_cancelLabel": "취소",
+  "input_stopResponse": "응답 중지",
+  "messages_responseStopped": "응답이 중지됨",
+  "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
+  "chainOfThought_inputLabel": "입력",
+  "chainOfThought_outputLabel": "출력",
+  "chainOfThought_toolLabel": "도구",
+  "chainOfThought_statusSucceededLabel": "성공",
+  "chainOfThought_statusFailedLabel": "실패함",
+  "chainOfThought_statusProcessingLabel": "처리",
+  "chainOfThought_explainabilityLabel": "이 답변은 어떻게 얻으셨습니까?"
 }

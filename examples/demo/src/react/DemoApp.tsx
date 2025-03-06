@@ -17,7 +17,6 @@ import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
 
 import {
-  BusEventFeedback,
   BusEventType,
   BusEventViewChange,
   ChatContainer,
@@ -29,7 +28,7 @@ import {
   ViewType,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Settings } from "../framework/types";
 import { SideBar } from "./DemoSideBarNav";
@@ -45,6 +44,99 @@ interface AppProps {
 function DemoApp({ config, settings }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [instance, setInstance] = useState<ChatInstance>();
+  const [stateText, setStateText] = useState<string>("Initial text");
+
+  useEffect(() => {
+    setInterval(() => setStateText(Date.now().toString()), 2000);
+  }, []);
+
+  /**
+   * Handler for user_defined response types. You can just have a switch statement here and return the right component
+   * depending on which component should be rendered.
+   *
+   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-render#user-defined-responses
+   */
+  const renderUserDefinedResponse = useCallback(
+    (state: RenderUserDefinedState, instance: ChatInstance) => {
+      const { messageItem } = state;
+      // The event here will contain details for each user defined response that needs to be rendered.
+      if (messageItem) {
+        switch (messageItem.user_defined?.user_defined_type) {
+          case "chart":
+            return (
+              <div className="padding">
+                <Chart
+                  content={messageItem.user_defined.chart_data as string}
+                />
+              </div>
+            );
+          case "green":
+            return (
+              <UserDefinedResponseExample
+                text={messageItem.user_defined.text as string}
+                parentStateText={stateText}
+              />
+            );
+          case "response-stopped":
+            return <>Custom user_defined response stopped message.</>;
+          default:
+            return undefined;
+        }
+      }
+
+      // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
+      // switch statement here that does something more specific depending on the component.
+      return <AISkeletonPlaceholder className="fullSkeleton" />;
+    },
+    [stateText]
+  );
+
+  /**
+   * You can return a React element for each writeable element.
+   *
+   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
+   */
+  const renderWriteableElements = useCallback(
+    () => ({
+      headerBottomElement: (
+        <WriteableElementExample
+          location="headerBottomElement"
+          parentStateText={stateText}
+        />
+      ),
+      welcomeNodeBeforeElement: (
+        <WriteableElementExample
+          location="welcomeNodeBeforeElement"
+          parentStateText={stateText}
+        />
+      ),
+      homeScreenHeaderBottomElement: (
+        <WriteableElementExample
+          location="homeScreenHeaderBottomElement"
+          parentStateText={stateText}
+        />
+      ),
+      homeScreenAfterStartersElement: (
+        <WriteableElementExample
+          location="homeScreenAfterStartersElement"
+          parentStateText={stateText}
+        />
+      ),
+      beforeInputElement: (
+        <WriteableElementExample
+          location="beforeInputElement"
+          parentStateText={stateText}
+        />
+      ),
+      aiTooltipAfterDescriptionElement: (
+        <WriteableElementExample
+          location="aiTooltipAfterDescriptionElement"
+          parentStateText={stateText}
+        />
+      ),
+    }),
+    [stateText]
+  );
 
   const onBeforeRender = (instance: ChatInstance) => {
     // You can set the instance to access it later if you need to.
@@ -139,7 +231,7 @@ function DemoApp({ config, settings }: AppProps) {
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderWriteableElements={
             settings.writeableElements === "true"
-              ? renderWriteableElements
+              ? renderWriteableElements()
               : undefined
           }
         />
@@ -153,7 +245,7 @@ function DemoApp({ config, settings }: AppProps) {
             renderUserDefinedResponse={renderUserDefinedResponse}
             renderWriteableElements={
               settings.writeableElements === "true"
-                ? renderWriteableElements
+                ? renderWriteableElements()
                 : undefined
             }
           />
@@ -165,32 +257,6 @@ function DemoApp({ config, settings }: AppProps) {
     </>
   );
 }
-
-/**
- * You can return a React element for each writeable element.
- *
- * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
- */
-const renderWriteableElements = {
-  headerBottomElement: () => (
-    <WriteableElementExample location="headerBottomElement" />
-  ),
-  welcomeNodeBeforeElement: () => (
-    <WriteableElementExample location="welcomeNodeBeforeElement" />
-  ),
-  homeScreenHeaderBottomElement: () => (
-    <WriteableElementExample location="homeScreenHeaderBottomElement" />
-  ),
-  homeScreenAfterStartersElement: () => (
-    <WriteableElementExample location="homeScreenAfterStartersElement" />
-  ),
-  beforeInputElement: () => (
-    <WriteableElementExample location="beforeInputElement" />
-  ),
-  aiTooltipAfterDescriptionElement: () => (
-    <WriteableElementExample location="aiTooltipAfterDescriptionElement" />
-  ),
-};
 
 /**
  * Handles when the user submits feedback.
@@ -220,43 +286,6 @@ function customButtonHandler(event: any) {
     // eslint-disable-next-line no-alert
     window.alert(messageItem.user_defined.text);
   }
-}
-
-/**
- * Handler for user_defined response types. You can just have a switch statement here and return the right component
- * depending on which component should be rendered.
- *
- * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-render#user-defined-responses
- */
-function renderUserDefinedResponse(
-  state: RenderUserDefinedState,
-  instance: ChatInstance
-) {
-  const { messageItem } = state;
-  // The event here will contain details for each user defined response that needs to be rendered.
-  if (messageItem) {
-    switch (messageItem.user_defined?.user_defined_type) {
-      case "chart":
-        return (
-          <div className="padding">
-            <Chart content={messageItem.user_defined.chart_data as string} />
-          </div>
-        );
-      case "green":
-        return (
-          <UserDefinedResponseExample
-            text={messageItem.user_defined.text as string}
-          />
-        );
-      case "response-stopped":
-        return <>Custom user_defined response stopped message.</>;
-      default:
-        return undefined;
-    }
-  }
-  // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
-  // switch statement here that does something more specific depending on the component.
-  return <AISkeletonPlaceholder className="fullSkeleton" />;
 }
 
 export { DemoApp };

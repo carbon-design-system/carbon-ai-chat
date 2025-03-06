@@ -74,6 +74,7 @@ export default (env, args) => {
             compress: true,
             port: 3001,
             hot: true,
+            open: true,
           }
         : undefined,
   };

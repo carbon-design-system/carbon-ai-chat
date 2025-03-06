@@ -30,6 +30,9 @@ class UserDefinedResponseExample extends LitElement {
   @property({ type: String })
   accessor text = "";
 
+  @property({ type: String })
+  accessor valueFromParent: string = "";
+
   @state()
   accessor timestamp = 0;
 
@@ -54,9 +57,16 @@ class UserDefinedResponseExample extends LitElement {
   render() {
     return html`
       <div class="external">
-        This is a user_defined response type with external styles. The following
-        is some text passed along for use by the back-end: ${this.text}. And
-        here is a value being set by state: ${this.timestamp}.
+        <p>This is a user_defined response type with external styles.</p>
+        <p>
+          The following is some text passed along for use by the back-end in the
+          response: ${this.text}.
+        </p>
+        <p>And here is a value being set by local state: ${this.timestamp}.</p>
+        <p>
+          And here is a value being set by the parent application state:
+          ${this.valueFromParent}
+        </p>
       </div>
     `;
   }

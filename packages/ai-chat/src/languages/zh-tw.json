@@ -174,6 +174,7 @@
   "conversationalSearch_viewPDF": "檢視 PDF",
   "conversationalSearch_viewSourceDocument": "檢視來源",
   "conversationalSearch_toggleCitations": "開啟或關閉來源清單",
+  "conversationalSearch_responseStopped": "已停止回應",
   "launcher_chatNow": "立即會談",
   "iframe_ariaSourceLoaded": "已載入網頁。",
   "iframe_ariaImageAltText": "預覽網頁畫面的影像。",
@@ -243,5 +244,15 @@
   "feedback_defaultPrompt": "您為何選擇此評比？",
   "feedback_defaultPlaceholder": "新增評論",
   "feedback_submitLabel": "提交",
-  "feedback_cancelLabel": "取消"
+  "feedback_cancelLabel": "取消",
+  "input_stopResponse": "停止回應",
+  "messages_responseStopped": "已停止回應",
+  "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
+  "chainOfThought_inputLabel": "輸入",
+  "chainOfThought_outputLabel": "輸出",
+  "chainOfThought_toolLabel": "工具",
+  "chainOfThought_statusSucceededLabel": "成功",
+  "chainOfThought_statusFailedLabel": "失敗",
+  "chainOfThought_statusProcessingLabel": "正在處理",
+  "chainOfThought_explainabilityLabel": "我是如何取得這個答案的？"
 }

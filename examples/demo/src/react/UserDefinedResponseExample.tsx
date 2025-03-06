@@ -19,20 +19,33 @@ import React, { useEffect, useState } from "react";
 
 interface UserDefinedExampleProps {
   text: string;
+  parentStateText: string;
 }
 
-function UserDefinedResponseExample({ text }: UserDefinedExampleProps) {
+function UserDefinedResponseExample({
+  text,
+  parentStateText,
+}: UserDefinedExampleProps) {
   const [timestamp, setTimestamp] = useState(0);
   useEffect(() => {
     setInterval(() => {
       setTimestamp(Date.now());
-    }, 1000);
+    }, 1500);
   }, []);
   return (
     <div className="external">
-      This is a user_defined response type with external styles. The following
-      is some text passed along for use by the back-end: {text}. And here is a
-      value being set by state: {timestamp}.
+      <p>
+        This is a user_defined response type with external styles hosted inside
+        its own slot.
+      </p>
+      <p>
+        The following is some text passed along for use by the back-end: {text}.
+      </p>
+      <p>
+        And here is a value being set by the parent container state:{" "}
+        {parentStateText}.
+      </p>
+      <p>And here is a value being set by local state: {timestamp}.</p>
     </div>
   );
 }

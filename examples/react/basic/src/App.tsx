@@ -23,14 +23,23 @@ import {
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
-// This function hooks up to your back-end.
+// These functions hook up to your back-end.
+import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
 // This function returns a React component for user defined responses.
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 
+/**
+ * It is preferable to create your configuration object outside of your React functions. You can also make use of
+ * useCallback or useMemo if you need to put it inside.
+ *
+ * Either way, this will prevent you from spinning up a new config object over and over. Carbon AI Chat will run
+ * a diff on the config object and if it is not deeply equal, the chat will be re-started.
+ */
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
+    customLoadHistory,
   },
 };
 
@@ -41,7 +50,7 @@ function App() {
     // Handle feedback event.
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
 
-    // For usage later.
+    // For usage on the instance later.
     setChatInstance(instance);
   }
 

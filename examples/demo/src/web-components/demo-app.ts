@@ -33,7 +33,7 @@ import {
   UserDefinedItem,
   ViewType,
 } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DeepPartial } from "ts-essentials";
 
@@ -75,14 +75,14 @@ export class DemoApp extends LitElement {
       right: 0;
       top: 0;
       height: 100vh;
-      width: 320px;
+      width: calc(320px + 1rem);
       z-index: 9999;
       transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
       visibility: visible; /* Visible by default */
     }
 
     .sidebar--closed {
-      right: -320px;
+      right: calc(calc(320px + 1rem) * -1);
       transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
       visibility: hidden; /* Hidden after right transition */
     }
@@ -102,6 +102,15 @@ export class DemoApp extends LitElement {
 
   @state()
   accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
+
+  @state()
+  accessor valueFromParent: string = Date.now().toString();
+
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    setInterval(() => {
+      this.valueFromParent = Date.now().toString();
+    }, 1500);
+  }
 
   /**
    * Listens for view changes on the AI chat.
@@ -264,6 +273,7 @@ export class DemoApp extends LitElement {
         return html`<div slot=${slot}>
           <user-defined-response-example
             .text=${userDefinedMessage.user_defined.text as string}
+            .valueFromParent=${this.valueFromParent}
           ></user-defined-response-example>
         </div>`;
       default:
@@ -303,6 +313,7 @@ export class DemoApp extends LitElement {
         return html`<div slot=${key}>
           <writeable-element-example
             location=${key}
+            valueFromParent=${this.valueFromParent}
           ></writeable-element-example>
         </div>`;
       });

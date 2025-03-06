@@ -50,8 +50,7 @@ const RESPONSE_MAP: Record<
   "code (stream)": doCodeStreaming,
   "conversational search": doConversationalSearch,
   "conversational search (stream)": doConversationalSearchStreaming,
-  // Issues with React component
-  // date: doDate,
+  date: doDate,
   grid: doGrid,
   "human agent": doHumanAgent,
   iframe: doIFrame,

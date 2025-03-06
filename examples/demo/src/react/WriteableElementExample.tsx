@@ -19,14 +19,21 @@ import React from "react";
 
 interface WriteableElementExampleProps {
   location: string;
+  parentStateText: string;
 }
 
-function WriteableElementExample({ location }: WriteableElementExampleProps) {
+function WriteableElementExample({
+  location,
+  parentStateText,
+}: WriteableElementExampleProps) {
   return (
     <div className="writeable-element-external">
-      Location: {location}. This is a writeable element with external styles.
-      You can inject any custom content here. You are not constrained by any
-      height.
+      <p>
+        Location: {location}. This is a writeable element with external styles.
+        You can inject any custom content here. You are not constrained by any
+        height.
+      </p>
+      <p>Some content from parent state: {parentStateText}</p>
     </div>
   );
 }

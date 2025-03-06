@@ -174,6 +174,7 @@
   "conversationalSearch_viewPDF": "PDFの表示",
   "conversationalSearch_viewSourceDocument": "ソースの表示",
   "conversationalSearch_toggleCitations": "ソースのリストを開く/閉じる",
+  "conversationalSearch_responseStopped": "応答停止",
   "launcher_chatNow": "今すぐチャット",
   "iframe_ariaSourceLoaded": "Web ページがロードされました。",
   "iframe_ariaImageAltText": "Web ページ・パネルのイメージをプレビューします。",
@@ -243,5 +244,15 @@
   "feedback_defaultPrompt": "なぜこの評価を選択されましたか?",
   "feedback_defaultPlaceholder": "コメントの追加",
   "feedback_submitLabel": "送信",
-  "feedback_cancelLabel": "キャンセル"
+  "feedback_cancelLabel": "キャンセル",
+  "input_stopResponse": "応答停止",
+  "messages_responseStopped": "応答停止",
+  "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
+  "chainOfThought_inputLabel": "入力",
+  "chainOfThought_outputLabel": "出力",
+  "chainOfThought_toolLabel": "ツール",
+  "chainOfThought_statusSucceededLabel": "成功",
+  "chainOfThought_statusFailedLabel": "失敗",
+  "chainOfThought_statusProcessingLabel": "処理中",
+  "chainOfThought_explainabilityLabel": "この答えはどうやって得たのでしょうか?"
 }
