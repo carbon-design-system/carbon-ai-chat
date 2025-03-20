@@ -23,12 +23,14 @@
     "es/**/*",
     "dist/**/*",
     "custom-elements.json",
-    "package.json"
+    "package.json",
+    "telemetry.yml"
   ],
   "scripts": {
     "build": "npm run clean && npm run custom-elements && node tasks/build.js && node tasks/build-dist.js",
     "clean": "rimraf es dist storybook-static",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
+    "postinstall": "ibmtelemetry --config=telemetry.yml",
     "storybook": "npm run custom-elements && storybook dev -p 6006",
     "storybook:build": "npm run custom-elements && storybook build",
     "test": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
@@ -37,6 +39,7 @@
   "dependencies": {
     "@carbon/styles": "^1.39.0",
     "@carbon/web-components": "^2.13.0",
+    "@ibm/telemetry-js": "^1.9.1",
     "lit": "^3.0.0",
     "tslib": "^2.6.3"
   },
