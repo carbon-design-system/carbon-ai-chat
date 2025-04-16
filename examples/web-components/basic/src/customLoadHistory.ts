@@ -13,7 +13,12 @@
  *
  */
 
-import { HistoryItem, MessageResponseTypes, TextItem } from "@carbon/ai-chat";
+import {
+  ChatInstance,
+  HistoryItem,
+  MessageResponseTypes,
+  TextItem,
+} from "@carbon/ai-chat";
 
 const HISTORY = [
   {
@@ -66,7 +71,15 @@ const HISTORY = [
   },
 ] as HistoryItem[];
 
-async function customLoadHistory() {
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
+async function customLoadHistory(instance: ChatInstance) {
+  // Mocking a delay in loading.
+  await sleep(3000);
   return HISTORY;
 }
 

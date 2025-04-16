@@ -245,8 +245,8 @@
   "feedback_defaultPlaceholder": "コメントの追加",
   "feedback_submitLabel": "送信",
   "feedback_cancelLabel": "キャンセル",
-  "input_stopResponse": "応答停止",
-  "messages_responseStopped": "応答停止",
+  "input_stopResponse": "応答の停止",
+  "messages_responseStopped": "応答が停止されています",
   "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
   "chainOfThought_inputLabel": "入力",
   "chainOfThought_outputLabel": "出力",
@@ -254,5 +254,5 @@
   "chainOfThought_statusSucceededLabel": "成功",
   "chainOfThought_statusFailedLabel": "失敗",
   "chainOfThought_statusProcessingLabel": "処理中",
-  "chainOfThought_explainabilityLabel": "この答えはどうやって得たのでしょうか?"
+  "chainOfThought_explainabilityLabel": "私がこの回答に至った経緯"
 }

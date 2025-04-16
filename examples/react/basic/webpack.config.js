@@ -63,6 +63,8 @@ export default {
   devServer: {
     static: path.join(__dirname, "dist"),
     compress: true,
+    port: 3002,
+    open: true,
     hot: true,
   },
 };

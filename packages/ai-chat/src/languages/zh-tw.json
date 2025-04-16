@@ -254,5 +254,5 @@
   "chainOfThought_statusSucceededLabel": "成功",
   "chainOfThought_statusFailedLabel": "失敗",
   "chainOfThought_statusProcessingLabel": "正在處理",
-  "chainOfThought_explainabilityLabel": "我是如何取得這個答案的？"
+  "chainOfThought_explainabilityLabel": "我是怎麼得到這個答案的？"
 }

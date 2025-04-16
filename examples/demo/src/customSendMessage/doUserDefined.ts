@@ -54,9 +54,9 @@ function doUserDefined(instance: ChatInstance) {
 }
 
 async function doUserDefinedStreaming(instance: ChatInstance) {
-  const WORD_DELAY = 500;
+  const WORD_DELAY = 50;
   const responseID = crypto.randomUUID();
-  const words = CHART_DATA.split(",");
+  const words = CHART_DATA.split('"');
   let isCanceled = false;
 
   const stopGeneratingEvent = {

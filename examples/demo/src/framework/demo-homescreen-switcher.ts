@@ -52,6 +52,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
     >
       <cds-dropdown-item value="none">None</cds-dropdown-item>
       <cds-dropdown-item value="default">Default</cds-dropdown-item>
+      <cds-dropdown-item value="splash">Splash</cds-dropdown-item>
       <cds-dropdown-item value="custom">Custom</cds-dropdown-item>
     </cds-dropdown>`;
   }

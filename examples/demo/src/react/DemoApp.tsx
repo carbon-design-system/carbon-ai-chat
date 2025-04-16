@@ -28,7 +28,7 @@ import {
   ViewType,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Settings } from "../framework/types";
 import { SideBar } from "./DemoSideBarNav";
@@ -96,7 +96,7 @@ function DemoApp({ config, settings }: AppProps) {
    *
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
    */
-  const renderWriteableElements = useCallback(
+  const renderWriteableElements = useMemo(
     () => ({
       headerBottomElement: (
         <WriteableElementExample
@@ -161,16 +161,42 @@ function DemoApp({ config, settings }: AppProps) {
             is_on: true,
             buttons: [
               {
-                label: "text",
+                label: "text (stream)",
               },
               {
-                label: "text (stream)",
+                label: "code (stream)",
+              },
+              {
+                label: "text",
               },
               {
                 label: "code",
               },
+            ],
+          },
+        });
+        break;
+
+      case "splash":
+        instance.updateHomeScreenConfig({
+          is_on: true,
+          allow_return: false,
+          greeting:
+            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
+          starters: {
+            is_on: true,
+            buttons: [
+              {
+                label: "text (stream)",
+              },
               {
                 label: "code (stream)",
+              },
+              {
+                label: "text",
+              },
+              {
+                label: "code",
               },
             ],
           },
@@ -212,7 +238,10 @@ function DemoApp({ config, settings }: AppProps) {
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
   let className;
-  if (settings.layout === "fullscreen") {
+  if (
+    settings.layout === "fullscreen" ||
+    settings.layout === "fullscreen-no-gutter"
+  ) {
     className = "fullScreen";
   } else if (settings.layout === "sidebar") {
     if (sideBarOpen) {
@@ -231,7 +260,7 @@ function DemoApp({ config, settings }: AppProps) {
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderWriteableElements={
             settings.writeableElements === "true"
-              ? renderWriteableElements()
+              ? renderWriteableElements
               : undefined
           }
         />
@@ -245,7 +274,7 @@ function DemoApp({ config, settings }: AppProps) {
             renderUserDefinedResponse={renderUserDefinedResponse}
             renderWriteableElements={
               settings.writeableElements === "true"
-                ? renderWriteableElements()
+                ? renderWriteableElements
                 : undefined
             }
           />

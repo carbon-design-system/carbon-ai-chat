@@ -56,6 +56,7 @@ function getSettings() {
       customSendMessage,
       ...config.messaging,
     },
+    debug: true,
   };
 
   const defaultSettings: Settings = {
@@ -77,7 +78,11 @@ function getSettings() {
           minimizeButtonIconType: undefined,
         },
         themeConfig: { ...defaultConfig.themeConfig, corners: undefined },
-        layout: { ...defaultConfig.layout, showFrame: undefined },
+        layout: {
+          ...defaultConfig.layout,
+          showFrame: undefined,
+          hasContentMaxWidth: undefined,
+        },
         element: undefined,
         openChatByDefault: undefined,
       };
@@ -100,7 +105,11 @@ function getSettings() {
           ...defaultConfig.themeConfig,
           corners: CornersType.SQUARE,
         },
-        layout: { ...defaultConfig.layout, showFrame: undefined },
+        layout: {
+          ...defaultConfig.layout,
+          showFrame: undefined,
+          hasContentMaxWidth: undefined,
+        },
         openChatByDefault: undefined,
       };
       delete defaultConfig.layout?.showFrame;
@@ -118,7 +127,32 @@ function getSettings() {
           ...defaultConfig.themeConfig,
           corners: CornersType.SQUARE,
         },
-        layout: { ...defaultConfig.layout, showFrame: false },
+        layout: {
+          ...defaultConfig.layout,
+          showFrame: false,
+          hasContentMaxWidth: undefined,
+        },
+        openChatByDefault: true,
+      };
+      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      break;
+    case "fullscreen-no-gutter":
+      defaultConfig = {
+        ...defaultConfig,
+        headerConfig: {
+          ...defaultConfig.headerConfig,
+          hideMinimizeButton: true,
+          minimizeButtonIconType: undefined,
+        },
+        themeConfig: {
+          ...defaultConfig.themeConfig,
+          corners: CornersType.SQUARE,
+        },
+        layout: {
+          ...defaultConfig.layout,
+          showFrame: false,
+          hasContentMaxWidth: false,
+        },
         openChatByDefault: true,
       };
       delete defaultConfig.headerConfig?.minimizeButtonIconType;

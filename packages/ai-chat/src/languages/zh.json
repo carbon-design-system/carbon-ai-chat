@@ -248,7 +248,7 @@
   "input_stopResponse": "停止响应",
   "messages_responseStopped": "响应已停止",
   "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
-  "chainOfThought_inputLabel": "Input",
+  "chainOfThought_inputLabel": "输入",
   "chainOfThought_outputLabel": "输出",
   "chainOfThought_toolLabel": "工具",
   "chainOfThought_statusSucceededLabel": "已成功",

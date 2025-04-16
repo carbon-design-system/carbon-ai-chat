@@ -10,6 +10,11 @@
     "useDefineForClassFields": true,
     "preserveConstEnums": true,
     "moduleResolution": "node",
+    "plugins": [
+      {
+        "name": "ts-lit-plugin"
+      }
+    ]
   },
   "include": ["src/**/*"]
 }
