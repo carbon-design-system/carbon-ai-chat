@@ -179,16 +179,42 @@ export class DemoApp extends LitElement {
             is_on: true,
             buttons: [
               {
-                label: "text",
+                label: "text (stream)",
               },
               {
-                label: "text (stream)",
+                label: "code (stream)",
+              },
+              {
+                label: "text",
               },
               {
                 label: "code",
               },
+            ],
+          },
+        });
+        break;
+
+      case "splash":
+        instance.updateHomeScreenConfig({
+          is_on: true,
+          allow_return: false,
+          greeting:
+            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
+          starters: {
+            is_on: true,
+            buttons: [
+              {
+                label: "text (stream)",
+              },
               {
                 label: "code (stream)",
+              },
+              {
+                label: "text",
+              },
+              {
+                label: "code",
               },
             ],
           },
@@ -293,7 +319,7 @@ export class DemoApp extends LitElement {
       default:
         // We are just going to always return a skeleton here, but you can give yourself more fine grained control.
         return html`<div slot=${slot}>
-          <cds-ai-skeleton-text></cds-ai-skeleton-text>
+          <cds-custom-ai-skeleton-text></cds-custom-ai-skeleton-text>
         </div>`;
     }
   }
@@ -340,7 +366,8 @@ export class DemoApp extends LitElement {
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
           >`
         : html``}
-      ${this.settings.layout === "fullscreen"
+      ${this.settings.layout === "fullscreen" ||
+      this.settings.layout === "fullscreen-no-gutter"
         ? html`<cds-aichat-custom-element
             class="fullScreen"
             .config=${this.config}

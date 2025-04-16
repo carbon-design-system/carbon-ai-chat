@@ -136,7 +136,6 @@ export class Demo extends LitElement {
 
   render() {
     return html`
-      <h1>Welcome!</h1>
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .config=${config}
