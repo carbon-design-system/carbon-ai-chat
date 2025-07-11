@@ -11,7 +11,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^0.3.2",
+    "@carbon/ai-chat": "^0.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
