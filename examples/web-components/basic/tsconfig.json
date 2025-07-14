@@ -8,7 +8,6 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
-    "preserveConstEnums": true,
     "moduleResolution": "node",
     "plugins": [
       {

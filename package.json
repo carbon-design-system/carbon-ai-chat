@@ -13,19 +13,31 @@
   },
   "homepage": "https://github.com/carbon-design-system/carbon-ai-chat#readme",
   "workspaces": [
-    "examples/demo",
+    "config/babel-preset-carbon",
+    "demo",
     "examples/react/basic",
     "examples/web-components/basic",
-    "packages/ai-chat"
+    "packages/ai-chat",
+    "packages/ai-chat-components"
   ],
   "scripts": {
+    "aiChat:build": "npm run build --workspace=@carbon/ai-chat --workspace=@carbon/ai-chat-examples-demo",
+    "aiChat:build:typedoc": "npm run build:typedoc --workspace=@carbon/ai-chat",
+    "aiChat:build:profile": "npm run build:profile --workspace=@carbon/ai-chat",
+    "aiChat:start": "npm run build:chat --workspace=@carbon/ai-chat && npm-run-all --parallel aiChat:start:chat aiChat:start:demo",
+    "aiChat:start:all": "npm run build:chat --workspace=@carbon/ai-chat && npm-run-all --parallel aiChat:start:chat aiChat:start:demo aiChat:start:react:basic aiChat:start:webcomponents:basic",
+    "aiChat:start:chat": "npm run start --workspace=@carbon/ai-chat",
+    "aiChat:start:demo": "npm run start --workspace=@carbon/ai-chat-examples-demo",
+    "aiChat:start:react:basic": "npm run start --workspace=@carbon/ai-chat-examples-react-basic",
+    "aiChat:start:webcomponents:basic": "npm run start --workspace=@carbon/ai-chat-examples-web-components-basic",
+    "aiChat:start:typedoc": "npm run start:typedoc --workspace=@carbon/ai-chat",
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
     "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
     "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
     "format:staged": "prettier --list-different '**/*.{js,md,scss,ts,tsx}' '!**/{build,es,lib,storybook,ts,umd}/**'",
-    "lint": "eslint packages --ext .js,.ts",
+    "lint": "eslint packages --ext .js,.ts,.tsx",
     "lint:license": "tools/check-license.js -a",
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
@@ -33,9 +45,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
+    "@babel/plugin-transform-private-methods": "^7.27.1",
+    "@babel/plugin-transform-runtime": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
-    "babel-preset-carbon": "^0.0.14",
     "commander": "^12.1.0",
     "eslint": "^8.53.0",
     "eslint-config-carbon": "3.10.0",
@@ -104,7 +119,29 @@
   "eslintConfig": {
     "extends": [
       "eslint-config-carbon"
-    ]
+    ],
+    "rules": {
+    "jsdoc/check-tag-names": ["error", {
+      "definedTags": [
+        "category",
+        "typeParam",
+        "template",
+        "inheritDoc",
+        "hidden",
+        "ignore",
+        "internal",
+        "override",
+        "packageDocumentation",
+        "public",
+        "protected",
+        "private",
+        "readonly",
+        "sealed",
+        "showCategories",
+        "virtual"
+      ]
+    }]
+  }
   },
   "stylelint": {
     "extends": [

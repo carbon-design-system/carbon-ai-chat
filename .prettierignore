@@ -3,3 +3,5 @@ lib
 dist
 umd
 node_modules
+
+packages/ai-chat/tasks/**

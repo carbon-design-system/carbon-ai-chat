@@ -1,0 +1,40 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+.fullScreen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: calc(100vw - 320px - 2rem);
+  z-index: 9999;
+}
+
+.sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: calc(320px + 1rem);
+  z-index: 9999;
+  transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
+  visibility: visible; /* Visible by default */
+}
+
+.sidebar--closed {
+  right: calc(calc(320px + 1rem) * -1);
+  transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
+  visibility: hidden; /* Hidden after right transition */
+}
+
+.padding {
+  padding-top: 1rem;
+}
+
+.fullSkeleton {
+  inline-size: 100% !important;
+}

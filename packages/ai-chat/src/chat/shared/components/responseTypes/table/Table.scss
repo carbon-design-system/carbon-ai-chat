@@ -1,0 +1,20 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+.WACTableContainer {
+  // Similarly, while we're stuck using overflow-x: auto at this level (for the sticky header workaround, explained in
+  // the web components table.scss), we need to enable flex here so the pagination component can extend to be the
+  // same width as the table if there is overflow.
+  display: flex;
+
+  // Apply the same background layer the table body uses to the wrapping container. This prevents areas that can be
+  // scrolled too, such as the area to the right of the pagination component, from being the wrong background color.
+  background-color: var(--cds-layer);
+  // Carbon's table component only shrinks so far and doesn't switch to overflow scrolling. We'll keep the same behavior
+  // in our web component but that means that our container here needs to be responsible for allowing the overflow.
+  overflow-x: auto;
+}

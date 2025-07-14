@@ -1,16 +1,10 @@
-/**
+/*
+ *  Copyright IBM Corp. 2025
  *
- * IBM Confidential
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
  *
- * (C) Copyright IBM Corp. 2024
- *
- * The source code for this program is not published or otherwise
- * divested of its trade secrets, irrespective of what has been
- * deposited with the U. S. Copyright Office
- *
- * US Government Users Restricted Rights - Use, duplication or
- * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
- *
+ *  @license
  */
 
 import {
@@ -33,7 +27,7 @@ import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
  * It is preferable to create your configuration object outside of your React functions. You can also make use of
  * useCallback or useMemo if you need to put it inside.
  *
- * Either way, this will prevent you from spinning up a new config object over and over. Carbon AI Chat will run
+ * Either way, this will prevent you from spinning up a new config object over and over. Carbon AI chat will run
  * a diff on the config object and if it is not deeply equal, the chat will be re-started.
  */
 const config: PublicConfig = {

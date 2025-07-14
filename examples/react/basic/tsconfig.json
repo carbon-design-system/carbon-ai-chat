@@ -10,7 +10,6 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
     "moduleResolution": "node",
-    "preserveConstEnums": true,
   },
   "include": ["src/**/*"]
 }

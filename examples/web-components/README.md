@@ -1,6 +1,6 @@
 # Web component examples
 
-This folder contains examples for specific functionality using web components with Lit. The [../demo](../demo) folder is also worth visiting to see different features working in concert.
+This folder contains examples for specific functionality using web components with Lit.
 
 | Example           | Description                                                                    |
 | ----------------- | ------------------------------------------------------------------------------ |

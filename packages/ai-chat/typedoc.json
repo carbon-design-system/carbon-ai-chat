@@ -1,0 +1,36 @@
+{
+    "plugin": ["./docs/typedoc/moduleNamePlugin.js"],
+    "entryPoints": ["./src/aiChatEntry.tsx"],
+    "out": "./dist/docs/carbon-tsdocs",
+    "name": "Carbon AI chat",
+    "readme": "none",
+    "projectDocuments": [
+      "./docs/Overview.md",
+      "./docs/React.md",
+      "./docs/WebComponent.md",
+      "./docs/Customization.md",
+      "./docs/CustomServiceDesks.md",
+      "./docs/CustomServer.md"
+    ],
+    "categoryOrder": [
+      "React",
+      "Web component",
+      "Config",
+      "Instance",
+      "Events",
+      "Service desk",
+      "Messaging",
+      "*"
+    ],
+    "disableSources": true,
+    "navigation": {
+        "includeCategories": true,
+        "includeGroups": false,
+        "includeFolders": true,
+        "compactFolders": true,
+        "excludeReferences": true
+    },
+    "categorizeByGroup": false,
+    "hideGenerator": true,
+    "customCss": "./docs/typedoc/typedoc.css"
+}

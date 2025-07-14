@@ -1,0 +1,33 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "sass:meta";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/layout";
+
+// Looking at the host-context is kind of code small, but not sure what the right way to do it is, yet.
+:host-context(.cds--g90),
+:host-context(.cds--g100) {
+  @include meta.load-css("highlight.js/scss/a11y-dark");
+}
+
+:host-context(.cds--white),
+:host-context(.cds--g10) {
+  @include meta.load-css("highlight.js/scss/a11y-light");
+}
+
+pre {
+  @include type.type-style("code-02");
+
+  overflow: auto hidden;
+  padding: layout.$spacing-05;
+
+  border: solid 1px theme.$chat-bubble-border;
+  background-color: theme.$layer-02;
+  white-space: pre-wrap;
+}

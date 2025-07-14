@@ -1,6 +1,6 @@
 # React examples
 
-This folder contains examples for specific functionality in React. The [../demo](../demo) folder is also worth visiting to see different features working in concert.
+This folder contains examples for specific functionality in React.
 
 | Example           | Description                                                                    |
 | ----------------- | ------------------------------------------------------------------------------ |
