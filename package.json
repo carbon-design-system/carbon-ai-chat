@@ -111,14 +111,14 @@
       "stylelint-config-carbon"
     ],
     "rules": {
-    "max-nesting-depth": 2,
-    "selector-pseudo-class-no-unknown": [
-      true,
-      {
-        "ignorePseudoClasses": ["global"]
-      }
-    ]
-  }
+      "max-nesting-depth": 2,
+      "selector-pseudo-class-no-unknown": [
+        true,
+        {
+          "ignorePseudoClasses": ["global"]
+        }
+      ]
+    }
   },
   "dependencies": {
     "@carbon/ai-chat": "^0.0.0"
