@@ -16,22 +16,18 @@
 @include theme.add-component-tokens(tag-tokens.$tag-tokens);
 @include theme.add-component-tokens(notification-tokens.$notification-tokens);
 
-:host(.#{$prefix}-theme-zone-white),
 .#{$prefix}-theme-zone-white {
   @include theme.theme(themes.$white);
 }
 
-:host(.#{$prefix}-theme-zone-g10),
 .#{$prefix}-theme-zone-g10 {
   @include theme.theme(themes.$g10);
 }
 
-:host(.#{$prefix}-theme-zone-g90),
 .#{$prefix}-theme-zone-g90 {
   @include theme.theme(themes.$g90);
 }
 
-:host(.#{$prefix}-theme-zone-g100),
 .#{$prefix}-theme-zone-g100 {
   @include theme.theme(themes.$g100);
 }

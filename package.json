@@ -47,7 +47,7 @@
     "prettier": "^2.8.8",
     "prettier-config-carbon": "^0.11.0",
     "stylelint": "^16.0.0",
-    "stylelint-config-carbon": "^1.19.0"
+    "stylelint-config-carbon": "^1.21.0"
   },
   "commitlint": {
     "extends": [
@@ -109,7 +109,16 @@
   "stylelint": {
     "extends": [
       "stylelint-config-carbon"
+    ],
+    "rules": {
+    "max-nesting-depth": 2,
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["global"]
+      }
     ]
+  }
   },
   "dependencies": {
     "@carbon/ai-chat": "^0.0.0"
