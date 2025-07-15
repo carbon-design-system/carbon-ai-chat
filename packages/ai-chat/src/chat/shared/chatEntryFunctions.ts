@@ -38,13 +38,13 @@ type ChatConstructorPromise = (
  * @param chatConstructorPromise A promise that resolves with the WatsonAssistantChat class. This can either be a
  * script tab with some onload handlers, or could be an import() statement. Because of our use of MFEs, we are
  * currently limited to the former.
- * @param renderOverride Function to pass into Chat class to call instead of render function.
+ * @param render Function to pass into Chat class to call instead of render function.
  * @returns Promise object that resolves with your new instance. See [./instance.md](./instance.md).
  */
 async function instantiateWidget(
   pagePublicConfig: PublicConfig,
   chatConstructorPromise: ChatConstructorPromise,
-  renderOverride?: Promise<RenderFunctionType>,
+  render?: Promise<RenderFunctionType>,
   element?: HTMLElement
 ) {
   const config = cloneDeep(pagePublicConfig);
@@ -80,7 +80,7 @@ async function instantiateWidget(
 
   const additionalChatParameters: AdditionalChatParameters = {
     onError,
-    renderOverride,
+    render,
   };
 
   return new Chat(publicConfig, element, additionalChatParameters);

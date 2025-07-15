@@ -41,19 +41,19 @@
 .cds--g100 {
   @include meta.load-css("highlight.js/scss/a11y-dark");
 
-  // BUT we would want to keep this.
+  /* BUT we would want to keep this. */
   scrollbar-color: var(--cds-layer-03) var(--cds-layer-01);
 }
 
-// TODO, we just need a custom version of the tile component.
+/* TODO, we just need a custom version of the tile component. */
 .cds--tile {
   border: solid 1px theme.$chat-bubble-border;
   border-radius: chatTheme.$CARD-border-radius;
-  // The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't
-  // work with chat because they produce different colors between white and g10, as well as between g90 and g100. For
-  // now create a token whose color that will be consistent for both light themes (based off the g10 color), and also
-  // consistent for both dark themes (based off the g100 color). In the future carbon should create and use a new token
-  // for this background, that works with chat, and we can remove this override.
+  /* The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't
+  work with chat because they produce different colors between white and g10, as well as between g90 and g100. For
+  now create a token whose color that will be consistent for both light themes (based off the g10 color), and also
+  consistent for both dark themes (based off the g100 color). In the future carbon should create and use a new token
+  for this background, that works with chat, and we can remove this override. */
   background-color: var(--cds-chat-TILE-background);
 }
 
@@ -83,146 +83,6 @@
 
 .HideWebChat {
   display: none;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .ibm-web-chat--reset-styles {
-    position: static;
-    z-index: auto;
-    display: block;
-    overflow: visible;
-    box-sizing: border-box;
-    padding: 0;
-    border-width: medium;
-    border-style: none;
-    border-color: currentcolor;
-    border-radius: 0;
-    margin: 0;
-    backface-visibility: visible;
-    background: none auto 0 0 repeat padding-box border-box scroll transparent;
-    block-size: auto;
-    border-image: none;
-    box-shadow: none;
-    clear: none;
-    clip: auto;
-    color: inherit;
-    column-gap: normal;
-    column-rule: medium none black;
-    column-span: 1;
-    columns: auto auto;
-    counter-increment: none;
-    counter-reset: none;
-    cursor: auto;
-    direction: inherit;
-    float: none;
-    font-family: inherit;
-    font-feature-settings: inherit;
-    font-size: inherit;
-    font-style: inherit;
-    font-variant: inherit;
-    font-weight: inherit;
-    hyphens: manual;
-    inline-size: auto;
-    inset: auto;
-    letter-spacing: inherit;
-    line-height: inherit;
-    list-style-image: none;
-    list-style-position: outside;
-    list-style-type: inherit;
-    max-block-size: none;
-    max-inline-size: none;
-    min-block-size: 0;
-    min-inline-size: 0;
-    opacity: 1;
-    outline: invert none medium;
-    perspective: none;
-    perspective-origin: 50% 50%;
-    quotes: "" "";
-    table-layout: auto;
-    text-align: inherit;
-    text-decoration: inherit;
-    text-indent: 0;
-    text-shadow: none;
-    text-transform: none;
-    transform: none;
-    transform-origin: 50% 50%;
-    transform-style: flat;
-    transition: none;
-    unicode-bidi: normal;
-    visibility: inherit;
-    white-space: normal;
-    word-break: normal;
-    word-spacing: normal;
-  }
-}
-
-.ibm-web-chat--reset-styles {
-  position: static;
-  z-index: auto;
-  display: block;
-  overflow: visible;
-  box-sizing: border-box;
-  padding: 0;
-  border-width: medium;
-  border-style: none;
-  border-color: currentcolor;
-  border-radius: 0;
-  margin: 0;
-  backface-visibility: visible;
-  background: none auto 0 0 repeat padding-box border-box scroll transparent;
-  block-size: auto;
-  border-image: none;
-  box-shadow: none;
-  clear: none;
-  clip: auto;
-  color: inherit;
-  column-gap: normal;
-  column-rule: medium none black;
-  column-span: 1;
-  columns: auto auto;
-  counter-increment: none;
-  counter-reset: none;
-  cursor: auto;
-  direction: inherit;
-  float: none;
-  font-family: inherit;
-  font-feature-settings: inherit;
-  font-size: inherit;
-  font-style: inherit;
-  font-variant: inherit;
-  font-weight: inherit;
-  hyphens: manual;
-  inline-size: auto;
-  inset: auto;
-  letter-spacing: inherit;
-  line-height: inherit;
-  list-style-image: none;
-  list-style-position: outside;
-  list-style-type: inherit;
-  max-block-size: none;
-  max-inline-size: none;
-  min-block-size: 0;
-  min-inline-size: 0;
-  opacity: 1;
-  outline: invert none medium;
-  perspective: none;
-  perspective-origin: 50% 50%;
-  quotes: "" "";
-  table-layout: auto;
-  text-align: inherit;
-  text-decoration: inherit;
-  text-indent: 0;
-  text-shadow: none;
-  text-transform: none;
-  transform: none;
-  transform-origin: 50% 50%;
-  transform-style: flat;
-  transition: all 0s ease 0s;
-  unicode-bidi: normal;
-  visibility: inherit;
-  white-space: normal;
-  word-break: normal;
-  word-spacing: normal;
 }
 
 button.WAC__button--link {

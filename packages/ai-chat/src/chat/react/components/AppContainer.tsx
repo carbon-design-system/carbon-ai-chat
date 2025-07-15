@@ -111,7 +111,7 @@ function AppContainer({
     const previousConfig = previousConfigRef.current;
     previousConfigRef.current = config;
 
-    async function renderOverride({ serviceManager }: RenderFunctionArgs) {
+    async function render({ serviceManager }: RenderFunctionArgs) {
       // For the npm package, we currently assume Carbon fonts are loaded on the page already.
       // This might have to change if we allow white labeling some day.
       const applicationStyles = await loadStyles();
@@ -152,7 +152,7 @@ function AppContainer({
         loadChat({
           managedWebChatRef,
           managedWebChat,
-          renderOverride,
+          render,
           setInstance: setInstances,
           onBeforeRender,
           onAfterRender,
@@ -207,7 +207,7 @@ function AppContainer({
 interface LoadChatArgs {
   managedWebChatRef: MutableRefObject<ManagedWebChat>;
   managedWebChat: ManagedWebChat;
-  renderOverride: RenderFunctionType;
+  render: RenderFunctionType;
   setInstance: (instance: ChatInstance) => void;
   /**
    * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
@@ -343,7 +343,7 @@ function addUserDefinedResponseHandler(
 async function loadChat({
   managedWebChatRef,
   managedWebChat,
-  renderOverride,
+  render,
   setInstance,
   onBeforeRender,
   onAfterRender,
@@ -369,7 +369,7 @@ async function loadChat({
   const widget = await instantiateWidget(
     managedWebChat.config,
     () => Promise.resolve(Chat),
-    Promise.resolve(renderOverride),
+    Promise.resolve(render),
     element
   );
 

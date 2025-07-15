@@ -18,12 +18,12 @@
 }
 
 .WACAgentAvatar .WACAgentAvatar__Circle {
-  width: var(--width);
-  height: var(--height);
   border: var(--cds-chat-BASE-border-radius-xsmall) solid currentcolor;
   border-radius: 50%;
   background-color: transparent;
+  block-size: var(--height);
   font-weight: bold;
+  inline-size: var(--width);
 }
 
 .WACAgentAvatar .WACAgentAvatar__Circle .WACAgentAvatar__Letter {

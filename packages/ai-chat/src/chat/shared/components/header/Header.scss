@@ -10,8 +10,8 @@
 @use "../../../styles/chatTheme";
 
 .WACHeader {
-  // Needed by the home screen so the opacity layer from the gradient backgrounds does not overlay the header in full
-  // screen mode.
+  /* Needed by the home screen so the opacity layer from the gradient backgrounds does not overlay the header in full
+  screen mode. */
   position: relative;
   display: flex;
   justify-content: center;
@@ -47,9 +47,11 @@
 }
 
 .WACHeader .cds--overflow-menu-options--open {
-  // Carbon dynamically calculates these values and adds them inline so we need !important to override them. This top
-  // will set the top of the open menu to the height of the header (plus 1px) so that it appears below the header.
+  /* Carbon dynamically calculates these values and adds them inline so we need !important to override them. This top
+  will set the top of the open menu to the height of the header (plus 1px) so that it appears below the header. */
+  /* stylelint-disable-next-line declaration-no-important */
   inset-block-start: 41px !important;
+  /* stylelint-disable-next-line declaration-no-important */
   inset-inline: 0 unset !important;
 }
 

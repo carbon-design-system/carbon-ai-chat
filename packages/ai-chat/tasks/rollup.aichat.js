@@ -82,9 +82,10 @@ const parsedDtsTsConfig = parseJsonConfigFileContent(
   './', // Base directory for resolving paths
 );
 
-async function runRollup() {
-  const config = [
-    {
+/**
+ * This is a built step for building the markdown webworker as a different file. Not yet in use.
+ */
+const workerBuild = {
       input: workerSrc,
       output: {
         file: workerOut,
@@ -127,7 +128,10 @@ async function runRollup() {
           }
         })
       ],
-    },
+    };
+
+async function runRollup() {
+  const config = [
     // Main bundle for es exports
     {
       input: [

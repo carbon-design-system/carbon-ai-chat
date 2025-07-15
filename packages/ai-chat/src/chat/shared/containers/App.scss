@@ -20,7 +20,7 @@
   display: flex;
   flex-direction: column;
   block-size: 100%;
-  // TODO: What to do with this?
+  /* TODO: What to do with this? */
   box-shadow: chatTheme.$BASE-box-shadow;
   font-size: var(--cds-chat-BASE-font-size-med);
   -webkit-font-smoothing: antialiased;
@@ -39,8 +39,8 @@
       theme.$ai-border-end
     )
     border-box;
-  // TODO: For AI theme only?
-  // These give us the 1px border on the outside that gets darker toward the top.
+  /* TODO: For AI theme only?
+  These give us the 1px border on the outside that gets darker toward the top. */
   box-shadow: chatTheme.$AI-box-shadow-outer;
 }
 
@@ -49,13 +49,14 @@
   box-shadow: none;
 }
 
-// These selectors apply a border radius to containers/elements that need to match the widget frame's border radius when
-// rounded corners are enabled.
+/* These selectors apply a border radius to containers/elements that need to match the widget frame's border radius when
+rounded corners are enabled. */
+
 .WACWidget.WACWidget--rounded {
   border-radius: var(--cds-chat-BASE-border-radius-med);
+  /* Rounded corners because .WACWidget doesn't have overflow: hidden to easily apply rounded corners at the top level.
+   We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI chat widget with */
 
-  // rounded corners because .WACWidget doesn't have overflow: hidden to easily apply rounded corners at the top level.
-  // We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI chat widget with
   .WACViewSourcePanel,
   .WACHomeScreen,
   .WACConfirmModal,
@@ -69,21 +70,22 @@
     border-radius: var(--cds-chat-BASE-border-radius-med);
   }
 
-  // For the top right and left corners when the widget is rounded.
+  /* For the top right and left corners when the widget is rounded. */
   .WACHeader {
     border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
     border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
   }
 
-  // For the bottom right and left corners when the widget is rounded.
+  /* For the bottom right and left corners when the widget is rounded. */
   .WACInputContainer,
   .WACBrandingBanner {
     border-end-end-radius: var(--cds-chat-BASE-border-radius-med);
     border-end-start-radius: var(--cds-chat-BASE-border-radius-med);
   }
 
-  // If the branding banner is visible, the animation container should not have a bottom left/right border radius since
-  // the branding banner will have them applied instead.
+  /* If the branding banner is visible, the animation container should not have a bottom left/right border radius since
+  the branding banner will have them applied instead. */
+
   &:not(.WACWidget--maxWidth)
     .WACWidget__animationContainer--withBrandingBanner
     .WACInputContainer,
@@ -93,8 +95,9 @@
   }
 }
 
-// Nested response types with cards should not have rounded corners since they fill the width of the container they're
-// in.
+/* Nested response types with cards should not have rounded corners since they fill the width of the container they're
+in. */
+
 .WACGrid,
 .WACBodyMessageComponents__MessageWrapper {
   .WACImage,
@@ -107,9 +110,8 @@
 .WACWidget .WACWidget__animationContainer {
   position: relative;
   z-index: 1;
-
-  // Using height 100% causes anything under the animation container to go out of view by a couple of pixels, so we
-  // should use flex instead.
+  /* Using height 100% causes anything under the animation container to go out of view by a couple of pixels, so we
+  should use flex instead. */
   flex: 1;
   background: theme.$chat-shell-background;
   inline-size: 100%;
@@ -147,8 +149,9 @@
   box-shadow: none;
 }
 
-// Note that we do not apply this when using a custom element. The user is responsible for showing or hiding the custom
-// element on their own. This gives them the opportunity to apply animations to the element.
+/* Note that we do not apply this when using a custom element. The user is responsible for showing or hiding the custom
+ element on their own. This gives them the opportunity to apply animations to the element. */
+
 .WACWidget.WACWidget--closed.WACWidget--defaultElement {
   display: none;
 }
@@ -325,7 +328,7 @@ svg.WACIcon__Logout--reverse {
 }
 
 .WACScrollFocus:focus-visible::before {
-  // This keeps this element stuck at the top so it doesn't scroll with the parent content.
+  /* This keeps this element stuck at the top so it doesn't scroll with the parent content. */
   position: sticky;
   z-index: 1;
   display: block;
@@ -333,7 +336,6 @@ svg.WACIcon__Logout--reverse {
   border: solid 2px theme.$focus;
   block-size: 100%;
   content: "";
-
   /* These stop this element from actually taking up space. */
   float: inline-start;
   inline-size: 100%;
@@ -342,12 +344,12 @@ svg.WACIcon__Logout--reverse {
   pointer-events: none;
 }
 
-.WACContainer--render .WACReverseIcon svg, // This class is simply for reversing icons not specifically for rtl purposes.
+.WACContainer--render .WACReverseIcon svg,  /* This class is simply for reversing icons not specifically for rtl purposes. */
 .WACContainer--render[dir='rtl'] .WACDirectionHasReversibleSVG svg {
   transform: scaleX(-1);
 }
 
-// This is to reverse a reversed icon in rtl. yeah
+/* This is to reverse a reversed icon in rtl. yeah */
 .WACContainer--render[dir="rtl"]
   .WACDirectionHasReversibleSVG.WACReverseIcon
   svg {
@@ -364,8 +366,9 @@ svg.WACIcon__Logout--reverse {
   }
 }
 
-// This class is is meant to wrap panel content that doesn't include the header. When panel content is given a max-width
-// elements with this class will be constrained.
+/* This class is is meant to wrap panel content that doesn't include the header. When panel content is given a max-width
+ elements with this class will be constrained. */
+
 .WACPanelContent {
   overflow: hidden;
 }
@@ -381,14 +384,14 @@ svg.WACIcon__Logout--reverse {
   }
 }
 
-// Remove top rounded corners for panel content when a header is visible.
+/* Remove top rounded corners for panel content when a header is visible. */
 .WACWidget .WACHeader__Container ~ .WACPanelContent,
 .WACWidget .WACHeader ~ .WACPanelContent {
   border-start-end-radius: 0;
   border-start-start-radius: 0;
 }
 
-// These selectors apply a border radius to panel content.
+/* These selectors apply a border radius to panel content. */
 .WACWidget--rounded {
   .WACBodyAndFooterComponent,
   .WACWidget__animationContainer:not(

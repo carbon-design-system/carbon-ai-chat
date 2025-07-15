@@ -25,7 +25,7 @@ interface AdditionalChatParameters {
   /**
    * Render function override.
    */
-  renderOverride?: Promise<RenderFunctionType>;
+  render?: Promise<RenderFunctionType>;
 }
 
 export { AdditionalChatParameters };

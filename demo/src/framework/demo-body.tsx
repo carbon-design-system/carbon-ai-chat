@@ -59,7 +59,7 @@ export class DemoBody extends LitElement {
     demo-theme-switcher,
     demo-homescreen-switcher,
     demo-writeable-elements-switcher {
-      padding-top: 1rem;
+      padding-block-start: 1rem;
     }
   `;
 

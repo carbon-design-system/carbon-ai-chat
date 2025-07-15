@@ -72,8 +72,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Lint
-        run: npm run lint
-        # run: npm run lint && npm run lint:styles
+        run: npm run lint && npm run lint:styles
 
   license:
     runs-on: ubuntu-latest

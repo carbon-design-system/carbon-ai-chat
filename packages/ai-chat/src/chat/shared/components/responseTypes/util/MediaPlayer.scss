@@ -21,7 +21,7 @@
 .WACMediaPlayer__SkeletonContainer,
 .WACMediaPlayer__Wrapper {
   position: relative;
-  padding-top: var(--padding-top, 0px);
+  padding-block-start: var(--padding-top, 0);
 }
 
 .WACMediaPlayer__Background {

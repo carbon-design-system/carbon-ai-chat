@@ -126,7 +126,7 @@ class Chat implements ChatInterface {
       await Promise.all([
         loadLanguagePack(this.serviceManager.store.getState().languagePack),
         loadLocale(this.serviceManager.store.getState().locale),
-        Promise.resolve(this.additionalChatParameters.renderOverride),
+        Promise.resolve(this.additionalChatParameters.render),
         doesHaveServiceDesk
           ? loadHAA()
           : Promise.resolve<CreateHumanAgentServiceFunction>(null),

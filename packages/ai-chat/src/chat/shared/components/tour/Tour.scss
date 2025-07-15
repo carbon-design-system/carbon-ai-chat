@@ -172,7 +172,8 @@
 
 // Some of the video players (ahem facebook) don't like to respect being hidden so they need to be forced.
 .WACTourStep.WACTourStep--hidden .WACMediaPlayer iframe {
-  visibility: hidden !important;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .WACTour__Controls {
