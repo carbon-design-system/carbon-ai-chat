@@ -1,0 +1,13 @@
+# Each line is a file pattern followed by one or more owners.
+
+# These owners will be the default owners for everything in the
+# repo. Unless a later match takes precedence, this team will
+# be requested for review when someone opens a pull request.
+* @carbon-design-system/carbon-ai-chat-developers
+
+
+# Admins and leads should be notified of changes to CI/CD workflows
+# codeowners, and any other config present in .github.
+# This should always be the last entry in this file.
+/.github/           @carbon-design-system/carbon-ai-chat-admins @carbon-design-system/carbon-ai-chat-developers
+/.github/CODEOWNERS @carbon-design-system/carbon-ai-chat-admins @carbon-design-system/carbon-ai-chat-developers
