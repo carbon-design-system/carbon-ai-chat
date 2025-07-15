@@ -233,8 +233,6 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
     } = this.props;
     const { isClosing, isOpening } = this.state;
 
-    console.log({ isClosing, shouldOpen });
-
     return (
       <HideComponent
         hidden={!isClosing && !shouldOpen}
