@@ -391,7 +391,6 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   if (desktopLauncherIsExpanded) {
     launcher = (
       <LauncherComplex
-        serviceManager={serviceManager}
         languagePack={languagePack}
         intl={intl}
         launcherComplexRef={launcherComplexRef}
@@ -410,7 +409,6 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   } else {
     launcher = (
       <Launcher
-        serviceManager={serviceManager}
         languagePack={languagePack}
         intl={intl}
         ref={launcherRef}

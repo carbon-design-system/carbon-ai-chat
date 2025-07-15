@@ -21,6 +21,7 @@ import {
   SearchResultBodyWithCitationHighlighted,
 } from "../SearchResultBody";
 import { BasePanelConfigOptions } from "../../../../../../types/instance/apiTypes";
+import { OverlayPanelName } from "../../../OverlayPanel";
 
 /**
  * This panel is used to show the text of a conversational search citation.
@@ -69,6 +70,7 @@ function ViewSourcePanel(
       labelBackButton={languagePack.general_ariaCloseInformationOverlay}
       eventName="Search citation panel opened"
       eventDescription="A user has opened the search citation panel"
+      testIdPrefix={OverlayPanelName.CONVERSATIONAL_SEARCH_CITATION}
     >
       <div className="WACViewSourcePanel__Content">{content}</div>
     </BasePanelComponent>

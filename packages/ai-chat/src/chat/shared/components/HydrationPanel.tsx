@@ -18,6 +18,7 @@ import { BotHeader } from "./header/BotHeader";
 import { HomeScreenHeader } from "./homeScreen/HomeScreenHeader";
 import { AnnounceOnMountComponent } from "./util/AnnounceOnMountComponent";
 import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
+import { OverlayPanelName } from "./OverlayPanel";
 
 interface HydrationPanelProps extends HasServiceManager, HasLanguagePack {
   /**
@@ -67,6 +68,7 @@ function HydrationPanel({
         headerDisplayName={headerDisplayName}
         onToggleHomeScreen={null}
         includeWriteableElement={false}
+        testIdPrefix={OverlayPanelName.HYDRATING}
       />
     );
   }

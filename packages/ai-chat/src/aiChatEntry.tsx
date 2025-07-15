@@ -16,6 +16,8 @@
  * To use the web components, directly import them.
  */
 
+export { OverlayPanelName } from "./chat/shared/components/OverlayPanel";
+
 export {
   CustomMenuOption,
   CustomPanelConfigOptions,
@@ -50,6 +52,7 @@ export {
   ChatInstanceTours,
   EventBusHandler,
   EventHandlers,
+  FileUploadCapabilities,
   HasAddRemoveClassName,
   IncreaseOrDecrease,
   InstanceElements,
@@ -240,3 +243,10 @@ export {
   ChatCustomElement,
   ChatCustomElementProps,
 } from "./react/ChatCustomElement";
+
+export {
+  PageObjectId,
+  makeTestId,
+  TestId,
+  PrefixedId,
+} from "./chat/shared/utils/PageObjectId";

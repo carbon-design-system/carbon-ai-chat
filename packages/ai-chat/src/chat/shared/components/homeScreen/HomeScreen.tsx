@@ -33,6 +33,7 @@ import {
   ButtonKindEnum,
   ButtonSizeEnum,
 } from "../../../../types/utilities/carbonTypes";
+import { OverlayPanelName } from "../OverlayPanel";
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -131,8 +132,6 @@ function HomeScreenComponent({
   } = homeScreenConfig;
   const homeScreenWithStarters =
     starters?.is_on && Boolean(starters.buttons?.length);
-  const { suffix } = serviceManager.namespace;
-  const starterBtnIDSuffix = suffix ? `--${suffix}` : "";
   const avatarURL = bot_avatar_url || botAvatarURL;
   const ariaBotAvatar = intl.formatMessage(
     { id: "header_ariaBotAvatar" },
@@ -216,7 +215,6 @@ function HomeScreenComponent({
                       isQuickAction
                       // eslint-disable-next-line react/no-array-index-key
                       key={index}
-                      id={`WACHomeScreen__starter-${index}${starterBtnIDSuffix}`}
                       className="WACHomeScreen__starter"
                       onClick={() => onStarterClick(starter)}
                     >
@@ -252,7 +250,6 @@ function HomeScreenComponent({
               type="button"
               size={ButtonSizeEnum.SMALL}
               kind={ButtonKindEnum.SECONDARY}
-              id="WACHomeScreen__backButton"
               className="WACHomeScreen__backButton"
               onClick={onToggleHomeScreen}
             >
@@ -275,9 +272,9 @@ function HomeScreenComponent({
               disableInput={false}
               isInputVisible
               disableSend={false}
-              inputType="homeScreen"
               languagePack={languagePack}
               serviceManager={serviceManager}
+              testIdPrefix={OverlayPanelName.HOME_SCREEN}
             />
           </div>
         </div>

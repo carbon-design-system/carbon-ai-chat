@@ -6,7 +6,8 @@
   "description": "A demo and testing framework using @carbon/ai-chat as a React component.",
   "scripts": {
     "start": "webpack serve --config ./webpack.config.js",
-    "build": "webpack --config ./webpack.config.js --mode production"
+    "build": "webpack --config ./webpack.config.js --mode production",
+    "test": "playwright test"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -33,6 +34,8 @@
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^24.0.14",
     "babel-loader": "^9.2.1",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",

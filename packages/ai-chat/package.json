@@ -37,8 +37,7 @@
     "not IE 11"
   ],
   "sideEffects": [
-    "**/cds-aichat-*.ts",
-    "**/cds-aichat-*.js"
+    "**/web-components/**/*.js"
   ],
   "devDependencies": {
     "@carbon/icon-helpers": "^10.60.0",
