@@ -9,5 +9,5 @@
 # Admins and leads should be notified of changes to CI/CD workflows
 # codeowners, and any other config present in .github.
 # This should always be the last entry in this file.
-/.github/           @carbon-design-system/carbon-ai-chat-admins @carbon-design-system/carbon-ai-chat-developers
+/.github/           @carbon-design-system/carbon-ai-chat-developers
 /.github/CODEOWNERS @carbon-design-system/carbon-ai-chat-admins @carbon-design-system/carbon-ai-chat-developers
