@@ -35,4 +35,3 @@ https://github.com/carbon-design-system/carbon-ai-chat/pulls
 [submit a pull request](https://github.com/carbon-design-system/carbon-ai-chat/compare)
 or [file an issue](https://github.com/carbon-design-system/carbon-ai-chat/issues/new) to
 discuss.
-
