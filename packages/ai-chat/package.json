@@ -113,7 +113,7 @@
     "markdown-it-sup": "^2.0.0",
     "memoize-one": "^6.0.0",
     "react-intl": "^7.1.6",
-    "react-player": "^2.15.1",
+    "react-player": "2.15.1",
     "swiper": "^11.1.1",
     "tabbable": "^6.2.0",
     "ts-essentials": "^9.4.1",
