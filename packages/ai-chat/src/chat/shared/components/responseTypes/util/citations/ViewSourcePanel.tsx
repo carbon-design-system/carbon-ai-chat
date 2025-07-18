@@ -16,10 +16,7 @@ import actions from "../../../../store/actions";
 import { AppState } from "../../../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../../../types/utilities/HasRequestFocus";
 import { BasePanelComponent } from "../../../BasePanelComponent";
-import {
-  SearchResultBody,
-  SearchResultBodyWithCitationHighlighted,
-} from "../SearchResultBody";
+import { SearchResultBodyWithCitationHighlighted } from "../SearchResultBody";
 import { BasePanelConfigOptions } from "../../../../../../types/instance/apiTypes";
 
 /**
@@ -36,7 +33,8 @@ function ViewSourcePanel(
   );
 
   let content;
-  if (citationItem && "text" in citationItem) {
+
+  if (citationItem) {
     // If text is in the citation item then this is a conversational search source that is being shown.
     if (relatedSearchResult) {
       // If there is a related search result than show the search result body with the citation text highlighted.
@@ -50,10 +48,6 @@ function ViewSourcePanel(
       // If there is no related search result than show the citation text.
       content = citationItem.text;
     }
-  } else {
-    // If the citation is not for a conversational search response then it must be for a legacy search result so we
-    // should show the search result body.
-    content = <SearchResultBody searchResult={citationItem} />;
   }
 
   return (

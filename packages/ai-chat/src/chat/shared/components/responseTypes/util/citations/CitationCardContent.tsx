@@ -13,7 +13,6 @@ import React, { useLayoutEffect, useRef } from "react";
 
 import { useLanguagePack } from "../../../../hooks/useLanguagePack";
 import { useWindowSize } from "../../../../hooks/useWindowSize";
-import { SearchResultBody } from "../SearchResultBody";
 import { CitationCardProps, CitationType } from "./CitationCard";
 
 /**
@@ -52,8 +51,7 @@ function CitationCardContent({
 
   // If citation has a "text" property, we know its from conversational search. If not, its legacy search and needs to
   // be processed differently.
-  const textContent = "text" in citation && citation.text;
-  const content = textContent || <SearchResultBody searchResult={citation} />;
+  const { text } = citation;
 
   // Checks if there is any need to allow expanding on the title. Watching window size changes as a clunky attempt to
   // deal with re-sizes, but that isn't really perfect.
@@ -64,7 +62,7 @@ function CitationCardContent({
         setIsExpandable(ref.current.clientHeight < ref.current.scrollHeight);
       }
     }
-  }, [textContent, isExpandable, setIsExpandable, width]);
+  }, [text, isExpandable, setIsExpandable, width]);
 
   let label;
   let icon;
@@ -84,7 +82,7 @@ function CitationCardContent({
           {citation.title}
         </div>
         <div ref={ref} className="WACCitationCard_Text">
-          {content}
+          {text}
         </div>
       </div>
       <div className="WACCitationCard_Footer">

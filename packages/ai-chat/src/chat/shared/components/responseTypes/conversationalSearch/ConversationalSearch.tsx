@@ -18,10 +18,7 @@ import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageIte
 import { SkeletonPlaceholder } from "../../SkeletonPicker";
 import InlineError from "../error/InlineError";
 import { CitationCard } from "../util/citations/CitationCard";
-import {
-  ConversationalSearchText,
-  ConversationalSearchTextFunctions,
-} from "./ConversationalSearchText";
+import { ConversationalSearchText } from "./ConversationalSearchText";
 import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
@@ -59,9 +56,6 @@ function ConversationalSearch({
   const swiperRef = useRef<SwiperRef>();
   const languagePack = useLanguagePack();
 
-  const conversationalSearchTextFunctionsRef =
-    useRef<ConversationalSearchTextFunctions>();
-
   const messageItem = localMessageItem.item;
 
   const sortedCitations = useMemo(
@@ -73,14 +67,9 @@ function ConversationalSearch({
     // The large bottom padding is to push the citations panel above the suggestions button (if it happens to be
     // present). The larger top padding also ensures the toggle button (which is just above the carousel) is also
     // still in view.
-    setTimeout(() => scrollElementIntoView(scrollIntoViewArea.current, 32, 64));
-  }
-
-  function focusToggleButton() {
-    setTimeout(() =>
-      conversationalSearchTextFunctionsRef.current
-        .getToggleCitationsElement()
-        ?.focus()
+    setTimeout(
+      () => scrollElementIntoView(scrollIntoViewArea.current, 32, 64),
+      50
     );
   }
 
@@ -104,7 +93,6 @@ function ConversationalSearch({
     setCitationsOpen(!citationsOpen);
     if (!citationsOpen) {
       scrollCitations();
-      focusToggleButton();
     }
   }
 
@@ -116,6 +104,13 @@ function ConversationalSearch({
         citation={citation}
         isSelected={index === selectedCitationIndex}
         onSelectCitation={() => onSelectCitation(index)}
+        // If there is no url or pdf on the citation than the citation will open a panel to show more information. The
+        // citation should include a search_result_idx that we can use that to get the corresponding search_result from
+        // the search_results array. We then use this search result in the panel to give the user extra context about
+        // the citation they clicked on.
+        relatedSearchResult={
+          messageItem.search_results?.[citation.search_result_idx]
+        }
       />
     ));
 
@@ -137,7 +132,6 @@ function ConversationalSearch({
   return (
     <div className="WACConversationalSearch">
       <ConversationalSearchText
-        ref={conversationalSearchTextFunctionsRef}
         searchItem={localMessageItem}
         showCitationsToggle={Boolean(sortedCitations?.length)}
         highlightCitation={

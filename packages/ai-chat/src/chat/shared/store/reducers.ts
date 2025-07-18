@@ -957,7 +957,7 @@ const reducers: { [key: string]: ReducerType } = {
     state: AppState,
     action: {
       isOpen: boolean;
-      citationItem: ConversationalSearchItemCitation | SearchResult;
+      citationItem: ConversationalSearchItemCitation;
       relatedSearchResult: SearchResult;
     }
   ) => {
