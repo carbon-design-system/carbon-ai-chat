@@ -231,6 +231,21 @@ close to overflowing. */
   }
 }
 
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    button.WACHomeScreen__starter {
+    display: block;
+    animation: none;
+    margin-block-end: layout.$spacing-04;
+    max-inline-size: 100%;
+    word-break: break-word;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
 .WACHomeScreen.WACHomeScreen--hydrationComplete button.WACHomeScreen__starter {
   display: block;
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
@@ -241,6 +256,14 @@ close to overflowing. */
 
   &:last-child {
     margin-block-end: 0;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    .WACHomeScreen__starters--animateGroup
+    button.WACHomeScreen__starter {
+    animation: none;
   }
 }
 
@@ -301,6 +324,13 @@ button.WACHomeScreen__starter:nth-child(4) {
 
 button.WACHomeScreen__starter:nth-child(5) {
   --cds-chat-HomeScreenStarter-index: 5;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    .WACHomeScreen__customContent--animation {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {

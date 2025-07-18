@@ -37,46 +37,13 @@
   align-items: center;
 }
 
-.WACHeader__Buttons .cds--btn:active,
-.WACHeader__Buttons .cds--btn:hover {
-  color: var(--cds-chat-PRIMARY-color-text);
-}
-
 .WACHeader__Buttons .WACHeader__Slug {
   margin: layout.$spacing-03;
 }
 
-.WACHeader .cds--overflow-menu-options--open {
-  /* Carbon dynamically calculates these values and adds them inline so we need !important to override them. This top
-  will set the top of the open menu to the height of the header (plus 1px) so that it appears below the header. */
-  /* stylelint-disable-next-line declaration-no-important */
-  inset-block-start: 41px !important;
-  /* stylelint-disable-next-line declaration-no-important */
-  inset-inline: 0 unset !important;
-}
-
-.WACHeader .cds--overflow-menu-options::after {
-  content: unset;
-}
-
-.WACWidget.WACWidget--rounded .WACHeader--content,
-.WACWidget.WACWidget--rounded:not(.WAC--wideWidth)
-  .WACHeader__LeftButtons
-  .cds--popover-container:first-child
-  .cds--btn,
-.WACWidget.WACWidget--rounded:not(.WAC--wideWidth)
-  .WACHeader__LeftButtons
-  .cds--overflow-menu__wrapper:first-child
-  .cds--btn {
-  border-start-start-radius: var(--cds-chat-CONTAINER-border-radius);
-}
-
-.WACWidget.WACWidget--rounded .WACHeader--content,
-.WACWidget.WACWidget--rounded:not(.WAC--wideWidth)
-  .WACHeader__RightButtons
-  .cds--popover-container:last-child
-  .cds--btn {
+.WACWidget.WACWidget--rounded .WACHeader--content {
   border-start-end-radius: var(--cds-chat-CONTAINER-border-radius);
+  border-start-start-radius: var(--cds-chat-CONTAINER-border-radius);
 }
 
 .WACHeader__CenterContainer:first-child {

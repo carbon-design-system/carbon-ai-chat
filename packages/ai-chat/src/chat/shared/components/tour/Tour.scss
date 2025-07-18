@@ -194,28 +194,6 @@
   // Remove the default padding from the carbon buttons so that the text of the "done" buttons are centered.
   padding: unset;
   max-inline-size: unset;
-
-  .cds--popover-container {
-    display: block;
-    inline-size: 100%;
-
-    button {
-      inline-size: 100%;
-    }
-  }
-}
-
-.WACTour__ControlsButton:first-of-type .cds--btn {
-  border-end-start-radius: layout.$spacing-04;
-}
-
-.WACTour__ControlsButton:last-of-type .cds--btn {
-  flex: 1;
-  border-end-end-radius: layout.$spacing-04;
-}
-
-.WACTour__ControlsButton:only-child .cds--btn {
-  flex: 1;
 }
 
 .WACTour__ControlsButton--hidden {
@@ -241,35 +219,9 @@
   min-block-size: layout.$spacing-07;
 }
 
-.WACTour__CloseMinimizeWrapper
-  .cds--popover-container:first-of-type
-  .WACTour__CloseMinimizeButton {
-  border-end-start-radius: layout.$spacing-05;
-  border-start-start-radius: layout.$spacing-05;
-  padding-inline: 20px layout.$spacing-05;
-}
-
-.WACTour__CloseMinimizeWrapper
-  .cds--popover-container:last-of-type
-  .WACTour__CloseMinimizeButton {
-  border-end-end-radius: layout.$spacing-05;
-  border-start-end-radius: layout.$spacing-05;
-  padding-inline: layout.$spacing-05 20px;
-}
-
-.WACTour__CloseMinimizeWrapper
-  .cds--popover-container:only-child
-  .WACTour__CloseMinimizeButton {
-  padding-inline-end: layout.$spacing-05;
-}
-
 .WACTour__CloseMinimizeDivider {
   background-color: theme.$border-subtle-00;
   inline-size: 1px;
-}
-
-.WACTour .cds--inline-notification {
-  margin: 0;
 }
 
 .WACTour__StatusContainer {
@@ -318,32 +270,6 @@
 
 .WACContainer--render[dir="rtl"] .WACTour__CloseMinimizeWrapper {
   inset-inline: 0 unset;
-}
-
-.WACContainer--render[dir="rtl"]
-  .WACTour__CloseMinimizeWrapper
-  .cds--popover-container:first-of-type
-  .WACTour__CloseMinimizeButton {
-  border-radius: 0 layout.$spacing-05 layout.$spacing-05 0;
-}
-
-.WACContainer--render[dir="rtl"]
-  .WACTour__CloseMinimizeWrapper
-  .cds--popover-container:last-of-type
-  .WACTour__CloseMinimizeButton {
-  border-radius: layout.$spacing-05 0 0 layout.$spacing-05;
-}
-
-.WACContainer--render[dir="rtl"]
-  .WACTour__ControlsButton:first-of-type
-  .cds--btn {
-  border-radius: 0 0 layout.$spacing-04 0;
-}
-
-.WACContainer--render[dir="rtl"]
-  .WACTour__ControlsButton:last-of-type
-  .cds--btn {
-  border-radius: 0 0 0 layout.$spacing-04;
 }
 
 .WACContainer--render[dir="rtl"] .WACTour__PreviousButton svg,

@@ -15,77 +15,6 @@
   inline-size: 100%;
 }
 
-.WACInputCompletions {
-  position: absolute;
-  // This ensures the input field sits on top of the completions.
-  z-index: 0;
-  border-style: solid;
-  border-color: var(--cds-border-subtle-00) var(--cds-border-subtle-00)
-    var(--cds-border-subtle-01) var(--cds-border-subtle-00);
-  border-block-start-width: var(--cds-chat-BASE-border-width-small);
-  inline-size: 100%;
-  // The 16px pushes the completions down so it overlaps the text input. This allows us to cover the gaps that occur
-  // when there are rounded corners on the input field.
-  inset-block-end: calc(100% - 8px);
-}
-
-.WACInputCompletions .cds--list-box__menu-item,
-.WACInputCompletions .cds--list-box__menu-item__option {
-  block-size: unset;
-}
-
-.WACInputCompletions .cds--list-box__menu-item__option {
-  text-overflow: unset;
-  white-space: unset;
-  word-break: break-word;
-  word-wrap: break-word;
-}
-
-.WACInputCompletions,
-.WACInputCompletions__Menu {
-  border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
-  border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
-}
-
-.WACWidget--maxWidth.WAC--wideWidth .WACInputCompletions {
-  border-width: var(--cds-chat-BASE-border-width-small)
-    var(--cds-chat-BASE-border-width-small) 0
-    var(--cds-chat-BASE-border-width-small);
-}
-
-.WACInputCompletion--afterSelected .WACInputCompletions__MenuItem,
-.WACInputCompletion:hover {
-  border-color: transparent;
-}
-
-.WACInputCompletions__MenuItem {
-  display: flex;
-  align-items: center;
-  min-block-size: 50px;
-}
-
-.WACInputCompletions__MenuItemLabel {
-  padding-inline-end: layout.$spacing-03;
-}
-
-.WACInputCompletions__MenuItemTag {
-  flex: none;
-  align-self: baseline;
-}
-
-.WACInputCompletions .WACInputCompletions__Menu {
-  position: relative;
-  display: block;
-  background-color: var(--cds-chat-prompt-background);
-  box-shadow: none;
-  margin-block-end: 8px;
-  max-block-size: 200px;
-}
-
-.WACInputCompletion--selected {
-  background-color: theme.$border-subtle-01;
-}
-
 .WACInputContainer {
   position: relative;
   // This ensures the input field sits on top of the completions.
@@ -171,14 +100,6 @@
   color: theme.$text-primary;
   cursor: pointer;
   inline-size: 32px;
-}
-
-.WACInputContainer .cds--file__selected-file {
-  background-color: theme.$field-02;
-}
-
-.WACInputContainer .cds--file__selected-file .cds--popover {
-  display: none;
 }
 
 .WACInputContainer__UploadInput:focus + .WACInputContainer__UploadButton {

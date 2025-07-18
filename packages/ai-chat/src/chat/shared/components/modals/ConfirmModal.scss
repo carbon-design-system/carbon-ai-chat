@@ -46,13 +46,6 @@
   border-block-start: solid 1px theme.$layer-03;
 }
 
-.WACContainer--render[dir="rtl"]
-  .WACConfirmModal__buttonContainer
-  .cds--btn--md:not(.cds--btn--danger--ghost, .cds--btn--icon-only),
-.WACConfirmModal .WACConfirmModal__buttonContainer .cds--btn {
-  padding-inline: layout.$spacing-05;
-}
-
 .WACConfirmModal .WACConfirmModal__buttonContainer * {
   flex: 1;
 }

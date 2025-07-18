@@ -14,29 +14,6 @@
   inline-size: 100%;
 }
 
-.WACContainer--render[dir="rtl"]
-  .WACFooterButtonComponents
-  .WACButtonItem.cds--btn,
-.WACFooterButtonComponents .WACButtonItem.cds--btn {
-  flex: 1;
-  max-inline-size: unset;
-}
-
-.WACFooterButtonComponents
-  .WACButtonItem.cds--btn:not(:only-child):first-child {
-  margin-inline-end: 1px;
-}
-
-.WACFooterButtonComponents .WACButtonItem.cds--btn:not(:only-child) {
-  max-inline-size: 50%;
-}
-
-.WACContainer--render[dir="rtl"]
-  .WACFooterButtonComponents
-  .WACButtonItem.cds--btn:not(:only-child):first-child {
-  margin-inline: 1px 0;
-}
-
 .WACFooterButtonComponents--column .WACButtonItem:last-child,
 .WACFooterButtonComponents .WACButtonItem:first-child {
   border-end-start-radius: chatTheme.$CARD-border-radius;
@@ -80,12 +57,6 @@
 
 .WACFooterButtonComponents--column {
   flex-direction: column;
-}
-
-.WACFooterButtonComponents.WACFooterButtonComponents--column
-  .WACButtonItem.cds--btn {
-  inline-size: 100%;
-  max-inline-size: unset;
 }
 
 .WACWidget--rounded

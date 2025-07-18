@@ -22,12 +22,3 @@
   inline-size: 100%;
   margin-block-end: layout.$spacing-05;
 }
-
-.WACNotifications__Notification .cds--actionable-notification {
-  display: block;
-  max-inline-size: unset;
-}
-
-.WACNotifications__Notification .cds--toast-notification {
-  inline-size: 100%;
-}

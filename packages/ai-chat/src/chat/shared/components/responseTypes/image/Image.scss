@@ -12,12 +12,9 @@
 
 .WACImage {
   overflow: hidden;
+  padding: 0;
   min-block-size: 0;
   min-inline-size: 0;
-}
-
-.WACImage.cds--tile {
-  padding: 0;
 
   .WACImage__Image--loaded {
     display: block;
