@@ -8,51 +8,50 @@
  */
 
 /**
- * Converts a Carbon icon module to a React component
+ * Creates a React component from a Carbon icon object
  */
 
 import { createElement, FunctionComponent } from 'react';
 
-
-/**
- * Props type for Carbon Icon React components
- * Extends standard SVG props with optional ARIA attributes
- */
-type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
-  'aria-label'?: string;
-  'aria-hidden'?: boolean | 'false' | 'true';
+type CarbonIcon = {
+  elem: 'svg';
+  attrs: {
+    viewBox: string;
+    width?: number;
+    height?: number;
+    fill?: string;
+    [key: string]: unknown;
+  };
+  content: Array<{
+    elem: string;
+    attrs?: Record<string, string | number>;
+  }>;
 };
 
 /**
- * Converts a Carbon SVG icon to a React component.
+ * Creates a React component from a Carbon icon object.
  * 
- * @param iconModule - Must be imported from '@carbon/icons' (e.g. '@carbon/icons/es/add/16')
- * @returns React component that renders the SVG icon
+ * @example
+ * import Launch16 from '@carbon/icons/es/launch/16';
+ * const Icon = carbonIconToReact(Launch16);
+ * <Icon aria-label="Launch" className="icon" />
  */
-export function carbonIconToReact(
-  iconModule: { toString: () => string }
-): FunctionComponent<CarbonIconProps> {
-  const svgString = iconModule.toString();
-  if (!svgString.trim().startsWith('<svg')) {
-    throw new Error('Invalid SVG input: String does not start with <svg> tag');
-  }
-  const doc = new DOMParser().parseFromString(svgString, 'image/svg+xml');
-  const svg = doc.querySelector('svg')!;
-  if (!svg) {
-      throw new Error('No SVG element found in the input');
-  }
-  if (!svg.innerHTML || svg.innerHTML.trim().length === 0) {
-      throw new Error('Empty SVG content');
-  }
-  const baseProps = Object.fromEntries(
-    Array.from(svg.attributes).map(attr => [attr.name, attr.value])
-  );
-  return (props = {}) => {
-    return createElement('svg', {
-      ...baseProps,
+
+export function carbonIconToReact(icon: CarbonIcon): FunctionComponent<React.SVGProps<SVGSVGElement>> {
+  return (props = {}) => createElement(
+    'svg',
+    {
+      ...icon.attrs,
+      width: icon.attrs.width || 16,
+      height: icon.attrs.height || 16,
+      fill: icon.attrs.fill || 'currentColor',
       ...props,
-      'aria-hidden': props['aria-label'] ? undefined : props['aria-hidden'] ?? true,
-      dangerouslySetInnerHTML: { __html: svg.innerHTML }
-    });
-  };
+    },
+    icon.content.map((child, i) => 
+      createElement(child.elem, {
+        key: i,
+        ...child.attrs,
+      })
+    )
+  );
 }
