@@ -1283,6 +1283,8 @@ type TableItemCell = string | number;
  * The content of the table is up to the client and is authored using json.
  *
  * @category Messaging
+ *
+ * @experimental
  */
 interface TableItem<TUserDefinedType = Record<string, unknown>>
   extends GenericItem<TUserDefinedType> {
@@ -1362,12 +1364,6 @@ interface MessageHistory {
   timestamp?: number;
 
   /**
-   * For session history the data passed to instance.updateHistoryUserDefined() is returned to the user here (on page
-   * change/refresh).
-   */
-  user_defined?: unknown;
-
-  /**
    * The user-friendly label that was associated with this message. This is used on messages that were sent by the
    * user to the assistant to request a response. This is the user displayed text that was entered or selected by
    * the user when that request was made.
@@ -1384,7 +1380,7 @@ interface MessageHistory {
    * choices an option and it includes the ID of the message response that presented the options to the user so we
    * can associate the user's request with that earlier response and display the appropriate selected state.
    */
-  relatedMessageID?: string;
+  related_message_id?: string;
 
   /**
    * @internal

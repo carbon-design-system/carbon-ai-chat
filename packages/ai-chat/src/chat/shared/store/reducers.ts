@@ -200,7 +200,6 @@ const reducers: { [key: string]: ReducerType } = {
     return newState;
   },
 
-  // TODO: Need session history test case for setting the alternate suggestions values
   [HYDRATE_MESSAGE_HISTORY]: (
     state: AppState,
     action: { messageHistory: AppStateMessages }

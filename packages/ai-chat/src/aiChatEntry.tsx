@@ -48,6 +48,7 @@ export {
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   ChatInstanceTours,
+  CSSVariable,
   EventBusHandler,
   EventHandlers,
   HasAddRemoveClassName,

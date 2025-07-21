@@ -11,11 +11,12 @@
  * The types of home screen backgrounds supported. This only applies when white labeling.
  *
  * @category Config
+ *
+ * @experimental
  */
 enum HomeScreenBackgroundType {
   NONE = "none", // The home screen background is the same color as the chat background.
   SOLID = "solid", // All solid color for home screen.
-  BOTTOM_UP = "bottom_up", // A bottom up gradient color.
 }
 
 /**
@@ -69,6 +70,8 @@ interface HomeScreenConfig {
 
   /**
    * An image url that will override the bot avatar displayed in home screen.
+   *
+   * @internal
    */
   bot_avatar_url?: string;
 

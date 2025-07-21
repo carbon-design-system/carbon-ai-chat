@@ -36,11 +36,7 @@ import { LauncherConfig } from "../../../types/config/LauncherConfig";
 import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
 import ObjectMap from "../../../types/utilities/ObjectMap";
 
-import {
-  HistoryItem,
-  HistoryNote,
-  NoteType,
-} from "../../../types/messaging/History";
+import { HistoryItem, HistoryNote } from "../../../types/messaging/History";
 
 import { arrayLastValue, asyncForEach } from "../utils/lang/arrayUtils";
 import { deepFreeze } from "../utils/lang/objectUtils";
@@ -53,7 +49,6 @@ import {
   createWelcomeRequest,
   hasServiceDesk,
   hasTourUserDefinedType,
-  isChannelTransferToAgent,
   isConnectToAgent,
   isLiveAgentMessage,
   isPause,
@@ -107,6 +102,7 @@ import {
   ViewChangeReason,
 } from "../../../types/events/eventBusTypes";
 import {
+  CSSVariable,
   PublicWebChatState,
   SendOptions,
 } from "../../../types/instance/ChatInstance";
@@ -122,18 +118,13 @@ import {
 import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
 import { setIntl } from "../utils/intlUtils";
 
-const VALID_PUBLIC_VARS_IN_AI_THEME_LIST = [
-  "BASE-height",
-  "BASE-max-height",
-  "BASE-width",
-  "BASE-z-index",
-];
-const VALID_PUBLIC_VARS_IN_AI_THEME_SET = new Set(
-  VALID_PUBLIC_VARS_IN_AI_THEME_LIST
+const VALID_PUBLIC_VARS_IN_AI_THEME_SET = new Set<string>(
+  Object.values(CSSVariable)
 );
-const UPDATE_CSS_VARS_AI_THEME_WARNING_MESSAGE = `[updateCSSVariables] The AI theme is enabled and only ${VALID_PUBLIC_VARS_IN_AI_THEME_LIST.join(
-  ", "
-)} can be updated.`;
+
+const UPDATE_CSS_VARS_AI_THEME_WARNING_MESSAGE = `[updateCSSVariables] The AI theme is enabled and only ${Object.values(
+  CSSVariable
+).join(", ")} can be updated.`;
 
 /**
  * This class is responsible for handling various "actions" that the system can perform including actions that can
@@ -564,7 +555,6 @@ class ChatActionsImpl {
         message,
         isLatestWelcomeNode,
         requestMessage,
-        false,
         requestOptions
       ).catch((error) => {
         consoleError("Error processing the message response", error);
@@ -614,7 +604,7 @@ class ChatActionsImpl {
 
     // TODO: This doesn't work right if this is called more than once.
     const notes: { notes: HistoryNote[] } = {
-      notes: [{ type: NoteType.HISTORY, body: messages }],
+      notes: [{ body: messages }],
     };
     const history = await this.serviceManager.historyService.loadHistory(notes);
 
@@ -922,14 +912,12 @@ class ChatActionsImpl {
    * @param fullMessage A v2 message API Response object.
    * @param isLatestWelcomeNode If it is a new welcome node, we want to pass that data along.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
-   * @param isProvidedFromTransfer Indicates that the message was provided from a channel transfer.
    * @param requestOptions The options that were included when the request was sent.
    */
   async processMessageResponse(
     fullMessage: MessageResponse,
     isLatestWelcomeNode: boolean,
     requestMessage: MessageRequest,
-    isProvidedFromTransfer: boolean,
     requestOptions: SendOptions = {}
   ) {
     const { store } = this.serviceManager;
@@ -1078,15 +1066,6 @@ class ChatActionsImpl {
 
             let shouldAutoRequestAgent = false;
 
-            // If this transfer to agent message was provided from a transfer, the agent card should make an auto request
-            // on behalf of the user. It's possible to receive a transfer to agent response from Carbon AI chat if the response
-            // types are not provided the "channels" attribute, so this check exists to make sure we only add
-            // shouldAutoRequestAgent if the agent response was provided from a transfer as opposed to a regular message
-            // request.
-            if (isProvidedFromTransfer) {
-              shouldAutoRequestAgent = isChannelTransferToAgent(fullMessage);
-            }
-
             // If configured, then auto-connect right now.
             if (config.public.serviceDesk?.skipConnectAgentCard) {
               shouldAutoRequestAgent = true;
@@ -1170,7 +1149,7 @@ class ChatActionsImpl {
    */
   public async insertLocalMessageResponse(message: MessageResponse) {
     message.id = uuid(UUIDType.MESSAGE);
-    await this.processMessageResponse(message, false, null, false, {});
+    await this.processMessageResponse(message, false, null, {});
   }
 
   /**

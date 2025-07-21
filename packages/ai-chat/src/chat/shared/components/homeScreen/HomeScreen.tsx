@@ -10,8 +10,7 @@
 import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
 import { unstable__ChatButton as ChatButton } from "@carbon/react";
 import cx from "classnames";
-import React, { RefObject, useState } from "react";
-import { useIntl } from "react-intl";
+import React, { RefObject } from "react";
 import { useSelector } from "react-redux";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -20,7 +19,6 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../../types/state/AppState";
 
 import { BrandColorKind, WriteableElementName } from "../../utils/constants";
-import { consoleError } from "../../utils/miscUtils";
 import { Input, InputFunctions } from "../input/Input";
 import WriteableElement from "../WriteableElement";
 import { HomeScreenHeader } from "./HomeScreenHeader";
@@ -41,16 +39,6 @@ interface HomeScreenProps {
    * Active config for home screen derived from combining remote and local config.
    */
   homeScreenConfig: HomeScreenConfig;
-
-  /**
-   * The avatar visible on the header bar. This value (image url) is first populated via config.
-   */
-  botAvatarURL: string;
-
-  /**
-   * The name of the bot.
-   */
-  botName: string;
 
   /**
    * The callback function to fire when the user clicks the send button which gets the input text passed into it.
@@ -90,8 +78,6 @@ interface HomeScreenProps {
 }
 
 function HomeScreenComponent({
-  botName,
-  botAvatarURL,
   homeScreenConfig,
   homeScreenMessageInputRef,
   onStarterClick,
@@ -102,10 +88,8 @@ function HomeScreenComponent({
   onRestart,
   onToggleHomeScreen,
 }: HomeScreenProps) {
-  const intl = useIntl();
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
-  const [avatarURLFailed, setAvatarURLFailed] = useState(false);
 
   const { showBackToBot } = useSelector(
     (state: AppState) =>
@@ -122,30 +106,15 @@ function HomeScreenComponent({
     ];
   const hasCustomContent = homeScreenWriteableElement.hasChildNodes();
 
-  const {
-    greeting,
-    starters,
-    bot_avatar_url,
-    background,
-    custom_content_only,
-  } = homeScreenConfig;
+  const { greeting, starters, background, custom_content_only } =
+    homeScreenConfig;
   const homeScreenWithStarters =
     starters?.is_on && Boolean(starters.buttons?.length);
   const { suffix } = serviceManager.namespace;
   const starterBtnIDSuffix = suffix ? `--${suffix}` : "";
-  const avatarURL = bot_avatar_url || botAvatarURL;
-  const ariaBotAvatar = intl.formatMessage(
-    { id: "header_ariaBotAvatar" },
-    { botName }
-  );
 
   const backgroundSolid =
     !useAITheme && background === HomeScreenBackgroundType.SOLID;
-  const backgroundBottomUp =
-    !useAITheme && background === HomeScreenBackgroundType.BOTTOM_UP;
-
-  const showAvatar =
-    avatarURL && !avatarURLFailed && !useAITheme && !custom_content_only;
 
   const firstRender = isHydrated && !prevIsHydrated;
 
@@ -156,7 +125,6 @@ function HomeScreenComponent({
         "WACHomeScreen--hydrationComplete": isHydrated,
         "WACHomeScreen--firstRender": firstRender,
         "WACHomeScreen--backgroundSolid": backgroundSolid,
-        "WACHomeScreen--backgroundGradientBottomUp": backgroundBottomUp,
       })}
     >
       <HomeScreenHeader
@@ -179,23 +147,8 @@ function HomeScreenComponent({
               "WACHomeScreen__body--noCustomContent": !hasCustomContent,
               "WACHomeScreen__body--customContent": hasCustomContent,
               "WACHomeScreen__body--customContentOnly": custom_content_only,
-              "WACHomeScreen__body--noAvatar": !showAvatar,
             })}
           >
-            {/* We only show the avatar if a url exist and we've been able to successfully fetch the avatar. If we're showing the AI theme we don't show an avatar. */}
-            {showAvatar && (
-              <div className="WACHomeScreen__avatarHolder">
-                <img
-                  className="WACHomeScreen__botAvatar"
-                  src={avatarURL}
-                  alt={ariaBotAvatar}
-                  onError={() => {
-                    setAvatarURLFailed(true);
-                    consoleError("The bot avatar URL failed to load.");
-                  }}
-                />
-              </div>
-            )}
             <div className="WACHomeScreen__initialContent">
               {!custom_content_only && (
                 <div className="WACHomeScreen__greeting">{greeting}</div>

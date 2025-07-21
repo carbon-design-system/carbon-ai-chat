@@ -31,7 +31,7 @@ const HISTORY = [
       output: {
         generic: [
           {
-            text: new Array(40).fill("words from history").join(" "),
+            text: new Array(5).fill("words from history").join(" "),
             response_type: MessageResponseTypes.TEXT,
           } satisfies TextItem as TextItem,
         ],
@@ -55,7 +55,7 @@ const HISTORY = [
       output: {
         generic: [
           {
-            text: new Array(100).fill("more words").join(" "),
+            text: new Array(5).fill("more words").join(" "),
             response_type: MessageResponseTypes.TEXT,
           } satisfies TextItem as TextItem,
         ],
@@ -65,7 +65,7 @@ const HISTORY = [
   },
 ] as HistoryItem[];
 
-async function customLoadHistory(instance: ChatInstance) {
+async function customLoadHistory(_instance: ChatInstance) {
   return HISTORY;
 }
 
