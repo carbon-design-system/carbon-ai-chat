@@ -8,7 +8,9 @@
  */
 
 import Launch from "@carbon/icons-react/es/Launch.js";
-import { Link } from "@carbon/react";
+import Launch16 from '@carbon/icons/es/launch/16.js';
+import Link  from "../../../../react/carbon/Link";
+import { carbonIconToReact } from "../../../utils/carbonIcon"
 import React from "react";
 
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
@@ -17,6 +19,8 @@ import {
   ButtonItemKind,
 } from "../../../../../types/messaging/Messages";
 import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
+
+const LaunchIcon = carbonIconToReact(Launch16);
 
 /**
  * This component is for a button response type where the button_type is "url". Clicking this button will take the
@@ -39,8 +43,8 @@ function ButtonItemURLComponent({
           href={url}
           target={target}
           rel="noopener noreferrer"
-          renderIcon={Launch}
         >
+          <LaunchIcon className="icon" aria-label="Launch" />
           {label || url}
         </Link>
       </div>
