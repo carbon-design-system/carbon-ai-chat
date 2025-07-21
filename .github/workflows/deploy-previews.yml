@@ -27,12 +27,10 @@ jobs:
         # skip the build if the PR has been closed
         if: github.event.action != 'closed'
         run: |
-          cd packages/ai-chat-components
           npm install
-          npm run build
-          npm run storybook:build
+          npm run aiChat:build
 
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
-          source-dir: ./packages/ai-chat-components/storybook-static
+          source-dir: ./demo/dist
