@@ -14,7 +14,7 @@ import React from "react";
 import CarbonInlineNotificationElement from "@carbon/web-components/es-custom/components/notification/inline-notification.js";
 
 const InlineNotification = createComponent({
-  tagName: 'cds-custom-inline-notification',
+  tagName: "cds-custom-inline-notification",
   elementClass: CarbonInlineNotificationElement,
   react: React,
 }) as React.ForwardRefExoticComponent<
