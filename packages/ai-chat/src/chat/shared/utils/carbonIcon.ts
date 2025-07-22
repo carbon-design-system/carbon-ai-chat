@@ -42,7 +42,7 @@ type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
  */
 
 export function carbonIconToReact(icon: CarbonIcon): FunctionComponent<CarbonIconProps> {
-  return (props = {}) => createElement(
+  const IconComponent =  (props = {}) => createElement(
     'svg',
     {
       ...icon.attrs,
@@ -58,4 +58,7 @@ export function carbonIconToReact(icon: CarbonIcon): FunctionComponent<CarbonIco
       })
     )
   );
+   // Set display name for debugging/React DevTools
+  IconComponent.displayName = `CarbonIcon(${icon.name || 'Anonymous'})`;
+  return IconComponent;
 }
