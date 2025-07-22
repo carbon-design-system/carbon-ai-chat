@@ -8,9 +8,9 @@
  */
 
 import Launch from "@carbon/icons-react/es/Launch.js";
-import Launch16 from '@carbon/icons/es/launch/16.js';
-import Link  from "../../../../react/carbon/Link";
-import { carbonIconToReact } from "../../../utils/carbonIcon"
+import Launch16 from "@carbon/icons/es/launch/16.js";
+import Link from "../../../../react/carbon/Link";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React from "react";
 
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
@@ -44,7 +44,7 @@ function ButtonItemURLComponent({
           target={target}
           rel="noopener noreferrer"
         >
-            <LaunchIcon slot="icon" className="icon" aria-label="Launch" />
+          <LaunchIcon slot="icon" className="icon" aria-label="Launch" />
           {label || url}
         </Link>
       </div>

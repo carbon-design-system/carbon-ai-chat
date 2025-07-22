@@ -11,10 +11,10 @@
  * Creates a React component from a Carbon icon object
  */
 
-import { createElement, FunctionComponent } from 'react';
+import { createElement, FunctionComponent } from "react";
 
 type CarbonIcon = {
-  elem: 'svg';
+  elem: "svg";
   attrs: {
     viewBox: string;
     width?: number;
@@ -29,35 +29,37 @@ type CarbonIcon = {
 };
 
 type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
-  slot?: string;  // Only add this line
+  slot?: string; // Only add this line
 };
 
 /**
  * Creates a React component from a Carbon icon object.
- * 
+ *
  * @example
  * import Launch16 from '@carbon/icons/es/launch/16';
  * const Icon = carbonIconToReact(Launch16);
  * <Icon aria-label="Launch" className="icon" />
  */
 
-export function carbonIconToReact(icon: CarbonIcon): FunctionComponent<CarbonIconProps> {
-  return function IconComponent(props = {}){
+export function carbonIconToReact(
+  icon: CarbonIcon
+): FunctionComponent<CarbonIconProps> {
+  return function IconComponent(props = {}) {
     return createElement(
-    'svg',
-    {
-      ...icon.attrs,
-      width: icon.attrs.width || 16,
-      height: icon.attrs.height || 16,
-      fill: icon.attrs.fill || 'currentColor',
-      ...props,
-    },
-    icon.content.map((child, i) => 
-      createElement(child.elem, {
-        key: i,
-        ...child.attrs,
-      })
-    )
-  );
-}
+      "svg",
+      {
+        ...icon.attrs,
+        width: icon.attrs.width || 16,
+        height: icon.attrs.height || 16,
+        fill: icon.attrs.fill || "currentColor",
+        ...props,
+      },
+      icon.content.map((child, i) =>
+        createElement(child.elem, {
+          key: i,
+          ...child.attrs,
+        })
+      )
+    );
+  };
 }

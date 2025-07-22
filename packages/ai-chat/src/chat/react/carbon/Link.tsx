@@ -14,7 +14,7 @@ import React from "react";
 import CarbonLinkElement from "@carbon/web-components/es-custom/components/link/link.js";
 
 const Link = createComponent({
-  tagName: 'cds-custom-link',
+  tagName: "cds-custom-link",
   elementClass: CarbonLinkElement,
   react: React,
 });
