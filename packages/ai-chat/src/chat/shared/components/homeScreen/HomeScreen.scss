@@ -23,39 +23,6 @@
   box-shadow: chatTheme.$AI-box-shadow-inner, chatTheme.$AI-box-shadow-outer;
 }
 
-.WACHomeScreen--backgroundGradientBottomUp {
-  background-image: linear-gradient(
-    to bottom,
-    theme.$chat-shell-background 0,
-    rgb(
-        var(--cds-chat-ACCENT-color-r) var(--cds-chat-ACCENT-color-g)
-          var(--cds-chat-ACCENT-color-b) / 15%
-      )
-      70%,
-    rgb(
-        var(--cds-chat-ACCENT-color-r) var(--cds-chat-ACCENT-color-g)
-          var(--cds-chat-ACCENT-color-b) / 50%
-      )
-      100%
-  );
-}
-
-/* Used to set opacity on top of the background gradient from above lines. We do this to dull the accent color in the
-gradient which helps prevent a11y issues with text contrast on the background. All items on the home screen are
-transformed (either by their hydration animations, or by inline transforms), or have position: relative, which causes
-their context to stack on top of this ::before layer. */
-
-.WACHomeScreen--backgroundGradientBottomUp::before {
-  position: absolute;
-  background-color: theme.$chat-shell-background;
-  block-size: 100%;
-  content: "";
-  inline-size: 100%;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  opacity: 0.5;
-}
-
 .WACHomeScreen__HomeScreenBottomElement {
   /* Needed by the home screen so the opacity layer from the gradient backgrounds does not overlay the header element in full
    screen mode. */
@@ -187,16 +154,11 @@ their context to stack on top of this ::before layer. */
   margin-block-start: layout.$spacing-07;
 }
 
-/* When there's no custom content set a margin under the starters that matches the margin above the avatar, or above the
- greeting if there is no avatar. This is done to center the content within the body and give the starters space at the
- bottom of the div if the content is overflowing or close to overflowing. */
+/* When there's no custom content set a margin under the starters that matches the greeting. This is done to center
+the content within the body and give the starters space at the bottom of the div if the content is overflowing or
+close to overflowing. */
 
 .WACHomeScreen__body--noCustomContent .WACHomeScreen__starters {
-  margin-block-end: layout.$spacing-09;
-}
-
-.WACHomeScreen__body--noCustomContent.WACHomeScreen__body--noAvatar
-  .WACHomeScreen__starters {
   margin-block-end: layout.$spacing-07;
 }
 
@@ -207,6 +169,21 @@ their context to stack on top of this ::before layer. */
   padding: 0;
   margin: 0;
   min-block-size: unset;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    button.WACHomeScreen__starter {
+    display: block;
+    animation: none;
+    margin-block-end: layout.$spacing-04;
+    max-inline-size: 100%;
+    word-break: break-word;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -291,6 +268,14 @@ their context to stack on top of this ::before layer. */
   }
 }
 
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    .WACHomeScreen__starters--animateGroup
+    button.WACHomeScreen__starter {
+    animation: none;
+  }
+}
+
 .WACHomeScreen.WACHomeScreen--hydrationComplete
   .WACHomeScreen__starters--animateGroup
   button.WACHomeScreen__starter {
@@ -316,6 +301,13 @@ button.WACHomeScreen__starter:nth-child(4) {
 
 button.WACHomeScreen__starter:nth-child(5) {
   --cds-chat-HomeScreenStarter-index: 5;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    .WACHomeScreen__customContent--animation {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {

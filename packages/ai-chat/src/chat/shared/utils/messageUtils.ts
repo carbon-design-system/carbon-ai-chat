@@ -198,7 +198,7 @@ function createMessageRequestForChoice(
   };
   messageRequest.history = {
     label: choice.label,
-    relatedMessageID: relatedResponseID,
+    related_message_id: relatedResponseID,
   };
 
   return messageRequest;
@@ -229,7 +229,7 @@ function createMessageRequestForButtonItemOption(
     messageRequest.input = { text: buttonItem.label };
   }
 
-  messageRequest.history = { relatedMessageID: relatedResponseID };
+  messageRequest.history = { related_message_id: relatedResponseID };
 
   return messageRequest;
 }
@@ -294,7 +294,7 @@ function createMessageRequestForDate(
 
   messageRequest.history = {
     label: userString,
-    relatedMessageID: relatedResponseID,
+    related_message_id: relatedResponseID,
   };
 
   return messageRequest;

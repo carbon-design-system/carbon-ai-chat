@@ -16,7 +16,6 @@ import { HasClassName } from "../../../../../../types/utilities/HasClassName";
 import { CitationCardProps, CitationType } from "./CitationCard";
 import { CitationCardContent } from "./CitationCardContent";
 import { CitationClickableCard } from "./CitationClickableCard";
-import { getSearchResultMetaData } from "../../../../utils/searchUtils";
 
 /**
  * Shows a Citation Card that will add an onClick handler to open up content that doesn't fit in the card IF NEEDED.
@@ -33,7 +32,7 @@ function ExpandToPanelCard({
   relatedSearchResult,
 }: ExpandToPanelCardProps) {
   const serviceManager = useServiceManager();
-  const { title } = getSearchResultMetaData(citation as any);
+  const { title } = citation;
 
   // If there's a searchResult that isn't empty than the card is expandable. Otherwise The CitationCardContent component
   // will measure itself with the citation text as its content and will let this component know if it can fit the

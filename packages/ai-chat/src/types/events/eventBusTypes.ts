@@ -410,6 +410,8 @@ export interface BusEvent {
 }
 
 /**
+ *
+ *
  * @category Events
  */
 export interface BusEventClosePanelButtonClicked extends BusEvent {
@@ -593,6 +595,9 @@ export interface BusEventMessageItemCustom extends BusEvent {
 }
 
 /**
+ * Used to populate user_defined responses. Please see the React or web component documentation as usage of this
+ * differs based on implementation.
+ *
  * @category Events
  */
 export interface BusEventUserDefinedResponse extends BusEvent {

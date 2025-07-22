@@ -50,6 +50,7 @@ export {
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   ChatInstanceTours,
+  CSSVariable,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,

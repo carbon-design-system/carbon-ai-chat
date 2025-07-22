@@ -918,6 +918,14 @@ interface ConversationalSearchItemCitation {
     start: number;
     end: number;
   }[];
+
+  /**
+   * In some implementations, the content searched isn't in an accessible URL. For instance, if could be from Milvus or
+   * ElasticSearch. In that scenario, you may populate "search_results". This field will allow you define which index in
+   * the search_results array matches with this citation. The end user can then drill into the larger search result to
+   * view it rather than clicking on a URL to actually see the content.
+   */
+  search_result_idx?: number;
 }
 
 /**
@@ -933,20 +941,17 @@ interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
   text: string;
 
   /**
-   * A title to display above the citation list, default set to "How do we know?".
-   */
-  citations_title: string;
-
-  /**
-   * A string to explain that these results are generated, default set to "Accuracy of generated answers may vary.".
-   */
-  disclaimer: string;
-
-  /**
    * Citations are used to connect specific text within a conversational search response with the relevant documents
    * returned by the backend.
    */
   citations?: ConversationalSearchItemCitation[];
+
+  /**
+   * In some implementations, the content searched isn't in an accessible URL. For instance, if could be from Milvus or
+   * ElasticSearch. In that scenario, you may populate "search_results". Combine this with
+   * {@link ConversationalSearchItemCitation.search_result_idx}.
+   */
+  search_results?: SearchResult[];
 }
 
 /**
@@ -1283,6 +1288,8 @@ type TableItemCell = string | number;
  * The content of the table is up to the client and is authored using json.
  *
  * @category Messaging
+ *
+ * @experimental
  */
 interface TableItem<TUserDefinedType = Record<string, unknown>>
   extends GenericItem<TUserDefinedType> {
@@ -1362,12 +1369,6 @@ interface MessageHistory {
   timestamp?: number;
 
   /**
-   * For session history the data passed to instance.updateHistoryUserDefined() is returned to the user here (on page
-   * change/refresh).
-   */
-  user_defined?: unknown;
-
-  /**
    * The user-friendly label that was associated with this message. This is used on messages that were sent by the
    * user to the assistant to request a response. This is the user displayed text that was entered or selected by
    * the user when that request was made.
@@ -1384,7 +1385,7 @@ interface MessageHistory {
    * choices an option and it includes the ID of the message response that presented the options to the user so we
    * can associate the user's request with that earlier response and display the appropriate selected state.
    */
-  relatedMessageID?: string;
+  related_message_id?: string;
 
   /**
    * @internal
@@ -1562,95 +1563,15 @@ interface AgentProfile {
 }
 
 /**
- * @category Messaging
- */
-interface SearchResultHighlight {
-  /**
-   * A description of the search result. This is taken from a highlight field in the
-   * Discovery service response, as specified in the search skill configuration.
-   */
-  body?: string[];
-
-  /**
-   * The title of the search result. This is taken from a highlight field in the Discovery service response, as
-   * specified in the search skill configuration.
-   */
-  title?: string[];
-}
-
-/**
- * The metadata for a single search result.
- *
- * @category Messaging
- */
-interface SearchResultMetadata {
-  /**
-   * The confidence score for the given result. For more information about how the confidence is calculated, see the
-   * Discovery service documentation.
-   */
-  confidence: number;
-
-  /**
-   * An unbounded measure of the relevance of a particular result, dependent on the query and matching document. A
-   * higher score indicates a greater match to the query parameters.
-   */
-  score: number;
-}
-
-/**
- * @category Messaging
- */
-interface SearchResultAnswer {
-  /**
-   * The actual text in answer from the discovery search result.
-   */
-  text: string;
-
-  /**
-   * Confidence score of the answer
-   */
-  confidence: number;
-}
-
-/**
  * A single search result.
  *
  * @category Messaging
  */
 interface SearchResult {
   /**
-   * The unique identifier of the document in the Discovery service collection.
-   */
-  id: string;
-
-  /**
-   * A description of the search result. This is taken from an abstract or summary field in the
-   * Discovery service response, as specified in the search skill configuration.
+   * The search result. This can be drilled into and viewed in a larger and scrollable format.
    */
   body?: string;
-
-  /**
-   * The title of the search result. This is taken from a title field in the Discovery service response, as
-   * specified in the search skill configuration.
-   */
-  title?: string;
-
-  /**
-   * The URL of the original data object in its native data source.
-   */
-  url?: string;
-
-  highlight?: SearchResultHighlight;
-
-  /**
-   * The metadata for this search result.
-   */
-  result_metadata: SearchResultMetadata;
-
-  /**
-   * The answers for search results.
-   */
-  answers?: SearchResultAnswer[];
 }
 
 export {
