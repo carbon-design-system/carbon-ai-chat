@@ -1,11 +1,9 @@
 name: ci-check
 on:
   push:
-    branches:
-      - main
+    branches: [ main, carbon-react-web-components-integration ]
   pull_request:
-    branches:
-      - main
+    branches: [ main, carbon-react-web-components-integration ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
