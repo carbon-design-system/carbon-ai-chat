@@ -28,6 +28,10 @@ type CarbonIcon = {
   }>;
 };
 
+type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
+  slot?: string;  // Only add this line
+};
+
 /**
  * Creates a React component from a Carbon icon object.
  * 
@@ -37,7 +41,7 @@ type CarbonIcon = {
  * <Icon aria-label="Launch" className="icon" />
  */
 
-export function carbonIconToReact(icon: CarbonIcon): FunctionComponent<React.SVGProps<SVGSVGElement>> {
+export function carbonIconToReact(icon: CarbonIcon): FunctionComponent<CarbonIconProps> {
   return (props = {}) => createElement(
     'svg',
     {

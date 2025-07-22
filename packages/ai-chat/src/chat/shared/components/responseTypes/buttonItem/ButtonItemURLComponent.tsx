@@ -44,7 +44,7 @@ function ButtonItemURLComponent({
           target={target}
           rel="noopener noreferrer"
         >
-          <LaunchIcon className="icon" aria-label="Launch" />
+            <LaunchIcon slot="icon" className="icon" aria-label="Launch" />
           {label || url}
         </Link>
       </div>
