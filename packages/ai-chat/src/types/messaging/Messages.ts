@@ -629,8 +629,13 @@ interface GenericItem<TUserDefinedType = Record<string, unknown>> {
  *
  * @category Messaging
  */
-type UserDefinedItem<TUserDefinedType = Record<string, unknown>> =
-  GenericItem<TUserDefinedType>;
+interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
+  extends GenericItem<TUserDefinedType> {
+  /**
+   * If the user_defined response type should be rendered as full width and ignore margin on the "start".
+   */
+  full_width?: boolean;
+}
 
 /**
  * A text item returned in a message response from a back-end.
