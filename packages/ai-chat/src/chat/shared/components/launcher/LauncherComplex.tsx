@@ -8,7 +8,7 @@
  */
 
 import Close from "@carbon/icons-react/es/Close.js";
-import { Tag } from "@carbon/react";
+import Tag from "../../../react/carbon/Tag";
 import cx from "classnames";
 import React, { RefObject } from "react";
 
