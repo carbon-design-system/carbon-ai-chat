@@ -19,7 +19,7 @@ import "@carbon/web-components/es-custom/components/loading/loading-icon.js";
 import CarbonLoadingElement from "@carbon/web-components/es-custom/components/loading/loading.js";
 
 const Loading = createComponent({
-  tagName: 'cds-custom-loading',
+  tagName: "cds-custom-loading",
   elementClass: CarbonLoadingElement,
   react: React,
 });
