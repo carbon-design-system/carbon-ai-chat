@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "0.3.3",
+  "version": "0.4.0-rc.0",
   "description": "Be sure to review the [chat documentation](https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -15,7 +15,7 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/aiChatEntry.js"
     },
-     "./dist/es/web-components/cds-aichat-container/index.js": {
+    "./dist/es/web-components/cds-aichat-container/index.js": {
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/web-components/cds-aichat-container/index.js"
     },
