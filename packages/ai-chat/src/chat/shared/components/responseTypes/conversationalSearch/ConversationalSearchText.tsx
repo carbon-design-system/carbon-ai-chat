@@ -88,6 +88,13 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
     text = searchItem.item.text;
   }
 
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onToggleCitations();
+    }
+  };
+
   useEffect(() => {
     async function getHtml() {
       const newHtml = await createHTMLWithHighlights(text, highlightCitation);
@@ -105,6 +112,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
             <OperationalTag
               id={toggleID}
               onClick={onToggleCitations}
+              onKeyDown={handleTagKeyDown}
               aria-expanded={citationsOpen}
               text={languagePack.conversationalSearch_citationsLabel}
               aria-label={languagePack.conversationalSearch_toggleCitations}
