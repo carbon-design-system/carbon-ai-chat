@@ -7,9 +7,11 @@
  *  @license
  */
 
-import ChevronDown from "@carbon/icons-react/es/ChevronDown.js";
-import ChevronUp from "@carbon/icons-react/es/ChevronUp.js";
-import { OperationalTag } from "@carbon/react";
+import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
+import OperationalTag from "../../../../react/carbon/OperationalTag";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
+
 import React, {
   useEffect,
   useImperativeHandle,
@@ -32,6 +34,9 @@ import {
   ConversationalSearchItemCitation,
 } from "../../../../../types/messaging/Messages";
 import { processMarkdown } from "../../../../web-components/components/markdownText/markdown/markdownToHTML";
+
+const ChevronUp = carbonIconToReact(ChevronUp16);
+const ChevronDown = carbonIconToReact(ChevronDown16);
 
 const TOGGLE_CONTAINER_CLASSNAME =
   "WACConversationalSearchText__CitationsToggleContainer";
@@ -145,9 +150,14 @@ function ConversationalSearchText(
                 onClick={onToggleCitations}
                 aria-expanded={citationsOpen}
                 text={languagePack.conversationalSearch_citationsLabel}
-                renderIcon={citationsOpen ? ChevronUp : ChevronDown}
                 aria-label={languagePack.conversationalSearch_toggleCitations}
-              />
+              >
+                {citationsOpen ? (
+                  <ChevronUp slot="icon" />
+                ) : (
+                  <ChevronDown slot="icon" />
+                )}
+              </OperationalTag>
             </span>
             {/* This &nbsp; makes sure that if the toggle button appears on its own line, it has some inline text
            content which will ensure that the line is sized based on the text. */}
