@@ -383,12 +383,12 @@ button.WACLauncher__Button svg {
 
 .WACLauncherComplex__Container .WACLauncher__CloseButton {
   position: absolute;
-  cursor: pointer;
 
   // 1px less padding everywhere to fit the border.
   padding: 3px 7px 3px 3px;
   border: var(--cds-chat-BASE-border-width-small) solid transparent;
   margin: 0;
+  cursor: pointer;
 
   // Slightly less blur than the normal box-shadow since the close button is so small.
   box-shadow: 1px 0 2px rgb(23 23 23 / 30%);
