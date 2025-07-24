@@ -11,7 +11,7 @@ import {
   AgentAvailability,
   ServiceDeskCapabilities,
 } from "../../../types/config/ServiceDeskConfig";
-import { AgentProfile } from "../../../types/messaging/Messages";
+import { ResponseUserProfile } from "../../../types/messaging/Messages";
 
 /**
  * Redux action creators for human agent actions.
@@ -76,10 +76,10 @@ function setAgentAvailability(availability: AgentAvailability) {
 /**
  * Sets the availability information for a user who is waiting to be connected to an agent.
  */
-function setAgentJoined(agentProfile: AgentProfile) {
+function setAgentJoined(responseUserProfile: ResponseUserProfile) {
   return {
     type: HA_SET_AGENT_JOINED,
-    agentProfile,
+    responseUserProfile,
   };
 }
 

@@ -14,15 +14,15 @@
 import UserAvatar from "@carbon/icons-react/es/UserAvatar.js";
 import React, { useEffect, useState } from "react";
 
-import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
-import { AgentProfile } from "../../../../types/messaging/Messages";
-import { useDynamicCSSProperties } from "../../hooks/useCSSCustomProperties";
+import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
+import { ResponseUserProfile } from "../../../types/messaging/Messages";
+import { useDynamicCSSProperties } from "../hooks/useCSSCustomProperties";
 
-interface AgentAvatarProps extends HasLanguagePack {
+interface ResponseUserAvatarProps extends HasLanguagePack {
   /**
    * Profile information about a specific agent.
    */
-  agentProfile: AgentProfile;
+  responseUserProfile: ResponseUserProfile;
 
   /**
    * The width of the avatar.
@@ -35,11 +35,11 @@ interface AgentAvatarProps extends HasLanguagePack {
   height?: string;
 }
 
-function AgentAvatar(props: AgentAvatarProps) {
-  const { agentProfile, languagePack, width, height } = props;
-  const agentName = agentProfile?.nickname;
+function ResponseUserAvatar(props: ResponseUserAvatarProps) {
+  const { responseUserProfile, languagePack, width, height } = props;
+  const agentName = responseUserProfile?.nickname;
   const avatarStyles = useDynamicCSSProperties({ width, height });
-  const avatarUrl = agentProfile?.profile_picture_url;
+  const avatarUrl = responseUserProfile?.profile_picture_url;
   // Indicates if the avatar for a human agent failed to load.
   const [hasError, setHasError] = useState(false);
   let component;
@@ -53,7 +53,7 @@ function AgentAvatar(props: AgentAvatarProps) {
     component = (
       <img
         src={avatarUrl}
-        alt={languagePack.agent_ariaAgentAvatar}
+        alt={languagePack.agent_ariaResponseUserAvatar}
         onError={() => setHasError(true)}
       />
     );
@@ -65,12 +65,14 @@ function AgentAvatar(props: AgentAvatarProps) {
     // We're only accepting ASCII (and extended ASCII) because proper browser detection for Latin characters is lacking.
     component = (
       <div
-        aria-label={languagePack.agent_ariaAgentAvatar}
-        className="WACAgentAvatar__Circle"
+        aria-label={languagePack.agent_ariaResponseUserAvatar}
+        className="WACResponseUserAvatar__Circle"
         // eslint-disable-next-line react/forbid-dom-props
         style={avatarStyles}
       >
-        <div className="WACAgentAvatar__Letter">{agentName.charAt(0)}</div>
+        <div className="WACResponseUserAvatar__Letter">
+          {agentName.charAt(0)}
+        </div>
       </div>
     );
   } else {
@@ -80,12 +82,12 @@ function AgentAvatar(props: AgentAvatarProps) {
         size={32}
         width={width ? Number(width.replace("px", "")) : undefined}
         height={height ? Number(height.replace("px", "")) : undefined}
-        aria-label={languagePack.agent_ariaAgentAvatar}
+        aria-label={languagePack.agent_ariaResponseUserAvatar}
       />
     );
   }
 
-  return <div className="WACAgentAvatar">{component}</div>;
+  return <div className="WACResponseUserAvatar">{component}</div>;
 }
 
-export { AgentAvatar };
+export { ResponseUserAvatar };

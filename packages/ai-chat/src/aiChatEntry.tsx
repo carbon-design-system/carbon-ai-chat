@@ -156,7 +156,7 @@ export {
 
 export {
   MessageHistory,
-  AgentProfile,
+  ResponseUserProfile,
   AudioItem,
   BaseMessageInput,
   ButtonItem,
@@ -219,6 +219,7 @@ export {
   PartialResponse,
   MessageHistoryFeedback,
   SearchResult,
+  UserType,
 } from "./types/messaging/Messages";
 
 export { HistoryItem } from "./types/messaging/History";

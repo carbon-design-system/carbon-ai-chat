@@ -10,20 +10,36 @@
 import {
   BusEventType,
   ChatInstance,
+  MessageResponse,
   MessageResponseTypes,
   OptionItem,
+  ResponseUserProfile,
   StreamChunk,
   TextItem,
+  UserType,
 } from "@carbon/ai-chat";
 
 import { sleep } from "../framework/utils";
 import { MARKDOWN, WELCOME_TEXT, WORD_DELAY } from "./constants";
 import { RESPONSE_MAP } from "./responseMap";
 
+const defaultHumanUserProfile: ResponseUserProfile = {
+  id: "1",
+  nickname: "James",
+  user_type: UserType.HUMAN,
+};
+
+const defaultAlternativeBotProfile: ResponseUserProfile = {
+  id: "1",
+  nickname: "Super bot",
+  user_type: UserType.BOT,
+};
+
 async function doTextStreaming(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  cancellable: boolean = true
+  cancellable = true,
+  userProfile?: ResponseUserProfile
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
@@ -46,7 +62,7 @@ async function doTextStreaming(
 
       await sleep(WORD_DELAY);
       // Each time you get a chunk back, you can call `addMessageChunk`.
-      instance.messaging.addMessageChunk({
+      const chunk: StreamChunk = {
         partial_item: {
           response_type: MessageResponseTypes.TEXT,
           // The next chunk, the chat component will deal with appending these chunks.
@@ -63,7 +79,17 @@ async function doTextStreaming(
           // This is the id of the entire message response.
           response_id: responseID,
         },
-      });
+      };
+
+      if (userProfile) {
+        chunk.partial_response = {
+          history: {
+            response_user_profile: userProfile,
+          },
+        };
+      }
+
+      instance.messaging.addMessageChunk(chunk);
     }
 
     // When you are done streaming this item in the response, you should call the complete item.
@@ -78,14 +104,24 @@ async function doTextStreaming(
         stream_stopped: isCanceled,
       },
     };
-    instance.messaging.addMessageChunk({
+
+    const chunk: StreamChunk = {
       complete_item: completeItem,
       streaming_metadata: {
         // This is the id of the entire message response.
         response_id: responseID,
-        stream_stopped: isCanceled,
       },
-    } as StreamChunk);
+    };
+
+    if (userProfile) {
+      chunk.partial_response = {
+        history: {
+          response_user_profile: userProfile,
+        },
+      };
+    }
+
+    instance.messaging.addMessageChunk(chunk);
 
     // When all and any chunks are complete, you send a final response.
     // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
@@ -128,96 +164,145 @@ function doWelcomeText(instance: ChatInstance) {
   });
 }
 
-function doText(instance: ChatInstance, text: string = MARKDOWN) {
-  instance.messaging.addMessage({
+function doText(
+  instance: ChatInstance,
+  text: string = MARKDOWN,
+  userProfile?: ResponseUserProfile
+) {
+  const genericItem = {
+    response_type: MessageResponseTypes.TEXT,
+    text,
+  } as TextItem;
+
+  const message: MessageResponse = {
     output: {
-      generic: [
-        {
-          response_type: MessageResponseTypes.TEXT,
-          text,
-          message_options: {
-            chain_of_thought: [
-              {
-                title: "A step we are marking as successful with a description",
-                tool_name: "boom_bam",
-                description: `This is an optional description.\n\n*boom_bam* queries the *BAM* database run by the *BOOM* group. This contains blerg data used to identify customers borps.\n\nSee more information on [borps](https://ibm.com).`,
-                request: {
-                  args: {
-                    foo: "bar",
-                    bar: "baz",
-                    boom: {
-                      bam: "bow",
-                    },
-                    fizz: [
-                      "i",
-                      "guess",
-                      "fizz",
-                      {
-                        name: "oh no a deep object",
-                      },
-                    ],
+      generic: [genericItem],
+    },
+  };
+
+  if (userProfile) {
+    message.history = {
+      response_user_profile: userProfile,
+    };
+  } else {
+    message.output.generic = [];
+    message.output.generic[0] = {
+      ...genericItem,
+      message_options: {
+        chain_of_thought: [
+          {
+            title: "A step we are marking as successful with a description",
+            tool_name: "boom_bam",
+            description: `This is an optional description.\n\n*boom_bam* queries the *BAM* database run by the *BOOM* group. This contains blerg data used to identify customers borps.\n\nSee more information on [borps](https://ibm.com).`,
+            request: {
+              args: {
+                foo: "bar",
+                bar: "baz",
+                boom: {
+                  bam: "bow",
+                },
+                fizz: [
+                  "i",
+                  "guess",
+                  "fizz",
+                  {
+                    name: "oh no a deep object",
                   },
-                },
-                response: {
-                  content: `{ "title": "I am some stringified JSON" }`,
-                },
+                ],
               },
-              {
-                title: "A second step with a really really long title",
-                tool_name: "bam_bo",
-                request: {
-                  args: {
-                    foo: "bar",
-                  },
-                },
-                response: {
-                  content: `I am just **text** this time. I support markdown formatting.`,
-                },
-              },
-              {
-                title: "Third step",
-                tool_name: "bam_bo",
-                request: {
-                  args: {
-                    foo: "bar",
-                  },
-                },
-                response: {
-                  content: { title: "I am some actual JSON" },
-                },
-              },
-            ],
-            feedback: {
-              /**
-               * Indicates if a request for feedback should be displayed.
-               */
-              is_on: true,
-
-              /**
-               * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
-               */
-              id: "1",
-
-              /**
-               * Indicates if the user should be asked for additional detailed information when providing positive feedback.
-               */
-              show_positive_details: false,
-
-              /**
-               * Indicates if the user should be asked for additional detailed information when providing negative feedback.
-               */
-              show_negative_details: true,
-
-              /**
-               * Indicates whether the prompt line should be shown.
-               */
-              show_prompt: true,
+            },
+            response: {
+              content: `{ "title": "I am some stringified JSON" }`,
             },
           },
-        } as TextItem,
-      ],
-    },
-  });
+          {
+            title: "A second step with a really really long title",
+            tool_name: "bam_bo",
+            request: {
+              args: {
+                foo: "bar",
+              },
+            },
+            response: {
+              content: `I am just **text** this time. I support markdown formatting.`,
+            },
+          },
+          {
+            title: "Third step",
+            tool_name: "bam_bo",
+            request: {
+              args: {
+                foo: "bar",
+              },
+            },
+            response: {
+              content: { title: "I am some actual JSON" },
+            },
+          },
+        ],
+        feedback: {
+          /**
+           * Indicates if a request for feedback should be displayed.
+           */
+          is_on: true,
+
+          /**
+           * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
+           */
+          id: "1",
+
+          /**
+           * Indicates if the user should be asked for additional detailed information when providing positive feedback.
+           */
+          show_positive_details: false,
+
+          /**
+           * Indicates if the user should be asked for additional detailed information when providing negative feedback.
+           */
+          show_negative_details: true,
+
+          /**
+           * Indicates whether the prompt line should be shown.
+           */
+          show_prompt: true,
+        },
+      },
+    };
+  }
+
+  instance.messaging.addMessage(message);
 }
 
-export { doTextStreaming, doWelcomeText, doText };
+function doTextWithHumanProfile(
+  instance: ChatInstance,
+  text: string = MARKDOWN,
+  responseUserProfile: ResponseUserProfile = defaultHumanUserProfile
+) {
+  doText(instance, text, responseUserProfile);
+}
+
+function doTextWithNonWatsonBotProfile(
+  instance: ChatInstance,
+  text: string = MARKDOWN,
+  responseUserProfile: ResponseUserProfile = defaultAlternativeBotProfile
+) {
+  doText(instance, text, responseUserProfile);
+}
+
+async function doTextStreamingWithNonWatsonBotProfile(
+  instance: ChatInstance,
+  text: string = MARKDOWN,
+  cancellable = true,
+  userProfile: ResponseUserProfile = defaultAlternativeBotProfile
+) {
+  return doTextStreaming(instance, text, cancellable, userProfile);
+}
+
+export {
+  doTextStreaming,
+  doWelcomeText,
+  doText,
+  doTextWithHumanProfile,
+  doTextWithNonWatsonBotProfile,
+  doTextStreamingWithNonWatsonBotProfile,
+};

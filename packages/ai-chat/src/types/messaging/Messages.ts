@@ -18,6 +18,11 @@ import { AgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../instance/apiTypes";
 
 /**
+ * String value of "watsonx".
+ */
+const watsonx = "watsonx";
+
+/**
  * This is the main interface that represents a request from a user sent to a back-end.
  *
  * @category Messaging
@@ -173,7 +178,6 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   thread_id?: string;
 
   /**
-   * @internal
    * The history information to store as part of this request. This includes extra information that was provided to
    * the user that was used in making the request.
    */
@@ -1398,7 +1402,6 @@ interface MessageHistory {
   from_history?: boolean;
 
   /**
-   * @internal
    * Indicates if this is a "silent" message. These messages are sent to or received from the assistant but should
    * not be displayed to the user.
    */
@@ -1426,10 +1429,9 @@ interface MessageHistory {
   error_state?: MessageErrorState;
 
   /**
-   * @internal
-   * This is the profile for the agent who sent or triggered this message.
+   * This is the profile for the human or bot who sent or triggered this message.
    */
-  agent_profile?: AgentProfile;
+  response_user_profile?: ResponseUserProfile;
 
   /**
    * @internal
@@ -1543,12 +1545,31 @@ interface FinalResponseChunk {
 type StreamChunk = PartialItemChunk | CompleteItemChunk | FinalResponseChunk;
 
 /**
+ * Types of users we accept messages from.
+ *
+ * @category Messaging
+ */
+enum UserType {
+  /**
+   * A message from a human, used for multi-human conversations.
+   */
+  HUMAN = "human",
+
+  /**
+   * A message from the bot, used for interacting with bots that are not backed by watsonx.
+   *
+   * Official guidance is to not use this for IBM products without explicit exception.
+   */
+  BOT = "bot",
+}
+
+/**
  * Profile information about a specific agent that can be used to display information to the user. This may
  * represent a human agent or a virtual/bot agent.
  *
  * @category Messaging
  */
-interface AgentProfile {
+interface ResponseUserProfile {
   /**
    * A unique identifier for this agent.
    */
@@ -1558,6 +1579,12 @@ interface AgentProfile {
    * The visible name for the agent. Can be the full name or just a first name.
    */
   nickname: string;
+
+  /**
+   * The type of user. If its a "human" there is more protection against code injection attacks, where as bot responses
+   * are trusted by default unless {@link PublicConfig.shouldSanitizeHTML} is set to true.
+   */
+  user_type: UserType;
 
   /**
    * An url pointing to an avatar for the agent.
@@ -1578,7 +1605,7 @@ interface SearchResult {
 }
 
 export {
-  AgentProfile,
+  ResponseUserProfile,
   AudioItem,
   BaseMessageInput,
   ButtonItem,
@@ -1634,4 +1661,6 @@ export {
   InternalMessageRequestType,
   SearchResult,
   PartialResponse,
+  UserType,
+  watsonx,
 };

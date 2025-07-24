@@ -53,9 +53,12 @@ import {
   Message,
   MessageRequest,
   MessageResponseTypes,
+  UserType,
+  watsonx,
 } from "../../../types/messaging/Messages";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { ResponseUserAvatar } from "../components/ResponseUserAvatar";
 
 enum MoveFocusType {
   /**
@@ -367,7 +370,8 @@ class MessageComponent extends PureComponent<
     message: Message
   ) {
     let avatar;
-    const { languagePack, botAvatarURL, useAITheme, carbonTheme } = this.props;
+    const { languagePack, botName, botAvatarURL, useAITheme, carbonTheme } =
+      this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
 
@@ -377,7 +381,7 @@ class MessageComponent extends PureComponent<
     if (isResponse(message)) {
       // We'll use the first message item for deciding if we should show the agent's avatar.
       const agentMessageType = localMessageItem.item.agent_message_type;
-      const agentProfile = message.history.agent_profile;
+      const responseUserProfile = message.history.response_user_profile;
 
       if (isAgentStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
@@ -385,13 +389,13 @@ class MessageComponent extends PureComponent<
       }
 
       const fromAgent = agentMessageType === AgentMessageType.FROM_AGENT;
-      if (fromAgent || agentProfile?.profile_picture_url) {
+      if (responseUserProfile?.profile_picture_url) {
         avatar = (
           <ImageWithFallback
-            url={agentProfile?.profile_picture_url}
+            url={responseUserProfile?.profile_picture_url}
             alt={
               fromAgent
-                ? languagePack.agent_ariaAgentAvatar
+                ? languagePack.agent_ariaResponseUserAvatar
                 : languagePack.agent_ariaGenericAvatar
             }
             fallback={<IconHolder icon={<Headset />} />}
@@ -399,27 +403,34 @@ class MessageComponent extends PureComponent<
         );
         iconClassName = "WACMessage__Avatar--agent";
       } else {
-        const icon = useAITheme ? (
-          <Avatar theme={carbonTheme} />
-        ) : (
-          <IconHolder icon={<ChatBot />} />
-        );
-        const imageUrl = useAITheme ? undefined : botAvatarURL;
+        actorName = responseUserProfile?.nickname || botName;
+
+        let icon = <IconHolder icon={<ChatBot />} />;
+
+        if (useAITheme && actorName === watsonx) {
+          icon = <Avatar theme={carbonTheme} />;
+        }
+
         avatar = (
           <ImageWithFallback
-            url={imageUrl}
+            url={botAvatarURL}
             alt={languagePack.agent_ariaGenericBotAvatar}
             fallback={icon}
           />
         );
-        iconClassName = "WACMessage__Avatar--bot";
-      }
 
-      if (fromAgent || agentProfile?.nickname) {
-        actorName =
-          agentProfile?.nickname || languagePack.agent_agentNoNameTitle;
-      } else if (useAITheme) {
-        actorName = "watsonx";
+        if (responseUserProfile?.user_type === UserType.HUMAN) {
+          avatar = (
+            <ResponseUserAvatar
+              responseUserProfile={responseUserProfile}
+              languagePack={languagePack}
+              width="32px"
+              height="32px"
+            />
+          );
+        }
+
+        iconClassName = "WACMessage__Avatar--bot";
       }
 
       label = (
@@ -630,11 +641,13 @@ class MessageComponent extends PureComponent<
     const noAnimation = isWelcomeResponse || disableFadeAnimation;
 
     // If this is a user_defined response type with silent set, we don't want to render all the extra cruft around it.
-    const agentClassName = getAgentMessageClassName(
-      agentMessageType,
-      responseType,
-      isCustomMessage
-    );
+    const agentClassName = agentMessageType
+      ? getAgentMessageClassName(
+          agentMessageType,
+          responseType,
+          isCustomMessage
+        )
+      : null;
 
     const messageIsRequest = isRequest(message);
     const isSystemMessage = isAgentStatusMessage(
@@ -689,6 +702,10 @@ class MessageComponent extends PureComponent<
                   "WAC__message-vertical-padding",
                   agentClassName,
                   {
+                    "WAC__received--fromHuman":
+                      !agentMessageType &&
+                      message.history?.response_user_profile?.user_type ===
+                        UserType.HUMAN,
                     "WAC__received--text":
                       responseType === MessageResponseTypes.TEXT,
                     "WAC__received--image":
@@ -771,7 +788,7 @@ function getAgentMessageClassName(
   messageResponseType: MessageResponseTypes,
   isUserDefinedResponse: boolean
 ) {
-  if (isUserDefinedResponse) {
+  if (agentMessageType && isUserDefinedResponse) {
     return "WAC__received--agentCustom";
   }
   if (
@@ -790,7 +807,7 @@ function getAgentMessageClassName(
     case AgentMessageType.DISCONNECTED:
       return "WAC__received--chatStatusMessage";
     case AgentMessageType.FROM_AGENT:
-      return "WAC__received--fromAgent";
+      return "WAC__received--fromHuman";
     default:
       return "WAC__received--agentStatusMessage";
   }

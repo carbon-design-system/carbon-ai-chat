@@ -25,7 +25,7 @@ import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { doFocusRef } from "../../utils/domUtils";
 import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
-import { AgentAvatar } from "./AgentAvatar";
+import { ResponseUserAvatar } from "../ResponseUserAvatar";
 import { AvailabilityMessage } from "./AvailabilityMessage";
 
 interface AgentBannerProps {
@@ -50,7 +50,7 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
   const agentState = useSelector((state: AppState) => state.agentState);
   const { isConnecting, availability, isScreenSharing } = agentState;
   const displayState = useSelector(selectAgentDisplayState, shallowEqual);
-  const { agentProfile } = persistedAgentState;
+  const { responseUserProfile } = persistedAgentState;
   const buttonRef = useRef<HTMLButtonElement>();
 
   let line1;
@@ -72,11 +72,11 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
     );
     buttonLabel = languagePack.agent_connectButtonCancel;
   } else {
-    line1 = agentProfile?.nickname || languagePack.agent_noName;
+    line1 = responseUserProfile?.nickname || languagePack.agent_noName;
     buttonLabel = languagePack.agent_connectedButtonEndChat;
     avatar = (
-      <AgentAvatar
-        agentProfile={agentProfile}
+      <ResponseUserAvatar
+        responseUserProfile={responseUserProfile}
         languagePack={languagePack}
         width="32px"
         height="32px"

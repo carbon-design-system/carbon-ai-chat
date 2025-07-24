@@ -11,7 +11,7 @@ import { IntlShape } from "react-intl";
 
 import {
   AgentMessageType,
-  AgentProfile,
+  ResponseUserProfile,
 } from "../../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../../types/instance/apiTypes";
 
@@ -20,10 +20,10 @@ import { EnglishLanguagePack } from "../../../../types/instance/apiTypes";
  */
 function getAgentStatusMessageText(
   agentMessageType: AgentMessageType,
-  agentProfile: AgentProfile,
+  responseUserProfile: ResponseUserProfile,
   intl: IntlShape
 ) {
-  const name = agentProfile?.nickname;
+  const name = responseUserProfile?.nickname;
 
   let messageKey: keyof EnglishLanguagePack;
   switch (agentMessageType) {

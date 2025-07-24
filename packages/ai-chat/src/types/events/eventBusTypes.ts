@@ -14,7 +14,7 @@
 import { DeepPartial } from "ts-essentials";
 
 import {
-  AgentProfile,
+  ResponseUserProfile,
   ButtonItem,
   GenericItem,
   Message,
@@ -466,7 +466,7 @@ export interface BusEventSend extends BusEvent {
 export interface BusEventAgentPreReceive extends BusEvent {
   type: BusEventType.AGENT_PRE_RECEIVE;
   data: MessageResponse;
-  agentProfile?: AgentProfile;
+  responseUserProfile?: ResponseUserProfile;
 }
 
 /**
@@ -475,7 +475,7 @@ export interface BusEventAgentPreReceive extends BusEvent {
 export interface BusEventAgentReceive extends BusEvent {
   type: BusEventType.AGENT_RECEIVE;
   data: MessageResponse;
-  agentProfile?: AgentProfile;
+  responseUserProfile?: ResponseUserProfile;
 }
 
 /**

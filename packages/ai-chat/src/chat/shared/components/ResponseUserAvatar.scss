@@ -8,16 +8,16 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 
-.WACAgentAvatar img {
+.WACResponseUserAvatar img {
   block-size: 100%;
   inline-size: 100%;
 }
 
-.WACAgentAvatar svg {
+.WACResponseUserAvatar svg {
   fill: currentcolor;
 }
 
-.WACAgentAvatar .WACAgentAvatar__Circle {
+.WACResponseUserAvatar .WACResponseUserAvatar__Circle {
   border: var(--cds-chat-BASE-border-radius-xsmall) solid currentcolor;
   border-radius: 50%;
   background-color: transparent;
@@ -26,7 +26,9 @@
   inline-size: var(--width);
 }
 
-.WACAgentAvatar .WACAgentAvatar__Circle .WACAgentAvatar__Letter {
+.WACResponseUserAvatar
+  .WACResponseUserAvatar__Circle
+  .WACResponseUserAvatar__Letter {
   display: flex;
   align-items: center;
   justify-content: center;

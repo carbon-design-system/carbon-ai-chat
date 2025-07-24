@@ -10,7 +10,7 @@
 import { DeepPartial } from "ts-essentials";
 
 import {
-  AgentProfile,
+  ResponseUserProfile,
   MessageRequest,
   MessageResponse,
 } from "../messaging/Messages";
@@ -131,7 +131,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   /**
    * Informs the chat widget that an agent has joined the chat.
    */
-  agentJoined(profile: AgentProfile): Promise<void>;
+  agentJoined(profile: ResponseUserProfile): Promise<void>;
 
   /**
    * Informs the chat widget that the agent has read all the messages that have been sent to the service desk.
@@ -167,7 +167,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    * that the transfer has started. The service desk should inform the widget when the transfer is complete by
    * sending a {@link agentJoined} message later.
    */
-  beginTransferToAnotherAgent(profile?: AgentProfile): Promise<void>;
+  beginTransferToAnotherAgent(profile?: ResponseUserProfile): Promise<void>;
 
   /**
    * Informs the chat widget that the agent has left the conversation. This does not end the conversation itself,

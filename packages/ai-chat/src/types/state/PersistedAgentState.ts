@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { AgentProfile } from "../messaging/Messages";
+import { ResponseUserProfile } from "../messaging/Messages";
 
 /**
  * The state of a conversation with an agent that is persisted in browser storage.
@@ -31,12 +31,12 @@ interface PersistedAgentState {
    * This is the profile of the last human agent to join a chat within a service desk. This value is preserved even
    * when the chat is disconnected.
    */
-  agentProfile?: AgentProfile;
+  responseUserProfile?: ResponseUserProfile;
 
   /**
    * This is a cache of the known agent profiles by agent ID.
    */
-  agentProfiles: Record<string, AgentProfile>;
+  responseUserProfiles: Record<string, ResponseUserProfile>;
 
   /**
    * Arbitrary state to save by the service desk. The information stored here various by service desk.

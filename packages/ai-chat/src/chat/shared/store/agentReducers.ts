@@ -26,7 +26,7 @@ import {
 import { type ReducerType } from "./reducers";
 import { ServiceDeskCapabilities } from "../../../types/config/ServiceDeskConfig";
 import { applyLocalMessageUIState } from "./reducerUtils";
-import { AgentProfile } from "../../../types/messaging/Messages";
+import { ResponseUserProfile } from "../../../types/messaging/Messages";
 
 /**
  * Redux reducers for human agent actions.
@@ -109,14 +109,15 @@ const agentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_AGENT_JOINED]: (
     state: AppState,
-    action: { agentProfile?: AgentProfile }
+    action: { responseUserProfile?: ResponseUserProfile }
   ): AppState => {
-    const agentProfiles = {
-      ...state.persistedToBrowserStorage.chatState.agentState.agentProfiles,
+    const responseUserProfiles = {
+      ...state.persistedToBrowserStorage.chatState.agentState
+        .responseUserProfiles,
     };
-    const { agentProfile } = action;
-    if (agentProfile) {
-      agentProfiles[agentProfile.id] = agentProfile;
+    const { responseUserProfile } = action;
+    if (responseUserProfile) {
+      responseUserProfiles[responseUserProfile.id] = responseUserProfile;
     }
 
     return {
@@ -134,8 +135,8 @@ const agentReducers: { [key: string]: ReducerType } = {
           agentState: {
             ...state.persistedToBrowserStorage.chatState.agentState,
             isConnected: true,
-            agentProfile,
-            agentProfiles,
+            responseUserProfile,
+            responseUserProfiles,
           },
         },
       },
@@ -215,7 +216,7 @@ const agentReducers: { [key: string]: ReducerType } = {
           ...state.persistedToBrowserStorage.chatState,
           agentState: {
             ...state.persistedToBrowserStorage.chatState.agentState,
-            agentProfile: null,
+            responseUserProfile: null,
           },
         },
       },
@@ -295,7 +296,7 @@ const agentReducers: { [key: string]: ReducerType } = {
             ...state.persistedToBrowserStorage.chatState.agentState,
             isConnected: false,
             isSuspended: false,
-            agentProfile: null,
+            responseUserProfile: null,
           },
         },
       },

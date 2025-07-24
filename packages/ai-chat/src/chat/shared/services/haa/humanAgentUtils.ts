@@ -19,7 +19,7 @@ import { ServiceManager } from "../ServiceManager";
 import { getAgentStatusMessageText } from "./agentStatusMessage";
 import {
   AgentMessageType,
-  AgentProfile,
+  ResponseUserProfile,
   GenericItem,
   Message,
   MessageResponseTypes,
@@ -48,12 +48,12 @@ function toPair(localMessages: LocalMessageItem[], originalMessage: Message) {
 async function createAgentLocalMessage(
   agentMessageType: AgentMessageType,
   serviceManager: ServiceManager,
-  agentProfile?: AgentProfile,
+  responseUserProfile?: ResponseUserProfile,
   fireEvents = true
 ) {
   const text = getAgentStatusMessageText(
     agentMessageType,
-    agentProfile,
+    responseUserProfile,
     serviceManager.intl
   );
 
@@ -61,11 +61,11 @@ async function createAgentLocalMessage(
   const { originalMessage, localMessage } = result;
 
   localMessage.item.text = text;
-  if (agentProfile) {
+  if (responseUserProfile) {
     if (!originalMessage.history) {
       originalMessage.history = {};
     }
-    originalMessage.history.agent_profile = agentProfile;
+    originalMessage.history.response_user_profile = responseUserProfile;
   }
 
   if (fireEvents) {
@@ -193,14 +193,14 @@ async function addBotReturnMessage(
  * session history.
  *
  * @param agentMessageType The type of the "end chat" message.
- * @param agentProfile The profile of the agent who ended the chat (or null if not ended by an agent).
+ * @param responseUserProfile The profile of the agent who ended the chat (or null if not ended by an agent).
  * @param fireEvents Indicates if the agent events should be fired for the "end chat" message.
  * @param wasSuspended Indicates if the conversation was suspended before it was ended.
  * @param serviceManager The service manager to use.
  */
 async function addAgentEndChatMessage(
   agentMessageType: AgentMessageType,
-  agentProfile: AgentProfile,
+  responseUserProfile: ResponseUserProfile,
   fireEvents: boolean,
   wasSuspended: boolean,
   serviceManager: ServiceManager
@@ -208,7 +208,7 @@ async function addAgentEndChatMessage(
   const endChatMessage = await createAgentLocalMessage(
     agentMessageType,
     serviceManager,
-    agentProfile,
+    responseUserProfile,
     fireEvents
   );
   await addMessages(

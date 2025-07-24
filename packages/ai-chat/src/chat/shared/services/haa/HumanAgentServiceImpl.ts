@@ -66,7 +66,7 @@ import {
 } from "./humanAgentUtils";
 import {
   AgentMessageType,
-  AgentProfile,
+  ResponseUserProfile,
   ConnectToAgentItem,
   Message,
   MessageResponse,
@@ -435,10 +435,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     if (isConnected && showAgentLeftMessage) {
-      const { agentProfile } = this.persistedAgentState();
+      const { responseUserProfile } = this.persistedAgentState();
       await addAgentEndChatMessage(
         agentEndChatMessageType,
-        agentProfile,
+        responseUserProfile,
         true,
         wasSuspended,
         this.serviceManager
@@ -827,10 +827,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
         if (allowEndChatMessages) {
           // If we didn't reconnect, then show the "end chat" messages to the user.
-          const { agentProfile } = this.persistedAgentState();
+          const { responseUserProfile } = this.persistedAgentState();
           await addAgentEndChatMessage(
             AgentMessageType.CHAT_WAS_ENDED,
-            agentProfile,
+            responseUserProfile,
             false,
             wasSuspended,
             this.serviceManager
@@ -865,17 +865,17 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   async addAgentLocalMessage(
     agentMessageType: AgentMessageType,
-    agentProfile?: AgentProfile,
+    responseUserProfile?: ResponseUserProfile,
     fireEvents = true,
     saveInHistory = true
   ) {
-    if (!agentProfile) {
-      agentProfile = this.persistedAgentState().agentProfile;
+    if (!responseUserProfile) {
+      responseUserProfile = this.persistedAgentState().responseUserProfile;
     }
     const { localMessage, originalMessage } = await createAgentLocalMessage(
       agentMessageType,
       this.serviceManager,
-      agentProfile,
+      responseUserProfile,
       fireEvents
     );
     await addMessages(
@@ -955,7 +955,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
   /**
    * Informs the chat widget that the agent has read all the messages that have been sent to the service desk.
    */
-  async agentJoined(profile: AgentProfile) {
+  async agentJoined(profile: ResponseUserProfile) {
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;
@@ -1041,16 +1041,17 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     const { serviceManager } = this;
 
     // If no agent ID is provided, just use the current one.
-    let agentProfile: AgentProfile;
+    let responseUserProfile: ResponseUserProfile;
     if (agentID === undefined) {
-      agentProfile = this.persistedAgentState().agentProfile;
+      responseUserProfile = this.persistedAgentState().responseUserProfile;
     } else {
-      agentProfile = this.persistedAgentState().agentProfiles[agentID];
-      if (!agentProfile) {
+      responseUserProfile =
+        this.persistedAgentState().responseUserProfiles[agentID];
+      if (!responseUserProfile) {
         // If we don't have a profile for the agent who sent this message, we need to use the profile for the current
         // agent (if there is one).
-        agentProfile = this.persistedAgentState().agentProfile;
-        if (agentProfile) {
+        responseUserProfile = this.persistedAgentState().responseUserProfile;
+        if (responseUserProfile) {
           consoleError(
             `Got agent ID ${agentID} but no agent with that ID joined the conversation. Using the current agent instead.`
           );
@@ -1062,10 +1063,10 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     await serviceManager.fire({
       type: BusEventType.AGENT_PRE_RECEIVE,
       data: messageResponse,
-      agentProfile,
+      responseUserProfile,
     });
 
-    messageResponse.history.agent_profile = agentProfile;
+    messageResponse.history.response_user_profile = responseUserProfile;
 
     const localMessages = messageResponse.output.generic.map((item: any) => {
       return outputItemToLocalItem(item, messageResponse);
@@ -1081,7 +1082,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     await serviceManager.fire({
       type: BusEventType.AGENT_RECEIVE,
       data: messageResponse,
-      agentProfile,
+      responseUserProfile,
     });
   }
 
@@ -1091,7 +1092,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    * that the transfer has started. The service desk should inform the widget when the transfer is complete by
    * sending a {@link agentJoined} message later.
    */
-  async beginTransferToAnotherAgent(profile?: AgentProfile) {
+  async beginTransferToAnotherAgent(profile?: ResponseUserProfile) {
     if (!this.service.chatStarted) {
       // The chat is no longer running.
       return;

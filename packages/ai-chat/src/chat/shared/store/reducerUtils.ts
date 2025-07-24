@@ -142,7 +142,7 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedToBrowserStorageState = {
     agentState: {
       isConnected: false,
       isSuspended: false,
-      agentProfiles: {},
+      responseUserProfiles: {},
     },
   },
   launcherState: {

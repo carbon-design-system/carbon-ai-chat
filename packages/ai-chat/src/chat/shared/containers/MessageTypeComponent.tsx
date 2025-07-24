@@ -84,6 +84,7 @@ import {
   OptionItem,
   TableItem,
   TextItem,
+  UserType,
   VideoItem,
 } from "../../../types/messaging/Messages";
 
@@ -224,13 +225,16 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     }
 
     const responseType = localMessageItem.item.response_type;
-    const withHumanAgent = Boolean(localMessageItem.item.agent_message_type);
+    const withHuman = Boolean(
+      message.history?.response_user_profile?.user_type === UserType.HUMAN ||
+        localMessageItem.item.agent_message_type
+    );
     switch (responseType) {
       case MessageResponseTypes.TEXT:
         return renderText(
           localMessageItem as LocalMessageItem<TextItem>,
           message,
-          withHumanAgent
+          withHuman
         );
       case MessageResponseTypes.IMAGE:
         return renderImage(localMessageItem as LocalMessageItem<ImageItem>);
