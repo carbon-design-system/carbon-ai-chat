@@ -29,16 +29,21 @@ enum MessageErrorState {
   FAILED = 2,
 
   /**
+   * The message failed while streaming.
+   */
+  FAILED_WHILE_STREAMING = 3,
+
+  /**
    * There was an error sending the message but the system is retrying the message.
    */
-  RETRYING = 3,
+  RETRYING = 4,
 
   /**
    * Indicates that the previous message has entered the retrying state and that this message is waiting for it to
    * finish or fail. This message will remain in the waiting state until it finishes successfully or it enters a
    * retrying state itself.
    */
-  WAITING = 4,
+  WAITING = 5,
 }
 
 /**
@@ -113,7 +118,7 @@ interface LocalMessageUIState<
   /**
    * Indicates if this message was used to start an agent conversation that was then ended.
    */
-  wasAgentChatEnded?: boolean;
+  wasHumanAgentChatEnded?: boolean;
 
   /**
    * A list of local message item ids for nested message item. This prop is used by the carousel response type.

@@ -21,8 +21,8 @@ import {
   agentUpdateIsTyping,
   endChat,
   setAgentAvailability,
-  setAgentJoined,
-  setAgentLeftChat,
+  setHumanAgentJoined,
+  setHumanAgentLeftChat,
   setIsConnecting,
   setIsReconnecting,
   setIsScreenSharing,
@@ -30,7 +30,7 @@ import {
   setShowScreenShareRequest,
   updateCapabilities,
   updateFilesUploadInProgress,
-} from "../../store/agentActions";
+} from "../../store/humanAgentActions";
 import { FileUpload } from "../../../../types/state/AppState";
 import {
   LocalMessageItem,
@@ -52,22 +52,22 @@ import {
 } from "../../utils/resolvablePromise";
 import { ServiceManager } from "../ServiceManager";
 import {
-  AgentsOnlineStatus,
+  HumanAgentsOnlineStatus,
   CreateHumanAgentServiceFunction,
   HumanAgentService,
 } from "./HumanAgentService";
 import {
-  addAgentEndChatMessage,
+  addHumanAgentEndChatMessage,
   addBotReturnMessage,
   addMessages,
-  createAgentLocalMessage,
+  createHumanAgentLocalMessage,
   LocalAndOriginalMessagesPair,
   toPair,
 } from "./humanAgentUtils";
 import {
-  AgentMessageType,
+  HumanAgentMessageType,
   ResponseUserProfile,
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   Message,
   MessageResponse,
   TextItem,
@@ -84,8 +84,8 @@ import {
   ServiceDeskFactoryParameters,
 } from "../../../../types/config/ServiceDeskConfig";
 import {
-  BusEventAgentPreEndChat,
-  BusEventAgentPreStartChat,
+  BusEventHumanAgentPreEndChat,
+  BusEventHumanAgentPreStartChat,
   BusEventType,
 } from "../../../../types/events/eventBusTypes";
 
@@ -120,19 +120,19 @@ const {
   FROM_USER,
   RECONNECTED,
   DISCONNECTED,
-  AGENT_ENDED_CHAT,
-  AGENT_JOINED,
+  HUMAN_AGENT_ENDED_CHAT,
+  HUMAN_AGENT_JOINED,
   USER_ENDED_CHAT,
   CHAT_WAS_ENDED,
-  TRANSFER_TO_AGENT,
-  AGENT_LEFT_CHAT,
+  TRANSFER_TO_HUMAN_AGENT,
+  HUMAN_AGENT_LEFT_CHAT,
   RELOAD_WARNING,
   SHARING_CANCELLED,
   SHARING_DECLINED,
   SHARING_ACCEPTED,
   SHARING_REQUESTED,
   SHARING_ENDED,
-} = AgentMessageType;
+} = HumanAgentMessageType;
 
 class HumanAgentServiceImpl implements HumanAgentService {
   /**
@@ -164,13 +164,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Indicates if an agent is currently typing.
    */
-  isAgentTyping = false;
+  isHumanAgentTyping = false;
 
   /**
    * The timer that is waiting for an agent to join. When this timer fires, the chat will be ended and an error will
    * be displayed.
    */
-  waitingForAgentJoinedTimer: ReturnType<typeof setTimeout>;
+  waitingForHumanAgentJoinedTimer: ReturnType<typeof setTimeout>;
 
   /**
    * The current set of files that are being uploaded.
@@ -214,7 +214,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const state = store.getState();
     const { config, persistedToBrowserStorage } = state;
     const serviceDeskState = cloneDeep(
-      persistedToBrowserStorage.chatState.agentState.serviceDeskState
+      persistedToBrowserStorage.chatState.humanAgentState.serviceDeskState
     );
 
     this.serviceDeskCallback = new ServiceDeskCallbackImpl(
@@ -248,7 +248,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * @param originalMessage The full original message that this Connect to Agent item belongs to.
    */
   public async startChat(
-    localConnectMessage: LocalMessageItem<ConnectToAgentItem>,
+    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
     originalMessage: Message
   ): Promise<void> {
     if (!this.serviceDesk) {
@@ -258,7 +258,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     if (
       this.serviceManager.store.getState().persistedToBrowserStorage.chatState
-        .agentState.isSuspended
+        .humanAgentState.isSuspended
     ) {
       // If the user is currently engaged in a conversation with an agent that is suspended and we start a new chat, we
       // need to end the current conversation first. We do still want to generate the "agent left" message however but
@@ -276,15 +276,15 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     try {
       this.chatStarted = true;
-      this.isAgentTyping = false;
+      this.isHumanAgentTyping = false;
       this.uploadingFiles.clear();
       this.serviceManager.store.dispatch(
         updateFilesUploadInProgress(this.uploadingFiles.size > 0)
       );
 
       // Fire off the pre-start event.
-      const event: BusEventAgentPreStartChat = {
-        type: BusEventType.AGENT_PRE_START_CHAT,
+      const event: BusEventHumanAgentPreStartChat = {
+        type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
         message: originalMessage as MessageResponse,
       };
       await serviceManager.fire(event);
@@ -302,8 +302,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
         serviceManager.store.getState().config.public.serviceDesk
           ?.agentJoinTimeoutSeconds;
       if (agentJoinTimeout) {
-        this.waitingForAgentJoinedTimer = setTimeout(
-          () => this.handleAgentJoinedTimeout(),
+        this.waitingForHumanAgentJoinedTimer = setTimeout(
+          () => this.handleHumanAgentJoinedTimeout(),
           agentJoinTimeout * 1000
         );
       }
@@ -330,23 +330,23 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
       serviceManager.store.dispatch(setIsConnecting(false, null));
       this.chatStarted = false;
-      this.cancelAgentJoinedTimer();
+      this.cancelHumanAgentJoinedTimer();
 
       throw error;
     }
   }
 
   /**
-   * Fires the {@link BusEventType.AGENT_PRE_END_CHAT} event. The event fired is returned which can contain information
+   * Fires the {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} event. The event fired is returned which can contain information
    * added by a listener.
    */
   async firePreEndChat(
-    endedByAgent: boolean
-  ): Promise<BusEventAgentPreEndChat> {
+    endedByHumanAgent: boolean
+  ): Promise<BusEventHumanAgentPreEndChat> {
     // Before ending the chat, fire an event.
-    const event: BusEventAgentPreEndChat = {
-      type: BusEventType.AGENT_PRE_END_CHAT,
-      endedByAgent,
+    const event: BusEventHumanAgentPreEndChat = {
+      type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      endedByHumanAgent,
       preEndChatPayload: null as unknown,
       cancelEndChat: false,
     };
@@ -357,13 +357,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Fires the {@link BusEventType.AGENT_END_CHAT} event.
+   * Fires the {@link BusEventType.HUMAN_AGENT_END_CHAT} event.
    */
-  async fireEndChat(endedByAgent: boolean, requestCancelled: boolean) {
+  async fireEndChat(endedByHumanAgent: boolean, requestCancelled: boolean) {
     // Before ending the chat, fire an event.
     await this.serviceManager.fire({
-      type: BusEventType.AGENT_END_CHAT,
-      endedByAgent,
+      type: BusEventType.HUMAN_AGENT_END_CHAT,
+      endedByHumanAgent,
       requestCancelled,
     });
   }
@@ -373,13 +373,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
    *
    * @param endedByUser Indicates if the chat is being ended as a result of the user or if it was ended
    * programmatically from an instance method.
-   * @param showAgentLeftMessage Indicates if the chat should show the "agent left" message.
+   * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
    * @param showBotReturnMessage Indicates if the chat should show the "bot return" message.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
   public async endChat(
     endedByUser: boolean,
-    showAgentLeftMessage = true,
+    showHumanAgentLeftMessage = true,
     showBotReturnMessage = true
   ): Promise<void> {
     if (!this.chatStarted || !this.serviceDesk) {
@@ -387,8 +387,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
       return;
     }
 
-    const { isConnected } = this.persistedAgentState();
-    let event: BusEventAgentPreEndChat;
+    const { isConnected } = this.persistedHumanAgentState();
+    let event: BusEventHumanAgentPreEndChat;
     if (isConnected) {
       event = await this.firePreEndChat(false);
       if (event.cancelEndChat) {
@@ -400,7 +400,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     await this.doEndChat(
       false,
       event?.preEndChatPayload,
-      showAgentLeftMessage,
+      showHumanAgentLeftMessage,
       showBotReturnMessage,
       endMessageType
     );
@@ -410,21 +410,21 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * This function will end the chat with a service class and clear the service state for it.
    */
   async doEndChat(
-    endedByAgent: boolean,
+    endedByHumanAgent: boolean,
     preEndChatPayload: unknown,
-    showAgentLeftMessage: boolean,
+    showHumanAgentLeftMessage: boolean,
     showBotReturnMessage: boolean,
-    agentEndChatMessageType: AgentMessageType
+    agentEndChatMessageType: HumanAgentMessageType
   ): Promise<void> {
-    const { isConnected } = this.persistedAgentState();
+    const { isConnected } = this.persistedHumanAgentState();
     const wasSuspended = this.isSuspended();
 
-    this.cancelAgentJoinedTimer();
+    this.cancelHumanAgentJoinedTimer();
     this.closeScreenShareRequestModal(ScreenShareState.CANCELLED);
 
     try {
       await resolveOrTimeout(
-        this.serviceDesk.endChat({ endedByAgent, preEndChatPayload }),
+        this.serviceDesk.endChat({ endedByHumanAgent, preEndChatPayload }),
         END_CHAT_TIMEOUT_MS
       );
     } catch (error) {
@@ -434,9 +434,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
     }
 
-    if (isConnected && showAgentLeftMessage) {
-      const { responseUserProfile } = this.persistedAgentState();
-      await addAgentEndChatMessage(
+    if (isConnected && showHumanAgentLeftMessage) {
+      const { responseUserProfile } = this.persistedHumanAgentState();
+      await addHumanAgentEndChatMessage(
         agentEndChatMessageType,
         responseUserProfile,
         true,
@@ -446,10 +446,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     this.chatStarted = false;
-    this.isAgentTyping = false;
+    this.isHumanAgentTyping = false;
     this.serviceManager.store.dispatch(endChat());
 
-    await this.fireEndChat(endedByAgent, !isConnected);
+    await this.fireEndChat(endedByHumanAgent, !isConnected);
 
     if (isConnected && showBotReturnMessage) {
       await addBotReturnMessage(
@@ -484,7 +484,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     // Fire the pre:send event that will allow code to customize the message.
     await serviceManager.fire({
-      type: BusEventType.AGENT_PRE_SEND,
+      type: BusEventType.HUMAN_AGENT_PRE_SEND,
       data: originalMessage,
       files: uploads,
     });
@@ -561,7 +561,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
 
       await serviceManager.fire({
-        type: BusEventType.AGENT_SEND,
+        type: BusEventType.HUMAN_AGENT_SEND,
         data: originalMessage,
         files: uploads,
       });
@@ -624,14 +624,14 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * @param connectMessage The message that contains the transfer_info object that may be used by the service desk,
    * so it can perform a more specific check.
    */
-  public async checkAreAnyAgentsOnline(
+  public async checkAreAnyHumanAgentsOnline(
     connectMessage: MessageResponse
-  ): Promise<AgentsOnlineStatus> {
-    let resultValue: AgentsOnlineStatus;
+  ): Promise<HumanAgentsOnlineStatus> {
+    let resultValue: HumanAgentsOnlineStatus;
     const initialRestartCount = this.serviceManager.restartCount;
 
     if (!this.serviceDesk?.areAnyAgentsOnline) {
-      resultValue = AgentsOnlineStatus.UNKNOWN;
+      resultValue = HumanAgentsOnlineStatus.UNKNOWN;
     } else {
       try {
         const timeoutSeconds =
@@ -646,24 +646,24 @@ class HumanAgentServiceImpl implements HumanAgentService {
         );
 
         if (result === true) {
-          resultValue = AgentsOnlineStatus.ONLINE;
+          resultValue = HumanAgentsOnlineStatus.ONLINE;
         } else if (result === false) {
-          resultValue = AgentsOnlineStatus.OFFLINE;
+          resultValue = HumanAgentsOnlineStatus.OFFLINE;
         } else {
           // Any other value for result will return an unknown status.
-          resultValue = AgentsOnlineStatus.UNKNOWN;
+          resultValue = HumanAgentsOnlineStatus.UNKNOWN;
         }
       } catch (error) {
         consoleError("Error attempting to get agent availability", error);
         // If we fail to get an answer we'll just return false to indicate that no agents are available.
-        resultValue = AgentsOnlineStatus.OFFLINE;
+        resultValue = HumanAgentsOnlineStatus.OFFLINE;
       }
     }
 
     if (initialRestartCount === this.serviceManager.restartCount) {
       // Don't await this since we don't want any event handlers to hold up this check.
       this.serviceManager.fire({
-        type: BusEventType.AGENT_ARE_ANY_AGENTS_ONLINE,
+        type: BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE,
         areAnyAgentsOnline: resultValue,
       });
     }
@@ -708,10 +708,11 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * This is called when an agent fails to join a chat after a given period of time.
    */
-  private async handleAgentJoinedTimeout() {
+  private async handleHumanAgentJoinedTimeout() {
     // Display an error to the user.
     const message =
-      this.serviceManager.store.getState().languagePack.errors_noAgentsJoined;
+      this.serviceManager.store.getState().languagePack
+        .errors_noHumanAgentsJoined;
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(message);
     await addMessages(
@@ -729,10 +730,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Cancels the agent joined timer if one is running.
    */
-  cancelAgentJoinedTimer() {
-    if (this.waitingForAgentJoinedTimer) {
-      clearTimeout(this.waitingForAgentJoinedTimer);
-      this.waitingForAgentJoinedTimer = null;
+  cancelHumanAgentJoinedTimer() {
+    if (this.waitingForHumanAgentJoinedTimer) {
+      clearTimeout(this.waitingForHumanAgentJoinedTimer);
+      this.waitingForHumanAgentJoinedTimer = null;
     }
   }
 
@@ -742,7 +743,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * @param state The new state of the screen sharing.
    */
   async screenShareUpdateRequestState(state: ScreenShareState) {
-    if (!this.persistedAgentState().isConnected) {
+    if (!this.persistedHumanAgentState().isConnected) {
       // Not connected to an agent.
       return;
     }
@@ -750,7 +751,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     // Close the modal.
     this.closeScreenShareRequestModal(state);
 
-    let agentMessageType: AgentMessageType;
+    let agentMessageType: HumanAgentMessageType;
     switch (state) {
       case ScreenShareState.ACCEPTED:
         agentMessageType = SHARING_ACCEPTED;
@@ -769,7 +770,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     // Display a message to the user.
-    await this.addAgentLocalMessage(agentMessageType);
+    await this.addHumanAgentLocalMessage(agentMessageType);
   }
 
   /**
@@ -777,7 +778,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   async screenShareStop() {
     this.serviceManager.store.dispatch(setIsScreenSharing(false));
-    await this.addAgentLocalMessage(SHARING_ENDED);
+    await this.addHumanAgentLocalMessage(SHARING_ENDED);
     await this.serviceDesk?.screenShareStop?.();
   }
 
@@ -791,7 +792,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const { store } = this.serviceManager;
 
     let didReconnect = false;
-    const { isConnected } = this.persistedAgentState();
+    const { isConnected } = this.persistedHumanAgentState();
 
     if (isConnected) {
       this.chatStarted = true;
@@ -811,7 +812,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
       store.dispatch(setIsReconnecting(false));
 
-      if (!this.persistedAgentState().isConnected) {
+      if (!this.persistedHumanAgentState().isConnected) {
         // The user may have disconnected while waiting for the reconnect in which case, just stop what we're doing.
         this.chatStarted = false;
         return;
@@ -827,9 +828,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
         if (allowEndChatMessages) {
           // If we didn't reconnect, then show the "end chat" messages to the user.
-          const { responseUserProfile } = this.persistedAgentState();
-          await addAgentEndChatMessage(
-            AgentMessageType.CHAT_WAS_ENDED,
+          const { responseUserProfile } = this.persistedHumanAgentState();
+          await addHumanAgentEndChatMessage(
+            HumanAgentMessageType.CHAT_WAS_ENDED,
             responseUserProfile,
             false,
             wasSuspended,
@@ -863,21 +864,22 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Adds a local agent message.
    */
-  async addAgentLocalMessage(
-    agentMessageType: AgentMessageType,
+  async addHumanAgentLocalMessage(
+    agentMessageType: HumanAgentMessageType,
     responseUserProfile?: ResponseUserProfile,
     fireEvents = true,
     saveInHistory = true
   ) {
     if (!responseUserProfile) {
-      responseUserProfile = this.persistedAgentState().responseUserProfile;
+      responseUserProfile = this.persistedHumanAgentState().responseUserProfile;
     }
-    const { localMessage, originalMessage } = await createAgentLocalMessage(
-      agentMessageType,
-      this.serviceManager,
-      responseUserProfile,
-      fireEvents
-    );
+    const { localMessage, originalMessage } =
+      await createHumanAgentLocalMessage(
+        agentMessageType,
+        this.serviceManager,
+        responseUserProfile,
+        fireEvents
+      );
     await addMessages(
       [toPair([localMessage], originalMessage)],
       saveInHistory,
@@ -890,9 +892,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Returns the persisted agent state from the store.
    */
-  persistedAgentState() {
+  persistedHumanAgentState() {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.agentState;
+      .chatState.humanAgentState;
   }
 
   /**
@@ -900,7 +902,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   isSuspended() {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.agentState.isSuspended;
+      .chatState.humanAgentState.isSuspended;
   }
 }
 
@@ -961,16 +963,16 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       return;
     }
 
-    this.service.cancelAgentJoinedTimer();
+    this.service.cancelHumanAgentJoinedTimer();
 
     // Update the store with the current agent's profile information.
-    this.serviceManager.store.dispatch(setAgentJoined(profile));
+    this.serviceManager.store.dispatch(setHumanAgentJoined(profile));
 
     // Then generate a message we can display in the UI to indicate that the agent has joined.
-    await this.service.addAgentLocalMessage(AGENT_JOINED, profile);
+    await this.service.addHumanAgentLocalMessage(HUMAN_AGENT_JOINED, profile);
 
     if (this.service.showLeaveWarning) {
-      await this.service.addAgentLocalMessage(
+      await this.service.addHumanAgentLocalMessage(
         RELOAD_WARNING,
         null,
         false,
@@ -1000,11 +1002,11 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    */
   async agentTyping(isTyping: boolean) {
     if (
-      this.persistedAgentState().isConnected &&
-      isTyping !== this.service.isAgentTyping
+      this.persistedHumanAgentState().isConnected &&
+      isTyping !== this.service.isHumanAgentTyping
     ) {
       this.serviceManager.store.dispatch(agentUpdateIsTyping(isTyping));
-      this.service.isAgentTyping = isTyping;
+      this.service.isHumanAgentTyping = isTyping;
     }
   }
 
@@ -1033,7 +1035,8 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     if (messageResponse.output?.generic?.length) {
       messageResponse.output.generic.forEach((messageItem) => {
         if (!messageItem.agent_message_type) {
-          messageItem.agent_message_type = AgentMessageType.FROM_AGENT;
+          messageItem.agent_message_type =
+            HumanAgentMessageType.FROM_HUMAN_AGENT;
         }
       });
     }
@@ -1043,14 +1046,15 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     // If no agent ID is provided, just use the current one.
     let responseUserProfile: ResponseUserProfile;
     if (agentID === undefined) {
-      responseUserProfile = this.persistedAgentState().responseUserProfile;
+      responseUserProfile = this.persistedHumanAgentState().responseUserProfile;
     } else {
       responseUserProfile =
-        this.persistedAgentState().responseUserProfiles[agentID];
+        this.persistedHumanAgentState().responseUserProfiles[agentID];
       if (!responseUserProfile) {
         // If we don't have a profile for the agent who sent this message, we need to use the profile for the current
         // agent (if there is one).
-        responseUserProfile = this.persistedAgentState().responseUserProfile;
+        responseUserProfile =
+          this.persistedHumanAgentState().responseUserProfile;
         if (responseUserProfile) {
           consoleError(
             `Got agent ID ${agentID} but no agent with that ID joined the conversation. Using the current agent instead.`
@@ -1061,7 +1065,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
 
     // Fire the pre:receive event that will allow code to customize the message.
     await serviceManager.fire({
-      type: BusEventType.AGENT_PRE_RECEIVE,
+      type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       data: messageResponse,
       responseUserProfile,
     });
@@ -1080,7 +1084,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     );
 
     await serviceManager.fire({
-      type: BusEventType.AGENT_RECEIVE,
+      type: BusEventType.HUMAN_AGENT_RECEIVE,
       data: messageResponse,
       responseUserProfile,
     });
@@ -1100,10 +1104,13 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
 
     if (profile) {
       // Update the store with the current agent's profile information.
-      this.serviceManager.store.dispatch(setAgentJoined(profile));
+      this.serviceManager.store.dispatch(setHumanAgentJoined(profile));
     }
 
-    await this.service.addAgentLocalMessage(TRANSFER_TO_AGENT, profile);
+    await this.service.addHumanAgentLocalMessage(
+      TRANSFER_TO_HUMAN_AGENT,
+      profile
+    );
   }
 
   /**
@@ -1115,10 +1122,10 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       return;
     }
 
-    await this.service.addAgentLocalMessage(AGENT_LEFT_CHAT);
+    await this.service.addHumanAgentLocalMessage(HUMAN_AGENT_LEFT_CHAT);
 
-    this.service.isAgentTyping = false;
-    this.serviceManager.store.dispatch(setAgentLeftChat());
+    this.service.isHumanAgentTyping = false;
+    this.serviceManager.store.dispatch(setHumanAgentLeftChat());
   }
 
   /**
@@ -1140,7 +1147,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       event.preEndChatPayload,
       true,
       true,
-      AGENT_ENDED_CHAT
+      HUMAN_AGENT_ENDED_CHAT
     );
   }
 
@@ -1157,7 +1164,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
 
     const { type, logInfo } = errorInfo;
     const { store } = this.serviceManager;
-    const { isConnecting } = store.getState().agentState;
+    const { isConnecting } = store.getState().humanAgentState;
 
     if (logInfo) {
       consoleError(
@@ -1181,7 +1188,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
         if (errorInfo.isDisconnected) {
           // The service desk has become disconnected so show an error and don't allow the user to send messages.
           this.service.showingDisconnectedError = true;
-          await this.service.addAgentLocalMessage(
+          await this.service.addHumanAgentLocalMessage(
             DISCONNECTED,
             null,
             true,
@@ -1192,7 +1199,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
           // The service desk says it's no longer disconnected but double check that we previously thought we were
           // disconnected.
           this.service.showingDisconnectedError = false;
-          await this.service.addAgentLocalMessage(
+          await this.service.addHumanAgentLocalMessage(
             RECONNECTED,
             null,
             true,
@@ -1206,7 +1213,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
         // If we can't connect, display an inline error message on the bot view.
         const { languagePack } = this.serviceManager.store.getState();
         const message =
-          errorInfo.messageToUser || languagePack.errors_connectingToAgent;
+          errorInfo.messageToUser || languagePack.errors_connectingToHumanAgent;
         const { originalMessage, localMessage } =
           createLocalMessageForInlineError(message);
         await addMessages(
@@ -1220,7 +1227,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
         // Cancel the connecting status.
         this.serviceManager.store.dispatch(setIsConnecting(false, null));
         this.service.chatStarted = false;
-        this.service.cancelAgentJoinedTimer();
+        this.service.cancelHumanAgentJoinedTimer();
         await this.service.fireEndChat(false, isConnecting);
         break;
       }
@@ -1289,7 +1296,8 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
           // Generate an inline error message to show the error to the user.
           const { originalMessage, localMessage } =
             createLocalMessageForInlineError(errorMessage);
-          localMessage.item.agent_message_type = AgentMessageType.INLINE_ERROR;
+          localMessage.item.agent_message_type =
+            HumanAgentMessageType.INLINE_ERROR;
           await addMessages(
             [toPair([localMessage], originalMessage)],
             true,
@@ -1334,7 +1342,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    * chat with an agent is currently running.
    */
   async screenShareRequest() {
-    if (!this.persistedAgentState().isConnected) {
+    if (!this.persistedHumanAgentState().isConnected) {
       return Promise.reject(
         new Error("Cannot request screen sharing if no chat is in progress.")
       );
@@ -1344,7 +1352,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       this.service.screenShareRequestPromise = resolvablePromise();
       this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
 
-      await this.service.addAgentLocalMessage(SHARING_REQUESTED);
+      await this.service.addHumanAgentLocalMessage(SHARING_REQUESTED);
     }
 
     return this.service.screenShareRequestPromise;
@@ -1356,23 +1364,23 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    */
   async screenShareEnded() {
     const wasScreenSharing =
-      this.serviceManager.store.getState().agentState.isScreenSharing;
+      this.serviceManager.store.getState().humanAgentState.isScreenSharing;
     const requestPending = this.service.screenShareRequestPromise;
     this.service.closeScreenShareRequestModal(ScreenShareState.CANCELLED);
     if (wasScreenSharing) {
       this.serviceManager.store.dispatch(setIsScreenSharing(false));
-      await this.service.addAgentLocalMessage(SHARING_ENDED);
+      await this.service.addHumanAgentLocalMessage(SHARING_ENDED);
     } else if (requestPending) {
-      await this.service.addAgentLocalMessage(SHARING_CANCELLED);
+      await this.service.addHumanAgentLocalMessage(SHARING_CANCELLED);
     }
   }
 
   /**
    * Returns the persisted agent state from the store.
    */
-  persistedAgentState() {
+  persistedHumanAgentState() {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.agentState;
+      .chatState.humanAgentState;
   }
 
   /**
@@ -1381,7 +1389,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    */
   persistedState(): TPersistedStateType {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.agentState.serviceDeskState as TPersistedStateType;
+      .chatState.humanAgentState.serviceDeskState as TPersistedStateType;
   }
 
   /**
@@ -1406,7 +1414,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     if (mergeWithCurrent) {
       newState = merge(
         {},
-        store.getState().persistedToBrowserStorage.chatState.agentState
+        store.getState().persistedToBrowserStorage.chatState.humanAgentState
           .serviceDeskState,
         state
       );

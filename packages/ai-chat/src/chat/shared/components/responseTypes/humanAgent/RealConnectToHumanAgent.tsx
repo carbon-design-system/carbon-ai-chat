@@ -15,23 +15,23 @@ import { Button, Tile } from "@carbon/react";
 import React, { ReactNode, useState } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { AgentsOnlineStatus } from "../../../services/haa/HumanAgentService";
+import { HumanAgentsOnlineStatus } from "../../../services/haa/HumanAgentService";
 import {
-  AgentDisplayState,
-  AgentState,
+  HumanAgentDisplayState,
+  HumanAgentState,
 } from "../../../../../types/state/AppState";
 import HasLanguagePack from "../../../../../types/utilities/HasLanguagePack";
 import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-import { PersistedAgentState } from "../../../../../types/state/PersistedAgentState";
-import { AvailabilityMessage } from "../../agent/AvailabilityMessage";
-import { EndAgentChatModal } from "../../modals/EndAgentChatModal";
+import { PersistedHumanAgentState } from "../../../../../types/state/PersistedHumanAgentState";
+import { AvailabilityMessage } from "../../humanAgent/AvailabilityMessage";
+import { EndHumanAgentChatModal } from "../../modals/EndHumanAgentChatModal";
 import {
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   MessageResponse,
 } from "../../../../../types/messaging/Messages";
 
-interface RealConnectToAgentProps
+interface RealConnectToHumanAgentProps
   extends HasLanguagePack,
     HasServiceManager,
     HasRequestFocus {
@@ -43,7 +43,7 @@ interface RealConnectToAgentProps
   /**
    * The "connect_to_agent" message that generated this card.
    */
-  localMessage: LocalMessageItem<ConnectToAgentItem>;
+  localMessage: LocalMessageItem<ConnectToHumanAgentItem>;
 
   /**
    * The "connect_to_agent" message that generated this card.
@@ -53,17 +53,17 @@ interface RealConnectToAgentProps
   /**
    * The current application agent state.
    */
-  agentState: AgentState;
+  humanAgentState: HumanAgentState;
 
   /**
    * The current persisted agent state.
    */
-  persistedAgentState: PersistedAgentState;
+  persistedHumanAgentState: PersistedHumanAgentState;
 
   /**
    * The current application agent state.
    */
-  agentDisplayState: AgentDisplayState;
+  agentDisplayState: HumanAgentDisplayState;
 }
 
 /**
@@ -74,20 +74,20 @@ interface RealConnectToAgentProps
  * This is the "real" component that is displayed to users as opposed to the "preview" component that is displayed
  * for users using the preview link.
  */
-function RealConnectToAgent(props: RealConnectToAgentProps) {
+function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const {
     languagePack,
     localMessage,
     originalMessage,
     disableUserInputs,
     serviceManager,
-    agentState,
+    humanAgentState,
     requestFocus,
     agentDisplayState,
-    persistedAgentState,
+    persistedHumanAgentState,
   } = props;
-  const { activeLocalMessageID, availability, isConnecting } = agentState;
-  const { isSuspended } = persistedAgentState;
+  const { activeLocalMessageID, availability, isConnecting } = humanAgentState;
+  const { isSuspended } = persistedHumanAgentState;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
 
@@ -110,9 +110,10 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
     }
   }
 
-  const noAgentsWereOnline =
-    originalMessage.history.agent_availability === AgentsOnlineStatus.OFFLINE;
-  if (noAgentsWereOnline) {
+  const noHumanAgentsWereOnline =
+    originalMessage.ui_state_internal?.agent_availability ===
+    HumanAgentsOnlineStatus.OFFLINE;
+  if (noHumanAgentsWereOnline) {
     // Display the "agents are not available" message that was configured in the skill or show a default value if
     // there is none.
     const agentUnavailableMessage =
@@ -151,7 +152,7 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
       messageToUser = languagePack.agent_cardMessageConnected;
     }
   } else if (disableUserInputs) {
-    if (localMessage.ui_state.wasAgentChatEnded) {
+    if (localMessage.ui_state.wasHumanAgentChatEnded) {
       buttonIcon = Logout;
       buttonText = languagePack.agent_cardButtonChatEnded;
       messageToUser = languagePack.agent_cardMessageChatEnded;
@@ -165,13 +166,13 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
   }
 
   return (
-    <Tile className="WACConnectToAgent">
-      <div className="WACConnectToAgent__Title">
+    <Tile className="WACConnectToHumanAgent">
+      <div className="WACConnectToHumanAgent__Title">
         <span>{languagePack.agent_chatTitle}</span>
       </div>
-      <div className="WACConnectToAgent__Text">{messageToUser}</div>
+      <div className="WACConnectToHumanAgent__Text">{messageToUser}</div>
       <Button
-        className="WACConnectToAgent__RequestButton"
+        className="WACConnectToHumanAgent__RequestButton"
         size="md"
         disabled={showDisabled}
         onClick={doStartChat}
@@ -180,12 +181,12 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
         {buttonText}
       </Button>
       {!showDisabled && isSuspended && (
-        <div className="WACConnectToAgent__SuspendedWarning">
+        <div className="WACConnectToHumanAgent__SuspendedWarning">
           {languagePack.agent_suspendedWarning}
         </div>
       )}
       {showConfirmSuspended && (
-        <EndAgentChatModal
+        <EndHumanAgentChatModal
           title={languagePack.agent_confirmSuspendedEndChatTitle}
           message={languagePack.agent_confirmSuspendedEndChatMessage}
           onConfirm={doStartChat}
@@ -196,4 +197,4 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
   );
 }
 
-export { RealConnectToAgent };
+export { RealConnectToHumanAgent };

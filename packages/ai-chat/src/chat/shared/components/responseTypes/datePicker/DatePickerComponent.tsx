@@ -142,7 +142,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   useOnMount(() => {
     const localeFromMessage = webChatLocale;
     const { originalUserText } = localMessage.ui_state;
-    const fromHistory = originalMessage.history.from_history;
+    const fromHistory = originalMessage.ui_state_internal?.from_history;
 
     // If this message is from history and a user has made a previous selection, set the value in the input.
     if (fromHistory && originalUserText) {

@@ -15,7 +15,7 @@ import React, { Fragment, PureComponent, ReactNode } from "react";
 import { connect } from "react-redux";
 
 import { InlineLoadingComponent } from "../../react/components/inlineLoading/InlineLoadingComponent";
-import { AgentBannerContainer } from "../components/agent/AgentBannerContainer";
+import { HumanAgentBannerContainer } from "../components/humanAgent/HumanAgentBannerContainer";
 import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
 import LatestWelcomeNodes from "../components/LatestWelcomeNodes";
 import { Notifications } from "../components/notifications/Notifications";
@@ -24,7 +24,10 @@ import {
   withServiceManager,
 } from "../hocs/withServiceManager";
 import actions from "../store/actions";
-import { selectAgentDisplayState, selectInputState } from "../store/selectors";
+import {
+  selectHumanAgentDisplayState,
+  selectInputState,
+} from "../store/selectors";
 import { AppState, ChatMessagesState } from "../../../types/state/AppState";
 import { AutoScrollOptions } from "../../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../../types/utilities/HasIntl";
@@ -86,7 +89,7 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   /**
    * The callback that is called when the user clicks the "end agent chat" button.
    */
-  onEndAgentChat: () => void;
+  onEndHumanAgentChat: () => void;
 
   /**
    * The current locale.
@@ -171,15 +174,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const numMessagesChanged =
       oldProps.localMessageItems.length !== newProps.localMessageItems.length;
 
-    const oldAgentDisplayState = selectAgentDisplayState(oldProps);
-    const newAgentDisplayState = selectAgentDisplayState(newProps);
+    const oldHumanAgentDisplayState = selectHumanAgentDisplayState(oldProps);
+    const newHumanAgentDisplayState = selectHumanAgentDisplayState(newProps);
 
     const typingChanged =
       oldProps.messageState.isTypingCounter !==
         newProps.messageState.isTypingCounter ||
       oldProps.messageState.isLoadingCounter !==
         newProps.messageState.isLoadingCounter ||
-      oldAgentDisplayState.isAgentTyping !== newAgentDisplayState.isAgentTyping;
+      oldHumanAgentDisplayState.isHumanAgentTyping !==
+        newHumanAgentDisplayState.isHumanAgentTyping;
 
     if (numMessagesChanged || typingChanged) {
       const newLastItem = arrayLastValue(newProps.localMessageItems);
@@ -287,7 +291,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       const { scrollToTop, scrollToBottom } = options;
       const { localMessageItems, messageState, allMessagesByID } = this.props;
       const { isTypingCounter, isLoadingCounter } = messageState;
-      const { isAgentTyping } = selectAgentDisplayState(this.props);
+      const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
       const scrollElement = this.messagesContainerWithScrollingRef.current;
 
       if (scrollToTop !== undefined) {
@@ -319,7 +323,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         // decide it remembers the previous scroll position and set it for us.
         animate = false;
         setScrollTop = 0;
-      } else if (isTypingCounter > 0 || isLoadingCounter > 0 || isAgentTyping) {
+      } else if (
+        isTypingCounter > 0 ||
+        isLoadingCounter > 0 ||
+        isHumanAgentTyping
+      ) {
         // The typing indicator is visible, so scroll to the bottom.
         setScrollTop = scrollElement.scrollHeight;
         debugAutoScroll("[doAutoScroll] isTyping visible", isTypingCounter);
@@ -391,7 +399,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       if (setScrollTop !== -1) {
         if (setScrollTop >= scrollElement.scrollTop) {
           // If this is from history, we don't want to animate.
-          if (lastMessage?.history?.from_history) {
+          if (lastMessage?.ui_state_internal?.from_history) {
             animate = false;
           }
 
@@ -473,7 +481,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Moves focus to the button in the agent header.
    */
-  public requestAgentBannerFocus() {
+  public requestHumanAgentBannerFocus() {
     if (this.agentBannerRef.current) {
       return this.agentBannerRef.current.requestFocus();
     }
@@ -619,7 +627,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       useAITheme,
     } = this.props;
     const inputState = selectInputState(this.props);
-    const { isAgentTyping } = selectAgentDisplayState(this.props);
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { isTypingCounter, isLoadingCounter } = messageState;
     const { chatState } = persistedToBrowserStorage;
     const { disclaimersAccepted } = chatState;
@@ -634,7 +642,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const totalMessagesWithTyping =
       this.props.localMessageItems.length +
-      (isTypingCounter > 0 || isLoadingCounter > 0 || isAgentTyping ? 1 : 0);
+      (isTypingCounter > 0 || isLoadingCounter > 0 || isHumanAgentTyping
+        ? 1
+        : 0);
 
     const isLastMessage = messagesIndex === totalMessagesWithTyping - 1;
     const className = cx({
@@ -701,11 +711,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Renders the agent banner that appears at the top of the messages list when connecting to an agent.
    */
-  private renderAgentBanner() {
+  private renderHumanAgentBanner() {
     return (
-      <AgentBannerContainer
+      <HumanAgentBannerContainer
         bannerRef={this.agentBannerRef}
-        onButtonClick={this.props.onEndAgentChat}
+        onButtonClick={this.props.onEndHumanAgentChat}
       />
     );
   }
@@ -883,7 +893,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       notifications,
     } = this.props;
     const { isTypingCounter, isLoadingCounter } = messageState;
-    const { isAgentTyping } = selectAgentDisplayState(this.props);
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus } = this.state;
 
     const messageIDForInput = this.getMessageIDForUserInput();
@@ -891,7 +901,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const regularMessages = this.renderMessages(messageIDForInput);
 
     let isTypingMessage;
-    if (isAgentTyping) {
+    if (isHumanAgentTyping) {
       isTypingMessage = intl.formatMessage({ id: "messages_agentIsTyping" });
     } else if (isTypingCounter) {
       isTypingMessage = intl.formatMessage(
@@ -910,7 +920,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         id={`WACMessages--holder${serviceManager.namespace.suffix}`}
         className="WACMessages--holder"
       >
-        {this.renderAgentBanner()}
+        {this.renderHumanAgentBanner()}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className={cx("WACMessages__Wrapper", {
@@ -927,7 +937,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             {regularMessages}
             {(Boolean(isTypingCounter) ||
               Boolean(isLoadingCounter) ||
-              isAgentTyping) &&
+              isHumanAgentTyping) &&
               this.renderTypingIndicator(
                 isTypingMessage,
                 localMessageItems.length

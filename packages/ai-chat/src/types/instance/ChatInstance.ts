@@ -392,7 +392,7 @@ interface ChatActions {
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
    * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.AGENT_PRE_END_CHAT} and {@link BusEventType.AGENT_END_CHAT} events have been fired and
+   * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    */
   agentEndConversation: () => Promise<void>;
@@ -740,7 +740,7 @@ export interface ChatInstanceServiceDeskActions {
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
    * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.AGENT_PRE_END_CHAT} and {@link BusEventType.AGENT_END_CHAT} events have been fired and
+   * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    */
   endConversation: () => Promise<void>;

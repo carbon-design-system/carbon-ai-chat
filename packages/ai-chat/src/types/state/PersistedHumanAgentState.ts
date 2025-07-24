@@ -12,7 +12,7 @@ import { ResponseUserProfile } from "../messaging/Messages";
 /**
  * The state of a conversation with an agent that is persisted in browser storage.
  */
-interface PersistedAgentState {
+interface PersistedHumanAgentState {
   /**
    * Indicates that the user is currently connected to an agent and a chat is in progress. This does not necessarily
    * mean that an agent has joined the conversation.
@@ -44,4 +44,4 @@ interface PersistedAgentState {
   serviceDeskState?: unknown;
 }
 
-export { PersistedAgentState };
+export { PersistedHumanAgentState };

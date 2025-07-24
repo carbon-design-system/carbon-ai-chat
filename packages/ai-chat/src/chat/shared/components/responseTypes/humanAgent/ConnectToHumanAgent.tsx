@@ -12,28 +12,28 @@ import React from "react";
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { AppConfig } from "../../../../../types/state/AppConfig";
 import {
-  AgentDisplayState,
-  AgentState,
+  HumanAgentDisplayState,
+  HumanAgentState,
 } from "../../../../../types/state/AppState";
 import HasLanguagePack from "../../../../../types/utilities/HasLanguagePack";
 import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-import { PersistedAgentState } from "../../../../../types/state/PersistedAgentState";
+import { PersistedHumanAgentState } from "../../../../../types/state/PersistedHumanAgentState";
 import { hasServiceDesk } from "../../../utils/messageUtils";
-import { RealConnectToAgent } from "./RealConnectToAgent";
+import { RealConnectToHumanAgent } from "./RealConnectToHumanAgent";
 import {
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   MessageResponse,
 } from "../../../../../types/messaging/Messages";
 
-interface ConnectToAgentProps
+interface ConnectToHumanAgentProps
   extends HasLanguagePack,
     HasServiceManager,
     HasRequestFocus {
   /**
    * The message that triggered this connect-to-agent action.
    */
-  localMessage: LocalMessageItem<ConnectToAgentItem>;
+  localMessage: LocalMessageItem<ConnectToHumanAgentItem>;
 
   /**
    * The message that triggered this connect-to-agent action.
@@ -48,17 +48,17 @@ interface ConnectToAgentProps
   /**
    * The current application agent state.
    */
-  agentState: AgentState;
+  humanAgentState: HumanAgentState;
 
   /**
    * The current persisted agent state.
    */
-  persistedAgentState: PersistedAgentState;
+  persistedHumanAgentState: PersistedHumanAgentState;
 
   /**
    * The current application agent state.
    */
-  agentDisplayState: AgentDisplayState;
+  agentDisplayState: HumanAgentDisplayState;
 
   /**
    * The configuration for the widget.
@@ -73,7 +73,7 @@ interface ConnectToAgentProps
  *
  * This component will display the appropriate panel depending on whether the user is viewing the preview link.
  */
-function ConnectToAgent(props: ConnectToAgentProps) {
+function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
   const {
     languagePack,
     localMessage,
@@ -81,10 +81,10 @@ function ConnectToAgent(props: ConnectToAgentProps) {
     config,
     serviceManager,
     disableUserInputs,
-    agentState,
+    humanAgentState,
     requestFocus,
     agentDisplayState,
-    persistedAgentState,
+    persistedHumanAgentState,
   } = props;
 
   // Disable the "start chat" button if the widget is in a readonly mode or a preview mode with no service desk.
@@ -93,14 +93,14 @@ function ConnectToAgent(props: ConnectToAgentProps) {
   // The Carbon InlineNotification component doesn't allow HTML anymore, so faking it here.
   return (
     <div>
-      <RealConnectToAgent
+      <RealConnectToHumanAgent
         localMessage={localMessage}
         originalMessage={originalMessage}
         languagePack={languagePack}
         serviceManager={serviceManager}
         disableUserInputs={childDisableUserInputs}
-        agentState={agentState}
-        persistedAgentState={persistedAgentState}
+        humanAgentState={humanAgentState}
+        persistedHumanAgentState={persistedHumanAgentState}
         agentDisplayState={agentDisplayState}
         requestFocus={requestFocus}
       />
@@ -108,4 +108,4 @@ function ConnectToAgent(props: ConnectToAgentProps) {
   );
 }
 
-export { ConnectToAgent };
+export { ConnectToHumanAgent };

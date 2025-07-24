@@ -24,7 +24,7 @@ import {
   TourStepGenericItem,
 } from "../messaging/Messages";
 import { FileUpload, ViewState } from "../instance/apiTypes";
-import { AgentsOnlineStatus } from "../config/ServiceDeskConfig";
+import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 
 /** @category Events */
 export enum BusEventType {
@@ -134,50 +134,50 @@ export enum BusEventType {
    * This event is fired before Carbon AI chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
-  AGENT_PRE_RECEIVE = "agent:pre:receive",
+  HUMAN_AGENT_PRE_RECEIVE = "human_agent:pre:receive",
 
   /**
    * This event is fired after Carbon AI chat processes a message received from a human agent from a service desk.
    * You can use this to update your history store.
    */
-  AGENT_RECEIVE = "agent:receive",
+  HUMAN_AGENT_RECEIVE = "human_agent:receive",
 
   /**
    * This event is fired before Carbon AI chat sends a message to a human agent from a service desk.
    * You can use this to filter messages before they are sent to the agent.
    */
-  AGENT_PRE_SEND = "agent:pre:send",
+  HUMAN_AGENT_PRE_SEND = "human_agent:pre:send",
 
   /**
    * This event is fired after Carbon AI chat sends a message to a human agent from a service desk.
    * You can use this to update your history store.
    */
-  AGENT_SEND = "agent:send",
+  HUMAN_AGENT_SEND = "human_agent:send",
 
   /**
    * This event is fired before a chat with a service desk has started. This occurs as soon as the user clicks the
    * "Request agent" button and before any attempt is made to communicate with the service desk.
    */
-  AGENT_PRE_START_CHAT = "agent:pre:startChat",
+  HUMAN_AGENT_PRE_START_CHAT = "human_agent:pre:startChat",
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
    * confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
-   * request for an agent is cancelled. The agent:endChat event however is fired in that case.
+   * request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
    */
-  AGENT_PRE_END_CHAT = "agent:pre:endChat",
+  HUMAN_AGENT_PRE_END_CHAT = "human_agent:pre:endChat",
 
   /**
-   * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.AGENT_PRE_END_CHAT} but
+   * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
    * can be fired both from the user leaving the chat or the agent ending the chat.
    */
-  AGENT_END_CHAT = "agent:endChat",
+  HUMAN_AGENT_END_CHAT = "human_agent:endChat",
 
   /**
    * This event is fired after Carbon AI chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
    * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
    */
-  AGENT_ARE_ANY_AGENTS_ONLINE = "agent:areAnyAgentsOnline",
+  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE = "human_agent:areAnyAgentsOnline",
 
   /**
    * Fired when a new chunk in a user_defined response comes through.
@@ -463,8 +463,8 @@ export interface BusEventSend extends BusEvent {
 /**
  * @category Service desk
  */
-export interface BusEventAgentPreReceive extends BusEvent {
-  type: BusEventType.AGENT_PRE_RECEIVE;
+export interface BusEventHumanAgentPreReceive extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_PRE_RECEIVE;
   data: MessageResponse;
   responseUserProfile?: ResponseUserProfile;
 }
@@ -472,8 +472,8 @@ export interface BusEventAgentPreReceive extends BusEvent {
 /**
  * @category Service desk
  */
-export interface BusEventAgentReceive extends BusEvent {
-  type: BusEventType.AGENT_RECEIVE;
+export interface BusEventHumanAgentReceive extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_RECEIVE;
   data: MessageResponse;
   responseUserProfile?: ResponseUserProfile;
 }
@@ -481,8 +481,8 @@ export interface BusEventAgentReceive extends BusEvent {
 /**
  * @category Service desk
  */
-export interface BusEventAgentPreSend extends BusEvent {
-  type: BusEventType.AGENT_PRE_SEND;
+export interface BusEventHumanAgentPreSend extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_PRE_SEND;
   data: MessageRequest;
   files: FileUpload[];
 }
@@ -490,8 +490,8 @@ export interface BusEventAgentPreSend extends BusEvent {
 /**
  * @category Service desk
  */
-export interface BusEventAgentSend extends BusEvent {
-  type: BusEventType.AGENT_SEND;
+export interface BusEventHumanAgentSend extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_SEND;
   data: MessageRequest;
   files: FileUpload[];
 }
@@ -787,12 +787,12 @@ export interface BusEventTourStep extends BusEvent {
  *
  * @category Service desk
  */
-export interface BusEventAgentPreStartChat<TPayloadType = unknown>
+export interface BusEventHumanAgentPreStartChat<TPayloadType = unknown>
   extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_PRE_START_CHAT;
+  type: BusEventType.HUMAN_AGENT_PRE_START_CHAT;
 
   /**
    * The message that was used to trigger the connection to the agent.
@@ -816,17 +816,17 @@ export interface BusEventAgentPreStartChat<TPayloadType = unknown>
  *
  * @category Service desk
  */
-export interface BusEventAgentPreEndChat<TPayloadType = unknown>
+export interface BusEventHumanAgentPreEndChat<TPayloadType = unknown>
   extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_PRE_END_CHAT;
+  type: BusEventType.HUMAN_AGENT_PRE_END_CHAT;
 
   /**
    * Indicates if the chat was ended by the agent.
    */
-  endedByAgent: boolean;
+  endedByHumanAgent: boolean;
 
   /**
    * An arbitrary payload object that a listener may set. This payload will be passed to the service desk
@@ -841,21 +841,21 @@ export interface BusEventAgentPreEndChat<TPayloadType = unknown>
 }
 
 /**
- * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.AGENT_PRE_END_CHAT} but
+ * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
  * can be fired both from the user leaving the chat or the agent ending the chat.
  *
  * @category Service desk
  */
-export interface BusEventAgentEndChat extends BusEvent {
+export interface BusEventHumanAgentEndChat extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_END_CHAT;
+  type: BusEventType.HUMAN_AGENT_END_CHAT;
 
   /**
    * Indicates if the chat was ended by the agent.
    */
-  endedByAgent: boolean;
+  endedByHumanAgent: boolean;
 
   /**
    * Indicates if the chat was ended because the request for an agent was cancelled or an error occurred while
@@ -870,17 +870,17 @@ export interface BusEventAgentEndChat extends BusEvent {
  *
  * @category Service desk
  */
-export interface BusEventAgentAreAnyAgentsOnline extends BusEvent {
+export interface BusEventHumanAgentAreAnyAgentsOnline extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_ARE_ANY_AGENTS_ONLINE;
+  type: BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE;
 
   /**
    * The result that was returned from "areAnyAgentsOnline". If an error occurred, this will be
-   * {@link AgentsOnlineStatus.OFFLINE}.
+   * {@link HumanAgentsOnlineStatus.OFFLINE}.
    */
-  areAnyAgentsOnline: AgentsOnlineStatus;
+  areAnyAgentsOnline: HumanAgentsOnlineStatus;
 }
 
 /**

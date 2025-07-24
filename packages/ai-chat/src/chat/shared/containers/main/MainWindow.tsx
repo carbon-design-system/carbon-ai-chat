@@ -27,9 +27,9 @@ import { ModalPortalRootContext } from "../../contexts/ModalPortalRootContext";
 import { HasServiceManager } from "../../hocs/withServiceManager";
 import actions from "../../store/actions";
 import {
-  selectAgentDisplayState,
+  selectHumanAgentDisplayState,
   selectInputState,
-  selectIsInputToAgent,
+  selectIsInputToHumanAgent,
 } from "../../store/selectors";
 import {
   AnimationInType,
@@ -441,7 +441,7 @@ class MainWindow
       const lastMessageItem = newProps.allMessageItemsByID[newLastItemID];
       const lastMessage =
         newProps.allMessagesByID[lastMessageItem?.fullMessageID];
-      if (!lastMessage?.history?.from_history) {
+      if (!lastMessage?.ui_state_internal?.from_history) {
         this.requestFocus();
       }
     }
@@ -569,12 +569,12 @@ class MainWindow
     source: MessageSendSource,
     options?: SendOptions
   ) => {
-    const isInputToAgent = selectIsInputToAgent(this.props);
+    const isInputToHumanAgent = selectIsInputToHumanAgent(this.props);
     const { serviceManager } = this.props;
     const state = serviceManager.store.getState();
     const { files } = selectInputState(state);
 
-    if (isInputToAgent) {
+    if (isInputToHumanAgent) {
       // If we're connected to an agent, then send the message to the agent instead of the bot.
       serviceManager.humanAgentService.sendMessageToAgent(text, files);
     } else {
@@ -586,7 +586,9 @@ class MainWindow
     }
 
     if (files.length) {
-      serviceManager.store.dispatch(actions.clearInputFiles(isInputToAgent));
+      serviceManager.store.dispatch(
+        actions.clearInputFiles(isInputToHumanAgent)
+      );
     }
   };
 
@@ -785,7 +787,7 @@ class MainWindow
   onUserTyping = (isTyping: boolean) => {
     if (
       this.props.serviceManager.store.getState().persistedToBrowserStorage
-        .chatState.agentState.isConnected
+        .chatState.humanAgentState.isConnected
     ) {
       this.props.serviceManager.humanAgentService.userTyping(isTyping);
     }
@@ -895,7 +897,7 @@ class MainWindow
       config,
       serviceManager,
       botMessageState,
-      agentState,
+      humanAgentState,
       allMessageItemsByID,
       isHydrated,
       locale,
@@ -907,7 +909,7 @@ class MainWindow
       this.state;
 
     const inputState = selectInputState(this.props);
-    const agentDisplayState = selectAgentDisplayState(this.props);
+    const agentDisplayState = selectHumanAgentDisplayState(this.props);
 
     const showDisclaimer = this.getShowDisclaimer();
     let hideBotContainer: boolean;
@@ -939,7 +941,7 @@ class MainWindow
             onSendInput={(text: string) =>
               this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
             }
-            agentState={agentState}
+            humanAgentState={humanAgentState}
             agentDisplayState={agentDisplayState}
             allMessageItemsByID={allMessageItemsByID}
             onRestart={this.onRestart}

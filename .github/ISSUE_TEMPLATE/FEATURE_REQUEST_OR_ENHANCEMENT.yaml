@@ -45,14 +45,6 @@ body:
       label: Application/PAL
       description: 'What application and/or PAL do you work on?'
   - type: dropdown
-    id: backend
-    attributes:
-      label: How do you use AI Chat?
-      options:
-        - 'with watsonx Orchestrate'
-        - 'with watsonx Assistant'
-        - 'with my own backend'
-  - type: dropdown
     id: blocker
     attributes:
       label: Is this a blocker to using AI Chat

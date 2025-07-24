@@ -36,7 +36,7 @@ import {
 import { FileStatusValue } from "../utils/constants";
 import { doFocusRef } from "../utils/domUtils";
 import {
-  isConnectToAgent,
+  isConnectToHumanAgent,
   isFullWidthUserDefined,
   isOptionItem,
   isRequest,
@@ -49,7 +49,7 @@ import { timestampToTimeString } from "../utils/timeUtils";
 import { type ScrollElementIntoViewFunction } from "./MessagesComponent";
 import { MessageTypeComponent } from "./MessageTypeComponent";
 import {
-  AgentMessageType,
+  HumanAgentMessageType,
   Message,
   MessageRequest,
   MessageResponseTypes,
@@ -297,8 +297,8 @@ class MessageComponent extends PureComponent<
     // If the message is a CTA, has a service desk error, and we're supposed to report service desk errors, then we
     // need to render the failed message.
     return (
-      isConnectToAgent(localMessageItem.item) &&
-      message.history?.agent_no_service_desk
+      isConnectToHumanAgent(localMessageItem.item) &&
+      message.ui_state_internal?.agent_no_service_desk
     );
   }
 
@@ -383,18 +383,19 @@ class MessageComponent extends PureComponent<
       const agentMessageType = localMessageItem.item.agent_message_type;
       const responseUserProfile = message.history.response_user_profile;
 
-      if (isAgentStatusMessage(agentMessageType)) {
+      if (isHumanAgentStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
         return null;
       }
 
-      const fromAgent = agentMessageType === AgentMessageType.FROM_AGENT;
+      const fromHumanAgent =
+        agentMessageType === HumanAgentMessageType.FROM_HUMAN_AGENT;
       if (responseUserProfile?.profile_picture_url) {
         avatar = (
           <ImageWithFallback
             url={responseUserProfile?.profile_picture_url}
             alt={
-              fromAgent
+              fromHumanAgent
                 ? languagePack.agent_ariaResponseUserAvatar
                 : languagePack.agent_ariaGenericAvatar
             }
@@ -402,6 +403,7 @@ class MessageComponent extends PureComponent<
           />
         );
         iconClassName = "WACMessage__Avatar--agent";
+        actorName = responseUserProfile?.nickname || "";
       } else {
         actorName = responseUserProfile?.nickname || botName;
 
@@ -608,7 +610,7 @@ class MessageComponent extends PureComponent<
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
     const agentMessageType = messageItem.agent_message_type;
-    const fromHistory = message.history.from_history;
+    const fromHistory = message.ui_state_internal?.from_history;
     const readWidgetSaid = isFirstMessageItem;
 
     if (
@@ -642,7 +644,7 @@ class MessageComponent extends PureComponent<
 
     // If this is a user_defined response type with silent set, we don't want to render all the extra cruft around it.
     const agentClassName = agentMessageType
-      ? getAgentMessageClassName(
+      ? getHumanAgentMessageClassName(
           agentMessageType,
           responseType,
           isCustomMessage
@@ -650,7 +652,7 @@ class MessageComponent extends PureComponent<
       : null;
 
     const messageIsRequest = isRequest(message);
-    const isSystemMessage = isAgentStatusMessage(
+    const isSystemMessage = isHumanAgentStatusMessage(
       localMessageItem.item.agent_message_type
     );
 
@@ -783,8 +785,8 @@ class MessageComponent extends PureComponent<
 /**
  * Returns the class name to add to messages with the given agent message type.
  */
-function getAgentMessageClassName(
-  agentMessageType: AgentMessageType,
+function getHumanAgentMessageClassName(
+  agentMessageType: HumanAgentMessageType,
   messageResponseType: MessageResponseTypes,
   isUserDefinedResponse: boolean
 ) {
@@ -801,12 +803,12 @@ function getAgentMessageClassName(
   switch (agentMessageType) {
     case null:
     case undefined:
-    case AgentMessageType.FROM_USER:
+    case HumanAgentMessageType.FROM_USER:
       return null;
-    case AgentMessageType.RELOAD_WARNING:
-    case AgentMessageType.DISCONNECTED:
+    case HumanAgentMessageType.RELOAD_WARNING:
+    case HumanAgentMessageType.DISCONNECTED:
       return "WAC__received--chatStatusMessage";
-    case AgentMessageType.FROM_AGENT:
+    case HumanAgentMessageType.FROM_HUMAN_AGENT:
       return "WAC__received--fromHuman";
     default:
       return "WAC__received--agentStatusMessage";
@@ -816,15 +818,15 @@ function getAgentMessageClassName(
 /**
  * Indicates if this message is a status message. These are messages that are centered in the view.
  */
-function isAgentStatusMessage(agentMessageType: AgentMessageType) {
+function isHumanAgentStatusMessage(agentMessageType: HumanAgentMessageType) {
   switch (agentMessageType) {
     case null:
     case undefined:
-    case AgentMessageType.FROM_USER:
-    case AgentMessageType.RELOAD_WARNING:
-    case AgentMessageType.DISCONNECTED:
-    case AgentMessageType.FROM_AGENT:
-    case AgentMessageType.INLINE_ERROR:
+    case HumanAgentMessageType.FROM_USER:
+    case HumanAgentMessageType.RELOAD_WARNING:
+    case HumanAgentMessageType.DISCONNECTED:
+    case HumanAgentMessageType.FROM_HUMAN_AGENT:
+    case HumanAgentMessageType.INLINE_ERROR:
       return false;
     default:
       return true;

@@ -18,10 +18,10 @@ import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
 } from "../schema/outputItemToLocalItem";
-import { AgentsOnlineStatus } from "../services/haa/HumanAgentService";
+import { HumanAgentsOnlineStatus } from "../services/haa/HumanAgentService";
 import { ServiceManager } from "../services/ServiceManager";
 import actions from "../store/actions";
-import { agentUpdateIsSuspended } from "../store/agentActions";
+import { agentUpdateIsSuspended } from "../store/humanAgentActions";
 import {
   DEFAULT_PERSISTED_TO_BROWSER,
   VIEW_STATE_LAUNCHER_OPEN,
@@ -49,8 +49,8 @@ import {
   createWelcomeRequest,
   hasServiceDesk,
   hasTourUserDefinedType,
-  isConnectToAgent,
-  isLiveAgentMessage,
+  isConnectToHumanAgent,
+  isLiveHumanAgentMessage,
   isPause,
   isRequest,
   isResponse,
@@ -277,10 +277,7 @@ class ChatActionsImpl {
       }
     } else {
       // Need to populate the history in redux (specifically botMessageState) before creating elements for custom
-      // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event where users may choose
-      // to call instance.updateHistoryUserDefined(messageID, data). That instance function will fail to save user
-      // data if the messageID provided can't be found in the botMessageState array. So we need to hydrate that
-      // state before firing userDefinedResponse events.
+      // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event.
       serviceManager.store.dispatch(
         actions.hydrateMessageHistory(history.messageHistory)
       );
@@ -316,7 +313,10 @@ class ChatActionsImpl {
       const lastOriginalMessage =
         history.messageHistory.allMessagesByID[lastMessage?.fullMessageID];
 
-      if (!isLiveAgentMessage(lastMessage) && isRequest(lastOriginalMessage)) {
+      if (
+        !isLiveHumanAgentMessage(lastMessage) &&
+        isRequest(lastOriginalMessage)
+      ) {
         // If the last message in history is a request that means that the user left the page before we received the
         // response and the response is actually still being calculated. In this case we want to "reconnect" to the
         // back-end so that we can receive the response when it becomes available. To do that all we have to do is
@@ -345,18 +345,18 @@ class ChatActionsImpl {
     const { persistedToBrowserStorage } = state;
     const { chatState, launcherState } = persistedToBrowserStorage;
     const publicWebChatState: PublicWebChatState = {
-      isConnectedWithHumanAgent: chatState.agentState.isConnected,
+      isConnectedWithHumanAgent: chatState.humanAgentState.isConnected,
       isWebChatOpen: launcherState.viewState.mainWindow,
-      isConnectingWithHumanAgent: state.agentState.isConnecting,
+      isConnectingWithHumanAgent: state.humanAgentState.isConnecting,
       isHomeScreenOpen: chatState.homeScreenState.isHomeScreenOpen,
       isDebugEnabled: isEnableDebugLog(),
       hasUserSentMessage: chatState.hasSentNonWelcomeMessage,
       isTourActive: launcherState.activeTour,
       viewState: { ...launcherState.viewState },
       serviceDesk: {
-        isConnected: chatState.agentState.isConnected,
-        isConnecting: state.agentState.isConnecting,
-        isSuspended: chatState.agentState.isSuspended ?? false,
+        isConnected: chatState.humanAgentState.isConnected,
+        isConnecting: state.humanAgentState.isConnecting,
+        isSuspended: chatState.humanAgentState.isSuspended ?? false,
       },
       locale: this.serviceManager.store.getState().locale,
       intl: this.serviceManager.intl,
@@ -502,7 +502,7 @@ class ChatActionsImpl {
    * This method completes when all message items have been processed (including the time delay that may be introduced
    * by a pause).
    *
-   * @param message A v2 message API Response object.
+   * @param message A {@link MessageResponse} object.
    * @param isLatestWelcomeNode Indicates if this message is a new welcome message that has just been shown to the user
    * and isn't a historical welcome message.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
@@ -883,7 +883,7 @@ class ChatActionsImpl {
    * turning this into a formal queue as the pause response_type may cause us to lose correct order in fast
    * conversations.
    *
-   * @param fullMessage A v2 message API Response object.
+   * @param fullMessage A {@link MessageResponse} object.
    * @param isLatestWelcomeNode If it is a new welcome node, we want to pass that data along.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
    * @param requestOptions The options that were included when the request was sent.
@@ -919,7 +919,7 @@ class ChatActionsImpl {
 
       if (messageItem) {
         const pause = isPause(messageItem);
-        const agent = isConnectToAgent(messageItem);
+        const agent = isConnectToHumanAgent(messageItem);
         const tour = hasTourUserDefinedType(messageItem);
 
         const localMessageItem = outputItemToLocalItem(
@@ -1009,18 +1009,18 @@ class ChatActionsImpl {
 
             // Make sure this state is reflected in history.
             store.dispatch(
-              actions.setMessageHistoryProperty(
+              actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
                 "agent_no_service_desk",
                 true
               )
             );
-            partialMessage.history.agent_no_service_desk = true;
+            partialMessage.ui_state_internal.agent_no_service_desk = true;
           }
 
           // eslint-disable-next-line no-await-in-loop
           const agentAvailability =
-            await this.serviceManager.humanAgentService?.checkAreAnyAgentsOnline(
+            await this.serviceManager.humanAgentService?.checkAreAnyHumanAgentsOnline(
               fullMessage
             );
 
@@ -1028,29 +1028,33 @@ class ChatActionsImpl {
           if (initialRestartCount === this.serviceManager.restartCount) {
             // Update the value in the redux store.
             store.dispatch(
-              actions.setMessageHistoryProperty(
+              actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
                 "agent_availability",
                 agentAvailability
               )
             );
 
-            // Send event to back-end to save the current agent availability state so session history can use it on reload.
-            partialMessage.history.agent_availability = agentAvailability;
+            partialMessage.ui_state_internal =
+              partialMessage.ui_state_internal || {};
 
-            let shouldAutoRequestAgent = false;
+            // Send event to back-end to save the current agent availability state so session history can use it on reload.
+            partialMessage.ui_state_internal.agent_availability =
+              agentAvailability;
+
+            let shouldAutoRequestHumanAgent = false;
 
             // If configured, then auto-connect right now.
-            if (config.public.serviceDesk?.skipConnectAgentCard) {
-              shouldAutoRequestAgent = true;
+            if (config.public.serviceDesk?.skipConnectHumanAgentCard) {
+              shouldAutoRequestHumanAgent = true;
             }
 
             // Decrement the typing counter to get rid of the pause.
             store.dispatch(actions.addIsTypingCounter(-1));
 
             if (
-              shouldAutoRequestAgent &&
-              agentAvailability === AgentsOnlineStatus.ONLINE
+              shouldAutoRequestHumanAgent &&
+              agentAvailability === HumanAgentsOnlineStatus.ONLINE
             ) {
               this.serviceManager.humanAgentService.startChat(
                 localMessageItem,
@@ -1585,7 +1589,7 @@ class ChatActionsImpl {
   async restartConversation(options: RestartConversationOptions = {}) {
     const {
       skipHydration = false,
-      endAgentConversation = true,
+      endHumanAgentConversation = true,
       fireEvents = true,
     } = options;
 
@@ -1620,11 +1624,11 @@ class ChatActionsImpl {
       const { viewState } = persistedToBrowserStorage.launcherState;
 
       // If we're connected to an agent, we need to end the agent chat.
-      const { isConnecting } = currentState.agentState;
+      const { isConnecting } = currentState.humanAgentState;
       const { isConnected } =
-        currentState.persistedToBrowserStorage.chatState.agentState;
+        currentState.persistedToBrowserStorage.chatState.humanAgentState;
 
-      if ((isConnected || isConnecting) && endAgentConversation) {
+      if ((isConnected || isConnecting) && endHumanAgentConversation) {
         await serviceManager.humanAgentService.endChat(true, false, false);
       }
 
@@ -1725,7 +1729,7 @@ class ChatActionsImpl {
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
    * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.AGENT_PRE_END_CHAT} and {@link BusEventType.AGENT_END_CHAT} events have been fired and
+   * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    */
   agentEndConversation(endedByUser: boolean) {
@@ -1773,7 +1777,7 @@ interface RestartConversationOptions {
   /**
    * Indicates if a conversation with a human agent should be ended. This defaults to true.
    */
-  endAgentConversation?: boolean;
+  endHumanAgentConversation?: boolean;
 
   /**
    * Indicates if the "pre:restartConversation" and "restartConversation" events should be fired. This defaults to true.

@@ -28,7 +28,7 @@ import type { CarbonTheme } from "../utilities/carbonTypes";
 import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
-import { PersistedAgentState } from "./PersistedAgentState";
+import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
 import type { PersistedTourState, TourState } from "./TourState";
 import { HomeScreenConfig, HomeScreenState } from "../config/HomeScreenConfig";
 import {
@@ -78,7 +78,7 @@ interface AppState extends AppStateMessages {
   /**
    * The current state for the human agent system.
    */
-  agentState: AgentState;
+  humanAgentState: HumanAgentState;
 
   /**
    * Whether we have hydrated Carbon AI chat. This means we have loaded session history if it exists as well as the
@@ -362,7 +362,7 @@ interface PersistedChatState {
   /**
    * The persisted state for agents.
    */
-  agentState: PersistedAgentState;
+  humanAgentState: PersistedHumanAgentState;
 }
 
 /**
@@ -501,7 +501,7 @@ interface ChatMessagesState {
 /**
  * This piece of state contains information about any connection to a human agent system.
  */
-interface AgentState {
+interface HumanAgentState {
   /**
    * Indicates that we are currently attempting to connect the user to an agent.
    */
@@ -550,7 +550,7 @@ interface AgentState {
   /**
    * Indicates if the agent is typing.
    */
-  isAgentTyping: boolean;
+  isHumanAgentTyping: boolean;
 
   /**
    * The state of the input field while connecting or connected to an agent.
@@ -561,7 +561,7 @@ interface AgentState {
 /**
  * The state that controls how the agent interaction appears to the user.
  */
-interface AgentDisplayState {
+interface HumanAgentDisplayState {
   /**
    * Indicates if the user should see that they are connecting or connected to an agent.
    */
@@ -580,7 +580,7 @@ interface AgentDisplayState {
   /**
    * Indicates if the agent is typing.
    */
-  isAgentTyping: boolean;
+  isHumanAgentTyping: boolean;
 }
 
 /**
@@ -732,8 +732,8 @@ export {
   AppStateMessages,
   AppState,
   PersistedToBrowserStorageState,
-  AgentDisplayState,
-  AgentState,
+  HumanAgentDisplayState,
+  HumanAgentState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,

@@ -214,7 +214,7 @@ class MessageService {
    * Process a response from assistant with 200 response code, send and return the messageResponse.
    *
    * @param current The current item in the send queue.
-   * @param received JSON output from v2 API.
+   * @param received A {@link MessageResponse}.
    */
   private async processSuccess(
     current: PendingMessageRequest,
@@ -442,7 +442,7 @@ class MessageService {
   }
 
   /**
-   * Sends the message to watsonx Assistant Backend. Returns "any" in the error case.
+   * Sends the message to the backend. Returns "any" in the error case.
    *
    * @param current The current item in the send queue.
    */
@@ -695,10 +695,9 @@ class MessageService {
   }
 
   /**
-   * Send a message to watsonx Assistant back-end. Returns "any" in the error case.
+   * Send a message to the backend. Returns "any" in the error case.
    *
-   * @param message Takes an object in the shape of a v2 message API Send object. See
-   * [Docs](https://cloud.ibm.com/apidocs/assistant-v2#send-user-input-to-assistant).
+   * @param message Takes a {@link MessageRequest} object.
    * @param source The source of the message.
    * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
    * @param requestOptions The options that were included when the request was sent.

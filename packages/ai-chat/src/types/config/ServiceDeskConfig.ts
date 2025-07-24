@@ -38,7 +38,7 @@ export interface ServiceDeskPublicConfig {
    * agents are available. This essentially mimics the user clicking the "Request agent" button on the card. The
    * card is still displayed to the user.
    */
-  skipConnectAgentCard?: boolean;
+  skipConnectHumanAgentCard?: boolean;
 
   /**
    * The timeout value is seconds to use when waiting for an agent to join the chat after an agent has been
@@ -59,7 +59,7 @@ export interface ServiceDeskPublicConfig {
  *
  * @category Service desk
  */
-export enum AgentsOnlineStatus {
+export enum HumanAgentsOnlineStatus {
   /**
    * Indicates that agents are online.
    */
@@ -431,7 +431,7 @@ export type ServiceDeskErrorInfo =
  */
 export interface StartChatOptions<TPayloadType = unknown> {
   /**
-   * Some arbitrary payload of data that was provided as part of the "agent:pre:startChat" event.
+   * Some arbitrary payload of data that was provided as part of the "human_agent:pre:startChat" event.
    */
   preStartChatPayload: TPayloadType;
 }
@@ -443,7 +443,7 @@ export interface StartChatOptions<TPayloadType = unknown> {
  */
 export interface EndChatInfo<TPayloadType = unknown> {
   /**
-   * Before a chat is ended, a {@link BusEventType.AGENT_PRE_END_CHAT} is fired. The payload value assigned to this
+   * Before a chat is ended, a {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} is fired. The payload value assigned to this
    * event by a listener is provided here.
    */
   preEndChatPayload: TPayloadType;
@@ -452,7 +452,7 @@ export interface EndChatInfo<TPayloadType = unknown> {
    * Indicates if the chat was ended by the agent (or by the service desk integration). If false, indicates the chat
    * was ended by the user or by Carbon AI chat.
    */
-  endedByAgent: boolean;
+  endedByHumanAgent: boolean;
 }
 
 /**

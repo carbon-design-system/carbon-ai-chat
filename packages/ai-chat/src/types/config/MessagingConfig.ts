@@ -20,7 +20,7 @@ export interface ChatInstanceMessaging {
    * Instructs the widget to process the given message as an incoming message received from the assistant. This will
    * fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
    *
-   * @param message A v2 message API Response object.
+   * @param message A {@link MessageResponse} object.
    */
   addMessage: (message: MessageResponse) => Promise<void>;
 

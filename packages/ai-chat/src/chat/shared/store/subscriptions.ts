@@ -55,10 +55,10 @@ function createHandleWindowTitle(serviceManager: ServiceManager) {
 
   return () => {
     const state = store.getState();
-    const { agentState } = store.getState();
-    const { numUnreadMessages } = agentState;
+    const { humanAgentState } = store.getState();
+    const { numUnreadMessages } = humanAgentState;
 
-    if (numUnreadMessages !== previousState.agentState.numUnreadMessages) {
+    if (numUnreadMessages !== previousState.humanAgentState.numUnreadMessages) {
       if (!numUnreadMessages) {
         // Nothing unread anymore so reset the window title.
         clearTimeout(changeTitleTimer);

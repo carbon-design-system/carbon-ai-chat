@@ -21,7 +21,7 @@ import { getBotName } from "../utils/miscUtils";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import {
-  DEFAULT_AGENT_STATE,
+  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
@@ -74,7 +74,7 @@ function doCreateStore(
       isReadonly: config.public.isReadonly,
       fieldVisible: !config.public.isReadonly,
     },
-    agentState: { ...DEFAULT_AGENT_STATE },
+    humanAgentState: { ...DEFAULT_HUMAN_AGENT_STATE },
     botName,
     headerDisplayName: null,
     botAvatarURL: config.public.botAvatarURL || null,

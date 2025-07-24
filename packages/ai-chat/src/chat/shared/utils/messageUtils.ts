@@ -17,13 +17,13 @@ import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
 import { uuid, UUIDType } from "./lang/uuid";
 import {
-  AgentMessageType,
+  HumanAgentMessageType,
   ButtonItem,
   ButtonItemType,
   CardItem,
   CarouselItem,
   CompleteItemChunk,
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   DateItem,
   EventInput,
   FinalResponseChunk,
@@ -82,11 +82,14 @@ function addDefaultsToMessage<T extends MessageResponse | MessageRequest>(
   if (!fullMessage.history) {
     fullMessage.history = {};
   }
+  if (!fullMessage.ui_state_internal) {
+    fullMessage.ui_state_internal = {};
+  }
   if (!fullMessage.history.timestamp) {
     fullMessage.history.timestamp = Date.now();
   }
-  if (fullMessage.history.from_history === undefined) {
-    fullMessage.history.from_history = false;
+  if (fullMessage.ui_state_internal.from_history === undefined) {
+    fullMessage.ui_state_internal.from_history = false;
   }
 
   return fullMessage;
@@ -104,14 +107,14 @@ function isRequest(message: unknown): message is MessageRequest<MessageInput> {
 /**
  * Indicates if this message was part of a conversation with a live agent.
  */
-function isLiveAgentMessage(message: LocalMessageItem) {
+function isLiveHumanAgentMessage(message: LocalMessageItem) {
   return Boolean(message.item.agent_message_type);
 }
 
 /**
  * Indicates if this message contains a message that was part of a conversation with a live agent.
  */
-function hasLiveAgentMessage(message: Message) {
+function hasLiveHumanAgentMessage(message: Message) {
   return (
     (isResponse(message) &&
       Boolean(
@@ -172,10 +175,10 @@ function isOptionItem(item: GenericItem): item is OptionItem {
 /**
  * Determines if the message is a transfer to agent response.
  */
-function isChannelTransferToAgent(message: MessageResponse) {
+function isChannelTransferToHumanAgent(message: MessageResponse) {
   const { generic } = message.output;
 
-  return generic.some(isConnectToAgent);
+  return generic.some(isConnectToHumanAgent);
 }
 
 /**
@@ -278,7 +281,7 @@ function createMessageRequestForFileUpload(upload: FileUpload): MessageRequest {
       text: upload.file.name,
       message_type:
         InternalMessageRequestType.FILE as unknown as MessageInputType,
-      agent_message_type: AgentMessageType.FROM_USER,
+      agent_message_type: HumanAgentMessageType.FROM_USER,
     },
     history: {
       file_upload_status: FileStatusValue.UPLOADING,
@@ -349,10 +352,12 @@ function createMessageResponseForItem<T extends GenericItem>(
 /**
  * Indicates if the dialog response is a "connect_to_agent" message.
  */
-function isConnectToAgent(
+function isConnectToHumanAgent(
   response: GenericItem
-): response is ConnectToAgentItem {
-  return response?.response_type === MessageResponseTypes.CONNECT_TO_AGENT;
+): response is ConnectToHumanAgentItem {
+  return (
+    response?.response_type === MessageResponseTypes.CONNECT_TO_HUMAN_AGENT
+  );
 }
 
 function isCardResponseType(response: GenericItem): response is CardItem {
@@ -411,7 +416,7 @@ function renderAsUserDefinedMessage(
     case MessageResponseTypes.TEXT:
     case MessageResponseTypes.IMAGE:
     case MessageResponseTypes.OPTION:
-    case MessageResponseTypes.CONNECT_TO_AGENT:
+    case MessageResponseTypes.CONNECT_TO_HUMAN_AGENT:
     case MessageResponseTypes.IFRAME:
     case MessageResponseTypes.VIDEO:
     case MessageResponseTypes.AUDIO:
@@ -559,7 +564,7 @@ function getLastBotResponseWithContext(state: AppState) {
     state.allMessagesByID,
     (message) =>
       isResponse(message) &&
-      !hasLiveAgentMessage(message) &&
+      !hasLiveHumanAgentMessage(message) &&
       Boolean(message.context)
   ) as MessageResponse;
 }
@@ -575,18 +580,18 @@ export {
   isEventRequest,
   isDateResponseType,
   isOptionItem,
-  isChannelTransferToAgent,
+  isChannelTransferToHumanAgent,
   createWelcomeRequest,
   createMessageRequestForChoice,
   createMessageRequestForText,
   createMessageResponseForText,
   createMessageRequestForDate,
-  isConnectToAgent,
+  isConnectToHumanAgent,
   renderAsUserDefinedMessage,
   renderAsTour,
   hasTourUserDefinedType,
   hasServiceDesk,
-  isLiveAgentMessage,
+  isLiveHumanAgentMessage,
   isItemSupportedInResponseBody,
   isCarouselResponseType,
   isResponseWithNestedItems,

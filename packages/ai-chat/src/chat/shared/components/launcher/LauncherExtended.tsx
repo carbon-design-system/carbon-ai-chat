@@ -53,7 +53,7 @@ interface LauncherExtendedProps extends HasClassName {
    * The number of unread messages from a human agent that should be displayed on the launcher. If this is 0, no
    * agent indicator will be shown unless showUnreadIndicator is set.
    */
-  unreadAgentCount: number;
+  unreadHumanAgentCount: number;
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
@@ -130,7 +130,7 @@ function LauncherExtended(
   ref: Ref<LauncherExtendedFunctions>
 ) {
   const {
-    unreadAgentCount,
+    unreadHumanAgentCount,
     showUnreadIndicator,
     launcherConfig,
     isExtended,
@@ -175,10 +175,10 @@ function LauncherExtended(
     activeTour
   );
 
-  if (unreadAgentCount !== 0) {
+  if (unreadHumanAgentCount !== 0) {
     ariaLabel += `. ${intl.formatMessage(
       { id: "icon_ariaUnreadMessages" },
-      { count: unreadAgentCount }
+      { count: unreadHumanAgentCount }
     )}`;
   }
 
@@ -356,9 +356,9 @@ function LauncherExtended(
             </div>
           </div>
         </div>
-        {(unreadAgentCount !== 0 || showUnreadIndicator) && (
+        {(unreadHumanAgentCount !== 0 || showUnreadIndicator) && (
           <div className="WAC__countIndicator">
-            {unreadAgentCount !== 0 ? unreadAgentCount : ""}
+            {unreadHumanAgentCount !== 0 ? unreadHumanAgentCount : ""}
           </div>
         )}
       </Button>
