@@ -17,7 +17,6 @@ import cx from "classnames";
 import React, { forwardRef, Ref, RefObject, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
 
-import { HasServiceManager } from "../../hocs/withServiceManager";
 import { AppState } from "../../../../types/state/AppState";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import HasIntl from "../../../../types/utilities/HasIntl";
@@ -26,8 +25,9 @@ import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
 import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
 import { LanguagePack } from "../../../../types/instance/apiTypes";
+import { PageObjectId } from "../../utils/PageObjectId";
 
-interface LauncherProps extends HasServiceManager, HasClassName, HasIntl {
+interface LauncherProps extends HasClassName, HasIntl {
   languagePack: LanguagePack;
   onToggleOpen: () => void;
 
@@ -67,7 +67,6 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     languagePack,
     unreadAgentCount,
     intl,
-    serviceManager,
     showUnreadIndicator,
     className,
     tabIndex,
@@ -145,7 +144,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
         className={cx("WACLauncher__Button", {
           WACLauncher__TourButton: activeTour,
         })}
-        id={`WACLauncher__Button${serviceManager.namespace.suffix}`}
+        data-testid={PageObjectId.LAUNCHER}
         kind={ButtonKindEnum.PRIMARY}
         type="button"
         onClick={onToggleOpen}

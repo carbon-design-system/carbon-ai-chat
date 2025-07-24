@@ -49,9 +49,10 @@ jobs:
           node-version: "22.x"
           registry-url: https://registry.npmjs.org
           cache: "npm"
-      - name: Install dependencies and buld
+      - name: Install dependencies and build
         run: |
           npm install
+          npx playwright install --with-deps
           npm run build
       - name: Continuous integration check
         run: npm run ci-check

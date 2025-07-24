@@ -28,7 +28,7 @@ import {
 } from "../../../types/instance/ChatInstance";
 import { BusEvent } from "../../../types/events/eventBusTypes";
 
-interface UserDefinedElementRegistryItem {
+export interface UserDefinedElementRegistryItem {
   slotName: string;
   element: HTMLElement;
 }

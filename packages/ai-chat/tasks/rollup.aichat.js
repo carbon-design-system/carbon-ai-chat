@@ -202,6 +202,23 @@ async function runRollup() {
           cwd: paths.root,
           exclude: /^(.+\/)?node_modules\/.+$/,
         }),
+        terser({
+          compress: false,
+          mangle: false,
+          format: {
+            beautify: true,
+            indent_level: 2,
+            // keep only comments that contain @license
+            comments: (astNode, comment) => {
+              const text = comment.value;
+              // comment.type === "comment2" for /* … */
+              if (comment.type === 'comment2') {
+                return /@license/i.test(text);
+              }
+              return false;
+            }
+          }
+        }),
         process.env.profile === 'true' && visualizer({ gzipSize: true, open: true }),
       ],
     },

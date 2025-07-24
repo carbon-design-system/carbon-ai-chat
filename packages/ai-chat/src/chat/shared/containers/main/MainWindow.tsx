@@ -46,11 +46,7 @@ import {
 } from "../../../../types/utilities/HasAddRemoveClassName";
 import { AutoScrollOptions } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import {
-  getIPhoneHeightOffset,
-  IS_IOS,
-  IS_MOBILE,
-} from "../../utils/browserUtils";
+import { IS_IOS, IS_MOBILE } from "../../utils/browserUtils";
 import { CornersType } from "../../utils/constants";
 import { doFocusRef, SCROLLBAR_WIDTH } from "../../utils/domUtils";
 import { arrayLastValue } from "../../utils/lang/arrayUtils";
@@ -550,11 +546,7 @@ class MainWindow
     } else {
       // For browsers that don't support the visual viewport, for now we'll just settle on these values which only
       // sort of works.
-      let height = "100vh";
-      if (IS_IOS) {
-        const offset = getIPhoneHeightOffset();
-        height = `calc(100vh - ${offset}px)`;
-      }
+      const height = "100vh";
       element.style.setProperty("--cds-chat-viewport-height", height);
       element.style.setProperty("--cds-chat-viewport-width", "100vw");
       element.style.setProperty("--cds-chat-viewport-offsetTop", "0");
@@ -1055,7 +1047,6 @@ class MainWindow
           <CatastrophicError
             onClose={this.onClose}
             headerDisplayName={headerDisplayName}
-            serviceManager={serviceManager}
             languagePack={languagePack}
             onRestart={this.onRestart}
             showHeader
@@ -1231,6 +1222,7 @@ class MainWindow
           eventName={eventName}
           eventDescription={eventDescription}
           overlayPanelName={overlayPanelName}
+          testIdPrefix={overlayPanelName}
           isOpen={isOpen}
           isMessageForInput={isMessageForInput}
           localMessageItem={localMessageItem}

@@ -76,7 +76,7 @@ function doCreateStore(
     },
     agentState: { ...DEFAULT_AGENT_STATE },
     botName,
-    headerDisplayName: useAITheme ? null : botName,
+    headerDisplayName: null,
     botAvatarURL: config.public.botAvatarURL || null,
     headerAvatarConfig: null,
     chatWidthBreakpoint: null,

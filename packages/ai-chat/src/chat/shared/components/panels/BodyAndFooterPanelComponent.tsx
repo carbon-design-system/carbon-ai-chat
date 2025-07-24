@@ -113,6 +113,12 @@ interface BodyAndFooterPanelComponentProps
    * Called when the restart button is clicked.
    */
   onClickRestart?: () => void;
+
+  /**
+   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
+   * in the header obviously unique.
+   */
+  testIdPrefix: OverlayPanelName;
 }
 
 /**
@@ -138,6 +144,7 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     onPanelCloseEnd,
     onPanelOpenStart,
     onPanelCloseStart,
+    testIdPrefix,
   } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
@@ -179,6 +186,7 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
         onClickClose={onClose}
         onClickRestart={onClickRestart}
         onClickCloseAndRestart={onCloseAndRestart}
+        testIdPrefix={testIdPrefix}
       >
         {originalMessage && (
           <BodyWithFooterComponent

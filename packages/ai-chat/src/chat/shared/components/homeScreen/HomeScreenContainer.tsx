@@ -118,8 +118,6 @@ function HomeScreenContainer({
   const homeScreenConfig = useSelector(
     (state: AppState) => state.homeScreenConfig
   );
-  const botAvatarURL = useSelector((state: AppState) => state.botAvatarURL);
-  const botName = useSelector((state: AppState) => state.botName);
 
   const isCustomPanelOpen = useSelector(
     (state: AppState) => state.customPanelState.isOpen
@@ -178,8 +176,6 @@ function HomeScreenContainer({
       overlayPanelName={OverlayPanelName.HOME_SCREEN}
     >
       <HomeScreen
-        botName={botName}
-        botAvatarURL={botAvatarURL}
         isHydrated={isHydrationAnimationComplete}
         homeScreenMessageInputRef={homeScreenInputRef}
         homeScreenConfig={homeScreenConfig}

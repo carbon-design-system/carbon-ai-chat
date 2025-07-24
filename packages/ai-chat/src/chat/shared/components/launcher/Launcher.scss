@@ -479,6 +479,13 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
         animation: none;
       }
     }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .WACLauncherComplex__SmallLauncherContainer,
+      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+        .WACLauncher__Button {
+        animation: none;
+      }
+    }
 
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -544,6 +551,13 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       animation: none;
     }
   }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__SmallLauncherContainer,
+    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+      .WACLauncher__Button {
+      animation: none;
+    }
+  }
 
   .WACLauncherComplex__SmallLauncherContainer,
   .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -574,6 +588,13 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
     }
   }
 
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__SmallLauncherContainer,
+    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+      .WACLauncher__Button {
+      animation: none;
+    }
+  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -754,6 +775,18 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
         inset-inline-end: calc(-1 * #{layout.$spacing-11});
       }
     }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .WACLauncherComplex__SmallLauncherContainer,
+      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+        .WACLauncher__Button {
+        padding: 0 60px 60px 0;
+        border-radius: layout.$spacing-11;
+        animation: none;
+        block-size: layout.$spacing-13;
+        inline-size: layout.$spacing-13;
+        inset-inline-end: calc(-1 * #{layout.$spacing-11});
+      }
+    }
 
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -815,6 +848,18 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
     }
   }
 
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__SmallLauncherContainer,
+    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+      .WACLauncher__Button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: none;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -951,6 +996,19 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       inset-inline-end: calc(-1 * #{layout.$spacing-11});
     }
   }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__SmallLauncherContainer,
+    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+      .WACLauncher__Button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: none;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-block-end: calc(-1 * #{layout.$spacing-11});
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+  }
 
   .WACLauncherComplex__SmallLauncherContainer,
   .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -1001,6 +1059,12 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
         animation: none;
       }
     }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .WACLauncherComplex__Text,
+      .WACLauncher__CloseButton {
+        animation: none;
+      }
+    }
 
     .WACLauncherComplex__Text,
     .WACLauncher__CloseButton {
@@ -1015,6 +1079,13 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       }
     }
 
+    @media screen and (prefers-reduced-motion: reduce) {
+      .WACLauncherComplex__SmallLauncherContainer,
+      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+        .WACLauncher__Button {
+        animation: none;
+      }
+    }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
       .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -1070,10 +1141,23 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       animation: none;
     }
   }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__Text,
+    .WACLauncher__CloseButton {
+      animation: none;
+    }
+  }
 
   .WACLauncherComplex__Text,
   .WACLauncher__CloseButton {
     animation: motion.$duration-slow-01 WACAnimLauncherComplex__FadeOut forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__SmallLauncherContainer,
+    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+      .WACLauncher__Button {
+      animation: none;
+    }
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
@@ -1107,6 +1191,13 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
 
 .WACContainer--render[dir="rtl"]
   .WACLauncherComplex__Container--closeAnimation {
+  @media screen and (prefers-reduced-motion: reduce) {
+    .WACLauncherComplex__SmallLauncherContainer,
+    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
+      .WACLauncher__Button {
+      animation: none;
+    }
+  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
