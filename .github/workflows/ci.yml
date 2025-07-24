@@ -4,6 +4,8 @@ on:
     branches: [ main, carbon-react-web-components-integration ]
   pull_request:
     branches: [ main, carbon-react-web-components-integration ]
+  merge_group:
+    types: [checks_requested]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,6 +39,8 @@ jobs:
         run: |
           npm install
           npx playwright install --with-deps
+      - name: Build chat component
+        run: npm run aiChat:build
       - name: Run test
         run: npm run test
 

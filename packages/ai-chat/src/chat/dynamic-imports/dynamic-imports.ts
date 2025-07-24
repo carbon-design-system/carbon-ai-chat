@@ -105,9 +105,20 @@ function lazyTourComponent() {
   return React.lazy(() => import("../shared/components/tour/TourContainer"));
 }
 
-function lazyMediaPlayer() {
-  return React.lazy(
-    () => import("../shared/components/responseTypes/util/ReactPlayer")
+function lazyMediaPlayer(): LazyExoticComponent<ComponentType<any>> {
+  return React.lazy(() =>
+    import("react-player/lazy/index.js").then((mod: any) => {
+      // react-player 2.x is old and is confused in their cjs vs mjs usage.
+      // mod might be:
+      // { default: Component }
+      // { default: { default: Component } }
+      // plain Component
+      let exported = mod.default ?? mod;
+      if (exported && typeof exported === "object" && "default" in exported) {
+        exported = exported.default;
+      }
+      return { default: exported };
+    })
   );
 }
 

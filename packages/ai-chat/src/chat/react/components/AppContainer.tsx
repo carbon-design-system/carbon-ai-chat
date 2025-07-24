@@ -268,7 +268,6 @@ function addUserDefinedResponseHandler(
     }>
   >
 ) {
-  console.log({ webChatInstance });
   /**
    * This handler will fire each time a user defined response occurs and we will update our state by appending the
    * event to the end of our events list. We have to make sure to create a new array in order to trigger a re-render.

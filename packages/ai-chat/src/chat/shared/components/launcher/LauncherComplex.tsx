@@ -12,7 +12,6 @@ import { Tag } from "@carbon/react";
 import cx from "classnames";
 import React, { RefObject } from "react";
 
-import { HasServiceManager } from "../../hocs/withServiceManager";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import HasIntl from "../../../../types/utilities/HasIntl";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
@@ -20,10 +19,7 @@ import { LauncherConfig } from "../../../../types/config/LauncherConfig";
 import { Launcher } from "./Launcher";
 import { LanguagePack } from "../../../../types/instance/apiTypes";
 
-interface LauncherComplexProps
-  extends HasServiceManager,
-    HasIntl,
-    HasClassName {
+interface LauncherComplexProps extends HasIntl, HasClassName {
   languagePack: LanguagePack;
   launcherConfig: LauncherConfig;
   onOpen: () => void;
@@ -71,7 +67,6 @@ interface LauncherComplexProps
 
 function LauncherComplex(props: LauncherComplexProps) {
   const {
-    serviceManager,
     languagePack,
     intl,
     launcherConfig,
@@ -132,7 +127,6 @@ function LauncherComplex(props: LauncherComplexProps) {
         </div>
       </button>
       <Launcher
-        serviceManager={serviceManager}
         languagePack={languagePack}
         intl={intl}
         ref={launcherRef}

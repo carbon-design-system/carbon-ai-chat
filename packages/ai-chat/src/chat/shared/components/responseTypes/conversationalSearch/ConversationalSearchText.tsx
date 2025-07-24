@@ -10,15 +10,7 @@
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
 import OperationalTag from "../../../../react/carbon/OperationalTag";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
-
-import React, {
-  useEffect,
-  useImperativeHandle,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 
 import { useCounter } from "../../../hooks/useCounter";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
@@ -27,19 +19,16 @@ import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageIte
 
 import { sanitizeHTML } from "../../../utils/htmlUtils";
 import { consoleError } from "../../../utils/miscUtils";
-import { PortalComponent } from "../../PortalComponent";
-import { MaybeDangerouslySetInnerHTML } from "../../util/MaybeDangerouslySetInnerHTML";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../../types/messaging/Messages";
 import { processMarkdown } from "../../../../web-components/components/markdownText/markdown/markdownToHTML";
+import { MarkdownText } from "../../../../react/components/markdownText/MarkdownText";
 
 const ChevronUp = carbonIconToReact(ChevronUp16);
 const ChevronDown = carbonIconToReact(ChevronDown16);
-
-const TOGGLE_CONTAINER_CLASSNAME =
-  "WACConversationalSearchText__CitationsToggleContainer";
 
 interface ConversationalSearchTextFunctions {
   /**
@@ -76,10 +65,7 @@ interface ConversationalSearchTextProps {
   citationsOpen: boolean;
 }
 
-function ConversationalSearchText(
-  props: ConversationalSearchTextProps,
-  ref: React.Ref<ConversationalSearchTextFunctions>
-) {
+function ConversationalSearchText(props: ConversationalSearchTextProps) {
   const {
     highlightCitation,
     onToggleCitations,
@@ -93,8 +79,6 @@ function ConversationalSearchText(
   const toggleID = `WACConversationalSearchText-${useCounter()}${
     serviceManager.namespace.suffix
   }`;
-  const [toggleContainer, setToggleContainer] = useState<HTMLSpanElement>();
-  const rootRef = useRef<HTMLDivElement>();
   const [html, setHtml] = useState("");
 
   let text: string;
@@ -106,64 +90,33 @@ function ConversationalSearchText(
 
   useEffect(() => {
     async function getHtml() {
-      const newHtml = await createHTMLWithHighlights(
-        text,
-        highlightCitation,
-        showCitationsToggle
-      );
+      const newHtml = await createHTMLWithHighlights(text, highlightCitation);
       setHtml(newHtml);
     }
     getHtml();
   }, [text, highlightCitation, showCitationsToggle]);
 
-  useImperativeHandle(ref, () => ({
-    /**
-     * Use the root element to query the citations toggle button because the OperationalTag does not use forwardRef so
-     * we have to rely on fetching the element manually.
-     */
-    getToggleCitationsElement: () =>
-      rootRef.current?.querySelector(".cds--tag--operational"),
-  }));
-
-  useLayoutEffect(() => {
-    const container = rootRef.current?.querySelector<HTMLSpanElement>(
-      `.${TOGGLE_CONTAINER_CLASSNAME}`
-    );
-    setToggleContainer(container);
-  }, [html]);
-
   return (
-    <div className="WACConversationalSearchText" ref={rootRef}>
-      <MaybeDangerouslySetInnerHTML
-        html={html}
-        overrideSanitize={
-          false /* The html is sanitized already in createHTMLWithHighlights. */
-        }
-      />
-      {toggleContainer && (
-        // Use a portal to attach the toggle button to its container element in the search result.
-        <PortalComponent hostElement={toggleContainer}>
-          <>
-            <span className="WACConversationalSearchText__CitationsToggle">
-              <OperationalTag
-                id={toggleID}
-                onClick={onToggleCitations}
-                aria-expanded={citationsOpen}
-                text={languagePack.conversationalSearch_citationsLabel}
-                aria-label={languagePack.conversationalSearch_toggleCitations}
-              >
-                {citationsOpen ? (
-                  <ChevronUp slot="icon" />
-                ) : (
-                  <ChevronDown slot="icon" />
-                )}
-              </OperationalTag>
-            </span>
-            {/* This &nbsp; makes sure that if the toggle button appears on its own line, it has some inline text
-           content which will ensure that the line is sized based on the text. */}
-            <span>&nbsp;</span>
-          </>
-        </PortalComponent>
+    <div className="WACConversationalSearchText">
+      <MarkdownText markdown={html} sanitizeHTML={false} />
+      {showCitationsToggle && (
+        <div className="WACConversationalSearchText__CitationsToggleContainer">
+          <div className="WACConversationalSearchText__CitationsToggle">
+            <OperationalTag
+              id={toggleID}
+              onClick={onToggleCitations}
+              aria-expanded={citationsOpen}
+              text={languagePack.conversationalSearch_citationsLabel}
+              aria-label={languagePack.conversationalSearch_toggleCitations}
+            >
+              {citationsOpen ? (
+                <ChevronUp slot="icon" />
+              ) : (
+                <ChevronDown slot="icon" />
+              )}
+            </OperationalTag>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -179,14 +132,10 @@ const HIGHLIGHT_TOKEN_REGEXP = /@@\/?:wc-source:@@/g;
  *
  * @param text The text to convert to html and highlight.
  * @param highlightCitation The citation that indicates what should be highlighted.
- * @param showCitationsToggle Indicates if the citations toggle should be displayed. If so, this code will examine
- * the html content to determine where it should be shown and will insert an element at that location that can be
- * found later.
  */
 async function createHTMLWithHighlights(
   text: string,
-  highlightCitation: ConversationalSearchItemCitation,
-  showCitationsToggle: boolean
+  highlightCitation: ConversationalSearchItemCitation
 ) {
   // Highlighting a citation is a bit messy. The back-end provides us with text ranges in the original search result
   // but those ranges don't pay attention to the structure of the content and thus it's possible for a range to
@@ -233,7 +182,7 @@ async function createHTMLWithHighlights(
 
   const afterMarkdownHTML = sanitizeHTML(md);
 
-  if (ranges || showCitationsToggle) {
+  if (ranges) {
     try {
       // Now stuff the html into an element so we can walk through it looking for the tokens.
       const rootElement = document.createElement("div");
@@ -242,25 +191,6 @@ async function createHTMLWithHighlights(
       if (ranges) {
         // Look for the highlight tokens and add highlights as necessary.
         insertHighlights(rootElement, false);
-      }
-
-      if (showCitationsToggle) {
-        // Insert the container element for the citation toggle.
-        const toggleContainer = document.createElement("span");
-        toggleContainer.className = TOGGLE_CONTAINER_CLASSNAME;
-
-        // Figure out what the last element is.
-        const lastElement = rootElement.lastElementChild;
-        const lastTag = lastElement?.tagName;
-        if (lastTag === "P") {
-          // Put the toggle inside the last paragraph so it'll be inline with that content.
-          lastElement.appendChild(document.createTextNode(" "));
-          lastElement.appendChild(toggleContainer);
-        } else {
-          // Make it a sibling of the last content. This will cause the toggle to appear below as a block element.
-          rootElement.appendChild(toggleContainer);
-          toggleContainer.className += ` ${TOGGLE_CONTAINER_CLASSNAME}--block`;
-        }
       }
 
       return rootElement.innerHTML;
@@ -368,9 +298,7 @@ function addTextSegment(
   }
 }
 
-const ConversationalSearchTextExport = React.memo(
-  React.forwardRef(ConversationalSearchText)
-);
+const ConversationalSearchTextExport = React.memo(ConversationalSearchText);
 
 export {
   ConversationalSearchTextExport as ConversationalSearchText,

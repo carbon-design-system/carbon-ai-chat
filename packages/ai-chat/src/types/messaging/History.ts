@@ -41,60 +41,8 @@ export interface HistoryItem {
 
 /**
  * Holds all the conversation between a User and a human or virtual agent.
- *
  * @category Messaging
  */
-export type SessionHistory = HistoryItem[];
-
-/**
- * Denotes the type of note.
- *
- * @category Messaging
- */
-export enum NoteType {
-  /**
-   * Represents the history of the conversation. The only type currently used by Web chat client.
-   */
-  HISTORY = "HISTORY",
-
-  /**
-   * Arbitrary text or/and image to presented to the human agent.
-   */
-  MESSAGE = "MESSAGE",
-
-  /**
-   * An non multi-turn Answer.
-   */
-  ANSWER = "ANSWER",
-
-  /**
-   * A multi-turn suggestion that an agent can approve or reject.
-   */
-  FLOW = "FLOW",
-
-  /**
-   * An error message to be presented to the human agent.
-   */
-  ERROR = "ERROR",
-}
-
-/**
- * Information about a conversation is provided as Notes.
- * A typical use case is the session history that is consumed by both Web Chat client and Agent App within a service
- * desk. More use cases are messages with information that is valuable to the Human Agent but it is not part of the
- * history of the conversation. Previously, with backdoor integrations, there was also support for suggestions notes to
- * the agent. This form of notes may be introduced in the future for front door integrations but currently are not in
- * use.
- *
- * @category Messaging
- */
-export interface Note {
-  type: NoteType;
-}
-
-/**
- * @category Messaging
- */
-export interface HistoryNote extends Note {
-  body: SessionHistory;
+export interface HistoryNote {
+  body: HistoryItem[];
 }

@@ -46,6 +46,8 @@ function App() {
 
     // For usage on the instance later.
     setChatInstance(instance);
+
+    console.log({ chatInstance });
   }
 
   /**
@@ -53,7 +55,7 @@ function App() {
    */
   function feedbackHandler(event: any) {
     if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
-      const { message, messageItem, ...reportData } = event;
+      const { ...reportData } = event;
       setTimeout(() => {
         // eslint-disable-next-line no-alert
         window.alert(JSON.stringify(reportData, null, 2));

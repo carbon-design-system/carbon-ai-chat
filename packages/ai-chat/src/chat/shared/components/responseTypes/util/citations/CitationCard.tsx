@@ -16,7 +16,7 @@ import {
   ConversationalSearchItemCitation,
   SearchResult,
 } from "../../../../../../types/messaging/Messages";
-import { getSearchResultMetaData } from "../../../../utils/searchUtils";
+import { isValidURL } from "../../../../utils/htmlUtils";
 
 /**
  * This component takes a ConversationalSearchItemCitation OR a SearchResult and decides which kind of tile to display
@@ -37,15 +37,9 @@ enum CitationType {
 
 interface CitationCardProps {
   /**
-   * A citation either from ConversationalSearch or from legacy (non-conversational) search. Confusingly,
-   * {@link ConversationalSearchItem} contains it's own search_result array. Those searchResults are not the
-   * searchResults that will be used for this citation prop here. Instead only legacy search will supply a searchResult
-   * item for the citation and this will come from the {@link SearchResultItem} in either the results, primary_results,
-   * or additional_results arrays. ConversationalSearch will supply a ConversationalSearchItemCitation for this prop, as
-   * well as a searchResult prop lower down. This search_result is from the ConversationalSearchItem that corresponds to
-   * this specific citation.
+   * A citation from ConversationalSearch.
    */
-  citation: ConversationalSearchItemCitation | SearchResult;
+  citation: ConversationalSearchItemCitation;
 
   /**
    * An optional handler for if focus is given to the card. We use this conversational search, currently, to
@@ -73,10 +67,10 @@ function CitationCard({
   onSelectCitation,
   relatedSearchResult,
 }: CitationCardProps) {
-  const { url, urlIsValid } = getSearchResultMetaData(citation as any);
+  const { url } = citation;
 
   function getType(): CitationType {
-    if (url && urlIsValid) {
+    if (url && isValidURL(url)) {
       return CitationType.URL;
     }
     return CitationType.EXPAND_IF_NEEDED;

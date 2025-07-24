@@ -77,6 +77,8 @@ import {
   ButtonSizeEnum,
 } from "../../../../types/utilities/carbonTypes";
 import { MinimizeButtonIconType } from "../../../../types/config/PublicConfig";
+import { OverlayPanelName } from "../OverlayPanel";
+import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
 
 // The minimum width in pixels of the center gap, that separates the left and right header objects, until the number
 // of objects that are allowed to be visible in the header is re-calculated.
@@ -179,6 +181,12 @@ interface HeaderProps {
    * The callback to call when an overflow item is chosen. This will return the index of the item that was clicked.
    */
   overflowClicked?: (index: number) => void;
+
+  /**
+   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
+   * in the header obviously unique.
+   */
+  testIdPrefix: OverlayPanelName;
 }
 
 /**
@@ -205,6 +213,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     brandColor = "primary",
     enableChatHeaderConfig,
     headerAvatarConfig,
+    testIdPrefix,
   } = props;
 
   const backButtonRef = useRef<HTMLButtonElement>();
@@ -717,6 +726,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               }}
               buttonRef={closeButtonRef}
               tooltipPosition={isRTL ? "right" : "left"}
+              testId={makeTestId(PageObjectId.CLOSE_CHAT, testIdPrefix)}
             >
               {closeIcon}
             </HeaderButton>
@@ -780,6 +790,11 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
    * Specify the alignment of the tooltip to the icon-only button. Can be one of: start, center, or end.
    */
   tooltipPosition?: ButtonTooltipPosition;
+
+  /**
+   * Testing id used for e2e tests.
+   */
+  testId?: TestId;
 }
 
 /**
@@ -794,6 +809,7 @@ function HeaderButton({
   buttonKind,
   isReversible = true,
   tooltipPosition,
+  testId,
 }: HeaderButtonProps) {
   return (
     <Button
@@ -805,6 +821,7 @@ function HeaderButton({
       size={ButtonSizeEnum.MEDIUM}
       kind={buttonKind || ButtonKindEnum.GHOST}
       tooltipPosition={tooltipPosition}
+      data-testid={testId}
     >
       {children}
     </Button>

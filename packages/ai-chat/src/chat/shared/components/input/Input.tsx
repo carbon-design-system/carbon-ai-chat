@@ -43,6 +43,8 @@ import {
   ButtonSizeEnum,
 } from "../../../../types/utilities/carbonTypes";
 import { BusEventType } from "../../../../types/events/eventBusTypes";
+import { OverlayPanelName } from "../OverlayPanel";
+import { makeTestId, PageObjectId } from "../../utils/PageObjectId";
 
 /**
  * The size of the gap between input changes before we indicate that the user has stopped typing.
@@ -81,11 +83,6 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
    * {@link InstanceInputElement.setOnBeforeSend} callback.
    */
   onSendInput: (text: string) => void;
-
-  /**
-   * Optionally, provide a inputType for the component. This will append the inputType to any id in the DOM.
-   */
-  inputType?: string;
 
   /**
    * Indicates if the text area should blur when the text is sent.
@@ -147,6 +144,11 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
    * the process of cancelling a streamed response is in progress.
    */
   isStopStreamingButtonDisabled?: boolean;
+
+  /**
+   * Testing id used for e2e tests.
+   */
+  testIdPrefix: OverlayPanelName;
 }
 
 interface InputFunctions {
@@ -163,7 +165,6 @@ interface InputFunctions {
 
 function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const {
-    inputType,
     isInputVisible,
     placeholder,
     disableInput,
@@ -181,6 +182,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     languagePack,
     isStopStreamingButtonVisible,
     isStopStreamingButtonDisabled,
+    testIdPrefix,
   } = props;
 
   const inputID = `${serviceManager.namespace.suffix}-${useCounter()}`;
@@ -315,16 +317,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       removeChangeListener: (listener: (value: string) => void) =>
         changeListeners.current.removeListener(listener),
     };
-  }
-
-  /**
-   * Given a base string, add modifiers to an element id to ensure it is unique based off of context.
-   */
-  function getElementId(baseId: string, isTestingId?: boolean) {
-    const elementID = baseId;
-    const withInputType = inputType ? `--${inputType}` : "";
-    const withNamespace = isTestingId ? "" : serviceManager.namespace.suffix;
-    return `${elementID}${withInputType}${withNamespace}`;
   }
 
   /**
@@ -463,8 +455,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 ref={textAreaRef}
                 onFocus={onInputFocus}
                 onBlur={onInputBlur}
-                id={getElementId("WACInputContainer-TextArea")}
-                testId={getElementId("WACInputContainer-TextArea", true)}
+                testId={makeTestId(PageObjectId.INPUT, testIdPrefix)}
               />
             </div>
             {Boolean(pendingUploads?.length) && (
@@ -507,7 +498,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               className="WACInputContainer__SendButton"
               kind={ButtonKindEnum.GHOST}
               size={ButtonSizeEnum.SMALL}
-              id={getElementId("WACInputContainer__SendButton")}
               type="button"
               onClick={send}
               aria-label={input_buttonLabel}
@@ -517,6 +507,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               tooltipAlignment={isRTL ? "start" : "end"}
               tooltipPosition="top"
               hasIconOnly
+              data-testid={makeTestId(PageObjectId.INPUT_SEND, testIdPrefix)}
             />
           </div>
         </div>

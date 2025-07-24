@@ -60,7 +60,7 @@ class MarkdownTextElement extends LitElement {
       this.fullText,
       this.tokenTree
     )) as TokenTree;
-  }, 50);
+  }, 100);
 }
 
 export default MarkdownTextElement;
