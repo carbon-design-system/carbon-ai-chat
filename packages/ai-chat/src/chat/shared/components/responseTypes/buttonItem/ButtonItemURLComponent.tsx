@@ -7,7 +7,6 @@
  *  @license
  */
 
-import Launch from "@carbon/icons-react/es/Launch.js";
 import Launch16 from "@carbon/icons/es/launch/16.js";
 import Link from "../../../../react/carbon/Link";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
@@ -59,7 +58,7 @@ function ButtonItemURLComponent({
       kind={kind}
       url={url}
       target={target}
-      renderIcon={Launch}
+      renderIcon={LaunchIcon}
     />
   );
 }
