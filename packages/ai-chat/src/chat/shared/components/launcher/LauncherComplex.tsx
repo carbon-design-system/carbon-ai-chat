@@ -100,6 +100,13 @@ function LauncherComplex(props: LauncherComplexProps) {
     return launcher_desktopGreeting;
   }
 
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onMinimize();
+    }
+  };
+
   /**
    * Renders the complex variation of the launcher.
    */
@@ -145,7 +152,7 @@ function LauncherComplex(props: LauncherComplexProps) {
         className="WACLauncher__CloseButton"
         aria-label={launcher_ariaIsExpanded}
         onClick={onMinimize}
-        onKeyDown={(e) => ["Space", "Enter"].includes(e.code) && onMinimize()}
+        onKeyDown={handleTagKeyDown}
         tabIndex={0}
         disabled={!desktopLauncherIsExpanded}
       >
