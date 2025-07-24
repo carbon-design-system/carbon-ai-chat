@@ -26,18 +26,60 @@ import { HideComponent } from "./util/HideComponent";
 
 /**
  * The possible overlay panels.
+ *
+ * @category Testing
  */
 enum OverlayPanelName {
+  /**
+   * The main chat panel.
+   */
+  MAIN = "main",
+
+  /**
+   * Disclaimer panel.
+   */
   DISCLAIMER = "disclaimer",
+
+  /**
+   * Homescreen Panel.
+   */
   HOME_SCREEN = "home_screen",
-  AGENT = "agent",
+
+  /**
+   * Hydration/loading state panel.
+   */
   HYDRATING = "hydrating",
+
+  /**
+   * Catastrophic error panel.
+   */
   CATASTROPHIC = "catastrophic",
-  BRANDING = "branding",
+
+  /**
+   * Iframe panel.
+   */
   IFRAME = "iframe",
+
+  /**
+   * Conversational search panel.
+   */
   CONVERSATIONAL_SEARCH_CITATION = "conversational_search_citation",
+
+  /**
+   * Custom panel.
+   */
   CUSTOM = "custom",
+
+  /**
+   * Panel coming from a button response type.
+   */
   SHOW_PANEL = "show_panel",
+
+  /**
+   * The unreleased panel response type.
+   *
+   * @internal
+   */
   PANEL_RESPONSE = "panel_response",
 }
 
@@ -232,8 +274,6 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
       overlayPanelName,
     } = this.props;
     const { isClosing, isOpening } = this.state;
-
-    console.log({ isClosing, shouldOpen });
 
     return (
       <HideComponent

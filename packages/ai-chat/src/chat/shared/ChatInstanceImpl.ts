@@ -26,7 +26,6 @@ import { ViewState, ViewType } from "../../types/state/AppState";
 
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import { LauncherConfig } from "../../types/config/LauncherConfig";
-import ObjectMap from "../../types/utilities/ObjectMap";
 import { HistoryItem } from "../../types/messaging/History";
 import { IncreaseOrDecrease, WriteableElementName } from "./utils/constants";
 import { withoutEmptyStarters } from "./utils/homeScreenUtils";
@@ -41,6 +40,7 @@ import {
   ChangeFunction,
   ChatHeaderAvatarConfig,
   ChatInstance,
+  CSSVariable,
   InstanceInputElement,
   SendOptions,
   TypeAndHandler,
@@ -190,7 +190,7 @@ function createChatInstance({
     },
 
     updateCSSVariables: (
-      variables: ObjectMap<string>,
+      variables: Partial<Record<CSSVariable, string>>,
       whiteLabelVariables?: WhiteLabelTheme
     ): void => {
       debugLog("Called instance.updateCSSVariables", variables);
@@ -302,13 +302,6 @@ function createChatInstance({
           viewChangeReason: ViewChangeReason.CALLED_CHANGE_VIEW,
         });
       }
-    },
-
-    addNotification: (notification: NotificationMessage): void => {
-      consoleWarn(
-        "This method is deprecated. Please use instance.notifications.addNotification() instead."
-      );
-      serviceManager.actions.addNotification(notification);
     },
 
     notifications: {

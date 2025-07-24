@@ -20,6 +20,7 @@ import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { BrandColorKind } from "../../utils/constants";
 import { Header } from "../header/Header";
+import { OverlayPanelName } from "../OverlayPanel";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -100,6 +101,7 @@ function HomeScreenHeader(
         overflowItems={overflowItems}
         useAITheme={useAITheme}
         brandColor={brandColor}
+        testIdPrefix={OverlayPanelName.HOME_SCREEN}
       />
     </div>
   );

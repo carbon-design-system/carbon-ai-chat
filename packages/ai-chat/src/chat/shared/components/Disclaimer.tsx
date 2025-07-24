@@ -26,6 +26,7 @@ import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
 import { MaybeDangerouslySetInnerHTML } from "./util/MaybeDangerouslySetInnerHTML";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
+import { OverlayPanelName } from "./OverlayPanel";
 
 interface DisclaimerProps {
   onAcceptDisclaimer: () => void;
@@ -72,7 +73,11 @@ function Disclaimer({
   return (
     <div className="WACDisclaimerContainer">
       <div className="WAC__disclaimer">
-        <SimpleHeader useAITheme={useAITheme} onClose={onClose} />
+        <SimpleHeader
+          useAITheme={useAITheme}
+          onClose={onClose}
+          testIdPrefix={OverlayPanelName.DISCLAIMER}
+        />
         <div
           className="WACPanelContent WAC__disclaimer-content"
           onScroll={onScroll}

@@ -312,7 +312,6 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
         "WACLauncher__ButtonContainer--noAnimation": disableIntroAnimation,
       })}
       ref={launcherRef}
-      serviceManager={serviceManager}
       launcherConfig={launcherConfig}
       showUnreadIndicator={showUnreadIndicator}
       unreadAgentCount={unreadAgentCount}

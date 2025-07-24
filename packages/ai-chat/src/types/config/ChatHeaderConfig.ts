@@ -134,6 +134,8 @@ export interface ChatHeaderMenu extends ChatHeaderObject {
  * The chat header objects that can be rendered in the chat header.
  *
  * @category Config
+ *
+ * @experimental
  */
 export type ChatHeaderObjectTypes =
   | ChatHeaderButton
@@ -160,12 +162,16 @@ export interface ChatHeaderConfig {
   };
 
   /**
-   * The list of chat header items that suplement the platform.
+   * The list of chat header items that supplement the platform.
+   *
+   * @experimental
    */
   left?: ChatHeaderObjectTypes[];
 
   /**
-   * The list of chat header items that suplement the chat.
+   * The list of chat header items that supplement the chat.
+   *
+   * @experimental
    */
   right?: ChatHeaderObjectTypes[];
 }

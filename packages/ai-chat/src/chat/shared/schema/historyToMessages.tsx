@@ -12,10 +12,7 @@
  */
 
 import { ServiceManager } from "../services/ServiceManager";
-import {
-  DEFAULT_CHAT_MESSAGES_STATE,
-  DEFAULT_MESSAGE_STATE,
-} from "../store/reducerUtils";
+import { DEFAULT_CHAT_MESSAGES_STATE } from "../store/reducerUtils";
 import {
   AppStateMessages,
   ChatMessagesState,
@@ -25,13 +22,7 @@ import {
   MessageErrorState,
 } from "../../../types/messaging/LocalMessageItem";
 import ObjectMap from "../../../types/utilities/ObjectMap";
-import {
-  HistoryItem,
-  HistoryNote,
-  Note,
-  NoteType,
-  SessionHistory,
-} from "../../../types/messaging/History";
+import { HistoryItem, HistoryNote } from "../../../types/messaging/History";
 import { FileStatusValue } from "../utils/constants";
 import { findLast } from "../utils/lang/arrayUtils";
 import { deepFreeze } from "../utils/lang/objectUtils";
@@ -151,11 +142,11 @@ interface LoadingState {
  *
  * Note that this function also has side effects because it fires history events as it is processing the loaded history.
  *
- * @param notes An array of the {@link Note} objects returned from the history store.
+ * @param notes An array of the {@link HistoryNote} objects returned from the history store.
  * @param serviceManager A reference to the {@link ServiceManager}.
  */
 async function notesToLoadedHistory(
-  notes: Note[],
+  notes: HistoryNote[],
   serviceManager: ServiceManager
 ): Promise<LoadedHistory> {
   // Create an empty version of our state and the final result object.
@@ -187,15 +178,6 @@ async function notesToLoadedHistory(
   await notesToMessages(notes, loadingState);
 
   if (!loadingState.allMessages.length) {
-    // If we have the latest transfer to agent response and no other message, it means session history is disabled, and
-    // we only have this response to render.
-    if (loadingState.loadedHistory.latestTransferToAgentResponse) {
-      return {
-        ...loadingState.loadedHistory,
-        messageHistory: DEFAULT_MESSAGE_STATE,
-      };
-    }
-
     // If we didn't actually find any messages, just return null to indicate that. This will trigger the widget to
     // get fetch the welcome node.
     return null;
@@ -223,9 +205,12 @@ async function notesToLoadedHistory(
 }
 
 /**
- * Converts the given list of {@link Note} objects into a flat list of all the message objects to process.
+ * Converts the given list of {@link HistoryNote} objects into a flat list of all the message objects to process.
  */
-async function notesToMessages(notes: Note[], loadingState: LoadingState) {
+async function notesToMessages(
+  notes: HistoryNote[],
+  loadingState: LoadingState
+) {
   const {
     allMessages,
     allMessagesByID,
@@ -241,22 +226,20 @@ async function notesToMessages(notes: Note[], loadingState: LoadingState) {
 
   // Find all the messages from history.
   notes.forEach((note) => {
-    if (note.type === NoteType.HISTORY) {
-      const sessionHistory: SessionHistory = (note as HistoryNote).body;
+    const sessionHistory = (note as HistoryNote).body;
 
-      const pushAndPrepareMessage = (historyItem: HistoryItem) => {
-        const { message } = historyItem;
+    const pushAndPrepareMessage = (historyItem: HistoryItem) => {
+      const { message } = historyItem;
 
-        if (
-          !isEventRequest(message) &&
-          (isRequest(message) || isResponse(message))
-        ) {
-          addMessage(message, loadingState, historyItem);
-        }
-      };
+      if (
+        !isEventRequest(message) &&
+        (isRequest(message) || isResponse(message))
+      ) {
+        addMessage(message, loadingState, historyItem);
+      }
+    };
 
-      sessionHistory.forEach(pushAndPrepareMessage);
-    }
+    sessionHistory.forEach(pushAndPrepareMessage);
   });
 
   // We need to do a little more processing on all the events now. We iterate backwards just to make it easier to
@@ -284,8 +267,8 @@ async function notesToMessages(notes: Note[], loadingState: LoadingState) {
         responsesByRequestID[message.request_id] = message;
       }
 
-      if (message.history.relatedMessageID) {
-        relatedMessageByID[message.history.relatedMessageID] = message;
+      if (message.history.related_message_id) {
+        relatedMessageByID[message.history.related_message_id] = message;
       }
     }
   }
@@ -368,6 +351,9 @@ function createLocalMessages(loadingState: LoadingState) {
               message as MessageResponse,
               false
             );
+
+            localMessagesByOriginalMessageID[message.id].push(localMessage);
+            allLocalMessagesByID[localMessage.ui_state.id] = localMessage;
 
             if (isResponseWithNestedItems(localMessage.item)) {
               const nestedLocalMessageItems: LocalMessageItem[] = [];

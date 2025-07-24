@@ -202,6 +202,7 @@ function CustomPanel(props: CustomPanelProps) {
         hideBackButton={options.hideBackButton}
         hideCloseButton={options.hideCloseButton}
         hideCloseAndRestartButton={options.hideCloseAndRestartButton}
+        testIdPrefix={OverlayPanelName.CUSTOM}
       >
         <WriteableElement
           slotName="customPanelElement"

@@ -220,6 +220,40 @@ export interface ChatHeaderAvatarConfig {
 }
 
 /**
+ * Valid public CSS variables that can be controlled when white labeling is disabled.
+ *
+ * These variables map to CSS custom properties used in styling the AI chat interface.
+ * This enum is used for type safety and documentation purposes.
+ *
+ * @category Instance
+ */
+export enum CSSVariable {
+  /**
+   * Controls the minimum height of the chat container when in float view.
+   * Use this to adjust the overall vertical space the chat can occupy.
+   */
+  BASE_HEIGHT = "BASE-height",
+
+  /**
+   * Restricts the maximum height of the chat container when in float view.
+   * This is useful to cap panel height and ensure it doesn't exceed view bounds.
+   */
+  BASE_MAX_HEIGHT = "BASE-max-height",
+
+  /**
+   * Sets the width of the chat panel in float view.
+   * Can be used to widen the float version of the chat.
+   */
+  BASE_WIDTH = "BASE-width",
+
+  /**
+   * Controls the z-index of the chat overlay or container in float view.
+   * Use to adjust stacking context if conflicts arise with other UI elements.
+   */
+  BASE_Z_INDEX = "BASE-z-index",
+}
+
+/**
  * This is a subset of the public interface that provides methods that can be used by the user to control the widget
  * and have it perform certain actions.
  *
@@ -264,14 +298,11 @@ interface ChatActions {
   updateLanguagePack: (newPack: DeepPartial<LanguagePack>) => void;
 
   /**
-   * This updates the map that can be used to override the values for CSS variables in the application. Each key of the
-   * map is the name of a variable (without the "--cds-chat-" prefix) and the value is whatever the value of
-   * the variable should be set at.
-   *
-   * @param publicVars A map of CSS variables. Each key of the map is the name of a variable (without the
-   * "--cds-chat-" prefix) and the value is whatever the value of the variable should be set at.
+   * This updates the map that can be used to override the values for CSS variables in the application.
    */
-  updateCSSVariables: (publicVars: Record<string, string>) => void;
+  updateCSSVariables: (
+    publicVars: Partial<Record<CSSVariable, string>>
+  ) => void;
 
   /**
    * Fire the view:pre:change and view:change events and change the view of the Carbon AI chat. If a {@link ViewType} is
@@ -282,7 +313,7 @@ interface ChatActions {
   changeView: (newView: ViewType | ViewState) => Promise<void>;
 
   /**
-   * Returns elements that Deb can write content to. This object is indirectly exposed using a proxy.
+   * Returns the list of writable elements.
    */
   writeableElements: Partial<WriteableElements>;
 
@@ -294,6 +325,8 @@ interface ChatActions {
 
   /**
    * Methods provided to developers to interact with the tour feature.
+   *
+   * @experimental
    */
   tours: ChatInstanceTours;
 
@@ -388,24 +421,21 @@ interface ChatActions {
   updateIsChatLoadingCounter: (direction: string) => void;
 
   /**
-   * Updates the title of the bot panel. This value defaults to the bot name with the AI theme turned off and defaults
-   * to nothing when the AI theme is turned on.
+   * Updates the title of the bot panel. This value defaults to blank.
    */
   updateMainHeaderTitle: (title?: null | string) => void;
 
   /**
    * Updates the avatar image of the bot panel.
+   *
+   * @internal
    */
   updateMainHeaderAvatar: (config?: ChatHeaderAvatarConfig) => void;
 
   /**
-   * Add a system level notification to the list of system notifications.
-   * @deprecated
-   */
-  addNotification: (notification: NotificationMessage) => void;
-
-  /**
    * The state of notifications in the chat.
+   *
+   * @experimental
    */
   notifications: ChatInstanceNotifications;
 
@@ -423,18 +453,18 @@ interface ChatActions {
    * @internal
    * A method to update the bot name.
    */
-  updateBotName?: (name: string) => void;
+  updateBotName: (name: string) => void;
 
   /**
    * @internal
    * A method to update the bot avatar.
    */
-  updateBotAvatarURL?: (url: string) => void;
+  updateBotAvatarURL: (url: string) => void;
 
   /**
    * Updates the Carbon AI chat launcher config with new desktop and/or mobile titles.
    */
-  updateLauncherConfig?: (config: LauncherConfig) => void;
+  updateLauncherConfig: (config: LauncherConfig) => void;
 }
 
 /**
@@ -496,8 +526,8 @@ export interface SendOptions {
 }
 
 /**
- * An object of elements we expose to developers to write to. Currently, this only encompasses above the welcome node,
- * but may grow to include portions of home page, etc.
+ * An object of elements we expose to developers to write to. Be sure to check the documentation of the React or
+ * web component you are using for how to make use of this, as it differs based on implementation.
  *
  * @category Instance
  */
@@ -635,7 +665,11 @@ export interface ChatInstanceTours {
 }
 
 /**
+ * Add notification messages to the chat.
+ *
  * @category Instance
+ *
+ * @experimental
  */
 export interface ChatInstanceNotifications {
   /**

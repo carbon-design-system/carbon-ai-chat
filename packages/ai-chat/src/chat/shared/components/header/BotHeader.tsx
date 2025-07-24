@@ -26,6 +26,7 @@ import { WriteableElementName } from "../../utils/constants";
 import WriteableElement from "../WriteableElement";
 import { Header } from "./Header";
 import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
+import { OverlayPanelName } from "../OverlayPanel";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -73,6 +74,12 @@ interface BotHeaderProps {
    * name.
    */
   enableChatHeaderConfig?: boolean;
+
+  /**
+   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
+   * in the header obviously unique.
+   */
+  testIdPrefix: OverlayPanelName;
 }
 
 function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
@@ -85,6 +92,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     includeWriteableElement,
     enableChatHeaderConfig,
     headerAvatarConfig,
+    testIdPrefix,
   } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
@@ -168,6 +176,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         overflowItems={overflowItems}
         overflowClicked={overflowClicked}
         enableChatHeaderConfig={enableChatHeaderConfig}
+        testIdPrefix={testIdPrefix}
       />
       {includeWriteableElement && (
         <WriteableElement

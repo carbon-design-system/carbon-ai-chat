@@ -20,6 +20,7 @@
       "Events",
       "Service desk",
       "Messaging",
+      "Testing",
       "*"
     ],
     "disableSources": true,

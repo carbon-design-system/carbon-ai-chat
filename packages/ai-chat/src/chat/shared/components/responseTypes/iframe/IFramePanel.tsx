@@ -18,6 +18,7 @@ import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus"
 import { BasePanelComponent } from "../../BasePanelComponent";
 import { IFrameComponent } from "./IFrameComponent";
 import { BasePanelConfigOptions } from "../../../../../types/instance/apiTypes";
+import { OverlayPanelName } from "../../OverlayPanel";
 
 interface IFramePanelComponentProps extends BasePanelConfigOptions {
   /**
@@ -52,6 +53,7 @@ function IFramePanelComponent(
       labelBackButton={languagePack.iframe_ariaClosePanel}
       eventName="IFrame panel opened"
       eventDescription="A user has opened the IFrame panel"
+      testIdPrefix={OverlayPanelName.IFRAME}
     >
       <div className="WACIFramePanel__Content">
         <IFrameComponent

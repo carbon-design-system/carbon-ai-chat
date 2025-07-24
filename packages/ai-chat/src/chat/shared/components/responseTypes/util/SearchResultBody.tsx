@@ -7,9 +7,8 @@
  *  @license
  */
 
-import React, { ReactNode } from "react";
+import React from "react";
 
-import { isOdd } from "../../../utils/lang/langUtils";
 import {
   convertPossibleStringifiedArrayToFirstString,
   convertToEmptyStringIfStringifiedNull,
@@ -19,72 +18,16 @@ import {
   SearchResult,
 } from "../../../../../types/messaging/Messages";
 
-/**
- * Returns a {@link ReactNode} that represents the given text with `<em>` tags in the string replaced with actual
- * JSX elements to form highlighted portions.
- */
-function formatHighlightFields(str: string): ReactNode {
-  const strArray = str.split(new RegExp("<em>|</em>", "g"));
-  // If there is an odd number of '<em>' separators, then just return the whole string, minus the '<em>' elements.
-  if (isOdd(strArray.length)) {
-    return [strArray.join("")];
-  }
-  return strArray.map((strSegment, index) => {
-    if (isOdd(index)) {
-      return strSegment;
-    }
-
-    return (
-      // eslint-disable-next-line react/no-array-index-key
-      <em key={index} className="WAC__highlight">
-        {strSegment}
-      </em>
-    );
-  });
-}
-
-interface SearchResultBodyProps {
-  searchResult: SearchResult | ConversationalSearchItemCitation;
-}
-
-/**
- * Determine which element to render as the body and the amount of text that will be displayed in it.
- * Always use highlight.body, Use body as a fallback based on certain conditions
- * This was driven by https://github.ibm.com/Watson-Discovery/customer-care/issues/660
- * We check the searchResults.highlight.body which should be an array. If that is not set, we fall back to
- * searchResult.body which is either a string OR a stringified array. If it is the latter, we only want the first
- * item in the stringified array. https://github.ibm.com/watson-engagement-advisor/wea-backlog/issues/31262 has an
- * explanation.
- */
-function SearchResultBody({ searchResult }: SearchResultBodyProps) {
-  if (searchResult && "highlight" in searchResult) {
-    if (searchResult.highlight?.body?.[0]) {
-      return formatHighlightFields(
-        convertToEmptyStringIfStringifiedNull(searchResult.highlight.body[0])
-      );
-    }
-  }
-  if (searchResult && "body" in searchResult && searchResult.body) {
-    return convertPossibleStringifiedArrayToFirstString(
-      convertToEmptyStringIfStringifiedNull(searchResult.body)
-    );
-  }
-  return null;
-}
-
-const SearchResultBodyExport = React.memo(SearchResultBody);
-
 interface SearchResultBodyWithCitationProps {
   relatedSearchResult: SearchResult;
   citationItem: ConversationalSearchItemCitation;
 }
 
 /**
- * In conversational search citation panels we show the search result body instead of the citation text or highlight
- * body because it will contain the most context for the user. This will only be used if there is no url or
- * pdf attached to the source, so the assumption is that the data will be nicely formatted from document ingestion
- * instead of a web crawler. We also make sure to highlight the citation text within the search result body to help the
- * user find the citation.
+ * In conversational search citation panels we show the search result body because it will contain the most context for the user.
+ * This will only be used if there is no url attached to the source, so the assumption is that the data will be nicely formatted
+ * from document ingestion instead of a web crawler. We also make sure to highlight the citation text within the search result body
+ * to help the user find the citation.
  */
 function SearchResultBodyWithCitationHighlighted({
   relatedSearchResult,
@@ -155,7 +98,4 @@ const SearchResultBodyWithCitationHighlightedExport = React.memo(
   SearchResultBodyWithCitationHighlighted
 );
 
-export {
-  SearchResultBodyExport as SearchResultBody,
-  SearchResultBodyWithCitationHighlightedExport as SearchResultBodyWithCitationHighlighted,
-};
+export { SearchResultBodyWithCitationHighlightedExport as SearchResultBodyWithCitationHighlighted };
