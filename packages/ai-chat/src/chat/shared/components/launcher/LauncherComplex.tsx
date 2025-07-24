@@ -7,7 +7,8 @@
  *  @license
  */
 
-import Close from "@carbon/icons-react/es/Close.js";
+import Close16 from "@carbon/icons/es/close/16.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import Tag from "../../../react/carbon/Tag";
 import cx from "classnames";
 import React, { RefObject } from "react";
@@ -19,6 +20,8 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
 import { Launcher } from "./Launcher";
 import { LanguagePack } from "../../../../types/instance/apiTypes";
+
+const CloseIcon = carbonIconToReact(Close16);
 
 interface LauncherComplexProps
   extends HasServiceManager,
@@ -148,12 +151,12 @@ function LauncherComplex(props: LauncherComplexProps) {
         className="WACLauncher__CloseButton"
         aria-label={launcher_ariaIsExpanded}
         onClick={onMinimize}
+        onKeyDown={(e) => ["Space", "Enter"].includes(e.code) && onMinimize()}
+        tabIndex={0}
         disabled={!desktopLauncherIsExpanded}
       >
-        <div className="WACLauncher__CloseButtonInnerWrapper">
-          <Close className="WACLauncher__CloseButtonIcon" />
-          {launcher_closeButton}
-        </div>
+        <CloseIcon slot="icon" className="WACLauncher__CloseButtonIcon" />
+        {launcher_closeButton}
       </Tag>
     </div>
   );

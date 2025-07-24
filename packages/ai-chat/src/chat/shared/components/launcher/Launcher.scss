@@ -383,6 +383,7 @@ button.WACLauncher__Button svg {
 
 .WACLauncherComplex__Container .WACLauncher__CloseButton {
   position: absolute;
+  cursor: pointer;
 
   // 1px less padding everywhere to fit the border.
   padding: 3px 7px 3px 3px;
@@ -400,7 +401,7 @@ button.WACLauncher__Button svg {
   opacity: 0;
 }
 
-.WACLauncherComplex__Container .WACLauncher__CloseButton:enabled:focus {
+.WACLauncherComplex__Container .WACLauncher__CloseButton:focus {
   border-color: theme.$focus;
   outline: none;
 }
@@ -410,11 +411,6 @@ button.WACLauncher__Button svg {
   .WACLauncher__CloseButton {
   padding: 3px 3px 3px 7px;
   inset-inline: 0 unset;
-}
-
-.WACLauncherComplex__Container .WACLauncher__CloseButtonInnerWrapper {
-  display: flex;
-  cursor: pointer;
 }
 
 .WACLauncherComplex__Container
