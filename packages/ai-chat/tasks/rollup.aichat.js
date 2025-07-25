@@ -134,7 +134,7 @@ const workerBuild = {
 
 async function runRollup() {
   const config = [
-    // Main bundle for es exports
+    // Main build with preserveModules for tree-shaking
     {
       input: [
         path.join(paths.src, '/aiChatEntry.tsx'),
@@ -147,7 +147,7 @@ async function runRollup() {
         preserveModules: true,
         preserveModulesRoot: 'src',
         entryFileNames: '[name].js',
-        chunkFileNames: '[name]-[hash].js',
+        chunkFileNames: '[name].js',
       },
       external,
       treeshake,
@@ -209,7 +209,7 @@ async function runRollup() {
             beautify: true,
             indent_level: 2,
             // keep only comments that contain @license
-            comments: (astNode, comment) => {
+            comments: (_astNode, comment) => {
               const text = comment.value;
               // comment.type === "comment2" for /* … */
               if (comment.type === 'comment2') {

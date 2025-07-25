@@ -22,6 +22,7 @@ import {
   BusEventUserDefinedResponse,
 } from "../types/events/eventBusTypes";
 import { ChatInstance } from "../types/instance/ChatInstance";
+import { DYNAMIC_IMPORTS } from "../chat/dynamic-imports/dynamic-imports";
 
 /**
  * This component creates a custom element protected by a ShadowRoot to render the React application into. It creates
@@ -98,7 +99,7 @@ function ChatContainer({
       return;
     }
 
-    import("../chat/react/components/AppContainer").then((appContainer) => {
+    DYNAMIC_IMPORTS.AppContainer().then((appContainer) => {
       setAppContainerComponent(() => appContainer.AppContainer);
     });
   });

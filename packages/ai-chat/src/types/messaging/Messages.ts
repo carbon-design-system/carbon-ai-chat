@@ -46,7 +46,6 @@ interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
   context?: unknown;
 
   /**
-   * @internal
    * The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
    * responses.
    */
@@ -168,7 +167,6 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   context?: unknown;
 
   /**
-   * @internal
    * The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
    * responses.
    */
