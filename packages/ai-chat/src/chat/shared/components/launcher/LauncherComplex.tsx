@@ -153,8 +153,7 @@ function LauncherComplex(props: LauncherComplexProps) {
         aria-label={launcher_ariaIsExpanded}
         onClick={onMinimize}
         onKeyDown={handleTagKeyDown}
-        tabIndex={0}
-        disabled={!desktopLauncherIsExpanded}
+        tabIndex={desktopLauncherIsExpanded ? 0 : -1}
       >
         <CloseIcon slot="icon" className="WACLauncher__CloseButtonIcon" />
         {launcher_closeButton}
