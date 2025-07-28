@@ -33,6 +33,11 @@ interface CardItemComponentProps extends HasRequestFocus {
    * Indicates if this message is part the most recent message response that allows for input.
    */
   isMessageForInput: boolean;
+
+  /**
+   * Function to render message components
+   */
+  renderMessageComponent: (props: any) => React.ReactNode;
 }
 
 /**
@@ -53,7 +58,7 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <BodyWithFooterComponent {...props} />
+      <BodyWithFooterComponent {...props} renderMessageComponent={props.renderMessageComponent} />
     </Tile>
   );
 }

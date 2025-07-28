@@ -430,7 +430,19 @@ class TableElement extends LitElement {
     // been changed by the pagination component then we need to keep the pagination component around so the user can
     // change the page size again, even if the current page size is the same as the number of table rows.
     if (this.rows.length > this._currentPageSize || this._rowsPerPageChanged) {
-      return html`${tableTemplate(this)} ${tablePaginationTemplate(this)}`;
+      return html`${tableTemplate(this)} ${tablePaginationTemplate({
+        _currentPageSize: this._currentPageSize,
+        _currentPageNumber: this._currentPageNumber,
+        _filterVisibleRowIDs: this._filterVisibleRowIDs,
+        rows: this.rows,
+        previousPageText: this.previousPageText,
+        nextPageText: this.nextPageText,
+        itemsPerPageText: this.itemsPerPageText,
+        getPaginationSupplementalText: this.getPaginationSupplementalText,
+        getPaginationStatusText: this.getPaginationStatusText,
+        _handlePageChangeEvent: this._handlePageChangeEvent,
+        _handlePageSizeChangeEvent: this._handlePageSizeChangeEvent,
+      })}`;
     }
 
     // Otherwise, just render the table.
@@ -438,6 +450,6 @@ class TableElement extends LitElement {
   }
 }
 
-export { TableElement, POSSIBLE_PAGE_SIZES, TABLE_COMPONENT_TAG_NAME };
+export { TableElement, TABLE_COMPONENT_TAG_NAME };
 
 export default TableElement;

@@ -11,7 +11,6 @@ import cx from "classnames";
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { MessageTypeComponent } from "../../../containers/MessageTypeComponent";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { selectInputState } from "../../../store/selectors";
@@ -37,9 +36,11 @@ const DEFAULT_COLUMN_WIDTH = "1";
 function GridItemComponent({
   localMessageItem,
   originalMessage,
+  renderMessageComponent,
 }: {
   localMessageItem: LocalMessageItem<GridItem>;
   originalMessage: MessageResponse;
+  renderMessageComponent: (props: any) => React.ReactNode;
 }) {
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
@@ -101,22 +102,22 @@ function GridItemComponent({
                   {cell.map((localMessageItemID, itemIndex) => {
                     const message = allMessageItemsByID[localMessageItemID];
                     return (
-                      <MessageTypeComponent
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={`item-${rowIndex}-${columnIndex}-${itemIndex}`}
-                        message={message}
-                        originalMessage={originalMessage}
-                        languagePack={languagePack}
-                        requestInputFocus={THROW_ERROR}
-                        disableUserInputs={inputState.isReadonly}
-                        config={appConfig}
-                        isMessageForInput={false}
-                        scrollElementIntoView={THROW_ERROR}
-                        serviceManager={serviceManager}
-                        isNestedMessageItem
-                        hideFeedback
-                        allowNewFeedback={false}
-                      />
+                      <React.Fragment key={`item-${rowIndex}-${columnIndex}-${itemIndex}`}>
+                        {renderMessageComponent({
+                          message,
+                          originalMessage,
+                          languagePack,
+                          requestInputFocus: THROW_ERROR,
+                          disableUserInputs: inputState.isReadonly,
+                          config: appConfig,
+                          isMessageForInput: false,
+                          scrollElementIntoView: THROW_ERROR,
+                          serviceManager,
+                          isNestedMessageItem: true,
+                          hideFeedback: true,
+                          allowNewFeedback: false,
+                        })}
+                      </React.Fragment>
                     );
                   })}
                 </div>

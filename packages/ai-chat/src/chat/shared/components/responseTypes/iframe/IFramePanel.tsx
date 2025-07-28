@@ -72,4 +72,6 @@ const IFramePanelExport = React.memo(forwardRef(IFramePanelComponent));
 
 export { IFramePanelExport as IFramePanel };
 
+export default IFramePanelExport;
+
 export type { IFramePanelComponentProps };

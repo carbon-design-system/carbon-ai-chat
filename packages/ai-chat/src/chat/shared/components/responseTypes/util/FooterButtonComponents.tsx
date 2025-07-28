@@ -11,15 +11,18 @@ import cx from "classnames";
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { MessageTypeComponent } from "../../../containers/MessageTypeComponent";
 import { AppState } from "../../../../../types/state/AppState";
 import { MessageTypeComponentProps } from "../../../../../types/messaging/MessageTypeComponentProps";
+
+interface FooterButtonComponentsProps extends MessageTypeComponentProps {
+  renderMessageComponent: (props: MessageTypeComponentProps & { message: any; isNestedMessageItem: boolean }) => React.ReactNode;
+}
 
 /**
  * This component handles rendering button response types in the footer of a container, under "body" content. See
  * {@link #BodyMessageComponents}.
  */
-function FooterButtonComponents(props: MessageTypeComponentProps) {
+function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const allMessageItemsByID = useSelector(
     (state: AppState) => state.allMessageItemsByID
   );
@@ -27,12 +30,13 @@ function FooterButtonComponents(props: MessageTypeComponentProps) {
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
       return (
-        <MessageTypeComponent
-          key={nestedMessageID}
-          {...props}
-          message={nestedLocalMessage}
-          isNestedMessageItem
-        />
+        <React.Fragment key={nestedMessageID}>
+          {props.renderMessageComponent({
+            ...props,
+            message: nestedLocalMessage,
+            isNestedMessageItem: true
+          })}
+        </React.Fragment>
       );
     });
   const totalButtons = buttonComponents?.length ?? 0;

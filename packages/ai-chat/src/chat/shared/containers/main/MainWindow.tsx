@@ -17,6 +17,7 @@ import { connect } from "react-redux";
 import { ChatClass } from "../../components/Chat";
 import { HydrationPanel } from "../../components/HydrationPanel";
 import { InputFunctions } from "../../components/input/Input";
+import { MessageTypeComponent } from "../MessageTypeComponent";
 
 import { OverlayPanel, OverlayPanelName } from "../../components/OverlayPanel";
 import { CustomPanel } from "../../components/panels/CustomPanel";
@@ -1247,6 +1248,7 @@ class MainWindow
               actions.setResponsePanelContent(null, false)
             );
           }}
+          renderMessageComponent={(childProps) => <MessageTypeComponent {...childProps} />}
         />
       </Suspense>
     );

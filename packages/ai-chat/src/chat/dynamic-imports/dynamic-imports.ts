@@ -53,38 +53,16 @@ function lazyWithPreload<T extends ComponentType<any>>(
  */
 const DYNAMIC_IMPORTS = {
   Chat: () => import("../shared/components/Chat"),
-  CatastrophicError: () =>
-    import("../shared/components/CatastrophicError").then((mod) => ({
-      default: mod.CatastrophicError,
-    })),
-  Disclaimer: () =>
-    import("../shared/components/Disclaimer").then((mod) => ({
-      default: mod.Disclaimer,
-    })),
+  CatastrophicError: () => import("../shared/components/CatastrophicError"),
+  Disclaimer: () => import("../shared/components/Disclaimer"),
   HomeScreenContainer: () =>
-    import("../shared/components/homeScreen/HomeScreenContainer").then(
-      (mod) => ({
-        default: mod.HomeScreenContainer,
-      })
-    ),
+    import("../shared/components/homeScreen/HomeScreenContainer"),
   IFramePanel: () =>
-    import("../shared/components/responseTypes/iframe/IFramePanel").then(
-      (mod) => ({
-        default: mod.IFramePanel,
-      })
-    ),
+    import("../shared/components/responseTypes/iframe/IFramePanel"),
   ViewSourcePanel: () =>
-    import(
-      "../shared/components/responseTypes/util/citations/ViewSourcePanel"
-    ).then((mod) => ({
-      default: mod.ViewSourcePanel,
-    })),
+    import("../shared/components/responseTypes/util/citations/ViewSourcePanel"),
   BodyAndFooterPanelComponent: () =>
-    import("../shared/components/panels/BodyAndFooterPanelComponent").then(
-      (mod) => ({
-        default: mod.BodyAndFooterPanelComponent,
-      })
-    ),
+    import("../shared/components/panels/BodyAndFooterPanelComponent"),
   TourContainer: () => import("../shared/components/tour/TourContainer"),
   Carousel: () =>
     import("../shared/components/responseTypes/carousel/Carousel"),

@@ -113,3 +113,5 @@ function Disclaimer({
 }
 
 export { Disclaimer };
+
+export default Disclaimer;

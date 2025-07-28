@@ -32,10 +32,15 @@ interface CarouselItemComponentProps extends HasRequestFocus {
    * Indicates if this message is part the most recent message response that allows for input.
    */
   isMessageForInput: boolean;
+
+  /**
+   * Function to render message components
+   */
+  renderMessageComponent: (props: any) => React.ReactNode;
 }
 
 function CarouselItemComponent(props: CarouselItemComponentProps) {
-  const { localMessageItem, fullMessage, isMessageForInput, requestFocus } =
+  const { localMessageItem, fullMessage, isMessageForInput, requestFocus, renderMessageComponent } =
     props;
   const allMessageItemsByID = useSelector(
     (state: AppState) => state.allMessageItemsByID
@@ -56,6 +61,7 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
               isMessageForInput={isMessageForInput}
               ignoreMaxWidth
               requestFocus={requestFocus}
+              renderMessageComponent={renderMessageComponent}
             />
           );
         })}

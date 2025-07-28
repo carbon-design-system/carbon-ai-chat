@@ -119,6 +119,11 @@ interface BodyAndFooterPanelComponentProps
    * in the header obviously unique.
    */
   testIdPrefix: OverlayPanelName;
+
+  /**
+   * Function to render message components
+   */
+  renderMessageComponent: (props: any) => React.ReactNode;
 }
 
 /**
@@ -145,6 +150,7 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     onPanelOpenStart,
     onPanelCloseStart,
     testIdPrefix,
+    renderMessageComponent,
   } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
@@ -194,6 +200,7 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
             fullMessage={originalMessage as MessageResponse}
             isMessageForInput={isMessageForInput}
             requestFocus={requestFocus}
+            renderMessageComponent={renderMessageComponent}
           />
         )}
       </BasePanelComponent>
@@ -202,3 +209,5 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
 }
 
 export { BodyAndFooterPanelComponent };
+
+export default BodyAndFooterPanelComponent;
