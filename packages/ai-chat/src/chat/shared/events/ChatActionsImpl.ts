@@ -783,21 +783,10 @@ class ChatActionsImpl {
           fullMessage: originalMessage,
           element,
           slot: slotName,
-          fullWidth: false,
         },
       };
 
       await this.serviceManager.fire(userDefinedResponseEvent);
-
-      if (userDefinedResponseEvent.data.fullWidth) {
-        this.serviceManager.store.dispatch(
-          actions.setMessageUIProperty(
-            localMessage.ui_state.id,
-            "fullWidth",
-            true
-          )
-        );
-      }
     } else if (isResponseWithNestedItems(localMessage.item)) {
       const {
         itemsLocalMessageItemIDs,
@@ -866,7 +855,6 @@ class ChatActionsImpl {
     messageItem: DeepPartial<GenericItem>
   ) {
     if (renderAsUserDefinedMessage(messageItem)) {
-      const { store } = this.serviceManager;
       const itemID = streamItemID(messageID, messageItem);
 
       let element: HTMLElement;
@@ -883,24 +871,10 @@ class ChatActionsImpl {
           chunk,
           element,
           slot: slotName,
-          fullWidth: false,
         },
       };
 
       await this.serviceManager.fire(userDefinedResponseEvent);
-
-      if (
-        store.getState().allMessageItemsByID[itemID].ui_state.fullWidth !==
-        userDefinedResponseEvent.data.fullWidth
-      ) {
-        store.dispatch(
-          actions.setMessageUIProperty(
-            itemID,
-            "fullWidth",
-            userDefinedResponseEvent.data.fullWidth
-          )
-        );
-      }
     }
   }
 

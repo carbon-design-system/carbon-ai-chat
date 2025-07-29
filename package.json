@@ -17,6 +17,8 @@
     "demo",
     "examples/react/basic",
     "examples/web-components/basic",
+    "examples/react/watsonx",
+    "examples/web-components/watsonx",
     "packages/ai-chat",
     "packages/ai-chat-components"
   ],

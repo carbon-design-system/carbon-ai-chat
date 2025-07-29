@@ -10,7 +10,9 @@ import Statoscope from "@statoscope/webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import Dotenv from "dotenv-webpack";
 import portfinder from "portfinder";
+import open from "open";
 
 const { default: StatoscopeWebpackPlugin } = Statoscope;
 
@@ -28,6 +30,9 @@ const createPlugins = (includeAnalysis) => {
     new HtmlWebpackPlugin({
       template: "./index.html",
       inject: "body",
+    }),
+    new Dotenv({
+      systemvars: true,
     }),
   ];
 
@@ -51,12 +56,12 @@ const createPlugins = (includeAnalysis) => {
 
 export default async (env, args) => {
   const port = await portfinder.getPortPromise({
-    port: process.env.PORT || 3004,
+    port: process.env.PORT || 3003,
   });
 
   return {
     mode: environment,
-    entry: "./src/main.ts",
+    entry: "./src/App.tsx",
     output: {
       path: path.resolve(__dirname, "dist"),
       filename: "bundle.js",
@@ -77,11 +82,10 @@ export default async (env, args) => {
           use: {
             loader: "babel-loader",
             options: {
-              presets: ["@babel/preset-env", "@babel/preset-typescript"],
-              plugins: [
-                ["@babel/plugin-proposal-decorators", { version: "2023-05" }],
-                "@babel/plugin-proposal-class-properties",
-                "@babel/plugin-transform-private-methods",
+              presets: [
+                "@babel/preset-env",
+                "@babel/preset-react",
+                "@babel/preset-typescript",
               ],
             },
           },
@@ -98,7 +102,11 @@ export default async (env, args) => {
       static: path.join(__dirname, "dist"),
       compress: true,
       port,
-      open: true,
+      onListening(server) {
+        console.log("✅ onListening fired!");
+        const port = server.server.address().port;
+        open(`http://localhost:${port}`);
+      },
       hot: true,
     },
   };
