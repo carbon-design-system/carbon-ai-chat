@@ -410,6 +410,8 @@ export interface BusEvent {
 }
 
 /**
+ *
+ *
  * @category Events
  */
 export interface BusEventClosePanelButtonClicked extends BusEvent {
@@ -593,6 +595,9 @@ export interface BusEventMessageItemCustom extends BusEvent {
 }
 
 /**
+ * Used to populate user_defined responses. Please see the React or web component documentation as usage of this
+ * differs based on implementation.
+ *
  * @category Events
  */
 export interface BusEventUserDefinedResponse extends BusEvent {
@@ -617,12 +622,6 @@ export interface BusEventUserDefinedResponse extends BusEvent {
      * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
      */
     slot?: string;
-
-    /**
-     * An assignable property that the event listener can assign that will indicate if the response is supposed to
-     * be full width.
-     */
-    fullWidth?: boolean;
   };
 }
 
@@ -651,12 +650,6 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
      * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
      */
     slot?: string;
-
-    /**
-     * An assignable property that the event listener can assign that will indicate if the response is supposed to
-     * be full width.
-     */
-    fullWidth?: boolean;
   };
 }
 

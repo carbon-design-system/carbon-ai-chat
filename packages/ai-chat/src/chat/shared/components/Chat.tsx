@@ -48,6 +48,7 @@ import {
 } from "../../../types/instance/ChatInstance";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { LanguagePack } from "../../../types/instance/apiTypes";
+import { OverlayPanelName } from "./OverlayPanel";
 
 interface ChatProps extends HasServiceManager, HasIntl {
   languagePack: LanguagePack;
@@ -464,6 +465,7 @@ class Chat extends Component<ChatProps, ChatState> {
           placeholder={languagePack[inputPlaceholderKey]}
           isStopStreamingButtonVisible={stopStreamingButtonState.isVisible}
           isStopStreamingButtonDisabled={stopStreamingButtonState.isDisabled}
+          testIdPrefix={OverlayPanelName.MAIN}
         />
         {this.state.showEndChatConfirmation && (
           <EndAgentChatModal
@@ -480,7 +482,6 @@ class Chat extends Component<ChatProps, ChatState> {
 
   public render() {
     const {
-      serviceManager,
       languagePack,
       onClose,
       onCloseAndRestart,
@@ -507,13 +508,13 @@ class Chat extends Component<ChatProps, ChatState> {
           onToggleHomeScreen={onToggleHomeScreen}
           enableChatHeaderConfig
           includeWriteableElement
+          testIdPrefix={OverlayPanelName.MAIN}
         />
         <NonHeaderBackground />
         <div className="WACPanelContent WAC__ChatNonHeaderContainer">
           {hasCaughtError && (
             <div className="WAC__MessagesErrorHandler">
               <CatastrophicError
-                serviceManager={serviceManager}
                 languagePack={languagePack}
                 onRestart={onRestart}
                 showHeader={false}

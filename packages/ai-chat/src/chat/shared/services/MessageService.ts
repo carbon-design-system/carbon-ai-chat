@@ -159,11 +159,6 @@ class MessageService {
   private serviceManager: ServiceManager;
 
   /**
-   * The full URL to the message endpoint used to send messages.
-   */
-  private messageURL: string;
-
-  /**
    * The amount of time in milliseconds to wait before timing out a message.
    */
   private timeoutMS: number;

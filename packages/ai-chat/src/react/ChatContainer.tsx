@@ -8,7 +8,7 @@
  */
 
 import { createComponent } from "@lit/react";
-import { css, LitElement } from "lit";
+import { css, LitElement, PropertyValues } from "lit";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -42,6 +42,15 @@ class ChatContainerReact extends LitElement {
       height: 100%;
     }
   `;
+
+  /**
+   * Dispatch a custom event when the shadow root is ready
+   * This ensures React can safely access shadowRoot
+   */
+  firstUpdated(changedProperties: PropertyValues) {
+    super.firstUpdated(changedProperties);
+    this.dispatchEvent(new CustomEvent("shadow-ready", { bubbles: true }));
+  }
 }
 
 // Wrap the custom element as a React component
@@ -99,29 +108,57 @@ function ChatContainer({
    * ShadowRoot we will inject our React application into.
    */
   useEffect(() => {
-    if (wrapperRef.current) {
-      const wrapperElement =
-        wrapperRef.current as unknown as ChatContainerReact;
-      // We need to check if the element in the ShadowRoot we are render the React application to exists.
-      // If it doesn't, we need to create and append it.
-      // When the Carbon AI chat is destroyed (either via a config change or by calling instance.destroy), this element is
-      // removed again. When the chat is destroyed the instance is set to null. The useEffect watches the instance
-      // value and runs if it changes, re-creating the container element if needed.
-      let reactElement = wrapperElement.shadowRoot?.querySelector(
+    if (!wrapperRef.current) {
+      return null; // Early return when there's nothing to set up because the element isn't ready.
+    }
+
+    let eventListenerAdded = false;
+
+    const wrapperElement = wrapperRef.current as unknown as ChatContainerReact;
+
+    // We need to check if the element in the ShadowRoot we are render the React application to exists.
+    // If it doesn't, we need to create and append it.
+
+    // When the Carbon AI chat is destroyed (either via a config change or by calling instance.destroy), this element is
+    // removed again. When the chat is destroyed the instance is set to null. The useEffect watches the instance
+    // value and runs if it changes, re-creating the container element if needed.
+
+    const handleShadowReady = () => {
+      // Now we know shadowRoot is definitely available
+      let reactElement = wrapperElement.shadowRoot.querySelector(
         ".cds--aichat-react-app"
       ) as HTMLElement;
+
       if (!reactElement) {
         reactElement = document.createElement("div");
         reactElement.classList.add("cds--aichat-react-app");
         wrapperElement.shadowRoot.appendChild(reactElement);
       }
+
       if (wrapperElement !== wrapper) {
         setWrapper(wrapperElement);
       }
       if (reactElement !== container) {
         setContainer(reactElement);
       }
+    };
+
+    if (wrapperElement.shadowRoot) {
+      // Already ready
+      handleShadowReady();
+    } else {
+      // Wait for ready event
+      eventListenerAdded = true;
+      wrapperElement.addEventListener("shadow-ready", handleShadowReady, {
+        once: true,
+      });
     }
+
+    return () => {
+      if (eventListenerAdded) {
+        wrapperElement.removeEventListener("shadow-ready", handleShadowReady);
+      }
+    };
   }, [container, wrapper, currentInstance]);
 
   /**

@@ -14,7 +14,6 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
-import { HasServiceManager } from "../hocs/withServiceManager";
 import { AppState } from "../../../types/state/AppState";
 import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
 import { ErrorMessageDark } from "./ErrorMessageDark";
@@ -27,8 +26,9 @@ import {
   CarbonTheme,
 } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { OverlayPanelName } from "./OverlayPanel";
 
-interface CatastrophicErrorProps extends HasServiceManager, HasLanguagePack {
+interface CatastrophicErrorProps extends HasLanguagePack {
   /**
    * Whether to render the header or just the content.
    */
@@ -60,7 +60,6 @@ interface CatastrophicErrorProps extends HasServiceManager, HasLanguagePack {
  */
 
 function CatastrophicError({
-  serviceManager,
   onClose,
   languagePack,
   onRestart,
@@ -84,6 +83,7 @@ function CatastrophicError({
           onClose={onClose}
           onToggleHomeScreen={null}
           includeWriteableElement={false}
+          testIdPrefix={OverlayPanelName.CATASTROPHIC}
         />
       )}
       <div
@@ -105,7 +105,6 @@ function CatastrophicError({
               className="WACCatastrophicError__RestartButton"
               kind={ButtonKindEnum.TERTIARY}
               size={ButtonSizeEnum.SMALL}
-              id={`WAC__error-reset${serviceManager.namespace.suffix}`}
               aria-label={languagePack.buttons_restart}
               onClick={onRestart}
               renderIcon={Restart}

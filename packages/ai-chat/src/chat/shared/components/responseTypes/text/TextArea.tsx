@@ -189,7 +189,7 @@ class TextArea extends PureComponent<TextAreaProps> {
           aria-required={isRequired}
           className="WAC__TextArea-textarea"
           disabled={disabled}
-          id={id}
+          id={id || testId}
           maxLength={maxLength}
           name={name}
           onFocus={onFocus}
@@ -203,8 +203,10 @@ class TextArea extends PureComponent<TextAreaProps> {
           value={value || ""}
           // Disable Grammarly because it overlays the chat
           // https://github.com/facebook/draft-js/issues/616#issuecomment-343596615
-          data-enable-grammarly={false}
-          data-test-id={testId}
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-enable-grammarly="false"
+          data-testid={testId}
         />
         {autoSize && (
           <div className="WAC__TextArea-sizer">

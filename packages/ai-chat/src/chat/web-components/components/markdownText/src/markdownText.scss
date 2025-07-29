@@ -18,6 +18,11 @@
   display: block;
 }
 
+.WACConversationalSearchText--hasCitation {
+  border-radius: 4px;
+  background-color: theme.$highlight;
+}
+
 .WACWidget__MarkdownP,
 .cds--data-table-content,
 .WACWidget__MarkdownBlockquote,
@@ -58,7 +63,7 @@ pre,
 }
 
 .WACWidget__MarkdownImg {
-  // Make sure images in markdown do not overflow.
+  /* Make sure images in markdown do not overflow. */
   max-inline-size: 100%;
 }
 

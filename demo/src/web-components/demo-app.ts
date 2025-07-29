@@ -110,7 +110,7 @@ export class DemoApp extends LitElement {
    *
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#view:change
    */
-  onViewChange = (event: BusEventViewChange, instance: ChatInstance) => {
+  onViewChange = (event: BusEventViewChange, _instance: ChatInstance) => {
     if (event.newViewState.mainWindow) {
       this.sideBarOpen = true;
     } else {
@@ -133,12 +133,9 @@ export class DemoApp extends LitElement {
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#messageItemCustom
    */
   customButtonHandler = (event: any) => {
-    const { customEventType, messageItem } = event as BusEventMessageItemCustom;
+    const { messageItem } = event as BusEventMessageItemCustom;
     // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
-    if (
-      customEventType === "buttonItemClicked" &&
-      messageItem.custom_event_name === "alert_button"
-    ) {
+    if (messageItem.custom_event_name === "alert_button") {
       // eslint-disable-next-line no-alert
       window.alert(messageItem.user_defined?.text);
     }
@@ -293,7 +290,7 @@ export class DemoApp extends LitElement {
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-render#user-defined-responses
    */
   renderUserDefinedChunk(slot: keyof UserDefinedSlotsMap) {
-    const { chunk, messageItem } = this.userDefinedSlotsMap[slot];
+    const { messageItem } = this.userDefinedSlotsMap[slot];
     switch (messageItem?.user_defined?.user_defined_type) {
       default:
         // We are just going to always return a skeleton here, but you can give yourself more fine grained control.

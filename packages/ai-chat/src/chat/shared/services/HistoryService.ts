@@ -17,11 +17,7 @@ import {
 } from "../schema/historyToMessages";
 import actions from "../store/actions";
 import { ViewType } from "../../../types/state/AppState";
-import {
-  HistoryItem,
-  HistoryNote,
-  NoteType,
-} from "../../../types/messaging/History";
+import { HistoryItem, HistoryNote } from "../../../types/messaging/History";
 
 import { consoleError } from "../utils/miscUtils";
 import { ServiceManager } from "./ServiceManager";
@@ -57,10 +53,8 @@ class HistoryService {
           await publicConfig.messaging.customLoadHistory(
             this.serviceManager.instance
           );
-        // The "author" property is not currently included in our public NoteItem type. Web chat does not use it.
         const note: HistoryNote = {
-          type: NoteType.HISTORY,
-          body: items as any,
+          body: items,
         };
         resultData = { notes: [note] };
       }

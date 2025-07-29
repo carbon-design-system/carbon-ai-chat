@@ -20,12 +20,7 @@
   margin-inline-start: 16px;
 }
 
-.WACConversationalSearchText--hasCitation {
-  border-radius: 4px;
-  background-color: theme.$highlight;
-}
-
-.WACConversationalSearchText__CitationsToggleContainer--block {
+.WACConversationalSearchText__CitationsToggleContainer {
   display: block;
   padding-block-start: layout.$spacing-02;
 }

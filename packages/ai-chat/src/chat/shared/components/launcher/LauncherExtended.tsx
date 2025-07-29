@@ -22,7 +22,6 @@ import React, {
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
-import { HasServiceManager } from "../../hocs/withServiceManager";
 import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { usePrevious } from "../../hooks/usePrevious";
@@ -36,7 +35,7 @@ import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
 import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
 
-interface LauncherExtendedProps extends HasServiceManager, HasClassName {
+interface LauncherExtendedProps extends HasClassName {
   onToggleOpen: () => void;
   launcherConfig: LauncherConfig;
 
@@ -133,7 +132,6 @@ function LauncherExtended(
   const {
     unreadAgentCount,
     showUnreadIndicator,
-    serviceManager,
     launcherConfig,
     isExtended,
     playExtendAnimation,
@@ -349,10 +347,7 @@ function LauncherExtended(
                 </div>
               </div>
             </div>
-            <div
-              className="WACLauncher__IconHolder"
-              id={`WACLauncher__Button${serviceManager.namespace.suffix}`}
-            >
+            <div className="WACLauncher__IconHolder">
               {activeTour ? (
                 <ArrowUpLeft size={24} className="WACLauncher__svg" />
               ) : (

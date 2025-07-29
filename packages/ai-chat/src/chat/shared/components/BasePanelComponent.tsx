@@ -20,6 +20,7 @@ import { HasClassName } from "../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { IS_MOBILE } from "../utils/browserUtils";
 import { Header } from "./header/Header";
+import { OverlayPanelName } from "./OverlayPanel";
 
 interface BasePanelComponentProps
   extends HasClassName,
@@ -50,6 +51,12 @@ interface BasePanelComponentProps
    * Indicates if the AI theme should be used.
    */
   useAITheme?: boolean;
+
+  /**
+   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
+   * in the header obviously unique.
+   */
+  testIdPrefix: OverlayPanelName;
 }
 
 /**
@@ -67,6 +74,7 @@ function BasePanelComponent(
     useAITheme,
     onClickCloseAndRestart,
     onClickRestart,
+    testIdPrefix,
     ...headerProps
   }: BasePanelComponentProps,
   ref: Ref<HasRequestFocus>
@@ -100,6 +108,7 @@ function BasePanelComponent(
             labelBackButton={labelBackButton}
             displayName={title}
             useAITheme={useAITheme}
+            testIdPrefix={testIdPrefix}
             showCenter
           />
         )}

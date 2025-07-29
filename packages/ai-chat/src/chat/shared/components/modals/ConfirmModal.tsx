@@ -101,8 +101,8 @@ class ConfirmModal extends Component<ConfirmModalProps> {
           <div
             className="WACConfirmModal"
             role="dialog"
-            aria-labelledby="WACConfirmModal__title"
-            aria-describedby="WACConfirmModal__message"
+            aria-labelledby={`WACConfirmModal__title${serviceManager.namespace.suffix}`}
+            aria-describedby={`WACConfirmModal__message${serviceManager.namespace.suffix}`}
           >
             <div className="WACConfirmModal__container">
               <AriaLiveMessage message={modalAnnounceMessage} />

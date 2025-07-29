@@ -11,6 +11,7 @@ import React, { forwardRef, Ref, useImperativeHandle, useRef } from "react";
 
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { Header } from "./Header";
+import { OverlayPanelName } from "../OverlayPanel";
 
 /**
  * This component renders a basic header with only a close button.
@@ -26,10 +27,16 @@ interface SimpleHeaderProps {
    * This callback is called when the user clicks the close button.
    */
   onClose: () => void;
+
+  /**
+   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
+   * in the header obviously unique.
+   */
+  testIdPrefix: OverlayPanelName;
 }
 
 function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
-  const { useAITheme, onClose } = props;
+  const { useAITheme, onClose, testIdPrefix } = props;
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -41,6 +48,7 @@ function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
       onClickClose={onClose}
       showCenter
       useAITheme={useAITheme}
+      testIdPrefix={testIdPrefix}
     />
   );
 }

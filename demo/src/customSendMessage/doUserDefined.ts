@@ -31,6 +31,14 @@ function doUserDefined(instance: ChatInstance) {
             text: FAKE_DATA,
           },
         } as UserDefinedItem,
+        {
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: {
+            user_defined_type: "green",
+            text: "As full width",
+          },
+          full_width: true,
+        } as UserDefinedItem,
       ],
     },
   });
