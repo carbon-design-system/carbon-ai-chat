@@ -10,7 +10,9 @@ import Statoscope from "@statoscope/webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import Dotenv from "dotenv-webpack";
 import portfinder from "portfinder";
+import open from "open";
 
 const { default: StatoscopeWebpackPlugin } = Statoscope;
 
@@ -28,6 +30,9 @@ const createPlugins = (includeAnalysis) => {
     new HtmlWebpackPlugin({
       template: "./index.html",
       inject: "body",
+    }),
+    new Dotenv({
+      systemvars: true,
     }),
   ];
 
@@ -51,7 +56,7 @@ const createPlugins = (includeAnalysis) => {
 
 export default async (env, args) => {
   const port = await portfinder.getPortPromise({
-    port: process.env.PORT || 3004,
+    port: process.env.PORT || 3005,
   });
 
   return {
@@ -98,7 +103,10 @@ export default async (env, args) => {
       static: path.join(__dirname, "dist"),
       compress: true,
       port,
-      open: true,
+      onListening(server) {
+        const port = server.server.address().port;
+        open(`http://localhost:${port}`);
+      },
       hot: true,
     },
   };

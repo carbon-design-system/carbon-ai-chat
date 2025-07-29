@@ -37,6 +37,7 @@ import { FileStatusValue } from "../utils/constants";
 import { doFocusRef } from "../utils/domUtils";
 import {
   isConnectToAgent,
+  isFullWidthUserDefined,
   isOptionItem,
   isRequest,
   isResponse,
@@ -718,8 +719,9 @@ class MessageComponent extends PureComponent<
                       responseType === MessageResponseTypes.BUTTON,
                     "WAC__received--grid":
                       responseType === MessageResponseTypes.GRID,
-                    "WAC__received--fullWidth":
-                      localMessageItem.ui_state.fullWidth,
+                    "WAC__received--fullWidth": isFullWidthUserDefined(
+                      localMessageItem.item
+                    ),
                     "WAC__message--historical": fromHistory,
                   }
                 )}
