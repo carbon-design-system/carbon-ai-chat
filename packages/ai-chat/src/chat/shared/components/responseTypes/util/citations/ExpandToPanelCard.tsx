@@ -13,8 +13,11 @@ import React, { useState } from "react";
 import { useServiceManager } from "../../../../hooks/useServiceManager";
 import actions from "../../../../store/actions";
 import { HasClassName } from "../../../../../../types/utilities/HasClassName";
-import { CitationCardProps, CitationType } from "./CitationCard";
-import { CitationCardContent } from "./CitationCardContent";
+import {
+  CitationCardContent,
+  CitationCardProps,
+  CitationType,
+} from "./CitationCardContent";
 import { CitationClickableCard } from "./CitationClickableCard";
 
 /**

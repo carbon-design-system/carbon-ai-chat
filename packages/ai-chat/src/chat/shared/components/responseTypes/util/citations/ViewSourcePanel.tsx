@@ -73,3 +73,4 @@ function ViewSourcePanel(
 
 const ViewSourcePanelExport = forwardRef(ViewSourcePanel);
 export { ViewSourcePanelExport as ViewSourcePanel };
+export default ViewSourcePanelExport;

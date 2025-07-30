@@ -8,11 +8,15 @@
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
+import portfinder from "portfinder";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default (env, args) => {
+export default async (env, args) => {
+  const port = await portfinder.getPortPromise({
+    port: process.env.PORT || 3001,
+  });
   const { mode = "development" } = args;
   return {
     mode,
@@ -64,7 +68,7 @@ export default (env, args) => {
         ? {
             static: path.join(__dirname, "dist"),
             compress: true,
-            port: 3001,
+            port,
             hot: true,
             open: true,
           }

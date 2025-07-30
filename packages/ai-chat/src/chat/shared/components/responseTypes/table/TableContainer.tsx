@@ -8,13 +8,7 @@
  */
 
 import { Theme } from "@carbon/react";
-import React, {
-  Suspense,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
@@ -96,31 +90,27 @@ function TableContainer(props: TableContainerProps) {
   }
 
   if (isValidTable) {
-    // TODO TABLE: When table md is streaming from an LLM use loading prop to render skeleton state.
-
     // Because of issues with our layering variables from carbon we need to force the table to be either in white or g90
     // theme. In the other themes the table background blends into the chat background causing the table to look like
     // it's floating.
     return (
       <Theme theme={LIGHT_THEMES.includes(carbonTheme) ? "white" : "g90"}>
         <div className="WACTableContainer" ref={tableContainerRef}>
-          <Suspense fallback={null}>
-            <Table
-              tableTitle={title}
-              tableDescription={description}
-              headers={headers}
-              rows={rows}
-              containerWidth={tableContainerWidth}
-              chatHeight={chatHeight}
-              filterPlaceholderText={languagePack.table_filterPlaceholder}
-              previousPageText={languagePack.table_previousPage}
-              nextPageText={languagePack.table_nextPage}
-              itemsPerPageText={languagePack.table_itemsPerPage}
-              getPaginationSupplementalText={getTablePaginationSupplementalText}
-              getPaginationStatusText={getTablePaginationStatusText}
-              locale={locale}
-            />
-          </Suspense>
+          <Table
+            tableTitle={title}
+            tableDescription={description}
+            headers={headers}
+            rows={rows}
+            containerWidth={tableContainerWidth}
+            chatHeight={chatHeight}
+            filterPlaceholderText={languagePack.table_filterPlaceholder}
+            previousPageText={languagePack.table_previousPage}
+            nextPageText={languagePack.table_nextPage}
+            itemsPerPageText={languagePack.table_itemsPerPage}
+            getPaginationSupplementalText={getTablePaginationSupplementalText}
+            getPaginationStatusText={getTablePaginationStatusText}
+            locale={locale}
+          />
         </div>
       </Theme>
     );

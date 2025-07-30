@@ -1,11 +1,11 @@
 {
   "name": "@carbon/ai-chat-examples-react-basic",
   "private": true,
-  "version": "0.1.0-rc.0",
+  "version": "0.1.0-rc.4",
   "type": "module",
   "description": "A basic example using @carbon/ai-chat as a React component.",
   "scripts": {
-    "start": "ENVIRONMENT=development webpack serve --config ./webpack.config.js",
+    "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js",
     "build:profile": "ANALYZE=true webpack --config ./webpack.config.js"
   },
@@ -13,7 +13,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^0.4.0-rc.0",
+    "@carbon/ai-chat": "^0.4.0-rc.4",
     "@carbon/icons": "^11.53.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.25.0",
@@ -31,8 +31,10 @@
     "@babel/preset-typescript": "^7.26.0",
     "@statoscope/webpack-plugin": "^5.29.0",
     "babel-loader": "^9.2.1",
+    "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",
+    "portfinder": "^1.0.37",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.3",

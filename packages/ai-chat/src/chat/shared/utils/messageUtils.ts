@@ -44,6 +44,7 @@ import {
   SingleOption,
   StreamChunk,
   TextItem,
+  UserDefinedItem,
   WithBodyAndFooter,
 } from "../../../types/messaging/Messages";
 
@@ -480,6 +481,16 @@ function isSingleItemCarousel(
   return isCarouselResponseType(messageItem) && messageItem.items.length === 1;
 }
 
+function isFullWidthUserDefined(
+  messageItem: GenericItem
+): messageItem is UserDefinedItem {
+  return isUserDefinedItem(messageItem) && messageItem.full_width;
+}
+
+function isUserDefinedItem(item: GenericItem): item is UserDefinedItem {
+  return (item?.response_type as string) === MessageResponseTypes.USER_DEFINED;
+}
+
 function isGridResponseType(item: GenericItem): item is GridItem {
   return (item?.response_type as string) === MessageResponseTypes.GRID;
 }
@@ -594,4 +605,5 @@ export {
   getMediaDimensions,
   getLastBotResponseWithContext,
   THREAD_ID_MAIN,
+  isFullWidthUserDefined,
 };

@@ -1470,3 +1470,5 @@ function validateCustomServiceDesk(serviceDesk: ServiceDesk) {
 }
 
 export { HumanAgentServiceImpl, createService, validateCustomServiceDesk };
+
+export default createService;

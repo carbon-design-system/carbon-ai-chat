@@ -138,12 +138,6 @@ interface LocalMessageUIState<
   gridLocalMessageItemIDs?: string[][][];
 
   /**
-   * Indicates if this message should be rendered full width. This will remove all padding on the sides and hide the
-   * avatar.
-   */
-  fullWidth?: boolean;
-
-  /**
    * If this item is currently streaming, this will contain the current streaming status.
    */
   streamingState?: LocalMessageItemStreamingState<TGenericItemType>;

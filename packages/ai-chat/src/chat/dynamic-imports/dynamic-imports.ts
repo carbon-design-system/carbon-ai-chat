@@ -9,15 +9,16 @@
 
 /**
  * In this file we manage our dynamic imports for the entry of Carbon AI chat. See https://webpack.js.org/guides/code-splitting/#dynamic-imports.
+ *
+ * Dynamic imports are defined in a map to ensure they are statically analyzable by bundlers like webpack.
+ * This guarantees that the target components get built and are available when dynamic imports are resolved.
  */
 
 import React, { type ComponentType, type LazyExoticComponent } from "react";
 import { CreateHumanAgentServiceFunction } from "../shared/services/haa/HumanAgentService";
 
 async function loadHAA(): Promise<CreateHumanAgentServiceFunction> {
-  const { createService } = await import(
-    "../shared/services/haa/HumanAgentServiceImpl"
-  );
+  const { createService } = await DYNAMIC_IMPORTS.HumanAgentService();
   return createService;
 }
 
@@ -41,72 +42,32 @@ function lazyWithPreload<T extends ComponentType<any>>(
   return Component;
 }
 
-function lazyChat() {
-  return lazyWithPreload(() => import("../shared/components/Chat"));
-}
-
-function lazyCatastrophicError() {
-  return lazyWithPreload(() =>
-    import("../shared/components/CatastrophicError").then((mod) => ({
-      default: mod.CatastrophicError,
-    }))
-  );
-}
-
-function lazyDisclaimer() {
-  return lazyWithPreload(() =>
-    import("../shared/components/Disclaimer").then((mod) => ({
-      default: mod.Disclaimer,
-    }))
-  );
-}
-
-function lazyHomeScreenContainer() {
-  return lazyWithPreload(() =>
-    import("../shared/components/homeScreen/HomeScreenContainer").then(
-      (mod) => ({
-        default: mod.HomeScreenContainer,
-      })
-    )
-  );
-}
-
-function lazyIFramePanel() {
-  return lazyWithPreload(() =>
-    import("../shared/components/responseTypes/iframe/IFramePanel").then(
-      (mod) => ({
-        default: mod.IFramePanel,
-      })
-    )
-  );
-}
-
-function lazyViewSourcePanel() {
-  return lazyWithPreload(() =>
-    import(
-      "../shared/components/responseTypes/util/citations/ViewSourcePanel"
-    ).then((mod) => ({
-      default: mod.ViewSourcePanel,
-    }))
-  );
-}
-
-function lazyBodyAndFooterPanelComponent() {
-  return lazyWithPreload(() =>
-    import("../shared/components/panels/BodyAndFooterPanelComponent").then(
-      (mod) => ({
-        default: mod.BodyAndFooterPanelComponent,
-      })
-    )
-  );
-}
-
-function lazyTourComponent() {
-  return React.lazy(() => import("../shared/components/tour/TourContainer"));
-}
-
-function lazyMediaPlayer(): LazyExoticComponent<ComponentType<any>> {
-  return React.lazy(() =>
+/**
+ * Map of all dynamic imports used by the application.
+ *
+ * By defining imports in this centralized map, we ensure they are statically analyzable
+ * by bundlers and will be included in builds even with preserveModules: true.
+ *
+ * When adding new dynamic imports, add them to this map first, then create the corresponding
+ * lazy function below.
+ */
+const DYNAMIC_IMPORTS = {
+  Chat: () => import("../shared/components/Chat"),
+  CatastrophicError: () => import("../shared/components/CatastrophicError"),
+  Disclaimer: () => import("../shared/components/Disclaimer"),
+  HomeScreenContainer: () =>
+    import("../shared/components/homeScreen/HomeScreenContainer"),
+  IFramePanel: () =>
+    import("../shared/components/responseTypes/iframe/IFramePanel"),
+  ViewSourcePanel: () =>
+    import("../shared/components/responseTypes/util/citations/ViewSourcePanel"),
+  BodyAndFooterPanelComponent: () =>
+    import("../shared/components/panels/BodyAndFooterPanelComponent"),
+  TourContainer: () => import("../shared/components/tour/TourContainer"),
+  Carousel: () =>
+    import("../shared/components/responseTypes/carousel/Carousel"),
+  // Special handling for react-player due to CJS/ESM confusion
+  MediaPlayer: () =>
     import("react-player/lazy/index.js").then((mod: any) => {
       // react-player 2.x is old and is confused in their cjs vs mjs usage.
       // mod might be:
@@ -118,14 +79,52 @@ function lazyMediaPlayer(): LazyExoticComponent<ComponentType<any>> {
         exported = exported.default;
       }
       return { default: exported };
-    })
-  );
+    }),
+  // Container components
+  AppContainer: () => import("../react/components/AppContainer"),
+  // Service imports (non-React components)
+  HumanAgentService: () =>
+    import("../shared/services/haa/HumanAgentServiceImpl"),
+};
+
+function lazyChat() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.Chat);
+}
+
+function lazyCatastrophicError() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.CatastrophicError);
+}
+
+function lazyDisclaimer() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.Disclaimer);
+}
+
+function lazyHomeScreenContainer() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.HomeScreenContainer);
+}
+
+function lazyIFramePanel() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.IFramePanel);
+}
+
+function lazyViewSourcePanel() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.ViewSourcePanel);
+}
+
+function lazyBodyAndFooterPanelComponent() {
+  return lazyWithPreload(DYNAMIC_IMPORTS.BodyAndFooterPanelComponent);
+}
+
+function lazyTourComponent() {
+  return React.lazy(DYNAMIC_IMPORTS.TourContainer);
+}
+
+function lazyMediaPlayer(): LazyExoticComponent<ComponentType<any>> {
+  return React.lazy(DYNAMIC_IMPORTS.MediaPlayer);
 }
 
 function lazyCarousel() {
-  return React.lazy(
-    () => import("../shared/components/responseTypes/carousel/Carousel")
-  );
+  return React.lazy(DYNAMIC_IMPORTS.Carousel);
 }
 
 export {
@@ -140,4 +139,5 @@ export {
   lazyViewSourcePanel,
   lazyBodyAndFooterPanelComponent,
   loadHAA,
+  DYNAMIC_IMPORTS,
 };

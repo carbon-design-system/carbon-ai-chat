@@ -42,14 +42,6 @@ interface TableItemRowWithIDs extends TableItemRow {
 
 const DEFAULT_TABLE_PAGE_SIZE = 5;
 const DEFAULT_TABLE_PAGE_SIZE_TALL_CHAT = 10;
-// The supported possible page sizes are 5, 10, 15, 20, 50, and all rows.
-const POSSIBLE_PAGE_SIZES = [
-  DEFAULT_TABLE_PAGE_SIZE,
-  DEFAULT_TABLE_PAGE_SIZE_TALL_CHAT,
-  15,
-  20,
-  50,
-];
 
 const TALL_CHAT_HEIGHT = 850;
 
@@ -430,7 +422,20 @@ class TableElement extends LitElement {
     // been changed by the pagination component then we need to keep the pagination component around so the user can
     // change the page size again, even if the current page size is the same as the number of table rows.
     if (this.rows.length > this._currentPageSize || this._rowsPerPageChanged) {
-      return html`${tableTemplate(this)} ${tablePaginationTemplate(this)}`;
+      return html`${tableTemplate(this)}
+      ${tablePaginationTemplate({
+        _currentPageSize: this._currentPageSize,
+        _currentPageNumber: this._currentPageNumber,
+        _filterVisibleRowIDs: this._filterVisibleRowIDs,
+        rows: this.rows,
+        previousPageText: this.previousPageText,
+        nextPageText: this.nextPageText,
+        itemsPerPageText: this.itemsPerPageText,
+        getPaginationSupplementalText: this.getPaginationSupplementalText,
+        getPaginationStatusText: this.getPaginationStatusText,
+        _handlePageChangeEvent: this._handlePageChangeEvent,
+        _handlePageSizeChangeEvent: this._handlePageSizeChangeEvent,
+      })}`;
     }
 
     // Otherwise, just render the table.
@@ -438,6 +443,6 @@ class TableElement extends LitElement {
   }
 }
 
-export { TableElement, POSSIBLE_PAGE_SIZES, TABLE_COMPONENT_TAG_NAME };
+export { TableElement, TABLE_COMPONENT_TAG_NAME };
 
 export default TableElement;

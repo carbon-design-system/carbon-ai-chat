@@ -191,3 +191,5 @@ function HomeScreenContainer({
 }
 
 export { HomeScreenContainer };
+
+export default HomeScreenContainer;

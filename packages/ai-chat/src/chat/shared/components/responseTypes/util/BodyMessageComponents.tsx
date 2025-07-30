@@ -11,15 +11,23 @@ import cx from "classnames";
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { MessageTypeComponent } from "../../../containers/MessageTypeComponent";
 import { AppState } from "../../../../../types/state/AppState";
 import { MessageTypeComponentProps } from "../../../../../types/messaging/MessageTypeComponentProps";
 import { MessageResponseTypes } from "../../../../../types/messaging/Messages";
 
+interface BodyMessageComponentsProps extends MessageTypeComponentProps {
+  renderMessageComponent: (
+    props: MessageTypeComponentProps & {
+      message: any;
+      isNestedMessageItem: boolean;
+    }
+  ) => React.ReactNode;
+}
+
 /**
  * This component handles rendering nested messages for response types that have a "body" property.
  */
-function BodyMessageComponents(props: MessageTypeComponentProps) {
+function BodyMessageComponents(props: BodyMessageComponentsProps) {
   const { bodyLocalMessageItemIDs } = props.message.ui_state;
   const allMessageItemsByID = useSelector(
     (state: AppState) => state.allMessageItemsByID
@@ -54,11 +62,11 @@ function BodyMessageComponents(props: MessageTypeComponentProps) {
               withShortBottomPadding,
           })}
         >
-          <MessageTypeComponent
-            {...props}
-            message={nestedLocalMessage}
-            isNestedMessageItem
-          />
+          {props.renderMessageComponent({
+            ...props,
+            message: nestedLocalMessage,
+            isNestedMessageItem: true,
+          })}
         </div>
       );
     }

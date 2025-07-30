@@ -10,7 +10,8 @@
       "./docs/WebComponent.md",
       "./docs/Customization.md",
       "./docs/CustomServiceDesks.md",
-      "./docs/CustomServer.md"
+      "./docs/CustomServer.md",
+      "./docs/DemoAndExamples.md"
     ],
     "categoryOrder": [
       "React",

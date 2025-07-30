@@ -218,6 +218,7 @@ export {
   TourStepGenericItem,
   PartialResponse,
   MessageHistoryFeedback,
+  SearchResult,
 } from "./types/messaging/Messages";
 
 export { HistoryItem } from "./types/messaging/History";

@@ -10,6 +10,7 @@ import Statoscope from "@statoscope/webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import portfinder from "portfinder";
 
 const { default: StatoscopeWebpackPlugin } = Statoscope;
 
@@ -48,50 +49,56 @@ const createPlugins = (includeAnalysis) => {
   return plugins;
 };
 
-export default {
-  mode: environment,
-  entry: "./src/App.tsx",
-  output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
-    clean: true,
-  },
-  resolve: {
-    extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
-  },
-  stats: {
-    modules: true, // list modules
-    reasons: true, // include why they were included
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(ts|tsx|js|jsx)$/, // Combine TypeScript and JavaScript files in one rule
-        exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: [
-              "@babel/preset-env",
-              "@babel/preset-react",
-              "@babel/preset-typescript",
-            ],
+export default async (env, args) => {
+  const port = await portfinder.getPortPromise({
+    port: process.env.PORT || 3002,
+  });
+
+  return {
+    mode: environment,
+    entry: "./src/App.tsx",
+    output: {
+      path: path.resolve(__dirname, "dist"),
+      filename: "bundle.js",
+      clean: true,
+    },
+    resolve: {
+      extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
+    },
+    stats: {
+      modules: true, // list modules
+      reasons: true, // include why they were included
+    },
+    module: {
+      rules: [
+        {
+          test: /\.(ts|tsx|js|jsx)$/, // Combine TypeScript and JavaScript files in one rule
+          exclude: /node_modules/,
+          use: {
+            loader: "babel-loader",
+            options: {
+              presets: [
+                "@babel/preset-env",
+                "@babel/preset-react",
+                "@babel/preset-typescript",
+              ],
+            },
           },
         },
-      },
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"],
-      },
-    ],
-  },
-  plugins: createPlugins(shouldAnalyze),
-  devtool: "source-map",
-  devServer: {
-    static: path.join(__dirname, "dist"),
-    compress: true,
-    port: 3002,
-    open: true,
-    hot: true,
-  },
+        {
+          test: /\.css$/,
+          use: ["style-loader", "css-loader"],
+        },
+      ],
+    },
+    plugins: createPlugins(shouldAnalyze),
+    devtool: "source-map",
+    devServer: {
+      static: path.join(__dirname, "dist"),
+      compress: true,
+      port,
+      open: true,
+      hot: true,
+    },
+  };
 };

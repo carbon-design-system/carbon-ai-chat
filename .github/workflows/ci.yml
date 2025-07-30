@@ -1,9 +1,9 @@
 name: ci-check
 on:
   push:
-    branches: [ main, carbon-react-web-components-integration ]
+    branches: [ main, release/v*, carbon-react-web-components-integration ]
   pull_request:
-    branches: [ main, carbon-react-web-components-integration ]
+    branches: [ main, release/v*, carbon-react-web-components-integration ]
   merge_group:
     types: [checks_requested]
 
