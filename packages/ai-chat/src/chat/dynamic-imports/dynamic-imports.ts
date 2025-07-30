@@ -127,6 +127,12 @@ function lazyCarousel() {
   return React.lazy(DYNAMIC_IMPORTS.Carousel);
 }
 
+function lazyTable() {
+  return React.lazy(
+    () => import("../shared/components/responseTypes/table/TableContainer")
+  );
+}
+
 export {
   lazyChat,
   lazyHomeScreenContainer,
@@ -134,6 +140,7 @@ export {
   lazyCatastrophicError,
   lazyTourComponent,
   lazyCarousel,
+  lazyTable,
   lazyMediaPlayer,
   lazyIFramePanel,
   lazyViewSourcePanel,
