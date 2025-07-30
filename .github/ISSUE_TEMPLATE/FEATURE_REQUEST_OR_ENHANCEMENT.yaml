@@ -1,8 +1,7 @@
 name: Feature request or enhancement 💡
-description: Suggest an idea for this project.
+description: Suggest an idea for this project
 title: '[Feature Request]: '
 type: 'enhancement'
-labels: ['status: grooming needed']
 body:
   - type: markdown
     attributes:
@@ -42,8 +41,8 @@ body:
   - type: input
     id: application
     attributes:
-      label: Application/PAL
-      description: 'What application and/or PAL do you work on?'
+      label: Application / product
+      description: "What application, product, or Carbon local system do you work on?"
   - type: dropdown
     id: backend
     attributes:
