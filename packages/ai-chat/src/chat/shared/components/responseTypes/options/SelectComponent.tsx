@@ -7,7 +7,8 @@
  *  @license
  */
 
-import { Dropdown, Layer, OnChangeData } from "@carbon/react";
+import Layer from "../../../../react/carbon/Layer";
+import { Dropdown, DropdownItem } from "../../../../react/carbon/Dropdown";
 import cx from "classnames";
 import { Environment, UseSelectStateChange } from "downshift";
 import React, { useRef, useState } from "react";
@@ -21,6 +22,10 @@ import {
   MessageInput,
   SingleOption,
 } from "../../../../../types/messaging/Messages";
+
+interface OnChangeData<ItemType> {
+  selectedItem: ItemType | null;
+}
 
 interface SelectProps extends HasLanguagePack, HasServiceManager {
   title: string;
@@ -83,14 +88,6 @@ function SelectComponent(props: SelectProps) {
     ? createProxyEnvironment(rootRef.current.getRootNode() as ShadowRoot)
     : undefined;
 
-  function findOptionForValue(): SingleOption {
-    const { value, options } = props;
-    const selectedItem = options.find((item) => {
-      return item.value === value;
-    });
-    return selectedItem;
-  }
-
   function onIsOpenChange(changes: UseSelectStateChange<SingleOption>) {
     /**
      * This is called when a state change occurs on the downshift component. We use this to take action when the dropdown
@@ -127,12 +124,11 @@ function SelectComponent(props: SelectProps) {
           WAC__customSelectTemporaryPadding: isBeingOpened,
         })}
       >
-        <Layer>
+        <Layer level={1}>
           <Dropdown
             id={`WAC__selectUUID_${id}`}
-            items={options}
             label={languagePack.options_select}
-            titleText={languagePack.options_select}
+            title-text={languagePack.options_select}
             hideLabel
             aria-label={
               disableUserInputs
@@ -140,14 +136,25 @@ function SelectComponent(props: SelectProps) {
                 : title
             }
             disabled={disableUserInputs}
-            onChange={onChange}
-            selectedItem={findOptionForValue()}
-            downshiftProps={{
-              environment,
-              onIsOpenChange,
-              id: `WACSelectComponent__Downshift-${id}`,
+            onSelection={(e: any) => {
+              onChange({
+                selectedItem: {
+                  label: e.detail.item.value,
+                  value: {
+                    input: {
+                      text: e.detail.item.value,
+                    },
+                  },
+                },
+              });
             }}
-          />
+          >
+            {options.map((option) => (
+              <DropdownItem value={option.label} key={option.label}>
+                {option.value.input.text}
+              </DropdownItem>
+            ))}
+          </Dropdown>
         </Layer>
       </div>
     </div>
