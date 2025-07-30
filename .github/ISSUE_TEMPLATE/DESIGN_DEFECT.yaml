@@ -39,7 +39,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: example-url
+    id: screenshots
     attributes:
       label: Screenshots
       description: 'Provide screenshots of the problem'
