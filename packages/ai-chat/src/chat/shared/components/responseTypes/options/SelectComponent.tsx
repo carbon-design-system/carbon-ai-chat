@@ -10,8 +10,7 @@
 import Layer from "../../../../react/carbon/Layer";
 import { Dropdown, DropdownItem } from "../../../../react/carbon/Dropdown";
 import cx from "classnames";
-import { Environment, UseSelectStateChange } from "downshift";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { useCounter } from "../../../hooks/useCounter";
@@ -26,6 +25,10 @@ import {
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
 }
+
+type SelectionEvent = CustomEvent<{
+  item: { value: string };
+}>;
 
 interface SelectProps extends HasLanguagePack, HasServiceManager {
   title: string;
@@ -47,24 +50,6 @@ interface SelectProps extends HasLanguagePack, HasServiceManager {
   shouldRemoveHTMLBeforeMarkdownConversion?: boolean;
 }
 
-/**
- * Downshift doesn't play well with shadow dom OOTB, so we need to feed it a custom environment.
- */
-function createProxyEnvironment(shadowRoot: ShadowRoot) {
-  const properties = {
-    document: shadowRoot.ownerDocument,
-    addEventListener:
-      shadowRoot.ownerDocument.addEventListener.bind(shadowRoot),
-    removeEventListener:
-      shadowRoot.ownerDocument.removeEventListener.bind(shadowRoot),
-    Node,
-  };
-
-  return new Proxy(shadowRoot, {
-    get: (_, prop: keyof typeof properties) => properties[prop],
-  }) as unknown as Environment;
-}
-
 function SelectComponent(props: SelectProps) {
   const {
     title,
@@ -84,30 +69,50 @@ function SelectComponent(props: SelectProps) {
   const counter = useCounter();
   const id = `${counter}${serviceManager.namespace.suffix}`;
 
-  const environment = rootRef.current?.getRootNode
-    ? createProxyEnvironment(rootRef.current.getRootNode() as ShadowRoot)
-    : undefined;
+  const handleToggle = () => {
+    setIsBeingOpened(true);
 
-  function onIsOpenChange(changes: UseSelectStateChange<SingleOption>) {
-    /**
-     * This is called when a state change occurs on the downshift component. We use this to take action when the dropdown
-     * is opened.
-     */
-    if (changes.isOpen && rootRef.current) {
-      // When the dropdown is opened, make sure it gets scrolled into view. To give a little extra padding to the
-      // scrollable area, we'll temporarily add some bottom padding to the item, let the scroll calculations run and
-      // then we'll remove it.
-      setTimeout(() => {
-        if (rootRef?.current) {
-          setIsBeingOpened(true);
-          doScrollElementIntoView(rootRef.current, true);
-          setIsBeingOpened(false);
-        }
-      }, 70 * 2);
-      // Carbon animates the menu opening, so we sadly need to provide a value here (fast01 token === 70) using the
-      // value from @carbon/motion (which is not exported to JS).
+    requestAnimationFrame(() => {
+      if (rootRef.current) {
+        doScrollElementIntoView(rootRef.current, true);
+      }
+      setIsBeingOpened(false);
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
     }
-  }
+  };
+
+  const handleBeingSelected = (e: SelectionEvent) => {
+    const text = e.detail.item.value;
+
+    onChange({
+      selectedItem: {
+        label: text,
+        value: { input: { text } },
+      },
+    });
+  };
+
+  // Effect to add overrides on list box to make the dropdown take the proper height after expanding
+  useEffect(() => {
+    setTimeout(() => {
+      const listBox = rootRef.current
+        ?.querySelector("cds-custom-dropdown")
+        ?.shadowRoot?.querySelector(
+          ".cds-custom--list-box--md"
+        ) as HTMLElement | null;
+
+      if (listBox) {
+        listBox.style.blockSize = "unset";
+        listBox.style.maxBlockSize = "unset";
+        console.log(listBox);
+      }
+    });
+  }, []);
 
   return (
     <div ref={rootRef}>
@@ -136,18 +141,9 @@ function SelectComponent(props: SelectProps) {
                 : title
             }
             disabled={disableUserInputs}
-            onSelection={(e: any) => {
-              onChange({
-                selectedItem: {
-                  label: e.detail.item.value,
-                  value: {
-                    input: {
-                      text: e.detail.item.value,
-                    },
-                  },
-                },
-              });
-            }}
+            onToggled={handleToggle}
+            onKeyDown={handleKeyDown}
+            onBeingSelected={handleBeingSelected}
           >
             {options.map((option) => (
               <DropdownItem value={option.label} key={option.label}>
