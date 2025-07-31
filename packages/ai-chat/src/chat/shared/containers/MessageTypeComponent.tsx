@@ -37,6 +37,7 @@ import UserDefinedResponse from "../components/responseTypes/custom/UserDefinedR
 import { DatePickerComponent } from "../components/responseTypes/datePicker/DatePickerComponent";
 import InlineError from "../components/responseTypes/error/InlineError";
 import { GridItemComponent } from "../components/responseTypes/grid/GridItemComponent";
+import { TableContainerItemComponent } from "../components/responseTypes/table/TableContainerItemComponent";
 import { IFrameMessage } from "../components/responseTypes/iframe/IFrameMessage";
 import { Image } from "../components/responseTypes/image/Image";
 import { OptionComponent } from "../components/responseTypes/options/OptionComponent";
@@ -50,7 +51,6 @@ import { selectAgentDisplayState } from "../store/selectors";
 import { AppState } from "../../../types/state/AppState";
 import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
 import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps";
-import { lazyTable } from "../../dynamic-imports/dynamic-imports";
 import {
   getMediaDimensions,
   isRequest,
@@ -111,8 +111,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const feedbackPanelID = useUUID();
 
   const feedbackHistory = originalMessage.history?.feedback?.[feedbackID];
-
-  const TableContainer = lazyTable();
 
   const feedbackInitialValues = useMemo<FeedbackInitialValues>(() => {
     if (!feedbackHistory) {
@@ -578,7 +576,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   function renderTable(message: LocalMessageItem<TableItem>) {
-    return <TableContainer tableItem={message.item} />;
+    return <TableContainerItemComponent tableItem={message.item} />;
   }
 
   function scrollChainOfThought(open: boolean, element: HTMLElement) {
