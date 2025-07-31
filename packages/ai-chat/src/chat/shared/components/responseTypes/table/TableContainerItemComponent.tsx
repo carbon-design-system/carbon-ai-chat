@@ -10,17 +10,16 @@
 import React, { Suspense } from "react";
 import { SkeletonPlaceholder } from "../../SkeletonPicker";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-import {
-  TableItem
-} from "../../../../../types/messaging/Messages";
+import { TableItem } from "../../../../../types/messaging/Messages";
 import { lazyTable } from "../../../../dynamic-imports/dynamic-imports";
 
 const TableContainer = lazyTable();
 
-function TableContainerItemComponent({ tableItem } : {
-  tableItem: LocalMessageItem<TableItem>["item"]
-} ) {
-
+function TableContainerItemComponent({
+  tableItem,
+}: {
+  tableItem: LocalMessageItem<TableItem>["item"];
+}) {
   return (
     <Suspense fallback={<SkeletonPlaceholder />}>
       <TableContainer tableItem={tableItem} />
