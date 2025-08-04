@@ -44,7 +44,7 @@
     "@carbon/icon-helpers": "^10.60.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/react": "^1.68.0",
-    "@carbon/web-components": "^2.25.0",
+    "@carbon/web-components": "^2.35.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
