@@ -86,7 +86,7 @@ const DYNAMIC_IMPORTS = {
   HumanAgentService: () =>
     import("../shared/services/haa/HumanAgentServiceImpl"),
   Table: () =>
-    import("../shared/components/responseTypes/table/TableContainer")
+    import("../shared/components/responseTypes/table/TableContainer"),
 };
 
 function lazyChat() {
