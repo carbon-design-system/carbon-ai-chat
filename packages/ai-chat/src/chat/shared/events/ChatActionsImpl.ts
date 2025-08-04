@@ -695,16 +695,16 @@ class ChatActionsImpl {
         )
       );
 
-      if (chunk.partial_response?.history) {
+      if (chunk.partial_response?.message_options) {
         if (Object.keys(chunk.partial_response).length > 1) {
           throw new Error(
-            `The partial_response object only supports the "history" property.`
+            `The partial_response object only supports the "message_options" property.`
           );
         }
         store.dispatch(
-          actions.streamingMergeHistory(
+          actions.streamingMergeMessageOptions(
             messageID,
-            chunk.partial_response?.history
+            chunk.partial_response?.message_options
           )
         );
       }

@@ -62,10 +62,8 @@ async function createHumanAgentLocalMessage(
 
   localMessage.item.text = text;
   if (responseUserProfile) {
-    if (!originalMessage.history) {
-      originalMessage.history = {};
-    }
-    originalMessage.history.response_user_profile = responseUserProfile;
+    originalMessage.message_options = originalMessage.message_options || {};
+    originalMessage.message_options.response_user_profile = responseUserProfile;
   }
 
   if (fireEvents) {
@@ -129,8 +127,6 @@ function createBotReturnMessage(languagePack: LanguagePack) {
  */
 async function addMessages(
   messagePairs: LocalAndOriginalMessagesPair[],
-  saveInHistory: boolean,
-  fireHistoryEvent: boolean,
   showLiveMessages: boolean,
   serviceManager: ServiceManager
 ) {
@@ -180,8 +176,6 @@ async function addBotReturnMessage(
         // Don't show this message if the chat has been restarted since we started waiting.
         addMessages(
           [toPair([botReturn.localMessage], botReturn.originalMessage)],
-          true,
-          false,
           !wasSuspended,
           serviceManager
         );
@@ -215,8 +209,6 @@ async function addHumanAgentEndChatMessage(
   );
   await addMessages(
     [toPair([endChatMessage.localMessage], endChatMessage.originalMessage)],
-    true,
-    false,
     !wasSuspended,
     serviceManager
   );

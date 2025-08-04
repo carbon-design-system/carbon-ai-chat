@@ -6,6 +6,8 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/themes/scss/themes";
 
 // TODO TABLE: The below sticky header workaround should be removed when Carbon adds out of the box functionality for
 // this (re this issue: https://github.com/carbon-design-system/carbon/issues/17735). When the sticky header workaround
@@ -57,8 +59,26 @@ cds-custom-table-header-description {
   margin-block-end: -#{layout.$spacing-03};
 }
 
-// Make the pagination component cover any available width. If the table above the pagination component is wider it will
-// expand to be the same width as the table.
-cds-custom-pagination {
+// Both table and pagination will be placed in the same grid column,
+// ensuring they have the same width that expands to fit the wider element.
+cds-custom-pagination,
+cds-custom-table {
+  grid-column: 1;
   inline-size: 100%;
+}
+
+.cds-ai-chat-table-container {
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr);
+  inline-size: 100%;
+  overflow-x: auto;
+}
+
+// Apply Carbon themes to the table container
+.cds-ai-chat-table-container.cds--white {
+  @include theme.theme(themes.$white);
+}
+
+.cds-ai-chat-table-container.cds--g90 {
+  @include theme.theme(themes.$g90);
 }

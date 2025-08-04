@@ -78,9 +78,9 @@ import {
   InlineErrorItem,
   InternalMessageRequestType,
   Message,
-  MessageHistory,
   MessageHistoryFeedback,
   MessageInputType,
+  MessageItemHistory,
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
@@ -200,7 +200,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               aria-label={props.languagePack.fileSharing_fileIcon}
             />
           )}
-          {/* The use of the heading role here is a compromise to Penn State which wanted us to enable the use of the 
+          {/* The use of the heading role here is a compromise to enable the use of the 
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <span role="heading" aria-level={2}>
@@ -235,8 +235,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     const responseType = localMessageItem.item.response_type;
     const withHuman = Boolean(
-      message.history?.response_user_profile?.user_type === UserType.HUMAN ||
-        localMessageItem.item.agent_message_type
+      message.message_options?.response_user_profile?.user_type ===
+        UserType.HUMAN || localMessageItem.item.agent_message_type
     );
     switch (responseType) {
       case MessageResponseTypes.TEXT:
@@ -681,15 +681,18 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     /**
      * Updates the message history with the feedback data provided.
      */
-    function updateHistory(data: MessageHistoryFeedback) {
+    function updateFeedbackHistory(data: MessageHistoryFeedback) {
       if (feedbackID) {
-        const history: MessageHistory = {
+        const history: MessageItemHistory = {
           feedback: {
             [feedbackID]: data,
           },
         };
         serviceManager.store.dispatch(
-          actions.mergeMessageHistory(localMessageItem.fullMessageID, history)
+          actions.mergeMessageItemHistory(
+            localMessageItem.fullMessageID,
+            history
+          )
         );
       }
     }
@@ -709,7 +712,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       if (toggleToSelected && !openDetails) {
         // If the button has been toggled to selected but we're not showing details, that means the option is considered
         // immediately submitted.
-        updateHistory({ is_positive: isPositive });
+        updateFeedbackHistory({ is_positive: isPositive });
         setIsFeedbackSubmitted(true);
 
         serviceManager.fire({
@@ -761,7 +764,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       serviceManager.fire(event);
 
       // Submit this update to be recorded in history.
-      updateHistory({
+      updateFeedbackHistory({
         is_positive: event.isPositive,
         text: event.text,
         categories: event.categories,

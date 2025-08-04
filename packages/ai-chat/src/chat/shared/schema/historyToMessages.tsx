@@ -265,9 +265,7 @@ async function notesToMessages(
 
       if (isResponse(message) && message.request_id) {
         responsesByRequestID[message.request_id] = message;
-      }
-
-      if (message.history.related_message_id) {
+      } else if (isRequest(message) && message.history.related_message_id) {
         relatedMessageByID[message.history.related_message_id] = message;
       }
     }

@@ -38,7 +38,7 @@ interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
    * The history information to store as part of this request. This includes extra information that was provided to
    * the user and about the user that was used in making the request.
    */
-  history?: MessageHistory;
+  history?: MessageRequestHistory;
 
   /**
    * Used to store private state information about the message.
@@ -192,10 +192,14 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   ui_state_internal?: MessageUIStateInternal;
 
   /**
-   * The history information to store as part of this request. This includes extra information that was provided to
-   * the user and about the user that was used in making the request.
+   * The history information to store as part of this request.
    */
-  history?: MessageHistory;
+  history?: MessageResponseHistory;
+
+  /**
+   * Options for the {@link MessageResponse}. This includes metadata about the user or bot sending this response.
+   */
+  message_options?: MessageResponseOptions;
 }
 
 /**
@@ -270,6 +274,8 @@ enum MessageResponseTypes {
 
   /**
    * Displays a table of data to the user.
+   *
+   * @experimental
    */
   TABLE = "table",
 
@@ -521,7 +527,7 @@ export interface ChainOfThoughtStep {
  */
 export interface GenericItemMessageOptions {
   /**
-   * Controls the display of chain of thought component. This API is in beta and is subject to change.
+   * Controls the display of chain of thought component.
    */
   chain_of_thought?: ChainOfThoughtStep[];
 
@@ -1337,28 +1343,14 @@ interface TableItem<TUserDefinedType = Record<string, unknown>>
 
 /**
  * @category Messaging
- */
-type TableItemRowExpandableSectionItem =
-  | TextItem
-  | ImageItem
-  | VideoItem
-  | AudioItem
-  | IFrameItem
-  | UserDefinedItem;
-
-/**
- * @category Messaging
+ *
+ * @experimental
  */
 interface TableItemRow {
   /**
    * Data for a specific cell.
    */
   cells: TableItemCell[];
-
-  /**
-   * A section that can expand beneath each row which contains an array of items exactly like the message api's output.generic array.
-   */
-  // expandable_section?: TableItemRowExpandableSectionItem[];
 }
 
 /**
@@ -1407,12 +1399,57 @@ interface MessageUIStateInternal {
 }
 
 /**
- * This interface contains information about the history of a given message. This information will eventually be
- * saved in the history store.
+ * This interface contains options for a {@link MessageResponse}.
  *
  * @category Messaging
  */
-interface MessageHistory {
+interface MessageResponseOptions {
+  /**
+   * This is the profile for the human or bot who sent or triggered this message.
+   */
+  response_user_profile?: ResponseUserProfile;
+}
+
+/**
+ * This interface contains information about the history of a given {@link MessageResponse}. This information should be
+ * saved your history store.
+ *
+ * @category Messaging
+ */
+interface MessageResponseHistory {
+  /**
+   * The time at which this message occurred.
+   */
+  timestamp?: number;
+
+  /**
+   * Indicates if this is a "silent" message. These messages are sent to or received from the assistant but should
+   * not be displayed to the user.
+   */
+  silent?: boolean;
+
+  /**
+   * The error state of this message.
+   */
+  error_state?: MessageErrorState;
+
+  /**
+   * @internal
+   * If this message represents a file upload, this is the status of that file. If the upload failed due to an
+   * error, the upload will be complete and the error_state value above will be set. The "success" status is a
+   * temporary status the displays a checkmark on successful uploads. The "complete" status is the permanent
+   * status stored in session history.
+   */
+  file_upload_status?: FileStatusValue;
+}
+
+/**
+ * This interface contains information about the history of a given {@link MessageRequest}. This information should be
+ * saved your history store.
+ *
+ * @category Messaging
+ */
+interface MessageRequestHistory {
   /**
    * The time at which this message occurred.
    */
@@ -1445,9 +1482,9 @@ interface MessageHistory {
   silent?: boolean;
 
   /**
-   * This is the profile for the human or bot who sent or triggered this message.
+   * The error state of this message.
    */
-  response_user_profile?: ResponseUserProfile;
+  error_state?: MessageErrorState;
 
   /**
    * @internal
@@ -1457,11 +1494,20 @@ interface MessageHistory {
    * status stored in session history.
    */
   file_upload_status?: FileStatusValue;
+}
 
+/**
+ * This interface contains information about the history of a given {@link GenericItem}. This information should be
+ * saved your history store.
+ *
+ * @category Messaging
+ */
+interface MessageItemHistory {
   /**
-   * The error state of this message.
+   * Indicates if this is a "silent" message. These messages are sent to or received from the assistant but should
+   * not be displayed to the user.
    */
-  error_state?: MessageErrorState;
+  silent?: boolean;
 
   /**
    * The state of feedback provided on the items in this message.
@@ -1498,7 +1544,7 @@ interface PartialResponse {
   /**
    * This contains the history of this response.
    */
-  history?: DeepPartial<MessageHistory>;
+  message_options?: DeepPartial<MessageResponseOptions>;
 }
 
 /**
@@ -1520,9 +1566,17 @@ interface PartialItemChunk extends Chunk {
 }
 
 /**
- * The interface for a chunk that represents a complete update to a message item. The item provided here should have
- * all the data necessary to render the item including any data that was previously received from partial chunks.
- * This chunk may contain corrections to previous chunks.
+ * A chunk that represents a complete update to a single message item within a streaming response.
+ *
+ * This chunk type exists to allow immediate replacement of a streaming item with its final, corrected version
+ * before the entire message response is complete. This enables real-time corrections to individual items
+ * (like fixing typos in streaming text) while other items in the same message may still be streaming.
+ *
+ * The item provided here should have all the data necessary to render the item including any data that was
+ * previously received from partial chunks. This chunk may contain corrections to previous chunks.
+ *
+ * Use this when you need to finalize a specific item but the overall message response isn't ready yet.
+ * For ending the entire streaming response, use {@link FinalResponseChunk} instead.
  *
  * @category Messaging
  */
@@ -1535,11 +1589,18 @@ interface CompleteItemChunk extends Chunk {
 }
 
 /**
- * The interface for a chunk that represents the entire completed message response. The response provided here
- * should have all the data necessary to render the response including any data that was previously received from item
- * chunks. This final response may contain corrections to previous chunks.
+ * A chunk that represents the entire completed message response, signaling the end of streaming.
  *
- * The ID of the message should match the ID that was previously provided by PartialItemChunk.streaming_metadata.id.
+ * This chunk type exists as the definitive way to close a streaming session and provide the final,
+ * authoritative version of the complete message response. Unlike {@link CompleteItemChunk} which updates
+ * individual items, this chunk finalizes the entire response and triggers cleanup of streaming UI states
+ * (like hiding "stop streaming" buttons).
+ *
+ * The response provided here should have all the data necessary to render the response including any data
+ * that was previously received from item chunks. This final response may contain corrections to previous chunks.
+ *
+ * Use this to signal that streaming is complete and provide the canonical final state of the entire message.
+ * The ID of the message should match the ID that was previously provided by streaming_metadata.response_id.
  *
  * @category Messaging
  */
@@ -1640,7 +1701,6 @@ export {
   InlineErrorItem,
   MediaItem,
   MediaItemDimensions,
-  MessageHistory,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,
@@ -1657,7 +1717,6 @@ export {
   TableItem,
   TableItemCell,
   TableItemRow,
-  TableItemRowExpandableSectionItem,
   TextItem,
   UserDefinedItem,
   VerticalCellAlignment,
@@ -1672,4 +1731,8 @@ export {
   UserType,
   watsonx,
   MessageUIStateInternal,
+  MessageItemHistory,
+  MessageResponseOptions,
+  MessageResponseHistory,
+  MessageRequestHistory,
 };

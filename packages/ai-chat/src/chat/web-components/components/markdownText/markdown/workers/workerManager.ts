@@ -18,64 +18,197 @@ import {
  * on updates.
  */
 
-// let worker: Worker | null = null;
-// const requests = new Map<number, (tree: any) => void>();
-// let requestId = 0;
+let worker: Worker | null = null;
+const requests = new Map<number, (tree: TokenTree | null) => void>();
+let requestId = 0;
 
 /**
- * Lazily renders markdown into a TokenTree tree, using a Web Worker if available.
- *
- * FOR NOW WE ARE DISABLING THE WORKER VERSION UNTIL WE ARE SURE FOLKS CAN BUILD IT SAFELY.
+ * Options for the getMarkdownWorker function.
+ */
+interface MarkdownWorkerOptions {
+  /**
+   * The markdown text to process.
+   */
+  markdown: string;
+
+  /**
+   * The previous token tree for diffing optimization. When provided, the markdown
+   * processor can perform efficient tree diffing to minimize re-rendering.
+   */
+  lastTree?: TokenTree;
+
+  /**
+   * Whether to enable web worker processing for better performance.
+   */
+  enableWorkers?: boolean;
+
+  /**
+   * Whether to enable debug logging.
+   */
+  debug?: boolean;
+
+  /**
+   * If HTML should be allowed in the markdown content.
+   */
+  allowHtml?: boolean;
+}
+
+/**
+ * Lazily renders markdown into a TokenTree tree, using a Web Worker if available and enabled.
  *
  * This function acts as a unified entry point for processing markdown input.
  * In the browser, it will attempt to use a shared Web Worker to offload parsing
- * work off the main thread. If Web Workers are unavailable (e.g., during server-side
- * rendering or in test environments), it falls back to synchronous in-thread parsing.
- *
- * This design ensures that:
- * - Markdown is rendered progressively and non-blocking in the browser
- * - Server-rendered environments don't error out or import unnecessary browser APIs
- * - Tree diffs preserve DOM stability for fast updates
+ * work off the main thread if enableWorkers is true and workers are supported.
+ * Otherwise, it falls back to synchronous in-thread parsing.
  */
 async function getMarkdownWorker(
-  markdown: string,
-  lastTree: any,
-  allowHtml = true
+  options: MarkdownWorkerOptions
 ): Promise<TokenTree> {
-  // FOR NOW WE ARE ONLY DOING IT THIS WAY WITHOUT A WORKER.
-  // If we're in an SSR context, or the browser doesn't support Workers,
-  // fall back to in-thread parsing using dynamically imported utilities.
-  // if (typeof window === "undefined" || typeof Worker === "undefined") {
-  const { parseMarkdown } = await import("../utils/markdown");
+  const {
+    markdown,
+    lastTree,
+    enableWorkers = false,
+    debug = false,
+    allowHtml = true,
+  } = options;
+  // Check if we should use workers
+  const shouldUseWorker =
+    enableWorkers &&
+    typeof window !== "undefined" &&
+    typeof Worker !== "undefined";
 
+  if (shouldUseWorker) {
+    // Initialize worker if not already done
+    if (!worker) {
+      // Try multiple worker creation strategies for maximum compatibility
+      worker = tryCreateWorker(debug);
+
+      if (worker) {
+        worker.onmessage = (event: MessageEvent) => {
+          const [id, tree, error] = event.data;
+          const resolver = requests.get(id);
+          if (resolver) {
+            requests.delete(id);
+            if (error) {
+              if (debug) {
+                console.log("Worker processing error:", error);
+              }
+              // Could fall back to main thread here, but for now just resolve with null
+              resolver(null);
+            } else {
+              resolver(tree);
+            }
+          }
+        };
+        worker.onerror = (error) => {
+          if (debug) {
+            console.log("Worker error, falling back to main thread:", error);
+          }
+          worker = null;
+        };
+      }
+    }
+
+    // Use worker if available
+    if (worker) {
+      return new Promise((resolve) => {
+        const id = requestId++;
+        requests.set(id, async (result) => {
+          if (result === null) {
+            // Worker failed, fall back to main thread
+            if (debug) {
+              console.log(
+                "Worker processing failed, falling back to main thread"
+              );
+            }
+            try {
+              const fallbackResult = await processInMainThread(
+                markdown,
+                lastTree
+              );
+              resolve(fallbackResult);
+            } catch (error) {
+              if (debug) {
+                console.error("Main thread fallback also failed:", error);
+              }
+              resolve(
+                lastTree || {
+                  key: "error",
+                  token: {
+                    type: "error",
+                    tag: "",
+                    nesting: 0,
+                    level: 0,
+                    content: "",
+                    attrs: null,
+                    children: null,
+                    markup: "",
+                    block: true,
+                    hidden: false,
+                    map: null,
+                    info: "",
+                    meta: null,
+                  },
+                  children: [],
+                }
+              );
+            }
+          } else {
+            resolve(result);
+          }
+        });
+
+        worker?.postMessage({
+          id,
+          markdown,
+          lastTree,
+        });
+      });
+    }
+  }
+
+  // Main thread processing (default and fallback)
+  return processInMainThread(markdown, lastTree, allowHtml);
+}
+
+/**
+ * Process markdown in the main thread.
+ */
+async function processInMainThread(
+  markdown: string,
+  lastTree?: TokenTree,
+  allowHtml?: boolean
+): Promise<TokenTree> {
+  const { parseMarkdown } = await import("../utils/markdown");
   // Parse markdown into tokens, build a tree, then diff it against the previous one
   const tokens = parseMarkdown(markdown, allowHtml);
   const tree = buildTokenTree(tokens);
   return diffTokenTree(lastTree, tree);
-  // }
-
-  // Load in the web worker for processing markdown into a tree if it isn't already loaded.
-  /* if (!worker && typeof Worker !== "undefined") {
-    const workerUrl = new URL("./markdownWorker.js", import.meta.url);
-    worker = new Worker(workerUrl, { type: "module" });
-    worker.onmessage = (event: MessageEvent) => {
-      const [id, tree] = event.data;
-      requests.get(id)?.(tree);
-      requests.delete(id);
-    };
-  }
-
-  // In the browser with a worker: post a message and await the result
-  return new Promise((resolve) => {
-    const id = requestId++;
-    requests.set(id, resolve);
-
-    worker.postMessage({
-      id,
-      markdown,
-      lastTree,
-    });
-  });*/
 }
 
-export { getMarkdownWorker };
+/**
+ * Attempts to create a worker, if it fails we fall back to using main thread.
+ */
+function tryCreateWorker(debug = false): Worker | null {
+  // Even if workers are supported, its possible that the consuming applications build can't find our worker,
+  // so we fallback to smain thread instead of worker thread if we error out here.
+  try {
+    const workerUrl = new URL("./markdownWorker.js", import.meta.url);
+    const fileWorker = new Worker(workerUrl, { type: "module" });
+    if (debug) {
+      console.log("Using external file worker for markdown processing");
+    }
+    return fileWorker;
+  } catch (error) {
+    if (debug) {
+      console.log("External file worker failed:", error);
+    }
+  }
+
+  if (debug) {
+    console.log("Worker failed to load, will use main thread");
+  }
+  return null;
+}
+
+export { getMarkdownWorker, type MarkdownWorkerOptions };

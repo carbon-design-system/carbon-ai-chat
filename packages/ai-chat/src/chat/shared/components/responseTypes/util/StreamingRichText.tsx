@@ -65,6 +65,7 @@ function StreamingRichText(props: StreamingRichTextProps) {
       <RichText
         text={textToUse}
         shouldRemoveHTMLBeforeMarkdownConversion={removeHTML}
+        streaming={streamingState && !streamingState.isDone}
       />
       {isStreamingError && (
         <InlineError

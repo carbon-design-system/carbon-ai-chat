@@ -83,7 +83,7 @@ async function doTextStreaming(
 
       if (userProfile) {
         chunk.partial_response = {
-          history: {
+          message_options: {
             response_user_profile: userProfile,
           },
         };
@@ -115,7 +115,7 @@ async function doTextStreaming(
 
     if (userProfile) {
       chunk.partial_response = {
-        history: {
+        message_options: {
           response_user_profile: userProfile,
         },
       };
@@ -181,7 +181,7 @@ function doText(
   };
 
   if (userProfile) {
-    message.history = {
+    message.message_options = {
       response_user_profile: userProfile,
     };
   } else {

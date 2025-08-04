@@ -174,6 +174,15 @@ export interface PublicConfig {
    * Sets the name of the bot.
    */
   botName?: string;
+
+  /**
+   * Enables the use of Web Workers for markdown processing when available.
+   * This can improve performance by offloading markdown parsing to a background thread.
+   * Defaults to false.
+   *
+   * @experimental
+   */
+  enableWorkers?: boolean;
 }
 
 /**

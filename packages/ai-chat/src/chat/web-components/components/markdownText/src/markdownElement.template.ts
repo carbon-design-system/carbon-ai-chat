@@ -9,14 +9,11 @@
 
 import { html } from "lit";
 
-import MarkdownTextElement from "../cds-aichat-markdown-text";
+import MarkdownElement from "../cds-aichat-markdown-text";
 
-function markdownTextTemplate(customElementClass: MarkdownTextElement) {
+function markdownTextTemplate(customElementClass: MarkdownElement) {
   const { renderedContent } = customElementClass;
-
-  return html`<div class="cds-aichat-markdown-text">
-    ${renderedContent || html``}
-  </div>`;
+  return html`<div class="cds-aichat-markdown-stack">${renderedContent}</div>`;
 }
 
 export { markdownTextTemplate };

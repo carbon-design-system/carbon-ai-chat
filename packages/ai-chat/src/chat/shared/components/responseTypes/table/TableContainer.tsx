@@ -7,18 +7,17 @@
  *  @license
  */
 
-import { Theme } from "@carbon/react";
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
 import { Table } from "../../../../react/components/table/Table";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { AppState } from "../../../../../types/state/AppState";
-import { LIGHT_THEMES } from "../../../utils/constants";
 import { consoleError } from "../../../utils/miscUtils";
 import InlineError from "../error/InlineError";
 import { TableItem } from "../../../../../types/messaging/Messages";
+import { CarbonTheme } from "../../../../../types/config/PublicConfig";
 
 interface TableContainerProps {
   /**
@@ -34,24 +33,16 @@ function TableContainer(props: TableContainerProps) {
   const { tableItem } = props;
   const { title, description, headers, rows } = tableItem;
 
-  const carbonTheme = useSelector((state: AppState) => state.theme.carbonTheme);
-  const chatHeight = useSelector((state: AppState) => state.chatHeight);
   const locale = useSelector((state: AppState) => state.locale);
+  const config = useSelector((state: AppState) => state.config.public);
+  const { carbonTheme } = config.themeConfig;
 
   const languagePack = useLanguagePack();
   const intl = useIntl();
 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const [tableContainerWidth, setTableContainerWidth] = useState<number>();
-
-  function onResize() {
-    setTableContainerWidth(tableContainerRef.current?.clientWidth);
-  }
-
-  useLayoutEffect(() => {
-    const tableResizeObserver = new ResizeObserver(onResize);
-    tableResizeObserver.observe(tableContainerRef.current);
-  });
+  // Determine if dark theme should be used based on carbonTheme
+  const isDarkTheme =
+    carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
 
   const isValidTable = useMemo(() => {
     const columnCount = headers.length;
@@ -90,19 +81,14 @@ function TableContainer(props: TableContainerProps) {
   }
 
   if (isValidTable) {
-    // Because of issues with our layering variables from carbon we need to force the table to be either in white or g90
-    // theme. In the other themes the table background blends into the chat background causing the table to look like
-    // it's floating.
     return (
-      <Theme theme={LIGHT_THEMES.includes(carbonTheme) ? "white" : "g90"}>
-        <div className="WACTableContainer" ref={tableContainerRef}>
+      <div className="WACTableContainer">
+        <Suspense fallback={null}>
           <Table
             tableTitle={title}
             tableDescription={description}
             headers={headers}
             rows={rows}
-            containerWidth={tableContainerWidth}
-            chatHeight={chatHeight}
             filterPlaceholderText={languagePack.table_filterPlaceholder}
             previousPageText={languagePack.table_previousPage}
             nextPageText={languagePack.table_nextPage}
@@ -110,9 +96,10 @@ function TableContainer(props: TableContainerProps) {
             getPaginationSupplementalText={getTablePaginationSupplementalText}
             getPaginationStatusText={getTablePaginationStatusText}
             locale={locale}
+            dark={isDarkTheme}
           />
-        </div>
-      </Theme>
+        </Suspense>
+      </div>
     );
   }
 

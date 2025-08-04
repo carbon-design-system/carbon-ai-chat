@@ -520,7 +520,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       updateFilesUploadInProgress(this.uploadingFiles.size > 0)
     );
 
-    await addMessages(pairs, true, true, !this.isSuspended(), serviceManager);
+    await addMessages(pairs, !this.isSuspended(), serviceManager);
 
     // Start some timeouts to display a warning or error if the service desk doesn't indicate if the message was
     // sent successfully (or it failed).
@@ -717,8 +717,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
       createLocalMessageForInlineError(message);
     await addMessages(
       [toPair([localMessage], originalMessage)],
-      true,
-      false,
       !this.isSuspended(),
       this.serviceManager
     );
@@ -867,8 +865,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   async addHumanAgentLocalMessage(
     agentMessageType: HumanAgentMessageType,
     responseUserProfile?: ResponseUserProfile,
-    fireEvents = true,
-    saveInHistory = true
+    fireEvents = true
   ) {
     if (!responseUserProfile) {
       responseUserProfile = this.persistedHumanAgentState().responseUserProfile;
@@ -882,8 +879,6 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
     await addMessages(
       [toPair([localMessage], originalMessage)],
-      saveInHistory,
-      false,
       !this.isSuspended(),
       this.serviceManager
     );
@@ -972,12 +967,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     await this.service.addHumanAgentLocalMessage(HUMAN_AGENT_JOINED, profile);
 
     if (this.service.showLeaveWarning) {
-      await this.service.addHumanAgentLocalMessage(
-        RELOAD_WARNING,
-        null,
-        false,
-        false
-      );
+      await this.service.addHumanAgentLocalMessage(RELOAD_WARNING, null, false);
       this.service.showLeaveWarning = false;
     }
   }
@@ -1070,15 +1060,15 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       responseUserProfile,
     });
 
-    messageResponse.history.response_user_profile = responseUserProfile;
+    messageResponse.message_options = messageResponse.message_options || {};
+
+    messageResponse.message_options.response_user_profile = responseUserProfile;
 
     const localMessages = messageResponse.output.generic.map((item: any) => {
       return outputItemToLocalItem(item, messageResponse);
     });
     await addMessages(
       [toPair(localMessages, messageResponse)],
-      true,
-      true,
       !this.service.isSuspended(),
       this.serviceManager
     );
@@ -1191,20 +1181,14 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
           await this.service.addHumanAgentLocalMessage(
             DISCONNECTED,
             null,
-            true,
-            false
+            true
           );
           store.dispatch(actions.updateInputState({ isReadonly: true }, true));
         } else if (this.service.showingDisconnectedError) {
           // The service desk says it's no longer disconnected but double check that we previously thought we were
           // disconnected.
           this.service.showingDisconnectedError = false;
-          await this.service.addHumanAgentLocalMessage(
-            RECONNECTED,
-            null,
-            true,
-            false
-          );
+          await this.service.addHumanAgentLocalMessage(RECONNECTED, null, true);
           store.dispatch(actions.updateInputState({ isReadonly: false }, true));
         }
         break;
@@ -1218,8 +1202,6 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
           createLocalMessageForInlineError(message);
         await addMessages(
           [toPair([localMessage], originalMessage)],
-          true,
-          false,
           !this.service.isSuspended(),
           this.serviceManager
         );
@@ -1277,14 +1259,14 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       };
       if (isError) {
         store.dispatch(
-          actions.setMessageHistoryProperty(
+          actions.setMessageResponseHistoryProperty(
             fileID,
             "file_upload_status",
             FileStatusValue.COMPLETE
           )
         );
         store.dispatch(
-          actions.setMessageHistoryProperty(
+          actions.setMessageResponseHistoryProperty(
             fileID,
             "error_state",
             MessageErrorState.FAILED
@@ -1300,8 +1282,6 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
             HumanAgentMessageType.INLINE_ERROR;
           await addMessages(
             [toPair([localMessage], originalMessage)],
-            true,
-            true,
             !this.service.isSuspended(),
             this.serviceManager
           );
@@ -1310,7 +1290,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
         // If the upload was completed successfully, we display a temporary "success" status. This will display a
         // checkmark temporarily before fading out. Session history will store "complete" as the status.
         store.dispatch(
-          actions.setMessageHistoryProperty(
+          actions.setMessageResponseHistoryProperty(
             fileID,
             "file_upload_status",
             FileStatusValue.SUCCESS

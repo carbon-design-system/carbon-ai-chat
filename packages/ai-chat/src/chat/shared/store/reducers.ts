@@ -58,7 +58,7 @@ import {
   FILE_UPLOAD_INPUT_ERROR,
   HYDRATE_CHAT,
   HYDRATE_MESSAGE_HISTORY,
-  MERGE_HISTORY,
+  MERGE_HISTORY_ITEM,
   MESSAGE_SET_OPTION_SELECTED,
   OPEN_IFRAME_CONTENT,
   REMOVE_ALL_NOTIFICATIONS,
@@ -78,7 +78,7 @@ import {
   SET_LAUNCHER_CONFIG_PROPERTY,
   SET_LAUNCHER_MINIMIZED,
   SET_LAUNCHER_PROPERTY,
-  SET_MESSAGE_HISTORY_PROPERTY,
+  SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_MESSAGE_UI_PROPERTY,
   SET_RESPONSE_PANEL_CONTENT,
@@ -90,7 +90,7 @@ import {
   SET_VIEW_CHANGING,
   SET_VIEW_STATE,
   STREAMING_ADD_CHUNK,
-  STREAMING_MERGE_HISTORY,
+  STREAMING_MERGE_MESSAGE_OPTIONS,
   STREAMING_START,
   TOGGLE_HOME_SCREEN,
   UPDATE_BOT_AVATAR_URL,
@@ -128,11 +128,13 @@ import {
   GenericItem,
   IFrameItem,
   Message,
-  MessageHistory,
   MessageRequest,
   MessageResponse,
   SearchResult,
   MessageUIStateInternal,
+  MessageResponseOptions,
+  MessageItemHistory,
+  MessageResponseHistory,
 } from "../../../types/messaging/Messages";
 import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
 import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
@@ -730,12 +732,14 @@ const reducers: { [key: string]: ReducerType } = {
     );
   },
 
-  [SET_MESSAGE_HISTORY_PROPERTY]: <TPropertyName extends keyof MessageHistory>(
+  [SET_MESSAGE_RESPONSE_HISTORY_PROPERTY]: <
+    TPropertyName extends keyof MessageResponseHistory
+  >(
     state: AppState,
     action: {
       messageID: string;
       propertyName: TPropertyName;
-      propertyValue: MessageHistory[TPropertyName];
+      propertyValue: MessageResponseHistory[TPropertyName];
     }
   ): AppState => {
     const { messageID, propertyName, propertyValue } = action;
@@ -788,9 +792,9 @@ const reducers: { [key: string]: ReducerType } = {
     return state;
   },
 
-  [MERGE_HISTORY]: (
+  [MERGE_HISTORY_ITEM]: (
     state: AppState,
-    action: { messageID: string; history: MessageHistory }
+    action: { messageID: string; history: MessageItemHistory }
   ): AppState => {
     const oldMessage = state.allMessagesByID[action.messageID];
     if (oldMessage) {
@@ -1331,15 +1335,18 @@ const reducers: { [key: string]: ReducerType } = {
     return applyFullMessage(state, streamIntoResponse);
   },
 
-  [STREAMING_MERGE_HISTORY]: (
+  [STREAMING_MERGE_MESSAGE_OPTIONS]: (
     state: AppState,
     {
       messageID,
-      history,
-    }: { messageID: string; history: DeepPartial<MessageHistory> }
+      message_options,
+    }: {
+      messageID: string;
+      message_options: DeepPartial<MessageResponseOptions>;
+    }
   ) => {
     const existingMessage = state.allMessagesByID[messageID];
-    const newMessage = merge({}, existingMessage, { history });
+    const newMessage = merge({}, existingMessage, { message_options });
     if (existingMessage) {
       return {
         ...state,
@@ -1402,28 +1409,36 @@ const reducers: { [key: string]: ReducerType } = {
         );
       }
     } else if (isCompleteItem) {
-      // This is a complete item.
-      newItem = outputItemToLocalItem(
-        chunkItem as GenericItem,
-        message as MessageResponse,
-        false
-      );
-      newItem.ui_state.needsAnnouncement = false;
-      newItem.ui_state.disableFadeAnimation = disableFadeAnimation;
-      newItem.ui_state.streamingState = { chunks: [], isDone: true };
+      // This is a complete item. Update the existing item instead of creating a new one
+      // to preserve object identity and prevent component re-mounting.
+      const updatedItem = {
+        ...existingLocalMessageItem.item,
+        ...chunkItem,
+      } as GenericItem;
+
+      newItem = {
+        ...existingLocalMessageItem,
+        item: updatedItem,
+        ui_state: {
+          ...existingLocalMessageItem.ui_state,
+          // Mark streaming as complete and clear intermediate state
+          isIntermediateStreaming: false,
+          streamingState: { chunks: [], isDone: true },
+        },
+      };
     } else {
       // This is a new chunk on an existing item. We need to merge it with the existing item and add the new chunk.
+      const existingChunks =
+        existingLocalMessageItem?.ui_state.streamingState?.chunks || [];
+      const newChunks = [...existingChunks, chunkItem];
+
       newItem = {
         ...existingLocalMessageItem,
         ui_state: {
           ...existingLocalMessageItem?.ui_state,
           streamingState: {
             ...existingLocalMessageItem?.ui_state.streamingState,
-            chunks: [
-              ...(existingLocalMessageItem?.ui_state.streamingState?.chunks ||
-                []),
-              chunkItem,
-            ],
+            chunks: newChunks,
           },
         },
       };

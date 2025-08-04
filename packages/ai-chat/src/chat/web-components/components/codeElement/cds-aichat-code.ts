@@ -18,10 +18,15 @@ import styles from "./src/codeElement.scss";
 class CDSChatCodeElement extends LitElement {
   @property({ type: String }) language = "";
   @property({ type: String }) content = "";
+  @property({ type: Boolean }) dark = false;
 
   static styles = css`
     ${unsafeCSS(styles)}
   `;
+
+  updated() {
+    this.throttledHighlight();
+  }
 
   private throttledHighlight = throttle(async () => {
     try {
@@ -47,14 +52,14 @@ class CDSChatCodeElement extends LitElement {
     } catch (error) {
       console.warn(`Language "${this.language}" could not be loaded.`);
     }
-  }, 100); // adjust delay as needed
-
-  updated() {
-    this.throttledHighlight();
-  }
+  }, 150); // adjust delay as needed
 
   render() {
-    return html`<pre><code class="language-${this.language}"></code></pre>`;
+    const themeClass = this.dark
+      ? "cds-aichat-code--dark"
+      : "cds-aichat-code--light";
+    return html`<pre class="${themeClass}"><code class="language-${this
+      .language}"></code></pre>`;
   }
 }
 

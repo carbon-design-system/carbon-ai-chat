@@ -99,10 +99,19 @@ export class DemoApp extends LitElement {
   @state()
   accessor valueFromParent: string = Date.now().toString();
 
+  private _interval?: ReturnType<typeof setInterval>;
+
   protected firstUpdated(_changedProperties: PropertyValues): void {
-    setInterval(() => {
+    this._interval = setInterval(() => {
       this.valueFromParent = Date.now().toString();
     }, 1500);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._interval) {
+      clearInterval(this._interval);
+    }
   }
 
   /**

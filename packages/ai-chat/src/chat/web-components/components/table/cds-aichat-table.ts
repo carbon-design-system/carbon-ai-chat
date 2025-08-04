@@ -7,10 +7,11 @@
  *  @license
  */
 
+import "@carbon/web-components/es-custom/components/layer/index.js";
 import { CDSTableRow } from "@carbon/web-components";
-import { stringify } from "csv-stringify/browser/esm/sync";
 import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
+import debounce from "lodash-es/debounce.js";
 
 import { carbonElement } from "../../decorators/customElement";
 import styles from "./src/table.scss";
@@ -39,10 +40,8 @@ interface TableItemRowWithIDs extends TableItemRow {
   id: string;
 }
 
-const DEFAULT_TABLE_PAGE_SIZE = 5;
-const DEFAULT_TABLE_PAGE_SIZE_TALL_CHAT = 10;
-
-const TALL_CHAT_HEIGHT = 850;
+// Width threshold for determining default page size. Tables wider than this get 10 rows, narrower get 5 rows.
+const PAGE_SIZE_WIDTH_THRESHOLD = 400;
 
 // We will have to give this component a unique ID on the name when we register it to avoid conflicts in a world where
 // multiple versions of the Carbon AI Chat can be on the same page.
@@ -72,26 +71,13 @@ class TableElement extends LitElement {
   headers: TableItemCell[];
 
   /**
-   * The array of rows. Each row includes an array of cells and an optional expandable_section.
+   * The array of rows. Each row includes an array of cells.
    */
   @property({ type: Array })
   rows: TableItemRow[];
 
   /**
-   * The width of the container containing this table. Used to create a sticky header on the table component.
-   */
-  @property({ type: Number, attribute: "container-width" })
-  containerWidth: number;
-
-  /**
-   * The height of the chat container that contains this table as a response type. This is used to determine how many
-   * rows to render on each page.
-   */
-  @property({ type: Number, attribute: "chat-height" })
-  chatHeight: number;
-
-  /**
-   * Whether or not the table content is loading. If it is than a skeleton state should be shown instead.
+   * Whether or not the table content is loading. If it is then a skeleton state should be shown instead.
    */
   @property({ type: Boolean, attribute: "loading" })
   loading: boolean;
@@ -125,6 +111,28 @@ class TableElement extends LitElement {
    */
   @property({ type: String, attribute: "locale" })
   locale: string;
+
+  /**
+   * Whether to use dark theme (g90) or light theme (white).
+   */
+  @property({ type: Boolean })
+  dark = false;
+
+  /**
+   * The calculated default page size based on component width.
+   * 10 for width > PAGE_SIZE_WIDTH_THRESHOLD, 5 for width <= PAGE_SIZE_WIDTH_THRESHOLD.
+   */
+  @state()
+  private _defaultPageSize = 5;
+
+  @property({ type: Number, attribute: "default-page-size" })
+  get defaultPageSize(): number {
+    return this._defaultPageSize;
+  }
+
+  set defaultPageSize(value: number) {
+    this._defaultPageSize = value;
+  }
 
   /**
    * The function used to get the supplemental text for the pagination component.
@@ -162,7 +170,7 @@ class TableElement extends LitElement {
    * How many rows are on each page of the table.
    */
   @state()
-  public _currentPageSize: number;
+  public _currentPageSize: number = this.defaultPageSize;
 
   /**
    * Whether or not the number of rows per page was changed with the pagination component. If the user used the
@@ -196,12 +204,122 @@ class TableElement extends LitElement {
     ${unsafeCSS(styles)}
   `;
 
+  private _parentResizeObserver?: ResizeObserver;
+
   /**
-   * Depending on the properties that changed validate the table or change the number of rows displayed in the table.
-   * There is also a [firstUpdated](https://lit.dev/docs/components/lifecycle/#firstupdated) function from lit that only
-   * fires after the components DOM has been updated the first time. That could potentially be used in these scenarios /
-   * similar scenarios as it seems similar to the old componentDidMount. For now use this broader function to make sure
-   * we see the prop updates we're expecting.
+   * Called when the element is added to the DOM.
+   * Sets up the ResizeObserver to monitor parent element width changes.
+   */
+  connectedCallback() {
+    super.connectedCallback();
+    this._setupParentResizeObserver();
+  }
+
+  /**
+   * Called when the element is removed from the DOM.
+   * Cleans up the ResizeObserver to prevent memory leaks.
+   */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._cleanupParentResizeObserver();
+  }
+
+  /**
+   * Called after the element's DOM has been updated for the first time.
+   * Initializes the table page size and sets up width-based calculations.
+   *
+   * @param _changedProperties - Map of properties that changed during the update
+   */
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    this._setPageSize();
+    this._updateParentWidthCSSProperty(); // Initial width setting
+  }
+
+  /**
+   * Sets up a ResizeObserver to monitor the parent element's width changes.
+   * Updates the CSS custom property `--cds-chat-table-width` when the parent resizes.
+   * Uses debouncing to limit the frequency of updates to improve performance.
+   *
+   * @private
+   */
+  private _setupParentResizeObserver() {
+    if (typeof ResizeObserver !== "undefined" && this.parentElement) {
+      this._parentResizeObserver = new ResizeObserver(
+        debounce((entries) => {
+          for (const entry of entries) {
+            // Use the element's offsetWidth instead of contentRect.width for custom elements
+            const elementWidth = (entry.target as HTMLElement).offsetWidth;
+
+            if (elementWidth > 0) {
+              this.style.setProperty(
+                "--cds-chat-table-width",
+                `${elementWidth}px`
+              );
+            }
+          }
+        }, 100) // 100ms debounce for parent resize events
+      );
+      this._parentResizeObserver.observe(this.parentElement);
+    }
+  }
+
+  /**
+   * Cleans up the ResizeObserver to prevent memory leaks.
+   * Should be called when the component is disconnected from the DOM.
+   *
+   * @private
+   */
+  private _cleanupParentResizeObserver() {
+    if (this._parentResizeObserver) {
+      this._parentResizeObserver.disconnect();
+      this._parentResizeObserver = undefined;
+    }
+  }
+
+  /**
+   * Updates the CSS custom property `--cds-chat-table-width` based on the parent element's width.
+   * Also calculates the default page size on first run based on the measured width.
+   * This method is called once during component initialization.
+   *
+   * @private
+   */
+  private _updateParentWidthCSSProperty() {
+    if (this.parentElement) {
+      let parentWidth = this.parentElement.offsetWidth;
+
+      // If parent width is 0, use fallback width that ensures 5-row default page size
+      if (parentWidth === 0) {
+        parentWidth = PAGE_SIZE_WIDTH_THRESHOLD - 1;
+      }
+
+      if (parentWidth > 0) {
+        this.style.setProperty("--cds-chat-table-width", `${parentWidth}px`);
+
+        // Calculate default page size based on the width we just measured
+        // Only set it once, don't recalculate on resize
+        if (this._defaultPageSize === 5) {
+          this._defaultPageSize =
+            parentWidth > PAGE_SIZE_WIDTH_THRESHOLD ? 10 : 5;
+
+          // Update _currentPageSize if it's still at the initial value
+          if (this._currentPageSize === 5) {
+            this._currentPageSize = this._defaultPageSize;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Called whenever component properties change after the initial render.
+   * Handles validation and re-initialization of table data when headers or rows change.
+   *
+   * This method performs two key operations:
+   * 1. Validates table structure when headers or rows are updated
+   * 2. Re-initializes internal row arrays and pagination when rows change
+   *
+   * @param changedProperties - Map of properties that changed during the update
+   * @protected
    */
   protected updated(changedProperties: PropertyValues<this>) {
     // If the headers or rows has recently updated and both are defined than we should validate the table
@@ -218,22 +336,19 @@ class TableElement extends LitElement {
     // If the value of tableRows updated then initialize the internal rows arrays.
     if (changedProperties.has("rows") && this.rows !== undefined) {
       this._initializeRowsArrays();
-    }
-
-    // If the page size is not currently defined, and the chatHeight has been set, then this is the first render and we
-    // need to choose the starting page size based off the chatHeight.
-    if (
-      this._currentPageSize === undefined &&
-      changedProperties.has("chatHeight") &&
-      this.chatHeight !== changedProperties.get("chatHeight")
-    ) {
-      this._initializePageSize();
+      this._setPageSize();
     }
   }
 
   /**
-   * Check if the table content is valid. A table is valid if the number of cells in each row is the same as the number
-   * of cells in the header.
+   * Validates the table structure by checking if all rows have the same number of cells as the header.
+   * Sets the internal `_isValid` state to false if any row has a mismatched cell count.
+   *
+   * A valid table requires:
+   * - All rows must have the same number of cells as there are headers
+   * - No rows can have more or fewer cells than the column count
+   *
+   * @private
    */
   private _calcIsTableValid() {
     const columnCount = this.headers.length;
@@ -250,8 +365,15 @@ class TableElement extends LitElement {
   }
 
   /**
-   * Create a new array of rows that includes ids for each row. Also build an array of those same ids representing the
-   * rows that have not been filtered out.
+   * Initializes internal arrays used for table functionality.
+   * Creates a new array of rows with unique IDs and initializes the filter visibility tracking.
+   *
+   * This method:
+   * 1. Resets the `_rowsWithIDs` array and `_filterVisibleRowIDs` set
+   * 2. Assigns string-based IDs to each row for tracking purposes
+   * 3. Marks all rows as initially visible (not filtered out)
+   *
+   * @private
    */
   private _initializeRowsArrays() {
     // Reset both arrays.
@@ -266,16 +388,16 @@ class TableElement extends LitElement {
   }
 
   /**
-   * If the chat container is over a certain height then show more rows per page.
+   * Configures the table's page size and filtering behavior.
+   * Determines whether filtering/searching should be enabled based on the number of rows
+   * relative to the current page size.
+   *
+   * Filtering is enabled when there are more rows than can fit on a single page,
+   * allowing users to search and paginate through large datasets.
+   *
+   * @private
    */
-  private _initializePageSize() {
-    // If the chat container is above a certain height then show more rows per page.
-    if (this.chatHeight > TALL_CHAT_HEIGHT) {
-      this._currentPageSize = DEFAULT_TABLE_PAGE_SIZE_TALL_CHAT;
-    } else {
-      this._currentPageSize = DEFAULT_TABLE_PAGE_SIZE;
-    }
-
+  private _setPageSize() {
     // If there are more rows than the page size then enable filtering.
     this._allowFiltering = this.rows.length > this._currentPageSize;
 
@@ -285,10 +407,14 @@ class TableElement extends LitElement {
   }
 
   /**
-   * When the page change event is fired by the pagination component, change which rows are visible. For some reason
-   * only this event is firing twice. However the page size and number is the same both times so the functionality of
-   * the pagination component works as expected. Ignore this double firing for now since it appears to be a bug on
-   * Carbon's end that will likely be fixed in a future release.
+   * Handles pagination events from the Carbon pagination component.
+   * Updates the visible rows when the user navigates to a different page.
+   *
+   * Note: This event sometimes fires twice due to a Carbon framework quirk,
+   * but since the page/size values are identical, it doesn't affect functionality.
+   *
+   * @param event - The page change event containing the new page number and size
+   * @public
    */
   public _handlePageChangeEvent = (event: PageChangeEvent) => {
     this._updateVisibleRows(event.detail?.page, event.detail?.pageSize);
@@ -296,7 +422,12 @@ class TableElement extends LitElement {
   };
 
   /**
-   * When the number of rows per page is changed, update the current page size and change which rows are visible.
+   * Handles page size change events from the pagination component.
+   * Updates the current page size and recalculates visible rows.
+   * Marks that the page size has been manually changed by the user.
+   *
+   * @param event - The page size change event containing the new page size
+   * @public
    */
   public _handlePageSizeChangeEvent = (event: PageChangeEvent) => {
     this._rowsPerPageChanged = true;
@@ -306,9 +437,15 @@ class TableElement extends LitElement {
   };
 
   /**
-   * When the filter event is fired, record which rows have not been filtered out, and update which rows are visible.
-   * This event is fired when the columns are sorted using the header cells AND when the table is filtered using the
-   * search bar.
+   * Handles filter and sort events from the Carbon table component.
+   * Updates the set of visible rows based on filtering/sorting results and resets to the first page.
+   *
+   * This event is triggered by:
+   * - Column sorting (clicking on sortable column headers)
+   * - Table filtering (using the search bar)
+   *
+   * @param event - The filter event containing the array of unfiltered rows
+   * @public
    */
   public _handleFilterEvent = (event: FilterEvent) => {
     // Record the new set of unfiltered row ids.
@@ -325,8 +462,18 @@ class TableElement extends LitElement {
   };
 
   /**
-   * Given the current page number, page size, and array of rows that have not been filtered out, determine which rows
-   * to show and hide using css.
+   * Controls which table rows are visible based on pagination and filtering.
+   * Uses CSS display properties to show/hide rows rather than DOM manipulation.
+   *
+   * This approach is necessary because Carbon's table component handles its own
+   * sorting and we need to preserve the DOM order it creates. The method:
+   * 1. Hides all rows initially
+   * 2. Filters to only rows that haven't been filtered out
+   * 3. Shows only the rows that belong to the current page
+   *
+   * @param page - The page number to display (1-based)
+   * @param pageSize - Number of rows per page
+   * @private
    */
   private _updateVisibleRows(
     page: number = this._currentPageNumber,
@@ -368,11 +515,19 @@ class TableElement extends LitElement {
   }
 
   /**
-   * Carbon's data table component by default only downloads rows that have been selected, and only downloads json. We
-   * don't want to implement selection at this time and we want our download to be csv so we need to implement own
-   * download function.
+   * Handles the table download functionality by exporting all table data as a CSV file.
+   *
+   * This custom implementation is necessary because Carbon's default download feature:
+   * - Only exports selected rows (we want all data)
+   * - Only exports as JSON (we want CSV format)
+   * - Doesn't include all the data we need
+   *
+   * The method dynamically imports the CSV stringify library to avoid bundle bloat,
+   * creates a data URL to comply with CSP policies, and triggers a download.
+   *
+   * @public
    */
-  public _handleDownload() {
+  public async _handleDownload() {
     // Don't save content from the expandable rows at this time. This could be added in the future but it's unclear how
     // this would look in the download.
     const tableArray: TableItemCell[][] = [
@@ -380,62 +535,86 @@ class TableElement extends LitElement {
       ...this.rows.map((row) => row.cells),
     ];
 
-    // stringify docs here: https://csv.js.org/stringify/api/sync/
-    const stringifiedTable = stringify(tableArray);
+    try {
+      // Lazy load the CSV stringify function only when needed
+      const { stringify } = await import("csv-stringify/browser/esm/sync");
 
-    const blob = new Blob([stringifiedTable], {
-      type: "text/csv;charset=utf-8;",
-    });
+      // Convert table data to CSV format
+      const csvContent = stringify(tableArray);
 
-    // It appears the only way to control the file name of a downloaded file is through an anchor element with a
-    // download attribute. So create such an element and add our data to be downloaded.
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "table-data.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
+      // Use data URL instead of Blob to avoid CSP issues with object-src
+      const dataUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(
+        csvContent
+      )}`;
 
-    // Click on the link we've created to download the blob with our stringified table data.
-    link.click();
-    document.body.removeChild(link);
+      // Create and trigger download using anchor element
+      const link = document.createElement("a");
+      link.setAttribute("href", dataUrl);
+      link.setAttribute("download", "table-data.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+
+      // Trigger download and cleanup
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Failed to download table data:", error);
+      // Fallback: could show user notification or use alternative method
+    }
   }
 
   /**
-   * Renders either the table skeleton or the table. If the table is larger than the page size then also render the
-   * pagination component to change pages.
+   * Renders the table component based on current state and data.
+   *
+   * The render logic follows this priority:
+   * 1. Shows skeleton loading state if `loading` is true
+   * 2. Shows table with pagination if there are more rows than the page size OR pagination was used
+   * 3. Shows table only if all rows fit on one page
+   *
+   * The method also applies the appropriate Carbon theme class (cds--g90 for dark, cds--white for light)
+   * to ensure proper styling based on the `dark` property.
+   *
+   * @returns The lit-html template for the table component
+   * @public
    */
   render() {
     // TODO TABLE: Once we have a web component version of the inline error state we could render that here if
     // !this._isValid.
 
+    // Apply appropriate Carbon theme class based on dark property
+    const themeClass = this.dark ? "cds--g90" : "cds--white";
+
     // This could be used while we wait for a md stream containing a table to complete.
     if (this.loading) {
-      return tableSkeletonTemplate();
+      return tableSkeletonTemplate(this._currentPageSize);
     }
 
     // If there are more rows than the page size then we need to add the pagination component. If the rows per page has
     // been changed by the pagination component then we need to keep the pagination component around so the user can
     // change the page size again, even if the current page size is the same as the number of table rows.
     if (this.rows.length > this._currentPageSize || this._rowsPerPageChanged) {
-      return html`${tableTemplate(this)}
-      ${tablePaginationTemplate({
-        _currentPageSize: this._currentPageSize,
-        _currentPageNumber: this._currentPageNumber,
-        _filterVisibleRowIDs: this._filterVisibleRowIDs,
-        rows: this.rows,
-        previousPageText: this.previousPageText,
-        nextPageText: this.nextPageText,
-        itemsPerPageText: this.itemsPerPageText,
-        getPaginationSupplementalText: this.getPaginationSupplementalText,
-        getPaginationStatusText: this.getPaginationStatusText,
-        _handlePageChangeEvent: this._handlePageChangeEvent,
-        _handlePageSizeChangeEvent: this._handlePageSizeChangeEvent,
-      })}`;
+      return html`<div class="cds-ai-chat-table-container ${themeClass}">
+        ${tableTemplate(this)}
+        ${tablePaginationTemplate({
+          _currentPageSize: this._currentPageSize,
+          _currentPageNumber: this._currentPageNumber,
+          _filterVisibleRowIDs: this._filterVisibleRowIDs,
+          rows: this.rows,
+          previousPageText: this.previousPageText,
+          nextPageText: this.nextPageText,
+          itemsPerPageText: this.itemsPerPageText,
+          getPaginationSupplementalText: this.getPaginationSupplementalText,
+          getPaginationStatusText: this.getPaginationStatusText,
+          _handlePageChangeEvent: this._handlePageChangeEvent,
+          _handlePageSizeChangeEvent: this._handlePageSizeChangeEvent,
+        })}
+      </div>`;
     }
 
     // Otherwise, just render the table.
-    return html`${tableTemplate(this)}`;
+    return html`<div class="cds-ai-chat-table-container ${themeClass}">
+      ${tableTemplate(this)}
+    </div>`;
   }
 }
 

@@ -134,26 +134,7 @@ $message-bar-width: 3px;
   .WAC__message
   .WAC__received--carousel:not(.WAC__received--carouselSingle),
 .WAC--standardWidth .WAC__message .WAC__received.WAC__received--fullWidth {
-  margin-inline: 0;
-}
-
-/* When UI customization is on, there should be left padding so it's not hidden. */
-.WAC--wideWidth
-  .WAC__message
-  .WACUICustomizationElement
-  ~ .WAC__received--fullWidth,
-.WAC--narrowWidth
-  .WAC__message
-  .WACUICustomizationElement
-  ~ .WAC__received--fullWidth,
-.WAC--standardWidth
-  .WAC__message
-  .WACUICustomizationElement
-  ~ .WAC__received--fullWidth {
-  /* Start = left margin + avatar + right margin. */
-  margin-inline-start: calc(
-    #{layout.$spacing-05} + 32px + #{layout.$spacing-03}
-  );
+  margin-inline: 0 layout.$spacing-05;
 }
 
 .WAC__message a {

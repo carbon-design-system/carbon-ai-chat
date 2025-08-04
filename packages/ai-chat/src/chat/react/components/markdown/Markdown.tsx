@@ -8,18 +8,18 @@
  */
 
 /**
- * This file creates React bindings for the MarkdownText web component and registers the web component in the DOM.
+ * This file creates React bindings for the Markdown web component and registers the web component in the DOM.
  */
 
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import MarkdownTextElement from "../../../web-components/components/markdownText/cds-aichat-markdown-text";
+import MarkdownElement from "../../../web-components/components/markdownText/cds-aichat-markdown-text";
 
-const MarkdownText = createComponent({
+const Markdown = createComponent({
   tagName: "cds-aichat-markdown-text",
-  elementClass: MarkdownTextElement,
+  elementClass: MarkdownElement,
   react: React,
 });
 
-export { MarkdownText };
+export { Markdown };

@@ -371,6 +371,8 @@ interface ChatActions {
 
   /**
    * Updates the custom menu options.
+   *
+   * @experimental
    */
   updateCustomMenuOptions: (options: CustomMenuOption[]) => void;
 
@@ -582,21 +584,33 @@ export enum WriteableElementName {
 /**
  * The interface represents the elements that Carbon AI Chat provides access to.
  *
+ * @experimental
+ *
  * @category Instance
  */
 export interface InstanceElements {
   /**
    * Returns the element that represents the main window.
+   *
+   * @experimental
    */
   getMainWindow: () => HasAddRemoveClassName;
 
   /**
    * Returns the element that represents the input field (text area) on the main message area.
+   *
+   * This will likely change to a contenteditable div before we move away from experimental.
+   *
+   * @experimental
    */
   getMessageInput: () => InstanceInputElement;
 
   /**
    * Returns the element that represents the input field (text area) on the home screen.
+   *
+   * This will likely change to a contenteditable div before we move away from experimental.
+   *
+   * @experimental
    */
   getHomeScreenInput: () => InstanceInputElement;
 }
@@ -609,6 +623,10 @@ export interface InstanceElements {
 export interface InstanceInputElement {
   /**
    * The raw HTML element for the element.
+   *
+   * This will likely change to a contenteditable div before we move away from experimental.
+   *
+   * @experimental
    */
   getHTMLElement: () => HTMLTextAreaElement;
 
@@ -638,6 +656,8 @@ export interface InstanceInputElement {
  * Methods provided to developers to interact with the tour feature.
  *
  * @category Instance
+ *
+ * @experimental
  */
 export interface ChatInstanceTours {
   /**
@@ -711,6 +731,8 @@ export interface HasAddRemoveClassName {
 }
 
 /**
+ * Upload options. Currently only applies to conversations with a human agent.
+ *
  * @category Instance
  */
 export interface FileUploadCapabilities {
@@ -732,6 +754,8 @@ export interface FileUploadCapabilities {
 }
 
 /**
+ * Start or end conversations with human agent.
+ *
  * @category Instance
  */
 export interface ChatInstanceServiceDeskActions {

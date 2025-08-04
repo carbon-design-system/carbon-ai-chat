@@ -39,8 +39,10 @@ import {
   GenericItem,
   IFrameItem,
   Message,
-  MessageHistory,
+  MessageItemHistory,
   MessageRequest,
+  MessageResponseHistory,
+  MessageResponseOptions,
   MessageUIStateInternal,
   SearchResult,
 } from "../../../types/messaging/Messages";
@@ -73,8 +75,9 @@ const MESSAGE_SET_OPTION_SELECTED = "MESSAGE_SET_OPTION_SELECTED";
 const SET_MESSAGE_UI_PROPERTY = "SET_MESSAGE_UI_PROPERTY";
 const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
   "SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY";
-const SET_MESSAGE_HISTORY_PROPERTY = "SET_MESSAGE_HISTORY_PROPERTY";
-const MERGE_HISTORY = "MERGE_HISTORY";
+const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
+  "SET_MESSAGE_RESPONSE_HISTORY_PROPERTY";
+const MERGE_HISTORY_ITEM = "MERGE_HISTORY_ITEM";
 const SET_LAUNCHER_PROPERTY = "SET_LAUNCHER_PROPERTY";
 const SET_LAUNCHER_CONFIG_PROPERTY = "SET_LAUNCHER_CONFIG_PROPERTY";
 const ANNOUNCE_MESSAGE = "ANNOUNCE_MESSAGE";
@@ -112,7 +115,7 @@ const SET_RESPONSE_PANEL_IS_OPEN = "SET_RESPONSE_PANEL_IS_OPEN";
 const SET_RESPONSE_PANEL_CONTENT = "SET_PANEL_RESPONSE_CONTENT";
 const STREAMING_ADD_CHUNK = "STREAMING_ADD_CHUNK";
 const STREAMING_START = "STREAMING_START";
-const STREAMING_MERGE_HISTORY = "STREAMING_MERGE_HISTORY";
+const STREAMING_MERGE_MESSAGE_OPTIONS = "STREAMING_MERGE_MESSAGE_OPTIONS";
 const ADD_NOTIFICATION = "ADD_NOTIFICATION";
 const REMOVE_ALL_NOTIFICATIONS = "REMOVE_ALL_NOTIFICATIONS";
 const REMOVE_NOTIFICATIONS = "REMOVE_NOTIFICATIONS";
@@ -370,13 +373,15 @@ const actions = {
    * @param propertyName The name of the property to update.
    * @param propertyValue The value to set on the property.
    */
-  setMessageHistoryProperty<TPropertyName extends keyof MessageHistory>(
+  setMessageResponseHistoryProperty<
+    TPropertyName extends keyof MessageResponseHistory
+  >(
     messageID: string,
     propertyName: TPropertyName,
-    propertyValue: MessageHistory[TPropertyName]
+    propertyValue: MessageResponseHistory[TPropertyName]
   ) {
     return {
-      type: SET_MESSAGE_HISTORY_PROPERTY,
+      type: SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
       messageID,
       propertyName,
       propertyValue,
@@ -409,12 +414,12 @@ const actions = {
   /**
    * Merges the given object into the history for the given message.
    */
-  mergeMessageHistory(messageID: string, history: MessageHistory) {
-    return { type: MERGE_HISTORY, messageID, history };
+  mergeMessageItemHistory(messageID: string, history: MessageItemHistory) {
+    return { type: MERGE_HISTORY_ITEM, messageID, history };
   },
 
   setMessageErrorState(messageID: string, errorState: MessageErrorState) {
-    return actions.setMessageHistoryProperty(
+    return actions.setMessageResponseHistoryProperty(
       messageID,
       "error_state",
       errorState
@@ -622,11 +627,15 @@ const actions = {
   /**
    * Merges the given message history object into an existing message object.
    */
-  streamingMergeHistory(
+  streamingMergeMessageOptions(
     messageID: string,
-    history: DeepPartial<MessageHistory>
+    message_options: DeepPartial<MessageResponseOptions>
   ) {
-    return { type: STREAMING_MERGE_HISTORY, messageID, history };
+    return {
+      type: STREAMING_MERGE_MESSAGE_OPTIONS,
+      messageID,
+      message_options,
+    };
   },
 
   /**
@@ -706,7 +715,7 @@ export {
   CHANGE_STEP_IN_TOUR,
   SET_HOME_SCREEN_IS_OPEN,
   UPDATE_LAUNCHER_CONFIG,
-  SET_MESSAGE_HISTORY_PROPERTY,
+  SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
   SET_LAUNCHER_PROPERTY,
   SET_LAUNCHER_CONFIG_PROPERTY,
@@ -729,13 +738,13 @@ export {
   SET_RESPONSE_PANEL_CONTENT,
   STREAMING_ADD_CHUNK,
   STREAMING_START,
-  STREAMING_MERGE_HISTORY,
+  STREAMING_MERGE_MESSAGE_OPTIONS,
   REMOVE_LOCAL_MESSAGE_ITEM,
   ADD_NOTIFICATION,
   REMOVE_MESSAGES,
   REMOVE_ALL_NOTIFICATIONS,
   REMOVE_NOTIFICATIONS,
-  MERGE_HISTORY,
+  MERGE_HISTORY_ITEM,
   UPDATE_CHAT_HEADER_CONFIG,
   UPDATE_MAX_VISIBLE_HEADER_OBJECTS,
   SET_STOP_STREAMING_BUTTON_VISIBLE,

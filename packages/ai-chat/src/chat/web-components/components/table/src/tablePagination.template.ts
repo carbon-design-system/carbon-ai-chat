@@ -54,6 +54,11 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     _handlePageChangeEvent: handlePageChangeEvent,
     _handlePageSizeChangeEvent: handlePageSizeChangeEvent,
   } = props;
+
+  if (!filterVisibleRowIDs || !filterVisibleRowIDs.size) {
+    return html``;
+  }
+
   const totalVisibleRows = filterVisibleRowIDs.size;
   const totalRows = rows.length;
 

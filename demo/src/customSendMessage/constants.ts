@@ -16,14 +16,23 @@ You can type **help** to see this message again.`;
 const TABLE = `
 | Lorem        | Ipsum      | Odor    | Amet      |
 |--------------|------------|---------|-----------|
-| consectetuer | adipiscing | elit    | Venenatis |
+| consectetuer dddd ddddd ddddd | adipiscing | elit    | Venenatis |
 | 0            | 1          | 2       | 3         |
 | bibendum     | enim       | blandit | quis      |
 | consectetuer | adipiscing | elit    | Venenatis |
-| 0            | 1          | 2       | 3         |
+| 4            | 5          | 6       | 7         |
 | bibendum     | enim       | blandit | quis      |
 | consectetuer | adipiscing | elit    | Venenatis |
-| 0            | 1          | 2       | 3         |
+| 8            | 9          | 10      | 11        |
+| bibendum     | enim       | blandit | quis      |
+| consectetuer | adipiscing | elit    | Venenatis |
+| 12           | 13         | 14      | 15        |
+| bibendum     | enim       | blandit | quis      |
+| consectetuer | adipiscing | elit    | Venenatis |
+| 16           | 17         | 18      | 19        |
+| bibendum     | enim       | blandit | quis      |
+| consectetuer | adipiscing | elit    | Venenatis |
+| 20           | 21         | 22      | 23        |
 | bibendum     | enim       | blandit | quis      |
 `;
 
@@ -51,29 +60,20 @@ const ORDERED_LIST = `
 4. Venenatis
 `;
 
-const TEXT = `Lorem **bold text** *italics text* ipsum odor amet, consectetuer adipiscing elit. \`alert("inline code");\` aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.
+const TEXT = `Lorem **bold text** *italics text* ipsum odor amet, consectetuer adipiscing elit. \`alert("inline code");\` aliquet non platea elementum morbi porta accumsan.
 
-Quam [link with target blank](https://ibm.com) scelerisque platea [link with target self](https://ibm.com){{target="_self"}} sem placerat pharetra sed. Porttitor per massa venenatis fusce fusce ad cras. Vel congue semper, rhoncus tempus nisl nam. Purus molestie tristique diam himenaeos sapien lacus.
+Quam [link with target blank](https://ibm.com) scelerisque platea [link with target self](https://ibm.com){{target="_self"}} sem placerat pharetra sed.
 
 `;
 
 const HEADERS = `
-# Header 1
+# Header 1 sized header
 ${TEXT}
 
-## Header 2
+## Header 2 sized header
 ${TEXT}
 
-### Header 3
-${TEXT}
-
-#### Header 4
-${TEXT}
-
-##### Header 5
-${TEXT}
-
-###### Header 6
+### Header 3 sized header
 ${TEXT}
 `;
 
@@ -85,11 +85,7 @@ def generate_lorem_ipsum(paragraphs=1):
     # Base words for Lorem Ipsum
     lorem_words = (
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "
-        "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
-        "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure "
-        "dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
-        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
-        "mollit anim id est laborum."
+        "incididunt ut labore et dolore magna aliqua."
     ).split()
     
     # Function to generate a random sentence
@@ -132,32 +128,12 @@ ${UNORDERED_LIST}
 ---
 `;
 
-// eslint-disable-next-line prefer-template, no-useless-concat
-const MARKDOWN_WITH_SOURCE = MARKDOWN + "\n\n```\n" + MARKDOWN + "\n```";
-
-const CHART_DATA = JSON.stringify({
-  $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-  data: {
-    values: [
-      { category: "A", value: 20 },
-      { category: "B", value: 40 },
-      { category: "C", value: 60 },
-    ],
-  },
-  mark: "bar",
-  encoding: {
-    x: { field: "category", type: "nominal", axis: { title: "Category" } },
-    y: { field: "value", type: "quantitative", axis: { title: "Value" } },
-  },
-});
-
-const WORD_DELAY = 50;
+const WORD_DELAY = 20;
 
 export {
   WELCOME_TEXT,
   TEXT,
   WORD_DELAY,
-  CHART_DATA,
   TABLE,
   ORDERED_LIST,
   UNORDERED_LIST,

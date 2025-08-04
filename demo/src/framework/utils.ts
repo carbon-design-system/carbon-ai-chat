@@ -54,6 +54,7 @@ function getSettings() {
     serviceDeskFactory: (parameters) =>
       Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk),
     debug: true,
+    enableWorkers: true,
   };
 
   const defaultSettings: Settings = {
@@ -153,6 +154,7 @@ function getSettings() {
       delete defaultConfig.headerConfig?.minimizeButtonIconType;
       break;
   }
+
   return { defaultConfig, defaultSettings };
 }
 

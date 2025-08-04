@@ -116,7 +116,6 @@ class ChatCustomElement extends LitElement {
    * Update the CSSStyleSheet’s first rule with new width/height.
    */
   private updateHostSize(width: string, height: string) {
-    console.log({ width, height });
     const rule = ChatCustomElement.sizeSheet.cssRules[0] as CSSStyleRule;
     rule.style.width = width;
     rule.style.height = height;
