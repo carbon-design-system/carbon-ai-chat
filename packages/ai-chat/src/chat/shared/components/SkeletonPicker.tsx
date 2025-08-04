@@ -7,10 +7,10 @@
  *  @license
  */
 
-import AISkeletonPlaceholder from '../../react/carbon/AISkeletonPlaceholder';
-import AISkeletonText from '../../react/carbon/AISkeletonText';
-import CarbonSkeletonText from '../../react/carbon/SkeletonText';
-import CarbonSkeletonPlaceholder from '../../react/carbon/SkeletonPlaceholder';
+import AISkeletonPlaceholder from "../../react/carbon/AISkeletonPlaceholder";
+import AISkeletonText from "../../react/carbon/AISkeletonText";
+import CarbonSkeletonText from "../../react/carbon/SkeletonText";
+import CarbonSkeletonPlaceholder from "../../react/carbon/SkeletonPlaceholder";
 import React from "react";
 import { useSelector } from "react-redux";
 

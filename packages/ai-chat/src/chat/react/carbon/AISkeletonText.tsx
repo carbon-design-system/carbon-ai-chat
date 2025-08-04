@@ -14,7 +14,7 @@ import React from "react";
 import CarbonAISkeletonText from "@carbon/web-components/es-custom/components/ai-skeleton/ai-skeleton-text.js";
 
 const AISkeletonText = createComponent({
-  tagName: 'cds-custom-ai-skeleton-text',
+  tagName: "cds-custom-ai-skeleton-text",
   elementClass: CarbonAISkeletonText,
   react: React,
 });

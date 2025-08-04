@@ -14,7 +14,7 @@ import React from "react";
 import CarbonSkeletonText from "@carbon/web-components/es-custom/components/skeleton-text/skeleton-text.js";
 
 const SkeletonText = createComponent({
-  tagName: 'cds-custom-skeleton-text',
+  tagName: "cds-custom-skeleton-text",
   elementClass: CarbonSkeletonText,
   react: React,
 });

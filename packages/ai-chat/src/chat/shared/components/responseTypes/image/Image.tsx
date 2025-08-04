@@ -7,12 +7,10 @@
  *  @license
  */
 
-import {
-  Tile,
-} from "@carbon/react";
+import { Tile } from "@carbon/react";
 import cx from "classnames";
-import AISkeletonPlaceholder from '../../../../react/carbon/AISkeletonPlaceholder';
-import SkeletonPlaceholder from '../../../../react/carbon/SkeletonPlaceholder';
+import AISkeletonPlaceholder from "../../../../react/carbon/AISkeletonPlaceholder";
+import SkeletonPlaceholder from "../../../../react/carbon/SkeletonPlaceholder";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";

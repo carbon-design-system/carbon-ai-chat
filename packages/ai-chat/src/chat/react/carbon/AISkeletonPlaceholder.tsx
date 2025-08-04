@@ -14,7 +14,7 @@ import React from "react";
 import CarbonAISkeletonPlaceholder from "@carbon/web-components/es-custom/components/ai-skeleton/ai-skeleton-placeholder.js";
 
 const AISkeletonPlaceholder = createComponent({
-  tagName: 'cds-custom-ai-skeleton-placeholder',
+  tagName: "cds-custom-ai-skeleton-placeholder",
   elementClass: CarbonAISkeletonPlaceholder,
   react: React,
 });

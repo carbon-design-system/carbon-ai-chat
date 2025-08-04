@@ -105,8 +105,12 @@
   border-start-start-radius: layout.$spacing-04;
 }
 
-cds-custom-ai-skeleton-placeholder.WACTourStep__SkeletonPlaceholder::part(skeleton-placeholder),
-cds-custom-skeleton-placeholder.WACTourStep__SkeletonPlaceholder::part(placeholder) {
+cds-custom-ai-skeleton-placeholder.WACTourStep__SkeletonPlaceholder::part(
+    skeleton-placeholder
+  ),
+cds-custom-skeleton-placeholder.WACTourStep__SkeletonPlaceholder::part(
+    placeholder
+  ) {
   block-size: 100%;
   inline-size: 100%;
 }
