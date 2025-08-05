@@ -7,22 +7,16 @@
  *  @license
  */
 
-import {
-  AISkeletonPlaceholder,
-  AISkeletonText,
-  SkeletonPlaceholder as CarbonSkeletonPlaceholder,
-  SkeletonText as CarbonSkeletonText,
-  SkeletonTextProps,
-  AISkeletonTextProps,
-} from "@carbon/react";
-import { AISkeletonPlaceholderProps } from "@carbon/react/lib/components/AISkeleton/AISkeletonPlaceholder";
-import { SkeletonPlaceholderProps } from "@carbon/react/lib/components/SkeletonPlaceholder/SkeletonPlaceholder";
+import AISkeletonPlaceholder from "../../react/carbon/AISkeletonPlaceholder";
+import AISkeletonText from "../../react/carbon/AISkeletonText";
+import CarbonSkeletonText from "../../react/carbon/SkeletonText";
+import CarbonSkeletonPlaceholder from "../../react/carbon/SkeletonPlaceholder";
 import React from "react";
 import { useSelector } from "react-redux";
 
 import { AppState } from "../../../types/state/AppState";
 
-function SkeletonText(props: SkeletonTextProps | AISkeletonTextProps) {
+function SkeletonText(props: any) {
   const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
   return useAITheme ? (
     <AISkeletonText {...props} />
@@ -31,9 +25,7 @@ function SkeletonText(props: SkeletonTextProps | AISkeletonTextProps) {
   );
 }
 
-function SkeletonPlaceholder(
-  props: SkeletonPlaceholderProps | AISkeletonPlaceholderProps
-) {
+function SkeletonPlaceholder(props: any) {
   const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
   return useAITheme ? (
     <AISkeletonPlaceholder {...props} />

@@ -16,13 +16,6 @@ button.WACCarouselContainer__NavigationButton,
   justify-content: center;
 }
 
-.WACCarouselContainer__Navigation
-  .cds--btn.WACCarouselContainer__NavigationButton {
-  padding: unset;
-  min-block-size: unset;
-  min-inline-size: unset;
-}
-
 .WACCarouselContainer__Controls {
   display: flex;
   align-items: center;
@@ -38,7 +31,7 @@ button.WACCarouselContainer__NavigationButton,
   max-inline-size: chatTheme.$CARD-max-width;
 }
 
-button.cds--btn.cds--btn.cds--btn.WACCarouselContainer__NavigationButton {
+.WACCarouselContainer__NavigationButton {
   padding: 0;
   block-size: 32px;
   color: currentcolor;

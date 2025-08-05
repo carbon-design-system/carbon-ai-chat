@@ -24,18 +24,10 @@
 }
 
 .WACWidget__MarkdownP,
-.cds--data-table-content,
 .WACWidget__MarkdownBlockquote,
 .WACWidget__MarkdownImg,
 .WACWidget__MarkdownPre {
   margin-block: 0;
-}
-
-.cds--list--unordered:not(.cds--list--nested),
-.cds--list--ordered:not(.cds--list--nested) {
-  padding: 0;
-  margin-block: 0;
-  padding-block: layout.$spacing-03;
 }
 
 .WACWidget__MarkdownP {
@@ -46,7 +38,7 @@
 }
 
 .WACWidget__MarkdownBlockquote {
-  border-inline-start: 4px solid var(--cds-chat-ACCENT-color);
+  border-inline-start: 4px solid theme.$background-brand;
   padding-inline-start: layout.$spacing-03;
 }
 
@@ -110,28 +102,12 @@ h6.WACWidget__MarkdownHeading {
 }
 
 .WACWidget__MarkdownP,
-.cds--data-table-content,
 .WACWidget__MarkdownBlockquote,
 .WACWidget__MarkdownImg,
-.cds--list--ordered:not(.cds--list--nested),
-.cds--list--unordered:not(.cds--list--nested),
 pre,
 .WACWidget__MarkdownPre,
 hr {
   &:not(:first-child) {
     margin-block-start: layout.$spacing-05;
-  }
-}
-
-.cds--list--ordered:not(.cds--list--nested) {
-  margin-inline-start: layout.$spacing-06;
-}
-
-:host-context(.WAC--narrowWidth),
-:host-context(.WAC--standardWidth) {
-  // Carbon displays cds--link using display: inline-flex to allow icons to align well. In our narrow viewport this can
-  // lead to some funky linebreaks. This CSS will set cds--link to be display: inline if there is no icon.
-  .cds--link:not(:has(.cds--link__icon)) {
-    display: inline;
   }
 }

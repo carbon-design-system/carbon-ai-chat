@@ -9,10 +9,6 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 
-.WAC__overlay-panel--branding {
-  z-index: 105;
-}
-
 .WAC__overlay-panel--disclaimer {
   z-index: 99;
 }
@@ -41,10 +37,6 @@
   z-index: 30;
 }
 
-.WAC__overlay-panel--agent {
-  z-index: 20;
-}
-
 .WAC__overlay-panel--conversational_search_citation {
   z-index: 6;
 }
@@ -64,15 +56,6 @@
   overflow: hidden;
 }
 
-.WAC__overlay--covering.WAC__overlay-panelContainer--animating
-  .WACHeader.WAC--primaryColor {
-  background-color: unset;
-}
-
-.WAC__overlay--covering .WAC__overlay-panel .WACHeader.WAC--primaryColor {
-  position: relative;
-}
-
 .WACWidget--rounded
   .WAC__overlay--covering.WAC__overlay-panelContainer
   .WACHeader--content {
@@ -83,41 +66,15 @@
 .WACWidget--rounded
   .WAC--wideWidth
   .WAC__overlay--covering
-  .WACHeader__LeftButtons
-  .cds--popover-container:first-child
-  .cds--btn {
+  .WACHeader__LeftButtons {
   border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
 }
 
 .WACWidget--rounded
   .WAC--wideWidth
   .WAC__overlay--covering
-  .WACHeader__RightButtons
-  .cds--popover-container:last-child
-  .cds--btn {
+  .WACHeader__RightButtons {
   border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
-}
-
-.WAC__overlay--covering.WAC__overlay-panelContainer:not(
-    .WAC__overlay-panelContainer--animating
-  )
-  .WACHeader.WAC--primaryColor::before {
-  position: absolute;
-  background: theme.$overlay;
-  block-size: 100%;
-  border-block-end: 1px solid theme.$border-subtle-00;
-  content: "";
-  inline-size: 100%;
-  opacity: 0.5;
-}
-
-.WACWidget.WACWidget--rounded
-  .WAC__overlay--covering.WAC__overlay-panelContainer:not(
-    .WAC__overlay-panelContainer--animating
-  )
-  .WACHeader.WAC--primaryColor::before {
-  border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
-  border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
 }
 
 .WAC__overlay-panel {
@@ -203,9 +160,23 @@
   }
 }
 
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--opening--slideInFromLeft {
+    animation: none;
+  }
+}
+
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--opening--slideInFromLeft {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
     WACSlideInFromRight both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--opening--slideInFromRight {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -336,9 +307,23 @@
   }
 }
 
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--closing--slideOutToLeft {
+    animation: none;
+  }
+}
+
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--closing--slideOutToLeft {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
     WACSlideOutToRight both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--closing--slideOutToRight {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
