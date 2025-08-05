@@ -91,10 +91,10 @@ function convertCSSVariablesToString(cssVariables: ObjectMap<string>): string {
  * @param whiteLabelVariables The set of customized styles.
  * @param carbonTheme The Carbon theme that is being used.
  */
-function remoteStylesToCSSVars(
+async function remoteStylesToCSSVars(
   whiteLabelVariables: WhiteLabelTheme,
   carbonTheme: CarbonTheme
-): ObjectMap<string> {
+): Promise<ObjectMap<string>> {
   const cssOverrides: ObjectMap<string> = {};
 
   const primaryColor = whiteLabelVariables["BASE-primary-color"];
@@ -104,8 +104,14 @@ function remoteStylesToCSSVars(
   if (primaryColor) {
     cssOverrides["PRIMARY-color"] = primaryColor;
     cssOverrides["PRIMARY-color-text"] = whiteOrBlackText(primaryColor);
-    cssOverrides["PRIMARY-color-hover"] = adjustLightness(primaryColor, -8);
-    cssOverrides["PRIMARY-color-active"] = adjustLightness(primaryColor, -10);
+    cssOverrides["PRIMARY-color-hover"] = await adjustLightness(
+      primaryColor,
+      -8
+    );
+    cssOverrides["PRIMARY-color-active"] = await adjustLightness(
+      primaryColor,
+      -10
+    );
 
     // We need to calculate the focus color for the buttons in the header. The focus color for the white and g10
     // themes is the same as the accent color. For g90 and g100, the focus color is white.
@@ -161,9 +167,9 @@ function remoteStylesToCSSVars(
     // The custom color basically corresponds to Blue 60 are we will replace all the occurrences of Blue 60 with
     // that custom color. For the other shades of blue, we will calculate a relative color from the custom color and
     // replace those colors with this calculated color.
-    const accentBlue20 = adjustLightness(accentColor, 40);
-    const accentBlue60Hover = adjustLightness(accentColor, -8);
-    const accentBlue80 = adjustLightness(accentColor, -20);
+    const accentBlue20 = await adjustLightness(accentColor, 40);
+    const accentBlue60Hover = await adjustLightness(accentColor, -8);
+    const accentBlue80 = await adjustLightness(accentColor, -20);
 
     fillValues(cssOverrides, colorMap.blue20, accentBlue20);
     fillValues(cssOverrides, colorMap.blue60, accentColor);
@@ -207,10 +213,13 @@ function remoteStylesToCSSVars(
     cssOverrides["ACCENT-color-bw"] = accentColorBW;
 
     // When ACCENT-color-bw is used as a button color we need a hover and active color.
-    cssOverrides["ACCENT-color-bw-hover"] = adjustLightness(accentColorBW, -8);
+    cssOverrides["ACCENT-color-bw-hover"] = await adjustLightness(
+      accentColorBW,
+      -8
+    );
 
     // The active color is a little darker than the hover color.
-    cssOverrides["ACCENT-color-bw-active"] = adjustLightness(
+    cssOverrides["ACCENT-color-bw-active"] = await adjustLightness(
       accentColorBW,
       -10
     );
@@ -227,8 +236,8 @@ function remoteStylesToCSSVars(
     // light). Used for the launcher experiments where we only have one accent color but really need two.
     cssOverrides["ACCENT-color-pastel"] =
       accentColorBW === gray100
-        ? adjustLightness(accentColor, 20)
-        : adjustLightness(accentColor, -15);
+        ? await adjustLightness(accentColor, 20)
+        : await adjustLightness(accentColor, -15);
   }
 
   return cssOverrides;

@@ -8,7 +8,6 @@
  */
 
 import { CDSTableRow } from "@carbon/web-components";
-import { bind } from "bind-decorator";
 import { stringify } from "csv-stringify/browser/esm/sync";
 import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
@@ -291,30 +290,27 @@ class TableElement extends LitElement {
    * the pagination component works as expected. Ignore this double firing for now since it appears to be a bug on
    * Carbon's end that will likely be fixed in a future release.
    */
-  @bind
-  public _handlePageChangeEvent(event: PageChangeEvent) {
+  public _handlePageChangeEvent = (event: PageChangeEvent) => {
     this._updateVisibleRows(event.detail?.page, event.detail?.pageSize);
     event.stopPropagation();
-  }
+  };
 
   /**
    * When the number of rows per page is changed, update the current page size and change which rows are visible.
    */
-  @bind
-  public _handlePageSizeChangeEvent(event: PageChangeEvent) {
+  public _handlePageSizeChangeEvent = (event: PageChangeEvent) => {
     this._rowsPerPageChanged = true;
     this._currentPageSize = event.detail?.pageSize;
     this._updateVisibleRows();
     event.stopPropagation();
-  }
+  };
 
   /**
    * When the filter event is fired, record which rows have not been filtered out, and update which rows are visible.
    * This event is fired when the columns are sorted using the header cells AND when the table is filtered using the
    * search bar.
    */
-  @bind
-  public _handleFilterEvent(event: FilterEvent) {
+  public _handleFilterEvent = (event: FilterEvent) => {
     // Record the new set of unfiltered row ids.
     this._filterVisibleRowIDs = new Set(
       event?.detail?.unfilteredRows.map((row) => row.id)
@@ -326,7 +322,7 @@ class TableElement extends LitElement {
     // Update which rows are visible.
     this._updateVisibleRows();
     event.stopPropagation();
-  }
+  };
 
   /**
    * Given the current page number, page size, and array of rows that have not been filtered out, determine which rows

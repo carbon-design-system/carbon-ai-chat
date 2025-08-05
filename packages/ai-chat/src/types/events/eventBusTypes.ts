@@ -11,7 +11,7 @@
  * This file contains the type definitions for the event bus.
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
   AgentProfile,

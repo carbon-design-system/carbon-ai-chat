@@ -24,7 +24,6 @@ import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
 import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
-import { MaybeDangerouslySetInnerHTML } from "./util/MaybeDangerouslySetInnerHTML";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { OverlayPanelName } from "./OverlayPanel";
 
@@ -87,9 +86,9 @@ function Disclaimer({
           <h1 className="WAC__disclaimer-title">
             {languagePack.disclaimer_title}
           </h1>
-          <MaybeDangerouslySetInnerHTML
+          <div
+            dangerouslySetInnerHTML={{ __html: disclaimerHTML }}
             className="WAC__disclaimer-description"
-            html={disclaimerHTML}
           />
         </div>
         <div className="WAC__disclaimer-buttons">

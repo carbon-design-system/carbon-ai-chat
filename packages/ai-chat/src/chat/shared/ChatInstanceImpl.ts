@@ -16,7 +16,7 @@
 
 import dayjs from "dayjs";
 import cloneDeep from "lodash-es/cloneDeep.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../types/utilities/DeepPartial";
 
 import { ChatHeaderConfig } from "../../types/config/ChatHeaderConfig";
 import { ServiceManager } from "./services/ServiceManager";

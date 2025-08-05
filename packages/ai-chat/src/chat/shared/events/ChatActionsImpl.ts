@@ -10,7 +10,7 @@
 import cloneDeep from "lodash-es/cloneDeep.js";
 import isEqual from "lodash-es/isEqual.js";
 import merge from "lodash-es/merge.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
 import { LoadedHistory } from "../schema/historyToMessages";
 import inputItemToLocalItem from "../schema/inputItemToLocalItem";

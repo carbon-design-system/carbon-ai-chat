@@ -9,7 +9,7 @@
 
 import cloneDeep from "lodash-es/cloneDeep.js";
 import merge from "lodash-es/merge.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../../types/utilities/DeepPartial";
 
 import inputItemToLocalItem from "../../schema/inputItemToLocalItem";
 import {
@@ -1419,10 +1419,12 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
 /**
  * Returns a new instance of the service implementation.
  */
-function createService(serviceManager: ServiceManager): HumanAgentService {
+function createHumanAgentService(
+  serviceManager: ServiceManager
+): HumanAgentService {
   return new HumanAgentServiceImpl(serviceManager);
 }
-assertType<CreateHumanAgentServiceFunction>(createService);
+assertType<CreateHumanAgentServiceFunction>(createHumanAgentService);
 
 /**
  * Performs some minimal validation of the provided custom service desk to make sure it meets the minimum
@@ -1469,6 +1471,10 @@ function validateCustomServiceDesk(serviceDesk: ServiceDesk) {
   }
 }
 
-export { HumanAgentServiceImpl, createService, validateCustomServiceDesk };
+export {
+  HumanAgentServiceImpl,
+  createHumanAgentService,
+  validateCustomServiceDesk,
+};
 
-export default createService;
+export default createHumanAgentService;

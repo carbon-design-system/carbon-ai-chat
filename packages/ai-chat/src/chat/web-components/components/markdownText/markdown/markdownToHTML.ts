@@ -31,7 +31,8 @@ function templateToString(result: TemplateResult): string {
  */
 async function processMarkdown(value: string, sanitzeHTML = false) {
   const tokenTree = await getMarkdownWorker(value, undefined);
-  const html = templateToString(renderTokenTree(tokenTree, sanitzeHTML));
+  const renderedTree = await renderTokenTree(tokenTree, sanitzeHTML);
+  const html = templateToString(renderedTree);
   return html;
 }
 

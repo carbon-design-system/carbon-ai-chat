@@ -9,14 +9,13 @@
 
 import { html } from "lit";
 
-import { renderTokenTree } from "../markdown/utils/renderTokenTree";
 import MarkdownTextElement from "../cds-aichat-markdown-text";
 
 function markdownTextTemplate(customElementClass: MarkdownTextElement) {
-  const { tokenTree, sanitizeHTML } = customElementClass;
+  const { renderedContent } = customElementClass;
 
   return html`<div class="cds-aichat-markdown-text">
-    ${renderTokenTree(tokenTree, sanitizeHTML)}
+    ${renderedContent || html``}
   </div>`;
 }
 

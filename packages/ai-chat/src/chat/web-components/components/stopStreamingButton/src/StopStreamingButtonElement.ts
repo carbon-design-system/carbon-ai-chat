@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { bind } from "bind-decorator";
 import { css, LitElement, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 
@@ -45,10 +44,9 @@ class StopStreamingButtonElement extends LitElement {
   /**
    * Called when the user clicks the stop streaming button.
    */
-  @bind
-  _handleOnClick() {
+  _handleOnClick = () => {
     this.onClick();
-  }
+  };
 }
 
 export { StopStreamingButtonElement };

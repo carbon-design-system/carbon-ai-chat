@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import { HasNeedsAnnouncement } from "../utilities/HasNeedsAnnouncement";
 import { GenericItem, MessageRequest } from "./Messages";

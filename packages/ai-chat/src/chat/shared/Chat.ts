@@ -15,14 +15,12 @@ import merge from "lodash-es/merge.js";
 import { createChatInstance } from "./ChatInstanceImpl";
 import { ChatInterface } from "./ChatInterface";
 import { createServiceManager } from "./loadServices";
-import { CreateHumanAgentServiceFunction } from "./services/haa/HumanAgentService";
 import { ServiceManager } from "./services/ServiceManager";
 import actions from "./store/actions";
 import { VIEW_STATE_ALL_CLOSED } from "./store/reducerUtils";
 import { AdditionalChatParameters } from "../../types/component/AdditionalChatParameters";
 import { AppConfig } from "../../types/state/AppConfig";
 import { loadLanguagePack, loadLocale } from "./utils/languages";
-import { hasServiceDesk } from "./utils/messageUtils";
 import { consoleDebug, consoleError } from "./utils/miscUtils";
 import { DEFAULT_PUBLIC_CONFIG } from "./chatEntryFunctions";
 import { PublicConfig } from "../../types/config/PublicConfig";
@@ -32,7 +30,7 @@ import {
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
 import { setIntl } from "./utils/intlUtils";
-import { loadHAA } from "../dynamic-imports/dynamic-imports";
+import createHumanAgentService from "./services/haa/HumanAgentServiceImpl";
 
 // Dayjs is a date library similar to moment, but that allows you to compose how much functionality you need. Here we
 // add the ability to add strings in the format of a given locale.
@@ -112,35 +110,23 @@ class Chat implements ChatInterface {
     instance: ChatInstance;
     serviceManager: ServiceManager;
   }> {
-    // Check if integration has a service desk configured in the tooling. If they do, we will use it with
-    // connect_to_agent response_type.
-    const doesHaveServiceDesk = hasServiceDesk(this.appConfig);
-
     this.serviceManager = await createServiceManager(
       this.appConfig,
       this.additionalChatParameters
     );
 
     // Asynchronously load all of the various dependencies that the Carbon AI chat depends on.
-    const [languagePack, localePack, render, createHumanAgentService] =
-      await Promise.all([
-        loadLanguagePack(this.serviceManager.store.getState().languagePack),
-        loadLocale(this.serviceManager.store.getState().locale),
-        Promise.resolve(this.additionalChatParameters.render),
-        doesHaveServiceDesk
-          ? loadHAA()
-          : Promise.resolve<CreateHumanAgentServiceFunction>(null),
-      ]);
+    const [languagePack, localePack, render] = await Promise.all([
+      loadLanguagePack(this.serviceManager.store.getState().languagePack),
+      loadLocale(this.serviceManager.store.getState().locale),
+      Promise.resolve(this.additionalChatParameters.render),
+    ]);
 
     this.serviceManager.customHostElement = this.customHostElement;
 
-    if (createHumanAgentService) {
-      // We'll create the service now but we can't initialize it until we load the service desk information
-      // from the remote config.
-      this.serviceManager.humanAgentService = createHumanAgentService(
-        this.serviceManager
-      );
-    }
+    this.serviceManager.humanAgentService = createHumanAgentService(
+      this.serviceManager
+    );
 
     // Update Redux with new values for language, locale, and messages.
     setIntl(this.serviceManager, localePack.name, languagePack);

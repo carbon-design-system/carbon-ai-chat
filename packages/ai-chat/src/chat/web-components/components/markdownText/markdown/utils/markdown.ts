@@ -14,24 +14,31 @@
 
 import MarkdownIt, { Token } from "markdown-it";
 import markdownItAttrs from "markdown-it-attrs";
-import markdownItSub from "markdown-it-sub";
-import markdownItSup from "markdown-it-sup";
 
-const defaultMarkdown = new MarkdownIt({
+const htmlMarkdown = new MarkdownIt({
   html: true,
   breaks: true,
   linkify: true,
-})
-  .use(markdownItAttrs, {
-    leftDelimiter: "{{",
-    rightDelimiter: "}}",
-    allowedAttributes: ["target", "rel", "class", "id"],
-  })
-  .use(markdownItSub)
-  .use(markdownItSup);
+}).use(markdownItAttrs, {
+  leftDelimiter: "{{",
+  rightDelimiter: "}}",
+  allowedAttributes: ["target", "rel", "class", "id"],
+});
 
-function parseMarkdown(fullText: string): Token[] {
-  return defaultMarkdown.parse(fullText, {});
+const noHtmlMarkdown = new MarkdownIt({
+  html: false,
+  breaks: true,
+  linkify: true,
+}).use(markdownItAttrs, {
+  leftDelimiter: "{{",
+  rightDelimiter: "}}",
+  allowedAttributes: ["target", "rel", "class", "id"],
+});
+
+function parseMarkdown(fullText: string, allowHtml = true): Token[] {
+  return allowHtml
+    ? htmlMarkdown.parse(fullText, {})
+    : noHtmlMarkdown.parse(fullText, {});
 }
 
-export { defaultMarkdown, parseMarkdown };
+export { parseMarkdown };

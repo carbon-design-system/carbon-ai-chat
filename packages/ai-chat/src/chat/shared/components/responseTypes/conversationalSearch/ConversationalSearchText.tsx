@@ -16,8 +16,6 @@ import { useCounter } from "../../../hooks/useCounter";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-
-import { sanitizeHTML } from "../../../utils/htmlUtils";
 import { consoleError } from "../../../utils/miscUtils";
 import {
   ConversationalSearchItem,
@@ -169,9 +167,7 @@ async function createHTMLWithHighlights(
     text = pieces.join("");
   }
 
-  const md = await processMarkdown(text);
-
-  const afterMarkdownHTML = sanitizeHTML(md);
+  const afterMarkdownHTML = await processMarkdown(text, true);
 
   if (ranges) {
     try {

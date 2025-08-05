@@ -12,7 +12,7 @@
  * intended to provide base types for a standalone widget and should not contain any imports of other types.
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { AgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../instance/apiTypes";

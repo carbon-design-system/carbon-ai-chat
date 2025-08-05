@@ -7,13 +7,14 @@
  *  @license
  */
 
-import DOMPurify from "dompurify";
 import { html, TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { type Token } from "markdown-it";
 
 import { type TokenTree } from "./tokenTree";
+
+import "../../../codeElement/cds-aichat-code";
 
 /**
  * Recursively renders a TokenTree into a Lit TemplateResult.
@@ -28,7 +29,10 @@ import { type TokenTree } from "./tokenTree";
  * - Structural markdown elements (headings, lists, tables, etc.)
  * - Custom markdown-it attributes (e.g. class, id, rel)
  */
-function renderTokenTree(node: TokenTree, sanitize: boolean): TemplateResult {
+async function renderTokenTree(
+  node: TokenTree,
+  sanitize: boolean
+): Promise<TemplateResult> {
   const { token, children } = node;
 
   // Handle raw HTML (e.g., <iframe>, <video>, or custom elements like <my-widget>)
@@ -37,17 +41,18 @@ function renderTokenTree(node: TokenTree, sanitize: boolean): TemplateResult {
     const raw = token.content;
 
     // If sanitization is enabled, use DOMPurify to strip unsafe HTML.
-    return html`${unsafeHTML(
-      sanitize
-        ? DOMPurify.sanitize(raw, {
-            CUSTOM_ELEMENT_HANDLING: {
-              tagNameCheck: () => true, // allow any custom element
-              attributeNameCheck: () => true,
-              allowCustomizedBuiltInElements: true,
-            },
-          })
-        : raw
-    )}`;
+    let content = raw;
+    if (sanitize) {
+      const { default: DOMPurify } = await import("dompurify");
+      content = DOMPurify.sanitize(raw, {
+        CUSTOM_ELEMENT_HANDLING: {
+          tagNameCheck: () => true, // allow any custom element
+          attributeNameCheck: () => true,
+          allowCustomizedBuiltInElements: true,
+        },
+      });
+    }
+    return html`${unsafeHTML(content)}`;
   }
 
   // Text-only content (usually plain text in paragraphs or inline spans)
@@ -62,7 +67,6 @@ function renderTokenTree(node: TokenTree, sanitize: boolean): TemplateResult {
 
   // Fenced code blocks (e.g., ```js\nconsole.log('hello')\n```)
   if (token.type === "fence") {
-    import("../../../codeElement/cds-aichat-code");
     const language = token.info?.trim() ?? "";
     return html`<cds-aichat-code
       language=${language}
@@ -82,24 +86,29 @@ function renderTokenTree(node: TokenTree, sanitize: boolean): TemplateResult {
   }, {} as Record<string, string>);
 
   // If sanitizing, filter out any unsafe attributes (e.g., onclick, javascript: URLs).
-  const attrs = sanitize
-    ? Object.fromEntries(
-        Object.entries(rawAttrs).filter(([key, value]) => {
-          const fragment = DOMPurify.sanitize(`<a ${key}="${value}">`, {
-            RETURN_DOM: true,
-          });
-          const element = fragment.firstChild as Element | null;
-          return element?.getAttribute(key) !== null;
-        })
-      )
-    : rawAttrs;
+  let attrs = rawAttrs;
+  if (sanitize) {
+    const { default: DOMPurify } = await import("dompurify");
+    attrs = Object.fromEntries(
+      Object.entries(rawAttrs).filter(([key, value]) => {
+        const fragment = DOMPurify.sanitize(`<a ${key}="${value}">`, {
+          RETURN_DOM: true,
+        });
+        const element = fragment.firstChild as Element | null;
+        return element?.getAttribute(key) !== null;
+      })
+    );
+  }
 
   // Recursively render all child nodes into Lit TemplateResults.
   // Use `repeat()` to give Lit a stable `key` per child, minimizing DOM updates.
+  const childResults = await Promise.all(
+    children.map((c) => renderTokenTree(c, sanitize))
+  );
   const content: TemplateResult = html`${repeat(
     children,
     (c) => c.key,
-    (c) => renderTokenTree(c, sanitize)
+    (_c, index) => childResults[index]
   )}`;
 
   // Use a static tag-based renderer to safely and predictably render known HTML tags.

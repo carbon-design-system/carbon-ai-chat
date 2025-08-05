@@ -11,10 +11,10 @@ import "intl-pluralrules";
 
 import cx from "classnames";
 import FocusTrap from "focus-trap-react";
-import React, { Component, MutableRefObject, RefObject, Suspense } from "react";
+import React, { Component, MutableRefObject, RefObject } from "react";
 import { connect } from "react-redux";
 
-import { ChatClass } from "../../components/Chat";
+import Chat, { ChatClass } from "../../components/Chat";
 import { HydrationPanel } from "../../components/HydrationPanel";
 import { InputFunctions } from "../../components/input/Input";
 import { MessageTypeComponent } from "../MessageTypeComponent";
@@ -47,7 +47,7 @@ import {
 } from "../../../../types/utilities/HasAddRemoveClassName";
 import { AutoScrollOptions } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { IS_IOS, IS_MOBILE } from "../../utils/browserUtils";
+import { IS_IOS, IS_MOBILE, isBrowser } from "../../utils/browserUtils";
 import { CornersType } from "../../utils/constants";
 import { doFocusRef, SCROLLBAR_WIDTH } from "../../utils/domUtils";
 import { arrayLastValue } from "../../utils/lang/arrayUtils";
@@ -66,23 +66,12 @@ import {
   SendOptions,
 } from "../../../../types/instance/ChatInstance";
 import { ButtonItem, SingleOption } from "../../../../types/messaging/Messages";
-import {
-  lazyBodyAndFooterPanelComponent,
-  lazyCatastrophicError,
-  lazyChat,
-  lazyDisclaimer,
-  lazyHomeScreenContainer,
-  lazyIFramePanel,
-  lazyViewSourcePanel,
-} from "../../../dynamic-imports/dynamic-imports";
-
-const Chat = lazyChat();
-const CatastrophicError = lazyCatastrophicError();
-const Disclaimer = lazyDisclaimer();
-const HomeScreenContainer = lazyHomeScreenContainer();
-const IFramePanel = lazyIFramePanel();
-const ViewSourcePanel = lazyViewSourcePanel();
-const BodyAndFooterPanelComponent = lazyBodyAndFooterPanelComponent();
+import CatastrophicError from "../../components/CatastrophicError";
+import Disclaimer from "../../components/Disclaimer";
+import HomeScreenContainer from "../../components/homeScreen/HomeScreenContainer";
+import IFramePanel from "../../components/responseTypes/iframe/IFramePanel";
+import ViewSourcePanel from "../../components/responseTypes/util/citations/ViewSourcePanel";
+import BodyAndFooterPanelComponent from "../../components/panels/BodyAndFooterPanelComponent";
 
 // Indicates the messages container is at the standard, default width.
 const WIDTH_BREAKPOINT_STANDARD = "WAC--standardWidth";
@@ -143,12 +132,6 @@ interface MainWindowState extends HasExtraClassNames {
    * element), this will end up having its initial state set by a public config option.
    */
   shouldAutoFocus: boolean;
-
-  /**
-   * We dynamically import inner panels in while hydration takes place. We need both that and hydrating to be completed to
-   * show them.
-   */
-  areModulesLoaded: boolean;
 }
 
 type MainWindowProps = MainWindowOwnProps & AppState;
@@ -172,7 +155,6 @@ class MainWindow
     shouldAutoFocus:
       this.props.config.public.shouldTakeFocusIfOpensAutomatically,
     extraClassNames: [],
-    areModulesLoaded: false,
   };
 
   /**
@@ -199,11 +181,6 @@ class MainWindow
    * A React ref to the bot {@link Disclaimer} component.
    */
   private disclaimerRef: RefObject<HTMLButtonElement> = React.createRef();
-
-  /**
-   * A React ref to the {@link BrandingOverlayComponent} component.
-   */
-  private brandingRef: RefObject<HTMLButtonElement> = React.createRef();
 
   /**
    * A React ref to the animation container element.
@@ -236,9 +213,7 @@ class MainWindow
   private mainWindowObserver: ResizeObserver;
 
   componentDidMount() {
-    const { persistedToBrowserStorage, config, serviceManager, mainWindowRef } =
-      this.props;
-    const { viewState } = persistedToBrowserStorage.launcherState;
+    const { config, serviceManager, mainWindowRef } = this.props;
     const { public: publicConfig } = config;
 
     serviceManager.mainWindow = this;
@@ -270,10 +245,6 @@ class MainWindow
       "--cds-chat-scrollbar-width",
       `${SCROLLBAR_WIDTH()}px`
     );
-
-    if (viewState.mainWindow) {
-      this.loadPanels();
-    }
   }
 
   componentWillUnmount(): void {
@@ -357,14 +328,8 @@ class MainWindow
       this.destroy();
     }
 
-    if (
-      (oldState.areModulesLoaded !== newState.areModulesLoaded ||
-        oldProps.isHydrated !== newProps.isHydrated) &&
-      newProps.isHydrated &&
-      newState.areModulesLoaded
-    ) {
-      // If both areModulesLoaded and isHydrated have changed and isHydrated is true and areModulesLoaded is true, then
-      // we can go ahead and request focus on the active panel.
+    if (oldProps.isHydrated !== newProps.isHydrated && newProps.isHydrated) {
+      // If isHydrated has changed and isHydrated is true  we can go ahead and request focus on the active panel.
       this.setState({ isHydrationAnimationComplete: true }, () => {
         requestAnimationFrame(() => {
           this.requestFocus();
@@ -378,7 +343,6 @@ class MainWindow
       this.setState({ open: true }, () => {
         this.requestFocus();
       });
-      this.loadPanels();
     } else if (
       !viewState.mainWindow &&
       prevViewState.mainWindow &&
@@ -454,23 +418,6 @@ class MainWindow
   }
 
   /**
-   * Lazy loads in all the different panels when Carbon AI chat is loaded.
-   */
-  loadPanels() {
-    Promise.all([
-      Chat.preload(),
-      CatastrophicError.preload(),
-      Disclaimer.preload(),
-      HomeScreenContainer.preload(),
-      IFramePanel.preload(),
-      ViewSourcePanel.preload(),
-      BodyAndFooterPanelComponent.preload(),
-    ]).then(() => {
-      this.setState({ areModulesLoaded: true });
-    });
-  }
-
-  /**
    * This function will apply the necessary updates to the body element. This is primarily used to deal with
    * adjustments made to mobile devices.
    */
@@ -479,33 +426,38 @@ class MainWindow
       IS_IOS &&
       !this.props.config.public.disableCustomElementMobileEnhancements
     ) {
-      if (
-        (window.screen.width <= 500 || window.screen.height <= 500) &&
-        this.props.persistedToBrowserStorage.launcherState.viewState
-          .mainWindow &&
-        !unmounting
-      ) {
-        this.previousBodyVisibility =
-          document.body.style.getPropertyValue("visibility");
-        this.previousBodyPosition =
-          document.body.style.getPropertyValue("position");
-        // On iOS devices when the keyboard is opened the viewport is immediately resized to the shorter view that is
-        // visible between the navigation bar and the keyboard. However, this occurs before the keyboard has fully slid
-        // into view. When the resize occurs we shrink the widget to the size of the viewport but this means that
-        // during the animation the widget is too short and what is behind the widget becomes momentarily visible. To
-        // deal with that we hide the body while the widget is open. For code searchability adding the words
-        // "visibility: hidden !important" since that is how this styling is rendered on the body.
-        document.body.style.setProperty("visibility", "hidden", "important");
-        // To prevent the widget from being scrollable in a way that gets it into a bad state, we can set the body
-        // to a fixed position. For code searchability adding the words "position: fixed !important" since that is how
-        // this styling is rendered on the body.
-        document.body.style.setProperty("position", "fixed", "important");
-      } else {
-        document.body.style.setProperty(
-          "visibility",
-          this.previousBodyVisibility
-        );
-        document.body.style.setProperty("position", this.previousBodyPosition);
+      if (isBrowser) {
+        if (
+          (window.screen.width <= 500 || window.screen.height <= 500) &&
+          this.props.persistedToBrowserStorage.launcherState.viewState
+            .mainWindow &&
+          !unmounting
+        ) {
+          this.previousBodyVisibility =
+            document.body.style.getPropertyValue("visibility");
+          this.previousBodyPosition =
+            document.body.style.getPropertyValue("position");
+          // On iOS devices when the keyboard is opened the viewport is immediately resized to the shorter view that is
+          // visible between the navigation bar and the keyboard. However, this occurs before the keyboard has fully slid
+          // into view. When the resize occurs we shrink the widget to the size of the viewport but this means that
+          // during the animation the widget is too short and what is behind the widget becomes momentarily visible. To
+          // deal with that we hide the body while the widget is open. For code searchability adding the words
+          // "visibility: hidden !important" since that is how this styling is rendered on the body.
+          document.body.style.setProperty("visibility", "hidden", "important");
+          // To prevent the widget from being scrollable in a way that gets it into a bad state, we can set the body
+          // to a fixed position. For code searchability adding the words "position: fixed !important" since that is how
+          // this styling is rendered on the body.
+          document.body.style.setProperty("position", "fixed", "important");
+        } else {
+          document.body.style.setProperty(
+            "visibility",
+            this.previousBodyVisibility
+          );
+          document.body.style.setProperty(
+            "position",
+            this.previousBodyPosition
+          );
+        }
       }
     }
   }
@@ -718,10 +670,11 @@ class MainWindow
   }
 
   private getShowDisclaimer() {
+    const hostname = isBrowser ? window.location.hostname : "localhost";
     return (
       this.props.config.public.disclaimer?.is_on &&
       !this.props.persistedToBrowserStorage.chatState.disclaimersAccepted[
-        window.location.hostname
+        hostname
       ]
     );
   }
@@ -859,7 +812,6 @@ class MainWindow
    */
   renderChat() {
     const { isHydrated, config, chatWidthBreakpoint } = this.props;
-    const { areModulesLoaded } = this.state;
 
     const showCovering =
       this.state.numPanelsCovering > 0 &&
@@ -870,7 +822,7 @@ class MainWindow
       <div className="WACWidget--content">
         {this.renderCustomPanel()}
         {this.renderHydrationPanel()}
-        {isHydrated && areModulesLoaded && (
+        {isHydrated && (
           <>
             {this.renderDisclaimerPanel()}
             {this.renderResponsePanel()}
@@ -924,37 +876,35 @@ class MainWindow
 
     return (
       <HideComponent className="WACBotContainer" hidden={hideBotContainer}>
-        <Suspense fallback={null}>
-          <Chat
-            botName={botName}
-            headerDisplayName={headerDisplayName}
-            headerAvatarConfig={headerAvatar}
-            ref={this.botChatRef}
-            languagePack={languagePack}
-            config={config}
-            serviceManager={serviceManager}
-            onClose={this.onClose}
-            onCloseAndRestart={this.onCloseAndRestart}
-            messageState={botMessageState}
-            onSendInput={(text: string) =>
-              this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
-            }
-            agentState={agentState}
-            agentDisplayState={agentDisplayState}
-            allMessageItemsByID={allMessageItemsByID}
-            onRestart={this.onRestart}
-            isHydrated={isHydrated}
-            isHydrationAnimationComplete={
-              isHydrationAnimationComplete && !showDisclaimer
-            }
-            inputState={inputState}
-            onToggleHomeScreen={this.onToggleHomeScreen}
-            onUserTyping={this.onUserTyping}
-            locale={locale}
-            useAITheme={theme.useAITheme}
-            carbonTheme={theme.carbonTheme}
-          />
-        </Suspense>
+        <Chat
+          botName={botName}
+          headerDisplayName={headerDisplayName}
+          headerAvatarConfig={headerAvatar}
+          ref={this.botChatRef}
+          languagePack={languagePack}
+          config={config}
+          serviceManager={serviceManager}
+          onClose={this.onClose}
+          onCloseAndRestart={this.onCloseAndRestart}
+          messageState={botMessageState}
+          onSendInput={(text: string) =>
+            this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
+          }
+          agentState={agentState}
+          agentDisplayState={agentDisplayState}
+          allMessageItemsByID={allMessageItemsByID}
+          onRestart={this.onRestart}
+          isHydrated={isHydrated}
+          isHydrationAnimationComplete={
+            isHydrationAnimationComplete && !showDisclaimer
+          }
+          inputState={inputState}
+          onToggleHomeScreen={this.onToggleHomeScreen}
+          onUserTyping={this.onUserTyping}
+          locale={locale}
+          useAITheme={theme.useAITheme}
+          carbonTheme={theme.carbonTheme}
+        />
       </HideComponent>
     );
   }
@@ -969,8 +919,6 @@ class MainWindow
       homeScreenConfig,
     } = this.props;
 
-    const { areModulesLoaded } = this.state;
-
     // We need to make an educated guess whether the home screen is going to be displayed after hydration is
     // complete, so we can show a version of the hydration panel that matches to avoid a flickering transition when
     // the hydration panel is only displayed very briefly. If the user's assistant session has expired, this will be
@@ -981,9 +929,7 @@ class MainWindow
     return (
       <HydrationPanel
         headerDisplayName={headerDisplayName}
-        isHydrated={
-          botMessageState.isHydratingCounter === 0 && areModulesLoaded
-        }
+        isHydrated={botMessageState.isHydratingCounter === 0}
         serviceManager={serviceManager}
         onClose={this.onClose}
         languagePack={languagePack}
@@ -1003,7 +949,6 @@ class MainWindow
       persistedToBrowserStorage,
     } = this.props;
     const { viewState } = persistedToBrowserStorage.launcherState;
-    const { areModulesLoaded } = this.state;
 
     return (
       <OverlayPanel
@@ -1017,7 +962,7 @@ class MainWindow
         animationOnOpen={AnimationInType.NONE}
         animationOnClose={AnimationOutType.NONE}
         shouldOpen={
-          (botMessageState.isHydratingCounter > 0 || !areModulesLoaded) &&
+          botMessageState.isHydratingCounter > 0 &&
           !catastrophicErrorType &&
           viewState.mainWindow
         }
@@ -1044,16 +989,14 @@ class MainWindow
         serviceManager={serviceManager}
         overlayPanelName={OverlayPanelName.CATASTROPHIC}
       >
-        <Suspense fallback={null}>
-          <CatastrophicError
-            onClose={this.onClose}
-            headerDisplayName={headerDisplayName}
-            languagePack={languagePack}
-            onRestart={this.onRestart}
-            showHeader
-            botName={botName}
-          />
-        </Suspense>
+        <CatastrophicError
+          onClose={this.onClose}
+          headerDisplayName={headerDisplayName}
+          languagePack={languagePack}
+          onRestart={this.onRestart}
+          showHeader
+          botName={botName}
+        />
       </OverlayPanel>
     );
   }
@@ -1078,14 +1021,12 @@ class MainWindow
         serviceManager={serviceManager}
         overlayPanelName={OverlayPanelName.DISCLAIMER}
       >
-        <Suspense fallback={null}>
-          <Disclaimer
-            onAcceptDisclaimer={this.onAcceptDisclaimer}
-            onClose={this.onClose}
-            disclaimerHTML={config.public.disclaimer?.disclaimerHTML}
-            disclaimerAcceptButtonRef={this.disclaimerRef}
-          />
-        </Suspense>
+        <Disclaimer
+          onAcceptDisclaimer={this.onAcceptDisclaimer}
+          onClose={this.onClose}
+          disclaimerHTML={config.public.disclaimer?.disclaimerHTML}
+          disclaimerAcceptButtonRef={this.disclaimerRef}
+        />
       </OverlayPanel>
     ) : null;
   }
@@ -1098,26 +1039,24 @@ class MainWindow
     const showHomeScreen = this.getShowHomeScreen();
 
     return (
-      <Suspense fallback={null}>
-        <HomeScreenContainer
-          onPanelOpenStart={() => this.onPanelOpenStart(false)}
-          onPanelOpenEnd={this.onPanelOpenEnd}
-          onPanelCloseStart={this.onPanelCloseStart}
-          onPanelCloseEnd={() => this.onPanelCloseEnd(false)}
-          onClose={this.onClose}
-          onCloseAndRestart={this.onCloseAndRestart}
-          onSendBotInput={(text: string) =>
-            this.onSendInput(text, MessageSendSource.HOME_SCREEN_INPUT)
-          }
-          onSendButtonInput={this.onSendHomeButtonInput}
-          onRestart={this.onRestart}
-          showHomeScreen={showHomeScreen}
-          isHydrationAnimationComplete={isHydrationAnimationComplete}
-          homeScreenInputRef={this.homeScreenInputRef}
-          onToggleHomeScreen={this.onToggleHomeScreen}
-          requestFocus={this.requestFocus}
-        />
-      </Suspense>
+      <HomeScreenContainer
+        onPanelOpenStart={() => this.onPanelOpenStart(false)}
+        onPanelOpenEnd={this.onPanelOpenEnd}
+        onPanelCloseStart={this.onPanelCloseStart}
+        onPanelCloseEnd={() => this.onPanelCloseEnd(false)}
+        onClose={this.onClose}
+        onCloseAndRestart={this.onCloseAndRestart}
+        onSendBotInput={(text: string) =>
+          this.onSendInput(text, MessageSendSource.HOME_SCREEN_INPUT)
+        }
+        onSendButtonInput={this.onSendHomeButtonInput}
+        onRestart={this.onRestart}
+        showHomeScreen={showHomeScreen}
+        isHydrationAnimationComplete={isHydrationAnimationComplete}
+        homeScreenInputRef={this.homeScreenInputRef}
+        onToggleHomeScreen={this.onToggleHomeScreen}
+        requestFocus={this.requestFocus}
+      />
     );
   }
 
@@ -1142,15 +1081,13 @@ class MainWindow
         serviceManager={serviceManager}
         overlayPanelName={OverlayPanelName.IFRAME}
       >
-        <Suspense fallback={null}>
-          <IFramePanel
-            useAITheme={this.props.theme.useAITheme}
-            ref={this.iframePanelRef}
-            onClickClose={this.onClose}
-            onClickRestart={this.onRestart}
-            onClickCloseAndRestart={this.onCloseAndRestart}
-          />
-        </Suspense>
+        <IFramePanel
+          useAITheme={this.props.theme.useAITheme}
+          ref={this.iframePanelRef}
+          onClickClose={this.onClose}
+          onClickRestart={this.onRestart}
+          onClickCloseAndRestart={this.onCloseAndRestart}
+        />
       </OverlayPanel>
     );
   }
@@ -1171,14 +1108,12 @@ class MainWindow
         serviceManager={serviceManager}
         overlayPanelName={OverlayPanelName.CONVERSATIONAL_SEARCH_CITATION}
       >
-        <Suspense fallback={null}>
-          <ViewSourcePanel
-            ref={this.viewSourcePanelRef}
-            onClickClose={this.onClose}
-            onClickRestart={this.onRestart}
-            onClickCloseAndRestart={this.onCloseAndRestart}
-          />
-        </Suspense>
+        <ViewSourcePanel
+          ref={this.viewSourcePanelRef}
+          onClickClose={this.onClose}
+          onClickRestart={this.onRestart}
+          onClickCloseAndRestart={this.onCloseAndRestart}
+        />
       </OverlayPanel>
     );
   }
@@ -1218,41 +1153,39 @@ class MainWindow
     const overlayPanelName = OverlayPanelName.PANEL_RESPONSE;
 
     return (
-      <Suspense fallback={null}>
-        <BodyAndFooterPanelComponent
-          eventName={eventName}
-          eventDescription={eventDescription}
-          overlayPanelName={overlayPanelName}
-          testIdPrefix={overlayPanelName}
-          isOpen={isOpen}
-          isMessageForInput={isMessageForInput}
-          localMessageItem={localMessageItem}
-          title={panelOptions?.title}
-          showAnimations={panelOptions?.show_animations}
-          useAITheme={this.props.theme.useAITheme}
-          requestFocus={this.requestFocus}
-          onClose={this.onClose}
-          onClickRestart={this.onRestart}
-          onCloseAndRestart={this.onCloseAndRestart}
-          onClickBack={() =>
-            this.props.serviceManager.store.dispatch(
-              actions.setResponsePanelIsOpen(false)
-            )
-          }
-          onPanelOpenStart={() => this.onPanelOpenStart(true)}
-          onPanelOpenEnd={this.onPanelOpenEnd}
-          onPanelCloseStart={this.onPanelCloseStart}
-          onPanelCloseEnd={() => {
-            this.onPanelCloseEnd(true);
-            this.props.serviceManager.store.dispatch(
-              actions.setResponsePanelContent(null, false)
-            );
-          }}
-          renderMessageComponent={(childProps) => (
-            <MessageTypeComponent {...childProps} />
-          )}
-        />
-      </Suspense>
+      <BodyAndFooterPanelComponent
+        eventName={eventName}
+        eventDescription={eventDescription}
+        overlayPanelName={overlayPanelName}
+        testIdPrefix={overlayPanelName}
+        isOpen={isOpen}
+        isMessageForInput={isMessageForInput}
+        localMessageItem={localMessageItem}
+        title={panelOptions?.title}
+        showAnimations={panelOptions?.show_animations}
+        useAITheme={this.props.theme.useAITheme}
+        requestFocus={this.requestFocus}
+        onClose={this.onClose}
+        onClickRestart={this.onRestart}
+        onCloseAndRestart={this.onCloseAndRestart}
+        onClickBack={() =>
+          this.props.serviceManager.store.dispatch(
+            actions.setResponsePanelIsOpen(false)
+          )
+        }
+        onPanelOpenStart={() => this.onPanelOpenStart(true)}
+        onPanelOpenEnd={this.onPanelOpenEnd}
+        onPanelCloseStart={this.onPanelCloseStart}
+        onPanelCloseEnd={() => {
+          this.onPanelCloseEnd(true);
+          this.props.serviceManager.store.dispatch(
+            actions.setResponsePanelContent(null, false)
+          );
+        }}
+        renderMessageComponent={(childProps) => (
+          <MessageTypeComponent {...childProps} />
+        )}
+      />
     );
   }
 

@@ -30,7 +30,7 @@ import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
 import { animateWithClass } from "../../utils/animationUtils";
-import { IS_MOBILE } from "../../utils/browserUtils";
+import { IS_MOBILE, isBrowser } from "../../utils/browserUtils";
 import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
 import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
@@ -510,6 +510,9 @@ function checkIfUserSwipedRight(
  */
 function getMaxLauncherExtendedWidth() {
   const launcherPosition = IS_MOBILE ? 32 : 64;
+  if (!isBrowser) {
+    return MAX_EXTENDED_LAUNCHER_WIDTH;
+  }
   const { width, height } = window.screen;
   const lowestValue = Math.min(height, width);
   const extendedWidth = lowestValue - launcherPosition;

@@ -18,11 +18,11 @@ import isEqual from "lodash-es/isEqual.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
 
+import { AppContainer } from "../../react/components/AppContainer";
 import { consoleWarn } from "../../shared/utils/miscUtils";
 import { carbonElement } from "../decorators/customElement";
 import { PublicConfig } from "../../../types/config/PublicConfig";
 import { ChatInstance } from "../../../types/instance/ChatInstance";
-import { DYNAMIC_IMPORTS } from "../../dynamic-imports/dynamic-imports";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -95,7 +95,6 @@ class ChatContainerInternal extends LitElement {
   root: Root;
 
   async renderReactApp() {
-    const { AppContainer } = await DYNAMIC_IMPORTS.AppContainer();
     const previousContainer: HTMLElement = this.shadowRoot.querySelector(
       ".cds--aichat-react-app"
     );

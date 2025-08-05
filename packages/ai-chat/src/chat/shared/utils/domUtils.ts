@@ -8,7 +8,7 @@
  */
 
 import { compute } from "compute-scroll-into-view";
-import memoizeOne from "memoize-one";
+import { memoizeFunction } from "./memoizerUtils";
 import { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
 import { tabbable } from "tabbable";
 
@@ -16,7 +16,7 @@ import { tabbable } from "tabbable";
  * The calculated size of scrollbars in the application. Note that this value can vary by browser and operating
  * system. This is memoized so it's calculated lazily after the application has loaded.
  */
-const SCROLLBAR_WIDTH = memoizeOne(getScrollbarWidth);
+const SCROLLBAR_WIDTH = memoizeFunction(getScrollbarWidth);
 
 /**
  * Scrolls the given element into view if necessary.

@@ -31,11 +31,25 @@ import InlineError from "../error/InlineError";
 import { VideoComponentConfig } from "../video/VideoComponent";
 import { TextHolderTile } from "./TextHolderTile";
 import { MessageResponseTypes } from "../../../../../types/messaging/Messages";
-import { lazyMediaPlayer } from "../../../../dynamic-imports/dynamic-imports";
 import { useDynamicCSSProperties } from "../../../hooks/useCSSCustomProperties";
+import type ReactPlayer from "react-player";
 
 // https://reactjs.org/docs/code-splitting.html#reactlazy
-const ReactPlayerComponent = lazyMediaPlayer();
+// Special handling for react-player due to CJS/ESM confusion
+const ReactPlayerComponent = React.lazy(() =>
+  import("react-player/lazy/index.js").then((mod: any) => {
+    // react-player 2.x is old and is confused in their cjs vs mjs usage.
+    // mod might be:
+    // { default: Component }
+    // { default: { default: Component } }
+    // plain Component
+    let exported = mod.default ?? mod;
+    if (exported && typeof exported === "object" && "default" in exported) {
+      exported = exported.default;
+    }
+    return { default: exported };
+  })
+) as React.LazyExoticComponent<typeof ReactPlayer>;
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between

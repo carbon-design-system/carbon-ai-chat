@@ -20,9 +20,7 @@ import {
   CarouselItem,
   MessageResponse,
 } from "../../../../../types/messaging/Messages";
-import { lazyCarousel } from "../../../../dynamic-imports/dynamic-imports";
-
-const Carousel = lazyCarousel();
+import Carousel from "./Carousel";
 
 interface CarouselItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<CarouselItem>;

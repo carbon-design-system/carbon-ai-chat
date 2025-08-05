@@ -9,7 +9,8 @@
 
 import merge from "lodash-es/merge.js";
 import mergeWith from "lodash-es/mergeWith.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
+import { isBrowser } from "../utils/browserUtils";
 
 import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 import { outputItemToLocalItem } from "../schema/outputItemToLocalItem";
@@ -791,7 +792,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.persistedToBrowserStorage.chatState,
         disclaimersAccepted: {
           ...state.persistedToBrowserStorage.chatState.disclaimersAccepted,
-          [window.location.hostname]: true,
+          [isBrowser ? window.location.hostname : "localhost"]: true,
         },
       },
     },

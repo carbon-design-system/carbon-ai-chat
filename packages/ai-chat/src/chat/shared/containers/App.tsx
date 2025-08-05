@@ -10,7 +10,7 @@
 import "intl-pluralrules";
 
 import cx from "classnames";
-import React, { Suspense, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { RawIntlProvider, useIntl } from "react-intl";
 import {
   Provider as ReduxProvider,
@@ -31,7 +31,11 @@ import actions from "../store/actions";
 import { AppState } from "../../../types/state/AppState";
 import { Dimension } from "../../../types/utilities/Dimension";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { IS_PHONE, IS_PHONE_IN_PORTRAIT_MODE } from "../utils/browserUtils";
+import {
+  IS_PHONE,
+  IS_PHONE_IN_PORTRAIT_MODE,
+  isBrowser,
+} from "../utils/browserUtils";
 import { consoleDebug, consoleError } from "../utils/miscUtils";
 import {
   convertCSSVariablesToString,
@@ -40,9 +44,7 @@ import {
 import MainWindow from "./main/MainWindow";
 import { MainWindowFunctions } from "./main/MainWindowFunctions";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
-import { lazyTourComponent } from "../../dynamic-imports/dynamic-imports";
-
-const TourContainerLazy = lazyTourComponent();
+import TourContainer from "../components/tour/TourContainer";
 
 interface AppProps extends HasServiceManager {
   hostElement?: Element;
@@ -102,8 +104,8 @@ function AppContainer({
   const dispatch = useDispatch();
 
   const [windowSize, setWindowSize] = useState<Dimension>({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: isBrowser ? window.innerWidth : 0,
+    height: isBrowser ? window.innerHeight : 0,
   });
 
   const cssVariableOverrideString = useMemo(() => {
@@ -113,9 +115,13 @@ function AppContainer({
   // If direction is "rtl" then the Carbon AI chat will render with the right-to-left styles.
   // If direction is anything else, the Carbon AI chat uses left-to-right styles by default.
   // If document.dir cannot be determined, using auto will inherit directionality from the page.
-  const dir = document.dir || "auto";
+  const dir = isBrowser ? document.dir || "auto" : "auto";
 
   useOnMount(() => {
+    if (!isBrowser) {
+      return () => {};
+    }
+
     // Add the listener for updating the window size.
     const windowListener = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -260,11 +266,7 @@ function MainContainer(props: MainContainerProps) {
         useCustomHostElement={Boolean(hostElement)}
         serviceManager={serviceManager}
       />
-      {showedTourOnce.current && (
-        <Suspense fallback={null}>
-          <TourContainerLazy ref={tourContainerRef} />
-        </Suspense>
-      )}
+      {showedTourOnce.current && <TourContainer ref={tourContainerRef} />}
       {showLauncher && <LauncherContainer />}
     </div>
   );

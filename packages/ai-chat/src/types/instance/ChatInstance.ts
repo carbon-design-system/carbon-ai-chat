@@ -8,7 +8,7 @@
  */
 
 import { IntlShape } from "react-intl";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
   CustomMenuOption,

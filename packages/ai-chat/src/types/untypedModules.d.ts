@@ -15,8 +15,6 @@
 
 declare module "@carbon/colors";
 declare module "@carbon/themes";
-declare module "markdown-it-sup";
-declare module "markdown-it-sub";
 declare module "@carbon/icons/es/*" {
   const icon: IconDescriptor;
   export default icon;

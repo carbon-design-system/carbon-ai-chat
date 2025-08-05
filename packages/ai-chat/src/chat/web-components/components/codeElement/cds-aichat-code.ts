@@ -13,7 +13,6 @@ import throttle from "lodash-es/throttle.js";
 
 import { carbonElement } from "../../decorators/customElement";
 import styles from "./src/codeElement.scss";
-import hljs from "highlight.js/lib/common";
 
 @carbonElement(`cds-aichat-code`)
 class CDSChatCodeElement extends LitElement {
@@ -26,6 +25,13 @@ class CDSChatCodeElement extends LitElement {
 
   private throttledHighlight = throttle(async () => {
     try {
+      // Dynamically import highlight.js only when needed
+      const hljsModule = await import("highlight.js/lib/common");
+      // highlight.js exports as default in ESM, but some bundlers might expose it directly
+      const hljs = "default" in hljsModule ? hljsModule.default : hljsModule;
+
+      console.log({ hljs });
+
       const codeEl = this.renderRoot.querySelector("code");
       let content = "";
       if (this.language && hljs.getLanguage(this.language)) {

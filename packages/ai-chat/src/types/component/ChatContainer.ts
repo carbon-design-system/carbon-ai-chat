@@ -8,7 +8,7 @@
  */
 
 import { type ReactNode } from "react";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message } from "../messaging/Messages";
