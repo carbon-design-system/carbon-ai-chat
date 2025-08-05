@@ -14,6 +14,7 @@ import React, {
   Suspense,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -32,7 +33,6 @@ import { VideoComponentConfig } from "../video/VideoComponent";
 import { TextHolderTile } from "./TextHolderTile";
 import { MessageResponseTypes } from "../../../../../types/messaging/Messages";
 import { lazyMediaPlayer } from "../../../../dynamic-imports/dynamic-imports";
-import { useDynamicCSSProperties } from "../../../hooks/useCSSCustomProperties";
 
 // https://reactjs.org/docs/code-splitting.html#reactlazy
 const ReactPlayerComponent = lazyMediaPlayer();
@@ -124,10 +124,13 @@ function MediaPlayerComponent({
   const { errors_audioSource, errors_videoSource } = useLanguagePack();
   const ariaAnnouncer = useAriaAnnouncer();
   const rootElementRef = useRef<HTMLDivElement>();
+  const wrapperElementRef = useRef<HTMLDivElement>(null);
+  const skeletonRef = useRef<HTMLDivElement>(null);
+
   const paddingTop = isMixcloud
     ? "120px"
     : getResponsiveElementPaddingValue(baseHeight);
-  const inlineStyles = useDynamicCSSProperties({ paddingTop });
+
   const isAudio = type === MessageResponseTypes.AUDIO;
   const errorMessage = isAudio ? errors_audioSource : errors_videoSource;
   const prevSource = usePrevious(source);
@@ -147,6 +150,15 @@ function MediaPlayerComponent({
       setSkeletonHidden(false);
     }
   }, [prevSource, skeletonHidden, source]);
+
+  useLayoutEffect(() => {
+    if (wrapperElementRef) {
+      wrapperElementRef.current.style.paddingBlockStart = paddingTop;
+    }
+    if (skeletonRef) {
+      skeletonRef.current.style.paddingBlockStart = paddingTop;
+    }
+  }, [paddingTop]);
 
   // This effect sets a timeout that auto error handles after 10 seconds of waiting for the React player to ready.
   // Once the player has loaded, the skeleton will be hidden, and we can clear the timeout.
@@ -183,11 +195,7 @@ function MediaPlayerComponent({
   function renderMediaPlayerSkeleton() {
     return (
       <Tile className="WACMediaPlayer__Skeleton">
-        <div
-          className="WACMediaPlayer__SkeletonContainer"
-          // eslint-disable-next-line react/forbid-dom-props
-          style={inlineStyles}
-        >
+        <div className="WACMediaPlayer__SkeletonContainer" ref={skeletonRef}>
           <SkeletonPlaceholder className="WACMediaPlayer__SkeletonPlayer" />
         </div>
         {(title || description) && (
@@ -234,8 +242,7 @@ function MediaPlayerComponent({
           <Tile
             className={cx("WACMediaPlayer", { WAC__hidden: !skeletonHidden })}
           >
-            {/* eslint-disable-next-line react/forbid-dom-props */}
-            <div className="WACMediaPlayer__Wrapper" style={inlineStyles}>
+            <div className="WACMediaPlayer__Wrapper" ref={wrapperElementRef}>
               {renderMediaPlayerBackground()}
               <Suspense fallback={renderSuspenseFallback()}>
                 <ReactPlayerComponent
