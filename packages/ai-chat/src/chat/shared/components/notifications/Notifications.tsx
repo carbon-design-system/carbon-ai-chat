@@ -15,7 +15,6 @@
  * keyboard navigation.
  */
 
-// import { ActionableNotification } from "@carbon/react";
 import ActionableNotification, {
   NOTIFICATION_KIND,
 } from "../../../react/carbon/ActionableNotification";

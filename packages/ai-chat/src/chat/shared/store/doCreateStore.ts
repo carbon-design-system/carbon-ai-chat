@@ -9,7 +9,6 @@
 
 import merge from "lodash-es/merge.js";
 import { createStore, Store } from "redux";
-import { NotificationStateObject } from "../../../types/instance/apiTypes";
 import { NODE_ENV } from "../environmentVariables";
 import { ServiceManager } from "../services/ServiceManager";
 import { AppConfig } from "../../../types/state/AppConfig";
@@ -65,61 +64,9 @@ function doCreateStore(
   };
 
   const botName = getBotName(themeState.useAITheme, config);
-  const notifications: NotificationStateObject[] = [
-    {
-      id: "notif-1",
-      notification: {
-        kind: "info",
-        title: "Welcome to the app",
-        message: "You’ve successfully signed in.",
-      },
-    },
-    {
-      id: "notif-2",
-      notification: {
-        kind: "error",
-        title: "Connection Failed",
-        message: "We couldn’t reach the server. Please try again later.",
-        onCloseButtonClick: () => {
-          console.log("Closed error notification");
-        },
-      },
-    },
-    {
-      id: "notif-3",
-      notification: {
-        kind: "success",
-        title: "Upload Complete",
-        message: "Your files were uploaded successfully.",
-        groupID: "uploads",
-      },
-    },
-    {
-      id: "notif-4",
-      notification: {
-        kind: "warning",
-        title: "Storage Almost Full",
-        message: "You are running out of storage space.",
-        actionButtonLabel: "Manage Storage",
-        onActionButtonClick: () => {
-          console.log("Clicked on Manage Storage");
-        },
-      },
-    },
-    {
-      id: "notif-5",
-      notification: {
-        kind: "info-square",
-        title: "New Features",
-        message: "Check out the new features we just released!",
-        groupID: "marketing",
-      },
-    },
-  ];
-
   const initialState: AppState = {
     ...DEFAULT_MESSAGE_STATE,
-    notifications: notifications,
+    notifications: [],
     botInputState: {
       ...DEFAULT_INPUT_STATE(),
       isReadonly: config.public.isReadonly,
