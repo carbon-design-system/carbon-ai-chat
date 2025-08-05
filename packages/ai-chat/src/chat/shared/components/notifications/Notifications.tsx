@@ -77,7 +77,7 @@ function Notifications({ notifications, serviceManager }: NotificationsProps) {
                 hasFocus={false}
               >
                 {actionButtonLabel && (
-                  <ActionableNotificationButton onClick={onActionButtonClick}>
+                  <ActionableNotificationButton slot="action" onClick={onActionButtonClick}>
                     {actionButtonLabel}
                   </ActionableNotificationButton>
                 )}
