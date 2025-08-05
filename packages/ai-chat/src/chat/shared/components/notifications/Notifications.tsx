@@ -64,8 +64,6 @@ function Notifications({ notifications, serviceManager }: NotificationsProps) {
                 actionButtonLabel={actionButtonLabel}
                 kind={item.kind as NOTIFICATION_KIND}
                 onNotificationClosed={() => {
-                  console.log("in closehjkh herwertg??");
-
                   onClose();
                   item.onCloseButtonClick?.();
                 }}
