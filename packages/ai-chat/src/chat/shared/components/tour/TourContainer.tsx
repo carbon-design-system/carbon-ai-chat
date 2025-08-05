@@ -9,7 +9,8 @@
 
 import ErrorFilled from "@carbon/icons-react/es/ErrorFilled.js";
 import Restart from "@carbon/icons-react/es/Restart.js";
-import { Button, InlineNotification } from "@carbon/react";
+import { Button } from "@carbon/react";
+import InlineNotification from "../../../react/carbon/InlineNotification";
 import React, {
   ReactElement,
   useEffect,

@@ -10,7 +10,7 @@
 import { Tile } from "@carbon/react";
 import cx from "classnames";
 import React from "react";
-import { CitationCardContent } from "./CitationCardContent";
+import { CitationCardContent, CitationType } from "./CitationCardContent";
 import { ExpandToPanelCard } from "./ExpandToPanelCard";
 import {
   ConversationalSearchItemCitation,
@@ -23,50 +23,17 @@ import { isValidURL } from "../../../../utils/htmlUtils";
  * it in.
  */
 
-enum CitationType {
-  /**
-   * If the citation has a url.
-   */
-  URL = "url",
-
-  /**
-   * If the citation has no url, if its full contents don't fit in the card, you can click on it to see a panel with the results.
-   */
-  EXPAND_IF_NEEDED = "expand",
-}
-
-interface CitationCardProps {
-  /**
-   * A citation from ConversationalSearch.
-   */
-  citation: ConversationalSearchItemCitation;
-
-  /**
-   * An optional handler for if focus is given to the card. We use this conversational search, currently, to
-   * highlight the text that matches the citation.
-   */
-  onSelectCitation?: () => void;
-
-  /**
-   * If this is the selected item in the conversational search context.
-   * A selected citation results in an extra highlight on the card and the the color of the corresponding highlight in
-   * the search result is also changed to reflect the selection.
-   */
-  isSelected?: boolean;
-
-  /**
-   * If the citation is for a {@link ConversationalSearchItem} then the ExpandToPanelCard should show a search result in
-   * the panel because it has extra text and detail that could be valuable to the user.
-   */
-  relatedSearchResult?: SearchResult;
-}
-
 function CitationCard({
   citation,
   isSelected,
   onSelectCitation,
   relatedSearchResult,
-}: CitationCardProps) {
+}: {
+  citation: ConversationalSearchItemCitation;
+  isSelected?: boolean;
+  onSelectCitation?: () => void;
+  relatedSearchResult?: SearchResult;
+}) {
   const { url } = citation;
 
   function getType(): CitationType {
@@ -118,4 +85,4 @@ function CitationCard({
 
 const CitationCardExport = React.memo(CitationCard);
 
-export { CitationCardExport as CitationCard, CitationType, CitationCardProps };
+export { CitationCardExport as CitationCard };

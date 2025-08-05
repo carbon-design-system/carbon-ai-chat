@@ -391,6 +391,7 @@ button.WACLauncher__Button svg {
 
   // Slightly less blur than the normal box-shadow since the close button is so small.
   box-shadow: 1px 0 2px rgb(23 23 23 / 30%);
+  cursor: pointer;
   font-size: var(--cds-chat-BASE-font-size-small);
 
   // The height of the tag 24px, plus the 8px gap we want.
@@ -400,7 +401,7 @@ button.WACLauncher__Button svg {
   opacity: 0;
 }
 
-.WACLauncherComplex__Container .WACLauncher__CloseButton:enabled:focus {
+.WACLauncherComplex__Container .WACLauncher__CloseButton:focus {
   border-color: theme.$focus;
   outline: none;
 }
@@ -410,11 +411,6 @@ button.WACLauncher__Button svg {
   .WACLauncher__CloseButton {
   padding: 3px 3px 3px 7px;
   inset-inline: 0 unset;
-}
-
-.WACLauncherComplex__Container .WACLauncher__CloseButtonInnerWrapper {
-  display: flex;
-  cursor: pointer;
 }
 
 .WACLauncherComplex__Container

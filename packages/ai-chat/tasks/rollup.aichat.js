@@ -49,19 +49,6 @@ const external = [
 
 const treeshake = true;
 
-/*{
-  // Treat modules as side-effect-free unless otherwise specified
-  moduleSideEffects: id => {
-    // Treat your own code as having side effects if necessary to prevent it from being removed.
-    if (id.includes('src/') || id.includes('@carbon/web-components')) {
-      return true;
-    }
-    // For external dependencies, be more specific or allow them all.
-    return /node_modules/.test(id);
-  }
-  // pureExternalModules: true, // Treat all external modules as pure
-};*/
-
 /**
  * Simplified tsconfig for dts plugin.
  */
@@ -134,20 +121,33 @@ const workerBuild = {
 
 async function runRollup() {
   const config = [
-    // Main bundle for es exports
+    // Main build with preserveModules for tree-shaking
     {
-      input: [
-        path.join(paths.src, '/aiChatEntry.tsx'),
-        path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
-        path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
-      ],
+      onwarn(warning, warn) {
+        // Treat circular dependencies as errors
+        if (warning.code === 'CIRCULAR_DEPENDENCY') {
+          throw new Error(`Circular dependency detected: ${warning.message}`);
+        }
+        
+        // For other warnings, use default behavior
+        warn(warning);
+      },
+      input: {
+        // Main entry - becomes es/aiChatEntry.js
+        'aiChatEntry': path.join(paths.src, '/aiChatEntry.tsx'),
+        
+        // Web components - becomes es/web-components/cds-aichat-container/index.js
+        'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
+        
+        // Web components - becomes es/web-components/cds-aichat-custom-element/index.js  
+        'web-components/cds-aichat-custom-element/index': path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
+      },
       output: {
         dir: path.join(paths.dist, '/es'),
         format: 'es',
-        preserveModules: true,
-        preserveModulesRoot: 'src',
+        preserveModules: false,
         entryFileNames: '[name].js',
-        chunkFileNames: '[name]-[hash].js',
+        chunkFileNames: 'chat.[name].js',
       },
       external,
       treeshake,
@@ -209,7 +209,7 @@ async function runRollup() {
             beautify: true,
             indent_level: 2,
             // keep only comments that contain @license
-            comments: (astNode, comment) => {
+            comments: (_astNode, comment) => {
               const text = comment.value;
               // comment.type === "comment2" for /* … */
               if (comment.type === 'comment2') {

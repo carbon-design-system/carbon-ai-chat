@@ -7,8 +7,9 @@
  *  @license
  */
 
-import Close from "@carbon/icons-react/es/Close.js";
-import { Tag } from "@carbon/react";
+import Close16 from "@carbon/icons/es/close/16.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
+import Tag from "../../../react/carbon/Tag";
 import cx from "classnames";
 import React, { RefObject } from "react";
 
@@ -18,6 +19,8 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
 import { Launcher } from "./Launcher";
 import { LanguagePack } from "../../../../types/instance/apiTypes";
+
+const CloseIcon = carbonIconToReact(Close16);
 
 interface LauncherComplexProps extends HasIntl, HasClassName {
   languagePack: LanguagePack;
@@ -97,6 +100,13 @@ function LauncherComplex(props: LauncherComplexProps) {
     return launcher_desktopGreeting;
   }
 
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onMinimize();
+    }
+  };
+
   /**
    * Renders the complex variation of the launcher.
    */
@@ -142,12 +152,11 @@ function LauncherComplex(props: LauncherComplexProps) {
         className="WACLauncher__CloseButton"
         aria-label={launcher_ariaIsExpanded}
         onClick={onMinimize}
-        disabled={!desktopLauncherIsExpanded}
+        onKeyDown={handleTagKeyDown}
+        tabIndex={desktopLauncherIsExpanded ? 0 : -1}
       >
-        <div className="WACLauncher__CloseButtonInnerWrapper">
-          <Close className="WACLauncher__CloseButtonIcon" />
-          {launcher_closeButton}
-        </div>
+        <CloseIcon slot="icon" className="WACLauncher__CloseButtonIcon" />
+        {launcher_closeButton}
       </Tag>
     </div>
   );

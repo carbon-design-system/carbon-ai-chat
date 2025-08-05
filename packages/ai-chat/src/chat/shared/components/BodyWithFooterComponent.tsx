@@ -29,6 +29,11 @@ interface BodyWithFooterComponentProps extends HasRequestFocus {
    * Indicates if this message is part the most recent message response that allows for input.
    */
   isMessageForInput: boolean;
+
+  /**
+   * Function to render message components
+   */
+  renderMessageComponent: (props: any) => React.ReactNode;
 }
 
 /**
@@ -39,6 +44,7 @@ function BodyWithFooterComponent({
   fullMessage,
   isMessageForInput,
   requestFocus,
+  renderMessageComponent,
 }: BodyWithFooterComponentProps) {
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
@@ -59,6 +65,7 @@ function BodyWithFooterComponent({
         serviceManager={serviceManager}
         hideFeedback
         allowNewFeedback={false}
+        renderMessageComponent={renderMessageComponent}
       />
       <FooterButtonComponents
         message={localMessageItem}
@@ -72,9 +79,12 @@ function BodyWithFooterComponent({
         serviceManager={serviceManager}
         hideFeedback
         allowNewFeedback={false}
+        renderMessageComponent={renderMessageComponent}
       />
     </>
   );
 }
 
 export { BodyWithFooterComponent };
+
+export default BodyWithFooterComponent;

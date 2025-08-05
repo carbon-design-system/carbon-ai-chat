@@ -12,12 +12,35 @@ import "@carbon/web-components/es-custom/components/select/index.js";
 
 import { html } from "lit";
 
-import TableElement, { POSSIBLE_PAGE_SIZES } from "../cds-aichat-table";
+// Import only the constants, not the class
+const POSSIBLE_PAGE_SIZES = [5, 10, 15, 20, 50];
+
+interface TablePaginationProps {
+  _currentPageSize: number;
+  _currentPageNumber: number;
+  _filterVisibleRowIDs: Set<string>;
+  rows: any[];
+  previousPageText: string;
+  nextPageText: string;
+  itemsPerPageText: string;
+  getPaginationSupplementalText: ({ count }: { count: number }) => string;
+  getPaginationStatusText: ({
+    start,
+    end,
+    count,
+  }: {
+    start: number;
+    end: number;
+    count: number;
+  }) => string;
+  _handlePageChangeEvent: (event: any) => void;
+  _handlePageSizeChangeEvent: (event: any) => void;
+}
 
 /**
  * Table pagination view logic.
  */
-function tablePaginationTemplate(tableElement: TableElement) {
+function tablePaginationTemplate(props: TablePaginationProps) {
   const {
     _currentPageSize: currentPageSize,
     _currentPageNumber: currentPageNumber,
@@ -30,7 +53,7 @@ function tablePaginationTemplate(tableElement: TableElement) {
     getPaginationStatusText,
     _handlePageChangeEvent: handlePageChangeEvent,
     _handlePageSizeChangeEvent: handlePageSizeChangeEvent,
-  } = tableElement;
+  } = props;
   const totalVisibleRows = filterVisibleRowIDs.size;
   const totalRows = rows.length;
 

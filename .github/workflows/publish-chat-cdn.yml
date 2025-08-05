@@ -86,7 +86,7 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist/docs/carbon-tsdocs"
-          DEST_DIR: "common/carbon/ai-chat-components/version/v${{steps.package-version.outputs.current-version}}/docs"
+          DEST_DIR: "common/carbon/ai-chat/version/v${{steps.package-version.outputs.current-version}}/docs"
 
       # If tag is a release candidate, upload the CDN artifacts to the `next` tag folder
       # ie. https://1.www.s81c.com/common/carbon/web-components/tag/v2/next/breadcrumb.min.js
@@ -133,5 +133,5 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "demo/dist"
-          DEST_DIR: "common/carbon/ai-chat-components/version/v${{steps.package-version.outputs.current-version}}/demo"
+          DEST_DIR: "common/carbon/ai-chat/version/v${{steps.package-version.outputs.current-version}}/demo"
 
