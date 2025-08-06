@@ -37,10 +37,10 @@ import UserDefinedResponse from "../components/responseTypes/custom/UserDefinedR
 import { DatePickerComponent } from "../components/responseTypes/datePicker/DatePickerComponent";
 import InlineError from "../components/responseTypes/error/InlineError";
 import { GridItemComponent } from "../components/responseTypes/grid/GridItemComponent";
-import { TableContainerItemComponent } from "../components/responseTypes/table/TableContainerItemComponent";
 import { IFrameMessage } from "../components/responseTypes/iframe/IFrameMessage";
 import { Image } from "../components/responseTypes/image/Image";
 import { OptionComponent } from "../components/responseTypes/options/OptionComponent";
+import TableContainer from "../components/responseTypes/table/TableContainer";
 import { TourCard } from "../components/responseTypes/tour/TourCard";
 import { StreamingRichText } from "../components/responseTypes/util/StreamingRichText";
 import { VideoComponent } from "../components/responseTypes/video/VideoComponent";
@@ -200,7 +200,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               aria-label={props.languagePack.fileSharing_fileIcon}
             />
           )}
-          {/* The use of the heading role here is a compromise to Penn State which wanted us to enable the use of the
+          {/* The use of the heading role here is a compromise to Penn State which wanted us to enable the use of the 
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <span role="heading" aria-level={2}>
@@ -598,7 +598,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   function renderTable(message: LocalMessageItem<TableItem>) {
-    return <TableContainerItemComponent tableItem={message.item} />;
+    return <TableContainer tableItem={message.item} />;
   }
 
   function scrollChainOfThought(open: boolean, element: HTMLElement) {
