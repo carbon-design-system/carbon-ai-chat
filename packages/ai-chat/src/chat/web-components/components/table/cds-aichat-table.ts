@@ -45,7 +45,7 @@ const DEFAULT_TABLE_PAGE_SIZE_TALL_CHAT = 10;
 const TALL_CHAT_HEIGHT = 850;
 
 // We will have to give this component a unique ID on the name when we register it to avoid conflicts in a world where
-// multiple versions of the Carbon AI chat can be on the same page.
+// multiple versions of the Carbon AI Chat can be on the same page.
 const TABLE_COMPONENT_TAG_NAME = "cds-aichat-table";
 
 /**

@@ -84,13 +84,13 @@ function TourContainer(props: unknown, ref: React.Ref<HasRequestFocus>) {
   const hideTour = !viewState.tour;
 
   // Set default values for the tour controls that match what we want to show during the loading state. These values
-  // will be updated when the Carbon AI chat is hydrated and the activeTourStepItems become available.
+  // will be updated when the Carbon AI Chat is hydrated and the activeTourStepItems become available.
   let reservePreviousButtonSpace = true;
   let hidePreviousButton = false;
   let renderDoneButton = false;
   let stepContentComponentsArray: Array<ReactElement> = [];
 
-  // Once the Carbon AI chat is hydrated, and we have the activeTourStepItems, create TourStepContentComponent's for each step
+  // Once the Carbon AI Chat is hydrated, and we have the activeTourStepItems, create TourStepContentComponent's for each step
   // and set the correct values for the tour controls properties.
   if (isHydrated && activeTourStepItems) {
     // If there is more than one step in the tour then save space in the tour controls for a previous button.
@@ -115,7 +115,7 @@ function TourContainer(props: unknown, ref: React.Ref<HasRequestFocus>) {
       />
     ));
   } else if (!isHydrated) {
-    // If the Carbon AI chat is not hydrated then show a skeleton component.
+    // If the Carbon AI Chat is not hydrated then show a skeleton component.
     stepContentComponentsArray = [<TourStepSkeletonComponent key={0} />];
   }
 

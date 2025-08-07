@@ -33,7 +33,7 @@ type ChatConstructorPromise = (
 ) => Promise<ConstructableChatInterface>;
 
 /**
- * Create new Carbon AI chat instance.
+ * Create new Carbon AI Chat instance.
  *
  * @param pagePublicConfig The public config options object that came from the page.
  * @param chatConstructorPromise A promise that resolves with the WatsonAssistantChat class. This can either be a

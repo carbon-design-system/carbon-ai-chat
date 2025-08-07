@@ -70,28 +70,28 @@ class ChatCustomElement extends LitElement {
   config!: PublicConfig;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   @property()
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called.
+   * This function is called after the render function of Carbon AI Chat is called.
    */
   @property()
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
    * An optional listener for "view:change" events. Such a listener is required when using a custom element in order
-   * to control the visibility of the Carbon AI chat main window. If no callback is provided here, a default one will be
-   * used that injects styling into the app that will show and hide the Carbon AI chat main window and also change the
+   * to control the visibility of the Carbon AI Chat main window. If no callback is provided here, a default one will be
+   * used that injects styling into the app that will show and hide the Carbon AI Chat main window and also change the
    * size of the custom element so it doesn't take up space when the main window is closed.
    *
    * You can provide a different callback here if you want custom behavior such as an animation when the main window
    * is opened or closed.
    *
-   * Note that this function can only be provided before Carbon AI chat is loaded. After Carbon AI chat is loaded, the event
+   * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the event
    * handler will not be updated.
    */
   @property()
@@ -194,31 +194,31 @@ class ChatCustomElement extends LitElement {
 /** @category Web component */
 interface CdsAiChatCustomElementAttributes {
   /**
-   * The configuration object used to render Carbon AI chat.
+   * The configuration object used to render Carbon AI Chat.
    */
   config: PublicConfig;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called.
+   * This function is called after the render function of Carbon AI Chat is called.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
    * An optional listener for "view:change" events. Such a listener is required when using a custom element in order
-   * to control the visibility of the Carbon AI chat main window. If no callback is provided here, a default one will be
-   * used that injects styling into the app that will show and hide the Carbon AI chat main window and also change the
+   * to control the visibility of the Carbon AI Chat main window. If no callback is provided here, a default one will be
+   * used that injects styling into the app that will show and hide the Carbon AI Chat main window and also change the
    * size of the custom element so it doesn't take up space when the main window is closed.
    *
    * You can provide a different callback here if you want custom behavior such as an animation when the main window
    * is opened or closed.
    *
-   * Note that this function can only be provided before Carbon AI chat is loaded. After Carbon AI chat is loaded, the event
+   * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the event
    * handler will not be updated.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;

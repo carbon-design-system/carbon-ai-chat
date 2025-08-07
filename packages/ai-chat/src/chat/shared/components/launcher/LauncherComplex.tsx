@@ -43,7 +43,7 @@ interface LauncherComplexProps extends HasIntl, HasClassName {
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
-   * in the session before the user has opened the Carbon AI chat and is superseded by the agent unread indicator if there
+   * in the session before the user has opened the Carbon AI Chat and is superseded by the agent unread indicator if there
    * is one.
    */
   showUnreadIndicator: boolean;
@@ -54,7 +54,7 @@ interface LauncherComplexProps extends HasIntl, HasClassName {
   desktopLauncherIsExpanded: boolean;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
 

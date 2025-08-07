@@ -17,7 +17,7 @@ import { AppState } from "../../../types/state/AppState";
 function useShouldSanitizeHTML() {
   const config = useSelector((state: AppState) => state.config.public);
 
-  // We want to sanitize the HTML in all the tooling Carbon AI chats, in the agent app or if the customer has asked for it.
+  // We want to sanitize the HTML in all the tooling Carbon AI Chats, in the agent app or if the customer has asked for it.
   return Boolean(config.shouldSanitizeHTML);
 }
 

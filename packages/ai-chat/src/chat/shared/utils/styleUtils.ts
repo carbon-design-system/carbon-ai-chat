@@ -8,7 +8,7 @@
  */
 
 /**
- * This file contains utility functions to process CSS for Carbon AI chat. It deals with things like transforming Object Maps
+ * This file contains utility functions to process CSS for Carbon AI Chat. It deals with things like transforming Object Maps
  * of CSS variables into CSS and properly injecting default Carbon colors into CSS variables.
  */
 

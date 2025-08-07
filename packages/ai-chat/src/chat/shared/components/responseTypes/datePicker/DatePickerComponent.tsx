@@ -160,7 +160,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       }
     } catch {
       consoleError(
-        `Locale ${dayjsLocale} is not recognized by Carbon AI chat. Defaulting to English(US).`
+        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`
       );
       setDateInfoForLocale("en");
     }

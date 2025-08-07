@@ -45,7 +45,7 @@ interface BodyAndFooterPanelComponentProps
   localMessageItem?: LocalMessageItem;
 
   /**
-   * The title to give the panel in Carbon AI chat.
+   * The title to give the panel in Carbon AI Chat.
    */
   title?: string;
 

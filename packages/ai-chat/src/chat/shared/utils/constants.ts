@@ -38,7 +38,7 @@ function THROW_ERROR() {
 }
 
 /**
- * The brand color types configurable for Carbon AI chat.
+ * The brand color types configurable for Carbon AI Chat.
  */
 enum BrandColorKind {
   PRIMARY = "primary",

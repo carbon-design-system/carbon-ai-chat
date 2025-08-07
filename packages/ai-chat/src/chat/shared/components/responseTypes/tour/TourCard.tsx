@@ -49,7 +49,7 @@ function TourCard({ message, serviceManager }: TourCardProps) {
 
   // TODO TOUR: I18N: These default values are being kept around for tours in beta. When we switch to our GA solution of
   // using a real tour card response type the defaults will either come from tooling or will need to be moved to our
-  // en.json file in Carbon AI chat and translated.
+  // en.json file in Carbon AI Chat and translated.
   const tourTitle =
     (message.item.user_defined?.card_title as unknown as any) ||
     "Guided journey";

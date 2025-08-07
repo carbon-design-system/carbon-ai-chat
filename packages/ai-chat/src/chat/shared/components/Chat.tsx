@@ -121,7 +121,7 @@ interface ChatProps extends HasServiceManager, HasIntl {
   onRestart: () => void;
 
   /**
-   * When Carbon AI chat hydrates there is a loading animation. This value notes that it is complete so any animation
+   * When Carbon AI Chat hydrates there is a loading animation. This value notes that it is complete so any animation
    * behaviors down stream can react.
    */
   isHydrationAnimationComplete?: boolean;

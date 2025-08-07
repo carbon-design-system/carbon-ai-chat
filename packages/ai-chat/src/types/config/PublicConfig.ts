@@ -93,35 +93,35 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI chat should grab focus if the Carbon AI chat is open on page load. This applies to session history open
-   * states as well as openByChatByDefault. This should be set to false if the Carbon AI chat is embedded in the tooling, for
+   * If the Carbon AI Chat should grab focus if the Carbon AI Chat is open on page load. This applies to session history open
+   * states as well as openByChatByDefault. This should be set to false if the Carbon AI Chat is embedded in the tooling, for
    * instance.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 
   /**
-   * An optional namespace that can be added to the Carbon AI chat that must be 30 characters or under. This value is
-   * intended to enable multiple instances of the Carbon AI chat to be used on the same page. The namespace for this web
+   * An optional namespace that can be added to the Carbon AI Chat that must be 30 characters or under. This value is
+   * intended to enable multiple instances of the Carbon AI Chat to be used on the same page. The namespace for this web
    * chat. This value is used to generate a value to append to anything unique (id, session keys, etc) to allow
-   * multiple Carbon AI chats on the same page.
+   * multiple Carbon AI Chats on the same page.
    *
-   * Note: this value is used in the aria region label for the Carbon AI chat. This means this value will be read out loud
+   * Note: this value is used in the aria region label for the Carbon AI Chat. This means this value will be read out loud
    * by users using a screen reader.
    */
   namespace?: string;
 
   /**
-   * Indicates if a focus trap should be enabled when the Carbon AI chat is open.
+   * Indicates if a focus trap should be enabled when the Carbon AI Chat is open.
    */
   enableFocusTrap?: boolean;
 
   /**
-   * If true, disables functionality in Carbon AI chat that changes the window title.
+   * If true, disables functionality in Carbon AI Chat that changes the window title.
    */
   disableWindowTitleChanges?: boolean;
 
   /**
-   * Indicates if Carbon AI chat should sanitize HTML from the bot.
+   * Indicates if Carbon AI Chat should sanitize HTML from the bot.
    */
   shouldSanitizeHTML?: boolean;
 
@@ -148,7 +148,7 @@ export interface PublicConfig {
   headerConfig?: HeaderConfig;
 
   /**
-   * The config object for changing Carbon AI chat's layout.
+   * The config object for changing Carbon AI Chat's layout.
    */
   layout?: LayoutConfig;
 
@@ -191,12 +191,12 @@ export enum MinimizeButtonIconType {
   MINIMIZE = "minimize",
 
   /**
-   * This shows an icon that indicates that the Carbon AI chat can be collapsed into a side panel.
+   * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
   SIDE_PANEL_LEFT = "side-panel-left",
 
   /**
-   * This shows an icon that indicates that the Carbon AI chat can be collapsed into a side panel.
+   * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
   SIDE_PANEL_RIGHT = "side-panel-right",
 }
@@ -211,7 +211,7 @@ export interface HeaderConfig {
   minimizeButtonIconType?: MinimizeButtonIconType;
 
   /**
-   * Hide the ability to minimize the Carbon AI chat.
+   * Hide the ability to minimize the Carbon AI Chat.
    */
   hideMinimizeButton?: boolean;
 
@@ -232,12 +232,12 @@ export interface HeaderConfig {
  */
 export interface LayoutConfig {
   /**
-   * Indicates if the Carbon AI chat widget should keep its border and box-shadow.
+   * Indicates if the Carbon AI Chat widget should keep its border and box-shadow.
    */
   showFrame?: boolean;
 
   /**
-   * Indicates if content inside the Carbon AI chat widget should be constrained to a max-width.
+   * Indicates if content inside the Carbon AI Chat widget should be constrained to a max-width.
    *
    * At larger widths the card, carousel, options and conversational search response types
    * have pending issues.
@@ -252,8 +252,8 @@ export interface LayoutConfig {
  */
 export interface PublicConfigMessaging {
   /**
-   * Indicates if Carbon AI chat should make a request for the welcome message when a new conversation begins. If this is
-   * true, then Carbon AI chat will start with an empty conversation.
+   * Indicates if Carbon AI Chat should make a request for the welcome message when a new conversation begins. If this is
+   * true, then Carbon AI Chat will start with an empty conversation.
    */
   skipWelcome?: boolean;
 
@@ -270,7 +270,7 @@ export interface PublicConfigMessaging {
   messageLoadingIndicatorTimeoutSecs?: number;
 
   /**
-   * A callback for Carbon AI chat to use to send messages to the assistant. When this is provided, this will be used as
+   * A callback for Carbon AI Chat to use to send messages to the assistant. When this is provided, this will be used as
    * an alternative for its built-in message service. Note that this is not used for human agent communication
    * (except for the event messages to update history).
    *
@@ -287,7 +287,7 @@ export interface PublicConfigMessaging {
   ) => Promise<void> | void;
 
   /**
-   * This is a callback function that is used by Carbon AI chat to retrieve history data for populating the Carbon AI chat. If
+   * This is a callback function that is used by Carbon AI Chat to retrieve history data for populating the Carbon AI Chat. If
    * this function is defined, it will be used instead of any other mechanism for fetching history.
    */
   customLoadHistory?: (instance: ChatInstance) => Promise<HistoryItem[]>;
@@ -373,7 +373,7 @@ export interface OnErrorData {
   otherData?: unknown;
 
   /**
-   * If the error is of the severity that requires a whole restart of Carbon AI chat.
+   * If the error is of the severity that requires a whole restart of Carbon AI Chat.
    */
   catastrophicErrorType?: boolean;
 }
@@ -403,7 +403,7 @@ export interface ThemeConfig {
   whiteLabelTheme?: WhiteLabelTheme;
 
   /**
-   * This flag is used to disable Carbon AI chat's rounded corners.
+   * This flag is used to disable Carbon AI Chat's rounded corners.
    */
   corners?: CornersType;
 }

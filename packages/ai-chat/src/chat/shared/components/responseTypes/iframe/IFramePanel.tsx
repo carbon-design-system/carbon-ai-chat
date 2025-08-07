@@ -29,7 +29,7 @@ interface IFramePanelComponentProps extends BasePanelConfigOptions {
 
 /**
  * This panel is used to load the provided source url in an iframe for users to complete some action or view a piece
- * of content without having them leave Carbon AI chat.
+ * of content without having them leave Carbon AI Chat.
  */
 function IFramePanelComponent(
   props: IFramePanelComponentProps,

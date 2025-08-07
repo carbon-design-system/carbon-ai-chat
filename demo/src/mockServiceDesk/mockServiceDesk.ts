@@ -256,7 +256,7 @@ class MockServiceDesk implements ServiceDesk {
   factoryParameters: ServiceDeskFactoryParameters;
 
   /**
-   * The instance of the Carbon AI chat.
+   * The instance of the Carbon AI Chat.
    */
   chatInstance: ChatInstance;
 

@@ -112,8 +112,8 @@ function AppContainer({
     return convertCSSVariablesToString(cssVariableOverrides);
   }, [cssVariableOverrides]);
 
-  // If direction is "rtl" then the Carbon AI chat will render with the right-to-left styles.
-  // If direction is anything else, the Carbon AI chat uses left-to-right styles by default.
+  // If direction is "rtl" then the Carbon AI Chat will render with the right-to-left styles.
+  // If direction is anything else, the Carbon AI Chat uses left-to-right styles by default.
   // If document.dir cannot be determined, using auto will inherit directionality from the page.
   const dir = isBrowser ? document.dir || "auto" : "auto";
 
@@ -202,7 +202,7 @@ function MainContainer(props: MainContainerProps) {
   const { hostElement, serviceManager } = props;
 
   // We always render the launcher (unless state.launcher.config.is_on is set to false), but we hide it with CSS
-  // if the tour or main Carbon AI chat window are open.
+  // if the tour or main Carbon AI Chat window are open.
   const showLauncher = useSelector(
     (state: AppState) => state.launcher.config.is_on
   );

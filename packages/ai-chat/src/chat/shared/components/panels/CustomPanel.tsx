@@ -219,10 +219,10 @@ function CustomPanel(props: CustomPanelProps) {
 function checkAllowClose(viewChanging: boolean) {
   if (viewChanging) {
     const message =
-      "You are attempting to close Carbon AI chat from a custom panel while Carbon AI chat is currently running a view" +
+      "You are attempting to close Carbon AI Chat from a custom panel while Carbon AI Chat is currently running a view" +
       " change event which is not permitted. Please use the disableDefaultCloseAction option to disable" +
       " this behavior for the custom panel and then use onClickClose to resolve your Promise that is handling" +
-      " the event; that Promise will allow you to close Carbon AI chat.";
+      " the event; that Promise will allow you to close Carbon AI Chat.";
     consoleError(message);
     throw new Error(message);
   }

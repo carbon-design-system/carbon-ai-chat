@@ -55,7 +55,7 @@ rounded corners are enabled. */
 .WACWidget.WACWidget--rounded {
   border-radius: var(--cds-chat-BASE-border-radius-med);
   /* Rounded corners because .WACWidget doesn't have overflow: hidden to easily apply rounded corners at the top level.
-   We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI chat widget with */
+   We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI Chat widget with */
 
   .WACViewSourcePanel,
   .WACHomeScreen,

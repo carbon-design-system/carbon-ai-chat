@@ -37,8 +37,8 @@ type CreateServiceManagerFunction = (
 ) => Promise<ServiceManager>;
 
 /**
- * This file contains the code needed to bootstrap all the shared services in Carbon AI chat. Services are used to hold
- * functions that are used throughout the application that need access to the current instance of the Carbon AI chat.
+ * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
+ * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
 async function createServiceManager(
   appConfig: AppConfig,

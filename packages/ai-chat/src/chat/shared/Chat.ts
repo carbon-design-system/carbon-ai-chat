@@ -47,17 +47,17 @@ class Chat implements ChatInterface {
   private customHostElement?: HTMLElement;
 
   /**
-   * An object with values important to Carbon AI chat that are separate from the external configs.
+   * An object with values important to Carbon AI Chat that are separate from the external configs.
    */
   private additionalChatParameters?: AdditionalChatParameters;
 
   /**
-   * Create new Carbon AI chat instance.
+   * Create new Carbon AI Chat instance.
    *
    * @param publicConfigProvided The public config provided by the user.
    * @param customHostElement The host element into which to render the widget. This is provided in the original public
    * config from the host page.
-   * @param additionalChatParametersProvided An object with values important to Carbon AI chat that are separate from the
+   * @param additionalChatParametersProvided An object with values important to Carbon AI Chat that are separate from the
    * external configs
    */
   constructor(
@@ -115,7 +115,7 @@ class Chat implements ChatInterface {
       this.additionalChatParameters
     );
 
-    // Asynchronously load all of the various dependencies that the Carbon AI chat depends on.
+    // Asynchronously load all of the various dependencies that the Carbon AI Chat depends on.
     const [languagePack, localePack, render] = await Promise.all([
       loadLanguagePack(this.serviceManager.store.getState().languagePack),
       loadLocale(this.serviceManager.store.getState().locale),

@@ -47,7 +47,7 @@ class UserSessionStorageService {
       const chatSession = chatSessionString
         ? JSON.parse(chatSessionString)
         : null;
-      // If the saved session is from a previous version of Carbon AI chat, we just throw it away to avoid having to deal with
+      // If the saved session is from a previous version of Carbon AI Chat, we just throw it away to avoid having to deal with
       // having to make sure these sessions are backwards compatible.
       if (chatSession?.version === VERSION) {
         return chatSession;
@@ -71,7 +71,7 @@ class UserSessionStorageService {
       const launcherSession: PersistedLauncherState = launcherSessionString
         ? JSON.parse(launcherSessionString)
         : null;
-      // If the saved session is from a previous version of Carbon AI chat, we just throw it away to avoid having to deal with
+      // If the saved session is from a previous version of Carbon AI Chat, we just throw it away to avoid having to deal with
       // having to make sure these sessions are backwards compatible.
       if (launcherSession?.version === VERSION) {
         launcherSession.wasLoadedFromBrowser = true;

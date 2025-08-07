@@ -30,7 +30,7 @@ yarn add @carbon/ai-chat
 
 #### Basic example
 
-Render this component in your application and provide the configuration options for the Carbon AI chat as a prop. Refer to the following example.
+Render this component in your application and provide the configuration options for the Carbon AI Chat as a prop. Refer to the following example.
 
 ```javascript
 import React from "react";
@@ -47,19 +47,19 @@ function App() {
 
 ### Using ChatContainer
 
-The {@link ChatContainer} is a functional component that loads and renders an instance of the Carbon AI chat when it mounts, and deletes the instance when unmounted. If the configuration for the Carbon AI chat changes, it also deletes the previous Carbon AI chat and creates a new one with the new configuration. It can also manage React portals for user-defined responses.
+The {@link ChatContainer} is a functional component that loads and renders an instance of the Carbon AI Chat when it mounts, and deletes the instance when unmounted. If the configuration for the Carbon AI Chat changes, it also deletes the previous Carbon AI Chat and creates a new one with the new configuration. It can also manage React portals for user-defined responses.
 
 See {@link ChatContainerProps} for an explanation of the various accepted props.
 
 ### Using ChatCustomElement
 
-This library provides the {@link ChatCustomElement} component, which can be used to render the Carbon AI chat inside a custom element. Use it you want to change the location where the Carbon AI chat renders. This component renders an element in your React app and uses that element as the custom element for rendering the Carbon AI chat. See {@link ChatCustomElementProps} for an explanation of the various accepted props.
+This library provides the {@link ChatCustomElement} component, which can be used to render the Carbon AI Chat inside a custom element. Use it you want to change the location where the Carbon AI Chat renders. This component renders an element in your React app and uses that element as the custom element for rendering the Carbon AI Chat. See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
-This component's default behavior adds and removes a class from the main window of the Carbon AI chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI chat when it opens or closes. When the Carbon AI chat closes, it adds a classname to the Carbon AI chat main window to hide the element. Your custom element receives another classname to set its width and height to 0, so that it doesn't take up space.
+This component's default behavior adds and removes a class from the main window of the Carbon AI Chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI Chat when it opens or closes. When the Carbon AI Chat closes, it adds a classname to the Carbon AI Chat main window to hide the element. Your custom element receives another classname to set its width and height to 0, so that it doesn't take up space.
 
-**Note:** The use case where you are using a custom element but also by using the Carbon AI chat's native launcher, the custom element remains visible as it also contains the launcher.
+**Note:** The use case where you are using a custom element but also by using the Carbon AI Chat's native launcher, the custom element remains visible as it also contains the launcher.
 
-If you don't want these behaviors, provide your own `onViewChange` prop to {@link ChatCustomElementProps.onViewChange} and provide your logic for controlling the visibility of the Carbon AI chat. If you want custom animations when the Carbon AI chat opens and closed, it is the mechanism to do that. Refer to the following example.
+If you don't want these behaviors, provide your own `onViewChange` prop to {@link ChatCustomElementProps.onViewChange} and provide your logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closed, it is the mechanism to do that. Refer to the following example.
 
 See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
@@ -70,7 +70,7 @@ import { ChatCustomElement } from "@carbon/ai-chat";
 import "./App.css";
 
 const chatOptions = {
-  /* Carbon AI chat options */
+  /* Carbon AI Chat options */
 };
 
 function App() {
@@ -171,7 +171,7 @@ function App({ messageService }: any) {
 
 ### Accessing instance methods
 
-You can use the {@link ChatContainerProps.onBeforeRender} or {@link ChatContainerProps.onAfterRender} props to access the Carbon AI chat's instance if you need to call instance methods later. This example renders a button that toggles the Carbon AI chat open and only renders after the instance becomes available. Refer to the following example.
+You can use the {@link ChatContainerProps.onBeforeRender} or {@link ChatContainerProps.onAfterRender} props to access the Carbon AI Chat's instance if you need to call instance methods later. This example renders a button that toggles the Carbon AI Chat open and only renders after the instance becomes available. Refer to the following example.
 
 ```javascript
 import React, { useCallback, useState } from "react";
@@ -197,7 +197,7 @@ function App() {
     <>
       {instance && (
         <button type="button" onClick={toggleWebChat}>
-          Toggle Carbon AI chat
+          Toggle Carbon AI Chat
         </button>
       )}
       <ChatContainer config={chatOptions} onBeforeRender={onBeforeRender} />
@@ -347,7 +347,7 @@ function App() {
 
 ### Testing with Jest
 
-Carbon AI chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
+Carbon AI Chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
 
 You may need to add configuration similar to the following to your Jest configuration.
 

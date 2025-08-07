@@ -41,7 +41,7 @@ export interface UserDefinedElementRegistryItem {
 
 class ServiceManager {
   /**
-   * The current instance of the Carbon AI chat.
+   * The current instance of the Carbon AI Chat.
    */
   instance: ChatInstance;
 
@@ -118,12 +118,12 @@ class ServiceManager {
   userSessionStorageService: UserSessionStorageService;
 
   /**
-   * An object defining the namespace of this Carbon AI chat and derived properties from that namespace name.
+   * An object defining the namespace of this Carbon AI Chat and derived properties from that namespace name.
    */
   namespace: NamespaceService;
 
   /**
-   * The additional, non-redux safe parameters that were passed as config options for the Carbon AI chat.
+   * The additional, non-redux safe parameters that were passed as config options for the Carbon AI Chat.
    */
   additionalChatParameters: AdditionalChatParameters;
 

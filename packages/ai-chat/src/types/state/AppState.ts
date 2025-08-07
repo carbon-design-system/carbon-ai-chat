@@ -46,7 +46,7 @@ import { AgentAvailability } from "../config/ServiceDeskConfig";
  */
 
 /**
- * The list of messages used by Carbon AI chat. These are in their own section for easy ability to restart.
+ * The list of messages used by Carbon AI Chat. These are in their own section for easy ability to restart.
  */
 interface AppStateMessages {
   /**
@@ -81,7 +81,7 @@ interface AppState extends AppStateMessages {
   humanAgentState: HumanAgentState;
 
   /**
-   * Whether we have hydrated Carbon AI chat. This means we have loaded session history if it exists as well as the
+   * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
    * welcome node (if appropriate).
    */
   isHydrated: boolean;
@@ -160,7 +160,7 @@ interface AppState extends AppStateMessages {
 
   /**
    * Any items stored here is also persisted to sessionStorage IF sessionHistory is turned on. We rehydrate the redux
-   * store with this information. Examples of things we store include if the Carbon AI chat is open and if you have an active
+   * store with this information. Examples of things we store include if the Carbon AI Chat is open and if you have an active
    * conversation with an agent.
    */
   persistedToBrowserStorage: PersistedToBrowserStorageState;
@@ -182,12 +182,12 @@ interface AppState extends AppStateMessages {
   chatHeight: number;
 
   /**
-   * Has thrown an error that Carbon AI chat can not recover from.
+   * Has thrown an error that Carbon AI Chat can not recover from.
    */
   catastrophicErrorType?: boolean;
 
   /**
-   * The state of the Carbon AI chat launcher.
+   * The state of the Carbon AI Chat launcher.
    */
   launcher: LauncherState;
 
@@ -230,11 +230,11 @@ interface AppState extends AppStateMessages {
   initialViewChangeComplete: boolean;
 
   /**
-   * Before Carbon AI chat is loaded, the initial view state is set to everything closed (which reflects the reality of the
-   * page as Carbon AI chat is loading). This property is the view state we want Carbon AI chat to try to get to after it is loaded.
+   * Before Carbon AI Chat is loaded, the initial view state is set to everything closed (which reflects the reality of the
+   * page as Carbon AI Chat is loading). This property is the view state we want Carbon AI Chat to try to get to after it is loaded.
    * If a previous session already exists, then this target will be set to the previous view state so we get back to
-   * where we were. If there is no session, this will be set to a default that is based on the current Carbon AI chat
-   * config and page context (such as considering if openChatByDefault is set). After Carbon AI chat is loaded, this value is
+   * where we were. If there is no session, this will be set to a default that is based on the current Carbon AI Chat
+   * config and page context (such as considering if openChatByDefault is set). After Carbon AI Chat is loaded, this value is
    * no longer used.
    */
   targetViewState: ViewState;
@@ -332,9 +332,9 @@ interface StopStreamingButtonState {
  */
 interface PersistedChatState {
   /**
-   * The version of the Carbon AI chat that this data is persisted for. If there are any breaking changes to the
+   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
    * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI chat startup.
+   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
    */
   version: string;
 
@@ -375,14 +375,14 @@ interface PersistedLauncherState {
   wasLoadedFromBrowser: boolean;
 
   /**
-   * The version of the Carbon AI chat that this data is persisted for. If there are any breaking changes to the
+   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
    * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI chat startup.
+   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
    */
   version: string;
 
   /**
-   * Indicates which of the Carbon AI chat views are visible and which are hidden.
+   * Indicates which of the Carbon AI Chat views are visible and which are hidden.
    */
   viewState: ViewState;
 
@@ -448,13 +448,13 @@ interface PersistedLauncherState {
  */
 interface PersistedToBrowserStorageState {
   /**
-   * Things stored that are related to the user profile. These are not accessible until the Carbon AI chat has been opened!
+   * Things stored that are related to the user profile. These are not accessible until the Carbon AI Chat has been opened!
    */
   chatState: PersistedChatState;
 
   /**
    * Things stored that are not related to the user profile. These should only be things that are not sensitive like
-   * "is the Carbon AI chat open".
+   * "is the Carbon AI Chat open".
    */
   launcherState: PersistedLauncherState;
 }
@@ -508,7 +508,7 @@ interface HumanAgentState {
   isConnecting: boolean;
 
   /**
-   * Indicates that we are currently attempting to re-connect the user to an agent. This occurs when Carbon AI chat is
+   * Indicates that we are currently attempting to re-connect the user to an agent. This occurs when Carbon AI Chat is
    * initially loaded and the user was previously connected to an agent.
    */
   isReconnecting: boolean;
@@ -609,7 +609,7 @@ interface AnnounceMessage {
 }
 
 /**
- * The different available widths of a Carbon AI chat.
+ * The different available widths of a Carbon AI Chat.
  */
 enum ChatWidthBreakpoint {
   // < 360px
@@ -711,7 +711,7 @@ interface ThemeState {
   carbonTheme: CarbonTheme;
 
   /**
-   * This flag is used to disable Carbon AI chat's rounded corners.
+   * This flag is used to disable Carbon AI Chat's rounded corners.
    */
   corners: CornersType;
 }

@@ -298,10 +298,10 @@ button.WACLauncher__Button svg {
 
   // Fixes a random bug with multi line line-clamp that caused the line-clamp to be ignored on first render after the
   // component had its visibility set to hidden or inherited it from it's parent. In our case this bug occurs after the
-  // Carbon AI chat has been opened and then closed. When its opened we apply visibility: hidden to the Launcher as a part of
+  // Carbon AI Chat has been opened and then closed. When its opened we apply visibility: hidden to the Launcher as a part of
   // the changes made for this class ".WACLauncher__ButtonContainer--hidden" above. So it's necessary that we apply
   // visibility: visible here as a workaround otherwise the line-clamp is ignored when the launcher renders again after
-  // the Carbon AI chat is closed. src
+  // the Carbon AI Chat is closed. src
   // https://stackoverflow.com/questions/38989475/css-multi-line-line-clamp-ellipsis-doesnt-work
   // This class needs to be removed when the element isn't visible otherwise the content will still show.
   visibility: visible;

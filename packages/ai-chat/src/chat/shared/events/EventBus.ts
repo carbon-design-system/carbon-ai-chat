@@ -64,7 +64,7 @@ class EventBus {
    * ("*") events will also be notified. Events will be fired in the order in which they were registered.
    *
    * @param busEvent A single event.
-   * @param instance The current instance of the Carbon AI chat that is passed to the event handlers
+   * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
   async fire<T extends BusEvent>(busEvent: T, instance: ChatInstance) {
     logEvent("Before fire", busEvent);
@@ -128,7 +128,7 @@ class EventBus {
    * function fires the events synchronously.
    *
    * @param busEvent A single event.
-   * @param instance The current instance of the Carbon AI chat that is passed to the event handlers
+   * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
   fireSync<T extends BusEvent>(busEvent: T, instance: ChatInstance) {
     logEvent("Before fire", busEvent);
