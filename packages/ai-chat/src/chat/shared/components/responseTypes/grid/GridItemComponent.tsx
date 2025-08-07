@@ -34,8 +34,7 @@ function GridItemComponent({
   originalMessage: MessageResponse;
   renderMessageComponent: (props: any) => React.ReactNode;
 }) {
-  const { columns, max_width } =
-    localMessageItem.item;
+  const { columns, max_width } = localMessageItem.item;
 
   return (
     <div
@@ -75,7 +74,7 @@ function GridItemComponent({
                   isPixelValue={isPixelValue}
                   rowIndex={rowIndex}
                   columnIndex={columnIndex}
-                  />
+                />
               );
             })}
           </div>

@@ -59,15 +59,11 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
 
   if (!hasError && avatarUrl) {
     component = (
-      <div
-        aria-label={languagePack.agent_ariaResponseUserAvatar}
-        className="WACResponseUserAvatar__Circle"
-        ref={avatarRef}
-      >
-        <div className="WACResponseUserAvatar__Letter">
-          {agentName.charAt(0)}
-        </div>
-      </div>
+      <img
+        src={avatarUrl}
+        alt={languagePack.agent_ariaResponseUserAvatar}
+        onError={() => setHasError(true)}
+      />
     );
   } else if (agentName?.match(/^[\x20-\xFE]+$/)) {
     // If the agentName only contains ASCII characters (and at least one), then show the first letter of the agentName
