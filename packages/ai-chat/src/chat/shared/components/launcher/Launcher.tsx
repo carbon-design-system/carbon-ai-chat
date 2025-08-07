@@ -35,7 +35,7 @@ interface LauncherProps extends HasClassName, HasIntl {
    * The number of unread messages from a human agent that should be displayed on the launcher. If this is 0, no
    * agent indicator will be shown unless showUnreadIndicator is set.
    */
-  unreadAgentCount: number;
+  unreadHumanAgentCount: number;
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
@@ -65,7 +65,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
   const {
     onToggleOpen,
     languagePack,
-    unreadAgentCount,
+    unreadHumanAgentCount,
     intl,
     showUnreadIndicator,
     className,
@@ -101,10 +101,10 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     activeTour
   );
 
-  if (unreadAgentCount !== 0) {
+  if (unreadHumanAgentCount !== 0) {
     ariaLabel += `. ${intl.formatMessage(
       { id: "icon_ariaUnreadMessages" },
-      { count: unreadAgentCount }
+      { count: unreadHumanAgentCount }
     )}`;
   }
 
@@ -157,9 +157,9 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
           launcherAvatar
         )}
 
-        {(unreadAgentCount !== 0 || showUnreadIndicator) && (
+        {(unreadHumanAgentCount !== 0 || showUnreadIndicator) && (
           <div className="WAC__countIndicator">
-            {unreadAgentCount !== 0 ? unreadAgentCount : ""}
+            {unreadHumanAgentCount !== 0 ? unreadHumanAgentCount : ""}
           </div>
         )}
       </Button>

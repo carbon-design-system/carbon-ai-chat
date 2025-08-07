@@ -8,7 +8,7 @@
  */
 
 import {
-  AgentProfile,
+  ResponseUserProfile,
   ServiceDesk,
   ServiceDeskCallback,
   ServiceDeskFactoryParameters,
@@ -29,6 +29,7 @@ import {
   VideoItem,
   TextItem,
   UserDefinedItem,
+  UserType,
 } from "@carbon/ai-chat";
 
 import { v4 as uuid } from "uuid";
@@ -158,7 +159,7 @@ interface MockState {
   /**
    * The current agent.
    */
-  currentAgent: AgentProfile;
+  currentAgent: ResponseUserProfile;
 }
 
 const HELLO_TEXT = (userName: string) =>
@@ -191,27 +192,31 @@ const TEXT_LONG =
 const PROFILE_URL_PREFIX =
   "https://web-chat.assistant.test.watson.cloud.ibm.com";
 
-const MOCK_AGENT_PROFILE_SHEPARD: AgentProfile = {
+const MOCK_AGENT_PROFILE_SHEPARD: ResponseUserProfile = {
   id: "CommanderShepard-id",
   nickname: "Shepard",
   profile_picture_url: `${PROFILE_URL_PREFIX}/assets/example_avatar_1.png`,
+  user_type: UserType.HUMAN,
 };
 
-const MOCK_AGENT_PROFILE_GARRUS: AgentProfile = {
+const MOCK_AGENT_PROFILE_GARRUS: ResponseUserProfile = {
   id: "GarrusVakarian-id",
   nickname: "Garrus",
   profile_picture_url: `${PROFILE_URL_PREFIX}/assets/example_avatar_2.png`,
+  user_type: UserType.HUMAN,
 };
 
-const MOCK_AGENT_PROFILE_LEGION: AgentProfile = {
+const MOCK_AGENT_PROFILE_LEGION: ResponseUserProfile = {
   id: "Legion-id",
   nickname: "Legion",
   profile_picture_url: `${PROFILE_URL_PREFIX}/assets/example_avatar_missing.png`,
+  user_type: UserType.HUMAN,
 };
 
-const MOCK_AGENT_PROFILE_EMPTY: AgentProfile = {
+const MOCK_AGENT_PROFILE_EMPTY: ResponseUserProfile = {
   id: "",
   nickname: "",
+  user_type: UserType.HUMAN,
 };
 
 // The agent we're currently talking to.
@@ -433,7 +438,7 @@ class MockServiceDesk implements ServiceDesk {
       additionalData.filesToUpload.forEach((file) => {
         // Use a setTimeout to simulate a random amount of time it takes to upload a file.
         setTimeout(() => {
-          let errorMessage: string = "";
+          let errorMessage = "";
           if (!file.file.name.endsWith(".png")) {
             errorMessage = "Only .png files may be uploaded.";
           }
@@ -748,7 +753,7 @@ function AGENT_TYPING(isTyping: boolean): MockStep[] {
   ];
 }
 
-function TRANSFER_TO_AGENT(agent: AgentProfile): MockStep[] {
+function TRANSFER_TO_AGENT(agent: ResponseUserProfile): MockStep[] {
   return [
     {
       delay: 0,
@@ -790,8 +795,8 @@ function AGENT_END_CHAT(): MockStep[] {
 // A message to the agent to respond with some simple text.
 function MESSAGE_TO_AGENT_TEXT(
   text: string,
-  delay: number = 1000,
-  showTyping: boolean = true
+  delay = 1000,
+  showTyping = true
 ): MockStep[] {
   const steps: MockStep[] = [];
   if (showTyping) {

@@ -54,6 +54,8 @@ export type TestId = PageObjectId | PrefixedId;
 
 /**
  * Generate a testId by PageObjectId and optional OverlayPanelName.
+ *
+ * @category Testing
  */
 export function makeTestId(id: PageObjectId, panel?: OverlayPanelName): TestId {
   if (panel) {

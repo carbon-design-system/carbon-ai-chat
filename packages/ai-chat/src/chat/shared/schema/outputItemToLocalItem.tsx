@@ -32,7 +32,7 @@ import {
 import { consoleError } from "../utils/miscUtils";
 
 /**
- * Takes data from the v2 message API ({@link MessageResponse}) and transforms into something usable by WAC
+ * Takes data from a {@link MessageResponse} and transforms into something usable by AI chat
  * ({@link LocalMessageItem}).
  *
  * @param messageItem The individual item from the message to convert.
@@ -58,7 +58,7 @@ function outputItemToLocalItem(
   const localMessage: LocalMessageItem = {
     ui_state: {
       id,
-      needsAnnouncement: !fullMessage.history.from_history,
+      needsAnnouncement: !fullMessage.ui_state_internal?.from_history,
       disableFadeAnimation,
     },
     item: messageItem,

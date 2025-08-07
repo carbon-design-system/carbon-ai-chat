@@ -8,14 +8,14 @@
  */
 
 import {
-  AgentsOnlineStatus,
+  HumanAgentsOnlineStatus,
   ScreenShareState,
 } from "../../../../types/config/ServiceDeskConfig";
 import { FileUpload } from "../../../../types/state/AppState";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { ServiceManager } from "../ServiceManager";
 import {
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   Message,
   MessageResponse,
 } from "../../../../types/messaging/Messages";
@@ -50,7 +50,7 @@ interface HumanAgentService {
    * not necessarily mean that an agent has joined the conversation or has read any messages sent by the user.
    */
   startChat(
-    localConnectMessage: LocalMessageItem<ConnectToAgentItem>,
+    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
     originalMessage: Message
   ): Promise<void>;
 
@@ -59,13 +59,13 @@ interface HumanAgentService {
    *
    * @param endedByUser Indicates if the chat is being ended as a result of the user or if it was ended
    * programmatically from an instance method.
-   * @param showAgentLeftMessage Indicates if the chat should show the "agent left" message.
+   * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
    * @param showBotReturnMessage Indicates if the chat should show the "bot return" message.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
   endChat(
     endedByUser: boolean,
-    showAgentLeftMessage?: boolean,
+    showHumanAgentLeftMessage?: boolean,
     showBotReturnMessage?: boolean
   ): Promise<void>;
 
@@ -99,9 +99,9 @@ interface HumanAgentService {
    * @param connectMessage The message that contains the transfer_info object that may be used by the service desk
    * so it can perform a more specific check.
    */
-  checkAreAnyAgentsOnline(
+  checkAreAnyHumanAgentsOnline(
     connectMessage: MessageResponse
-  ): Promise<AgentsOnlineStatus>;
+  ): Promise<HumanAgentsOnlineStatus>;
 
   /**
    * Indicates that the user has selected some files to be uploaded but that the user has not yet chosen to send
@@ -137,9 +137,9 @@ type CreateHumanAgentServiceFunction = (
   serviceManager: ServiceManager
 ) => HumanAgentService;
 
-// TODO: Moved used for AgentsOnlineStatus export to use the package.
+// TODO: Moved used for HumanAgentsOnlineStatus export to use the package.
 export {
   HumanAgentService,
   CreateHumanAgentServiceFunction,
-  AgentsOnlineStatus,
+  HumanAgentsOnlineStatus,
 };

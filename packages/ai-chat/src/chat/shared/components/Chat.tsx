@@ -17,8 +17,8 @@ import MessagesComponent, {
 import { HasServiceManager } from "../hocs/withServiceManager";
 import { AppConfig } from "../../../types/state/AppConfig";
 import {
-  AgentDisplayState,
-  AgentState,
+  HumanAgentDisplayState,
+  HumanAgentState,
   AppState,
   ChatMessagesState,
   FileUpload,
@@ -39,7 +39,7 @@ import { consoleError, createDidCatchErrorData } from "../utils/miscUtils";
 import { CatastrophicError } from "./CatastrophicError";
 import { BotHeader } from "./header/BotHeader";
 import { Input, InputFunctions } from "./input/Input";
-import { EndAgentChatModal } from "./modals/EndAgentChatModal";
+import { EndHumanAgentChatModal } from "./modals/EndHumanAgentChatModal";
 import { RequestScreenShareModal } from "./modals/RequestScreenShareModal";
 import WriteableElement from "./WriteableElement";
 import {
@@ -87,12 +87,12 @@ interface ChatProps extends HasServiceManager, HasIntl {
   /**
    * Any information about the current human agent the user is connected to.
    */
-  agentState: AgentState;
+  humanAgentState: HumanAgentState;
 
   /**
    * The display state for an interaction with a human agent.
    */
-  agentDisplayState: AgentDisplayState;
+  agentDisplayState: HumanAgentDisplayState;
 
   /**
    * The callback to call when the user enters some text into the field and it needs to be sent. This occurs if the
@@ -209,7 +209,7 @@ class Chat extends Component<ChatProps, ChatState> {
   }
 
   componentDidUpdate(prevProps: Readonly<ChatProps>): void {
-    const { isHydrationAnimationComplete, agentState } = this.props;
+    const { isHydrationAnimationComplete, humanAgentState } = this.props;
 
     // If we don't wait for the animation to complete, the auto scroll can not work correctly.
     // Thankfully, we have this property already to look at and kick off the autoscroll.
@@ -225,7 +225,7 @@ class Chat extends Component<ChatProps, ChatState> {
 
     // This covers the case where an agent joins while the confirmation modal is visible.
     const connectingChanged =
-      agentState.isConnecting !== prevProps.agentState.isConnecting;
+      humanAgentState.isConnecting !== prevProps.humanAgentState.isConnecting;
     if (this.state.showEndChatConfirmation && connectingChanged) {
       this.hideConfirmEndChat();
     }
@@ -260,7 +260,7 @@ class Chat extends Component<ChatProps, ChatState> {
   /**
    * The callback that can be called when the end agent chat confirmation panel should be shown.
    */
-  private confirmAgentEndChat = () => {
+  private confirmHumanAgentEndChat = () => {
     this.hideConfirmEndChat();
     this.props.serviceManager.humanAgentService.endChat(true);
   };
@@ -290,7 +290,7 @@ class Chat extends Component<ChatProps, ChatState> {
         agentDisplayState.isConnectingOrConnected &&
         agentDisplayState.disableInput
       ) {
-        if (this.messagesRef.current.requestAgentBannerFocus()) {
+        if (this.messagesRef.current.requestHumanAgentBannerFocus()) {
           return;
         }
       }
@@ -348,8 +348,9 @@ class Chat extends Component<ChatProps, ChatState> {
    * The callback that is called when the user selects one or more files to be uploaded.
    */
   private onFilesSelectedForUpload = (uploads: FileUpload[]) => {
-    const isInputToAgent = this.props.agentDisplayState.isConnectingOrConnected;
-    if (isInputToAgent) {
+    const isInputToHumanAgent =
+      this.props.agentDisplayState.isConnectingOrConnected;
+    if (isInputToHumanAgent) {
       this.props.serviceManager.humanAgentService.filesSelectedForUpload(
         uploads
       );
@@ -396,7 +397,7 @@ class Chat extends Component<ChatProps, ChatState> {
       serviceManager,
       inputState,
       onUserTyping,
-      agentState,
+      humanAgentState,
       botName,
       onSendInput,
       locale,
@@ -412,7 +413,7 @@ class Chat extends Component<ChatProps, ChatState> {
       allowMultipleFileUploads,
       stopStreamingButtonState,
     } = inputState;
-    const { fileUploadInProgress } = agentState;
+    const { fileUploadInProgress } = humanAgentState;
     const { inputPlaceholderKey } = agentDisplayState;
 
     // If there are any files currently selected or being uploaded and multiple files are not allowed, then show the
@@ -436,7 +437,7 @@ class Chat extends Component<ChatProps, ChatState> {
               requestInputFocus={this.requestInputFocus}
               botName={botName}
               intl={intl}
-              onEndAgentChat={this.showConfirmEndChat}
+              onEndHumanAgentChat={this.showConfirmEndChat}
               locale={locale}
               useAITheme={useAITheme}
               carbonTheme={carbonTheme}
@@ -468,12 +469,12 @@ class Chat extends Component<ChatProps, ChatState> {
           testIdPrefix={OverlayPanelName.MAIN}
         />
         {this.state.showEndChatConfirmation && (
-          <EndAgentChatModal
-            onConfirm={this.confirmAgentEndChat}
+          <EndHumanAgentChatModal
+            onConfirm={this.confirmHumanAgentEndChat}
             onCancel={this.hideConfirmEndChat}
           />
         )}
-        {this.props.agentState.showScreenShareRequest && (
+        {this.props.humanAgentState.showScreenShareRequest && (
           <RequestScreenShareModal />
         )}
       </>

@@ -529,7 +529,7 @@ function createChatInstance({
         debugLog("Called instance.messaging.clearConversation");
         return serviceManager.actions.restartConversation({
           skipHydration: true,
-          endAgentConversation: false,
+          endHumanAgentConversation: false,
           fireEvents: false,
         });
       },

@@ -41,6 +41,7 @@ import {
   Message,
   MessageHistory,
   MessageRequest,
+  MessageUIStateInternal,
   SearchResult,
 } from "../../../types/messaging/Messages";
 import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
@@ -70,6 +71,8 @@ const SET_INITIAL_VIEW_CHANGE_COMPLETE = "SET_INITIAL_VIEW_CHANGE_COMPLETE";
 const UPDATE_CSS_VARIABLES = "UPDATE_CSS_VARIABLES";
 const MESSAGE_SET_OPTION_SELECTED = "MESSAGE_SET_OPTION_SELECTED";
 const SET_MESSAGE_UI_PROPERTY = "SET_MESSAGE_UI_PROPERTY";
+const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
+  "SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY";
 const SET_MESSAGE_HISTORY_PROPERTY = "SET_MESSAGE_HISTORY_PROPERTY";
 const MERGE_HISTORY = "MERGE_HISTORY";
 const SET_LAUNCHER_PROPERTY = "SET_LAUNCHER_PROPERTY";
@@ -381,6 +384,29 @@ const actions = {
   },
 
   /**
+   * Sets the give property of the {@link MessageUIStateInternal} associated with the message of the given ID to the given
+   * value.
+   *
+   * @param messageID The ID of the message to update.
+   * @param propertyName The name of the property to update.
+   * @param propertyValue The value to set on the property.
+   */
+  setMessageUIStateInternalProperty<
+    TPropertyName extends keyof MessageUIStateInternal
+  >(
+    messageID: string,
+    propertyName: TPropertyName,
+    propertyValue: MessageUIStateInternal[TPropertyName]
+  ) {
+    return {
+      type: SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
+      messageID,
+      propertyName,
+      propertyValue,
+    };
+  },
+
+  /**
    * Merges the given object into the history for the given message.
    */
   mergeMessageHistory(messageID: string, history: MessageHistory) {
@@ -509,8 +535,11 @@ const actions = {
   /**
    * Updates the state of the input field.
    */
-  updateInputState(newState: Partial<InputState>, isInputToAgent: boolean) {
-    return { type: UPDATE_INPUT_STATE, newState, isInputToAgent };
+  updateInputState(
+    newState: Partial<InputState>,
+    isInputToHumanAgent: boolean
+  ) {
+    return { type: UPDATE_INPUT_STATE, newState, isInputToHumanAgent };
   },
 
   /**
@@ -523,15 +552,15 @@ const actions = {
   /**
    * Adds a new file to the input area for uploaded.
    */
-  addInputFile(file: FileUpload, isInputToAgent: boolean) {
-    return { type: ADD_INPUT_FILE, file, isInputToAgent };
+  addInputFile(file: FileUpload, isInputToHumanAgent: boolean) {
+    return { type: ADD_INPUT_FILE, file, isInputToHumanAgent };
   },
 
   /**
    * Removes a file attachment from the upload attachments area.
    */
-  removeFileUpload(fileID: string, isInputToAgent: boolean) {
-    return { type: REMOVE_INPUT_FILE, fileID, isInputToAgent };
+  removeFileUpload(fileID: string, isInputToHumanAgent: boolean) {
+    return { type: REMOVE_INPUT_FILE, fileID, isInputToHumanAgent };
   },
 
   /**
@@ -547,21 +576,21 @@ const actions = {
   fileUploadInputError(
     fileID: string,
     errorMessage: string,
-    isInputToAgent: boolean
+    isInputToHumanAgent: boolean
   ) {
     return {
       type: FILE_UPLOAD_INPUT_ERROR,
       fileID,
       errorMessage,
-      isInputToAgent,
+      isInputToHumanAgent,
     };
   },
 
   /**
    * Removes all the files from the input area.
    */
-  clearInputFiles(isInputToAgent: boolean) {
-    return { type: CLEAR_INPUT_FILES, isInputToAgent };
+  clearInputFiles(isInputToHumanAgent: boolean) {
+    return { type: CLEAR_INPUT_FILES, isInputToHumanAgent };
   },
 
   addNestedMessages(localMessageItems: LocalMessageItem[]) {
@@ -713,4 +742,5 @@ export {
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STREAM_ID,
   UPDATE_MAIN_HEADER_AVATAR,
+  SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
 };

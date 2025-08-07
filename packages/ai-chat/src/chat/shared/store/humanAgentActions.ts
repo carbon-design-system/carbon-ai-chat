@@ -11,17 +11,17 @@ import {
   AgentAvailability,
   ServiceDeskCapabilities,
 } from "../../../types/config/ServiceDeskConfig";
-import { AgentProfile } from "../../../types/messaging/Messages";
+import { ResponseUserProfile } from "../../../types/messaging/Messages";
 
 /**
  * Redux action creators for human agent actions.
  */
 
-const HA_SET_AGENT_AVAILABILITY = "HA_SET_AGENT_AVAILABILITY";
+const HA_SET_HUMAN_AGENT_AVAILABILITY = "HA_SET_HUMAN_AGENT_AVAILABILITY";
 const HA_SET_IS_CONNECTING = "HA_SET_IS_CONNECTING";
 const HA_SET_IS_RECONNECTING = "HA_SET_IS_RECONNECTING";
-const HA_SET_AGENT_JOINED = "HA_SET_AGENT_JOINED";
-const HA_SET_AGENT_LEFT_CHAT = "HA_SET_AGENT_LEFT_CHAT";
+const HA_SET_HUMAN_AGENT_JOINED = "HA_SET_HUMAN_AGENT_JOINED";
+const HA_SET_HUMAN_AGENT_LEFT_CHAT = "HA_SET_HUMAN_AGENT_LEFT_CHAT";
 const HA_END_CHAT = "HA_END_CHAT";
 const HA_UPDATE_CAPABILITIES = "HA_UPDATE_CAPABILITIES";
 const HA_UPDATE_FILE_UPLOAD_IN_PROGRESS = "HA_UPDATE_FILE_UPLOAD_IN_PROGRESS";
@@ -52,8 +52,8 @@ function setIsReconnecting(isReconnecting: boolean) {
 /**
  * Indicate agent has left chat.
  */
-function setAgentLeftChat() {
-  return { type: HA_SET_AGENT_LEFT_CHAT };
+function setHumanAgentLeftChat() {
+  return { type: HA_SET_HUMAN_AGENT_LEFT_CHAT };
 }
 
 /**
@@ -68,7 +68,7 @@ function endChat() {
  */
 function setAgentAvailability(availability: AgentAvailability) {
   return {
-    type: HA_SET_AGENT_AVAILABILITY,
+    type: HA_SET_HUMAN_AGENT_AVAILABILITY,
     availability,
   };
 }
@@ -76,10 +76,10 @@ function setAgentAvailability(availability: AgentAvailability) {
 /**
  * Sets the availability information for a user who is waiting to be connected to an agent.
  */
-function setAgentJoined(agentProfile: AgentProfile) {
+function setHumanAgentJoined(responseUserProfile: ResponseUserProfile) {
   return {
-    type: HA_SET_AGENT_JOINED,
-    agentProfile,
+    type: HA_SET_HUMAN_AGENT_JOINED,
+    responseUserProfile,
   };
 }
 
@@ -133,9 +133,9 @@ function agentUpdateIsTyping(isTyping: boolean) {
 }
 
 export {
-  HA_SET_AGENT_AVAILABILITY,
-  HA_SET_AGENT_JOINED,
-  HA_SET_AGENT_LEFT_CHAT,
+  HA_SET_HUMAN_AGENT_AVAILABILITY,
+  HA_SET_HUMAN_AGENT_JOINED,
+  HA_SET_HUMAN_AGENT_LEFT_CHAT,
   HA_END_CHAT,
   HA_SET_IS_CONNECTING,
   HA_UPDATE_CAPABILITIES,
@@ -149,8 +149,8 @@ export {
   setIsConnecting,
   setIsReconnecting,
   setAgentAvailability,
-  setAgentJoined,
-  setAgentLeftChat,
+  setHumanAgentJoined,
+  setHumanAgentLeftChat,
   endChat,
   updateCapabilities,
   updateFilesUploadInProgress,

@@ -15,7 +15,7 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../../types/state/AppState";
 import { ConfirmModal, ConfirmModalButtonProps } from "./ConfirmModal";
 
-interface EndAgentChatModalProps extends ConfirmModalButtonProps {
+interface EndHumanAgentChatModalProps extends ConfirmModalButtonProps {
   /**
    * The title for the modal.
    */
@@ -31,12 +31,13 @@ interface EndAgentChatModalProps extends ConfirmModalButtonProps {
  * Displays a modal asking if the user wants to end a chat with an agent. This also covers the case where the user
  * cancels a request for an agent before an agent has joined.
  */
-function EndAgentChatModal(props: EndAgentChatModalProps) {
+function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
   const { onConfirm, onCancel, title, message } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
   const { isConnected, isSuspended } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.chatState.agentState
+    (state: AppState) =>
+      state.persistedToBrowserStorage.chatState.humanAgentState
   );
 
   const useTitle =
@@ -74,4 +75,4 @@ function EndAgentChatModal(props: EndAgentChatModalProps) {
   );
 }
 
-export { EndAgentChatModal };
+export { EndHumanAgentChatModal };

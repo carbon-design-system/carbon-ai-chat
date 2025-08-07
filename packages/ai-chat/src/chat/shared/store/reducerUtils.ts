@@ -11,7 +11,7 @@ import isEqual from "lodash-es/isEqual.js";
 
 import { VERSION } from "../environmentVariables";
 import {
-  AgentState,
+  HumanAgentState,
   AnnounceMessage,
   AppState,
   AppStateMessages,
@@ -139,10 +139,10 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedToBrowserStorageState = {
       activeTourID: null,
       activeTourCurrentStepIndex: null,
     },
-    agentState: {
+    humanAgentState: {
       isConnected: false,
       isSuspended: false,
-      agentProfiles: {},
+      responseUserProfiles: {},
     },
   },
   launcherState: {
@@ -195,17 +195,17 @@ const DEFAULT_INPUT_STATE = (): InputState => ({
   },
 });
 
-const DEFAULT_AGENT_STATE: AgentState = {
+const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
   isConnecting: false,
   isReconnecting: false,
   numUnreadMessages: 0,
   fileUploadInProgress: false,
   showScreenShareRequest: false,
   isScreenSharing: false,
-  isAgentTyping: false,
+  isHumanAgentTyping: false,
   inputState: DEFAULT_INPUT_STATE(),
 };
-deepFreeze(DEFAULT_AGENT_STATE);
+deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_THEME_STATE: ThemeState = {
   carbonTheme: CarbonTheme.G10,
@@ -274,12 +274,12 @@ function handleViewStateChange(
   viewState: ViewState
 ): AppState {
   // If the main window is opened and the page is visible, mark any unread messages as read.
-  let { agentState } = state;
+  let { humanAgentState } = state;
   let { showUnreadIndicator } = state.persistedToBrowserStorage.launcherState;
   if (viewState.mainWindow && state.isBrowserPageVisible) {
-    if (agentState.numUnreadMessages !== 0) {
-      agentState = {
-        ...agentState,
+    if (humanAgentState.numUnreadMessages !== 0) {
+      humanAgentState = {
+        ...humanAgentState,
         numUnreadMessages: 0,
       };
     }
@@ -289,7 +289,7 @@ function handleViewStateChange(
   return {
     ...state,
     announceMessage: calcAnnouncementForWidgetOpen(state, viewState),
-    agentState,
+    humanAgentState,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
       launcherState: {
@@ -387,7 +387,7 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 }
 
 export {
-  DEFAULT_AGENT_STATE,
+  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,

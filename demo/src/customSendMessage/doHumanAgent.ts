@@ -9,7 +9,7 @@
 
 import {
   ChatInstance,
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
 
@@ -18,8 +18,8 @@ function doHumanAgent(instance: ChatInstance) {
     output: {
       generic: [
         {
-          response_type: MessageResponseTypes.CONNECT_TO_AGENT,
-        } as ConnectToAgentItem,
+          response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+        } as ConnectToHumanAgentItem,
       ],
     },
   });

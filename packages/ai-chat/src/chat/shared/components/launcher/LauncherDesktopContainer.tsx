@@ -76,8 +76,8 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const launcherConfig = launcherState.config;
   const { time_to_expand, new_expand_time } = launcherConfig.desktop;
   const isExpandedLauncherEnabled = launcherConfig.desktop.is_on;
-  const unreadAgentCount = useSelector(
-    (state: AppState) => state.agentState.numUnreadMessages
+  const unreadHumanAgentCount = useSelector(
+    (state: AppState) => state.humanAgentState.numUnreadMessages
   );
 
   const [smallLauncherClassName, setSmallLauncherClassName] = useState("");
@@ -398,7 +398,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         launcherConfig={launcherConfig}
         onOpen={onOpen}
         onMinimize={onMinimize}
-        unreadAgentCount={unreadAgentCount}
+        unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         desktopLauncherIsExpanded={desktopLauncherIsExpanded}
         launcherHidden={launcherHidden}
@@ -413,7 +413,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         intl={intl}
         ref={launcherRef}
         onToggleOpen={onOpen}
-        unreadAgentCount={unreadAgentCount}
+        unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         className={smallLauncherClassName}
         launcherHidden={launcherHidden}

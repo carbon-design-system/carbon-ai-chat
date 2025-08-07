@@ -16,10 +16,10 @@ import { asyncForEach } from "../../utils/lang/arrayUtils";
 import { deepFreeze } from "../../utils/lang/objectUtils";
 import { createMessageResponseForItem } from "../../utils/messageUtils";
 import { ServiceManager } from "../ServiceManager";
-import { getAgentStatusMessageText } from "./agentStatusMessage";
+import { getHumanAgentStatusMessageText } from "./agentStatusMessage";
 import {
-  AgentMessageType,
-  AgentProfile,
+  HumanAgentMessageType,
+  ResponseUserProfile,
   GenericItem,
   Message,
   MessageResponseTypes,
@@ -45,39 +45,39 @@ function toPair(localMessages: LocalMessageItem[], originalMessage: Message) {
 /**
  * Create a local message that represent a status message to display to the user.
  */
-async function createAgentLocalMessage(
-  agentMessageType: AgentMessageType,
+async function createHumanAgentLocalMessage(
+  agentMessageType: HumanAgentMessageType,
   serviceManager: ServiceManager,
-  agentProfile?: AgentProfile,
+  responseUserProfile?: ResponseUserProfile,
   fireEvents = true
 ) {
-  const text = getAgentStatusMessageText(
+  const text = getHumanAgentStatusMessageText(
     agentMessageType,
-    agentProfile,
+    responseUserProfile,
     serviceManager.intl
   );
 
-  const result = createAgentLocalMessageForType(agentMessageType);
+  const result = createHumanAgentLocalMessageForType(agentMessageType);
   const { originalMessage, localMessage } = result;
 
   localMessage.item.text = text;
-  if (agentProfile) {
+  if (responseUserProfile) {
     if (!originalMessage.history) {
       originalMessage.history = {};
     }
-    originalMessage.history.agent_profile = agentProfile;
+    originalMessage.history.response_user_profile = responseUserProfile;
   }
 
   if (fireEvents) {
     await serviceManager.fire({
-      type: BusEventType.AGENT_PRE_RECEIVE,
+      type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       data: originalMessage,
     });
   }
   deepFreeze(originalMessage);
   if (fireEvents) {
     await serviceManager.fire({
-      type: BusEventType.AGENT_RECEIVE,
+      type: BusEventType.HUMAN_AGENT_RECEIVE,
       data: originalMessage,
     });
   }
@@ -88,7 +88,9 @@ async function createAgentLocalMessage(
 /**
  * Creates an empty skeleton of a {@link LocalMessageItem} with the given agent message type.
  */
-function createAgentLocalMessageForType(agentMessageType: AgentMessageType) {
+function createHumanAgentLocalMessageForType(
+  agentMessageType: HumanAgentMessageType
+) {
   const messageItem: GenericItem = {
     response_type: MessageResponseTypes.TEXT,
     agent_message_type: agentMessageType,
@@ -116,7 +118,7 @@ function createBotReturnMessage(languagePack: LanguagePack) {
   }
 
   const { originalMessage, localMessage } =
-    createAgentLocalMessageForType(null);
+    createHumanAgentLocalMessageForType(null);
   localMessage.item.text = agent_botReturned;
 
   return { originalMessage, localMessage };
@@ -193,22 +195,22 @@ async function addBotReturnMessage(
  * session history.
  *
  * @param agentMessageType The type of the "end chat" message.
- * @param agentProfile The profile of the agent who ended the chat (or null if not ended by an agent).
+ * @param responseUserProfile The profile of the agent who ended the chat (or null if not ended by an agent).
  * @param fireEvents Indicates if the agent events should be fired for the "end chat" message.
  * @param wasSuspended Indicates if the conversation was suspended before it was ended.
  * @param serviceManager The service manager to use.
  */
-async function addAgentEndChatMessage(
-  agentMessageType: AgentMessageType,
-  agentProfile: AgentProfile,
+async function addHumanAgentEndChatMessage(
+  agentMessageType: HumanAgentMessageType,
+  responseUserProfile: ResponseUserProfile,
   fireEvents: boolean,
   wasSuspended: boolean,
   serviceManager: ServiceManager
 ) {
-  const endChatMessage = await createAgentLocalMessage(
+  const endChatMessage = await createHumanAgentLocalMessage(
     agentMessageType,
     serviceManager,
-    agentProfile,
+    responseUserProfile,
     fireEvents
   );
   await addMessages(
@@ -222,9 +224,9 @@ async function addAgentEndChatMessage(
 
 export {
   LocalAndOriginalMessagesPair,
-  createAgentLocalMessage,
+  createHumanAgentLocalMessage,
   addMessages,
   toPair,
-  addAgentEndChatMessage,
+  addHumanAgentEndChatMessage,
   addBotReturnMessage,
 };

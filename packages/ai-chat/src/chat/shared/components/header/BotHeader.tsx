@@ -19,7 +19,7 @@ import { shallowEqual, useSelector } from "react-redux";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
-import { selectAgentDisplayState } from "../../store/selectors";
+import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
@@ -105,7 +105,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     (state: AppState) => state.customMenuOptions
   );
   const { isConnectingOrConnected } = useSelector(
-    selectAgentDisplayState,
+    selectHumanAgentDisplayState,
     shallowEqual
   );
   const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);

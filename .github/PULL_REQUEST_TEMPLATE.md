@@ -1,20 +1,20 @@
 Closes #
 
-{{short description}}
+{{ Short description }}
 
 #### Changelog
 
 **New**
 
-- {{new thing}}
+- {{ New thing }}
 
 **Changed**
 
-- {{change thing}}
+- {{ Changed thing }}
 
 **Removed**
 
-- {{removed thing}}
+- {{ Removed thing }}
 
 #### Testing / Reviewing
 

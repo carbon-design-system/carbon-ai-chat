@@ -10,76 +10,76 @@
 import { IntlShape } from "react-intl";
 
 import {
-  AgentMessageType,
-  AgentProfile,
+  HumanAgentMessageType,
+  ResponseUserProfile,
 } from "../../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../../types/instance/apiTypes";
 
 /**
  * Calculates the text to display for a given agent message type.
  */
-function getAgentStatusMessageText(
-  agentMessageType: AgentMessageType,
-  agentProfile: AgentProfile,
+function getHumanAgentStatusMessageText(
+  agentMessageType: HumanAgentMessageType,
+  responseUserProfile: ResponseUserProfile,
   intl: IntlShape
 ) {
-  const name = agentProfile?.nickname;
+  const name = responseUserProfile?.nickname;
 
   let messageKey: keyof EnglishLanguagePack;
   switch (agentMessageType) {
-    case AgentMessageType.AGENT_JOINED: {
+    case HumanAgentMessageType.HUMAN_AGENT_JOINED: {
       messageKey = name ? "agent_agentJoinedName" : "agent_agentJoinedNoName";
       break;
     }
-    case AgentMessageType.RELOAD_WARNING: {
+    case HumanAgentMessageType.RELOAD_WARNING: {
       messageKey = "agent_youConnectedWarning";
       break;
     }
-    case AgentMessageType.AGENT_LEFT_CHAT: {
+    case HumanAgentMessageType.HUMAN_AGENT_LEFT_CHAT: {
       messageKey = name ? "agent_agentLeftChat" : "agent_agentLeftChatNoName";
       break;
     }
-    case AgentMessageType.AGENT_ENDED_CHAT: {
+    case HumanAgentMessageType.HUMAN_AGENT_ENDED_CHAT: {
       messageKey = name ? "agent_agentEndedChat" : "agent_agentEndedChatNoName";
       break;
     }
-    case AgentMessageType.TRANSFER_TO_AGENT: {
+    case HumanAgentMessageType.TRANSFER_TO_HUMAN_AGENT: {
       messageKey = name ? "agent_transferring" : "agent_transferringNoName";
       break;
     }
-    case AgentMessageType.USER_ENDED_CHAT: {
+    case HumanAgentMessageType.USER_ENDED_CHAT: {
       messageKey = "agent_youEndedChat";
       break;
     }
-    case AgentMessageType.CHAT_WAS_ENDED: {
+    case HumanAgentMessageType.CHAT_WAS_ENDED: {
       messageKey = "agent_conversationWasEnded";
       break;
     }
-    case AgentMessageType.DISCONNECTED: {
+    case HumanAgentMessageType.DISCONNECTED: {
       messageKey = "agent_disconnected";
       break;
     }
-    case AgentMessageType.RECONNECTED: {
+    case HumanAgentMessageType.RECONNECTED: {
       messageKey = "agent_reconnected";
       break;
     }
-    case AgentMessageType.SHARING_REQUESTED: {
+    case HumanAgentMessageType.SHARING_REQUESTED: {
       messageKey = "agent_sharingRequested";
       break;
     }
-    case AgentMessageType.SHARING_ACCEPTED: {
+    case HumanAgentMessageType.SHARING_ACCEPTED: {
       messageKey = "agent_sharingAccepted";
       break;
     }
-    case AgentMessageType.SHARING_DECLINED: {
+    case HumanAgentMessageType.SHARING_DECLINED: {
       messageKey = "agent_sharingDeclined";
       break;
     }
-    case AgentMessageType.SHARING_CANCELLED: {
+    case HumanAgentMessageType.SHARING_CANCELLED: {
       messageKey = "agent_sharingCancelled";
       break;
     }
-    case AgentMessageType.SHARING_ENDED: {
+    case HumanAgentMessageType.SHARING_ENDED: {
       messageKey = "agent_sharingEnded";
       break;
     }
@@ -92,4 +92,4 @@ function getAgentStatusMessageText(
   );
 }
 
-export { getAgentStatusMessageText };
+export { getHumanAgentStatusMessageText };

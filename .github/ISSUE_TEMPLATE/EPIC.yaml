@@ -1,0 +1,39 @@
+name: Epic 🏔️
+description: Detail a larger effort of work
+title: '[Epic]: '
+type: 'epic'
+body:
+  - type: textarea
+    id: value-proposition
+    attributes:
+      label: Value proposition
+      description: "Why are we doing this? Describe the benefit or value the initiative will deliver to users, customers, or the business. Frame it from the perspective of the user or stakeholder to focus on the problem being solved or the opportunity being captured."
+    validations:
+      required: true
+  - type: textarea
+    id: expected-outcomes
+    attributes:
+      label: Expected outcomes
+      description: "What will success look like? Include measurable results or changes in behavior you expect to see if the value proposition is delivered. These are often KPIs, metrics, or observable changes that indicate the epic has achieved its goal."
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: "Include links to related epics, issues, Figma files, etc."
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Preview
+      description: 'Provide an image of what this epic looks like.'
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of conduct
+      description: Please confirm the following
+      options:
+        - label:
+            I agree to follow this project's [code of
+            conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
+          required: true

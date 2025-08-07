@@ -79,6 +79,7 @@ import {
   SET_LAUNCHER_MINIMIZED,
   SET_LAUNCHER_PROPERTY,
   SET_MESSAGE_HISTORY_PROPERTY,
+  SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_MESSAGE_UI_PROPERTY,
   SET_RESPONSE_PANEL_CONTENT,
   SET_RESPONSE_PANEL_IS_OPEN,
@@ -108,7 +109,7 @@ import {
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
 } from "./actions";
-import { agentReducers } from "./agentReducers";
+import { humanAgentReducers } from "./humanAgentReducers";
 import {
   applyBotMessageState,
   applyFullMessage,
@@ -122,7 +123,7 @@ import {
 import { clearTourState, populateTourStepItems } from "./tourReducerUtils";
 import { ChatHeaderAvatarConfig } from "../../../types/instance/ChatInstance";
 import {
-  AgentMessageType,
+  HumanAgentMessageType,
   ConversationalSearchItemCitation,
   GenericItem,
   IFrameItem,
@@ -131,6 +132,7 @@ import {
   MessageRequest,
   MessageResponse,
   SearchResult,
+  MessageUIStateInternal,
 } from "../../../types/messaging/Messages";
 import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
 import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
@@ -142,10 +144,10 @@ import {
 type ReducerType = (state: AppState, action?: any) => AppState;
 
 // The set of agent message types that should be excluded on the unread agent message count.
-const EXCLUDE_AGENT_UNREAD = new Set([
-  AgentMessageType.USER_ENDED_CHAT,
-  AgentMessageType.CHAT_WAS_ENDED,
-  AgentMessageType.RELOAD_WARNING,
+const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
+  HumanAgentMessageType.USER_ENDED_CHAT,
+  HumanAgentMessageType.CHAT_WAS_ENDED,
+  HumanAgentMessageType.RELOAD_WARNING,
 ]);
 
 const reducers: { [key: string]: ReducerType } = {
@@ -294,18 +296,18 @@ const reducers: { [key: string]: ReducerType } = {
       if (!isBotMessage && (!isMainWindowOpen || !state.isBrowserPageVisible)) {
         // This message is with an agent, and it occurred while the main window was closed or the page is not
         // visible, so it may need to be counted as an unread message.
-        const fromAgent = !isRequest(message);
+        const fromHumanAgent = !isRequest(message);
         if (
-          fromAgent &&
-          !EXCLUDE_AGENT_UNREAD.has(messageItem.item.agent_message_type)
+          fromHumanAgent &&
+          !EXCLUDE_HUMAN_AGENT_UNREAD.has(messageItem.item.agent_message_type)
         ) {
           // If this message came from an agent, then add one to the unread count, but not if it's one of the excluded
           // types.
           newState = {
             ...newState,
-            agentState: {
-              ...newState.agentState,
-              numUnreadMessages: newState.agentState.numUnreadMessages + 1,
+            humanAgentState: {
+              ...newState.humanAgentState,
+              numUnreadMessages: newState.humanAgentState.numUnreadMessages + 1,
             },
           };
         }
@@ -756,6 +758,36 @@ const reducers: { [key: string]: ReducerType } = {
     return state;
   },
 
+  [SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY]: <
+    TPropertyName extends keyof MessageUIStateInternal
+  >(
+    state: AppState,
+    action: {
+      messageID: string;
+      propertyName: TPropertyName;
+      propertyValue: MessageUIStateInternal[TPropertyName];
+    }
+  ): AppState => {
+    const { messageID, propertyName, propertyValue } = action;
+    const oldMessage = state.allMessagesByID[messageID];
+    if (oldMessage) {
+      return {
+        ...state,
+        allMessagesByID: {
+          ...state.allMessagesByID,
+          [messageID]: {
+            ...oldMessage,
+            ui_state_internal: {
+              ...oldMessage.ui_state_internal,
+              [propertyName]: propertyValue,
+            },
+          },
+        },
+      };
+    }
+    return state;
+  },
+
   [MERGE_HISTORY]: (
     state: AppState,
     action: { messageID: string; history: MessageHistory }
@@ -1050,9 +1082,9 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_INPUT_STATE]: (
     state: AppState,
-    action: { newState: Partial<InputState>; isInputToAgent: boolean }
+    action: { newState: Partial<InputState>; isInputToHumanAgent: boolean }
   ) => {
-    const currentInputState = getInputState(state, action.isInputToAgent);
+    const currentInputState = getInputState(state, action.isInputToHumanAgent);
     const newInputState = {
       ...currentInputState,
       ...action.newState,
@@ -1060,7 +1092,7 @@ const reducers: { [key: string]: ReducerType } = {
     const newState = applyInputState(
       state,
       newInputState,
-      action.isInputToAgent
+      action.isInputToHumanAgent
     );
     return newState;
   },
@@ -1076,14 +1108,14 @@ const reducers: { [key: string]: ReducerType } = {
     if (isMainWindowOpen && action.isVisible) {
       numUnreadMessages = 0;
     } else {
-      numUnreadMessages = state.agentState.numUnreadMessages;
+      numUnreadMessages = state.humanAgentState.numUnreadMessages;
     }
 
     return {
       ...state,
       isBrowserPageVisible: action.isVisible,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         numUnreadMessages,
       },
     };
@@ -1091,24 +1123,30 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ADD_INPUT_FILE]: (
     state: AppState,
-    { file, isInputToAgent }: { file: FileUpload; isInputToAgent: boolean }
+    {
+      file,
+      isInputToHumanAgent,
+    }: { file: FileUpload; isInputToHumanAgent: boolean }
   ) => {
-    const currentInputState = getInputState(state, isInputToAgent);
+    const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
       state,
       {
         ...currentInputState,
         files: [...currentInputState.files, file],
       },
-      isInputToAgent
+      isInputToHumanAgent
     );
   },
 
   [REMOVE_INPUT_FILE]: (
     state: AppState,
-    { fileID, isInputToAgent }: { fileID: string; isInputToAgent: boolean }
+    {
+      fileID,
+      isInputToHumanAgent,
+    }: { fileID: string; isInputToHumanAgent: boolean }
   ) => {
-    const currentInputState = getInputState(state, isInputToAgent);
+    const currentInputState = getInputState(state, isInputToHumanAgent);
     const newUploads = [...currentInputState.files];
     const index = newUploads.findIndex((file) => file.id === fileID);
     if (index !== -1) {
@@ -1120,7 +1158,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: newUploads,
       },
-      isInputToAgent
+      isInputToHumanAgent
     );
   },
 
@@ -1187,16 +1225,16 @@ const reducers: { [key: string]: ReducerType } = {
 
   [CLEAR_INPUT_FILES]: (
     state: AppState,
-    { isInputToAgent }: { isInputToAgent: boolean }
+    { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
   ) => {
-    const currentInputState = getInputState(state, isInputToAgent);
+    const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
       state,
       {
         ...currentInputState,
         files: [],
       },
-      isInputToAgent
+      isInputToHumanAgent
     );
   },
 
@@ -1205,10 +1243,10 @@ const reducers: { [key: string]: ReducerType } = {
     {
       fileID,
       errorMessage,
-      isInputToAgent,
-    }: { fileID: string; errorMessage: string; isInputToAgent: boolean }
+      isInputToHumanAgent,
+    }: { fileID: string; errorMessage: string; isInputToHumanAgent: boolean }
   ) => {
-    const currentInputSate = getInputState(state, isInputToAgent);
+    const currentInputSate = getInputState(state, isInputToHumanAgent);
     const newUploads = [...currentInputSate.files];
     const index = newUploads.findIndex((file) => file.id === fileID);
     if (index !== -1) {
@@ -1225,7 +1263,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputSate,
         files: newUploads,
       },
-      isInputToAgent
+      isInputToHumanAgent
     );
   },
 
@@ -1499,13 +1537,13 @@ const reducers: { [key: string]: ReducerType } = {
 function applyInputState(
   state: AppState,
   newInputState: InputState,
-  isInputToAgent: boolean
+  isInputToHumanAgent: boolean
 ): AppState {
-  if (isInputToAgent) {
+  if (isInputToHumanAgent) {
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         inputState: newInputState,
       },
     };
@@ -1519,11 +1557,13 @@ function applyInputState(
 /**
  * Returns the given input state.
  */
-function getInputState(state: AppState, isInputToAgent: boolean) {
-  return isInputToAgent ? state.agentState.inputState : state.botInputState;
+function getInputState(state: AppState, isInputToHumanAgent: boolean) {
+  return isInputToHumanAgent
+    ? state.humanAgentState.inputState
+    : state.botInputState;
 }
 
 // Merge in the other reducers.
-Object.assign(reducers, agentReducers);
+Object.assign(reducers, humanAgentReducers);
 
 export { reducers, ReducerType };

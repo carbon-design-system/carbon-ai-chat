@@ -15,9 +15,9 @@ import {
 import { uuid, UUIDType } from "../utils/lang/uuid";
 
 /**
- * Takes data from the v2 message API and transforms into something usable by WAC.
+ * Takes data from {@link MessageRequest} and transforms into something usable by the chat internally.
  *
- * @param  message Takes an object in the shape of a v2 message API Send object. With an additional `ui_state`
+ * @param  message Takes a {@link MessageRequest} object. With an additional `ui_state`
  * object for local state.
  * @param originalUserText The original text provided by the user before it was potentially modified on the
  * underlying {@link MessageRequest}. This value may be null if there is no text from the user to display.

@@ -27,9 +27,9 @@ import { ModalPortalRootContext } from "../../contexts/ModalPortalRootContext";
 import { HasServiceManager } from "../../hocs/withServiceManager";
 import actions from "../../store/actions";
 import {
-  selectAgentDisplayState,
+  selectHumanAgentDisplayState,
   selectInputState,
-  selectIsInputToAgent,
+  selectIsInputToHumanAgent,
 } from "../../store/selectors";
 import {
   AnimationInType,
@@ -84,8 +84,8 @@ const WIDTH_BREAKPOINT_WIDE = "WAC--wideWidth";
 
 interface MainWindowOwnProps extends HasServiceManager {
   /**
-   * By default, Carbon AI chat will create its own host element. If PublicConfig.element is set, we use the element provided
-   * instead and render Carbon AI chat there.
+   * By default, Carbon AI Chat will create its own host element. If PublicConfig.element is set, we use the element provided
+   * instead and render Carbon AI Chat there.
    */
   useCustomHostElement: boolean;
 
@@ -127,7 +127,7 @@ interface MainWindowState extends HasExtraClassNames {
   isHydrationAnimationComplete: boolean;
 
   /**
-   * In the tooling we don't want to have focus automatically set because it makes the page scroll to the Carbon AI chat.
+   * In the tooling we don't want to have focus automatically set because it makes the page scroll to the Carbon AI Chat.
    * It's possible that because we have a changing behavior here (we used to not focus if people rendered to an
    * element), this will end up having its initial state set by a public config option.
    */
@@ -282,7 +282,7 @@ class MainWindow
 
   /**
    * This function is called when the app is destroyed. This component is never actually unmounted; the entire
-   * container holding the Carbon AI chat is simply removed from the DOM.
+   * container holding the Carbon AI Chat is simply removed from the DOM.
    */
   destroy() {
     if (
@@ -338,7 +338,7 @@ class MainWindow
     }
 
     if (viewState.mainWindow && (!prevViewState.mainWindow || !open)) {
-      // If the main Carbon AI chat window is now open, and it was not previously then perform the necessary updates.
+      // If the main Carbon AI Chat window is now open, and it was not previously then perform the necessary updates.
       // See https://reactjs.org/docs/react-component.html#componentdidupdate.
       this.setState({ open: true }, () => {
         this.requestFocus();
@@ -349,7 +349,7 @@ class MainWindow
       oldState.open &&
       open
     ) {
-      // If the main Carbon AI chat window was previously open but is now no longer open then preform the necessary updates.
+      // If the main Carbon AI Chat window was previously open but is now no longer open then preform the necessary updates.
       // See https://reactjs.org/docs/react-component.html#componentdidupdate.
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ closing: true });
@@ -380,7 +380,7 @@ class MainWindow
           newProps.botMessageState.localMessageIDs.length &&
         this.state.shouldAutoFocus
       ) {
-        // If there are fewer messages than there were previously, we infer that the Carbon AI chat has been restarted.
+        // If there are fewer messages than there were previously, we infer that the Carbon AI Chat has been restarted.
         // In that case, don't do any autofocusing.
         this.setState({ shouldAutoFocus: false });
       } else if (
@@ -405,7 +405,7 @@ class MainWindow
       const lastMessageItem = newProps.allMessageItemsByID[newLastItemID];
       const lastMessage =
         newProps.allMessagesByID[lastMessageItem?.fullMessageID];
-      if (!lastMessage?.history?.from_history) {
+      if (!lastMessage?.ui_state_internal?.from_history) {
         this.requestFocus();
       }
     }
@@ -521,12 +521,12 @@ class MainWindow
     source: MessageSendSource,
     options?: SendOptions
   ) => {
-    const isInputToAgent = selectIsInputToAgent(this.props);
+    const isInputToHumanAgent = selectIsInputToHumanAgent(this.props);
     const { serviceManager } = this.props;
     const state = serviceManager.store.getState();
     const { files } = selectInputState(state);
 
-    if (isInputToAgent) {
+    if (isInputToHumanAgent) {
       // If we're connected to an agent, then send the message to the agent instead of the bot.
       serviceManager.humanAgentService.sendMessageToAgent(text, files);
     } else {
@@ -538,7 +538,9 @@ class MainWindow
     }
 
     if (files.length) {
-      serviceManager.store.dispatch(actions.clearInputFiles(isInputToAgent));
+      serviceManager.store.dispatch(
+        actions.clearInputFiles(isInputToHumanAgent)
+      );
     }
   };
 
@@ -563,7 +565,7 @@ class MainWindow
     });
   };
 
-  // Reset Carbon AI chat to new session.
+  // Reset Carbon AI Chat to new session.
   onRestart = async () => {
     await this.props.serviceManager.actions.restartConversation();
     this.requestFocus();
@@ -738,7 +740,7 @@ class MainWindow
   onUserTyping = (isTyping: boolean) => {
     if (
       this.props.serviceManager.store.getState().persistedToBrowserStorage
-        .chatState.agentState.isConnected
+        .chatState.humanAgentState.isConnected
     ) {
       this.props.serviceManager.humanAgentService.userTyping(isTyping);
     }
@@ -847,7 +849,7 @@ class MainWindow
       config,
       serviceManager,
       botMessageState,
-      agentState,
+      humanAgentState,
       allMessageItemsByID,
       isHydrated,
       locale,
@@ -859,7 +861,7 @@ class MainWindow
       this.state;
 
     const inputState = selectInputState(this.props);
-    const agentDisplayState = selectAgentDisplayState(this.props);
+    const agentDisplayState = selectHumanAgentDisplayState(this.props);
 
     const showDisclaimer = this.getShowDisclaimer();
     let hideBotContainer: boolean;
@@ -890,7 +892,7 @@ class MainWindow
           onSendInput={(text: string) =>
             this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
           }
-          agentState={agentState}
+          humanAgentState={humanAgentState}
           agentDisplayState={agentDisplayState}
           allMessageItemsByID={allMessageItemsByID}
           onRestart={this.onRestart}
@@ -939,7 +941,7 @@ class MainWindow
   }
 
   /**
-   * Render the panel with the loading state when we are hydrating the Carbon AI chat.
+   * Render the panel with the loading state when we are hydrating the Carbon AI Chat.
    */
   renderHydrationPanel() {
     const {
@@ -976,7 +978,7 @@ class MainWindow
   }
 
   /**
-   * Render the panel for when the Carbon AI chat completely fails.
+   * Render the panel for when the Carbon AI Chat completely fails.
    */
   renderCatastrophicPanel() {
     const { serviceManager, botName, languagePack, headerDisplayName } =
@@ -1253,7 +1255,7 @@ class MainWindow
                 ref={this.animationContainerRef}
                 className="WACWidget__animationContainer"
                 onScroll={() => {
-                  // When Carbon AI chat initially opens, it's possible for focusable elements inside a custom panel to
+                  // When Carbon AI Chat initially opens, it's possible for focusable elements inside a custom panel to
                   // cause the element to scroll during the opening animations. The listener to reset any
                   // scrolling that is happening.
                   if (this.animationContainerRef.current.scrollTop !== 0) {

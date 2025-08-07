@@ -638,7 +638,7 @@ svg.WAC__sent-fileIcon {
     display: none;
   }
 
-  .WAC__received--fromAgent,
+  .WAC__received--fromHuman,
   .WAC__sent--bubble {
     border-radius: var(--cds-chat-BASE-border-radius-med);
   }
@@ -663,17 +663,16 @@ svg.WAC__sent-fileIcon {
   background-color: theme.$chat-avatar-agent;
 }
 
-.WAC__received--fromAgent.WAC__received--text {
+.WAC__received--fromHuman.WAC__received--text {
   padding: layout.$spacing-03 layout.$spacing-04;
   border: solid 1px theme.$chat-bubble-border;
   border-radius: 0 var(--cds-chat-BASE-border-radius-med)
     var(--cds-chat-BASE-border-radius-med)
     var(--cds-chat-BASE-border-radius-med);
   background-color: theme.$chat-bubble-agent;
-  max-inline-size: 75%;
 }
 
-.WACContainer--render[dir="rtl"] .WAC__received--fromAgent.WAC__received--text {
+.WACContainer--render[dir="rtl"] .WAC__received--fromHuman.WAC__received--text {
   border-radius: var(--cds-chat-BASE-border-radius-med) 0
     var(--cds-chat-BASE-border-radius-med)
     var(--cds-chat-BASE-border-radius-med);

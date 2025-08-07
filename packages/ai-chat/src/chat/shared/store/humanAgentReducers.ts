@@ -10,9 +10,9 @@
 import { AppState } from "../../../types/state/AppState";
 import {
   HA_END_CHAT,
-  HA_SET_AGENT_AVAILABILITY,
-  HA_SET_AGENT_JOINED,
-  HA_SET_AGENT_LEFT_CHAT,
+  HA_SET_HUMAN_AGENT_AVAILABILITY,
+  HA_SET_HUMAN_AGENT_JOINED,
+  HA_SET_HUMAN_AGENT_LEFT_CHAT,
   HA_SET_IS_CONNECTING,
   HA_SET_IS_RECONNECTING,
   HA_SET_IS_SCREEN_SHARING,
@@ -22,17 +22,17 @@ import {
   HA_UPDATE_FILE_UPLOAD_IN_PROGRESS,
   HA_UPDATE_IS_SUSPENDED,
   HA_UPDATE_IS_TYPING,
-} from "./agentActions";
+} from "./humanAgentActions";
 import { type ReducerType } from "./reducers";
 import { ServiceDeskCapabilities } from "../../../types/config/ServiceDeskConfig";
 import { applyLocalMessageUIState } from "./reducerUtils";
-import { AgentProfile } from "../../../types/messaging/Messages";
+import { ResponseUserProfile } from "../../../types/messaging/Messages";
 
 /**
  * Redux reducers for human agent actions.
  */
 
-const agentReducers: { [key: string]: ReducerType } = {
+const humanAgentReducers: { [key: string]: ReducerType } = {
   [HA_SET_IS_CONNECTING]: (
     state: AppState,
     action: { isConnecting: boolean; localMessageID: string }
@@ -40,23 +40,24 @@ const agentReducers: { [key: string]: ReducerType } = {
     const { isConnecting, localMessageID } = action;
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         isConnecting,
         activeLocalMessageID: localMessageID,
         // When connecting, clear any unread messages from a previous conversation.
         numUnreadMessages: isConnecting
           ? 0
-          : state.agentState.numUnreadMessages,
+          : state.humanAgentState.numUnreadMessages,
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
         chatState: {
           ...state.persistedToBrowserStorage.chatState,
-          agentState: {
-            ...state.persistedToBrowserStorage.chatState.agentState,
+          humanAgentState: {
+            ...state.persistedToBrowserStorage.chatState.humanAgentState,
             isSuspended: isConnecting
-              ? state.persistedToBrowserStorage.chatState.agentState.isSuspended
+              ? state.persistedToBrowserStorage.chatState.humanAgentState
+                  .isSuspended
               : false,
           },
         },
@@ -71,23 +72,26 @@ const agentReducers: { [key: string]: ReducerType } = {
     const { isReconnecting } = action;
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         isReconnecting,
       },
     };
   },
 
-  [HA_SET_AGENT_AVAILABILITY]: (state: AppState, action: any): AppState => {
-    if (!state.agentState.isConnecting) {
+  [HA_SET_HUMAN_AGENT_AVAILABILITY]: (
+    state: AppState,
+    action: any
+  ): AppState => {
+    if (!state.humanAgentState.isConnecting) {
       // If the agent is not currently connecting, just ignore the availability update.
       return state;
     }
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
-        availability: state.agentState.isConnecting
+      humanAgentState: {
+        ...state.humanAgentState,
+        availability: state.humanAgentState.isConnecting
           ? action.availability
           : null,
       },
@@ -100,29 +104,30 @@ const agentReducers: { [key: string]: ReducerType } = {
   ): AppState => {
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         showScreenShareRequest: showRequest,
       },
     };
   },
 
-  [HA_SET_AGENT_JOINED]: (
+  [HA_SET_HUMAN_AGENT_JOINED]: (
     state: AppState,
-    action: { agentProfile?: AgentProfile }
+    action: { responseUserProfile?: ResponseUserProfile }
   ): AppState => {
-    const agentProfiles = {
-      ...state.persistedToBrowserStorage.chatState.agentState.agentProfiles,
+    const responseUserProfiles = {
+      ...state.persistedToBrowserStorage.chatState.humanAgentState
+        .responseUserProfiles,
     };
-    const { agentProfile } = action;
-    if (agentProfile) {
-      agentProfiles[agentProfile.id] = agentProfile;
+    const { responseUserProfile } = action;
+    if (responseUserProfile) {
+      responseUserProfiles[responseUserProfile.id] = responseUserProfile;
     }
 
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         isConnecting: false,
         isReconnecting: false,
         availability: null,
@@ -131,11 +136,11 @@ const agentReducers: { [key: string]: ReducerType } = {
         ...state.persistedToBrowserStorage,
         chatState: {
           ...state.persistedToBrowserStorage.chatState,
-          agentState: {
-            ...state.persistedToBrowserStorage.chatState.agentState,
+          humanAgentState: {
+            ...state.persistedToBrowserStorage.chatState.humanAgentState,
             isConnected: true,
-            agentProfile,
-            agentProfiles,
+            responseUserProfile,
+            responseUserProfiles,
           },
         },
       },
@@ -151,8 +156,8 @@ const agentReducers: { [key: string]: ReducerType } = {
       ...state.persistedToBrowserStorage,
       chatState: {
         ...state.persistedToBrowserStorage.chatState,
-        agentState: {
-          ...state.persistedToBrowserStorage.chatState.agentState,
+        humanAgentState: {
+          ...state.persistedToBrowserStorage.chatState.humanAgentState,
           serviceDeskState: action.state,
         },
       },
@@ -164,8 +169,8 @@ const agentReducers: { [key: string]: ReducerType } = {
     action: { isSuspended: boolean }
   ): AppState => {
     if (
-      !state.agentState.isConnecting &&
-      !state.persistedToBrowserStorage.chatState.agentState.isConnected
+      !state.humanAgentState.isConnecting &&
+      !state.persistedToBrowserStorage.chatState.humanAgentState.isConnected
     ) {
       // If the user is not connecting or connected to an agent, then we can't update the suspended state.
       return state;
@@ -176,8 +181,8 @@ const agentReducers: { [key: string]: ReducerType } = {
         ...state.persistedToBrowserStorage,
         chatState: {
           ...state.persistedToBrowserStorage.chatState,
-          agentState: {
-            ...state.persistedToBrowserStorage.chatState.agentState,
+          humanAgentState: {
+            ...state.persistedToBrowserStorage.chatState.humanAgentState,
             isSuspended: action.isSuspended,
           },
         },
@@ -191,31 +196,31 @@ const agentReducers: { [key: string]: ReducerType } = {
   ): AppState => {
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
-        isAgentTyping: action.isTyping,
+      humanAgentState: {
+        ...state.humanAgentState,
+        isHumanAgentTyping: action.isTyping,
       },
     };
   },
 
-  [HA_SET_AGENT_LEFT_CHAT]: (state: AppState): AppState =>
+  [HA_SET_HUMAN_AGENT_LEFT_CHAT]: (state: AppState): AppState =>
     // Remove the agent's profile and typing indicator.
     ({
       ...state,
       botMessageState: {
         ...state.botMessageState,
       },
-      agentState: {
-        ...state.agentState,
-        isAgentTyping: false,
+      humanAgentState: {
+        ...state.humanAgentState,
+        isHumanAgentTyping: false,
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
         chatState: {
           ...state.persistedToBrowserStorage.chatState,
-          agentState: {
-            ...state.persistedToBrowserStorage.chatState.agentState,
-            agentProfile: null,
+          humanAgentState: {
+            ...state.persistedToBrowserStorage.chatState.humanAgentState,
+            responseUserProfile: null,
           },
         },
       },
@@ -226,7 +231,7 @@ const agentReducers: { [key: string]: ReducerType } = {
     action: { capabilities: ServiceDeskCapabilities }
   ): AppState => {
     const newInputState = {
-      ...state.agentState.inputState,
+      ...state.humanAgentState.inputState,
       ...action.capabilities,
     };
     if (!newInputState.allowFileUploads) {
@@ -234,8 +239,8 @@ const agentReducers: { [key: string]: ReducerType } = {
     }
     return {
       ...state,
-      agentState: {
-        ...state.agentState,
+      humanAgentState: {
+        ...state.humanAgentState,
         inputState: newInputState,
       },
     };
@@ -246,8 +251,8 @@ const agentReducers: { [key: string]: ReducerType } = {
     { isSharing }: { isSharing: boolean }
   ): AppState => ({
     ...state,
-    agentState: {
-      ...state.agentState,
+    humanAgentState: {
+      ...state.humanAgentState,
       isScreenSharing: isSharing,
     },
   }),
@@ -257,8 +262,8 @@ const agentReducers: { [key: string]: ReducerType } = {
     action: { fileUploadInProgress: boolean }
   ): AppState => ({
     ...state,
-    agentState: {
-      ...state.agentState,
+    humanAgentState: {
+      ...state.humanAgentState,
       fileUploadInProgress: action.fileUploadInProgress,
     },
   }),
@@ -267,23 +272,23 @@ const agentReducers: { [key: string]: ReducerType } = {
     // Update the UI state of the current CTA message to indicate that chat was ended.
     let newState = applyLocalMessageUIState(
       state,
-      state.agentState.activeLocalMessageID,
-      "wasAgentChatEnded",
+      state.humanAgentState.activeLocalMessageID,
+      "wasHumanAgentChatEnded",
       true
     );
 
     // End the chat.
     newState = {
       ...newState,
-      agentState: {
-        ...newState.agentState,
+      humanAgentState: {
+        ...newState.humanAgentState,
         isConnecting: false,
         isReconnecting: false,
         availability: null,
         activeLocalMessageID: null,
-        isAgentTyping: false,
+        isHumanAgentTyping: false,
         inputState: {
-          ...newState.agentState.inputState,
+          ...newState.humanAgentState.inputState,
           isReadonly: false,
         },
       },
@@ -291,11 +296,11 @@ const agentReducers: { [key: string]: ReducerType } = {
         ...state.persistedToBrowserStorage,
         chatState: {
           ...state.persistedToBrowserStorage.chatState,
-          agentState: {
-            ...state.persistedToBrowserStorage.chatState.agentState,
+          humanAgentState: {
+            ...state.persistedToBrowserStorage.chatState.humanAgentState,
             isConnected: false,
             isSuspended: false,
-            agentProfile: null,
+            responseUserProfile: null,
           },
         },
       },
@@ -304,4 +309,4 @@ const agentReducers: { [key: string]: ReducerType } = {
   },
 };
 
-export { agentReducers };
+export { humanAgentReducers };

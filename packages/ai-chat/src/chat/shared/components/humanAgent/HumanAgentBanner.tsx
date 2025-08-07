@@ -20,15 +20,15 @@ import { shallowEqual, useSelector } from "react-redux";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
-import { selectAgentDisplayState } from "../../store/selectors";
+import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { doFocusRef } from "../../utils/domUtils";
 import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
-import { AgentAvatar } from "./AgentAvatar";
+import { ResponseUserAvatar } from "../ResponseUserAvatar";
 import { AvailabilityMessage } from "./AvailabilityMessage";
 
-interface AgentBannerProps {
+interface HumanAgentBannerProps {
   /**
    * The callback that is called when the user clicks the "end chat" or "cancel" button.
    */
@@ -40,17 +40,23 @@ interface AgentBannerProps {
  * live agent. It will display a cancel button in the case where the user is waiting for an agent or an "end chat"
  * button for when the user is connected to an agent.
  */
-function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
+function HumanAgentBanner(
+  props: HumanAgentBannerProps,
+  ref: RefObject<HasRequestFocus>
+) {
   const { onButtonClick } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
-  const persistedAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.chatState.agentState
+  const persistedHumanAgentState = useSelector(
+    (state: AppState) =>
+      state.persistedToBrowserStorage.chatState.humanAgentState
   );
-  const agentState = useSelector((state: AppState) => state.agentState);
-  const { isConnecting, availability, isScreenSharing } = agentState;
-  const displayState = useSelector(selectAgentDisplayState, shallowEqual);
-  const { agentProfile } = persistedAgentState;
+  const humanAgentState = useSelector(
+    (state: AppState) => state.humanAgentState
+  );
+  const { isConnecting, availability, isScreenSharing } = humanAgentState;
+  const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
+  const { responseUserProfile } = persistedHumanAgentState;
   const buttonRef = useRef<HTMLButtonElement>();
 
   let line1;
@@ -72,11 +78,11 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
     );
     buttonLabel = languagePack.agent_connectButtonCancel;
   } else {
-    line1 = agentProfile?.nickname || languagePack.agent_noName;
+    line1 = responseUserProfile?.nickname || languagePack.agent_noName;
     buttonLabel = languagePack.agent_connectedButtonEndChat;
     avatar = (
-      <AgentAvatar
-        agentProfile={agentProfile}
+      <ResponseUserAvatar
+        responseUserProfile={responseUserProfile}
         languagePack={languagePack}
         width="32px"
         height="32px"
@@ -101,20 +107,24 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
 
   return (
     <div
-      className={cx("WACAgentBanner", {
-        "WACAgentBanner--connected": !isConnecting,
+      className={cx("WACHumanAgentBanner", {
+        "WACHumanAgentBanner--connected": !isConnecting,
       })}
     >
       {displayState.isConnectingOrConnected && (
-        <div className="WACAgentBanner__Body">
+        <div className="WACHumanAgentBanner__Body">
           {avatar}
-          <div className="WACAgentBanner__AgentInfo">
-            <div className="WACAgentBanner__AgentLine1">{line1}</div>
-            {line2 && <div className="WACAgentBanner__AgentLine2">{line2}</div>}
+          <div className="WACHumanAgentBanner__HumanAgentInfo">
+            <div className="WACHumanAgentBanner__HumanAgentLine1">{line1}</div>
+            {line2 && (
+              <div className="WACHumanAgentBanner__HumanAgentLine2">
+                {line2}
+              </div>
+            )}
           </div>
           <Button
             ref={buttonRef}
-            className="WACAgentBanner__Button WACAgentBanner__CancelButton"
+            className="WACHumanAgentBanner__Button WACHumanAgentBanner__CancelButton"
             onClick={onButtonClick}
             size="sm"
           >
@@ -124,7 +134,7 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
       )}
       {isScreenSharing && (
         <Button
-          className="WACAgentBanner__Button WACAgentBanner__StopSharingButton"
+          className="WACHumanAgentBanner__Button WACHumanAgentBanner__StopSharingButton"
           kind="danger"
           size="sm"
           renderIcon={ScreenOff}
@@ -139,5 +149,5 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
   );
 }
 
-const AgentBannerExport = React.memo(forwardRef(AgentBanner));
-export { AgentBannerExport as AgentBanner };
+const HumanAgentBannerExport = React.memo(forwardRef(HumanAgentBanner));
+export { HumanAgentBannerExport as HumanAgentBanner };

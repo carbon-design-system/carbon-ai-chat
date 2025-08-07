@@ -10,12 +10,12 @@
 import React from "react";
 import { shallowEqual, useSelector } from "react-redux";
 
-import { selectAgentDisplayState } from "../../store/selectors";
+import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { AgentBanner } from "./AgentBanner";
+import { HumanAgentBanner } from "./HumanAgentBanner";
 
-interface AgentBannerContainerProps {
+interface HumanAgentBannerContainerProps {
   /**
    * A ref to the banner.
    */
@@ -30,16 +30,18 @@ interface AgentBannerContainerProps {
 /**
  * A simple container for the agent banner that avoids rendering it if it is hidden.
  */
-function AgentBannerContainer({
+function HumanAgentBannerContainer({
   onButtonClick,
   bannerRef,
-}: AgentBannerContainerProps) {
-  const agentState = useSelector((state: AppState) => state.agentState);
-  const displayState = useSelector(selectAgentDisplayState, shallowEqual);
-  if (displayState.isConnectingOrConnected || agentState.isScreenSharing) {
-    return <AgentBanner ref={bannerRef} onButtonClick={onButtonClick} />;
+}: HumanAgentBannerContainerProps) {
+  const humanAgentState = useSelector(
+    (state: AppState) => state.humanAgentState
+  );
+  const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
+  if (displayState.isConnectingOrConnected || humanAgentState.isScreenSharing) {
+    return <HumanAgentBanner ref={bannerRef} onButtonClick={onButtonClick} />;
   }
   return null;
 }
 
-export { AgentBannerContainer };
+export { HumanAgentBannerContainer };

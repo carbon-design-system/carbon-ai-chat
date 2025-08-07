@@ -27,7 +27,7 @@ import {
 import { FeedbackInitialValues } from "../../web-components/components/feedbackElement/src/FeedbackElement";
 import { CSS_CLASS_PREFIX } from "../../web-components/settings";
 import { ResponseStopped } from "../components/ResponseStopped";
-import { ConnectToAgent } from "../components/responseTypes/agent/ConnectToAgent";
+import { ConnectToHumanAgent } from "../components/responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "../components/responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "../components/responseTypes/buttonItem/ButtonItemComponent";
 import { CardItemComponent } from "../components/responseTypes/card/CardItemComponent";
@@ -47,9 +47,12 @@ import { VideoComponent } from "../components/responseTypes/video/VideoComponent
 import { useLanguagePack } from "../hooks/useLanguagePack";
 import { useUUID } from "../hooks/useUUID";
 import actions from "../store/actions";
-import { selectAgentDisplayState } from "../store/selectors";
+import { selectHumanAgentDisplayState } from "../store/selectors";
 import { AppState } from "../../../types/state/AppState";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
+import {
+  LocalMessageItem,
+  MessageErrorState,
+} from "../../../types/messaging/LocalMessageItem";
 import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps";
 import {
   getMediaDimensions,
@@ -65,7 +68,7 @@ import {
   ButtonItem,
   CardItem,
   CarouselItem,
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   ConversationalSearchItem,
   DateItem,
   GridItem,
@@ -84,6 +87,7 @@ import {
   OptionItem,
   TableItem,
   TextItem,
+  UserType,
   VideoItem,
 } from "../../../types/messaging/Messages";
 
@@ -102,10 +106,16 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const intl = useIntl();
   const languagePack = useLanguagePack();
   const feedbackDetailsRef = useRef<HTMLDivElement>();
-  const agentDisplayState = useSelector(selectAgentDisplayState, shallowEqual);
-  const agentState = useSelector((state: AppState) => state.agentState);
-  const persistedAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.chatState.agentState
+  const agentDisplayState = useSelector(
+    selectHumanAgentDisplayState,
+    shallowEqual
+  );
+  const humanAgentState = useSelector(
+    (state: AppState) => state.humanAgentState
+  );
+  const persistedHumanAgentState = useSelector(
+    (state: AppState) =>
+      state.persistedToBrowserStorage.chatState.humanAgentState
   );
   const feedbackID = message.item.message_options?.feedback?.id;
   const feedbackPanelID = useUUID();
@@ -224,13 +234,16 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     }
 
     const responseType = localMessageItem.item.response_type;
-    const withHumanAgent = Boolean(localMessageItem.item.agent_message_type);
+    const withHuman = Boolean(
+      message.history?.response_user_profile?.user_type === UserType.HUMAN ||
+        localMessageItem.item.agent_message_type
+    );
     switch (responseType) {
       case MessageResponseTypes.TEXT:
         return renderText(
           localMessageItem as LocalMessageItem<TextItem>,
           message,
-          withHumanAgent
+          withHuman
         );
       case MessageResponseTypes.IMAGE:
         return renderImage(localMessageItem as LocalMessageItem<ImageItem>);
@@ -239,9 +252,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           localMessageItem as LocalMessageItem<OptionItem>,
           message
         );
-      case MessageResponseTypes.CONNECT_TO_AGENT:
-        return renderConnectToAgent(
-          localMessageItem as LocalMessageItem<ConnectToAgentItem>,
+      case MessageResponseTypes.CONNECT_TO_HUMAN_AGENT:
+        return renderConnectToHumanAgent(
+          localMessageItem as LocalMessageItem<ConnectToHumanAgentItem>,
           message as MessageResponse
         );
       case MessageResponseTypes.INLINE_ERROR:
@@ -333,7 +346,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       <StreamingRichText
         text={localMessageItem.item.text}
         streamingState={localMessageItem.ui_state.streamingState}
-        isStreamingError={originalMessage?.history?.is_streaming_error}
+        isStreamingError={
+          originalMessage?.history?.error_state ===
+          MessageErrorState.FAILED_WHILE_STREAMING
+        }
         removeHTML={removeHTML}
         doAutoScroll={props.doAutoScroll}
       />
@@ -452,7 +468,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     return (
       <UserDefinedResponse
         streamingState={message.ui_state.streamingState}
-        isStreamingError={originalMessage?.history?.is_streaming_error}
+        isStreamingError={
+          originalMessage?.history?.error_state ===
+          MessageErrorState.FAILED_WHILE_STREAMING
+        }
         doAutoScroll={props.doAutoScroll}
         localMessageID={message.ui_state.id}
         serviceManager={serviceManager}
@@ -466,7 +485,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     return <TourCard message={message} serviceManager={serviceManager} />;
   }
 
-  function renderConnectToAgent(
+  function renderConnectToHumanAgent(
     message: LocalMessageItem,
     originalMessage: MessageResponse
   ) {
@@ -479,15 +498,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     } = props;
 
     return (
-      <ConnectToAgent
+      <ConnectToHumanAgent
         localMessage={message}
         originalMessage={originalMessage}
         languagePack={languagePack}
         config={config}
         serviceManager={serviceManager}
-        agentState={agentState}
+        humanAgentState={humanAgentState}
         agentDisplayState={agentDisplayState}
-        persistedAgentState={persistedAgentState}
+        persistedHumanAgentState={persistedHumanAgentState}
         disableUserInputs={disableUserInputs || !isMessageForInput}
         requestFocus={props.requestInputFocus}
       />
@@ -521,7 +540,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       <ConversationalSearch
         localMessageItem={localMessageItem}
         scrollElementIntoView={scrollElementIntoView}
-        isStreamingError={fullMessage.history?.is_streaming_error}
+        isStreamingError={
+          fullMessage?.history?.error_state ===
+          MessageErrorState.FAILED_WHILE_STREAMING
+        }
         doAutoScroll={doAutoScroll}
       />
     );

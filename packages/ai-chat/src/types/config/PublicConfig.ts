@@ -121,7 +121,7 @@ export interface PublicConfig {
   disableWindowTitleChanges?: boolean;
 
   /**
-   * Indicates if Carbon AI chat should sanitize HTML from a user or from the assistant.
+   * Indicates if Carbon AI chat should sanitize HTML from the bot.
    */
   shouldSanitizeHTML?: boolean;
 

@@ -102,7 +102,7 @@ function ChatContainer({
     // We need to check if the element in the ShadowRoot we are render the React application to exists.
     // If it doesn't, we need to create and append it.
 
-    // When the Carbon AI chat is destroyed (either via a config change or by calling instance.destroy), this element is
+    // When the Carbon AI Chat is destroyed (either via a config change or by calling instance.destroy), this element is
     // removed again. When the chat is destroyed the instance is set to null. The useEffect watches the instance
     // value and runs if it changes, re-creating the container element if needed.
 

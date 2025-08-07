@@ -39,7 +39,7 @@ interface LauncherComplexProps extends HasIntl, HasClassName {
    * The number of unread messages from a human agent that should be displayed on the launcher. If this is 0, no
    * agent indicator will be shown unless showUnreadIndicator is set.
    */
-  unreadAgentCount: number;
+  unreadHumanAgentCount: number;
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
@@ -74,7 +74,7 @@ function LauncherComplex(props: LauncherComplexProps) {
     launcherRef,
     onOpen,
     onMinimize,
-    unreadAgentCount,
+    unreadHumanAgentCount,
     showUnreadIndicator,
     desktopLauncherIsExpanded,
     launcherHidden,
@@ -132,7 +132,7 @@ function LauncherComplex(props: LauncherComplexProps) {
         ref={launcherRef}
         onToggleOpen={onOpen}
         className="WACLauncherComplex__SmallLauncherContainer"
-        unreadAgentCount={unreadAgentCount}
+        unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         launcherHidden={launcherHidden}
         activeTour={activeTour}

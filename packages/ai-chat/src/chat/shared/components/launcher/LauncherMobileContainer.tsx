@@ -56,8 +56,8 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const { config: launcherConfig } = useSelector(
     (state: AppState) => state.launcher
   );
-  const unreadAgentCount = useSelector(
-    (state: AppState) => state.agentState.numUnreadMessages
+  const unreadHumanAgentCount = useSelector(
+    (state: AppState) => state.humanAgentState.numUnreadMessages
   );
   const {
     mobileLauncherIsExtended: isExtended,
@@ -314,7 +314,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
       ref={launcherRef}
       launcherConfig={launcherConfig}
       showUnreadIndicator={showUnreadIndicator}
-      unreadAgentCount={unreadAgentCount}
+      unreadHumanAgentCount={unreadHumanAgentCount}
       isExtended={isExtended}
       playExtendAnimation={playExtendAnimation}
       onToggleOpen={handleToggleOpen}

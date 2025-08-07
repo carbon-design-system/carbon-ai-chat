@@ -8,7 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 
-.WACAgentBanner__Body {
+.WACHumanAgentBanner__Body {
   display: flex;
   align-items: center;
   padding: layout.$spacing-05;
@@ -19,21 +19,21 @@
   line-height: var(--cds-chat-BASE-line-height-med);
 }
 
-.WACAgentBanner .WACAgentAvatar {
+.WACHumanAgentBanner .WACResponseUserAvatar {
   margin: 0 layout.$spacing-04 0 0;
   block-size: 32px;
   inline-size: 32px;
 }
 
-.WACContainer--render[dir="rtl"] .WACAgentBanner .WACAgentAvatar {
+.WACContainer--render[dir="rtl"] .WACHumanAgentBanner .WACResponseUserAvatar {
   margin: 0 0 0 layout.$spacing-04;
 }
 
-.WACAgentBanner .WACAgentAvatar img {
+.WACHumanAgentBanner .WACResponseUserAvatar img {
   border-radius: 16px;
 }
 
-.WACAgentBanner__AgentInfo {
+.WACHumanAgentBanner__HumanAgentInfo {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -41,39 +41,39 @@
   padding: 0 layout.$spacing-05 0 0;
 }
 
-.WACContainer--render[dir="rtl"] .WACAgentBanner__AgentInfo {
+.WACContainer--render[dir="rtl"] .WACHumanAgentBanner__HumanAgentInfo {
   padding: 0 0 0 layout.$spacing-05;
 }
 
-.WACAgentBanner__AgentLine1 {
+.WACHumanAgentBanner__HumanAgentLine1 {
   font-weight: var(--cds-chat-BASE-weight-semibold);
 }
 
-.WACAgentBanner--connected .WACAgentBanner__AgentLine1 {
+.WACHumanAgentBanner--connected .WACHumanAgentBanner__HumanAgentLine1 {
   font-size: var(--cds-chat-BASE-font-size-large);
 }
 
-.WACAgentBanner__AgentLine2 {
+.WACHumanAgentBanner__HumanAgentLine2 {
   padding-block-start: layout.$spacing-02;
 }
 
-.WACAgentBanner__AgentLine2,
-.WACAgentBanner__AgentLine2 p {
+.WACHumanAgentBanner__HumanAgentLine2,
+.WACHumanAgentBanner__HumanAgentLine2 p {
   font-size: var(--cds-chat-BASE-font-size-med);
   line-height: var(--cds-chat-BASE-line-height-med);
 }
 
 .WACContainer--render[dir="rtl"]
-  .WACAgentBanner__CancelButton.cds--btn--sm:not(
+  .WACHumanAgentBanner__CancelButton.cds--btn--sm:not(
     .cds--btn--danger--ghost,
     .cds--btn--icon-only
   ),
-.WACAgentBanner__CancelButton.cds--btn {
+.WACHumanAgentBanner__CancelButton.cds--btn {
   align-self: center;
   padding-inline: layout.$spacing-04;
 }
 
-.WACAgentBanner__StopSharingButton {
+.WACHumanAgentBanner__StopSharingButton {
   inline-size: 100%;
   max-inline-size: unset;
 }

@@ -1,9 +1,7 @@
 name: Bug report 🐛
-description:
-  Something not working as expected? This is the place to report your issue.
+description: Report something that isn't working as expected
 title: '[Bug]: '
 type: 'bug'
-labels: ['status: grooming needed']
 body:
   - type: markdown
     attributes:
@@ -44,12 +42,10 @@ body:
       placeholder: What did you see? What did you expect to see?
     validations:
       required: true
-    validations:
-      required: true
   - type: input
     id: example-url
     attributes:
-      label: Reproduction/example
+      label: Reproduction / example
       description: |
         Re-create the issue using [CodeSandbox](https://codesandbox.io/) or [Stackblitz](https://stackblitz.com).
     validations:
@@ -66,7 +62,7 @@ body:
   - type: dropdown
     id: severity
     attributes:
-      label: Suggested Severity
+      label: Suggested severity
       description:
         'Read more to understand our [severity levels](https://github.com/carbon-design-system/carbon/blob/main/docs/guides/support.md#severity)'
       options:
@@ -77,8 +73,8 @@ body:
   - type: input
     id: application
     attributes:
-      label: Application/PAL
-      description: "What application and/or PAL do you work on?"
+      label: Application / product
+      description: "What application, product, or Carbon local system do you work on?"
   - type: checkboxes
     id: terms
     attributes:
