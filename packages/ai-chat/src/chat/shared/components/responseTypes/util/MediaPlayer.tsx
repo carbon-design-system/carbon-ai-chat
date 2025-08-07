@@ -153,10 +153,13 @@ function MediaPlayerComponent({
 
   useLayoutEffect(() => {
     if (wrapperElementRef) {
-      wrapperElementRef.current.style.paddingBlockStart = paddingTop;
+      wrapperElementRef.current.style.setProperty(
+        "padding-block-start",
+        paddingTop
+      );
     }
     if (skeletonRef) {
-      skeletonRef.current.style.paddingBlockStart = paddingTop;
+      skeletonRef.current.style.setProperty("padding-block-start", paddingTop);
     }
   }, [paddingTop]);
 

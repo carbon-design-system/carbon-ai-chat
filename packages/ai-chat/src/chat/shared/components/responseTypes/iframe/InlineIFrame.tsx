@@ -42,7 +42,7 @@ function InlineIFrame({ messageItem, doAutoScroll }: InlineIframeProps) {
   // set padding-top style dynamically
   useLayoutEffect(() => {
     if (iframeRef && paddingTop) {
-      iframeRef.current.style.paddingBlockStart = paddingTop;
+      iframeRef.current.style.setProperty("padding-block-start", paddingTop);
     }
   }, [paddingTop]);
 
