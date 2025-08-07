@@ -283,6 +283,8 @@ If you run into an issue where Lerna detects no changes (usually when bumping fr
 
 Run the workflow again with both `dry run` and `force publish` options set to true so you can confirm the version bump before re-running with `force publish` set to true and `dry run` set to false.
 
+> **Note:** when running the workflow with the `force publish` option, the workflow does not fail so make sure to cancel the workflow once it has completed running through the publish step.
+
 ![Screenshot of minor release workflow with force publish option](https://github.com/user-attachments/assets/a1535d5c-058d-4784-a46f-ae65fed3b286)
 
 ### Tag already exists
