@@ -150,6 +150,11 @@ interface MessageProps
   isFirstMessageItem: boolean;
 
   /**
+   * Indicates if this message item is the last item in a message response.
+   */
+  isLastMessageItem: boolean;
+
+  /**
    * The current locale. This value is not directly used by this component. It is indirectly used by the dayjs
    * library which formats the timestamps in this message. However, it needs to be passed a prop to ensure that this
    * component re-renders if the locale changes.
@@ -602,6 +607,7 @@ class MessageComponent extends PureComponent<
       isMessageForInput,
       scrollElementIntoView,
       isFirstMessageItem,
+      isLastMessageItem,
       hideFeedback,
       allowNewFeedback,
     } = this.props;
@@ -633,6 +639,7 @@ class MessageComponent extends PureComponent<
         config={config}
         doAutoScroll={doAutoScroll}
         scrollElementIntoView={scrollElementIntoView}
+        showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}
         allowNewFeedback={allowNewFeedback}
       />

@@ -1347,6 +1347,7 @@ const reducers: { [key: string]: ReducerType } = {
   ) => {
     const existingMessage = state.allMessagesByID[messageID];
     const newMessage = merge({}, existingMessage, { message_options });
+
     if (existingMessage) {
       return {
         ...state,

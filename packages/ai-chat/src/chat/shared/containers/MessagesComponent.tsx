@@ -602,6 +602,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * node.
    * @param isMessageForInput Indicates if this message is part the most recent message response that allows for input.
    * @param isFirstMessageItem Indicates if this message item is the first item in a message response.
+   * @param isLastMessageItem Indicates if this message item is the last item in a message response.
    * @param lastMessageID The ID of the last full message shown.
    */
   renderMessage(
@@ -611,6 +612,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     showBeforeWelcomeNodeElement: boolean,
     isMessageForInput: boolean,
     isFirstMessageItem: boolean,
+    isLastMessageItem: boolean,
     lastMessageID: string
   ) {
     const {
@@ -682,6 +684,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         doAutoScroll={this.doAutoScroll}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
+        isLastMessageItem={isLastMessageItem}
         locale={locale}
         carbonTheme={carbonTheme}
         useAITheme={useAITheme}
@@ -864,6 +867,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         previousMessageID !== localMessageItem.fullMessageID;
       const showBeforeWelcomeNodeElement =
         localMessageItem.ui_state.isWelcomeResponse && isFirstMessageItem;
+      const isLastMessageItem =
+        localMessageItems.length - 1 === currentIndex ||
+        localMessageItem.fullMessageID !==
+          localMessageItems[currentIndex + 1].fullMessageID;
 
       previousMessageID = localMessageItem.fullMessageID;
 
@@ -875,6 +882,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           showBeforeWelcomeNodeElement,
           isMessageForInput,
           isFirstMessageItem,
+          isLastMessageItem,
           lastMessageID
         )
       );

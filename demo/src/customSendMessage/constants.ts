@@ -13,6 +13,10 @@ This back-end is mocked entirely on the client side. It does **not** show all po
 
 You can type **help** to see this message again.`;
 
+const CHAIN_OF_THOUGHT_TEXT = `This content has required making a lot of requests to tools to render.`;
+
+const CHAIN_OF_THOUGHT_TEXT_STREAM = `This content has required making a lot of requests to tools to render. As this text is streaming in, different tool calls are being made to update what is coming back in the response.`;
+
 const TABLE = `
 | Lorem        | Ipsum      | Odor    | Amet      |
 |--------------|------------|---------|-----------|
@@ -131,6 +135,8 @@ ${UNORDERED_LIST}
 const WORD_DELAY = 20;
 
 export {
+  CHAIN_OF_THOUGHT_TEXT_STREAM,
+  CHAIN_OF_THOUGHT_TEXT,
   WELCOME_TEXT,
   TEXT,
   WORD_DELAY,

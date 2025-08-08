@@ -54,6 +54,11 @@ interface MessageContextValues
   isNestedMessageItem?: boolean;
 
   /**
+   * We only show chain of thought on the last message.
+   */
+  showChainOfThought: boolean;
+
+  /**
    * Indicates if all feedback components should be hidden.
    */
   hideFeedback: boolean;

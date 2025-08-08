@@ -9,6 +9,8 @@
 
 import {
   BusEventType,
+  ChainOfThoughtStep,
+  ChainOfThoughtStepStatus,
   ChatInstance,
   MessageResponse,
   MessageResponseTypes,
@@ -20,7 +22,13 @@ import {
 } from "@carbon/ai-chat";
 
 import { sleep } from "../framework/utils";
-import { MARKDOWN, WELCOME_TEXT, WORD_DELAY } from "./constants";
+import {
+  CHAIN_OF_THOUGHT_TEXT,
+  CHAIN_OF_THOUGHT_TEXT_STREAM,
+  MARKDOWN,
+  WELCOME_TEXT,
+  WORD_DELAY,
+} from "./constants";
 import { RESPONSE_MAP } from "./responseMap";
 
 const defaultHumanUserProfile: ResponseUserProfile = {
@@ -35,14 +43,127 @@ const defaultAlternativeBotProfile: ResponseUserProfile = {
   user_type: UserType.BOT,
 };
 
+const fullChainOfThought: ChainOfThoughtStep[] = [
+  {
+    title: "A step we are marking as successful with a description",
+    tool_name: "boom_bam",
+    description: `This is an optional description.\n\n*boom_bam* queries the *BAM* database run by the *BOOM* group. This contains blerg data used to identify customers borps.\n\nSee more information on [borps](https://ibm.com).`,
+    request: {
+      args: {
+        foo: "bar",
+        bar: "baz",
+        boom: {
+          bam: "bow",
+        },
+        fizz: [
+          "i",
+          "guess",
+          "fizz",
+          {
+            name: "oh no a deep object",
+          },
+        ],
+      },
+    },
+    response: {
+      content: `{ "title": "I am some stringified JSON" }`,
+    },
+  },
+  {
+    title: "A second step with a really really long title",
+    tool_name: "bam_bo",
+    request: {
+      args: {
+        foo: "bar",
+      },
+    },
+    response: {
+      content: `I am just **text** this time. I support markdown formatting.`,
+    },
+  },
+  {
+    title: "Third step",
+    tool_name: "bam_bo",
+    request: {
+      args: {
+        foo: "bar",
+      },
+    },
+    response: {
+      content: { title: "I am some actual JSON" },
+    },
+  },
+];
+
+/**
+ * A function that just mocks the chain of thought steps coming in live.
+ */
+function returnChainOfStepByStatus(
+  chainOfThought: ChainOfThoughtStep[],
+  currentIndex: number,
+  state: ChainOfThoughtStepStatus
+) {
+  const currentChainOfThought = [];
+
+  for (let i = 0; i < chainOfThought.length; i++) {
+    const step = {
+      ...chainOfThought[i],
+    };
+    if (
+      i < currentIndex ||
+      (i === currentIndex && state === ChainOfThoughtStepStatus.SUCCESS)
+    ) {
+      step.status = ChainOfThoughtStepStatus.SUCCESS;
+      currentChainOfThought.push(step);
+    } else if (
+      i === currentIndex &&
+      state === ChainOfThoughtStepStatus.PROCESSING
+    ) {
+      step.response = undefined;
+      step.status = state;
+      currentChainOfThought.push(step);
+    } else {
+      break;
+    }
+  }
+
+  return currentChainOfThought;
+}
+
 async function doTextStreaming(
   instance: ChatInstance,
   text: string = MARKDOWN,
   cancellable = true,
-  userProfile?: ResponseUserProfile
+  wordDelay = WORD_DELAY,
+  userProfile?: ResponseUserProfile,
+  chainOfThought?: ChainOfThoughtStep[]
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
+  const totalWords = words.length;
+
+  const chainOfThoughtStreamingSteps: any = {};
+
+  // Setup mocking chain of thought steps coming in as the text renders.
+  if (typeof chainOfThought !== "undefined") {
+    const numberOfSteps = chainOfThought.length * 2;
+    const stepWordAmount = Math.floor(totalWords / numberOfSteps);
+    for (let i = 0; i < chainOfThought.length - 1; i++) {
+      const word = Math.max(stepWordAmount * 2 * i, 1);
+      chainOfThoughtStreamingSteps[word] = returnChainOfStepByStatus(
+        chainOfThought,
+        i,
+        ChainOfThoughtStepStatus.PROCESSING
+      );
+      chainOfThoughtStreamingSteps[word + stepWordAmount] =
+        returnChainOfStepByStatus(
+          chainOfThought,
+          i,
+          ChainOfThoughtStepStatus.SUCCESS
+        );
+    }
+  }
+
   let isCanceled = false;
   let lastWordIndex = 0;
 
@@ -60,7 +181,7 @@ async function doTextStreaming(
       const word = words[index];
       lastWordIndex = index;
 
-      await sleep(WORD_DELAY);
+      await sleep(wordDelay);
       // Each time you get a chunk back, you can call `addMessageChunk`.
       const chunk: StreamChunk = {
         partial_item: {
@@ -81,12 +202,16 @@ async function doTextStreaming(
         },
       };
 
-      if (userProfile) {
-        chunk.partial_response = {
-          message_options: {
-            response_user_profile: userProfile,
-          },
-        };
+      chunk.partial_response = {};
+
+      chunk.partial_response.message_options = {};
+
+      chunk.partial_response.message_options.response_user_profile =
+        userProfile;
+
+      if (chainOfThoughtStreamingSteps[index]) {
+        chunk.partial_response.message_options.chain_of_thought =
+          chainOfThoughtStreamingSteps[index];
       }
 
       instance.messaging.addMessageChunk(chunk);
@@ -113,13 +238,12 @@ async function doTextStreaming(
       },
     };
 
-    if (userProfile) {
-      chunk.partial_response = {
-        message_options: {
-          response_user_profile: userProfile,
-        },
-      };
-    }
+    chunk.partial_response = {
+      message_options: {
+        response_user_profile: userProfile,
+        chain_of_thought: chainOfThought,
+      },
+    };
 
     instance.messaging.addMessageChunk(chunk);
 
@@ -130,6 +254,10 @@ async function doTextStreaming(
       id: responseID,
       output: {
         generic: [completeItem],
+      },
+      message_options: {
+        response_user_profile: userProfile,
+        chain_of_thought: chainOfThought,
       },
     };
 
@@ -167,7 +295,8 @@ function doWelcomeText(instance: ChatInstance) {
 function doText(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  userProfile?: ResponseUserProfile
+  userProfile?: ResponseUserProfile,
+  chainOfThought?: ChainOfThoughtStep[]
 ) {
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -180,66 +309,17 @@ function doText(
     },
   };
 
+  message.message_options = {
+    chain_of_thought: chainOfThought,
+  };
+
   if (userProfile) {
-    message.message_options = {
-      response_user_profile: userProfile,
-    };
+    message.message_options.response_user_profile = userProfile;
   } else {
-    message.output.generic = [];
+    message.output.generic = message.output.generic || [];
     message.output.generic[0] = {
       ...genericItem,
       message_options: {
-        chain_of_thought: [
-          {
-            title: "A step we are marking as successful with a description",
-            tool_name: "boom_bam",
-            description: `This is an optional description.\n\n*boom_bam* queries the *BAM* database run by the *BOOM* group. This contains blerg data used to identify customers borps.\n\nSee more information on [borps](https://ibm.com).`,
-            request: {
-              args: {
-                foo: "bar",
-                bar: "baz",
-                boom: {
-                  bam: "bow",
-                },
-                fizz: [
-                  "i",
-                  "guess",
-                  "fizz",
-                  {
-                    name: "oh no a deep object",
-                  },
-                ],
-              },
-            },
-            response: {
-              content: `{ "title": "I am some stringified JSON" }`,
-            },
-          },
-          {
-            title: "A second step with a really really long title",
-            tool_name: "bam_bo",
-            request: {
-              args: {
-                foo: "bar",
-              },
-            },
-            response: {
-              content: `I am just **text** this time. I support markdown formatting.`,
-            },
-          },
-          {
-            title: "Third step",
-            tool_name: "bam_bo",
-            request: {
-              args: {
-                foo: "bar",
-              },
-            },
-            response: {
-              content: { title: "I am some actual JSON" },
-            },
-          },
-        ],
         feedback: {
           /**
            * Indicates if a request for feedback should be displayed.
@@ -295,10 +375,38 @@ async function doTextStreamingWithNonWatsonBotProfile(
   cancellable = true,
   userProfile: ResponseUserProfile = defaultAlternativeBotProfile
 ) {
-  return doTextStreaming(instance, text, cancellable, userProfile);
+  return doTextStreaming(instance, text, cancellable, WORD_DELAY, userProfile);
+}
+
+async function doTextChainOfThoughtStreaming(
+  instance: ChatInstance,
+  text: string = CHAIN_OF_THOUGHT_TEXT_STREAM,
+  cancellable = true,
+  userProfile?: ResponseUserProfile,
+  chainOfThought: ChainOfThoughtStep[] = fullChainOfThought
+) {
+  doTextStreaming(
+    instance,
+    text,
+    cancellable,
+    300,
+    userProfile,
+    chainOfThought
+  );
+}
+
+function doTextChainOfThought(
+  instance: ChatInstance,
+  text: string = CHAIN_OF_THOUGHT_TEXT,
+  userProfile?: ResponseUserProfile,
+  chainOfThought: ChainOfThoughtStep[] = fullChainOfThought
+) {
+  doText(instance, text, userProfile, chainOfThought);
 }
 
 export {
+  doTextChainOfThoughtStreaming,
+  doTextChainOfThought,
   doTextStreaming,
   doWelcomeText,
   doText,

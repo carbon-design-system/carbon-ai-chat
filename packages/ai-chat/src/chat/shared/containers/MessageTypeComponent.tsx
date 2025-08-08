@@ -167,7 +167,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         <>
           {response}
           {isResponseStopped && <ResponseStopped />}
-          {renderChainOfThought(localMessageItem)}
+          {props.showChainOfThought &&
+            renderChainOfThought(localMessageItem, message)}
           {renderFeedback(localMessageItem, message)}
         </>
       );
@@ -623,14 +624,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   /**
-   * Renders chain of thought component for the given message item if appropriate.
+   * Renders chain of thought component for the given {@link MessageResponse}.
    */
-  function renderChainOfThought(localMessageItem: LocalMessageItem) {
-    const chainOfThought =
-      localMessageItem.item.message_options?.chain_of_thought;
+  function renderChainOfThought(
+    localMessageItem: LocalMessageItem,
+    message: MessageResponse
+  ) {
+    const chainOfThought = message.message_options?.chain_of_thought;
     if (!chainOfThought || props.isNestedMessageItem) {
       return false;
     }
+    console.log("renderChainOfThought", chainOfThought);
     return (
       <ChainOfThought
         steps={chainOfThought}

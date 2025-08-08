@@ -527,11 +527,6 @@ export interface ChainOfThoughtStep {
  */
 export interface GenericItemMessageOptions {
   /**
-   * Controls the display of chain of thought component.
-   */
-  chain_of_thought?: ChainOfThoughtStep[];
-
-  /**
    * Controls the display of a feedback options (thumbs up/down) for a message item.
    */
   feedback?: GenericItemMessageFeedbackOptions;
@@ -1408,6 +1403,11 @@ interface MessageResponseOptions {
    * This is the profile for the human or bot who sent or triggered this message.
    */
   response_user_profile?: ResponseUserProfile;
+
+  /**
+   * Controls the display of chain of thought component.
+   */
+  chain_of_thought?: ChainOfThoughtStep[];
 }
 
 /**

@@ -35,8 +35,6 @@ class CDSChatCodeElement extends LitElement {
       // highlight.js exports as default in ESM, but some bundlers might expose it directly
       const hljs = "default" in hljsModule ? hljsModule.default : hljsModule;
 
-      console.log({ hljs });
-
       const codeEl = this.renderRoot.querySelector("code");
       let content = "";
       if (this.language && hljs.getLanguage(this.language)) {
