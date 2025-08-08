@@ -173,7 +173,7 @@ close to overflowing. */
 
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     display: block;
     animation: none;
     margin-block-end: layout.$spacing-04;
@@ -188,7 +188,7 @@ close to overflowing. */
 
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     display: block;
     animation: none;
     margin-block-end: layout.$spacing-04;
@@ -203,7 +203,7 @@ close to overflowing. */
 
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     display: block;
     animation: none;
     margin-block-end: layout.$spacing-04;
@@ -218,7 +218,7 @@ close to overflowing. */
 
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     display: block;
     animation: none;
     margin-block-end: layout.$spacing-04;
@@ -233,7 +233,7 @@ close to overflowing. */
 
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     display: block;
     animation: none;
     margin-block-end: layout.$spacing-04;
@@ -246,7 +246,8 @@ close to overflowing. */
   }
 }
 
-.WACHomeScreen.WACHomeScreen--hydrationComplete button.WACHomeScreen__starter {
+.WACHomeScreen.WACHomeScreen--hydrationComplete
+  cds-custom-chat-button.WACHomeScreen__starter {
   display: block;
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
     WACFadeInUp calc(var(--cds-chat-HomeScreenStarter-index) * 0.12s) both;
@@ -262,7 +263,7 @@ close to overflowing. */
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
     .WACHomeScreen__starters--animateGroup
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     animation: none;
   }
 }
@@ -270,7 +271,7 @@ close to overflowing. */
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
     .WACHomeScreen__starters--animateGroup
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     animation: none;
   }
 }
@@ -278,7 +279,7 @@ close to overflowing. */
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
     .WACHomeScreen__starters--animateGroup
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     animation: none;
   }
 }
@@ -286,7 +287,7 @@ close to overflowing. */
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
     .WACHomeScreen__starters--animateGroup
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     animation: none;
   }
 }
@@ -294,35 +295,35 @@ close to overflowing. */
 @media screen and (prefers-reduced-motion: reduce) {
   .WACHomeScreen.WACHomeScreen--hydrationComplete
     .WACHomeScreen__starters--animateGroup
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
     animation: none;
   }
 }
 
 .WACHomeScreen.WACHomeScreen--hydrationComplete
   .WACHomeScreen__starters--animateGroup
-  button.WACHomeScreen__starter {
+  cds-custom-chat-button.WACHomeScreen__starter {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
     WACFadeInUp 0.12s both;
 }
 
-button.WACHomeScreen__starter:nth-child(1) {
+cds-custom-chat-button.WACHomeScreen__starter:nth-child(1) {
   --cds-chat-HomeScreenStarter-index: 1;
 }
 
-button.WACHomeScreen__starter:nth-child(2) {
+cds-custom-chat-button.WACHomeScreen__starter:nth-child(2) {
   --cds-chat-HomeScreenStarter-index: 2;
 }
 
-button.WACHomeScreen__starter:nth-child(3) {
+cds-custom-chat-button.WACHomeScreen__starter:nth-child(3) {
   --cds-chat-HomeScreenStarter-index: 3;
 }
 
-button.WACHomeScreen__starter:nth-child(4) {
+cds-custom-chat-button.WACHomeScreen__starter:nth-child(4) {
   --cds-chat-HomeScreenStarter-index: 4;
 }
 
-button.WACHomeScreen__starter:nth-child(5) {
+cds-custom-chat-button.WACHomeScreen__starter:nth-child(5) {
   --cds-chat-HomeScreenStarter-index: 5;
 }
 
@@ -476,17 +477,17 @@ button.WACHomeScreen__starter:nth-child(5) {
       color: currentcolor;
     }
 
-    button.WACHomeScreen__starter {
+    cds-custom-chat-button.WACHomeScreen__starter {
       border: 1px solid var(--cds-chat-ACCENT-color-text);
       color: var(--cds-chat-ACCENT-color-text);
     }
 
-    button.WACHomeScreen__starter:hover {
+    cds-custom-chat-button.WACHomeScreen__starter:hover {
       background-color: var(--cds-chat-ACCENT-color-hover);
       color: currentcolor;
     }
 
-    button.WACHomeScreen__starter:active {
+    cds-custom-chat-button.WACHomeScreen__starter:active {
       background-color: var(--cds-chat-ACCENT-color-active);
     }
   }

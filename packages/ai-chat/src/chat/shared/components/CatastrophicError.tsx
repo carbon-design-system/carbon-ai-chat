@@ -7,8 +7,12 @@
  *  @license
  */
 
-import Restart from "@carbon/icons-react/es/Restart.js";
-import { unstable__ChatButton as ChatButton } from "@carbon/react";
+import Restart16 from "@carbon/icons/es/restart/16.js";
+import { carbonIconToReact } from "../utils/carbonIcon";
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "../../react/carbon/ChatButton";
 import cx from "classnames";
 import React from "react";
 import { useIntl } from "react-intl";
@@ -27,6 +31,8 @@ import {
 } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 import { OverlayPanelName } from "./OverlayPanel";
+
+const Restart = carbonIconToReact(Restart16);
 
 interface CatastrophicErrorProps extends HasLanguagePack {
   /**
@@ -103,13 +109,12 @@ function CatastrophicError({
           {onRestart && (
             <ChatButton
               className="WACCatastrophicError__RestartButton"
-              kind={ButtonKindEnum.TERTIARY}
-              size={ButtonSizeEnum.SMALL}
+              kind={CHAT_BUTTON_KIND.TERTIARY}
+              size={CHAT_BUTTON_SIZE.SMALL}
               aria-label={languagePack.buttons_restart}
               onClick={onRestart}
-              renderIcon={Restart}
-              type="button"
             >
+              <Restart slot="icon" />
               {languagePack.buttons_retry}
             </ChatButton>
           )}

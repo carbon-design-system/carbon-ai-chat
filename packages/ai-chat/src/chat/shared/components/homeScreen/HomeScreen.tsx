@@ -7,8 +7,11 @@
  *  @license
  */
 
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "../../../react/carbon/ChatButton";
 import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
-import { unstable__ChatButton as ChatButton } from "@carbon/react";
 import cx from "classnames";
 import React, { RefObject } from "react";
 import { useSelector } from "react-redux";
@@ -116,7 +119,6 @@ function HomeScreenComponent({
     !useAITheme && background === HomeScreenBackgroundType.SOLID;
 
   const firstRender = isHydrated && !prevIsHydrated;
-
   return (
     <div
       className={cx("WACHomeScreen", {
@@ -162,9 +164,8 @@ function HomeScreenComponent({
                 >
                   {starters.buttons.map((starter, index) => (
                     <ChatButton
-                      type="button"
-                      size={ButtonSizeEnum.SMALL}
-                      kind={ButtonKindEnum.TERTIARY}
+                      size={CHAT_BUTTON_SIZE.SMALL}
+                      kind={CHAT_BUTTON_KIND.TERTIARY}
                       isQuickAction
                       // eslint-disable-next-line react/no-array-index-key
                       key={index}
@@ -200,9 +201,8 @@ function HomeScreenComponent({
         >
           {showBackToBot && (
             <ChatButton
-              type="button"
-              size={ButtonSizeEnum.SMALL}
-              kind={ButtonKindEnum.SECONDARY}
+              size={CHAT_BUTTON_SIZE.SMALL}
+              kind={CHAT_BUTTON_KIND.SECONDARY}
               className="WACHomeScreen__backButton"
               onClick={onToggleHomeScreen}
             >
