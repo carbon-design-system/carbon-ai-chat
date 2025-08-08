@@ -29,10 +29,6 @@ import {
   SingleOption,
 } from "../../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../../types/events/eventBusTypes";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../../types/utilities/carbonTypes";
 
 interface OptionProps extends HasServiceManager, HasLanguagePack {
   /**

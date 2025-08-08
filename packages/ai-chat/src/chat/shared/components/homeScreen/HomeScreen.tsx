@@ -30,10 +30,6 @@ import {
   HomeScreenConfig,
   HomeScreenStarterButton,
 } from "../../../../types/config/HomeScreenConfig";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../types/utilities/carbonTypes";
 import { OverlayPanelName } from "../OverlayPanel";
 
 interface HomeScreenProps {

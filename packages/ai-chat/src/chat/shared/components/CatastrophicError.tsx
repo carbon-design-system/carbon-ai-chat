@@ -24,11 +24,7 @@ import { ErrorMessageDark } from "./ErrorMessageDark";
 import { ErrorMessageLight } from "./ErrorMessageLight";
 import { BotHeader } from "./header/BotHeader";
 import RichText from "./responseTypes/util/RichText";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-  CarbonTheme,
-} from "../../../types/utilities/carbonTypes";
+import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 import { OverlayPanelName } from "./OverlayPanel";
 
