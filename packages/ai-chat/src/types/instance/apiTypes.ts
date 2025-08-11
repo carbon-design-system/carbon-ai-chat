@@ -26,7 +26,7 @@ export enum FileStatusValue {
 }
 
 /**
- * An interface that represents a file to upload and it's current upload status.
+ * An interface that represents a file to upload and its current upload status.
  *
  * @category Instance
  */

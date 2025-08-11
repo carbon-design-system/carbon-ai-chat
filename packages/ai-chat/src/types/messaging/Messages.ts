@@ -317,7 +317,7 @@ enum MessageResponseTypes {
  */
 export enum HumanAgentMessageType {
   /**
-   * The was an error in a message.
+   * There was an error in a message.
    */
   INLINE_ERROR = "inline_error",
 
@@ -527,13 +527,13 @@ export interface ChainOfThoughtStep {
  */
 export interface GenericItemMessageOptions {
   /**
-   * Controls the display of a feedback options (thumbs up/down) for a message item.
+   * Controls the display of feedback options (thumbs up/down) for a message item.
    */
   feedback?: GenericItemMessageFeedbackOptions;
 }
 
 /**
- * Controls the display of a feedback options (thumbs up/down) for a message item.
+ * Controls the display of feedback options (thumbs up/down) for a message item.
  *
  * @category Messaging
  */
@@ -621,7 +621,7 @@ interface BaseGenericItem<TUserDefinedType = Record<string, unknown>> {
   response_type: MessageResponseTypes;
 
   /**
-   * Metadata used identify a generic item within the context of a stream in order to correlate any updates meant
+   * Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
    * for a specific item.
    */
   streaming_metadata?: ItemStreamingMetadata;
@@ -721,7 +721,7 @@ interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
   };
 
   /**
-   * When a conversation is escalated to an agent additional information is needed to fullfill the request. This
+   * When a conversation is escalated to an agent additional information is needed to fulfill the request. This
    * additional information typically is added by the channel integration and cannot be deduced from the dialog
    * itself.
    */
@@ -729,7 +729,7 @@ interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
 }
 
 /**
- * Additional information as part of a {@link ConnectToHumanAgentItem} that may be need to perform a transfer to an agent.
+ * Additional information as part of a {@link ConnectToHumanAgentItem} that may be needed to perform a transfer to an agent.
  *
  * @category Messaging
  */
@@ -968,7 +968,7 @@ interface ConversationalSearchItemCitation {
   }[];
 
   /**
-   * In some implementations, the content searched isn't in an accessible URL. For instance, if could be from Milvus or
+   * In some implementations, the content searched isn't in an accessible URL. For instance, it could be from Milvus or
    * ElasticSearch. In that scenario, you may populate "search_results". This field will allow you define which index in
    * the search_results array matches with this citation. The end user can then drill into the larger search result to
    * view it rather than clicking on a URL to actually see the content.
@@ -995,7 +995,7 @@ interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
   citations?: ConversationalSearchItemCitation[];
 
   /**
-   * In some implementations, the content searched isn't in an accessible URL. For instance, if could be from Milvus or
+   * In some implementations, the content searched isn't in an accessible URL. For instance, it could be from Milvus or
    * ElasticSearch. In that scenario, you may populate "search_results". Combine this with
    * {@link ConversationalSearchItemCitation.search_result_idx}.
    */
@@ -1068,7 +1068,7 @@ type AudioItem<TUserDefinedType = Record<string, unknown>> =
  */
 enum ButtonItemType {
   /**
-   * A button that sends it value back to the backend.
+   * A button that sends its value back to the backend.
    */
   POST_BACK = "post_back",
 
@@ -1185,7 +1185,7 @@ enum ButtonItemKind {
 }
 
 /**
- * This message item represents a link to a downloadable file.
+ * This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.
  *
  * @category Messaging
  */
@@ -1290,7 +1290,7 @@ interface GridItem<TUserDefinedType = Record<string, unknown>>
   vertical_alignment?: VerticalCellAlignment;
 
   /**
-   * The list of columns specifications. This will determine the maximum number of columns that can be rendered.
+   * The list of column specifications. This will determine the maximum number of columns that can be rendered.
    */
   columns: {
     width: string;
@@ -1436,7 +1436,7 @@ interface MessageResponseOptions {
   response_user_profile?: ResponseUserProfile;
 
   /**
-   * Controls the display of chain of thought component.
+   * Controls the display of the chain of thought component.
    */
   chain_of_thought?: ChainOfThoughtStep[];
 }
@@ -1475,7 +1475,7 @@ interface MessageResponseHistory {
    * @internal
    * If this message represents a file upload, this is the status of that file. If the upload failed due to an
    * error, the upload will be complete and the error_state value above will be set. The "success" status is a
-   * temporary status the displays a checkmark on successful uploads. The "complete" status is the permanent
+   * temporary status that displays a checkmark on successful uploads. The "complete" status is the permanent
    * status stored in session history.
    */
   file_upload_status?: FileStatusValue;
@@ -1528,7 +1528,7 @@ interface MessageRequestHistory {
    * @internal
    * If this message represents a file upload, this is the status of that file. If the upload failed due to an
    * error, the upload will be complete and the error_state value above will be set. The "success" status is a
-   * temporary status the displays a checkmark on successful uploads. The "complete" status is the permanent
+   * temporary status that displays a checkmark on successful uploads. The "complete" status is the permanent
    * status stored in session history.
    */
   file_upload_status?: FileStatusValue;
@@ -1673,7 +1673,7 @@ interface ResponseUserProfile {
   user_type: UserType;
 
   /**
-   * An url pointing to an avatar for the response author. This image should be a square.
+   * A URL pointing to an avatar for the response author. This image should be a square.
    */
   profile_picture_url?: string;
 }

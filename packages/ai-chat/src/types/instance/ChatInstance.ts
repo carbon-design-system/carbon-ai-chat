@@ -331,7 +331,7 @@ interface ChatActions {
   tours: ChatInstanceTours;
 
   /**
-   * Allow being able to set the input field to be invisible. Helpful for when
+   * Sets the input field to be invisible. Helpful for when
    * you want to force input into a button, etc.
    */
   updateInputFieldVisibility: (isVisible: boolean) => void;
@@ -392,14 +392,14 @@ interface ChatActions {
   /**
    * Either increases or decreases the internal counter that indicates whether the "bot is loading" indicator is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error.
+   * increase or decrease the value. Any other value will log an error.
    */
   updateIsLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error.
+   * increase or decrease the value. Any other value will log an error.
    */
   updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
