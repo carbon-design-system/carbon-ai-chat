@@ -217,9 +217,23 @@
   }
 }
 
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--opening--slideInFromLeft {
+    animation: none;
+  }
+}
+
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--opening--slideInFromLeft {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
     WACSlideInFromRight both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--opening--slideInFromRight {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -378,9 +392,23 @@
   }
 }
 
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--closing--slideOutToLeft {
+    animation: none;
+  }
+}
+
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--closing--slideOutToLeft {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
     WACSlideOutToRight both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--closing--slideOutToRight {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
