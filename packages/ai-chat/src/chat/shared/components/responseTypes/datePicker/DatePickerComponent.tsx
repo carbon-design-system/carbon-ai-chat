@@ -8,7 +8,17 @@
  */
 
 import Checkmark from "@carbon/icons-react/es/Checkmark.js";
-import { Button, DatePicker, DatePickerInput, Layer } from "@carbon/react";
+import {
+  Button,
+  // DatePicker as ReactDatePicker,
+  // DatePickerInput as ReactDatePickerInput,
+} from "@carbon/react";
+import Layer from "../../../../react/carbon/Layer";
+import {
+  DatePickerInput,
+  DatePicker,
+} from "../../../../react/carbon/DatePicker";
+import { DATE_PICKER_INPUT_KIND } from "@carbon/web-components/es/components/date-picker/defs.js";
 import dayjs from "dayjs";
 import { BaseOptions } from "flatpickr/dist/types/options";
 import React, { useCallback, useRef, useState } from "react";
@@ -16,6 +26,7 @@ import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
 import { ScrollElementIntoViewFunction } from "../../../containers/MessagesComponent";
+import { doScrollElementIntoView } from "../../../utils/domUtils";
 import { useOnMount } from "../../../hooks/useOnMount";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { AppState } from "../../../../../types/state/AppState";
@@ -74,15 +85,8 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const [flatpickrLocale, setFlatpickrLocale] =
     useState<BaseOptions["locale"]>();
   const [dayjsLocale, setDayjsLocale] = useState<string>();
-  const [datePickerHostElement, setDatePickerHostElement] =
-    useState<HTMLDivElement>();
+  const datePickerRef = useRef<any>(null);
   const valueForAssistantRef = useRef<string>();
-  // This ref is to track when the user uses the date picker input through some pointer that's not a keyboard
-  // (e.g. mouse, touch, etc.) to open the date picker. If the date picker is opened and the user's pointer is not
-  // over the date picker input, such as when the date picker is scrolled into view, the date picker will close.
-  // This is intentional behavior from the DatePicker component, so a way around this will be to scroll the calendar
-  // into view after the user has lifted their pointer from the input and not when the calendar is opened.
-  const isInputPointerDownEventFiredRef = useRef<boolean>(false);
   const inputLabel = intl.formatMessage(
     { id: "datePicker_chooseDate" },
     { format: userDisplayFormat }
@@ -132,12 +136,24 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     );
   }, [localMessage, serviceManager, userDisplayValue]);
 
-  /**
-   * Scrolls the date picker host element into view.
-   */
-  const doScrollElementIntoView = useCallback(() => {
-    scrollElementIntoView(datePickerHostElement, 0, 24);
-  }, [datePickerHostElement, scrollElementIntoView]);
+  const handleOpen = useCallback(() => {
+    setIsCalendarOpen(true);
+
+    const element = datePickerRef.current?.renderRoot?.querySelector(
+      "#floating-menu-container div.cds-custom--date-picker__calendar"
+    );
+
+    if (element) {
+      const onAnimationEnd = () => {
+        doScrollElementIntoView(element, true);
+        element.removeEventListener("transitionend", onAnimationEnd);
+        element.removeEventListener("animationend", onAnimationEnd);
+      };
+
+      element.addEventListener("transitionend", onAnimationEnd);
+      element.addEventListener("animationend", onAnimationEnd);
+    }
+  }, []);
 
   useOnMount(() => {
     const localeFromMessage = webChatLocale;
@@ -168,71 +184,38 @@ function DatePickerComponent(props: DatePickerComponentProps) {
 
   return (
     <div className="WACDatePicker">
-      {isDateInfoReady && datePickerHostElement && (
-        <Layer>
+      {isDateInfoReady && (
+        <Layer level={1}>
           <DatePicker
-            className="WACDatePicker__Calendar"
-            datePickerType="single"
-            allowInput={false}
-            locale={flatpickrLocale}
-            appendTo={datePickerHostElement}
-            onChange={(dates) => {
+            ref={datePickerRef}
+            allow-input="true"
+            close-on-select="true"
+            date-format={flatpickrFormat}
+            onClick={handleOpen}
+            onFocus={handleOpen}
+            onChange={(e: CustomEvent) => {
+              const dates = e.detail.selectedDates;
               if (dates.length) {
                 const date = dates[0];
-
                 // The assistant should receive the date value in ISO format.
                 valueForAssistantRef.current = toAssistantDateFormat(date);
                 // Use the date object to get a date string in the expected format.
                 setUserDisplayValue(toUserDateFormat(date, userDisplayFormat));
+                setIsCalendarOpen(false);
               }
             }}
-            dateFormat={flatpickrFormat}
-            onOpen={() => {
-              setIsCalendarOpen(true);
-              // The carbon date picker uses a "handleClickOutside" functionality to detect when the user has clicked
-              // outside of the component so that it will auto-close the calendar popup. There is a bug that occurs
-              // when the component scrolls at the same time the popup opens. If the user clicks on the picker input
-              // field, the mouse down part causes the field to get focus which causes the popup to open. We had code
-              // below that would then cause the chat to scroll which moved the input field so it was no longer under
-              // the mouse cursor. Unless the user does this very fast, the mouse up half of the click will not occur
-              // on the input field (because it moved) and the component detects this as a "click outside" and closes
-              // the popup. The popup can open either because the user clicks on the input field or when the field gets
-              // focus from keyboard input. With keyboard input, we want continue to scroll when the popup opens.
-              // However, if the user clicks on the input, we want to delay the scroll until the click is fully
-              // processed (this will ensure the cursor stays on the input field until the mouse up occurs).
-              if (isInputPointerDownEventFiredRef.current) {
-                isInputPointerDownEventFiredRef.current = false;
-              } else {
-                doScrollElementIntoView();
-              }
-            }}
-            onClose={() => setIsCalendarOpen(false)}
           >
             <DatePickerInput
               id={uuidRef.current}
-              labelText={inputLabel}
-              placeholder={userDisplayFormat}
               disabled={disabled}
-              // Set this prop value to an empty string. The component will set a default text telling the user to match
-              // the requests date format, which is useless since we don't allow the user to type a date.
-              title=""
-              // This event listener is fired before the DatePicker component's onOpen listener so we'll set the flag
-              // to prevent the onOpen listener from moving the input away from the user's pointer and close the
-              // calendar as result.
-              onPointerDown={() => {
-                isInputPointerDownEventFiredRef.current = true;
-              }}
-              // This event listener gets fired once the user's pointer is lifted from the input which is when we
-              // scroll the calendar into view.
-              onClick={() => doScrollElementIntoView()}
-            />
+              kind={DATE_PICKER_INPUT_KIND.SINGLE}
+              label-text={inputLabel}
+              placeholder={userDisplayFormat}
+              warn-text=""
+            ></DatePickerInput>
           </DatePicker>
         </Layer>
       )}
-      <div
-        className="WACDatePicker__CalendarContainer"
-        ref={setDatePickerHostElement}
-      />
       {!disabled && !isCalendarOpen && userDisplayValue && (
         <Button
           className="WACDatePicker__ConfirmButton"
