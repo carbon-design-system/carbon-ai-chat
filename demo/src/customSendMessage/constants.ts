@@ -7,66 +7,61 @@
  *  @license
  */
 
-const WELCOME_TEXT = `Welcome to this example of a custom back-end.
-
-This back-end is mocked entirely on the client side. It does **not** show all potential functionality.
+const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is harded coded with responses to show a subset of the functionality of Carbon AI Chat.
 
 You can type **help** to see this message again.`;
 
-const CHAIN_OF_THOUGHT_TEXT = `This content has required making a lot of requests to tools to render.`;
+const CHAIN_OF_THOUGHT_TEXT = `Carbon's versatile bonding properties have been analyzed through multiple chemical databases to present this comprehensive overview.`;
 
-const CHAIN_OF_THOUGHT_TEXT_STREAM = `This content has required making a lot of requests to tools to render. As this text is streaming in, different tool calls are being made to update what is coming back in the response.`;
+const CHAIN_OF_THOUGHT_TEXT_STREAM = `Carbon's versatile bonding properties have been analyzed through multiple chemical databases to present this comprehensive overview. As this analysis streams in, various computational chemistry tools are querying molecular structures and periodic trends.`;
 
 const TABLE = `
-| Lorem        | Ipsum      | Odor    | Amet      |
-|--------------|------------|---------|-----------|
-| consectetuer dddd ddddd ddddd | adipiscing | elit    | Venenatis |
-| 0            | 1          | 2       | 3         |
-| bibendum     | enim       | blandit | quis      |
-| consectetuer | adipiscing | elit    | Venenatis |
-| 4            | 5          | 6       | 7         |
-| bibendum     | enim       | blandit | quis      |
-| consectetuer | adipiscing | elit    | Venenatis |
-| 8            | 9          | 10      | 11        |
-| bibendum     | enim       | blandit | quis      |
-| consectetuer | adipiscing | elit    | Venenatis |
-| 12           | 13         | 14      | 15        |
-| bibendum     | enim       | blandit | quis      |
-| consectetuer | adipiscing | elit    | Venenatis |
-| 16           | 17         | 18      | 19        |
-| bibendum     | enim       | blandit | quis      |
-| consectetuer | adipiscing | elit    | Venenatis |
-| 20           | 21         | 22      | 23        |
-| bibendum     | enim       | blandit | quis      |
+| Element      | Symbol | Atomic Number | Group | Period | Atomic Mass (u) | Electron Config | Bonding | Melting Point (°C) | Boiling Point (°C) |
+|--------------|--------|---------------|-------|--------|-----------------|-----------------|---------|--------------------|--------------------|
+| Carbon       | C      | 6             | 14    | 2      | 12.011          | [He] 2s² 2p²    | Covalent| 3550               | 4027               |
+| Silicon      | Si     | 14            | 14    | 3      | 28.085          | [Ne] 3s² 3p²    | Covalent| 1414               | 3265               |
+| Germanium    | Ge     | 32            | 14    | 4      | 72.630          | [Ar] 3d¹⁰ 4s² 4p²| Covalent| 938                | 2833               |
+| Tin          | Sn     | 50            | 14    | 5      | 118.710         | [Kr] 4d¹⁰ 5s² 5p²| Metallic| 232                | 2602               |
+| Lead         | Pb     | 82            | 14    | 6      | 207.200         | [Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²| Metallic| 327          | 1749               |
+| Flerovium    | Fl     | 114           | 14    | 7      | 289             | [Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²| Unknown | Unknown      | Unknown            |
+| Hydrogen     | H      | 1             | 1     | 1      | 1.008           | 1s¹             | Covalent| -259               | -253               |
+| Helium       | He     | 2             | 18    | 1      | 4.003           | 1s²             | Noble   | -272               | -269               |
+| Lithium      | Li     | 3             | 1     | 2      | 6.940           | [He] 2s¹        | Metallic| 180                | 1342               |
+| Beryllium    | Be     | 4             | 2     | 2      | 9.012           | [He] 2s²        | Metallic| 1287               | 2468               |
+| Boron        | B      | 5             | 13    | 2      | 10.810          | [He] 2s² 2p¹    | Covalent| 2075               | 4000               |
+| Nitrogen     | N      | 7             | 15    | 2      | 14.007          | [He] 2s² 2p³    | Covalent| -210               | -196               |
+| Oxygen       | O      | 8             | 16    | 2      | 15.999          | [He] 2s² 2p⁴    | Covalent| -218               | -183               |
+| Fluorine     | F      | 9             | 17    | 2      | 18.998          | [He] 2s² 2p⁵    | Covalent| -220               | -188               |
+| Neon         | Ne     | 10            | 18    | 2      | 20.180          | [He] 2s² 2p⁶    | Noble   | -249               | -246               |
 `;
 
 const UNORDERED_LIST = `
-- consectetuer
-- adipiscing
-- elit
-  - sublist
-  - adipiscing
-  - elit
-  - Venenatis
-- Venenatis
-- consectetuer
-- adipiscing
-- elit
-- Venenatis
+- Carbon allotropes
+- Diamond
+- Graphite
+  - Graphene layers
+  - Hexagonal structure
+  - Electrical conductivity
+  - Thermal properties
+- Fullerenes
+- Carbon nanotubes
+- Amorphous carbon
+- Coal
+- Activated carbon
 `;
 
 const ORDERED_LIST = `
-1. consectetuer
-  1. sub item 1
-  2. sub item 2
-2. adipiscing
-3. elit
-4. Venenatis
+1. Carbon bonding types
+  1. Single bonds (sp³)
+  2. Double bonds (sp²)
+2. Triple bonds (sp)
+3. Aromatic bonding
+4. Metallic carbides
 `;
 
-const TEXT = `Lorem **bold text** *italics text* ipsum odor amet, consectetuer adipiscing elit. \`alert("inline code");\` aliquet non platea elementum morbi porta accumsan.
+const TEXT = `Carbon is a **chemical element** with the *atomic number* 6 and symbol **C**. \`C + O₂ → CO₂\` represents one of carbon's most fundamental reactions.
 
-Quam [link with target blank](https://ibm.com) scelerisque platea [link with target self](https://ibm.com){{target="_self"}} sem placerat pharetra sed.
+Carbon forms [covalent bonds](https://ibm.com) through electron sharing and creates [carbon chains](https://ibm.com){{target="_self"}} that are essential for organic molecules.
 
 `;
 
@@ -83,38 +78,37 @@ ${TEXT}
 
 const CODE =
   "\n```python\n" +
-  `import random
+  `import periodictable
+from rdkit import Chem
 
-def generate_lorem_ipsum(paragraphs=1):
-    # Base words for Lorem Ipsum
-    lorem_words = (
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "
-        "incididunt ut labore et dolore magna aliqua."
-    ).split()
+def analyze_carbon_compounds(smiles_list):
+    # Analyze carbon-containing molecules
+    carbon = periodictable.C
+    results = []
     
-    # Function to generate a random sentence
-    def random_sentence():
-        sentence_length = random.randint(4, 12)
-        sentence = random.sample(lorem_words, sentence_length)
-        return " ".join(sentence).capitalize() + "."
+    for smiles in smiles_list:
+        mol = Chem.MolFromSmiles(smiles)
+        if mol:
+            carbon_count = sum(1 for atom in mol.GetAtoms() if atom.GetSymbol() == 'C')
+            molecular_weight = Chem.rdMolDescriptors.CalcExactMolWt(mol)
+            results.append({
+                'smiles': smiles,
+                'carbon_atoms': carbon_count,
+                'molecular_weight': molecular_weight
+            })
     
-    # Function to generate a paragraph
-    def random_paragraph():
-        sentence_count = random.randint(3, 6)
-        return " ".join(random_sentence() for _ in range(sentence_count))
-    
-    # Generate the requested number of paragraphs
-    return "\\n\\n".join(random_paragraph() for _ in range(paragraphs))
+    return results
 
-# Example usage
-print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
+# Example usage - analyzing carbon compounds
+compounds = ['CCO', 'C6H6', 'CC(=O)O']  # Ethanol, Benzene, Acetic acid
+print(analyze_carbon_compounds(compounds))
 ` +
-  "\n\n```";
+  "```";
 
 const BLOCKQUOTE = `
-> Lorem **bold text** *italics text* ipsum odor amet, consectetuer adipiscing elit. \`alert("inline code");\` aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.
+> Carbon is the **fourth most abundant** element in the *observable universe* by mass after hydrogen, helium, and oxygen. \`C₆H₁₂O₆\` represents glucose, a fundamental carbon-based molecule for life. Carbon's unique tetravalent bonding capability enables complex molecular architectures.
 >
-> Quam [link with target blank](https://ibm.com) scelerisque platea [link with target self](https://ibm.com){{target="_self"}} sem placerat pharetra sed. Porttitor per massa venenatis fusce fusce ad cras. Vel congue semper, rhoncus tempus nisl nam. Purus molestie tristique diam himenaeos sapien lacus.
+> The [carbon cycle](https://ibm.com) describes how carbon moves between Earth's atmosphere, oceans, and [living organisms](https://ibm.com){{target="_self"}} through photosynthesis and respiration. Carbon dating uses the radioactive isotope ¹⁴C to determine the age of organic materials. Diamond and graphite demonstrate carbon's structural versatility through different bonding arrangements.
  `;
 
 const MARKDOWN = `

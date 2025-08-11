@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatInstance, DateItem, MessageResponseTypes } from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
 
 function doDate(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -15,7 +15,7 @@ function doDate(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.DATE,
-        } as DateItem,
+        },
       ],
     },
   });

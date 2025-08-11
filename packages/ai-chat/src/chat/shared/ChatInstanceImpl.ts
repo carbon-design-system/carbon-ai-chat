@@ -27,7 +27,7 @@ import { ViewState, ViewType } from "../../types/state/AppState";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import { LauncherConfig } from "../../types/config/LauncherConfig";
 import { HistoryItem } from "../../types/messaging/History";
-import { IncreaseOrDecrease, WriteableElementName } from "./utils/constants";
+import { WriteableElementName } from "./utils/constants";
 import { withoutEmptyStarters } from "./utils/homeScreenUtils";
 import { loadLanguagePack, loadLocale } from "./utils/languages";
 import {
@@ -227,11 +227,8 @@ function createChatInstance({
       instance = undefined;
     },
 
-    updateAssistantInputFieldVisibility: (isVisible: boolean) => {
-      debugLog(
-        "Called instance.updateAssistantInputFieldVisibility",
-        isVisible
-      );
+    updateInputFieldVisibility: (isVisible: boolean) => {
+      debugLog("Called instance.updateInputFieldVisibility", isVisible);
       serviceManager.store.dispatch(
         actions.updateInputState({ fieldVisible: isVisible }, false)
       );
@@ -376,35 +373,6 @@ function createChatInstance({
     restartConversation: async () => {
       debugLog("Called instance.restartConversation");
       return serviceManager.actions.restartConversation();
-    },
-
-    agentEndConversation: () => {
-      debugLog("Called instance.agentEndConversation");
-      consoleWarn(
-        `The instance.agentEndConversation method is deprecated. Use instance.serviceDesk.endConversation instead.`
-      );
-      return serviceManager.actions.agentEndConversation(false);
-    },
-
-    updateIsTypingCounter(direction: IncreaseOrDecrease): void {
-      debugLog("Called instance.updateIsTypingCounter", direction);
-      const { store } = serviceManager;
-
-      if (direction === "increase") {
-        store.dispatch(actions.addIsTypingCounter(1));
-      } else if (direction === "decrease") {
-        if (store.getState().botMessageState.isTypingCounter <= 0) {
-          consoleError(
-            "You cannot decrease the typing counter when it is already <= 0"
-          );
-          return;
-        }
-        store.dispatch(actions.addIsTypingCounter(-1));
-      } else {
-        consoleError(
-          `[updateIsTypingCounter] Invalid direction: ${direction}. Valid values are "increase" and "decrease".`
-        );
-      }
     },
 
     updateIsLoadingCounter(direction: string): void {

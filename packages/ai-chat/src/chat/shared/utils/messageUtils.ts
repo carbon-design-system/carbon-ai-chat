@@ -173,15 +173,6 @@ function isOptionItem(item: GenericItem): item is OptionItem {
 }
 
 /**
- * Determines if the message is a transfer to agent response.
- */
-function isChannelTransferToHumanAgent(message: MessageResponse) {
-  const { generic } = message.output;
-
-  return generic.some(isConnectToHumanAgent);
-}
-
-/**
  * Generates a {@link MessageRequest} for the given {@link Option} that the user has selected. This is used for
  * generating the request to the server once the user has selected a choice from an option or suggestion list.
  *
@@ -580,7 +571,6 @@ export {
   isEventRequest,
   isDateResponseType,
   isOptionItem,
-  isChannelTransferToHumanAgent,
   createWelcomeRequest,
   createMessageRequestForChoice,
   createMessageRequestForText,

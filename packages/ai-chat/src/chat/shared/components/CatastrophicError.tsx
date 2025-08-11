@@ -124,5 +124,3 @@ const CatastrophicErrorExport = React.memo(CatastrophicError);
 export { CatastrophicErrorExport as CatastrophicError };
 
 export default CatastrophicErrorExport;
-
-export type { CatastrophicErrorProps };

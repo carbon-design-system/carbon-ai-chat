@@ -39,8 +39,8 @@ import {
   GenericItem,
   IFrameItem,
   Message,
-  MessageItemHistory,
   MessageRequest,
+  MessageRequestHistory,
   MessageResponseHistory,
   MessageResponseOptions,
   MessageUIStateInternal,
@@ -77,7 +77,7 @@ const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
   "SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY";
 const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
   "SET_MESSAGE_RESPONSE_HISTORY_PROPERTY";
-const MERGE_HISTORY_ITEM = "MERGE_HISTORY_ITEM";
+const MERGE_HISTORY = "MERGE_HISTORY";
 const SET_LAUNCHER_PROPERTY = "SET_LAUNCHER_PROPERTY";
 const SET_LAUNCHER_CONFIG_PROPERTY = "SET_LAUNCHER_CONFIG_PROPERTY";
 const ANNOUNCE_MESSAGE = "ANNOUNCE_MESSAGE";
@@ -414,8 +414,11 @@ const actions = {
   /**
    * Merges the given object into the history for the given message.
    */
-  mergeMessageItemHistory(messageID: string, history: MessageItemHistory) {
-    return { type: MERGE_HISTORY_ITEM, messageID, history };
+  mergeMessageHistory(
+    messageID: string,
+    history: MessageResponseHistory | MessageRequestHistory
+  ) {
+    return { type: MERGE_HISTORY, messageID, history };
   },
 
   setMessageErrorState(messageID: string, errorState: MessageErrorState) {
@@ -744,7 +747,7 @@ export {
   REMOVE_MESSAGES,
   REMOVE_ALL_NOTIFICATIONS,
   REMOVE_NOTIFICATIONS,
-  MERGE_HISTORY_ITEM,
+  MERGE_HISTORY,
   UPDATE_CHAT_HEADER_CONFIG,
   UPDATE_MAX_VISIBLE_HEADER_OBJECTS,
   SET_STOP_STREAMING_BUTTON_VISIBLE,

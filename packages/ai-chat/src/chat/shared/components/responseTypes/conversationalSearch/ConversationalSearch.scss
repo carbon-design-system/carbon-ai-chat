@@ -69,12 +69,6 @@
   padding-block-end: 0;
 }
 
-// Add padding between conversational search, or streamed text, and an inline error.
-.WACConversationalSearch .WAC__inlineError,
-.WACStreamingRichText .WAC__inlineError {
-  padding-block-start: layout.$spacing-03;
-}
-
 .WAC--standardWidth .WACConversationalSearch .WACCarouselContainer--oneSlide,
 .WAC--wideWidth .WACConversationalSearch .WACCarouselContainer--oneSlide,
 .WAC--wideWidth .WACConversationalSearch_Disclaimer,

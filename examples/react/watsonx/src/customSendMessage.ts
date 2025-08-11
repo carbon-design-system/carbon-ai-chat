@@ -10,11 +10,9 @@
 import {
   ChatInstance,
   CustomSendMessageOptions,
-  TextItem,
   MessageResponse,
   MessageResponseTypes,
   MessageRequest,
-  InlineErrorItem,
 } from "@carbon/ai-chat";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { getWatsonxConfig } from "./watsonxConfig";
@@ -136,7 +134,7 @@ async function streamWatsonxResponse(
                     streaming_metadata: {
                       id: itemId,
                     },
-                  } as TextItem,
+                  },
                   streaming_metadata: {
                     response_id: responseId,
                   },
@@ -158,7 +156,7 @@ async function streamWatsonxResponse(
                     streaming_metadata: {
                       id: itemId,
                     },
-                  } as TextItem,
+                  },
                   streaming_metadata: {
                     response_id: responseId,
                   },
@@ -175,7 +173,7 @@ async function streamWatsonxResponse(
                   streaming_metadata: {
                     id: itemId,
                   },
-                } as TextItem,
+                },
                 streaming_metadata: {
                   response_id: responseId,
                 },
@@ -211,7 +209,7 @@ async function streamWatsonxResponse(
             text: `Sorry, I encountered an error while connecting to watsonx.ai: ${
               error instanceof Error ? error.message : "Unknown error"
             }`,
-          } as InlineErrorItem,
+          },
         ],
       },
     };
@@ -231,7 +229,7 @@ async function customSendMessage(
           {
             response_type: MessageResponseTypes.TEXT,
             text: WELCOME_TEXT,
-          } as TextItem,
+          },
         ],
       },
     };
@@ -260,7 +258,7 @@ async function customSendMessage(
                   ? configError.message
                   : "Please check your environment variables."
               }`,
-            } as InlineErrorItem,
+            },
           ],
         },
       };

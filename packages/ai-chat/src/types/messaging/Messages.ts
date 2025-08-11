@@ -424,7 +424,7 @@ export type Message =
  * @category Messaging
  */
 export interface TourStepGenericItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * A way for the authors to label steps so they can use the goToStep function to change to a
    * specific tour step.
@@ -600,7 +600,8 @@ export interface GenericItemMessageFeedbackOptions {
 /**
  * @category Messaging
  */
-export type PanelItem = GenericItem & MessageItemPanelInfo;
+export type PanelItem<TUserDefinedType = Record<string, unknown>> =
+  BaseGenericItem<TUserDefinedType> & MessageItemPanelInfo;
 
 /**
  * @category Messaging
@@ -608,12 +609,12 @@ export type PanelItem = GenericItem & MessageItemPanelInfo;
 export type PartialOrCompleteItemChunk = PartialItemChunk | CompleteItemChunk;
 
 /**
- * The basic class for items returned from a back-end as part of a message response. These are the items contained
- * in the {@link MessageOutput.generic} array.
+ * The base interface that all message response items must implement. Contains common properties
+ * shared by all item types.
  *
  * @category Messaging
  */
-interface GenericItem<TUserDefinedType = Record<string, unknown>> {
+interface BaseGenericItem<TUserDefinedType = Record<string, unknown>> {
   /**
    * The response type of this message item.
    */
@@ -638,8 +639,33 @@ interface GenericItem<TUserDefinedType = Record<string, unknown>> {
   /**
    * Options that control additional features available for a message item.
    */
-  message_options?: GenericItemMessageOptions;
+  message_item_options?: GenericItemMessageOptions;
 }
+
+/**
+ * The basic class for items returned from a back-end as part of a message response. These are the items contained
+ * in the {@link MessageOutput.generic} array.
+ *
+ * @category Messaging
+ */
+type GenericItem<TUserDefinedType = Record<string, unknown>> =
+  | TextItem<TUserDefinedType>
+  | OptionItem<TUserDefinedType>
+  | ConnectToHumanAgentItem<TUserDefinedType>
+  | ImageItem<TUserDefinedType>
+  | PauseItem<TUserDefinedType>
+  | UserDefinedItem<TUserDefinedType>
+  | IFrameItem<TUserDefinedType>
+  | VideoItem<TUserDefinedType>
+  | AudioItem<TUserDefinedType>
+  | DateItem<TUserDefinedType>
+  | TableItem<TUserDefinedType>
+  | InlineErrorItem<TUserDefinedType>
+  | CardItem<TUserDefinedType>
+  | CarouselItem<TUserDefinedType>
+  | ButtonItem<TUserDefinedType>
+  | GridItem<TUserDefinedType>
+  | ConversationalSearchItem<TUserDefinedType>;
 
 /**
  * A user defined item returned in a message response from a back-end.
@@ -647,7 +673,7 @@ interface GenericItem<TUserDefinedType = Record<string, unknown>> {
  * @category Messaging
  */
 interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * If the user_defined response type should be rendered as full width and ignore margin on the "start".
    */
@@ -660,7 +686,7 @@ interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface TextItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The text of the response.
    */
@@ -674,7 +700,7 @@ interface TextItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * A message to be sent to the human agent who will be taking over the conversation.
    */
@@ -729,7 +755,7 @@ interface ConnectToHumanAgentItemTransferInfo {
  * @category Messaging
  */
 interface PauseItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * How long to pause, in milliseconds.
    */
@@ -749,7 +775,7 @@ interface PauseItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface OptionItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * An array of objects describing the options from which the user can choose.
    */
@@ -812,7 +838,7 @@ interface SingleOption {
  * @category Messaging
  */
 interface IFrameItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The source URL to an embeddable page
    */
@@ -880,7 +906,7 @@ enum IFrameItemDisplayOption {
  * @category Messaging
  */
 interface MediaItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The url pointing to a media source, whether audio, video, or image.
    *
@@ -956,7 +982,7 @@ interface ConversationalSearchItemCitation {
  * @category Messaging
  */
 interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The returned conversational text. Any HTML/Markdown will be ignored.
    */
@@ -982,7 +1008,7 @@ interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface InlineErrorItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * Some end user friendly text describing the error and what they should do next.
    *
@@ -1018,21 +1044,24 @@ interface InlineErrorItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-type ImageItem = MediaItem;
+type ImageItem<TUserDefinedType = Record<string, unknown>> =
+  MediaItem<TUserDefinedType>;
 
 /**
  * The video response type definition for future reuse. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
  */
-type VideoItem = MediaItem;
+type VideoItem<TUserDefinedType = Record<string, unknown>> =
+  MediaItem<TUserDefinedType>;
 
 /**
  * The audio response type definition for future reuse. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
  */
-type AudioItem = MediaItem;
+type AudioItem<TUserDefinedType = Record<string, unknown>> =
+  MediaItem<TUserDefinedType>;
 
 /**
  * @category Messaging
@@ -1161,7 +1190,7 @@ enum ButtonItemKind {
  * @category Messaging
  */
 interface ButtonItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The style of button to display.
    */
@@ -1219,13 +1248,14 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
 /**
  * @category Messaging
  */
-type CardItem = GenericItem & WithBodyAndFooter & WithWidthOptions;
+type CardItem<TUserDefinedType = Record<string, unknown>> =
+  BaseGenericItem<TUserDefinedType> & WithBodyAndFooter & WithWidthOptions;
 
 /**
  * @category Messaging
  */
 interface CarouselItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   items: GenericItem[];
 }
 
@@ -1247,7 +1277,7 @@ type VerticalCellAlignment = "top" | "center" | "bottom";
  * @category Messaging
  */
 interface GridItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType>,
+  extends BaseGenericItem<TUserDefinedType>,
     WithWidthOptions {
   /**
    * Determines the horizontal alignment of all items in the grid.
@@ -1298,7 +1328,8 @@ interface GridItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-type DateItem = GenericItem;
+type DateItem<TUserDefinedType = Record<string, unknown>> =
+  BaseGenericItem<TUserDefinedType>;
 
 /**
  * @category Messaging
@@ -1314,7 +1345,7 @@ type TableItemCell = string | number;
  * @experimental
  */
 interface TableItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * Optional title for the table.
    */
@@ -1434,6 +1465,13 @@ interface MessageResponseHistory {
   error_state?: MessageErrorState;
 
   /**
+   * The state of feedback provided on the items in this message.
+   */
+  feedback?: {
+    [feedbackID: string]: MessageHistoryFeedback;
+  };
+
+  /**
    * @internal
    * If this message represents a file upload, this is the status of that file. If the upload failed due to an
    * error, the upload will be complete and the error_state value above will be set. The "success" status is a
@@ -1494,27 +1532,6 @@ interface MessageRequestHistory {
    * status stored in session history.
    */
   file_upload_status?: FileStatusValue;
-}
-
-/**
- * This interface contains information about the history of a given {@link GenericItem}. This information should be
- * saved your history store.
- *
- * @category Messaging
- */
-interface MessageItemHistory {
-  /**
-   * Indicates if this is a "silent" message. These messages are sent to or received from the assistant but should
-   * not be displayed to the user.
-   */
-  silent?: boolean;
-
-  /**
-   * The state of feedback provided on the items in this message.
-   */
-  feedback?: {
-    [feedbackID: string]: MessageHistoryFeedback;
-  };
 }
 
 /**
@@ -1676,6 +1693,7 @@ interface SearchResult {
 export {
   ResponseUserProfile,
   AudioItem,
+  BaseGenericItem,
   BaseMessageInput,
   ButtonItem,
   ButtonItemKind,
@@ -1731,7 +1749,6 @@ export {
   UserType,
   watsonx,
   MessageUIStateInternal,
-  MessageItemHistory,
   MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,

@@ -157,9 +157,10 @@ export {
 } from "./types/config/ServiceDeskConfig";
 
 export {
+  BaseGenericItem,
+  MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,
-  MessageItemHistory,
   ResponseUserProfile,
   AudioItem,
   BaseMessageInput,

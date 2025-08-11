@@ -9,9 +9,7 @@
 
 import {
   ChatInstance,
-  GenericItem,
   MessageResponseTypes,
-  TextItem,
   WidthOptions,
 } from "@carbon/ai-chat";
 
@@ -21,77 +19,12 @@ function doGrid(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "#### Grid Lendyr example:",
-        } as TextItem,
-        {
-          rows: [
-            {
-              cells: [
-                {
-                  items: [
-                    {
-                      rows: [
-                        {
-                          cells: [
-                            {
-                              items: [
-                                {
-                                  source:
-                                    "https://web-chat.global.assistant.watson.appdomain.cloud/assets/Lendyr-Avatar.png",
-                                  response_type: "image",
-                                },
-                              ],
-                            },
-                            {
-                              items: [
-                                {
-                                  response_type: "text",
-                                  text: "IBM **watsonx Assistant Demo Site**\n[https://lendyr.com](https://lendyr.com)",
-                                },
-                              ],
-                              vertical_alignment: "center",
-                            },
-                          ],
-                        },
-                      ],
-                      columns: [
-                        {
-                          width: "40px",
-                        },
-                        {
-                          width: "1",
-                        },
-                      ],
-                      response_type: "grid",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              cells: [
-                {
-                  items: [
-                    {
-                      response_type: "text",
-                      text: "Learn how IBM watsonx Assistant can be used to create powerful experiences that help customers actually resolve their problems.",
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-          columns: [
-            {
-              width: "1",
-            },
-          ],
-          response_type: "grid",
-        } as unknown as GenericItem,
+          text: "You can use the grid response type to do more complicated layouts of content on a grid. Be sure to take note of user_defined response types as your layout gets more complex.",
+        },
         {
           response_type: MessageResponseTypes.TEXT,
           text: "#### Grid alignment example with max_width: WidthOptions.SMALL",
-        } as TextItem,
+        },
         {
           max_width: WidthOptions.SMALL,
           rows: [
@@ -100,7 +33,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "**top**\ncenter\nbottom",
                     },
                   ],
@@ -108,7 +41,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -116,7 +49,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -125,7 +58,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -138,7 +71,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "top\n**center**\nbottom",
                     },
                   ],
@@ -146,7 +79,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -155,7 +88,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -165,7 +98,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -179,7 +112,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "top\ncenter\n**bottom**",
                     },
                   ],
@@ -187,7 +120,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -196,7 +129,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -206,7 +139,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -230,12 +163,12 @@ function doGrid(instance: ChatInstance) {
               width: "1",
             },
           ],
-          response_type: "grid",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.GRID,
+        },
         {
           response_type: MessageResponseTypes.TEXT,
           text: "#### Grid alignment example with max_width: WidthOptions.MEDIUM",
-        } as TextItem,
+        },
         {
           max_width: WidthOptions.MEDIUM,
           rows: [
@@ -244,7 +177,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "**top**\ncenter\nbottom",
                     },
                   ],
@@ -252,7 +185,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -260,7 +193,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -269,7 +202,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -282,7 +215,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "top\n**center**\nbottom",
                     },
                   ],
@@ -290,7 +223,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -299,7 +232,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -309,7 +242,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -323,7 +256,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "top\ncenter\n**bottom**",
                     },
                   ],
@@ -331,7 +264,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -340,7 +273,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -350,7 +283,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -374,12 +307,12 @@ function doGrid(instance: ChatInstance) {
               width: "1",
             },
           ],
-          response_type: "grid",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.GRID,
+        },
         {
           response_type: MessageResponseTypes.TEXT,
           text: "#### Grid alignment example with max_width: WidthOptions.LARGE",
-        } as TextItem,
+        },
         {
           max_width: WidthOptions.LARGE,
           rows: [
@@ -388,7 +321,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "**top**\ncenter\nbottom",
                     },
                   ],
@@ -396,7 +329,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -404,7 +337,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -413,7 +346,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -426,7 +359,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "top\n**center**\nbottom",
                     },
                   ],
@@ -434,7 +367,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -443,7 +376,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -453,7 +386,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -467,7 +400,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "top\ncenter\n**bottom**",
                     },
                   ],
@@ -475,7 +408,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "left",
                     },
                   ],
@@ -484,7 +417,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "center",
                     },
                   ],
@@ -494,7 +427,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      response_type: "text",
+                      response_type: MessageResponseTypes.TEXT,
                       text: "right",
                     },
                   ],
@@ -518,12 +451,12 @@ function doGrid(instance: ChatInstance) {
               width: "1",
             },
           ],
-          response_type: "grid",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.GRID,
+        },
         {
           response_type: MessageResponseTypes.TEXT,
           text: "#### Using the grid to control the width of a single response type (Video set to SMALL here)",
-        } as TextItem,
+        },
         {
           max_width: WidthOptions.SMALL,
           rows: [
@@ -548,8 +481,8 @@ function doGrid(instance: ChatInstance) {
               width: "1",
             },
           ],
-          response_type: "grid",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.GRID,
+        },
       ],
     },
   });

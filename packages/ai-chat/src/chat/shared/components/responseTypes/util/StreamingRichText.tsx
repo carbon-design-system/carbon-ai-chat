@@ -61,7 +61,7 @@ function StreamingRichText(props: StreamingRichTextProps) {
   }
 
   return (
-    <div className="WACStreamingRichText">
+    <>
       <RichText
         text={textToUse}
         shouldRemoveHTMLBeforeMarkdownConversion={removeHTML}
@@ -72,7 +72,7 @@ function StreamingRichText(props: StreamingRichTextProps) {
           text={languagePack.conversationalSearch_streamingIncomplete}
         />
       )}
-    </div>
+    </>
   );
 }
 

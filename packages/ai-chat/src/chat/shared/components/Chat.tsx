@@ -549,5 +549,3 @@ function NonHeaderBackground() {
 
 export default injectIntl(Chat, { forwardRef: true });
 export { Chat as ChatClass };
-
-export type { ChatProps };

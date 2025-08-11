@@ -10,10 +10,8 @@
 import {
   BusEventType,
   ChatInstance,
-  GenericItem,
   MessageResponseTypes,
   StreamChunk,
-  UserDefinedItem,
 } from "@carbon/ai-chat";
 
 import { sleep } from "../framework/utils";
@@ -30,7 +28,7 @@ function doUserDefined(instance: ChatInstance) {
             user_defined_type: "green",
             text: FAKE_DATA,
           },
-        } as UserDefinedItem,
+        },
         {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
@@ -38,7 +36,7 @@ function doUserDefined(instance: ChatInstance) {
             text: "As full width",
           },
           full_width: true,
-        } as UserDefinedItem,
+        },
       ],
     },
   });
@@ -67,7 +65,7 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
       // Each time you get a chunk back, you can call `addMessageChunk`.
       instance.messaging.addMessageChunk({
         partial_item: {
-          response_type: "user_defined",
+          response_type: MessageResponseTypes.USER_DEFINED,
           // The next chunk, the chat component will deal with appending these chunks.
           user_defined: {
             user_defined_type: "green",
@@ -80,7 +78,7 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
             id: "1",
             cancellable: true,
           },
-        } as unknown as GenericItem,
+        },
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,

@@ -13,7 +13,7 @@ import { useSelector } from "react-redux";
 
 import { Markdown } from "../../../../react/components/markdown/Markdown";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { CarbonTheme } from "../../../../../aiChatEntry";
+import { CarbonTheme } from "../../../../../types/config/PublicConfig";
 import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
 import { AppState } from "../../../../../types/state/AppState";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";

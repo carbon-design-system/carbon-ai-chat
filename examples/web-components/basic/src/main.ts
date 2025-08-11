@@ -14,7 +14,6 @@ import {
   BusEventType,
   type ChatInstance,
   FeedbackInteractionType,
-  type GenericItem,
   type MessageResponse,
   type PublicConfig,
   type UserDefinedItem,
@@ -30,7 +29,7 @@ interface UserDefinedSlotsMap {
 }
 
 interface UserDefinedSlot {
-  message: GenericItem;
+  message: UserDefinedItem;
   fullMessage: MessageResponse;
 }
 
@@ -108,7 +107,7 @@ export class Demo extends LitElement {
   renderUserDefinedResponse(slot: keyof UserDefinedSlotsMap) {
     const { message } = this.userDefinedSlotsMap[slot];
 
-    const userDefinedMessage = message as UserDefinedItem;
+    const userDefinedMessage = message;
 
     // Check the "type" we have used as our key.
     switch (userDefinedMessage.user_defined?.user_defined_type) {

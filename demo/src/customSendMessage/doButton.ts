@@ -8,10 +8,10 @@
  */
 
 import {
+  ButtonItemKind,
+  ButtonItemType,
   ChatInstance,
-  GenericItem,
   MessageResponseTypes,
-  TextItem,
 } from "@carbon/ai-chat";
 
 function doButton(instance: ChatInstance) {
@@ -21,49 +21,50 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.TEXT,
           text: "Buttons can be used to either send content back to your assistant, open URLs, open a panel, or throw client side events to drive client side code.",
-        } as TextItem,
+        },
         {
-          response_type: "button",
-          label: "Run some code",
-          kind: "danger",
-          button_type: "custom_event",
+          response_type: MessageResponseTypes.BUTTON,
+          label: "Alert button",
+          kind: ButtonItemKind.DANGER,
+          button_type: ButtonItemType.CUSTOM_EVENT,
           custom_event_name: "alert_button",
+          // Pass any extra meta data you want here and it will be included in the event payload.
           user_defined: {
-            text: "Alert!",
+            text: "Carbon!",
           },
-        } as unknown as GenericItem,
+        },
         {
-          response_type: "button",
+          response_type: MessageResponseTypes.BUTTON,
           label: "Send a message",
-          button_type: "post_back",
+          button_type: ButtonItemType.POST_BACK,
           value: {
             input: {
               text: "button",
             },
           },
-        } as unknown as GenericItem,
+        },
         {
-          response_type: "button",
-          button_type: "show_panel",
+          response_type: MessageResponseTypes.BUTTON,
+          button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
-          kind: "secondary",
+          kind: ButtonItemKind.SECONDARY,
           panel: {
             title: "My panel",
             show_animations: true,
             body: [
               {
-                response_type: "text",
-                text: "Product details or other ancillary info",
+                response_type: MessageResponseTypes.TEXT,
+                text: "Carbon!",
               },
             ],
           },
-        } as unknown as GenericItem,
+        },
         {
-          response_type: "button",
-          button_type: "url",
+          response_type: MessageResponseTypes.BUTTON,
+          button_type: ButtonItemType.URL,
           label: "Visit ibm.com",
           url: "https://www.ibm.com",
-        } as unknown as GenericItem,
+        },
       ],
     },
   });

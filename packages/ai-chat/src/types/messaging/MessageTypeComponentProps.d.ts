@@ -14,7 +14,7 @@ import { HasDisplayOverride } from "../utilities/HasDisplayOverride";
 import { HasDoAutoScroll } from "../utilities/HasDoAutoScroll";
 import { LanguagePack } from "./LanguagePack";
 import { LocalMessageItem } from "./LocalMessageItem";
-import { Message } from "../watsonAssistantAPITypes";
+import { Message } from "./Messages";
 
 interface MessageContextValues
   extends HasServiceManager,

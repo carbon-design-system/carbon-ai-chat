@@ -1646,7 +1646,7 @@ class ChatActionsImpl {
         );
       }
 
-      this.serviceManager.instance.updateAssistantInputFieldVisibility(true);
+      this.serviceManager.instance.updateInputFieldVisibility(true);
       this.serviceManager.messageService.cancelAllMessageRequests();
 
       store.dispatch(actions.restartConversation());

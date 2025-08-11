@@ -74,6 +74,10 @@ function GridItemCell({
       cellRef.current.style.setProperty("inline-size", width);
       cellRef.current.style.setProperty("flex", `${flex}`);
       cellRef.current.style.setProperty("align-items", alignItems);
+      cellRef.current.style.setProperty(
+        "text-align",
+        cellData?.horizontal_alignment || horizontal_alignment
+      );
       cellRef.current.style.setProperty("justify-content", justifyContent);
     }
   }, [

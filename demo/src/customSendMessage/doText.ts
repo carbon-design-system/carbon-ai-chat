@@ -14,10 +14,8 @@ import {
   ChatInstance,
   MessageResponse,
   MessageResponseTypes,
-  OptionItem,
   ResponseUserProfile,
   StreamChunk,
-  TextItem,
   UserType,
 } from "@carbon/ai-chat";
 
@@ -45,52 +43,55 @@ const defaultAlternativeBotProfile: ResponseUserProfile = {
 
 const fullChainOfThought: ChainOfThoughtStep[] = [
   {
-    title: "A step we are marking as successful with a description",
-    tool_name: "boom_bam",
-    description: `This is an optional description.\n\n*boom_bam* queries the *BAM* database run by the *BOOM* group. This contains blerg data used to identify customers borps.\n\nSee more information on [borps](https://ibm.com).`,
+    title: "Querying molecular structure database for carbon compounds",
+    tool_name: "chem_db_query",
+    description: `This step queries chemical databases for carbon structures.\n\n*chem_db_query* accesses the *ChemSpider* database maintained by the *Royal Society of Chemistry*. This contains molecular data used to identify carbon allotropes and organic compounds.\n\nSee more information on [ChemSpider](https://ibm.com).`,
     request: {
       args: {
-        foo: "bar",
-        bar: "baz",
-        boom: {
-          bam: "bow",
+        element: "carbon",
+        query_type: "allotropes",
+        filters: {
+          bonding_type: "covalent",
         },
-        fizz: [
-          "i",
-          "guess",
-          "fizz",
+        include: [
+          "diamond",
+          "graphite",
+          "fullerenes",
           {
-            name: "oh no a deep object",
+            name: "carbon nanotubes",
           },
         ],
       },
     },
     response: {
-      content: `{ "title": "I am some stringified JSON" }`,
+      content: `{ "allotropes_found": 4, "primary_structures": ["diamond", "graphite", "fullerenes", "nanotubes"] }`,
     },
   },
   {
-    title: "A second step with a really really long title",
-    tool_name: "bam_bo",
+    title: "Calculating carbon bond energies and molecular stability metrics",
+    tool_name: "bond_analyzer",
     request: {
       args: {
-        foo: "bar",
+        molecule: "benzene",
       },
     },
     response: {
-      content: `I am just **text** this time. I support markdown formatting.`,
+      content: `Benzene shows **aromatic stability** with delocalized π electrons. The C-C bond length is *1.39 Å*, intermediate between single and double bonds.`,
     },
   },
   {
-    title: "Third step",
-    tool_name: "bam_bo",
+    title: "Periodic trend analysis",
+    tool_name: "periodic_analyzer",
     request: {
       args: {
-        foo: "bar",
+        group: 14,
       },
     },
     response: {
-      content: { title: "I am some actual JSON" },
+      content: {
+        trend: "atomic_radius_increases_down_group",
+        elements: ["C", "Si", "Ge", "Sn", "Pb"],
+      },
     },
   },
 ];
@@ -195,7 +196,7 @@ async function doTextStreaming(
             id: "1",
             cancellable,
           },
-        } as TextItem,
+        },
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
@@ -280,13 +281,13 @@ function doWelcomeText(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.TEXT,
           text: WELCOME_TEXT,
-        } as TextItem,
+        },
         {
           response_type: MessageResponseTypes.OPTION,
           title:
             'Select a response to view it in action. The "text" response includes configuration to send feedback (thumbs up/down). This can be applied to any response.',
           options,
-        } as OptionItem,
+        },
       ],
     },
   });
@@ -301,7 +302,7 @@ function doText(
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
     text,
-  } as TextItem;
+  };
 
   const message: MessageResponse = {
     output: {
@@ -319,7 +320,7 @@ function doText(
     message.output.generic = message.output.generic || [];
     message.output.generic[0] = {
       ...genericItem,
-      message_options: {
+      message_item_options: {
         feedback: {
           /**
            * Indicates if a request for feedback should be displayed.

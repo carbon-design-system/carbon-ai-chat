@@ -331,10 +331,10 @@ interface ChatActions {
   tours: ChatInstanceTours;
 
   /**
-   * Allow being able to set the input field to be invisible on assistant facing (not agent) views. Helpful for when
+   * Allow being able to set the input field to be invisible. Helpful for when
    * you want to force input into a button, etc.
    */
-  updateAssistantInputFieldVisibility: (isVisible: boolean) => void;
+  updateInputFieldVisibility: (isVisible: boolean) => void;
 
   /**
    * Changes the state of Carbon AI Chat to allow or disallow input. This includes the input field as well as inputs like
@@ -390,37 +390,18 @@ interface ChatActions {
   doAutoScroll: () => void;
 
   /**
-   * Ends the conversation with a human agent. This does not request confirmation from the user first. If the user
-   * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
-   * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
-   * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
-   * resolved.
-   */
-  agentEndConversation: () => Promise<void>;
-
-  /**
-   * Either increases or decreases the internal counter that indicates whether the "bot is typing" indicator is
-   * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error. Currently, this is the same as the loading
-   * indicator.
-   */
-  updateIsTypingCounter: (direction: IncreaseOrDecrease) => void;
-
-  /**
    * Either increases or decreases the internal counter that indicates whether the "bot is loading" indicator is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error. Currently, this is the same as the typing
-   * indicator.
+   * increase or decrease the value. Any other value with log an error.
    */
-  updateIsLoadingCounter: (direction: string) => void;
+  updateIsLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
    * increase or decrease the value. Any other value with log an error.
    */
-  updateIsChatLoadingCounter: (direction: string) => void;
+  updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
    * Updates the title of the bot panel. This value defaults to blank.

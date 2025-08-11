@@ -80,9 +80,9 @@ import {
   Message,
   MessageHistoryFeedback,
   MessageInputType,
-  MessageItemHistory,
   MessageRequest,
   MessageResponse,
+  MessageResponseHistory,
   MessageResponseTypes,
   OptionItem,
   TableItem,
@@ -117,10 +117,12 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     (state: AppState) =>
       state.persistedToBrowserStorage.chatState.humanAgentState
   );
-  const feedbackID = message.item.message_options?.feedback?.id;
+  const feedbackID = message.item.message_item_options?.feedback?.id;
   const feedbackPanelID = useUUID();
 
-  const feedbackHistory = originalMessage.history?.feedback?.[feedbackID];
+  const feedbackHistory = isResponse(originalMessage)
+    ? originalMessage.history?.feedback?.[feedbackID]
+    : null;
 
   const feedbackInitialValues = useMemo<FeedbackInitialValues>(() => {
     if (!feedbackHistory) {
@@ -328,7 +330,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     // For text provided by the assistant, pass it through some HTML formatting before displaying it.
     return (
-      <div className="WAC__received--textContent">
+      <div>
         {renderRichText(
           message,
           removeHTML,
@@ -657,7 +659,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message: MessageResponse
   ) {
     const feedbackOptions =
-      localMessageItem.item.message_options?.feedback || {};
+      localMessageItem.item.message_item_options?.feedback || {};
 
     const {
       id: feedbackID,
@@ -687,16 +689,13 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
      */
     function updateFeedbackHistory(data: MessageHistoryFeedback) {
       if (feedbackID) {
-        const history: MessageItemHistory = {
+        const history: MessageResponseHistory = {
           feedback: {
             [feedbackID]: data,
           },
         };
         serviceManager.store.dispatch(
-          actions.mergeMessageItemHistory(
-            localMessageItem.fullMessageID,
-            history
-          )
+          actions.mergeMessageHistory(localMessageItem.fullMessageID, history)
         );
       }
     }

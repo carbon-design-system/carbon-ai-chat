@@ -410,4 +410,4 @@ async function loadStyles() {
   return carbonStyles + styles;
 }
 
-export { AppContainerExport as AppContainer, AppContainerProps };
+export { AppContainerExport as AppContainer };

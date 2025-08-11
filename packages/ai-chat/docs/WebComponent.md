@@ -4,7 +4,7 @@ title: Using as a Web component
 
 ### Overview
 
-AI chat shows two web components that act as a facade in front of the core AI chat.
+Carbon AI chat exports two web components.
 
 To use the `float` layout, refer to [cds-aichat-container](#chat-container). If you want to use a custom size, such as rendering in a sidebar, full-screen mode, or nested within your UI, refer to [cds-aichat-custom-element](#chat-custom-element).
 
@@ -23,6 +23,8 @@ Or using `yarn`:
 ```bash
 yarn add @carbon/ai-chat
 ```
+
+_Be sure to check for required peerDependencies._
 
 #### Basic example
 
@@ -54,7 +56,7 @@ See {@link CdsAiChatContainerAttributes} for an explanation of the various accep
 
 #### Using `cds-aichat-custom-element`
 
-This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. It is necessary to change the location where the Carbon AI Chat renders.
+This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. Use this if you need to change the location where the Carbon AI Chat renders.
 
 This component's default behavior adds and removes a class from the main window of the Carbon AI Chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI Chat when it opens or closes. When the Carbon AI Chat closes, it adds a classname to the Carbon AI Chat main window to hide the element. Another classname is added to your custom element to set its width and height to 0, so that it doesn't take up space.
 
@@ -217,7 +219,7 @@ export class Demo extends LitElement {
       case "my_unique_identifier":
         // And here is an example using your own component.
         return html`<div slot=${slot}>
-          ${userDefinedMessage.user_defined.text as string}>
+          ${userDefinedMessage.user_defined.text as string}
         </div>`;
       default:
         return null;

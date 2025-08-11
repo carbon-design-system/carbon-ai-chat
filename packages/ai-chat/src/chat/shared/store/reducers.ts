@@ -44,7 +44,6 @@ import {
   ADD_INPUT_FILE,
   ADD_IS_HYDRATING_COUNTER,
   ADD_IS_LOADING_COUNTER,
-  ADD_IS_TYPING_COUNTER,
   ADD_LOCAL_MESSAGE_ITEM,
   ADD_MESSAGE,
   ADD_NESTED_MESSAGES,
@@ -58,7 +57,7 @@ import {
   FILE_UPLOAD_INPUT_ERROR,
   HYDRATE_CHAT,
   HYDRATE_MESSAGE_HISTORY,
-  MERGE_HISTORY_ITEM,
+  MERGE_HISTORY,
   MESSAGE_SET_OPTION_SELECTED,
   OPEN_IFRAME_CONTENT,
   REMOVE_ALL_NOTIFICATIONS,
@@ -133,8 +132,8 @@ import {
   SearchResult,
   MessageUIStateInternal,
   MessageResponseOptions,
-  MessageItemHistory,
   MessageResponseHistory,
+  MessageRequestHistory,
 } from "../../../types/messaging/Messages";
 import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
 import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
@@ -170,7 +169,6 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.botMessageState,
         localMessageIDs: [],
         messageIDs: [],
-        isTypingCounter: 0,
         isScrollAnchored: false,
       },
       allMessageItemsByID: {},
@@ -504,22 +502,6 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [ADD_IS_TYPING_COUNTER]: (
-    state: AppState,
-    action: { addToIsTyping: number }
-  ): AppState => {
-    return {
-      ...state,
-      botMessageState: {
-        ...state.botMessageState,
-        isTypingCounter: Math.max(
-          state.botMessageState.isTypingCounter + action.addToIsTyping,
-          0
-        ),
-      },
-    };
-  },
-
   [ADD_IS_LOADING_COUNTER]: (
     state: AppState,
     action: { addToIsLoading: number }
@@ -792,9 +774,12 @@ const reducers: { [key: string]: ReducerType } = {
     return state;
   },
 
-  [MERGE_HISTORY_ITEM]: (
+  [MERGE_HISTORY]: (
     state: AppState,
-    action: { messageID: string; history: MessageItemHistory }
+    action: {
+      messageID: string;
+      history: MessageResponseHistory | MessageRequestHistory;
+    }
   ): AppState => {
     const oldMessage = state.allMessagesByID[action.messageID];
     if (oldMessage) {

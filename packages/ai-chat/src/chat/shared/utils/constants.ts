@@ -50,23 +50,8 @@ enum BrandColorKind {
 // padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
 const AUTO_SCROLL_EXTRA = 28 - 8;
 
-const LIGHT_THEMES = ["white", "g10"];
-
-let isJest = false;
-try {
-  // "process" is undefined when not in a jest environment, but I don't know how to check its value without the code
-  // throwing a "not defined" error.
-  if (process?.env.JEST_WORKER_ID) {
-    isJest = true;
-  }
-} catch (error) {
-  // Ignore
-}
-
-const IS_JEST = isJest;
-
 // How much to throttle auto scrolling. When we are in test mode, we set this to zero.
-const AUTO_SCROLL_THROTTLE_TIMEOUT: number = IS_JEST ? 0 : 100;
+const AUTO_SCROLL_THROTTLE_TIMEOUT = 100;
 
 export {
   AUTO_SCROLL_THROTTLE_TIMEOUT,
@@ -82,6 +67,4 @@ export {
   CornersType,
   IncreaseOrDecrease,
   AUTO_SCROLL_EXTRA,
-  LIGHT_THEMES,
-  IS_JEST,
 };
