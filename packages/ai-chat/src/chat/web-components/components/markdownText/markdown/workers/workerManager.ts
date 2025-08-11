@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { parseMarkdown } from "../utils/markdown";
 import {
   type TokenTree,
   buildTokenTree,
@@ -179,7 +180,6 @@ async function processInMainThread(
   lastTree?: TokenTree,
   allowHtml?: boolean
 ): Promise<TokenTree> {
-  const { parseMarkdown } = await import("../utils/markdown");
   // Parse markdown into tokens, build a tree, then diff it against the previous one
   const tokens = parseMarkdown(markdown, allowHtml);
   const tree = buildTokenTree(tokens);
