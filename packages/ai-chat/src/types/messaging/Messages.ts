@@ -533,7 +533,26 @@ export interface GenericItemMessageOptions {
 }
 
 /**
- * Controls the display of feedback options (thumbs up/down) for a message item.
+ * If you want to have different categories for positive and negative feedback, you can provide two different arrays.
+ *
+ * You may not provide one of the arrays. e.g. you want negative categories but don't care about positive categories.
+ *
+ * @category Messaging
+ */
+export interface GenericItemMessageFeedbackCategories {
+  /**
+   * List of strings for positive feedback categories.
+   */
+  positive?: string[];
+
+  /**
+   * List of strings for negative feedback categories.
+   */
+  negative?: string[];
+}
+
+/**
+ * Controls the display of a feedback options (thumbs up/down) for a message item.
  *
  * @category Messaging
  */
@@ -581,9 +600,11 @@ export interface GenericItemMessageFeedbackOptions {
   prompt?: string;
 
   /**
-   * An optional set of categories to allow the user to choose from.
+   * An optional set of categories to allow the user to choose from. This can either be an array of strings for
+   * both positive and negative feedback or a {@link GenericItemMessageFeedbackCategories} object to make different
+   * configuration for both.
    */
-  categories?: string[];
+  categories?: string[] | GenericItemMessageFeedbackCategories;
 
   /**
    * The placeholder to show in the text area. A default value will be used if no value is provided here.

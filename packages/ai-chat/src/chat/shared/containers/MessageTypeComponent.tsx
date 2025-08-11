@@ -782,6 +782,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       const isOpen =
         isFeedbackOpen &&
         (isPositive ? isPositiveFeedbackSelected : isNegativeFeedbackSelected);
+
+      let filteredCategories;
+      // Categories can be an array of strings or an object with positive and negative arrays.
+      if (Array.isArray(categories)) {
+        filteredCategories = categories;
+      } else if (isPositive) {
+        filteredCategories = categories?.positive;
+      } else {
+        filteredCategories = categories?.negative;
+      }
+
       return (
         <FeedbackComponent
           class={`${CSS_CLASS_PREFIX}-feedbackDetails-${
@@ -803,7 +814,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           showPrompt={show_prompt}
           title={title || languagePack.feedback_defaultTitle}
           prompt={prompt || languagePack.feedback_defaultPrompt}
-          categories={categories}
+          categories={filteredCategories}
           placeholder={placeholder || languagePack.feedback_defaultPlaceholder}
           disclaimer={disclaimer}
           submitLabel={languagePack.feedback_submitLabel}

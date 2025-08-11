@@ -346,6 +346,13 @@ function doText(
            * Indicates whether the prompt line should be shown.
            */
           show_prompt: true,
+
+          /**
+           * We want a list of negative feedback categories, but don't care about positive.
+           */
+          categories: {
+            negative: ["Wrong answer", "Do not like the answer"],
+          },
         },
       },
     };
