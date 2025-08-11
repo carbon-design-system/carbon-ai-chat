@@ -27,7 +27,8 @@
   },
   "files": [
     "dist/es",
-    "dist/types"
+    "dist/types",
+    "telemetry.yml"
   ],
   "browserslist": [
     "> 0.5%",
