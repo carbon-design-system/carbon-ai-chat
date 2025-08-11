@@ -85,8 +85,10 @@ interface AppContainerProps extends HasServiceManager {
   applicationStyles: string;
 }
 
-const applicationStylesheet = new CSSStyleSheet();
-const cssVariableOverrideStylesheet = new CSSStyleSheet();
+const applicationStylesheet =
+  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
+const cssVariableOverrideStylesheet =
+  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
 
 function AppContainer({
   serviceManager,
@@ -152,27 +154,44 @@ function AppContainer({
       return;
     }
 
-    if (hostElement) {
+  if (hostElement) {
       // React doesn't let us set "!important" in a style value inline.
       containerRef.current.style.setProperty("height", "100%", "important");
       containerRef.current.style.setProperty("width", "100%", "important");
     }
 
-    // Get the top-level node this element is in
-    const rootNode = containerRef.current.getRootNode();
+  const rootNode = containerRef.current.getRootNode();
 
-    if (rootNode instanceof ShadowRoot) {
-      applicationStylesheet.replaceSync(
-        applicationStyles || ".WACContainer { visibility: hidden; }"
-      );
-      cssVariableOverrideStylesheet.replaceSync(`${cssVariableOverrideString}`);
+  const appStyles = applicationStyles || ".WACContainer { visibility: hidden; }";
+  const cssVariableStyles = cssVariableOverrideString || "";
+
+  if (rootNode instanceof ShadowRoot) {
+    if (applicationStylesheet && cssVariableOverrideStylesheet) {
+      applicationStylesheet.replaceSync(appStyles);
+      cssVariableOverrideStylesheet.replaceSync(cssVariableStyles);
 
       rootNode.adoptedStyleSheets = [
         applicationStylesheet,
-        cssVariableOverrideStylesheet,
+        cssVariableOverrideStylesheet
       ];
+    } else {
+      // have fallback when adoptedStylesheets are not supported (ie playwright testing)
+      if (!rootNode.querySelector("style[data-base-styles]")) {
+        const baseStyles = document.createElement("style");
+        baseStyles.dataset.appStyles = "true";
+        baseStyles.textContent = appStyles;
+        rootNode.appendChild(baseStyles);
+      }
+
+      if (!rootNode.querySelector("style[data-variables-custom]")) {
+        const variableCustomStyles = document.createElement("style");
+        variableCustomStyles.dataset.overrideStyles = "true";
+        variableCustomStyles.textContent = cssVariableStyles;
+        rootNode.appendChild(variableCustomStyles);
+      }
     }
-  }, [applicationStyles, containerRef, cssVariableOverrideString, hostElement]);
+  }
+}, [applicationStyles, containerRef, cssVariableOverrideString, hostElement]);
 
   return (
     <div
