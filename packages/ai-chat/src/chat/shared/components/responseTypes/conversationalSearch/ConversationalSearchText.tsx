@@ -7,9 +7,9 @@
  *  @license
  */
 
-import ChevronDown from "@carbon/icons-react/es/ChevronDown.js";
-import ChevronUp from "@carbon/icons-react/es/ChevronUp.js";
-import { OperationalTag } from "@carbon/react";
+import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
+import OperationalTag from "../../../../react/carbon/OperationalTag";
 import React, { useEffect, useState } from "react";
 
 import { useCounter } from "../../../hooks/useCounter";
@@ -19,12 +19,16 @@ import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageIte
 
 import { sanitizeHTML } from "../../../utils/htmlUtils";
 import { consoleError } from "../../../utils/miscUtils";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../../types/messaging/Messages";
 import { processMarkdown } from "../../../../web-components/components/markdownText/markdown/markdownToHTML";
 import { MarkdownText } from "../../../../react/components/markdownText/MarkdownText";
+
+const ChevronUp = carbonIconToReact(ChevronUp16);
+const ChevronDown = carbonIconToReact(ChevronDown16);
 
 interface ConversationalSearchTextFunctions {
   /**
@@ -84,6 +88,13 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
     text = searchItem.item.text;
   }
 
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onToggleCitations();
+    }
+  };
+
   useEffect(() => {
     async function getHtml() {
       const newHtml = await createHTMLWithHighlights(text, highlightCitation);
@@ -101,11 +112,17 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
             <OperationalTag
               id={toggleID}
               onClick={onToggleCitations}
+              onKeyDown={handleTagKeyDown}
               aria-expanded={citationsOpen}
               text={languagePack.conversationalSearch_citationsLabel}
-              renderIcon={citationsOpen ? ChevronUp : ChevronDown}
               aria-label={languagePack.conversationalSearch_toggleCitations}
-            />
+            >
+              {citationsOpen ? (
+                <ChevronUp slot="icon" />
+              ) : (
+                <ChevronDown slot="icon" />
+              )}
+            </OperationalTag>
           </div>
         </div>
       )}

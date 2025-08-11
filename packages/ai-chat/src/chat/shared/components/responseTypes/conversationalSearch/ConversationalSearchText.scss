@@ -25,14 +25,8 @@
   padding-block-start: layout.$spacing-02;
 }
 
-.WACConversationalSearchText__CitationsToggle .cds--tag .cds--tag__custom-icon {
+.WACConversationalSearchText__CitationsToggle {
   margin: 0;
-}
-
-.WACConversationalSearchText__CitationsToggle .cds--tag {
-  margin: 0;
-  min-block-size: 20px;
-  padding-inline-start: layout.$spacing-03;
 }
 
 .WACContainer--render[dir="rtl"] {

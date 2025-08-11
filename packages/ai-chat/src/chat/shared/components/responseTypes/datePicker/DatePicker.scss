@@ -19,13 +19,3 @@
   margin-block-start: layout.$spacing-04;
   margin-inline-start: auto;
 }
-
-/* Prevent the datepicker element from floating by undoing it's absolute positioning. */
-.WACDatePicker .flatpickr-calendar {
-  position: unset;
-}
-
-/* For some reason the date picker component isn't updating the icon disabled state. */
-.WACDatePicker .cds--date-picker__input:disabled ~ .cds--date-picker__icon {
-  fill: theme.$icon-disabled;
-}

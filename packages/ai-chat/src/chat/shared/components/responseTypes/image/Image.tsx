@@ -7,12 +7,10 @@
  *  @license
  */
 
-import {
-  SkeletonPlaceholder,
-  Tile,
-  unstable__AiSkeletonPlaceholder as AiSkeletonPlaceholder,
-} from "@carbon/react";
+import { Tile } from "@carbon/react";
 import cx from "classnames";
+import AISkeletonPlaceholder from "../../../../react/carbon/AISkeletonPlaceholder";
+import SkeletonPlaceholder from "../../../../react/carbon/SkeletonPlaceholder";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
@@ -208,7 +206,7 @@ function ImageOnly({
         !inline &&
         source &&
         (useAITheme ? (
-          <AiSkeletonPlaceholder className="WACImage__Skeleton" />
+          <AISkeletonPlaceholder className="WACImage__Skeleton" />
         ) : (
           <SkeletonPlaceholder className="WACImage__Skeleton" />
         ))}

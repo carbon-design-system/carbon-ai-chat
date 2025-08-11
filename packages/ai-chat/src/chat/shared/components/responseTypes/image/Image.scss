@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -12,12 +12,9 @@
 
 .WACImage {
   overflow: hidden;
+  padding: 0;
   min-block-size: 0;
   min-inline-size: 0;
-}
-
-.WACImage.cds--tile {
-  padding: 0;
 
   .WACImage__Image--loaded {
     display: block;
@@ -25,7 +22,10 @@
   }
 }
 
-.WACImage__Skeleton {
+cds-custom-ai-skeleton-placeholder.WACImage__Skeleton::part(
+    skeleton-placeholder
+  ),
+cds-custom-skeleton-placeholder.WACImage__Skeleton::part(placeholder) {
   block-size: 192px;
   inline-size: 100%;
 }

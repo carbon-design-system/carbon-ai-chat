@@ -20,22 +20,6 @@
   padding-block-end: layout.$spacing-11;
 }
 
-/* The dropdown button doesn't have a height set so we should set it ourselves. */
-.WAC__selectHolder .cds--list-box__field {
-  block-size: 40px;
-}
-
-/* We have to manually force the date picker to fill the space it's in. */
-.WAC__selectHolder .cds--list-box__menu {
-  position: static;
-}
-
-/* Undo the block size set to allow the dropdown menu to scroll into view when opened. */
-.WAC__selectHolder .cds--dropdown {
-  block-size: unset;
-  max-block-size: unset;
-}
-
 .WACWidget--maxWidth {
   .WAC__selectHolder {
     inline-size: 380px;

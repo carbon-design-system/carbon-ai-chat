@@ -63,16 +63,6 @@
   line-height: var(--cds-chat-BASE-line-height-med);
 }
 
-.WACContainer--render[dir="rtl"]
-  .WACAgentBanner__CancelButton.cds--btn--sm:not(
-    .cds--btn--danger--ghost,
-    .cds--btn--icon-only
-  ),
-.WACAgentBanner__CancelButton.cds--btn {
-  align-self: center;
-  padding-inline: layout.$spacing-04;
-}
-
 .WACAgentBanner__StopSharingButton {
   inline-size: 100%;
   max-inline-size: unset;
