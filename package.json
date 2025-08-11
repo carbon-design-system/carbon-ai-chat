@@ -60,7 +60,7 @@
     "lerna": "^8.1.8",
     "lint-staged": "^15.2.10",
     "prettier": "^2.8.8",
-    "prettier-config-carbon": "^0.11.0",
+    "prettier-config-carbon": "^0.12.0",
     "stylelint": "^16.0.0",
     "stylelint-config-carbon": "^1.21.0"
   },
