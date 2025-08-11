@@ -10,7 +10,7 @@
 import "intl-pluralrules";
 
 import cx from "classnames";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { RawIntlProvider, useIntl } from "react-intl";
 import {
   Provider as ReduxProvider,
@@ -85,6 +85,9 @@ interface AppContainerProps extends HasServiceManager {
   applicationStyles: string;
 }
 
+const applicationStylesheet = new CSSStyleSheet();
+const cssVariableOverrideStylesheet = new CSSStyleSheet();
+
 function AppContainer({
   serviceManager,
   hostElement,
@@ -97,6 +100,8 @@ function AppContainer({
   const theme = useSelector((state: AppState) => state.theme);
   const config = useSelector((state: AppState) => state.config);
   const layout = useSelector((state: AppState) => state.layout);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { namespace } = serviceManager;
   const { originalName } = namespace;
@@ -142,26 +147,39 @@ function AppContainer({
     };
   });
 
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    if (hostElement) {
+      // React doesn't let us set "!important" in a style value inline.
+      containerRef.current.style.setProperty("height", "100%", "important");
+      containerRef.current.style.setProperty("width", "100%", "important");
+    }
+
+    // Get the top-level node this element is in
+    const rootNode = containerRef.current.getRootNode();
+
+    if (rootNode instanceof ShadowRoot) {
+      applicationStylesheet.replaceSync(
+        applicationStyles || ".WACContainer { visibility: hidden; }"
+      );
+      cssVariableOverrideStylesheet.replaceSync(`${cssVariableOverrideString}`);
+
+      rootNode.adoptedStyleSheets = [
+        applicationStylesheet,
+        cssVariableOverrideStylesheet,
+      ];
+    }
+  }, [applicationStyles, containerRef, cssVariableOverrideString, hostElement]);
+
   return (
     <div
       className="WACContainer"
       data-namespace={originalName}
-      ref={(node) => {
-        if (node && hostElement) {
-          // React doesn't let us set "!important" in a style value inline.
-          node.style.setProperty("height", "100%", "important");
-          node.style.setProperty("width", "100%", "important");
-        }
-      }}
+      ref={containerRef}
     >
-      <div className="WACContainer--styles">
-        <style data-base-styles="true" nonce={config.public.cspNonce}>
-          {applicationStyles || `.WACContainer { visibility: hidden; }`}
-        </style>
-        <style data-variables-custom="true" nonce={config.public.cspNonce}>
-          {cssVariableOverrideString}
-        </style>
-      </div>
       <div
         className={cx(`WACContainer--render`, getThemeClassNames(theme), {
           "WACContainer-disableMobileEnhancements":
