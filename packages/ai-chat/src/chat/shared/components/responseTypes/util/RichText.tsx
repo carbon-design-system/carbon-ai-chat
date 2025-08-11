@@ -11,7 +11,6 @@ import React from "react";
 
 import { MarkdownText } from "../../../../react/components/markdownText/MarkdownText";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { removeHTML } from "../../../utils/htmlUtils";
 
 interface RichTextProps {
   /**
@@ -41,15 +40,20 @@ interface RichTextProps {
 function RichText(props: RichTextProps) {
   const { text, shouldRemoveHTMLBeforeMarkdownConversion, overrideSanitize } =
     props;
-  const preformattedText = shouldRemoveHTMLBeforeMarkdownConversion
-    ? removeHTML(text)
-    : text;
   let doSanitize = useShouldSanitizeHTML();
   if (overrideSanitize !== undefined) {
     doSanitize = overrideSanitize;
   }
 
-  return <MarkdownText markdown={preformattedText} sanitizeHTML={doSanitize} />;
+  return (
+    <MarkdownText
+      markdown={text}
+      sanitizeHTML={doSanitize}
+      shouldRemoveHTMLBeforeMarkdownConversion={
+        shouldRemoveHTMLBeforeMarkdownConversion
+      }
+    />
+  );
 }
 
 const RichTextExport = React.memo(RichText);

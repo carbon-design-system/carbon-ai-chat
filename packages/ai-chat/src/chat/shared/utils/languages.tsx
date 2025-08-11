@@ -16,7 +16,7 @@
 
 import dayjs from "dayjs";
 import enLocaleData from "dayjs/locale/en.js";
-import IntlMessageFormat from "intl-messageformat";
+import { IntlMessageFormat } from "intl-messageformat";
 import React from "react";
 import { IntlShape } from "react-intl";
 

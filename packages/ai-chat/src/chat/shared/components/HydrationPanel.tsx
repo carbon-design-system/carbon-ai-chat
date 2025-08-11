@@ -22,12 +22,12 @@ import { OverlayPanelName } from "./OverlayPanel";
 
 interface HydrationPanelProps extends HasServiceManager, HasLanguagePack {
   /**
-   * Indicates if the Carbon AI chat has been hydrated.
+   * Indicates if the Carbon AI Chat has been hydrated.
    */
   isHydrated: boolean;
 
   /**
-   * Indicates if we should show a home screen version. This minimizes a jarring shift when Carbon AI chat initially opens
+   * Indicates if we should show a home screen version. This minimizes a jarring shift when Carbon AI Chat initially opens
    * and the home screen appears.
    */
   useHomeScreenVersion: boolean;
@@ -44,7 +44,7 @@ interface HydrationPanelProps extends HasServiceManager, HasLanguagePack {
 }
 
 /**
- * This component is rendered while the Carbon AI chat is hydrating.
+ * This component is rendered while the Carbon AI Chat is hydrating.
  */
 
 function HydrationPanel({

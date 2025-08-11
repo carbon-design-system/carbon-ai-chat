@@ -44,7 +44,7 @@ interface LauncherDesktopContainerProps extends HasRequestFocus {
   launcherRef: RefObject<HasRequestFocus>;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
 

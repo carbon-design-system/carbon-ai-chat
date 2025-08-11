@@ -13,17 +13,17 @@ import { RenderUserDefinedState } from "./ChatContainer";
 
 interface ManagedWebChat {
   /**
-   * The config for the Carbon AI chat that is loaded.
+   * The config for the Carbon AI Chat that is loaded.
    */
   config: PublicConfig;
 
   /**
-   * Indicates if this instance of the Carbon AI chat should be or has been destroyed.
+   * Indicates if this instance of the Carbon AI Chat should be or has been destroyed.
    */
   shouldDestroy: boolean;
 
   /**
-   * The instance of Carbon AI chat that was loaded.
+   * The instance of Carbon AI Chat that was loaded.
    */
   instance: ChatInstance;
 }

@@ -8,7 +8,7 @@
  */
 
 import { type ReactNode } from "react";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message } from "../messaging/Messages";
@@ -45,9 +45,9 @@ interface RenderUserDefinedState {
  * The type of the render function that is used to render user defined responses. This function should return a
  * component that renders the display for the message contained in the given event.
  *
- * @param state The BusEventUserDefinedResponse that was originally fired by Carbon AI chat when the user defined response
+ * @param state The BusEventUserDefinedResponse that was originally fired by Carbon AI Chat when the user defined response
  * was first fired.
- * @param instance The current instance of the Carbon AI chat.
+ * @param instance The current instance of the Carbon AI Chat.
  *
  * @category React
  */
@@ -68,20 +68,20 @@ type RenderWriteableElementResponse = {
 /** @category React */
 interface ChatContainerProps {
   /**
-   * The config to use to load Carbon AI chat. If you need to perform any actions after Carbon AI chat been loaded,
+   * The config to use to load Carbon AI Chat. If you need to perform any actions after Carbon AI Chat been loaded,
    * use the "onBeforeRender" or "onAfterRender" props.
    */
   config: PublicConfig;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 

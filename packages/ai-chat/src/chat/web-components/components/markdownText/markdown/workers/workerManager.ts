@@ -7,7 +7,11 @@
  *  @license
  */
 
-import { type TokenTree } from "../utils/tokenTree";
+import {
+  type TokenTree,
+  buildTokenTree,
+  diffTokenTree,
+} from "../utils/tokenTree";
 
 /**
  * Loads in web worker that handles processing markdown into a tree and then diffing the tree
@@ -35,20 +39,17 @@ import { type TokenTree } from "../utils/tokenTree";
  */
 async function getMarkdownWorker(
   markdown: string,
-  lastTree: any
+  lastTree: any,
+  allowHtml = true
 ): Promise<TokenTree> {
   // FOR NOW WE ARE ONLY DOING IT THIS WAY WITHOUT A WORKER.
   // If we're in an SSR context, or the browser doesn't support Workers,
   // fall back to in-thread parsing using dynamically imported utilities.
   // if (typeof window === "undefined" || typeof Worker === "undefined") {
-  const [{ buildTokenTree, diffTokenTree }, { parseMarkdown }] =
-    await Promise.all([
-      import("../utils/tokenTree"),
-      import("../utils/markdown"),
-    ]);
+  const { parseMarkdown } = await import("../utils/markdown");
 
   // Parse markdown into tokens, build a tree, then diff it against the previous one
-  const tokens = parseMarkdown(markdown);
+  const tokens = parseMarkdown(markdown, allowHtml);
   const tree = buildTokenTree(tokens);
   return diffTokenTree(lastTree, tree);
   // }

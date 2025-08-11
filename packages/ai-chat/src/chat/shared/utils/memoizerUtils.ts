@@ -7,9 +7,51 @@
  *  @license
  */
 
-import memoizeOne from "memoize-one";
-
 import ObjectMap from "../../../types/utilities/ObjectMap";
+
+/**
+ * Simple memoization utility that caches the result of the last function call.
+ * Only re-computes if the arguments have changed.
+ */
+function memoizeFunction<Args extends readonly unknown[], Return>(
+  fn: (...args: Args) => Return,
+  isEqual?: (newArgs: Args, lastArgs: Args) => boolean
+): (...args: Args) => Return {
+  let hasResult = false;
+  let lastArgs: Args;
+  let lastResult: Return;
+
+  return (...args: Args): Return => {
+    if (!hasResult || !areArgumentsEqual(args, lastArgs, isEqual)) {
+      hasResult = true;
+      lastArgs = args;
+      lastResult = fn(...args);
+    }
+    return lastResult;
+  };
+}
+
+function areArgumentsEqual<Args extends readonly unknown[]>(
+  newArgs: Args,
+  lastArgs: Args,
+  isEqual?: (newArgs: Args, lastArgs: Args) => boolean
+): boolean {
+  if (isEqual) {
+    return isEqual(newArgs, lastArgs);
+  }
+
+  if (newArgs.length !== lastArgs.length) {
+    return false;
+  }
+
+  for (let i = 0; i < newArgs.length; i++) {
+    if (newArgs[i] !== lastArgs[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 /**
  * Creates a memoizer that will take an array of keys and a map of those keys to values and return an array of
@@ -27,7 +69,7 @@ function createUnmappingMemoizer<V>(): (
   values: string[],
   map: ObjectMap<V>
 ) => V[] {
-  return memoizeOne(
+  return memoizeFunction(
     (keys: string[], map: ObjectMap<V>) => keys.map((key) => map[key]),
     isUnmappingEqual
   );
@@ -76,4 +118,4 @@ function isUnmappingEqual<V>(
   return true;
 }
 
-export { createUnmappingMemoizer };
+export { createUnmappingMemoizer, memoizeFunction };

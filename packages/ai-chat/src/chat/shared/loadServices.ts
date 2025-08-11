@@ -29,6 +29,7 @@ import {
   setEnableDebugStackTracesLog,
 } from "./utils/miscUtils";
 import { setIntl } from "./utils/intlUtils";
+import { isBrowser } from "./utils/browserUtils";
 
 type CreateServiceManagerFunction = (
   appConfig: AppConfig,
@@ -36,8 +37,8 @@ type CreateServiceManagerFunction = (
 ) => Promise<ServiceManager>;
 
 /**
- * This file contains the code needed to bootstrap all the shared services in Carbon AI chat. Services are used to hold
- * functions that are used throughout the application that need access to the current instance of the Carbon AI chat.
+ * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
+ * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
 async function createServiceManager(
   appConfig: AppConfig,
@@ -74,21 +75,27 @@ async function createServiceManager(
   );
 
   // Create all custom elements for Deb.
-  serviceManager.writeableElements = {
-    [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
-      document.createElement("div"),
-    [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
-      document.createElement("div"),
-    [WriteableElementName.HEADER_BOTTOM_ELEMENT]: document.createElement("div"),
-    [WriteableElementName.BEFORE_INPUT_ELEMENT]: document.createElement("div"),
-    [WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT]:
-      document.createElement("div"),
-    [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]:
-      document.createElement("div"),
-    [WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT]:
-      document.createElement("div"),
-    [WriteableElementName.CUSTOM_PANEL_ELEMENT]: document.createElement("div"),
-  };
+  serviceManager.writeableElements = {};
+  if (isBrowser) {
+    serviceManager.writeableElements = {
+      [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HEADER_BOTTOM_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.BEFORE_INPUT_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.CUSTOM_PANEL_ELEMENT]:
+        document.createElement("div"),
+    };
+  }
 
   if (publicConfig.debug) {
     setEnableDebugLog(true);

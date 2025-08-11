@@ -12,8 +12,7 @@ import { css, LitElement, PropertyValues } from "lit";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { type AppContainerProps } from "../chat/react/components/AppContainer";
-import { useOnMount } from "../chat/shared/hooks/useOnMount";
+import { AppContainer } from "../chat/react/components/AppContainer";
 import { carbonElement } from "../chat/web-components/decorators/customElement";
 import { ChatContainerProps } from "../types/component/ChatContainer";
 import {
@@ -22,7 +21,7 @@ import {
   BusEventUserDefinedResponse,
 } from "../types/events/eventBusTypes";
 import { ChatInstance } from "../types/instance/ChatInstance";
-import { DYNAMIC_IMPORTS } from "../chat/dynamic-imports/dynamic-imports";
+import { isBrowser } from "../chat/shared/utils/browserUtils";
 
 /**
  * This component creates a custom element protected by a ShadowRoot to render the React application into. It creates
@@ -78,10 +77,6 @@ function ChatContainer({
   const wrapperRef = useRef(null); // Ref for the React wrapper component
   const [wrapper, setWrapper] = useState(null);
   const [container, setContainer] = useState<HTMLElement | null>(null); // Actual element we render the React Portal to in the Shadowroot.
-  const [AppContainerComponent, setAppContainerComponent] =
-    useState<React.MemoExoticComponent<
-      (props: AppContainerProps) => React.JSX.Element
-    > | null>(null);
 
   const [userDefinedElements, setUserDefinedElements] = useState<HTMLElement[]>(
     []
@@ -90,19 +85,6 @@ function ChatContainer({
     HTMLElement[]
   >([]);
   const [currentInstance, setCurrentInstance] = useState<ChatInstance>(null);
-
-  /**
-   * If window is not defined, we don't load in the chat since it isn't SSR friendly.
-   */
-  useOnMount(() => {
-    if (typeof window === "undefined" || typeof document === "undefined") {
-      return;
-    }
-
-    DYNAMIC_IMPORTS.AppContainer().then((appContainer) => {
-      setAppContainerComponent(() => appContainer.AppContainer);
-    });
-  });
 
   /**
    * Setup the DOM nodes of both the web component to be able to inject slotted content into it, and the element inside the
@@ -120,7 +102,7 @@ function ChatContainer({
     // We need to check if the element in the ShadowRoot we are render the React application to exists.
     // If it doesn't, we need to create and append it.
 
-    // When the Carbon AI chat is destroyed (either via a config change or by calling instance.destroy), this element is
+    // When the Carbon AI Chat is destroyed (either via a config change or by calling instance.destroy), this element is
     // removed again. When the chat is destroyed the instance is set to null. The useEffect watches the instance
     // value and runs if it changes, re-creating the container element if needed.
 
@@ -233,7 +215,7 @@ function ChatContainer({
 
   // If we are in SSR mode, just short circuit here. This prevents all of our window.* and document.* stuff from trying
   // to run and erroring out.
-  if (typeof window === "undefined" || typeof document === "undefined") {
+  if (!isBrowser) {
     return null;
   }
 
@@ -241,9 +223,8 @@ function ChatContainer({
     <>
       <ReactChatContainer ref={wrapperRef} />
       {container &&
-        AppContainerComponent &&
         createPortal(
-          <AppContainerComponent
+          <AppContainer
             config={config}
             renderUserDefinedResponse={renderUserDefinedResponse}
             renderWriteableElements={renderWriteableElements}

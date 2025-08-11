@@ -39,7 +39,7 @@ interface LauncherMobileContainerProps {
   launcherRef: RefObject<LauncherExtendedFunctions>;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
 
@@ -194,7 +194,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
               {
                 startingIndex: initialBounceTurn - 1,
                 afterEach: () => {
-                  // Increase the turn counter and have Carbon AI chat remember where the user left off in the flow.
+                  // Increase the turn counter and have Carbon AI Chat remember where the user left off in the flow.
                   turnCounter++;
                   serviceManager.store.dispatch(
                     actions.setLauncherProperty("bounceTurn", turnCounter)

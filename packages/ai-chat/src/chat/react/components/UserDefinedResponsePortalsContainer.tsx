@@ -16,7 +16,7 @@ import { RenderUserDefinedStateInternal } from "../../../types/component/Managed
 
 interface UserDefinedResponsePortalsContainer {
   /**
-   * The instance of a Carbon AI chat that this component will register listeners on.
+   * The instance of a Carbon AI Chat that this component will register listeners on.
    */
   chatInstance: ChatInstance;
 
@@ -35,11 +35,11 @@ interface UserDefinedResponsePortalsContainer {
 }
 
 /**
- * This is a utility component that is used to manage all the user defined responses that are rendered by Carbon AI chat.
- * When a user defined response message is received by Carbon AI chat, it will fire a "userDefinedResponse" event that
+ * This is a utility component that is used to manage all the user defined responses that are rendered by Carbon AI Chat.
+ * When a user defined response message is received by Carbon AI Chat, it will fire a "userDefinedResponse" event that
  * provides an HTML element to which your application can attach user defined content. React portals are a mechanism
  * that allows you to render a component in your React application but attach that component to the HTML element
- * that was provided by Carbon AI chat.
+ * that was provided by Carbon AI Chat.
  *
  * This component will render a portal for each user defined response. The contents of that portal will be
  * determined by calling the provided "renderResponse" render prop.
@@ -73,7 +73,7 @@ function UserDefinedResponsePortalsContainer({
 
 /**
  * This is the component that will attach a React portal to the given host element. The host element is the element
- * provided by Carbon AI chat where your user defined response will be displayed in the DOM. This portal will attach any React
+ * provided by Carbon AI Chat where your user defined response will be displayed in the DOM. This portal will attach any React
  * children passed to it under this component so you can render the response using your own React application. Those
  * children will be rendered under the given element where it lives in the DOM.
  */

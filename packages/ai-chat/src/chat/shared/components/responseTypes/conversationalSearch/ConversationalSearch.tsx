@@ -23,9 +23,7 @@ import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../../types/messaging/Messages";
-import { lazyCarousel } from "../../../../dynamic-imports/dynamic-imports";
-
-const Carousel = lazyCarousel();
+import Carousel from "../carousel/Carousel";
 
 interface ConversationalSearchProps extends HasDoAutoScroll {
   /**

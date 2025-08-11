@@ -35,7 +35,7 @@ interface CatastrophicErrorProps extends HasLanguagePack {
   showHeader: boolean;
 
   /**
-   * If defined, will show a button to restart the Carbon AI chat by calling this method.
+   * If defined, will show a button to restart the Carbon AI Chat by calling this method.
    */
   onRestart?: () => void;
 
@@ -56,7 +56,7 @@ interface CatastrophicErrorProps extends HasLanguagePack {
 }
 
 /**
- * This component is rendered while the Carbon AI chat is hydrating.
+ * This component is rendered while the Carbon AI Chat is hydrating.
  */
 
 function CatastrophicError({

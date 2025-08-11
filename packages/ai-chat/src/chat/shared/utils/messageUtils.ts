@@ -8,7 +8,7 @@
  */
 
 import cloneDeep from "lodash-es/cloneDeep.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
 import { AppConfig } from "../../../types/state/AppConfig";
 import { AppState, FileUpload } from "../../../types/state/AppState";

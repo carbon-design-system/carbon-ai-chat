@@ -84,7 +84,7 @@ function setHumanAgentJoined(responseUserProfile: ResponseUserProfile) {
 }
 
 /**
- * Updates Carbon AI chat with the capabilities supported by the service desk.
+ * Updates Carbon AI Chat with the capabilities supported by the service desk.
  */
 function updateCapabilities(capabilities: Partial<ServiceDeskCapabilities>) {
   return { type: HA_UPDATE_CAPABILITIES, capabilities };

@@ -10,7 +10,7 @@
 import cloneDeep from "lodash-es/cloneDeep.js";
 import isEqual from "lodash-es/isEqual.js";
 import merge from "lodash-es/merge.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
 import { LoadedHistory } from "../schema/historyToMessages";
 import inputItemToLocalItem from "../schema/inputItemToLocalItem";
@@ -142,7 +142,7 @@ class ChatActionsImpl {
   private sessionTimer: ReturnType<typeof setTimeout>;
 
   /**
-   * This Promise is used when hydrating the Carbon AI chat. If this Promise is defined, then it means that a hydration
+   * This Promise is used when hydrating the Carbon AI Chat. If this Promise is defined, then it means that a hydration
    * process has begun and any additional attempts to hydrate can wait for it to resolve.
    */
   private hydrationPromise: Promise<void>;
@@ -158,7 +158,7 @@ class ChatActionsImpl {
   private restarting = false;
 
   /**
-   * Indicates if Carbon AI chat has been hydrated at least once. This is used when a rehydration occurs so that we avoid
+   * Indicates if Carbon AI Chat has been hydrated at least once. This is used when a rehydration occurs so that we avoid
    * performing certain operations more than once.
    */
   private alreadyHydrated = false;
@@ -231,7 +231,7 @@ class ChatActionsImpl {
     alternateOptions?: SendOptions
   ) {
     debugLog(
-      "Hydrating Carbon AI chat",
+      "Hydrating Carbon AI Chat",
       alternateWelcomeRequest,
       alternateWelcomeRequestSource,
       alternateOptions
@@ -391,7 +391,7 @@ class ChatActionsImpl {
    * @param message The message to send.
    * @param source The source of the message.
    * @param options Options for the sent message.
-   * @param ignoreHydration Indicates if this function should not check to see if the Carbon AI chat is hydrated before
+   * @param ignoreHydration Indicates if this function should not check to see if the Carbon AI Chat is hydrated before
    * performing send.
    */
   async send(
@@ -406,7 +406,7 @@ class ChatActionsImpl {
         : message;
 
     // If the home screen is open, we want to close it as soon as a message is sent. Note that this will also apply
-    // if the Carbon AI chat hasn't been opened yet.
+    // if the Carbon AI Chat hasn't been opened yet.
     if (
       this.serviceManager.store.getState().persistedToBrowserStorage.chatState
         .homeScreenState.isHomeScreenOpen

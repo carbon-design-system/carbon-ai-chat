@@ -33,8 +33,8 @@ import {
 @carbonElement("cds-aichat-container")
 class ChatContainer extends LitElement {
   /**
-   * The config to use to load Carbon AI chat. Note that the "onLoad" property is overridden by this component. If you
-   * need to perform any actions after Carbon AI chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
+   * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
+   * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
    */
   @property({ type: Object })
   config: PublicConfig;
@@ -43,14 +43,14 @@ class ChatContainer extends LitElement {
   element?: HTMLElement;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   @property()
   onBeforeRender: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called.
+   * This function is called after the render function of Carbon AI Chat is called.
    */
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
@@ -140,18 +140,18 @@ declare global {
 /** @category Web component */
 interface CdsAiChatContainerAttributes {
   /**
-   * The configuration object used to render Carbon AI chat.
+   * The configuration object used to render Carbon AI Chat.
    */
   config: PublicConfig;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called.
+   * This function is called after the render function of Carbon AI Chat is called.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 }

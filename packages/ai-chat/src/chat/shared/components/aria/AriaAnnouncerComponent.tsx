@@ -19,6 +19,7 @@ import {
   isTextNode,
 } from "../../utils/domUtils";
 import VisuallyHidden from "../util/VisuallyHidden";
+import { isBrowser } from "../../utils/browserUtils";
 
 // The set of types for an INPUT node that we want to announce the value of.
 const ANNOUNCE_INPUT_TYPES = new Set([
@@ -161,7 +162,7 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
 function nodeToText(node: Node, strings: string[]) {
   if (isElement(node)) {
     if (
-      window.getComputedStyle(node).display !== "none" &&
+      (!isBrowser || window.getComputedStyle(node).display !== "none") &&
       node.getAttribute("aria-hidden") !== "true" &&
       !node.hasAttribute(ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE)
     ) {

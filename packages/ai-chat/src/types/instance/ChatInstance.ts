@@ -8,7 +8,7 @@
  */
 
 import { IntlShape } from "react-intl";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
   CustomMenuOption,
@@ -28,7 +28,7 @@ import { MessageRequest } from "../messaging/Messages";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
- * that can be used with Carbon AI chat.
+ * that can be used with Carbon AI Chat.
  *
  * @category Instance
  */
@@ -48,7 +48,7 @@ export interface ChatInstance extends EventHandlers, ChatActions {
   destroy: () => void;
 
   /**
-   * Returns state information of the Carbon AI chat that could be useful.
+   * Returns state information of the Carbon AI Chat that could be useful.
    */
   getState: () => PublicWebChatState;
 }
@@ -60,17 +60,17 @@ export interface ChatInstance extends EventHandlers, ChatActions {
  */
 export interface PublicWebChatState {
   /**
-   * Is the Carbon AI chat currently in an open state.
+   * Is the Carbon AI Chat currently in an open state.
    */
   isWebChatOpen: boolean;
 
   /**
-   * Is the Carbon AI chat currently connected with a human agent.
+   * Is the Carbon AI Chat currently connected with a human agent.
    */
   isConnectedWithHumanAgent: boolean;
 
   /**
-   * Indicates if Carbon AI chat has requested to be connected to a human agent but an agent has not yet joined the
+   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
    * conversation.
    */
   isConnectingWithHumanAgent: boolean;
@@ -96,7 +96,7 @@ export interface PublicWebChatState {
   isTourActive: boolean;
 
   /**
-   * The current viewState of the Carbon AI chat.
+   * The current viewState of the Carbon AI Chat.
    */
   viewState: ViewState;
 
@@ -125,12 +125,12 @@ export interface PublicWebChatState {
  */
 export interface PublicWebChatServiceDeskState {
   /**
-   * Is the Carbon AI chat currently connected with a human agent.
+   * Is the Carbon AI Chat currently connected with a human agent.
    */
   isConnected: boolean;
 
   /**
-   * Indicates if Carbon AI chat has requested to be connected to a human agent but an agent has not yet joined the
+   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
    * conversation.
    */
   isConnecting: boolean;
@@ -305,7 +305,7 @@ interface ChatActions {
   ) => void;
 
   /**
-   * Fire the view:pre:change and view:change events and change the view of the Carbon AI chat. If a {@link ViewType} is
+   * Fire the view:pre:change and view:change events and change the view of the Carbon AI Chat. If a {@link ViewType} is
    * provided then that view will become visible and the rest will be hidden. If a {@link ViewState} is provided that
    * includes all of the views then all of the views will be changed accordingly. If a partial {@link ViewState} is
    * provided then only the views provided will be changed.
@@ -318,7 +318,7 @@ interface ChatActions {
   writeableElements: Partial<WriteableElements>;
 
   /**
-   * The elements of Carbon AI chat that need to be exposed for customers to manipulate. Unlike writeable elements, these
+   * The elements of Carbon AI Chat that need to be exposed for customers to manipulate. Unlike writeable elements, these
    * elements have existing content
    */
   elements: InstanceElements;
@@ -337,7 +337,7 @@ interface ChatActions {
   updateAssistantInputFieldVisibility: (isVisible: boolean) => void;
 
   /**
-   * Changes the state of Carbon AI chat to allow or disallow input. This includes the input field as well as inputs like
+   * Changes the state of Carbon AI Chat to allow or disallow input. This includes the input field as well as inputs like
    * buttons and dropdowns.
    */
   updateInputIsDisabled: (isDisabled: boolean) => void;
@@ -462,7 +462,7 @@ interface ChatActions {
   updateBotAvatarURL: (url: string) => void;
 
   /**
-   * Updates the Carbon AI chat launcher config with new desktop and/or mobile titles.
+   * Updates the Carbon AI Chat launcher config with new desktop and/or mobile titles.
    */
   updateLauncherConfig: (config: LauncherConfig) => void;
 }
@@ -519,7 +519,7 @@ export interface SendOptions {
    * wait for the entire streaming response to complete. By default, the call will wait until the entire process is
    * completed and the stream has sent all of its data to the client. If this is true, the function will return as
    * soon as the streaming begins (the first chunk is received). This is particularly useful when requesting the
-   * welcome node as it would allow the welcome node to provide a streaming response without leaving Carbon AI chat in a
+   * welcome node as it would allow the welcome node to provide a streaming response without leaving Carbon AI Chat in a
    * loading state until the streaming is all done.
    */
   returnBeforeStreaming?: boolean;
@@ -580,7 +580,7 @@ export enum WriteableElementName {
 }
 
 /**
- * The interface represents the elements that Carbon AI chat provides access to.
+ * The interface represents the elements that Carbon AI Chat provides access to.
  *
  * @category Instance
  */
@@ -602,7 +602,7 @@ export interface InstanceElements {
 }
 
 /**
- * Represents one of the input elements that Carbon AI chat provides access to custom code.
+ * Represents one of the input elements that Carbon AI Chat provides access to custom code.
  *
  * @category Instance
  */

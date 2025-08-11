@@ -12,7 +12,6 @@
  */
 
 import { gray100, white } from "@carbon/colors";
-import Color from "color";
 
 import { consoleError } from "./miscUtils";
 
@@ -103,7 +102,9 @@ function whiteOrBlackText(background: string): string {
 /**
  * Adjust a given color's lightness by a specified number of percentage points.
  */
-function adjustLightness(token: string, shift: number) {
+async function adjustLightness(token: string, shift: number) {
+  const colorModule = await import("color");
+  const Color = "default" in colorModule ? colorModule.default : colorModule;
   const original = Color(token).hsl().object();
 
   return Color({ ...original, l: original.l + shift })

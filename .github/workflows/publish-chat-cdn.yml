@@ -42,7 +42,7 @@ jobs:
           path: packages/ai-chat
 
       # If tag is a release candidate, upload the CDN artifacts to the `next` tag folder
-      # ie. https://1.www.s81c.com/common/carbon/web-components/tag/v2/next/breadcrumb.min.js
+      # ie. https://1.www.s81c.com/common/carbon/ai-chat/tag/next/docs/documents/Overview.html
       - name: Upload typedoc to COS under the `next` folder
         if: ${{ env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -58,7 +58,7 @@ jobs:
           DEST_DIR: "common/carbon/ai-chat/tag/next/docs"
 
       # If tag is a full release, upload the CDN artifacts to the `latest` tag folder
-      # ie. https://1.www.s81c.com/common/carbon/web-components/tag/v2/latest/breadcrumb.min.js
+      # ie. https://1.www.s81c.com/common/carbon/ai-chat/tag/latest/docs/documents/Overview.html
       - name: Upload typedoc to COS under the `latest` folder
         if: ${{ !env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -74,7 +74,7 @@ jobs:
           DEST_DIR: "common/carbon/ai-chat/tag/latest/docs"
 
       # Upload the CDN artifacts to versioned folder
-      # ie. https://1.www.s81c.com/common/carbon/web-components/version/v2.12.0/breadcrumb.min.js
+      # ie. https://1.www.s81c.com/common/carbon/ai-chat/version/v.1.0.0/docs/documents/Overview.html
       - name: Upload typedoc to COS under the versioned folder
         uses: jakejarvis/s3-sync-action@master
         with:

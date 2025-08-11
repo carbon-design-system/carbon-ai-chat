@@ -536,7 +536,7 @@ svg.WAC__sent-fileIcon {
 
 .WAC__received--iframePreviewCard {
   /* For some reason, without this property here, the preview card's width increases by 11 pixels if the url is too long.
-   This property used to exist in the WAC__received class before Carbon AI chat 5.0 which would've prevented this issue. */
+   This property used to exist in the WAC__received class before Carbon AI Chat 5.0 which would've prevented this issue. */
   overflow: hidden;
   inline-size: 100%;
 }

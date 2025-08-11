@@ -9,7 +9,7 @@
 
 /**
  * @packageDocumentation
- * @module Carbon AI chat types
+ * @module Carbon AI Chat types
  * @showCategories
  *
  * All external exports. This file exports types as well as the React components.
@@ -134,6 +134,8 @@ export {
   ThemeConfig,
   // WhiteLabelTheme,
 } from "./types/config/PublicConfig";
+
+export { DeepPartial } from "../src/types/utilities/DeepPartial";
 
 export {
   AdditionalDataToAgent,

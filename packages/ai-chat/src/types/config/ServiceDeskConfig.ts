@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
   ResponseUserProfile,
@@ -34,7 +34,7 @@ export interface ServiceDeskPublicConfig {
   availabilityTimeoutSeconds?: number;
 
   /**
-   * Indicates if Carbon AI chat should auto-connect to an agent whenever it receives a connect_to_agent response and
+   * Indicates if Carbon AI Chat should auto-connect to an agent whenever it receives a connect_to_agent response and
    * agents are available. This essentially mimics the user clicking the "Request agent" button on the card. The
    * card is still displayed to the user.
    */
@@ -48,7 +48,7 @@ export interface ServiceDeskPublicConfig {
   agentJoinTimeoutSeconds?: number;
 
   /**
-   * Indicates if Carbon AI chat should automatically attempt to reconnect the user to a human agent when it is loaded. This
+   * Indicates if Carbon AI Chat should automatically attempt to reconnect the user to a human agent when it is loaded. This
    * only works if the service desk integration being used supports reconnecting. This value defaults to true.
    */
   allowReconnect?: boolean;
@@ -89,7 +89,7 @@ export interface ServiceDeskFactoryParameters {
   callback: ServiceDeskCallback;
 
   /**
-   * The instance of Carbon AI chat.
+   * The instance of Carbon AI Chat.
    */
   instance: ChatInstance;
 
@@ -100,15 +100,15 @@ export interface ServiceDeskFactoryParameters {
 }
 
 /**
- * This interface represents the operations that a service desk integration can call on Carbon AI chat when it wants web
- * chat to do something. When a service desk integration instance is created, Carbon AI chat will provide an
+ * This interface represents the operations that a service desk integration can call on Carbon AI Chat when it wants web
+ * chat to do something. When a service desk integration instance is created, Carbon AI Chat will provide an
  * implementation of this interface to the integration for it to use.
  *
  * @category Service desk
  */
 export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   /**
-   * Updates Carbon AI chat with the capabilities supported by the service desk. Some of these capabilities may support
+   * Updates Carbon AI Chat with the capabilities supported by the service desk. Some of these capabilities may support
    * being changed dynamically and can be updated at any time.
    *
    * @param capabilities The set of capabilities to update. Only properties that need to be changed need to be included.
@@ -148,11 +148,11 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   /**
    * Sends a message to the chat widget from an agent.
    *
-   * Note: The text response type from the standard Watson API is supported in addition to the Carbon AI chat specific
+   * Note: The text response type from the standard Watson API is supported in addition to the Carbon AI Chat specific
    * MessageResponseTypes.INLINE_ERROR response type.
    *
    * @param message The message to display to the user. Note, the ability to pass a string for the message was added in
-   * Carbon AI chat 6.7.0. Earlier versions of Carbon AI chat will not work if you pass just a string.
+   * Carbon AI Chat 6.7.0. Earlier versions of Carbon AI Chat will not work if you pass just a string.
    * @param agentID The ID of the agent who is sending the message. If this is not provided, then the ID of the last
    * agent who joined the conversation will be used.
    */
@@ -191,7 +191,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   /**
    * Updates the status of a file upload. The upload may either be successful or an error may have occurred. The
    * location of a file upload may be in one of two places. The first occurs when the user has selected a file to be
-   * uploaded but has not yet sent the file. In this case, the file appears inside the Carbon AI chat input area. If an
+   * uploaded but has not yet sent the file. In this case, the file appears inside the Carbon AI Chat input area. If an
    * error is indicated on the file, the error message will be displayed along with the file and the user must
    * remove the file from the input area before a message can be sent.
    *
@@ -221,7 +221,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   screenShareRequest(): Promise<ScreenShareState>;
 
   /**
-   * Informs Carbon AI chat that a screen sharing session has ended or been cancelled. This may occur while waiting for a
+   * Informs Carbon AI Chat that a screen sharing session has ended or been cancelled. This may occur while waiting for a
    * screen sharing request to be accepted or while screen sharing is in progress.
    */
   screenShareEnded(): Promise<void>;
@@ -233,11 +233,11 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   persistedState(): TPersistedStateType;
 
   /**
-   * Allows the service desk to store state that may be retrieved when Carbon AI chat is reloaded on a page. This information
+   * Allows the service desk to store state that may be retrieved when Carbon AI Chat is reloaded on a page. This information
    * is stored in browser session storage which has a total limit of 5MB per origin so the storage should be used
    * sparingly. Also, the value provided here must be JSON serializable.
    *
-   * When Carbon AI chat is reloaded, the data provided here will be returned to the service desk via the
+   * When Carbon AI Chat is reloaded, the data provided here will be returned to the service desk via the
    * ServiceDeskFactoryParameters.persistedState property. This data may also be retrieved by using the
    * {@link persistedState} method.
    *
@@ -288,9 +288,9 @@ export enum ScreenShareState {
 
 /**
  * Information about the current availability of an agent while a user is waiting to be connected. If these are not set
- * the Carbon AI chat will provide generic messaging letting the user know that a request for an agent has been sent.
+ * the Carbon AI Chat will provide generic messaging letting the user know that a request for an agent has been sent.
  *
- * Note that only one of these fields will be used by Carbon AI chat if more than one has been assigned a value. Priority
+ * Note that only one of these fields will be used by Carbon AI Chat if more than one has been assigned a value. Priority
  * first goes to estimated_wait_time, then position_in_queue, and then message.
  *
  * @category Service desk
@@ -309,7 +309,7 @@ export interface AgentAvailability {
   /**
    * A custom message to display to the user containing the updated status. This may contain markdown.
    *
-   * @since Web chat 6.7.0. This value will be ignored if used with earlier versions of Carbon AI chat.
+   * @since Web chat 6.7.0. This value will be ignored if used with earlier versions of Carbon AI Chat.
    */
   message?: string;
 }
@@ -371,7 +371,7 @@ export interface ConnectingErrorInfo extends BaseErrorInfo {
    * An optional message that is displayed to the user in the bot view. If this value is not provided, a default
    * message will be shown instead.
    *
-   * Note that support for this field was added in Carbon AI chat 6.7.0. It will be ignored in earlier versions.
+   * Note that support for this field was added in Carbon AI Chat 6.7.0. It will be ignored in earlier versions.
    */
   messageToUser?: string;
 }
@@ -450,7 +450,7 @@ export interface EndChatInfo<TPayloadType = unknown> {
 
   /**
    * Indicates if the chat was ended by the agent (or by the service desk integration). If false, indicates the chat
-   * was ended by the user or by Carbon AI chat.
+   * was ended by the user or by Carbon AI Chat.
    */
   endedByHumanAgent: boolean;
 }
@@ -486,15 +486,15 @@ export interface ServiceDesk {
 
   /**
    * Instructs the service desk to start a new chat. This will be called when a user requests to connect to an agent
-   * and Carbon AI chat initiates the process (typically when the user clicks the button on the "Connect to Agent" card).
+   * and Carbon AI Chat initiates the process (typically when the user clicks the button on the "Connect to Agent" card).
    * It will make the appropriate calls to the service desk to start the chat and will make use of the callback to
-   * inform Carbon AI chat when an agent joins or messages are received.
+   * inform Carbon AI Chat when an agent joins or messages are received.
    *
-   * This may be called multiple times by Carbon AI chat. If a user begins a chat with an agent, ends the chat and then
+   * This may be called multiple times by Carbon AI Chat. If a user begins a chat with an agent, ends the chat and then
    * begins a new chat with an agent, this function will be called again.
    *
    * If the integration is unable to start a chat (such as if the service desk is down or no agents are available)
-   * then this function should throw an error to let Carbon AI chat know that the chat could not be started.
+   * then this function should throw an error to let Carbon AI Chat know that the chat could not be started.
    *
    * The {@link areAnyAgentsOnline} function is called before this function is called and is called as soon as a
    * "connect_to_agent" message has been received from the assistant. This determines if the "Connect to Agent" card

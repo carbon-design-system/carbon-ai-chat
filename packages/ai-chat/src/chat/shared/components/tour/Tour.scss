@@ -69,7 +69,7 @@
 }
 
 // Make sure the step content can overflow vertically but not horizontally.
-// For desktop we want the content to be 1/2 of Carbon AI chat height.
+// For desktop we want the content to be 1/2 of Carbon AI Chat height.
 .WACTourStep {
   overflow: hidden auto;
   max-block-size: calc((var(--cds-chat-BASE-max-height) / 2));

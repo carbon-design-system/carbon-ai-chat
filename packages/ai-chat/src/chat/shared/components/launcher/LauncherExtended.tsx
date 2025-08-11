@@ -30,7 +30,7 @@ import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
 import { animateWithClass } from "../../utils/animationUtils";
-import { IS_MOBILE } from "../../utils/browserUtils";
+import { IS_MOBILE, isBrowser } from "../../utils/browserUtils";
 import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
 import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
@@ -57,7 +57,7 @@ interface LauncherExtendedProps extends HasClassName {
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
-   * in the session before the user has opened the Carbon AI chat and is superseded by the agent unread indicator if there
+   * in the session before the user has opened the Carbon AI Chat and is superseded by the agent unread indicator if there
    * is one.
    */
   showUnreadIndicator: boolean;
@@ -73,7 +73,7 @@ interface LauncherExtendedProps extends HasClassName {
   onReduceEnd: () => void;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
 
@@ -510,6 +510,9 @@ function checkIfUserSwipedRight(
  */
 function getMaxLauncherExtendedWidth() {
   const launcherPosition = IS_MOBILE ? 32 : 64;
+  if (!isBrowser) {
+    return MAX_EXTENDED_LAUNCHER_WIDTH;
+  }
   const { width, height } = window.screen;
   const lowestValue = Math.min(height, width);
   const extendedWidth = lowestValue - launcherPosition;

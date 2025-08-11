@@ -10,7 +10,7 @@
 interface HasBaseHeight {
   /**
    * The base height value relative to the width of the response type in the authoring modal. This helps the response
-   * element maintain its aspect ratio no matter the width of Carbon AI chat. Use the
+   * element maintain its aspect ratio no matter the width of Carbon AI Chat. Use the
    * {@link getResponsiveElementPaddingValue} to calculate the top padding value.
    */
   baseHeight?: number;

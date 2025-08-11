@@ -1,6 +1,6 @@
 # Demo Application
 
-This is a demo of the Carbon AI chat using a mock back-end.
+This is a demo of the Carbon AI Chat using a mock back-end.
 
 It can serve as a helpful guide in concert with the specific more simple examples located in ['../react'](../examples/react) and ['../web-components'](../examples/web-components).
 

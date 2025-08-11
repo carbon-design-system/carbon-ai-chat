@@ -12,7 +12,7 @@
  * intended to provide base types for a standalone widget and should not contain any imports of other types.
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../instance/apiTypes";
@@ -848,7 +848,7 @@ interface IFrameItem<TUserDefinedType = Record<string, unknown>>
  */
 interface MediaItemDimensions {
   /**
-   * This property's value is used to calculate a responsive height for Carbon AI chat's media player so that its aspect
+   * This property's value is used to calculate a responsive height for Carbon AI Chat's media player so that its aspect
    * ratio is the same between different screen widths. This is set to a reasonable default depending on the response type
    * and other details like what service you are pulling the content from (e.g. Youtube or SoundCloud).
    */
@@ -1094,7 +1094,7 @@ interface WithWidthOptions {
  */
 interface WithBodyAndFooter {
   /**
-   * A list of message items to render in a Carbon AI chat panel.
+   * A list of message items to render in a Carbon AI Chat panel.
    */
   body?: GenericItem[];
 
@@ -1109,7 +1109,7 @@ interface WithBodyAndFooter {
  */
 interface MessageItemPanelInfo extends WithBodyAndFooter {
   /**
-   * The title to give the panel in Carbon AI chat.
+   * The title to give the panel in Carbon AI Chat.
    */
   title?: string;
 
@@ -1187,7 +1187,7 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   label?: string;
 
   /**
-   * A custom event that can be listened to by Carbon AI chat when the button item is clicked.
+   * A custom event that can be listened to by Carbon AI Chat when the button item is clicked.
    */
   custom_event_name?: string;
 

@@ -70,7 +70,7 @@ export interface AddMessageOptions {
  */
 export interface CustomSendMessageOptions {
   /**
-   * A signal to let customSendMessage to cancel a request if it has exceeded Carbon AI chat's timeout.
+   * A signal to let customSendMessage to cancel a request if it has exceeded Carbon AI Chat's timeout.
    */
   signal: AbortSignal;
 }

@@ -69,7 +69,7 @@ interface LauncherCallToActionConfig {
 
   /**
    * @internal
-   * An optional override of the icon shown on the launcher. This is ignored if the Carbon AI chat theme is turned on.
+   * An optional override of the icon shown on the launcher. This is ignored if the Carbon AI Chat theme is turned on.
    */
   avatar_url_override?: string;
 }

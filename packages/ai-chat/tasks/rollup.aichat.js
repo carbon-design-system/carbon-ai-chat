@@ -148,6 +148,14 @@ async function runRollup() {
         preserveModules: false,
         entryFileNames: '[name].js',
         chunkFileNames: 'chat.[name].js',
+        banner: `/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */`,
       },
       external,
       treeshake,
@@ -208,15 +216,8 @@ async function runRollup() {
           format: {
             beautify: true,
             indent_level: 2,
-            // keep only comments that contain @license
-            comments: (_astNode, comment) => {
-              const text = comment.value;
-              // comment.type === "comment2" for /* … */
-              if (comment.type === 'comment2') {
-                return /@license/i.test(text);
-              }
-              return false;
-            }
+            // Remove all comments - the copyright header is added via banner
+            comments: false
           }
         }),
         process.env.profile === 'true' && visualizer({ gzipSize: true, open: true }),

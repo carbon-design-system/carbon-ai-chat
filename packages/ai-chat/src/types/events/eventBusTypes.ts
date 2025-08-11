@@ -11,7 +11,7 @@
  * This file contains the type definitions for the event bus.
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
   ResponseUserProfile,
@@ -131,25 +131,25 @@ export enum BusEventType {
   TOUR_STEP = "tour:step",
 
   /**
-   * This event is fired before Carbon AI chat processes a message received from a human agent from a service desk.
+   * This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
   HUMAN_AGENT_PRE_RECEIVE = "human_agent:pre:receive",
 
   /**
-   * This event is fired after Carbon AI chat processes a message received from a human agent from a service desk.
+   * This event is fired after Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to update your history store.
    */
   HUMAN_AGENT_RECEIVE = "human_agent:receive",
 
   /**
-   * This event is fired before Carbon AI chat sends a message to a human agent from a service desk.
+   * This event is fired before Carbon AI Chat sends a message to a human agent from a service desk.
    * You can use this to filter messages before they are sent to the agent.
    */
   HUMAN_AGENT_PRE_SEND = "human_agent:pre:send",
 
   /**
-   * This event is fired after Carbon AI chat sends a message to a human agent from a service desk.
+   * This event is fired after Carbon AI Chat sends a message to a human agent from a service desk.
    * You can use this to update your history store.
    */
   HUMAN_AGENT_SEND = "human_agent:send",
@@ -174,7 +174,7 @@ export enum BusEventType {
   HUMAN_AGENT_END_CHAT = "human_agent:endChat",
 
   /**
-   * This event is fired after Carbon AI chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
+   * This event is fired after Carbon AI Chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
    * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
    */
   HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE = "human_agent:areAnyAgentsOnline",
@@ -203,7 +203,7 @@ export enum BusEventType {
  */
 export enum ViewChangeReason {
   /**
-   * Indicates the Carbon AI chat has loaded for the first time and a view is trying to open. If openChatByDefault is
+   * Indicates the Carbon AI Chat has loaded for the first time and a view is trying to open. If openChatByDefault is
    * true then the main window will be trying to open, otherwise the launcher will be trying to open.
    */
   WEB_CHAT_LOADED = "webChatLoaded",
@@ -311,7 +311,7 @@ export enum MessageSendSource {
   OPTION_DROP_DOWN = "optionDropDown",
 
   /**
-   * The message was sent as an automatic re-send when Carbon AI chat is loaded. This occurs when Carbon AI chat sees that the
+   * The message was sent as an automatic re-send when Carbon AI Chat is loaded. This occurs when Carbon AI Chat sees that the
    * last message request did not receive a response.
    */
   HYDRATE_RESEND = "hydrateResend",
@@ -513,12 +513,12 @@ export interface BusEventViewPreChange extends BusEvent {
   oldViewState: ViewState;
 
   /**
-   * The new view state that Carbon AI chat is going to switch to. This new state can be changed by the event handler.
+   * The new view state that Carbon AI Chat is going to switch to. This new state can be changed by the event handler.
    */
   newViewState: ViewState;
 
   /**
-   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI chat's view should
+   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI Chat's view should
    * not be changed.
    */
   cancelViewChange: boolean;
@@ -541,12 +541,12 @@ export interface BusEventViewChange extends BusEvent {
   oldViewState: ViewState;
 
   /**
-   * The new view state that Carbon AI chat has switched to. This new state can be changed by the event handler.
+   * The new view state that Carbon AI Chat has switched to. This new state can be changed by the event handler.
    */
   newViewState: ViewState;
 
   /**
-   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI chat's view should
+   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI Chat's view should
    * not be changed. Since the view has already changed when this event is fired, this property will cause the view to
    * change back. Note that the view change events are *not* fired when the view changes back.
    */
@@ -865,7 +865,7 @@ export interface BusEventHumanAgentEndChat extends BusEvent {
 }
 
 /**
- * This event is fired after Carbon AI chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
+ * This event is fired after Carbon AI Chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
  * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
  *
  * @category Service desk

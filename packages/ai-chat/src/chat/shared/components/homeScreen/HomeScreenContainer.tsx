@@ -89,7 +89,7 @@ interface HomeScreenContainerProps {
   homeScreenInputRef: RefObject<InputFunctions>;
 
   /**
-   * The callback that can be called when this component wants the Carbon AI chat to regain focus after a homescreen overflow
+   * The callback that can be called when this component wants the Carbon AI Chat to regain focus after a homescreen overflow
    * menu item is clicked.
    */
   requestFocus?: () => void;

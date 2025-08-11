@@ -58,7 +58,7 @@ export interface FileUpload {
 }
 
 /**
- * Whether a particular Carbon AI chat view is visible or not.
+ * Whether a particular Carbon AI Chat view is visible or not.
  *
  * @category Instance
  */
@@ -147,7 +147,7 @@ export interface NotificationStateObject {
 export type LanguagePack = EnglishLanguagePack;
 
 /**
- * The different views that can be shown by Carbon AI chat.
+ * The different views that can be shown by Carbon AI Chat.
  *
  * @category Instance
  */
@@ -199,7 +199,7 @@ export interface CustomPanels {
 }
 
 /**
- * The custom panel instance for controlling and manipulating a custom panel in Carbon AI chat.
+ * The custom panel instance for controlling and manipulating a custom panel in Carbon AI Chat.
  *
  * @category Instance
  */
@@ -223,7 +223,7 @@ export interface CustomPanelInstance {
 }
 
 /**
- * Describes general config options for a Carbon AI chat panel. These options are also part of the
+ * Describes general config options for a Carbon AI Chat panel. These options are also part of the
  * {@link BasePanelComponentProps}, except the options here are also shared with {@link CustomPanelConfigOptions}.
  *
  * Any options specific to either the BasePanelComponent or CustomPanelConfigOptions should be added to the respective
@@ -294,7 +294,7 @@ export interface CustomPanelConfigOptions extends BasePanelConfigOptions {
 
   /**
    * Disables the default action that is taken when the close or close-and-restart buttons are clicked. The default
-   * action closes Carbon AI chat and disabling this will cause the button to not do anything. You can override the button
+   * action closes Carbon AI Chat and disabling this will cause the button to not do anything. You can override the button
    * behavior by using the {@link onClickClose} or {@link onClickCloseAndRestart} callback.
    */
   disableDefaultCloseAction?: boolean;

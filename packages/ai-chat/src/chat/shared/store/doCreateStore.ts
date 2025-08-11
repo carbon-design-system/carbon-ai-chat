@@ -125,7 +125,7 @@ function doCreateStore(
     viewChanging: false,
     initialViewChangeComplete: false,
     targetViewState:
-      // If openChatByDefault is set to true then the Carbon AI chat should open automatically. This value will be overridden
+      // If openChatByDefault is set to true then the Carbon AI Chat should open automatically. This value will be overridden
       // by session history if a session exists. This overwriting is intentional since we only want openChatByDefault to
       // open the main window the first time the chat loads for a user.
       config.public.openChatByDefault
@@ -176,7 +176,7 @@ function doCreateStore(
 }
 
 /**
- * Returns the corner type for the Carbon AI chat widget.
+ * Returns the corner type for the Carbon AI Chat widget.
  */
 function getThemeCornersType(config: AppConfig) {
   if (

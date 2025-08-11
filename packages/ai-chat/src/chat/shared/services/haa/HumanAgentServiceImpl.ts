@@ -9,7 +9,7 @@
 
 import cloneDeep from "lodash-es/cloneDeep.js";
 import merge from "lodash-es/merge.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../../types/utilities/DeepPartial";
 
 import inputItemToLocalItem from "../../schema/inputItemToLocalItem";
 import {
@@ -929,7 +929,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
   }
 
   /**
-   * Updates Carbon AI chat with the capabilities supported by the service desk. Some of these capabilities may support
+   * Updates Carbon AI Chat with the capabilities supported by the service desk. Some of these capabilities may support
    * being changed dynamically and can be updated at any time.
    *
    * @param capabilities The set of capabilities to update. Only properties that need to be changed need to be included.
@@ -1013,11 +1013,11 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
   /**
    * Sends a message to the chat widget from an agent.
    *
-   * Note: The text response type from the standard Watson API is supported in addition to the Carbon AI chat specific
+   * Note: The text response type from the standard Watson API is supported in addition to the Carbon AI Chat specific
    * {@link MessageResponseTypes.INLINE_ERROR} response type.
    *
    * @param message The message to display to the user. Note, the ability to pass a string for the message was added in
-   * Carbon AI chat 6.7.0. Earlier versions of Carbon AI chat will not work if you pass just a string.
+   * Carbon AI Chat 6.7.0. Earlier versions of Carbon AI Chat will not work if you pass just a string.
    * @param agentID The ID of the agent who is sending the message. If this is not provided, then the ID of the last
    * agent who joined the conversation will be used.
    */
@@ -1247,7 +1247,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
   /**
    * Updates the status of a file upload. The upload may either be successful or an error may have occurred. The
    * location of a file upload may be in one of two places. The first occurs when the user has selected a file to be
-   * uploaded but has not yet sent the file. In this case, the file appears inside the Carbon AI chat input area. If an
+   * uploaded but has not yet sent the file. In this case, the file appears inside the Carbon AI Chat input area. If an
    * error is indicated on the file, the error message will be displayed along with the file and the user must
    * remove the file from the input area before a message can be sent.
    *
@@ -1359,7 +1359,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
   }
 
   /**
-   * Informs Carbon AI chat that a screen sharing session has ended or been cancelled. This may occur while waiting for a
+   * Informs Carbon AI Chat that a screen sharing session has ended or been cancelled. This may occur while waiting for a
    * screen sharing request to be accepted or while screen sharing is in progress.
    */
   async screenShareEnded() {
@@ -1393,11 +1393,11 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
   }
 
   /**
-   * Allows the service desk to store state that may be retrieved when Carbon AI chat is reloaded on a page. This information
+   * Allows the service desk to store state that may be retrieved when Carbon AI Chat is reloaded on a page. This information
    * is stored in browser session storage which has a total limit of 5MB per origin so the storage should be used
    * sparingly. Also, the value provided here must be JSON serializable.
    *
-   * When Carbon AI chat is reloaded, the data provided here will be returned to the service desk via the
+   * When Carbon AI Chat is reloaded, the data provided here will be returned to the service desk via the
    * ServiceDeskFactoryParameters.persistedState property.
    *
    * @param state The state to update.
@@ -1428,10 +1428,12 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
 /**
  * Returns a new instance of the service implementation.
  */
-function createService(serviceManager: ServiceManager): HumanAgentService {
+function createHumanAgentService(
+  serviceManager: ServiceManager
+): HumanAgentService {
   return new HumanAgentServiceImpl(serviceManager);
 }
-assertType<CreateHumanAgentServiceFunction>(createService);
+assertType<CreateHumanAgentServiceFunction>(createHumanAgentService);
 
 /**
  * Performs some minimal validation of the provided custom service desk to make sure it meets the minimum
@@ -1478,6 +1480,10 @@ function validateCustomServiceDesk(serviceDesk: ServiceDesk) {
   }
 }
 
-export { HumanAgentServiceImpl, createService, validateCustomServiceDesk };
+export {
+  HumanAgentServiceImpl,
+  createHumanAgentService,
+  validateCustomServiceDesk,
+};
 
-export default createService;
+export default createHumanAgentService;
