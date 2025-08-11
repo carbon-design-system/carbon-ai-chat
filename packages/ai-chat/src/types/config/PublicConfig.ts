@@ -147,18 +147,21 @@ export interface PublicConfig {
 
   /**
    * @internal
+   * @experimental
    * Sets the chat into a read only mode for displaying old conversations.
    */
   isReadonly?: boolean;
 
   /**
    * @internal
+   * @experimental
    * Sets the avatar image.
    */
   botAvatarURL?: string;
 
   /**
    * @internal
+   * @experimental
    * Sets the name of the bot.
    */
   botName?: string;
@@ -169,6 +172,7 @@ export interface PublicConfig {
    * Defaults to false.
    *
    * @experimental
+   * @internal
    */
   enableWorkers?: boolean;
 }
