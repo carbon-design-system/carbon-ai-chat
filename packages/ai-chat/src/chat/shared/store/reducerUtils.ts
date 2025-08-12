@@ -185,7 +185,7 @@ const DEFAULT_INPUT_STATE = (): InputState => ({
   fieldVisible: true,
   isReadonly: false,
   files: [],
-  allowFileUploads: true,
+  allowFileUploads: false,
   allowMultipleFileUploads: false,
   allowedFileUploadTypes: null,
   stopStreamingButtonState: {
