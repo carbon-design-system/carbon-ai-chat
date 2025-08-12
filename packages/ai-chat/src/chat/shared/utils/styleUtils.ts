@@ -25,6 +25,7 @@ import {
 } from "./colors";
 import { WA_CONSOLE_PREFIX } from "./constants";
 import {
+  ThemeType,
   CarbonTheme,
   WhiteLabelTheme,
 } from "../../../types/config/PublicConfig";
@@ -334,16 +335,12 @@ function mergeCSSVariables(
   publicVars: ObjectMap<string>,
   whiteLabelVariables: WhiteLabelTheme,
   carbonTheme: CarbonTheme,
-  useAITheme: boolean,
+  theme: ThemeType | undefined,
 ): ObjectMap<string> {
   carbonTheme = carbonTheme || CarbonTheme.G10;
-  useAITheme = useAITheme || false;
   publicVars = publicVars || {};
 
-  const internalOverrides = createInternalCSSOverridesMap(
-    carbonTheme,
-    useAITheme,
-  );
+  const internalOverrides = createInternalCSSOverridesMap(carbonTheme, theme);
   const result = { ...internalOverrides, ...publicVars };
 
   Object.entries(result).forEach(([key, value]) => {
@@ -377,10 +374,10 @@ function mergeCSSVariables(
  */
 function createInternalCSSOverridesMap(
   carbonTheme: CarbonTheme,
-  useAITheme: boolean,
+  theme: ThemeType | undefined,
 ): ObjectMap<string> {
   let internalOverridesMap = {};
-  if (!useAITheme) {
+  if (theme !== ThemeType.CARBON_AI) {
     // Some carbon colors need to be overridden in order to support our theming options (when the user isn't using the
     // AI theme). For now these overrides only apply to the quick action chat buttons since their carbon default, link
     // blue, may not match the users theme. But this could be extended to other overrides in the future.
@@ -422,7 +419,7 @@ function getThemeClassNames(themeState: ThemeState) {
       break;
   }
 
-  if (themeState?.useAITheme) {
+  if (themeState?.theme === ThemeType.CARBON_AI) {
     themeClassnames += " WAC--aiTheme";
   }
 

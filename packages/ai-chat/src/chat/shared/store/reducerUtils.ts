@@ -34,7 +34,7 @@ import {
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
-import { LayoutConfig } from "../../../types/config/PublicConfig";
+import { LayoutConfig, ThemeType } from "../../../types/config/PublicConfig";
 import { LocalMessageUIState } from "../../../types/messaging/LocalMessageItem";
 import { Message } from "../../../types/messaging/Messages";
 
@@ -194,7 +194,7 @@ deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_THEME_STATE: ThemeState = {
   carbonTheme: CarbonTheme.G10,
-  useAITheme: false,
+  theme: ThemeType.CARBON_AI,
   corners: CornersType.ROUND,
 };
 deepFreeze(DEFAULT_THEME_STATE);

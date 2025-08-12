@@ -21,6 +21,7 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { BrandColorKind } from "../../utils/constants";
 import { Header } from "../header/Header";
 import { OverlayPanelName } from "../OverlayPanel";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -66,7 +67,7 @@ function HomeScreenHeader(
   const customMenuOptions = useSelector(
     (state: AppState) => state.customMenuOptions,
   );
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const theme = useSelector((state: AppState) => state.theme.theme);
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -98,7 +99,7 @@ function HomeScreenHeader(
         onCloseAndRestart={onCloseAndRestart}
         overflowClicked={overflowClicked}
         overflowItems={overflowItems}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
         brandColor={brandColor}
         testIdPrefix={OverlayPanelName.HOME_SCREEN}
       />

@@ -72,6 +72,7 @@ import HomeScreenContainer from "../../components/homeScreen/HomeScreenContainer
 import IFramePanel from "../../components/responseTypes/iframe/IFramePanel";
 import ViewSourcePanel from "../../components/responseTypes/util/citations/ViewSourcePanel";
 import BodyAndFooterPanelComponent from "../../components/panels/BodyAndFooterPanelComponent";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 
 // Indicates the messages container is at the standard, default width.
 const WIDTH_BREAKPOINT_STANDARD = "WAC--standardWidth";
@@ -898,7 +899,7 @@ class MainWindow
           onToggleHomeScreen={this.onToggleHomeScreen}
           onUserTyping={this.onUserTyping}
           locale={locale}
-          useAITheme={theme.useAITheme}
+          useAITheme={theme.theme === ThemeType.CARBON_AI}
           carbonTheme={theme.carbonTheme}
         />
       </HideComponent>
@@ -1078,7 +1079,7 @@ class MainWindow
         overlayPanelName={OverlayPanelName.IFRAME}
       >
         <IFramePanel
-          useAITheme={this.props.theme.useAITheme}
+          useAITheme={this.props.theme.theme === ThemeType.CARBON_AI}
           ref={this.iframePanelRef}
           onClickClose={this.onClose}
           onClickRestart={this.onRestart}
@@ -1120,7 +1121,7 @@ class MainWindow
   renderCustomPanel() {
     return (
       <CustomPanel
-        useAITheme={this.props.theme.useAITheme}
+        useAITheme={this.props.theme.theme === ThemeType.CARBON_AI}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
         onCloseAndRestart={this.onCloseAndRestart}
@@ -1159,7 +1160,7 @@ class MainWindow
         localMessageItem={localMessageItem}
         title={panelOptions?.title}
         showAnimations={panelOptions?.show_animations}
-        useAITheme={this.props.theme.useAITheme}
+        useAITheme={this.props.theme.theme === ThemeType.CARBON_AI}
         requestFocus={this.requestFocus}
         onClose={this.onClose}
         onClickRestart={this.onRestart}

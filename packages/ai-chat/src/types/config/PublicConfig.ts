@@ -63,6 +63,14 @@ export interface PublicConfig {
   debug?: boolean;
 
   /**
+   * Expose internal serviceManager on ChatInstance for testing purposes.
+   * This should only be used in test environments.
+   *
+   * @internal
+   */
+  exposeServiceManagerForTesting?: boolean;
+
+  /**
    * Sets theming configuration.
    */
   themeConfig?: ThemeConfig;
@@ -148,16 +156,6 @@ export interface PublicConfig {
    * Sets the name of the bot.
    */
   botName?: string;
-
-  /**
-   * Enables the use of Web Workers for markdown processing when available.
-   * This can improve performance by offloading markdown parsing to a background thread.
-   * Defaults to false.
-   *
-   * @experimental
-   * @internal
-   */
-  enableWorkers?: boolean;
 }
 
 /**
@@ -306,6 +304,23 @@ export enum CarbonTheme {
 }
 
 /**
+ * Enum for theme configuration values.
+ *
+ * @category Config
+ */
+export enum ThemeType {
+  /**
+   * Uses the Carbon AI theme styling.
+   */
+  CARBON_AI = "CarbonAI",
+
+  /**
+   * Uses white label theme styling.
+   */
+  WHITE_LABEL = "WhiteLabel",
+}
+
+/**
  * The different categories of errors that the system can record. These values are published for end user consumption.
  *
  * @category Config
@@ -374,14 +389,15 @@ export interface ThemeConfig {
 
   /**
    * @internal
-   * Indicates if the carbon four AI theme should be enabled.
+   * Specifies which theme configuration to use.
    */
-  useAITheme?: boolean;
+  theme?: ThemeType;
 
   /**
    * @internal
    * This object contains the style information that is provided by the tooling that changes various bits of
    * appearance in the widget. These are used to configure multiple CSS variables in an accessible way.
+   * This is only available with using {@link ThemeType} set to `WHITE_LABEL`.
    */
 
   whiteLabelTheme?: WhiteLabelTheme;

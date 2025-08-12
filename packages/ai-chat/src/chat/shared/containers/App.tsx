@@ -165,7 +165,11 @@ function AppContainer({
     const cssVariableStyles = cssVariableOverrideString || "";
 
     if (rootNode instanceof ShadowRoot) {
-      if (applicationStylesheet && cssVariableOverrideStylesheet) {
+      if (
+        applicationStylesheet &&
+        "replaceSync" in applicationStylesheet &&
+        cssVariableOverrideStylesheet
+      ) {
         applicationStylesheet.replaceSync(appStyles);
         cssVariableOverrideStylesheet.replaceSync(cssVariableStyles);
 

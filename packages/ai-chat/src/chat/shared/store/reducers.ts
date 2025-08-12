@@ -12,6 +12,7 @@ import mergeWith from "lodash-es/mergeWith.js";
 import { DeepPartial } from "../../../types/utilities/DeepPartial";
 import { isBrowser } from "../utils/browserUtils";
 
+import { ThemeType } from "../../../types/config/PublicConfig";
 import { outputItemToLocalItem } from "../schema/outputItemToLocalItem";
 import { AppConfig } from "../../../types/state/AppConfig";
 import {
@@ -597,9 +598,10 @@ const reducers: { [key: string]: ReducerType } = {
     return {
       ...state,
       botName: action.name,
-      headerDisplayName: state.theme.useAITheme
-        ? state.headerDisplayName
-        : action.name,
+      headerDisplayName:
+        state.theme.theme === ThemeType.CARBON_AI
+          ? state.headerDisplayName
+          : action.name,
     };
   },
 
