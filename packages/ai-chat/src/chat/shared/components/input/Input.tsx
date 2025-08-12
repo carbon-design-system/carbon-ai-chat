@@ -10,7 +10,8 @@
 import Attachment from "@carbon/icons-react/es/Attachment.js";
 import Send from "@carbon/icons-react/es/Send.js";
 import SendFilled from "@carbon/icons-react/es/SendFilled.js";
-import { Button, FileUploaderItem } from "@carbon/react";
+import FileUploaderItem, {FILE_UPLOADER_ITEM_SIZE, FILE_UPLOADER_ITEM_STATE} from "../../../react/carbon/FileUploaderItem";
+import { Button } from "@carbon/react";
 import cx from "classnames";
 import React, {
   ChangeEvent,
@@ -468,13 +469,25 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                       iconDescription={
                         languagePack.fileSharing_removeButtonTitle
                       }
-                      name={fileUpload.file.name}
-                      status={FileStatusValue.EDIT}
+                      state={FILE_UPLOADER_ITEM_STATE.EDIT}
                       errorSubject={fileUpload.errorMessage}
                       invalid={fileUpload.isError}
-                      size={ButtonSizeEnum.SMALL}
+                      size={FILE_UPLOADER_ITEM_SIZE.SMALL}
                       onDelete={() => onRemoveFile(fileUpload.id)}
-                    />
+                    >{fileUpload.file.name}</FileUploaderItem>
+                    //   <FileUploaderItem
+                    //   // eslint-disable-next-line react/no-array-index-key
+                    //   key={index}
+                    //   iconDescription={
+                    //     languagePack.fileSharing_removeButtonTitle
+                    //   }
+                    //   name={fileUpload.file.name}
+                    //   status={FileStatusValue.EDIT}
+                    //   errorSubject={fileUpload.errorMessage}
+                    //   invalid={fileUpload.isError}
+                    //   size={ButtonSizeEnum.SMALL}
+                    //   onDelete={() => onRemoveFile(fileUpload.id)}
+                    // />
                   );
                 })}
               </div>
