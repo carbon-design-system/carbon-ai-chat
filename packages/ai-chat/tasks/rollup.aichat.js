@@ -36,11 +36,6 @@ const workspaceDir = path.resolve(__dirname, '../');
 
 process.chdir(workspaceDir);
 
-const workerSrc = path.join(paths.src,
-  'chat/web-components/components/markdownText/markdown/workers/markdownWorker.ts');
-const workerOut = path.join(paths.dist, 'es',
-  'markdownWorker.js');
-
 
 const external = [
   ...Object.keys(pkg.peerDependencies || []),
@@ -71,65 +66,15 @@ const parsedDtsTsConfig = parseJsonConfigFileContent(
   './', // Base directory for resolving paths
 );
 
-/**
- * This is a built step for building the markdown webworker as a different file. Not yet in use.
- */
-const workerBuild = {
-      input: workerSrc,
-      output: {
-        file: workerOut,
-        format: 'es',
-        sourcemap: false,
-        inlineDynamicImports: true,
-        banner: `/* 
- *  Copyright IBM Corp. 2025
- *  
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- */`,
-      },
-      external: [],                  
-      plugins: [
-        nodeResolve({
-          browser: true,
-          extensions: ['.js', '.ts'],
-        }),
-        commonjs({
-          include: /node_modules/,
-        }),
-        typescript({
-          tsconfig: path.join(paths.root,'tsconfig.json'),
-          compilerOptions: {
-            outDir: path.join(paths.dist, 'es'),
-            declaration: false,
-            module: 'ESNext',
-            target: 'ES2021',
-          }
-        }),
-        terser({
-          format: {
-            comments: /Copyright IBM Corp\./,
-            ascii_only: true
-          },
-          mangle: true,
-          compress: {
-            passes: 2
-          }
-        })
-      ],
-    };
-
 async function runRollup() {
   const config = [
-    // Worker build for external file fallback
-    workerBuild,
-    // Main build with preserveModules for tree-shaking
+    // Main build
     {
       onwarn(warning, warn) {
         // Treat circular dependencies as errors
-        /* if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        if (warning.code === 'CIRCULAR_DEPENDENCY') {
           throw new Error(`Circular dependency detected: ${warning.message}`);
-        } */
+        }
         
         // For other warnings, use default behavior
         warn(warning);
@@ -164,19 +109,17 @@ async function runRollup() {
       plugins: [
         postcss({
           extensions: ['.css', '.scss'],
-          inject: false, // Do not inject into <head>
-          modules: false, // No CSS modules
-          extract: false, // or true, if you want a separate CSS file
+          inject: false,
+          modules: false,
+          extract: false,
           sourceMap: false,
           plugins: [autoprefixer(), comments({ removeAll: true })],
-          // Pass options directly to the Sass processor:
           use: [
             [
               'sass',
               {
                 // You can add includePaths here, but often the Sass importer works well without extensive paths.
                 includePaths: [process.cwd(), path.resolve(paths.root, 'node_modules'), path.resolve(paths.root, '../../', 'node_modules')],
-                // If needed, you can also add a custom importer here.
               },
             ],
           ],

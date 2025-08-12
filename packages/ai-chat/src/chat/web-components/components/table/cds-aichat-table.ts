@@ -7,8 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/layer/index.js";
-import { CDSTableRow } from "@carbon/web-components";
+import { type CDSTableRow } from "@carbon/web-components";
 import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import debounce from "lodash-es/debounce.js";

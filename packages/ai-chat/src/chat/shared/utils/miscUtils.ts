@@ -17,7 +17,11 @@ import { AppConfig } from "../../../types/state/AppConfig";
 import { FileUpload } from "../../../types/state/AppState";
 import { FileStatusValue, WA_CONSOLE_PREFIX } from "./constants";
 import { resolveOrTimeout } from "./lang/promiseUtils";
-import { OnErrorData, OnErrorType } from "../../../types/config/PublicConfig";
+import {
+  OnErrorData,
+  OnErrorType,
+  ThemeType,
+} from "../../../types/config/PublicConfig";
 
 /**
  * A global flag to indicate if we want to show debug messages in the browser console. This is generally set from
@@ -178,9 +182,9 @@ function callOnError(onError: (data: OnErrorData) => void, data: OnErrorData) {
   }
 }
 
-function getBotName(useAITheme: boolean, config: AppConfig) {
+function getBotName(theme: ThemeType | undefined, config: AppConfig) {
   let botName;
-  if (useAITheme) {
+  if (theme === ThemeType.CARBON_AI) {
     botName = "watsonx";
   } else {
     botName = config.public.botName || "watsonx";

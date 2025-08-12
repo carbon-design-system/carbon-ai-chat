@@ -115,7 +115,6 @@ export {
   PublicConfig,
   PublicConfigMessaging,
   ThemeConfig,
-  // WhiteLabelTheme,
 } from "./types/config/PublicConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";

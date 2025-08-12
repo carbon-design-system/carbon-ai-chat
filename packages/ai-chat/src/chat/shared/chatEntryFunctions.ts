@@ -24,9 +24,7 @@ const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
   shouldTakeFocusIfOpensAutomatically: true,
   serviceDesk: {},
   messaging: {},
-  themeConfig: {
-    useAITheme: true,
-  },
+  themeConfig: {},
 };
 type ChatConstructorPromise = (
   publicConfig?: PublicConfig,

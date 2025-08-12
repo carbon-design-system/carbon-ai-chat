@@ -25,6 +25,7 @@ import type {
 import type { CornersType } from "../../chat/shared/utils/constants";
 import type { AppConfig } from "./AppConfig";
 import type { CarbonTheme } from "../utilities/carbonTypes";
+import type { ThemeType, WhiteLabelTheme } from "../config/PublicConfig";
 import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
@@ -677,9 +678,9 @@ interface MessagePanelState<T extends GenericItem = GenericItem> {
  */
 interface ThemeState {
   /**
-   * Indicates if the carbon for AI theme is enabled.
+   * Specifies which theme configuration to use.
    */
-  useAITheme: boolean;
+  theme?: ThemeType;
 
   /**
    * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
@@ -691,6 +692,11 @@ interface ThemeState {
    * This flag is used to disable Carbon AI Chat's rounded corners.
    */
   corners: CornersType;
+
+  /**
+   * Variables for white labeling.
+   */
+  whiteLabelTheme?: WhiteLabelTheme;
 }
 interface ChatHeaderState {
   /**
