@@ -42,7 +42,7 @@ jobs:
           path: packages/ai-chat
 
       # If tag is a release candidate, upload the CDN artifacts to the `next` tag folder
-      # ie. https://1.www.s81c.com/common/carbon/ai-chat/tag/next/docs/documents/Overview.html
+      # ie. chat.carbondesignsystem.com/tag/next/docs/index.html
       - name: Upload typedoc to COS under the `next` folder
         if: ${{ env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -55,10 +55,10 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist/docs/carbon-tsdocs"
-          DEST_DIR: "common/carbon/ai-chat/tag/next/docs"
+          DEST_DIR: "tag/next/docs"
 
       # If tag is a full release, upload the CDN artifacts to the `latest` tag folder
-      # ie. https://1.www.s81c.com/common/carbon/ai-chat/tag/latest/docs/documents/Overview.html
+      # ie. chat.carbondesignsystem.com/tag/latest/docs/index.html
       - name: Upload typedoc to COS under the `latest` folder
         if: ${{ !env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -71,10 +71,10 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist/docs/carbon-tsdocs"
-          DEST_DIR: "common/carbon/ai-chat/tag/latest/docs"
+          DEST_DIR: "tag/latest/docs"
 
       # Upload the CDN artifacts to versioned folder
-      # ie. https://1.www.s81c.com/common/carbon/ai-chat/version/v.1.0.0/docs/documents/Overview.html
+      # ie. chat.carbondesignsystem.com/version/v.1.0.0/docs/index.html
       - name: Upload typedoc to COS under the versioned folder
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -86,10 +86,10 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat/dist/docs/carbon-tsdocs"
-          DEST_DIR: "common/carbon/ai-chat/version/v${{steps.package-version.outputs.current-version}}/docs"
+          DEST_DIR: "version/v${{steps.package-version.outputs.current-version}}/docs"
 
       # If tag is a release candidate, upload the CDN artifacts to the `next` tag folder
-      # ie. https://1.www.s81c.com/common/carbon/web-components/tag/v2/next/breadcrumb.min.js
+      # ie. chat.carbondesignsystem.com/tag/next/demo/index.html
       - name: Upload demo to COS under the `next` folder
         if: ${{ env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -102,10 +102,10 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "demo/dist"
-          DEST_DIR: "common/carbon/ai-chat/tag/next/demo"
+          DEST_DIR: "tag/next/demo"
 
       # If tag is a full release, upload the CDN artifacts to the `latest` tag folder
-      # ie. https://1.www.s81c.com/common/carbon/web-components/tag/v2/latest/breadcrumb.min.js
+      # ie. chat.carbondesignsystem.com/tag/latest/demo/index.html
       - name: Upload demo to COS under the `latest` folder
         if: ${{ !env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -118,10 +118,10 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "demo/dist"
-          DEST_DIR: "common/carbon/ai-chat/tag/latest/demo"
+          DEST_DIR: "tag/latest/demo"
 
       # Upload the CDN artifacts to versioned folder
-      # ie. https://1.www.s81c.com/common/carbon/web-components/version/v2.12.0/breadcrumb.min.js
+      # ie. chat.carbondesignsystem.com/version/v1.x.0/demo/index.html
       - name: Upload demo to COS under the versioned folder
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -133,5 +133,5 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "demo/dist"
-          DEST_DIR: "common/carbon/ai-chat/version/v${{steps.package-version.outputs.current-version}}/demo"
+          DEST_DIR: "version/v${{steps.package-version.outputs.current-version}}/demo"
 
