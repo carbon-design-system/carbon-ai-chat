@@ -10,7 +10,10 @@
 import Attachment from "@carbon/icons-react/es/Attachment.js";
 import Send from "@carbon/icons-react/es/Send.js";
 import SendFilled from "@carbon/icons-react/es/SendFilled.js";
-import FileUploaderItem, {FILE_UPLOADER_ITEM_SIZE, FILE_UPLOADER_ITEM_STATE} from "../../../react/carbon/FileUploaderItem";
+import FileUploaderItem, {
+  FILE_UPLOADER_ITEM_SIZE,
+  FILE_UPLOADER_ITEM_STATE,
+} from "../../../react/carbon/FileUploaderItem";
 import { Button } from "@carbon/react";
 import cx from "classnames";
 import React, {
@@ -474,7 +477,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                       invalid={fileUpload.isError}
                       size={FILE_UPLOADER_ITEM_SIZE.SMALL}
                       onDelete={() => onRemoveFile(fileUpload.id)}
-                    >{fileUpload.file.name}</FileUploaderItem>
+                    >
+                      {fileUpload.file.name}
+                    </FileUploaderItem>
                     //   <FileUploaderItem
                     //   // eslint-disable-next-line react/no-array-index-key
                     //   key={index}

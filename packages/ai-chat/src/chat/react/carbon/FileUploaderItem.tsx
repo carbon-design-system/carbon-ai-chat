@@ -11,7 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import { FILE_UPLOADER_ITEM_SIZE, FILE_UPLOADER_ITEM_STATE } from "@carbon/web-components/es/components/file-uploader/defs.js";
+import {
+  FILE_UPLOADER_ITEM_SIZE,
+  FILE_UPLOADER_ITEM_STATE,
+} from "@carbon/web-components/es/components/file-uploader/defs.js";
 import CarbonFileUploaderItemElement from "@carbon/web-components/es-custom/components/file-uploader/file-uploader-item.js";
 
 const FileUploaderItem = createComponent({
@@ -25,4 +28,4 @@ const FileUploaderItem = createComponent({
 });
 
 export default FileUploaderItem;
-export { FILE_UPLOADER_ITEM_SIZE, FILE_UPLOADER_ITEM_STATE }
+export { FILE_UPLOADER_ITEM_SIZE, FILE_UPLOADER_ITEM_STATE };
