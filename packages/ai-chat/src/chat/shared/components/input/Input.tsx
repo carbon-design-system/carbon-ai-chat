@@ -480,19 +480,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                     >
                       {fileUpload.file.name}
                     </FileUploaderItem>
-                    //   <FileUploaderItem
-                    //   // eslint-disable-next-line react/no-array-index-key
-                    //   key={index}
-                    //   iconDescription={
-                    //     languagePack.fileSharing_removeButtonTitle
-                    //   }
-                    //   name={fileUpload.file.name}
-                    //   status={FileStatusValue.EDIT}
-                    //   errorSubject={fileUpload.errorMessage}
-                    //   invalid={fileUpload.isError}
-                    //   size={ButtonSizeEnum.SMALL}
-                    //   onDelete={() => onRemoveFile(fileUpload.id)}
-                    // />
                   );
                 })}
               </div>
