@@ -7,9 +7,10 @@
  *  @license
  */
 
-import ChevronLeft from "@carbon/icons-react/es/ChevronLeft.js";
-import ChevronRight from "@carbon/icons-react/es/ChevronRight.js";
-import { Button } from "@carbon/react";
+import Button, { BUTTON_KIND } from "../../../../react/carbon/Button";
+import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
+import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React, { MutableRefObject, ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
@@ -26,10 +27,10 @@ import {
   AppState,
   ChatWidthBreakpoint,
 } from "../../../../../types/state/AppState";
-import { ButtonKindEnum } from "../../../../../types/utilities/carbonTypes";
+const ChevronLeft = carbonIconToReact(ChevronLeft16);
+const ChevronRight = carbonIconToReact(ChevronRight16);
 
 const SWIPER_MODULES = [A11y, Navigation];
-
 // This object holds the left margin value for received messages.
 const MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT = {
   [ChatWidthBreakpoint.NARROW]: 16,
@@ -131,10 +132,10 @@ function Carousel({
           <Button
             ref={setPreviousButton}
             className="WACCarouselContainer__NavigationButton WACDirectionHasReversibleSVG"
-            kind={ButtonKindEnum.GHOST}
+            kind={BUTTON_KIND.GHOST}
             aria-label={carousel_prevNavButton}
           >
-            <ChevronLeft />
+            <ChevronLeft slot="icon" />
           </Button>
           <div className="WACCarouselContainer__CurrentLabel">
             {currentLabel}
@@ -142,10 +143,10 @@ function Carousel({
           <Button
             ref={setNextButton}
             className="WACCarouselContainer__NavigationButton WACDirectionHasReversibleSVG"
-            kind={ButtonKindEnum.GHOST}
+            kind={BUTTON_KIND.GHOST}
             aria-label={carousel_nextNavButton}
           >
-            <ChevronRight />
+            <ChevronRight slot="icon" />
           </Button>
         </div>
       </div>

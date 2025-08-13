@@ -7,11 +7,13 @@
  *  @license
  */
 
-import Checkmark from "@carbon/icons-react/es/Checkmark.js";
-import Headset from "@carbon/icons-react/es/Headset.js";
-import HelpDesk from "@carbon/icons-react/es/HelpDesk.js";
-import Logout from "@carbon/icons-react/es/Logout.js";
-import { Button, Tile } from "@carbon/react";
+import Checkmark16 from "@carbon/icons/es/checkmark/16.js";
+import Headset16 from "@carbon/icons/es/headset/16.js";
+import HelpDesk16 from "@carbon/icons/es/help-desk/16.js";
+import Logout16 from "@carbon/icons/es/logout/16.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { Tile } from "@carbon/react";
+import Button from "../../../../react/carbon/Button";
 import React, { ReactNode, useState } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
@@ -30,6 +32,11 @@ import {
   ConnectToAgentItem,
   MessageResponse,
 } from "../../../../../types/messaging/Messages";
+
+const Checkmark = carbonIconToReact(Checkmark16);
+const Headset = carbonIconToReact(Headset16);
+const HelpDesk = carbonIconToReact(HelpDesk16);
+const Logout = carbonIconToReact(Logout16);
 
 interface RealConnectToAgentProps
   extends HasLanguagePack,
@@ -125,7 +132,8 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
     localMessage.item.agent_available?.message ||
     languagePack.default_agent_availableMessage;
 
-  let buttonIcon: (props: any) => ReactNode; // CarbonIconType is not exported, currently.
+  let ButtonIcon: (props: any) => ReactNode; // CarbonIconType is not exported, currently.
+  // let ButtonIcon: React.FC<CarbonIconProps>;
   let buttonText: string;
   let showDisabled: boolean =
     disableUserInputs || agentDisplayState.isConnectingOrConnected;
@@ -137,7 +145,7 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
     if (isConnecting) {
       // In the connecting state, the text on the card changes as the availability information is updated by the
       // service desk integration.
-      buttonIcon = Checkmark;
+      ButtonIcon = Checkmark;
       buttonText = languagePack.agent_cardButtonChatRequested;
       messageToUser = (
         <AvailabilityMessage
@@ -146,21 +154,21 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
         />
       );
     } else {
-      buttonIcon = Headset;
+      ButtonIcon = Headset;
       buttonText = languagePack.agent_cardButtonConnected;
       messageToUser = languagePack.agent_cardMessageConnected;
     }
   } else if (disableUserInputs) {
     if (localMessage.ui_state.wasAgentChatEnded) {
-      buttonIcon = Logout;
+      ButtonIcon = Logout;
       buttonText = languagePack.agent_cardButtonChatEnded;
       messageToUser = languagePack.agent_cardMessageChatEnded;
     } else {
-      buttonIcon = Headset;
+      ButtonIcon = Headset;
       buttonText = languagePack.agent_startChat;
     }
   } else {
-    buttonIcon = HelpDesk;
+    ButtonIcon = HelpDesk;
     buttonText = languagePack.agent_startChat;
   }
 
@@ -175,8 +183,8 @@ function RealConnectToAgent(props: RealConnectToAgentProps) {
         size="md"
         disabled={showDisabled}
         onClick={doStartChat}
-        renderIcon={buttonIcon}
       >
+        <ButtonIcon slot="icon" />
         {buttonText}
       </Button>
       {!showDisabled && isSuspended && (

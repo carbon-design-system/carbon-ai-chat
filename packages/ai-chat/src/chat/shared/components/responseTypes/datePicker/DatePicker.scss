@@ -16,6 +16,10 @@
 
 .WACDatePicker__ConfirmButton {
   display: block;
-  margin-block-start: layout.$spacing-04;
-  margin-inline-start: auto;
+
+  &::part(button) {
+    display: block;
+    margin-block-start: layout.$spacing-04;
+    margin-inline-start: auto;
+  }
 }

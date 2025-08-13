@@ -9,10 +9,14 @@
 
 /* eslint-disable react/no-danger */
 
+import CDSButton from "@carbon/web-components/es-custom/components/button/button.js";
+import ArrowUpLeft24 from "@carbon/icons/es/arrow--up-left/24.js";
 import AiLaunch from "@carbon/icons-react/es/AiLaunch.js";
-import ArrowUpLeft from "@carbon/icons-react/es/ArrowUpLeft.js";
+// import ArrowUpLeft from "@carbon/icons-react/es/ArrowUpLeft.js";
 import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
-import { Button } from "@carbon/react";
+import { carbonIconToReact } from "../../utils/carbonIcon";
+// import { Button } from "@carbon/react";
+import Button, { BUTTON_KIND, BUTTON_TYPE } from "../../../react/carbon/Button";
 import cx from "classnames";
 import React, { forwardRef, Ref, RefObject, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
@@ -23,10 +27,10 @@ import HasIntl from "../../../../types/utilities/HasIntl";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
-import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
 import { LanguagePack } from "../../../../types/instance/apiTypes";
 import { PageObjectId } from "../../utils/PageObjectId";
 
+const ArrowUpLeft = carbonIconToReact(ArrowUpLeft24);
 interface LauncherProps extends HasClassName, HasIntl {
   languagePack: LanguagePack;
   onToggleOpen: () => void;
@@ -83,7 +87,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
   /**
    * A React ref to the button in this component.
    */
-  const buttonRef: RefObject<HTMLButtonElement> = React.createRef();
+  const buttonRef: RefObject<CDSButton> = React.createRef();
 
   useImperativeHandle(ref, () => ({
     /**
@@ -145,14 +149,14 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
           WACLauncher__TourButton: activeTour,
         })}
         data-testid={PageObjectId.LAUNCHER}
-        kind={ButtonKindEnum.PRIMARY}
-        type="button"
+        kind={BUTTON_KIND.PRIMARY}
+        type={"button" as BUTTON_TYPE}
         onClick={onToggleOpen}
         ref={buttonRef}
         tabIndex={tabIndex}
       >
         {activeTour ? (
-          <ArrowUpLeft size={24} className="WACLauncher__svg" />
+          <ArrowUpLeft className="WACLauncher__svg" slot="icon" />
         ) : (
           launcherAvatar
         )}

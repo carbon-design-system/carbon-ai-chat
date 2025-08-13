@@ -6,10 +6,14 @@
  *
  *  @license
  */
-
-import ArrowUpLeft from "@carbon/icons-react/es/ArrowUpLeft.js";
+import CDSButton from "@carbon/web-components/es-custom/components/button/button.js";
+import Button, {
+  BUTTON_KIND,
+  BUTTON_TYPE,
+} from "../../../react/carbon/Button.js";
+import ArrowUpLeft24 from "@carbon/icons/es/arrow--up-left/24.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
-import { Button } from "@carbon/react";
 import cx from "classnames";
 import React, {
   forwardRef,
@@ -33,7 +37,8 @@ import { animateWithClass } from "../../utils/animationUtils";
 import { IS_MOBILE } from "../../utils/browserUtils";
 import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
-import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
+
+const ArrowUpLeft = carbonIconToReact(ArrowUpLeft24);
 
 interface LauncherExtendedProps extends HasClassName {
   onToggleOpen: () => void;
@@ -154,7 +159,7 @@ function LauncherExtended(
     useState(playExtendAnimation);
   const [showGreetingMessage, setShowGreetingMessage] = useState(false);
   const prevIsExtended = usePrevious(isExtended);
-  const buttonRef = useRef<HTMLButtonElement>();
+  const buttonRef = useRef<CDSButton>();
   const extendedContainerRef = useRef<HTMLDivElement>();
   const greetingMessageRef = useRef<HTMLDivElement>();
   const textHolderRef = useRef<HTMLDivElement>();
@@ -322,8 +327,8 @@ function LauncherExtended(
         className={cx("WACLauncher__Button", "WACLauncherExtended__Button", {
           WACLauncher__TourButton: activeTour,
         })}
-        kind={activeTour ? ButtonKindEnum.GHOST : ButtonKindEnum.PRIMARY}
-        type="button"
+        kind={activeTour ? BUTTON_KIND.GHOST : BUTTON_KIND.PRIMARY}
+        type={"button" as BUTTON_TYPE}
         ref={buttonRef}
         onClick={onToggleOpen}
       >
@@ -349,7 +354,7 @@ function LauncherExtended(
             </div>
             <div className="WACLauncher__IconHolder">
               {activeTour ? (
-                <ArrowUpLeft size={24} className="WACLauncher__svg" />
+                <ArrowUpLeft className="WACLauncher__svg" slot="icon" />
               ) : (
                 launcherAvatar
               )}

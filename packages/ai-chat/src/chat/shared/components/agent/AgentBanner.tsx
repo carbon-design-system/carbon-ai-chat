@@ -7,8 +7,10 @@
  *  @license
  */
 
-import ScreenOff from "@carbon/icons-react/es/ScreenOff.js";
-import { Button } from "@carbon/react";
+import ScreenOff16 from "@carbon/icons/es/screen--off/16.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
+import Button, { BUTTON_KIND } from "../../../react/carbon/Button";
+import CDSButton from "@carbon/web-components/es-custom/components/button/button.js";
 import cx from "classnames";
 import React, {
   forwardRef,
@@ -27,6 +29,8 @@ import { doFocusRef } from "../../utils/domUtils";
 import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
 import { AgentAvatar } from "./AgentAvatar";
 import { AvailabilityMessage } from "./AvailabilityMessage";
+
+const ScreenOff = carbonIconToReact(ScreenOff16);
 
 interface AgentBannerProps {
   /**
@@ -51,7 +55,7 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
   const { isConnecting, availability, isScreenSharing } = agentState;
   const displayState = useSelector(selectAgentDisplayState, shallowEqual);
   const { agentProfile } = persistedAgentState;
-  const buttonRef = useRef<HTMLButtonElement>();
+  const buttonRef = useRef<CDSButton>();
 
   let line1;
   let line2;
@@ -125,11 +129,11 @@ function AgentBanner(props: AgentBannerProps, ref: RefObject<HasRequestFocus>) {
       {isScreenSharing && (
         <Button
           className="WACAgentBanner__Button WACAgentBanner__StopSharingButton"
-          kind="danger"
+          kind={"danger" as BUTTON_KIND}
           size="sm"
-          renderIcon={ScreenOff}
           onClick={onStopSharing}
         >
+          <ScreenOff slot="icon" />
           {languagePack.agent_sharingStopSharingButton}
         </Button>
       )}

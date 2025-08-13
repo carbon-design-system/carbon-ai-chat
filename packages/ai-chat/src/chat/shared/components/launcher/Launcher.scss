@@ -63,15 +63,60 @@
 
 // This is the actual small launcher button itself, it's color and box shadow are already set, we just need to make it
 // round as well.
+.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round.WACLauncherComplex__SmallLauncherContainer {
+  .WACLauncher__Button {
+    &::part(button) {
+      block-size: 100%;
+      inline-size: 100%;
+    }
+  }
+}
+
+.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round:not(
+    .WACLauncherComplex__SmallLauncherContainer
+  )
+  .WACLauncher__Button {
+  &::part(button) {
+    border-radius: 28px;
+  }
+}
+
 .WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
   .WACLauncher__Button {
-  border-radius: 28px;
-
   @media screen and (prefers-reduced-motion: reduce) {
     &:not(.WACLauncher__TourButton) {
-      background-color: var(--cds-chat-LAUNCHER-color-background);
-      transition: none;
+      &::part(button) {
+        background-color: var(--cds-chat-LAUNCHER-color-background);
+        transition: none;
 
+        // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
+        &:focus {
+          border-width: var(--cds-chat-BASE-border-width-large);
+          border-color: var(--cds-chat-LAUNCHER-color-background);
+          box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
+            var(--cds-chat-LAUNCHER-color-focus-border);
+        }
+
+        &:hover {
+          border-color: var(--cds-chat-LAUNCHER-color-background-hover);
+          background-color: var(--cds-chat-LAUNCHER-color-background-hover);
+        }
+
+        &:active {
+          border-width: var(--cds-chat-BASE-border-width-large);
+          border-color: var(--cds-chat-LAUNCHER-color-background-active);
+          background-color: var(--cds-chat-LAUNCHER-color-background-active);
+          box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
+            var(--cds-chat-LAUNCHER-color-focus-border);
+        }
+      }
+    }
+  }
+
+  &:not(.WACLauncher__TourButton) {
+    &::part(button) {
+      background-color: var(--cds-chat-LAUNCHER-color-background);
+      transition: unset;
       // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
       &:focus {
         border-width: var(--cds-chat-BASE-border-width-large);
@@ -92,32 +137,6 @@
         box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
           var(--cds-chat-LAUNCHER-color-focus-border);
       }
-    }
-  }
-
-  &:not(.WACLauncher__TourButton) {
-    background-color: var(--cds-chat-LAUNCHER-color-background);
-    transition: unset;
-
-    // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
-    &:focus {
-      border-width: var(--cds-chat-BASE-border-width-large);
-      border-color: var(--cds-chat-LAUNCHER-color-background);
-      box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-        var(--cds-chat-LAUNCHER-color-focus-border);
-    }
-
-    &:hover {
-      border-color: var(--cds-chat-LAUNCHER-color-background-hover);
-      background-color: var(--cds-chat-LAUNCHER-color-background-hover);
-    }
-
-    &:active {
-      border-width: var(--cds-chat-BASE-border-width-large);
-      border-color: var(--cds-chat-LAUNCHER-color-background-active);
-      background-color: var(--cds-chat-LAUNCHER-color-background-active);
-      box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-        var(--cds-chat-LAUNCHER-color-focus-border);
     }
   }
 }
@@ -193,7 +212,7 @@
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
-  button.WACLauncher__Button {
+  .WACLauncher__Button::part(button) {
     position: static;
     display: flex;
     align-items: center;
@@ -207,7 +226,7 @@
   }
 }
 
-button.WACLauncher__Button {
+.WACLauncher__Button::part(button) {
   position: static;
   display: flex;
   align-items: center;
@@ -220,11 +239,11 @@ button.WACLauncher__Button {
   transition: background 250ms ease-in-out, transform 150ms ease;
 }
 
-button.WACLauncher__Button:focus {
+.WACLauncher__Button:focus {
   border-width: var(--cds-chat-BASE-border-width-large);
 }
 
-button.WACLauncher__Button svg {
+.WACLauncher__Button svg {
   block-size: 24px;
   inline-size: 24px;
 }
@@ -426,7 +445,7 @@ button.WACLauncher__Button svg {
   margin-inline: layout.$spacing-02 unset;
 }
 
-button.WACLauncher__Button:not(.WACLauncher__TourButton) {
+.WACLauncher__Button:not(.WACLauncher__TourButton) {
   background-color: transparent;
 
   svg {
