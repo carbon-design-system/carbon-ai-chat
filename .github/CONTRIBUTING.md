@@ -108,7 +108,7 @@ npm run build
 ```
 
 To start coding, navigate to the package you'll be working on. For example, if
-contributing to React components (i.e., `@carbon/ai-chat`), run the following
+contributing to AI Chat (i.e., `@carbon/ai-chat`), run the following
 commands:
 
 ```sh
