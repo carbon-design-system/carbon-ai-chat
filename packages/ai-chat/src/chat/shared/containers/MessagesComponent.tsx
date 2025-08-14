@@ -178,8 +178,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const newHumanAgentDisplayState = selectHumanAgentDisplayState(newProps);
 
     const typingChanged =
-      oldProps.messageState.isTypingCounter !==
-        newProps.messageState.isTypingCounter ||
       oldProps.messageState.isLoadingCounter !==
         newProps.messageState.isLoadingCounter ||
       oldHumanAgentDisplayState.isHumanAgentTyping !==
@@ -290,7 +288,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       const { scrollToTop, scrollToBottom } = options;
       const { localMessageItems, messageState, allMessagesByID } = this.props;
-      const { isTypingCounter, isLoadingCounter } = messageState;
+      const { isLoadingCounter } = messageState;
       const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
       const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -323,14 +321,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         // decide it remembers the previous scroll position and set it for us.
         animate = false;
         setScrollTop = 0;
-      } else if (
-        isTypingCounter > 0 ||
-        isLoadingCounter > 0 ||
-        isHumanAgentTyping
-      ) {
+      } else if (isLoadingCounter > 0 || isHumanAgentTyping) {
         // The typing indicator is visible, so scroll to the bottom.
         setScrollTop = scrollElement.scrollHeight;
-        debugAutoScroll("[doAutoScroll] isTyping visible", isTypingCounter);
+        debugAutoScroll("[doAutoScroll] isLoading visible", isLoadingCounter);
       } else {
         /**
          * Determines if the message should be scrolled to. The last user message should be scrolled to by default.
@@ -602,6 +596,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * node.
    * @param isMessageForInput Indicates if this message is part the most recent message response that allows for input.
    * @param isFirstMessageItem Indicates if this message item is the first item in a message response.
+   * @param isLastMessageItem Indicates if this message item is the last item in a message response.
    * @param lastMessageID The ID of the last full message shown.
    */
   renderMessage(
@@ -611,6 +606,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     showBeforeWelcomeNodeElement: boolean,
     isMessageForInput: boolean,
     isFirstMessageItem: boolean,
+    isLastMessageItem: boolean,
     lastMessageID: string,
   ) {
     const {
@@ -628,7 +624,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
     const inputState = selectInputState(this.props);
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { isTypingCounter, isLoadingCounter } = messageState;
+    const { isLoadingCounter } = messageState;
     const { chatState } = persistedToBrowserStorage;
     const { disclaimersAccepted } = chatState;
 
@@ -642,9 +638,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const totalMessagesWithTyping =
       this.props.localMessageItems.length +
-      (isTypingCounter > 0 || isLoadingCounter > 0 || isHumanAgentTyping
-        ? 1
-        : 0);
+      (isLoadingCounter > 0 || isHumanAgentTyping ? 1 : 0);
 
     const isLastMessage = messagesIndex === totalMessagesWithTyping - 1;
     const className = cx({
@@ -682,6 +676,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         doAutoScroll={this.doAutoScroll}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
+        isLastMessageItem={isLastMessageItem}
         locale={locale}
         carbonTheme={carbonTheme}
         useAITheme={useAITheme}
@@ -864,6 +859,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         previousMessageID !== localMessageItem.fullMessageID;
       const showBeforeWelcomeNodeElement =
         localMessageItem.ui_state.isWelcomeResponse && isFirstMessageItem;
+      const isLastMessageItem =
+        localMessageItems.length - 1 === currentIndex ||
+        localMessageItem.fullMessageID !==
+          localMessageItems[currentIndex + 1].fullMessageID;
 
       previousMessageID = localMessageItem.fullMessageID;
 
@@ -875,6 +874,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           showBeforeWelcomeNodeElement,
           isMessageForInput,
           isFirstMessageItem,
+          isLastMessageItem,
           lastMessageID,
         ),
       );
@@ -892,7 +892,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       serviceManager,
       notifications,
     } = this.props;
-    const { isTypingCounter, isLoadingCounter } = messageState;
+    const { isLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus } = this.state;
 
@@ -903,11 +903,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     let isTypingMessage;
     if (isHumanAgentTyping) {
       isTypingMessage = intl.formatMessage({ id: "messages_agentIsTyping" });
-    } else if (isTypingCounter) {
-      isTypingMessage = intl.formatMessage(
-        { id: "messages_botIsTyping" },
-        { botName },
-      );
     } else if (isLoadingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_botIsLoading" },
@@ -935,9 +930,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           >
             {this.renderScrollHandle(true)}
             {regularMessages}
-            {(Boolean(isTypingCounter) ||
-              Boolean(isLoadingCounter) ||
-              isHumanAgentTyping) &&
+            {(Boolean(isLoadingCounter) || isHumanAgentTyping) &&
               this.renderTypingIndicator(
                 isTypingMessage,
                 localMessageItems.length,

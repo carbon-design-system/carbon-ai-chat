@@ -157,7 +157,10 @@ export {
 } from "./types/config/ServiceDeskConfig";
 
 export {
-  MessageHistory,
+  BaseGenericItem,
+  MessageResponseOptions,
+  MessageResponseHistory,
+  MessageRequestHistory,
   ResponseUserProfile,
   AudioItem,
   BaseMessageInput,
@@ -201,7 +204,6 @@ export {
   TableItem,
   TableItemCell,
   TableItemRow,
-  TableItemRowExpandableSectionItem,
   TextItem,
   UserDefinedItem,
   VerticalCellAlignment,

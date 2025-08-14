@@ -14,9 +14,9 @@
  */
 export enum ChatHeaderObjectType {
   LINK = "link", // A link button to render in the chat header.
-  MENU = "menu", // A menu to create a list of other chat header obejct types.
+  MENU = "menu", // A menu to create a list of other chat header object types.
   BUTTON = "button", // A button to render in the chat header for custom interactions.
-  RADIO_GROUP = "radio-group", // A radio group for displaying selectable menu items as redio options.
+  RADIO_GROUP = "radio-group", // A radio group for displaying selectable menu items as radio options.
 }
 
 /**
@@ -156,7 +156,7 @@ export interface ChatHeaderConfig {
     title: string;
 
     /**
-     * The name display after the title.
+     * The name displayed after the title.
      */
     name?: string;
   };

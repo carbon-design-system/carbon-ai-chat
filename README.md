@@ -23,7 +23,8 @@ This will install the package that contains both the web component and React ver
 
 ## 📖 Documentation
 
-- [Documentation site](https://1.www.s81c.com/common/carbon/ai-chat/tag/latest/docs/documents/Overview.html)
+- [Documentation site](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html)
+- [Demo site](https://chat.carbondesignsystem.com/tag/latest/demo/index.html)
 - [React examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react)
 - [Web component examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components)
 

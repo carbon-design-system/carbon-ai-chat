@@ -38,7 +38,7 @@ interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
    * The history information to store as part of this request. This includes extra information that was provided to
    * the user and about the user that was used in making the request.
    */
-  history?: MessageHistory;
+  history?: MessageRequestHistory;
 
   /**
    * Used to store private state information about the message.
@@ -192,10 +192,14 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   ui_state_internal?: MessageUIStateInternal;
 
   /**
-   * The history information to store as part of this request. This includes extra information that was provided to
-   * the user and about the user that was used in making the request.
+   * The history information to store as part of this request.
    */
-  history?: MessageHistory;
+  history?: MessageResponseHistory;
+
+  /**
+   * Options for the {@link MessageResponse}. This includes metadata about the user or bot sending this response.
+   */
+  message_options?: MessageResponseOptions;
 }
 
 /**
@@ -270,6 +274,8 @@ enum MessageResponseTypes {
 
   /**
    * Displays a table of data to the user.
+   *
+   * @experimental
    */
   TABLE = "table",
 
@@ -311,7 +317,7 @@ enum MessageResponseTypes {
  */
 export enum HumanAgentMessageType {
   /**
-   * The was an error in a message.
+   * There was an error in a message.
    */
   INLINE_ERROR = "inline_error",
 
@@ -418,7 +424,7 @@ export type Message =
  * @category Messaging
  */
 export interface TourStepGenericItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * A way for the authors to label steps so they can use the goToStep function to change to a
    * specific tour step.
@@ -521,14 +527,28 @@ export interface ChainOfThoughtStep {
  */
 export interface GenericItemMessageOptions {
   /**
-   * Controls the display of chain of thought component. This API is in beta and is subject to change.
-   */
-  chain_of_thought?: ChainOfThoughtStep[];
-
-  /**
-   * Controls the display of a feedback options (thumbs up/down) for a message item.
+   * Controls the display of feedback options (thumbs up/down) for a message item.
    */
   feedback?: GenericItemMessageFeedbackOptions;
+}
+
+/**
+ * If you want to have different categories for positive and negative feedback, you can provide two different arrays.
+ *
+ * You may not provide one of the arrays. e.g. you want negative categories but don't care about positive categories.
+ *
+ * @category Messaging
+ */
+export interface GenericItemMessageFeedbackCategories {
+  /**
+   * List of strings for positive feedback categories.
+   */
+  positive?: string[];
+
+  /**
+   * List of strings for negative feedback categories.
+   */
+  negative?: string[];
 }
 
 /**
@@ -580,9 +600,11 @@ export interface GenericItemMessageFeedbackOptions {
   prompt?: string;
 
   /**
-   * An optional set of categories to allow the user to choose from.
+   * An optional set of categories to allow the user to choose from. This can either be an array of strings for
+   * both positive and negative feedback or a {@link GenericItemMessageFeedbackCategories} object to make different
+   * configuration for both.
    */
-  categories?: string[];
+  categories?: string[] | GenericItemMessageFeedbackCategories;
 
   /**
    * The placeholder to show in the text area. A default value will be used if no value is provided here.
@@ -599,7 +621,8 @@ export interface GenericItemMessageFeedbackOptions {
 /**
  * @category Messaging
  */
-export type PanelItem = GenericItem & MessageItemPanelInfo;
+export type PanelItem<TUserDefinedType = Record<string, unknown>> =
+  BaseGenericItem<TUserDefinedType> & MessageItemPanelInfo;
 
 /**
  * @category Messaging
@@ -607,19 +630,19 @@ export type PanelItem = GenericItem & MessageItemPanelInfo;
 export type PartialOrCompleteItemChunk = PartialItemChunk | CompleteItemChunk;
 
 /**
- * The basic class for items returned from a back-end as part of a message response. These are the items contained
- * in the {@link MessageOutput.generic} array.
+ * The base interface that all message response items must implement. Contains common properties
+ * shared by all item types.
  *
  * @category Messaging
  */
-interface GenericItem<TUserDefinedType = Record<string, unknown>> {
+interface BaseGenericItem<TUserDefinedType = Record<string, unknown>> {
   /**
    * The response type of this message item.
    */
   response_type: MessageResponseTypes;
 
   /**
-   * Metadata used identify a generic item within the context of a stream in order to correlate any updates meant
+   * Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
    * for a specific item.
    */
   streaming_metadata?: ItemStreamingMetadata;
@@ -637,8 +660,33 @@ interface GenericItem<TUserDefinedType = Record<string, unknown>> {
   /**
    * Options that control additional features available for a message item.
    */
-  message_options?: GenericItemMessageOptions;
+  message_item_options?: GenericItemMessageOptions;
 }
+
+/**
+ * The basic class for items returned from a back-end as part of a message response. These are the items contained
+ * in the {@link MessageOutput.generic} array.
+ *
+ * @category Messaging
+ */
+type GenericItem<TUserDefinedType = Record<string, unknown>> =
+  | TextItem<TUserDefinedType>
+  | OptionItem<TUserDefinedType>
+  | ConnectToHumanAgentItem<TUserDefinedType>
+  | ImageItem<TUserDefinedType>
+  | PauseItem<TUserDefinedType>
+  | UserDefinedItem<TUserDefinedType>
+  | IFrameItem<TUserDefinedType>
+  | VideoItem<TUserDefinedType>
+  | AudioItem<TUserDefinedType>
+  | DateItem<TUserDefinedType>
+  | TableItem<TUserDefinedType>
+  | InlineErrorItem<TUserDefinedType>
+  | CardItem<TUserDefinedType>
+  | CarouselItem<TUserDefinedType>
+  | ButtonItem<TUserDefinedType>
+  | GridItem<TUserDefinedType>
+  | ConversationalSearchItem<TUserDefinedType>;
 
 /**
  * A user defined item returned in a message response from a back-end.
@@ -646,7 +694,7 @@ interface GenericItem<TUserDefinedType = Record<string, unknown>> {
  * @category Messaging
  */
 interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * If the user_defined response type should be rendered as full width and ignore margin on the "start".
    */
@@ -659,7 +707,7 @@ interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface TextItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The text of the response.
    */
@@ -673,7 +721,7 @@ interface TextItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * A message to be sent to the human agent who will be taking over the conversation.
    */
@@ -694,7 +742,7 @@ interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
   };
 
   /**
-   * When a conversation is escalated to an agent additional information is needed to fullfill the request. This
+   * When a conversation is escalated to an agent additional information is needed to fulfill the request. This
    * additional information typically is added by the channel integration and cannot be deduced from the dialog
    * itself.
    */
@@ -702,7 +750,7 @@ interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
 }
 
 /**
- * Additional information as part of a {@link ConnectToHumanAgentItem} that may be need to perform a transfer to an agent.
+ * Additional information as part of a {@link ConnectToHumanAgentItem} that may be needed to perform a transfer to an agent.
  *
  * @category Messaging
  */
@@ -728,7 +776,7 @@ interface ConnectToHumanAgentItemTransferInfo {
  * @category Messaging
  */
 interface PauseItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * How long to pause, in milliseconds.
    */
@@ -748,7 +796,7 @@ interface PauseItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface OptionItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * An array of objects describing the options from which the user can choose.
    */
@@ -811,7 +859,7 @@ interface SingleOption {
  * @category Messaging
  */
 interface IFrameItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The source URL to an embeddable page
    */
@@ -879,7 +927,7 @@ enum IFrameItemDisplayOption {
  * @category Messaging
  */
 interface MediaItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The url pointing to a media source, whether audio, video, or image.
    *
@@ -941,7 +989,7 @@ interface ConversationalSearchItemCitation {
   }[];
 
   /**
-   * In some implementations, the content searched isn't in an accessible URL. For instance, if could be from Milvus or
+   * In some implementations, the content searched isn't in an accessible URL. For instance, it could be from Milvus or
    * ElasticSearch. In that scenario, you may populate "search_results". This field will allow you define which index in
    * the search_results array matches with this citation. The end user can then drill into the larger search result to
    * view it rather than clicking on a URL to actually see the content.
@@ -955,7 +1003,7 @@ interface ConversationalSearchItemCitation {
  * @category Messaging
  */
 interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The returned conversational text. Any HTML/Markdown will be ignored.
    */
@@ -968,7 +1016,7 @@ interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
   citations?: ConversationalSearchItemCitation[];
 
   /**
-   * In some implementations, the content searched isn't in an accessible URL. For instance, if could be from Milvus or
+   * In some implementations, the content searched isn't in an accessible URL. For instance, it could be from Milvus or
    * ElasticSearch. In that scenario, you may populate "search_results". Combine this with
    * {@link ConversationalSearchItemCitation.search_result_idx}.
    */
@@ -981,7 +1029,7 @@ interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
  * @category Messaging
  */
 interface InlineErrorItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * Some end user friendly text describing the error and what they should do next.
    *
@@ -1017,28 +1065,31 @@ interface InlineErrorItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-type ImageItem = MediaItem;
+type ImageItem<TUserDefinedType = Record<string, unknown>> =
+  MediaItem<TUserDefinedType>;
 
 /**
  * The video response type definition for future reuse. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
  */
-type VideoItem = MediaItem;
+type VideoItem<TUserDefinedType = Record<string, unknown>> =
+  MediaItem<TUserDefinedType>;
 
 /**
  * The audio response type definition for future reuse. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
  */
-type AudioItem = MediaItem;
+type AudioItem<TUserDefinedType = Record<string, unknown>> =
+  MediaItem<TUserDefinedType>;
 
 /**
  * @category Messaging
  */
 enum ButtonItemType {
   /**
-   * A button that sends it value back to the backend.
+   * A button that sends its value back to the backend.
    */
   POST_BACK = "post_back",
 
@@ -1155,12 +1206,12 @@ enum ButtonItemKind {
 }
 
 /**
- * This message item represents a link to a downloadable file.
+ * This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.
  *
  * @category Messaging
  */
 interface ButtonItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * The style of button to display.
    */
@@ -1218,13 +1269,14 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
 /**
  * @category Messaging
  */
-type CardItem = GenericItem & WithBodyAndFooter & WithWidthOptions;
+type CardItem<TUserDefinedType = Record<string, unknown>> =
+  BaseGenericItem<TUserDefinedType> & WithBodyAndFooter & WithWidthOptions;
 
 /**
  * @category Messaging
  */
 interface CarouselItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   items: GenericItem[];
 }
 
@@ -1246,7 +1298,7 @@ type VerticalCellAlignment = "top" | "center" | "bottom";
  * @category Messaging
  */
 interface GridItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType>,
+  extends BaseGenericItem<TUserDefinedType>,
     WithWidthOptions {
   /**
    * Determines the horizontal alignment of all items in the grid.
@@ -1259,7 +1311,7 @@ interface GridItem<TUserDefinedType = Record<string, unknown>>
   vertical_alignment?: VerticalCellAlignment;
 
   /**
-   * The list of columns specifications. This will determine the maximum number of columns that can be rendered.
+   * The list of column specifications. This will determine the maximum number of columns that can be rendered.
    */
   columns: {
     width: string;
@@ -1297,7 +1349,8 @@ interface GridItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-type DateItem = GenericItem;
+type DateItem<TUserDefinedType = Record<string, unknown>> =
+  BaseGenericItem<TUserDefinedType>;
 
 /**
  * @category Messaging
@@ -1313,7 +1366,7 @@ type TableItemCell = string | number;
  * @experimental
  */
 interface TableItem<TUserDefinedType = Record<string, unknown>>
-  extends GenericItem<TUserDefinedType> {
+  extends BaseGenericItem<TUserDefinedType> {
   /**
    * Optional title for the table.
    */
@@ -1337,28 +1390,14 @@ interface TableItem<TUserDefinedType = Record<string, unknown>>
 
 /**
  * @category Messaging
- */
-type TableItemRowExpandableSectionItem =
-  | TextItem
-  | ImageItem
-  | VideoItem
-  | AudioItem
-  | IFrameItem
-  | UserDefinedItem;
-
-/**
- * @category Messaging
+ *
+ * @experimental
  */
 interface TableItemRow {
   /**
    * Data for a specific cell.
    */
   cells: TableItemCell[];
-
-  /**
-   * A section that can expand beneath each row which contains an array of items exactly like the message api's output.generic array.
-   */
-  // expandable_section?: TableItemRowExpandableSectionItem[];
 }
 
 /**
@@ -1407,12 +1446,69 @@ interface MessageUIStateInternal {
 }
 
 /**
- * This interface contains information about the history of a given message. This information will eventually be
- * saved in the history store.
+ * This interface contains options for a {@link MessageResponse}.
  *
  * @category Messaging
  */
-interface MessageHistory {
+interface MessageResponseOptions {
+  /**
+   * This is the profile for the human or bot who sent or triggered this message.
+   */
+  response_user_profile?: ResponseUserProfile;
+
+  /**
+   * Controls the display of the chain of thought component.
+   */
+  chain_of_thought?: ChainOfThoughtStep[];
+}
+
+/**
+ * This interface contains information about the history of a given {@link MessageResponse}. This information should be
+ * saved your history store.
+ *
+ * @category Messaging
+ */
+interface MessageResponseHistory {
+  /**
+   * The time at which this message occurred.
+   */
+  timestamp?: number;
+
+  /**
+   * Indicates if this is a "silent" message. These messages are sent to or received from the assistant but should
+   * not be displayed to the user.
+   */
+  silent?: boolean;
+
+  /**
+   * The error state of this message.
+   */
+  error_state?: MessageErrorState;
+
+  /**
+   * The state of feedback provided on the items in this message.
+   */
+  feedback?: {
+    [feedbackID: string]: MessageHistoryFeedback;
+  };
+
+  /**
+   * @internal
+   * If this message represents a file upload, this is the status of that file. If the upload failed due to an
+   * error, the upload will be complete and the error_state value above will be set. The "success" status is a
+   * temporary status that displays a checkmark on successful uploads. The "complete" status is the permanent
+   * status stored in session history.
+   */
+  file_upload_status?: FileStatusValue;
+}
+
+/**
+ * This interface contains information about the history of a given {@link MessageRequest}. This information should be
+ * saved your history store.
+ *
+ * @category Messaging
+ */
+interface MessageRequestHistory {
   /**
    * The time at which this message occurred.
    */
@@ -1445,30 +1541,18 @@ interface MessageHistory {
   silent?: boolean;
 
   /**
-   * This is the profile for the human or bot who sent or triggered this message.
-   */
-  response_user_profile?: ResponseUserProfile;
-
-  /**
-   * @internal
-   * If this message represents a file upload, this is the status of that file. If the upload failed due to an
-   * error, the upload will be complete and the error_state value above will be set. The "success" status is a
-   * temporary status the displays a checkmark on successful uploads. The "complete" status is the permanent
-   * status stored in session history.
-   */
-  file_upload_status?: FileStatusValue;
-
-  /**
    * The error state of this message.
    */
   error_state?: MessageErrorState;
 
   /**
-   * The state of feedback provided on the items in this message.
+   * @internal
+   * If this message represents a file upload, this is the status of that file. If the upload failed due to an
+   * error, the upload will be complete and the error_state value above will be set. The "success" status is a
+   * temporary status that displays a checkmark on successful uploads. The "complete" status is the permanent
+   * status stored in session history.
    */
-  feedback?: {
-    [feedbackID: string]: MessageHistoryFeedback;
-  };
+  file_upload_status?: FileStatusValue;
 }
 
 /**
@@ -1498,7 +1582,7 @@ interface PartialResponse {
   /**
    * This contains the history of this response.
    */
-  history?: DeepPartial<MessageHistory>;
+  message_options?: DeepPartial<MessageResponseOptions>;
 }
 
 /**
@@ -1520,9 +1604,17 @@ interface PartialItemChunk extends Chunk {
 }
 
 /**
- * The interface for a chunk that represents a complete update to a message item. The item provided here should have
- * all the data necessary to render the item including any data that was previously received from partial chunks.
- * This chunk may contain corrections to previous chunks.
+ * A chunk that represents a complete update to a single message item within a streaming response.
+ *
+ * This chunk type exists to allow immediate replacement of a streaming item with its final, corrected version
+ * before the entire message response is complete. This enables real-time corrections to individual items
+ * (like fixing typos in streaming text) while other items in the same message may still be streaming.
+ *
+ * The item provided here should have all the data necessary to render the item including any data that was
+ * previously received from partial chunks. This chunk may contain corrections to previous chunks.
+ *
+ * Use this when you need to finalize a specific item but the overall message response isn't ready yet.
+ * For ending the entire streaming response, use {@link FinalResponseChunk} instead.
  *
  * @category Messaging
  */
@@ -1535,11 +1627,18 @@ interface CompleteItemChunk extends Chunk {
 }
 
 /**
- * The interface for a chunk that represents the entire completed message response. The response provided here
- * should have all the data necessary to render the response including any data that was previously received from item
- * chunks. This final response may contain corrections to previous chunks.
+ * A chunk that represents the entire completed message response, signaling the end of streaming.
  *
- * The ID of the message should match the ID that was previously provided by PartialItemChunk.streaming_metadata.id.
+ * This chunk type exists as the definitive way to close a streaming session and provide the final,
+ * authoritative version of the complete message response. Unlike {@link CompleteItemChunk} which updates
+ * individual items, this chunk finalizes the entire response and triggers cleanup of streaming UI states
+ * (like hiding "stop streaming" buttons).
+ *
+ * The response provided here should have all the data necessary to render the response including any data
+ * that was previously received from item chunks. This final response may contain corrections to previous chunks.
+ *
+ * Use this to signal that streaming is complete and provide the canonical final state of the entire message.
+ * The ID of the message should match the ID that was previously provided by streaming_metadata.response_id.
  *
  * @category Messaging
  */
@@ -1595,7 +1694,7 @@ interface ResponseUserProfile {
   user_type: UserType;
 
   /**
-   * An url pointing to an avatar for the response author. This image should be a square.
+   * A URL pointing to an avatar for the response author. This image should be a square.
    */
   profile_picture_url?: string;
 }
@@ -1615,6 +1714,7 @@ interface SearchResult {
 export {
   ResponseUserProfile,
   AudioItem,
+  BaseGenericItem,
   BaseMessageInput,
   ButtonItem,
   ButtonItemKind,
@@ -1640,7 +1740,6 @@ export {
   InlineErrorItem,
   MediaItem,
   MediaItemDimensions,
-  MessageHistory,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,
@@ -1657,7 +1756,6 @@ export {
   TableItem,
   TableItemCell,
   TableItemRow,
-  TableItemRowExpandableSectionItem,
   TextItem,
   UserDefinedItem,
   VerticalCellAlignment,
@@ -1672,4 +1770,7 @@ export {
   UserType,
   watsonx,
   MessageUIStateInternal,
+  MessageResponseOptions,
+  MessageResponseHistory,
+  MessageRequestHistory,
 };

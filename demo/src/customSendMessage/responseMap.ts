@@ -30,6 +30,8 @@ import { doOrderedList } from "./doOrderedList";
 import { doTable, doTableStreaming } from "./doTable";
 import {
   doText,
+  doTextChainOfThought,
+  doTextChainOfThoughtStreaming,
   doTextStreaming,
   doTextStreamingWithNonWatsonBotProfile,
   doTextWithHumanProfile,
@@ -66,6 +68,8 @@ const RESPONSE_MAP: Record<
   "text from third party human": doTextWithHumanProfile,
   "text from third party bot": doTextWithNonWatsonBotProfile,
   "text (stream) from third party bot": doTextStreamingWithNonWatsonBotProfile,
+  "text with chain of thought": doTextChainOfThought,
+  "text (stream) with chain of thought": doTextChainOfThoughtStreaming,
   user_defined: doUserDefined,
   "user_defined (stream)": doUserDefinedStreaming,
   video: doVideo,

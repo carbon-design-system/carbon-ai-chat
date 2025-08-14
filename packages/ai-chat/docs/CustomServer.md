@@ -4,7 +4,7 @@ title: Setting up your server
 
 ### Overview
 
-The Carbon AI Chat provides your own server for the chat to interact with. It allows for both streaming and non-streamed results, or a mixture of both.
+The Carbon AI Chat allows you to provide your own server for the chat to interact with. It supports both streaming and non-streaming results, or a mixture of both.
 
 ### Creating your custom messaging server
 
@@ -14,7 +14,7 @@ For more information, see [the examples page](https://github.com/carbon-design-s
 
 Inside the `MessageResponse` the Carbon AI Chat can accept `response_types`. You can navigate to the properties for each `response_type` by visiting the base {@link GenericItem} type.
 
-The Carbon AI Chat takes custom messaging server configuration part of its {@link PublicConfig}. You are required to provide a `messaging.customSendMessage` (see {@link PublicConfigMessaging.customSendMessage}) function that the Carbon AI Chat calls any time the user sends a message. It also gets called if you make use of the `send` function on {@link ChatInstance}.
+The Carbon AI Chat takes custom messaging server configuration as part of its {@link PublicConfig}. You are required to provide a `messaging.customSendMessage` (see {@link PublicConfigMessaging.customSendMessage}) function that the Carbon AI Chat calls any time the user sends a message. It also gets called if you make use of the `send` function on {@link ChatInstance}.
 
 In this function, the Carbon AI Chat passes three parameters:
 
@@ -26,13 +26,13 @@ This function can return nothing or it can return a promise object. If you retur
 
 1. Set up a message queue and only pass the next message to your function when the message completes.
 2. Show a loading indicator if the message is taking a while to return (or return its first chunk if streaming).
-3. Throw a visible error and pass an abort signal if the waiting for the message crosses the `messaging.messageTimeoutSecs` timeout identified in your {@link PublicConfig} with {@link PublicConfigMessaging.messageTimeoutSecs}.
+3. Throw a visible error and pass an abort signal if waiting for the message exceeds the `messaging.messageTimeoutSecs` timeout identified in your {@link PublicConfig} with {@link PublicConfigMessaging.messageTimeoutSecs}.
 
 If you do not return a promise object, the Carbon AI Chat does not queue messages for you.
 
-By default, the Carbon AI Chat sends a {@link MessageRequest} with `input.text` set to a blank string and `history.is_welcome_request` set to true when a user first opens the chat. It is to allow you to inject a hard coded greeting response to the user. If you do not wish to use this functionality, you can set `messaging.skipWelcome` to `false`. See {@link PublicConfigMessaging.skipWelcome}.
+By default, the Carbon AI Chat sends a {@link MessageRequest} with `input.text` set to a blank string and `history.is_welcome_request` set to true when a user first opens the chat. It is to allow you to inject a hard coded greeting response to the user. If you do not wish to use this functionality, you can set `messaging.skipWelcome` to `true`. See {@link PublicConfigMessaging.skipWelcome}.
 
-Once you call `messaging.customSendMessage`, you need to feed responses back into the chat. Use of the {@link ChatInstance} passed into the function is for this purpose.
+Once you call `messaging.customSendMessage`, you need to feed responses back into the chat. The {@link ChatInstance} passed into the function is used for this purpose.
 
 #### Additional resources
 
@@ -44,4 +44,5 @@ Your history store returns an array of {@link HistoryItem} members. There is cur
 
 The Carbon AI Chat allows you to define a `messaging.customLoadHistory` function in your {@link PublicConfig}. See {@link PublicConfigMessaging.customLoadHistory}. This method returns a promise that resolves when you have finished loading messages into the chat. During the Carbon AI Chat's hydration process, you can call this function with the Carbon AI Chat {@link ChatInstance} object as its only parameter. You can then call `instance.messaging.insertHistory` to load a conversation into the chat. See {@link ChatInstanceMessaging.insertHistory}.
 
-Some use cases can have more the one conversation attached to the chat. You can optionally forgo by using `messaging.customLoadHistory` and directly call `instance.messaging.insertHistory` as needed. In a use case where a user can change between different conversations, you can to call `instance.messaging.clearConversation` to clear out the previous conversation before calling `instance.messaging.insertHistory`. See {@link ChatInstanceMessaging.clearConversation}.
+Some use cases can have more than one conversation attached to the chat. You can optionally forgo using `messaging.customLoadHistory` and directly call `instance.messaging.insertHistory` as needed. In a use case where a user can change between different conversations, you need to call `instance.messaging.clearConversation` to clear out the previous conversation before calling `instance.messaging.insertHistory`. See {@link ChatInstanceMessaging.clearConversation}. You can also make use of `instance.messaging.updateIsChatLoadingCounter` to add a hydration loading animation when you are waiting for
+your API to return the history.

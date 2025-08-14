@@ -6,20 +6,20 @@ This project enables the Carbon and watsonx teams to focus on core chat behavior
 
 ### Accessing the Github Repo (IBM Only)
 
-The repository for this work is located at [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat). This repository includes code examples and language string translations in addition to source code and issues boards.
+The repository for this work is located at [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat). This repository includes code examples and language string translations in addition to source code and issue boards.
 
-You need to follow the following steps for access.
+Follow these steps to request access:
 
 _Sometimes the first time the SSO session doesn't correctly get updated with the new permissions until you shutdown your browser completely and log back in._
 
-1. Visit [AccessHub](https://ibm-support.saviyntcloud.com/ECMv6/request/requestHome) and request for access to "Carbon Design System internal repository access"
-2. Once you received confirmation of access, onboard your public GitHub account to IBM's Github Enterprise Cloud (GHEC) account at [https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/](https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/)
+1. Visit [AccessHub](https://ibm-support.saviyntcloud.com/ECMv6/request/requestHome) and request access to "Carbon Design System internal repository access"
+2. After receiving confirmation of access, onboard your public GitHub account to IBM's Github Enterprise Cloud (GHEC) account at [https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/](https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/)
 3. See [https://github.com/orgs/carbon-design-system/sso](https://github.com/orgs/carbon-design-system/sso) to initiate SSO login to the Github Enterprise Cloud
 4. See [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat) to validate access.
 
 ### Installing the Carbon AI Chat
 
-You can install the Carbon AI Chat into your application in multiple ways. Internally, the Carbon AI Chat uses dynamic imports to only load the pieces of the Carbon AI Chat that you need.
+You can install the Carbon AI Chat into your application in multiple ways.
 
 #### Using as a React component
 
@@ -78,23 +78,19 @@ For more information, see the [web component](WebComponent.md) documentation.
 
 #### Configuration
 
-When use the React or web component version of the Carbon AI Chat, it passes in a configuration object that sets various immutable options as a `config` property. By editing the configuration object, you can control the appearance and behavior of the Carbon AI Chat before your customers see it. The configuration options enable you to specify where the Carbon AI Chat widget appears on your page, choose whether to use the IBM-provided launcher or your own, and more.
+When using the React or web component version of the Carbon AI Chat, you pass in a configuration object that sets various immutable options as a `config` property. By editing the configuration object, you can control the appearance and behavior of the Carbon AI Chat before your users see it. The configuration options enable you to specify where the Carbon AI Chat widget appears on your page, choose whether to use the IBM-provided launcher or your own, and more.
 
 See the type documentation for {@link PublicConfig}.
 
 #### Instance methods
 
-Each instance of the Carbon AI Chat provides a collection of runtime methods that your website can call any time after the instance is available on your website. You can apply these methods before or after the Carbon AI Chat renders on the screen. You can open or close the Carbon AI Chat widget from a custom control, send messages to your assistant from your own functions, theme the Carbon AI Chat, dynamically update the Carbon AI Chat text strings, and more.
+Each instance of the Carbon AI Chat provides a collection of imperative runtime methods that your website can call any time after the instance is available on your website. You can apply these methods before or after the Carbon AI Chat renders on the screen. You can open or close the Carbon AI Chat widget from a custom control, send messages to your assistant from your own functions, dynamically update the Carbon AI Chat text strings, and more.
 
 See the type documentation for {@link ChatInstance}.
 
 #### Events
 
-Throughout its life cycle, the Carbon AI Chat fires a variety of events your code can subscribe to. To use the event handler callbacks, do the following steps:
-
-- Manipulate the message contents before sending, or after receiving.
-- Change how your website renders when the Carbon AI Chat opens or closes.
-- Render your own custom response types inside the Carbon AI Chat widget.
+Throughout its life cycle, the Carbon AI Chat fires a variety of events your code can subscribe to.
 
 See the type documentation for {@link BusEvent}.
 
@@ -124,9 +120,7 @@ The Carbon AI Chat integration complies with the [Web Content Accessibility 2.1 
 
 #### Languages
 
-Most of the content that displays in the Carbon AI Chat originates from an assistant and displays the language that the content is written in. However, some content that displays in the Carbon AI Chat is static text that is hard-coded inside of the Carbon AI Chat. This includes items such as the "Type something..." message that appears as the placeholder text in the input field or the "Choose a date" text that appears on a date picker. By default, these texts display in English but you can change the language of the texts. The Carbon AI Chat provides several translations for these texts and you can configure the Carbon AI Chat to use those languages.
-
-In addition, the individual texts can change if you want to use different text or if you want to provide your own translations for a language the Carbon AI Chat does not have support for.
+Most of the content that displays in the Carbon AI Chat originates from an assistant and displays the language that the content is written in. However, some content that displays in the Carbon AI Chat is static text that is hard-coded inside of the Carbon AI Chat. This includes items such as the "Type something..." message that appears as the placeholder text in the input field or the "Choose a date" text that appears on a date picker. By default, these texts display in English but you can change the language of the texts.
 
 To change any text string, use the {@link ChatInstance.updateLanguagePack} instance method. The JSON object specifies the replacement strings. You can find the strings that the Carbon AI Chat uses in the [languages folder](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat/src/languages).
 

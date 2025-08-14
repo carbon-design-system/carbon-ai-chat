@@ -10,20 +10,22 @@
 @use "@carbon/styles/scss/theme";
 @use "@carbon/layout";
 
-// Looking at the host-context is kind of code small, but not sure what the right way to do it is, yet.
-:host-context(.cds--g90),
-:host-context(.cds--g100) {
+:host {
+  display: block;
+  @include type.default-type();
+}
+
+// Apply dark theme styles when dark class is present
+pre.cds-aichat-code--dark {
   @include meta.load-css("highlight.js/scss/a11y-dark");
 }
 
-:host-context(.cds--white),
-:host-context(.cds--g10) {
+// Apply light theme styles when light class is present
+pre.cds-aichat-code--light {
   @include meta.load-css("highlight.js/scss/a11y-light");
 }
 
 pre {
-  @include type.type-style("code-02");
-
   overflow: auto hidden;
   padding: layout.$spacing-05;
 

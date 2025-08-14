@@ -14,10 +14,14 @@ import { html } from "lit";
 /**
  * Table skeleton view logic.
  */
-function tableSkeletonTemplate() {
+function tableSkeletonTemplate(rowCount = 5) {
   // Can add header names to the skeleton if we want to
   // https://web-components.carbondesignsystem.com/?path=/docs/components-datatable-skeleton--overview#custom-headers.
-  return html`<cds-custom-table-skeleton row-count="3" column-count="2">
+  return html`<cds-custom-table-skeleton
+    row-count=${rowCount}
+    column-count="2"
+    .showHeader=${false}
+  >
   </cds-custom-table-skeleton>`;
 }
 

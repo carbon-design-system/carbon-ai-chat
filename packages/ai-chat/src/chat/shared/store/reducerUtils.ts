@@ -165,7 +165,6 @@ deepFreeze(DEFAULT_PERSISTED_TO_BROWSER);
 const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
   messageIDs: [],
-  isTypingCounter: 0,
   isLoadingCounter: 0,
   isHydratingCounter: 0,
   isScrollAnchored: false,

@@ -474,12 +474,6 @@ interface ChatMessagesState {
   messageIDs: string[];
 
   /**
-   * Counter that indicates if the other party (not the user) is typing and that a typing indicator should be displayed.
-   * If "0" then we do not show typing indicator.
-   */
-  isTypingCounter: number;
-
-  /**
    * Counter that indicates if a message is loading and a loading indicator should be displayed.
    * If "0" then we do not show loading indicator.
    */

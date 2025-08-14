@@ -153,6 +153,7 @@ function getSettings() {
       delete defaultConfig.headerConfig?.minimizeButtonIconType;
       break;
   }
+
   return { defaultConfig, defaultSettings };
 }
 

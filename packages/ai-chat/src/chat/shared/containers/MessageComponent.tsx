@@ -150,6 +150,11 @@ interface MessageProps
   isFirstMessageItem: boolean;
 
   /**
+   * Indicates if this message item is the last item in a message response.
+   */
+  isLastMessageItem: boolean;
+
+  /**
    * The current locale. This value is not directly used by this component. It is indirectly used by the dayjs
    * library which formats the timestamps in this message. However, it needs to be passed a prop to ensure that this
    * component re-renders if the locale changes.
@@ -381,7 +386,8 @@ class MessageComponent extends PureComponent<
     if (isResponse(message)) {
       // We'll use the first message item for deciding if we should show the agent's avatar.
       const agentMessageType = localMessageItem.item.agent_message_type;
-      const responseUserProfile = message.history.response_user_profile;
+      const responseUserProfile =
+        message.message_options?.response_user_profile;
 
       if (isHumanAgentStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
@@ -601,6 +607,7 @@ class MessageComponent extends PureComponent<
       isMessageForInput,
       scrollElementIntoView,
       isFirstMessageItem,
+      isLastMessageItem,
       hideFeedback,
       allowNewFeedback,
     } = this.props;
@@ -632,6 +639,7 @@ class MessageComponent extends PureComponent<
         config={config}
         doAutoScroll={doAutoScroll}
         scrollElementIntoView={scrollElementIntoView}
+        showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}
         allowNewFeedback={allowNewFeedback}
       />
@@ -706,8 +714,8 @@ class MessageComponent extends PureComponent<
                   {
                     "WAC__received--fromHuman":
                       !agentMessageType &&
-                      message.history?.response_user_profile?.user_type ===
-                        UserType.HUMAN,
+                      message.message_options?.response_user_profile
+                        ?.user_type === UserType.HUMAN,
                     "WAC__received--text":
                       responseType === MessageResponseTypes.TEXT,
                     "WAC__received--image":

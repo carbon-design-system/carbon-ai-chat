@@ -12,11 +12,10 @@
  */
 
 import UserAvatar from "@carbon/icons-react/es/UserAvatar.js";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 
 import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
 import { ResponseUserProfile } from "../../../types/messaging/Messages";
-import { useDynamicCSSProperties } from "../hooks/useCSSCustomProperties";
 
 interface ResponseUserAvatarProps extends HasLanguagePack {
   /**
@@ -38,16 +37,25 @@ interface ResponseUserAvatarProps extends HasLanguagePack {
 function ResponseUserAvatar(props: ResponseUserAvatarProps) {
   const { responseUserProfile, languagePack, width, height } = props;
   const agentName = responseUserProfile?.nickname;
-  const avatarStyles = useDynamicCSSProperties({ width, height });
   const avatarUrl = responseUserProfile?.profile_picture_url;
   // Indicates if the avatar for a human agent failed to load.
   const [hasError, setHasError] = useState(false);
   let component;
 
+  const avatarRef = useRef<HTMLDivElement>(null);
+
   // If the avatar Url changes, then hasError should reset to allow an attempt at loading the new avatar url.
   useEffect(() => {
     setHasError(false);
   }, [avatarUrl]);
+
+  // set the width and height of avatar if agentName only contains ASCII characters
+  useLayoutEffect(() => {
+    if (avatarRef && width && height) {
+      avatarRef.current.style.setProperty("inline-size", width);
+      avatarRef.current.style.setProperty("block-size", height);
+    }
+  }, [width, height]);
 
   if (!hasError && avatarUrl) {
     component = (
@@ -67,8 +75,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
       <div
         aria-label={languagePack.agent_ariaResponseUserAvatar}
         className="WACResponseUserAvatar__Circle"
-        // eslint-disable-next-line react/forbid-dom-props
-        style={avatarStyles}
+        ref={avatarRef}
       >
         <div className="WACResponseUserAvatar__Letter">
           {agentName.charAt(0)}

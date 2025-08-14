@@ -64,6 +64,7 @@ function BodyWithFooterComponent({
         scrollElementIntoView={THROW_ERROR}
         serviceManager={serviceManager}
         hideFeedback
+        showChainOfThought={false}
         allowNewFeedback={false}
         renderMessageComponent={renderMessageComponent}
       />
@@ -78,6 +79,7 @@ function BodyWithFooterComponent({
         scrollElementIntoView={THROW_ERROR}
         serviceManager={serviceManager}
         hideFeedback
+        showChainOfThought={false}
         allowNewFeedback={false}
         renderMessageComponent={renderMessageComponent}
       />

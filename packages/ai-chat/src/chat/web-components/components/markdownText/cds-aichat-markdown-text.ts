@@ -10,12 +10,12 @@
 import { css, unsafeCSS } from "lit";
 
 import { carbonElement } from "../../decorators/customElement";
-import MarkdownTextElement from "./src/MarkdownElement";
+import MarkdownElement from "./src/MarkdownElement";
 import { markdownTextTemplate } from "./src/markdownElement.template";
 import styles from "./src/markdownText.scss";
 
 @carbonElement("cds-aichat-markdown-text")
-class CDSChatMarkdownTextElement extends MarkdownTextElement {
+class CDSChatMarkdownElement extends MarkdownElement {
   static styles = css`
     ${unsafeCSS(styles)}
   `;
@@ -25,4 +25,4 @@ class CDSChatMarkdownTextElement extends MarkdownTextElement {
   }
 }
 
-export default CDSChatMarkdownTextElement;
+export default CDSChatMarkdownElement;

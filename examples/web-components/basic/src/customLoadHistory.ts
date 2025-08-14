@@ -11,7 +11,6 @@ import {
   ChatInstance,
   HistoryItem,
   MessageResponseTypes,
-  TextItem,
 } from "@carbon/ai-chat";
 
 const HISTORY = [
@@ -33,7 +32,7 @@ const HISTORY = [
           {
             text: new Array(5).fill("words from history").join(" "),
             response_type: MessageResponseTypes.TEXT,
-          } satisfies TextItem as TextItem,
+          },
         ],
       },
     },
@@ -57,16 +56,16 @@ const HISTORY = [
           {
             text: new Array(5).fill("more words").join(" "),
             response_type: MessageResponseTypes.TEXT,
-          } satisfies TextItem as TextItem,
+          },
         ],
       },
     },
     time: new Date().toISOString(),
   },
-] as HistoryItem[];
+];
 
 async function customLoadHistory(_instance: ChatInstance) {
-  return HISTORY;
+  return HISTORY as HistoryItem[];
 }
 
 export { customLoadHistory };

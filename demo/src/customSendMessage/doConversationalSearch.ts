@@ -10,7 +10,8 @@
 import {
   BusEventType,
   ChatInstance,
-  GenericItem,
+  ConversationalSearchItem,
+  MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
 
@@ -18,59 +19,54 @@ import { sleep } from "../framework/utils";
 import { WORD_DELAY } from "./constants";
 
 const TEXT =
-  "The National Park Service (NPS) was created on August 25, 1916, by Congress through the act that established Yellowstone National Park. However, individual sites within the NPS, such as those mentioned in the document, were established at different times. For example, Jamestown, Virginia was founded in 1607, Plymouth was founded in 1620, and Independence National Historical Park was established in 1948 to preserve Independence Hall and the Liberty Bell.";
+  "Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times. Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.";
 
 const META = {
   citations: [
     {
-      title:
-        "Independence National Historical Park (U.S. National Park Service)",
-      text: "The park represents the founding ideals of the nation, and preserves national and international symbols of freedom and democracy, including Independence Hall and the Liberty Bell.",
-      body: "The park represents the founding ideals of the nation, and preserves national and international symbols of freedom and democracy, including Independence Hall and the Liberty Bell.",
-      url: "https://www.nps.gov/inde/index.htm#:~:text=%22We%20hold%20these,the%20Liberty%20Bell",
-      ranges: [{ start: 377, end: 456 }],
+      title: "Carbon Allotropes - Chemical Database (IBM Research)",
+      text: "Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov.",
+      url: "https://ibm.com/research/carbon-allotropes#:~:text=Diamond%20was%20first,University%20of%20Manchester",
+      ranges: [{ start: 147, end: 290 }],
+    },
+    {
+      title: "Carbon Element History - Chemical Elements Database (IBM Watson)",
+      text: "Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times.",
+      url: "https://ibm.com/chemistry/elements/carbon#:~:text=Antoine%20Lavoisier%201789",
+      ranges: [{ start: 0, end: 137 }],
     },
     {
       title:
-        "Frequently Asked Questions - Historic Jamestowne Part of Colonial National Historical Park (U.S. National Park Service)",
-      text: 'When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe; 2.',
-      body: 'When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe; 2.',
-      url: "https://www.nps.gov/jame/faqs.htm#:~:text=1607",
-      ranges: [{ start: 269, end: 330 }],
-    },
-    {
-      title:
-        "Frequently Asked Questions - Historic Jamestowne Part of Colonial National Historical Park (U.S. National Park Service)",
-      text: 'When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe; 2.',
-      body: 'When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe; 2.',
+        "Carbon Research Database - Internal Collection (IBM Quantum Network)",
+      text: "Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985.",
       // The result comes from an internal collection and does not have a url, instead we are going to reference the full search result.
       search_result_idx: 0,
-      ranges: [{ start: 269, end: 330 }],
+      ranges: [{ start: 138, end: 247 }],
     },
   ],
   search_results: [
     {
-      body: `When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe;
+      body: `Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.
       
-When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe;
+Carbon forms the backbone of organic chemistry due to its ability to form four covalent bonds and create long chains and complex structures. The element has an atomic number of 6 and is located in group 14 of the periodic table.
 
-When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe;
+Carbon nanotubes, another important allotrope, exhibit remarkable mechanical and electrical properties. These cylindrical structures were first discovered in 1991 and have applications in electronics, materials science, and nanotechnology.
 
-When Jamestown was founded the Virginia Company, who funded everything, wanted a return on their investment - they wanted to make money, whereas Plymouth was founded for "religious freedom" - more specifically to escape persecution they felt for their religious beliefs in Europe;`,
+Isotopes of carbon include carbon-12, carbon-13, and carbon-14. Carbon-14 is radioactive and is used in carbon dating to determine the age of organic materials up to about 50,000 years old.`,
     },
   ],
 };
 
 function doConversationalSearch(instance: ChatInstance) {
-  const response = {
-    response_type: "conversational_search",
+  const response: ConversationalSearchItem = {
+    response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
     text: TEXT,
     ...META,
   };
 
   instance.messaging.addMessage({
     output: {
-      generic: [response as GenericItem],
+      generic: [response],
     },
   });
 }
@@ -102,7 +98,7 @@ async function doConversationalSearchStreaming(
       // Each time you get a chunk back, you can call `addMessageChunk`.
       instance.messaging.addMessageChunk({
         partial_item: {
-          response_type: "conversational_search",
+          response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
           // The next chunk, the chat component will deal with appending these chunks.
           text: `${word} `,
           streaming_metadata: {
@@ -112,7 +108,7 @@ async function doConversationalSearchStreaming(
             id: "1",
             cancellable: true,
           },
-        } as unknown as GenericItem,
+        },
         streaming_metadata: {
           // This is the id of the entire message response.
           response_id: responseID,
@@ -124,7 +120,7 @@ async function doConversationalSearchStreaming(
     // This requires ALL the concatenated final text. If you want to append text, run a post processing safety check, or anything
     // else that mutates the data, you can do so here.
     let completeItem = {
-      response_type: "conversational_search",
+      response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
       text: isCanceled ? words.splice(0, lastWordIndex).join(" ") : text,
       streaming_metadata: {
         // This is the id of the item inside the response.

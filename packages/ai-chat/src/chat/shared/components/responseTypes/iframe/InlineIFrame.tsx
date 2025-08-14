@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useLayoutEffect, useRef } from "react";
 
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
@@ -17,7 +17,6 @@ import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
 import InlineError from "../error/InlineError";
 import { IFrameComponent } from "./IFrameComponent";
 import { IFrameItem } from "../../../../../types/messaging/Messages";
-import { useDynamicCSSProperties } from "../../../hooks/useCSSCustomProperties";
 
 interface InlineIframeProps extends HasDoAutoScroll {
   /**
@@ -36,8 +35,16 @@ function InlineIFrame({ messageItem, doAutoScroll }: InlineIframeProps) {
   const { source, title } = messageItem;
   const baseHeight = getMediaDimensions(messageItem)?.base_height;
   const paddingTop = getResponsiveElementPaddingValue(baseHeight);
-  const inlineStyles = useDynamicCSSProperties({ paddingTop });
   const iframeTitle = title || source;
+
+  const iframeRef = useRef<HTMLDivElement>(null);
+
+  // set padding-top style dynamically
+  useLayoutEffect(() => {
+    if (iframeRef && paddingTop) {
+      iframeRef.current.style.setProperty("padding-block-start", paddingTop);
+    }
+  }, [paddingTop]);
 
   /**
    * Render an error message and announce it when the iframe component times out.
@@ -53,7 +60,7 @@ function InlineIFrame({ messageItem, doAutoScroll }: InlineIframeProps) {
 
   return (
     // eslint-disable-next-line react/forbid-dom-props
-    <div className="WACInlineIFrame" style={inlineStyles}>
+    <div className="WACInlineIFrame" ref={iframeRef}>
       <IFrameComponent
         source={source}
         title={iframeTitle}

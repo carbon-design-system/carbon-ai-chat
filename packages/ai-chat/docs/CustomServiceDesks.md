@@ -4,7 +4,7 @@ title: Service desks
 
 ### Overview
 
-The Carbon AI Chat supports you in creating a custom integration with a service desk or contact center that users can use to communicate with human agents. To build an integration, create an object or class that satisfies the Carbon AI Chat ServiceDesk interface. Then implement a factory function in the Carbon AI Chat configuration that returns a new instance of your integration when the Carbon AI Chat asks for one.
+The Carbon AI Chat supports you in creating a custom integration with a service desk or contact center that users can use to communicate with human agents. To build an integration, create an object or class that satisfies the Carbon AI Chat {@link ServiceDesk} interface. Then implement a factory function in the Carbon AI Chat configuration that returns a new instance of your integration when the Carbon AI Chat asks for one.
 
 For the Carbon AI Chat to integrate with a custom service desk, two basic steps need to happen:
 
@@ -15,7 +15,7 @@ See {@link PublicConfig} and note `serviceDesk` and `serviceDeskFactory` to view
 
 ### Service desk requirements
 
-To create an integration between the Carbon AI Chat and a service desk, the service desk must support communication from a web browser and must fulfill the Carbon AI Chat service desk API. Use the http endpoints that the service desk or the web socket interface provided. In particular, the service desk must support the ability to start a chat to receive messages from a user or to deliver messages from an agent to the user.
+To create an integration between the Carbon AI Chat and a service desk, the service desk must support communication from a web browser and must fulfill the Carbon AI Chat service desk API. Use the HTTP endpoints that the service desk or the web socket interface provides. In particular, the service desk must support the ability to start a chat to receive messages from a user or to deliver messages from an agent to the user.
 
 If the service desk requires calls to include secrets that cannot be exposed to end users, such as API keys, use middleware on your server to handle the calls. Proxy the calls from the Carbon AI Chat. This middleware receives the calls from the Carbon AI Chat and forwards them to the service desk along with the additional secret.
 
@@ -63,7 +63,7 @@ The `serviceDeskFactory` configuration property expects a factory function that 
 
 #### Communicating from your service desk to the Carbon AI Chat
 
-One of the items that are passed into the factory is a callback object. The TypeScript definitions documented these callbacks. These callbacks are the functions that you call inside your service desk code to communicate information back to the Carbon AI Chat.
+One of the items that are passed into the factory is a callback object. The TypeScript definitions document these callbacks. These callbacks are the functions that you call inside your service desk code to communicate information back to the Carbon AI Chat.
 
 #### Interaction flow
 
@@ -84,7 +84,7 @@ The following section outlines the steps and actions that typically occur when a
 
 ### API Details
 
-Implement the following methods from the ServiceDesk interface in your integration:
+Implement the following methods from the {@link ServiceDesk} interface in your integration:
 
 - getName
 - startChat
@@ -94,7 +94,7 @@ Implement the following methods from the ServiceDesk interface in your integrati
 - userReadMessages (optional)
 - areAnyAgentsOnline (optional)
 
-You can use the following methods from the ServiceDeskCallback interface in your integration:
+You can use the following methods from the {@link ServiceDeskCallback} interface in your integration:
 
 - agentEndedChat
 - agentJoined
@@ -110,7 +110,7 @@ You can use the following methods from the ServiceDeskCallback interface in your
 
 ### Supported response types
 
-The `callback.sendMessageToUser` function lets your integration display a message to the user. You can provide a simple string, which displays a basic text response to the user. ]In addition you can pass a `MessageResponse` object with the following response types:
+The `callback.sendMessageToUser` function lets your integration display a message to the user. You can provide a simple string, which displays a basic text response to the user. In addition, you can pass a {@link MessageResponse} object with the following response types:
 
 - text
 - image
@@ -139,7 +139,7 @@ this.callback.updateCapabilities({
 
 #### Validating files before uploading
 
-When a user selects to upload files, the Carbon AI Chat calls the `filesSelectedForUpload` function in your integration. You can use this function to validate that the file is appropriate for uploading. You can check the file's type or file size and report an error if it is not valid. The user must remove any files that are in error before sending a message with the files. You can report the error by calling the following `callback.setFileUploadStatus` function.
+When a user selects files to upload, the Carbon AI Chat calls the `filesSelectedForUpload` function in your integration. You can use this function to validate that the file is appropriate for uploading. You can check the file's type or file size and report an error if it is not valid. The user must remove any files that are in error before sending a message with the files. You can report the error by calling the following `callback.setFileUploadStatus` function.
 
 ```javascript
 filesSelectedForUpload(uploads: FileUpload[]): void {
@@ -157,7 +157,7 @@ filesSelectedForUpload(uploads: FileUpload[]): void {
 
 After you enabled file uploads from the user, the user can select files and upload them to an agent. It occurs by the user sending the files as a "message". The files pass to your integration when you call the `sendMessageToAgent` function. The files pass as the `additionalData.filesToUpload` argument.
 
-**Note:** The user does not need to type a message so the `message.input.text` value can be empty. {{class=DocMarkdown__Note}}
+**Note:** The user does not need to type a message, so the `message.input.text` value can be empty.
 
 Once your integration receives the files to upload, it should perform whatever operations are necessary to actually send the files to the service desk. Refer to the following example for `sendMessageToAgent`.
 
@@ -188,7 +188,7 @@ this.callback.setFileUploadStatus(file.id, true, errorMessage);
 
 The Carbon AI Chat provides the ability to integrate with screen sharing or co-browse capabilities a service desk provides. The service desk API in the Carbon AI Chat allows the integration to ask the user to approve a screen sharing request from the agent and then it gives the user the ability to stop screen sharing when he wishes.
 
-**Note:** The Carbon AI Chat does not provide the screen sharing functions, only the ability to request permission from the user. The service desk integration provides the screen sharing capability. {{class=DocMarkdown__Note}}
+**Note:** The Carbon AI Chat does not provide the screen sharing functions, only the ability to request permission from the user. The service desk integration provides the screen sharing capability.
 
 To begin a screen sharing session, you need to call the `callback.screenShareRequest` function. After the call, the Carbon AI Chat displays a modal to the user asking if he wants to approve the request to begin screen sharing. This function returns a Promise that resolves when the user responds to the request and the resolution value is the user's response.
 
@@ -200,6 +200,6 @@ The user may stop screen sharing at any point. If the user stops screen sharing,
 
 If the service desk you are connecting to allows users to reconnect to an agent after the page reloads, the Carbon AI Chat provides support to enable this process. The Carbon AI Chat keeps track of whether a user connects to an agent between page loads. If the Carbon AI Chat loads and detects that the user was previously connected to an agent, it gives the service desk integration an opportunity to reconnect. Call the `reconnect` function if it exists on the integration. The service desk then performs whatever steps are necessary to reconnect and once the reconnect is complete (or fails), the `reconnect` function resolves with a boolean to indicate successful reconnection.
 
-**Note:** The user is unable to interact with the Carbon AI Chat until the `reconnect` function resolves or the user chooses to disconnect from the service desk. {{class=DocMarkdown__Note}}
+**Note:** The user is unable to interact with the Carbon AI Chat until the `reconnect` function resolves or the user chooses to disconnect from the service desk.
 
 If the integration needs to record a state between page loads, it can use the `updatePersistedState` function. The `updatePersistedState` persists the provided data in the browser's session history along with the session data that the Carbon AI Chat stores. The session storage has a size limit, so avoid putting large amounts of data here.

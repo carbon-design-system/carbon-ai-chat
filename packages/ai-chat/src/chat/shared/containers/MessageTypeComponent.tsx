@@ -78,11 +78,11 @@ import {
   InlineErrorItem,
   InternalMessageRequestType,
   Message,
-  MessageHistory,
   MessageHistoryFeedback,
   MessageInputType,
   MessageRequest,
   MessageResponse,
+  MessageResponseHistory,
   MessageResponseTypes,
   OptionItem,
   TableItem,
@@ -117,10 +117,12 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     (state: AppState) =>
       state.persistedToBrowserStorage.chatState.humanAgentState,
   );
-  const feedbackID = message.item.message_options?.feedback?.id;
+  const feedbackID = message.item.message_item_options?.feedback?.id;
   const feedbackPanelID = useUUID();
 
-  const feedbackHistory = originalMessage.history?.feedback?.[feedbackID];
+  const feedbackHistory = isResponse(originalMessage)
+    ? originalMessage.history?.feedback?.[feedbackID]
+    : null;
 
   const feedbackInitialValues = useMemo<FeedbackInitialValues>(() => {
     if (!feedbackHistory) {
@@ -167,7 +169,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         <>
           {response}
           {isResponseStopped && <ResponseStopped />}
-          {renderChainOfThought(localMessageItem)}
+          {props.showChainOfThought &&
+            renderChainOfThought(localMessageItem, message)}
           {renderFeedback(localMessageItem, message)}
         </>
       );
@@ -200,7 +203,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               aria-label={props.languagePack.fileSharing_fileIcon}
             />
           )}
-          {/* The use of the heading role here is a compromise to Penn State which wanted us to enable the use of the 
+          {/* The use of the heading role here is a compromise to enable the use of the
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <span role="heading" aria-level={2}>
@@ -235,8 +238,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     const responseType = localMessageItem.item.response_type;
     const withHuman = Boolean(
-      message.history?.response_user_profile?.user_type === UserType.HUMAN ||
-        localMessageItem.item.agent_message_type,
+      message.message_options?.response_user_profile?.user_type ===
+        UserType.HUMAN || localMessageItem.item.agent_message_type,
     );
     switch (responseType) {
       case MessageResponseTypes.TEXT:
@@ -327,7 +330,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     // For text provided by the assistant, pass it through some HTML formatting before displaying it.
     return (
-      <div className="WAC__received--textContent">
+      <div>
         {renderRichText(
           message,
           removeHTML,
@@ -623,14 +626,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   /**
-   * Renders chain of thought component for the given message item if appropriate.
+   * Renders chain of thought component for the given {@link MessageResponse}.
    */
-  function renderChainOfThought(localMessageItem: LocalMessageItem) {
-    const chainOfThought =
-      localMessageItem.item.message_options?.chain_of_thought;
+  function renderChainOfThought(
+    localMessageItem: LocalMessageItem,
+    message: MessageResponse,
+  ) {
+    const chainOfThought = message.message_options?.chain_of_thought;
     if (!chainOfThought || props.isNestedMessageItem) {
       return false;
     }
+    console.log("renderChainOfThought", chainOfThought);
     return (
       <ChainOfThought
         steps={chainOfThought}
@@ -653,7 +659,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message: MessageResponse,
   ) {
     const feedbackOptions =
-      localMessageItem.item.message_options?.feedback || {};
+      localMessageItem.item.message_item_options?.feedback || {};
 
     const {
       id: feedbackID,
@@ -681,9 +687,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     /**
      * Updates the message history with the feedback data provided.
      */
-    function updateHistory(data: MessageHistoryFeedback) {
+    function updateFeedbackHistory(data: MessageHistoryFeedback) {
       if (feedbackID) {
-        const history: MessageHistory = {
+        const history: MessageResponseHistory = {
           feedback: {
             [feedbackID]: data,
           },
@@ -709,7 +715,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       if (toggleToSelected && !openDetails) {
         // If the button has been toggled to selected but we're not showing details, that means the option is considered
         // immediately submitted.
-        updateHistory({ is_positive: isPositive });
+        updateFeedbackHistory({ is_positive: isPositive });
         setIsFeedbackSubmitted(true);
 
         serviceManager.fire({
@@ -761,7 +767,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       serviceManager.fire(event);
 
       // Submit this update to be recorded in history.
-      updateHistory({
+      updateFeedbackHistory({
         is_positive: event.isPositive,
         text: event.text,
         categories: event.categories,
@@ -776,6 +782,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       const isOpen =
         isFeedbackOpen &&
         (isPositive ? isPositiveFeedbackSelected : isNegativeFeedbackSelected);
+
+      let filteredCategories;
+      // Categories can be an array of strings or an object with positive and negative arrays.
+      if (Array.isArray(categories)) {
+        filteredCategories = categories;
+      } else if (isPositive) {
+        filteredCategories = categories?.positive;
+      } else {
+        filteredCategories = categories?.negative;
+      }
+
       return (
         <FeedbackComponent
           class={`${CSS_CLASS_PREFIX}-feedbackDetails-${
@@ -797,7 +814,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           showPrompt={show_prompt}
           title={title || languagePack.feedback_defaultTitle}
           prompt={prompt || languagePack.feedback_defaultPrompt}
-          categories={categories}
+          categories={filteredCategories}
           placeholder={placeholder || languagePack.feedback_defaultPlaceholder}
           disclaimer={disclaimer}
           submitLabel={languagePack.feedback_submitLabel}
