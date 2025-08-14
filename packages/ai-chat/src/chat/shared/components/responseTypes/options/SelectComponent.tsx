@@ -109,7 +109,6 @@ function SelectComponent(props: SelectProps) {
       if (listBox) {
         listBox.style.blockSize = "unset";
         listBox.style.maxBlockSize = "unset";
-        console.log(listBox);
       }
     });
   }, []);
