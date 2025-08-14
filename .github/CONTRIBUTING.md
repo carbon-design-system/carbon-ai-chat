@@ -200,7 +200,6 @@ assets:
 - **Report bugs:** Even if you can’t submit a fix, opening a well-documented
   issue makes a big difference.
 
-
 ### How can I test components or share a bug reproduction?
 
 Use in-browser development environments.
