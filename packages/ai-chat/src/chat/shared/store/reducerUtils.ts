@@ -33,7 +33,6 @@ import {
 } from "../../../types/config/LauncherConfig";
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
-import { TourState } from "../../../types/state/TourState";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { LayoutConfig } from "../../../types/config/PublicConfig";
 import { LocalMessageUIState } from "../../../types/messaging/LocalMessageItem";
@@ -92,11 +91,6 @@ const DEFAULT_CITATION_PANEL_STATE: ViewSourcePanelState = {
 };
 deepFreeze(DEFAULT_CITATION_PANEL_STATE);
 
-const DEFAULT_TOUR_STATE: TourState = {
-  activeTourStepItems: null,
-};
-deepFreeze(DEFAULT_TOUR_STATE);
-
 const DEFAULT_MESSAGE_PANEL_STATE: MessagePanelState<any> = {
   isOpen: false,
   localMessageItem: null,
@@ -108,21 +102,18 @@ deepFreeze(DEFAULT_MESSAGE_PANEL_STATE);
 const VIEW_STATE_ALL_CLOSED: ViewState = {
   launcher: false,
   mainWindow: false,
-  tour: false,
 };
 deepFreeze(VIEW_STATE_ALL_CLOSED);
 
 const VIEW_STATE_LAUNCHER_OPEN: ViewState = {
   launcher: true,
   mainWindow: false,
-  tour: false,
 };
 deepFreeze(VIEW_STATE_LAUNCHER_OPEN);
 
 const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
   mainWindow: true,
   launcher: false,
-  tour: false,
 };
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
@@ -135,10 +126,6 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedToBrowserStorageState = {
       showBackToBot: false,
     },
     hasSentNonWelcomeMessage: false,
-    persistedTourState: {
-      activeTourID: null,
-      activeTourCurrentStepIndex: null,
-    },
     humanAgentState: {
       isConnected: false,
       isSuspended: false,
@@ -149,7 +136,6 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedToBrowserStorageState = {
     wasLoadedFromBrowser: false,
     version: VERSION,
     viewState: VIEW_STATE_ALL_CLOSED,
-    activeTour: false,
     showUnreadIndicator: false,
     mobileLauncherIsExtended: false,
     mobileLauncherWasReduced: false,
@@ -242,8 +228,6 @@ function calcAnnouncementForWidgetOpen(
   }
 
   // The view has changed so show the appropriate message.
-  // TODO TOUR: I18N. This will need to be updated before ga. For now the announcement only cares if the main window is
-  // opened. If the tour is opened, the announcement will be that the window is closed.
   return {
     messageID: newViewState.mainWindow
       ? "window_ariaWindowOpened"
@@ -398,7 +382,6 @@ export {
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   DEFAULT_LAUNCHER,
-  DEFAULT_TOUR_STATE,
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,
   DEFAULT_LAYOUT_STATE,

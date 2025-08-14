@@ -67,8 +67,7 @@ class ServiceManager {
 
   /**
    * The entire wrapping element for the chat that includes styles and render. This is the element that
-   * is either appended to the body or the custom element. It includes the main window, the tours window
-   * and the launcher.
+   * is either appended to the body or the custom element. It includes the main window, and the launcher.
    */
   container: HTMLElement;
 
