@@ -134,7 +134,7 @@ class Chat implements ChatInterface {
     // Tell dayjs to globally use the locale.
     dayjs.locale(localePack);
 
-    // Here we render the application. If the tour or main window are supposed to be open then we will hydrate the
+    // Here we render the application. If the main window is supposed to be open then we will hydrate the
     // chat if sessionHistory is enabled, or fetch the welcome node if it's disabled.
     const reallyRenderAndReturnInstance = async () => {
       // Render the React application.
@@ -162,13 +162,10 @@ class Chat implements ChatInterface {
           mainWindowOpenReason,
         });
       } else {
-        // If a tour and/or the launcher are supposed to be open, or nothing is supposed to be open, then only fire
-        // the view:change events and try to change the view.
         const viewChangeReason: ViewChangeReason =
           ViewChangeReason.WEB_CHAT_LOADED;
 
-        // If a tour is supposed to be open then try to hydrate the chat.
-        const tryHydrating = targetViewState.tour;
+        const tryHydrating = false;
 
         // If nothing is supposed to be open then force the view:change events to fire. Since the default viewState
         // is all views closed, and the targetViewState is all views closed, changeView would see two equal

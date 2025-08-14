@@ -10,7 +10,6 @@
 /* eslint-disable react/no-danger */
 
 import AiLaunch from "@carbon/icons-react/es/AiLaunch.js";
-import ArrowUpLeft from "@carbon/icons-react/es/ArrowUpLeft.js";
 import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
 import { Button } from "@carbon/react";
 import cx from "classnames";
@@ -50,15 +49,9 @@ interface LauncherProps extends HasClassName, HasIntl {
   tabIndex?: number;
 
   /**
-   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If there's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
@@ -71,7 +64,6 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     className,
     tabIndex,
     launcherHidden,
-    activeTour,
   } = props;
   const launcherAvatarURL = useSelector((state: AppState) =>
     state.theme.useAITheme
@@ -95,11 +87,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
-  let ariaLabel = getLauncherButtonAriaLabel(
-    languagePack,
-    launcherHidden,
-    activeTour
-  );
+  let ariaLabel = getLauncherButtonAriaLabel(languagePack, launcherHidden);
 
   if (unreadHumanAgentCount !== 0) {
     ariaLabel += `. ${intl.formatMessage(
@@ -141,9 +129,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     >
       <Button
         aria-label={ariaLabel}
-        className={cx("WACLauncher__Button", {
-          WACLauncher__TourButton: activeTour,
-        })}
+        className="WACLauncher__Button"
         data-testid={PageObjectId.LAUNCHER}
         kind={ButtonKindEnum.PRIMARY}
         type="button"
@@ -151,11 +137,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
         ref={buttonRef}
         tabIndex={tabIndex}
       >
-        {activeTour ? (
-          <ArrowUpLeft size={24} className="WACLauncher__svg" />
-        ) : (
-          launcherAvatar
-        )}
+        {launcherAvatar}
 
         {(unreadHumanAgentCount !== 0 || showUnreadIndicator) && (
           <div className="WAC__countIndicator">

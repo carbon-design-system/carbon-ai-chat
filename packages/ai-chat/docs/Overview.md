@@ -142,4 +142,4 @@ Some languages are read from left to right (`ltr`), and others from right to lef
 
 ### Cookies and GDPR
 
-The Carbon AI Chat does not use any cookies. It uses the browser's transient session storage for required behavior to track the state of the Carbon AI Chat as you navigate from page to page (e.g., should the home screen be visible, do you have an active tour open, and so on).
+The Carbon AI Chat does not use any cookies. It uses the browser's transient session storage for required behavior to track the state of the Carbon AI Chat as you navigate from page to page (e.g., should the home screen be visible, and so on).

@@ -91,7 +91,6 @@ function HomeScreenHeader(
       <Header
         ref={headerRef}
         displayName={displayName}
-        showCenter
         showRestartButton={showRestartButton}
         hideCloseAndRestartButton={hideCloseAndRestartButton}
         onClickRestart={onRestart}

@@ -9,7 +9,6 @@
 
 import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
-import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 import {
   AnnounceMessage,
   AppState,
@@ -52,6 +51,7 @@ import {
   LauncherType,
   NotificationMessage,
 } from "../../../types/instance/apiTypes";
+import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 
 const CHANGE_STATE = "CHANGE_STATE";
 const UPDATE_BOT_NAME = "UPDATE_BOT_NAME";
@@ -89,9 +89,6 @@ const UPDATE_HOME_SCREEN_CONFIG = "UPDATE_HOME_SCREEN_CONFIG";
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   "UPDATE_HAS_SENT_NON_WELCOME_MESSAGE";
 const UPDATE_PERSISTED_CHAT_STATE = "UPDATE_PERSISTED_CHAT_STATE";
-const SET_TOUR_DATA = "SET_TOUR_DATA";
-const CLEAR_TOUR_DATA = "CLEAR_TOUR_DATA";
-const CHANGE_STEP_IN_TOUR = "CHANGE_STEP_IN_TOUR";
 const SET_HOME_SCREEN_IS_OPEN = "SET_HOME_SCREEN_IS_OPEN";
 const UPDATE_LAUNCHER_CONFIG = "UPDATE_LAUNCHER_CONFIG";
 const UPDATE_MESSAGE = "UPDATE_MESSAGE";
@@ -120,7 +117,6 @@ const ADD_NOTIFICATION = "ADD_NOTIFICATION";
 const REMOVE_ALL_NOTIFICATIONS = "REMOVE_ALL_NOTIFICATIONS";
 const REMOVE_NOTIFICATIONS = "REMOVE_NOTIFICATIONS";
 const UPDATE_CHAT_HEADER_CONFIG = "UPDATE_CHAT_HEADER_CONFIG";
-const UPDATE_MAX_VISIBLE_HEADER_OBJECTS = "UPDATE_MAX_VISIBLE_HEADER_OBJECTS";
 const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
 const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
@@ -219,26 +215,6 @@ const actions = {
     return {
       type: UPDATE_PERSISTED_CHAT_STATE,
       chatState,
-    };
-  },
-
-  setTourData(newActiveTourMessageID: string) {
-    return {
-      type: SET_TOUR_DATA,
-      newActiveTourMessageID,
-    };
-  },
-
-  clearTourData() {
-    return {
-      type: CLEAR_TOUR_DATA,
-    };
-  },
-
-  changeStepInTour(newStepNumber: number) {
-    return {
-      type: CHANGE_STEP_IN_TOUR,
-      newStepNumber,
     };
   },
 
@@ -663,10 +639,6 @@ const actions = {
     return { type: UPDATE_CHAT_HEADER_CONFIG, chatHeaderConfig };
   },
 
-  setMaxVisibleHeaderObjects(maxTotal: number) {
-    return { type: UPDATE_MAX_VISIBLE_HEADER_OBJECTS, maxTotal };
-  },
-
   setStopStreamingButtonVisible(isVisible: boolean) {
     return { type: SET_STOP_STREAMING_BUTTON_VISIBLE, isVisible };
   },
@@ -713,9 +685,6 @@ export {
   UPDATE_HOME_SCREEN_CONFIG,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
-  SET_TOUR_DATA,
-  CLEAR_TOUR_DATA,
-  CHANGE_STEP_IN_TOUR,
   SET_HOME_SCREEN_IS_OPEN,
   UPDATE_LAUNCHER_CONFIG,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
@@ -749,7 +718,6 @@ export {
   REMOVE_NOTIFICATIONS,
   MERGE_HISTORY,
   UPDATE_CHAT_HEADER_CONFIG,
-  UPDATE_MAX_VISIBLE_HEADER_OBJECTS,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STREAM_ID,

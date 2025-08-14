@@ -54,7 +54,7 @@ import {
 
 interface AppContainerProps extends ChatContainerProps {
   /**
-   * The element the Carbon AI Chat is hosted in. Included main window, tours and launcher.
+   * The element the Carbon AI Chat is hosted in. Including main window and launcher.
    */
   container: HTMLElement;
 

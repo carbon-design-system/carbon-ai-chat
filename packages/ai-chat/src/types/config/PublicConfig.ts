@@ -114,23 +114,6 @@ export interface PublicConfig {
   shouldSanitizeHTML?: boolean;
 
   /**
-   * A config object to modify tours.
-   *
-   * @experimental
-   */
-  tourConfig?: {
-    /**
-     * Indicates if the minimize button should be hidden.
-     */
-    hideMinimizeButton?: boolean;
-
-    /**
-     * Indicates if the chat button should be hidden.
-     */
-    hideChatButton?: boolean;
-  };
-
-  /**
    * Extra config for controlling the behavior of the header.
    */
   headerConfig?: HeaderConfig;

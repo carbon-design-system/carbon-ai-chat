@@ -109,22 +109,9 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     shallowEqual
   );
   const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
-  const maxVisibleHeaderObjects = useSelector(
-    (state: AppState) => state.chatHeaderState.maxVisibleHeaderObjects
-  );
-  const leftObjectsLength = useSelector(
-    (state: AppState) => state.chatHeaderState.config?.left?.length || 0
-  );
-  const rightObjectsLength = useSelector(
-    (state: AppState) => state.chatHeaderState.config?.right?.length || 0
-  );
+
   const headerRef = useRef<HasRequestFocus>();
 
-  const isHeaderObjectsInOverflow =
-    leftObjectsLength > maxVisibleHeaderObjects ||
-    rightObjectsLength > maxVisibleHeaderObjects;
-  const hasChatHeaderObjects =
-    enableChatHeaderConfig && isHeaderObjectsInOverflow;
   const showRestartButton =
     publicConfig.showRestartButton ||
     publicConfig.headerConfig?.showRestartButton;
@@ -149,7 +136,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   if (overflowItems && allowHomeScreen) {
     // Insert a "Home screen" option at the top.
     overflowItems.splice(0, 0, languagePack.homeScreen_overflowMenuHomeScreen);
-  } else if (!overflowItems && allowHomeScreen && hasChatHeaderObjects) {
+  } else if (!overflowItems && allowHomeScreen) {
     // If there are header objects in the overflow menu, insert the "Home screen" option.
     overflowItems = [languagePack.homeScreen_overflowMenuHomeScreen];
   }
@@ -161,7 +148,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     <div className="WACHeader__Container">
       <Header
         ref={headerRef}
-        showCenter
         headerAvatarConfig={headerAvatarConfig}
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}

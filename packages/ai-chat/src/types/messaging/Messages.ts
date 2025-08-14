@@ -418,21 +418,6 @@ export type Message =
   | MessageResponse;
 
 /**
- * TODO TOUR: If we end up supporting this user_defined approach longer term, instead of something officially supported
- * by the back-end, then we need to add this to the types repo.
- *
- * @category Messaging
- */
-export interface TourStepGenericItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
-  /**
-   * A way for the authors to label steps so they can use the goToStep function to change to a
-   * specific tour step.
-   */
-  step_id: string;
-}
-
-/**
  * @category Messaging
  */
 export interface ItemStreamingMetadata {

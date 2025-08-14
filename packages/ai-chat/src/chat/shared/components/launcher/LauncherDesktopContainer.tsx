@@ -44,20 +44,13 @@ interface LauncherDesktopContainerProps extends HasRequestFocus {
   launcherRef: RefObject<HasRequestFocus>;
 
   /**
-   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If there's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
-  const { launcherRef, onDoToggle, requestFocus, launcherHidden, activeTour } =
-    props;
+  const { launcherRef, onDoToggle, requestFocus, launcherHidden } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const intl = useIntl();
@@ -313,11 +306,11 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     }
   }, [determineLauncherHeight, viewState.launcher]);
 
-  // If the main window or tour have been opened then clear all timers and set the launcher state as if it had been
-  // clicked open. This is to protect against scenarios where the main window or tour are opened using other methods
+  // If the main window has been opened then clear all timers and set the launcher state as if it had been
+  // clicked open. This is to protect against scenarios where the main window is opened using other methods
   // besides clicking on the launcher.
   useEffect(() => {
-    if (viewState.mainWindow || viewState.tour) {
+    if (viewState.mainWindow) {
       // Clear timers and update launcher state so that no more greeting messages or bounces occur.
       setDefaultLauncherState();
     }
@@ -402,7 +395,6 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         showUnreadIndicator={showUnreadIndicator}
         desktopLauncherIsExpanded={desktopLauncherIsExpanded}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
         className={complexLauncherClassName}
       />
     );
@@ -417,7 +409,6 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         showUnreadIndicator={showUnreadIndicator}
         className={smallLauncherClassName}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
       />
     );
   }

@@ -72,16 +72,12 @@ export interface ViewState {
    * Whether the main window is visible or not.
    */
   mainWindow: boolean;
-
-  /**
-   * Whether a tour is visible or not.
-   */
-  tour: boolean;
 }
 
 /**
  * A record of a notification to be shown in the UI.
  *
+ * @experimental
  * @category Instance
  */
 export interface NotificationMessage {
@@ -126,6 +122,7 @@ export interface NotificationMessage {
 
 /**
  * @category Instance
+ * @experimental
  */
 export interface NotificationStateObject {
   /**
@@ -153,7 +150,7 @@ export type LanguagePack = EnglishLanguagePack;
  */
 export enum ViewType {
   /**
-   * The launcher view is used to open the main window or tour.
+   * The launcher view is used to open the main window.
    */
   LAUNCHER = "launcher",
 
@@ -162,11 +159,6 @@ export enum ViewType {
    * string value is kept camel case to align with the viewState mainWindow property.
    */
   MAIN_WINDOW = "mainWindow",
-
-  /**
-   * The tour view is used to guide the end user through a task.
-   */
-  TOUR = "tour",
 }
 
 /**
@@ -312,7 +304,7 @@ export interface CustomMenuOption {
   text: string;
 
   /**
-   * The callback handler to call when the option is selected.
+   * The callback handler to call when the option is selected. Provide this of "url".
    */
   handler: () => void;
 }

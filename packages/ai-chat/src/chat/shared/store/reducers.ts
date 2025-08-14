@@ -12,7 +12,6 @@ import mergeWith from "lodash-es/mergeWith.js";
 import { DeepPartial } from "../../../types/utilities/DeepPartial";
 import { isBrowser } from "../utils/browserUtils";
 
-import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 import { outputItemToLocalItem } from "../schema/outputItemToLocalItem";
 import { AppConfig } from "../../../types/state/AppConfig";
 import {
@@ -50,9 +49,7 @@ import {
   ADD_NOTIFICATION,
   ANNOUNCE_MESSAGE,
   CHANGE_STATE,
-  CHANGE_STEP_IN_TOUR,
   CLEAR_INPUT_FILES,
-  CLEAR_TOUR_DATA,
   CLOSE_IFRAME_PANEL,
   FILE_UPLOAD_INPUT_ERROR,
   HYDRATE_CHAT,
@@ -85,7 +82,6 @@ import {
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STREAM_ID,
-  SET_TOUR_DATA,
   SET_VIEW_CHANGING,
   SET_VIEW_STATE,
   STREAMING_ADD_CHUNK,
@@ -94,7 +90,6 @@ import {
   TOGGLE_HOME_SCREEN,
   UPDATE_BOT_AVATAR_URL,
   UPDATE_BOT_NAME,
-  UPDATE_CHAT_HEADER_CONFIG,
   UPDATE_CSS_VARIABLES,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_HOME_SCREEN_CONFIG,
@@ -104,9 +99,9 @@ import {
   UPDATE_LOCAL_MESSAGE_ITEM,
   UPDATE_MAIN_HEADER_AVATAR,
   UPDATE_MAIN_HEADER_TITLE,
-  UPDATE_MAX_VISIBLE_HEADER_OBJECTS,
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
+  UPDATE_CHAT_HEADER_CONFIG,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
 import {
@@ -119,7 +114,6 @@ import {
   handleViewStateChange,
   setHomeScreenOpenState,
 } from "./reducerUtils";
-import { clearTourState, populateTourStepItems } from "./tourReducerUtils";
 import { ChatHeaderAvatarConfig } from "../../../types/instance/ChatInstance";
 import {
   HumanAgentMessageType,
@@ -141,6 +135,7 @@ import {
   LauncherType,
   NotificationMessage,
 } from "../../../types/instance/apiTypes";
+import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 
 type ReducerType = (state: AppState, action?: any) => AppState;
 
@@ -195,8 +190,7 @@ const reducers: { [key: string]: ReducerType } = {
       isHydrated: false,
       catastrophicErrorType: null,
     };
-    // Clear the tour state on restart.
-    newState = clearTourState(newState);
+
     if (newState.homeScreenConfig.is_on) {
       newState = setHomeScreenOpenState(newState, true);
     }
@@ -207,17 +201,11 @@ const reducers: { [key: string]: ReducerType } = {
     state: AppState,
     action: { messageHistory: AppStateMessages }
   ): AppState => {
-    let newState = {
+    const newState = {
       ...state,
       ...action.messageHistory,
     };
 
-    // If there's an active tour then use the new state with message history to populate the tour state.
-    if (
-      state.persistedToBrowserStorage.chatState.persistedTourState.activeTourID
-    ) {
-      newState = populateTourStepItems(newState);
-    }
     return newState;
   },
 
@@ -1016,59 +1004,6 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [SET_TOUR_DATA]: (
-    state: AppState,
-    action: { newActiveTourMessageID: string }
-  ): AppState => {
-    const newStateWithPersistedTourData = {
-      ...state,
-      persistedToBrowserStorage: {
-        ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          persistedTourState: {
-            activeTourID: action.newActiveTourMessageID,
-            activeTourCurrentStepIndex: 0,
-          },
-        },
-        launcherState: {
-          ...state.persistedToBrowserStorage.launcherState,
-          activeTour: true,
-        },
-      },
-    };
-    return populateTourStepItems(newStateWithPersistedTourData);
-  },
-
-  [CLEAR_TOUR_DATA]: (state: AppState): AppState => {
-    return clearTourState(state);
-  },
-
-  [CHANGE_STEP_IN_TOUR]: (
-    state: AppState,
-    action: { newStepNumber: number }
-  ): AppState => {
-    return {
-      ...state,
-      persistedToBrowserStorage: {
-        ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          persistedTourState: {
-            ...state.persistedToBrowserStorage.chatState.persistedTourState,
-            activeTourCurrentStepIndex: Math.max(
-              Math.min(
-                action.newStepNumber,
-                state.tourState.activeTourStepItems.length - 1
-              ),
-              0
-            ),
-          },
-        },
-      },
-    };
-  },
-
   [UPDATE_INPUT_STATE]: (
     state: AppState,
     action: { newState: Partial<InputState>; isInputToHumanAgent: boolean }
@@ -1455,19 +1390,6 @@ const reducers: { [key: string]: ReducerType } = {
           ...state.chatHeaderState.config,
           ...chatHeaderConfig,
         },
-      },
-    };
-  },
-
-  [UPDATE_MAX_VISIBLE_HEADER_OBJECTS]: (
-    state: AppState,
-    { maxTotal }: { maxTotal: number }
-  ) => {
-    return {
-      ...state,
-      chatHeaderState: {
-        ...state.chatHeaderState,
-        maxVisibleHeaderObjects: maxTotal,
       },
     };
   },
