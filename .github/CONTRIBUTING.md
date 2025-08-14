@@ -113,6 +113,7 @@ commands:
 
 ```sh
 # Start the demo development server.
+# Run at root of project
 npm run aiChat:start
 
 # Navigate to the ai-chat package.
