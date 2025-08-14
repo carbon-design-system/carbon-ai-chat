@@ -30,7 +30,6 @@ import { useOnMount } from "../hooks/useOnMount";
 import actions from "../store/actions";
 import { AppState } from "../../../types/state/AppState";
 import { Dimension } from "../../../types/utilities/Dimension";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
@@ -44,7 +43,6 @@ import {
 import MainWindow from "./main/MainWindow";
 import { MainWindowFunctions } from "./main/MainWindowFunctions";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
-import TourContainer from "../components/tour/TourContainer";
 
 interface AppProps extends HasServiceManager {
   hostElement?: Element;
@@ -240,25 +238,12 @@ function MainContainer(props: MainContainerProps) {
   const { hostElement, serviceManager } = props;
 
   // We always render the launcher (unless state.launcher.config.is_on is set to false), but we hide it with CSS
-  // if the tour or main Carbon AI Chat window are open.
+  // if the main Carbon AI Chat window is open.
   const showLauncher = useSelector(
     (state: AppState) => state.launcher.config.is_on
   );
-  const { viewState } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
-  );
 
-  const tourContainerRef = useRef<HasRequestFocus>();
   const mainWindowRef = useRef<MainWindowFunctions>();
-  const showTour = viewState.tour;
-
-  // This indicates if the tour has been opened at least once. The tour isn't rendered until it's been opened the first
-  // time. Rendering of the tour is delayed to prevent the tour buttons being clicked by pen testing tools. After the
-  // tour has been opened once it's simply shown and hidden using CSS, instead of unmounting it. CSS is used to show
-  // and hide the tour so that the scroll position and video playback positions can be preserved within steps when
-  // the tour is hidden.
-  const showedTourOnce = useRef(showTour);
-  showedTourOnce.current = showTour || showedTourOnce.current;
 
   const intl = useIntl();
   const namespace = serviceManager.namespace.originalName;
@@ -276,11 +261,7 @@ function MainContainer(props: MainContainerProps) {
         const { persistedToBrowserStorage } = serviceManager.store.getState();
         const { viewState } = persistedToBrowserStorage.launcherState;
 
-        if (viewState.tour) {
-          // If there is a tour visible prioritize focusing on that over the main window.
-          tourContainerRef.current?.requestFocus();
-        } else if (viewState.mainWindow) {
-          // If there is no tour visible then focus on the main window.
+        if (viewState.mainWindow) {
           mainWindowRef.current?.requestFocus();
         }
       } catch (error) {
@@ -291,9 +272,8 @@ function MainContainer(props: MainContainerProps) {
     serviceManager.appWindow = { requestFocus };
   });
 
-  // Always render the main window and let it control whether it should be visible with css. Only render the tour
-  // once it's been opened once.
   return (
+    // Always render the main window and let it control whether it should be visible with css.  return (
     <div
       className="WACWidget__regionContainer"
       role="region"
@@ -304,7 +284,6 @@ function MainContainer(props: MainContainerProps) {
         useCustomHostElement={Boolean(hostElement)}
         serviceManager={serviceManager}
       />
-      {showedTourOnce.current && <TourContainer ref={tourContainerRef} />}
       {showLauncher && <LauncherContainer />}
     </div>
   );

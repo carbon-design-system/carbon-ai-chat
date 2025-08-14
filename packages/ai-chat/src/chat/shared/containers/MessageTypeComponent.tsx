@@ -41,7 +41,6 @@ import { IFrameMessage } from "../components/responseTypes/iframe/IFrameMessage"
 import { Image } from "../components/responseTypes/image/Image";
 import { OptionComponent } from "../components/responseTypes/options/OptionComponent";
 import TableContainer from "../components/responseTypes/table/TableContainer";
-import { TourCard } from "../components/responseTypes/tour/TourCard";
 import { StreamingRichText } from "../components/responseTypes/util/StreamingRichText";
 import { VideoComponent } from "../components/responseTypes/video/VideoComponent";
 import { useLanguagePack } from "../hooks/useLanguagePack";
@@ -59,7 +58,6 @@ import {
   isRequest,
   isResponse,
   isTextItem,
-  renderAsTour,
   renderAsUserDefinedMessage,
 } from "../utils/messageUtils";
 import { ChainOfThought } from "../../react/components/chainOfThought/ChainOfThought";
@@ -223,11 +221,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     localMessageItem: LocalMessageItem,
     message: MessageResponse
   ) {
-    if (renderAsTour(localMessageItem.item)) {
-      // Render an invalid component who's user_defined_type is specifically for the tour beta feature, as a tour.
-      return renderTour(localMessageItem);
-    }
-
     if (renderAsUserDefinedMessage(localMessageItem.item)) {
       // Render all invalid components as a user defined response
       return renderUserDefinedResponse(
@@ -480,12 +473,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         serviceManager={serviceManager}
       />
     );
-  }
-
-  function renderTour(message: LocalMessageItem) {
-    const { serviceManager } = props;
-
-    return <TourCard message={message} serviceManager={serviceManager} />;
   }
 
   function renderConnectToHumanAgent(

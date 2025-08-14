@@ -68,36 +68,8 @@
   border-radius: 28px;
 
   @media screen and (prefers-reduced-motion: reduce) {
-    &:not(.WACLauncher__TourButton) {
-      background-color: var(--cds-chat-LAUNCHER-color-background);
-      transition: none;
-
-      // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
-      &:focus {
-        border-width: var(--cds-chat-BASE-border-width-large);
-        border-color: var(--cds-chat-LAUNCHER-color-background);
-        box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-          var(--cds-chat-LAUNCHER-color-focus-border);
-      }
-
-      &:hover {
-        border-color: var(--cds-chat-LAUNCHER-color-background-hover);
-        background-color: var(--cds-chat-LAUNCHER-color-background-hover);
-      }
-
-      &:active {
-        border-width: var(--cds-chat-BASE-border-width-large);
-        border-color: var(--cds-chat-LAUNCHER-color-background-active);
-        background-color: var(--cds-chat-LAUNCHER-color-background-active);
-        box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-          var(--cds-chat-LAUNCHER-color-focus-border);
-      }
-    }
-  }
-
-  &:not(.WACLauncher__TourButton) {
     background-color: var(--cds-chat-LAUNCHER-color-background);
-    transition: unset;
+    transition: none;
 
     // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
     &:focus {
@@ -120,43 +92,30 @@
         var(--cds-chat-LAUNCHER-color-focus-border);
     }
   }
-}
 
-// If clicking the launcher will open a tour then we want the launcher to have the same background color as the main
-// window and the same icon color as a ghost button within the main window.
-.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
-  .WACLauncher__TourButton {
-  border: var(--cds-chat-BASE-border-width-large) solid transparent;
-  background-color: theme.$background;
-  color: theme.$icon-primary;
-}
+  background-color: var(--cds-chat-LAUNCHER-color-background);
+  transition: unset;
 
-.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
-  .WACLauncher__TourButton:focus {
-  border-width: var(--cds-chat-BASE-border-width-large);
-  box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med) theme.$focus;
-}
+  // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
+  &:focus {
+    border-width: var(--cds-chat-BASE-border-width-large);
+    border-color: var(--cds-chat-LAUNCHER-color-background);
+    box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
+      var(--cds-chat-LAUNCHER-color-focus-border);
+  }
 
-.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
-  .WACLauncher__TourButton:active {
-  border-width: var(--cds-chat-BASE-border-width-large);
-  box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med) theme.$focus;
-}
+  &:hover {
+    border-color: var(--cds-chat-LAUNCHER-color-background-hover);
+    background-color: var(--cds-chat-LAUNCHER-color-background-hover);
+  }
 
-.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
-  .WACLauncher__TourButton:focus
-  .WACLauncher__svg,
-.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
-  .WACLauncher__TourButton:active
-  .WACLauncher__svg {
-  fill: theme.$focus;
-}
-
-.WACContainer--render[dir="rtl"]
-  .WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
-  .WACLauncher__TourButton
-  .WACLauncher__svg {
-  transform: scaleX(-1);
+  &:active {
+    border-width: var(--cds-chat-BASE-border-width-large);
+    border-color: var(--cds-chat-LAUNCHER-color-background-active);
+    background-color: var(--cds-chat-LAUNCHER-color-background-active);
+    box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
+      var(--cds-chat-LAUNCHER-color-focus-border);
+  }
 }
 
 .WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round
@@ -208,6 +167,12 @@
 }
 
 button.WACLauncher__Button {
+  svg {
+    block-size: 24px;
+    fill: var(--cds-chat-LAUNCHER-color-avatar);
+    inline-size: 24px;
+  }
+
   position: static;
   display: flex;
   align-items: center;
@@ -222,11 +187,6 @@ button.WACLauncher__Button {
 
 button.WACLauncher__Button:focus {
   border-width: var(--cds-chat-BASE-border-width-large);
-}
-
-button.WACLauncher__Button svg {
-  block-size: 24px;
-  inline-size: 24px;
 }
 
 .WACLauncher__svg {
@@ -291,6 +251,7 @@ button.WACLauncher__Button svg {
   font-size: 20px;
   letter-spacing: 0;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   line-height: 1.4;
   opacity: 0;
   overflow-wrap: break-word;
@@ -430,14 +391,6 @@ button.WACLauncher__Button svg {
   margin-inline: layout.$spacing-02 unset;
 }
 
-button.WACLauncher__Button:not(.WACLauncher__TourButton) {
-  background-color: transparent;
-
-  svg {
-    fill: var(--cds-chat-LAUNCHER-color-avatar);
-  }
-}
-
 @media screen and (prefers-reduced-motion: reduce) {
   .WACLauncherComplex__Container--introAnimation {
     animation: none;
@@ -460,42 +413,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
     .WACLauncherComplex__Text {
       animation: motion.$duration-slow-02 WACAnimLauncherComplex__FadeInText
         forwards;
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
@@ -561,42 +478,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       animation: none;
     }
   }
-
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -626,42 +507,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
 
 .WACContainer--render[dir="rtl"]
   .WACLauncherComplex__Container--introAnimation {
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -817,67 +662,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
         inset-inline-end: calc(-1 * #{layout.$spacing-11});
       }
     }
-
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        padding: 0 60px 60px 0;
-        border-radius: layout.$spacing-11;
-        animation: none;
-        block-size: layout.$spacing-13;
-        inline-size: layout.$spacing-13;
-        inset-inline-end: calc(-1 * #{layout.$spacing-11});
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        padding: 0 60px 60px 0;
-        border-radius: layout.$spacing-11;
-        animation: none;
-        block-size: layout.$spacing-13;
-        inline-size: layout.$spacing-13;
-        inset-inline-end: calc(-1 * #{layout.$spacing-11});
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        padding: 0 60px 60px 0;
-        border-radius: layout.$spacing-11;
-        animation: none;
-        block-size: layout.$spacing-13;
-        inline-size: layout.$spacing-13;
-        inset-inline-end: calc(-1 * #{layout.$spacing-11});
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        padding: 0 60px 60px 0;
-        border-radius: layout.$spacing-11;
-        animation: none;
-        block-size: layout.$spacing-13;
-        inline-size: layout.$spacing-13;
-        inset-inline-end: calc(-1 * #{layout.$spacing-11});
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        padding: 0 60px 60px 0;
-        border-radius: layout.$spacing-11;
-        animation: none;
-        block-size: layout.$spacing-13;
-        inline-size: layout.$spacing-13;
-        inset-inline-end: calc(-1 * #{layout.$spacing-11});
-      }
-    }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
       .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -937,67 +721,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
   .WACLauncherComplex__Text {
     animation: motion.$duration-moderate-01 WACAnimLauncherComplex__FadeInText
       forwards;
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
@@ -1108,72 +831,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       inset-inline-end: calc(-1 * #{layout.$spacing-11});
     }
   }
-
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-block-end: calc(-1 * #{layout.$spacing-11});
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-block-end: calc(-1 * #{layout.$spacing-11});
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-block-end: calc(-1 * #{layout.$spacing-11});
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-block-end: calc(-1 * #{layout.$spacing-11});
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      padding: 0 60px 60px 0;
-      border-radius: layout.$spacing-11;
-      animation: none;
-      block-size: layout.$spacing-13;
-      inline-size: layout.$spacing-13;
-      inset-block-end: calc(-1 * #{layout.$spacing-11});
-      inset-inline-end: calc(-1 * #{layout.$spacing-11});
-    }
-  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
@@ -1224,37 +881,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
         animation: none;
       }
     }
-
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__Text,
-      .WACLauncher__CloseButton {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__Text,
-      .WACLauncher__CloseButton {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__Text,
-      .WACLauncher__CloseButton {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__Text,
-      .WACLauncher__CloseButton {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__Text,
-      .WACLauncher__CloseButton {
-        animation: none;
-      }
-    }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__Text,
       .WACLauncher__CloseButton {
@@ -1266,42 +892,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
     .WACLauncher__CloseButton {
       animation: motion.$duration-slow-01 WACAnimLauncherComplex__FadeOut
         forwards;
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
-    }
-    @media screen and (prefers-reduced-motion: reduce) {
-      .WACLauncherComplex__SmallLauncherContainer,
-      .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-        .WACLauncher__Button {
-        animation: none;
-      }
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
@@ -1352,75 +942,10 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
       animation: none;
     }
   }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__Text,
-    .WACLauncher__CloseButton {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__Text,
-    .WACLauncher__CloseButton {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__Text,
-    .WACLauncher__CloseButton {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__Text,
-    .WACLauncher__CloseButton {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__Text,
-    .WACLauncher__CloseButton {
-      animation: none;
-    }
-  }
 
   .WACLauncherComplex__Text,
   .WACLauncher__CloseButton {
     animation: motion.$duration-slow-01 WACAnimLauncherComplex__FadeOut forwards;
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
@@ -1447,41 +972,6 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
 
 .WACContainer--render[dir="rtl"]
   .WACLauncherComplex__Container--closeAnimation {
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
-  @media screen and (prefers-reduced-motion: reduce) {
-    .WACLauncherComplex__SmallLauncherContainer,
-    .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
-      .WACLauncher__Button {
-      animation: none;
-    }
-  }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer

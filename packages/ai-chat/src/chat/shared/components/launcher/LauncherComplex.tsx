@@ -54,15 +54,9 @@ interface LauncherComplexProps extends HasIntl, HasClassName {
   desktopLauncherIsExpanded: boolean;
 
   /**
-   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If theres's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 function LauncherComplex(props: LauncherComplexProps) {
@@ -78,7 +72,6 @@ function LauncherComplex(props: LauncherComplexProps) {
     showUnreadIndicator,
     desktopLauncherIsExpanded,
     launcherHidden,
-    activeTour,
     className,
   } = props;
   const {
@@ -135,7 +128,6 @@ function LauncherComplex(props: LauncherComplexProps) {
         unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
       />
       {/* Potential close button changes - possibly match the accent color, or change/animate on hover of container */}
       <Tag

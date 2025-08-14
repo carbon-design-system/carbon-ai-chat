@@ -581,8 +581,6 @@ class MainWindow
    */
   async doClose(fromCloseAndRestart: boolean) {
     const { serviceManager } = this.props;
-    const { activeTour } =
-      serviceManager.store.getState().persistedToBrowserStorage.launcherState;
 
     // Fire the view:change and window:close events. If the view change is canceled then the main window will stay open.
     if (fromCloseAndRestart) {
@@ -599,14 +597,10 @@ class MainWindow
         await serviceManager.actions.restartConversation();
       }
     } else {
-      // If the chat is not restarting and there is an active tour then try to open the tour view, otherwise try to open
-      // the launcher.
-      await serviceManager.actions.changeView(
-        activeTour ? ViewType.TOUR : ViewType.LAUNCHER,
-        {
-          mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
-        }
-      );
+      // If the chat is not restarting try to open the launcher.
+      await serviceManager.actions.changeView(ViewType.LAUNCHER, {
+        mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
+      });
     }
   }
 

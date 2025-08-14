@@ -7,7 +7,6 @@
  *  @license
  */
 
-import ArrowUpLeft from "@carbon/icons-react/es/ArrowUpLeft.js";
 import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
 import { Button } from "@carbon/react";
 import cx from "classnames";
@@ -73,15 +72,9 @@ interface LauncherExtendedProps extends HasClassName {
   onReduceEnd: () => void;
 
   /**
-   * If the main Carbon AI Chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If there's's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 /**
@@ -140,7 +133,6 @@ function LauncherExtended(
     onReduceEnd,
     className,
     launcherHidden,
-    activeTour,
   } = props;
   const ariaAnnouncer = useAriaAnnouncer();
   const languagePack = useLanguagePack();
@@ -169,11 +161,7 @@ function LauncherExtended(
   const extendWithoutAnimation = isExtended && !animateExtendedState;
   const launcherGreetingMessage =
     launcherConfig.mobile.title || languagePack.launcher_mobileGreeting;
-  let ariaLabel = getLauncherButtonAriaLabel(
-    languagePack,
-    launcherHidden,
-    activeTour
-  );
+  let ariaLabel = getLauncherButtonAriaLabel(languagePack, launcherHidden);
 
   if (unreadHumanAgentCount !== 0) {
     ariaLabel += `. ${intl.formatMessage(
@@ -319,10 +307,8 @@ function LauncherExtended(
     >
       <Button
         aria-label={ariaLabel}
-        className={cx("WACLauncher__Button", "WACLauncherExtended__Button", {
-          WACLauncher__TourButton: activeTour,
-        })}
-        kind={activeTour ? ButtonKindEnum.GHOST : ButtonKindEnum.PRIMARY}
+        className="WACLauncher__Button WACLauncherExtended__Button"
+        kind={ButtonKindEnum.PRIMARY}
         type="button"
         ref={buttonRef}
         onClick={onToggleOpen}
@@ -347,13 +333,7 @@ function LauncherExtended(
                 </div>
               </div>
             </div>
-            <div className="WACLauncher__IconHolder">
-              {activeTour ? (
-                <ArrowUpLeft size={24} className="WACLauncher__svg" />
-              ) : (
-                launcherAvatar
-              )}
-            </div>
+            <div className="WACLauncher__IconHolder">{launcherAvatar}</div>
           </div>
         </div>
         {(unreadHumanAgentCount !== 0 || showUnreadIndicator) && (

@@ -32,7 +32,6 @@ import {
   DEFAULT_MESSAGE_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_THEME_STATE,
-  DEFAULT_TOUR_STATE,
   VIEW_STATE_ALL_CLOSED,
   VIEW_STATE_LAUNCHER_OPEN,
   VIEW_STATE_MAIN_WINDOW_OPEN,
@@ -133,14 +132,12 @@ function doCreateStore(
         : VIEW_STATE_LAUNCHER_OPEN,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
     customMenuOptions: null,
-    tourState: DEFAULT_TOUR_STATE,
     isBrowserPageVisible: true,
     showNonHeaderBackgroundCover: false,
     theme: themeState,
     layout: getLayoutState(config),
     chatHeaderState: {
       config: null,
-      maxVisibleHeaderObjects: 0,
     },
   };
 

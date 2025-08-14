@@ -109,7 +109,6 @@ function BasePanelComponent(
             displayName={title}
             useAITheme={useAITheme}
             testIdPrefix={testIdPrefix}
-            showCenter
           />
         )}
         <div className="WACPanelContent">{children}</div>

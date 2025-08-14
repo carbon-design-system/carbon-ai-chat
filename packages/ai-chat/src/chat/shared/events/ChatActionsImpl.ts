@@ -48,7 +48,6 @@ import {
   createMessageResponseForText,
   createWelcomeRequest,
   hasServiceDesk,
-  hasTourUserDefinedType,
   isConnectToHumanAgent,
   isLiveHumanAgentMessage,
   isPause,
@@ -74,7 +73,7 @@ import {
   resolvablePromise,
 } from "../utils/resolvablePromise";
 import { mergeCSSVariables } from "../utils/styleUtils";
-import { constructViewState, validateViewState } from "../utils/viewStateUtils";
+import { constructViewState } from "../utils/viewStateUtils";
 import {
   CompleteItemChunk,
   GenericItem,
@@ -98,7 +97,6 @@ import {
   MainWindowCloseReason,
   MainWindowOpenReason,
   MessageSendSource,
-  TourStartReason,
   ViewChangeReason,
 } from "../../../types/events/eventBusTypes";
 import {
@@ -351,7 +349,6 @@ class ChatActionsImpl {
       isHomeScreenOpen: chatState.homeScreenState.isHomeScreenOpen,
       isDebugEnabled: isEnableDebugLog(),
       hasUserSentMessage: chatState.hasSentNonWelcomeMessage,
-      isTourActive: launcherState.activeTour,
       viewState: { ...launcherState.viewState },
       serviceDesk: {
         isConnected: chatState.humanAgentState.isConnected,
@@ -920,7 +917,6 @@ class ChatActionsImpl {
       if (messageItem) {
         const pause = isPause(messageItem);
         const agent = isConnectToHumanAgent(messageItem);
-        const tour = hasTourUserDefinedType(messageItem);
 
         const localMessageItem = outputItemToLocalItem(
           messageItem,
@@ -928,54 +924,6 @@ class ChatActionsImpl {
           isLatestWelcomeNode,
           requestOptions.disableFadeAnimation
         );
-
-        // If the message item is a tour and the tour card is supposed to be skipped then start the tour now.
-        if (
-          tour &&
-          (requestOptions.skipTourCard || messageItem.user_defined?.skip_card)
-        ) {
-          // Determine the reason the tour is starting. If the startTour method was used and skip_card is true then the
-          // method being used will take priority.
-          const startTourReason = requestOptions.skipTourCard
-            ? TourStartReason.START_TOUR_METHOD
-            : TourStartReason.SKIP_CARD;
-
-          // Determine the reason the view is changing.
-          const { viewState } =
-            store.getState().persistedToBrowserStorage.launcherState;
-          if (viewState.mainWindow) {
-            // If the mainWindow is visible then use the MainWindowCloseReasons and fire the window:close events. If the
-            // startTour method was used and skip_card is true then the method being used will take priority.
-            const mainWindowCloseReason = requestOptions.skipTourCard
-              ? MainWindowCloseReason.CALLED_START_TOUR
-              : MainWindowCloseReason.TOUR_SKIP_CARD;
-            // No need to await startTour() here since there is nothing else in this function that is dependent on
-            // startTours completion.
-            this.startTour(localMessageItem, startTourReason, {
-              mainWindowCloseReason,
-            }).catch((error) => {
-              consoleError("Error starting the tour", error);
-            });
-          } else {
-            // If the mainWindow is not visible then use the ViewChangeReasons and do not fire the window:close events.
-            // If the startTour method was used and skip_card is true then the method being used will take priority.
-            const viewChangeReason = requestOptions.skipTourCard
-              ? ViewChangeReason.CALLED_START_TOUR
-              : ViewChangeReason.TOUR_SKIP_CARD;
-            // No need to await startTour() here since there is nothing else in this function that is dependent on
-            // startTours completion.
-            this.startTour(localMessageItem, startTourReason, {
-              viewChangeReason,
-            }).catch((error) => {
-              consoleError("Error starting the tour", error);
-            });
-          }
-        } else if (!tour && requestOptions.skipTourCard) {
-          // If instance.startTour() was used but a tour response was not received then log an error.
-          consoleError(
-            "The message response received was not a tour, so the tour card was not skipped nor was a tour started by the startTour() call."
-          );
-        }
 
         const nestedLocalMessageItems: LocalMessageItem[] = [];
         createLocalMessageItemsForNestedMessageItems(
@@ -1274,7 +1222,7 @@ class ChatActionsImpl {
   /**
    * Construct the newViewState from the newView provided. Fire the view:pre:change and view:change events, as well as
    * window:pre:open, window:open, or window:pre:close, window:close if instructed to do so. If the view change isn't
-   * canceled by the events then change the view. If the main window or tour are open after changing the view, and
+   * canceled by the events then change the view. If the main window is open after changing the view, and
    * doNotHydrate isn't true and the chat is not already hydrated, then hydrate the chat.
    */
   async changeView(
@@ -1294,11 +1242,6 @@ class ChatActionsImpl {
     // Build the new viewState object.
     let newViewState = constructViewState(newView, store.getState());
 
-    if (!validateViewState(newViewState, store.getState())) {
-      // If the newViewState had an issue and was unable to be verified then do not change the view.
-      return viewState;
-    }
-
     if (!isEqual(newViewState, viewState) || forceViewChange) {
       // If the newViewState is different from the current viewState, or the viewChange is being forced to happen, fire
       // the view:change events and change which views are visible.
@@ -1309,10 +1252,10 @@ class ChatActionsImpl {
         store.getState().persistedToBrowserStorage.launcherState.viewState;
       if (
         tryHydrating &&
-        (newViewState.mainWindow || newViewState.tour) &&
+        newViewState.mainWindow &&
         !store.getState().isHydrated
       ) {
-        // If it's ok to hydrate, the main window or tour are now visible, and the chat isn't hydrated, then hydrate
+        // If it's ok to hydrate, the main window is now visible, and the chat isn't hydrated, then hydrate
         // the chat. Since this function is only responsible for changing the view don't await hydrateChat(), instead
         // let hydrateChat complete on its own time.
         this.hydrateChat().catch((error) => {
@@ -1380,14 +1323,6 @@ class ChatActionsImpl {
         return;
       }
 
-      // Validate the view state returned from the view:pre:change event.
-      if (
-        !validateViewState(preViewChangeEvent.newViewState, store.getState())
-      ) {
-        // If the view state had an issue and was unable to be verified then do not change the view.
-        return;
-      }
-
       // If there were no issues with the new view state then use it.
       newViewState = preViewChangeEvent.newViewState;
 
@@ -1412,14 +1347,6 @@ class ChatActionsImpl {
         return;
       }
 
-      // Validate the view state returned from the view:change event.
-      if (!validateViewState(viewChangeEvent.newViewState, store.getState())) {
-        // If the view state had an issue and was unable to be verified then switch the viewState back to what it was
-        // originally.
-        store.dispatch(actions.setViewState(oldViewState));
-        return;
-      }
-
       // If there were no issues with the new view state then use it.
       newViewState = viewChangeEvent.newViewState;
 
@@ -1427,137 +1354,6 @@ class ChatActionsImpl {
       store.dispatch(actions.setViewState(deepFreeze(newViewState)));
     } finally {
       store.dispatch(actions.setViewChanging(false));
-    }
-  }
-
-  /**
-   * To start the tour save all the new tour data in store, fire the view:change events (as well as the window:close
-   * events if the main window is open), and then switch to the tour view. If the view:change events are successful then
-   * fire the tour:start and tour:step events as well.
-   */
-  async startTour(
-    message: LocalMessageItem,
-    startTourReason: TourStartReason,
-    changeViewReason: {
-      viewChangeReason?: ViewChangeReason;
-      mainWindowCloseReason?: MainWindowCloseReason;
-    }
-  ) {
-    // Save all the new tour info in store.
-    this.serviceManager.store.dispatch(
-      actions.setTourData(message.fullMessageID)
-    );
-
-    // Fire the appropriate events and try to open the tour.
-    const newViewState = await this.changeView(ViewType.TOUR, changeViewReason);
-
-    if (newViewState.tour) {
-      // If the tour is now visible then fire the tour:start event.
-      await this.serviceManager.fire({
-        type: BusEventType.TOUR_START,
-        reason: startTourReason,
-      });
-      // Then fire the tour:step event with the first steps info.
-      await this.serviceManager.fire({
-        type: BusEventType.TOUR_STEP,
-        step: this.serviceManager.store.getState().tourState
-          .activeTourStepItems[0],
-      });
-    }
-  }
-
-  /**
-   * To end the tour fire the view:change events and switch to the launcher. If the view:change events are successful
-   * then clear all the tour data from store.
-   */
-  async endTour(reason: {
-    viewChangeReason: ViewChangeReason;
-  }): Promise<boolean> {
-    const { viewState } =
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .launcherState;
-
-    let newViewState = viewState;
-    if (viewState.tour) {
-      // If a tour is open then change to the launcher.
-      newViewState = await this.changeView(ViewType.LAUNCHER, reason);
-    }
-
-    if (!newViewState.tour) {
-      // If the tour is no longer visible or wasn't visible then clear the tour data.
-      this.serviceManager.store.dispatch(actions.clearTourData());
-      return true;
-    }
-
-    // If changeView didn't hide the tour, then the tour data was not cleared, so return false.
-    return false;
-  }
-
-  /**
-   * Look for the provided stepId string within the tour step items. If a step with a matching step_id is found then
-   * move to that step within the tour.
-   */
-  goToSpecificTourStep(stepId: string) {
-    const { activeTourStepItems } =
-      this.serviceManager.store.getState().tourState;
-
-    // Find the index of the step with a step_id string matching the provided stepId.
-    const newStepIndex = activeTourStepItems.findIndex(
-      (stepItem: { step_id: string }) => stepItem.step_id === stepId
-    );
-
-    if (newStepIndex) {
-      // If a matching step is found then change to that step in the tour.
-      this.changeStepInTour({ newStepIndex });
-    } else {
-      // If a matching step is not found then log an error and don't change the tour step.
-      consoleError(
-        `No step with the id "${stepId}" was found within the current tour. As a result, goToTourStep() did not change the current tour step.`
-      );
-    }
-  }
-
-  /**
-   * Change the tour step, either to a specific step, the next step, or the previous step. After changing the step send
-   * a tour:step event.
-   */
-  async changeStepInTour(changeStepOptions: {
-    newStepIndex?: number;
-    nextStep?: boolean;
-    previousStep?: boolean;
-  }) {
-    const { store } = this.serviceManager;
-    const { activeTourStepItems } = store.getState().tourState;
-    const { activeTourCurrentStepIndex } =
-      store.getState().persistedToBrowserStorage.chatState.persistedTourState;
-
-    // Get the new default step number if there is one.
-    let { newStepIndex } = changeStepOptions;
-
-    if (changeStepOptions.nextStep) {
-      newStepIndex = activeTourCurrentStepIndex + 1;
-    } else if (changeStepOptions.previousStep) {
-      newStepIndex = activeTourCurrentStepIndex - 1;
-    }
-
-    // Change to the new step in the tour.
-    store.dispatch(actions.changeStepInTour(newStepIndex));
-
-    // Get the new step number from store in case the number that was provided had been out of bounds for the step array.
-    const actualNewStepIndex =
-      store.getState().persistedToBrowserStorage.chatState.persistedTourState
-        .activeTourCurrentStepIndex;
-
-    if (actualNewStepIndex === newStepIndex) {
-      // Fire the tour step event with the new step info.
-      await this.serviceManager.fire({
-        type: BusEventType.TOUR_STEP,
-        step: activeTourStepItems[actualNewStepIndex],
-      });
-    } else {
-      consoleWarn(
-        "The tour tried to change to a step that was out of bounds for the step array, so no step change was made."
-      );
     }
   }
 
@@ -1583,8 +1379,7 @@ class ChatActionsImpl {
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
    * This will clear all the current assistant messages from the main bot view and cancel any outstanding messages.
-   * This will also clear any active tour data and re-show the input field if it was hidden. Lastly, this will clear
-   * the current assistant session which will force a new session to start on the next message.
+   * Lastly, this will clear the current assistant session which will force a new session to start on the next message.
    */
   async restartConversation(options: RestartConversationOptions = {}) {
     const {
@@ -1620,8 +1415,6 @@ class ChatActionsImpl {
       }
 
       const currentState = store.getState();
-      const { persistedToBrowserStorage } = currentState;
-      const { viewState } = persistedToBrowserStorage.launcherState;
 
       // If we're connected to an agent, we need to end the agent chat.
       const { isConnecting } = currentState.humanAgentState;
@@ -1630,20 +1423,6 @@ class ChatActionsImpl {
 
       if ((isConnected || isConnecting) && endHumanAgentConversation) {
         await serviceManager.humanAgentService.endChat(true, false, false);
-      }
-
-      if (viewState.tour) {
-        // If a tour is open then try to open the main window. Specify not to hydrate the chat because hydration is
-        // planned to happen after restart:conversation has fired below. We don't need to clear the tour data in store
-        // since the restartConversation redux action will do that.
-        await this.serviceManager.actions.changeView(
-          ViewType.MAIN_WINDOW,
-          {
-            mainWindowOpenReason:
-              MainWindowOpenReason.CALLED_RESTART_CONVERSATION,
-          },
-          false
-        );
       }
 
       this.serviceManager.instance.updateInputFieldVisibility(true);
@@ -1697,15 +1476,6 @@ class ChatActionsImpl {
     if (keepOpenState) {
       // If we want to keep the open state then copy it from browser storage.
       newPersistedToBrowserStorage.launcherState.viewState = originalViewState;
-
-      if (originalViewState.tour) {
-        // If a tour was previously open then change the viewState to close the tour and open the main window instead.
-        newPersistedToBrowserStorage.launcherState.viewState = {
-          ...originalViewState,
-          tour: false,
-          mainWindow: true,
-        };
-      }
     } else {
       // If we don't want to keep the open state then set the launcher to be open.
       newPersistedToBrowserStorage.launcherState.viewState =

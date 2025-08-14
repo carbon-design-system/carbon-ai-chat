@@ -421,25 +421,8 @@ function renderAsUserDefinedMessage(
     case MessageResponseTypes.GRID:
       return false;
     default:
-      // If the custom response is for the tour feature then don't render as a custom message since it will be rendered
-      // as a tour instead.
-      return !renderAsTour(messageItem);
+      return true;
   }
-}
-
-/**
- * Determines if the LocalMessage should be rendered as a tour.
- */
-function renderAsTour(messageItem: DeepPartial<GenericItem>): boolean {
-  return hasTourUserDefinedType(messageItem);
-}
-
-/**
- * Determines if the Generic item's user_defined_type matched the type for the tour beta.
- */
-function hasTourUserDefinedType(message: DeepPartial<GenericItem>): boolean {
-  // For now the tour response will be a custom message with a specific user_defined_type.
-  return message?.user_defined?.user_defined_type === "IBM_BETA_JOURNEYS_TOUR";
 }
 
 /**
@@ -578,8 +561,6 @@ export {
   createMessageRequestForDate,
   isConnectToHumanAgent,
   renderAsUserDefinedMessage,
-  renderAsTour,
-  hasTourUserDefinedType,
   hasServiceDesk,
   isLiveHumanAgentMessage,
   isItemSupportedInResponseBody,

@@ -17,10 +17,7 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { IS_PHONE } from "../../utils/browserUtils";
 import { LauncherDesktopContainer } from "./LauncherDesktopContainer";
 import { LauncherMobileContainer } from "./LauncherMobileContainer";
-import {
-  MainWindowOpenReason,
-  ViewChangeReason,
-} from "../../../../types/events/eventBusTypes";
+import { MainWindowOpenReason } from "../../../../types/events/eventBusTypes";
 
 function LauncherContainer() {
   const serviceManager = useServiceManager();
@@ -33,33 +30,19 @@ function LauncherContainer() {
   );
   const launcherHidden = !viewState.launcher;
 
-  const activeTour = useSelector(
-    (state: AppState) =>
-      state.persistedToBrowserStorage.launcherState.activeTour
-  );
-
   const requestFocus = useCallback(() => {
     launcherRef.current?.requestFocus();
   }, [launcherRef]);
 
-  // If there's an active tour then on launcher click switch to the tour view. If there is not an active tour then on
-  // launcher click, fire the window open events, and switch to the main window. After switching to either the tour or
-  // the main window kick off hydration if the chat isn't hydrated yet.
   const onDoToggle = useCallback(() => {
-    if (activeTour) {
-      // If there's an active tour then try to open the tour on launcher click.
-      return serviceManager.actions.changeView(ViewType.TOUR, {
-        viewChangeReason: ViewChangeReason.LAUNCHER_CLICKED,
-      });
-    }
     // Otherwise try to open the main window on launcher click.
     return serviceManager.actions.changeView(ViewType.MAIN_WINDOW, {
       mainWindowOpenReason: MainWindowOpenReason.DEFAULT_LAUNCHER,
     });
-  }, [activeTour, serviceManager.actions]);
+  }, [serviceManager.actions]);
 
   useEffectDidUpdate(() => {
-    // If the main window and tour view are closed, and the launcher is visible, then we should request focus on the
+    // If the main window is closed, and the launcher is visible, then we should request focus on the
     // launcher. We need to wait for the initial view change to complete before requesting focus when the viewState
     // changes. This is because we don't want to request focus after the first view change when
     // Chat.startInternal switches from all views closed to whatever the starting view state is. Instead
@@ -67,7 +50,6 @@ function LauncherContainer() {
     if (
       viewState.launcher &&
       !viewState.mainWindow &&
-      !viewState.tour &&
       initialViewChangeComplete
     ) {
       launcherRef.current?.requestFocus();
@@ -81,7 +63,6 @@ function LauncherContainer() {
         launcherRef={launcherRef}
         onToggleOpen={onDoToggle}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
       />
     );
   } else {
@@ -91,7 +72,6 @@ function LauncherContainer() {
         onDoToggle={onDoToggle}
         requestFocus={requestFocus}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
       />
     );
   }

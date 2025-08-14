@@ -18,7 +18,6 @@ import dayjs from "dayjs";
 import cloneDeep from "lodash-es/cloneDeep.js";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 
-import { ChatHeaderConfig } from "../../types/config/ChatHeaderConfig";
 import { ServiceManager } from "./services/ServiceManager";
 import actions from "./store/actions";
 import { selectInputState } from "./store/selectors";
@@ -64,6 +63,7 @@ import {
 } from "../../types/messaging/Messages";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
 import { setIntl } from "./utils/intlUtils";
+import { ChatHeaderConfig } from "../../types/config/ChatHeaderConfig";
 
 interface CreateChatInstance {
   /**
@@ -286,9 +286,9 @@ function createChatInstance({
       } else {
         consoleError(
           "You tried to change the view but the view you provided was not a string or an object. You can either change" +
-            ' to one of the supported views by providing a string, ex. "launcher", "mainWindow", or "tour". Or you can' +
+            ' to one of the supported views by providing a string, ex. "launcher" or "mainWindow". Or you can' +
             ' change the state of multiple views by providing an object, ex. { "launcher": true, "mainWindow": false,' +
-            ' "tour": true }. Please use one of these supported options.'
+            " }. Please use one of these supported options."
         );
         issueWithNewView = true;
       }
@@ -435,31 +435,6 @@ function createChatInstance({
       getMainWindow,
       getMessageInput,
       getHomeScreenInput,
-    },
-
-    tours: {
-      startTour: async (message: string) => {
-        debugLog("Called instance.tours.startTour", message);
-        await serviceManager.actions.send(
-          message,
-          MessageSendSource.START_TOUR_METHOD,
-          { skipTourCard: true }
-        );
-      },
-      endTour: async () => {
-        debugLog("Called instance.tours.endTour");
-        serviceManager.actions.endTour({
-          viewChangeReason: ViewChangeReason.CALLED_END_TOUR,
-        });
-      },
-      goToNextStep: async () => {
-        debugLog("Called instance.tours.goToNextStep");
-        serviceManager.actions.changeStepInTour({ nextStep: true });
-      },
-      goToStep: async (stepId: string) => {
-        debugLog("Called instance.tours.goToStep", stepId);
-        serviceManager.actions.goToSpecificTourStep(stepId);
-      },
     },
 
     messaging: {

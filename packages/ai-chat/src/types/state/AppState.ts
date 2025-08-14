@@ -29,7 +29,6 @@ import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
 import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
-import type { PersistedTourState, TourState } from "./TourState";
 import { HomeScreenConfig, HomeScreenState } from "../config/HomeScreenConfig";
 import {
   ConversationalSearchItemCitation,
@@ -245,11 +244,6 @@ interface AppState extends AppStateMessages {
   customMenuOptions: CustomMenuOption[];
 
   /**
-   * The non-persisted state for tours.
-   */
-  tourState: TourState;
-
-  /**
    * Indicates if we should display a transparent background covering the non-header area of the main window.
    */
   showNonHeaderBackgroundCover: boolean;
@@ -355,11 +349,6 @@ interface PersistedChatState {
   hasSentNonWelcomeMessage: boolean;
 
   /**
-   * The persisted state for tours.
-   */
-  persistedTourState: PersistedTourState;
-
-  /**
    * The persisted state for agents.
    */
   humanAgentState: PersistedHumanAgentState;
@@ -385,12 +374,6 @@ interface PersistedLauncherState {
    * Indicates which of the Carbon AI Chat views are visible and which are hidden.
    */
   viewState: ViewState;
-
-  /**
-   * Indicates if there is currently an active tour. If there is then clicking on the launcher should open the tour
-   * view.
-   */
-  activeTour: boolean;
 
   /**
    * Indicates if we should show an unread indicator on the launcher. This is a custom flag that is set by
@@ -714,12 +697,6 @@ interface ChatHeaderState {
    * The chat header config state.
    */
   config: ChatHeaderConfig;
-
-  /**
-   * The total number of chat header objects that are allowed to be visible in the chat header in each of the left and
-   * right containers.
-   */
-  maxVisibleHeaderObjects: number;
 }
 
 export {

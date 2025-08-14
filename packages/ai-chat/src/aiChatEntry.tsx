@@ -31,25 +31,13 @@ export {
   ViewType,
 } from "./types/instance/apiTypes";
 
-export {
-  ChatHeaderObjectType,
-  ChatHeaderButton,
-  ChatHeaderConfig,
-  ChatHeaderGroupMenu,
-  ChatHeaderGroupMenuItem,
-  ChatHeaderLink,
-  ChatHeaderMenu,
-  ChatHeaderMenuItemTypes,
-  ChatHeaderObjectTypes,
-} from "./types/config/ChatHeaderConfig";
+export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   ChangeFunction,
-  ChatHeaderAvatarConfig,
   ChatInstance,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
-  ChatInstanceTours,
   CSSVariable,
   EventBusHandler,
   EventHandlers,
@@ -95,17 +83,12 @@ export {
   BusEventReceive,
   BusEventReset,
   BusEventSend,
-  BusEventTourEnd,
-  BusEventTourStart,
-  BusEventTourStep,
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
   MessageSendSource,
-  TourEndReason,
-  TourStartReason,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
 
@@ -180,6 +163,7 @@ export {
   EventInputData,
   FinalResponseChunk,
   GenericItem,
+  GenericItemMessageFeedbackCategories,
   GridItem,
   HorizontalCellAlignment,
   IFrameItem,
@@ -219,7 +203,6 @@ export {
   GenericItemMessageOptions,
   Message,
   PartialOrCompleteItemChunk,
-  TourStepGenericItem,
   PartialResponse,
   MessageHistoryFeedback,
   SearchResult,

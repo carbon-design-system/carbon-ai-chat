@@ -21,7 +21,6 @@ import {
   MessageRequest,
   MessageResponse,
   PartialOrCompleteItemChunk,
-  TourStepGenericItem,
 } from "../messaging/Messages";
 import { FileUpload, ViewState } from "../instance/apiTypes";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
@@ -116,21 +115,6 @@ export enum BusEventType {
   CUSTOM_PANEL_CLOSE = "customPanel:close",
 
   /**
-   * Fired when a tour starts.
-   */
-  TOUR_START = "tour:start",
-
-  /**
-   * Fired when a tour ends.
-   */
-  TOUR_END = "tour:end",
-
-  /**
-   * Fired when a tour moves to the next step.
-   */
-  TOUR_STEP = "tour:step",
-
-  /**
    * This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
@@ -209,49 +193,14 @@ export enum ViewChangeReason {
   WEB_CHAT_LOADED = "webChatLoaded",
 
   /**
-   * Indicates the user clicked on our built-in launcher button that opened either a tour or the main window.
+   * Indicates the user clicked on our built-in launcher button that opened the main window.
    */
   LAUNCHER_CLICKED = "launcherClicked",
 
   /**
-   * Indicates the main window was opened from a tour.
-   */
-  TOUR_OPENED_OTHER_VIEW = "tourOpenedOtherView",
-
-  /**
-   * Indicates the {@link ChatInstance.restartConversation} method was used while a tour was visible.
-   */
-  CALLED_RESTART_CONVERSATION = "calledRestartConversation",
-
-  /**
-   * Indicates the user clicked on our built-in minimize button that closed to either the launcher or a tour.
+   * Indicates the user clicked on our built-in minimize button that closed the launcher.
    */
   MAIN_WINDOW_MINIMIZED = "mainWindowMinimized",
-
-  /**
-   * Indicates a tour was started by the start tour button in the main window.
-   */
-  TOUR_CARD_STARTED_TOUR = "tourCardStartedTour",
-
-  /**
-   * Indicates a tour was resumed by the resume button in the main window.
-   */
-  TOUR_CARD_RESUMED_TOUR = "tourCardResumedTour",
-
-  /**
-   * Indicates a tour was restarted by the restart button in the main window.
-   */
-  TOUR_CARD_RESTARTED_TOUR = "tourCardRestartedTour",
-
-  /**
-   * Indicates a tour was started by the startTour instance method.
-   */
-  CALLED_START_TOUR = "calledStartTour",
-
-  /**
-   * Indicates a tour was started by a tour response type that included the 'skip_card' flag.
-   */
-  TOUR_SKIP_CARD = "tourSkipCard",
 
   /**
    * Indicates the user clicked the close and restart button that minimized to the launcher.
@@ -259,29 +208,9 @@ export enum ViewChangeReason {
   MAIN_WINDOW_CLOSED_AND_RESTARTED = "mainWindowClosedAndRestarted",
 
   /**
-   * Indicates the user clicked on the minimize button within the tour to close to the launcher.
-   */
-  TOUR_MINIMIZED = "tourMinimized",
-
-  /**
-   * Indicates the close button was used to close a tour.
-   */
-  TOUR_CLOSED = "tourClosed",
-
-  /**
-   * Indicates the done button was used to close a tour.
-   */
-  TOUR_DONE = "tourDone",
-
-  /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.
    */
   CALLED_CHANGE_VIEW = "calledChangeView",
-
-  /**
-   * Indicates the ChatInstance.tours.endTour method was used to close a tour.
-   */
-  CALLED_END_TOUR = "calledEndTour",
 }
 
 /**
@@ -342,11 +271,6 @@ export enum MessageSendSource {
   HOME_SCREEN_STARTER = "homeScreenStarter",
 
   /**
-   * The startTour method has called.
-   */
-  START_TOUR_METHOD = "startTourMethod",
-
-  /**
    * A default request for the welcome message was made.
    */
   WELCOME_REQUEST = "welcomeRequest",
@@ -360,42 +284,6 @@ export enum MessageSendSource {
    * Some other source.
    */
   OTHER = "other",
-}
-
-/**
- * The possible reasons why a tour could be started. Purposefully not firing this event when the restart button is
- * clicked.
- *
- * @category Events
- */
-export enum TourStartReason {
-  /**
-   * If the startTour instance method was used to start the tour.
-   */
-  START_TOUR_METHOD = "start_tour_method",
-
-  /**
-   * If the skip_card property was true within the tour json.
-   */
-  SKIP_CARD = "skip_card",
-
-  /**
-   * If the user clicked the tour card's start button.
-   */
-  START_TOUR_CLICKED = "start_tour_clicked",
-}
-
-/**
- * The possible reasons why a tour could have ended. Purposefully not firing this event when the close button is clicked
- * or the endTour instance method is used.
- *
- * @category Events
- */
-export enum TourEndReason {
-  /**
-   * If the user clicked the done button.
-   */
-  DONE_CLICKED = "done_clicked",
 }
 
 /**
@@ -735,53 +623,6 @@ export interface BusEventCustomPanelClose extends BusEvent {
 }
 
 /**
- * Fired when a tour is started. The tour could be started upon receipt of a tour message with skip_card true, when a
- * developer used the startTour instance method, or when the start tour card is clicked by the user.
- * Purposefully not firing this event when the restart button is clicked.
- *
- * @category Events
- */
-export interface BusEventTourStart extends BusEvent {
-  type: BusEventType.TOUR_START;
-
-  /**
-   * The reason for the tour starting.
-   */
-  reason: TourStartReason;
-}
-
-/**
- * Fired when the tour is ended by clicking the done button at the end of the tour. Purposefully not firing this event
- * when the close button is clicked or the endTour instance method is used.
- *
- * @category Events
- */
-export interface BusEventTourEnd extends BusEvent {
-  type: BusEventType.TOUR_END;
-
-  /**
-   * The reason for the tour ending.
-   */
-  reason: TourEndReason;
-}
-
-/**
- * Fired when a new step is shown to the user. This could be caused by a tour starting/restarting, the user clicking the
- * next or previous buttons within the tour, or by a developer calling the goToNextStep or goToStep
- * instance methods. Purposefully not firing this event when a tour is resumed.
- *
- * @category Events
- */
-export interface BusEventTourStep extends BusEvent {
-  type: BusEventType.TOUR_STEP;
-
-  /**
-   * The details of the new step item.
-   */
-  step: TourStepGenericItem;
-}
-
-/**
  * This event is fired before the user is connected to a service desk. This occurs as soon as the user clicks the
  * "Request agent" button and before any attempt is made to communicate with the service desk.
  *
@@ -965,25 +806,6 @@ export enum MainWindowOpenReason {
    * Indicates the main window was opened as a result of session history.
    */
   SESSION_HISTORY = "session_history",
-
-  /**
-   * Indicates the main window was opened from a tour.
-   *
-   * @deprecated This reason is unclear so it's no longer being used. window:open events that used this reason will now
-   * use the {@link TOUR_OPENED_OTHER_VIEW} reason instead. Since this reason was only added for beta tours we're
-   * ok with removing it without a major release.
-   */
-  FROM_TOUR = "from_tour",
-
-  /**
-   * Indicates the main window was opened from a tour.
-   */
-  TOUR_OPENED_OTHER_VIEW = "tour_opened_other_view",
-
-  /**
-   * Indicates the {@link ChatInstance.restartConversation} method was used while a tour was visible.
-   */
-  CALLED_RESTART_CONVERSATION = "called_restart_conversation",
 }
 
 /**
@@ -996,44 +818,6 @@ export enum MainWindowCloseReason {
    * Indicates the user clicked on our built-in minimize button that closed to the launcher.
    */
   DEFAULT_MINIMIZE = "default_minimize",
-
-  /**
-   * Indicates the main window was closed to open a tour. This either happens when a tour is started from a TourCard, or
-   * when the main window is closed with the minimize button, or the {@link ChatInstance.closeWindow}
-   * function, and there's an active tour to be shown.
-   *
-   * @deprecated This reason is unclear and was being used for many different scenarios so it's been removed.
-   * window:close events that used this reason now use one of the following reasons; {@link TOUR_CARD_STARTED_TOUR},
-   * {@link TOUR_CARD_RESUMED_TOUR}, {@link TOUR_CARD_RESTARTED_TOUR}, {@link CALLED_START_TOUR}, and
-   * {@link TOUR_SKIP_CARD}. Since this reason was only added for beta tours we're ok with removing it without a major
-   * release.
-   */
-  OPEN_TOUR = "open_tour",
-
-  /**
-   * Indicates a tour was started by the start tour button in the main window.
-   */
-  TOUR_CARD_STARTED_TOUR = "tour_card_started_tour",
-
-  /**
-   * Indicates a tour was resumed by the resume button in the main window.
-   */
-  TOUR_CARD_RESUMED_TOUR = "tour_card_resumed_tour",
-
-  /**
-   * Indicates a tour was restarted by the restart button in the main window.
-   */
-  TOUR_CARD_RESTARTED_TOUR = "tour_card_restarted_tour",
-
-  /**
-   * Indicates a tour was started by the {@link startTour} instance method.
-   */
-  CALLED_START_TOUR = "called_start_tour",
-
-  /**
-   * Indicates a tour was started by a tour response type that included the 'skip_card' flag.
-   */
-  TOUR_SKIP_CARD = "tour_skip_card",
 
   /**
    * Indicates the user clicked the close and restart button that minimized to the launcher.

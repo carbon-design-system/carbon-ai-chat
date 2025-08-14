@@ -18,13 +18,13 @@ import {
   ViewState,
   ViewType,
 } from "./apiTypes";
-import { ChatHeaderConfig } from "../config/ChatHeaderConfig";
 import { CornersType } from "../config/CornersType";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { HomeScreenConfig } from "../config/HomeScreenConfig";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import { LauncherConfig } from "../config/LauncherConfig";
 import { MessageRequest } from "../messaging/Messages";
+import { ChatHeaderConfig } from "../config/ChatHeaderConfig";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -89,11 +89,6 @@ export interface PublicWebChatState {
    * Has the user sent a message that isn't requesting the welcome node.
    */
   hasUserSentMessage: boolean;
-
-  /**
-   * Whether there is an active tour currently.
-   */
-  isTourActive: boolean;
 
   /**
    * The current viewState of the Carbon AI Chat.
@@ -324,13 +319,6 @@ interface ChatActions {
   elements: InstanceElements;
 
   /**
-   * Methods provided to developers to interact with the tour feature.
-   *
-   * @experimental
-   */
-  tours: ChatInstanceTours;
-
-  /**
    * Sets the input field to be invisible. Helpful for when
    * you want to force input into a button, etc.
    */
@@ -491,13 +479,6 @@ export interface SendOptions {
 
   /**
    * @internal
-   * If {@link ChatInstance.tours.startTour} is used then the next message received, assuming it's a
-   * tour, should skip the tour card and start the tour.
-   */
-  skipTourCard?: boolean;
-
-  /**
-   * @internal
    * Indicates if a call to send should return/resolve immediately when a streaming response begins and should not
    * wait for the entire streaming response to complete. By default, the call will wait until the entire process is
    * completed and the stream has sent all of its data to the client. If this is true, the function will return as
@@ -631,38 +612,6 @@ export interface InstanceInputElement {
    * Removes a change listener that was previously added.
    */
   removeChangeListener: (listener: ChangeFunction) => void;
-}
-
-/**
- * Methods provided to developers to interact with the tour feature.
- *
- * @category Instance
- *
- * @experimental
- */
-export interface ChatInstanceTours {
-  /**
-   * Sends the given message to the back-end with the skipTourCard option set to true. When a tour response is received,
-   * this method automatically starts the tour and skips the tour card. If a response other than a tour is received,
-   * then an error is logged.
-   */
-  startTour: (message: string) => void;
-
-  /**
-   * Clears all tour data, closes the tour, and switches to the launcher.
-   */
-  endTour: () => void;
-
-  /**
-   * Moves forward one step in the tour.
-   */
-  goToNextStep: () => void;
-
-  /**
-   * Looks for the provided stepId string within the tour step items. If a step with a matching step_id is found then
-   * moves to that step within the tour.
-   */
-  goToStep: (stepId: string) => void;
 }
 
 /**
