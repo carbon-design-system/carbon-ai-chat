@@ -18,11 +18,11 @@ import actions from "../store/actions";
 function setIntl(
   serviceManager: ServiceManager,
   locale: string,
-  messages: LanguagePack
+  messages: LanguagePack,
 ) {
   serviceManager.intl = createIntl({ locale, messages });
   serviceManager.store.dispatch(
-    actions.setAppStateValue("languagePack", messages)
+    actions.setAppStateValue("languagePack", messages),
   );
   serviceManager.store.dispatch(actions.setAppStateValue("locale", locale));
 }

@@ -42,10 +42,10 @@ function Disclaimer({
 }: DisclaimerProps) {
   const languagePack = useLanguagePack();
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint
+    (state: AppState) => state.chatWidthBreakpoint,
   );
   const { carbonTheme, useAITheme } = useSelector(
-    (state: AppState) => state.theme
+    (state: AppState) => state.theme,
   );
   const isDarkTheme =
     carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;

@@ -40,7 +40,7 @@ import {
 async function getMarkdownWorker(
   markdown: string,
   lastTree: any,
-  allowHtml = true
+  allowHtml = true,
 ): Promise<TokenTree> {
   // FOR NOW WE ARE ONLY DOING IT THIS WAY WITHOUT A WORKER.
   // If we're in an SSR context, or the browser doesn't support Workers,

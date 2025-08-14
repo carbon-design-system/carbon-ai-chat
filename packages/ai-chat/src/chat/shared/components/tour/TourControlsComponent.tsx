@@ -79,7 +79,7 @@ interface TourControlsComponentProps {
  */
 function TourControlsComponent(
   props: TourControlsComponentProps,
-  ref: React.Ref<HasRequestFocus>
+  ref: React.Ref<HasRequestFocus>,
 ) {
   const {
     reservePreviousButtonSpace,

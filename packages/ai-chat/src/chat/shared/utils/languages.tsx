@@ -115,7 +115,7 @@ function isSupportedLocale<T>(locale: string, object: T): keyof T | null {
 function findSupportedKey<T>(
   requestedLocale: string,
   object: T,
-  objectType: string
+  objectType: string,
 ): keyof T {
   // Check to see if the requested locale is supported.
   const requestedSupported = isSupportedLocale(requestedLocale, object);
@@ -126,7 +126,7 @@ function findSupportedKey<T>(
   if (requestedLocale) {
     const keyList = JSON.stringify(Object.keys(object));
     consoleError(
-      `The requested locale "${requestedLocale}" does not contain a supported ${objectType}. We are defaulting to "en". The supported values are ${keyList}.`
+      `The requested locale "${requestedLocale}" does not contain a supported ${objectType}. We are defaulting to "en". The supported values are ${keyList}.`,
     );
   }
 
@@ -145,12 +145,12 @@ async function loadLocale(requestedLocale: string): Promise<ILocale> {
       return localeModule.default;
     }
     consoleError(
-      `The locale data for "${localeKey}" did not load. The application will default to "en".`
+      `The locale data for "${localeKey}" did not load. The application will default to "en".`,
     );
   } catch (error) {
     consoleError(
       `An error occurred loading the locale data for "${requestedLocale}". The application will default to "en".`,
-      error
+      error,
     );
   }
   return enLocaleData;
@@ -166,7 +166,7 @@ async function loadLocale(requestedLocale: string): Promise<ILocale> {
  * their English values when the instance's language pack is updated.
  */
 async function loadLanguagePack(
-  providedLanguagePack?: LanguagePack
+  providedLanguagePack?: LanguagePack,
 ): Promise<LanguagePack> {
   if (providedLanguagePack) {
     // Use the language pack that was provided.
@@ -242,7 +242,7 @@ async function loadDayjsLocale(locale: string): Promise<string> {
 function formatMessage(
   intl: IntlShape,
   id: keyof EnglishLanguagePack,
-  values: Record<string, string>
+  values: Record<string, string>,
 ) {
   return intl.formatMessage({ id }, values);
 }

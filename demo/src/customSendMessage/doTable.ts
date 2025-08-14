@@ -26,7 +26,7 @@ async function doTableStreaming(instance: ChatInstance) {
   await doTextStreaming(
     instance,
     `A markdown table in the text response type.\n\n${TABLE}`,
-    true
+    true,
   );
 }
 

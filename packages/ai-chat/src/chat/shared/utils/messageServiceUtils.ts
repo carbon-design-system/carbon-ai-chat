@@ -47,7 +47,7 @@ class MessageLoadingManager {
     onEnd: (hasExceededMaxSilentLoading: boolean) => void,
     onTimeout: () => void,
     msMaxSilentLoading: number,
-    msMaxAttempt: number
+    msMaxAttempt: number,
   ) {
     this.hasExceededMaxSilentLoading = false;
     this.onEnd = onEnd;

@@ -18,7 +18,7 @@ import { useMemo } from "react";
  * @returns Object suitable for React's style prop containing CSS custom properties
  */
 const useDynamicCSSProperties = (
-  styles: Record<string, string | number | undefined>
+  styles: Record<string, string | number | undefined>,
 ) => {
   return useMemo(() => {
     const customProperties: Record<string, string | number> = {};
@@ -28,7 +28,7 @@ const useDynamicCSSProperties = (
         // Convert camelCase to kebab-case for CSS custom properties
         const kebabKey = key.replace(
           /[A-Z]/g,
-          (letter) => `-${letter.toLowerCase()}`
+          (letter) => `-${letter.toLowerCase()}`,
         );
         customProperties[`--${kebabKey}`] = value;
       }

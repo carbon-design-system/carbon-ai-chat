@@ -43,7 +43,7 @@ function ButtonItemShowPanelComponent({
   const onClickHandler = useCallback(async () => {
     serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
     serviceManager.store.dispatch(
-      actions.setResponsePanelContent(localMessageItem, isMessageForInput)
+      actions.setResponsePanelContent(localMessageItem, isMessageForInput),
     );
   }, [localMessageItem, isMessageForInput, serviceManager]);
 

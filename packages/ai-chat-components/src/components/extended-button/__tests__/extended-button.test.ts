@@ -28,7 +28,7 @@ import ExtendedButton from "../extended-button.js";
 describe("extended-button", function () {
   it("should render with cds-button minimum attributes", async () => {
     const el = await fixture<ExtendedButton>(
-      html`<prefix-extended-button> button </prefix-extended-button>`
+      html`<prefix-extended-button> button </prefix-extended-button>`,
     );
 
     await expect(el).dom.to.equalSnapshot();

@@ -42,8 +42,8 @@
   }
 
   .dot--left {
-    animation: linear-load-size, linear-load-stroke, linear-loop-size,
-      linear-loop-stroke;
+    animation:
+      linear-load-size, linear-load-stroke, linear-loop-size, linear-loop-stroke;
     animation-delay: 1s, 1s, 2s, 2s;
     animation-duration: 1s;
     animation-fill-mode: forwards;
@@ -62,8 +62,8 @@
   }
 
   .dot--center {
-    animation: linear-load-size, linear-load-stroke, linear-loop-size,
-      linear-loop-stroke;
+    animation:
+      linear-load-size, linear-load-stroke, linear-loop-size, linear-loop-stroke;
     animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
     animation-duration: 1s;
     animation-fill-mode: forwards;
@@ -82,8 +82,8 @@
   }
 
   .dot--right {
-    animation: linear-load-size, linear-load-stroke, linear-loop-size,
-      linear-loop-stroke;
+    animation:
+      linear-load-size, linear-load-stroke, linear-loop-size, linear-loop-stroke;
     animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
     animation-duration: 1s;
     animation-fill-mode: forwards;
@@ -119,7 +119,8 @@
   }
 
   .dot--left {
-    animation: linear-load-size, linear-load-stroke, linear-unload-size,
+    animation:
+      linear-load-size, linear-load-stroke, linear-unload-size,
       linear-unload-stroke;
     animation-delay: 1s, 1s, 2s, 2s;
     animation-duration: 1s;
@@ -139,7 +140,8 @@
   }
 
   .dot--center {
-    animation: linear-load-size, linear-load-stroke, linear-unload-size,
+    animation:
+      linear-load-size, linear-load-stroke, linear-unload-size,
       linear-unload-stroke;
     animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
     animation-duration: 1s;
@@ -159,7 +161,8 @@
   }
 
   .dot--right {
-    animation: linear-load-size, linear-load-stroke, linear-unload-size,
+    animation:
+      linear-load-size, linear-load-stroke, linear-unload-size,
       linear-unload-stroke;
     animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
     animation-duration: 1s;

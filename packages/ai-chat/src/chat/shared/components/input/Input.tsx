@@ -208,7 +208,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   // An array of functions that will be called when the text value changes.
   const changeListeners = useRef<ListenerList<[string]>>(
-    new ListenerList<[string]>()
+    new ListenerList<[string]>(),
   );
 
   // The last text value that was sent to the change listeners.
@@ -324,10 +324,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function onRemoveFile(fileID: string) {
     const isInputToHumanAgent = selectIsInputToHumanAgent(
-      serviceManager.store.getState()
+      serviceManager.store.getState(),
     );
     serviceManager.store.dispatch(
-      actions.removeFileUpload(fileID, isInputToHumanAgent)
+      actions.removeFileUpload(fileID, isInputToHumanAgent),
     );
     // After we remove the file, we need to move focus back to the input field.
     textAreaRef.current.takeFocus();
@@ -338,7 +338,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     const isInputToHumanAgent = selectIsInputToHumanAgent(
-      serviceManager.store.getState()
+      serviceManager.store.getState(),
     );
     const { dispatch } = serviceManager.store;
     const { files } = event.target;

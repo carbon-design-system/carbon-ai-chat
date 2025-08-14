@@ -17,7 +17,7 @@ import { consoleError } from "./miscUtils";
  */
 function constructViewState(
   newView: ViewType | Partial<ViewState>,
-  appState: AppState
+  appState: AppState,
 ): ViewState {
   const { viewState } = appState.persistedToBrowserStorage.launcherState;
 
@@ -50,7 +50,7 @@ function validateViewState(viewState: ViewState, appState: AppState): boolean {
     // If the new viewState is supposed to show a tour, but there is no active tour, then log an error and return false.
     consoleError(
       "Error changing the view. The new view was supposed to show a tour however there is no active tour to show." +
-        " Changing the view has been canceled."
+        " Changing the view has been canceled.",
     );
     return false;
   }

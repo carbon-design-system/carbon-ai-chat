@@ -33,12 +33,12 @@ interface IFramePanelComponentProps extends BasePanelConfigOptions {
  */
 function IFramePanelComponent(
   props: IFramePanelComponentProps,
-  ref: Ref<HasRequestFocus>
+  ref: Ref<HasRequestFocus>,
 ) {
   const languagePack = useLanguagePack();
   const { store } = useServiceManager();
   const { isOpen, messageItem } = useSelector(
-    (state: AppState) => state.iFramePanelState
+    (state: AppState) => state.iFramePanelState,
   );
   const iframeTitle = messageItem?.title || messageItem?.source;
 

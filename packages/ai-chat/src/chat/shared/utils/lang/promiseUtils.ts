@@ -33,7 +33,7 @@ async function sleep(milliseconds: number) {
 function resolveOrTimeout<T>(
   promise: Promise<T>,
   duration: number,
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<T> {
   // Create a promise that rejects in <ms> milliseconds
   const timeout = new Promise<T>((resolve, reject) => {

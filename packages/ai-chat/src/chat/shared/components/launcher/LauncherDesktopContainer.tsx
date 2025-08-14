@@ -63,7 +63,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const intl = useIntl();
 
   const browserLauncherState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
+    (state: AppState) => state.persistedToBrowserStorage.launcherState,
   );
   const {
     desktopLauncherWasMinimized,
@@ -77,7 +77,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const { time_to_expand, new_expand_time } = launcherConfig.desktop;
   const isExpandedLauncherEnabled = launcherConfig.desktop.is_on;
   const unreadHumanAgentCount = useSelector(
-    (state: AppState) => state.humanAgentState.numUnreadMessages
+    (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
 
   const [smallLauncherClassName, setSmallLauncherClassName] = useState("");
@@ -112,7 +112,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     if (launcherComplexRef.current?.style?.setProperty) {
       launcherComplexRef.current.style.setProperty(
         "--cds-chat-LAUNCHER-desktop-expanded-height",
-        expandedLauncherHeight
+        expandedLauncherHeight,
       );
     }
   }, []);
@@ -133,13 +133,13 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     // allow the user to pop up a new greeting message even if one has already been minimized.
     if (!launcherHiddenRef.current) {
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("desktopLauncherIsExpanded", true)
+        actions.setLauncherProperty("desktopLauncherIsExpanded", true),
       );
       // Determine the height of the complex launcher.
       determineLauncherHeight();
       // Add the className for the intro animation.
       setComplexLauncherClassName(
-        "WACLauncherComplex__Container--introAnimation"
+        "WACLauncherComplex__Container--introAnimation",
       );
     }
   }, [determineLauncherHeight, serviceManager.store]);
@@ -171,7 +171,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     if (!launcherHiddenRef.current) {
       // Add the bounce animation class to the launcher.
       setSmallLauncherClassName(
-        "WACLauncher__ButtonContainer--bounceAnimation"
+        "WACLauncher__ButtonContainer--bounceAnimation",
       );
     }
   }, []);
@@ -187,7 +187,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       // Increment the bounce turn counter, so we know where to pick up from if the page is reloaded/changed.
       bounceTurnRef.current++;
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("bounceTurn", bounceTurnRef.current)
+        actions.setLauncherProperty("bounceTurn", bounceTurnRef.current),
       );
     }
   }, [serviceManager.store]);
@@ -216,9 +216,14 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       }, BOUNCING_ANIMATION_TIMEOUTS[0] + BOUNCING_ANIMATION_TIMEOUTS[1]);
 
       // After the second bounce is done remove the animation className and send a tracking event.
-      secondBounceAnimationFinishedTimerRef.current = setTimeout(() => {
-        finishBounceAnimation();
-      }, BOUNCING_ANIMATION_TIMEOUTS[0] + BOUNCING_ANIMATION_TIMEOUTS[1] + TIME_FOR_BOUNCE_ANIMATION);
+      secondBounceAnimationFinishedTimerRef.current = setTimeout(
+        () => {
+          finishBounceAnimation();
+        },
+        BOUNCING_ANIMATION_TIMEOUTS[0] +
+          BOUNCING_ANIMATION_TIMEOUTS[1] +
+          TIME_FOR_BOUNCE_ANIMATION,
+      );
     } else if (bounceTurnRef.current === 2) {
       // If there has already been a bounce animation then set a timer for 60s from now for the second bounce.
       secondBounceAnimationStartTimerRef.current = setTimeout(() => {
@@ -307,7 +312,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       determineLauncherHeight();
       // Add the className for the simple intro animation.
       setComplexLauncherClassName(
-        "WACLauncherComplex__Container--simpleAnimation"
+        "WACLauncherComplex__Container--simpleAnimation",
       );
       animateOnceVisible.current = false;
     }
@@ -338,8 +343,8 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         actions.setLauncherConfigProperty(
           "new_expand_time",
           false,
-          LauncherType.DESKTOP
-        )
+          LauncherType.DESKTOP,
+        ),
       );
     }
   }, [
@@ -367,7 +372,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
 
   const onMinimize = useCallback(() => {
     setComplexLauncherClassName(
-      "WACLauncherComplex__Container--closeAnimation"
+      "WACLauncherComplex__Container--closeAnimation",
     );
     // Wait for the minimize animation to finish before switching back to the original launcher.
     setTimeout(() => {

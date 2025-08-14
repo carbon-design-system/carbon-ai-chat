@@ -19,7 +19,7 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
     props: MessageTypeComponentProps & {
       message: any;
       isNestedMessageItem: boolean;
-    }
+    },
   ) => React.ReactNode;
 }
 
@@ -29,7 +29,7 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
  */
 function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+    (state: AppState) => state.allMessageItemsByID,
   );
   const buttonComponents =
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {

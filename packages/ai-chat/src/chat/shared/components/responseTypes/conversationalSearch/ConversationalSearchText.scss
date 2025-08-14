@@ -37,8 +37,8 @@
 
 .WACContainer--render[dir="rtl"] {
   .WACConversationalSearchText__Segment:nth-last-child(
-      1 of .WACConversationalSearchText__Segment
-    ) {
+    1 of .WACConversationalSearchText__Segment
+  ) {
     margin-inline: layout.$spacing-02 0;
   }
 }

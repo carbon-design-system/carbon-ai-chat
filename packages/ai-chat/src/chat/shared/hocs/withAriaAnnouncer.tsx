@@ -29,7 +29,7 @@ interface HasAriaAnnouncer {
 }
 
 function withAriaAnnouncer<P extends HasAriaAnnouncer>(
-  Component: React.ComponentType<P>
+  Component: React.ComponentType<P>,
 ) {
   // Drop the injected prop from the outer API
   type OuterProps = Omit<P, "ariaAnnouncer">;

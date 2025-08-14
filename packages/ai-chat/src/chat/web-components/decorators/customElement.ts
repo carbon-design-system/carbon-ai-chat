@@ -54,7 +54,7 @@ const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
 
 const standardCustomElement = (
   tagName: string,
-  descriptor: ClassDescriptor
+  descriptor: ClassDescriptor,
 ) => {
   const { kind, elements } = descriptor;
   return {

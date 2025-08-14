@@ -31,7 +31,7 @@ import "../../../codeElement/cds-aichat-code";
  */
 async function renderTokenTree(
   node: TokenTree,
-  sanitize: boolean
+  sanitize: boolean,
 ): Promise<TemplateResult> {
   const { token, children } = node;
 
@@ -80,10 +80,13 @@ async function renderTokenTree(
   const tag = token.tag || "div";
 
   // Convert markdown-it attributes (array of [key, value]) into an object.
-  const rawAttrs = (token.attrs || []).reduce((acc, [key, value]) => {
-    acc[key] = value;
-    return acc;
-  }, {} as Record<string, string>);
+  const rawAttrs = (token.attrs || []).reduce(
+    (acc, [key, value]) => {
+      acc[key] = value;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
   // If sanitizing, filter out any unsafe attributes (e.g., onclick, javascript: URLs).
   let attrs = rawAttrs;
@@ -96,19 +99,19 @@ async function renderTokenTree(
         });
         const element = fragment.firstChild as Element | null;
         return element?.getAttribute(key) !== null;
-      })
+      }),
     );
   }
 
   // Recursively render all child nodes into Lit TemplateResults.
   // Use `repeat()` to give Lit a stable `key` per child, minimizing DOM updates.
   const childResults = await Promise.all(
-    children.map((c) => renderTokenTree(c, sanitize))
+    children.map((c) => renderTokenTree(c, sanitize)),
   );
   const content: TemplateResult = html`${repeat(
     children,
     (c) => c.key,
-    (_c, index) => childResults[index]
+    (_c, index) => childResults[index],
   )}`;
 
   // Use a static tag-based renderer to safely and predictably render known HTML tags.
@@ -130,7 +133,7 @@ function renderWithStaticTag(
   tag: string,
   token: Token,
   content: TemplateResult,
-  attrs: Record<string, string>
+  attrs: Record<string, string>,
 ): TemplateResult {
   switch (tag) {
     case "p":

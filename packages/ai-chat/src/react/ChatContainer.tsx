@@ -59,7 +59,7 @@ const ReactChatContainer = React.memo(
     tagName: "cds-aichat-react",
     elementClass: ChatContainerReact,
     react: React,
-  })
+  }),
 );
 
 /**
@@ -79,7 +79,7 @@ function ChatContainer({
   const [container, setContainer] = useState<HTMLElement | null>(null); // Actual element we render the React Portal to in the Shadowroot.
 
   const [userDefinedElements, setUserDefinedElements] = useState<HTMLElement[]>(
-    []
+    [],
   );
   const [writeableElementSlots, setWriteableElementSlots] = useState<
     HTMLElement[]
@@ -109,7 +109,7 @@ function ChatContainer({
     const handleShadowReady = () => {
       // Now we know shadowRoot is definitely available
       let reactElement = wrapperElement.shadowRoot.querySelector(
-        ".cds--aichat-react-app"
+        ".cds--aichat-react-app",
       ) as HTMLElement;
 
       if (!reactElement) {
@@ -154,7 +154,7 @@ function ChatContainer({
         ...writeableElementSlots,
       ];
       const currentNodes: HTMLElement[] = Array.from(
-        wrapper.childNodes
+        wrapper.childNodes,
       ) as HTMLElement[];
       const newNodesSet = new Set(combinedNodes);
 
@@ -182,7 +182,7 @@ function ChatContainer({
         element,
       ]);
     },
-    []
+    [],
   );
 
   const onBeforeRenderOverride = useCallback(
@@ -190,7 +190,7 @@ function ChatContainer({
       if (instance) {
         const addWriteableElementSlots = () => {
           const slots: HTMLElement[] = Object.entries(
-            instance.writeableElements
+            instance.writeableElements,
           ).map((writeableElement) => {
             const [key, element] = writeableElement;
             element.setAttribute("slot", key); // Assign slot attributes dynamically
@@ -210,7 +210,7 @@ function ChatContainer({
         onBeforeRender?.(instance);
       }
     },
-    [onBeforeRender, userDefinedHandler]
+    [onBeforeRender, userDefinedHandler],
   );
 
   // If we are in SSR mode, just short circuit here. This prevents all of our window.* and document.* stuff from trying
@@ -234,7 +234,7 @@ function ChatContainer({
             setParentInstance={setCurrentInstance}
             element={element}
           />,
-          container // Render AppContainer into the shadowRoot
+          container, // Render AppContainer into the shadowRoot
         )}
     </>
   );
@@ -242,7 +242,7 @@ function ChatContainer({
 
 /** @category React */
 const ChatContainerExport = React.memo(
-  ChatContainer
+  ChatContainer,
 ) as React.FC<ChatContainerProps>;
 
 export { ChatContainerExport as ChatContainer, ChatContainerProps };

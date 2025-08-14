@@ -41,7 +41,7 @@ function removeClassNameFromState(name: string) {
   return (previousState: HasExtraClassNames) => {
     return {
       extraClassNames: previousState.extraClassNames.filter(
-        (value) => value !== name
+        (value) => value !== name,
       ),
     };
   };

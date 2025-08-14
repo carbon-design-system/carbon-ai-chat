@@ -58,7 +58,7 @@ function ConversationalSearch({
 
   const sortedCitations = useMemo(
     () => sortCitations(messageItem.citations),
-    [messageItem.citations]
+    [messageItem.citations],
   );
 
   function scrollCitations() {
@@ -67,14 +67,14 @@ function ConversationalSearch({
     // still in view.
     setTimeout(
       () => scrollElementIntoView(scrollIntoViewArea.current, 32, 64),
-      50
+      50,
     );
   }
 
   // If the chunks change, kick off an auto-scroll.
   useCallbackOnChange(
     localMessageItem.ui_state.streamingState?.chunks,
-    doAutoScroll
+    doAutoScroll,
   );
 
   // Note: the AI button below has a specific component in the latest Carbon library we could swap in after we
@@ -157,7 +157,7 @@ function sortCitations(citations: ConversationalSearchItemCitation[]) {
   }
   const withRanges = citations.filter((citation) => citation.ranges?.length);
   const withoutRanges = citations.filter(
-    (citation) => !citation.ranges?.length
+    (citation) => !citation.ranges?.length,
   );
   return withRanges.concat(withoutRanges);
 }

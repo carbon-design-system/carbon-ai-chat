@@ -233,7 +233,7 @@ class Chat extends Component<ChatProps, ChatState> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData("Chat", error, errorInfo)
+      createDidCatchErrorData("Chat", error, errorInfo),
     );
     this.setState({ hasCaughtError: true });
   }
@@ -352,7 +352,7 @@ class Chat extends Component<ChatProps, ChatState> {
       this.props.agentDisplayState.isConnectingOrConnected;
     if (isInputToHumanAgent) {
       this.props.serviceManager.humanAgentService.filesSelectedForUpload(
-        uploads
+        uploads,
       );
       // If the user chose a file and multiple files are not allowed, the file input will become disabled so we need to
       // move focus back to the text input.
@@ -432,7 +432,7 @@ class Chat extends Component<ChatProps, ChatState> {
               messageState={messageState}
               localMessageItems={this.messagesToArray(
                 messageState.localMessageIDs,
-                allMessageItemsByID
+                allMessageItemsByID,
               )}
               requestInputFocus={this.requestInputFocus}
               botName={botName}
@@ -540,7 +540,7 @@ class Chat extends Component<ChatProps, ChatState> {
  */
 function NonHeaderBackground() {
   const isVisible = useSelector<AppState>(
-    (state) => state.showNonHeaderBackgroundCover
+    (state) => state.showNonHeaderBackgroundCover,
   );
   return isVisible ? (
     <div className="WACBackgroundCover WACBackgroundCover__NonHeader" />

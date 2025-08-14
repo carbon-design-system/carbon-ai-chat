@@ -118,7 +118,7 @@ function generateKey(token: Token): string {
  */
 function diffTokenTree(
   oldTree: TokenTree | undefined,
-  newTree: TokenTree
+  newTree: TokenTree,
 ): TokenTree {
   // If the keys don’t match, it means this part of the tree is totally different,
   // so we stop and just return the new one (no need to go deeper).
@@ -137,7 +137,7 @@ function diffTokenTree(
   // Create a "lookup table" of old children using their keys.
   // This helps us quickly find if a new child was already in the old tree.
   const oldChildrenByKey = new Map(
-    oldTree.children.map((child) => [child.key, child])
+    oldTree.children.map((child) => [child.key, child]),
   );
 
   // Now go through each new child and decide:

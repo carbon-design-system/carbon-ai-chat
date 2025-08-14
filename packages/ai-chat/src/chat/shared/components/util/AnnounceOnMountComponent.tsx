@@ -74,6 +74,6 @@ class AnnounceOnMountComponent extends PureComponent<
 }
 
 const AnnounceOnMountComponentExport = withAriaAnnouncer(
-  AnnounceOnMountComponent
+  AnnounceOnMountComponent,
 );
 export { AnnounceOnMountComponentExport as AnnounceOnMountComponent };

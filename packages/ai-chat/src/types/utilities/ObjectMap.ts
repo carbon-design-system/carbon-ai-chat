@@ -19,7 +19,7 @@
  */
 type ObjectMap<
   TPropertyType,
-  TKeyType extends string | number = string
+  TKeyType extends string | number = string,
 > = Partial<Record<TKeyType, TPropertyType>>;
 
 export default ObjectMap;

@@ -27,7 +27,7 @@ import { uuid, UUIDType } from "../utils/lang/uuid";
 function inputItemToLocalItem(
   message: MessageRequest,
   originalUserText: string,
-  id: string = uuid(UUIDType.LOCAL_MESSAGE)
+  id: string = uuid(UUIDType.LOCAL_MESSAGE),
 ): LocalMessageItem {
   const localMessage: LocalMessageItem = {
     // The individual message in the format of an item from output.generic in the docs above.

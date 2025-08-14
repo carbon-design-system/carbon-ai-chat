@@ -66,7 +66,7 @@ function UserDefinedResponsePortalsContainer({
               {renderUserDefinedResponse(slotState, chatInstance)}
             </UserDefinedResponseComponentPortal>
           );
-        }
+        },
       )
     : null;
 }
@@ -88,6 +88,6 @@ function UserDefinedResponseComponentPortal({
 }
 
 const UserDefinedResponsePortalsContainerExport = React.memo(
-  UserDefinedResponsePortalsContainer
+  UserDefinedResponsePortalsContainer,
 );
 export { UserDefinedResponsePortalsContainerExport as UserDefinedResponsePortalsContainer };

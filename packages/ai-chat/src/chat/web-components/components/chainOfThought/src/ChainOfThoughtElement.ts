@@ -133,7 +133,8 @@ class ChainOfThoughtElement extends LitElement {
    * ID we use for a11y.
    */
   @state()
-  _chainOfThoughtPanelID = `${CSS_CLASS_PREFIX}-chain-of-thought-panel-id-${uuid()}`;
+  _chainOfThoughtPanelID =
+    `${CSS_CLASS_PREFIX}-chain-of-thought-panel-id-${uuid()}`;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     // Update the steps saying they are all closed.

@@ -227,13 +227,13 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const chatHeaderConfig = useSelector(
-    (state: AppState) => state.chatHeaderState.config
+    (state: AppState) => state.chatHeaderState.config,
   );
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint
+    (state: AppState) => state.chatWidthBreakpoint,
   );
   const maxVisibleHeaderObjects = useSelector(
-    (state: AppState) => state.chatHeaderState.maxVisibleHeaderObjects
+    (state: AppState) => state.chatHeaderState.maxVisibleHeaderObjects,
   );
   const [overflowIsOpen, setOverflowIsOpen] = useState(false);
   const [confirmModelOpen, setConfirmModelOpen] = useState(false);
@@ -299,7 +299,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
 
   if (showCloseAndRestartButton && showRestartButton) {
     throw new Error(
-      "You cannot enable both the restart button and the close-and-restart buttons."
+      "You cannot enable both the restart button and the close-and-restart buttons.",
     );
   }
 
@@ -333,7 +333,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   function getComponentInMenu(
     item: ChatHeaderMenuItemTypes,
     index: number,
-    list: ChatHeaderMenuItemTypes[]
+    list: ChatHeaderMenuItemTypes[],
   ) {
     switch (item.type) {
       case ChatHeaderObjectType.LINK:
@@ -400,7 +400,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               // Filter out menu objects from submenus to prevent having more than 1 level of submenus.
               .filter(
                 (menuItem) =>
-                  (menuItem.type as string) !== ChatHeaderObjectType.MENU
+                  (menuItem.type as string) !== ChatHeaderObjectType.MENU,
               )
               .map(getComponentInMenu)}
           </ChatHeaderMenuItem>
@@ -415,7 +415,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
    */
   function getComponentInChatHeader(
     headerObject: ChatHeaderObjectTypes,
-    index: number
+    index: number,
   ) {
     switch (headerObject.type) {
       case ChatHeaderObjectType.LINK:
@@ -594,7 +594,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           let newTotal = Math.floor(
             (centerObjectsRef.current.offsetWidth -
               HEADER_OBJECTS_GAP_MIN_SIZE) /
-              (HEADER_OBJECTS_GAP_MIN_SIZE * 2)
+              (HEADER_OBJECTS_GAP_MIN_SIZE * 2),
           );
 
           if (newTotal < 0) {
@@ -603,7 +603,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
 
           setTimeout(() => {
             serviceManager.store.dispatch(
-              actions.setMaxVisibleHeaderObjects(newTotal)
+              actions.setMaxVisibleHeaderObjects(newTotal),
             );
           });
         }

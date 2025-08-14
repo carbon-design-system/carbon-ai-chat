@@ -30,7 +30,7 @@ export class DemoWriteableElementsSwitcher extends LitElement {
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      })
+      }),
     );
   };
 

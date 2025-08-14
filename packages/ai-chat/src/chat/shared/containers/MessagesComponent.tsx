@@ -62,7 +62,7 @@ const DEBUG_AUTO_SCROLL = false;
 type ScrollElementIntoViewFunction = (
   element: HTMLElement,
   paddingTop?: number,
-  paddingBottom?: number
+  paddingBottom?: number,
 ) => void;
 
 interface MessagesOwnProps extends HasIntl, HasServiceManager {
@@ -159,7 +159,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   componentDidMount(): void {
     this.scrollPanelObserver = new ResizeObserver(this.onResize);
     this.scrollPanelObserver.observe(
-      this.messagesContainerWithScrollingRef.current
+      this.messagesContainerWithScrollingRef.current,
     );
 
     this.previousScrollOffsetHeight =
@@ -200,7 +200,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   componentWillUnmount(): void {
     // Remove the listeners and observer we added previously.
     this.scrollPanelObserver.unobserve(
-      this.messagesContainerWithScrollingRef.current
+      this.messagesContainerWithScrollingRef.current,
     );
   }
 
@@ -221,7 +221,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private checkScrollAnchor(
     fromAutoScroll?: boolean,
-    assumeScrollTop?: number
+    assumeScrollTop?: number,
   ) {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -244,8 +244,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         this.props.serviceManager.store.dispatch(
           actions.setChatMessagesStateProperty(
             "isScrollAnchored",
-            isScrollAnchored
-          )
+            isScrollAnchored,
+          ),
         );
       }
     }
@@ -338,7 +338,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
          */
         const shouldScrollToMessage = (
           localItem: LocalMessageItem,
-          message: Message
+          message: Message,
         ) => {
           if (isResponse(message)) {
             const messageRequest = allMessagesByID[
@@ -360,7 +360,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         let messageIndex = localMessageItems.length - 1;
         let localItem = localMessageItems[messageIndex];
         let lastScrollableMessageComponent: MessageClass = this.messageRefs.get(
-          localItem?.ui_state.id
+          localItem?.ui_state.id,
         );
         while (messageIndex >= 1) {
           localItem = localMessageItems[messageIndex];
@@ -368,12 +368,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
           if (shouldScrollToMessage(localItem, message)) {
             lastScrollableMessageComponent = this.messageRefs.get(
-              localItem?.ui_state.id
+              localItem?.ui_state.id,
             );
             debugAutoScroll(
               `[doAutoScroll] lastScrollableMessageComponent=${messageIndex}`,
               localMessageItems[messageIndex],
-              message
+              message,
             );
             break;
           }
@@ -387,7 +387,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             lastScrollableMessageComponent.ref.current?.offsetTop;
           setScrollTop = offsetTop + AUTO_SCROLL_EXTRA;
           debugAutoScroll(
-            `[doAutoScroll] Scrolling to message offsetTop=${offsetTop}`
+            `[doAutoScroll] Scrolling to message offsetTop=${offsetTop}`,
           );
         } else {
           // No message found.
@@ -407,7 +407,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             `[doAutoScroll] doScrollElement`,
             scrollElement,
             setScrollTop,
-            animate
+            animate,
           );
           doScrollElement(scrollElement, setScrollTop, 0, animate);
 
@@ -441,7 +441,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public scrollElementIntoView = (
     element: HTMLElement,
     paddingTop = 8,
-    paddingBottom = 8
+    paddingBottom = 8,
   ) => {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -473,7 +473,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       doScrollElement(
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
-        0
+        0,
       );
     }
   };
@@ -611,7 +611,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     showBeforeWelcomeNodeElement: boolean,
     isMessageForInput: boolean,
     isFirstMessageItem: boolean,
-    lastMessageID: string
+    lastMessageID: string,
   ) {
     const {
       serviceManager,
@@ -725,7 +725,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private requestMoveFocus = (
     moveFocusType: MoveFocusType,
-    currentMessageIndex: number
+    currentMessageIndex: number,
   ) => {
     if (moveFocusType === MoveFocusType.INPUT) {
       this.props.requestInputFocus();
@@ -791,7 +791,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       : () =>
           this.requestMoveFocus(
             atTop ? MoveFocusType.FIRST : MoveFocusType.LAST,
-            0
+            0,
           );
 
     return (
@@ -875,8 +875,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           showBeforeWelcomeNodeElement,
           isMessageForInput,
           isFirstMessageItem,
-          lastMessageID
-        )
+          lastMessageID,
+        ),
       );
     }
 
@@ -906,12 +906,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } else if (isTypingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_botIsTyping" },
-        { botName }
+        { botName },
       );
     } else if (isLoadingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_botIsLoading" },
-        { botName }
+        { botName },
       );
     }
 
@@ -940,7 +940,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               isHumanAgentTyping) &&
               this.renderTypingIndicator(
                 isTypingMessage,
-                localMessageItems.length
+                localMessageItems.length,
               )}
             <Notifications
               serviceManager={serviceManager}
@@ -967,8 +967,8 @@ export default withServiceManager(
     null,
     {
       forwardRef: true,
-    }
-  )(MessagesComponent)
+    },
+  )(MessagesComponent),
 );
 
 export {

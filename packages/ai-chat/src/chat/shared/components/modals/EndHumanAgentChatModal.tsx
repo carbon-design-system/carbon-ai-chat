@@ -37,7 +37,7 @@ function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
   const serviceManager = useServiceManager();
   const { isConnected, isSuspended } = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.humanAgentState
+      state.persistedToBrowserStorage.chatState.humanAgentState,
   );
 
   const useTitle =

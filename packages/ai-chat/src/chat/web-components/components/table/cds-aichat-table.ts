@@ -313,7 +313,7 @@ class TableElement extends LitElement {
   public _handleFilterEvent = (event: FilterEvent) => {
     // Record the new set of unfiltered row ids.
     this._filterVisibleRowIDs = new Set(
-      event?.detail?.unfilteredRows.map((row) => row.id)
+      event?.detail?.unfilteredRows.map((row) => row.id),
     );
 
     // Go back to the first page.
@@ -330,7 +330,7 @@ class TableElement extends LitElement {
    */
   private _updateVisibleRows(
     page: number = this._currentPageNumber,
-    pageSize: number = this._currentPageSize
+    pageSize: number = this._currentPageSize,
   ) {
     // Set the current page number and only show the rows for that page.
     this._currentPageNumber = page;
@@ -338,7 +338,7 @@ class TableElement extends LitElement {
     // Grab all the rows that have been rendered. It's necessary to grab them from the page because the cds-custom-table puts
     // the rows in a specific order when sorting and we want to preserve that order.
     const rows: HTMLElement[] = Array.from(
-      this.renderRoot.querySelectorAll("cds-custom-table-row")
+      this.renderRoot.querySelectorAll("cds-custom-table-row"),
     );
 
     // This is similar to the carbon example here https://stackblitz.com/edit/github-kbd9xw-s3y3s6?file=index.html. I
@@ -354,7 +354,7 @@ class TableElement extends LitElement {
 
     // Now filter the rows down to what is visible according to the filter.
     const filterVisibleRows = rows.filter((row) =>
-      this._filterVisibleRowIDs.has(row.id)
+      this._filterVisibleRowIDs.has(row.id),
     );
 
     // Now show all the rows that are within the current page.

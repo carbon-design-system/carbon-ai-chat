@@ -47,7 +47,7 @@ function outputItemToLocalItem(
   messageItem: GenericItem,
   fullMessage: MessageResponse,
   isLatestWelcomeNode = false,
-  disableFadeAnimation = false
+  disableFadeAnimation = false,
 ): LocalMessageItem {
   // If the item comes with a streaming id, use that. Otherwise assign a new id.
   const id =
@@ -109,7 +109,7 @@ function createLocalMessageItemsForNestedMessageItems(
   originalMessage: MessageResponse,
   fromHistory: boolean,
   nestedLocalMessageItems: LocalMessageItem[],
-  allowFooter: boolean
+  allowFooter: boolean,
 ) {
   const { item } = localMessageItem;
 
@@ -128,9 +128,9 @@ function createLocalMessageItemsForNestedMessageItems(
           (nestedMessageItem) =>
             isSupportedMessageItemInBody(
               localMessageItem.item,
-              nestedMessageItem
+              nestedMessageItem,
             ),
-          false // Grids shouldn't allow buttons.
+          false, // Grids shouldn't allow buttons.
         );
         return cellLocalMessageItemIDs;
       });
@@ -149,7 +149,7 @@ function createLocalMessageItemsForNestedMessageItems(
         isSupportedMessageItemInBody(item, nestedMessageItem),
       // A carousel as standalone response type should allow buttons. If a carousel is allowed to be nested in the
       // future, this would be helpful to prevent buttons in it.
-      allowFooter
+      allowFooter,
     );
   } else {
     const bodyItems =
@@ -167,7 +167,7 @@ function createLocalMessageItemsForNestedMessageItems(
         (nestedMessageItem) =>
           isSupportedMessageItemInBody(item, nestedMessageItem),
         // If nested items are being rendered in a panel, the footer should not be allowed.
-        !isShowPanelButtonType(item)
+        !isShowPanelButtonType(item),
       );
     }
 
@@ -191,7 +191,7 @@ function createLocalMessageItemsForNestedMessageItems(
           isSupportedMessageItemInFooter(item, nestedMessageItem),
         // A show panel button in a footer may open a panel that itself also has a footer. Nothing else in a footer can
         // have nested items with footers.
-        !isShowPanelButtonType(item)
+        !isShowPanelButtonType(item),
       );
     }
   }
@@ -206,7 +206,7 @@ function createLocalMessageItemsForNestedType(
   fromHistory: boolean,
   nestedLocalMessageItems: LocalMessageItem[],
   isSupported: (nestedMessageItem: GenericItem) => boolean,
-  allowFooter: boolean
+  allowFooter: boolean,
 ) {
   items.forEach((nestedMessageItem) => {
     if (isSupported(nestedMessageItem)) {
@@ -214,7 +214,7 @@ function createLocalMessageItemsForNestedType(
         nestedMessageItem,
         originalMessage,
         false,
-        true
+        true,
       );
 
       nestedMessageItemIDs.push(nestedLocalMessageItem.ui_state.id);
@@ -226,12 +226,12 @@ function createLocalMessageItemsForNestedType(
           originalMessage,
           fromHistory,
           nestedLocalMessageItems,
-          allowFooter
+          allowFooter,
         );
       }
     } else {
       consoleError(
-        `The "${localMessageItem.item.response_type}" response type does not support "${nestedMessageItem.response_type}" in "${type}" array.`
+        `The "${localMessageItem.item.response_type}" response type does not support "${nestedMessageItem.response_type}" in "${type}" array.`,
       );
     }
   });
@@ -242,7 +242,7 @@ function createLocalMessageItemsForNestedType(
  */
 function isSupportedMessageItemInBody(
   rootMessageItem: GenericItem,
-  nestedMessageItem: GenericItem
+  nestedMessageItem: GenericItem,
 ) {
   switch (rootMessageItem.response_type as string) {
     case MessageResponseTypes.CARD:
@@ -275,7 +275,7 @@ function isSupportedMessageItemInBody(
  */
 function isSupportedMessageItemInFooter(
   rootMessageItem: GenericItem,
-  nestedMessageItem: GenericItem
+  nestedMessageItem: GenericItem,
 ) {
   if (isButtonResponseType(nestedMessageItem)) {
     // The panel response type and show_panel button type should not support the button type "show_panel" in the

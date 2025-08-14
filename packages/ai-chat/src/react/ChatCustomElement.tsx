@@ -94,7 +94,7 @@ function ChatCustomElement({
 
       return onBeforeRender?.(instance);
     },
-    [onBeforeRender, onViewChange, customElement]
+    [onBeforeRender, onViewChange, customElement],
   );
 
   return (
@@ -115,7 +115,7 @@ function ChatCustomElement({
 
 /** @category React */
 const ChatCustomElementExport = React.memo(
-  ChatCustomElement
+  ChatCustomElement,
 ) as React.FC<ChatCustomElementProps>;
 
 export { ChatCustomElementExport as ChatCustomElement, ChatCustomElementProps };

@@ -46,7 +46,7 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
     renderMessageComponent,
   } = props;
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+    (state: AppState) => state.allMessageItemsByID,
   );
   const { itemsLocalMessageItemIDs } = localMessageItem.ui_state;
 

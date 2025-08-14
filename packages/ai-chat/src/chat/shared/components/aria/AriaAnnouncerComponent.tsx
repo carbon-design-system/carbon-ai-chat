@@ -105,7 +105,7 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
     } else if (value.messageID) {
       const formattedMessage = this.props.intl.formatMessage(
         { id: value.messageID },
-        value.messageValues
+        value.messageValues,
       );
       this.pendingValues.push(formattedMessage);
     } else {

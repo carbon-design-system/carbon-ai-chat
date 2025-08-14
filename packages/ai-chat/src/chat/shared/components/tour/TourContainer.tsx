@@ -52,18 +52,18 @@ function TourContainer(props: unknown, ref: React.Ref<HasRequestFocus>) {
 
   const intl = useIntl();
   const tourConfig = useSelector(
-    (state: AppState) => state.config.public.tourConfig
+    (state: AppState) => state.config.public.tourConfig,
   );
   const { isHydrated } = useSelector((state: AppState) => state);
   const { viewState } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
+    (state: AppState) => state.persistedToBrowserStorage.launcherState,
   );
   const { activeTourCurrentStepIndex } = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.persistedTourState
+      state.persistedToBrowserStorage.chatState.persistedTourState,
   );
   const { activeTourStepItems } = useSelector(
-    (state: AppState) => state.tourState
+    (state: AppState) => state.tourState,
   );
   // These three state variables are for future use when dynamic steps are introduced.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -137,7 +137,7 @@ function TourContainer(props: unknown, ref: React.Ref<HasRequestFocus>) {
     // Fire the tour end event before switching to the launcher.
     await serviceManager.eventBus.fire(
       { type: BusEventType.TOUR_END, reason: TourEndReason.DONE_CLICKED },
-      serviceManager.instance
+      serviceManager.instance,
     );
     // Try to open the launcher and clear the tour data from store.
     await serviceManager.actions.endTour({
@@ -274,7 +274,7 @@ function TourContainer(props: unknown, ref: React.Ref<HasRequestFocus>) {
     if (isHydrated && !hideTour && !renderErrorScreen) {
       const tourInstructionsText = intl.formatMessage(
         { id: "tour_instructions" },
-        { chatButtonText: languagePack.tour_ariaChatButton }
+        { chatButtonText: languagePack.tour_ariaChatButton },
       );
       ariaAnnouncer(tourInstructionsText);
     }

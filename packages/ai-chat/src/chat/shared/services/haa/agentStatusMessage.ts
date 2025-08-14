@@ -21,7 +21,7 @@ import { EnglishLanguagePack } from "../../../../types/instance/apiTypes";
 function getHumanAgentStatusMessageText(
   agentMessageType: HumanAgentMessageType,
   responseUserProfile: ResponseUserProfile,
-  intl: IntlShape
+  intl: IntlShape,
 ) {
   const name = responseUserProfile?.nickname;
 

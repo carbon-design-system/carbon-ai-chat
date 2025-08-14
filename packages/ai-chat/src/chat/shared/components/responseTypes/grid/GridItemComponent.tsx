@@ -47,7 +47,7 @@ function GridItemComponent({
   const appConfig = useSelector((state: AppState) => state.config);
   const inputState = useSelector(selectInputState);
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+    (state: AppState) => state.allMessageItemsByID,
   );
   const { columns, horizontal_alignment, vertical_alignment, max_width } =
     localMessageItem.item;
@@ -90,10 +90,10 @@ function GridItemComponent({
                     width: isPixelValue ? columnWidthString : undefined,
                     flex: isPixelValue ? undefined : Number(columnWidthString),
                     alignItems: getFlexAlignment(
-                      cellData?.horizontal_alignment || horizontal_alignment
+                      cellData?.horizontal_alignment || horizontal_alignment,
                     ),
                     justifyContent: getFlexAlignment(
-                      cellData?.vertical_alignment || vertical_alignment
+                      cellData?.vertical_alignment || vertical_alignment,
                     ),
                   }}
                   // eslint-disable-next-line react/no-array-index-key
@@ -126,7 +126,7 @@ function GridItemComponent({
               );
             })}
           </div>
-        )
+        ),
       )}
     </div>
   );
@@ -136,7 +136,7 @@ function GridItemComponent({
  * Returns the CSS flex alignment for the given horizontal/vertical alignment value;
  */
 function getFlexAlignment(
-  value: HorizontalCellAlignment | VerticalCellAlignment
+  value: HorizontalCellAlignment | VerticalCellAlignment,
 ) {
   switch (value) {
     case "bottom":

@@ -70,13 +70,17 @@ export class DemoApp extends LitElement {
       height: 100vh;
       width: calc(320px + 1rem);
       z-index: 9999;
-      transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
+      transition:
+        right 100ms,
+        visibility 0s 100ms; /* Delay visibility change */
       visibility: visible; /* Visible by default */
     }
 
     .sidebar--closed {
       right: calc(calc(320px + 1rem) * -1);
-      transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
+      transition:
+        right 100ms,
+        visibility 0s 0s; /* Immediately hide after transition */
       visibility: hidden; /* Hidden after right transition */
     }
   `;

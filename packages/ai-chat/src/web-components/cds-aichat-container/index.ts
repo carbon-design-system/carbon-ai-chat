@@ -78,7 +78,7 @@ class ChatContainer extends LitElement {
    * updating this._userDefinedSlotNames;
    */
   userDefinedHandler = (
-    event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse
+    event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse,
   ) => {
     // This element already has `slot` as an attribute.
     const { slot } = event.data;
@@ -106,7 +106,7 @@ class ChatContainer extends LitElement {
     Object.keys(this._instance.writeableElements).forEach(
       (writeableElementKey) => {
         writeableElementSlots.push(writeableElementKey);
-      }
+      },
     );
     this._writeableElementSlots = writeableElementSlots;
   }
@@ -122,10 +122,10 @@ class ChatContainer extends LitElement {
       .element=${this.element}
     >
       ${this._writeableElementSlots.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
+        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
       )}
       ${this._userDefinedSlotNames.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
+        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
       )}
     </cds-aichat-internal>`;
   }

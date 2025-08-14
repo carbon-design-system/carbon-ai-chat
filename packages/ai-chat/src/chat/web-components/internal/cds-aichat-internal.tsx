@@ -80,7 +80,7 @@ class ChatContainerInternal extends LitElement {
     ) {
       if (changedProperties.get("config")) {
         consoleWarn(
-          "The config object you have passed to AI chat has updated. Tearing down and re-starting the chat."
+          "The config object you have passed to AI chat has updated. Tearing down and re-starting the chat.",
         );
       }
       if (this.config) {
@@ -96,7 +96,7 @@ class ChatContainerInternal extends LitElement {
 
   async renderReactApp() {
     const previousContainer: HTMLElement = this.shadowRoot.querySelector(
-      ".cds--aichat-react-app"
+      ".cds--aichat-react-app",
     );
     previousContainer?.remove();
     const container = document.createElement("div");
@@ -116,7 +116,7 @@ class ChatContainerInternal extends LitElement {
         onAfterRender={this.onAfterRender}
         container={container}
         element={this.element}
-      />
+      />,
     );
   }
 }

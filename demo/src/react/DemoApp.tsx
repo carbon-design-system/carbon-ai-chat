@@ -73,7 +73,7 @@ function DemoApp({ config, settings }: AppProps) {
       // switch statement here that does something more specific depending on the component.
       return <AISkeletonPlaceholder className="fullSkeleton" />;
     },
-    [stateText]
+    [stateText],
   );
 
   /**
@@ -120,7 +120,7 @@ function DemoApp({ config, settings }: AppProps) {
         />
       ),
     }),
-    [stateText]
+    [stateText],
   );
 
   const onBeforeRender = (instance: ChatInstance) => {

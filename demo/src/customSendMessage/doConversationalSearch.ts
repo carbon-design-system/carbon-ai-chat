@@ -77,7 +77,7 @@ function doConversationalSearch(instance: ChatInstance) {
 
 async function doConversationalSearchStreaming(
   instance: ChatInstance,
-  text: string = TEXT
+  text: string = TEXT,
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");

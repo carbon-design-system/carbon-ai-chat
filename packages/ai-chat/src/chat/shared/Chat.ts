@@ -63,7 +63,7 @@ class Chat implements ChatInterface {
   constructor(
     publicConfigProvided: PublicConfig,
     customHostElement?: HTMLElement,
-    additionalChatParametersProvided?: AdditionalChatParameters
+    additionalChatParametersProvided?: AdditionalChatParameters,
   ) {
     if (publicConfigProvided?.debug) {
       consoleDebug("Constructed chat widget", publicConfigProvided);
@@ -74,7 +74,7 @@ class Chat implements ChatInterface {
     const publicConfig: PublicConfig = merge(
       {},
       DEFAULT_PUBLIC_CONFIG,
-      publicConfigProvided
+      publicConfigProvided,
     );
     this.additionalChatParameters = additionalChatParametersProvided || {};
 
@@ -112,7 +112,7 @@ class Chat implements ChatInterface {
   }> {
     this.serviceManager = await createServiceManager(
       this.appConfig,
-      this.additionalChatParameters
+      this.additionalChatParameters,
     );
 
     // Asynchronously load all of the various dependencies that the Carbon AI Chat depends on.
@@ -125,7 +125,7 @@ class Chat implements ChatInterface {
     this.serviceManager.customHostElement = this.customHostElement;
 
     this.serviceManager.humanAgentService = createHumanAgentService(
-      this.serviceManager
+      this.serviceManager,
     );
 
     // Update Redux with new values for language, locale, and messages.
@@ -179,14 +179,14 @@ class Chat implements ChatInterface {
           targetViewState,
           { viewChangeReason },
           tryHydrating,
-          forceViewChange
+          forceViewChange,
         );
       }
 
       // Lastly set the initialViewChangeComplete so that the launcher and other components can begin their
       // animations if they're visible.
       this.serviceManager.store.dispatch(
-        actions.setInitialViewChangeComplete(true)
+        actions.setInitialViewChangeComplete(true),
       );
 
       return this.serviceManager.instance;

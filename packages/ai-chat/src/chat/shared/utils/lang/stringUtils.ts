@@ -40,7 +40,7 @@ function parseUnknownDataToMarkdown(data: unknown) {
           content = `\`\`\`\n${JSON.stringify(
             JSON.parse(data),
             null,
-            2
+            2,
           )}\n\`\`\`\n`;
         } else {
           content = data;

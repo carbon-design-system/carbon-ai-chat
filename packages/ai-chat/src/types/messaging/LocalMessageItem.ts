@@ -81,7 +81,7 @@ interface LocalMessageItem<TGenericItemType extends GenericItem = GenericItem> {
  * @category Messaging
  */
 interface LocalMessageUIState<
-  TGenericItemType extends GenericItem = GenericItem
+  TGenericItemType extends GenericItem = GenericItem,
 > extends HasNeedsAnnouncement {
   /**
    * The ID of this local message item. Note that this is not the same ID as the ID of the full message request or
@@ -158,7 +158,7 @@ interface LocalMessageUIState<
  * @category Messaging
  */
 interface LocalMessageItemStreamingState<
-  TGenericItemType extends GenericItem = GenericItem
+  TGenericItemType extends GenericItem = GenericItem,
 > {
   /**
    * Indicates if streaming is done and we've received all the pieces.

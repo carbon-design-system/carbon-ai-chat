@@ -38,7 +38,7 @@ function TourCard({ message, serviceManager }: TourCardProps) {
     useLanguagePack();
   const { activeTourID } = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.persistedTourState
+      state.persistedToBrowserStorage.chatState.persistedTourState,
   );
 
   // If the id of the original message that generated this card matches the active tour ID then we should show a resume
@@ -76,7 +76,7 @@ function TourCard({ message, serviceManager }: TourCardProps) {
       ViewType.TOUR,
       {
         mainWindowCloseReason: MainWindowCloseReason.TOUR_CARD_RESTARTED_TOUR,
-      }
+      },
     );
 
     if (newViewState.tour) {
@@ -119,7 +119,7 @@ function TourCard({ message, serviceManager }: TourCardProps) {
               {
                 mainWindowCloseReason:
                   MainWindowCloseReason.TOUR_CARD_STARTED_TOUR,
-              }
+              },
             )
           }
         >

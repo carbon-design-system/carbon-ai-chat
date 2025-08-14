@@ -155,7 +155,7 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
   const originalMessage = useSelector(
-    (state: AppState) => state.allMessagesByID[localMessageItem?.fullMessageID]
+    (state: AppState) => state.allMessagesByID[localMessageItem?.fullMessageID],
   );
   const showAnimations = props.showAnimations ?? true;
   const disableAnimation = !showAnimations;

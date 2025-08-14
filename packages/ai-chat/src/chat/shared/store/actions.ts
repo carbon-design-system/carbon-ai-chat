@@ -177,7 +177,7 @@ const actions = {
     messageItem: LocalMessageItem,
     message: Message,
     addMessage: boolean,
-    addAfterID?: string
+    addAfterID?: string,
   ) {
     return {
       type: ADD_LOCAL_MESSAGE_ITEM,
@@ -290,7 +290,7 @@ const actions = {
   updateCSSVariables(
     variables: ObjectMap<string>,
     publicVars: ObjectMap<string>,
-    whiteLabelVariables: WhiteLabelTheme
+    whiteLabelVariables: WhiteLabelTheme,
   ) {
     return {
       type: UPDATE_CSS_VARIABLES,
@@ -327,7 +327,7 @@ const actions = {
   setMessageUIProperty<TPropertyName extends keyof LocalMessageUIState>(
     localMessageID: string,
     propertyName: TPropertyName,
-    propertyValue: LocalMessageUIState[TPropertyName]
+    propertyValue: LocalMessageUIState[TPropertyName],
   ) {
     return {
       type: SET_MESSAGE_UI_PROPERTY,
@@ -342,17 +342,17 @@ const actions = {
    */
   setLauncherProperty<TPropertyName extends keyof PersistedLauncherState>(
     propertyName: TPropertyName,
-    propertyValue: PersistedLauncherState[TPropertyName]
+    propertyValue: PersistedLauncherState[TPropertyName],
   ) {
     return { type: SET_LAUNCHER_PROPERTY, propertyName, propertyValue };
   },
 
   setLauncherConfigProperty<
-    TPropertyName extends keyof LauncherInternalCallToActionConfig
+    TPropertyName extends keyof LauncherInternalCallToActionConfig,
   >(
     propertyName: TPropertyName,
     propertyValue: LauncherInternalCallToActionConfig[TPropertyName],
-    launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE
+    launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE,
   ) {
     return {
       type: SET_LAUNCHER_CONFIG_PROPERTY,
@@ -373,7 +373,7 @@ const actions = {
   setMessageHistoryProperty<TPropertyName extends keyof MessageHistory>(
     messageID: string,
     propertyName: TPropertyName,
-    propertyValue: MessageHistory[TPropertyName]
+    propertyValue: MessageHistory[TPropertyName],
   ) {
     return {
       type: SET_MESSAGE_HISTORY_PROPERTY,
@@ -392,11 +392,11 @@ const actions = {
    * @param propertyValue The value to set on the property.
    */
   setMessageUIStateInternalProperty<
-    TPropertyName extends keyof MessageUIStateInternal
+    TPropertyName extends keyof MessageUIStateInternal,
   >(
     messageID: string,
     propertyName: TPropertyName,
-    propertyValue: MessageUIStateInternal[TPropertyName]
+    propertyValue: MessageUIStateInternal[TPropertyName],
   ) {
     return {
       type: SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
@@ -417,7 +417,7 @@ const actions = {
     return actions.setMessageHistoryProperty(
       messageID,
       "error_state",
-      errorState
+      errorState,
     );
   },
 
@@ -441,7 +441,7 @@ const actions = {
    */
   setChatMessagesStateProperty<TPropertyName extends keyof ChatMessagesState>(
     propertyName: TPropertyName,
-    propertyValue: ChatMessagesState[TPropertyName]
+    propertyValue: ChatMessagesState[TPropertyName],
   ) {
     return { type: SET_CHAT_MESSAGES_PROPERTY, propertyName, propertyValue };
   },
@@ -507,7 +507,7 @@ const actions = {
   setViewSourcePanelIsOpen(
     isOpen: boolean,
     citationItem?: ConversationalSearchItemCitation,
-    relatedSearchResult?: SearchResult
+    relatedSearchResult?: SearchResult,
   ) {
     return {
       type: SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
@@ -537,7 +537,7 @@ const actions = {
    */
   updateInputState(
     newState: Partial<InputState>,
-    isInputToHumanAgent: boolean
+    isInputToHumanAgent: boolean,
   ) {
     return { type: UPDATE_INPUT_STATE, newState, isInputToHumanAgent };
   },
@@ -576,7 +576,7 @@ const actions = {
   fileUploadInputError(
     fileID: string,
     errorMessage: string,
-    isInputToHumanAgent: boolean
+    isInputToHumanAgent: boolean,
   ) {
     return {
       type: FILE_UPLOAD_INPUT_ERROR,
@@ -603,7 +603,7 @@ const actions = {
 
   setResponsePanelContent(
     localMessageItem: LocalMessageItem,
-    isMessageForInput = false
+    isMessageForInput = false,
   ) {
     return {
       type: SET_RESPONSE_PANEL_CONTENT,
@@ -624,7 +624,7 @@ const actions = {
    */
   streamingMergeHistory(
     messageID: string,
-    history: DeepPartial<MessageHistory>
+    history: DeepPartial<MessageHistory>,
   ) {
     return { type: STREAMING_MERGE_HISTORY, messageID, history };
   },
@@ -636,7 +636,7 @@ const actions = {
     fullMessageID: string,
     chunkItem: DeepPartial<GenericItem>,
     isCompleteItem: boolean,
-    disableFadeAnimation: boolean
+    disableFadeAnimation: boolean,
   ) {
     return {
       type: STREAMING_ADD_CHUNK,

@@ -29,7 +29,7 @@ const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
   },
 };
 type ChatConstructorPromise = (
-  publicConfig?: PublicConfig
+  publicConfig?: PublicConfig,
 ) => Promise<ConstructableChatInterface>;
 
 /**
@@ -46,13 +46,13 @@ async function instantiateWidget(
   pagePublicConfig: PublicConfig,
   chatConstructorPromise: ChatConstructorPromise,
   render?: Promise<RenderFunctionType>,
-  element?: HTMLElement
+  element?: HTMLElement,
 ) {
   const config = cloneDeep(pagePublicConfig);
 
   if (!config.messaging?.customSendMessage) {
     throw new Error(
-      `You must set messaging.customSendMessage in your configuration object.`
+      `You must set messaging.customSendMessage in your configuration object.`,
     );
   }
 
@@ -63,13 +63,13 @@ async function instantiateWidget(
   if (isBrowser) {
     if (document.location.protocol !== "https:") {
       consoleWarn(
-        'Your page is not running with "https"; your data will not be sent  securely.'
+        'Your page is not running with "https"; your data will not be sent  securely.',
       );
     }
 
     if (document.compatMode !== "CSS1Compat") {
       consoleWarn(
-        'Your page is running in quirks mode; you may experience layout issues with the chat. Add "<!DOCTYPE html>" to the page to run in standards mode.'
+        'Your page is running in quirks mode; you may experience layout issues with the chat. Add "<!DOCTYPE html>" to the page to run in standards mode.',
       );
     }
   }

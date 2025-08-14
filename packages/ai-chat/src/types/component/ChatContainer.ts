@@ -53,7 +53,7 @@ interface RenderUserDefinedState {
  */
 type RenderUserDefinedResponse = (
   state: RenderUserDefinedState,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) => ReactNode;
 
 /**

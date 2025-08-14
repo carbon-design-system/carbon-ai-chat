@@ -50,7 +50,7 @@ function assertType<TItemType>(item: TItemType): TItemType {
  */
 function createMessageResponseForText(
   text: string,
-  responseType: MessageResponseTypes = MessageResponseTypes.TEXT
+  responseType: MessageResponseTypes = MessageResponseTypes.TEXT,
 ): MessageResponse {
   const textItem: TextItem = {
     response_type: responseType as MessageResponseTypes,
@@ -282,12 +282,12 @@ class MockServiceDesk implements ServiceDesk {
 
   startChat(
     connectMessage: MessageResponse,
-    startChatOptions: StartChatOptions
+    startChatOptions: StartChatOptions,
   ): Promise<void> {
     console.log(`MockServiceDesk [startChat]: connectMessage`, connectMessage);
     console.log(
       `MockServiceDesk [startChat]: startChatOptions`,
-      startChatOptions
+      startChatOptions,
     );
 
     this.preStartChatPayload =
@@ -302,13 +302,13 @@ class MockServiceDesk implements ServiceDesk {
     if (this.mockState.connectDelayFactor === 0) {
       return runSteps(
         this,
-        START_CHAT_IMMEDIATELY(this.preStartChatPayload.userName)
+        START_CHAT_IMMEDIATELY(this.preStartChatPayload.userName),
       );
     }
     if (this.mockState.connectInfoType === ConnectInfoType.NONE) {
       return runSteps(
         this,
-        START_CHAT_NO_INFO(this.preStartChatPayload.userName, this.mockState)
+        START_CHAT_NO_INFO(this.preStartChatPayload.userName, this.mockState),
       );
     }
 
@@ -316,7 +316,7 @@ class MockServiceDesk implements ServiceDesk {
 
     return runSteps(
       this,
-      START_CHAT(this.preStartChatPayload.userName, this.mockState)
+      START_CHAT(this.preStartChatPayload.userName, this.mockState),
     );
   }
 
@@ -338,7 +338,7 @@ class MockServiceDesk implements ServiceDesk {
       const text = `Thank you for responding to our survey. ${surveyResponse}`;
       this.sendMessageToUser(
         createMessageResponseForText(text),
-        this.mockState.currentAgent.id
+        this.mockState.currentAgent.id,
       );
     }
 
@@ -353,12 +353,12 @@ class MockServiceDesk implements ServiceDesk {
   sendMessageToAgent(
     message: MessageRequest,
     _messageID: string,
-    additionalData: AdditionalDataToAgent
+    additionalData: AdditionalDataToAgent,
   ): Promise<void> {
     console.log(
       `MockServiceDesk [sendMessageToAgent]`,
       message,
-      additionalData
+      additionalData,
     );
     const { text } = message.input;
 
@@ -387,7 +387,7 @@ class MockServiceDesk implements ServiceDesk {
         steps = MESSAGE_TO_AGENT_TEXT(TEXT_LONG);
       } else if (textLower.includes("text medium")) {
         steps = MESSAGE_TO_AGENT_TEXT(
-          "Thanks for being so interesting! I'm sure we're going to have a *wonderful* conversation. Let's get started..."
+          "Thanks for being so interesting! I'm sure we're going to have a *wonderful* conversation. Let's get started...",
         );
       } else if (textLower.includes("markdown")) {
         steps = MESSAGE_TO_AGENT_TEXT(MARKDOWN);
@@ -400,19 +400,19 @@ class MockServiceDesk implements ServiceDesk {
           .getState()
           .intl.formatMessage({ id: "input_placeholder" });
         steps = MESSAGE_TO_AGENT_TEXT(
-          `Intl string (input_placeholder): *${message}*`
+          `Intl string (input_placeholder): *${message}*`,
         );
       } else if (textLower.includes("leave")) {
         steps = MESSAGE_TO_AGENT_LEAVE_CHAT();
       } else if (textLower.includes("text")) {
         steps = MESSAGE_TO_AGENT_TEXT(
-          "TypeScript is awesome! I don't know how anyone can live without it. Seriously?!"
+          "TypeScript is awesome! I don't know how anyone can live without it. Seriously?!",
         );
       } else if (textLower.includes("upload")) {
         steps = MESSAGE_TO_AGENT_TEXT(
           "Alright, you can upload some files. But only .png files please.",
           0,
-          false
+          false,
         );
       } else if (textLower.includes("message throw")) {
         steps = MESSAGE_THROW();
@@ -428,7 +428,7 @@ class MockServiceDesk implements ServiceDesk {
         steps = HANG_MESSAGE();
       } else {
         steps = MESSAGE_TO_AGENT_TEXT(
-          'If you say so. Type *"help"* for a list of other things you can say.'
+          'If you say so. Type *"help"* for a list of other things you can say.',
         );
       }
     }
@@ -437,17 +437,20 @@ class MockServiceDesk implements ServiceDesk {
     if (additionalData.filesToUpload) {
       additionalData.filesToUpload.forEach((file) => {
         // Use a setTimeout to simulate a random amount of time it takes to upload a file.
-        setTimeout(() => {
-          let errorMessage = "";
-          if (!file.file.name.endsWith(".png")) {
-            errorMessage = "Only .png files may be uploaded.";
-          }
-          this.callback.setFileUploadStatus(
-            file.id,
-            Boolean(errorMessage.length),
-            errorMessage
-          );
-        }, Math.random() * 5000 + 1);
+        setTimeout(
+          () => {
+            let errorMessage = "";
+            if (!file.file.name.endsWith(".png")) {
+              errorMessage = "Only .png files may be uploaded.";
+            }
+            this.callback.setFileUploadStatus(
+              file.id,
+              Boolean(errorMessage.length),
+              errorMessage,
+            );
+          },
+          Math.random() * 5000 + 1,
+        );
       });
     }
 
@@ -461,7 +464,7 @@ class MockServiceDesk implements ServiceDesk {
         this.callback.setFileUploadStatus(
           file.id,
           true,
-          'You may not upload files that start with the letter "A"! Duh.'
+          'You may not upload files that start with the letter "A"! Duh.',
         );
       }
     });
@@ -488,7 +491,7 @@ class MockServiceDesk implements ServiceDesk {
   async screenShareStop() {
     this.callback.sendMessageToUser(
       "Alright, you have stopped sharing your screen.",
-      this.mockState.currentAgent.id
+      this.mockState.currentAgent.id,
     );
   }
 
@@ -530,7 +533,7 @@ function START_CHAT_IMMEDIATELY(userName: string): MockStep[] {
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_SHEPARD);
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -539,7 +542,7 @@ function START_CHAT_IMMEDIATELY(userName: string): MockStep[] {
 
 function START_CHAT_NO_INFO(
   userName: string,
-  mockState: MockState
+  mockState: MockState,
 ): MockStep[] {
   return [
     {
@@ -560,7 +563,7 @@ function START_CHAT_NO_INFO(
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          MOCK_AGENT_PROFILE_SHEPARD.id
+          MOCK_AGENT_PROFILE_SHEPARD.id,
         );
       },
     },
@@ -651,7 +654,7 @@ function START_CHAT(userName: string, mockState: MockState): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          mockState.currentAgent.id
+          mockState.currentAgent.id,
         );
       },
     },
@@ -684,11 +687,11 @@ function MESSAGE_TO_AGENT_HELP(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "***These messages must be sent to an agent and not to the bot.***",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
         instance.sendMessageToUser(
           HELP_TEXT,
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -796,7 +799,7 @@ function AGENT_END_CHAT(): MockStep[] {
 function MESSAGE_TO_AGENT_TEXT(
   text: string,
   delay = 1000,
-  showTyping = true
+  showTyping = true,
 ): MockStep[] {
   const steps: MockStep[] = [];
   if (showTyping) {
@@ -834,7 +837,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Noooooo! I thought we were getting along so well!",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -850,7 +853,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Okay, I'll find **someone else** you can talk to.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -879,7 +882,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Hi! I'm **Garrus** and I'm nicer than **Shepard**!",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -894,7 +897,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "You'll regret this.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -910,7 +913,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.mockState.currentAgent = MOCK_AGENT_PROFILE_LEGION;
         instance.callback.beginTransferToAnotherAgent(
-          MOCK_AGENT_PROFILE_LEGION
+          MOCK_AGENT_PROFILE_LEGION,
         );
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_LEGION);
       },
@@ -920,7 +923,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Shepard-Commander.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -935,7 +938,7 @@ function MESSAGE_TO_AGENT_LEAVE_CHAT(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "I am leaving now!",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
         instance.callback.agentLeftChat();
       },
@@ -951,7 +954,7 @@ function TRANSFER_TO_EMPTY(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Transferring you to a no-name.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
         instance.mockState.currentAgent = MOCK_AGENT_PROFILE_EMPTY;
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_EMPTY);
@@ -1144,7 +1147,7 @@ function MESSAGE_TO_AGENT_JOKE(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "One atom says to another atom: I think I've lost an electron.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -1153,7 +1156,7 @@ function MESSAGE_TO_AGENT_JOKE(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "The second atom says: are you sure?",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -1162,7 +1165,7 @@ function MESSAGE_TO_AGENT_JOKE(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "The first atom says: I'm positive.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },

@@ -64,7 +64,8 @@
   .WAC--primaryColor button.cds--overflow-menu--open:hover:active,
   .WAC--primaryColor button.cds--btn--ghost:hover:active {
     // If the ai theme is enabled then match the hover + active box-shadow that is put on the AI slug.
-    box-shadow: inset 0 0 0 1px var(--cds-chat-PRIMARY-color-focus),
+    box-shadow:
+      inset 0 0 0 1px var(--cds-chat-PRIMARY-color-focus),
       inset 0 0 0 2px var(--cds-focus-inset);
   }
 }

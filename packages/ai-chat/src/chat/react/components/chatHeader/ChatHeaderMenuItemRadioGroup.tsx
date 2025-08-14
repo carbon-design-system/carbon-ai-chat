@@ -40,7 +40,7 @@ interface ChatHeaderMenuItemRadioGroupProps {
  * This component renders the Carbon MenuItemRadioGroup component specifically in the {@link ChatHeaderMenu} component.
  */
 function ChatHeaderMenuItemRadioGroup(
-  props: ChatHeaderMenuItemRadioGroupProps
+  props: ChatHeaderMenuItemRadioGroupProps,
 ) {
   const { label, items, defaultSelectedItem, selectedItem, onChange } = props;
   return (

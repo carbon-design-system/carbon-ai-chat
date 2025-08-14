@@ -33,7 +33,7 @@ import { isBrowser } from "./utils/browserUtils";
 
 type CreateServiceManagerFunction = (
   appConfig: AppConfig,
-  additionalChatParameters: AdditionalChatParameters
+  additionalChatParameters: AdditionalChatParameters,
 ) => Promise<ServiceManager>;
 
 /**
@@ -42,7 +42,7 @@ type CreateServiceManagerFunction = (
  */
 async function createServiceManager(
   appConfig: AppConfig,
-  additionalChatParameters: AdditionalChatParameters
+  additionalChatParameters: AdditionalChatParameters,
 ) {
   const publicConfig = appConfig.public;
 
@@ -52,7 +52,7 @@ async function createServiceManager(
   serviceManager.additionalChatParameters = additionalChatParameters;
   serviceManager.namespace = new NamespaceService(publicConfig.namespace);
   serviceManager.userSessionStorageService = new UserSessionStorageService(
-    serviceManager
+    serviceManager,
   );
   serviceManager.actions = new ChatActionsImpl(serviceManager);
   serviceManager.eventBus = new EventBus();
@@ -60,7 +60,7 @@ async function createServiceManager(
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageService = new MessageService(
     serviceManager,
-    publicConfig
+    publicConfig,
   );
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   if (!publicConfig.disableWindowTitleChanges) {
@@ -71,7 +71,7 @@ async function createServiceManager(
   setIntl(
     serviceManager,
     serviceManager.store.getState().locale,
-    serviceManager.store.getState().languagePack
+    serviceManager.store.getState().languagePack,
   );
 
   // Create all custom elements for Deb.

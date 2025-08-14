@@ -157,7 +157,8 @@ button.#{vars.$css-class-prefix}-chain-of-thought-button:focus-visible {
   button.#{vars.$css-class-prefix}-chain-of-thought-accordion-item-header:focus-visible {
     position: relative;
     z-index: 2;
-    box-shadow: 0 -1px 0 0 var(--cds-focus, #0f62fe),
+    box-shadow:
+      0 -1px 0 0 var(--cds-focus, #0f62fe),
       inset 0 1px 0 0 var(--cds-focus, #0f62fe),
       inset 2px 0 0 0 var(--cds-focus, #0f62fe),
       0 1px 0 0 var(--cds-focus, #0f62fe),

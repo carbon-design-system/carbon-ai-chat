@@ -56,7 +56,7 @@ function WriteableElementsPortalsContainer({
               {responseItem}
             </WriteableElementsComponentPortal>
           ) : null;
-        }
+        },
       )}
     </>
   );
@@ -79,6 +79,6 @@ function WriteableElementsComponentPortal({
 }
 
 const WriteableElementsPortalsContainerExport = React.memo(
-  WriteableElementsPortalsContainer
+  WriteableElementsPortalsContainer,
 );
 export { WriteableElementsPortalsContainerExport as WriteableElementsPortalsContainer };

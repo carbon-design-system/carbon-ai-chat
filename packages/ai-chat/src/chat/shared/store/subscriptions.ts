@@ -34,10 +34,10 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
       previousPersistedToBrowserStorage = persistedToBrowserStorage;
 
       serviceManager.userSessionStorageService.persistChatSession(
-        persistedToBrowserStorage.chatState
+        persistedToBrowserStorage.chatState,
       );
       serviceManager.userSessionStorageService.persistLauncherSession(
-        persistedToBrowserStorage.launcherState
+        persistedToBrowserStorage.launcherState,
       );
     }
   };

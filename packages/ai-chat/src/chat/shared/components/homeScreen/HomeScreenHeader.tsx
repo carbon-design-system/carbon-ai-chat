@@ -50,21 +50,21 @@ interface HomeScreenHeaderProps {
 
 function HomeScreenHeader(
   props: HomeScreenHeaderProps,
-  ref: Ref<HasRequestFocus>
+  ref: Ref<HasRequestFocus>,
 ) {
   const { brandColor, onClose, onRestart, onCloseAndRestart } = props;
   const showRestartButton = useSelector(
     (state: AppState) =>
       state.config.public.showRestartButton ||
-      state.config.public.headerConfig?.showRestartButton
+      state.config.public.headerConfig?.showRestartButton,
   );
   const showBackButton = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.homeScreenState.showBackToBot
+      state.persistedToBrowserStorage.chatState.homeScreenState.showBackToBot,
   );
   const displayName = useSelector((state: AppState) => state.headerDisplayName);
   const customMenuOptions = useSelector(
-    (state: AppState) => state.customMenuOptions
+    (state: AppState) => state.customMenuOptions,
   );
   const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
   const headerRef = useRef<HasRequestFocus>();
@@ -81,7 +81,7 @@ function HomeScreenHeader(
       const { handler } = customMenuOptions[index];
       handler();
     },
-    [customMenuOptions]
+    [customMenuOptions],
   );
 
   const overflowItems = customMenuOptions?.map((option) => option.text);

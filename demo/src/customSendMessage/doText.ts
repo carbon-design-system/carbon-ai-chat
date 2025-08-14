@@ -39,7 +39,7 @@ async function doTextStreaming(
   instance: ChatInstance,
   text: string = MARKDOWN,
   cancellable = true,
-  userProfile?: ResponseUserProfile
+  userProfile?: ResponseUserProfile,
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
@@ -167,7 +167,7 @@ function doWelcomeText(instance: ChatInstance) {
 function doText(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  userProfile?: ResponseUserProfile
+  userProfile?: ResponseUserProfile,
 ) {
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -276,7 +276,7 @@ function doText(
 function doTextWithHumanProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultHumanUserProfile
+  responseUserProfile: ResponseUserProfile = defaultHumanUserProfile,
 ) {
   doText(instance, text, responseUserProfile);
 }
@@ -284,7 +284,7 @@ function doTextWithHumanProfile(
 function doTextWithNonWatsonBotProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultAlternativeBotProfile
+  responseUserProfile: ResponseUserProfile = defaultAlternativeBotProfile,
 ) {
   doText(instance, text, responseUserProfile);
 }
@@ -293,7 +293,7 @@ async function doTextStreamingWithNonWatsonBotProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
   cancellable = true,
-  userProfile: ResponseUserProfile = defaultAlternativeBotProfile
+  userProfile: ResponseUserProfile = defaultAlternativeBotProfile,
 ) {
   return doTextStreaming(instance, text, cancellable, userProfile);
 }

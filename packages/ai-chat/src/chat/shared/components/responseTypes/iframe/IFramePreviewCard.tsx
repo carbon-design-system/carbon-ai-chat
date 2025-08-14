@@ -44,7 +44,7 @@ function IFramePreviewCardComponent({
   const intl = useIntl();
   const iframeAriaClickPreviewCardMessage = intl.formatMessage(
     { id: "iframe_ariaClickPreviewCard" },
-    { source: urlHostName }
+    { source: urlHostName },
   );
 
   /**

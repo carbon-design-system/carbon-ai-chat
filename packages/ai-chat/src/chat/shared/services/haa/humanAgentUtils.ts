@@ -49,12 +49,12 @@ async function createHumanAgentLocalMessage(
   agentMessageType: HumanAgentMessageType,
   serviceManager: ServiceManager,
   responseUserProfile?: ResponseUserProfile,
-  fireEvents = true
+  fireEvents = true,
 ) {
   const text = getHumanAgentStatusMessageText(
     agentMessageType,
     responseUserProfile,
-    serviceManager.intl
+    serviceManager.intl,
   );
 
   const result = createHumanAgentLocalMessageForType(agentMessageType);
@@ -89,7 +89,7 @@ async function createHumanAgentLocalMessage(
  * Creates an empty skeleton of a {@link LocalMessageItem} with the given agent message type.
  */
 function createHumanAgentLocalMessageForType(
-  agentMessageType: HumanAgentMessageType
+  agentMessageType: HumanAgentMessageType,
 ) {
   const messageItem: GenericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -98,7 +98,7 @@ function createHumanAgentLocalMessageForType(
   const originalMessage = createMessageResponseForItem(messageItem);
   const localMessage: LocalMessageItem<TextItem> = outputItemToLocalItem(
     messageItem,
-    originalMessage
+    originalMessage,
   );
 
   return { localMessage, originalMessage };
@@ -132,7 +132,7 @@ async function addMessages(
   saveInHistory: boolean,
   fireHistoryEvent: boolean,
   showLiveMessages: boolean,
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ) {
   if (showLiveMessages) {
     // Add to the redux store and fire any custom response events that are needed.
@@ -142,17 +142,17 @@ async function addMessages(
         await asyncForEach(localMessages, async (localMessage, index) => {
           await serviceManager.actions.handleUserDefinedResponseItems(
             localMessage,
-            originalMessage
+            originalMessage,
           );
           serviceManager.store.dispatch(
             actions.addLocalMessageItem(
               localMessage,
               originalMessage,
-              index === 0
-            )
+              index === 0,
+            ),
           );
         });
-      }
+      },
     );
   }
 }
@@ -168,10 +168,10 @@ async function addMessages(
 async function addBotReturnMessage(
   botReturnDelay: number,
   wasSuspended: boolean,
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ) {
   const botReturn = createBotReturnMessage(
-    serviceManager.store.getState().languagePack
+    serviceManager.store.getState().languagePack,
   );
   if (botReturn) {
     const initialRestartCount = serviceManager.restartCount;
@@ -183,7 +183,7 @@ async function addBotReturnMessage(
           true,
           false,
           !wasSuspended,
-          serviceManager
+          serviceManager,
         );
       }
     }, botReturnDelay);
@@ -205,20 +205,20 @@ async function addHumanAgentEndChatMessage(
   responseUserProfile: ResponseUserProfile,
   fireEvents: boolean,
   wasSuspended: boolean,
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ) {
   const endChatMessage = await createHumanAgentLocalMessage(
     agentMessageType,
     serviceManager,
     responseUserProfile,
-    fireEvents
+    fireEvents,
   );
   await addMessages(
     [toPair([endChatMessage.localMessage], endChatMessage.originalMessage)],
     true,
     false,
     !wasSuspended,
-    serviceManager
+    serviceManager,
   );
 }
 

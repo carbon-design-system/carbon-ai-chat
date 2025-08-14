@@ -227,11 +227,11 @@ class MainWindow
       if (visualViewport) {
         (visualViewport as any).addEventListener(
           "resize",
-          this.onVisualViewportResize
+          this.onVisualViewportResize,
         );
         (visualViewport as any).addEventListener(
           "scroll",
-          this.updateFromVisualViewport
+          this.updateFromVisualViewport,
         );
       }
 
@@ -243,7 +243,7 @@ class MainWindow
     // Make the scrollbar width available to CSS.
     this.containerRef.current.style.setProperty(
       "--cds-chat-scrollbar-width",
-      `${SCROLLBAR_WIDTH()}px`
+      `${SCROLLBAR_WIDTH()}px`,
     );
   }
 
@@ -270,13 +270,13 @@ class MainWindow
       appChatWidthBreakpoint = ChatWidthBreakpoint.NARROW;
     }
     this.props.serviceManager.store.dispatch(
-      actions.setAppStateValue("chatWidth", width)
+      actions.setAppStateValue("chatWidth", width),
     );
     this.props.serviceManager.store.dispatch(
-      actions.setAppStateValue("chatHeight", height)
+      actions.setAppStateValue("chatHeight", height),
     );
     this.props.serviceManager.store.dispatch(
-      actions.setAppStateValue("chatWidthBreakpoint", appChatWidthBreakpoint)
+      actions.setAppStateValue("chatWidthBreakpoint", appChatWidthBreakpoint),
     );
   };
 
@@ -293,11 +293,11 @@ class MainWindow
       if (visualViewport) {
         (visualViewport as any).removeEventListener(
           "resize",
-          this.onVisualViewportResize
+          this.onVisualViewportResize,
         );
         (visualViewport as any).removeEventListener(
           "scroll",
-          this.updateFromVisualViewport
+          this.updateFromVisualViewport,
         );
       }
     }
@@ -306,7 +306,7 @@ class MainWindow
 
   componentDidUpdate(
     oldProps: Readonly<MainWindowProps>,
-    oldState: Readonly<MainWindowState>
+    oldState: Readonly<MainWindowState>,
   ) {
     const newProps = this.props;
     const newState = this.state;
@@ -358,7 +358,7 @@ class MainWindow
       } else {
         this.containerRef.current.addEventListener(
           "animationend",
-          this.removeChatFromDom
+          this.removeChatFromDom,
         );
         this.requestFocus();
       }
@@ -394,10 +394,10 @@ class MainWindow
     }
 
     const newLastItemID = arrayLastValue(
-      newProps.botMessageState.localMessageIDs
+      newProps.botMessageState.localMessageIDs,
     );
     const oldLastItemID = arrayLastValue(
-      oldProps.botMessageState.localMessageIDs
+      oldProps.botMessageState.localMessageIDs,
     );
 
     if (newLastItemID !== oldLastItemID && newState.shouldAutoFocus) {
@@ -413,7 +413,7 @@ class MainWindow
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData("MainWindow", error, errorInfo, true)
+      createDidCatchErrorData("MainWindow", error, errorInfo, true),
     );
   }
 
@@ -451,11 +451,11 @@ class MainWindow
         } else {
           document.body.style.setProperty(
             "visibility",
-            this.previousBodyVisibility
+            this.previousBodyVisibility,
           );
           document.body.style.setProperty(
             "position",
-            this.previousBodyPosition
+            this.previousBodyPosition,
           );
         }
       }
@@ -482,19 +482,19 @@ class MainWindow
       // viewport scrolling occurs on iOS devices when the keyboard is open but not on android.
       element.style.setProperty(
         "--cds-chat-viewport-height",
-        `${(visualViewport as any).height}px`
+        `${(visualViewport as any).height}px`,
       );
       element.style.setProperty(
         "--cds-chat-viewport-width",
-        `${(visualViewport as any).width}px`
+        `${(visualViewport as any).width}px`,
       );
       element.style.setProperty(
         "--cds-chat-viewport-offsetTop",
-        `${(visualViewport as any).offsetTop}px`
+        `${(visualViewport as any).offsetTop}px`,
       );
       element.style.setProperty(
         "--cds-chat-viewport-offsetLeft",
-        `${(visualViewport as any).offsetLeft}px`
+        `${(visualViewport as any).offsetLeft}px`,
       );
     } else {
       // For browsers that don't support the visual viewport, for now we'll just settle on these values which only
@@ -519,7 +519,7 @@ class MainWindow
   onSendInput = async (
     text: string,
     source: MessageSendSource,
-    options?: SendOptions
+    options?: SendOptions,
   ) => {
     const isInputToHumanAgent = selectIsInputToHumanAgent(this.props);
     const { serviceManager } = this.props;
@@ -539,7 +539,7 @@ class MainWindow
 
     if (files.length) {
       serviceManager.store.dispatch(
-        actions.clearInputFiles(isInputToHumanAgent)
+        actions.clearInputFiles(isInputToHumanAgent),
       );
     }
   };
@@ -549,7 +549,7 @@ class MainWindow
 
     this.props.serviceManager.actions.sendWithCatch(
       messageRequest,
-      MessageSendSource.HOME_SCREEN_STARTER
+      MessageSendSource.HOME_SCREEN_STARTER,
     );
   };
 
@@ -557,7 +557,7 @@ class MainWindow
   removeChatFromDom = () => {
     this.containerRef.current.removeEventListener(
       "animationend",
-      this.removeChatFromDom
+      this.removeChatFromDom,
     );
     this.setState({
       open: false,
@@ -592,7 +592,7 @@ class MainWindow
         {
           mainWindowCloseReason:
             MainWindowCloseReason.MAIN_WINDOW_CLOSED_AND_RESTARTED,
-        }
+        },
       );
       if (!newViewState.mainWindow) {
         // If the main window is no longer visible restart the conversation.
@@ -605,7 +605,7 @@ class MainWindow
         activeTour ? ViewType.TOUR : ViewType.LAUNCHER,
         {
           mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
-        }
+        },
       );
     }
   }
@@ -764,7 +764,7 @@ class MainWindow
         numPanelsCovering:
           prevState.numPanelsCovering + (coverBackground ? 1 : 0),
       }),
-      this.requestFocus
+      this.requestFocus,
     );
   };
 
@@ -783,7 +783,7 @@ class MainWindow
   onPanelCloseStart = () => {
     this.setState(
       (prevState) => ({ numPanelsAnimating: prevState.numPanelsAnimating + 1 }),
-      this.requestFocus
+      this.requestFocus,
     );
   };
 
@@ -1172,7 +1172,7 @@ class MainWindow
         onCloseAndRestart={this.onCloseAndRestart}
         onClickBack={() =>
           this.props.serviceManager.store.dispatch(
-            actions.setResponsePanelIsOpen(false)
+            actions.setResponsePanelIsOpen(false),
           )
         }
         onPanelOpenStart={() => this.onPanelOpenStart(true)}
@@ -1181,7 +1181,7 @@ class MainWindow
         onPanelCloseEnd={() => {
           this.onPanelCloseEnd(true);
           this.props.serviceManager.store.dispatch(
-            actions.setResponsePanelContent(null, false)
+            actions.setResponsePanelContent(null, false),
           );
         }}
         renderMessageComponent={(childProps) => (
@@ -1224,7 +1224,7 @@ class MainWindow
           className={cx(
             "WACMainWindow",
             "WACWidget__FocusTrapContainer",
-            ...extraClassNames
+            ...extraClassNames,
           )}
           ref={this.mainWindowRef}
         >
@@ -1293,5 +1293,5 @@ export default connect<AppState, void, MainWindowOwnProps, AppState>(
   null,
   {
     forwardRef: true,
-  }
+  },
 )(MainWindow);

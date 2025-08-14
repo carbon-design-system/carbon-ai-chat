@@ -56,7 +56,7 @@ function debugLog(message: string, ...args: any[]) {
 function debugStackTrace(message: string, ...args: any[]) {
   if (enableDebugStackTracesLog) {
     const stack = new Error(
-      'This is not an error; it is a stack trace used for debugging purposes. It is enabled by the "debugStackTraces: true" configuration option.'
+      'This is not an error; it is a stack trace used for debugging purposes. It is enabled by the "debugStackTraces: true" configuration option.',
     );
     debugLog(message, stack, ...args);
   } else {
@@ -137,7 +137,7 @@ function createDidCatchErrorData(
   component: string,
   error: Error,
   errorInfo: ErrorInfo,
-  isCatastrophicError?: boolean
+  isCatastrophicError?: boolean,
 ): OnErrorData {
   return {
     errorType: OnErrorType.RENDER,

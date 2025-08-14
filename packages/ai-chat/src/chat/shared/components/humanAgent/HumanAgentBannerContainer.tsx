@@ -35,7 +35,7 @@ function HumanAgentBannerContainer({
   bannerRef,
 }: HumanAgentBannerContainerProps) {
   const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState
+    (state: AppState) => state.humanAgentState,
   );
   const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
   if (displayState.isConnectingOrConnected || humanAgentState.isScreenSharing) {

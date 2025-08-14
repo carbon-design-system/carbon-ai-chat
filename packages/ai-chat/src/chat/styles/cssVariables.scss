@@ -87,12 +87,12 @@
   --cds-chat-UNREAD-INDICATOR-color-text: #ffffff;
 
   /* Font Family */
-  --cds-chat-BASE-font-family: "IBM Plex Sans", "Helvetica Neue", arial,
-    sans-serif;
-  --cds-chat-BASE-header-font-family: "IBM Plex Sans", "Helvetica Neue", arial,
-    sans-serif;
-  --cds-chat-HOME_SCREEN-greeting-font-family: "IBM Plex Sans", "Helvetica Neue",
-    arial, sans-serif;
+  --cds-chat-BASE-font-family:
+    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
+  --cds-chat-BASE-header-font-family:
+    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
+  --cds-chat-HOME_SCREEN-greeting-font-family:
+    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
 
   /* PRIMARY color customizations */
   --cds-chat-PRIMARY-color: #{theme.$chat-header-background};
@@ -163,8 +163,8 @@
   --cds-chat-BRANDING-background: var(--cds-layer-01);
   --cds-chat-BRANDING-link: var(--cds-link-primary);
   --cds-chat-BRANDING-border-color: var(--cds-layer-02);
-  --cds-chat-BRANDING-font-family: "IBM Plex Sans", "Helvetica Neue", arial,
-    sans-serif;
+  --cds-chat-BRANDING-font-family:
+    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
 
   /*  Other styles */
   --cds-chat-CONTAINER-border-radius: 0;

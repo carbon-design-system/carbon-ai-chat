@@ -33,7 +33,7 @@ const CSS_CLASS_STATUS_PREFIX = `${CSS_CLASS_PREFIX}-chain-of-thought-accordion-
  */
 type ChainOfThoughtOnToggle = (
   isOpen: boolean,
-  scrollToElement: HTMLElement
+  scrollToElement: HTMLElement,
 ) => void;
 
 interface ChainOfThoughtStepWithToggle extends ChainOfThoughtStep {
@@ -54,7 +54,7 @@ function stepStatus(
   status: ChainOfThoughtStepStatus,
   statusSucceededLabelText: string,
   statusFailedLabelText: string,
-  statusProcessingLabelText: string
+  statusProcessingLabelText: string,
 ) {
   switch (status) {
     case ChainOfThoughtStepStatus.PROCESSING:
@@ -92,7 +92,7 @@ function renderToolData(data: unknown, label: string, classPostfix: string) {
 function renderToolDataAsMarkdown(
   content: string,
   label: string,
-  classPostfix: string
+  classPostfix: string,
 ) {
   return html`<div
     class="${CSS_CLASS_ITEM_PREFIX} ${CSS_CLASS_ITEM_PREFIX}-${classPostfix}"
@@ -107,7 +107,7 @@ function renderToolDataAsMarkdown(
 
 function accordionItemContent(
   customElementClass: ChainOfThoughtElement,
-  item: ChainOfThoughtStepWithToggle
+  item: ChainOfThoughtStepWithToggle,
 ) {
   const { inputLabelText, outputLabelText, toolLabelText } = customElementClass;
   if (item.open) {
@@ -184,7 +184,7 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
               item.status,
               statusSucceededLabelText,
               statusFailedLabelText,
-              statusProcessingLabelText
+              statusProcessingLabelText,
             )}</span
           >
         </button>
@@ -203,7 +203,7 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
 }
 
 function chainOfThoughtElementTemplate(
-  customElementClass: ChainOfThoughtElement
+  customElementClass: ChainOfThoughtElement,
 ) {
   const { _chainOfThoughtPanelID, explainabilityText, open } =
     customElementClass;

@@ -42,17 +42,17 @@ interface HumanAgentBannerProps {
  */
 function HumanAgentBanner(
   props: HumanAgentBannerProps,
-  ref: RefObject<HasRequestFocus>
+  ref: RefObject<HasRequestFocus>,
 ) {
   const { onButtonClick } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
   const persistedHumanAgentState = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.humanAgentState
+      state.persistedToBrowserStorage.chatState.humanAgentState,
   );
   const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState
+    (state: AppState) => state.humanAgentState,
   );
   const { isConnecting, availability, isScreenSharing } = humanAgentState;
   const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);

@@ -51,7 +51,7 @@ class HistoryService {
       } else if (publicConfig.messaging?.customLoadHistory) {
         const items: HistoryItem[] =
           await publicConfig.messaging.customLoadHistory(
-            this.serviceManager.instance
+            this.serviceManager.instance,
           );
         const note: HistoryNote = {
           body: items,
@@ -73,7 +73,7 @@ class HistoryService {
         await this.serviceManager.actions.changeView(
           ViewType.MAIN_WINDOW,
           { mainWindowOpenReason: MainWindowOpenReason.SESSION_HISTORY },
-          false
+          false,
         );
         // Clear the tour state, regardless if changeView was successful or not, since there is no tour data to be
         // shown. This is done instead of calling serviceManager.actions.endTour() because this scenario is a little
@@ -83,7 +83,7 @@ class HistoryService {
     } catch (error) {
       consoleError(
         "An error occurred while attempting to load the conversation history",
-        error
+        error,
       );
     }
 

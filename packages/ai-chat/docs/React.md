@@ -333,7 +333,7 @@ function App() {
         />
       ),
     }),
-    [modelsInUse]
+    [modelsInUse],
   );
 
   return (

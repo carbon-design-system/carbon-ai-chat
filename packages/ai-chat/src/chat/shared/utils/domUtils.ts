@@ -29,7 +29,7 @@ const SCROLLBAR_WIDTH = memoizeFunction(getScrollbarWidth);
 function doScrollElementIntoView(
   element: Element,
   animate = false,
-  boundary?: Element
+  boundary?: Element,
 ) {
   if (element) {
     const actions = compute(element, {
@@ -58,7 +58,7 @@ function doScrollElement(
   element: Element,
   scrollTop: number,
   scrollLeft: number,
-  animate = false
+  animate = false,
 ) {
   setTimeout(() => {
     if (element) {
@@ -126,7 +126,7 @@ function doFocus(element: HTMLElement | SVGElement, preventScroll = false) {
 function doFocusRef(
   ref: RefObject<HTMLElement>,
   defer = false,
-  preventScroll = false
+  preventScroll = false,
 ) {
   if (ref) {
     if (defer) {
@@ -183,7 +183,7 @@ function isTextAreaNode(node: Node): node is HTMLTextAreaElement {
  * @returns boolean explaining if there was a focusable element or not.
  */
 function focusOnFirstFocusableItemInArrayOfElements(
-  elements: HTMLElement[]
+  elements: HTMLElement[],
 ): boolean {
   for (let index = 0; index < elements.length; index++) {
     if (focusOnFirstFocusableElement(elements[index])) {

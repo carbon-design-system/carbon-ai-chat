@@ -48,7 +48,7 @@ const ReactPlayerComponent = React.lazy(() =>
       exported = exported.default;
     }
     return { default: exported };
-  })
+  }),
 ) as React.LazyExoticComponent<typeof ReactPlayer>;
 
 /**

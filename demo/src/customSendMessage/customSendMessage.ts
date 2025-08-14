@@ -19,7 +19,7 @@ import { RESPONSE_MAP } from "./responseMap";
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) {
   if (request.input.message_type !== "event") {
     if (request.input.text && request.input.text in RESPONSE_MAP) {

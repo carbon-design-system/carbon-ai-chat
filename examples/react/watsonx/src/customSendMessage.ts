@@ -42,7 +42,7 @@ async function getAccessToken(): Promise<string> {
       throw new Error(
         `Token request failed: ${response.status} ${
           response.statusText
-        }\n${JSON.stringify(errorData)}`
+        }\n${JSON.stringify(errorData)}`,
       );
     }
 
@@ -60,7 +60,7 @@ async function getAccessToken(): Promise<string> {
 async function streamWatsonxResponse(
   input: string,
   _config: ReturnType<typeof getWatsonxConfig>,
-  instance: ChatInstance
+  instance: ChatInstance,
 ): Promise<void> {
   try {
     // Get access token
@@ -106,7 +106,7 @@ async function streamWatsonxResponse(
           // Check if this is an error event from the proxy
           if (parsed.error) {
             throw new Error(
-              `${parsed.error}: ${parsed.details || parsed.message || ""}`
+              `${parsed.error}: ${parsed.details || parsed.message || ""}`,
             );
           }
 
@@ -222,7 +222,7 @@ async function streamWatsonxResponse(
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) {
   if (request.input.text === "") {
     const message: MessageResponse = {

@@ -51,7 +51,7 @@ interface HumanAgentService {
    */
   startChat(
     localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
-    originalMessage: Message
+    originalMessage: Message,
   ): Promise<void>;
 
   /**
@@ -66,7 +66,7 @@ interface HumanAgentService {
   endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage?: boolean,
-    showBotReturnMessage?: boolean
+    showBotReturnMessage?: boolean,
   ): Promise<void>;
 
   /**
@@ -100,7 +100,7 @@ interface HumanAgentService {
    * so it can perform a more specific check.
    */
   checkAreAnyHumanAgentsOnline(
-    connectMessage: MessageResponse
+    connectMessage: MessageResponse,
   ): Promise<HumanAgentsOnlineStatus>;
 
   /**
@@ -126,7 +126,7 @@ interface HumanAgentService {
    */
   handleHydration(
     allowReconnect: boolean,
-    allowEndChatMessages: boolean
+    allowEndChatMessages: boolean,
   ): Promise<void>;
 }
 
@@ -134,7 +134,7 @@ interface HumanAgentService {
  * The type signature of the "createService" function in the implementation.
  */
 type CreateHumanAgentServiceFunction = (
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ) => HumanAgentService;
 
 // TODO: Moved used for HumanAgentsOnlineStatus export to use the package.

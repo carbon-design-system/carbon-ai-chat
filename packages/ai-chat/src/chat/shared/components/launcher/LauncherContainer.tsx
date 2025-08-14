@@ -26,16 +26,17 @@ function LauncherContainer() {
   const serviceManager = useServiceManager();
   const launcherRef = useRef<HasRequestFocus>();
   const viewState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState.viewState
+    (state: AppState) =>
+      state.persistedToBrowserStorage.launcherState.viewState,
   );
   const initialViewChangeComplete = useSelector(
-    (state: AppState) => state.initialViewChangeComplete
+    (state: AppState) => state.initialViewChangeComplete,
   );
   const launcherHidden = !viewState.launcher;
 
   const activeTour = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.launcherState.activeTour
+      state.persistedToBrowserStorage.launcherState.activeTour,
   );
 
   const requestFocus = useCallback(() => {

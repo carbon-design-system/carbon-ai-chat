@@ -116,14 +116,14 @@ function HomeScreenContainer({
 }: HomeScreenContainerProps) {
   const serviceManager = useServiceManager();
   const homeScreenConfig = useSelector(
-    (state: AppState) => state.homeScreenConfig
+    (state: AppState) => state.homeScreenConfig,
   );
 
   const isCustomPanelOpen = useSelector(
-    (state: AppState) => state.customPanelState.isOpen
+    (state: AppState) => state.customPanelState.isOpen,
   );
   const prevIsHydrationAnimationComplete = usePrevious(
-    isHydrationAnimationComplete
+    isHydrationAnimationComplete,
   );
   const shouldHide = isCustomPanelOpen;
 
@@ -138,7 +138,7 @@ function HomeScreenContainer({
     (text: string) => {
       onSendBotInput(text);
     },
-    [onSendBotInput]
+    [onSendBotInput],
   );
 
   const handlerStarterClick = useCallback(
@@ -152,10 +152,10 @@ function HomeScreenContainer({
             },
           },
         },
-        THREAD_ID_MAIN
+        THREAD_ID_MAIN,
       );
     },
-    [onSendButtonInput]
+    [onSendButtonInput],
   );
 
   return (

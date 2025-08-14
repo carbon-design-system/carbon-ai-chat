@@ -85,7 +85,7 @@ function CustomPanel(props: CustomPanelProps) {
   } = props;
   const languagePack = useLanguagePack();
   const { isOpen, options } = useSelector(
-    (state: AppState) => state.customPanelState
+    (state: AppState) => state.customPanelState,
   );
   const {
     title,
@@ -150,34 +150,34 @@ function CustomPanel(props: CustomPanelProps) {
       onOpenStart={() => {
         serviceManager.eventBus.fire(
           { type: BusEventType.CUSTOM_PANEL_PRE_OPEN },
-          serviceManager.instance
+          serviceManager.instance,
         );
         onPanelOpenStart();
       }}
       onOpenEnd={() => {
         serviceManager.eventBus.fire(
           { type: BusEventType.CUSTOM_PANEL_OPEN },
-          serviceManager.instance
+          serviceManager.instance,
         );
         onPanelOpenEnd();
       }}
       onCloseStart={() => {
         serviceManager.eventBus.fire(
           { type: BusEventType.CUSTOM_PANEL_PRE_CLOSE },
-          serviceManager.instance
+          serviceManager.instance,
         );
         onPanelCloseStart();
       }}
       onCloseEnd={() => {
         serviceManager.eventBus.fire(
           { type: BusEventType.CUSTOM_PANEL_CLOSE },
-          serviceManager.instance
+          serviceManager.instance,
         );
         onPanelCloseEnd();
         serviceManager.store.dispatch(
           actions.setCustomPanelConfigOptions(
-            DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
-          )
+            DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+          ),
         );
       }}
       animationOnOpen={openAnimation}

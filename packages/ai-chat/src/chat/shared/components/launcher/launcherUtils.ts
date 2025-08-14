@@ -16,7 +16,7 @@ import { LanguagePack } from "../../../../types/instance/apiTypes";
 function getLauncherButtonAriaLabel(
   languagePack: LanguagePack,
   isLauncherHidden: boolean,
-  isTourActive: boolean
+  isTourActive: boolean,
 ) {
   if (isTourActive) {
     return isLauncherHidden

@@ -217,7 +217,9 @@ button.WACLauncher__Button {
   background-color: var(--cds-chat-LAUNCHER-color-background);
   block-size: var(--cds-chat-LAUNCHER-default-size);
   inline-size: var(--cds-chat-LAUNCHER-default-size);
-  transition: background 250ms ease-in-out, transform 150ms ease;
+  transition:
+    background 250ms ease-in-out,
+    transform 150ms ease;
 }
 
 button.WACLauncher__Button:focus {
@@ -321,9 +323,10 @@ button.WACLauncher__Button svg {
   // of the page. Once all of that has been done move down the height of the launcher container. This way the top of the
   // container always starts 16px above the small launcher before the animation, irrelevant of how tall the container is.
   inset-block-end: calc(
-    #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) + var(
-        --cds-chat-LAUNCHER-position-bottom
-      ) - var(--cds-chat-LAUNCHER-desktop-expanded-height)
+    #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) +
+      var(--cds-chat-LAUNCHER-position-bottom) - var(
+        --cds-chat-LAUNCHER-desktop-expanded-height
+      )
   );
 
   // 64px of distance between the right side of the medium container and the right side of the page, so that theres a
@@ -631,9 +634,10 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
     // of the page. Once all of that has been done move down the height of the launcher container. This way the top of the
     // container always starts 16px above the small launcher before the animation, irrelevant of how tall the container is.
     inset-block-end: calc(
-      #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) + var(
-          --cds-chat-LAUNCHER-position-bottom
-        ) - var(--cds-chat-LAUNCHER-desktop-expanded-height)
+      #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) +
+        var(--cds-chat-LAUNCHER-position-bottom) - var(
+          --cds-chat-LAUNCHER-desktop-expanded-height
+        )
     );
   }
 
@@ -1248,9 +1252,10 @@ button.WACLauncher__Button:not(.WACLauncher__TourButton) {
     background: transparent;
     box-shadow: none;
     inset-block-end: calc(
-      #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) + var(
-          --cds-chat-LAUNCHER-position-bottom
-        ) - var(--cds-chat-LAUNCHER-desktop-expanded-height)
+      #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) +
+        var(--cds-chat-LAUNCHER-position-bottom) - var(
+          --cds-chat-LAUNCHER-desktop-expanded-height
+        )
     );
   }
 }
@@ -1380,12 +1385,16 @@ button.WACLauncherExtended__Button {
   align-items: center;
   justify-content: center;
   block-size: calc(
-    var(--cds-chat-LAUNCHER-default-size) -
-      var(--cds-chat-BASE-border-width-large) * 2
+    var(--cds-chat-LAUNCHER-default-size) - var(
+        --cds-chat-BASE-border-width-large
+      ) *
+      2
   );
   inline-size: calc(
-    var(--cds-chat-LAUNCHER-default-size) -
-      var(--cds-chat-BASE-border-width-large) * 2
+    var(--cds-chat-LAUNCHER-default-size) - var(
+        --cds-chat-BASE-border-width-large
+      ) *
+      2
   );
   margin-inline-start: auto;
 
@@ -1458,8 +1467,8 @@ button.WACLauncherExtended__Button {
 }
 
 .WACLauncher__ButtonContainer.WACLauncherExtended__Button--extendedAnimation {
-  animation: WACLauncherExtend 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s
-      both,
+  animation:
+    WACLauncherExtend 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both,
     WACLauncherPartiallyRound 0.3s ease-in 0.5s both;
   @media screen and (prefers-reduced-motion: reduce) {
     button.WACLauncherExtended__Button {
@@ -1506,8 +1515,8 @@ button.WACLauncherExtended__Button {
 }
 
 .WACLauncher__ButtonContainer.WACLauncherExtended__Button--reducedAnimation {
-  animation: WACLauncherReduce 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s
-      both,
+  animation:
+    WACLauncherReduce 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both,
     WACLauncherCompletelyRound 0.3s ease-out 0.5s both;
   @media screen and (prefers-reduced-motion: reduce) {
     button.WACLauncherExtended__Button {

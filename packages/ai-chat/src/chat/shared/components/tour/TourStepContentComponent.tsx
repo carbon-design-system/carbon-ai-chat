@@ -178,7 +178,7 @@ function StepContentVideo(props: TourStepComponentProp<VideoItem>) {
   const { source, description, alt_text } = messageItem;
 
   const { viewState } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
+    (state: AppState) => state.persistedToBrowserStorage.launcherState,
   );
 
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -209,7 +209,7 @@ function StepContentVideo(props: TourStepComponentProp<VideoItem>) {
  * If the responseType is not one of the three supported types for tours then render an inline error.
  */
 function StepContentUnsupportedError(
-  props: TourStepComponentProp<GenericItem>
+  props: TourStepComponentProp<GenericItem>,
 ) {
   const { messageItem, isCurrentStep } = props;
   const languagePack = useLanguagePack();
@@ -218,7 +218,7 @@ function StepContentUnsupportedError(
   useEffect(() => {
     if (isCurrentStep) {
       consoleError(
-        `The response type you tried to use "${messageItem.response_type}" is not valid within a tour step. The supported response types in tour steps are text, video, and image.`
+        `The response type you tried to use "${messageItem.response_type}" is not valid within a tour step. The supported response types in tour steps are text, video, and image.`,
       );
     }
   }, [isCurrentStep, messageItem.response_type]);

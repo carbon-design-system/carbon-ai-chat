@@ -93,7 +93,7 @@ function convertCSSVariablesToString(cssVariables: ObjectMap<string>): string {
  */
 async function remoteStylesToCSSVars(
   whiteLabelVariables: WhiteLabelTheme,
-  carbonTheme: CarbonTheme
+  carbonTheme: CarbonTheme,
 ): Promise<ObjectMap<string>> {
   const cssOverrides: ObjectMap<string> = {};
 
@@ -106,11 +106,11 @@ async function remoteStylesToCSSVars(
     cssOverrides["PRIMARY-color-text"] = whiteOrBlackText(primaryColor);
     cssOverrides["PRIMARY-color-hover"] = await adjustLightness(
       primaryColor,
-      -8
+      -8,
     );
     cssOverrides["PRIMARY-color-active"] = await adjustLightness(
       primaryColor,
-      -10
+      -10,
     );
 
     // We need to calculate the focus color for the buttons in the header. The focus color for the white and g10
@@ -156,9 +156,8 @@ async function remoteStylesToCSSVars(
   ) {
     // We don't like the default Carbon color for the sent text bubble in the g90 and g100 color themes.
     cssOverrides["SECONDARY-color"] = `var(${CSS_VAR_PREFIX}layer-02)`;
-    cssOverrides[
-      "SECONDARY-color-text"
-    ] = `var(${CSS_VAR_PREFIX}text-primary);`;
+    cssOverrides["SECONDARY-color-text"] =
+      `var(${CSS_VAR_PREFIX}text-primary);`;
   }
 
   if (accentColor) {
@@ -215,13 +214,13 @@ async function remoteStylesToCSSVars(
     // When ACCENT-color-bw is used as a button color we need a hover and active color.
     cssOverrides["ACCENT-color-bw-hover"] = await adjustLightness(
       accentColorBW,
-      -8
+      -8,
     );
 
     // The active color is a little darker than the hover color.
     cssOverrides["ACCENT-color-bw-active"] = await adjustLightness(
       accentColorBW,
-      -10
+      -10,
     );
 
     // Also need an inverse of ACCENT-color-bw so that we can have accessible text within our bw buttons.
@@ -319,7 +318,7 @@ const ACCENT_COLOR_MAPS: Record<CarbonTheme, { [key: string]: string[] }> = {
 function fillValues(
   styles: ObjectMap<string>,
   propertyNames: string[],
-  value: string
+  value: string,
 ) {
   propertyNames.forEach((propertyName) => {
     styles[propertyName] = value;
@@ -335,7 +334,7 @@ function mergeCSSVariables(
   publicVars: ObjectMap<string>,
   whiteLabelVariables: WhiteLabelTheme,
   carbonTheme: CarbonTheme,
-  useAITheme: boolean
+  useAITheme: boolean,
 ): ObjectMap<string> {
   carbonTheme = carbonTheme || CarbonTheme.G10;
   useAITheme = useAITheme || false;
@@ -343,7 +342,7 @@ function mergeCSSVariables(
 
   const internalOverrides = createInternalCSSOverridesMap(
     carbonTheme,
-    useAITheme
+    useAITheme,
   );
   const result = { ...internalOverrides, ...publicVars };
 
@@ -351,7 +350,7 @@ function mergeCSSVariables(
     // Variables starting with "$" are carbon theme tokens and should all be colors
     if (key.startsWith("$") && !value.match(HEXADECIMAL_REGEX)) {
       console.warn(
-        `${WA_CONSOLE_PREFIX} You tried to call "updateCSSVariables" with an invalid value for "${key}": "${publicVars[key]}". You must use hexadecimal values for colors.`
+        `${WA_CONSOLE_PREFIX} You tried to call "updateCSSVariables" with an invalid value for "${key}": "${publicVars[key]}". You must use hexadecimal values for colors.`,
       );
       // Delete color values that are not in hexadecimal format to ensure we can use them in methods in ./colors.
       delete result[key];
@@ -360,7 +359,7 @@ function mergeCSSVariables(
 
   const remoteVars = remoteStylesToCSSVars(
     whiteLabelVariables || {},
-    carbonTheme
+    carbonTheme,
   );
 
   Object.entries(remoteVars).forEach(([key, value]) => {
@@ -378,7 +377,7 @@ function mergeCSSVariables(
  */
 function createInternalCSSOverridesMap(
   carbonTheme: CarbonTheme,
-  useAITheme: boolean
+  useAITheme: boolean,
 ): ObjectMap<string> {
   let internalOverridesMap = {};
   if (!useAITheme) {

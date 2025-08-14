@@ -125,7 +125,7 @@ function Carousel({
   const intl = useIntl();
   const { carousel_prevNavButton, carousel_nextNavButton } = useLanguagePack();
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint
+    (state: AppState) => state.chatWidthBreakpoint,
   );
   const [nextButton, setNextButton] = useState<HTMLElement>();
   const [previousButton, setPreviousButton] = useState<HTMLElement>();
@@ -139,7 +139,7 @@ function Carousel({
   const totalSlideCount = React.Children.count(children);
   const currentLabel = intl.formatMessage(
     { id: "components_swiper_currentLabel" },
-    { currentSlideNumber, totalSlideCount }
+    { currentSlideNumber, totalSlideCount },
   );
 
   if (totalSlideCount <= 1) {

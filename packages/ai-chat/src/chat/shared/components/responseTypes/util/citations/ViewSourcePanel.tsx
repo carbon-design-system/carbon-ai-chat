@@ -25,12 +25,12 @@ import { OverlayPanelName } from "../../../OverlayPanel";
  */
 function ViewSourcePanel(
   props: BasePanelConfigOptions,
-  ref: Ref<HasRequestFocus>
+  ref: Ref<HasRequestFocus>,
 ) {
   const languagePack = useLanguagePack();
   const { store } = useServiceManager();
   const { isOpen, citationItem, relatedSearchResult } = useSelector(
-    (state: AppState) => state.viewSourcePanelState
+    (state: AppState) => state.viewSourcePanelState,
   );
 
   let content;

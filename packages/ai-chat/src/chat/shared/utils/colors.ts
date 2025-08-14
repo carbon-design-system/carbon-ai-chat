@@ -75,7 +75,7 @@ function calculateContrast(color1: string, color2: string) {
 function calculateRelativeLuminance([r8, g8, b8]: [
   number,
   number,
-  number
+  number,
 ]): number {
   const rRGB = r8 / 255;
   const gRGB = g8 / 255;

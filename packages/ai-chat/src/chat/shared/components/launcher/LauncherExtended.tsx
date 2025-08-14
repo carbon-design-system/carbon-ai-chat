@@ -127,7 +127,7 @@ const MAX_EXTENDED_LAUNCHER_WIDTH = 400;
  */
 function LauncherExtended(
   props: LauncherExtendedProps,
-  ref: Ref<LauncherExtendedFunctions>
+  ref: Ref<LauncherExtendedFunctions>,
 ) {
   const {
     unreadHumanAgentCount,
@@ -148,7 +148,7 @@ function LauncherExtended(
   const launcherAvatarURL = useSelector((state: AppState) =>
     state.theme.useAITheme
       ? undefined
-      : state.launcher.config.mobile.avatar_url_override
+      : state.launcher.config.mobile.avatar_url_override,
   );
   const [animateExtendedState, setAnimateExtendedState] =
     useState(playExtendAnimation);
@@ -172,13 +172,13 @@ function LauncherExtended(
   let ariaLabel = getLauncherButtonAriaLabel(
     languagePack,
     launcherHidden,
-    activeTour
+    activeTour,
   );
 
   if (unreadHumanAgentCount !== 0) {
     ariaLabel += `. ${intl.formatMessage(
       { id: "icon_ariaUnreadMessages" },
-      { count: unreadHumanAgentCount }
+      { count: unreadHumanAgentCount },
     )}`;
   }
 
@@ -215,7 +215,7 @@ function LauncherExtended(
     calculateAndSetMaxExtendedLauncherWidth(
       textHolderElement,
       greetingMessageElement,
-      extendedContainerElement
+      extendedContainerElement,
     );
   }, [ariaAnnouncer, extendWithoutAnimation, launcherGreetingMessage]);
 
@@ -230,7 +230,7 @@ function LauncherExtended(
           { fadeInElement: greetingMessageRef.current, fadeInTime: 300 },
           () => {
             setAnimateExtendedState(false);
-          }
+          },
         );
       } else {
         // Only un-hide the greeting message.
@@ -244,7 +244,7 @@ function LauncherExtended(
         checkIfUserSwipedRight(
           event.touches[0],
           touchStartRef.current,
-          onSwipeRight
+          onSwipeRight,
         );
       };
 
@@ -274,7 +274,7 @@ function LauncherExtended(
         setAnimateExtendedState(true);
         extendedContainerRef.current.removeEventListener(
           "animationend",
-          reduceAnimationEndListener
+          reduceAnimationEndListener,
         );
       };
 
@@ -282,7 +282,7 @@ function LauncherExtended(
       // load.
       extendedContainerRef.current.addEventListener(
         "animationend",
-        reduceAnimationEndListener
+        reduceAnimationEndListener,
       );
 
       // Fade out the greeting message.
@@ -313,7 +313,7 @@ function LauncherExtended(
           "WACLauncherExtended__Button--extendedAnimation": extendWithAnimation,
           "WACLauncherExtended__Button--reducedAnimation":
             shouldReduceExtendedLauncher,
-        }
+        },
       )}
       ref={extendedContainerRef}
     >
@@ -373,7 +373,7 @@ function LauncherExtended(
 function calculateAndSetMaxExtendedLauncherWidth(
   textHolderEl: HTMLDivElement,
   greetingMessageEl: HTMLDivElement,
-  extendedContainerEl: HTMLDivElement
+  extendedContainerEl: HTMLDivElement,
 ) {
   // The number in pixels that don't make up the space the launcher text can fill up.
   // 68px = 6px (left/right button border width) + 50px (launcher icon container) + 12px (text holder left padding)
@@ -392,7 +392,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   greetingMessageEl.style.setProperty("display", "flex");
 
   const { clientWidth } = greetingMessageEl.querySelector(
-    ".WACLauncherExtended__GreetingText"
+    ".WACLauncherExtended__GreetingText",
   );
   // We should add a pixel to compensate for lack of clientWidth precision. It's possible for 1 line of text to be
   // rendered as 2 lines because HTML may render text with a precise width of 219.266 pixels, but clientWidth will
@@ -413,7 +413,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   // Set the extended width property to animate to.
   extendedContainerEl.style.setProperty(
     "--cds-chat--LAUNCHER-EXTENDED-width",
-    `${launcherExtendedWidth}px`
+    `${launcherExtendedWidth}px`,
   );
 }
 
@@ -426,7 +426,7 @@ function doFadeAnimationForElements(
     fadeInElement,
     fadeInTime = 600,
   }: ExtendedFadeAnimationOptions,
-  callback?: () => void
+  callback?: () => void,
 ) {
   if (fadeOutElement) {
     fadeOutElement.classList.remove("WACLauncherExtended__Element--hidden");
@@ -437,13 +437,13 @@ function doFadeAnimationForElements(
       () => {
         fadeOutElement.classList.add("WACLauncherExtended__Element--hidden");
         fadeOutElement.classList.remove(
-          "WACLauncherExtended__Element--FadeOut"
+          "WACLauncherExtended__Element--FadeOut",
         );
         // If there is no element provided to fade in, fire the callback function after the fade out animation is complete.
         if (!fadeInElement && callback) {
           callback();
         }
-      }
+      },
     );
   }
 
@@ -456,13 +456,13 @@ function doFadeAnimationForElements(
         600,
         () => {
           fadeInElement.classList.remove(
-            "WACLauncherExtended__Element--FadeIn"
+            "WACLauncherExtended__Element--FadeIn",
           );
           // Fire the callback after the fade in animation has ended.
           if (callback) {
             callback();
           }
-        }
+        },
       );
     }, fadeInTime);
   }
@@ -475,7 +475,7 @@ function doFadeAnimationForElements(
 function checkIfUserSwipedRight(
   touchList: Touch,
   touchStartCoordinates: LauncherTouchStartCoordinates,
-  callback: () => void
+  callback: () => void,
 ) {
   const { touchStartX, touchStartY } = touchStartCoordinates;
 

@@ -153,7 +153,7 @@ const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
 const reducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
     state: AppState,
-    action: { partialState: DeepPartial<AppState> }
+    action: { partialState: DeepPartial<AppState> },
   ): AppState => merge({}, state, action.partialState),
 
   [HYDRATE_CHAT]: (state: AppState): AppState => ({
@@ -205,7 +205,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [HYDRATE_MESSAGE_HISTORY]: (
     state: AppState,
-    action: { messageHistory: AppStateMessages }
+    action: { messageHistory: AppStateMessages },
   ): AppState => {
     let newState = {
       ...state,
@@ -228,7 +228,7 @@ const reducers: { [key: string]: ReducerType } = {
       message: Message;
       addMessage: boolean;
       addAfterID: string;
-    }
+    },
   ): AppState => {
     const { messageItem, message, addMessage, addAfterID } = action;
     const { id } = messageItem.ui_state;
@@ -242,7 +242,7 @@ const reducers: { [key: string]: ReducerType } = {
     }
 
     const currentIndex = newState.botMessageState.localMessageIDs.findIndex(
-      (existingID) => existingID === id
+      (existingID) => existingID === id,
     );
     const newLocalMessageIDs = [...newState.botMessageState.localMessageIDs];
 
@@ -259,7 +259,7 @@ const reducers: { [key: string]: ReducerType } = {
     // If an "addAfterID" was provided, use that to determine where to put this new ID.
     if (addAfterID) {
       const afterIDIndex = newLocalMessageIDs.findIndex(
-        (existingID) => existingID === addAfterID
+        (existingID) => existingID === addAfterID,
       );
       if (afterIDIndex !== -1) {
         insertAtIndex = afterIDIndex + 1;
@@ -319,7 +319,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [REMOVE_MESSAGES]: (
     state: AppState,
-    { messageIDs }: { messageIDs: string[] }
+    { messageIDs }: { messageIDs: string[] },
   ): AppState => {
     const idsSet = new Set(messageIDs);
 
@@ -328,7 +328,7 @@ const reducers: { [key: string]: ReducerType } = {
 
     // Remove all the message IDs from the message list.
     const newMessageIDs = state.botMessageState.messageIDs.filter(
-      (messageID) => !idsSet.has(messageID)
+      (messageID) => !idsSet.has(messageID),
     );
 
     // Remove all the message items from the items list for items that are part of one of the messages being
@@ -341,7 +341,7 @@ const reducers: { [key: string]: ReducerType } = {
           delete newAllMessageItems[messageItemID];
         }
         return !removeItem;
-      }
+      },
     );
 
     // Remove the message objects from the map.
@@ -365,7 +365,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_LOCAL_MESSAGE_ITEM]: (
     state: AppState,
-    action: { messageItem: LocalMessageItem }
+    action: { messageItem: LocalMessageItem },
   ): AppState => {
     const { messageItem } = action;
     return {
@@ -379,7 +379,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_MESSAGE]: (
     state: AppState,
-    action: { message: Message }
+    action: { message: Message },
   ): AppState => {
     const { message } = action;
     return {
@@ -455,13 +455,13 @@ const reducers: { [key: string]: ReducerType } = {
 
           // Keep the item if it's not in the new message.
           return !isItemInMessage;
-        }
+        },
       );
 
       // Now insert the message items back into the list at the right spot, but only the items we already had.
       if (existingItemIDs.length) {
         const itemIDsToInsert = itemIDsInNewMessage.filter((itemID) =>
-          existingItemIDs.includes(itemID)
+          existingItemIDs.includes(itemID),
         );
         if (itemIDsToInsert.length) {
           newLocalMessageIDs.splice(firstFoundIndex, 0, ...itemIDsToInsert);
@@ -483,7 +483,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [MESSAGE_SET_OPTION_SELECTED]: (
     state: AppState,
-    action: { sentMessage: MessageRequest; messageID: string }
+    action: { sentMessage: MessageRequest; messageID: string },
   ): AppState => {
     const newMessagesByID = {
       ...state.allMessageItemsByID,
@@ -504,7 +504,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ADD_IS_TYPING_COUNTER]: (
     state: AppState,
-    action: { addToIsTyping: number }
+    action: { addToIsTyping: number },
   ): AppState => {
     return {
       ...state,
@@ -512,7 +512,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.botMessageState,
         isTypingCounter: Math.max(
           state.botMessageState.isTypingCounter + action.addToIsTyping,
-          0
+          0,
         ),
       },
     };
@@ -520,7 +520,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ADD_IS_LOADING_COUNTER]: (
     state: AppState,
-    action: { addToIsLoading: number }
+    action: { addToIsLoading: number },
   ): AppState => {
     return {
       ...state,
@@ -528,7 +528,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.botMessageState,
         isLoadingCounter: Math.max(
           state.botMessageState.isLoadingCounter + action.addToIsLoading,
-          0
+          0,
         ),
       },
     };
@@ -536,7 +536,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ADD_IS_HYDRATING_COUNTER]: (
     state: AppState,
-    action: { addToIsHydrating: number }
+    action: { addToIsHydrating: number },
   ): AppState => {
     return {
       ...state,
@@ -544,7 +544,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.botMessageState,
         isHydratingCounter: Math.max(
           state.botMessageState.isHydratingCounter + action.addToIsHydrating,
-          0
+          0,
         ),
       },
     };
@@ -552,7 +552,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_APP_STATE_VALUE]: (
     state: AppState,
-    action: { key: keyof AppState; value: any }
+    action: { key: keyof AppState; value: any },
   ): AppState => ({
     ...state,
     [action.key]: action.value,
@@ -560,7 +560,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_PERSISTED_CHAT_STATE]: (
     state: AppState,
-    action: { chatState: Partial<PersistedChatState> }
+    action: { chatState: Partial<PersistedChatState> },
   ): AppState => ({
     ...state,
     persistedToBrowserStorage: {
@@ -574,7 +574,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_HAS_SENT_NON_WELCOME_MESSAGE]: (
     state: AppState,
-    action: { hasSentNonWelcomeMessage: boolean }
+    action: { hasSentNonWelcomeMessage: boolean },
   ): AppState => {
     if (
       state.persistedToBrowserStorage.chatState.hasSentNonWelcomeMessage ===
@@ -600,14 +600,14 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_VIEW_STATE]: (
     state: AppState,
-    action: { viewState: ViewState }
+    action: { viewState: ViewState },
   ): AppState => {
     return handleViewStateChange(state, action.viewState);
   },
 
   [SET_VIEW_CHANGING]: (
     state: AppState,
-    action: { viewChanging: boolean }
+    action: { viewChanging: boolean },
   ): AppState => ({
     ...state,
     viewChanging: action.viewChanging,
@@ -615,7 +615,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_INITIAL_VIEW_CHANGE_COMPLETE]: (
     state: AppState,
-    action: { changeComplete: boolean }
+    action: { changeComplete: boolean },
   ): AppState => ({
     ...state,
     initialViewChangeComplete: action.changeComplete,
@@ -633,7 +633,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_BOT_AVATAR_URL]: (
     state: AppState,
-    action: { url: string }
+    action: { url: string },
   ): AppState => ({
     ...state,
     botAvatarURL: action.url,
@@ -641,7 +641,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_LAUNCHER_AVATAR_URL]: (
     state: AppState,
-    action: { source: string }
+    action: { source: string },
   ): AppState => ({
     ...state,
     launcher: {
@@ -662,7 +662,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_MAIN_HEADER_TITLE]: (
     state: AppState,
-    action: { title: null | string }
+    action: { title: null | string },
   ): AppState => ({
     ...state,
     headerDisplayName: action.title,
@@ -674,7 +674,7 @@ const reducers: { [key: string]: ReducerType } = {
       variables: ObjectMap<string>;
       publicVars: ObjectMap<string>;
       whiteLabelVariables: WhiteLabelTheme;
-    }
+    },
   ): AppState => {
     const { config } = state;
     const { variables } = action;
@@ -696,7 +696,7 @@ const reducers: { [key: string]: ReducerType } = {
   // we will probably want to split this reducer into individual parts.
   [UPDATE_HOME_SCREEN_CONFIG]: (
     state: AppState,
-    action: { homeScreenConfig: HomeScreenConfig }
+    action: { homeScreenConfig: HomeScreenConfig },
   ): AppState => {
     // background_gradient is deprecated. When it's removed the following config manipulation function can be removed
     // and the merge in this reducer can go back to using action.homeScreenConfig for the new value instead of
@@ -709,7 +709,7 @@ const reducers: { [key: string]: ReducerType } = {
         {},
         state.homeScreenConfig,
         newHomeScreenConfig,
-        replaceCurrentArrayValue
+        replaceCurrentArrayValue,
       ),
     };
   },
@@ -720,13 +720,13 @@ const reducers: { [key: string]: ReducerType } = {
       localMessageID: string;
       propertyName: TPropertyName;
       propertyValue: LocalMessageUIState[TPropertyName];
-    }
+    },
   ): AppState => {
     return applyLocalMessageUIState(
       state,
       action.localMessageID,
       action.propertyName,
-      action.propertyValue
+      action.propertyValue,
     );
   },
 
@@ -736,7 +736,7 @@ const reducers: { [key: string]: ReducerType } = {
       messageID: string;
       propertyName: TPropertyName;
       propertyValue: MessageHistory[TPropertyName];
-    }
+    },
   ): AppState => {
     const { messageID, propertyName, propertyValue } = action;
     const oldMessage = state.allMessagesByID[messageID];
@@ -759,14 +759,14 @@ const reducers: { [key: string]: ReducerType } = {
   },
 
   [SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY]: <
-    TPropertyName extends keyof MessageUIStateInternal
+    TPropertyName extends keyof MessageUIStateInternal,
   >(
     state: AppState,
     action: {
       messageID: string;
       propertyName: TPropertyName;
       propertyValue: MessageUIStateInternal[TPropertyName];
-    }
+    },
   ): AppState => {
     const { messageID, propertyName, propertyValue } = action;
     const oldMessage = state.allMessagesByID[messageID];
@@ -790,7 +790,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [MERGE_HISTORY]: (
     state: AppState,
-    action: { messageID: string; history: MessageHistory }
+    action: { messageID: string; history: MessageHistory },
   ): AppState => {
     const oldMessage = state.allMessagesByID[action.messageID];
     if (oldMessage) {
@@ -810,7 +810,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ANNOUNCE_MESSAGE]: (
     state: AppState,
-    action: { message: AnnounceMessage }
+    action: { message: AnnounceMessage },
   ): AppState => ({
     ...state,
     announceMessage: action.message,
@@ -832,7 +832,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_HOME_SCREEN_IS_OPEN]: (
     state: AppState,
-    { isOpen }: { isOpen: boolean }
+    { isOpen }: { isOpen: boolean },
   ) => setHomeScreenOpenState(state, isOpen),
 
   [TOGGLE_HOME_SCREEN]: (state: AppState) =>
@@ -840,12 +840,12 @@ const reducers: { [key: string]: ReducerType } = {
       state,
       !state.persistedToBrowserStorage.chatState.homeScreenState
         .isHomeScreenOpen,
-      true
+      true,
     ),
 
   [UPDATE_LAUNCHER_CONFIG]: (
     state: AppState,
-    action: { launcherConfig: LauncherConfig }
+    action: { launcherConfig: LauncherConfig },
   ) => {
     const newConfig = merge({}, state.launcher.config, action.launcherConfig);
     return {
@@ -878,7 +878,7 @@ const reducers: { [key: string]: ReducerType } = {
     action: {
       propertyName: TPropertyName;
       propertyValue: PersistedLauncherState[TPropertyName];
-    }
+    },
   ) => {
     return {
       ...state,
@@ -893,14 +893,14 @@ const reducers: { [key: string]: ReducerType } = {
   },
 
   [SET_LAUNCHER_CONFIG_PROPERTY]: <
-    TPropertyName extends keyof LauncherInternalCallToActionConfig
+    TPropertyName extends keyof LauncherInternalCallToActionConfig,
   >(
     state: AppState,
     action: {
       propertyName: TPropertyName;
       propertyValue: LauncherInternalCallToActionConfig[TPropertyName];
       launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE;
-    }
+    },
   ) => {
     const newState = {
       ...state,
@@ -934,7 +934,7 @@ const reducers: { [key: string]: ReducerType } = {
     action: {
       propertyName: TPropertyName;
       propertyValue: ChatMessagesState[TPropertyName];
-    }
+    },
   ) => {
     return applyBotMessageState(state, {
       [action.propertyName]: action.propertyValue,
@@ -957,7 +957,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [OPEN_IFRAME_CONTENT]: (
     state: AppState,
-    { messageItem }: { messageItem: IFrameItem }
+    { messageItem }: { messageItem: IFrameItem },
   ) => {
     return {
       ...state,
@@ -991,7 +991,7 @@ const reducers: { [key: string]: ReducerType } = {
       isOpen: boolean;
       citationItem: ConversationalSearchItemCitation;
       relatedSearchResult: SearchResult;
-    }
+    },
   ) => {
     return {
       ...state,
@@ -1016,7 +1016,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_CUSTOM_PANEL_OPTIONS]: (
     state: AppState,
-    action: { options: CustomPanelConfigOptions }
+    action: { options: CustomPanelConfigOptions },
   ) => {
     return {
       ...state,
@@ -1029,7 +1029,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_TOUR_DATA]: (
     state: AppState,
-    action: { newActiveTourMessageID: string }
+    action: { newActiveTourMessageID: string },
   ): AppState => {
     const newStateWithPersistedTourData = {
       ...state,
@@ -1057,7 +1057,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [CHANGE_STEP_IN_TOUR]: (
     state: AppState,
-    action: { newStepNumber: number }
+    action: { newStepNumber: number },
   ): AppState => {
     return {
       ...state,
@@ -1070,9 +1070,9 @@ const reducers: { [key: string]: ReducerType } = {
             activeTourCurrentStepIndex: Math.max(
               Math.min(
                 action.newStepNumber,
-                state.tourState.activeTourStepItems.length - 1
+                state.tourState.activeTourStepItems.length - 1,
               ),
-              0
+              0,
             ),
           },
         },
@@ -1082,7 +1082,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_INPUT_STATE]: (
     state: AppState,
-    action: { newState: Partial<InputState>; isInputToHumanAgent: boolean }
+    action: { newState: Partial<InputState>; isInputToHumanAgent: boolean },
   ) => {
     const currentInputState = getInputState(state, action.isInputToHumanAgent);
     const newInputState = {
@@ -1092,14 +1092,14 @@ const reducers: { [key: string]: ReducerType } = {
     const newState = applyInputState(
       state,
       newInputState,
-      action.isInputToHumanAgent
+      action.isInputToHumanAgent,
     );
     return newState;
   },
 
   [SET_IS_BROWSER_PAGE_VISIBLE]: (
     state: AppState,
-    action: { isVisible: boolean }
+    action: { isVisible: boolean },
   ) => {
     // If the page becomes visible while the main window is open, then clear the number of unread messages.
     let numUnreadMessages;
@@ -1126,7 +1126,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       file,
       isInputToHumanAgent,
-    }: { file: FileUpload; isInputToHumanAgent: boolean }
+    }: { file: FileUpload; isInputToHumanAgent: boolean },
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
@@ -1135,7 +1135,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: [...currentInputState.files, file],
       },
-      isInputToHumanAgent
+      isInputToHumanAgent,
     );
   },
 
@@ -1144,7 +1144,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       fileID,
       isInputToHumanAgent,
-    }: { fileID: string; isInputToHumanAgent: boolean }
+    }: { fileID: string; isInputToHumanAgent: boolean },
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     const newUploads = [...currentInputState.files];
@@ -1158,16 +1158,16 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: newUploads,
       },
-      isInputToHumanAgent
+      isInputToHumanAgent,
     );
   },
 
   [REMOVE_LOCAL_MESSAGE_ITEM]: (
     state: AppState,
-    { localMessageItemID }: { localMessageItemID: string }
+    { localMessageItemID }: { localMessageItemID: string },
   ) => {
     const newLocalMessageIDs = state.botMessageState.localMessageIDs.filter(
-      (id) => id !== localMessageItemID
+      (id) => id !== localMessageItemID,
     );
     const allMessageItemsByID = {
       ...state.allMessageItemsByID,
@@ -1190,7 +1190,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       notification,
       notificationID,
-    }: { notificationID: string; notification: NotificationMessage }
+    }: { notificationID: string; notification: NotificationMessage },
   ) => {
     return {
       ...state,
@@ -1203,7 +1203,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [REMOVE_NOTIFICATIONS]: (
     state: AppState,
-    { groupID, notificationID }: { groupID?: string; notificationID?: string }
+    { groupID, notificationID }: { groupID?: string; notificationID?: string },
   ) => {
     return {
       ...state,
@@ -1225,7 +1225,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [CLEAR_INPUT_FILES]: (
     state: AppState,
-    { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
+    { isInputToHumanAgent }: { isInputToHumanAgent: boolean },
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
@@ -1234,7 +1234,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: [],
       },
-      isInputToHumanAgent
+      isInputToHumanAgent,
     );
   },
 
@@ -1244,7 +1244,7 @@ const reducers: { [key: string]: ReducerType } = {
       fileID,
       errorMessage,
       isInputToHumanAgent,
-    }: { fileID: string; errorMessage: string; isInputToHumanAgent: boolean }
+    }: { fileID: string; errorMessage: string; isInputToHumanAgent: boolean },
   ) => {
     const currentInputSate = getInputState(state, isInputToHumanAgent);
     const newUploads = [...currentInputSate.files];
@@ -1263,13 +1263,13 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputSate,
         files: newUploads,
       },
-      isInputToHumanAgent
+      isInputToHumanAgent,
     );
   },
 
   [ADD_NESTED_MESSAGES]: (
     state: AppState,
-    { localMessageItems }: { localMessageItems: LocalMessageItem[] }
+    { localMessageItems }: { localMessageItems: LocalMessageItem[] },
   ) => {
     const allMessageItemsByID = { ...state.allMessageItemsByID };
 
@@ -1285,7 +1285,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_RESPONSE_PANEL_IS_OPEN]: (
     state: AppState,
-    { isOpen }: { isOpen: boolean }
+    { isOpen }: { isOpen: boolean },
   ) => {
     return {
       ...state,
@@ -1301,7 +1301,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       localMessageItem,
       isMessageForInput,
-    }: { localMessageItem: LocalMessageItem; isMessageForInput: boolean }
+    }: { localMessageItem: LocalMessageItem; isMessageForInput: boolean },
   ) => {
     return {
       ...state,
@@ -1315,7 +1315,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [STREAMING_START]: (
     state: AppState,
-    { messageID }: { messageID: string }
+    { messageID }: { messageID: string },
   ) => {
     // Add an empty placeholder where we will start adding the streaming chunks as they come in.
     const streamIntoResponse: MessageResponse = {
@@ -1336,7 +1336,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       messageID,
       history,
-    }: { messageID: string; history: DeepPartial<MessageHistory> }
+    }: { messageID: string; history: DeepPartial<MessageHistory> },
   ) => {
     const existingMessage = state.allMessagesByID[messageID];
     const newMessage = merge({}, existingMessage, { history });
@@ -1365,7 +1365,7 @@ const reducers: { [key: string]: ReducerType } = {
       chunkItem: DeepPartial<GenericItem>;
       isCompleteItem: boolean;
       disableFadeAnimation: boolean;
-    }
+    },
   ) => {
     const message = state.allMessagesByID[fullMessageID] as MessageResponse;
 
@@ -1380,7 +1380,7 @@ const reducers: { [key: string]: ReducerType } = {
       newItem = outputItemToLocalItem(
         chunkItem as GenericItem,
         message as MessageResponse,
-        false
+        false,
       );
       newItem.ui_state.needsAnnouncement = false;
       newItem.ui_state.disableFadeAnimation = disableFadeAnimation;
@@ -1397,8 +1397,8 @@ const reducers: { [key: string]: ReducerType } = {
       if (!newItem.item.response_type) {
         throw new Error(
           `New chunk item does not have a response_type: ${JSON.stringify(
-            chunkItem
-          )}`
+            chunkItem,
+          )}`,
         );
       }
     } else if (isCompleteItem) {
@@ -1406,7 +1406,7 @@ const reducers: { [key: string]: ReducerType } = {
       newItem = outputItemToLocalItem(
         chunkItem as GenericItem,
         message as MessageResponse,
-        false
+        false,
       );
       newItem.ui_state.needsAnnouncement = false;
       newItem.ui_state.disableFadeAnimation = disableFadeAnimation;
@@ -1444,7 +1444,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_CHAT_HEADER_CONFIG]: (
     state: AppState,
-    { chatHeaderConfig }: { chatHeaderConfig: ChatHeaderConfig }
+    { chatHeaderConfig }: { chatHeaderConfig: ChatHeaderConfig },
   ) => {
     return {
       ...state,
@@ -1460,7 +1460,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_MAX_VISIBLE_HEADER_OBJECTS]: (
     state: AppState,
-    { maxTotal }: { maxTotal: number }
+    { maxTotal }: { maxTotal: number },
   ) => {
     return {
       ...state,
@@ -1473,7 +1473,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_STOP_STREAMING_BUTTON_VISIBLE]: (
     state: AppState,
-    { isVisible }: { isVisible: boolean }
+    { isVisible }: { isVisible: boolean },
   ) => {
     return {
       ...state,
@@ -1489,7 +1489,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_STOP_STREAMING_BUTTON_DISABLED]: (
     state: AppState,
-    { isDisabled }: { isDisabled: boolean }
+    { isDisabled }: { isDisabled: boolean },
   ) => {
     return {
       ...state,
@@ -1505,7 +1505,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_STREAM_ID]: (
     state: AppState,
-    { currentStreamID }: { currentStreamID: string }
+    { currentStreamID }: { currentStreamID: string },
   ) => {
     return {
       ...state,
@@ -1521,7 +1521,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_MAIN_HEADER_AVATAR]: (
     state: AppState,
-    { config }: { config: ChatHeaderAvatarConfig }
+    { config }: { config: ChatHeaderAvatarConfig },
   ) => {
     return {
       ...state,
@@ -1537,7 +1537,7 @@ const reducers: { [key: string]: ReducerType } = {
 function applyInputState(
   state: AppState,
   newInputState: InputState,
-  isInputToHumanAgent: boolean
+  isInputToHumanAgent: boolean,
 ): AppState {
   if (isInputToHumanAgent) {
     return {

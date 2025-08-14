@@ -54,10 +54,10 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const { launcherRef, onToggleOpen, launcherHidden, activeTour } = props;
   const serviceManager = useServiceManager();
   const { config: launcherConfig } = useSelector(
-    (state: AppState) => state.launcher
+    (state: AppState) => state.launcher,
   );
   const unreadHumanAgentCount = useSelector(
-    (state: AppState) => state.humanAgentState.numUnreadMessages
+    (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
   const {
     mobileLauncherIsExtended: isExtended,
@@ -67,7 +67,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
     showUnreadIndicator,
     viewState,
   } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
+    (state: AppState) => state.persistedToBrowserStorage.launcherState,
   );
 
   const [isStartingBounceAnimation, setIsStartingBounceAnimation] =
@@ -83,7 +83,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const reduceLauncherTimeoutIDRef = useRef(null);
   const endBounceAnimationRef = useRef(null);
   const shouldBounceRef = useRef(
-    previouslyPlayedExtendAnimation && !disableBounce
+    previouslyPlayedExtendAnimation && !disableBounce,
   );
 
   const { time_to_expand, new_expand_time, time_to_reduce } =
@@ -107,7 +107,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const setLauncherStateAsReduced = useCallback(() => {
     if (!wasReduced) {
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("mobileLauncherWasReduced", true)
+        actions.setLauncherProperty("mobileLauncherWasReduced", true),
       );
     }
   }, [wasReduced, serviceManager]);
@@ -121,7 +121,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
       document.removeEventListener("scroll", reduceLauncher);
 
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("mobileLauncherIsExtended", false)
+        actions.setLauncherProperty("mobileLauncherIsExtended", false),
       );
     }
   }, [isExtended, serviceManager]);
@@ -132,10 +132,10 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
       if (!isExtended && !isExtending) {
         // Since the launcher is going to expand, set the reduced flag to false.
         serviceManager.store.dispatch(
-          actions.setLauncherProperty("mobileLauncherWasReduced", false)
+          actions.setLauncherProperty("mobileLauncherWasReduced", false),
         );
         serviceManager.store.dispatch(
-          actions.setLauncherProperty("mobileLauncherIsExtended", true)
+          actions.setLauncherProperty("mobileLauncherIsExtended", true),
         );
       }
     }, time_to_expand);
@@ -152,7 +152,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
 
     // Prevent the launcher from bouncing if it was toggled and allowed to play the bounce animation.
     serviceManager.store.dispatch(
-      actions.setLauncherProperty("mobileLauncherDisableBounce", true)
+      actions.setLauncherProperty("mobileLauncherDisableBounce", true),
     );
 
     reduceLauncher();
@@ -183,7 +183,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
 
             launcherContainerElement.removeEventListener(
               "animationend",
-              startRecurringBounceAnimation
+              startRecurringBounceAnimation,
             );
             setIsStartingBounceAnimation(true);
 
@@ -197,18 +197,18 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
                   // Increase the turn counter and have Carbon AI Chat remember where the user left off in the flow.
                   turnCounter++;
                   serviceManager.store.dispatch(
-                    actions.setLauncherProperty("bounceTurn", turnCounter)
+                    actions.setLauncherProperty("bounceTurn", turnCounter),
                   );
                 },
                 afterAll: () => {
                   serviceManager.store.dispatch(
                     actions.setLauncherProperty(
                       "mobileLauncherDisableBounce",
-                      true
-                    )
+                      true,
+                    ),
                   );
                 },
-              }
+              },
             );
           }
         };
@@ -216,7 +216,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
         // Once the launcher container has completed fading in, kick off the recurring bounce animation.
         launcherContainerElement.addEventListener(
           "animationend",
-          startRecurringBounceAnimation
+          startRecurringBounceAnimation,
         );
       }
     }
@@ -255,8 +255,8 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
         actions.setLauncherConfigProperty(
           "new_expand_time",
           false,
-          LauncherType.MOBILE
-        )
+          LauncherType.MOBILE,
+        ),
       );
     }
   }, [

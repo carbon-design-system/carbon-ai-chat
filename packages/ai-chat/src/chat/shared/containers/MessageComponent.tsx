@@ -131,7 +131,7 @@ interface MessageProps
    */
   requestMoveFocus: (
     moveFocusType: MoveFocusType,
-    currentMessageIndex: number
+    currentMessageIndex: number,
   ) => void;
 
   /**
@@ -259,7 +259,7 @@ class MessageComponent extends PureComponent<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData("Message", error, errorInfo)
+      createDidCatchErrorData("Message", error, errorInfo),
     );
     this.setState({ didRenderErrorOccur: true });
   }
@@ -269,7 +269,7 @@ class MessageComponent extends PureComponent<
     if (uiState.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        actions.setMessageWasAnnounced(uiState.id),
       );
     }
   }
@@ -279,7 +279,7 @@ class MessageComponent extends PureComponent<
     if (uiState.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        actions.setMessageWasAnnounced(uiState.id),
       );
     }
   }
@@ -367,7 +367,7 @@ class MessageComponent extends PureComponent<
    */
   private renderAvatarLine(
     localMessageItem: LocalMessageItem,
-    message: Message
+    message: Message,
   ) {
     let avatar;
     const { languagePack, botName, botAvatarURL, useAITheme, carbonTheme } =
@@ -647,13 +647,13 @@ class MessageComponent extends PureComponent<
       ? getHumanAgentMessageClassName(
           agentMessageType,
           responseType,
-          isCustomMessage
+          isCustomMessage,
         )
       : null;
 
     const messageIsRequest = isRequest(message);
     const isSystemMessage = isHumanAgentStatusMessage(
-      localMessageItem.item.agent_message_type
+      localMessageItem.item.agent_message_type,
     );
 
     let isOptionResponseWithoutTitleOrDescription = false;
@@ -686,7 +686,7 @@ class MessageComponent extends PureComponent<
             "WAC__message--has-focus": this.state.focusHandleHasFocus,
             "WAC__message--option-response-without-title-or-description":
               isOptionResponseWithoutTitleOrDescription,
-          }
+          },
         )}
         ref={this.ref}
       >
@@ -732,17 +732,17 @@ class MessageComponent extends PureComponent<
                       responseType ===
                       MessageResponseTypes.CONVERSATIONAL_SEARCH,
                     "WAC__received--carouselSingle": isSingleItemCarousel(
-                      localMessageItem.item
+                      localMessageItem.item,
                     ),
                     "WAC__received--button":
                       responseType === MessageResponseTypes.BUTTON,
                     "WAC__received--grid":
                       responseType === MessageResponseTypes.GRID,
                     "WAC__received--fullWidth": isFullWidthUserDefined(
-                      localMessageItem.item
+                      localMessageItem.item,
                     ),
                     "WAC__message--historical": fromHistory,
-                  }
+                  },
                 )}
                 ref={this.messageRef}
               >
@@ -759,7 +759,7 @@ class MessageComponent extends PureComponent<
                   {
                     "WAC__sentAndMessageState--belowMessage":
                       messageState?.showBelowMessage,
-                  }
+                  },
                 )}
               >
                 {/* messageState is empty, or the messageState is not empty and the messageState should not be below the message. */}
@@ -788,7 +788,7 @@ class MessageComponent extends PureComponent<
 function getHumanAgentMessageClassName(
   agentMessageType: HumanAgentMessageType,
   messageResponseType: MessageResponseTypes,
-  isUserDefinedResponse: boolean
+  isUserDefinedResponse: boolean,
 ) {
   if (agentMessageType && isUserDefinedResponse) {
     return "WAC__received--agentCustom";
@@ -854,6 +854,6 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
 }
 
 export default withAriaAnnouncer(
-  injectIntl(MessageComponent, { forwardRef: true })
+  injectIntl(MessageComponent, { forwardRef: true }),
 );
 export { MessageComponent as MessageClass, MoveFocusType };

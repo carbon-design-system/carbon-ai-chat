@@ -51,20 +51,20 @@ function ButtonItemPostBackComponent({
     if (isInputAvailable) {
       const messageRequest = createMessageRequestForButtonItemOption(
         messageItem,
-        fullMessageID
+        fullMessageID,
       );
 
       requestFocus();
       serviceManager.store.dispatch(
-        actions.messageSetOptionSelected(ui_state.id, messageRequest)
+        actions.messageSetOptionSelected(ui_state.id, messageRequest),
       );
       serviceManager.actions.sendWithCatch(
         messageRequest,
-        MessageSendSource.POST_BACK_BUTTON
+        MessageSendSource.POST_BACK_BUTTON,
       );
     } else {
       consoleError(
-        `${WA_CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`
+        `${WA_CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`,
       );
     }
   }, [

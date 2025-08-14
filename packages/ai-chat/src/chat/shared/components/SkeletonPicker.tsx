@@ -32,7 +32,7 @@ function SkeletonText(props: SkeletonTextProps | AISkeletonTextProps) {
 }
 
 function SkeletonPlaceholder(
-  props: SkeletonPlaceholderProps | AISkeletonPlaceholderProps
+  props: SkeletonPlaceholderProps | AISkeletonPlaceholderProps,
 ) {
   const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
   return useAITheme ? (

@@ -230,12 +230,12 @@ deepFreeze(DEFAULT_LAYOUT_STATE);
  */
 function calcAnnouncementForWidgetOpen(
   previousState: AppState,
-  newViewState: ViewState
+  newViewState: ViewState,
 ): AnnounceMessage {
   if (
     isEqual(
       previousState.persistedToBrowserStorage.launcherState.viewState,
-      newViewState
+      newViewState,
     )
   ) {
     // No change in the view state so return the current announcement.
@@ -258,7 +258,7 @@ function calcAnnouncementForWidgetOpen(
  */
 function applyBotMessageState(
   state: AppState,
-  newState: Partial<ChatMessagesState>
+  newState: Partial<ChatMessagesState>,
 ): AppState {
   return {
     ...state,
@@ -271,7 +271,7 @@ function applyBotMessageState(
 
 function handleViewStateChange(
   state: AppState,
-  viewState: ViewState
+  viewState: ViewState,
 ): AppState {
   // If the main window is opened and the page is visible, mark any unread messages as read.
   let { humanAgentState } = state;
@@ -304,7 +304,7 @@ function handleViewStateChange(
 function setHomeScreenOpenState(
   state: AppState,
   isOpen: boolean,
-  showBackToBot?: boolean
+  showBackToBot?: boolean,
 ): AppState {
   if (showBackToBot === undefined) {
     showBackToBot =
@@ -336,12 +336,12 @@ function setHomeScreenOpenState(
  * @param propertyValue The value to set on the property.
  */
 function applyLocalMessageUIState<
-  TPropertyName extends keyof LocalMessageUIState
+  TPropertyName extends keyof LocalMessageUIState,
 >(
   state: AppState,
   localMessageID: string,
   propertyName: TPropertyName,
-  propertyValue: LocalMessageUIState[TPropertyName]
+  propertyValue: LocalMessageUIState[TPropertyName],
 ) {
   const oldMessage = state.allMessageItemsByID[localMessageID];
   if (oldMessage) {

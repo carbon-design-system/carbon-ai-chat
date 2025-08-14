@@ -81,11 +81,11 @@ class MarkdownTextElement extends LitElement {
     this.tokenTree = (await getMarkdownWorker(
       this.fullText,
       this.tokenTree,
-      !this.shouldRemoveHTMLBeforeMarkdownConversion
+      !this.shouldRemoveHTMLBeforeMarkdownConversion,
     )) as TokenTree;
     this.renderedContent = await renderTokenTree(
       this.tokenTree,
-      this.sanitizeHTML
+      this.sanitizeHTML,
     );
   }, 100);
 
@@ -97,7 +97,7 @@ class MarkdownTextElement extends LitElement {
   private scheduleRender = throttle(async () => {
     this.renderedContent = await renderTokenTree(
       this.tokenTree,
-      this.sanitizeHTML
+      this.sanitizeHTML,
     );
   }, 50);
 }

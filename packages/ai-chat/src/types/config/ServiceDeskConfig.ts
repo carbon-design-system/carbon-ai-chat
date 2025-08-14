@@ -158,7 +158,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    */
   sendMessageToUser(
     message: MessageResponse | string,
-    agentID?: string
+    agentID?: string,
   ): Promise<void>;
 
   /**
@@ -207,7 +207,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   setFileUploadStatus(
     fileID: string,
     isError?: boolean,
-    errorMessage?: string
+    errorMessage?: string,
   ): Promise<void>;
 
   /**
@@ -248,7 +248,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    */
   updatePersistedState(
     state: DeepPartial<TPersistedStateType>,
-    mergeWithCurrent?: boolean
+    mergeWithCurrent?: boolean,
   ): void;
 }
 
@@ -510,7 +510,7 @@ export interface ServiceDesk {
    */
   startChat: (
     connectMessage: MessageResponse,
-    startChatOptions: StartChatOptions
+    startChatOptions: StartChatOptions,
   ) => Promise<void>;
 
   /**
@@ -533,7 +533,7 @@ export interface ServiceDesk {
   sendMessageToAgent: (
     message: MessageRequest,
     messageID: string,
-    additionalData: AdditionalDataToAgent
+    additionalData: AdditionalDataToAgent,
   ) => Promise<void>;
 
   /**
@@ -564,7 +564,7 @@ export interface ServiceDesk {
    * means the availability status of agents is unknown or the service desk doesn't support this information.
    */
   areAnyAgentsOnline?: (
-    connectMessage: MessageResponse
+    connectMessage: MessageResponse,
   ) => Promise<boolean | null>;
 
   /**

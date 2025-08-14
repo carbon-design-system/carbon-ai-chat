@@ -42,7 +42,7 @@ import { LayoutConfig } from "../../../types/config/PublicConfig";
 
 function doCreateStore(
   config: AppConfig,
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ): Store<AppState> {
   // Determine the value for useAITheme.
   let useAITheme;
@@ -88,7 +88,7 @@ function doCreateStore(
       {},
       {},
       themeState.carbonTheme,
-      themeState.useAITheme
+      themeState.useAITheme,
     ),
     isHydrated: false,
     // The language pack will start as English. If a different language pack is provided or updated, it will be
@@ -115,7 +115,7 @@ function doCreateStore(
         {
           mobile: {},
         },
-        { is_on: config.public.showLauncher }
+        { is_on: config.public.showLauncher },
       ),
     }),
     iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,

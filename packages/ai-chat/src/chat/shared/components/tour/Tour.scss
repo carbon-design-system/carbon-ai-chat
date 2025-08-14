@@ -86,9 +86,10 @@
   // The height of the screen, minus the height of the close and minimize buttons, the margin beneath them, the height of
   // the control bar, and the margin above and below the entire component.
   max-block-size: calc(
-    100vh - #{layout.$spacing-07} - #{layout.$spacing-03} - 40px -
-      var(--cds-chat-LAUNCHER-position-bottom) -
-      var(--cds-chat-LAUNCHER-position-bottom)
+    100vh - #{layout.$spacing-07} - #{layout.$spacing-03} -
+      40px - var(--cds-chat-LAUNCHER-position-bottom) - var(
+        --cds-chat-LAUNCHER-position-bottom
+      )
   );
 }
 

@@ -238,7 +238,7 @@ interface LoadChatArgs {
  */
 async function destroyWebChat(
   managedWebChat: ManagedWebChat,
-  setInstance: (instance: ChatInstance) => void
+  setInstance: (instance: ChatInstance) => void,
 ) {
   if (managedWebChat) {
     if (managedWebChat.instance) {
@@ -266,7 +266,7 @@ function addUserDefinedResponseHandler(
     SetStateAction<{
       [key: string]: RenderUserDefinedStateInternal;
     }>
-  >
+  >,
 ) {
   /**
    * This handler will fire each time a user defined response occurs and we will update our state by appending the
@@ -369,7 +369,7 @@ async function loadChat({
     managedWebChat.config,
     () => Promise.resolve(Chat),
     Promise.resolve(render),
-    element
+    element,
   );
 
   const instance = await widget.start();

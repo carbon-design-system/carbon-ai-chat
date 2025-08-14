@@ -137,7 +137,7 @@ async function sleep(milliseconds: number) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) {
   if (request.input.text === "") {
     instance.messaging.addMessage({

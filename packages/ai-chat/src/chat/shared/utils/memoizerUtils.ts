@@ -15,7 +15,7 @@ import ObjectMap from "../../../types/utilities/ObjectMap";
  */
 function memoizeFunction<Args extends readonly unknown[], Return>(
   fn: (...args: Args) => Return,
-  isEqual?: (newArgs: Args, lastArgs: Args) => boolean
+  isEqual?: (newArgs: Args, lastArgs: Args) => boolean,
 ): (...args: Args) => Return {
   let hasResult = false;
   let lastArgs: Args;
@@ -34,7 +34,7 @@ function memoizeFunction<Args extends readonly unknown[], Return>(
 function areArgumentsEqual<Args extends readonly unknown[]>(
   newArgs: Args,
   lastArgs: Args,
-  isEqual?: (newArgs: Args, lastArgs: Args) => boolean
+  isEqual?: (newArgs: Args, lastArgs: Args) => boolean,
 ): boolean {
   if (isEqual) {
     return isEqual(newArgs, lastArgs);
@@ -67,11 +67,11 @@ function areArgumentsEqual<Args extends readonly unknown[]>(
  */
 function createUnmappingMemoizer<V>(): (
   values: string[],
-  map: ObjectMap<V>
+  map: ObjectMap<V>,
 ) => V[] {
   return memoizeFunction(
     (keys: string[], map: ObjectMap<V>) => keys.map((key) => map[key]),
-    isUnmappingEqual
+    isUnmappingEqual,
   );
 }
 
@@ -81,7 +81,7 @@ function createUnmappingMemoizer<V>(): (
  */
 function isUnmappingEqual<V>(
   newArgs: [string[], ObjectMap<V>],
-  oldArgs: [string[], ObjectMap<V>]
+  oldArgs: [string[], ObjectMap<V>],
 ): boolean {
   const [keys1, map1] = newArgs;
   const [keys2, map2] = oldArgs;

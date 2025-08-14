@@ -119,11 +119,11 @@ import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
 import { setIntl } from "../utils/intlUtils";
 
 const VALID_PUBLIC_VARS_IN_AI_THEME_SET = new Set<string>(
-  Object.values(CSSVariable)
+  Object.values(CSSVariable),
 );
 
 const UPDATE_CSS_VARS_AI_THEME_WARNING_MESSAGE = `[updateCSSVariables] The AI theme is enabled and only ${Object.values(
-  CSSVariable
+  CSSVariable,
 ).join(", ")} can be updated.`;
 
 /**
@@ -190,7 +190,7 @@ class ChatActionsImpl {
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateWelcomeRequestSource?: MessageSendSource,
-    alternateOptions?: SendOptions
+    alternateOptions?: SendOptions,
   ) {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
     let fireReady = false;
@@ -200,7 +200,7 @@ class ChatActionsImpl {
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
           alternateWelcomeRequestSource,
-          alternateOptions
+          alternateOptions,
         );
         fireReady = true;
       }
@@ -228,13 +228,13 @@ class ChatActionsImpl {
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateWelcomeRequestSource?: MessageSendSource,
-    alternateOptions?: SendOptions
+    alternateOptions?: SendOptions,
   ) {
     debugLog(
       "Hydrating Carbon AI Chat",
       alternateWelcomeRequest,
       alternateWelcomeRequestSource,
-      alternateOptions
+      alternateOptions,
     );
 
     // Load the history and main config but only if it's the first time we are hydrating.
@@ -271,7 +271,7 @@ class ChatActionsImpl {
             createWelcomeRequest(),
             MessageSendSource.WELCOME_REQUEST,
             { returnBeforeStreaming: true },
-            true
+            true,
           );
         }
       }
@@ -279,7 +279,7 @@ class ChatActionsImpl {
       // Need to populate the history in redux (specifically botMessageState) before creating elements for custom
       // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event.
       serviceManager.store.dispatch(
-        actions.hydrateMessageHistory(history.messageHistory)
+        actions.hydrateMessageHistory(history.messageHistory),
       );
       await this.createElementsForUserDefinedResponses(history.messageHistory);
 
@@ -296,7 +296,7 @@ class ChatActionsImpl {
         alternateWelcomeRequest,
         alternateWelcomeRequestSource,
         alternateOptions,
-        true
+        true,
       );
     }
 
@@ -306,7 +306,7 @@ class ChatActionsImpl {
 
     if (history) {
       const lastMessageID = arrayLastValue(
-        history.messageHistory.botMessageState.localMessageIDs
+        history.messageHistory.botMessageState.localMessageIDs,
       );
       const lastMessage =
         history.messageHistory.allMessageItemsByID[lastMessageID];
@@ -324,7 +324,7 @@ class ChatActionsImpl {
         // already there).
         serviceManager.messageService.resendMessage(
           lastOriginalMessage,
-          lastMessage.ui_state.id
+          lastMessage.ui_state.id,
         );
       }
     }
@@ -334,7 +334,7 @@ class ChatActionsImpl {
     const allowReconnect = config.public.serviceDesk.allowReconnect ?? true;
     this.serviceManager?.humanAgentService?.handleHydration(
       allowReconnect,
-      Boolean(history)
+      Boolean(history),
     );
 
     this.alreadyHydrated = true;
@@ -373,7 +373,7 @@ class ChatActionsImpl {
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
-    ignoreHydration = false
+    ignoreHydration = false,
   ) {
     try {
       await this.send(message, source, options, ignoreHydration);
@@ -398,7 +398,7 @@ class ChatActionsImpl {
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
-    ignoreHydration = false
+    ignoreHydration = false,
   ) {
     const messageRequest =
       typeof message === "string"
@@ -445,7 +445,7 @@ class ChatActionsImpl {
   private async doSend(
     message: MessageRequest,
     source: MessageSendSource,
-    options: SendOptions = {}
+    options: SendOptions = {},
   ): Promise<void> {
     const { store } = this.serviceManager;
 
@@ -477,8 +477,8 @@ class ChatActionsImpl {
       store.dispatch(
         actions.messageSetOptionSelected(
           options.setValueSelectedForMessageID,
-          message
-        )
+          message,
+        ),
       );
     }
 
@@ -492,7 +492,7 @@ class ChatActionsImpl {
       cloneDeep(message),
       source,
       localMessage.ui_state.id,
-      options
+      options,
     );
   }
 
@@ -512,7 +512,7 @@ class ChatActionsImpl {
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
-    requestOptions?: SendOptions
+    requestOptions?: SendOptions,
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
 
@@ -535,7 +535,7 @@ class ChatActionsImpl {
 
     if (!isLatestWelcomeNode) {
       this.serviceManager.store.dispatch(
-        actions.updateHasSentNonWelcomeMessage(true)
+        actions.updateHasSentNonWelcomeMessage(true),
       );
     }
 
@@ -555,7 +555,7 @@ class ChatActionsImpl {
         message,
         isLatestWelcomeNode,
         requestMessage,
-        requestOptions
+        requestOptions,
       ).catch((error) => {
         consoleError("Error processing the message response", error);
       });
@@ -563,7 +563,7 @@ class ChatActionsImpl {
       const inlineError: MessageResponse = createMessageResponseForText(
         languagePack.errors_singleMessage,
         message.thread_id,
-        MessageResponseTypes.INLINE_ERROR
+        MessageResponseTypes.INLINE_ERROR,
       );
       this.receive(inlineError, false);
     }
@@ -618,7 +618,7 @@ class ChatActionsImpl {
     const newAppStateMessages: AppStateMessages = merge(
       {},
       history.messageHistory,
-      currentAppStateMessages
+      currentAppStateMessages,
     );
 
     // Now make sure the message arrays are merged correctly.
@@ -632,7 +632,7 @@ class ChatActionsImpl {
     ];
 
     this.serviceManager.store.dispatch(
-      actions.hydrateMessageHistory(newAppStateMessages)
+      actions.hydrateMessageHistory(newAppStateMessages),
     );
     await this.createElementsForUserDefinedResponses(history.messageHistory);
 
@@ -648,7 +648,7 @@ class ChatActionsImpl {
   async receiveChunk(
     chunk: StreamChunk,
     messageID?: string,
-    options: AddMessageOptions = {}
+    options: AddMessageOptions = {},
   ) {
     const chunkPromise = resolvablePromise();
     this.chunkQueue.push({ chunk, messageID, options, chunkPromise });
@@ -691,21 +691,21 @@ class ChatActionsImpl {
           messageID,
           item,
           isCompleteItem,
-          options.disableFadeAnimation ?? true
-        )
+          options.disableFadeAnimation ?? true,
+        ),
       );
 
       if (chunk.partial_response?.history) {
         if (Object.keys(chunk.partial_response).length > 1) {
           throw new Error(
-            `The partial_response object only supports the "history" property.`
+            `The partial_response object only supports the "history" property.`,
           );
         }
         store.dispatch(
           actions.streamingMergeHistory(
             messageID,
-            chunk.partial_response?.history
-          )
+            chunk.partial_response?.history,
+          ),
         );
       }
 
@@ -751,7 +751,7 @@ class ChatActionsImpl {
       userDefinedItem.element.setAttribute("slot", userDefinedItem.slotName);
       this.serviceManager.userDefinedElementRegistry.set(
         messageItemID,
-        userDefinedItem
+        userDefinedItem,
       );
     }
     return userDefinedItem;
@@ -764,7 +764,7 @@ class ChatActionsImpl {
    */
   async handleUserDefinedResponseItems(
     localMessage: LocalMessageItem,
-    originalMessage: Message
+    originalMessage: Message,
   ) {
     if (renderAsUserDefinedMessage(localMessage.item)) {
       let element: HTMLElement;
@@ -772,7 +772,7 @@ class ChatActionsImpl {
       if (!localMessage.item.user_defined?.silent) {
         // If the message is silent, don't create a host element for it since it's not going to be rendered.
         ({ element, slotName } = this.getOrCreateUserDefinedElement(
-          localMessage.ui_state.id
+          localMessage.ui_state.id,
         ));
       }
 
@@ -800,12 +800,12 @@ class ChatActionsImpl {
        * Will attempt to create an element for the custom response using the provided local message id.
        */
       const createElementForNestedUserDefinedResponse = (
-        localMessageItemID: string
+        localMessageItemID: string,
       ) => {
         const nestedLocalMessage = allMessageItemsByID[localMessageItemID];
         return this.handleUserDefinedResponseItems(
           nestedLocalMessage,
-          originalMessage
+          originalMessage,
         );
       };
 
@@ -813,30 +813,30 @@ class ChatActionsImpl {
         await asyncForEach(gridLocalMessageItemIDs, (row) =>
           asyncForEach(row, (cell) =>
             asyncForEach(cell, (itemID) =>
-              createElementForNestedUserDefinedResponse(itemID)
-            )
-          )
+              createElementForNestedUserDefinedResponse(itemID),
+            ),
+          ),
         );
       }
 
       if (itemsLocalMessageItemIDs?.length) {
         await asyncForEach(
           itemsLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
+          createElementForNestedUserDefinedResponse,
         );
       }
 
       if (bodyLocalMessageItemIDs?.length) {
         await asyncForEach(
           bodyLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
+          createElementForNestedUserDefinedResponse,
         );
       }
 
       if (footerLocalMessageItemIDs?.length) {
         await asyncForEach(
           footerLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
+          createElementForNestedUserDefinedResponse,
         );
       }
     }
@@ -852,7 +852,7 @@ class ChatActionsImpl {
   async handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
-    messageItem: DeepPartial<GenericItem>
+    messageItem: DeepPartial<GenericItem>,
   ) {
     if (renderAsUserDefinedMessage(messageItem)) {
       const itemID = streamItemID(messageID, messageItem);
@@ -892,7 +892,7 @@ class ChatActionsImpl {
     fullMessage: MessageResponse,
     isLatestWelcomeNode: boolean,
     requestMessage: MessageRequest,
-    requestOptions: SendOptions = {}
+    requestOptions: SendOptions = {},
   ) {
     const { store } = this.serviceManager;
     const { config } = store.getState();
@@ -926,7 +926,7 @@ class ChatActionsImpl {
           messageItem,
           fullMessage,
           isLatestWelcomeNode,
-          requestOptions.disableFadeAnimation
+          requestOptions.disableFadeAnimation,
         );
 
         // If the message item is a tour and the tour card is supposed to be skipped then start the tour now.
@@ -973,7 +973,7 @@ class ChatActionsImpl {
         } else if (!tour && requestOptions.skipTourCard) {
           // If instance.startTour() was used but a tour response was not received then log an error.
           consoleError(
-            "The message response received was not a tour, so the tour card was not skipped nor was a tour started by the startTour() call."
+            "The message response received was not a tour, so the tour card was not skipped nor was a tour started by the startTour() call.",
           );
         }
 
@@ -983,7 +983,7 @@ class ChatActionsImpl {
           fullMessage,
           false,
           nestedLocalMessageItems,
-          true
+          true,
         );
 
         store.dispatch(actions.addNestedMessages(nestedLocalMessageItems));
@@ -1012,8 +1012,8 @@ class ChatActionsImpl {
               actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
                 "agent_no_service_desk",
-                true
-              )
+                true,
+              ),
             );
             partialMessage.ui_state_internal.agent_no_service_desk = true;
           }
@@ -1021,7 +1021,7 @@ class ChatActionsImpl {
           // eslint-disable-next-line no-await-in-loop
           const agentAvailability =
             await this.serviceManager.humanAgentService?.checkAreAnyHumanAgentsOnline(
-              fullMessage
+              fullMessage,
             );
 
           // If a restart occurred while waiting for the agents online check, then skip the processing below.
@@ -1031,8 +1031,8 @@ class ChatActionsImpl {
               actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
                 "agent_availability",
-                agentAvailability
-              )
+                agentAvailability,
+              ),
             );
 
             partialMessage.ui_state_internal =
@@ -1058,7 +1058,7 @@ class ChatActionsImpl {
             ) {
               this.serviceManager.humanAgentService.startChat(
                 localMessageItem,
-                fullMessage
+                fullMessage,
               );
             }
           }
@@ -1088,7 +1088,7 @@ class ChatActionsImpl {
           // eslint-disable-next-line no-await-in-loop
           await this.handleUserDefinedResponseItems(
             localMessageItem,
-            fullMessage
+            fullMessage,
           );
           if (
             !localMessageItem.item.user_defined?.silent &&
@@ -1099,8 +1099,8 @@ class ChatActionsImpl {
                 localMessageItem,
                 fullMessage,
                 false,
-                previousItemID
-              )
+                previousItemID,
+              ),
             );
             previousItemID = localMessageItem.ui_state.id;
           }
@@ -1114,10 +1114,10 @@ class ChatActionsImpl {
    */
   openResponsePanel(
     localMessageItem: LocalMessageItem,
-    isMessageForInput: boolean
+    isMessageForInput: boolean,
   ) {
     this.serviceManager.store.dispatch(
-      actions.setResponsePanelContent(localMessageItem, isMessageForInput)
+      actions.setResponsePanelContent(localMessageItem, isMessageForInput),
     );
     this.serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
   }
@@ -1157,7 +1157,7 @@ class ChatActionsImpl {
    */
   removeNotification(groupID: string) {
     this.serviceManager.store.dispatch(
-      actions.removeNotifications({ groupID })
+      actions.removeNotifications({ groupID }),
     );
   }
 
@@ -1182,7 +1182,7 @@ class ChatActionsImpl {
    */
   updateCSSVariables(
     publicVars: ObjectMap<string>,
-    whiteLabelVariables: WhiteLabelTheme = {}
+    whiteLabelVariables: WhiteLabelTheme = {},
   ) {
     const { store } = this.serviceManager;
     const { theme } = store.getState();
@@ -1216,10 +1216,10 @@ class ChatActionsImpl {
       publicVars,
       whiteLabelVariables,
       carbonTheme,
-      useAITheme
+      useAITheme,
     );
     store.dispatch(
-      actions.updateCSSVariables(allVariables, publicVars, whiteLabelVariables)
+      actions.updateCSSVariables(allVariables, publicVars, whiteLabelVariables),
     );
   }
 
@@ -1258,7 +1258,7 @@ class ChatActionsImpl {
    */
   updateHomeScreenConfig(homeScreenConfig: HomeScreenConfig) {
     this.serviceManager.store.dispatch(
-      actions.updateHomeScreenConfig(homeScreenConfig)
+      actions.updateHomeScreenConfig(homeScreenConfig),
     );
   }
 
@@ -1267,7 +1267,7 @@ class ChatActionsImpl {
    */
   updateLauncherConfig(launcherConfig: LauncherConfig) {
     this.serviceManager.store.dispatch(
-      actions.updateLauncherConfig(launcherConfig)
+      actions.updateLauncherConfig(launcherConfig),
     );
   }
 
@@ -1285,7 +1285,7 @@ class ChatActionsImpl {
       mainWindowCloseReason?: MainWindowCloseReason;
     },
     tryHydrating = true,
-    forceViewChange = false
+    forceViewChange = false,
   ): Promise<ViewState> {
     const { store } = this.serviceManager;
     const { viewState } =
@@ -1342,14 +1342,14 @@ class ChatActionsImpl {
       viewChangeReason?: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
-    }
+    },
   ): Promise<void> {
     const { store } = this.serviceManager;
 
     if (store.getState().viewChanging) {
       // If the view is already in the middle of changing then throw an error.
       throw new Error(
-        "The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events."
+        "The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events.",
       );
     }
 
@@ -1441,11 +1441,11 @@ class ChatActionsImpl {
     changeViewReason: {
       viewChangeReason?: ViewChangeReason;
       mainWindowCloseReason?: MainWindowCloseReason;
-    }
+    },
   ) {
     // Save all the new tour info in store.
     this.serviceManager.store.dispatch(
-      actions.setTourData(message.fullMessageID)
+      actions.setTourData(message.fullMessageID),
     );
 
     // Fire the appropriate events and try to open the tour.
@@ -1503,7 +1503,7 @@ class ChatActionsImpl {
 
     // Find the index of the step with a step_id string matching the provided stepId.
     const newStepIndex = activeTourStepItems.findIndex(
-      (stepItem: { step_id: string }) => stepItem.step_id === stepId
+      (stepItem: { step_id: string }) => stepItem.step_id === stepId,
     );
 
     if (newStepIndex) {
@@ -1512,7 +1512,7 @@ class ChatActionsImpl {
     } else {
       // If a matching step is not found then log an error and don't change the tour step.
       consoleError(
-        `No step with the id "${stepId}" was found within the current tour. As a result, goToTourStep() did not change the current tour step.`
+        `No step with the id "${stepId}" was found within the current tour. As a result, goToTourStep() did not change the current tour step.`,
       );
     }
   }
@@ -1556,7 +1556,7 @@ class ChatActionsImpl {
       });
     } else {
       consoleWarn(
-        "The tour tried to change to a step that was out of bounds for the step array, so no step change was made."
+        "The tour tried to change to a step that was out of bounds for the step array, so no step change was made.",
       );
     }
   }
@@ -1573,8 +1573,8 @@ class ChatActionsImpl {
       this.serviceManager.store.dispatch(
         actions.setAppStateValue(
           "catastrophicErrorType",
-          error.catastrophicErrorType
-        )
+          error.catastrophicErrorType,
+        ),
       );
     }
     callOnError(this.serviceManager.additionalChatParameters.onError, error);
@@ -1597,7 +1597,7 @@ class ChatActionsImpl {
 
     if (this.restarting) {
       consoleWarn(
-        "You cannot restart a conversation while a previous restart is still pending."
+        "You cannot restart a conversation while a previous restart is still pending.",
       );
       return;
     }
@@ -1642,7 +1642,7 @@ class ChatActionsImpl {
             mainWindowOpenReason:
               MainWindowOpenReason.CALLED_RESTART_CONVERSATION,
           },
-          false
+          false,
         );
       }
 
@@ -1691,7 +1691,7 @@ class ChatActionsImpl {
     const { persistedToBrowserStorage } = store.getState();
     const originalViewState = persistedToBrowserStorage.launcherState.viewState;
     const newPersistedToBrowserStorage = cloneDeep(
-      DEFAULT_PERSISTED_TO_BROWSER
+      DEFAULT_PERSISTED_TO_BROWSER,
     );
 
     if (keepOpenState) {
@@ -1719,8 +1719,8 @@ class ChatActionsImpl {
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(
         "persistedToBrowserStorage",
-        newPersistedToBrowserStorage
-      )
+        newPersistedToBrowserStorage,
+      ),
     );
   }
 
@@ -1758,9 +1758,9 @@ class ChatActionsImpl {
           messages.allMessagesByID[localMessage.fullMessageID];
         return this.handleUserDefinedResponseItems(
           localMessage,
-          originalMessage
+          originalMessage,
         );
-      }
+      },
     );
   }
 }

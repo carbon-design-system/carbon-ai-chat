@@ -75,7 +75,7 @@ function getURLHostName(url: string): string {
  */
 function conditionalSetTimeout(
   operation: () => void,
-  timeout: number
+  timeout: number,
 ): ReturnType<typeof setTimeout> | null {
   if (timeout) {
     return setTimeout(operation, timeout);

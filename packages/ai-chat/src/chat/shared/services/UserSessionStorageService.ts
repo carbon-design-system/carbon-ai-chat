@@ -66,7 +66,7 @@ class UserSessionStorageService {
   loadLauncherSession(): PersistedLauncherState | null {
     try {
       const launcherSessionString = storage.getItem(
-        this.getLauncherSessionKey()
+        this.getLauncherSessionKey(),
       );
       const launcherSession: PersistedLauncherState = launcherSessionString
         ? JSON.parse(launcherSessionString)

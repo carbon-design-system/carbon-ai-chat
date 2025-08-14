@@ -69,7 +69,6 @@ The prerelease occurs on the first Monday of a sprint. During this stage, the
 release team will need to do the following:
 
 - [ ] Initiate code freeze by creating a release branch from `main`
-
   - This can be done through the GitHub UI
   - Make sure the branch name follows the `release/vx.x.x` format
     ![Screenshot of manually creating release branch from GitHub UI](https://github.com/user-attachments/assets/d4247f09-b1ab-4903-a504-938ddece03a9)
@@ -82,7 +81,6 @@ release team will need to do the following:
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
       to generate the prerelease versions for the packages
-
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `first minor rc` (rc stands for release candidate)
@@ -180,7 +178,6 @@ validated. During this stage, the release team will do the following:
       to generate the full minor versions for the packages
 
   ![Screenshot of minor release workflow with full minor release selected](https://github.com/user-attachments/assets/9ab859fc-f25d-4c52-8f0c-71ee7adacf48)
-
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `full minor release`
@@ -200,7 +197,6 @@ validated. During this stage, the release team will do the following:
       This workflow creates the release tag, generates the release with notes,
       and opens a PR to merge the changelog and version bumps from the release
       branch to `main`.
-
   - [ ] Make sure to specify to release branch and the correct release versions.
         ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/33162cc1-e38f-4c86-9bc8-c0b773c86eda)
     - The `release tag` option is the version that was just published (ie.

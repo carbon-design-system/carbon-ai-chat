@@ -17,7 +17,7 @@ import { CSS_CLASS_PREFIX } from "../../../../settings";
 import { CornersType } from "../../../../../../types/config/CornersType";
 
 export function chatHeaderAvatarTemplate(
-  classElement: ChatHeaderAvatarElement
+  classElement: ChatHeaderAvatarElement,
 ) {
   const { url, corners, alt, onError } = classElement;
   return html`
