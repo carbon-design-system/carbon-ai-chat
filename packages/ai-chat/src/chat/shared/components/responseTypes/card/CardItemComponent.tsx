@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import Tile from "../../../../react/carbon/Tile";
 import cx from "classnames";
 import React from "react";
 

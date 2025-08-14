@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import { ClickableTile } from "../../../../../react/carbon/Tile";
 import cx from "classnames";
 import React from "react";
 import { CitationCardContent, CitationType } from "./CitationCardContent";
@@ -57,8 +57,7 @@ function CitationCard({
 
   if (type === CitationType.URL) {
     return (
-      // eslint-disable-next-line jsx-a11y/control-has-associated-label
-      <a
+      <ClickableTile
         className={className}
         href={url}
         target="_blank"
@@ -66,10 +65,8 @@ function CitationCard({
         onClick={onSelectCitation}
         onFocus={onSelectCitation}
       >
-        <Tile>
-          <CitationCardContent citation={citation} type={type} />
-        </Tile>
-      </a>
+        <CitationCardContent citation={citation} type={type} />
+      </ClickableTile>
     );
   }
 

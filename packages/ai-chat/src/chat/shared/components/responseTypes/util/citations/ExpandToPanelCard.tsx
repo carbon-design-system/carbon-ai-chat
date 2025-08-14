@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import { Tile, ClickableTile } from "../../../../../react/carbon/Tile";
 import React, { useState } from "react";
 
 import { useServiceManager } from "../../../../hooks/useServiceManager";
@@ -18,7 +18,6 @@ import {
   CitationCardProps,
   CitationType,
 } from "./CitationCardContent";
-import { CitationClickableCard } from "./CitationClickableCard";
 
 /**
  * Shows a Citation Card that will add an onClick handler to open up content that doesn't fit in the card IF NEEDED.
@@ -51,6 +50,12 @@ function ExpandToPanelCard({
     serviceManager.store.dispatch(
       actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult)
     );
+    onSelectCitation();
+  }
+  function onKeydown(e: any) {
+    if ([" ", "Enter"].includes(e.key)) {
+      onViewSourcePanelButtonClick?.();
+    }
   }
 
   function renderTile(className?: string) {
@@ -68,14 +73,19 @@ function ExpandToPanelCard({
 
   if (isExpandable) {
     return (
-      <CitationClickableCard
+      <ClickableTile
         className={className}
         title={title}
         onClick={onViewSourcePanelButtonClick}
-        onSelectCitation={onSelectCitation}
+        onKeyDown={onKeydown}
       >
-        {renderTile()}
-      </CitationClickableCard>
+        <CitationCardContent
+          citation={citation}
+          type={CitationType.EXPAND_IF_NEEDED}
+          setIsExpandable={setIsExpandable}
+          isExpandable={isExpandable}
+        />
+      </ClickableTile>
     );
   }
 

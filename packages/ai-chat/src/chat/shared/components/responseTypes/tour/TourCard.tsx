@@ -9,7 +9,8 @@
 
 import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
 import Restart from "@carbon/icons-react/es/Restart.js";
-import { Button, Tile } from "@carbon/react";
+import { Button } from "@carbon/react";
+import Tile from "../../../../react/carbon/Tile";
 import React from "react";
 import { useSelector } from "react-redux";
 

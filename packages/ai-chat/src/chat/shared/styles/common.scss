@@ -46,7 +46,7 @@
 }
 
 /* TODO, we just need a custom version of the tile component. */
-.cds--tile {
+cds-custom-tile {
   border: solid 1px theme.$chat-bubble-border;
   border-radius: chatTheme.$CARD-border-radius;
   /* The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't

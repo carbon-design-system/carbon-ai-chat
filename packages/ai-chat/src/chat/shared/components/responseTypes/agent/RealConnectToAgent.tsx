@@ -11,7 +11,8 @@ import Checkmark from "@carbon/icons-react/es/Checkmark.js";
 import Headset from "@carbon/icons-react/es/Headset.js";
 import HelpDesk from "@carbon/icons-react/es/HelpDesk.js";
 import Logout from "@carbon/icons-react/es/Logout.js";
-import { Button, Tile } from "@carbon/react";
+import { Button } from "@carbon/react";
+import Tile from "../../../../react/carbon/Tile";
 import React, { ReactNode, useState } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
