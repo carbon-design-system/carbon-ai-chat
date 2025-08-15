@@ -21,6 +21,7 @@ import { getURLHostName } from "../../../utils/browserUtils";
 import VisuallyHidden from "../../util/VisuallyHidden";
 import { ClickableImage } from "../util/ClickableImage";
 import { IFrameItem } from "../../../../../types/messaging/Messages";
+import { ThemeType } from "../../../../../types/config/PublicConfig";
 
 interface IFramePreviewCardComponentProps extends HasDoAutoScroll {
   /**
@@ -37,7 +38,7 @@ function IFramePreviewCardComponent({
   doAutoScroll,
 }: IFramePreviewCardComponentProps) {
   const { source, image_url, title, description } = messageItem;
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const theme = useSelector((state: AppState) => state.theme.theme);
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
   const { iframe_ariaImageAltText } = useLanguagePack();
@@ -78,7 +79,7 @@ function IFramePreviewCardComponent({
         renderIcon={ArrowRight}
         onClick={handleCardClick}
         preventInlineError
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
       />
       <VisuallyHidden>{iframeAriaClickPreviewCardMessage}</VisuallyHidden>
     </div>

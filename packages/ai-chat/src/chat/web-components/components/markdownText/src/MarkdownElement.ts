@@ -11,10 +11,12 @@ import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import throttle from "lodash-es/throttle.js";
 
-import { TokenTree } from "../markdown/utils/tokenTree";
-import { getMarkdownWorker } from "../markdown/workers/workerManager";
 import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
-import { renderTokenTree } from "../markdown/utils/renderTokenTree";
+import {
+  TokenTree,
+  renderTokenTree,
+  markdownToTokenTree,
+} from "./markdownProcessor";
 
 class MarkdownElement extends LitElement {
   @property({ type: String })
@@ -52,22 +54,6 @@ class MarkdownElement extends LitElement {
 
   @property({ type: Boolean })
   dark = false;
-
-  /**
-   * Enables the use of Web Workers for markdown processing when available.
-   * This can improve performance by offloading markdown parsing to a background thread.
-   *
-   * @experimental
-   */
-  @property({ type: Boolean })
-  enableWorkers = false;
-
-  /**
-   * Enables debug logging for worker strategies and markdown processing.
-   * Should match the debug setting from PublicConfig.
-   */
-  @property({ type: Boolean })
-  debug = false;
 
   private fullText = "";
 
@@ -110,13 +96,11 @@ class MarkdownElement extends LitElement {
    * to avoid duplicate work when content updates.
    */
   private scheduleTokenParse = throttle(async () => {
-    this.tokenTree = await getMarkdownWorker({
-      markdown: this.fullText,
-      lastTree: this.tokenTree,
-      enableWorkers: this.enableWorkers,
-      debug: this.debug,
-      allowHtml: !this.shouldRemoveHTMLBeforeMarkdownConversion,
-    });
+    this.tokenTree = markdownToTokenTree(
+      this.fullText,
+      this.tokenTree,
+      !this.shouldRemoveHTMLBeforeMarkdownConversion,
+    );
 
     this.renderedContent = renderTokenTree(this.tokenTree, {
       sanitize: this.sanitizeHTML,

@@ -32,10 +32,12 @@ function AriaAnnouncerProvider(props: HasChildren) {
   const announcerFunction = useCallback<AriaAnnouncerFunctionType>((value) => {
     // It's possible for some component to try to do an announcement before this component has actually been mounted
     // (because it's later in the DOM). If that happens, then we need to delay the announcement a bit.
-    if (!announcerRef.current) {
-      setTimeout(() => announcerRef.current.announceValue(value));
-    } else {
-      announcerRef.current.announceValue(value);
+    if (value) {
+      if (!announcerRef.current) {
+        setTimeout(() => announcerRef.current.announceValue(value));
+      } else {
+        announcerRef.current.announceValue(value);
+      }
     }
   }, []);
   const previousAnnounceMessageRef = useRef<AnnounceMessage>();

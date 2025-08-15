@@ -25,6 +25,7 @@ import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { usePrevious } from "../../hooks/usePrevious";
 import { AppState } from "../../../../types/state/AppState";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
@@ -138,7 +139,7 @@ function LauncherExtended(
   const languagePack = useLanguagePack();
   const intl = useIntl();
   const launcherAvatarURL = useSelector((state: AppState) =>
-    state.theme.useAITheme
+    state.theme.theme === ThemeType.CARBON_AI
       ? undefined
       : state.launcher.config.mobile.avatar_url_override,
   );
