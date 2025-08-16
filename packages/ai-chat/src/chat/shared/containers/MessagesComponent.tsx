@@ -53,6 +53,7 @@ import MessageComponent, {
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { Message, MessageRequest } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { Button } from "@carbon/react";
 
 const DEBUG_AUTO_SCROLL = false;
 
@@ -115,6 +116,10 @@ interface MessagesState {
    * panel.
    */
   scrollHandleHasFocus: boolean;
+  /**
+   * Indicates if there are messages below where the scroll bar currently is set.
+   */
+  unreadMessages: boolean;
 }
 
 class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
@@ -123,6 +128,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public readonly state: Readonly<MessagesState> = {
     scrollHandleHasFocus: false,
+    unreadMessages: false
   };
 
   /**
@@ -256,6 +262,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * list is still scrolled to the bottom.
    */
   public onResize = () => {
+    this.renderUnreadMessagesNotification();
     if (this.props.messageState.isScrollAnchored) {
       const element = this.messagesContainerWithScrollingRef.current;
       if (element) {
@@ -341,6 +348,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             // If the request for this response was silent, then scroll to it instead of scrolling to where the
             // silent user message would be. But don't do this if it's an empty message (which happens with a
             // skip_use_input message from an extension).
+            this.renderUnreadMessagesNotification();
             return (
               messageRequest?.history?.silent &&
               messageRequest.input?.text !== ""
@@ -518,6 +526,25 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
     }
+  }
+
+  /**
+   * Calculates if there are any messages at the bottom out of the scroll view of the container.
+   * The result determines if the user should be told if they need to scroll down to view more 
+   * messages or not.
+   */
+  public checkMessagesOutOfView() {
+    const scrollElement = this.messagesContainerWithScrollingRef.current;
+    const remainingPixelsToScroll = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight;
+    return remainingPixelsToScroll > 60;
+  }
+
+  /**
+   * Updates the state after checking if there are any unread messages in the chat view
+   */
+  public renderUnreadMessagesNotification() {
+    const shouldRender = this.checkMessagesOutOfView();
+    this.setState({scrollHandleHasFocus: false, unreadMessages: shouldRender});
   }
 
   /**
@@ -800,8 +827,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           languagePack[labelKey] || languagePack.messages_scrollHandle
         }
         onClick={onClick}
-        onFocus={() => this.setState({ scrollHandleHasFocus: true })}
-        onBlur={() => this.setState({ scrollHandleHasFocus: false })}
+        onFocus={() => this.setState({ scrollHandleHasFocus: true, ...this.state })}
+        onBlur={() => this.setState({ scrollHandleHasFocus: false, ...this.state })}
       />
     );
   }
@@ -894,7 +921,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
     const { isLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { scrollHandleHasFocus } = this.state;
+    const { scrollHandleHasFocus, unreadMessages } = this.state;
 
     const messageIDForInput = this.getMessageIDForUserInput();
 
@@ -926,7 +953,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             id={`WAC__messages${serviceManager.namespace.suffix}`}
             className="WAC__messages"
             ref={this.messagesContainerWithScrollingRef}
-            onScroll={() => this.checkScrollAnchor()}
+            onScroll={() => {
+              this.checkScrollAnchor();
+              this.renderUnreadMessagesNotification();
+            }}
           >
             {this.renderScrollHandle(true)}
             {regularMessages}
@@ -940,6 +970,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
+            {unreadMessages && <div className="WAC__messages--unreadMessagesIndicator">
+              <Button size="sm"> Unread messages </Button>
+            </div>
+            }
           </div>
         </div>
       </div>
