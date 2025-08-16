@@ -128,7 +128,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public readonly state: Readonly<MessagesState> = {
     scrollHandleHasFocus: false,
-    unreadMessages: false
+    unreadMessages: false,
   };
 
   /**
@@ -530,12 +530,15 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   /**
    * Calculates if there are any messages at the bottom out of the scroll view of the container.
-   * The result determines if the user should be told if they need to scroll down to view more 
+   * The result determines if the user should be told if they need to scroll down to view more
    * messages or not.
    */
   public checkMessagesOutOfView() {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
-    const remainingPixelsToScroll = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight;
+    const remainingPixelsToScroll =
+      scrollElement.scrollHeight -
+      scrollElement.scrollTop -
+      scrollElement.clientHeight;
     return remainingPixelsToScroll > 60;
   }
 
@@ -544,7 +547,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public renderUnreadMessagesNotification() {
     const shouldRender = this.checkMessagesOutOfView();
-    this.setState({scrollHandleHasFocus: false, unreadMessages: shouldRender});
+    this.setState({
+      scrollHandleHasFocus: false,
+      unreadMessages: shouldRender,
+    });
   }
 
   /**
@@ -827,8 +833,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           languagePack[labelKey] || languagePack.messages_scrollHandle
         }
         onClick={onClick}
-        onFocus={() => this.setState({ scrollHandleHasFocus: true, ...this.state })}
-        onBlur={() => this.setState({ scrollHandleHasFocus: false, ...this.state })}
+        onFocus={() =>
+          this.setState({ scrollHandleHasFocus: true, ...this.state })
+        }
+        onBlur={() =>
+          this.setState({ scrollHandleHasFocus: false, ...this.state })
+        }
       />
     );
   }
@@ -970,10 +980,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
-            {unreadMessages && <div className="WAC__messages--unreadMessagesIndicator">
-              <Button size="sm"> Unread messages </Button>
-            </div>
-            }
+            {unreadMessages && (
+              <div className="WAC__messages--unreadMessagesIndicator">
+                <Button size="sm"> Unread messages </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
