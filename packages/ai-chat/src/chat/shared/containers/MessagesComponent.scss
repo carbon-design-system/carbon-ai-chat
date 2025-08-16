@@ -56,3 +56,11 @@
   block-size: 100%;
   inline-size: 100%;
 }
+
+.WAC__messages--unreadMessagesIndicator {
+  position: absolute;
+  z-index: 1;
+  inline-size: 100%;
+  inset-block-end: 30px;
+  text-align: center;
+}
