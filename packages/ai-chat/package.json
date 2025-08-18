@@ -107,7 +107,7 @@
     "markdown-it": "^14.1.0",
     "markdown-it-attrs": "^4.1.6",
     "react-intl": "^7.1.6",
-    "react-player": "2.15.1",
+    "react-player": "2.16.1",
     "swiper": "^11.1.1"
   },
   "scripts": {
