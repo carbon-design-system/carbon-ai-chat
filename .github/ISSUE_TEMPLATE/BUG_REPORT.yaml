@@ -47,7 +47,7 @@ body:
     attributes:
       label: Reproduction / example
       description: |
-        Re-create the issue using [CodeSandbox](https://codesandbox.io/) or [Stackblitz](https://stackblitz.com).
+        Re-create the issue using the [Web Components basic Stackblitz example](https://stackblitz.com/github/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/basic) or [React basic Stackblitz example](https://stackblitz.com/github/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic).
     validations:
       required: true
   - type: textarea
