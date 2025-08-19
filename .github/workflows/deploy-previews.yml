@@ -36,3 +36,4 @@ jobs:
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./demo/dist
+          token: ${{ secrets.PAT }}
