@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 @use "../../../styles/chatTheme";
 
 .WACHomeScreen {
@@ -131,11 +132,8 @@
 
 .WACHomeScreen__greeting {
   color: theme.$text-primary;
-  font-family: var(--cds-chat-HOME_SCREEN-greeting-font-family);
-  font-size: var(--cds-heading-04-font-size);
-  font-weight: var(--cds-heading-04-font-weight);
-  letter-spacing: var(--cds-heading-04-letter-spacing);
-  line-height: var(--cds-heading-04-line-height);
+  @include type.type-style("heading-04");
+
   margin-block-start: layout.$spacing-07;
 }
 
@@ -449,55 +447,4 @@ cds-custom-chat-button.WACHomeScreen__starter:nth-child(5) {
 .WACHomeScreen.WACHomeScreen--firstRender .WACInputContainer {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
     WACFadeInUp 0.37s both;
-}
-
-/**********************************************************************************************************************
- Home Screen solid styles */
-
-.WACHomeScreen--backgroundSolid {
-  /* Set the background to the accent color so the gutters will be the accent color in fullscreen. */
-  background-color: var(--cds-chat-ACCENT-color);
-
-  .WACHeader {
-    border-block-end: none;
-  }
-
-  .WACHomeScreen__content {
-    /* Set the content wrapper background to the shell background so that the custom content will have this background
-     by default. */
-    background-color: theme.$chat-shell-background;
-  }
-
-  .WACHomeScreen__body {
-    /* Set the background color on this layer so that the non custom content is the accent color. */
-    background-color: var(--cds-chat-ACCENT-color);
-    color: var(--cds-chat-ACCENT-color-text);
-
-    .WACHomeScreen__greeting {
-      color: currentcolor;
-    }
-
-    cds-custom-chat-button.WACHomeScreen__starter {
-      border: 1px solid var(--cds-chat-ACCENT-color-text);
-      color: var(--cds-chat-ACCENT-color-text);
-    }
-
-    cds-custom-chat-button.WACHomeScreen__starter:hover {
-      background-color: var(--cds-chat-ACCENT-color-hover);
-      color: currentcolor;
-    }
-
-    cds-custom-chat-button.WACHomeScreen__starter:active {
-      background-color: var(--cds-chat-ACCENT-color-active);
-    }
-  }
-
-  .WACHomeScreen__customContent--customContentOnly {
-    background-color: var(--cds-chat-ACCENT-color);
-    color: var(--cds-chat-ACCENT-color-text);
-  }
-
-  .WACHomeScreen__inputContainer {
-    background-color: var(--cds-chat-ACCENT-color);
-  }
 }

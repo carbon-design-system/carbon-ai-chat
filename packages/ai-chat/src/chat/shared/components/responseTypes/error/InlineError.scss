@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 
 .WAC__inlineError {
   display: flex;
@@ -20,7 +21,7 @@
 
 .WAC__inlineError--iconHolder {
   display: flex;
-  flex: 0 0 var(--cds-chat-BASE-border-radius-xlarge);
+  flex: 0 0 layout.$spacing-05;
   align-items: flex-start;
   margin: layout.$spacing-01 layout.$spacing-03 0 layout.$spacing-05;
 }
@@ -36,16 +37,17 @@
 }
 
 .WAC__inlineError--icon {
-  block-size: var(--cds-chat-BASE-border-radius-xlarge);
-  inline-size: var(--cds-chat-BASE-border-radius-xlarge);
+  block-size: layout.$spacing-05;
+  inline-size: layout.$spacing-05;
 }
 
 .WAC__inlineError--text {
   flex: 1;
-  font-size: var(--cds-chat-BASE-font-size-med);
+  @include type.type-style("body-01");
+
   margin-block-start: 1px;
 }
 
 .WAC__inlineError .WAC__inlineError--text {
-  color: var(--cds-text-error);
+  color: theme.$text-error;
 }

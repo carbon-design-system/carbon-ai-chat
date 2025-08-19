@@ -6,16 +6,16 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/type";
 
 cds-chat-header-title {
   text-align: center;
 }
 
 .WACChatHeaderTitle {
+  @include type.type-style("body-01");
+
   overflow: hidden;
-  font-size: var(--cds-chat-BASE-font-size-med);
-  font-weight: 400;
-  line-height: var(--cds-chat-BASE-line-height-med);
   overflow-wrap: break-word;
   text-overflow: ellipsis;
   white-space: nowrap;

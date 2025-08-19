@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 
 .WACCitationCard {
   display: block;
@@ -18,7 +19,7 @@
   button.WACCitationCard--clickable {
     padding: 0;
     border: none;
-    border-radius: var(--cds-chat-BASE-border-radius-med);
+    border-radius: layout.$spacing-03;
     cursor: pointer;
     inline-size: 100%;
     padding-inline-end: 0;
@@ -41,7 +42,7 @@
       text-decoration: none;
 
       .cds--tile {
-        box-shadow: 0 0 0 2px inset var(--cds-focus, #0f62fe);
+        box-shadow: 0 0 0 2px inset theme.$focus;
         text-decoration: none;
       }
     }
@@ -50,7 +51,7 @@
       text-decoration: none;
 
       .cds--tile {
-        background: var(--cds-layer-hover);
+        background: theme.$layer-hover-01;
         text-decoration: none;
       }
     }
@@ -59,7 +60,7 @@
       text-decoration: none;
 
       .cds--tile {
-        box-shadow: 0 0 0 2px inset var(--cds-focus, #0f62fe);
+        box-shadow: 0 0 0 2px inset theme.$focus;
         text-decoration: none;
       }
     }
@@ -72,7 +73,8 @@
 
 .WACCitationCard_Title {
   color: theme.$text-secondary;
-  font-size: var(--cds-chat-BASE-font-size-large);
+  @include type.type-style("body-02");
+
   padding-block-end: layout.$spacing-03;
 }
 
@@ -81,7 +83,8 @@
   overflow: hidden;
   -webkit-box-orient: vertical;
   color: theme.$text-secondary;
-  font-size: var(--cds-chat-BASE-font-size-med);
+  @include type.type-style("body-01");
+
   -webkit-line-clamp: 5;
   line-clamp: 5;
   text-align: start;
@@ -91,13 +94,13 @@
 .WACCitationCard_Footer {
   display: flex;
   justify-content: space-between;
-  color: var(--cds-link-primary);
+  color: theme.$link-primary;
   padding-block-start: layout.$spacing-03;
 }
 
 .WACCitationCard_Label,
 .WACCitationCard_Icon {
-  font-size: var(--cds-chat-BASE-font-size-small);
+  @include type.type-style("caption-01");
 }
 
 .WACCitationCard_Icon {

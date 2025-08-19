@@ -103,7 +103,7 @@ function SelectComponent(props: SelectProps) {
       const listBox = rootRef.current
         ?.querySelector("cds-custom-dropdown")
         ?.shadowRoot?.querySelector(
-          ".cds-custom--list-box--md"
+          ".cds-custom--list-box--md",
         ) as HTMLElement | null;
 
       if (listBox) {

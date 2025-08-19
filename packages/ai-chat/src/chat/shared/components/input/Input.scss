@@ -8,7 +8,9 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/components/button/tokens";
+@use "@carbon/styles/scss/components/button" as button;
 
 .WACInputAndCompletions {
   position: relative;
@@ -22,21 +24,19 @@
   display: flex;
   align-items: center;
   background-color: var(--cds-chat-prompt-background);
-  border-block-start: var(--cds-chat-BASE-border-width-small) solid
-    var(--cds-border-subtle-00);
+  border-block-start: button.$button-outline-width solid theme.$border-subtle-00;
   color: theme.$text-primary;
   inline-size: 100%;
   min-block-size: 0;
-  outline: var(--cds-chat-BASE-border-width-med) solid transparent;
+  outline: button.$button-border-width solid transparent;
   outline-offset: -2px;
   padding-block: layout.$spacing-04;
   padding-inline: layout.$spacing-05 layout.$spacing-03;
 }
 
 .WACWidget--maxWidth.WAC--wideWidth .WACInputContainer {
-  border: var(--cds-chat-BASE-border-width-small) solid
-    var(--cds-border-subtle-00);
-  border-radius: var(--cds-chat-BASE-border-radius-med);
+  border: button.$button-outline-width solid theme.$border-subtle-00;
+  border-radius: layout.$spacing-03;
   margin-block-end: 32px;
 }
 
@@ -44,7 +44,7 @@
 .WAC--aiTheme .WACInputContainer {
   // Lastly create a transparent border. The color of this border will end up being the second linear-gradient specified
   // while the padding and content of the input field will just be the normal background color from the first gradient.
-  border: var(--cds-chat-BASE-border-width-small) solid transparent;
+  border: button.$button-outline-width solid transparent;
   background: 
     // Set a background gradient that is really just a solid color for the input field background color. This gradient
     // covers the input containers padding and content, but not the border. We need a gradient here because that
@@ -60,7 +60,7 @@
     // layer is the only one of the two that covers the border it will underlay the transparent border created below.
     linear-gradient(
         to bottom,
-        var(--cds-border-subtle-00),
+        theme.$border-subtle-00,
         var(--cds-chat-prompt-background)
       )
       border-box;
@@ -107,7 +107,7 @@
 }
 
 .WACInputContainer__UploadInput:focus + .WACInputContainer__UploadButton {
-  box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med) theme.$focus;
+  box-shadow: inset 0 0 0 button.$button-border-width theme.$focus;
 }
 
 .WACInputContainer__UploadButton:hover {
@@ -160,9 +160,9 @@ label.WACInputContainer__UploadButton--disabled:hover {
 .WACInputContainer .WAC__TextArea {
   display: inline-block;
   overflow: hidden;
-  font-size: var(--cds-chat-BASE-font-size-med);
+  @include type.type-style("body-01");
+
   inline-size: 100%;
-  line-height: var(--cds-chat-BASE-line-height-med);
   min-block-size: 0;
 }
 
@@ -184,9 +184,9 @@ label.WACInputContainer__UploadButton--disabled:hover {
 
 .WACInputContainer .WAC__TextArea .WAC__TextArea-textarea::placeholder {
   color: theme.$text-placeholder;
+  @include type.type-style("body-01");
+
   font-family: inherit;
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-med);
 }
 
 .WACInputContainer__SendButtonContainer,

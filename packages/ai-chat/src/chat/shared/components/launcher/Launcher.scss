@@ -8,43 +8,71 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button" as button;
 @use "../../../styles/chatTheme";
+
+$launcher-default-size: 56px;
+$unread-indicator-color-background: theme.$support-error;
+$unread-indicator-color-text: theme.$text-on-color;
+$launcher-position-bottom: layout.$spacing-07;
+$launcher-position-right: layout.$spacing-07;
+$launcher-position-bottom-mobile: layout.$spacing-05;
+
+// Launcher color variables
+$launcher-color-background: button.$button-primary;
+$launcher-color-avatar: theme.$text-on-color;
+$launcher-color-background-hover: button.$button-primary-hover;
+$launcher-color-background-active: button.$button-primary-active;
+$launcher-color-focus-border: theme.$text-on-color;
+$launcher-mobile-color-text: theme.$text-on-color;
+$launcher-expanded-message-color-background: button.$button-primary;
+$launcher-expanded-message-color-text: theme.$text-on-color;
+$launcher-expanded-message-color-background-hover: button.$button-primary-hover;
+$launcher-expanded-message-color-background-active: button.$button-primary-active;
+$launcher-expanded-message-color-focus-border: theme.$text-on-color;
+
+@keyframes WACLauncherIn {
+  0% {
+    /* Launcher positioning should probably be handled by remote config not CSS. */
+    inset-block-end: calc($launcher-position-bottom - #{layout.$spacing-05});
+    opacity: 0;
+  }
+
+  100% {
+    /* Launcher positioning should probably be handled by remote config not CSS. */
+    inset-block-end: $launcher-position-bottom;
+    opacity: 1;
+  }
+}
 
 @media screen and (prefers-reduced-motion: reduce) {
   .WACLauncher__ButtonContainer {
     position: fixed;
     z-index: var(--cds-chat-BASE-z-index);
-    border-radius: var(--cds-chat-BASE-border-radius-xsmall);
+    border-radius: layout.$spacing-01;
     animation: none;
-    background-color: #ffffff;
+    background-color: theme.$background;
     box-shadow: chatTheme.$BASE-box-shadow;
-
-    /* Launcher positioning should probably be handled by remote config not CSS. */
-    inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-
-    /* Launcher positioning should probably be handled by remote config not CSS. */
-    inset-inline-end: var(--cds-chat-LAUNCHER-position-bottom);
+    inset-block-end: $launcher-position-bottom;
+    inset-inline-end: $launcher-position-bottom;
   }
 }
 
 .WACLauncher__ButtonContainer {
   position: fixed;
   z-index: var(--cds-chat-BASE-z-index);
-  border-radius: var(--cds-chat-BASE-border-radius-xsmall);
+  border-radius: layout.$spacing-01;
   animation: WACLauncherIn motion.$duration-moderate-01
     motion.motion(entrance, expressive) both;
-  background-color: #ffffff;
+  background-color: theme.$background;
   box-shadow: chatTheme.$BASE-box-shadow;
-
-  /* Launcher positioning should probably be handled by remote config not CSS. */
-  inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-
-  /* Launcher positioning should probably be handled by remote config not CSS. */
-  inset-inline-end: var(--cds-chat-LAUNCHER-position-bottom);
+  inset-block-end: $launcher-position-bottom;
+  inset-inline-end: $launcher-position-bottom;
 }
 
 .WACContainer--render[dir="rtl"] .WACLauncher__ButtonContainer {
-  inset-inline: var(--cds-chat-LAUNCHER-position-bottom) unset;
+  inset-inline: $launcher-position-bottom unset;
 }
 
 .WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--hidden {
@@ -68,53 +96,53 @@
   border-radius: 28px;
 
   @media screen and (prefers-reduced-motion: reduce) {
-    background-color: var(--cds-chat-LAUNCHER-color-background);
+    background-color: $launcher-color-background;
     transition: none;
 
     // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
     &:focus {
-      border-width: var(--cds-chat-BASE-border-width-large);
-      border-color: var(--cds-chat-LAUNCHER-color-background);
-      box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-        var(--cds-chat-LAUNCHER-color-focus-border);
+      border-width: button.$button-border-width;
+      border-color: $launcher-color-background;
+      box-shadow: inset 0 0 0 button.$button-border-width
+        $launcher-color-focus-border;
     }
 
     &:hover {
-      border-color: var(--cds-chat-LAUNCHER-color-background-hover);
-      background-color: var(--cds-chat-LAUNCHER-color-background-hover);
+      border-color: $launcher-color-background-hover;
+      background-color: $launcher-color-background-hover;
     }
 
     &:active {
-      border-width: var(--cds-chat-BASE-border-width-large);
-      border-color: var(--cds-chat-LAUNCHER-color-background-active);
-      background-color: var(--cds-chat-LAUNCHER-color-background-active);
-      box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-        var(--cds-chat-LAUNCHER-color-focus-border);
+      border-width: button.$button-border-width;
+      border-color: $launcher-color-background-active;
+      background-color: $launcher-color-background-active;
+      box-shadow: inset 0 0 0 button.$button-border-width
+        $launcher-color-focus-border;
     }
   }
 
-  background-color: var(--cds-chat-LAUNCHER-color-background);
+  background-color: $launcher-color-background;
   transition: unset;
 
   // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
   &:focus {
-    border-width: var(--cds-chat-BASE-border-width-large);
-    border-color: var(--cds-chat-LAUNCHER-color-background);
-    box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-      var(--cds-chat-LAUNCHER-color-focus-border);
+    border-width: button.$button-border-width;
+    border-color: $launcher-color-background;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      $launcher-color-focus-border;
   }
 
   &:hover {
-    border-color: var(--cds-chat-LAUNCHER-color-background-hover);
-    background-color: var(--cds-chat-LAUNCHER-color-background-hover);
+    border-color: $launcher-color-background-hover;
+    background-color: $launcher-color-background-hover;
   }
 
   &:active {
-    border-width: var(--cds-chat-BASE-border-width-large);
-    border-color: var(--cds-chat-LAUNCHER-color-background-active);
-    background-color: var(--cds-chat-LAUNCHER-color-background-active);
-    box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-      var(--cds-chat-LAUNCHER-color-focus-border);
+    border-width: button.$button-border-width;
+    border-color: $launcher-color-background-active;
+    background-color: $launcher-color-background-active;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      $launcher-color-focus-border;
   }
 }
 
@@ -127,12 +155,12 @@
   justify-content: center;
   padding: 0 4px;
   border-radius: 10px;
-  background-color: var(--cds-chat-UNREAD-INDICATOR-color-background);
-  color: var(--cds-chat-UNREAD-INDICATOR-color-text);
-  font-size: var(--cds-chat-BASE-font-size-small);
+  background-color: $unread-indicator-color-background;
+  color: $unread-indicator-color-text;
+  @include type.type-style("caption-01");
+
   inset-block-start: calc(-1 * #{layout.$spacing-01});
   inset-inline-end: calc(-1 * #{layout.$spacing-01});
-  line-height: 14px;
   min-block-size: 20px;
 
   // This is 20px and not a multiple of 4 because of the 12px font-size plus 4px of padding on each side.
@@ -158,10 +186,10 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    border-radius: var(--cds-chat-BASE-border-radius-xsmall);
-    background-color: var(--cds-chat-LAUNCHER-color-background);
-    block-size: var(--cds-chat-LAUNCHER-default-size);
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
+    border-radius: layout.$spacing-01;
+    background-color: $launcher-color-background;
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
     transition: none;
   }
 }
@@ -169,7 +197,7 @@
 button.WACLauncher__Button {
   svg {
     block-size: 24px;
-    fill: var(--cds-chat-LAUNCHER-color-avatar);
+    fill: $launcher-color-avatar;
     inline-size: 24px;
   }
 
@@ -178,17 +206,17 @@ button.WACLauncher__Button {
   align-items: center;
   justify-content: center;
   padding: 0;
-  border-radius: var(--cds-chat-BASE-border-radius-xsmall);
-  background-color: var(--cds-chat-LAUNCHER-color-background);
-  block-size: var(--cds-chat-LAUNCHER-default-size);
-  inline-size: var(--cds-chat-LAUNCHER-default-size);
+  border-radius: layout.$spacing-01;
+  background-color: $launcher-color-background;
+  block-size: $launcher-default-size;
+  inline-size: $launcher-default-size;
   transition:
     background 250ms ease-in-out,
     transform 150ms ease;
 }
 
 button.WACLauncher__Button:focus {
-  border-width: var(--cds-chat-BASE-border-width-large);
+  border-width: button.$button-border-width;
 }
 
 .WACLauncher__svg {
@@ -249,7 +277,7 @@ button.WACLauncher__Button:focus {
   display: -webkit-box;
   margin: layout.$spacing-05;
   -webkit-box-orient: vertical;
-  color: var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-text);
+  color: $launcher-expanded-message-color-text;
   font-size: 20px;
   letter-spacing: 0;
   -webkit-line-clamp: 3;
@@ -284,8 +312,8 @@ button.WACLauncher__Button:focus {
   // of the page. Once all of that has been done move down the height of the launcher container. This way the top of the
   // container always starts 16px above the small launcher before the animation, irrelevant of how tall the container is.
   inset-block-end: calc(
-    #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) +
-      var(--cds-chat-LAUNCHER-position-bottom) - var(
+    #{layout.$spacing-05} + $launcher-default-size +
+      $launcher-position-bottom - var(
         --cds-chat-LAUNCHER-desktop-expanded-height
       )
   );
@@ -302,40 +330,32 @@ button.WACLauncher__Button:focus {
 
 .WACLauncherComplex__Container .WACLauncherComplex__ContentButton {
   padding: 0;
-  border: var(--cds-chat-BASE-border-width-large) solid transparent;
+  border: button.$button-border-width solid transparent;
   border-radius: layout.$spacing-04;
   background: transparent;
   box-shadow: none;
   min-inline-size: layout.$spacing-13;
 
   &:enabled:focus {
-    border-width: var(--cds-chat-BASE-border-width-large);
-    border-color: var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background);
-    box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-      var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-focus-border);
+    border-width: button.$button-border-width;
+    border-color: $launcher-expanded-message-color-background;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      $launcher-expanded-message-color-focus-border;
     outline: none;
   }
 
   &:enabled:hover {
-    border-color: var(
-      --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background-hover
-    );
-    background-color: var(
-      --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background-hover
-    );
+    border-color: $launcher-expanded-message-color-background-hover;
+    background-color: $launcher-expanded-message-color-background-hover;
     cursor: pointer;
   }
 
   &:enabled:active {
-    border-width: var(--cds-chat-BASE-border-width-large);
-    border-color: var(
-      --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background-active
-    );
-    background: var(
-      --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background-active
-    );
-    box-shadow: inset 0 0 0 var(--cds-chat-BASE-border-width-med)
-      var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-focus-border);
+    border-width: button.$button-border-width;
+    border-color: $launcher-expanded-message-color-background-active;
+    background: $launcher-expanded-message-color-background-active;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      $launcher-expanded-message-color-focus-border;
   }
 }
 
@@ -350,18 +370,17 @@ button.WACLauncher__Button:focus {
 
   // 1px less padding everywhere to fit the border.
   padding: 3px 7px 3px 3px;
-  border: var(--cds-chat-BASE-border-width-small) solid transparent;
+  border: button.$button-outline-width solid transparent;
   margin: 0;
 
   // Slightly less blur than the normal box-shadow since the close button is so small.
   box-shadow: 1px 0 2px rgb(23 23 23 / 30%);
   cursor: pointer;
-  font-size: var(--cds-chat-BASE-font-size-small);
+  @include type.type-style("caption-01");
 
   // The height of the tag 24px, plus the 8px gap we want.
   inset-block-start: calc((#{layout.$spacing-06} + #{layout.$spacing-03}) * -1);
   inset-inline-end: 0;
-  line-height: var(--cds-chat-BASE-line-height-small);
   opacity: 0;
 }
 
@@ -559,8 +578,8 @@ button.WACLauncher__Button:focus {
     // of the page. Once all of that has been done move down the height of the launcher container. This way the top of the
     // container always starts 16px above the small launcher before the animation, irrelevant of how tall the container is.
     inset-block-end: calc(
-      #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) +
-        var(--cds-chat-LAUNCHER-position-bottom) - var(
+      #{layout.$spacing-05} + $launcher-default-size +
+        $launcher-position-bottom - var(
           --cds-chat-LAUNCHER-desktop-expanded-height
         )
     );
@@ -572,7 +591,7 @@ button.WACLauncher__Button:focus {
   }
 
   100% {
-    background: var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background);
+    background: $launcher-expanded-message-color-background;
     box-shadow: chatTheme.$BASE-box-shadow;
     // 64px of distance between the bottom of the medium container and the bottom of the page, so that theres a slight
     // overlap between the container and the small launcher which has an 80px height when it's expanded.
@@ -598,10 +617,10 @@ button.WACLauncher__Button:focus {
   0% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--cds-chat-LAUNCHER-default-size);
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
-    inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-    inset-inline-end: var(--cds-chat-LAUNCHER-position-right);
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
+    inset-block-end: $launcher-position-bottom;
+    inset-inline-end: $launcher-position-right;
   }
 
   100% {
@@ -618,10 +637,10 @@ button.WACLauncher__Button:focus {
   0% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--cds-chat-LAUNCHER-default-size);
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
-    inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-    inset-inline-start: var(--cds-chat-LAUNCHER-position-right);
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
+    inset-block-end: $launcher-position-bottom;
+    inset-inline-start: $launcher-position-right;
   }
 
   100% {
@@ -854,7 +873,7 @@ button.WACLauncher__Button:focus {
 }
 
 .WACLauncherComplex__Container--toolingPreview {
-  background: var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background);
+  background: $launcher-expanded-message-color-background;
   box-shadow: chatTheme.$BASE-box-shadow;
   // 64px of distance between the bottom of the medium container and the bottom of the page, so that theres a slight
   // overlap between the container and the small launcher which has an 80px height when it's expanded.
@@ -1068,7 +1087,7 @@ button.WACLauncher__Button:focus {
 
 @keyframes WACAnimLauncherComplex__FadeOutSlideDown {
   0% {
-    background: var(--cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background);
+    background: $launcher-expanded-message-color-background;
     box-shadow: chatTheme.$BASE-box-shadow;
     inset-block-end: layout.$spacing-10;
   }
@@ -1082,8 +1101,8 @@ button.WACLauncher__Button:focus {
     background: transparent;
     box-shadow: none;
     inset-block-end: calc(
-      #{layout.$spacing-05} + var(--cds-chat-LAUNCHER-default-size) +
-        var(--cds-chat-LAUNCHER-position-bottom) - var(
+      #{layout.$spacing-05} + $launcher-default-size +
+        $launcher-position-bottom - var(
           --cds-chat-LAUNCHER-desktop-expanded-height
         )
     );
@@ -1117,10 +1136,10 @@ button.WACLauncher__Button:focus {
   100% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--cds-chat-LAUNCHER-default-size);
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
-    inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-    inset-inline-end: var(--cds-chat-LAUNCHER-position-right);
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
+    inset-block-end: $launcher-position-bottom;
+    inset-inline-end: $launcher-position-right;
   }
 }
 
@@ -1137,22 +1156,28 @@ button.WACLauncher__Button:focus {
   100% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--cds-chat-LAUNCHER-default-size);
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
-    inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-    inset-inline-start: var(--cds-chat-LAUNCHER-position-right);
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
+    inset-block-end: $launcher-position-bottom;
+    inset-inline-start: $launcher-position-right;
   }
 }
 
 // Launcher Extended styles
 .WACLauncherExtended__Container {
-  block-size: var(--cds-chat-LAUNCHER-default-size);
-  inline-size: var(--cds-chat-LAUNCHER-default-size);
+  block-size: $launcher-default-size;
+  inline-size: $launcher-default-size;
+}
+
+// Mobile launcher positioning - use 1rem instead of spacing-07
+.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--mobile {
+  inset-block-end: $launcher-position-bottom-mobile;
+  inset-inline-end: $launcher-position-bottom-mobile;
 }
 
 button.WACLauncherExtended__Button {
   padding: 0;
-  border-width: var(--cds-chat-BASE-border-width-large);
+  border-width: button.$button-border-width;
   block-size: 100%;
   cursor: pointer;
   inline-size: 100%;
@@ -1174,7 +1199,7 @@ button.WACLauncherExtended__Button {
   display: flex;
   inline-size: calc(var(--cds-chat--LAUNCHER-EXTENDED-width) - 6px);
   inset-inline-end: 0;
-  max-inline-size: calc(100vw - var(--cds-chat-LAUNCHER-position-bottom) - 6px);
+  max-inline-size: calc(100vw - $launcher-position-bottom - 6px);
 }
 
 .WACLauncherExtended__TextHolder {
@@ -1189,17 +1214,16 @@ button.WACLauncherExtended__Button {
   display: flex;
   align-items: center;
   block-size: 100%;
-  color: var(--cds-chat-LAUNCHER-MOBILE-color-text);
-  font-size: var(--cds-chat-BASE-font-size-med);
-  font-weight: var(--cds-chat-BASE-weight-semibold);
+  color: $launcher-mobile-color-text;
+  @include type.type-style("body-01");
+
   inline-size: calc(100% - 12px);
   inset-block-end: 0;
-  line-height: var(--cds-chat-BASE-line-height-small);
   word-break: break-word;
 }
 
 .WAC-isPhone .WACLauncherExtended__Greeting {
-  line-height: var(--cds-chat-BASE-line-height-med);
+  @include type.type-style("body-01");
 }
 
 .WACLauncherExtended__GreetingText {
@@ -1207,6 +1231,7 @@ button.WACLauncherExtended__Button {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   text-overflow: ellipsis;
 }
 
@@ -1214,18 +1239,8 @@ button.WACLauncherExtended__Button {
   display: flex;
   align-items: center;
   justify-content: center;
-  block-size: calc(
-    var(--cds-chat-LAUNCHER-default-size) - var(
-        --cds-chat-BASE-border-width-large
-      ) *
-      2
-  );
-  inline-size: calc(
-    var(--cds-chat-LAUNCHER-default-size) - var(
-        --cds-chat-BASE-border-width-large
-      ) *
-      2
-  );
+  block-size: calc($launcher-default-size - button.$button-border-width * 2);
+  inline-size: calc($launcher-default-size - button.$button-border-width * 2);
   margin-inline-start: auto;
 
   svg {
@@ -1420,7 +1435,7 @@ button.WACLauncherExtended__Button {
 
 @keyframes WACLauncherExtend {
   0% {
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
+    inline-size: $launcher-default-size;
   }
 
   100% {
@@ -1434,7 +1449,7 @@ button.WACLauncherExtended__Button {
   }
 
   100% {
-    inline-size: var(--cds-chat-LAUNCHER-default-size);
+    inline-size: $launcher-default-size;
   }
 }
 
@@ -1462,11 +1477,4 @@ button.WACLauncherExtended__Button {
     inset-block-start: -12px;
     opacity: 0;
   }
-}
-
-// Tooling preview styles
-// These styles remove the hover, focus, and active states for both desktop and mobile launchers in tooling preview.
-.WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--toolingPreview
-  button:enabled {
-  pointer-events: none;
 }

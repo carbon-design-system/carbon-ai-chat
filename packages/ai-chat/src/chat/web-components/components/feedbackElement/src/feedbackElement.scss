@@ -8,12 +8,13 @@
 @use "../../../vars";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/colors";
+@use "@carbon/styles/scss/type";
 @use "@carbon/layout";
 
 .#{vars.$css-class-prefix}-container {
   box-sizing: border-box;
   border: 1px solid theme.$chat-bubble-border;
-  border-radius: var(--cds-chat-BASE-border-radius-med);
+  border-radius: layout.$spacing-03;
   animation: fade-in 600ms forwards;
   background-color: theme.$chat-shell-background;
   container-type: inline-size;
@@ -32,9 +33,9 @@
 }
 
 .#{vars.$css-class-prefix}-title {
+  @include type.type-style("heading-compact-01");
+
   flex: 1;
-  font-size: var(--cds-chat-BASE-font-size-xlarge);
-  line-height: var(--cds-chat-BASE-line-height-xlarge);
 }
 
 .#{vars.$css-class-prefix}-close {
@@ -43,9 +44,9 @@
 
 .#{vars.$css-class-prefix}-disclaimer,
 .#{vars.$css-class-prefix}-prompt {
+  @include type.type-style("body-compact-01");
+
   color: theme.$text-secondary;
-  font-size: var(--cds-chat-BASE-font-size-small);
-  line-height: var(--cds-chat-BASE-line-height-small);
   margin-block-start: layout.$spacing-03;
   margin-inline: layout.$spacing-05;
 }
@@ -69,7 +70,7 @@
 .#{vars.$css-class-prefix}-submit {
   flex: 1;
   --#{vars.$web-component-prefix}-rounded-button-bottom-right: var(
-    --cds-chat-BASE-border-radius-med
+    #{layout.$spacing-03}
   );
   --#{vars.$web-component-prefix}-rounded-button-width: 100%;
   --#{vars.$web-component-prefix}-rounded-button-max-width: 100%;
@@ -78,7 +79,7 @@
 .#{vars.$css-class-prefix}-cancel {
   flex: 1;
   --#{vars.$web-component-prefix}-rounded-button-bottom-left: var(
-    --cds-chat-BASE-border-radius-med
+    #{layout.$spacing-03}
   );
   --#{vars.$web-component-prefix}-rounded-button-width: 100%;
   --#{vars.$web-component-prefix}-rounded-button-max-width: 100%;

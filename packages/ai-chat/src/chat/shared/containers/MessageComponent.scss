@@ -137,21 +137,21 @@ $message-bar-width: 3px;
   margin-inline: 0 layout.$spacing-05;
 }
 
-.WAC__message a {
+.WAC__message a:not(.cds--btn) {
   color: theme.$link-primary;
   outline: none;
   text-decoration: none;
 }
 
-.WAC__message a:visited {
+.WAC__message a:visited:not(.cds--btn) {
   color: theme.$link-primary;
 }
 
-.WAC__message a:hover {
+.WAC__message a:hover:not(.cds--btn) {
   text-decoration: underline;
 }
 
-.WAC__message a:focus {
+.WAC__message a:focus:not(.cds--btn) {
   text-decoration: underline;
 }
 
@@ -181,8 +181,8 @@ $message-bar-width: 3px;
 .WAC__message-userDefinedResponse {
   position: relative;
   color: theme.$text-primary;
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-med);
+  @include type.type-style("body-01");
+
   overflow-wrap: break-word;
   word-break: break-word;
   word-wrap: break-word;
@@ -293,20 +293,15 @@ svg.WAC__sent-fileIcon {
   /* This is needed to fix a problem where Edge antialiases the edge when zoomed causing a gap with the arrow. See
    https:github.ibm.com/watson-engagement-advisor/wea-backlog/issues/28030 */
   border: solid 1px theme.$chat-bubble-user;
-  border-radius: var(--cds-chat-BASE-border-radius-med) 0
-    var(--cds-chat-BASE-border-radius-med)
-    var(--cds-chat-BASE-border-radius-med);
+  border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
   background: theme.$chat-bubble-user;
   /* TODO: these needs a real carbon token. */
   color: var(--cds-chat-SECONDARY-color-text);
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-med);
+  @include type.type-style("body-01");
 }
 
 .WACContainer--render[dir="rtl"] .WAC__sent--bubble {
-  border-radius: 0 var(--cds-chat-BASE-border-radius-med)
-    var(--cds-chat-BASE-border-radius-med)
-    var(--cds-chat-BASE-border-radius-med);
+  border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
 }
 
 .WAC__received--options,
@@ -325,20 +320,20 @@ svg.WAC__sent-fileIcon {
 }
 
 .WACSearchMessage {
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-large);
+  @include type.type-style("body-01");
 }
 
 .WAC__bot-message .WAC__received--agentStatusMessage {
   color: theme.$text-helper;
-  font-size: var(--cds-chat-BASE-font-size-med);
+  @include type.type-style("caption-01");
+
   padding-inline: layout.$spacing-05;
   text-align: center;
 }
 
 .WAC__bot-message .WAC__received--chatStatusMessage {
   color: theme.$text-secondary;
-  font-size: var(--cds-chat-BASE-font-size-med);
+  @include type.type-style("caption-01");
 }
 
 .WAC__message--systemMessage {
@@ -354,8 +349,7 @@ svg.WAC__sent-fileIcon {
 
   .WACMessage__Label {
     color: theme.$text-secondary;
-    font-size: var(--cds-chat-BASE-font-size-small);
-    line-height: var(--cds-chat-BASE-line-height-small);
+    @include type.type-style("caption-01");
   }
 
   .WACMessage__Avatar {
@@ -416,7 +410,7 @@ svg.WAC__sent-fileIcon {
 
   .WAC__received--fromHuman,
   .WAC__sent--bubble {
-    border-radius: var(--cds-chat-BASE-border-radius-med);
+    border-radius: layout.$spacing-03;
   }
 }
 
@@ -442,16 +436,12 @@ svg.WAC__sent-fileIcon {
 .WAC__received--fromHuman.WAC__received--text {
   padding: layout.$spacing-03 layout.$spacing-04;
   border: solid 1px theme.$chat-bubble-border;
-  border-radius: 0 var(--cds-chat-BASE-border-radius-med)
-    var(--cds-chat-BASE-border-radius-med)
-    var(--cds-chat-BASE-border-radius-med);
+  border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
   background-color: theme.$chat-bubble-agent;
 }
 
-.WACContainer--render[dir="rtl"] .WAC__received--fromHuman.WAC__received--text {
-  border-radius: var(--cds-chat-BASE-border-radius-med) 0
-    var(--cds-chat-BASE-border-radius-med)
-    var(--cds-chat-BASE-border-radius-med);
+.WACContainer--render[dir="rtl"] .WAC__received--fromAgent.WAC__received--text {
+  border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
 }
 
 .WACMessage__Avatar--bot .WACImageWithFallback .WACIconHolder {

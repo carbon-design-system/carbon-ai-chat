@@ -19,27 +19,6 @@
 
   /* Generic variables using for common values that are repeated throughout the widget. */
 
-  /* TODO: Start using Carbon sass variables as appropriate below. See chatTheme.scss. */
-
-  /* Typography */
-  --cds-chat-BASE-weight-semibold: 600;
-  --cds-chat-BASE-font-size-small: 12px;
-  --cds-chat-BASE-font-size-med: 14px;
-  --cds-chat-BASE-font-size-large: 16px;
-  --cds-chat-BASE-font-size-xlarge: 20px;
-  --cds-chat-BASE-line-height-small: 16px;
-  --cds-chat-BASE-line-height-med: 18px;
-  --cds-chat-BASE-line-height-large: 20px;
-  --cds-chat-BASE-line-height-xlarge: 26px;
-
-  /* Borders */
-  --cds-chat-BASE-border-radius-xsmall: 2px;
-  --cds-chat-BASE-border-radius-med: 8px;
-  --cds-chat-BASE-border-radius-xlarge: 16px;
-  --cds-chat-BASE-border-width-small: 1px;
-  --cds-chat-BASE-border-width-med: 2px;
-  --cds-chat-BASE-border-width-large: 3px;
-
   /* **************************************************************************************************************** */
 
   /* Internal properties where reuse is needed */
@@ -61,11 +40,6 @@
   --cds-chat-BASE-top-position: auto;
   --cds-chat-BASE-left-position: auto;
 
-  /* Launcher */
-  --cds-chat-LAUNCHER-default-size: 56px;
-  --cds-chat-LAUNCHER-position-bottom: #{layout.$spacing-07};
-  --cds-chat-LAUNCHER-position-right: #{layout.$spacing-07};
-
   /* **************************************************************************************************************** */
 
   /* Customizations applied by tooling or developer configuration */
@@ -76,50 +50,10 @@
   /* The smaller of 380px or the available width of the screen. The is to account for zoom levels pushing us to 320px. */
   --cds-chat-BASE-width: min(380px, var(--cds-chat-BASE-max-width));
   --cds-chat-BASE-height: calc(100vh - (2 * #{layout.$spacing-07}));
-  --cds-chat-UNREAD-INDICATOR-color-background: #da1e28;
-  --cds-chat-UNREAD-INDICATOR-color-text: #ffffff;
-
-  /* Font Family */
-  --cds-chat-BASE-font-family:
-    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
-  --cds-chat-BASE-header-font-family:
-    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
-  --cds-chat-HOME_SCREEN-greeting-font-family:
-    "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
-
-  /* ACCENT color customizations */
-  --cds-chat-ACCENT-color: #{theme.$background-brand};
-  --cds-chat-ACCENT-color-hover: #{tokens.$button-tertiary-hover}; /* Ghost button hover */
-  --cds-chat-ACCENT-color-active: #{tokens.$button-tertiary-active}; /* Ghost button hover */
-
-  /* The default rgb for blue-60 */
-  --cds-chat-ACCENT-color-r: 15;
-  --cds-chat-ACCENT-color-g: 98;
-  --cds-chat-ACCENT-color-b: 254;
-  --cds-chat-ACCENT-color-text: var(--cds-text-on-color);
-
-  /* LAUNCHER color customizations */
-  --cds-chat-LAUNCHER-color-background: var(--cds-chat-ACCENT-color);
-  --cds-chat-LAUNCHER-color-avatar: var(--cds-chat-ACCENT-color-text);
-  --cds-chat-LAUNCHER-color-background-hover: #{tokens.$button-primary-hover};
-  --cds-chat-LAUNCHER-color-background-active: #{tokens.$button-primary-active};
-  --cds-chat-LAUNCHER-color-focus-border: var(--cds-chat-ACCENT-color-text);
-  --cds-chat-LAUNCHER-MOBILE-color-text: var(--cds-chat-ACCENT-color-text);
-  --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background: var(
-    --cds-chat-ACCENT-color
-  );
-  --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-text: var(
-    --cds-chat-ACCENT-color-text
-  );
-  --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background-hover: #{tokens.$button-primary-hover};
-  --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-background-active: #{tokens.$button-primary-active};
-  --cds-chat-LAUNCHER-EXPANDED-MESSAGE-color-focus-border: var(
-    --cds-chat-ACCENT-color-text
-  );
 }
 
 .WACWidget--rounded {
-  --cds-chat-CONTAINER-border-radius: 8px;
+  --cds-chat-CONTAINER-border-radius: #{layout.$spacing-03};
 }
 
 // The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't
@@ -139,7 +73,6 @@
 
 /* We will have to think on what this looks like if we are going to remove these CSS variables and make them SASS based. */
 .WAC-isPhone {
-  --cds-chat-LAUNCHER-position-bottom: 16px;
   --cds-chat-BASE-width: var(--cds-chat-viewport-width, "100vw");
   --cds-chat-BASE-height: var(--cds-chat-viewport-height, "100vh");
   --cds-chat-BASE-left-position: var(--cds-chat-viewport-offsetLeft, "0");
@@ -147,12 +80,4 @@
   --cds-chat-BASE-max-height: auto;
   --cds-chat-BASE-min-height: auto;
   --cds-chat-BASE-right-position: auto;
-  --cds-chat-BASE-font-size-small: 14px;
-  --cds-chat-BASE-font-size-med: 16px;
-  --cds-chat-BASE-font-size-large: 18px;
-  --cds-chat-BASE-font-size-xlarge: 24px;
-  --cds-chat-BASE-line-height-small: 19px;
-  --cds-chat-BASE-line-height-med: 21px;
-  --cds-chat-BASE-line-height-large: 23px;
-  --cds-chat-BASE-line-height-xlarge: 30px;
 }

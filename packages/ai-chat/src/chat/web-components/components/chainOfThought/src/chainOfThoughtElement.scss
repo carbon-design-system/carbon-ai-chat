@@ -86,7 +86,7 @@ button.#{vars.$css-class-prefix}-chain-of-thought-button {
 
 button.#{vars.$css-class-prefix}-chain-of-thought-button:focus,
 button.#{vars.$css-class-prefix}-chain-of-thought-button:focus-visible {
-  outline: 2px solid var(--cds-focus);
+  outline: 2px solid theme.$focus;
 }
 
 .#{vars.$css-class-prefix}-chain-of-thought-accordion-item-content {
@@ -158,12 +158,12 @@ button.#{vars.$css-class-prefix}-chain-of-thought-button:focus-visible {
     position: relative;
     z-index: 2;
     box-shadow:
-      0 -1px 0 0 var(--cds-focus, #0f62fe),
-      inset 0 1px 0 0 var(--cds-focus, #0f62fe),
-      inset 2px 0 0 0 var(--cds-focus, #0f62fe),
-      0 1px 0 0 var(--cds-focus, #0f62fe),
-      inset 0 -1px 0 0 var(--cds-focus, #0f62fe),
-      inset -2px 0 0 0 var(--cds-focus, #0f62fe);
+      0 -1px 0 0 theme.$focus,
+      inset 0 1px 0 0 theme.$focus,
+      inset 2px 0 0 0 theme.$focus,
+      0 1px 0 0 theme.$focus,
+      inset 0 -1px 0 0 theme.$focus,
+      inset -2px 0 0 0 theme.$focus;
     outline: none;
   }
 }

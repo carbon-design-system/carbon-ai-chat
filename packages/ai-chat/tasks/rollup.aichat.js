@@ -83,6 +83,9 @@ async function runRollup() {
         // Main entry - becomes es/aiChatEntry.js
         'aiChatEntry': path.join(paths.src, '/aiChatEntry.tsx'),
         
+        // Server entry without web component side effects - becomes es/serverEntry.js
+        'serverEntry': path.join(paths.src, '/serverEntry.ts'),
+        
         // Web components - becomes es/web-components/cds-aichat-container/index.js
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
         
@@ -172,6 +175,7 @@ async function runRollup() {
     {
       input: {
         aiChatEntry: path.join(paths.src, '/aiChatEntry.tsx'),
+        serverEntry: path.join(paths.src, '/serverEntry.ts'),
       },
       output: {
         dir: path.join(paths.dist, '/types'),

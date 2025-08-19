@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/components/button" as button;
 
 .WACResponseUserAvatar img {
   block-size: 100%;
@@ -17,8 +18,8 @@
   fill: currentcolor;
 }
 
-.WACResponseUserAvatar .WACResponseUserAvatar__Circle {
-  border: var(--cds-chat-BASE-border-radius-xsmall) solid currentcolor;
+.WACAgentAvatar .WACAgentAvatar__Circle {
+  border: button.$button-border-width solid currentcolor;
   border-radius: 50%;
   background-color: transparent;
   font-weight: bold;

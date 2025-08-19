@@ -59,22 +59,22 @@
 .WACWidget--rounded
   .WAC__overlay--covering.WAC__overlay-panelContainer
   .WACHeader--content {
-  border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
-  border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
+  border-start-end-radius: layout.$spacing-03;
+  border-start-start-radius: layout.$spacing-03;
 }
 
 .WACWidget--rounded
   .WAC--wideWidth
   .WAC__overlay--covering
   .WACHeader__LeftButtons {
-  border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
+  border-start-start-radius: layout.$spacing-03;
 }
 
 .WACWidget--rounded
   .WAC--wideWidth
   .WAC__overlay--covering
   .WACHeader__RightButtons {
-  border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
+  border-start-end-radius: layout.$spacing-03;
 }
 
 .WAC__overlay-panel {

@@ -9,15 +9,24 @@
 
 /**
  * @packageDocumentation
- * @module Carbon AI Chat types
- * @showCategories
+ * @module Carbon AI Chat server-side exports
  *
- * All external exports. This file exports types as well as the React components.
- * To use the web components, directly import them.
+ * Server-side entry point for types, enums, and utilities without browser side effects.
+ * This file does not import web components to avoid triggering their registration,
+ * making it safe to use in Node.js environments, SSR, and testing.
  */
 
+// Export types and utilities without importing web components
 export { OverlayPanelName } from "./chat/shared/components/OverlayPanel";
 
+export {
+  PageObjectId,
+  makeTestId,
+  TestId,
+  PrefixedId,
+} from "./chat/shared/utils/PageObjectId";
+
+// Export all types without the web component implementations
 export {
   CustomMenuOption,
   CustomPanelConfigOptions,
@@ -218,25 +227,12 @@ export {
   LauncherConfig,
 } from "./types/config/LauncherConfig";
 
-export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-container/index";
-
-export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
-
 export {
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
 } from "./types/component/ChatContainer";
-export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
 
-export {
-  ChatCustomElement,
-  ChatCustomElementProps,
-} from "./react/ChatCustomElement";
-
-export {
-  PageObjectId,
-  makeTestId,
-  TestId,
-  PrefixedId,
-} from "./chat/shared/utils/PageObjectId";
+// Export type-only interfaces for web component attributes without importing the implementations
+export type { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-container/index";
+export type { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";

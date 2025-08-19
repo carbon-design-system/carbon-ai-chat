@@ -415,17 +415,7 @@ export interface ThemeConfig {
  */
 export interface WhiteLabelTheme {
   /**
-   * The secondary color which controls the color of the user sent chat bubble.
-   */
-  "BASE-secondary-color"?: string;
-
-  /**
-   * The primary color controls the color of the header.
-   */
-  "BASE-primary-color"?: string;
-
-  /**
    * The accent color which controls things like focus and button colors throughout the widget.
    */
-  "BASE-accent-color"?: string;
+  quickThemeHex?: string;
 }

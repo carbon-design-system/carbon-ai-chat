@@ -21,12 +21,12 @@
 
 [data-carbon-theme="white"] .dot,
 [data-carbon-theme="g10"] .dot {
-  stroke: #001d6c;
+  stroke: $interactive;
 }
 
 [data-carbon-theme="g90"] .dot,
 [data-carbon-theme="g100"] .dot {
-  stroke: #f4f4f4;
+  stroke: $text-secondary;
 }
 
 .linear {

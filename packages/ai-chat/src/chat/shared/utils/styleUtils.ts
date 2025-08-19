@@ -12,17 +12,9 @@
  * of CSS variables into CSS and properly injecting default Carbon colors into CSS variables.
  */
 
-import { blue60, gray10, gray80, gray100, white } from "@carbon/colors";
-
 import { ThemeState } from "../../../types/state/AppState";
 import ObjectMap from "../../../types/utilities/ObjectMap";
-import {
-  adjustLightness,
-  calculateContrast,
-  hexCodeToRGB,
-  MIN_CONTRAST,
-  whiteOrBlackText,
-} from "./colors";
+import { adjustLightness } from "./colors";
 import { WA_CONSOLE_PREFIX } from "./constants";
 import {
   ThemeType,
@@ -37,23 +29,6 @@ const CSS_CHAT_PREFIX = "chat-";
 
 // Regex to determine a 3 or 6 digit hexadecimal color
 const HEXADECIMAL_REGEX = /#([a-f0-9]{3}){1,2}\b/i;
-
-// Some carbon colors need to be overridden in order to support our theming options. Map the overrides for the light
-// themes here.
-const INTERNAL_OVERRIDES_LIGHT_THEME_MAP = {
-  // In light themes make the quick action chat buttons black since the default link blue may not match the users theme.
-  "$chat-button": "#000000",
-  "$chat-button-text-hover": "#525252",
-};
-
-// Some carbon colors need to be overridden in order to support our theming options. Map the overrides for the dark
-// themes here.
-const INTERNAL_OVERRIDES_DARK_THEME_MAP = {
-  // In dark themes make the quick action chat buttons white since the default light link blue may not match the users
-  // theme.
-  "$chat-button": "#ffffff",
-  "$chat-button-text-hover": "#f4f4f4",
-};
 
 /**
  * Converts the given map of CSS variable into a string that is formatted for inserting into a style tag.
@@ -98,146 +73,22 @@ async function remoteStylesToCSSVars(
 ): Promise<ObjectMap<string>> {
   const cssOverrides: ObjectMap<string> = {};
 
-  const primaryColor = whiteLabelVariables["BASE-primary-color"];
-  const secondaryColor = whiteLabelVariables["BASE-secondary-color"];
-  const accentColor = whiteLabelVariables["BASE-accent-color"];
+  const themeColor = whiteLabelVariables.quickThemeHex;
 
-  if (primaryColor) {
-    cssOverrides["PRIMARY-color"] = primaryColor;
-    cssOverrides["PRIMARY-color-text"] = whiteOrBlackText(primaryColor);
-    cssOverrides["PRIMARY-color-hover"] = await adjustLightness(
-      primaryColor,
-      -8,
-    );
-    cssOverrides["PRIMARY-color-active"] = await adjustLightness(
-      primaryColor,
-      -10,
-    );
-
-    // We need to calculate the focus color for the buttons in the header. The focus color for the white and g10
-    // themes is the same as the accent color. For g90 and g100, the focus color is white.
-    const useAccentColor = accentColor || blue60;
-    const tryFocusColor =
-      carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100
-        ? white
-        : useAccentColor;
-
-    let useFocusColor;
-    if (calculateContrast(primaryColor, tryFocusColor) >= MIN_CONTRAST) {
-      // The default color works fine.
-      useFocusColor = tryFocusColor;
-    } else if (
-      tryFocusColor !== useAccentColor &&
-      calculateContrast(primaryColor, useAccentColor) >= MIN_CONTRAST
-    ) {
-      // The default doesn't work so let's try the accent.
-      useFocusColor = useAccentColor;
-    } else if (
-      tryFocusColor !== white &&
-      calculateContrast(primaryColor, white) >= MIN_CONTRAST
-    ) {
-      // The accent doesn't work, so let's try white.
-      useFocusColor = white;
-    } else {
-      // If white doesn't work, then gray100 will.
-      useFocusColor = gray100;
-    }
-
-    if (useFocusColor !== tryFocusColor) {
-      cssOverrides["PRIMARY-color-focus"] = useFocusColor;
-    }
-  }
-
-  if (secondaryColor) {
-    cssOverrides["SECONDARY-color"] = secondaryColor;
-    cssOverrides["SECONDARY-color-text"] = whiteOrBlackText(secondaryColor);
-  } else if (
-    carbonTheme === CarbonTheme.G90 ||
-    carbonTheme === CarbonTheme.G100
-  ) {
-    // We don't like the default Carbon color for the sent text bubble in the g90 and g100 color themes.
-    cssOverrides["SECONDARY-color"] = `var(${CSS_VAR_PREFIX}layer-02)`;
-    cssOverrides["SECONDARY-color-text"] =
-      `var(${CSS_VAR_PREFIX}text-primary);`;
-  }
-
-  if (accentColor) {
+  if (themeColor) {
     const colorMap = ACCENT_COLOR_MAPS[carbonTheme];
 
     // The custom color basically corresponds to Blue 60 are we will replace all the occurrences of Blue 60 with
     // that custom color. For the other shades of blue, we will calculate a relative color from the custom color and
     // replace those colors with this calculated color.
-    const accentBlue20 = await adjustLightness(accentColor, 40);
-    const accentBlue60Hover = await adjustLightness(accentColor, -8);
-    const accentBlue80 = await adjustLightness(accentColor, -20);
+    const themeColorBlue20 = await adjustLightness(themeColor, 40);
+    const themeColorBlue60Hover = await adjustLightness(themeColor, -8);
+    const themeColorBlue80 = await adjustLightness(themeColor, -20);
 
-    fillValues(cssOverrides, colorMap.blue20, accentBlue20);
-    fillValues(cssOverrides, colorMap.blue60, accentColor);
-    fillValues(cssOverrides, colorMap.blue60Hover, accentBlue60Hover);
-    fillValues(cssOverrides, colorMap.blue80, accentBlue80);
-
-    // Update the launcher variables with the appropriate accent colors for the button states.
-    cssOverrides["LAUNCHER-color-background"] = accentColor;
-    cssOverrides["LAUNCHER-color-background-hover"] = accentBlue60Hover;
-    cssOverrides["LAUNCHER-color-background-active"] = accentBlue80;
-    cssOverrides["LAUNCHER-EXPANDED-MESSAGE-color-background"] = accentColor;
-    cssOverrides["LAUNCHER-EXPANDED-MESSAGE-color-hover"] = accentBlue60Hover;
-    cssOverrides["LAUNCHER-EXPANDED-MESSAGE-color-active"] = accentBlue80;
-
-    cssOverrides["ACCENT-color"] = accentColor;
-    const accentColorRGB = hexCodeToRGB(accentColor);
-    cssOverrides["ACCENT-color-r"] = accentColorRGB[0].toString();
-    cssOverrides["ACCENT-color-g"] = accentColorRGB[1].toString();
-    cssOverrides["ACCENT-color-b"] = accentColorRGB[2].toString();
-
-    // The ghost button text color defaults to $link-01 but since we've decided to not override $link-01, we need to
-    // change the color of the ghost button separately.
-    cssOverrides["ACCENT-color-ghost-text"] = accentColor;
-
-    // Now figure out what font color would go with a background color that's "Blue 60".
-    const accentColorBW = whiteOrBlackText(accentColor);
-    cssOverrides["ACCENT-color-text"] = accentColorBW;
-    cssOverrides["ACCENT-color-background-hover"] = accentBlue60Hover;
-    cssOverrides["ACCENT-color-background-active"] = accentBlue80;
-
-    // Update the launcher variables with the appropriate BW colors.
-    cssOverrides["LAUNCHER-color-focus-border"] = accentColorBW;
-    cssOverrides["LAUNCHER-color-avatar"] = accentColorBW;
-    cssOverrides["LAUNCHER-EXPANDED-MESSAGE-color-text"] = accentColorBW;
-    cssOverrides["LAUNCHER-EXPANDED-MESSAGE-color-focus-border"] =
-      accentColorBW;
-    cssOverrides["LAUNCHER-MOBILE-color-text"] = accentColorBW;
-
-    // This color is either black or white and is based on the contrast difference with the accent color. Its primary use
-    // is the color of button on top of the accent color.
-    cssOverrides["ACCENT-color-bw"] = accentColorBW;
-
-    // When ACCENT-color-bw is used as a button color we need a hover and active color.
-    cssOverrides["ACCENT-color-bw-hover"] = await adjustLightness(
-      accentColorBW,
-      -8,
-    );
-
-    // The active color is a little darker than the hover color.
-    cssOverrides["ACCENT-color-bw-active"] = await adjustLightness(
-      accentColorBW,
-      -10,
-    );
-
-    // Also need an inverse of ACCENT-color-bw so that we can have accessible text within our bw buttons.
-    cssOverrides["ACCENT-color-bw-inverse"] =
-      accentColorBW === gray100 ? white : gray100;
-
-    // Need a slightly more gray version of the bw accent color.
-    cssOverrides["ACCENT-color-bw-gray"] =
-      accentColorBW === gray100 ? gray80 : gray10;
-
-    // A slightly darker or lighter accent color (darker if the accent color was already dark, lighter if it was already
-    // light). Used for the launcher experiments where we only have one accent color but really need two.
-    cssOverrides["ACCENT-color-pastel"] =
-      accentColorBW === gray100
-        ? await adjustLightness(accentColor, 20)
-        : await adjustLightness(accentColor, -15);
+    fillValues(cssOverrides, colorMap.blue20, themeColorBlue20);
+    fillValues(cssOverrides, colorMap.blue60, themeColor);
+    fillValues(cssOverrides, colorMap.blue60Hover, themeColorBlue60Hover);
+    fillValues(cssOverrides, colorMap.blue80, themeColorBlue80);
   }
 
   return cssOverrides;
@@ -335,13 +186,12 @@ function mergeCSSVariables(
   publicVars: ObjectMap<string>,
   whiteLabelVariables: WhiteLabelTheme,
   carbonTheme: CarbonTheme,
-  theme: ThemeType | undefined,
+  _theme: ThemeType | undefined,
 ): ObjectMap<string> {
   carbonTheme = carbonTheme || CarbonTheme.G10;
   publicVars = publicVars || {};
 
-  const internalOverrides = createInternalCSSOverridesMap(carbonTheme, theme);
-  const result = { ...internalOverrides, ...publicVars };
+  const result = publicVars;
 
   Object.entries(result).forEach(([key, value]) => {
     // Variables starting with "$" are carbon theme tokens and should all be colors
@@ -366,36 +216,6 @@ function mergeCSSVariables(
   });
 
   return result;
-}
-
-/**
- * This function replaces the default carbon colors for some specific scss variables. After this function is called the
- * public and remote values in mergeCSSVariables can override whatever is set here.
- */
-function createInternalCSSOverridesMap(
-  carbonTheme: CarbonTheme,
-  theme: ThemeType | undefined,
-): ObjectMap<string> {
-  let internalOverridesMap = {};
-  if (theme !== ThemeType.CARBON_AI) {
-    // Some carbon colors need to be overridden in order to support our theming options (when the user isn't using the
-    // AI theme). For now these overrides only apply to the quick action chat buttons since their carbon default, link
-    // blue, may not match the users theme. But this could be extended to other overrides in the future.
-    if ([CarbonTheme.G10, CarbonTheme.WHITE].includes(carbonTheme)) {
-      // In light themes make the quick action chat buttons black.
-      internalOverridesMap = {
-        ...internalOverridesMap,
-        ...INTERNAL_OVERRIDES_LIGHT_THEME_MAP,
-      };
-    } else if ([CarbonTheme.G90, CarbonTheme.G100].includes(carbonTheme)) {
-      // In dark themes make the quick action chat buttons white.
-      internalOverridesMap = {
-        ...internalOverridesMap,
-        ...INTERNAL_OVERRIDES_DARK_THEME_MAP,
-      };
-    }
-  }
-  return internalOverridesMap;
 }
 
 // Given a themeState determine which classNames should be used on the "WACContainer--render" element.

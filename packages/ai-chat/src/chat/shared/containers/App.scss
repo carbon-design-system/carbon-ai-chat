@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
 @use "../../styles/chatTheme";
 
 .WACWidget__regionContainer {
@@ -20,12 +21,12 @@
   display: flex;
   flex-direction: column;
   block-size: 100%;
+  @include type.type-style("body-01");
+
   /* TODO: What to do with this? */
   box-shadow: chatTheme.$BASE-box-shadow;
-  font-size: var(--cds-chat-BASE-font-size-med);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: var(--cds-chat-BASE-line-height-med);
   -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
   text-rendering: optimizelegibility;
   visibility: visible;
@@ -53,7 +54,7 @@
 rounded corners are enabled. */
 
 .WACWidget.WACWidget--rounded {
-  border-radius: var(--cds-chat-BASE-border-radius-med);
+  border-radius: layout.$spacing-03;
   /* Rounded corners because .WACWidget doesn't have overflow: hidden to easily apply rounded corners at the top level.
    We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI Chat widget with */
 
@@ -67,20 +68,20 @@ rounded corners are enabled. */
   .WAC__hydratingContainer,
   .WACBackgroundCover,
   .WACAlternateSuggestionsContainer {
-    border-radius: var(--cds-chat-BASE-border-radius-med);
+    border-radius: layout.$spacing-03;
   }
 
   /* For the top right and left corners when the widget is rounded. */
   .WACHeader {
-    border-start-end-radius: var(--cds-chat-BASE-border-radius-med);
-    border-start-start-radius: var(--cds-chat-BASE-border-radius-med);
+    border-start-end-radius: layout.$spacing-03;
+    border-start-start-radius: layout.$spacing-03;
   }
 
   /* For the bottom right and left corners when the widget is rounded. */
   .WACInputContainer,
   .WACBrandingBanner {
-    border-end-end-radius: var(--cds-chat-BASE-border-radius-med);
-    border-end-start-radius: var(--cds-chat-BASE-border-radius-med);
+    border-end-end-radius: layout.$spacing-03;
+    border-end-start-radius: layout.$spacing-03;
   }
 
   /* If the branding banner is visible, the animation container should not have a bottom left/right border radius since

@@ -80,8 +80,8 @@ cds-custom-skeleton-placeholder.WACImage__Skeleton::part(placeholder) {
 .WACImage__IconOnly .WACImage__Icon {
   padding: layout.$spacing-04;
   border-radius: chatTheme.$CARD-border-radius;
-  background-color: #1717173f;
-  fill: #ffffff;
+  background-color: theme.$overlay;
+  fill: theme.$icon-on-color;
 }
 
 svg.WACImage__Icon {

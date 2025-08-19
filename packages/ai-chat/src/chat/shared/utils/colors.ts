@@ -113,10 +113,4 @@ async function adjustLightness(token: string, shift: number) {
     .toLowerCase();
 }
 
-export {
-  MIN_CONTRAST,
-  adjustLightness,
-  whiteOrBlackText,
-  hexCodeToRGB,
-  calculateContrast,
-};
+export { adjustLightness, whiteOrBlackText };

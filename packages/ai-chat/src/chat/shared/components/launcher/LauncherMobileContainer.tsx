@@ -307,6 +307,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
       })}
       ref={launcherRef}
       launcherConfig={launcherConfig}
+      isMobile={true}
       showUnreadIndicator={showUnreadIndicator}
       unreadHumanAgentCount={unreadHumanAgentCount}
       isExtended={isExtended}

@@ -7,16 +7,17 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 
 .WACHumanAgentBanner__Body {
   display: flex;
   align-items: center;
   padding: layout.$spacing-05;
   background-color: theme.$layer-01;
-  border-block-end: 1px solid var(--cds-border-subtle-01, #c6c6c6);
-  font-size: var(--cds-chat-BASE-font-size-med);
+  border-block-end: 1px solid theme.$border-subtle-01;
+  @include type.type-style("body-01");
+
   inline-size: 100%;
-  line-height: var(--cds-chat-BASE-line-height-med);
 }
 
 .WACHumanAgentBanner .WACResponseUserAvatar {
@@ -49,8 +50,8 @@
   font-weight: var(--cds-chat-BASE-weight-semibold);
 }
 
-.WACHumanAgentBanner--connected .WACHumanAgentBanner__HumanAgentLine1 {
-  font-size: var(--cds-chat-BASE-font-size-large);
+.WACHumanAgentBanner--connected .WACAgentBanner__AgentLine1 {
+  @include type.type-style("body-02");
 }
 
 .WACHumanAgentBanner__HumanAgentLine2 {
@@ -59,8 +60,7 @@
 
 .WACHumanAgentBanner__HumanAgentLine2,
 .WACHumanAgentBanner__HumanAgentLine2 p {
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-med);
+  @include type.type-style("body-01");
 }
 
 .WACAgentBanner__StopSharingButton {

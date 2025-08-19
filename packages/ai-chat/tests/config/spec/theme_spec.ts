@@ -40,9 +40,7 @@ describe("Config Theme", () => {
         theme: ThemeType.CARBON_AI,
         corners: CornersType.SQUARE,
         whiteLabelTheme: {
-          "BASE-primary-color": "#ff0000",
-          "BASE-secondary-color": "#00ff00",
-          "BASE-accent-color": "#0000ff",
+          quickThemeHex: "#ff0000",
         },
       };
 
@@ -115,8 +113,7 @@ describe("Config Theme", () => {
     it("should store themeConfig with only whiteLabelTheme in Redux state", async () => {
       const themeConfig = {
         whiteLabelTheme: {
-          "BASE-primary-color": "#123456",
-          "BASE-accent-color": "#abcdef",
+          quickThemeHex: "#123456",
         },
       };
 

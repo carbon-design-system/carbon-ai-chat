@@ -7,14 +7,16 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 @use "../../../../styles/chatTheme";
 
 .WACConnectToHumanAgent {
   max-inline-size: chatTheme.$CARD-max-width;
 }
 
-.WACConnectToHumanAgent__Title {
-  font-size: var(--cds-chat-BASE-font-size-large);
+.WACConnectToAgent__Title {
+  @include type.type-style("body-02");
+
   font-weight: var(--cds-chat-BASE-weight-semibold);
   inline-size: 100%;
   padding-block-end: layout.$spacing-02;
@@ -24,10 +26,9 @@
   padding-block-end: layout.$spacing-06;
 }
 
-.WACConnectToHumanAgent__Text p,
-.WACConnectToHumanAgent__Text {
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-med);
+.WACConnectToAgent__Text p,
+.WACConnectToAgent__Text {
+  @include type.type-style("body-01");
 }
 
 .WACConnectToHumanAgent__RequestButton {
