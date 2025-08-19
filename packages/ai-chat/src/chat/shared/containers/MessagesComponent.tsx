@@ -365,8 +365,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Default case - no change in behavior
           return false;
         };
-        // Iterate backwards until we find the last message to scroll to. By default, the user's last message should be
-        // scrolled to. However, if the user's message was silent, the last response should be scrolled to.
+        // Iterate backwards until we find the last message to scroll to. By default, response messages should be
+        // scrolled to (not request messages). However, if a response has history.silent=true, it should not be scrolled to.
+        // If all messages are not scrollable, we'll default to the bottom of the conversation.
         let messageIndex = localMessageItems.length - 1;
         let localItem = localMessageItems[messageIndex];
         let lastScrollableMessageComponent: MessageClass = this.messageRefs.get(
