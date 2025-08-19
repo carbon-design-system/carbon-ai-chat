@@ -253,7 +253,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   /**
    * This will check to see if the messages list is anchored to the bottom of the panel and if so, ensure that the
-   * list is still scrolled to the bottom.
+   * list is still scrolled to the bottom. It will also run doAutoScroll to ensure proper scrolling behavior
+   * when the window is resized.
    */
   public onResize = () => {
     if (this.props.messageState.isScrollAnchored) {
@@ -262,6 +263,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         element.scrollTop = element.scrollHeight;
       }
     }
+    
+    // Run doAutoScroll when the window is resized to maintain proper scroll position
+    // This is important for workspace functionality
+    this.doAutoScroll();
   };
 
   /**
@@ -327,27 +332,38 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         debugAutoScroll("[doAutoScroll] isLoading visible", isLoadingCounter);
       } else {
         /**
-         * Determines if the message should be scrolled to. The last user message should be scrolled to by default.
-         * However, the last bot message should be scrolled to if there is no user message that can be scrolled to.
+         * Determines if the message should be scrolled to. By default, response messages should be scrolled to,
+         * and request messages should not be scrolled to (inverse of previous behavior).
+         * Special cases:
+         * 1. If a response has history.silent=true, it should not be scrolled to
+         * 2. If a message is from history, we should always scroll to it if possible
          */
         const shouldScrollToMessage = (
           localItem: LocalMessageItem,
           message: Message,
         ) => {
+          // Special case: If message is from history, we should scroll to it regardless of type
+          if (message?.ui_state_internal?.from_history) {
+            return true;
+          }
+          
+          if (isRequest(message)) {
+            // For regular request messages, return false (inverse of previous behavior)
+            return false;
+          }
+          
           if (isResponse(message)) {
-            const messageRequest = allMessagesByID[
-              message?.request_id
-            ] as MessageRequest;
-            // If the request for this response was silent, then scroll to it instead of scrolling to where the
-            // silent user message would be. But don't do this if it's an empty message (which happens with a
-            // skip_use_input message from an extension).
-            return (
-              messageRequest?.history?.silent &&
-              messageRequest.input?.text !== ""
-            );
+            // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
+            // then we should return false
+            if (message?.history?.silent) {
+              return false;
+            }
+            // For regular response messages, return true (inverse of previous behavior)
+            return true;
           }
 
-          return isRequest(message);
+          // Default case - no change in behavior
+          return false;
         };
         // Iterate backwards until we find the last message to scroll to. By default, the user's last message should be
         // scrolled to. However, if the user's message was silent, the last response should be scrolled to.
@@ -458,7 +474,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     ) {
       // The top of the element is above the fold or the element doesn't fully fit. Scroll it so its top is at the top
       // of the scroll panel.
-      doScrollElement(scrollElement, topDistanceFromTop, 0);
+      doScrollElement(scrollElement, topDistanceFromTop, 0, false);
     } else if (
       bottomDistanceFromTop >
       scrollElement.scrollTop + scrollElement.offsetHeight
@@ -468,6 +484,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
         0,
+        false
       );
     }
   };
@@ -509,7 +526,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const setScrollTop = panelComponent.ref.current.offsetTop;
 
         // Do the scrolling.
-        doScrollElement(scrollElement, setScrollTop, 0, animate);
+        // Always set animate to false as per requirements
+        doScrollElement(scrollElement, setScrollTop, 0, false);
 
         // Update the scroll anchor setting based on this new position.
         this.checkScrollAnchor(true, setScrollTop);
