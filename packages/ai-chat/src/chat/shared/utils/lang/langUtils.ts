@@ -22,10 +22,7 @@ function isNil(value: any): boolean {
  * Determines if a given number is odd.
  */
 function isOdd(value: number): boolean {
-  if (value % 2 !== 1) {
-    return true;
-  }
-  return false;
+  return Math.abs(value % 2) === 1;
 }
 
 export { isNil, isOdd };

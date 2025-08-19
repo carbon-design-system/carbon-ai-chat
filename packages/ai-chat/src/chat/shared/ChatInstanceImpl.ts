@@ -374,7 +374,10 @@ function createChatInstance({
 
     restartConversation: async () => {
       debugLog("Called instance.restartConversation");
-      return serviceManager.actions.restartConversation();
+      consoleWarn(
+        "instance.restartConversation is deprecated. Use instance.messaging.restartConversation instead.",
+      );
+      return instance.messaging.restartConversation();
     },
 
     updateIsLoadingCounter(direction: string): void {
@@ -482,6 +485,11 @@ function createChatInstance({
       insertHistory: (messages: HistoryItem[]) => {
         debugLog("Called instance.messaging.insertHistory", messages);
         return serviceManager.actions.insertHistory(messages);
+      },
+
+      restartConversation: async () => {
+        debugLog("Called instance.messaging.restartConversation");
+        return serviceManager.actions.restartConversation();
       },
     },
 

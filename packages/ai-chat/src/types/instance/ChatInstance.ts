@@ -377,6 +377,8 @@ interface ChatActions {
    * This will clear all the current assistant messages from the main bot view and cancel any outstanding
    * messages. This will also clear the current assistant session which will force a new session to start on the
    * next message.
+   *
+   * @deprecated Use {@link ChatInstanceMessaging.restartConversation} instead.
    */
   restartConversation: () => Promise<void>;
 
@@ -401,6 +403,8 @@ interface ChatActions {
 
   /**
    * Updates the title of the bot panel. This value defaults to blank.
+   *
+   * @internal
    */
   updateMainHeaderTitle: (title?: null | string) => void;
 

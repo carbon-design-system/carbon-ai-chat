@@ -606,6 +606,11 @@ class ChatActionsImpl {
     };
     const history = await this.serviceManager.historyService.loadHistory(notes);
 
+    // If no history was loaded, there's nothing to do
+    if (!history) {
+      return;
+    }
+
     // Merge the existing state on top of the new state (with the current state taking precedence over anything
     // that that's in the inserted state).
     const currentAppStateMessages: AppStateMessages = {
