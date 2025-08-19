@@ -17,6 +17,7 @@ import React, { forwardRef, Ref, RefObject, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
 
 import { AppState } from "../../../../types/state/AppState";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import HasIntl from "../../../../types/utilities/HasIntl";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
@@ -66,11 +67,13 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     launcherHidden,
   } = props;
   const launcherAvatarURL = useSelector((state: AppState) =>
-    state.theme.useAITheme
+    state.theme.theme === ThemeType.CARBON_AI
       ? undefined
       : state.launcher.config.desktop.avatar_url_override,
   );
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const useAITheme = useSelector(
+    (state: AppState) => state.theme.theme === ThemeType.CARBON_AI,
+  );
 
   /**
    * A React ref to the button in this component.
