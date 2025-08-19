@@ -48,6 +48,7 @@ import { useUUID } from "../hooks/useUUID";
 import actions from "../store/actions";
 import { selectHumanAgentDisplayState } from "../store/selectors";
 import { AppState } from "../../../types/state/AppState";
+import { ThemeType } from "../../../types/config/PublicConfig";
 import {
   LocalMessageItem,
   MessageErrorState,
@@ -380,7 +381,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderImage(message: LocalMessageItem<ImageItem>) {
     const { languagePack, serviceManager } = props;
-    const { useAITheme } = serviceManager.store.getState().theme;
+    const { theme } = serviceManager.store.getState().theme;
 
     return (
       <Image
@@ -390,7 +391,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         description={message.item.description}
         altText={message.item.alt_text}
         needsAnnouncement={message.ui_state.needsAnnouncement}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
       />
     );
   }

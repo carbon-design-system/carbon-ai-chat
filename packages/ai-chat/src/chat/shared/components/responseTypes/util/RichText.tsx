@@ -43,7 +43,7 @@ interface RichTextProps {
 
 /**
  * This component will display some text as formatted HTML in the browser. It will process the provided text and use
- * {@link processMarkdown} to link for links in the text to convert to anchors as well as looking for a limited set of
+ * markdownToHTML to link for links in the text to convert to anchors as well as looking for a limited set of
  * Markdown to format as HTML.
  *
  * Warning: This should only be used with trusted text. Do NOT use this with text that was entered by the end-user.
@@ -128,8 +128,6 @@ function RichText(props: RichTextProps) {
       sanitizeHTML={doSanitize}
       streaming={streaming}
       localization={localization}
-      debug={config.debug}
-      enableWorkers={config.enableWorkers}
       dark={isDarkTheme}
       shouldRemoveHTMLBeforeMarkdownConversion={
         shouldRemoveHTMLBeforeMarkdownConversion

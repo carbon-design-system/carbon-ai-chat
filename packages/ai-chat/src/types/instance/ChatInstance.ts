@@ -51,6 +51,14 @@ export interface ChatInstance extends EventHandlers, ChatActions {
    * Returns state information of the Carbon AI Chat that could be useful.
    */
   getState: () => PublicWebChatState;
+
+  /**
+   * Internal testing property that exposes the serviceManager.
+   * Only available when exposeServiceManagerForTesting is set to true in PublicConfig.
+   *
+   * @internal
+   */
+  serviceManager?: any;
 }
 
 /**

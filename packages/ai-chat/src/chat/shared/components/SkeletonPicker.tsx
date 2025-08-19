@@ -21,10 +21,11 @@ import React from "react";
 import { useSelector } from "react-redux";
 
 import { AppState } from "../../../types/state/AppState";
+import { ThemeType } from "../../../types/config/PublicConfig";
 
 function SkeletonText(props: SkeletonTextProps | AISkeletonTextProps) {
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
-  return useAITheme ? (
+  const theme = useSelector((state: AppState) => state.theme.theme);
+  return theme === ThemeType.CARBON_AI ? (
     <AISkeletonText {...props} />
   ) : (
     <CarbonSkeletonText {...props} />
@@ -34,8 +35,8 @@ function SkeletonText(props: SkeletonTextProps | AISkeletonTextProps) {
 function SkeletonPlaceholder(
   props: SkeletonPlaceholderProps | AISkeletonPlaceholderProps,
 ) {
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
-  return useAITheme ? (
+  const theme = useSelector((state: AppState) => state.theme.theme);
+  return theme === ThemeType.CARBON_AI ? (
     <AISkeletonPlaceholder {...props} />
   ) : (
     <CarbonSkeletonPlaceholder {...props} />
