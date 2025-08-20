@@ -51,7 +51,7 @@ import MessageComponent, {
   MoveFocusType,
 } from "./MessageComponent";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
-import { Message, MessageRequest } from "../../../types/messaging/Messages";
+import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 
 const DEBUG_AUTO_SCROLL = false;
@@ -263,7 +263,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         element.scrollTop = element.scrollHeight;
       }
     }
-    
+
     // Run doAutoScroll when the window is resized to maintain proper scroll position
     // This is important for workspace functionality
     this.doAutoScroll();
@@ -346,12 +346,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           if (message?.ui_state_internal?.from_history) {
             return true;
           }
-          
+
           if (isRequest(message)) {
             // For regular request messages, return false (inverse of previous behavior)
             return false;
           }
-          
+
           if (isResponse(message)) {
             // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
             // then we should return false
@@ -485,7 +485,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
         0,
-        false
+        false,
       );
     }
   };
@@ -505,9 +505,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * message, this will scroll the first message to the top of the message window.
    *
    * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to true.
+   * @param animate Whether or not the scroll should be animated. Defaults to fakse.
    */
-  public doScrollToMessage(messageID: string, animate = true) {
+  public doScrollToMessage(messageID: string, animate = false) {
     try {
       // Find the component that has the message we want to scroll to.
       const { localMessageItems } = this.props;
@@ -528,7 +528,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
         // Do the scrolling.
         // Always set animate to false as per requirements
-        doScrollElement(scrollElement, setScrollTop, 0, false);
+        doScrollElement(scrollElement, setScrollTop, 0, animate);
 
         // Update the scroll anchor setting based on this new position.
         this.checkScrollAnchor(true, setScrollTop);
