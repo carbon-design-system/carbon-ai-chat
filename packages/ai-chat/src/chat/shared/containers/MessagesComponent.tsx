@@ -107,7 +107,7 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   carbonTheme: CarbonTheme;
 }
 
-interface MessagesProps extends MessagesOwnProps, AppState {}
+interface MessagesProps extends MessagesOwnProps, AppState { }
 
 interface MessagesState {
   /**
@@ -179,9 +179,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const typingChanged =
       oldProps.messageState.isLoadingCounter !==
-        newProps.messageState.isLoadingCounter ||
+      newProps.messageState.isLoadingCounter ||
       oldHumanAgentDisplayState.isHumanAgentTyping !==
-        newHumanAgentDisplayState.isHumanAgentTyping;
+      newHumanAgentDisplayState.isHumanAgentTyping;
 
     if (numMessagesChanged || typingChanged) {
       const newLastItem = arrayLastValue(newProps.localMessageItems);
@@ -505,7 +505,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * message, this will scroll the first message to the top of the message window.
    *
    * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to fakse.
+   * @param animate Whether or not the scroll should be animated. Defaults to false.
    */
   public doScrollToMessage(messageID: string, animate = false) {
     try {
@@ -709,7 +709,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         <LatestWelcomeNodes
           welcomeNodeBeforeElement={
             serviceManager.writeableElements[
-              WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT
+            WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT
             ]
           }
           key={messageItemID}
@@ -803,10 +803,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const onClick = IS_MOBILE
       ? undefined
       : () =>
-          this.requestMoveFocus(
-            atTop ? MoveFocusType.FIRST : MoveFocusType.LAST,
-            0,
-          );
+        this.requestMoveFocus(
+          atTop ? MoveFocusType.FIRST : MoveFocusType.LAST,
+          0,
+        );
 
     return (
       <button
@@ -881,7 +881,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       const isLastMessageItem =
         localMessageItems.length - 1 === currentIndex ||
         localMessageItem.fullMessageID !==
-          localMessageItems[currentIndex + 1].fullMessageID;
+        localMessageItems[currentIndex + 1].fullMessageID;
 
       previousMessageID = localMessageItem.fullMessageID;
 
