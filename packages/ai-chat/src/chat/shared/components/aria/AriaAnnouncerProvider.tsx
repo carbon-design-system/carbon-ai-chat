@@ -34,7 +34,7 @@ function AriaAnnouncerProvider(props: HasChildren) {
     // (because it's later in the DOM). If that happens, then we need to delay the announcement a bit.
     if (value) {
       if (!announcerRef.current) {
-        setTimeout(() => announcerRef.current.announceValue(value));
+        setTimeout(() => announcerRef.current?.announceValue(value));
       } else {
         announcerRef.current.announceValue(value);
       }

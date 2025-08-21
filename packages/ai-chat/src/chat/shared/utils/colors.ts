@@ -24,20 +24,26 @@ const MIN_CONTRAST = 4.5;
  * mark. It does not validate that the string is in the proper format.
  */
 function hexCodeToRGB(color: string): [number, number, number] {
+  // Validate hex color format
+  if (!color.startsWith("#") || !/^#[0-9a-fA-F]+$/.test(color)) {
+    consoleError(`Unsupported color code: "${color}"`);
+    return [0, 0, 0];
+  }
+
   if (color.length === 7) {
     const red = color.substring(1, 3);
-    const blue = color.substring(3, 5);
-    const green = color.substring(5, 7);
-    return [parseInt(red, 16), parseInt(blue, 16), parseInt(green, 16)];
+    const green = color.substring(3, 5);
+    const blue = color.substring(5, 7);
+    return [parseInt(red, 16), parseInt(green, 16), parseInt(blue, 16)];
   }
   if (color.length === 4) {
     const red = color.substring(1, 2);
-    const blue = color.substring(2, 3);
-    const green = color.substring(3, 4);
+    const green = color.substring(2, 3);
+    const blue = color.substring(3, 4);
     return [
       parseInt(red + red, 16),
-      parseInt(blue + blue, 16),
       parseInt(green + green, 16),
+      parseInt(blue + blue, 16),
     ];
   }
   consoleError(`Unsupported color code: "${color}"`);

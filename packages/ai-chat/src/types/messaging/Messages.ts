@@ -1594,7 +1594,12 @@ interface PartialItemChunk extends Chunk {
  * previously received from partial chunks. This chunk may contain corrections to previous chunks.
  *
  * Use this when you need to finalize a specific item but the overall message response isn't ready yet.
- * For ending the entire streaming response, use {@link FinalResponseChunk} instead.
+ *
+ * If you are only streaming a single item you can skip
+ * this chunk type entirely. CompleteItemChunk is primarily useful when streaming multiple different message
+ * items and you need to finalize one item while others are still streaming.
+ *
+ * For ending the entire streaming response en masse, use {@link FinalResponseChunk}.
  *
  * @category Messaging
  */

@@ -2,7 +2,7 @@ module.exports = {
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "jsdom",
   roots: ["<rootDir>/tests"],
-  testMatch: ["**/spec/*_spec.ts"],
+  testMatch: ["**/spec/**/*_spec.ts"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "mjs"],
   transform: {
     "^.+\\.(ts|tsx)$": ["ts-jest", {
