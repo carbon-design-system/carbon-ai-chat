@@ -76,7 +76,7 @@ function CatastrophicError({
 
   const errorBodyText = intl.formatMessage({ id: errorKey }, { botName });
   return (
-    <div className="WAC">
+    <>
       {showHeader && (
         <BotHeader
           headerDisplayName={headerDisplayName}
@@ -115,7 +115,7 @@ function CatastrophicError({
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

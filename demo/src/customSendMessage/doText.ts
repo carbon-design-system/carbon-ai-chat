@@ -41,6 +41,12 @@ const defaultAlternativeBotProfile: ResponseUserProfile = {
   user_type: UserType.BOT,
 };
 
+const defaultWatsonAgentProfile: ResponseUserProfile = {
+  id: "1",
+  nickname: "Carbon",
+  user_type: UserType.WATSONX,
+};
+
 const fullChainOfThought: ChainOfThoughtStep[] = [
   {
     title: "Querying molecular structure database for carbon compounds",
@@ -377,6 +383,14 @@ function doTextWithNonWatsonBotProfile(
   doText(instance, text, responseUserProfile);
 }
 
+function doTextWithWatsonAgentProfile(
+  instance: ChatInstance,
+  text: string = MARKDOWN,
+  responseUserProfile: ResponseUserProfile = defaultWatsonAgentProfile,
+) {
+  doText(instance, text, responseUserProfile);
+}
+
 async function doTextStreamingWithNonWatsonBotProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
@@ -421,4 +435,5 @@ export {
   doTextWithHumanProfile,
   doTextWithNonWatsonBotProfile,
   doTextStreamingWithNonWatsonBotProfile,
+  doTextWithWatsonAgentProfile,
 };

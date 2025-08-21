@@ -62,6 +62,7 @@ import {
   StreamChunk,
 } from "../../types/messaging/Messages";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
+import { ThemeType } from "../../types/config/PublicConfig";
 import { setIntl } from "./utils/intlUtils";
 import { ChatHeaderConfig } from "../../types/config/ChatHeaderConfig";
 
@@ -330,7 +331,8 @@ function createChatInstance({
       debugLog("Called instance.updateHomeScreenConfig", homeScreenConfig);
       const homeScreenConfigClone = cloneDeep(homeScreenConfig);
 
-      const isAIThemeEnabled = serviceManager.store.getState().theme.useAITheme;
+      const isAIThemeEnabled =
+        serviceManager.store.getState().theme.theme === ThemeType.CARBON_AI;
 
       if (isAIThemeEnabled) {
         if (homeScreenConfig?.background) {
@@ -500,6 +502,14 @@ function createChatInstance({
       },
     },
   };
+
+  // Add serviceManager for testing if the flag is enabled (exclude instance to avoid circular reference)
+  if (
+    serviceManager.store.getState().config.public.exposeServiceManagerForTesting
+  ) {
+    const { instance: _, ...serviceManagerForTesting } = serviceManager;
+    (instance as any).serviceManager = serviceManagerForTesting;
+  }
 
   if (serviceManager.store.getState().config.public.debug) {
     consoleDebug("[ChatInstanceImpl] Created chat instance", instance);

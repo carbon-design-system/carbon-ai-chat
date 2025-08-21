@@ -53,8 +53,8 @@ import {
   Message,
   MessageRequest,
   MessageResponseTypes,
+  ResponseUserProfile,
   UserType,
-  watsonx,
 } from "../../../types/messaging/Messages";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
@@ -386,8 +386,12 @@ class MessageComponent extends PureComponent<
     if (isResponse(message)) {
       // We'll use the first message item for deciding if we should show the agent's avatar.
       const agentMessageType = localMessageItem.item.agent_message_type;
-      const responseUserProfile =
-        message.message_options?.response_user_profile;
+      const responseUserProfile: ResponseUserProfile = message.message_options
+        ?.response_user_profile || {
+        id: "watsonx",
+        nickname: "watsonx",
+        user_type: UserType.WATSONX,
+      };
 
       if (isHumanAgentStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
@@ -396,7 +400,10 @@ class MessageComponent extends PureComponent<
 
       const fromHumanAgent =
         agentMessageType === HumanAgentMessageType.FROM_HUMAN_AGENT;
-      if (responseUserProfile?.profile_picture_url) {
+      if (
+        responseUserProfile.profile_picture_url &&
+        responseUserProfile.user_type !== UserType.WATSONX
+      ) {
         avatar = (
           <ImageWithFallback
             url={responseUserProfile?.profile_picture_url}
@@ -415,7 +422,7 @@ class MessageComponent extends PureComponent<
 
         let icon = <IconHolder icon={<ChatBot />} />;
 
-        if (useAITheme && actorName === watsonx) {
+        if (useAITheme && responseUserProfile.user_type === UserType.WATSONX) {
           icon = <Avatar theme={carbonTheme} />;
         }
 
@@ -427,7 +434,7 @@ class MessageComponent extends PureComponent<
           />
         );
 
-        if (responseUserProfile?.user_type === UserType.HUMAN) {
+        if (responseUserProfile.user_type === UserType.HUMAN) {
           avatar = (
             <ResponseUserAvatar
               responseUserProfile={responseUserProfile}

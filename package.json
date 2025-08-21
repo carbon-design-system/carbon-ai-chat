@@ -13,7 +13,6 @@
   },
   "homepage": "https://github.com/carbon-design-system/carbon-ai-chat#readme",
   "workspaces": [
-    "config/babel-preset-carbon",
     "demo",
     "examples/react/basic",
     "examples/web-components/basic",
@@ -51,6 +50,7 @@
     "@babel/preset-react": "^7.27.1",
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "babel-preset-carbon": "^0.8.0",
     "commander": "^12.1.0",
     "concurrently": "^9.2.0",
     "eslint": "^8.53.0",

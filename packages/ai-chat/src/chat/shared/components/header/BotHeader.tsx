@@ -27,6 +27,7 @@ import WriteableElement from "../WriteableElement";
 import { Header } from "./Header";
 import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
 import { OverlayPanelName } from "../OverlayPanel";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -108,7 +109,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     selectHumanAgentDisplayState,
     shallowEqual,
   );
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const theme = useSelector((state: AppState) => state.theme.theme);
   const headerRef = useRef<HasRequestFocus>();
 
   const showRestartButton =
@@ -151,7 +152,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
         showRestartButton={showRestartButton}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
         backContent={<Home />}
         labelBackButton={languagePack.homeScreen_returnToHome}
         onClickRestart={onRestart}

@@ -105,6 +105,7 @@ import {
   SendOptions,
 } from "../../../types/instance/ChatInstance";
 import {
+  ThemeType,
   OnErrorData,
   OnErrorType,
   WhiteLabelTheme,
@@ -1134,10 +1135,10 @@ class ChatActionsImpl {
   ) {
     const { store } = this.serviceManager;
     const { theme } = store.getState();
-    const { carbonTheme, useAITheme } = theme;
+    const { carbonTheme, theme: aiTheme } = theme;
 
     // If the AI theme is enabled, only a set amount of public variables should be allowed.
-    if (useAITheme) {
+    if (aiTheme === ThemeType.CARBON_AI) {
       const usePublicVars = publicVars;
       publicVars = {};
       whiteLabelVariables = {};
@@ -1164,7 +1165,7 @@ class ChatActionsImpl {
       publicVars,
       whiteLabelVariables,
       carbonTheme,
-      useAITheme,
+      aiTheme,
     );
     store.dispatch(
       actions.updateCSSVariables(allVariables, publicVars, whiteLabelVariables),

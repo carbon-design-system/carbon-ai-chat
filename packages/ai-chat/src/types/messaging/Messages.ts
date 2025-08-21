@@ -18,11 +18,6 @@ import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../instance/apiTypes";
 
 /**
- * String value of "watsonx".
- */
-const watsonx = "watsonx";
-
-/**
  * This is the main interface that represents a request from a user sent to a back-end.
  *
  * @category Messaging
@@ -1648,11 +1643,16 @@ enum UserType {
   HUMAN = "human",
 
   /**
-   * A message from the bot, used for interacting with bots that are not backed by watsonx.
+   * A message from a non-watsonx bot, used for interacting with bots that are not backed by watsonx.
    *
    * Official guidance is to not use this for IBM products without explicit exception.
    */
   BOT = "bot",
+
+  /**
+   * A message from watsonx.
+   */
+  WATSONX = "watsonx",
 }
 
 /**
@@ -1753,7 +1753,6 @@ export {
   SearchResult,
   PartialResponse,
   UserType,
-  watsonx,
   MessageUIStateInternal,
   MessageResponseOptions,
   MessageResponseHistory,

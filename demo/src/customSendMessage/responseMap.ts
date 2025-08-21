@@ -36,6 +36,7 @@ import {
   doTextStreamingWithNonWatsonBotProfile,
   doTextWithHumanProfile,
   doTextWithNonWatsonBotProfile,
+  doTextWithWatsonAgentProfile,
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
@@ -65,6 +66,7 @@ const RESPONSE_MAP: Record<
   "table (stream)": doTableStreaming,
   text: doText,
   "text (stream)": doTextStreaming,
+  "text from watsonx agent": doTextWithWatsonAgentProfile,
   "text from third party human": doTextWithHumanProfile,
   "text from third party bot": doTextWithNonWatsonBotProfile,
   "text (stream) from third party bot": doTextStreamingWithNonWatsonBotProfile,
