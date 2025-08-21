@@ -8,12 +8,6 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 
-.WACDatePicker__CalendarContainer {
-  position: relative;
-  inline-size: 100%;
-  inset-block-start: 2px;
-}
-
 .WACDatePicker__ConfirmButton {
   display: block;
   margin-block-start: layout.$spacing-04;
