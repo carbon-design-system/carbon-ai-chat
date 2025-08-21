@@ -8,11 +8,7 @@
  */
 
 import Checkmark from "@carbon/icons-react/es/Checkmark.js";
-import {
-  Button,
-  // DatePicker as ReactDatePicker,
-  // DatePickerInput as ReactDatePickerInput,
-} from "@carbon/react";
+import { Button } from "@carbon/react";
 import Layer from "../../../../react/carbon/Layer";
 import {
   DatePickerInput,
