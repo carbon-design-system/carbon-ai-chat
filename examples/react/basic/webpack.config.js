@@ -36,13 +36,13 @@ const createPlugins = (includeAnalysis) => {
       new StatoscopeWebpackPlugin({
         statsOptions: { modules: true, reasons: true },
         open: "file",
-      })
+      }),
     );
 
     plugins.push(new BundleAnalyzerPlugin());
 
     console.log(
-      "Statoscope analysis enabled - report will be generated after build"
+      "Statoscope analysis enabled - report will be generated after build",
     );
   }
 

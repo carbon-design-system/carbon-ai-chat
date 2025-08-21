@@ -18,7 +18,7 @@ import { customSendMessage } from "./customSendMessage";
  * It is preferable to create your configuration object outside of your React functions. You can also make use of
  * useCallback or useMemo if you need to put it inside.
  *
- * Either way, this will prevent you from spinning up a new config object over and over. Carbon AI chat will run
+ * Either way, this will prevent you from spinning up a new config object over and over. Carbon AI Chat will run
  * a diff on the config object and if it is not deeply equal, the chat will be re-started.
  */
 const config: PublicConfig = {

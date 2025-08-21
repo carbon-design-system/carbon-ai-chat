@@ -4,7 +4,7 @@ title: Using as a Web component
 
 ### Overview
 
-AI chat shows two web components that act as a facade in front of the core AI chat.
+Carbon AI chat exports two web components.
 
 To use the `float` layout, refer to [cds-aichat-container](#chat-container). If you want to use a custom size, such as rendering in a sidebar, full-screen mode, or nested within your UI, refer to [cds-aichat-custom-element](#chat-custom-element).
 
@@ -24,9 +24,11 @@ Or using `yarn`:
 yarn add @carbon/ai-chat
 ```
 
+_Be sure to check for required peerDependencies._
+
 #### Basic example
 
-Render this component in your application, and provide the configuration options for the Carbon AI chat as a prop.
+Render this component in your application, and provide the configuration options for the Carbon AI Chat as a prop.
 
 ```typescript
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
@@ -48,19 +50,19 @@ export class MyApp extends LitElement {
 
 ### Using `cds-aichat-container`
 
-The `cds-aichat-container` component loads and renders an instance of the Carbon AI chat when it mounts and deletes that instance when unmounted. If option changes occur in the Carbon AI chat configuration, it also deletes the previous Carbon AI chat and creates a new one with the new configuration.
+The `cds-aichat-container` component loads and renders an instance of the Carbon AI Chat when it mounts and deletes that instance when unmounted. If option changes occur in the Carbon AI Chat configuration, it also deletes the previous Carbon AI Chat and creates a new one with the new configuration.
 
 See {@link CdsAiChatContainerAttributes} for an explanation of the various accepted properties and attributes.
 
 #### Using `cds-aichat-custom-element`
 
-This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI chat inside a custom element. It is necessary to change the location where the Carbon AI chat renders.
+This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. Use this if you need to change the location where the Carbon AI Chat renders.
 
-This component's default behavior adds and removes a class from the main window of the Carbon AI chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI chat when it opens or closes. When the Carbon AI chat closes, it adds a classname to the Carbon AI chat main window to hide the element. Another classname is added to your custom element to set its width and height to 0, so that it doesn't take up space.
+This component's default behavior adds and removes a class from the main window of the Carbon AI Chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI Chat when it opens or closes. When the Carbon AI Chat closes, it adds a classname to the Carbon AI Chat main window to hide the element. Another classname is added to your custom element to set its width and height to 0, so that it doesn't take up space.
 
-**Note:** The custom element must remain visible if you want to use the built-in Carbon AI chat launcher, which is also contained in your custom element.
+**Note:** The custom element must remain visible if you want to use the built-in Carbon AI Chat launcher, which is also contained in your custom element.
 
-If you don't want these behaviors, then provide your own `onViewChange` prop to `cds-aichat-custom-element` and provide your own logic for controlling the visibility of the Carbon AI chat. If you want custom animations when the Carbon AI chat opens and closes, use this mechanism to do that. Refer to the following example.
+If you don't want these behaviors, then provide your own `onViewChange` prop to `cds-aichat-custom-element` and provide your own logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, use this mechanism to do that. Refer to the following example.
 
 See {@link CdsAiChatCustomElementAttributes} for an explanation of the various accepted properties and attributes.
 
@@ -93,7 +95,7 @@ export class MyApp extends LitElement {
 
 ### Accessing instance methods
 
-You can use the {@link CdsAiChatContainerAttributes.onBeforeRender} or {@link CdsAiChatContainerAttributes.onAfterRender} props to access the Carbon AI chat's instance if you need to call instance methods later. This example renders a button that toggles the Carbon AI chat open and only renders after the instance becomes available. Refer to the following example.
+You can use the {@link CdsAiChatContainerAttributes.onBeforeRender} or {@link CdsAiChatContainerAttributes.onAfterRender} props to access the Carbon AI Chat's instance if you need to call instance methods later. This example renders a button that toggles the Carbon AI Chat open and only renders after the instance becomes available. Refer to the following example.
 
 ```typescript
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
@@ -127,9 +129,9 @@ export class MyApp extends LitElement {
 
 ### User defined responses
 
-This component is also capable of managing `user defined` responses. The Carbon AI chat throws events when it receives a `user_defined` response from your custom backend. These events come with the name of a dynamically generated slot.
+This component is also capable of managing `user defined` responses. The Carbon AI Chat throws events when it receives a `user_defined` response from your custom backend. These events come with the name of a dynamically generated slot.
 
-Then, you dynamically generate these slots to pass into the Carbon AI chat's web component and pass in your custom content to be displayed in the correct slot inside the Carbon AI chat. Refer to the following example.
+Then, you dynamically generate these slots to pass into the Carbon AI Chat's web component and pass in your custom content to be displayed in the correct slot inside the Carbon AI Chat. Refer to the following example.
 
 ```typescript
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
@@ -217,7 +219,7 @@ export class Demo extends LitElement {
       case "my_unique_identifier":
         // And here is an example using your own component.
         return html`<div slot=${slot}>
-          ${userDefinedMessage.user_defined.text as string}>
+          ${userDefinedMessage.user_defined.text as string}
         </div>`;
       default:
         return null;
@@ -262,7 +264,7 @@ export class MyApp extends LitElement {
 
 ### Testing with Jest
 
-Carbon AI chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
+Carbon AI Chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
 
 You may need to add configuration similar to the following to your Jest configuration.
 

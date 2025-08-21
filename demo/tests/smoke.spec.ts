@@ -5,17 +5,21 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { makeTestId, OverlayPanelName, PageObjectId } from "@carbon/ai-chat";
+import {
+  makeTestId,
+  OverlayPanelName,
+  PageObjectId,
+} from "@carbon/ai-chat/server";
 import { test, expect } from "@playwright/test";
 
 test("smoke React", async ({ page }) => {
   // 1) Navigate to the app
-  await page.goto("http://localhost:3001/");
+  await page.goto("/");
 
   // 2) Open the React chat widget, enter a message, confirm receipt of answer, close the chat.
   await page.getByTestId(PageObjectId.LAUNCHER).click();
   const close = page.getByTestId(
-    makeTestId(PageObjectId.CLOSE_CHAT, OverlayPanelName.MAIN)
+    makeTestId(PageObjectId.CLOSE_CHAT, OverlayPanelName.MAIN),
   );
   await expect(close).toBeVisible();
   await page
@@ -27,15 +31,13 @@ test("smoke React", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText(
-    'Lorem bold text italics text ipsum odor amet, consectetuer adipiscing elit. alert("inline code"); aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.'
-  );
+  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
   await close.click();
 });
 
 test("smoke web component", async ({ page }) => {
   // 1) Navigate to the app
-  await page.goto("http://localhost:3001/");
+  await page.goto("/");
 
   // 2) Select “Web component” and wait for the new page (query string) to load
   await page.getByRole("combobox", { name: "Component framework" }).click();
@@ -49,7 +51,7 @@ test("smoke web component", async ({ page }) => {
   // 3) Open the Web component chat widget, enter a message, confirm receipt of answer, close the chat.
   await page.getByTestId(PageObjectId.LAUNCHER).click();
   const close = page.getByTestId(
-    makeTestId(PageObjectId.CLOSE_CHAT, OverlayPanelName.MAIN)
+    makeTestId(PageObjectId.CLOSE_CHAT, OverlayPanelName.MAIN),
   );
   await expect(close).toBeVisible();
   await page
@@ -61,8 +63,6 @@ test("smoke web component", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText(
-    'Lorem bold text italics text ipsum odor amet, consectetuer adipiscing elit. alert("inline code"); aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.'
-  );
+  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
   await close.click();
 });

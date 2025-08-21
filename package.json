@@ -13,7 +13,6 @@
   },
   "homepage": "https://github.com/carbon-design-system/carbon-ai-chat#readme",
   "workspaces": [
-    "config/babel-preset-carbon",
     "demo",
     "examples/react/basic",
     "examples/web-components/basic",
@@ -26,7 +25,7 @@
     "aiChat:build": "npm run build --workspace=@carbon/ai-chat --workspace=@carbon/ai-chat-examples-demo",
     "aiChat:build:typedoc": "npm run build:typedoc --workspace=@carbon/ai-chat",
     "aiChat:build:profile": "npm run build:profile --workspace=@carbon/ai-chat",
-    "aiChat:start": "npm run build:chat --workspace=@carbon/ai-chat && run-p aiChat:start:ai-chat aiChat:start:demo",
+    "aiChat:start": "npm run build:chat --workspace=@carbon/ai-chat && concurrently \"npm run aiChat:start:ai-chat\" \"npm run aiChat:start:demo\"",
     "aiChat:start:all": "npm run build:chat --workspace=@carbon/ai-chat && lerna run start --stream --parallel",
     "aiChat:start:ai-chat": "npm run start --workspace=@carbon/ai-chat",
     "aiChat:start:demo": "npm run start --workspace=@carbon/ai-chat-examples-demo",
@@ -36,7 +35,7 @@
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
     "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
     "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
-    "format:staged": "prettier --list-different '**/*.{js,md,scss,ts,tsx}' '!**/{build,es,lib,storybook,ts,umd}/**'",
+    "format:staged": "prettier --list-different '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,storybook,ts,umd}/**'",
     "lint": "eslint packages --ext .js,.ts,.tsx",
     "lint:license": "tools/check-license.js -a",
     "lint:license:staged": "tools/check-license.js -w",
@@ -51,7 +50,9 @@
     "@babel/preset-react": "^7.27.1",
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "babel-preset-carbon": "^0.8.0",
     "commander": "^12.1.0",
+    "concurrently": "^9.2.0",
     "eslint": "^8.53.0",
     "eslint-config-carbon": "3.10.0",
     "gitignore-to-glob": "^0.3.0",
@@ -59,8 +60,8 @@
     "husky": "^9.1.6",
     "lerna": "^8.1.8",
     "lint-staged": "^15.2.10",
-    "prettier": "^2.8.8",
-    "prettier-config-carbon": "^0.11.0",
+    "prettier": "^3.0.0",
+    "prettier-config-carbon": "^0.12.0",
     "stylelint": "^16.0.0",
     "stylelint-config-carbon": "^1.21.0"
   },
@@ -121,28 +122,31 @@
       "eslint-config-carbon"
     ],
     "rules": {
-    "jsdoc/check-tag-names": ["error", {
-      "definedTags": [
-        "category",
-        "experimental",
-        "typeParam",
-        "template",
-        "inheritDoc",
-        "hidden",
-        "ignore",
-        "internal",
-        "override",
-        "packageDocumentation",
-        "public",
-        "protected",
-        "private",
-        "readonly",
-        "sealed",
-        "showCategories",
-        "virtual"
+      "jsdoc/check-tag-names": [
+        "error",
+        {
+          "definedTags": [
+            "category",
+            "experimental",
+            "typeParam",
+            "template",
+            "inheritDoc",
+            "hidden",
+            "ignore",
+            "internal",
+            "override",
+            "packageDocumentation",
+            "public",
+            "protected",
+            "private",
+            "readonly",
+            "sealed",
+            "showCategories",
+            "virtual"
+          ]
+        }
       ]
-    }]
-  }
+    }
   },
   "stylelint": {
     "extends": [
@@ -150,13 +154,14 @@
     ],
     "rules": {
       "max-nesting-depth": 4,
-      "a11y/media-prefers-reduced-motion": [true,
+      "a11y/media-prefers-reduced-motion": [
+        true,
         {
           "severity": "warning"
         }
       ],
       "keyframes-name-pattern": [
-        "^[a-z][a-z0-9\\-]+$",          
+        "^[a-z][a-z0-9\\-]+$",
         {
           "message": "Keyframe names should be kebab-case",
           "severity": "warning"
@@ -164,8 +169,16 @@
       ],
       "declaration-property-unit-allowed-list": [
         {
-          "font-size": ["em", "rem", "px"],      
-          "line-height": ["unitless", "em", "rem"]
+          "font-size": [
+            "em",
+            "rem",
+            "px"
+          ],
+          "line-height": [
+            "unitless",
+            "em",
+            "rem"
+          ]
         },
         {
           "severity": "warning"
@@ -186,7 +199,9 @@
       "selector-pseudo-class-no-unknown": [
         true,
         {
-          "ignorePseudoClasses": ["global"]
+          "ignorePseudoClasses": [
+            "global"
+          ]
         }
       ]
     }

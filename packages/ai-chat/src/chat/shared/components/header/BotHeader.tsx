@@ -19,7 +19,7 @@ import { shallowEqual, useSelector } from "react-redux";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
-import { selectAgentDisplayState } from "../../store/selectors";
+import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
@@ -27,6 +27,7 @@ import WriteableElement from "../WriteableElement";
 import { Header } from "./Header";
 import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
 import { OverlayPanelName } from "../OverlayPanel";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -98,33 +99,19 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   const languagePack = useLanguagePack();
   const homeScreenIsOn = useSelector(
     (state: AppState) =>
-      state.homeScreenConfig.is_on && state.homeScreenConfig.allow_return
+      state.homeScreenConfig.is_on && state.homeScreenConfig.allow_return,
   );
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const customMenuOptions = useSelector(
-    (state: AppState) => state.customMenuOptions
+    (state: AppState) => state.customMenuOptions,
   );
   const { isConnectingOrConnected } = useSelector(
-    selectAgentDisplayState,
-    shallowEqual
+    selectHumanAgentDisplayState,
+    shallowEqual,
   );
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
-  const maxVisibleHeaderObjects = useSelector(
-    (state: AppState) => state.chatHeaderState.maxVisibleHeaderObjects
-  );
-  const leftObjectsLength = useSelector(
-    (state: AppState) => state.chatHeaderState.config?.left?.length || 0
-  );
-  const rightObjectsLength = useSelector(
-    (state: AppState) => state.chatHeaderState.config?.right?.length || 0
-  );
+  const theme = useSelector((state: AppState) => state.theme.theme);
   const headerRef = useRef<HasRequestFocus>();
 
-  const isHeaderObjectsInOverflow =
-    leftObjectsLength > maxVisibleHeaderObjects ||
-    rightObjectsLength > maxVisibleHeaderObjects;
-  const hasChatHeaderObjects =
-    enableChatHeaderConfig && isHeaderObjectsInOverflow;
   const showRestartButton =
     publicConfig.showRestartButton ||
     publicConfig.headerConfig?.showRestartButton;
@@ -142,14 +129,14 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         handler();
       }
     },
-    [customMenuOptions, onToggleHomeScreen, allowHomeScreen]
+    [customMenuOptions, onToggleHomeScreen, allowHomeScreen],
   );
 
   let overflowItems = customMenuOptions?.map((option) => option.text);
   if (overflowItems && allowHomeScreen) {
     // Insert a "Home screen" option at the top.
     overflowItems.splice(0, 0, languagePack.homeScreen_overflowMenuHomeScreen);
-  } else if (!overflowItems && allowHomeScreen && hasChatHeaderObjects) {
+  } else if (!overflowItems && allowHomeScreen) {
     // If there are header objects in the overflow menu, insert the "Home screen" option.
     overflowItems = [languagePack.homeScreen_overflowMenuHomeScreen];
   }
@@ -161,12 +148,11 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     <div className="WACHeader__Container">
       <Header
         ref={headerRef}
-        showCenter
         headerAvatarConfig={headerAvatarConfig}
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
         showRestartButton={showRestartButton}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
         backContent={<Home />}
         labelBackButton={languagePack.homeScreen_returnToHome}
         onClickRestart={onRestart}

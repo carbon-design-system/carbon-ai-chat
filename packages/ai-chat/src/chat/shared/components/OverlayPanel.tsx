@@ -284,7 +284,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
           className,
           {
             "WAC__overlay-panelContainer--animating": isOpening || isClosing,
-          }
+          },
         )}
       >
         <div
@@ -296,7 +296,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
               "WAC__overlay-panel--closed": !isClosing && !shouldOpen,
               [`WAC__overlay-panel--opening--${animationOnOpen}`]: isOpening,
               "WAC__overlay-panel--open": !isOpening && shouldOpen,
-            }
+            },
           )}
         >
           {children}

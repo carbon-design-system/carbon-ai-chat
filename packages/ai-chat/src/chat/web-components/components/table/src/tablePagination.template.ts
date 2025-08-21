@@ -54,12 +54,17 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     _handlePageChangeEvent: handlePageChangeEvent,
     _handlePageSizeChangeEvent: handlePageSizeChangeEvent,
   } = props;
+
+  if (!filterVisibleRowIDs || !filterVisibleRowIDs.size) {
+    return html``;
+  }
+
   const totalVisibleRows = filterVisibleRowIDs.size;
   const totalRows = rows.length;
 
   // Page sizes will only be included if the page size is less than the total number of rows.
   const supportedPageSizes = POSSIBLE_PAGE_SIZES.filter(
-    (pageSize) => pageSize < totalRows
+    (pageSize) => pageSize < totalRows,
   );
 
   // TODO TABLE: This component is quite wide. Because of the shadow dom we can't select it's contents to hide items
@@ -88,7 +93,7 @@ function tablePaginationTemplate(props: TablePaginationProps) {
       (pageSize) =>
         html`<cds-custom-select-item value="${pageSize}"
           >${pageSize}</cds-custom-select-item
-        >`
+        >`,
     )}
     <cds-custom-select-item value="${totalRows}"
       >${totalRows}</cds-custom-select-item

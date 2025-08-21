@@ -9,7 +9,7 @@
 
 /**
  * @packageDocumentation
- * @module Carbon AI chat types
+ * @module Carbon AI Chat types
  * @showCategories
  *
  * All external exports. This file exports types as well as the React components.
@@ -26,30 +26,19 @@ export {
   FileStatusValue,
   FileUpload,
   LauncherType,
+  LanguagePack,
   NotificationMessage,
   ViewState,
   ViewType,
 } from "./types/instance/apiTypes";
 
-export {
-  ChatHeaderObjectType,
-  ChatHeaderButton,
-  ChatHeaderConfig,
-  ChatHeaderGroupMenu,
-  ChatHeaderGroupMenuItem,
-  ChatHeaderLink,
-  ChatHeaderMenu,
-  ChatHeaderMenuItemTypes,
-  ChatHeaderObjectTypes,
-} from "./types/config/ChatHeaderConfig";
+export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   ChangeFunction,
-  ChatHeaderAvatarConfig,
   ChatInstance,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
-  ChatInstanceTours,
   CSSVariable,
   EventBusHandler,
   EventHandlers,
@@ -70,14 +59,14 @@ export { CornersType } from "./types/config/CornersType";
 
 export {
   BusEvent,
-  BusEventAgentAreAnyAgentsOnline,
-  BusEventAgentEndChat,
-  BusEventAgentPreEndChat,
-  BusEventAgentPreReceive,
-  BusEventAgentPreSend,
-  BusEventAgentPreStartChat,
-  BusEventAgentReceive,
-  BusEventAgentSend,
+  BusEventHumanAgentAreAnyAgentsOnline,
+  BusEventHumanAgentEndChat,
+  BusEventHumanAgentPreEndChat,
+  BusEventHumanAgentPreReceive,
+  BusEventHumanAgentPreSend,
+  BusEventHumanAgentPreStartChat,
+  BusEventHumanAgentReceive,
+  BusEventHumanAgentSend,
   BusEventChatReady,
   BusEventChunkUserDefinedResponse,
   BusEventClosePanelButtonClicked,
@@ -95,17 +84,12 @@ export {
   BusEventReceive,
   BusEventReset,
   BusEventSend,
-  BusEventTourEnd,
-  BusEventTourStart,
-  BusEventTourStep,
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
   MessageSendSource,
-  TourEndReason,
-  TourStartReason,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
 
@@ -132,13 +116,14 @@ export {
   PublicConfig,
   PublicConfigMessaging,
   ThemeConfig,
-  // WhiteLabelTheme,
 } from "./types/config/PublicConfig";
+
+export { DeepPartial } from "../src/types/utilities/DeepPartial";
 
 export {
   AdditionalDataToAgent,
   AgentAvailability,
-  AgentsOnlineStatus,
+  HumanAgentsOnlineStatus,
   ConnectingErrorInfo,
   DisconnectedErrorInfo,
   EndChatInfo,
@@ -155,8 +140,11 @@ export {
 } from "./types/config/ServiceDeskConfig";
 
 export {
-  MessageHistory,
-  AgentProfile,
+  BaseGenericItem,
+  MessageResponseOptions,
+  MessageResponseHistory,
+  MessageRequestHistory,
+  ResponseUserProfile,
   AudioItem,
   BaseMessageInput,
   ButtonItem,
@@ -166,8 +154,8 @@ export {
   CarouselItem,
   Chunk,
   CompleteItemChunk,
-  ConnectToAgentItem,
-  ConnectToAgentItemTransferInfo,
+  ConnectToHumanAgentItem,
+  ConnectToHumanAgentItemTransferInfo,
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
   DateItem,
@@ -175,6 +163,7 @@ export {
   EventInputData,
   FinalResponseChunk,
   GenericItem,
+  GenericItemMessageFeedbackCategories,
   GridItem,
   HorizontalCellAlignment,
   IFrameItem,
@@ -199,7 +188,6 @@ export {
   TableItem,
   TableItemCell,
   TableItemRow,
-  TableItemRowExpandableSectionItem,
   TextItem,
   UserDefinedItem,
   VerticalCellAlignment,
@@ -208,17 +196,17 @@ export {
   WithBodyAndFooter,
   WithWidthOptions,
   SingleOption,
-  AgentMessageType,
+  HumanAgentMessageType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   GenericItemMessageFeedbackOptions,
   GenericItemMessageOptions,
   Message,
   PartialOrCompleteItemChunk,
-  TourStepGenericItem,
   PartialResponse,
   MessageHistoryFeedback,
   SearchResult,
+  UserType,
 } from "./types/messaging/Messages";
 
 export { HistoryItem } from "./types/messaging/History";

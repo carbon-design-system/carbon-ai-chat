@@ -54,7 +54,7 @@ import {
 
 interface AppContainerProps extends ChatContainerProps {
   /**
-   * The element the Carbon AI chat is hosted in. Included main window, tours and launcher.
+   * The element the Carbon AI Chat is hosted in. Including main window and launcher.
    */
   container: HTMLElement;
 
@@ -65,7 +65,7 @@ interface AppContainerProps extends ChatContainerProps {
 
   /**
    * This is used by the React ChatContainer. ChatContainer has to inject the DOM element that is used as the container
-   * into the ShadowRoot. When Carbon AI chat is destroyed, this element is removed. By seeing that the instance has been set
+   * into the ShadowRoot. When Carbon AI Chat is destroyed, this element is removed. By seeing that the instance has been set
    * to null, ChatContainer can know it needs to re-create that element in a useEffect.
    */
   setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
@@ -81,7 +81,7 @@ function AppContainer({
   setParentInstance,
   element,
 }: AppContainerProps) {
-  // A state value that contains the current instance of Carbon AI chat.
+  // A state value that contains the current instance of Carbon AI Chat.
   const [instance, setInstance] = useState<ChatInstance>(null);
   const [renderProps, setRenderProps] = useState<RenderFunctionArgs>(null);
   const [applicationStyles, setApplicationStyles] = useState<string>(null);
@@ -101,10 +101,10 @@ function AppContainer({
   const [userDefinedResponseEventsBySlot, setUserDefinedResponseEventsBySlot] =
     useState<Record<string, RenderUserDefinedStateInternal>>({});
 
-  // The most recent Carbon AI chat that was load by this component.
+  // The most recent Carbon AI Chat that was load by this component.
   const managedWebChatRef = useRef<ManagedWebChat>(null);
 
-  // The previous Carbon AI chat config.
+  // The previous Carbon AI Chat config.
   const previousConfigRef = useRef<PublicConfig>(null);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ function AppContainer({
 
     // isEqual performs a deep check, but for elements only checks the reference.
     if (!isEqual(previousConfig, config)) {
-      // We'll use this managed object to keep track of the Carbon AI chat instance we are creating for this effect.
+      // We'll use this managed object to keep track of the Carbon AI Chat instance we are creating for this effect.
       const managedWebChat: ManagedWebChat = {
         instance: null,
         shouldDestroy: false,
@@ -210,14 +210,14 @@ interface LoadChatArgs {
   render: RenderFunctionType;
   setInstance: (instance: ChatInstance) => void;
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
@@ -234,11 +234,11 @@ interface LoadChatArgs {
 }
 
 /**
- * Destroys an instance of Carbon AI chat and marks it destroyed.
+ * Destroys an instance of Carbon AI Chat and marks it destroyed.
  */
 async function destroyWebChat(
   managedWebChat: ManagedWebChat,
-  setInstance: (instance: ChatInstance) => void
+  setInstance: (instance: ChatInstance) => void,
 ) {
   if (managedWebChat) {
     if (managedWebChat.instance) {
@@ -257,7 +257,7 @@ async function destroyWebChat(
 }
 
 /**
- * Adds a "userDefinedResponse" event listener to the given Carbon AI chat instance that will use the given set function
+ * Adds a "userDefinedResponse" event listener to the given Carbon AI Chat instance that will use the given set function
  * to add new events to the list.
  */
 function addUserDefinedResponseHandler(
@@ -266,7 +266,7 @@ function addUserDefinedResponseHandler(
     SetStateAction<{
       [key: string]: RenderUserDefinedStateInternal;
     }>
-  >
+  >,
 ) {
   /**
    * This handler will fire each time a user defined response occurs and we will update our state by appending the
@@ -349,8 +349,8 @@ async function loadChat({
   setUserDefinedResponseEventsBySlot,
   element,
 }: LoadChatArgs) {
-  // Each time the Carbon AI chat config settings change (or this component is mounted), we need to destroy any previous
-  // Carbon AI chat and create a new Carbon AI chat.
+  // Each time the Carbon AI Chat config settings change (or this component is mounted), we need to destroy any previous
+  // Carbon AI Chat and create a new Carbon AI Chat.
 
   // First look at the old ref and destroy it if its supposed to be destroyed.
   await destroyWebChat(managedWebChatRef.current, setInstance);
@@ -364,12 +364,12 @@ async function loadChat({
     return;
   }
 
-  // Create Carbon AI chat here.
+  // Create Carbon AI Chat here.
   const widget = await instantiateWidget(
     managedWebChat.config,
     () => Promise.resolve(Chat),
     Promise.resolve(render),
-    element
+    element,
   );
 
   const instance = await widget.start();
@@ -410,4 +410,4 @@ async function loadStyles() {
   return carbonStyles + styles;
 }
 
-export { AppContainerExport as AppContainer, AppContainerProps };
+export { AppContainerExport as AppContainer };

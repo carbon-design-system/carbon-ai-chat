@@ -2,7 +2,7 @@
     "plugin": ["./docs/typedoc/moduleNamePlugin.js"],
     "entryPoints": ["./src/aiChatEntry.tsx"],
     "out": "./dist/docs/carbon-tsdocs",
-    "name": "Carbon AI chat",
+    "name": "Carbon AI Chat",
     "readme": "none",
     "projectDocuments": [
       "./docs/Overview.md",

@@ -23,10 +23,11 @@ $css--plex: true !default;
 }
 
 .#{$css-class-prefix}-tag-list-item {
+  @include type-style("body-compact-01");
+
   box-sizing: border-box;
   padding: layout.$spacing-01;
   animation: fade-in 600ms forwards;
-  font-size: var(--cds-chat-BASE-font-size-small);
   opacity: 0;
 }
 

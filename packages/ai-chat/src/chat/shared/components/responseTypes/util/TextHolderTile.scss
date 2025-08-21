@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 
 .WACTextHolderTile {
   display: flex;
@@ -25,9 +26,9 @@
 }
 
 .WACTextHolderTile__Title {
-  font-size: var(--cds-chat-BASE-font-size-large);
+  @include type.type-style("body-02");
+
   font-weight: 400;
-  line-height: 22px;
   min-block-size: unset;
 }
 
@@ -37,8 +38,8 @@
 
 .WACTextHolderTile__Description,
 .WACTextHolderTile__Url {
-  font-size: var(--cds-chat-BASE-font-size-small);
-  line-height: var(--cds-chat-BASE-line-height-small);
+  @include type.type-style("caption-01");
+
   min-block-size: unset;
 }
 

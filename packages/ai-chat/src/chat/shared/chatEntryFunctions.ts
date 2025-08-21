@@ -16,6 +16,7 @@ import {
 import { AdditionalChatParameters } from "../../types/component/AdditionalChatParameters";
 import { assertType, consoleDebug, consoleWarn } from "./utils/miscUtils";
 import { PublicConfig } from "../../types/config/PublicConfig";
+import { isBrowser } from "./utils/browserUtils";
 
 const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
   openChatByDefault: false,
@@ -23,16 +24,14 @@ const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
   shouldTakeFocusIfOpensAutomatically: true,
   serviceDesk: {},
   messaging: {},
-  themeConfig: {
-    useAITheme: true,
-  },
+  themeConfig: {},
 };
 type ChatConstructorPromise = (
-  publicConfig?: PublicConfig
+  publicConfig?: PublicConfig,
 ) => Promise<ConstructableChatInterface>;
 
 /**
- * Create new Carbon AI chat instance.
+ * Create new Carbon AI Chat instance.
  *
  * @param pagePublicConfig The public config options object that came from the page.
  * @param chatConstructorPromise A promise that resolves with the WatsonAssistantChat class. This can either be a
@@ -45,13 +44,13 @@ async function instantiateWidget(
   pagePublicConfig: PublicConfig,
   chatConstructorPromise: ChatConstructorPromise,
   render?: Promise<RenderFunctionType>,
-  element?: HTMLElement
+  element?: HTMLElement,
 ) {
   const config = cloneDeep(pagePublicConfig);
 
   if (!config.messaging?.customSendMessage) {
     throw new Error(
-      `You must set messaging.customSendMessage in your configuration object.`
+      `You must set messaging.customSendMessage in your configuration object.`,
     );
   }
 
@@ -59,16 +58,18 @@ async function instantiateWidget(
     consoleDebug("[ChatEntry] Called instantiateWidget", config);
   }
 
-  if (document.location.protocol !== "https:") {
-    consoleWarn(
-      'Your page is not running with "https"; your data will not be sent  securely.'
-    );
-  }
+  if (isBrowser) {
+    if (document.location.protocol !== "https:") {
+      consoleWarn(
+        'Your page is not running with "https"; your data will not be sent  securely.',
+      );
+    }
 
-  if (document.compatMode !== "CSS1Compat") {
-    consoleWarn(
-      'Your page is running in quirks mode; you may experience layout issues with the chat. Add "<!DOCTYPE html>" to the page to run in standards mode.'
-    );
+    if (document.compatMode !== "CSS1Compat") {
+      consoleWarn(
+        'Your page is running in quirks mode; you may experience layout issues with the chat. Add "<!DOCTYPE html>" to the page to run in standards mode.',
+      );
+    }
   }
 
   // Extract the extra properties from the page config we don't want to put in to the redux store.

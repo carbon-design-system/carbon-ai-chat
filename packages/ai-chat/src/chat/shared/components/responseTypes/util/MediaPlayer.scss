@@ -21,11 +21,11 @@
 .WACMediaPlayer__SkeletonContainer,
 .WACMediaPlayer__Wrapper {
   position: relative;
-  padding-block-start: var(--padding-top, 0);
+  padding-block-start: 0;
 }
 
 .WACMediaPlayer__Background {
-  background-color: #393939;
+  background-color: theme.$layer-accent-01;
 }
 
 .WACMediaPlayer__Background--audio {
@@ -47,7 +47,7 @@
 }
 
 .WACMediaPlayer__MusicIcon {
-  fill: #ffffff;
+  fill: theme.$icon-on-color;
 }
 
 .WACMediaPlayer__ErrorIcon {

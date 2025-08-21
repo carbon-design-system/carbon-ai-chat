@@ -82,7 +82,7 @@ export class DemoBody extends LitElement {
 
   private _renderReactApp() {
     const container: HTMLElement = document.querySelector(
-      "#root"
+      "#root",
     ) as HTMLElement;
     // If a root already exists, unmount it to avoid memory leaks
     if (this._root) {
@@ -90,7 +90,7 @@ export class DemoBody extends LitElement {
     }
     this._root = createRoot(container);
     this._root.render(
-      <DemoApp config={this.config} settings={this.settings} />
+      <DemoApp config={this.config} settings={this.settings} />,
     );
   }
 

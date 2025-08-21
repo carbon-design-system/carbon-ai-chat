@@ -27,7 +27,7 @@ interface HasServiceManager {
 }
 
 function withServiceManager<P extends HasServiceManager>(
-  Component: React.ComponentType<P>
+  Component: React.ComponentType<P>,
 ) {
   // 1. OuterProps = everything in P except serviceManager
   type OuterProps = Omit<P, "serviceManager">;

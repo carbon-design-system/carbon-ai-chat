@@ -41,7 +41,7 @@ export interface UserDefinedElementRegistryItem {
 
 class ServiceManager {
   /**
-   * The current instance of the Carbon AI chat.
+   * The current instance of the Carbon AI Chat.
    */
   instance: ChatInstance;
 
@@ -67,8 +67,7 @@ class ServiceManager {
 
   /**
    * The entire wrapping element for the chat that includes styles and render. This is the element that
-   * is either appended to the body or the custom element. It includes the main window, the tours window
-   * and the launcher.
+   * is either appended to the body or the custom element. It includes the main window, and the launcher.
    */
   container: HTMLElement;
 
@@ -118,12 +117,12 @@ class ServiceManager {
   userSessionStorageService: UserSessionStorageService;
 
   /**
-   * An object defining the namespace of this Carbon AI chat and derived properties from that namespace name.
+   * An object defining the namespace of this Carbon AI Chat and derived properties from that namespace name.
    */
   namespace: NamespaceService;
 
   /**
-   * The additional, non-redux safe parameters that were passed as config options for the Carbon AI chat.
+   * The additional, non-redux safe parameters that were passed as config options for the Carbon AI Chat.
    */
   additionalChatParameters: AdditionalChatParameters;
 

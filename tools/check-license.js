@@ -30,11 +30,11 @@ const {
 program
   .option(
     "-c, --test-current-year",
-    "Ensures the license header represents the current year"
+    "Ensures the license header represents the current year",
   )
   .option(
     "-w, --write-current-year",
-    "Updates the license header to represent the current year"
+    "Updates the license header to represent the current year",
   )
   .option("-a, --check-all-files", "Grabs all files in the project to check");
 
@@ -67,14 +67,14 @@ const check = async (paths, options) => {
       {
         cwd: path.resolve(__dirname, ".."),
         gitignore: true,
-      }
+      },
     );
 
     checkPaths = await globby(
       gitIgnorePath.reduce(
         (acc, item) => acc.concat(gitignoreToGlob(item)),
-        ["**/*.{js,ts,tsx,scss,html}", "!**/*.snap.js", "!examples"]
-      )
+        ["**/*.{js,ts,tsx,scss,html}", "!**/*.snap.js", "!examples"],
+      ),
     );
   } else if (options.writeCurrentYear) {
     // Get the list of staged files
@@ -90,7 +90,7 @@ const check = async (paths, options) => {
           files: ["**/*.{js,ts,tsx,scss,html}"],
           exclude: ["**/*.snap.js"],
         },
-      }
+      },
     );
   }
 
@@ -112,11 +112,11 @@ const check = async (paths, options) => {
             const newContents = contents
               .replace(
                 reLicenseTextSingleYear,
-                (match) => `${match}, ${currentYear}`
+                (match) => `${match}, ${currentYear}`,
               )
               .replace(
                 reLicenseTextRange,
-                (match, token) => `${token}${currentYear}`
+                (match, token) => `${token}${currentYear}`,
               );
             if (!reLicenseTextCurrentYear.test(newContents)) {
               return item;
@@ -126,12 +126,12 @@ const check = async (paths, options) => {
             return item;
           }
         }
-      })
+      }),
     )
   ).filter(Boolean);
   if (filesWithErrors.length > 0) {
     throw new Error(
-      `Cannot find license text in: ${filesWithErrors.join(", ")}`
+      `Cannot find license text in: ${filesWithErrors.join(", ")}`,
     );
   }
 };
@@ -143,5 +143,5 @@ check(program.args, options).then(
   (error) => {
     console.error(error); // eslint-disable-line no-console
     process.exit(1);
-  }
+  },
 );

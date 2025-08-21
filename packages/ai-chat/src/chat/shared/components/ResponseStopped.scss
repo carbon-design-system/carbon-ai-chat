@@ -7,12 +7,13 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 
 .WACResponseStopped {
+  @include type.type-style("body-01");
+
   color: theme.$text-secondary;
-  font-size: var(--cds-chat-BASE-font-size-med);
   font-style: italic;
-  line-height: var(--cds-chat-BASE-line-height-large);
   margin-block-start: layout.$spacing-05;
 }
 

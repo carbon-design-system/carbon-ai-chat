@@ -11,20 +11,19 @@
  * This file contains the type definitions for the event bus.
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
-  AgentProfile,
+  ResponseUserProfile,
   ButtonItem,
   GenericItem,
   Message,
   MessageRequest,
   MessageResponse,
   PartialOrCompleteItemChunk,
-  TourStepGenericItem,
 } from "../messaging/Messages";
 import { FileUpload, ViewState } from "../instance/apiTypes";
-import { AgentsOnlineStatus } from "../config/ServiceDeskConfig";
+import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 
 /** @category Events */
 export enum BusEventType {
@@ -116,68 +115,53 @@ export enum BusEventType {
   CUSTOM_PANEL_CLOSE = "customPanel:close",
 
   /**
-   * Fired when a tour starts.
-   */
-  TOUR_START = "tour:start",
-
-  /**
-   * Fired when a tour ends.
-   */
-  TOUR_END = "tour:end",
-
-  /**
-   * Fired when a tour moves to the next step.
-   */
-  TOUR_STEP = "tour:step",
-
-  /**
-   * This event is fired before Carbon AI chat processes a message received from a human agent from a service desk.
+   * This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
-  AGENT_PRE_RECEIVE = "agent:pre:receive",
+  HUMAN_AGENT_PRE_RECEIVE = "human_agent:pre:receive",
 
   /**
-   * This event is fired after Carbon AI chat processes a message received from a human agent from a service desk.
+   * This event is fired after Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to update your history store.
    */
-  AGENT_RECEIVE = "agent:receive",
+  HUMAN_AGENT_RECEIVE = "human_agent:receive",
 
   /**
-   * This event is fired before Carbon AI chat sends a message to a human agent from a service desk.
+   * This event is fired before Carbon AI Chat sends a message to a human agent from a service desk.
    * You can use this to filter messages before they are sent to the agent.
    */
-  AGENT_PRE_SEND = "agent:pre:send",
+  HUMAN_AGENT_PRE_SEND = "human_agent:pre:send",
 
   /**
-   * This event is fired after Carbon AI chat sends a message to a human agent from a service desk.
+   * This event is fired after Carbon AI Chat sends a message to a human agent from a service desk.
    * You can use this to update your history store.
    */
-  AGENT_SEND = "agent:send",
+  HUMAN_AGENT_SEND = "human_agent:send",
 
   /**
    * This event is fired before a chat with a service desk has started. This occurs as soon as the user clicks the
    * "Request agent" button and before any attempt is made to communicate with the service desk.
    */
-  AGENT_PRE_START_CHAT = "agent:pre:startChat",
+  HUMAN_AGENT_PRE_START_CHAT = "human_agent:pre:startChat",
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
    * confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
-   * request for an agent is cancelled. The agent:endChat event however is fired in that case.
+   * request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
    */
-  AGENT_PRE_END_CHAT = "agent:pre:endChat",
+  HUMAN_AGENT_PRE_END_CHAT = "human_agent:pre:endChat",
 
   /**
-   * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.AGENT_PRE_END_CHAT} but
+   * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
    * can be fired both from the user leaving the chat or the agent ending the chat.
    */
-  AGENT_END_CHAT = "agent:endChat",
+  HUMAN_AGENT_END_CHAT = "human_agent:endChat",
 
   /**
-   * This event is fired after Carbon AI chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
+   * This event is fired after Carbon AI Chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
    * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
    */
-  AGENT_ARE_ANY_AGENTS_ONLINE = "agent:areAnyAgentsOnline",
+  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE = "human_agent:areAnyAgentsOnline",
 
   /**
    * Fired when a new chunk in a user_defined response comes through.
@@ -203,55 +187,20 @@ export enum BusEventType {
  */
 export enum ViewChangeReason {
   /**
-   * Indicates the Carbon AI chat has loaded for the first time and a view is trying to open. If openChatByDefault is
+   * Indicates the Carbon AI Chat has loaded for the first time and a view is trying to open. If openChatByDefault is
    * true then the main window will be trying to open, otherwise the launcher will be trying to open.
    */
   WEB_CHAT_LOADED = "webChatLoaded",
 
   /**
-   * Indicates the user clicked on our built-in launcher button that opened either a tour or the main window.
+   * Indicates the user clicked on our built-in launcher button that opened the main window.
    */
   LAUNCHER_CLICKED = "launcherClicked",
 
   /**
-   * Indicates the main window was opened from a tour.
-   */
-  TOUR_OPENED_OTHER_VIEW = "tourOpenedOtherView",
-
-  /**
-   * Indicates the {@link ChatInstance.restartConversation} method was used while a tour was visible.
-   */
-  CALLED_RESTART_CONVERSATION = "calledRestartConversation",
-
-  /**
-   * Indicates the user clicked on our built-in minimize button that closed to either the launcher or a tour.
+   * Indicates the user clicked on our built-in minimize button that closed the launcher.
    */
   MAIN_WINDOW_MINIMIZED = "mainWindowMinimized",
-
-  /**
-   * Indicates a tour was started by the start tour button in the main window.
-   */
-  TOUR_CARD_STARTED_TOUR = "tourCardStartedTour",
-
-  /**
-   * Indicates a tour was resumed by the resume button in the main window.
-   */
-  TOUR_CARD_RESUMED_TOUR = "tourCardResumedTour",
-
-  /**
-   * Indicates a tour was restarted by the restart button in the main window.
-   */
-  TOUR_CARD_RESTARTED_TOUR = "tourCardRestartedTour",
-
-  /**
-   * Indicates a tour was started by the startTour instance method.
-   */
-  CALLED_START_TOUR = "calledStartTour",
-
-  /**
-   * Indicates a tour was started by a tour response type that included the 'skip_card' flag.
-   */
-  TOUR_SKIP_CARD = "tourSkipCard",
 
   /**
    * Indicates the user clicked the close and restart button that minimized to the launcher.
@@ -259,29 +208,9 @@ export enum ViewChangeReason {
   MAIN_WINDOW_CLOSED_AND_RESTARTED = "mainWindowClosedAndRestarted",
 
   /**
-   * Indicates the user clicked on the minimize button within the tour to close to the launcher.
-   */
-  TOUR_MINIMIZED = "tourMinimized",
-
-  /**
-   * Indicates the close button was used to close a tour.
-   */
-  TOUR_CLOSED = "tourClosed",
-
-  /**
-   * Indicates the done button was used to close a tour.
-   */
-  TOUR_DONE = "tourDone",
-
-  /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.
    */
   CALLED_CHANGE_VIEW = "calledChangeView",
-
-  /**
-   * Indicates the ChatInstance.tours.endTour method was used to close a tour.
-   */
-  CALLED_END_TOUR = "calledEndTour",
 }
 
 /**
@@ -311,7 +240,7 @@ export enum MessageSendSource {
   OPTION_DROP_DOWN = "optionDropDown",
 
   /**
-   * The message was sent as an automatic re-send when Carbon AI chat is loaded. This occurs when Carbon AI chat sees that the
+   * The message was sent as an automatic re-send when Carbon AI Chat is loaded. This occurs when Carbon AI Chat sees that the
    * last message request did not receive a response.
    */
   HYDRATE_RESEND = "hydrateResend",
@@ -342,11 +271,6 @@ export enum MessageSendSource {
   HOME_SCREEN_STARTER = "homeScreenStarter",
 
   /**
-   * The startTour method has called.
-   */
-  START_TOUR_METHOD = "startTourMethod",
-
-  /**
    * A default request for the welcome message was made.
    */
   WELCOME_REQUEST = "welcomeRequest",
@@ -360,42 +284,6 @@ export enum MessageSendSource {
    * Some other source.
    */
   OTHER = "other",
-}
-
-/**
- * The possible reasons why a tour could be started. Purposefully not firing this event when the restart button is
- * clicked.
- *
- * @category Events
- */
-export enum TourStartReason {
-  /**
-   * If the startTour instance method was used to start the tour.
-   */
-  START_TOUR_METHOD = "start_tour_method",
-
-  /**
-   * If the skip_card property was true within the tour json.
-   */
-  SKIP_CARD = "skip_card",
-
-  /**
-   * If the user clicked the tour card's start button.
-   */
-  START_TOUR_CLICKED = "start_tour_clicked",
-}
-
-/**
- * The possible reasons why a tour could have ended. Purposefully not firing this event when the close button is clicked
- * or the endTour instance method is used.
- *
- * @category Events
- */
-export enum TourEndReason {
-  /**
-   * If the user clicked the done button.
-   */
-  DONE_CLICKED = "done_clicked",
 }
 
 /**
@@ -463,26 +351,26 @@ export interface BusEventSend extends BusEvent {
 /**
  * @category Service desk
  */
-export interface BusEventAgentPreReceive extends BusEvent {
-  type: BusEventType.AGENT_PRE_RECEIVE;
+export interface BusEventHumanAgentPreReceive extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_PRE_RECEIVE;
   data: MessageResponse;
-  agentProfile?: AgentProfile;
+  responseUserProfile?: ResponseUserProfile;
 }
 
 /**
  * @category Service desk
  */
-export interface BusEventAgentReceive extends BusEvent {
-  type: BusEventType.AGENT_RECEIVE;
+export interface BusEventHumanAgentReceive extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_RECEIVE;
   data: MessageResponse;
-  agentProfile?: AgentProfile;
+  responseUserProfile?: ResponseUserProfile;
 }
 
 /**
  * @category Service desk
  */
-export interface BusEventAgentPreSend extends BusEvent {
-  type: BusEventType.AGENT_PRE_SEND;
+export interface BusEventHumanAgentPreSend extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_PRE_SEND;
   data: MessageRequest;
   files: FileUpload[];
 }
@@ -490,8 +378,8 @@ export interface BusEventAgentPreSend extends BusEvent {
 /**
  * @category Service desk
  */
-export interface BusEventAgentSend extends BusEvent {
-  type: BusEventType.AGENT_SEND;
+export interface BusEventHumanAgentSend extends BusEvent {
+  type: BusEventType.HUMAN_AGENT_SEND;
   data: MessageRequest;
   files: FileUpload[];
 }
@@ -513,12 +401,12 @@ export interface BusEventViewPreChange extends BusEvent {
   oldViewState: ViewState;
 
   /**
-   * The new view state that Carbon AI chat is going to switch to. This new state can be changed by the event handler.
+   * The new view state that Carbon AI Chat is going to switch to. This new state can be changed by the event handler.
    */
   newViewState: ViewState;
 
   /**
-   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI chat's view should
+   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI Chat's view should
    * not be changed.
    */
   cancelViewChange: boolean;
@@ -541,12 +429,12 @@ export interface BusEventViewChange extends BusEvent {
   oldViewState: ViewState;
 
   /**
-   * The new view state that Carbon AI chat has switched to. This new state can be changed by the event handler.
+   * The new view state that Carbon AI Chat has switched to. This new state can be changed by the event handler.
    */
   newViewState: ViewState;
 
   /**
-   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI chat's view should
+   * This is used by the event handler to indicate that the view change should be cancelled and Carbon AI Chat's view should
    * not be changed. Since the view has already changed when this event is fired, this property will cause the view to
    * change back. Note that the view change events are *not* fired when the view changes back.
    */
@@ -735,64 +623,17 @@ export interface BusEventCustomPanelClose extends BusEvent {
 }
 
 /**
- * Fired when a tour is started. The tour could be started upon receipt of a tour message with skip_card true, when a
- * developer used the startTour instance method, or when the start tour card is clicked by the user.
- * Purposefully not firing this event when the restart button is clicked.
- *
- * @category Events
- */
-export interface BusEventTourStart extends BusEvent {
-  type: BusEventType.TOUR_START;
-
-  /**
-   * The reason for the tour starting.
-   */
-  reason: TourStartReason;
-}
-
-/**
- * Fired when the tour is ended by clicking the done button at the end of the tour. Purposefully not firing this event
- * when the close button is clicked or the endTour instance method is used.
- *
- * @category Events
- */
-export interface BusEventTourEnd extends BusEvent {
-  type: BusEventType.TOUR_END;
-
-  /**
-   * The reason for the tour ending.
-   */
-  reason: TourEndReason;
-}
-
-/**
- * Fired when a new step is shown to the user. This could be caused by a tour starting/restarting, the user clicking the
- * next or previous buttons within the tour, or by a developer calling the goToNextStep or goToStep
- * instance methods. Purposefully not firing this event when a tour is resumed.
- *
- * @category Events
- */
-export interface BusEventTourStep extends BusEvent {
-  type: BusEventType.TOUR_STEP;
-
-  /**
-   * The details of the new step item.
-   */
-  step: TourStepGenericItem;
-}
-
-/**
  * This event is fired before the user is connected to a service desk. This occurs as soon as the user clicks the
  * "Request agent" button and before any attempt is made to communicate with the service desk.
  *
  * @category Service desk
  */
-export interface BusEventAgentPreStartChat<TPayloadType = unknown>
+export interface BusEventHumanAgentPreStartChat<TPayloadType = unknown>
   extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_PRE_START_CHAT;
+  type: BusEventType.HUMAN_AGENT_PRE_START_CHAT;
 
   /**
    * The message that was used to trigger the connection to the agent.
@@ -816,17 +657,17 @@ export interface BusEventAgentPreStartChat<TPayloadType = unknown>
  *
  * @category Service desk
  */
-export interface BusEventAgentPreEndChat<TPayloadType = unknown>
+export interface BusEventHumanAgentPreEndChat<TPayloadType = unknown>
   extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_PRE_END_CHAT;
+  type: BusEventType.HUMAN_AGENT_PRE_END_CHAT;
 
   /**
    * Indicates if the chat was ended by the agent.
    */
-  endedByAgent: boolean;
+  endedByHumanAgent: boolean;
 
   /**
    * An arbitrary payload object that a listener may set. This payload will be passed to the service desk
@@ -841,21 +682,21 @@ export interface BusEventAgentPreEndChat<TPayloadType = unknown>
 }
 
 /**
- * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.AGENT_PRE_END_CHAT} but
+ * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
  * can be fired both from the user leaving the chat or the agent ending the chat.
  *
  * @category Service desk
  */
-export interface BusEventAgentEndChat extends BusEvent {
+export interface BusEventHumanAgentEndChat extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_END_CHAT;
+  type: BusEventType.HUMAN_AGENT_END_CHAT;
 
   /**
    * Indicates if the chat was ended by the agent.
    */
-  endedByAgent: boolean;
+  endedByHumanAgent: boolean;
 
   /**
    * Indicates if the chat was ended because the request for an agent was cancelled or an error occurred while
@@ -865,22 +706,22 @@ export interface BusEventAgentEndChat extends BusEvent {
 }
 
 /**
- * This event is fired after Carbon AI chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
+ * This event is fired after Carbon AI Chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
  * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
  *
  * @category Service desk
  */
-export interface BusEventAgentAreAnyAgentsOnline extends BusEvent {
+export interface BusEventHumanAgentAreAnyAgentsOnline extends BusEvent {
   /**
    * The type of the event.
    */
-  type: BusEventType.AGENT_ARE_ANY_AGENTS_ONLINE;
+  type: BusEventType.HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE;
 
   /**
    * The result that was returned from "areAnyAgentsOnline". If an error occurred, this will be
-   * {@link AgentsOnlineStatus.OFFLINE}.
+   * {@link HumanAgentsOnlineStatus.OFFLINE}.
    */
-  areAnyAgentsOnline: AgentsOnlineStatus;
+  areAnyAgentsOnline: HumanAgentsOnlineStatus;
 }
 
 /**
@@ -965,25 +806,6 @@ export enum MainWindowOpenReason {
    * Indicates the main window was opened as a result of session history.
    */
   SESSION_HISTORY = "session_history",
-
-  /**
-   * Indicates the main window was opened from a tour.
-   *
-   * @deprecated This reason is unclear so it's no longer being used. window:open events that used this reason will now
-   * use the {@link TOUR_OPENED_OTHER_VIEW} reason instead. Since this reason was only added for beta tours we're
-   * ok with removing it without a major release.
-   */
-  FROM_TOUR = "from_tour",
-
-  /**
-   * Indicates the main window was opened from a tour.
-   */
-  TOUR_OPENED_OTHER_VIEW = "tour_opened_other_view",
-
-  /**
-   * Indicates the {@link ChatInstance.restartConversation} method was used while a tour was visible.
-   */
-  CALLED_RESTART_CONVERSATION = "called_restart_conversation",
 }
 
 /**
@@ -996,44 +818,6 @@ export enum MainWindowCloseReason {
    * Indicates the user clicked on our built-in minimize button that closed to the launcher.
    */
   DEFAULT_MINIMIZE = "default_minimize",
-
-  /**
-   * Indicates the main window was closed to open a tour. This either happens when a tour is started from a TourCard, or
-   * when the main window is closed with the minimize button, or the {@link ChatInstance.closeWindow}
-   * function, and there's an active tour to be shown.
-   *
-   * @deprecated This reason is unclear and was being used for many different scenarios so it's been removed.
-   * window:close events that used this reason now use one of the following reasons; {@link TOUR_CARD_STARTED_TOUR},
-   * {@link TOUR_CARD_RESUMED_TOUR}, {@link TOUR_CARD_RESTARTED_TOUR}, {@link CALLED_START_TOUR}, and
-   * {@link TOUR_SKIP_CARD}. Since this reason was only added for beta tours we're ok with removing it without a major
-   * release.
-   */
-  OPEN_TOUR = "open_tour",
-
-  /**
-   * Indicates a tour was started by the start tour button in the main window.
-   */
-  TOUR_CARD_STARTED_TOUR = "tour_card_started_tour",
-
-  /**
-   * Indicates a tour was resumed by the resume button in the main window.
-   */
-  TOUR_CARD_RESUMED_TOUR = "tour_card_resumed_tour",
-
-  /**
-   * Indicates a tour was restarted by the restart button in the main window.
-   */
-  TOUR_CARD_RESTARTED_TOUR = "tour_card_restarted_tour",
-
-  /**
-   * Indicates a tour was started by the {@link startTour} instance method.
-   */
-  CALLED_START_TOUR = "called_start_tour",
-
-  /**
-   * Indicates a tour was started by a tour response type that included the 'skip_card' flag.
-   */
-  TOUR_SKIP_CARD = "tour_skip_card",
 
   /**
    * Indicates the user clicked the close and restart button that minimized to the launcher.

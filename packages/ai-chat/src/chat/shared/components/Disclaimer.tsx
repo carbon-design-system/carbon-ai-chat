@@ -24,9 +24,9 @@ import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
 import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
-import { MaybeDangerouslySetInnerHTML } from "./util/MaybeDangerouslySetInnerHTML";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { OverlayPanelName } from "./OverlayPanel";
+import { ThemeType } from "../../../types/config/PublicConfig";
 
 interface DisclaimerProps {
   onAcceptDisclaimer: () => void;
@@ -43,11 +43,9 @@ function Disclaimer({
 }: DisclaimerProps) {
   const languagePack = useLanguagePack();
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint
+    (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { carbonTheme, useAITheme } = useSelector(
-    (state: AppState) => state.theme
-  );
+  const { carbonTheme, theme } = useSelector((state: AppState) => state.theme);
   const isDarkTheme =
     carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
   const [hasReadDisclaimer, setHasReadDisclaimer] = useState(false);
@@ -74,7 +72,7 @@ function Disclaimer({
     <div className="WACDisclaimerContainer">
       <div className="WAC__disclaimer">
         <SimpleHeader
-          useAITheme={useAITheme}
+          useAITheme={theme === ThemeType.CARBON_AI}
           onClose={onClose}
           testIdPrefix={OverlayPanelName.DISCLAIMER}
         />
@@ -87,9 +85,9 @@ function Disclaimer({
           <h1 className="WAC__disclaimer-title">
             {languagePack.disclaimer_title}
           </h1>
-          <MaybeDangerouslySetInnerHTML
+          <div
+            dangerouslySetInnerHTML={{ __html: disclaimerHTML }}
             className="WAC__disclaimer-description"
-            html={disclaimerHTML}
           />
         </div>
         <div className="WAC__disclaimer-buttons">

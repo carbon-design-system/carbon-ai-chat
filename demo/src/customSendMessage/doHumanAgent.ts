@@ -7,19 +7,15 @@
  *  @license
  */
 
-import {
-  ChatInstance,
-  ConnectToAgentItem,
-  MessageResponseTypes,
-} from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
 
 function doHumanAgent(instance: ChatInstance) {
   instance.messaging.addMessage({
     output: {
       generic: [
         {
-          response_type: MessageResponseTypes.CONNECT_TO_AGENT,
-        } as ConnectToAgentItem,
+          response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+        },
       ],
     },
   });

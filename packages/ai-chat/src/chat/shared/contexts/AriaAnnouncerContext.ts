@@ -22,7 +22,7 @@ import { AnnounceMessage } from "../../../types/state/AppState";
  * @see AriaAnnouncerProvider
  */
 type AriaAnnouncerFunctionType = (
-  value: Node | AnnounceMessage | string
+  value: Node | AnnounceMessage | string,
 ) => void;
 
 const AriaAnnouncerContext =

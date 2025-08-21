@@ -9,21 +9,13 @@
 
 import cx from "classnames";
 import React from "react";
-import { useSelector } from "react-redux";
-
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import { selectInputState } from "../../../store/selectors";
-import { AppState } from "../../../../../types/state/AppState";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-import { THROW_ERROR } from "../../../utils/constants";
 import {
   GridItem,
-  HorizontalCellAlignment,
   MessageResponse,
-  VerticalCellAlignment,
   WidthOptions,
 } from "../../../../../types/messaging/Messages";
+import { GridItemCell } from "./GridItemCell";
 
 // This regex is for validating a number (1) or pixel value (10px) which are the only valid width values for a column.
 const VALID_COLUMN_WIDTH_REGEX = /^[0-9]*(px)?$/;
@@ -42,17 +34,7 @@ function GridItemComponent({
   originalMessage: MessageResponse;
   renderMessageComponent: (props: any) => React.ReactNode;
 }) {
-  const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
-  const appConfig = useSelector((state: AppState) => state.config);
-  const inputState = useSelector(selectInputState);
-  const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
-  );
-  const { columns, horizontal_alignment, vertical_alignment, max_width } =
-    localMessageItem.item;
-  const gridTemplateColumns =
-    columns?.map((column) => column.width).join(" ") || DEFAULT_COLUMN_WIDTH;
+  const { columns, max_width } = localMessageItem.item;
 
   return (
     <div
@@ -61,8 +43,6 @@ function GridItemComponent({
         WACMaxWidthMedium: max_width === WidthOptions.MEDIUM,
         WACMaxWidthLarge: max_width === WidthOptions.LARGE,
       })}
-      // eslint-disable-next-line react/forbid-dom-props
-      style={{ gridTemplateColumns }}
     >
       {localMessageItem.ui_state.gridLocalMessageItemIDs.map(
         (row, rowIndex) => (
@@ -83,72 +63,25 @@ function GridItemComponent({
               }
 
               return (
-                <div
-                  className="WACGrid__Cell"
-                  // eslint-disable-next-line react/forbid-dom-props
-                  style={{
-                    width: isPixelValue ? columnWidthString : undefined,
-                    flex: isPixelValue ? undefined : Number(columnWidthString),
-                    alignItems: getFlexAlignment(
-                      cellData?.horizontal_alignment || horizontal_alignment
-                    ),
-                    justifyContent: getFlexAlignment(
-                      cellData?.vertical_alignment || vertical_alignment
-                    ),
-                  }}
-                  // eslint-disable-next-line react/no-array-index-key
+                <GridItemCell
+                  localMessageItem={localMessageItem}
+                  renderMessageComponent={renderMessageComponent}
+                  cell={cell}
+                  originalMessage={originalMessage}
+                  cellData={cellData}
+                  columnWidthString={columnWidthString}
                   key={`cell-${rowIndex}-${columnIndex}`}
-                >
-                  {cell.map((localMessageItemID, itemIndex) => {
-                    const message = allMessageItemsByID[localMessageItemID];
-                    return (
-                      <React.Fragment
-                        key={`item-${rowIndex}-${columnIndex}-${itemIndex}`}
-                      >
-                        {renderMessageComponent({
-                          message,
-                          originalMessage,
-                          languagePack,
-                          requestInputFocus: THROW_ERROR,
-                          disableUserInputs: inputState.isReadonly,
-                          config: appConfig,
-                          isMessageForInput: false,
-                          scrollElementIntoView: THROW_ERROR,
-                          serviceManager,
-                          isNestedMessageItem: true,
-                          hideFeedback: true,
-                          allowNewFeedback: false,
-                        })}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+                  isPixelValue={isPixelValue}
+                  rowIndex={rowIndex}
+                  columnIndex={columnIndex}
+                />
               );
             })}
           </div>
-        )
+        ),
       )}
     </div>
   );
-}
-
-/**
- * Returns the CSS flex alignment for the given horizontal/vertical alignment value;
- */
-function getFlexAlignment(
-  value: HorizontalCellAlignment | VerticalCellAlignment
-) {
-  switch (value) {
-    case "bottom":
-    case "right":
-      return "flex-end";
-    case "center":
-      return "center";
-    case "top":
-    case "left":
-    default:
-      return "flex-start";
-  }
 }
 
 const GridItemComponentExport = React.memo(GridItemComponent);

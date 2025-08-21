@@ -7,11 +7,12 @@
  *  @license
  */
 
-import {
-  OnChangeData,
-  unstable__ChatButton as ChatButton,
-} from "@carbon/react";
+import { OnChangeData } from "@carbon/react";
 import React, { Component, MouseEvent } from "react";
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "../../../../react/carbon/ChatButton";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import HasLanguagePack from "../../../../../types/utilities/HasLanguagePack";
@@ -28,10 +29,6 @@ import {
   SingleOption,
 } from "../../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../../types/events/eventBusTypes";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../../types/utilities/carbonTypes";
 
 interface OptionProps extends HasServiceManager, HasLanguagePack {
   /**
@@ -74,7 +71,7 @@ class OptionComponent extends Component<OptionProps> {
     const { id: responseID } = originalMessage;
     const messageRequest = createMessageRequestForChoice(
       selectedOption,
-      responseID
+      responseID,
     );
     const localMessageID = localMessage.ui_state.id;
 
@@ -117,7 +114,6 @@ class OptionComponent extends Component<OptionProps> {
     } = this.props;
     const { options, title, description, preference } = localMessage.item;
     const { optionSelected } = localMessage.ui_state;
-
     const type = getOptionType(preference, options.length);
 
     return type === "button" ? (
@@ -138,9 +134,9 @@ class OptionComponent extends Component<OptionProps> {
               return (
                 <li key={item.label}>
                   <ChatButton
-                    kind={ButtonKindEnum.TERTIARY}
+                    kind={CHAT_BUTTON_KIND.TERTIARY}
                     isQuickAction
-                    size={ButtonSizeEnum.SMALL}
+                    size={CHAT_BUTTON_SIZE.SMALL}
                     className={`WAC__button-${index}`}
                     disabled={disableUserInputs}
                     isSelected={isSelected}

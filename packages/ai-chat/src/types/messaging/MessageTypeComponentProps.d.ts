@@ -14,7 +14,7 @@ import { HasDisplayOverride } from "../utilities/HasDisplayOverride";
 import { HasDoAutoScroll } from "../utilities/HasDoAutoScroll";
 import { LanguagePack } from "./LanguagePack";
 import { LocalMessageItem } from "./LocalMessageItem";
-import { Message } from "../watsonAssistantAPITypes";
+import { Message } from "./Messages";
 
 interface MessageContextValues
   extends HasServiceManager,
@@ -52,6 +52,11 @@ interface MessageContextValues
    * Determines if the current message item is an item nested in a response type.
    */
   isNestedMessageItem?: boolean;
+
+  /**
+   * We only show chain of thought on the last message.
+   */
+  showChainOfThought: boolean;
 
   /**
    * Indicates if all feedback components should be hidden.

@@ -20,14 +20,13 @@
 .cds--g90,
 .cds--g100 {
   background-color: unset;
-  font-family: var(--cds-chat-BASE-font-family);
+  font-family: "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
   font-feature-settings: normal;
   font-size: 100%;
   font-style: normal;
   font-variant: normal;
   font-weight: 400;
   letter-spacing: normal;
-  line-height: var(--cds-chat-BASE-line-height-med);
   text-decoration: none;
 }
 
@@ -42,7 +41,7 @@
   @include meta.load-css("highlight.js/scss/a11y-dark");
 
   /* BUT we would want to keep this. */
-  scrollbar-color: var(--cds-layer-03) var(--cds-layer-01);
+  scrollbar-color: theme.$layer-03 theme.$layer-01;
 }
 
 /* TODO, we just need a custom version of the tile component. */
@@ -76,50 +75,11 @@
 }
 
 .WAC__highlight {
-  background-color: var(--cds-highlight, #d0e2ff);
+  background-color: theme.$highlight;
   font-style: normal;
   font-weight: bold;
 }
 
 .HideWebChat {
   display: none;
-}
-
-button.WAC__button--link {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  color: theme.$link-primary;
-  font-size: inherit;
-  line-height: inherit;
-  text-align: start;
-}
-
-.WACContainer--render[dir="rtl"] button.WAC__button--link {
-  text-align: end;
-}
-
-button.WAC__button--link:enabled,
-button.WAC__button--link:enabled * {
-  cursor: pointer;
-}
-
-button.WAC__button--link:disabled,
-button.WAC__button--link:disabled * {
-  cursor: not-allowed;
-}
-
-button.WAC__button--link:hover span {
-  text-decoration: underline;
-}
-
-button.WAC__button--link:focus span {
-  text-decoration: underline;
-}
-
-button.WAC__button--link::-moz-focus-inner {
-  padding: 0;
-  border: 0;
 }

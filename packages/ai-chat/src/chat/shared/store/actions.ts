@@ -7,9 +7,8 @@
  *  @license
  */
 
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
-import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 import {
   AnnounceMessage,
   AppState,
@@ -39,8 +38,11 @@ import {
   GenericItem,
   IFrameItem,
   Message,
-  MessageHistory,
   MessageRequest,
+  MessageRequestHistory,
+  MessageResponseHistory,
+  MessageResponseOptions,
+  MessageUIStateInternal,
   SearchResult,
 } from "../../../types/messaging/Messages";
 import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
@@ -49,6 +51,7 @@ import {
   LauncherType,
   NotificationMessage,
 } from "../../../types/instance/apiTypes";
+import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 
 const CHANGE_STATE = "CHANGE_STATE";
 const UPDATE_BOT_NAME = "UPDATE_BOT_NAME";
@@ -70,7 +73,10 @@ const SET_INITIAL_VIEW_CHANGE_COMPLETE = "SET_INITIAL_VIEW_CHANGE_COMPLETE";
 const UPDATE_CSS_VARIABLES = "UPDATE_CSS_VARIABLES";
 const MESSAGE_SET_OPTION_SELECTED = "MESSAGE_SET_OPTION_SELECTED";
 const SET_MESSAGE_UI_PROPERTY = "SET_MESSAGE_UI_PROPERTY";
-const SET_MESSAGE_HISTORY_PROPERTY = "SET_MESSAGE_HISTORY_PROPERTY";
+const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
+  "SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY";
+const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
+  "SET_MESSAGE_RESPONSE_HISTORY_PROPERTY";
 const MERGE_HISTORY = "MERGE_HISTORY";
 const SET_LAUNCHER_PROPERTY = "SET_LAUNCHER_PROPERTY";
 const SET_LAUNCHER_CONFIG_PROPERTY = "SET_LAUNCHER_CONFIG_PROPERTY";
@@ -83,9 +89,6 @@ const UPDATE_HOME_SCREEN_CONFIG = "UPDATE_HOME_SCREEN_CONFIG";
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   "UPDATE_HAS_SENT_NON_WELCOME_MESSAGE";
 const UPDATE_PERSISTED_CHAT_STATE = "UPDATE_PERSISTED_CHAT_STATE";
-const SET_TOUR_DATA = "SET_TOUR_DATA";
-const CLEAR_TOUR_DATA = "CLEAR_TOUR_DATA";
-const CHANGE_STEP_IN_TOUR = "CHANGE_STEP_IN_TOUR";
 const SET_HOME_SCREEN_IS_OPEN = "SET_HOME_SCREEN_IS_OPEN";
 const UPDATE_LAUNCHER_CONFIG = "UPDATE_LAUNCHER_CONFIG";
 const UPDATE_MESSAGE = "UPDATE_MESSAGE";
@@ -109,12 +112,11 @@ const SET_RESPONSE_PANEL_IS_OPEN = "SET_RESPONSE_PANEL_IS_OPEN";
 const SET_RESPONSE_PANEL_CONTENT = "SET_PANEL_RESPONSE_CONTENT";
 const STREAMING_ADD_CHUNK = "STREAMING_ADD_CHUNK";
 const STREAMING_START = "STREAMING_START";
-const STREAMING_MERGE_HISTORY = "STREAMING_MERGE_HISTORY";
+const STREAMING_MERGE_MESSAGE_OPTIONS = "STREAMING_MERGE_MESSAGE_OPTIONS";
 const ADD_NOTIFICATION = "ADD_NOTIFICATION";
 const REMOVE_ALL_NOTIFICATIONS = "REMOVE_ALL_NOTIFICATIONS";
 const REMOVE_NOTIFICATIONS = "REMOVE_NOTIFICATIONS";
 const UPDATE_CHAT_HEADER_CONFIG = "UPDATE_CHAT_HEADER_CONFIG";
-const UPDATE_MAX_VISIBLE_HEADER_OBJECTS = "UPDATE_MAX_VISIBLE_HEADER_OBJECTS";
 const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
 const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
@@ -174,7 +176,7 @@ const actions = {
     messageItem: LocalMessageItem,
     message: Message,
     addMessage: boolean,
-    addAfterID?: string
+    addAfterID?: string,
   ) {
     return {
       type: ADD_LOCAL_MESSAGE_ITEM,
@@ -213,26 +215,6 @@ const actions = {
     return {
       type: UPDATE_PERSISTED_CHAT_STATE,
       chatState,
-    };
-  },
-
-  setTourData(newActiveTourMessageID: string) {
-    return {
-      type: SET_TOUR_DATA,
-      newActiveTourMessageID,
-    };
-  },
-
-  clearTourData() {
-    return {
-      type: CLEAR_TOUR_DATA,
-    };
-  },
-
-  changeStepInTour(newStepNumber: number) {
-    return {
-      type: CHANGE_STEP_IN_TOUR,
-      newStepNumber,
     };
   },
 
@@ -287,7 +269,7 @@ const actions = {
   updateCSSVariables(
     variables: ObjectMap<string>,
     publicVars: ObjectMap<string>,
-    whiteLabelVariables: WhiteLabelTheme
+    whiteLabelVariables: WhiteLabelTheme,
   ) {
     return {
       type: UPDATE_CSS_VARIABLES,
@@ -324,7 +306,7 @@ const actions = {
   setMessageUIProperty<TPropertyName extends keyof LocalMessageUIState>(
     localMessageID: string,
     propertyName: TPropertyName,
-    propertyValue: LocalMessageUIState[TPropertyName]
+    propertyValue: LocalMessageUIState[TPropertyName],
   ) {
     return {
       type: SET_MESSAGE_UI_PROPERTY,
@@ -339,17 +321,17 @@ const actions = {
    */
   setLauncherProperty<TPropertyName extends keyof PersistedLauncherState>(
     propertyName: TPropertyName,
-    propertyValue: PersistedLauncherState[TPropertyName]
+    propertyValue: PersistedLauncherState[TPropertyName],
   ) {
     return { type: SET_LAUNCHER_PROPERTY, propertyName, propertyValue };
   },
 
   setLauncherConfigProperty<
-    TPropertyName extends keyof LauncherInternalCallToActionConfig
+    TPropertyName extends keyof LauncherInternalCallToActionConfig,
   >(
     propertyName: TPropertyName,
     propertyValue: LauncherInternalCallToActionConfig[TPropertyName],
-    launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE
+    launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE,
   ) {
     return {
       type: SET_LAUNCHER_CONFIG_PROPERTY,
@@ -367,13 +349,38 @@ const actions = {
    * @param propertyName The name of the property to update.
    * @param propertyValue The value to set on the property.
    */
-  setMessageHistoryProperty<TPropertyName extends keyof MessageHistory>(
+  setMessageResponseHistoryProperty<
+    TPropertyName extends keyof MessageResponseHistory,
+  >(
     messageID: string,
     propertyName: TPropertyName,
-    propertyValue: MessageHistory[TPropertyName]
+    propertyValue: MessageResponseHistory[TPropertyName],
   ) {
     return {
-      type: SET_MESSAGE_HISTORY_PROPERTY,
+      type: SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
+      messageID,
+      propertyName,
+      propertyValue,
+    };
+  },
+
+  /**
+   * Sets the give property of the {@link MessageUIStateInternal} associated with the message of the given ID to the given
+   * value.
+   *
+   * @param messageID The ID of the message to update.
+   * @param propertyName The name of the property to update.
+   * @param propertyValue The value to set on the property.
+   */
+  setMessageUIStateInternalProperty<
+    TPropertyName extends keyof MessageUIStateInternal,
+  >(
+    messageID: string,
+    propertyName: TPropertyName,
+    propertyValue: MessageUIStateInternal[TPropertyName],
+  ) {
+    return {
+      type: SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
       messageID,
       propertyName,
       propertyValue,
@@ -383,15 +390,18 @@ const actions = {
   /**
    * Merges the given object into the history for the given message.
    */
-  mergeMessageHistory(messageID: string, history: MessageHistory) {
+  mergeMessageHistory(
+    messageID: string,
+    history: MessageResponseHistory | MessageRequestHistory,
+  ) {
     return { type: MERGE_HISTORY, messageID, history };
   },
 
   setMessageErrorState(messageID: string, errorState: MessageErrorState) {
-    return actions.setMessageHistoryProperty(
+    return actions.setMessageResponseHistoryProperty(
       messageID,
       "error_state",
-      errorState
+      errorState,
     );
   },
 
@@ -415,7 +425,7 @@ const actions = {
    */
   setChatMessagesStateProperty<TPropertyName extends keyof ChatMessagesState>(
     propertyName: TPropertyName,
-    propertyValue: ChatMessagesState[TPropertyName]
+    propertyValue: ChatMessagesState[TPropertyName],
   ) {
     return { type: SET_CHAT_MESSAGES_PROPERTY, propertyName, propertyValue };
   },
@@ -481,7 +491,7 @@ const actions = {
   setViewSourcePanelIsOpen(
     isOpen: boolean,
     citationItem?: ConversationalSearchItemCitation,
-    relatedSearchResult?: SearchResult
+    relatedSearchResult?: SearchResult,
   ) {
     return {
       type: SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
@@ -509,8 +519,11 @@ const actions = {
   /**
    * Updates the state of the input field.
    */
-  updateInputState(newState: Partial<InputState>, isInputToAgent: boolean) {
-    return { type: UPDATE_INPUT_STATE, newState, isInputToAgent };
+  updateInputState(
+    newState: Partial<InputState>,
+    isInputToHumanAgent: boolean,
+  ) {
+    return { type: UPDATE_INPUT_STATE, newState, isInputToHumanAgent };
   },
 
   /**
@@ -523,15 +536,15 @@ const actions = {
   /**
    * Adds a new file to the input area for uploaded.
    */
-  addInputFile(file: FileUpload, isInputToAgent: boolean) {
-    return { type: ADD_INPUT_FILE, file, isInputToAgent };
+  addInputFile(file: FileUpload, isInputToHumanAgent: boolean) {
+    return { type: ADD_INPUT_FILE, file, isInputToHumanAgent };
   },
 
   /**
    * Removes a file attachment from the upload attachments area.
    */
-  removeFileUpload(fileID: string, isInputToAgent: boolean) {
-    return { type: REMOVE_INPUT_FILE, fileID, isInputToAgent };
+  removeFileUpload(fileID: string, isInputToHumanAgent: boolean) {
+    return { type: REMOVE_INPUT_FILE, fileID, isInputToHumanAgent };
   },
 
   /**
@@ -547,21 +560,21 @@ const actions = {
   fileUploadInputError(
     fileID: string,
     errorMessage: string,
-    isInputToAgent: boolean
+    isInputToHumanAgent: boolean,
   ) {
     return {
       type: FILE_UPLOAD_INPUT_ERROR,
       fileID,
       errorMessage,
-      isInputToAgent,
+      isInputToHumanAgent,
     };
   },
 
   /**
    * Removes all the files from the input area.
    */
-  clearInputFiles(isInputToAgent: boolean) {
-    return { type: CLEAR_INPUT_FILES, isInputToAgent };
+  clearInputFiles(isInputToHumanAgent: boolean) {
+    return { type: CLEAR_INPUT_FILES, isInputToHumanAgent };
   },
 
   addNestedMessages(localMessageItems: LocalMessageItem[]) {
@@ -574,7 +587,7 @@ const actions = {
 
   setResponsePanelContent(
     localMessageItem: LocalMessageItem,
-    isMessageForInput = false
+    isMessageForInput = false,
   ) {
     return {
       type: SET_RESPONSE_PANEL_CONTENT,
@@ -593,11 +606,15 @@ const actions = {
   /**
    * Merges the given message history object into an existing message object.
    */
-  streamingMergeHistory(
+  streamingMergeMessageOptions(
     messageID: string,
-    history: DeepPartial<MessageHistory>
+    message_options: DeepPartial<MessageResponseOptions>,
   ) {
-    return { type: STREAMING_MERGE_HISTORY, messageID, history };
+    return {
+      type: STREAMING_MERGE_MESSAGE_OPTIONS,
+      messageID,
+      message_options,
+    };
   },
 
   /**
@@ -607,7 +624,7 @@ const actions = {
     fullMessageID: string,
     chunkItem: DeepPartial<GenericItem>,
     isCompleteItem: boolean,
-    disableFadeAnimation: boolean
+    disableFadeAnimation: boolean,
   ) {
     return {
       type: STREAMING_ADD_CHUNK,
@@ -620,10 +637,6 @@ const actions = {
 
   updateChatHeaderConfig(chatHeaderConfig: ChatHeaderConfig) {
     return { type: UPDATE_CHAT_HEADER_CONFIG, chatHeaderConfig };
-  },
-
-  setMaxVisibleHeaderObjects(maxTotal: number) {
-    return { type: UPDATE_MAX_VISIBLE_HEADER_OBJECTS, maxTotal };
   },
 
   setStopStreamingButtonVisible(isVisible: boolean) {
@@ -672,12 +685,9 @@ export {
   UPDATE_HOME_SCREEN_CONFIG,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
-  SET_TOUR_DATA,
-  CLEAR_TOUR_DATA,
-  CHANGE_STEP_IN_TOUR,
   SET_HOME_SCREEN_IS_OPEN,
   UPDATE_LAUNCHER_CONFIG,
-  SET_MESSAGE_HISTORY_PROPERTY,
+  SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
   SET_LAUNCHER_PROPERTY,
   SET_LAUNCHER_CONFIG_PROPERTY,
@@ -700,7 +710,7 @@ export {
   SET_RESPONSE_PANEL_CONTENT,
   STREAMING_ADD_CHUNK,
   STREAMING_START,
-  STREAMING_MERGE_HISTORY,
+  STREAMING_MERGE_MESSAGE_OPTIONS,
   REMOVE_LOCAL_MESSAGE_ITEM,
   ADD_NOTIFICATION,
   REMOVE_MESSAGES,
@@ -708,9 +718,9 @@ export {
   REMOVE_NOTIFICATIONS,
   MERGE_HISTORY,
   UPDATE_CHAT_HEADER_CONFIG,
-  UPDATE_MAX_VISIBLE_HEADER_OBJECTS,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STREAM_ID,
   UPDATE_MAIN_HEADER_AVATAR,
+  SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
 };

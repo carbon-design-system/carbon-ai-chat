@@ -8,7 +8,7 @@
  */
 
 import { IntlShape } from "react-intl";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 import {
   CustomMenuOption,
@@ -18,17 +18,17 @@ import {
   ViewState,
   ViewType,
 } from "./apiTypes";
-import { ChatHeaderConfig } from "../config/ChatHeaderConfig";
 import { CornersType } from "../config/CornersType";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { HomeScreenConfig } from "../config/HomeScreenConfig";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import { LauncherConfig } from "../config/LauncherConfig";
 import { MessageRequest } from "../messaging/Messages";
+import { ChatHeaderConfig } from "../config/ChatHeaderConfig";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
- * that can be used with Carbon AI chat.
+ * that can be used with Carbon AI Chat.
  *
  * @category Instance
  */
@@ -48,9 +48,17 @@ export interface ChatInstance extends EventHandlers, ChatActions {
   destroy: () => void;
 
   /**
-   * Returns state information of the Carbon AI chat that could be useful.
+   * Returns state information of the Carbon AI Chat that could be useful.
    */
   getState: () => PublicWebChatState;
+
+  /**
+   * Internal testing property that exposes the serviceManager.
+   * Only available when exposeServiceManagerForTesting is set to true in PublicConfig.
+   *
+   * @internal
+   */
+  serviceManager?: any;
 }
 
 /**
@@ -60,17 +68,17 @@ export interface ChatInstance extends EventHandlers, ChatActions {
  */
 export interface PublicWebChatState {
   /**
-   * Is the Carbon AI chat currently in an open state.
+   * Is the Carbon AI Chat currently in an open state.
    */
   isWebChatOpen: boolean;
 
   /**
-   * Is the Carbon AI chat currently connected with a human agent.
+   * Is the Carbon AI Chat currently connected with a human agent.
    */
   isConnectedWithHumanAgent: boolean;
 
   /**
-   * Indicates if Carbon AI chat has requested to be connected to a human agent but an agent has not yet joined the
+   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
    * conversation.
    */
   isConnectingWithHumanAgent: boolean;
@@ -91,12 +99,7 @@ export interface PublicWebChatState {
   hasUserSentMessage: boolean;
 
   /**
-   * Whether there is an active tour currently.
-   */
-  isTourActive: boolean;
-
-  /**
-   * The current viewState of the Carbon AI chat.
+   * The current viewState of the Carbon AI Chat.
    */
   viewState: ViewState;
 
@@ -125,12 +128,12 @@ export interface PublicWebChatState {
  */
 export interface PublicWebChatServiceDeskState {
   /**
-   * Is the Carbon AI chat currently connected with a human agent.
+   * Is the Carbon AI Chat currently connected with a human agent.
    */
   isConnected: boolean;
 
   /**
-   * Indicates if Carbon AI chat has requested to be connected to a human agent but an agent has not yet joined the
+   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
    * conversation.
    */
   isConnecting: boolean;
@@ -182,7 +185,7 @@ export interface EventHandlers {
  */
 export type EventBusHandler<T extends BusEvent = BusEvent> = (
   event: T,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) => unknown;
 
 /**
@@ -282,7 +285,7 @@ interface ChatActions {
    */
   send: (
     message: MessageRequest | string,
-    options?: SendOptions
+    options?: SendOptions,
   ) => Promise<void>;
 
   /**
@@ -301,11 +304,11 @@ interface ChatActions {
    * This updates the map that can be used to override the values for CSS variables in the application.
    */
   updateCSSVariables: (
-    publicVars: Partial<Record<CSSVariable, string>>
+    publicVars: Partial<Record<CSSVariable, string>>,
   ) => void;
 
   /**
-   * Fire the view:pre:change and view:change events and change the view of the Carbon AI chat. If a {@link ViewType} is
+   * Fire the view:pre:change and view:change events and change the view of the Carbon AI Chat. If a {@link ViewType} is
    * provided then that view will become visible and the rest will be hidden. If a {@link ViewState} is provided that
    * includes all of the views then all of the views will be changed accordingly. If a partial {@link ViewState} is
    * provided then only the views provided will be changed.
@@ -318,26 +321,19 @@ interface ChatActions {
   writeableElements: Partial<WriteableElements>;
 
   /**
-   * The elements of Carbon AI chat that need to be exposed for customers to manipulate. Unlike writeable elements, these
+   * The elements of Carbon AI Chat that need to be exposed for customers to manipulate. Unlike writeable elements, these
    * elements have existing content
    */
   elements: InstanceElements;
 
   /**
-   * Methods provided to developers to interact with the tour feature.
-   *
-   * @experimental
-   */
-  tours: ChatInstanceTours;
-
-  /**
-   * Allow being able to set the input field to be invisible on assistant facing (not agent) views. Helpful for when
+   * Sets the input field to be invisible. Helpful for when
    * you want to force input into a button, etc.
    */
-  updateAssistantInputFieldVisibility: (isVisible: boolean) => void;
+  updateInputFieldVisibility: (isVisible: boolean) => void;
 
   /**
-   * Changes the state of Carbon AI chat to allow or disallow input. This includes the input field as well as inputs like
+   * Changes the state of Carbon AI Chat to allow or disallow input. This includes the input field as well as inputs like
    * buttons and dropdowns.
    */
   updateInputIsDisabled: (isDisabled: boolean) => void;
@@ -371,6 +367,8 @@ interface ChatActions {
 
   /**
    * Updates the custom menu options.
+   *
+   * @experimental
    */
   updateCustomMenuOptions: (options: CustomMenuOption[]) => void;
 
@@ -388,37 +386,18 @@ interface ChatActions {
   doAutoScroll: () => void;
 
   /**
-   * Ends the conversation with a human agent. This does not request confirmation from the user first. If the user
-   * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
-   * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
-   * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.AGENT_PRE_END_CHAT} and {@link BusEventType.AGENT_END_CHAT} events have been fired and
-   * resolved.
-   */
-  agentEndConversation: () => Promise<void>;
-
-  /**
-   * Either increases or decreases the internal counter that indicates whether the "bot is typing" indicator is
-   * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error. Currently, this is the same as the loading
-   * indicator.
-   */
-  updateIsTypingCounter: (direction: IncreaseOrDecrease) => void;
-
-  /**
    * Either increases or decreases the internal counter that indicates whether the "bot is loading" indicator is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error. Currently, this is the same as the typing
-   * indicator.
+   * increase or decrease the value. Any other value will log an error.
    */
-  updateIsLoadingCounter: (direction: string) => void;
+  updateIsLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value with log an error.
+   * increase or decrease the value. Any other value will log an error.
    */
-  updateIsChatLoadingCounter: (direction: string) => void;
+  updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
    * Updates the title of the bot panel. This value defaults to blank.
@@ -462,7 +441,7 @@ interface ChatActions {
   updateBotAvatarURL: (url: string) => void;
 
   /**
-   * Updates the Carbon AI chat launcher config with new desktop and/or mobile titles.
+   * Updates the Carbon AI Chat launcher config with new desktop and/or mobile titles.
    */
   updateLauncherConfig: (config: LauncherConfig) => void;
 }
@@ -508,18 +487,11 @@ export interface SendOptions {
 
   /**
    * @internal
-   * If {@link ChatInstance.tours.startTour} is used then the next message received, assuming it's a
-   * tour, should skip the tour card and start the tour.
-   */
-  skipTourCard?: boolean;
-
-  /**
-   * @internal
    * Indicates if a call to send should return/resolve immediately when a streaming response begins and should not
    * wait for the entire streaming response to complete. By default, the call will wait until the entire process is
    * completed and the stream has sent all of its data to the client. If this is true, the function will return as
    * soon as the streaming begins (the first chunk is received). This is particularly useful when requesting the
-   * welcome node as it would allow the welcome node to provide a streaming response without leaving Carbon AI chat in a
+   * welcome node as it would allow the welcome node to provide a streaming response without leaving Carbon AI Chat in a
    * loading state until the streaming is all done.
    */
   returnBeforeStreaming?: boolean;
@@ -580,35 +552,51 @@ export enum WriteableElementName {
 }
 
 /**
- * The interface represents the elements that Carbon AI chat provides access to.
+ * The interface represents the elements that Carbon AI Chat provides access to.
+ *
+ * @experimental
  *
  * @category Instance
  */
 export interface InstanceElements {
   /**
    * Returns the element that represents the main window.
+   *
+   * @experimental
    */
   getMainWindow: () => HasAddRemoveClassName;
 
   /**
    * Returns the element that represents the input field (text area) on the main message area.
+   *
+   * This will likely change to a contenteditable div before we move away from experimental.
+   *
+   * @experimental
    */
   getMessageInput: () => InstanceInputElement;
 
   /**
    * Returns the element that represents the input field (text area) on the home screen.
+   *
+   * This will likely change to a contenteditable div before we move away from experimental.
+   *
+   * @experimental
    */
   getHomeScreenInput: () => InstanceInputElement;
 }
 
 /**
- * Represents one of the input elements that Carbon AI chat provides access to custom code.
+ * Represents one of the input elements that Carbon AI Chat provides access to custom code.
  *
  * @category Instance
  */
 export interface InstanceInputElement {
   /**
    * The raw HTML element for the element.
+   *
+   * This will likely change to a contenteditable div before we move away from experimental.
+   *
+   * @experimental
    */
   getHTMLElement: () => HTMLTextAreaElement;
 
@@ -632,36 +620,6 @@ export interface InstanceInputElement {
    * Removes a change listener that was previously added.
    */
   removeChangeListener: (listener: ChangeFunction) => void;
-}
-
-/**
- * Methods provided to developers to interact with the tour feature.
- *
- * @category Instance
- */
-export interface ChatInstanceTours {
-  /**
-   * Sends the given message to the back-end with the skipTourCard option set to true. When a tour response is received,
-   * this method automatically starts the tour and skips the tour card. If a response other than a tour is received,
-   * then an error is logged.
-   */
-  startTour: (message: string) => void;
-
-  /**
-   * Clears all tour data, closes the tour, and switches to the launcher.
-   */
-  endTour: () => void;
-
-  /**
-   * Moves forward one step in the tour.
-   */
-  goToNextStep: () => void;
-
-  /**
-   * Looks for the provided stepId string within the tour step items. If a step with a matching step_id is found then
-   * moves to that step within the tour.
-   */
-  goToStep: (stepId: string) => void;
 }
 
 /**
@@ -711,6 +669,8 @@ export interface HasAddRemoveClassName {
 }
 
 /**
+ * Upload options. Currently only applies to conversations with a human agent.
+ *
  * @category Instance
  */
 export interface FileUploadCapabilities {
@@ -732,6 +692,8 @@ export interface FileUploadCapabilities {
 }
 
 /**
+ * Start or end conversations with human agent.
+ *
  * @category Instance
  */
 export interface ChatInstanceServiceDeskActions {
@@ -740,7 +702,7 @@ export interface ChatInstanceServiceDeskActions {
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
    * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.AGENT_PRE_END_CHAT} and {@link BusEventType.AGENT_END_CHAT} events have been fired and
+   * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    */
   endConversation: () => Promise<void>;

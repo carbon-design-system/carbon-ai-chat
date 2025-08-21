@@ -7,10 +7,10 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 
 .WAC__description {
-  font-size: var(--cds-chat-BASE-font-size-med);
-  line-height: var(--cds-chat-BASE-line-height-med);
+  @include type.type-style("body-01");
 }
 
 .WACContainer--render[dir="rtl"] .WAC__disclaimer-title,

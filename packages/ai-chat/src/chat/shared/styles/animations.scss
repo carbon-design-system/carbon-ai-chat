@@ -118,22 +118,6 @@
   }
 }
 
-@keyframes WACLauncherIn {
-  0% {
-    /* Launcher positioning should probably be handled by remote config not CSS. */
-    inset-block-end: calc(
-      var(--cds-chat-LAUNCHER-position-bottom) - #{layout.$spacing-05}
-    );
-    opacity: 0;
-  }
-
-  100% {
-    /* Launcher positioning should probably be handled by remote config not CSS. */
-    inset-block-end: var(--cds-chat-LAUNCHER-position-bottom);
-    opacity: 1;
-  }
-}
-
 @keyframes WACAnimateHeight {
   0% {
     block-size: var(--cds-chat-Animate-Start-Height);

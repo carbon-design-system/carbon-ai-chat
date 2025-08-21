@@ -46,7 +46,7 @@ interface ConstructableChatInterface {
   new (
     publicConfigProvided: PublicConfig,
     hostElement?: Element,
-    additionalChatParametersProvided?: AdditionalChatParameters
+    additionalChatParametersProvided?: AdditionalChatParameters,
   ): ChatInterface;
 }
 

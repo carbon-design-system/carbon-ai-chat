@@ -64,7 +64,7 @@ function getCommits(folder) {
   // Gets the git output between the two tags
   const output = child
     .execSync(
-      `git log ${tagFrom}..${toTag} --pretty=format:"%s"${delimiter} -- ${folder}`
+      `git log ${tagFrom}..${toTag} --pretty=format:"%s"${delimiter} -- ${folder}`,
     )
     .toString("utf-8");
 

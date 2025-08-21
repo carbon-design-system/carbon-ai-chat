@@ -27,7 +27,7 @@ export class DemoVersionSwitcher extends LitElement {
         detail: { ...this.settings, framework: customEvent.detail.item.value },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      })
+      }),
     );
   };
 

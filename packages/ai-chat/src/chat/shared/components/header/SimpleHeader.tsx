@@ -46,7 +46,6 @@ function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
     <Header
       ref={headerRef}
       onClickClose={onClose}
-      showCenter
       useAITheme={useAITheme}
       testIdPrefix={testIdPrefix}
     />

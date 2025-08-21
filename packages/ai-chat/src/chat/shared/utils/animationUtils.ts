@@ -62,7 +62,7 @@ function animateWithClass(
   element: HTMLElement,
   className: string,
   endAnimationNameOrDelay?: string | number,
-  endAnimationCallback?: () => void
+  endAnimationCallback?: () => void,
 ) {
   if (element) {
     element.classList.add(className);
@@ -111,7 +111,7 @@ function setAnimationTimeouts(
   element: Element,
   animation: string,
   timeouts: number[],
-  options: AnimationTimeoutOptions
+  options: AnimationTimeoutOptions,
 ) {
   const { startingIndex, beforeAll, afterAll, beforeEach, afterEach } = options;
   // The index of the current timeout value to start off on in the array.

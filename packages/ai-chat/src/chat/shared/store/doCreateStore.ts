@@ -9,19 +9,19 @@
 
 import merge from "lodash-es/merge.js";
 import { createStore, Store } from "redux";
-
 import { NODE_ENV } from "../environmentVariables";
 import { ServiceManager } from "../services/ServiceManager";
 import { AppConfig } from "../../../types/state/AppConfig";
 import { AppState, ThemeState } from "../../../types/state/AppState";
 import { IS_PHONE } from "../utils/browserUtils";
 import { CornersType } from "../utils/constants";
+import { ThemeType } from "../../../types/config/PublicConfig";
 import { withoutEmptyStarters } from "../utils/homeScreenUtils";
 import { getBotName } from "../utils/miscUtils";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import {
-  DEFAULT_AGENT_STATE,
+  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
@@ -32,7 +32,6 @@ import {
   DEFAULT_MESSAGE_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_THEME_STATE,
-  DEFAULT_TOUR_STATE,
   VIEW_STATE_ALL_CLOSED,
   VIEW_STATE_LAUNCHER_OPEN,
   VIEW_STATE_MAIN_WINDOW_OPEN,
@@ -42,29 +41,18 @@ import { LayoutConfig } from "../../../types/config/PublicConfig";
 
 function doCreateStore(
   config: AppConfig,
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ): Store<AppState> {
-  // Determine the value for useAITheme.
-  let useAITheme;
-  if (config.public.themeConfig?.useAITheme !== undefined) {
-    // If a value is set in the public config then use that.
-    useAITheme = config.public.themeConfig?.useAITheme;
-  } else {
-    // If neither config is setting a value than use the default.
-    useAITheme = DEFAULT_THEME_STATE.useAITheme;
-  }
-
-  // The theme state uses a default for each property which can be overridden by the public config if specified. If a
-  // value for the property is not specified in the public config, then the default can be overridden by the remote
-  // config.
+  // The theme state uses a default for each property which can be overridden by the public config if specified.
   const themeState: ThemeState = {
     carbonTheme:
       config.public.themeConfig?.carbonTheme || DEFAULT_THEME_STATE.carbonTheme,
-    useAITheme,
+    theme: config.public.themeConfig?.theme || DEFAULT_THEME_STATE.theme,
     corners: getThemeCornersType(config),
+    whiteLabelTheme: config.public.themeConfig?.whiteLabelTheme,
   };
 
-  const botName = getBotName(themeState.useAITheme, config);
+  const botName = getBotName(themeState.theme, config);
 
   const initialState: AppState = {
     ...DEFAULT_MESSAGE_STATE,
@@ -74,7 +62,7 @@ function doCreateStore(
       isReadonly: config.public.isReadonly,
       fieldVisible: !config.public.isReadonly,
     },
-    agentState: { ...DEFAULT_AGENT_STATE },
+    humanAgentState: { ...DEFAULT_HUMAN_AGENT_STATE },
     botName,
     headerDisplayName: null,
     botAvatarURL: config.public.botAvatarURL || null,
@@ -82,13 +70,13 @@ function doCreateStore(
     chatWidthBreakpoint: null,
     chatWidth: null,
     chatHeight: null,
-    // Any IBM set variables will override variables coming from remote. We keep this in redux so we can track the
-    // current state of the theming variables as they are updated and merged at different times.
     cssVariableOverrides: mergeCSSVariables(
       {},
-      {},
+      themeState.theme === ThemeType.WHITE_LABEL
+        ? themeState.whiteLabelTheme || {}
+        : {},
       themeState.carbonTheme,
-      themeState.useAITheme
+      themeState.theme,
     ),
     isHydrated: false,
     // The language pack will start as English. If a different language pack is provided or updated, it will be
@@ -115,7 +103,7 @@ function doCreateStore(
         {
           mobile: {},
         },
-        { is_on: config.public.showLauncher }
+        { is_on: config.public.showLauncher },
       ),
     }),
     iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
@@ -125,7 +113,7 @@ function doCreateStore(
     viewChanging: false,
     initialViewChangeComplete: false,
     targetViewState:
-      // If openChatByDefault is set to true then the Carbon AI chat should open automatically. This value will be overridden
+      // If openChatByDefault is set to true then the Carbon AI Chat should open automatically. This value will be overridden
       // by session history if a session exists. This overwriting is intentional since we only want openChatByDefault to
       // open the main window the first time the chat loads for a user.
       config.public.openChatByDefault
@@ -133,14 +121,12 @@ function doCreateStore(
         : VIEW_STATE_LAUNCHER_OPEN,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
     customMenuOptions: null,
-    tourState: DEFAULT_TOUR_STATE,
     isBrowserPageVisible: true,
     showNonHeaderBackgroundCover: false,
     theme: themeState,
     layout: getLayoutState(config),
     chatHeaderState: {
       config: null,
-      maxVisibleHeaderObjects: 0,
     },
   };
 
@@ -176,7 +162,7 @@ function doCreateStore(
 }
 
 /**
- * Returns the corner type for the Carbon AI chat widget.
+ * Returns the corner type for the Carbon AI Chat widget.
  */
 function getThemeCornersType(config: AppConfig) {
   if (
@@ -191,7 +177,7 @@ function getThemeCornersType(config: AppConfig) {
 }
 
 function getLayoutState(config: AppConfig): LayoutConfig {
-  if (config.public.themeConfig?.useAITheme) {
+  if (config.public.themeConfig?.theme === ThemeType.CARBON_AI) {
     return {
       showFrame: config.public.layout?.showFrame ?? true,
       hasContentMaxWidth: config.public.layout?.hasContentMaxWidth ?? true,

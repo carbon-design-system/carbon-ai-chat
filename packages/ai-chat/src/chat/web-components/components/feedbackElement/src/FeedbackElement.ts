@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { bind } from "bind-decorator";
 import { css, LitElement, PropertyValues, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 
@@ -182,10 +181,9 @@ class FeedbackElement extends LitElement {
   /**
    * Called when the selected categories changes.
    */
-  @bind
-  _handleCategoryChange(selectedCategories: string[]) {
+  _handleCategoryChange = (selectedCategories: string[]) => {
     this._selectedCategories = selectedCategories;
-  }
+  };
 }
 
 /**

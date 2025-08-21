@@ -15,7 +15,10 @@
  * keyboard navigation.
  */
 
-import { ActionableNotification } from "@carbon/react";
+import ActionableNotification, {
+  NOTIFICATION_KIND,
+} from "../../../react/carbon/ActionableNotification";
+import ActionableNotificationButton from "../../../react/carbon/ActionableNotificationButton";
 import React from "react";
 
 import { NotificationStateObject } from "../../../../types/instance/apiTypes";
@@ -36,7 +39,7 @@ function Notifications({ notifications, serviceManager }: NotificationsProps) {
           const item = notification.notification;
           const onClose = () => {
             serviceManager.store.dispatch(
-              actions.removeNotifications({ notificationID: notification.id })
+              actions.removeNotifications({ notificationID: notification.id }),
             );
           };
 
@@ -58,9 +61,8 @@ function Notifications({ notifications, serviceManager }: NotificationsProps) {
               <ActionableNotification
                 aria-label={languagePack.notifications_toastClose}
                 actionButtonLabel={actionButtonLabel}
-                onActionButtonClick={onActionButtonClick}
-                kind={item.kind}
-                onClose={() => {
+                kind={item.kind as NOTIFICATION_KIND}
+                onNotificationClosed={() => {
                   onClose();
                   item.onCloseButtonClick?.();
                 }}
@@ -70,7 +72,16 @@ function Notifications({ notifications, serviceManager }: NotificationsProps) {
                 // steal focus but it's still experimental and does not provide the functionality we need (it does not
                 // have a close button).
                 hasFocus={false}
-              />
+              >
+                {actionButtonLabel && (
+                  <ActionableNotificationButton
+                    slot="action"
+                    onClick={onActionButtonClick}
+                  >
+                    {actionButtonLabel}
+                  </ActionableNotificationButton>
+                )}
+              </ActionableNotification>
             </div>
           );
         })}

@@ -21,6 +21,7 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { BrandColorKind } from "../../utils/constants";
 import { Header } from "../header/Header";
 import { OverlayPanelName } from "../OverlayPanel";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -50,23 +51,23 @@ interface HomeScreenHeaderProps {
 
 function HomeScreenHeader(
   props: HomeScreenHeaderProps,
-  ref: Ref<HasRequestFocus>
+  ref: Ref<HasRequestFocus>,
 ) {
   const { brandColor, onClose, onRestart, onCloseAndRestart } = props;
   const showRestartButton = useSelector(
     (state: AppState) =>
       state.config.public.showRestartButton ||
-      state.config.public.headerConfig?.showRestartButton
+      state.config.public.headerConfig?.showRestartButton,
   );
   const showBackButton = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.homeScreenState.showBackToBot
+      state.persistedToBrowserStorage.chatState.homeScreenState.showBackToBot,
   );
   const displayName = useSelector((state: AppState) => state.headerDisplayName);
   const customMenuOptions = useSelector(
-    (state: AppState) => state.customMenuOptions
+    (state: AppState) => state.customMenuOptions,
   );
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const theme = useSelector((state: AppState) => state.theme.theme);
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -81,7 +82,7 @@ function HomeScreenHeader(
       const { handler } = customMenuOptions[index];
       handler();
     },
-    [customMenuOptions]
+    [customMenuOptions],
   );
 
   const overflowItems = customMenuOptions?.map((option) => option.text);
@@ -91,7 +92,6 @@ function HomeScreenHeader(
       <Header
         ref={headerRef}
         displayName={displayName}
-        showCenter
         showRestartButton={showRestartButton}
         hideCloseAndRestartButton={hideCloseAndRestartButton}
         onClickRestart={onRestart}
@@ -99,7 +99,7 @@ function HomeScreenHeader(
         onCloseAndRestart={onCloseAndRestart}
         overflowClicked={overflowClicked}
         overflowItems={overflowItems}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
         brandColor={brandColor}
         testIdPrefix={OverlayPanelName.HOME_SCREEN}
       />

@@ -28,7 +28,7 @@ import {
 } from "@carbon/ai-chat";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../types/DeepPartial";
 
 import { Settings } from "../framework/types";
 
@@ -70,13 +70,17 @@ export class DemoApp extends LitElement {
       height: 100vh;
       width: calc(320px + 1rem);
       z-index: 9999;
-      transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
+      transition:
+        right 100ms,
+        visibility 0s 100ms; /* Delay visibility change */
       visibility: visible; /* Visible by default */
     }
 
     .sidebar--closed {
       right: calc(calc(320px + 1rem) * -1);
-      transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
+      transition:
+        right 100ms,
+        visibility 0s 0s; /* Immediately hide after transition */
       visibility: hidden; /* Hidden after right transition */
     }
   `;
@@ -99,10 +103,19 @@ export class DemoApp extends LitElement {
   @state()
   accessor valueFromParent: string = Date.now().toString();
 
+  private _interval?: ReturnType<typeof setInterval>;
+
   protected firstUpdated(_changedProperties: PropertyValues): void {
-    setInterval(() => {
+    this._interval = setInterval(() => {
       this.valueFromParent = Date.now().toString();
     }, 1500);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._interval) {
+      clearInterval(this._interval);
+    }
   }
 
   /**

@@ -30,7 +30,7 @@ function asArray<T>(value: T | T[]): T[] {
  */
 async function asyncForEach<T>(
   array: T[],
-  callbackFunction: (value: T, index: number, array: T[]) => unknown
+  callbackFunction: (value: T, index: number, array: T[]) => unknown,
 ) {
   for (let index = 0; index < array.length; index++) {
     const value = array[index];
@@ -51,7 +51,7 @@ async function asyncForEach<T>(
 function findLast<T>(
   array: T[],
   predicate: (value: T, index: number, array: T[]) => boolean,
-  startAt?: number
+  startAt?: number,
 ): T {
   const lastIndex = findLastIndex(array, predicate, startAt);
   return lastIndex === -1 ? undefined : array[lastIndex];
@@ -69,7 +69,7 @@ function findLast<T>(
 function findLastIndex<T>(
   array: T[],
   predicate: (value: T, index: number, array: T[]) => boolean,
-  startAt?: number
+  startAt?: number,
 ): number {
   if (array) {
     const startingIndex = startAt === undefined ? array.length - 1 : startAt;
@@ -99,7 +99,7 @@ function findLastIndex<T>(
 function findLastWithMap<T>(
   keys: string[],
   map: ObjectMap<T>,
-  predicate: (value: T, index: number, array: string[]) => boolean
+  predicate: (value: T, index: number, array: string[]) => boolean,
 ): T {
   for (let index = keys.length - 1; index >= 0; index--) {
     const key = keys[index];

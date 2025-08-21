@@ -33,8 +33,8 @@ import {
 @carbonElement("cds-aichat-container")
 class ChatContainer extends LitElement {
   /**
-   * The config to use to load Carbon AI chat. Note that the "onLoad" property is overridden by this component. If you
-   * need to perform any actions after Carbon AI chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
+   * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
+   * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
    */
   @property({ type: Object })
   config: PublicConfig;
@@ -43,14 +43,14 @@ class ChatContainer extends LitElement {
   element?: HTMLElement;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   @property()
   onBeforeRender: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called.
+   * This function is called after the render function of Carbon AI Chat is called.
    */
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
@@ -78,7 +78,7 @@ class ChatContainer extends LitElement {
    * updating this._userDefinedSlotNames;
    */
   userDefinedHandler = (
-    event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse
+    event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse,
   ) => {
     // This element already has `slot` as an attribute.
     const { slot } = event.data;
@@ -106,7 +106,7 @@ class ChatContainer extends LitElement {
     Object.keys(this._instance.writeableElements).forEach(
       (writeableElementKey) => {
         writeableElementSlots.push(writeableElementKey);
-      }
+      },
     );
     this._writeableElementSlots = writeableElementSlots;
   }
@@ -122,10 +122,10 @@ class ChatContainer extends LitElement {
       .element=${this.element}
     >
       ${this._writeableElementSlots.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
+        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
       )}
       ${this._userDefinedSlotNames.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
+        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
       )}
     </cds-aichat-internal>`;
   }
@@ -140,18 +140,18 @@ declare global {
 /** @category Web component */
 interface CdsAiChatContainerAttributes {
   /**
-   * The configuration object used to render Carbon AI chat.
+   * The configuration object used to render Carbon AI Chat.
    */
   config: PublicConfig;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called.
+   * This function is called after the render function of Carbon AI Chat is called.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 }

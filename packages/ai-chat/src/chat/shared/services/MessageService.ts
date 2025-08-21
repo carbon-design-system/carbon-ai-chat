@@ -214,11 +214,11 @@ class MessageService {
    * Process a response from assistant with 200 response code, send and return the messageResponse.
    *
    * @param current The current item in the send queue.
-   * @param received JSON output from v2 API.
+   * @param received A {@link MessageResponse}.
    */
   private async processSuccess(
     current: PendingMessageRequest,
-    received?: MessageResponse
+    received?: MessageResponse,
   ) {
     const { requestOptions, isProcessed } = current;
     const isWelcomeNode = Boolean(current.message.history.is_welcome_request);
@@ -254,7 +254,7 @@ class MessageService {
           received,
           isWelcomeNode,
           message,
-          requestOptions
+          requestOptions,
         );
       }
       this.messageLoadingManager.end();
@@ -290,7 +290,7 @@ class MessageService {
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(errorMessage);
     store.dispatch(
-      actions.addLocalMessageItem(localMessage, originalMessage, true)
+      actions.addLocalMessageItem(localMessage, originalMessage, true),
     );
   }
 
@@ -306,7 +306,7 @@ class MessageService {
       {
         skipQueue: true,
         silent: true,
-      }
+      },
     );
   }
 
@@ -347,7 +347,7 @@ class MessageService {
   private async processError(
     pendingRequest: PendingMessageRequest,
     resultText: string,
-    allowRetry: boolean
+    allowRetry: boolean,
   ) {
     const {
       message,
@@ -411,7 +411,7 @@ class MessageService {
    */
   private rejectFinalErrorOnMessage(
     pendingRequest: PendingMessageRequest,
-    resultText = "An undefined error occurred trying to send your message."
+    resultText = "An undefined error occurred trying to send your message.",
   ) {
     const { sendMessagePromise } = pendingRequest;
 
@@ -442,7 +442,7 @@ class MessageService {
   }
 
   /**
-   * Sends the message to watsonx Assistant Backend. Returns "any" in the error case.
+   * Sends the message to the backend. Returns "any" in the error case.
    *
    * @param current The current item in the send queue.
    */
@@ -469,7 +469,7 @@ class MessageService {
       await customSendMessage(
         message,
         { signal: controller.signal },
-        this.serviceManager.instance
+        this.serviceManager.instance,
       );
       await this.processSuccess(current, null);
     } catch (error) {
@@ -516,13 +516,13 @@ class MessageService {
           this.messageLoadingManager.start(
             () => {
               this.serviceManager.store.dispatch(
-                actions.addIsLoadingCounter(1)
+                actions.addIsLoadingCounter(1),
               );
             },
             (didExceedMaxLoading: boolean) => {
               if (didExceedMaxLoading) {
                 this.serviceManager.store.dispatch(
-                  actions.addIsLoadingCounter(-1)
+                  actions.addIsLoadingCounter(-1),
                 );
               }
             },
@@ -530,7 +530,7 @@ class MessageService {
               this.cancelMessageRequestByID(message.id, true);
             },
             LOADING_INDICATOR_TIMER,
-            this.timeoutMS
+            this.timeoutMS,
           );
         }
 
@@ -550,7 +550,7 @@ class MessageService {
             data: message,
             source,
           },
-          this.serviceManager.instance
+          this.serviceManager.instance,
         );
 
         if (current.isProcessed) {
@@ -562,7 +562,7 @@ class MessageService {
         const localMessage = inputItemToLocalItem(
           message,
           originalUserText,
-          current.localMessageID
+          current.localMessageID,
         );
         // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
         // we don't need to update it here either.
@@ -574,7 +574,7 @@ class MessageService {
 
         await eventBus.fire(
           { type: BusEventType.SEND, data: message, source },
-          this.serviceManager.instance
+          this.serviceManager.instance,
         );
       }
       this.sendToAssistant(current);
@@ -595,7 +595,7 @@ class MessageService {
     source: MessageSendSource,
     localMessageID: string,
     sendMessagePromise: ResolvablePromise<void>,
-    requestOptions: SendOptions = {}
+    requestOptions: SendOptions = {},
   ) {
     const newPendingMessage: PendingMessageRequest = {
       localMessageID,
@@ -647,7 +647,7 @@ class MessageService {
    */
   private setMessageErrorState(
     pendingRequest: PendingMessageRequest,
-    errorState: MessageErrorState
+    errorState: MessageErrorState,
   ) {
     const { message } = pendingRequest;
     // Find the current state for the message. Note that we want to look up the current state from the store which
@@ -675,12 +675,12 @@ class MessageService {
         // Announce the change if necessary.
         if (announceMessageID) {
           this.serviceManager.store.dispatch(
-            actions.announceMessage({ messageID: announceMessageID })
+            actions.announceMessage({ messageID: announceMessageID }),
           );
         }
 
         this.serviceManager.store.dispatch(
-          actions.setMessageErrorState(message.id, errorState)
+          actions.setMessageErrorState(message.id, errorState),
         );
 
         // After updating store get the updated message back from store and use it within the messageService. If we
@@ -695,10 +695,9 @@ class MessageService {
   }
 
   /**
-   * Send a message to watsonx Assistant back-end. Returns "any" in the error case.
+   * Send a message to the backend. Returns "any" in the error case.
    *
-   * @param message Takes an object in the shape of a v2 message API Send object. See
-   * [Docs](https://cloud.ibm.com/apidocs/assistant-v2#send-user-input-to-assistant).
+   * @param message Takes a {@link MessageRequest} object.
    * @param source The source of the message.
    * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
    * @param requestOptions The options that were included when the request was sent.
@@ -707,7 +706,7 @@ class MessageService {
     message: MessageRequest<any>,
     source: MessageSendSource,
     localMessageID?: string,
-    requestOptions?: SendOptions
+    requestOptions?: SendOptions,
   ): Promise<MessageResponse | any> {
     message.history.timestamp = message.history.timestamp || Date.now();
 
@@ -726,7 +725,7 @@ class MessageService {
       source,
       localMessageID,
       sendMessagePromise,
-      requestOptions
+      requestOptions,
     );
     this.runQueueIfReady();
 
@@ -757,7 +756,7 @@ class MessageService {
       pendingRequest = this.queue.current;
     } else {
       const index = this.queue.waiting.findIndex(
-        (item) => item.message.id === messageID
+        (item) => item.message.id === messageID,
       );
       if (index !== -1) {
         pendingRequest = this.queue.waiting[index];

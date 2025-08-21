@@ -17,7 +17,7 @@ import {
 import { ChatContainer, ChatContainerProps } from "./ChatContainer";
 
 /**
- * This is the React component for people injecting a Carbon AI chat with a custom element.
+ * This is the React component for people injecting a Carbon AI Chat with a custom element.
  *
  * It provides said element any class or id defined on itself for styling. It then calls ChatContainer with the custom
  * element passed in as a property to be used instead of generating an element with the default properties for a
@@ -39,14 +39,14 @@ interface ChatCustomElementProps extends ChatContainerProps {
 
   /**
    * An optional listener for "view:change" events. Such a listener is required when using a custom element in order
-   * to control the visibility of the Carbon AI chat main window. If no callback is provided here, a default one will be
-   * used that injects styling into the app that will show and hide the Carbon AI chat main window and also change the
+   * to control the visibility of the Carbon AI Chat main window. If no callback is provided here, a default one will be
+   * used that injects styling into the app that will show and hide the Carbon AI Chat main window and also change the
    * size of the custom element so it doesn't take up space when the main window is closed.
    *
    * You can provide a different callback here if you want custom behavior such as an animation when the main window
    * is opened or closed.
    *
-   * Note that this function can only be provided before Carbon AI chat is loaded. After Carbon AI chat is loaded, the event
+   * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the event
    * handler will not be updated.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
@@ -68,7 +68,7 @@ function ChatCustomElement({
   const onBeforeRenderOverride = useCallback(
     async (instance: ChatInstance) => {
       /**
-       * A default handler for the "view:change" event. This will be used to show or hide the Carbon AI chat main window
+       * A default handler for the "view:change" event. This will be used to show or hide the Carbon AI Chat main window
        * using a simple classname.
        */
       function defaultViewChangeHandler(event: any, instance: ChatInstance) {
@@ -94,7 +94,7 @@ function ChatCustomElement({
 
       return onBeforeRender?.(instance);
     },
-    [onBeforeRender, onViewChange, customElement]
+    [onBeforeRender, onViewChange, customElement],
   );
 
   return (
@@ -115,7 +115,7 @@ function ChatCustomElement({
 
 /** @category React */
 const ChatCustomElementExport = React.memo(
-  ChatCustomElement
+  ChatCustomElement,
 ) as React.FC<ChatCustomElementProps>;
 
 export { ChatCustomElementExport as ChatCustomElement, ChatCustomElementProps };

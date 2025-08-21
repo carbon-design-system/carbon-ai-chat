@@ -11,8 +11,6 @@
  * Miscellaneous utilities for dealing with HTML.
  */
 
-import DomPurify from "dompurify";
-
 import { isEmptyString } from "./lang/stringUtils";
 
 /**
@@ -27,23 +25,4 @@ function isValidURL(string: string) {
   return string.includes("http://") || string.includes("https://");
 }
 
-/**
- * Sanitizes the given block of HTML to remove potentially malicious content. This will strip out everything that's
- * not in the allowed set provided by the library we're using here. We use the defaults for DOMPurify, but do allow
- * "target" to be set.
- */
-function sanitizeHTML(content: string): string {
-  return DomPurify.sanitize(content, { ADD_ATTR: ["target"] });
-}
-
-/**
- * Remove all HTML tags. We use an external library to make sure we don't forget any tags to forbid.
- * Custom HTML tags won't hurt anyone.
- */
-function removeHTML(content: string): string {
-  return DomPurify.sanitize(content, {
-    ALLOWED_TAGS: [],
-  });
-}
-
-export { isValidURL, sanitizeHTML, removeHTML };
+export { isValidURL };

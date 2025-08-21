@@ -25,7 +25,7 @@ const VisuallyHidden = React.forwardRef(
         {props.children}
       </div>
     );
-  }
+  },
 );
 
 VisuallyHidden.displayName = "VisuallyHidden";

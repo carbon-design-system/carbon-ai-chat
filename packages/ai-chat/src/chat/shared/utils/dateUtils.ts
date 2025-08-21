@@ -13,7 +13,7 @@ import { RIGHT_TO_LEFT_MARK } from "./constants";
 // string.
 const UNWANTED_CHARACTERS_REGEX = new RegExp(
   `[ ${RIGHT_TO_LEFT_MARK}]|\\.$`,
-  "g"
+  "g",
 );
 
 /**

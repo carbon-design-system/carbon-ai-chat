@@ -7,8 +7,11 @@
  *  @license
  */
 
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "../../../react/carbon/ChatButton";
 import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
-import { unstable__ChatButton as ChatButton } from "@carbon/react";
 import cx from "classnames";
 import React, { RefObject } from "react";
 import { useSelector } from "react-redux";
@@ -27,11 +30,8 @@ import {
   HomeScreenConfig,
   HomeScreenStarterButton,
 } from "../../../../types/config/HomeScreenConfig";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../types/utilities/carbonTypes";
 import { OverlayPanelName } from "../OverlayPanel";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -94,12 +94,12 @@ function HomeScreenComponent({
 
   const { showBackToBot } = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.homeScreenState
+      state.persistedToBrowserStorage.chatState.homeScreenState,
   );
 
   const prevIsHydrated = usePrevious(isHydrated);
 
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const theme = useSelector((state: AppState) => state.theme.theme);
 
   const homeScreenWriteableElement =
     serviceManager.writeableElements[
@@ -113,14 +113,14 @@ function HomeScreenComponent({
     starters?.is_on && Boolean(starters.buttons?.length);
 
   const backgroundSolid =
-    !useAITheme && background === HomeScreenBackgroundType.SOLID;
+    theme !== ThemeType.CARBON_AI &&
+    background === HomeScreenBackgroundType.SOLID;
 
   const firstRender = isHydrated && !prevIsHydrated;
-
   return (
     <div
       className={cx("WACHomeScreen", {
-        "WACHomeScreen--backgroundAITheme": useAITheme,
+        "WACHomeScreen--backgroundAITheme": theme === ThemeType.CARBON_AI,
         "WACHomeScreen--hydrationComplete": isHydrated,
         "WACHomeScreen--firstRender": firstRender,
         "WACHomeScreen--backgroundSolid": backgroundSolid,
@@ -162,9 +162,8 @@ function HomeScreenComponent({
                 >
                   {starters.buttons.map((starter, index) => (
                     <ChatButton
-                      type="button"
-                      size={ButtonSizeEnum.SMALL}
-                      kind={ButtonKindEnum.TERTIARY}
+                      size={CHAT_BUTTON_SIZE.SMALL}
+                      kind={CHAT_BUTTON_KIND.TERTIARY}
                       isQuickAction
                       // eslint-disable-next-line react/no-array-index-key
                       key={index}
@@ -200,9 +199,8 @@ function HomeScreenComponent({
         >
           {showBackToBot && (
             <ChatButton
-              type="button"
-              size={ButtonSizeEnum.SMALL}
-              kind={ButtonKindEnum.SECONDARY}
+              size={CHAT_BUTTON_SIZE.SMALL}
+              kind={CHAT_BUTTON_KIND.SECONDARY}
               className="WACHomeScreen__backButton"
               onClick={onToggleHomeScreen}
             >

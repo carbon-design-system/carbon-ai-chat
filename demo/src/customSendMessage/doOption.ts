@@ -7,11 +7,7 @@
  *  @license
  */
 
-import {
-  ChatInstance,
-  MessageResponseTypes,
-  OptionItem,
-} from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
 
 import { RESPONSE_MAP } from "./responseMap";
 
@@ -27,7 +23,7 @@ function doOption(instance: ChatInstance) {
           response_type: MessageResponseTypes.OPTION,
           title: "Select a response to view it in action (dropdown).",
           options,
-        } as OptionItem,
+        },
         {
           response_type: MessageResponseTypes.OPTION,
           title: "Select a response to view it in action (button).",
@@ -35,7 +31,7 @@ function doOption(instance: ChatInstance) {
             "If under 5 items, default is buttons. If over, moves to dropdown.",
           options,
           preference: "button",
-        } as OptionItem,
+        },
       ],
     },
   });

@@ -7,11 +7,7 @@
  *  @license
  */
 
-import {
-  ChatInstance,
-  InlineErrorItem,
-  MessageResponseTypes,
-} from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
 
 function doError(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -19,7 +15,7 @@ function doError(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.INLINE_ERROR,
-        } as InlineErrorItem,
+        },
       ],
     },
   });

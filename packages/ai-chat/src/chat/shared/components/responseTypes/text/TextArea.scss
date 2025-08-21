@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/components/button" as button;
 
 .WAC__TextArea {
   position: relative;
@@ -15,7 +16,7 @@
 
 .WAC__TextArea .WAC__TextArea-textarea {
   padding: 0;
-  border: var(--cds-chat-BASE-border-width-med) solid transparent;
+  border: button.$button-border-width solid transparent;
   block-size: 100%;
   color: inherit;
   font: inherit;
@@ -23,13 +24,13 @@
 }
 
 .WAC__TextArea .WAC__TextArea-textarea:focus {
-  border: var(--cds-chat-BASE-border-width-med) solid theme.$focus;
+  border: button.$button-border-width solid theme.$focus;
   border-radius: 0;
   outline: 0;
 }
 
 .WAC__TextArea .WAC__TextArea-textarea::-moz-focus-inner {
-  border: var(--cds-chat-BASE-border-width-med) solid theme.$focus;
+  border: button.$button-border-width solid theme.$focus;
   border-radius: 0;
   outline: 0;
 }

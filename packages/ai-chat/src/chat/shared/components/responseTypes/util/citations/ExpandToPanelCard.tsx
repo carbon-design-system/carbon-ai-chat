@@ -42,14 +42,14 @@ function ExpandToPanelCard({
   // contents in the tile. If it can't fit the contents then it needs to be a clickable tile that can expand into a
   // panel.
   const [isExpandable, setIsExpandable] = useState(
-    Boolean(relatedSearchResult?.body)
+    Boolean(relatedSearchResult?.body),
   );
 
   function onViewSourcePanelButtonClick() {
     // If a search result is provided we want to show that in the panel with the citation text highlighted, otherwise
     // just show the citation.
     serviceManager.store.dispatch(
-      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult)
+      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult),
     );
   }
 

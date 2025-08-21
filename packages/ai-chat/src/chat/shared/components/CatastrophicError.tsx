@@ -7,8 +7,12 @@
  *  @license
  */
 
-import Restart from "@carbon/icons-react/es/Restart.js";
-import { unstable__ChatButton as ChatButton } from "@carbon/react";
+import Restart16 from "@carbon/icons/es/restart/16.js";
+import { carbonIconToReact } from "../utils/carbonIcon";
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "../../react/carbon/ChatButton";
 import cx from "classnames";
 import React from "react";
 import { useIntl } from "react-intl";
@@ -20,13 +24,11 @@ import { ErrorMessageDark } from "./ErrorMessageDark";
 import { ErrorMessageLight } from "./ErrorMessageLight";
 import { BotHeader } from "./header/BotHeader";
 import RichText from "./responseTypes/util/RichText";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-  CarbonTheme,
-} from "../../../types/utilities/carbonTypes";
+import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 import { OverlayPanelName } from "./OverlayPanel";
+
+const Restart = carbonIconToReact(Restart16);
 
 interface CatastrophicErrorProps extends HasLanguagePack {
   /**
@@ -35,7 +37,7 @@ interface CatastrophicErrorProps extends HasLanguagePack {
   showHeader: boolean;
 
   /**
-   * If defined, will show a button to restart the Carbon AI chat by calling this method.
+   * If defined, will show a button to restart the Carbon AI Chat by calling this method.
    */
   onRestart?: () => void;
 
@@ -56,7 +58,7 @@ interface CatastrophicErrorProps extends HasLanguagePack {
 }
 
 /**
- * This component is rendered while the Carbon AI chat is hydrating.
+ * This component is rendered while the Carbon AI Chat is hydrating.
  */
 
 function CatastrophicError({
@@ -76,7 +78,7 @@ function CatastrophicError({
 
   const errorBodyText = intl.formatMessage({ id: errorKey }, { botName });
   return (
-    <div className="WAC">
+    <>
       {showHeader && (
         <BotHeader
           headerDisplayName={headerDisplayName}
@@ -103,19 +105,18 @@ function CatastrophicError({
           {onRestart && (
             <ChatButton
               className="WACCatastrophicError__RestartButton"
-              kind={ButtonKindEnum.TERTIARY}
-              size={ButtonSizeEnum.SMALL}
+              kind={CHAT_BUTTON_KIND.TERTIARY}
+              size={CHAT_BUTTON_SIZE.SMALL}
               aria-label={languagePack.buttons_restart}
               onClick={onRestart}
-              renderIcon={Restart}
-              type="button"
             >
+              <Restart slot="icon" />
               {languagePack.buttons_retry}
             </ChatButton>
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -124,5 +125,3 @@ const CatastrophicErrorExport = React.memo(CatastrophicError);
 export { CatastrophicErrorExport as CatastrophicError };
 
 export default CatastrophicErrorExport;
-
-export type { CatastrophicErrorProps };

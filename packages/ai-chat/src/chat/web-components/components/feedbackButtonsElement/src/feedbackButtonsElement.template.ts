@@ -28,7 +28,7 @@ const ThumbsUp16svg = toString(ThumbsUp16);
 const ThumbsUpFilled16svg = toString(ThumbsUpFilled16);
 
 function feedbackButtonsElementTemplate(
-  customElementClass: FeedbackButtonsElement
+  customElementClass: FeedbackButtonsElement,
 ) {
   const {
     isPositiveOpen,
@@ -62,7 +62,7 @@ function feedbackButtonsElementTemplate(
     >
       <span slot="icon"
         >${unsafeSVG(
-          isPositiveSelected ? ThumbsUpFilled16svg : ThumbsUp16svg
+          isPositiveSelected ? ThumbsUpFilled16svg : ThumbsUp16svg,
         )}</span
       >
       <span slot="tooltip-content"
@@ -85,7 +85,7 @@ function feedbackButtonsElementTemplate(
     >
       <span slot="icon"
         >${unsafeSVG(
-          isNegativeSelected ? ThumbsDownFilled16svg : ThumbsDown16svg
+          isNegativeSelected ? ThumbsDownFilled16svg : ThumbsDown16svg,
         )}</span
       >
       <span slot="tooltip-content"

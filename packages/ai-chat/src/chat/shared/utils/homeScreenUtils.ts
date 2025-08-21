@@ -21,7 +21,7 @@ function withoutEmptyStarters(config: HomeScreenConfig): HomeScreenConfig {
       starters: {
         ...config.starters,
         buttons: config.starters.buttons.filter((button) =>
-          Boolean(button.label?.trim())
+          Boolean(button.label?.trim()),
         ),
       },
     };

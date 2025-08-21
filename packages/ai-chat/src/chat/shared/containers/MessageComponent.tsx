@@ -36,7 +36,7 @@ import {
 import { FileStatusValue } from "../utils/constants";
 import { doFocusRef } from "../utils/domUtils";
 import {
-  isConnectToAgent,
+  isConnectToHumanAgent,
   isFullWidthUserDefined,
   isOptionItem,
   isRequest,
@@ -49,13 +49,16 @@ import { timestampToTimeString } from "../utils/timeUtils";
 import { type ScrollElementIntoViewFunction } from "./MessagesComponent";
 import { MessageTypeComponent } from "./MessageTypeComponent";
 import {
-  AgentMessageType,
+  HumanAgentMessageType,
   Message,
   MessageRequest,
   MessageResponseTypes,
+  ResponseUserProfile,
+  UserType,
 } from "../../../types/messaging/Messages";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { ResponseUserAvatar } from "../components/ResponseUserAvatar";
 
 enum MoveFocusType {
   /**
@@ -128,7 +131,7 @@ interface MessageProps
    */
   requestMoveFocus: (
     moveFocusType: MoveFocusType,
-    currentMessageIndex: number
+    currentMessageIndex: number,
   ) => void;
 
   /**
@@ -145,6 +148,11 @@ interface MessageProps
    * Indicates if this message item is the first item in a message response.
    */
   isFirstMessageItem: boolean;
+
+  /**
+   * Indicates if this message item is the last item in a message response.
+   */
+  isLastMessageItem: boolean;
 
   /**
    * The current locale. This value is not directly used by this component. It is indirectly used by the dayjs
@@ -256,7 +264,7 @@ class MessageComponent extends PureComponent<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData("Message", error, errorInfo)
+      createDidCatchErrorData("Message", error, errorInfo),
     );
     this.setState({ didRenderErrorOccur: true });
   }
@@ -266,7 +274,7 @@ class MessageComponent extends PureComponent<
     if (uiState.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        actions.setMessageWasAnnounced(uiState.id),
       );
     }
   }
@@ -276,7 +284,7 @@ class MessageComponent extends PureComponent<
     if (uiState.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        actions.setMessageWasAnnounced(uiState.id),
       );
     }
   }
@@ -294,8 +302,8 @@ class MessageComponent extends PureComponent<
     // If the message is a CTA, has a service desk error, and we're supposed to report service desk errors, then we
     // need to render the failed message.
     return (
-      isConnectToAgent(localMessageItem.item) &&
-      message.history?.agent_no_service_desk
+      isConnectToHumanAgent(localMessageItem.item) &&
+      message.ui_state_internal?.agent_no_service_desk
     );
   }
 
@@ -364,10 +372,11 @@ class MessageComponent extends PureComponent<
    */
   private renderAvatarLine(
     localMessageItem: LocalMessageItem,
-    message: Message
+    message: Message,
   ) {
     let avatar;
-    const { languagePack, botAvatarURL, useAITheme, carbonTheme } = this.props;
+    const { languagePack, botName, botAvatarURL, useAITheme, carbonTheme } =
+      this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
 
@@ -377,49 +386,66 @@ class MessageComponent extends PureComponent<
     if (isResponse(message)) {
       // We'll use the first message item for deciding if we should show the agent's avatar.
       const agentMessageType = localMessageItem.item.agent_message_type;
-      const agentProfile = message.history.agent_profile;
+      const responseUserProfile: ResponseUserProfile = message.message_options
+        ?.response_user_profile || {
+        id: "watsonx",
+        nickname: "watsonx",
+        user_type: UserType.WATSONX,
+      };
 
-      if (isAgentStatusMessage(agentMessageType)) {
+      if (isHumanAgentStatusMessage(agentMessageType)) {
         // These messages don't show an avatar line.
         return null;
       }
 
-      const fromAgent = agentMessageType === AgentMessageType.FROM_AGENT;
-      if (fromAgent || agentProfile?.profile_picture_url) {
+      const fromHumanAgent =
+        agentMessageType === HumanAgentMessageType.FROM_HUMAN_AGENT;
+      if (
+        responseUserProfile.profile_picture_url &&
+        responseUserProfile.user_type !== UserType.WATSONX
+      ) {
         avatar = (
           <ImageWithFallback
-            url={agentProfile?.profile_picture_url}
+            url={responseUserProfile?.profile_picture_url}
             alt={
-              fromAgent
-                ? languagePack.agent_ariaAgentAvatar
+              fromHumanAgent
+                ? languagePack.agent_ariaResponseUserAvatar
                 : languagePack.agent_ariaGenericAvatar
             }
             fallback={<IconHolder icon={<Headset />} />}
           />
         );
         iconClassName = "WACMessage__Avatar--agent";
+        actorName = responseUserProfile?.nickname || "";
       } else {
-        const icon = useAITheme ? (
-          <Avatar theme={carbonTheme} />
-        ) : (
-          <IconHolder icon={<ChatBot />} />
-        );
-        const imageUrl = useAITheme ? undefined : botAvatarURL;
+        actorName = responseUserProfile?.nickname || botName;
+
+        let icon = <IconHolder icon={<ChatBot />} />;
+
+        if (useAITheme && responseUserProfile.user_type === UserType.WATSONX) {
+          icon = <Avatar theme={carbonTheme} />;
+        }
+
         avatar = (
           <ImageWithFallback
-            url={imageUrl}
+            url={botAvatarURL}
             alt={languagePack.agent_ariaGenericBotAvatar}
             fallback={icon}
           />
         );
-        iconClassName = "WACMessage__Avatar--bot";
-      }
 
-      if (fromAgent || agentProfile?.nickname) {
-        actorName =
-          agentProfile?.nickname || languagePack.agent_agentNoNameTitle;
-      } else if (useAITheme) {
-        actorName = "watsonx";
+        if (responseUserProfile.user_type === UserType.HUMAN) {
+          avatar = (
+            <ResponseUserAvatar
+              responseUserProfile={responseUserProfile}
+              languagePack={languagePack}
+              width="32px"
+              height="32px"
+            />
+          );
+        }
+
+        iconClassName = "WACMessage__Avatar--bot";
       }
 
       label = (
@@ -589,6 +615,7 @@ class MessageComponent extends PureComponent<
       isMessageForInput,
       scrollElementIntoView,
       isFirstMessageItem,
+      isLastMessageItem,
       hideFeedback,
       allowNewFeedback,
     } = this.props;
@@ -598,7 +625,7 @@ class MessageComponent extends PureComponent<
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
     const agentMessageType = messageItem.agent_message_type;
-    const fromHistory = message.history.from_history;
+    const fromHistory = message.ui_state_internal?.from_history;
     const readWidgetSaid = isFirstMessageItem;
 
     if (
@@ -620,6 +647,7 @@ class MessageComponent extends PureComponent<
         config={config}
         doAutoScroll={doAutoScroll}
         scrollElementIntoView={scrollElementIntoView}
+        showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}
         allowNewFeedback={allowNewFeedback}
       />
@@ -631,15 +659,17 @@ class MessageComponent extends PureComponent<
     const noAnimation = isWelcomeResponse || disableFadeAnimation;
 
     // If this is a user_defined response type with silent set, we don't want to render all the extra cruft around it.
-    const agentClassName = getAgentMessageClassName(
-      agentMessageType,
-      responseType,
-      isCustomMessage
-    );
+    const agentClassName = agentMessageType
+      ? getHumanAgentMessageClassName(
+          agentMessageType,
+          responseType,
+          isCustomMessage,
+        )
+      : null;
 
     const messageIsRequest = isRequest(message);
-    const isSystemMessage = isAgentStatusMessage(
-      localMessageItem.item.agent_message_type
+    const isSystemMessage = isHumanAgentStatusMessage(
+      localMessageItem.item.agent_message_type,
     );
 
     let isOptionResponseWithoutTitleOrDescription = false;
@@ -672,7 +702,7 @@ class MessageComponent extends PureComponent<
             "WAC__message--has-focus": this.state.focusHandleHasFocus,
             "WAC__message--option-response-without-title-or-description":
               isOptionResponseWithoutTitleOrDescription,
-          }
+          },
         )}
         ref={this.ref}
       >
@@ -690,6 +720,10 @@ class MessageComponent extends PureComponent<
                   "WAC__message-vertical-padding",
                   agentClassName,
                   {
+                    "WAC__received--fromHuman":
+                      !agentMessageType &&
+                      message.message_options?.response_user_profile
+                        ?.user_type === UserType.HUMAN,
                     "WAC__received--text":
                       responseType === MessageResponseTypes.TEXT,
                     "WAC__received--image":
@@ -714,17 +748,17 @@ class MessageComponent extends PureComponent<
                       responseType ===
                       MessageResponseTypes.CONVERSATIONAL_SEARCH,
                     "WAC__received--carouselSingle": isSingleItemCarousel(
-                      localMessageItem.item
+                      localMessageItem.item,
                     ),
                     "WAC__received--button":
                       responseType === MessageResponseTypes.BUTTON,
                     "WAC__received--grid":
                       responseType === MessageResponseTypes.GRID,
                     "WAC__received--fullWidth": isFullWidthUserDefined(
-                      localMessageItem.item
+                      localMessageItem.item,
                     ),
                     "WAC__message--historical": fromHistory,
-                  }
+                  },
                 )}
                 ref={this.messageRef}
               >
@@ -741,7 +775,7 @@ class MessageComponent extends PureComponent<
                   {
                     "WAC__sentAndMessageState--belowMessage":
                       messageState?.showBelowMessage,
-                  }
+                  },
                 )}
               >
                 {/* messageState is empty, or the messageState is not empty and the messageState should not be below the message. */}
@@ -767,12 +801,12 @@ class MessageComponent extends PureComponent<
 /**
  * Returns the class name to add to messages with the given agent message type.
  */
-function getAgentMessageClassName(
-  agentMessageType: AgentMessageType,
+function getHumanAgentMessageClassName(
+  agentMessageType: HumanAgentMessageType,
   messageResponseType: MessageResponseTypes,
-  isUserDefinedResponse: boolean
+  isUserDefinedResponse: boolean,
 ) {
-  if (isUserDefinedResponse) {
+  if (agentMessageType && isUserDefinedResponse) {
     return "WAC__received--agentCustom";
   }
   if (
@@ -785,13 +819,13 @@ function getAgentMessageClassName(
   switch (agentMessageType) {
     case null:
     case undefined:
-    case AgentMessageType.FROM_USER:
+    case HumanAgentMessageType.FROM_USER:
       return null;
-    case AgentMessageType.RELOAD_WARNING:
-    case AgentMessageType.DISCONNECTED:
+    case HumanAgentMessageType.RELOAD_WARNING:
+    case HumanAgentMessageType.DISCONNECTED:
       return "WAC__received--chatStatusMessage";
-    case AgentMessageType.FROM_AGENT:
-      return "WAC__received--fromAgent";
+    case HumanAgentMessageType.FROM_HUMAN_AGENT:
+      return "WAC__received--fromHuman";
     default:
       return "WAC__received--agentStatusMessage";
   }
@@ -800,15 +834,15 @@ function getAgentMessageClassName(
 /**
  * Indicates if this message is a status message. These are messages that are centered in the view.
  */
-function isAgentStatusMessage(agentMessageType: AgentMessageType) {
+function isHumanAgentStatusMessage(agentMessageType: HumanAgentMessageType) {
   switch (agentMessageType) {
     case null:
     case undefined:
-    case AgentMessageType.FROM_USER:
-    case AgentMessageType.RELOAD_WARNING:
-    case AgentMessageType.DISCONNECTED:
-    case AgentMessageType.FROM_AGENT:
-    case AgentMessageType.INLINE_ERROR:
+    case HumanAgentMessageType.FROM_USER:
+    case HumanAgentMessageType.RELOAD_WARNING:
+    case HumanAgentMessageType.DISCONNECTED:
+    case HumanAgentMessageType.FROM_HUMAN_AGENT:
+    case HumanAgentMessageType.INLINE_ERROR:
       return false;
     default:
       return true;
@@ -836,6 +870,6 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
 }
 
 export default withAriaAnnouncer(
-  injectIntl(MessageComponent, { forwardRef: true })
+  injectIntl(MessageComponent, { forwardRef: true }),
 );
 export { MessageComponent as MessageClass, MoveFocusType };

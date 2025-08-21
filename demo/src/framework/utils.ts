@@ -153,6 +153,7 @@ function getSettings() {
       delete defaultConfig.headerConfig?.minimizeButtonIconType;
       break;
   }
+
   return { defaultConfig, defaultSettings };
 }
 
@@ -167,7 +168,7 @@ function getSettings() {
 async function asyncForEach<T>(
   list: T[],
   condition: (item: T, index: number) => boolean | Promise<boolean>,
-  callback: (item: T, index: number) => Promise<void>
+  callback: (item: T, index: number) => Promise<void>,
 ) {
   for (let index = 0; index < list.length; index++) {
     if (await condition(list[index], index)) {

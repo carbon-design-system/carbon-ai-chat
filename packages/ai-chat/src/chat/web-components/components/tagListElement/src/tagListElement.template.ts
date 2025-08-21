@@ -44,7 +44,7 @@ function tagListElementTemplate(customElementClass: TagListElement) {
             >
               ${value}
             </cds-custom-chat-button>
-          </li>`
+          </li>`,
       )}
     </div>`}
   </div>`;

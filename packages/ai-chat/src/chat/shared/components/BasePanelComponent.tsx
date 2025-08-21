@@ -77,10 +77,10 @@ function BasePanelComponent(
     testIdPrefix,
     ...headerProps
   }: BasePanelComponentProps,
-  ref: Ref<HasRequestFocus>
+  ref: Ref<HasRequestFocus>,
 ) {
   const showRestartButton = useSelector(
-    (state: AppState) => state.config.public.headerConfig?.showRestartButton
+    (state: AppState) => state.config.public.headerConfig?.showRestartButton,
   );
   const headerRef = useRef<HasRequestFocus>();
 
@@ -109,7 +109,6 @@ function BasePanelComponent(
             displayName={title}
             useAITheme={useAITheme}
             testIdPrefix={testIdPrefix}
-            showCenter
           />
         )}
         <div className="WACPanelContent">{children}</div>
@@ -119,7 +118,7 @@ function BasePanelComponent(
 }
 
 const BasePanelComponentExport = React.memo(
-  React.forwardRef(BasePanelComponent)
+  React.forwardRef(BasePanelComponent),
 );
 
 export { BasePanelComponentExport as BasePanelComponent };

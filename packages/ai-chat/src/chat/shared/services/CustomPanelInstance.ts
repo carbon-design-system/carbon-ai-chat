@@ -19,13 +19,13 @@ import { ServiceManager } from "./ServiceManager";
  * manager is passed in instead made a private property.
  */
 function createCustomPanelInstance(
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
 ): CustomPanelInstance {
   let hostElement;
 
   const customPanelInstance: CustomPanelInstance = {
     open(
-      options: CustomPanelConfigOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
+      options: CustomPanelConfigOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
     ) {
       const { store } = serviceManager;
       store.dispatch(actions.setCustomPanelConfigOptions(options));

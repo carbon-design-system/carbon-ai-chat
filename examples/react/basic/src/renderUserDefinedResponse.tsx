@@ -14,7 +14,7 @@ import { CustomResponseExample } from "./CustomResponseExample";
 
 function renderUserDefinedResponse(
   state: RenderUserDefinedState,
-  _instance: ChatInstance
+  _instance: ChatInstance,
 ) {
   const { messageItem } = state;
   // The event here will contain details for each user defined response that needs to be rendered.

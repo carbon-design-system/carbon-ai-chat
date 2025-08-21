@@ -36,11 +36,6 @@ const workspaceDir = path.resolve(__dirname, '../');
 
 process.chdir(workspaceDir);
 
-const workerSrc = path.join(paths.src,
-  'chat/web-components/components/markdownText/markdown/workers/markdownWorker.ts');
-const workerOut = path.join(paths.dist, 'es',
-  'chat/web-components/components/markdownText/markdown/workers/markdownWorker.js');
-
 
 const external = [
   ...Object.keys(pkg.peerDependencies || []),
@@ -71,57 +66,9 @@ const parsedDtsTsConfig = parseJsonConfigFileContent(
   './', // Base directory for resolving paths
 );
 
-/**
- * This is a built step for building the markdown webworker as a different file. Not yet in use.
- */
-const workerBuild = {
-      input: workerSrc,
-      output: {
-        file: workerOut,
-        format: 'es',
-        sourcemap: false,
-        inlineDynamicImports: true,
-        banner: `/* 
- *  Copyright IBM Corp. 2025
- *  
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- */`,
-      },
-      external: [],                  
-      plugins: [
-        nodeResolve({
-          browser: true,
-          extensions: ['.js', '.ts'],
-        }),
-        commonjs({
-          include: /node_modules/,
-        }),
-        typescript({
-          tsconfig: path.join(paths.root,'tsconfig.json'),
-          compilerOptions: {
-            outDir: path.join(paths.dist, 'es'),
-            declaration: false,
-            module: 'ESNext',
-            target: 'ES2021',
-          }
-        }),
-        terser({
-          format: {
-            comments: /Copyright IBM Corp\./,
-            ascii_only: true
-          },
-          mangle: true,
-          compress: {
-            passes: 2
-          }
-        })
-      ],
-    };
-
 async function runRollup() {
   const config = [
-    // Main build with preserveModules for tree-shaking
+    // Main build
     {
       onwarn(warning, warn) {
         // Treat circular dependencies as errors
@@ -136,6 +83,9 @@ async function runRollup() {
         // Main entry - becomes es/aiChatEntry.js
         'aiChatEntry': path.join(paths.src, '/aiChatEntry.tsx'),
         
+        // Server entry without web component side effects - becomes es/serverEntry.js
+        'serverEntry': path.join(paths.src, '/serverEntry.ts'),
+        
         // Web components - becomes es/web-components/cds-aichat-container/index.js
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
         
@@ -148,25 +98,31 @@ async function runRollup() {
         preserveModules: false,
         entryFileNames: '[name].js',
         chunkFileNames: 'chat.[name].js',
+        banner: `/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */`,
       },
       external,
       treeshake,
       plugins: [
         postcss({
           extensions: ['.css', '.scss'],
-          inject: false, // Do not inject into <head>
-          modules: false, // No CSS modules
-          extract: false, // or true, if you want a separate CSS file
+          inject: false,
+          modules: false,
+          extract: false,
           sourceMap: false,
           plugins: [autoprefixer(), comments({ removeAll: true })],
-          // Pass options directly to the Sass processor:
           use: [
             [
               'sass',
               {
                 // You can add includePaths here, but often the Sass importer works well without extensive paths.
                 includePaths: [process.cwd(), path.resolve(paths.root, 'node_modules'), path.resolve(paths.root, '../../', 'node_modules')],
-                // If needed, you can also add a custom importer here.
               },
             ],
           ],
@@ -208,15 +164,8 @@ async function runRollup() {
           format: {
             beautify: true,
             indent_level: 2,
-            // keep only comments that contain @license
-            comments: (_astNode, comment) => {
-              const text = comment.value;
-              // comment.type === "comment2" for /* … */
-              if (comment.type === 'comment2') {
-                return /@license/i.test(text);
-              }
-              return false;
-            }
+            // Remove all comments - the copyright header is added via banner
+            comments: false
           }
         }),
         process.env.profile === 'true' && visualizer({ gzipSize: true, open: true }),
@@ -226,6 +175,7 @@ async function runRollup() {
     {
       input: {
         aiChatEntry: path.join(paths.src, '/aiChatEntry.tsx'),
+        serverEntry: path.join(paths.src, '/serverEntry.ts'),
       },
       output: {
         dir: path.join(paths.dist, '/types'),
