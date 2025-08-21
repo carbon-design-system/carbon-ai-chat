@@ -1135,7 +1135,7 @@ class ChatActionsImpl {
   ) {
     const { store } = this.serviceManager;
     const { theme } = store.getState();
-    const { carbonTheme, theme: aiTheme } = theme;
+    const { derivedCarbonTheme, theme: aiTheme } = theme;
 
     // If the AI theme is enabled, only a set amount of public variables should be allowed.
     if (aiTheme === ThemeType.CARBON_AI) {
@@ -1164,7 +1164,7 @@ class ChatActionsImpl {
     const allVariables = mergeCSSVariables(
       publicVars,
       whiteLabelVariables,
-      carbonTheme,
+      derivedCarbonTheme,
       aiTheme,
     );
     store.dispatch(

@@ -45,9 +45,12 @@ function Disclaimer({
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { carbonTheme, theme } = useSelector((state: AppState) => state.theme);
+  const { derivedCarbonTheme, theme } = useSelector(
+    (state: AppState) => state.theme,
+  );
   const isDarkTheme =
-    carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
+    derivedCarbonTheme === CarbonTheme.G90 ||
+    derivedCarbonTheme === CarbonTheme.G100;
   const [hasReadDisclaimer, setHasReadDisclaimer] = useState(false);
   const disclaimerContent = useRef<HTMLDivElement>();
 

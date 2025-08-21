@@ -21,6 +21,7 @@ import { HumanAgentService } from "./haa/HumanAgentService";
 import { HistoryService } from "./HistoryService";
 import MessageService from "./MessageService";
 import { NamespaceService } from "./NamespaceService";
+import { ThemeWatcherService } from "./ThemeWatcherService";
 import { UserSessionStorageService } from "./UserSessionStorageService";
 import {
   ChatInstance,
@@ -130,6 +131,11 @@ class ServiceManager {
    * This is a custom panel manager that currently only fetches 1 custom panel.
    */
   customPanelManager: CustomPanelManager;
+
+  /**
+   * Service that watches CSS variables and updates theme when CarbonTheme.INHERIT is used.
+   */
+  themeWatcherService: ThemeWatcherService;
 
   /**
    * Indicates the number of times that a restart has occurred. This can be used by various asynchronous operations to

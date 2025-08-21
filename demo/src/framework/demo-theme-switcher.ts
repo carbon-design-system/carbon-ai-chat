@@ -38,12 +38,15 @@ export class DemoThemeSwitcher extends LitElement {
 
   render() {
     return html`<cds-dropdown
-      value="${this.config?.themeConfig?.carbonTheme || CarbonTheme.G10}"
+      value="${this.config?.themeConfig?.carbonTheme || CarbonTheme.WHITE}"
       title-text="Carbon theme"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
+      <cds-dropdown-item value="white">White</cds-dropdown-item>
       <cds-dropdown-item value="g10">Light (g10)</cds-dropdown-item>
+      <cds-dropdown-item value="g90">Dark (g90)</cds-dropdown-item>
       <cds-dropdown-item value="g100">Dark (g100)</cds-dropdown-item>
+      <cds-dropdown-item value="inherit">Inherit from parent</cds-dropdown-item>
     </cds-dropdown>`;
   }
 }

@@ -15,15 +15,15 @@ import {
   FILE_UPLOADER_ITEM_SIZE,
   FILE_UPLOADER_ITEM_STATE,
 } from "@carbon/web-components/es/components/file-uploader/defs.js";
-import CarbonFileUploaderItemElement from "@carbon/web-components/es-custom/components/file-uploader/file-uploader-item.js";
+import CarbonFileUploaderItemElement from "@carbon/web-components/es/components/file-uploader/file-uploader-item.js";
 
 const FileUploaderItem = createComponent({
-  tagName: "cds-custom-file-uploader-item",
+  tagName: "cds-file-uploader-item",
   elementClass: CarbonFileUploaderItemElement,
   react: React,
   events: {
-    onBeingDeleted: "cds-custom-file-uploader-item-beingdeleted",
-    onDelete: "cds-custom-file-uploader-item-deleted",
+    onBeingDeleted: "cds-file-uploader-item-beingdeleted",
+    onDelete: "cds-file-uploader-item-deleted",
   },
 });
 

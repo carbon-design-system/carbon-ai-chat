@@ -105,7 +105,7 @@
     @include type.type-style("heading-01");
   }
 
-  cds-custom-ordered-list:not([nested]) cds-custom-list-item {
+  cds-ordered-list:not([nested]) cds-list-item {
     margin-inline-start: layout.$spacing-06;
   }
 

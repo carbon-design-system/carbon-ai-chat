@@ -11,10 +11,7 @@
 @use "@carbon/styles/scss/components/button/tokens";
 @use "@carbon/styles/scss/motion";
 
-.cds--white,
-.cds--g10,
-.cds--g90,
-.cds--g100 {
+.WACContainer--render {
   /* **************************************************************************************************************** */
 
   /* Generic variables using for common values that are repeated throughout the widget. */
@@ -54,21 +51,6 @@
 
 .WACWidget--rounded {
   --cds-chat-CONTAINER-border-radius: #{layout.$spacing-03};
-}
-
-// The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't
-// work with chat because they produce different colors between white and g10, and between g90 and g100. For now create
-// a token whose color that will be consistent for both light themes (based off the g10 color), and for both dark themes
-// (based off the g100 color). In the future carbon should create and use a new token for this background and we can
-// remove this override.
-.cds--white,
-.cds--g10 {
-  --cds-chat-TILE-background: #ffffff;
-}
-
-.cds--g90,
-.cds--g100 {
-  --cds-chat-TILE-background: #292929;
 }
 
 /* We will have to think on what this looks like if we are going to remove these CSS variables and make them SASS based. */

@@ -45,8 +45,12 @@ function doCreateStore(
 ): Store<AppState> {
   // The theme state uses a default for each property which can be overridden by the public config if specified.
   const themeState: ThemeState = {
-    carbonTheme:
-      config.public.themeConfig?.carbonTheme || DEFAULT_THEME_STATE.carbonTheme,
+    originalCarbonTheme:
+      config.public.themeConfig?.carbonTheme ||
+      DEFAULT_THEME_STATE.originalCarbonTheme,
+    derivedCarbonTheme:
+      config.public.themeConfig?.carbonTheme ||
+      DEFAULT_THEME_STATE.derivedCarbonTheme,
     theme: config.public.themeConfig?.theme || DEFAULT_THEME_STATE.theme,
     corners: getThemeCornersType(config),
     whiteLabelTheme: config.public.themeConfig?.whiteLabelTheme,
@@ -75,7 +79,7 @@ function doCreateStore(
       themeState.theme === ThemeType.WHITE_LABEL
         ? themeState.whiteLabelTheme || {}
         : {},
-      themeState.carbonTheme,
+      themeState.derivedCarbonTheme,
       themeState.theme,
     ),
     isHydrated: false,

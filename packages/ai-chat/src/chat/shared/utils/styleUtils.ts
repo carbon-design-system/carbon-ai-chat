@@ -104,6 +104,7 @@ async function remoteStylesToCSSVars(
  */
 
 const ACCENT_COLOR_MAPS: Record<CarbonTheme, { [key: string]: string[] }> = {
+  inherit: {},
   white: {
     blue20: ["$highlight"],
     blue60: [
@@ -221,7 +222,10 @@ function mergeCSSVariables(
 // Given a themeState determine which classNames should be used on the "WACContainer--render" element.
 function getThemeClassNames(themeState: ThemeState) {
   let themeClassnames: string;
-  switch (themeState?.carbonTheme) {
+
+  // Check if the original theme was INHERIT - if so, don't apply any Carbon theme classes
+  // This allows the component to inherit CSS variables from the parent page
+  switch (themeState?.originalCarbonTheme) {
     case CarbonTheme.WHITE:
       themeClassnames = CarbonThemeClassNames.WHITE;
       break;
@@ -233,6 +237,19 @@ function getThemeClassNames(themeState: ThemeState) {
       break;
     case CarbonTheme.G100:
       themeClassnames = CarbonThemeClassNames.G100;
+      break;
+    case CarbonTheme.INHERIT:
+      // INHERIT mode - don't apply theme classes, inherit from parent
+      themeClassnames = "";
+      // Apply dark theme class if derived theme is dark
+      if (
+        themeState?.derivedCarbonTheme === CarbonTheme.G90 ||
+        themeState?.derivedCarbonTheme === CarbonTheme.G100
+      ) {
+        themeClassnames += "cds-aichat--dark";
+      } else {
+        themeClassnames += "cds-aichat--light";
+      }
       break;
     default:
       themeClassnames = CarbonThemeClassNames.G10;

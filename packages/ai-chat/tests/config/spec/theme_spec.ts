@@ -18,7 +18,6 @@ import {
 import { CornersType } from "../../../src/types/config/CornersType";
 import { createBaseTestConfig } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
-import { DEFAULT_THEME_STATE } from "../../../src/chat/shared/store/reducerUtils";
 
 describe("Config Theme", () => {
   const createBaseConfig = (): PublicConfig => ({
@@ -70,7 +69,15 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme).toEqual(themeConfig);
+      expect(state.theme).toEqual({
+        originalCarbonTheme: CarbonTheme.G90,
+        derivedCarbonTheme: CarbonTheme.G90,
+        theme: ThemeType.CARBON_AI,
+        corners: CornersType.SQUARE,
+        whiteLabelTheme: {
+          quickThemeHex: "#ff0000",
+        },
+      });
     });
 
     it("should store partial themeConfig in Redux state", async () => {
@@ -105,8 +112,11 @@ describe("Config Theme", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.theme).toEqual({
-        ...DEFAULT_THEME_STATE,
-        ...themeConfig,
+        derivedCarbonTheme: "white",
+        originalCarbonTheme: "white",
+        corners: "round",
+        theme: "CarbonAI",
+        whiteLabelTheme: undefined,
       });
     });
 
@@ -144,8 +154,11 @@ describe("Config Theme", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.theme).toEqual({
-        ...DEFAULT_THEME_STATE,
-        ...themeConfig,
+        derivedCarbonTheme: "white",
+        originalCarbonTheme: "white",
+        corners: "round",
+        theme: "CarbonAI",
+        whiteLabelTheme: themeConfig.whiteLabelTheme,
       });
     });
 
@@ -176,7 +189,83 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme.theme).toEqual(ThemeType.CARBON_AI); // default value
+      expect(state.theme.theme).toEqual(ThemeType.CARBON_AI);
+      expect(state.theme.derivedCarbonTheme).toEqual(CarbonTheme.WHITE);
+      expect(state.theme.originalCarbonTheme).toEqual(CarbonTheme.WHITE);
+    });
+
+    it("should handle CarbonTheme.INHERIT property", async () => {
+      const themeConfig = {
+        carbonTheme: CarbonTheme.INHERIT,
+      };
+
+      const config: PublicConfig = {
+        ...createBaseConfig(),
+        themeConfig,
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(
+        React.createElement(ChatContainer, {
+          config,
+          onBeforeRender,
+        }),
+      );
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+      const state: AppState = store.getState();
+      expect(state.theme.derivedCarbonTheme).toEqual(CarbonTheme.INHERIT);
+      expect(state.theme.originalCarbonTheme).toEqual(CarbonTheme.INHERIT);
+    });
+
+    it("should properly set derivedCarbonTheme and originalCarbonTheme in Redux state", async () => {
+      const themeConfig = {
+        carbonTheme: CarbonTheme.G90,
+        theme: ThemeType.CARBON_AI,
+        corners: CornersType.SQUARE,
+      };
+
+      const config: PublicConfig = {
+        ...createBaseConfig(),
+        themeConfig,
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(
+        React.createElement(ChatContainer, {
+          config,
+          onBeforeRender,
+        }),
+      );
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+      const state: AppState = store.getState();
+      expect(state.theme.derivedCarbonTheme).toEqual(CarbonTheme.G90);
+      expect(state.theme.originalCarbonTheme).toEqual(CarbonTheme.G90);
+      expect(state.theme.theme).toEqual(ThemeType.CARBON_AI);
+      expect(state.theme.corners).toEqual(CornersType.SQUARE);
     });
   });
 });

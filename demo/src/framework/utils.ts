@@ -12,6 +12,7 @@ import {
   MinimizeButtonIconType,
   PublicConfig,
   ServiceDesk,
+  ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
@@ -32,8 +33,21 @@ function updateQueryParams(items: KeyPairs[]) {
   items.forEach(({ key, value }) => {
     urlParams.set(key, value);
   });
-  // Update the URL without refreshing the page
+
+  // Update the URL with a page refresh
   window.location.search = urlParams.toString();
+}
+
+function updatePageTheme(theme: string) {
+  // Get the current URL's search params
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Update only the pageTheme parameter
+  urlParams.set("pageTheme", theme);
+
+  // Update the URL without refreshing the page using History API
+  const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+  window.history.replaceState({}, "", newUrl);
 }
 
 function getSettings() {
@@ -44,6 +58,7 @@ function getSettings() {
   const config: Partial<PublicConfig> = urlParams.has("config")
     ? JSON.parse(urlParams.get("config") as string)
     : {};
+  const pageTheme = urlParams.get("pageTheme") || "cds--white";
 
   let defaultConfig: PublicConfig = {
     ...config,
@@ -51,9 +66,8 @@ function getSettings() {
       customSendMessage,
       ...config.messaging,
     },
-    serviceDeskFactory: (parameters) =>
+    serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) =>
       Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk),
-    debug: true,
   };
 
   const defaultSettings: Settings = {
@@ -154,7 +168,7 @@ function getSettings() {
       break;
   }
 
-  return { defaultConfig, defaultSettings };
+  return { defaultConfig, defaultSettings, pageTheme };
 }
 
 /**
@@ -179,4 +193,4 @@ async function asyncForEach<T>(
   }
 }
 
-export { updateQueryParams, getSettings, sleep, asyncForEach };
+export { updateQueryParams, updatePageTheme, getSettings, sleep, asyncForEach };

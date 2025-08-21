@@ -15,10 +15,7 @@
 @use "@carbon/styles/scss/theme";
 @use "../../styles/chatTheme";
 
-.cds--white,
-.cds--g10,
-.cds--g90,
-.cds--g100 {
+.WACContainer--render {
   background-color: unset;
   font-family: "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
   font-feature-settings: normal;
@@ -30,30 +27,34 @@
   text-decoration: none;
 }
 
-// TODO: These can be removed when conversational search is a web component AND we have hit 9.0 and made text response a web component
+/* The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't
+work with chat because they produce different colors between white and g10, as well as between g90 and g100. For
+now create a token whose color that will be consistent for both light themes (based off the g10 color), and also
+consistent for both dark themes (based off the g100 color). In the future carbon should create and use a new token
+for this background, that works with chat, and we can remove this override. */
+
+.cds-aichat--light,
 .cds--white,
 .cds--g10 {
-  @include meta.load-css("highlight.js/scss/a11y-light");
+  .cds--tile {
+    background-color: #ffffff;
+  }
 }
 
+.cds-aichat--dark,
 .cds--g90,
 .cds--g100 {
-  @include meta.load-css("highlight.js/scss/a11y-dark");
-
-  /* BUT we would want to keep this. */
   scrollbar-color: theme.$layer-03 theme.$layer-01;
+
+  .cds--tile {
+    background-color: #292929;
+  }
 }
 
 /* TODO, we just need a custom version of the tile component. */
 .cds--tile {
   border: solid 1px theme.$chat-bubble-border;
   border-radius: chatTheme.$CARD-border-radius;
-  /* The carbon tiles currently use the layer-01 token for the background color of the tiles. These layer tokens don't
-  work with chat because they produce different colors between white and g10, as well as between g90 and g100. For
-  now create a token whose color that will be consistent for both light themes (based off the g10 color), and also
-  consistent for both dark themes (based off the g100 color). In the future carbon should create and use a new token
-  for this background, that works with chat, and we can remove this override. */
-  background-color: var(--cds-chat-TILE-background);
 }
 
 .WACWidget__breakWord {

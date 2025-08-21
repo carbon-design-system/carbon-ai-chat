@@ -64,6 +64,15 @@ class MarkdownElement extends LitElement {
     if (changedProperties.has("markdown")) {
       this.scheduleTokenParse();
     }
+
+    // Re-render if dark mode, localization, or other rendering properties changed
+    if (
+      changedProperties.has("dark") ||
+      changedProperties.has("localization") ||
+      changedProperties.has("streaming")
+    ) {
+      this.scheduleRender();
+    }
   }
 
   @state()
@@ -105,6 +114,8 @@ class MarkdownElement extends LitElement {
     this.renderedContent = renderTokenTree(this.tokenTree, {
       sanitize: this.sanitizeHTML,
       streaming: this.streaming,
+      localization: this.localization,
+      dark: this.dark,
     });
   }, 100);
 
@@ -117,6 +128,8 @@ class MarkdownElement extends LitElement {
     this.renderedContent = renderTokenTree(this.tokenTree, {
       sanitize: this.sanitizeHTML,
       streaming: this.streaming,
+      localization: this.localization,
+      dark: this.dark,
     });
   }, 50);
 }

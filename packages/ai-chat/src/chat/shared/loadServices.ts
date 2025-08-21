@@ -14,6 +14,7 @@ import { HistoryService } from "./services/HistoryService";
 import MessageService from "./services/MessageService";
 import { NamespaceService } from "./services/NamespaceService";
 import { ServiceManager } from "./services/ServiceManager";
+import { ThemeWatcherService } from "./services/ThemeWatcherService";
 import { UserSessionStorageService } from "./services/UserSessionStorageService";
 import { doCreateStore } from "./store/doCreateStore";
 import {
@@ -66,7 +67,27 @@ async function createServiceManager(
   if (!publicConfig.disableWindowTitleChanges) {
     serviceManager.store.subscribe(createHandleWindowTitle(serviceManager));
   }
+
+  // Subscribe to theme changes to start/stop the theme watcher as needed
+  let currentOriginalTheme =
+    serviceManager.store.getState().theme.originalCarbonTheme;
+
+  serviceManager.store.subscribe(() => {
+    const newOriginalTheme =
+      serviceManager.store.getState().theme.originalCarbonTheme;
+    if (newOriginalTheme !== currentOriginalTheme) {
+      serviceManager.themeWatcherService.onThemeChange(newOriginalTheme);
+      currentOriginalTheme = newOriginalTheme;
+    }
+  });
   serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
+  serviceManager.themeWatcherService = new ThemeWatcherService(
+    serviceManager.store,
+  );
+
+  // Start theme watching if initially set to INHERIT
+  // If later we make the theme mutable, we will have to consider that here.
+  serviceManager.themeWatcherService.onThemeChange(currentOriginalTheme);
 
   setIntl(
     serviceManager,

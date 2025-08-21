@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/tag/index.js";
-import "@carbon/web-components/es-custom/components/chat-button/index.js";
+import "@carbon/web-components/es/components/tag/index.js";
+import "@carbon/web-components/es/components/chat-button/index.js";
 
 import { html } from "lit";
 
@@ -30,7 +30,7 @@ function tagListElementTemplate(customElementClass: TagListElement) {
       ${tags.map(
         (value) =>
           html`<li class="${CSS_CLASS_PREFIX}-tag-list-item}">
-            <cds-custom-chat-button
+            <cds-chat-button
               class="${CSS_CLASS_PREFIX}-tag-list-button"
               kind="primary"
               size="sm"
@@ -43,7 +43,7 @@ function tagListElementTemplate(customElementClass: TagListElement) {
               @click="${handleTagClick}"
             >
               ${value}
-            </cds-custom-chat-button>
+            </cds-chat-button>
           </li>`,
       )}
     </div>`}

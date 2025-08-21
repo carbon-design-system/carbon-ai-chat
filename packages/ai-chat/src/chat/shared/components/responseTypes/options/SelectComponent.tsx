@@ -7,7 +7,6 @@
  *  @license
  */
 
-import Layer from "../../../../react/carbon/Layer";
 import { Dropdown, DropdownItem } from "../../../../react/carbon/Dropdown";
 import cx from "classnames";
 import React, { useEffect, useRef, useState } from "react";
@@ -101,15 +100,12 @@ function SelectComponent(props: SelectProps) {
   useEffect(() => {
     setTimeout(() => {
       const listBox = rootRef.current
-        ?.querySelector("cds-custom-dropdown")
-        ?.shadowRoot?.querySelector(
-          ".cds-custom--list-box--md",
-        ) as HTMLElement | null;
+        ?.querySelector("cds-dropdown")
+        ?.shadowRoot?.querySelector(".cds--list-box--md") as HTMLElement | null;
 
       if (listBox) {
         listBox.style.blockSize = "unset";
         listBox.style.maxBlockSize = "unset";
-        console.log(listBox);
       }
     });
   }, []);
@@ -129,29 +125,25 @@ function SelectComponent(props: SelectProps) {
           WAC__customSelectTemporaryPadding: isBeingOpened,
         })}
       >
-        <Layer level={1}>
-          <Dropdown
-            id={`WAC__selectUUID_${id}`}
-            label={languagePack.options_select}
-            title-text={languagePack.options_select}
-            hideLabel
-            aria-label={
-              disableUserInputs
-                ? languagePack.options_ariaOptionsDisabled
-                : title
-            }
-            disabled={disableUserInputs}
-            onToggled={handleToggle}
-            onKeyDown={handleKeyDown}
-            onBeingSelected={handleBeingSelected}
-          >
-            {options.map((option) => (
-              <DropdownItem value={option.label} key={option.label}>
-                {option.value.input.text}
-              </DropdownItem>
-            ))}
-          </Dropdown>
-        </Layer>
+        <Dropdown
+          id={`WAC__selectUUID_${id}`}
+          label={languagePack.options_select}
+          title-text={languagePack.options_select}
+          hideLabel
+          aria-label={
+            disableUserInputs ? languagePack.options_ariaOptionsDisabled : title
+          }
+          disabled={disableUserInputs}
+          onToggled={handleToggle}
+          onKeyDown={handleKeyDown}
+          onBeingSelected={handleBeingSelected}
+        >
+          {options.map((option) => (
+            <DropdownItem value={option.label} key={option.label}>
+              {option.value.input.text}
+            </DropdownItem>
+          ))}
+        </Dropdown>
       </div>
     </div>
   );

@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonLinkElement from "@carbon/web-components/es-custom/components/link/link.js";
+import CarbonLinkElement from "@carbon/web-components/es/components/link/link.js";
 
 const Link = createComponent({
-  tagName: "cds-custom-link",
+  tagName: "cds-link",
   elementClass: CarbonLinkElement,
   react: React,
 });

@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonAISkeletonPlaceholder from "@carbon/web-components/es-custom/components/ai-skeleton/ai-skeleton-placeholder.js";
+import CarbonAISkeletonPlaceholder from "@carbon/web-components/es/components/ai-skeleton/ai-skeleton-placeholder.js";
 
 const AISkeletonPlaceholder = createComponent({
-  tagName: "cds-custom-ai-skeleton-placeholder",
+  tagName: "cds-ai-skeleton-placeholder",
   elementClass: CarbonAISkeletonPlaceholder,
   react: React,
 });

@@ -8,7 +8,7 @@
  */
 
 import "../../markdownText/cds-aichat-markdown-text";
-import "@carbon/web-components/es-custom/components/inline-loading/index.js";
+import "@carbon/web-components/es/components/inline-loading/index.js";
 
 import { toString } from "@carbon/icon-helpers";
 import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
@@ -58,10 +58,10 @@ function stepStatus(
 ) {
   switch (status) {
     case ChainOfThoughtStepStatus.PROCESSING:
-      return html`<cds-custom-inline-loading
+      return html`<cds-inline-loading
         status="active"
         aria-label="${statusProcessingLabelText}"
-      ></cds-custom-inline-loading>`;
+      ></cds-inline-loading>`;
     case ChainOfThoughtStepStatus.FAILURE:
       return html`<span
         class="${CSS_CLASS_STATUS_PREFIX}--${ChainOfThoughtStepStatus.FAILURE}"

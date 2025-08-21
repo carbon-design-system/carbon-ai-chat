@@ -19,6 +19,7 @@ import {
   InputState,
   PersistedChatState,
   PersistedLauncherState,
+  ThemeState,
   ViewState,
 } from "../../../types/state/AppState";
 import {
@@ -121,6 +122,7 @@ const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
 const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
 const UPDATE_MAIN_HEADER_AVATAR = "UPDATE_MAIN_HEADER_AVATAR";
+const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
 
 /**
  * We had to downgrade to Redux 4 to beable to support AI chat users on React 17.
@@ -654,6 +656,9 @@ const actions = {
   updateMainHeaderAvatar(config: ChatHeaderAvatarConfig) {
     return { type: UPDATE_MAIN_HEADER_AVATAR, config };
   },
+  updateThemeState(themeState: ThemeState) {
+    return { type: UPDATE_THEME_STATE, themeState };
+  },
 };
 
 export default actions;
@@ -722,5 +727,6 @@ export {
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STREAM_ID,
   UPDATE_MAIN_HEADER_AVATAR,
+  UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
 };

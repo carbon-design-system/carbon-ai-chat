@@ -295,8 +295,6 @@ svg.WAC__sent-fileIcon {
   border: solid 1px theme.$chat-bubble-user;
   border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
   background: theme.$chat-bubble-user;
-  /* TODO: these needs a real carbon token. */
-  color: var(--cds-chat-SECONDARY-color-text);
   @include type.type-style("body-01");
 }
 

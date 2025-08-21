@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/textarea/index.js";
-import "@carbon/web-components/es-custom/components/icon-button/index.js";
+import "@carbon/web-components/es/components/textarea/index.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
 
 import { toString } from "@carbon/icon-helpers";
 import ThumbsDown16 from "@carbon/icons/es/thumbs-down/16.js";
@@ -46,7 +46,7 @@ function feedbackButtonsElementTemplate(
   } = customElementClass;
 
   return html`<div class="${CSS_CLASS_PREFIX}-feedback-buttons">
-    <cds-custom-icon-button
+    <cds-icon-button
       class="${CSS_CLASS_PREFIX}-feedback-buttons-positive"
       size="sm"
       align="top-left"
@@ -68,8 +68,8 @@ function feedbackButtonsElementTemplate(
       <span slot="tooltip-content"
         >${positiveLabel || enLanguagePack.feedback_positiveLabel}</span
       >
-    </cds-custom-icon-button>
-    <cds-custom-icon-button
+    </cds-icon-button>
+    <cds-icon-button
       class="${CSS_CLASS_PREFIX}-feedback-buttons-negative"
       size="sm"
       align="top-left"
@@ -91,7 +91,7 @@ function feedbackButtonsElementTemplate(
       <span slot="tooltip-content"
         >${negativeLabel || enLanguagePack.feedback_negativeLabel}</span
       >
-    </cds-custom-icon-button>
+    </cds-icon-button>
   </div>`;
 }
 

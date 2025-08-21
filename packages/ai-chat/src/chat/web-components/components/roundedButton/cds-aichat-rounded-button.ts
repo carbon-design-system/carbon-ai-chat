@@ -7,7 +7,7 @@
  *  @license
  */
 
-import CDSButton from "@carbon/web-components/es-custom/components/button/button.js";
+import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { css, unsafeCSS } from "lit";
 
 import { carbonElement } from "../../decorators/customElement";
@@ -15,7 +15,7 @@ import { carbonElement } from "../../decorators/customElement";
 const ROUNDED_BUTTON_TAG_NAME = `cds-aichat-rounded-button`;
 
 const styles = `
-  .cds-custom--btn {
+  .cds--btn {
     border-start-start-radius: var(--${ROUNDED_BUTTON_TAG_NAME}-top-left);
     border-start-end-radius: var(--${ROUNDED_BUTTON_TAG_NAME}-top-right);
     border-end-start-radius: var(--${ROUNDED_BUTTON_TAG_NAME}-bottom-left);

@@ -17,7 +17,6 @@ import { AppState } from "../../../../../types/state/AppState";
 import { consoleError } from "../../../utils/miscUtils";
 import InlineError from "../error/InlineError";
 import { TableItem } from "../../../../../types/messaging/Messages";
-import { CarbonTheme } from "../../../../../types/config/PublicConfig";
 
 interface TableContainerProps {
   /**
@@ -34,15 +33,9 @@ function TableContainer(props: TableContainerProps) {
   const { title, description, headers, rows } = tableItem;
 
   const locale = useSelector((state: AppState) => state.locale);
-  const config = useSelector((state: AppState) => state.config.public);
-  const { carbonTheme } = config.themeConfig;
 
   const languagePack = useLanguagePack();
   const intl = useIntl();
-
-  // Determine if dark theme should be used based on carbonTheme
-  const isDarkTheme =
-    carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
 
   const isValidTable = useMemo(() => {
     const columnCount = headers.length;
@@ -96,7 +89,6 @@ function TableContainer(props: TableContainerProps) {
             getPaginationSupplementalText={getTablePaginationSupplementalText}
             getPaginationStatusText={getTablePaginationStatusText}
             locale={locale}
-            dark={isDarkTheme}
           />
         </Suspense>
       </div>

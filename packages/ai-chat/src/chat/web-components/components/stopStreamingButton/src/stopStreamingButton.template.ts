@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/icon-button/index.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
 
 import { toString } from "@carbon/icon-helpers";
 import StopFilled16 from "@carbon/icons/es/stop--filled/16.js";
@@ -30,7 +30,7 @@ export function stopStreamingButtonTemplate({
   onClick,
 }: StopStreamingButtonElement) {
   return html`
-    <cds-custom-icon-button
+    <cds-icon-button
       class="${CSS_CLASS_PREFIX}-stop-streaming-button"
       align="${tooltipAlignment}"
       kind="${ButtonKindEnum.GHOST}"
@@ -44,6 +44,6 @@ export function stopStreamingButtonTemplate({
         >${unsafeSVG(StopFilled16svg)}</span
       >
       <span slot="tooltip-content">${label}</span>
-    </cds-custom-icon-button>
+    </cds-icon-button>
   `;
 }
