@@ -205,6 +205,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
             close-on-select="true"
             date-format={flatpickrFormat}
             onFocus={handleOpen}
+            onClick={handleOpen}
             onChange={(e: CustomEvent) => {
               const dates = e.detail.selectedDates;
               if (dates.length) {
