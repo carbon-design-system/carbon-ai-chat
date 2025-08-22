@@ -53,7 +53,7 @@ import MessageComponent, {
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
-import { Button } from "@carbon/react";
+import { ArrowDown } from "@carbon/icons-react";
 
 const DEBUG_AUTO_SCROLL = false;
 
@@ -1001,7 +1001,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             {this.renderScrollHandle(false)}
             {unreadMessages && (
               <div className="WAC__messages--unreadMessagesIndicator">
-                <Button size="sm"> Unread messages </Button>
+                <div className="WAC__messages--unreadMessagesIndicatorIcon"><ArrowDown /></div>
               </div>
             )}
           </div>

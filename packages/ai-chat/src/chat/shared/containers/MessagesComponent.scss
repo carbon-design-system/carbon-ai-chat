@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities";
+@use "../../styles/chatTheme";
 
 .WACMessages--holder {
   display: flex;
@@ -63,4 +64,14 @@
   inline-size: 100%;
   inset-block-end: 30px;
   text-align: center;
+  justify-content: center;
+}
+
+.WAC__messages--unreadMessagesIndicatorIcon {
+  background-color: theme.$layer-01;
+  padding: 7px 5px 5px 5px;
+  border-radius: 50%;
+  margin: 0 auto;
+  inline-size: 32px;
+  box-shadow: chatTheme.$AI-box-shadow-outer;
 }
