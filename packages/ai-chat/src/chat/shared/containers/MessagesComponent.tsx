@@ -1001,7 +1001,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             {this.renderScrollHandle(false)}
             {unreadMessages && (
               <div className="WAC__messages--unreadMessagesIndicator">
-                <div className="WAC__messages--unreadMessagesIndicatorIcon"><ArrowDown /></div>
+                <div className="WAC__messages--unreadMessagesIndicatorIcon">
+                  <ArrowDown />
+                </div>
               </div>
             )}
           </div>
