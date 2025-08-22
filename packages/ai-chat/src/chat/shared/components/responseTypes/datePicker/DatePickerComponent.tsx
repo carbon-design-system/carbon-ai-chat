@@ -69,7 +69,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const intl = useIntl();
   const webChatLocale = useSelector((state: AppState) => state.locale);
   const originalMessage = useSelector(
-    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID]
+    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID],
   ) as MessageResponse;
   const uuidRef = useRef(uuid(UUIDType.MISCELLANEOUS));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -83,13 +83,13 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const valueForAssistantRef = useRef<string>();
   const inputLabel = intl.formatMessage(
     { id: "datePicker_chooseDate" },
-    { format: userDisplayFormat }
+    { format: userDisplayFormat },
   );
   const confirmButtonLabel = intl.formatMessage({
     id: "datePicker_confirmDate",
   });
   const isDateInfoReady = Boolean(
-    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale
+    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale,
   );
 
   /**
@@ -118,7 +118,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     const request = createMessageRequestForDate(
       valueForAssistantRef.current,
       userDisplayValue,
-      responseID
+      responseID,
     );
 
     serviceManager.actions.sendWithCatch(
@@ -126,7 +126,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       MessageSendSource.DATE_PICKER,
       {
         setValueSelectedForMessageID: localMessageID,
-      }
+      },
     );
   }, [localMessage, serviceManager, userDisplayValue]);
 
@@ -140,10 +140,10 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     }
 
     const container = root.querySelector(
-      "#floating-menu-container"
+      "#floating-menu-container",
     ) as HTMLElement | null;
     const calendar = container?.querySelector(
-      ".cds--date-picker__calendar"
+      ".cds--date-picker__calendar",
     ) as HTMLElement | null;
 
     calendar && (calendar.style.position = "unset");
@@ -184,7 +184,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       }
     } catch {
       consoleError(
-        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`
+        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`,
       );
       setDateInfoForLocale("en");
     }
