@@ -119,7 +119,7 @@ interface MessagesState {
   /**
    * Indicates if there are messages below where the scroll bar currently is set.
    */
-  unreadMessages: boolean;
+  scrollDown: boolean;
 }
 
 class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
@@ -128,7 +128,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public readonly state: Readonly<MessagesState> = {
     scrollHandleHasFocus: false,
-    unreadMessages: false,
+    scrollDown: false,
   };
 
   /**
@@ -263,7 +263,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * when the window is resized.
    */
   public onResize = () => {
-    this.renderUnreadMessagesNotification();
+    this.renderscrollDownNotification();
     if (this.props.messageState.isScrollAnchored) {
       const element = this.messagesContainerWithScrollingRef.current;
       if (element) {
@@ -360,7 +360,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
 
           if (isResponse(message)) {
-            this.renderUnreadMessagesNotification();
+            this.renderscrollDownNotification();
             // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
             // then we should return false
             if (message?.history?.silent) {
@@ -564,11 +564,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Updates the state after checking if there are any unread messages in the chat view
    */
-  public renderUnreadMessagesNotification() {
+  public renderscrollDownNotification() {
     const shouldRender = this.checkMessagesOutOfView();
     this.setState({
       scrollHandleHasFocus: false,
-      unreadMessages: shouldRender,
+      scrollDown: shouldRender,
     });
   }
 
@@ -950,7 +950,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
     const { isLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { scrollHandleHasFocus, unreadMessages } = this.state;
+    const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = this.getMessageIDForUserInput();
 
@@ -984,7 +984,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             ref={this.messagesContainerWithScrollingRef}
             onScroll={() => {
               this.checkScrollAnchor();
-              this.renderUnreadMessagesNotification();
+              this.renderscrollDownNotification();
             }}
           >
             {this.renderScrollHandle(true)}
@@ -999,9 +999,15 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
-            {unreadMessages && (
-              <div className="WAC__messages--unreadMessagesIndicator">
-                <div className="WAC__messages--unreadMessagesIndicatorIcon">
+            {scrollDown && (
+              <div
+                role="button"
+                tabIndex={0}
+                className="WAC__messages--scrollDownIndicator"
+                onClick={() => this.doAutoScroll({ scrollToBottom: 0 })}
+                onKeyDown={() => this.doAutoScroll({ scrollToBottom: 0 })}
+              >
+                <div className="WAC__messages--scrollDownIndicatorIcon">
                   <ArrowDown />
                 </div>
               </div>

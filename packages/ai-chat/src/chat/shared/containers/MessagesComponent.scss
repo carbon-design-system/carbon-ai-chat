@@ -58,7 +58,7 @@
   inline-size: 100%;
 }
 
-.WAC__messages--unreadMessagesIndicator {
+.WAC__messages--scrollDownIndicator {
   position: absolute;
   z-index: 1;
   justify-content: center;
@@ -67,7 +67,7 @@
   text-align: center;
 }
 
-.WAC__messages--unreadMessagesIndicatorIcon {
+.WAC__messages--scrollDownIndicatorIcon {
   padding: 7px 5px 5px;
   border-radius: 50%;
   margin: 0 auto;
