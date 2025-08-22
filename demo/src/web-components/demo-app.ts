@@ -308,7 +308,7 @@ export class DemoApp extends LitElement {
       default:
         // We are just going to always return a skeleton here, but you can give yourself more fine grained control.
         return html`<div slot=${slot}>
-          <cds-custom-ai-skeleton-text></cds-custom-ai-skeleton-text>
+          <cds-ai-skeleton-text></cds-ai-skeleton-text>
         </div>`;
     }
   }

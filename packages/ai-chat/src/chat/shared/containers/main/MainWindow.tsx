@@ -72,7 +72,8 @@ import HomeScreenContainer from "../../components/homeScreen/HomeScreenContainer
 import IFramePanel from "../../components/responseTypes/iframe/IFramePanel";
 import ViewSourcePanel from "../../components/responseTypes/util/citations/ViewSourcePanel";
 import BodyAndFooterPanelComponent from "../../components/panels/BodyAndFooterPanelComponent";
-import { ThemeType } from "../../../../types/config/PublicConfig";
+import { CarbonTheme, ThemeType } from "../../../../types/config/PublicConfig";
+import Layer from "../../../react/carbon/Layer";
 
 // Indicates the messages container is at the standard, default width.
 const WIDTH_BREAKPOINT_STANDARD = "WAC--standardWidth";
@@ -900,7 +901,7 @@ class MainWindow
           onUserTyping={this.onUserTyping}
           locale={locale}
           useAITheme={theme.theme === ThemeType.CARBON_AI}
-          carbonTheme={theme.carbonTheme}
+          carbonTheme={theme.derivedCarbonTheme}
         />
       </HideComponent>
     );
@@ -1202,6 +1203,10 @@ class MainWindow
     const { closing, open, extraClassNames } = this.state;
     const localeClassName = `WACLocale-${locale || "en"}`;
 
+    const shouldUseLayer =
+      theme.derivedCarbonTheme === CarbonTheme.G10 ||
+      theme.derivedCarbonTheme === CarbonTheme.G100;
+
     const showGlass =
       config.public.enableFocusTrap &&
       open &&
@@ -1215,58 +1220,60 @@ class MainWindow
     /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
     return (
       <FocusTrap active={trapActive}>
-        <div
-          className={cx(
-            "WACMainWindow",
-            "WACWidget__FocusTrapContainer",
-            ...extraClassNames,
-          )}
-          ref={this.mainWindowRef}
-        >
-          {showGlass && <div className="WACWidget__FocusTrapGlass" />}
+        <Layer level={shouldUseLayer ? 1 : 0}>
           <div
-            id={`WACWidget${serviceManager.namespace.suffix}`}
-            className={cx(`WACWidget ${localeClassName}`, {
-              "WACWidget--rounded": theme.corners === CornersType.ROUND,
-              "WACWidget--defaultElement": !useCustomHostElement,
-              "WACWidget--launched": !closing,
-              "WACWidget--closing": closing,
-              "WACWidget--closed": !open,
-              "WACWidget--maxWidth": isWideWidth && layout.hasContentMaxWidth,
-              [WIDTH_BREAKPOINT_NARROW]:
-                chatWidthBreakpoint === ChatWidthBreakpoint.NARROW,
-              [WIDTH_BREAKPOINT_STANDARD]:
-                chatWidthBreakpoint === ChatWidthBreakpoint.STANDARD,
-              [WIDTH_BREAKPOINT_WIDE]: isWideWidth,
-            })}
-            ref={this.containerRef}
-          >
-            <VisuallyHidden>
-              <h1>{languagePack.window_title}</h1>
-            </VisuallyHidden>
-            {catastrophicErrorType && this.renderCatastrophicPanel()}
-            {!catastrophicErrorType && (
-              <div
-                ref={this.animationContainerRef}
-                className="WACWidget__animationContainer"
-                onScroll={() => {
-                  // When Carbon AI Chat initially opens, it's possible for focusable elements inside a custom panel to
-                  // cause the element to scroll during the opening animations. The listener to reset any
-                  // scrolling that is happening.
-                  if (this.animationContainerRef.current.scrollTop !== 0) {
-                    this.animationContainerRef.current.scrollTop = 0;
-                  }
-                }}
-              >
-                {this.renderChat()}
-              </div>
+            className={cx(
+              "WACMainWindow",
+              "WACWidget__FocusTrapContainer",
+              ...extraClassNames,
             )}
+            ref={this.mainWindowRef}
+          >
+            {showGlass && <div className="WACWidget__FocusTrapGlass" />}
             <div
-              className="WACMainWindowModalHost"
-              ref={this.setModalPortalHostElement}
-            />
+              id={`WACWidget${serviceManager.namespace.suffix}`}
+              className={cx(`WACWidget ${localeClassName}`, {
+                "WACWidget--rounded": theme.corners === CornersType.ROUND,
+                "WACWidget--defaultElement": !useCustomHostElement,
+                "WACWidget--launched": !closing,
+                "WACWidget--closing": closing,
+                "WACWidget--closed": !open,
+                "WACWidget--maxWidth": isWideWidth && layout.hasContentMaxWidth,
+                [WIDTH_BREAKPOINT_NARROW]:
+                  chatWidthBreakpoint === ChatWidthBreakpoint.NARROW,
+                [WIDTH_BREAKPOINT_STANDARD]:
+                  chatWidthBreakpoint === ChatWidthBreakpoint.STANDARD,
+                [WIDTH_BREAKPOINT_WIDE]: isWideWidth,
+              })}
+              ref={this.containerRef}
+            >
+              <VisuallyHidden>
+                <h1>{languagePack.window_title}</h1>
+              </VisuallyHidden>
+              {catastrophicErrorType && this.renderCatastrophicPanel()}
+              {!catastrophicErrorType && (
+                <div
+                  ref={this.animationContainerRef}
+                  className="WACWidget__animationContainer"
+                  onScroll={() => {
+                    // When Carbon AI Chat initially opens, it's possible for focusable elements inside a custom panel to
+                    // cause the element to scroll during the opening animations. The listener to reset any
+                    // scrolling that is happening.
+                    if (this.animationContainerRef.current.scrollTop !== 0) {
+                      this.animationContainerRef.current.scrollTop = 0;
+                    }
+                  }}
+                >
+                  {this.renderChat()}
+                </div>
+              )}
+              <div
+                className="WACMainWindowModalHost"
+                ref={this.setModalPortalHostElement}
+              />
+            </div>
           </div>
-        </div>
+        </Layer>
       </FocusTrap>
     );
   }

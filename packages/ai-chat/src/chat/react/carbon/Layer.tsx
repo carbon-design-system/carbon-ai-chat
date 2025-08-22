@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonLayerElement from "@carbon/web-components/es-custom/components/layer/layer.js";
+import CarbonLayerElement from "@carbon/web-components/es/components/layer/layer.js";
 
 const Layer = createComponent({
-  tagName: "cds-custom-layer",
+  tagName: "cds-layer",
   elementClass: CarbonLayerElement,
   react: React,
 });

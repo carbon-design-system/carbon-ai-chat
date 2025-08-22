@@ -112,12 +112,6 @@ class TableElement extends LitElement {
   locale: string;
 
   /**
-   * Whether to use dark theme (g90) or light theme (white).
-   */
-  @property({ type: Boolean })
-  dark = false;
-
-  /**
    * The calculated default page size based on component width.
    * 10 for width > PAGE_SIZE_WIDTH_THRESHOLD, 5 for width <= PAGE_SIZE_WIDTH_THRESHOLD.
    */
@@ -481,10 +475,10 @@ class TableElement extends LitElement {
     // Set the current page number and only show the rows for that page.
     this._currentPageNumber = page;
 
-    // Grab all the rows that have been rendered. It's necessary to grab them from the page because the cds-custom-table puts
+    // Grab all the rows that have been rendered. It's necessary to grab them from the page because the cds-table puts
     // the rows in a specific order when sorting and we want to preserve that order.
     const rows: HTMLElement[] = Array.from(
-      this.renderRoot.querySelectorAll("cds-custom-table-row"),
+      this.renderRoot.querySelectorAll("cds-table-row"),
     );
 
     // This is similar to the carbon example here https://stackblitz.com/edit/github-kbd9xw-s3y3s6?file=index.html. I
@@ -580,9 +574,6 @@ class TableElement extends LitElement {
     // TODO TABLE: Once we have a web component version of the inline error state we could render that here if
     // !this._isValid.
 
-    // Apply appropriate Carbon theme class based on dark property
-    const themeClass = this.dark ? "cds--g90" : "cds--white";
-
     // This could be used while we wait for a md stream containing a table to complete.
     if (this.loading) {
       return tableSkeletonTemplate(this._currentPageSize);
@@ -592,7 +583,7 @@ class TableElement extends LitElement {
     // been changed by the pagination component then we need to keep the pagination component around so the user can
     // change the page size again, even if the current page size is the same as the number of table rows.
     if (this.rows.length > this._currentPageSize || this._rowsPerPageChanged) {
-      return html`<div class="cds-ai-chat-table-container ${themeClass}">
+      return html`<div class="cds-ai-chat-table-container">
         ${tableTemplate(this)}
         ${tablePaginationTemplate({
           _currentPageSize: this._currentPageSize,
@@ -611,7 +602,7 @@ class TableElement extends LitElement {
     }
 
     // Otherwise, just render the table.
-    return html`<div class="cds-ai-chat-table-container ${themeClass}">
+    return html`<div class="cds-ai-chat-table-container">
       ${tableTemplate(this)}
     </div>`;
   }

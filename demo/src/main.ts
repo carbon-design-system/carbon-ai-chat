@@ -10,12 +10,14 @@
 import "@carbon/web-components/es/components/ui-shell/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
+import "@carbon/web-components/es/components/accordion/index.js";
 import "./framework/demo-body";
 import "./framework/demo-header";
 import "./framework/demo-version-switcher";
 import "./framework/demo-layout-switcher";
 import "./framework/demo-homescreen-switcher";
 import "./framework/demo-theme-switcher";
+import "./framework/demo-page-theme-switcher";
 import "./framework/demo-side-bar-nav";
 import "./framework/demo-writeable-elements-switcher";
 import "./web-components/demo-app";

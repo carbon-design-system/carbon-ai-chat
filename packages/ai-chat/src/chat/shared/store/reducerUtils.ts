@@ -193,7 +193,8 @@ const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
 deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_THEME_STATE: ThemeState = {
-  carbonTheme: CarbonTheme.G10,
+  derivedCarbonTheme: CarbonTheme.WHITE,
+  originalCarbonTheme: CarbonTheme.WHITE,
   theme: ThemeType.CARBON_AI,
   corners: CornersType.ROUND,
 };

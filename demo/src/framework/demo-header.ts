@@ -19,7 +19,7 @@ export class DemoHeader extends LitElement {
     return html`
       <cds-header aria-label="Carbon AI Chat">
         <cds-header-name
-          href="https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html"
+          href="https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html"
           prefix="Carbon"
           >AI chat</cds-header-name
         >

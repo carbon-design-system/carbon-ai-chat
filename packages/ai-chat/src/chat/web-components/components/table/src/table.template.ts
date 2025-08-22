@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/data-table/index.js";
-import "@carbon/web-components/es-custom/components/checkbox/index.js";
-import "@carbon/web-components/es-custom/components/button/index.js";
-import "@carbon/web-components/es-custom/components/layer/index.js";
+import "@carbon/web-components/es/components/data-table/index.js";
+import "@carbon/web-components/es/components/checkbox/index.js";
+import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/layer/index.js";
 
 import { toString } from "@carbon/icon-helpers";
 import Download16 from "@carbon/icons/es/download/16.js";
@@ -45,48 +45,45 @@ function tableTemplate(tableElement: TableElement) {
   } = tableElement;
 
   function toolbarElement() {
-    return html`<cds-custom-table-toolbar slot="toolbar">
-      <cds-custom-table-toolbar-content>
+    return html`<cds-table-toolbar slot="toolbar">
+      <cds-table-toolbar-content>
         ${allowTableFiltering
-          ? html`<cds-custom-table-toolbar-search
+          ? html`<cds-table-toolbar-search
               persistent
               placeholder=${filterPlaceholderText}
-            ></cds-custom-table-toolbar-search>`
+            ></cds-table-toolbar-search>`
           : ""}
-        <cds-custom-button @click=${handleDownload}
-          >${unsafeSVG(Download16svg)}</cds-custom-button
+        <cds-button @click=${handleDownload}
+          >${unsafeSVG(Download16svg)}</cds-button
         >
-      </cds-custom-table-toolbar-content>
-    </cds-custom-table-toolbar>`;
+      </cds-table-toolbar-content>
+    </cds-table-toolbar>`;
   }
 
   function headersElement() {
-    return html`<cds-custom-table-head>
-      <cds-custom-table-header-row>
+    return html`<cds-table-head>
+      <cds-table-header-row>
         ${headers.map(
           (header) =>
-            html`<cds-custom-table-header-cell
-              >${header}</cds-custom-table-header-cell
-            >`,
+            html`<cds-table-header-cell>${header}</cds-table-header-cell>`,
         )}
-      </cds-custom-table-header-row>
-    </cds-custom-table-head>`;
+      </cds-table-header-row>
+    </cds-table-head>`;
   }
 
   function rowsElement() {
-    return html`<cds-custom-table-body>
+    return html`<cds-table-body>
       ${repeat(
         tableRowsWithIDs,
         (row) => row.id,
         (row) =>
-          html`<cds-custom-table-row id=${row.id}
+          html`<cds-table-row id=${row.id}
             >${row.cells.map(
-              (cell) =>
-                html`<cds-custom-table-cell>${cell}</cds-custom-table-cell>`,
-            )}</cds-custom-table-row
+              (cell) => html`<cds-table-cell>${cell}</cds-table-cell>`,
+            )}</cds-table-row
           >`,
       )}
-    </cds-custom-table-body>`;
+    </cds-table-body>`;
   }
 
   // TODO TABLE: There is a bug with size="sm" and is-sortable that prevents the header row from being the same size as
@@ -94,25 +91,23 @@ function tableTemplate(tableElement: TableElement) {
   // bug is fixed.
 
   // Enable sorting if filtering is enabled.
-  return html`<cds-custom-layer level="1"
-    ><cds-custom-table
-      size="md"
-      locale=${locale}
-      .isSortable=${allowTableFiltering}
-      .useZebraStyles=${true}
-      @cds-custom-table-filtered=${handleFilterEvent}
-    >
-      ${tableTitle &&
-      html`<cds-custom-table-header-title slot="title"
-        >${tableTitle}</cds-custom-table-header-title
-      >`}
-      ${tableDescription &&
-      html`<cds-custom-table-header-description slot="description"
-        >${tableDescription}</cds-custom-table-header-description
-      >`}
-      ${toolbarElement()} ${headersElement()} ${rowsElement()}
-    </cds-custom-table></cds-custom-layer
-  >`;
+  return html`<cds-table
+    size="md"
+    locale=${locale}
+    .isSortable=${allowTableFiltering}
+    .useZebraStyles=${true}
+    @cds-table-filtered=${handleFilterEvent}
+  >
+    ${tableTitle &&
+    html`<cds-table-header-title slot="title"
+      >${tableTitle}</cds-table-header-title
+    >`}
+    ${tableDescription &&
+    html`<cds-table-header-description slot="description"
+      >${tableDescription}</cds-table-header-description
+    >`}
+    ${toolbarElement()} ${headersElement()} ${rowsElement()}
+  </cds-table>`;
 }
 
 export { tableTemplate };

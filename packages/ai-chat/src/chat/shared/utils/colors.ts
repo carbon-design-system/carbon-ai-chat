@@ -19,6 +19,45 @@ import { consoleError } from "./miscUtils";
 const MIN_CONTRAST = 4.5;
 
 /**
+ * Converts the given color string into an array with the red, green and blue components
+ * separated. Supports hex codes, rgb(), rgba(), hsl(), and hsla() formats.
+ */
+function colorToRGB(color: string): [number, number, number] {
+  const trimmedColor = color.trim().toLowerCase();
+
+  // Handle hex colors
+  if (trimmedColor.startsWith("#")) {
+    return hexCodeToRGB(trimmedColor);
+  }
+
+  // Handle rgb/rgba colors
+  const rgbMatch = trimmedColor.match(
+    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+)?\s*\)/,
+  );
+  if (rgbMatch) {
+    return [
+      parseInt(rgbMatch[1], 10),
+      parseInt(rgbMatch[2], 10),
+      parseInt(rgbMatch[3], 10),
+    ];
+  }
+
+  // Handle hsl/hsla colors - convert to RGB
+  const hslMatch = trimmedColor.match(
+    /hsla?\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*[\d.]+)?\s*\)/,
+  );
+  if (hslMatch) {
+    const h = parseInt(hslMatch[1], 10) / 360;
+    const s = parseInt(hslMatch[2], 10) / 100;
+    const l = parseInt(hslMatch[3], 10) / 100;
+    return hslToRgb(h, s, l);
+  }
+
+  consoleError(`Unsupported color format: "${color}"`);
+  return [0, 0, 0];
+}
+
+/**
  * Converts the given hexadecimal formatted color string into an array with the red, blue and green components
  * separated. This function requires the string to be either a 3 or 6 digit hexadecimal code with a leading hash
  * mark. It does not validate that the string is in the proper format.
@@ -45,14 +84,52 @@ function hexCodeToRGB(color: string): [number, number, number] {
 }
 
 /**
+ * Converts HSL to RGB values.
+ */
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  let r, g, b;
+
+  if (s === 0) {
+    r = g = b = l; // achromatic
+  } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) {
+        t += 1;
+      }
+      if (t > 1) {
+        t -= 1;
+      }
+      if (t < 1 / 6) {
+        return p + (q - p) * 6 * t;
+      }
+      if (t < 1 / 2) {
+        return q;
+      }
+      if (t < 2 / 3) {
+        return p + (q - p) * (2 / 3 - t) * 6;
+      }
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+/**
  * Calculates the contrast ratio between the two colors. Contrast values can range from 1 to 21. A value of 4.5 is
  * considered the minimum between a foreground and background color to meet accessibility guidelines.
  *
  * @see https://www.w3.org/TR/WCAG20/#contrast-ratiodef
  */
 function calculateContrast(color1: string, color2: string) {
-  const rgb1 = hexCodeToRGB(color1);
-  const rgb2 = hexCodeToRGB(color2);
+  const rgb1 = colorToRGB(color1);
+  const rgb2 = colorToRGB(color2);
 
   const luminance1 = calculateRelativeLuminance(rgb1);
   const luminance2 = calculateRelativeLuminance(rgb2);
@@ -113,4 +190,68 @@ async function adjustLightness(token: string, shift: number) {
     .toLowerCase();
 }
 
-export { adjustLightness, whiteOrBlackText };
+/**
+ * Checks if a color (from a CSS variable or hex string) is lighter than the specified threshold.
+ * Returns true if the color has lightness greater than the threshold percentage.
+ */
+function isColorLighterThan(color: string, thresholdPercent = 50): boolean {
+  try {
+    let colorValue = color.trim();
+
+    // If it's a CSS variable, try to get the computed value
+    if (colorValue.startsWith("var(")) {
+      const computedStyle = getComputedStyle(document.documentElement);
+      const variableName = colorValue.match(/var\(([^)]+)\)/)?.[1];
+      if (variableName) {
+        colorValue = computedStyle.getPropertyValue(variableName).trim();
+      }
+    }
+
+    // If we still don't have a valid color, return false
+    if (
+      !colorValue ||
+      colorValue === "" ||
+      colorValue === "var(--cds-chat-shell-background)"
+    ) {
+      return false;
+    }
+
+    // Convert to RGB and calculate relative luminance
+    const rgb = colorToRGB(colorValue);
+    const luminance = calculateRelativeLuminance(rgb);
+
+    // Convert luminance to lightness percentage (approximate)
+    // Lightness in HSL is roughly related to luminance but not exactly the same
+    // This is a simplified approximation
+    const lightnessPercent = Math.sqrt(luminance) * 100;
+
+    return lightnessPercent > thresholdPercent;
+  } catch (error) {
+    consoleError(`Error checking color lightness for "${color}": ${error}`);
+    return false;
+  }
+}
+
+/**
+ * Gets the computed value of a CSS custom property (CSS variable).
+ */
+function getCSSVariableValue(variableName: string): string | null {
+  try {
+    const computedStyle = getComputedStyle(document.documentElement);
+    const value = computedStyle.getPropertyValue(variableName).trim();
+    return value || null;
+  } catch (error) {
+    consoleError(`Error getting CSS variable "${variableName}": ${error}`);
+    return null;
+  }
+}
+
+export {
+  MIN_CONTRAST,
+  calculateContrast,
+  hexCodeToRGB,
+  adjustLightness,
+  whiteOrBlackText,
+  isColorLighterThan,
+  getCSSVariableValue,
+};

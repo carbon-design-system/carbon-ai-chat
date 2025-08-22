@@ -297,10 +297,28 @@ export interface DisclaimerPublicConfig {
  * @category Config
  */
 export enum CarbonTheme {
+  /**
+   * Injects Carbon white theme tokens. This is the default.
+   */
   WHITE = "white",
+  /**
+   * Injects Carbon Gray 10 theme tokens.
+   */
   G10 = "g10",
+  /**
+   * Injects Carbon Gray 90 theme tokens.
+   */
   G90 = "g90",
+  /**
+   * Injects Carbon Gray 100 theme tokens.
+   */
   G100 = "g100",
+  /**
+   * Inherits Carbon CSS theming tokens from parent.
+   *
+   * @experimental
+   */
+  INHERIT = "inherit",
 }
 
 /**
@@ -382,7 +400,7 @@ export interface OnErrorData {
  */
 export interface ThemeConfig {
   /**
-   * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
+   * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'white'. See
    * https://carbondesignsystem.com/guidelines/color/tokens.
    */
   carbonTheme?: CarbonTheme;

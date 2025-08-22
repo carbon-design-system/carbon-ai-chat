@@ -25,6 +25,7 @@ import {
   InputState,
   PersistedChatState,
   PersistedLauncherState,
+  ThemeState,
   ViewState,
 } from "../../../types/state/AppState";
 import {
@@ -103,6 +104,7 @@ import {
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
   UPDATE_CHAT_HEADER_CONFIG,
+  UPDATE_THEME_STATE,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
 import {
@@ -1451,6 +1453,16 @@ const reducers: { [key: string]: ReducerType } = {
     return {
       ...state,
       headerAvatarConfig: config,
+    };
+  },
+
+  [UPDATE_THEME_STATE]: (
+    state: AppState,
+    { themeState }: { themeState: ThemeState },
+  ) => {
+    return {
+      ...state,
+      theme: themeState,
     };
   },
 };

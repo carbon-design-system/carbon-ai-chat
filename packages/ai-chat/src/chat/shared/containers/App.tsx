@@ -277,7 +277,6 @@ function MainContainer(props: MainContainerProps) {
   });
 
   return (
-    // Always render the main window and let it control whether it should be visible with css.  return (
     <div
       className="WACWidget__regionContainer"
       role="region"

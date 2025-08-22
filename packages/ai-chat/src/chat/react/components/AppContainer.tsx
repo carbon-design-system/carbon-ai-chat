@@ -395,19 +395,9 @@ const loadBaseStyles = async () => {
   return styles;
 };
 
-const loadCarbon = async () => {
-  const { default: carbon } = await import(
-    "../../shared/styles/export.carbon.scss"
-  );
-  return carbon;
-};
-
 async function loadStyles() {
-  const [styles, carbonStyles] = await Promise.all([
-    loadBaseStyles(),
-    loadCarbon(),
-  ]);
-  return carbonStyles + styles;
+  const styles = await loadBaseStyles();
+  return styles;
 }
 
 export { AppContainerExport as AppContainer };

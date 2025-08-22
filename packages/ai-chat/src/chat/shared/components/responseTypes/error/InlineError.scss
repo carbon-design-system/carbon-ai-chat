@@ -26,12 +26,6 @@
   margin: layout.$spacing-01 layout.$spacing-03 0 layout.$spacing-05;
 }
 
-.WACHumanAgentContainer .WAC__inlineError--iconHolder {
-  flex: unset;
-  inline-size: 24px;
-  padding-inline-start: 4px;
-}
-
 .WACContainer--render[dir="rtl"] .WAC__inlineError--iconHolder {
   margin: 0 layout.$spacing-05 0 layout.$spacing-03;
 }

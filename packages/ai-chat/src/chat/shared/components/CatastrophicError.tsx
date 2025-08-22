@@ -70,7 +70,9 @@ function CatastrophicError({
   headerDisplayName,
 }: CatastrophicErrorProps) {
   const intl = useIntl();
-  const carbonTheme = useSelector((state: AppState) => state.theme.carbonTheme);
+  const carbonTheme = useSelector(
+    (state: AppState) => state.theme.derivedCarbonTheme,
+  );
   const isDarkTheme =
     carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
 

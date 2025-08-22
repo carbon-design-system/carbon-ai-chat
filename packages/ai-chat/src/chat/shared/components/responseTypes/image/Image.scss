@@ -22,10 +22,8 @@
   }
 }
 
-cds-custom-ai-skeleton-placeholder.WACImage__Skeleton::part(
-    skeleton-placeholder
-  ),
-cds-custom-skeleton-placeholder.WACImage__Skeleton::part(placeholder) {
+cds-ai-skeleton-placeholder.WACImage__Skeleton::part(skeleton-placeholder),
+cds-skeleton-placeholder.WACImage__Skeleton::part(placeholder) {
   block-size: 192px;
   inline-size: 100%;
 }

@@ -686,7 +686,13 @@ interface ThemeState {
    * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
    * https://carbondesignsystem.com/guidelines/color/tokens.
    */
-  carbonTheme: CarbonTheme;
+  derivedCarbonTheme: CarbonTheme;
+
+  /**
+   * The original carbon theme that was set by the user before any automatic theme switching.
+   * Used to detect when inherit mode should avoid applying Carbon theme classes.
+   */
+  originalCarbonTheme: CarbonTheme;
 
   /**
    * This flag is used to disable Carbon AI Chat's rounded corners.

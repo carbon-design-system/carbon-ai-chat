@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonInlineNotificationElement from "@carbon/web-components/es-custom/components/notification/inline-notification.js";
+import CarbonInlineNotificationElement from "@carbon/web-components/es/components/notification/inline-notification.js";
 
 const InlineNotification = createComponent({
-  tagName: "cds-custom-inline-notification",
+  tagName: "cds-inline-notification",
   elementClass: CarbonInlineNotificationElement,
   react: React,
 }) as React.ForwardRefExoticComponent<

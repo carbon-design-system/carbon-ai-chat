@@ -25,17 +25,17 @@
 // component currently has too much content for our smaller widths, and would have an overflow of it's own if we tried
 // to fix it to the container width. For now it's better to just have one scroll bar and let the footer scroll with the
 // table body.
-cds-custom-table-header-title,
-cds-custom-table-header-description,
-cds-custom-table-toolbar {
+cds-table-header-title,
+cds-table-header-description,
+cds-table-toolbar {
   position: sticky;
   inline-size: var(--cds-chat-table-width, auto);
   inset-inline-start: 0;
 }
 
-:dir(rtl) cds-custom-table-header-title,
-:dir(rtl) cds-custom-table-header-description,
-:dir(rtl) cds-custom-table-toolbar {
+:dir(rtl) cds-table-header-title,
+:dir(rtl) cds-table-header-description,
+:dir(rtl) cds-table-toolbar {
   right: 0;
   left: unset;
 }
@@ -46,8 +46,8 @@ cds-custom-table-toolbar {
 // padding is in a shadow root, we can't select the div to override the styles. In order to remove this scroll the
 // padding needs to be offset from the parent div using this negative margin "hack". Then the padding can be reapplied
 // to the component we control so the title is properly indented but doesn't scroll.
-cds-custom-table-header-title,
-cds-custom-table-header-description {
+cds-table-header-title,
+cds-table-header-description {
   padding: 0 layout.$spacing-05;
   inline-size: calc(
     var(--cds-chat-table-width, auto) - layout.$spacing-05 - layout.$spacing-05
@@ -55,14 +55,14 @@ cds-custom-table-header-description {
   margin-inline: -#{layout.$spacing-05};
 }
 
-cds-custom-table-header-description {
+cds-table-header-description {
   margin-block-end: -#{layout.$spacing-03};
 }
 
 // Both table and pagination will be placed in the same grid column,
 // ensuring they have the same width that expands to fit the wider element.
-cds-custom-pagination,
-cds-custom-table {
+cds-pagination,
+cds-table {
   grid-column: 1;
   inline-size: 100%;
 }

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/skeleton-icon/index.js";
+import "@carbon/web-components/es/components/skeleton-icon/index.js";
 
 import cx from "classnames";
 import { html } from "lit";

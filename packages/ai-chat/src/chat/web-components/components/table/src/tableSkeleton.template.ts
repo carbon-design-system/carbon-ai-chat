@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/data-table/table-skeleton.js";
+import "@carbon/web-components/es/components/data-table/table-skeleton.js";
 
 import { html } from "lit";
 
@@ -17,12 +17,12 @@ import { html } from "lit";
 function tableSkeletonTemplate(rowCount = 5) {
   // Can add header names to the skeleton if we want to
   // https://web-components.carbondesignsystem.com/?path=/docs/components-datatable-skeleton--overview#custom-headers.
-  return html`<cds-custom-table-skeleton
+  return html`<cds-table-skeleton
     row-count=${rowCount}
     column-count="2"
     .showHeader=${false}
   >
-  </cds-custom-table-skeleton>`;
+  </cds-table-skeleton>`;
 }
 
 export { tableSkeletonTemplate };

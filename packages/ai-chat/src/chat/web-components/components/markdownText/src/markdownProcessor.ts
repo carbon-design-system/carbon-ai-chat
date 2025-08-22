@@ -22,7 +22,7 @@ import MarkdownIt, { Token } from "markdown-it";
 import markdownItAttrs from "markdown-it-attrs";
 
 import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
-import "@carbon/web-components/es-custom/components/list/index.js";
+import "@carbon/web-components/es/components/list/index.js";
 import "../../codeElement/cds-aichat-code";
 import "../../table/cds-aichat-table";
 
@@ -533,22 +533,20 @@ function renderWithStaticTag(
     // Lists with Carbon components
     case "ul": {
       const nested = token.level > 1;
-      return html`<cds-custom-unordered-list ?nested=${nested} ...=${attrs}>
+      return html`<cds-unordered-list ?nested=${nested} ...=${attrs}>
         ${content}
-      </cds-custom-unordered-list>`;
+      </cds-unordered-list>`;
     }
 
     case "ol": {
       const nested = token.level > 1;
-      return html`<cds-custom-ordered-list ?nested=${nested} ...=${attrs}>
+      return html`<cds-ordered-list ?nested=${nested} ...=${attrs}>
         ${content}
-      </cds-custom-ordered-list>`;
+      </cds-ordered-list>`;
     }
 
     case "li":
-      return html`<cds-custom-list-item ...=${attrs}
-        >${content}</cds-custom-list-item
-      >`;
+      return html`<cds-list-item ...=${attrs}>${content}</cds-list-item>`;
 
     // Inline formatting
     case "strong":
@@ -655,7 +653,6 @@ function renderWithStaticTag(
           DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT}
           .getPaginationStatusText=${tableLocalization?.getPaginationStatusText ||
           DEFAULT_PAGINATION_STATUS_TEXT}
-          .dark=${options.dark}
           ...=${tableAttrs}
         ></cds-aichat-table>
       </div>`;

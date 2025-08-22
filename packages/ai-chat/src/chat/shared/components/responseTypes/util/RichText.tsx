@@ -65,12 +65,12 @@ function RichText(props: RichTextProps) {
   const languagePack = useLanguagePack();
   const intl = useIntl();
   const locale = useSelector((state: AppState) => state.locale);
-  const config = useSelector((state: AppState) => state.config.public);
-  const { carbonTheme } = config.themeConfig;
+  const themeState = useSelector((state: AppState) => state.theme);
 
-  // Determine if dark theme should be used based on carbonTheme
+  // Determine if dark theme should be used based on derivedCarbonTheme
   const isDarkTheme =
-    carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
+    themeState.derivedCarbonTheme === CarbonTheme.G90 ||
+    themeState.derivedCarbonTheme === CarbonTheme.G100;
 
   // Memoize localization object to prevent unnecessary re-renders
   const localization: LocalizationOptions = useMemo(() => {

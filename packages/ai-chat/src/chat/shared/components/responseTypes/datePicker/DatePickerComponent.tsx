@@ -9,7 +9,6 @@
 
 import Checkmark from "@carbon/icons-react/es/Checkmark.js";
 import { Button } from "@carbon/react";
-import Layer from "../../../../react/carbon/Layer";
 import {
   DatePickerInput,
   DatePicker,
@@ -70,7 +69,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const intl = useIntl();
   const webChatLocale = useSelector((state: AppState) => state.locale);
   const originalMessage = useSelector(
-    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID],
+    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID]
   ) as MessageResponse;
   const uuidRef = useRef(uuid(UUIDType.MISCELLANEOUS));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -84,13 +83,13 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const valueForAssistantRef = useRef<string>();
   const inputLabel = intl.formatMessage(
     { id: "datePicker_chooseDate" },
-    { format: userDisplayFormat },
+    { format: userDisplayFormat }
   );
   const confirmButtonLabel = intl.formatMessage({
     id: "datePicker_confirmDate",
   });
   const isDateInfoReady = Boolean(
-    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale,
+    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale
   );
 
   /**
@@ -119,7 +118,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     const request = createMessageRequestForDate(
       valueForAssistantRef.current,
       userDisplayValue,
-      responseID,
+      responseID
     );
 
     serviceManager.actions.sendWithCatch(
@@ -127,7 +126,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       MessageSendSource.DATE_PICKER,
       {
         setValueSelectedForMessageID: localMessageID,
-      },
+      }
     );
   }, [localMessage, serviceManager, userDisplayValue]);
 
@@ -141,10 +140,10 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     }
 
     const container = root.querySelector(
-      "#floating-menu-container",
+      "#floating-menu-container"
     ) as HTMLElement | null;
     const calendar = container?.querySelector(
-      ".cds-custom--date-picker__calendar",
+      ".cds-custom--date-picker__calendar"
     ) as HTMLElement | null;
 
     calendar && (calendar.style.position = "unset");
@@ -185,7 +184,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       }
     } catch {
       consoleError(
-        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`,
+        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`
       );
       setDateInfoForLocale("en");
     }
@@ -194,36 +193,34 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   return (
     <div className="WACDatePicker">
       {isDateInfoReady && (
-        <Layer level={1}>
-          <DatePicker
-            ref={datePickerRef}
-            allow-input="true"
-            close-on-select="true"
-            date-format={flatpickrFormat}
-            onFocus={handleOpen}
-            onClick={handleOpen}
-            onChange={(e: CustomEvent) => {
-              const dates = e.detail.selectedDates;
-              if (dates.length) {
-                const date = dates[0];
-                // The assistant should receive the date value in ISO format.
-                valueForAssistantRef.current = toAssistantDateFormat(date);
-                // Use the date object to get a date string in the expected format.
-                setUserDisplayValue(toUserDateFormat(date, userDisplayFormat));
-                setIsCalendarOpen(false);
-              }
-            }}
-          >
-            <DatePickerInput
-              id={uuidRef.current}
-              disabled={disabled}
-              kind={DATE_PICKER_INPUT_KIND.SINGLE}
-              label-text={inputLabel}
-              placeholder={userDisplayFormat}
-              warn-text=""
-            ></DatePickerInput>
-          </DatePicker>
-        </Layer>
+        <DatePicker
+          ref={datePickerRef}
+          allow-input="true"
+          close-on-select="true"
+          date-format={flatpickrFormat}
+          onFocus={handleOpen}
+          onClick={handleOpen}
+          onChange={(e: CustomEvent) => {
+            const dates = e.detail.selectedDates;
+            if (dates.length) {
+              const date = dates[0];
+              // The assistant should receive the date value in ISO format.
+              valueForAssistantRef.current = toAssistantDateFormat(date);
+              // Use the date object to get a date string in the expected format.
+              setUserDisplayValue(toUserDateFormat(date, userDisplayFormat));
+              setIsCalendarOpen(false);
+            }
+          }}
+        >
+          <DatePickerInput
+            id={uuidRef.current}
+            disabled={disabled}
+            kind={DATE_PICKER_INPUT_KIND.SINGLE}
+            label-text={inputLabel}
+            placeholder={userDisplayFormat}
+            warn-text=""
+          ></DatePickerInput>
+        </DatePicker>
       )}
       {!disabled && !isCalendarOpen && userDisplayValue && (
         <Button

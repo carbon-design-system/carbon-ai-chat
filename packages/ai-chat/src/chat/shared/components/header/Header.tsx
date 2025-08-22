@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/slug/index.js";
+import "@carbon/web-components/es/components/slug/index.js";
 
 import Close from "@carbon/icons-react/es/Close.js";
 import CloseLarge from "@carbon/icons-react/es/CloseLarge.js";
@@ -17,8 +17,8 @@ import Restart from "@carbon/icons-react/es/Restart.js";
 import SidePanelClose from "@carbon/icons-react/es/SidePanelClose.js";
 import SubtractLarge from "@carbon/icons-react/es/SubtractLarge.js";
 import { Button, ButtonTooltipPosition, MenuItem } from "@carbon/react";
-import { AI_LABEL_SIZE } from "@carbon/web-components/es-custom/components/ai-label/defs.js";
-import { POPOVER_ALIGNMENT } from "@carbon/web-components/es-custom/components/popover/defs.js";
+import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
+import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
 import cx from "classnames";
 import React, {
   forwardRef,

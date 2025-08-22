@@ -29,6 +29,7 @@ function Avatar({ theme }: AvatarProps) {
   const c = `c-${uniqueId}`;
   const d = `d-${uniqueId}`;
   const e = `e-${uniqueId}`;
+
   if (theme === CarbonTheme.WHITE || theme === CarbonTheme.G10) {
     return (
       <svg

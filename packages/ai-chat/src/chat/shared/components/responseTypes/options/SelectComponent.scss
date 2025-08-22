@@ -26,10 +26,10 @@
   }
 }
 
-cds-custom-dropdown::part(trigger-button) {
+cds-dropdown::part(trigger-button) {
   block-size: 2.5rem;
 }
 
-cds-custom-dropdown::part(menu-body) {
+cds-dropdown::part(menu-body) {
   position: static;
 }

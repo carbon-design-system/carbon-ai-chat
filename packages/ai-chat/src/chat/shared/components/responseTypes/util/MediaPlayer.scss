@@ -56,12 +56,10 @@
   fill: theme.$support-error;
 }
 
-cds-custom-ai-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
+cds-ai-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
     skeleton-placeholder
   ),
-cds-custom-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
-    placeholder
-  ),
+cds-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(placeholder),
 .WACMediaPlayer__Background,
 .WACMediaPlayer__Player {
   position: absolute;
@@ -69,12 +67,10 @@ cds-custom-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
   inset-inline-start: 0;
 }
 
-cds-custom-ai-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
+cds-ai-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
     skeleton-placeholder
   ),
-cds-custom-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(
-    placeholder
-  ),
+cds-skeleton-placeholder.WACMediaPlayer__SkeletonPlayer::part(placeholder),
 .WACMediaPlayer__Background {
   block-size: 100%;
   inline-size: 100%;
