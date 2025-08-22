@@ -143,7 +143,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       "#floating-menu-container"
     ) as HTMLElement | null;
     const calendar = container?.querySelector(
-      ".cds-custom--date-picker__calendar"
+      ".cds--date-picker__calendar"
     ) as HTMLElement | null;
 
     calendar && (calendar.style.position = "unset");
