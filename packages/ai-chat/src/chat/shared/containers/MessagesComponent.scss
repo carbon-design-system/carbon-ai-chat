@@ -61,17 +61,17 @@
 .WAC__messages--unreadMessagesIndicator {
   position: absolute;
   z-index: 1;
+  justify-content: center;
   inline-size: 100%;
   inset-block-end: 30px;
   text-align: center;
-  justify-content: center;
 }
 
 .WAC__messages--unreadMessagesIndicatorIcon {
-  background-color: theme.$layer-01;
-  padding: 7px 5px 5px 5px;
+  padding: 7px 5px 5px;
   border-radius: 50%;
   margin: 0 auto;
-  inline-size: 32px;
+  background-color: theme.$layer-01;
   box-shadow: chatTheme.$AI-box-shadow-outer;
+  inline-size: 32px;
 }
