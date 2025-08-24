@@ -212,7 +212,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run ci-check && npm run format:write && npm run lint && npm run lint:styles"
+      "pre-commit": "npm run ci-check && npm run format:write && npm run lint && npm run lint:license && npm run lint:styles"
     }
   }
 }
