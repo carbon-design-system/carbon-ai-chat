@@ -16,7 +16,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// Set this to a suitable prefix for your project to use in TS files
-const prefix = "cds-aichat";
+import { customElement } from "lit/decorators.js";
+import tile from "./src/tile.template.js";
+import prefix from "../../globals/settings.js";
 
-export default prefix;
+/**
+ * Component extending the @carbon/web-components' tile
+ */
+//@ts-ignore
+@customElement(`${prefix}-tile`)
+class CDSAIChatTile extends tile {}
+
+export default CDSAIChatTile;
