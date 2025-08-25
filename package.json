@@ -209,10 +209,5 @@
   },
   "dependencies": {
     "@carbon/ai-chat": "^0.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run ci-check && npm run format:write && npm run lint && npm run lint:license && npm run lint:styles"
-    }
   }
 }

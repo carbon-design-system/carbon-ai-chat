@@ -983,6 +983,8 @@ export default withServiceManager(
   )(MessagesComponent),
 );
 
+console.log("testing hooks");
+
 export {
   MessagesComponent as MessagesComponentClass,
   ScrollElementIntoViewFunction,
