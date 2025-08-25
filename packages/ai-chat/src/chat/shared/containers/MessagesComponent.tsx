@@ -1000,17 +1000,15 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             />
             {this.renderScrollHandle(false)}
             {scrollDown && (
-              <div
-                role="button"
-                tabIndex={0}
+              <button
+                type="button"
                 className="WAC__messages--scrollDownIndicator"
                 onClick={() => this.doAutoScroll({ scrollToBottom: 0 })}
-                onKeyDown={() => this.doAutoScroll({ scrollToBottom: 0 })}
               >
                 <div className="WAC__messages--scrollDownIndicatorIcon">
                   <ArrowDown />
                 </div>
-              </div>
+              </button>
             )}
           </div>
         </div>
