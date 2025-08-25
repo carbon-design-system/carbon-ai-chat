@@ -1,5 +1,5 @@
 {
-    "plugin": ["./docs/typedoc/moduleNamePlugin.js"],
+    "plugin": ["./docs/typedoc/moduleNamePlugin.js", "./docs/typedoc/cookiePreferencesPlugin.js"],
     "entryPoints": ["./src/aiChatEntry.tsx"],
     "out": "./dist/docs/carbon-tsdocs",
     "name": "Carbon AI Chat",
