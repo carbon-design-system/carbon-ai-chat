@@ -7,7 +7,10 @@
  *  @license
  */
 
-import Button, { BUTTON_KIND } from "../../../../react/carbon/Button";
+import Button, {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "../../../../react/carbon/Button";
 import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
@@ -174,6 +177,7 @@ function Carousel({
             className="WACCarouselContainer__NavigationButton WACDirectionHasReversibleSVG"
             kind={BUTTON_KIND.GHOST}
             aria-label={carousel_prevNavButton}
+            size={BUTTON_SIZE.SMALL}
           >
             <ChevronLeft slot="icon" />
           </Button>
@@ -185,6 +189,7 @@ function Carousel({
             className="WACCarouselContainer__NavigationButton WACDirectionHasReversibleSVG"
             kind={BUTTON_KIND.GHOST}
             aria-label={carousel_nextNavButton}
+            size={BUTTON_SIZE.SMALL}
           >
             <ChevronRight slot="icon" />
           </Button>
