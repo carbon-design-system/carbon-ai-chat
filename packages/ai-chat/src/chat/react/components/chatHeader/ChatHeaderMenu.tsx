@@ -7,7 +7,8 @@
  *  @license
  */
 
-import { Menu } from "@carbon/react";
+import Menu, { MENU_SIZE } from "../../carbon/Menu";
+import CDSMenu from "@carbon/web-components/es/components/menu/menu";
 import React, { MutableRefObject } from "react";
 
 import { HasChildren } from "../../../../types/utilities/HasChildren";
@@ -33,7 +34,7 @@ interface ChatHeaderMenuProps extends HasID, HasClassName, HasChildren {
   /**
    * The ref of the containing element, used for positioning and alignment of the menu.
    */
-  containerRef?: MutableRefObject<HTMLDivElement>;
+  containerRef?: MutableRefObject<CDSMenu>;
 
   /**
    * Specify how the menu should align with the button element.
@@ -49,23 +50,18 @@ function ChatHeaderMenu({
   className,
   label,
   isOpen,
-  target,
   children,
   menuAlignment,
-  containerRef,
 }: ChatHeaderMenuProps) {
   return (
     <Menu
       id={id}
       className={className}
       open={isOpen}
-      target={target}
       label={label}
-      size="md"
+      size={MENU_SIZE.MEDIUM}
       menuAlignment={menuAlignment}
       mode="full"
-      legacyAutoalign={false}
-      containerRef={containerRef}
     >
       {children}
     </Menu>

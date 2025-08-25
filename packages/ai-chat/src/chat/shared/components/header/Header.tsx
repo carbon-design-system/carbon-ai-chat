@@ -8,15 +8,16 @@
  */
 
 import "@carbon/web-components/es/components/slug/index.js";
-
-import Close from "@carbon/icons-react/es/Close.js";
+import CDSMenu from "@carbon/web-components/es/components/menu/menu";
+import MenuItem from "../../../react/carbon/MenuItem";
+import Menu16 from "@carbon/icons/es/menu/16.js";
+import Close16 from "@carbon/icons/es/close/16.js";
 import CloseLarge from "@carbon/icons-react/es/CloseLarge.js";
 import DownToBottom from "@carbon/icons-react/es/DownToBottom.js";
-import Menu from "@carbon/icons-react/es/Menu.js";
 import Restart from "@carbon/icons-react/es/Restart.js";
 import SidePanelClose from "@carbon/icons-react/es/SidePanelClose.js";
 import SubtractLarge from "@carbon/icons-react/es/SubtractLarge.js";
-import { Button, ButtonTooltipPosition, MenuItem } from "@carbon/react";
+import { Button, ButtonTooltipPosition } from "@carbon/react";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
 import cx from "classnames";
@@ -32,7 +33,7 @@ import React, {
   useState,
 } from "react";
 import { useSelector } from "react-redux";
-
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
 import { ChatHeaderAvatar } from "../../../react/components/chatHeader/ChatHeaderAvatar";
 import { ChatHeaderOverflowMenu } from "../../../react/components/chatHeader/ChatHeaderOverflowMenu";
@@ -59,6 +60,8 @@ import { MinimizeButtonIconType } from "../../../../types/config/PublicConfig";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
 
+const Close = carbonIconToReact(Close16);
+const Menu = carbonIconToReact(Menu16);
 interface HeaderProps {
   /**
    * The name to display.
@@ -189,7 +192,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const restartButtonRef = useRef<HTMLButtonElement>();
   const closeAndRestartButtonRef = useRef<HTMLButtonElement>();
   const closeButtonRef = useRef<HTMLButtonElement>();
-  const overflowRef = useRef<HTMLDivElement>();
+  const overflowRef = useRef<CDSMenu>();
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);
