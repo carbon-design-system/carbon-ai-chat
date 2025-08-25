@@ -17,14 +17,6 @@ import Button, {
 
 import Close from "@carbon/icons-react/es/Close.js";
 import Menu from "@carbon/icons-react/es/Menu.js";
-// import CloseLarge from "@carbon/icons-react/es/CloseLarge.js";
-// import DownToBottom from "@carbon/icons-react/es/DownToBottom.js";
-// import Restart from "@carbon/icons-react/es/Restart.js";
-// import SidePanelClose from "@carbon/icons-react/es/SidePanelClose.js";
-// import SubtractLarge from "@carbon/icons-react/es/SubtractLarge.js";
-
-// import Close16 from "@carbon/icons/es/close/16.js";
-// import Menu16 from "@carbon/icons/es/menu/16.js";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
