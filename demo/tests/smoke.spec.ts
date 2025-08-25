@@ -9,6 +9,9 @@ import { makeTestId, OverlayPanelName, PageObjectId } from "@carbon/ai-chat";
 import { test, expect } from "@playwright/test";
 
 test("smoke React", async ({ page }) => {
+  // Block analytics script
+  await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+
   // 1) Navigate to the app
   await page.goto("http://localhost:3001/");
 
@@ -32,8 +35,11 @@ test("smoke React", async ({ page }) => {
 });
 
 test("smoke web component", async ({ page }) => {
+  // Block analytics script
+  await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+
   // 1) Navigate to the app
-  await page.goto("http://localhost:3001/");
+  await page.goto("http://localhost:3001/", { waitUntil: "domcontentloaded" });
 
   // 2) Select “Web component” and wait for the new page (query string) to load
   await page.getByRole("combobox", { name: "Component framework" }).click();
