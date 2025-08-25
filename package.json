@@ -41,7 +41,7 @@
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "test": "lerna run test --stream",
-    "prepare": "husky"
+    "postinstall": "husky"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
