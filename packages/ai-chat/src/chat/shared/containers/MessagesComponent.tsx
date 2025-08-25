@@ -983,7 +983,7 @@ export default withServiceManager(
   )(MessagesComponent),
 );
 
-console.log("testing hooks");
+console.log("testing hooks with removal of prepare script");
 
 export {
   MessagesComponent as MessagesComponentClass,
