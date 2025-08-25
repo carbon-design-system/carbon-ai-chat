@@ -63,8 +63,6 @@ import { MinimizeButtonIconType } from "../../../../types/config/PublicConfig";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
 
-// const Close = carbonIconToReact(Close16);
-// const Menu = carbonIconToReact(Menu16);
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const DownToBottom = carbonIconToReact(DownToBottom16);
 const Restart = carbonIconToReact(Restart16);
