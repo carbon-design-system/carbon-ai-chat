@@ -27,7 +27,7 @@ import {
 import { FeedbackInitialValues } from "../../web-components/components/feedbackElement/src/FeedbackElement";
 import { CSS_CLASS_PREFIX } from "../../web-components/settings";
 import { ResponseStopped } from "../components/ResponseStopped";
-import { ConnectToAgent } from "../components/responseTypes/agent/ConnectToAgent";
+import { ConnectToHumanAgent } from "../components/responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "../components/responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "../components/responseTypes/buttonItem/ButtonItemComponent";
 import { CardItemComponent } from "../components/responseTypes/card/CardItemComponent";
@@ -41,22 +41,24 @@ import { IFrameMessage } from "../components/responseTypes/iframe/IFrameMessage"
 import { Image } from "../components/responseTypes/image/Image";
 import { OptionComponent } from "../components/responseTypes/options/OptionComponent";
 import TableContainer from "../components/responseTypes/table/TableContainer";
-import { TourCard } from "../components/responseTypes/tour/TourCard";
 import { StreamingRichText } from "../components/responseTypes/util/StreamingRichText";
 import { VideoComponent } from "../components/responseTypes/video/VideoComponent";
 import { useLanguagePack } from "../hooks/useLanguagePack";
 import { useUUID } from "../hooks/useUUID";
 import actions from "../store/actions";
-import { selectAgentDisplayState } from "../store/selectors";
+import { selectHumanAgentDisplayState } from "../store/selectors";
 import { AppState } from "../../../types/state/AppState";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
+import { ThemeType } from "../../../types/config/PublicConfig";
+import {
+  LocalMessageItem,
+  MessageErrorState,
+} from "../../../types/messaging/LocalMessageItem";
 import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps";
 import {
   getMediaDimensions,
   isRequest,
   isResponse,
   isTextItem,
-  renderAsTour,
   renderAsUserDefinedMessage,
 } from "../utils/messageUtils";
 import { ChainOfThought } from "../../react/components/chainOfThought/ChainOfThought";
@@ -65,7 +67,7 @@ import {
   ButtonItem,
   CardItem,
   CarouselItem,
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   ConversationalSearchItem,
   DateItem,
   GridItem,
@@ -75,15 +77,16 @@ import {
   InlineErrorItem,
   InternalMessageRequestType,
   Message,
-  MessageHistory,
   MessageHistoryFeedback,
   MessageInputType,
   MessageRequest,
   MessageResponse,
+  MessageResponseHistory,
   MessageResponseTypes,
   OptionItem,
   TableItem,
   TextItem,
+  UserType,
   VideoItem,
 } from "../../../types/messaging/Messages";
 
@@ -102,15 +105,23 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const intl = useIntl();
   const languagePack = useLanguagePack();
   const feedbackDetailsRef = useRef<HTMLDivElement>();
-  const agentDisplayState = useSelector(selectAgentDisplayState, shallowEqual);
-  const agentState = useSelector((state: AppState) => state.agentState);
-  const persistedAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.chatState.agentState
+  const agentDisplayState = useSelector(
+    selectHumanAgentDisplayState,
+    shallowEqual,
   );
-  const feedbackID = message.item.message_options?.feedback?.id;
+  const humanAgentState = useSelector(
+    (state: AppState) => state.humanAgentState,
+  );
+  const persistedHumanAgentState = useSelector(
+    (state: AppState) =>
+      state.persistedToBrowserStorage.chatState.humanAgentState,
+  );
+  const feedbackID = message.item.message_item_options?.feedback?.id;
   const feedbackPanelID = useUUID();
 
-  const feedbackHistory = originalMessage.history?.feedback?.[feedbackID];
+  const feedbackHistory = isResponse(originalMessage)
+    ? originalMessage.history?.feedback?.[feedbackID]
+    : null;
 
   const feedbackInitialValues = useMemo<FeedbackInitialValues>(() => {
     if (!feedbackHistory) {
@@ -127,15 +138,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   // Indicates if the negative or positive feedback buttons are marked as selected.
   const [isPositiveFeedbackSelected, setIsPositiveFeedbackSelected] = useState(
-    feedbackHistory && feedbackHistory.is_positive
+    feedbackHistory && feedbackHistory.is_positive,
   );
   const [isNegativeFeedbackSelected, setIsNegativeFeedbackSelected] = useState(
-    feedbackHistory && !feedbackHistory.is_positive
+    feedbackHistory && !feedbackHistory.is_positive,
   );
 
   // Indicates if details have been submitted.
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(
-    Boolean(feedbackHistory)
+    Boolean(feedbackHistory),
   );
 
   /**
@@ -143,7 +154,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderSpecificMessage(
     localMessageItem: LocalMessageItem,
-    message: Message
+    message: Message,
   ) {
     if (isRequest(message)) {
       return renderRequest(localMessageItem, message as MessageRequest);
@@ -157,7 +168,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         <>
           {response}
           {isResponseStopped && <ResponseStopped />}
-          {renderChainOfThought(localMessageItem)}
+          {props.showChainOfThought &&
+            renderChainOfThought(localMessageItem, message)}
           {renderFeedback(localMessageItem, message)}
         </>
       );
@@ -171,7 +183,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderRequest(
     localMessageItem: LocalMessageItem,
-    originalMessage: MessageRequest
+    originalMessage: MessageRequest,
   ) {
     const messageItem = localMessageItem.item;
 
@@ -190,7 +202,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               aria-label={props.languagePack.fileSharing_fileIcon}
             />
           )}
-          {/* The use of the heading role here is a compromise to Penn State which wanted us to enable the use of the 
+          {/* The use of the heading role here is a compromise to enable the use of the
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <span role="heading" aria-level={2}>
@@ -208,93 +220,91 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderResponse(
     localMessageItem: LocalMessageItem,
-    message: MessageResponse
+    message: MessageResponse,
   ) {
-    if (renderAsTour(localMessageItem.item)) {
-      // Render an invalid component who's user_defined_type is specifically for the tour beta feature, as a tour.
-      return renderTour(localMessageItem);
-    }
-
     if (renderAsUserDefinedMessage(localMessageItem.item)) {
       // Render all invalid components as a user defined response
       return renderUserDefinedResponse(
         localMessageItem as LocalMessageItem<any>,
-        message
+        message,
       );
     }
 
     const responseType = localMessageItem.item.response_type;
-    const withHumanAgent = Boolean(localMessageItem.item.agent_message_type);
+    const withHuman = Boolean(
+      message.message_options?.response_user_profile?.user_type ===
+        UserType.HUMAN || localMessageItem.item.agent_message_type,
+    );
     switch (responseType) {
       case MessageResponseTypes.TEXT:
         return renderText(
           localMessageItem as LocalMessageItem<TextItem>,
           message,
-          withHumanAgent
+          withHuman,
         );
       case MessageResponseTypes.IMAGE:
         return renderImage(localMessageItem as LocalMessageItem<ImageItem>);
       case MessageResponseTypes.OPTION:
         return renderOption(
           localMessageItem as LocalMessageItem<OptionItem>,
-          message
+          message,
         );
-      case MessageResponseTypes.CONNECT_TO_AGENT:
-        return renderConnectToAgent(
-          localMessageItem as LocalMessageItem<ConnectToAgentItem>,
-          message as MessageResponse
+      case MessageResponseTypes.CONNECT_TO_HUMAN_AGENT:
+        return renderConnectToHumanAgent(
+          localMessageItem as LocalMessageItem<ConnectToHumanAgentItem>,
+          message as MessageResponse,
         );
       case MessageResponseTypes.INLINE_ERROR:
         return renderInlineError(
-          localMessageItem as LocalMessageItem<InlineErrorItem>
+          localMessageItem as LocalMessageItem<InlineErrorItem>,
         );
       case MessageResponseTypes.IFRAME:
         return renderIFrameMessage(
-          localMessageItem as LocalMessageItem<IFrameItem>
+          localMessageItem as LocalMessageItem<IFrameItem>,
         );
       case MessageResponseTypes.VIDEO:
         return renderVideoMessage(
-          localMessageItem as LocalMessageItem<VideoItem>
+          localMessageItem as LocalMessageItem<VideoItem>,
         );
       case MessageResponseTypes.AUDIO:
         return renderAudioMessage(
-          localMessageItem as LocalMessageItem<AudioItem>
+          localMessageItem as LocalMessageItem<AudioItem>,
         );
       case MessageResponseTypes.DATE:
         return renderDateMessage(
-          localMessageItem as LocalMessageItem<DateItem>
+          localMessageItem as LocalMessageItem<DateItem>,
         );
       case MessageResponseTypes.CONVERSATIONAL_SEARCH:
         return renderConversationalSearchMessage(
           localMessageItem as LocalMessageItem<ConversationalSearchItem>,
-          message as MessageResponse
+          message as MessageResponse,
         );
       case MessageResponseTypes.TABLE:
         return renderTable(localMessageItem as LocalMessageItem<TableItem>);
       case MessageResponseTypes.CARD:
         return renderCard(
           localMessageItem as LocalMessageItem<CardItem>,
-          message as MessageResponse
+          message as MessageResponse,
         );
       case MessageResponseTypes.CAROUSEL:
         return renderCarouselMessage(
           localMessageItem as LocalMessageItem<CarouselItem>,
-          message as MessageResponse
+          message as MessageResponse,
         );
       case MessageResponseTypes.BUTTON:
         return renderButtonItem(
           localMessageItem as LocalMessageItem<ButtonItem>,
-          message as MessageResponse
+          message as MessageResponse,
         );
       case MessageResponseTypes.GRID:
         return renderGrid(
           localMessageItem as LocalMessageItem<GridItem>,
-          message as MessageResponse
+          message as MessageResponse,
         );
       default:
         return renderUserDefinedResponse(
           localMessageItem as LocalMessageItem<TextItem>,
-          message
+          message,
         );
     }
   }
@@ -302,23 +312,23 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   function renderText(
     message: LocalMessageItem<TextItem>,
     originalMessage: MessageResponse,
-    removeHTML: boolean
+    removeHTML: boolean,
   ) {
     if (props.isNestedMessageItem) {
       return renderRichText(
         message,
         removeHTML,
-        originalMessage as MessageResponse
+        originalMessage as MessageResponse,
       );
     }
 
     // For text provided by the assistant, pass it through some HTML formatting before displaying it.
     return (
-      <div className="WAC__received--textContent">
+      <div>
         {renderRichText(
           message,
           removeHTML,
-          originalMessage as MessageResponse
+          originalMessage as MessageResponse,
         )}
       </div>
     );
@@ -327,13 +337,16 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   function renderRichText(
     localMessageItem: LocalMessageItem<TextItem>,
     removeHTML: boolean,
-    originalMessage?: MessageResponse
+    originalMessage?: MessageResponse,
   ) {
     return (
       <StreamingRichText
         text={localMessageItem.item.text}
         streamingState={localMessageItem.ui_state.streamingState}
-        isStreamingError={originalMessage?.history?.is_streaming_error}
+        isStreamingError={
+          originalMessage?.history?.error_state ===
+          MessageErrorState.FAILED_WHILE_STREAMING
+        }
         removeHTML={removeHTML}
         doAutoScroll={props.doAutoScroll}
       />
@@ -342,7 +355,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderOption(
     message: LocalMessageItem<OptionItem>,
-    originalMessage: Message
+    originalMessage: Message,
   ) {
     const {
       languagePack,
@@ -368,7 +381,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderImage(message: LocalMessageItem<ImageItem>) {
     const { languagePack, serviceManager } = props;
-    const { useAITheme } = serviceManager.store.getState().theme;
+    const { theme } = serviceManager.store.getState().theme;
 
     return (
       <Image
@@ -378,7 +391,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         description={message.item.description}
         altText={message.item.alt_text}
         needsAnnouncement={message.ui_state.needsAnnouncement}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
       />
     );
   }
@@ -446,13 +459,16 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderUserDefinedResponse(
     message: LocalMessageItem,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
   ) {
     const { serviceManager } = props;
     return (
       <UserDefinedResponse
         streamingState={message.ui_state.streamingState}
-        isStreamingError={originalMessage?.history?.is_streaming_error}
+        isStreamingError={
+          originalMessage?.history?.error_state ===
+          MessageErrorState.FAILED_WHILE_STREAMING
+        }
         doAutoScroll={props.doAutoScroll}
         localMessageID={message.ui_state.id}
         serviceManager={serviceManager}
@@ -460,15 +476,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     );
   }
 
-  function renderTour(message: LocalMessageItem) {
-    const { serviceManager } = props;
-
-    return <TourCard message={message} serviceManager={serviceManager} />;
-  }
-
-  function renderConnectToAgent(
+  function renderConnectToHumanAgent(
     message: LocalMessageItem,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
   ) {
     const {
       languagePack,
@@ -479,15 +489,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     } = props;
 
     return (
-      <ConnectToAgent
+      <ConnectToHumanAgent
         localMessage={message}
         originalMessage={originalMessage}
         languagePack={languagePack}
         config={config}
         serviceManager={serviceManager}
-        agentState={agentState}
+        humanAgentState={humanAgentState}
         agentDisplayState={agentDisplayState}
-        persistedAgentState={persistedAgentState}
+        persistedHumanAgentState={persistedHumanAgentState}
         disableUserInputs={disableUserInputs || !isMessageForInput}
         requestFocus={props.requestInputFocus}
       />
@@ -496,7 +506,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderCard(
     message: LocalMessageItem<CardItem>,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
@@ -514,14 +524,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderConversationalSearchMessage(
     localMessageItem: LocalMessageItem<ConversationalSearchItem>,
-    fullMessage: MessageResponse
+    fullMessage: MessageResponse,
   ) {
     const { scrollElementIntoView, doAutoScroll } = props;
     return (
       <ConversationalSearch
         localMessageItem={localMessageItem}
         scrollElementIntoView={scrollElementIntoView}
-        isStreamingError={fullMessage.history?.is_streaming_error}
+        isStreamingError={
+          fullMessage?.history?.error_state ===
+          MessageErrorState.FAILED_WHILE_STREAMING
+        }
         doAutoScroll={doAutoScroll}
       />
     );
@@ -529,7 +542,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderButtonItem(
     message: LocalMessageItem<ButtonItem>,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
@@ -544,7 +557,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderCarouselMessage(
     message: LocalMessageItem<CarouselItem>,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
@@ -562,7 +575,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderGrid(
     message: LocalMessageItem<GridItem>,
-    originalMessage: MessageResponse
+    originalMessage: MessageResponse,
   ) {
     return (
       <GridItemComponent
@@ -596,19 +609,22 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }) {
     return intl.formatMessage(
       { id: "chainOfThought_stepTitle" },
-      { stepNumber, stepTitle }
+      { stepNumber, stepTitle },
     );
   }
 
   /**
-   * Renders chain of thought component for the given message item if appropriate.
+   * Renders chain of thought component for the given {@link MessageResponse}.
    */
-  function renderChainOfThought(localMessageItem: LocalMessageItem) {
-    const chainOfThought =
-      localMessageItem.item.message_options?.chain_of_thought;
+  function renderChainOfThought(
+    localMessageItem: LocalMessageItem,
+    message: MessageResponse,
+  ) {
+    const chainOfThought = message.message_options?.chain_of_thought;
     if (!chainOfThought || props.isNestedMessageItem) {
       return false;
     }
+    console.log("renderChainOfThought", chainOfThought);
     return (
       <ChainOfThought
         steps={chainOfThought}
@@ -628,10 +644,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderFeedback(
     localMessageItem: LocalMessageItem,
-    message: MessageResponse
+    message: MessageResponse,
   ) {
     const feedbackOptions =
-      localMessageItem.item.message_options?.feedback || {};
+      localMessageItem.item.message_item_options?.feedback || {};
 
     const {
       id: feedbackID,
@@ -659,15 +675,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     /**
      * Updates the message history with the feedback data provided.
      */
-    function updateHistory(data: MessageHistoryFeedback) {
+    function updateFeedbackHistory(data: MessageHistoryFeedback) {
       if (feedbackID) {
-        const history: MessageHistory = {
+        const history: MessageResponseHistory = {
           feedback: {
             [feedbackID]: data,
           },
         };
         serviceManager.store.dispatch(
-          actions.mergeMessageHistory(localMessageItem.fullMessageID, history)
+          actions.mergeMessageHistory(localMessageItem.fullMessageID, history),
         );
       }
     }
@@ -687,7 +703,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       if (toggleToSelected && !openDetails) {
         // If the button has been toggled to selected but we're not showing details, that means the option is considered
         // immediately submitted.
-        updateHistory({ is_positive: isPositive });
+        updateFeedbackHistory({ is_positive: isPositive });
         setIsFeedbackSubmitted(true);
 
         serviceManager.fire({
@@ -739,7 +755,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       serviceManager.fire(event);
 
       // Submit this update to be recorded in history.
-      updateHistory({
+      updateFeedbackHistory({
         is_positive: event.isPositive,
         text: event.text,
         categories: event.categories,
@@ -754,6 +770,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       const isOpen =
         isFeedbackOpen &&
         (isPositive ? isPositiveFeedbackSelected : isNegativeFeedbackSelected);
+
+      let filteredCategories;
+      // Categories can be an array of strings or an object with positive and negative arrays.
+      if (Array.isArray(categories)) {
+        filteredCategories = categories;
+      } else if (isPositive) {
+        filteredCategories = categories?.positive;
+      } else {
+        filteredCategories = categories?.negative;
+      }
+
       return (
         <FeedbackComponent
           class={`${CSS_CLASS_PREFIX}-feedbackDetails-${
@@ -775,7 +802,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           showPrompt={show_prompt}
           title={title || languagePack.feedback_defaultTitle}
           prompt={prompt || languagePack.feedback_defaultPrompt}
-          categories={categories}
+          categories={filteredCategories}
           placeholder={placeholder || languagePack.feedback_defaultPlaceholder}
           disclaimer={disclaimer}
           submitLabel={languagePack.feedback_submitLabel}

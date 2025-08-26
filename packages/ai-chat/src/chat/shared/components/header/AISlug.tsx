@@ -7,14 +7,14 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/ai-label/ai-label-action-button.js";
+import "@carbon/web-components/es/components/ai-label/ai-label-action-button.js";
 
-import CDSAILabel from "@carbon/web-components/es-custom/components/ai-label/ai-label.js";
+import CDSAILabel from "@carbon/web-components/es/components/ai-label/ai-label.js";
 import { createComponent } from "@lit/react";
 import React from "react";
 
 const AISlug = createComponent({
-  tagName: "cds-custom-ai-label",
+  tagName: "cds-ai-label",
   elementClass: CDSAILabel,
   react: React,
 });

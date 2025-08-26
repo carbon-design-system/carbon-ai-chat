@@ -7,32 +7,73 @@
  *  @license
  */
 
-import { LitElement } from "lit";
+import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import throttle from "lodash-es/throttle.js";
 
-import { TokenTree } from "../markdown/utils/tokenTree";
-import { getMarkdownWorker } from "../markdown/workers/workerManager";
+import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
+import {
+  TokenTree,
+  renderTokenTree,
+  markdownToTokenTree,
+} from "./markdownProcessor";
 
-class MarkdownTextElement extends LitElement {
+class MarkdownElement extends LitElement {
   @property({ type: String })
   set markdown(newMarkdown: string) {
     if (newMarkdown !== this.fullText) {
       this.fullText = newMarkdown;
-      this.scheduleTokenParse();
     }
   }
 
-  @property({ type: Boolean }) sanitizeHTML = false;
+  get markdown(): string {
+    return this.fullText;
+  }
 
-  @property({
-    type: Boolean,
-    attribute: "should-remove-padding",
-    reflect: true,
-  })
-  shouldRemovePadding: boolean;
+  @property({ type: Boolean })
+  set sanitizeHTML(value: boolean) {
+    const oldValue = this._sanitizeHTML;
+    this._sanitizeHTML = value;
+    if (oldValue !== value && this.tokenTree.children.length > 0) {
+      this.scheduleRender();
+    }
+  }
+  get sanitizeHTML() {
+    return this._sanitizeHTML;
+  }
+  private _sanitizeHTML = false;
+
+  @property({ type: Boolean })
+  shouldRemoveHTMLBeforeMarkdownConversion = false;
+
+  @property({ type: Boolean })
+  streaming = false;
+
+  @property({ type: Object })
+  localization?: LocalizationOptions;
+
+  @property({ type: Boolean })
+  dark = false;
 
   private fullText = "";
+
+  updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+
+    // Only schedule token parse if markdown content changed
+    if (changedProperties.has("markdown")) {
+      this.scheduleTokenParse();
+    }
+
+    // Re-render if dark mode, localization, or other rendering properties changed
+    if (
+      changedProperties.has("dark") ||
+      changedProperties.has("localization") ||
+      changedProperties.has("streaming")
+    ) {
+      this.scheduleRender();
+    }
+  }
 
   @state()
   tokenTree: TokenTree = {
@@ -55,12 +96,42 @@ class MarkdownTextElement extends LitElement {
     children: [],
   };
 
+  @state()
+  renderedContent: TemplateResult | null = null;
+
+  /**
+   * Throttled function that parses markdown text into a token tree and renders it.
+   * Called when the markdown content changes. Handles both parsing and rendering
+   * to avoid duplicate work when content updates.
+   */
   private scheduleTokenParse = throttle(async () => {
-    this.tokenTree = (await getMarkdownWorker(
+    this.tokenTree = markdownToTokenTree(
       this.fullText,
-      this.tokenTree
-    )) as TokenTree;
+      this.tokenTree,
+      !this.shouldRemoveHTMLBeforeMarkdownConversion,
+    );
+
+    this.renderedContent = renderTokenTree(this.tokenTree, {
+      sanitize: this.sanitizeHTML,
+      streaming: this.streaming,
+      localization: this.localization,
+      dark: this.dark,
+    });
   }, 100);
+
+  /**
+   * Throttled function that re-renders the existing token tree with current settings.
+   * Called when only rendering options change (like sanitizeHTML) without needing
+   * to re-parse the markdown content.
+   */
+  private scheduleRender = throttle(async () => {
+    this.renderedContent = renderTokenTree(this.tokenTree, {
+      sanitize: this.sanitizeHTML,
+      streaming: this.streaming,
+      localization: this.localization,
+      dark: this.dark,
+    });
+  }, 50);
 }
 
-export default MarkdownTextElement;
+export default MarkdownElement;

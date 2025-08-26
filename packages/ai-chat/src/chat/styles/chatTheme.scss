@@ -6,6 +6,7 @@
  */
 
 @use "@carbon/styles/scss/theme";
+@use "@carbon/layout";
 
 // Web chat widget
 $BASE-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
@@ -25,5 +26,5 @@ $AI-box-shadow-inner: inset 0 -80px 70px -65px theme.$ai-inner-shadow;
 $AI-box-shadow-outer: 0 4px 10px 2px theme.$ai-drop-shadow;
 
 // Card
-$CARD-border-radius: var(--cds-chat-BASE-border-radius-med);
+$CARD-border-radius: layout.$spacing-03;
 $CARD-max-width: 424px;

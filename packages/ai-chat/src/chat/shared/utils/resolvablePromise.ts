@@ -48,10 +48,10 @@ type ResolvablePromise<TResolveType = any> = Resolvable<TResolveType> &
  * can be called on demand by the code using the promise.
  */
 function resolvablePromise<
-  TResolveType = void
+  TResolveType = void,
 >(): ResolvablePromise<TResolveType> {
   let resolveFunction: (
-    value?: TResolveType | PromiseLike<TResolveType>
+    value?: TResolveType | PromiseLike<TResolveType>,
   ) => void;
   let rejectFunction: (reason?: any) => void;
 

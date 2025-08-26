@@ -79,7 +79,7 @@ function TextHolderTile({
                 "WACWidget__textEllipsis",
                 {
                   WACTextHolderTile__UrlMargin: title || description,
-                }
+                },
               )}
               aria-hidden
             >

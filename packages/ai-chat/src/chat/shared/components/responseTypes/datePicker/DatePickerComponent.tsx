@@ -7,8 +7,14 @@
  *  @license
  */
 
-import Checkmark from "@carbon/icons-react/es/Checkmark.js";
-import { Button, DatePicker, DatePickerInput, Layer } from "@carbon/react";
+import Checkmark32 from "@carbon/icons/es/checkmark/32.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
+import Button from "../../../../react/carbon/Button";
+import {
+  DatePickerInput,
+  DatePicker,
+} from "../../../../react/carbon/DatePicker";
+import { DATE_PICKER_INPUT_KIND } from "@carbon/web-components/es/components/date-picker/defs.js";
 import dayjs from "dayjs";
 import { BaseOptions } from "flatpickr/dist/types/options";
 import React, { useCallback, useRef, useState } from "react";
@@ -37,6 +43,8 @@ import {
 } from "../../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../../types/events/eventBusTypes";
 
+const Checkmark = carbonIconToReact(Checkmark32);
+
 interface DatePickerComponentProps {
   /**
    * The message to display.
@@ -64,7 +72,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const intl = useIntl();
   const webChatLocale = useSelector((state: AppState) => state.locale);
   const originalMessage = useSelector(
-    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID]
+    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID],
   ) as MessageResponse;
   const uuidRef = useRef(uuid(UUIDType.MISCELLANEOUS));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -74,24 +82,17 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const [flatpickrLocale, setFlatpickrLocale] =
     useState<BaseOptions["locale"]>();
   const [dayjsLocale, setDayjsLocale] = useState<string>();
-  const [datePickerHostElement, setDatePickerHostElement] =
-    useState<HTMLDivElement>();
+  const datePickerRef = useRef<any>(null);
   const valueForAssistantRef = useRef<string>();
-  // This ref is to track when the user uses the date picker input through some pointer that's not a keyboard
-  // (e.g. mouse, touch, etc.) to open the date picker. If the date picker is opened and the user's pointer is not
-  // over the date picker input, such as when the date picker is scrolled into view, the date picker will close.
-  // This is intentional behavior from the DatePicker component, so a way around this will be to scroll the calendar
-  // into view after the user has lifted their pointer from the input and not when the calendar is opened.
-  const isInputPointerDownEventFiredRef = useRef<boolean>(false);
   const inputLabel = intl.formatMessage(
     { id: "datePicker_chooseDate" },
-    { format: userDisplayFormat }
+    { format: userDisplayFormat },
   );
   const confirmButtonLabel = intl.formatMessage({
     id: "datePicker_confirmDate",
   });
   const isDateInfoReady = Boolean(
-    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale
+    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale,
   );
 
   /**
@@ -120,7 +121,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     const request = createMessageRequestForDate(
       valueForAssistantRef.current,
       userDisplayValue,
-      responseID
+      responseID,
     );
 
     serviceManager.actions.sendWithCatch(
@@ -128,21 +129,47 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       MessageSendSource.DATE_PICKER,
       {
         setValueSelectedForMessageID: localMessageID,
-      }
+      },
     );
   }, [localMessage, serviceManager, userDisplayValue]);
 
-  /**
-   * Scrolls the date picker host element into view.
-   */
-  const doScrollElementIntoView = useCallback(() => {
-    scrollElementIntoView(datePickerHostElement, 0, 24);
-  }, [datePickerHostElement, scrollElementIntoView]);
+  const handleOpen = useCallback(() => {
+    setIsCalendarOpen(true);
+
+    const datePicker = datePickerRef.current;
+    const root = datePicker?.renderRoot;
+    if (!datePicker || !root) {
+      return;
+    }
+
+    const container = root.querySelector(
+      "#floating-menu-container",
+    ) as HTMLElement | null;
+    const calendar = container?.querySelector(
+      ".cds--date-picker__calendar",
+    ) as HTMLElement | null;
+
+    calendar && (calendar.style.position = "unset");
+    container && (container.style.position = "unset");
+
+    if (calendar) {
+      const onAnimationEnd = () => {
+        scrollElementIntoView(calendar, 0, 24);
+        calendar.removeEventListener("animationend", onAnimationEnd);
+      };
+      calendar.addEventListener("animationend", onAnimationEnd);
+    }
+
+    Object.assign(datePicker.style, {
+      display: "flex",
+      flexDirection: "column",
+    });
+  }, [scrollElementIntoView]);
 
   useOnMount(() => {
     const localeFromMessage = webChatLocale;
     const { originalUserText } = localMessage.ui_state;
-    const fromHistory = originalMessage.history.from_history;
+    const fromHistory = originalMessage.ui_state_internal?.from_history;
 
     // If this message is from history and a user has made a previous selection, set the value in the input.
     if (fromHistory && originalUserText) {
@@ -160,7 +187,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       }
     } catch {
       consoleError(
-        `Locale ${dayjsLocale} is not recognized by Carbon AI chat. Defaulting to English(US).`
+        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`,
       );
       setDateInfoForLocale("en");
     }
@@ -168,77 +195,42 @@ function DatePickerComponent(props: DatePickerComponentProps) {
 
   return (
     <div className="WACDatePicker">
-      {isDateInfoReady && datePickerHostElement && (
-        <Layer>
-          <DatePicker
-            className="WACDatePicker__Calendar"
-            datePickerType="single"
-            allowInput={false}
-            locale={flatpickrLocale}
-            appendTo={datePickerHostElement}
-            onChange={(dates) => {
-              if (dates.length) {
-                const date = dates[0];
-
-                // The assistant should receive the date value in ISO format.
-                valueForAssistantRef.current = toAssistantDateFormat(date);
-                // Use the date object to get a date string in the expected format.
-                setUserDisplayValue(toUserDateFormat(date, userDisplayFormat));
-              }
-            }}
-            dateFormat={flatpickrFormat}
-            onOpen={() => {
-              setIsCalendarOpen(true);
-              // The carbon date picker uses a "handleClickOutside" functionality to detect when the user has clicked
-              // outside of the component so that it will auto-close the calendar popup. There is a bug that occurs
-              // when the component scrolls at the same time the popup opens. If the user clicks on the picker input
-              // field, the mouse down part causes the field to get focus which causes the popup to open. We had code
-              // below that would then cause the chat to scroll which moved the input field so it was no longer under
-              // the mouse cursor. Unless the user does this very fast, the mouse up half of the click will not occur
-              // on the input field (because it moved) and the component detects this as a "click outside" and closes
-              // the popup. The popup can open either because the user clicks on the input field or when the field gets
-              // focus from keyboard input. With keyboard input, we want continue to scroll when the popup opens.
-              // However, if the user clicks on the input, we want to delay the scroll until the click is fully
-              // processed (this will ensure the cursor stays on the input field until the mouse up occurs).
-              if (isInputPointerDownEventFiredRef.current) {
-                isInputPointerDownEventFiredRef.current = false;
-              } else {
-                doScrollElementIntoView();
-              }
-            }}
-            onClose={() => setIsCalendarOpen(false)}
-          >
-            <DatePickerInput
-              id={uuidRef.current}
-              labelText={inputLabel}
-              placeholder={userDisplayFormat}
-              disabled={disabled}
-              // Set this prop value to an empty string. The component will set a default text telling the user to match
-              // the requests date format, which is useless since we don't allow the user to type a date.
-              title=""
-              // This event listener is fired before the DatePicker component's onOpen listener so we'll set the flag
-              // to prevent the onOpen listener from moving the input away from the user's pointer and close the
-              // calendar as result.
-              onPointerDown={() => {
-                isInputPointerDownEventFiredRef.current = true;
-              }}
-              // This event listener gets fired once the user's pointer is lifted from the input which is when we
-              // scroll the calendar into view.
-              onClick={() => doScrollElementIntoView()}
-            />
-          </DatePicker>
-        </Layer>
+      {isDateInfoReady && (
+        <DatePicker
+          ref={datePickerRef}
+          allow-input="true"
+          close-on-select="true"
+          date-format={flatpickrFormat}
+          onFocus={handleOpen}
+          onClick={handleOpen}
+          onChange={(e: CustomEvent) => {
+            const dates = e.detail.selectedDates;
+            if (dates.length) {
+              const date = dates[0];
+              // The assistant should receive the date value in ISO format.
+              valueForAssistantRef.current = toAssistantDateFormat(date);
+              // Use the date object to get a date string in the expected format.
+              setUserDisplayValue(toUserDateFormat(date, userDisplayFormat));
+              setIsCalendarOpen(false);
+            }
+          }}
+        >
+          <DatePickerInput
+            id={uuidRef.current}
+            disabled={disabled}
+            kind={DATE_PICKER_INPUT_KIND.SINGLE}
+            label-text={inputLabel}
+            placeholder={userDisplayFormat}
+            warn-text=""
+          ></DatePickerInput>
+        </DatePicker>
       )}
-      <div
-        className="WACDatePicker__CalendarContainer"
-        ref={setDatePickerHostElement}
-      />
       {!disabled && !isCalendarOpen && userDisplayValue && (
         <Button
           className="WACDatePicker__ConfirmButton"
           onClick={handlerSendDate}
-          renderIcon={(props) => <Checkmark size={32} {...props} />}
         >
+          <Checkmark slot="icon" />
           {confirmButtonLabel}
         </Button>
       )}

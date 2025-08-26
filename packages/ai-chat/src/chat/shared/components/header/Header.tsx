@@ -8,26 +8,28 @@
  */
 
 import "@carbon/web-components/es-custom/components/slug/index.js";
+import CDSButton from "@carbon/web-components/es-custom/components/button/button";
+import Button, {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+  BUTTON_TOOLTIP_POSITION,
+} from "../../../react/carbon/Button";
 
 import Close from "@carbon/icons-react/es/Close.js";
-import CloseLarge from "@carbon/icons-react/es/CloseLarge.js";
-import DownToBottom from "@carbon/icons-react/es/DownToBottom.js";
 import Menu from "@carbon/icons-react/es/Menu.js";
-import Restart from "@carbon/icons-react/es/Restart.js";
-import SidePanelClose from "@carbon/icons-react/es/SidePanelClose.js";
-import SubtractLarge from "@carbon/icons-react/es/SubtractLarge.js";
-import {
-  Button,
-  ButtonTooltipPosition,
-  MenuItem,
-  MenuItemDivider,
-} from "@carbon/react";
+import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
+import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
+import Restart16 from "@carbon/icons/es/restart/16.js";
+import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
+import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
+
+import { carbonIconToReact } from "../../utils/carbonIcon";
+import { MenuItem } from "@carbon/react";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es-custom/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es-custom/components/popover/defs.js";
 import cx from "classnames";
 import React, {
   forwardRef,
-  Fragment,
   Ref,
   RefObject,
   useCallback,
@@ -39,50 +41,33 @@ import React, {
 } from "react";
 import { useSelector } from "react-redux";
 
-import {
-  ChatHeaderObjectType,
-  ChatHeaderGroupMenuItem,
-  ChatHeaderMenuItemTypes,
-  ChatHeaderObjectTypes,
-} from "../../../../types/config/ChatHeaderConfig";
 import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
 import { ChatHeaderAvatar } from "../../../react/components/chatHeader/ChatHeaderAvatar";
-import { ChatHeaderLink } from "../../../react/components/chatHeader/ChatHeaderLink";
-import { ChatHeaderMenuButton } from "../../../react/components/chatHeader/ChatHeaderMenuButton";
-import { ChatHeaderMenuItem } from "../../../react/components/chatHeader/ChatHeaderMenuItem";
-import { ChatHeaderMenuItemRadioGroup } from "../../../react/components/chatHeader/ChatHeaderMenuItemRadioGroup";
 import { ChatHeaderOverflowMenu } from "../../../react/components/chatHeader/ChatHeaderOverflowMenu";
 import { ChatHeaderTitle } from "../../../react/components/chatHeader/ChatHeaderTitle";
 import { HideComponentContext } from "../../contexts/HideComponentContext";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { usePrevious } from "../../hooks/usePrevious";
 import { useServiceManager } from "../../hooks/useServiceManager";
-import actions from "../../store/actions";
-import {
-  AppState,
-  ChatWidthBreakpoint,
-} from "../../../../types/state/AppState";
+import { AppState } from "../../../../types/state/AppState";
 import { HasChildren } from "../../../../types/utilities/HasChildren";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import ObjectMap from "../../../../types/utilities/ObjectMap";
 import { BrandColorKind, WriteableElementName } from "../../utils/constants";
 import { doFocusRef } from "../../utils/domUtils";
 import { ConfirmModal } from "../modals/ConfirmModal";
 import WriteableElement from "../WriteableElement";
 // The React AI Slug from @carbon/react doesn't work in ShadowRoot, so we need to use the web component one.
 import { AISlug } from "./AISlug";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../types/utilities/carbonTypes";
 import { MinimizeButtonIconType } from "../../../../types/config/PublicConfig";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
 
-// The minimum width in pixels of the center gap, that separates the left and right header objects, until the number
-// of objects that are allowed to be visible in the header is re-calculated.
-const HEADER_OBJECTS_GAP_MIN_SIZE = 100;
+const CloseLarge = carbonIconToReact(CloseLarge16);
+const DownToBottom = carbonIconToReact(DownToBottom16);
+const Restart = carbonIconToReact(Restart16);
+const SidePanelClose = carbonIconToReact(SidePanelClose16);
+const SubtractLarge = carbonIconToReact(SubtractLarge16);
 
 interface HeaderProps {
   /**
@@ -123,11 +108,6 @@ interface HeaderProps {
   useAITheme?: boolean;
 
   /**
-   * Determines if the center area of the header should be rendered.
-   */
-  showCenter?: boolean;
-
-  /**
    * The aria label to display on the back button.
    */
   labelBackButton?: string;
@@ -135,7 +115,7 @@ interface HeaderProps {
   /**
    * The type of button class to use on the back button.
    */
-  backButtonType?: ButtonKindEnum;
+  backButtonType?: BUTTON_KIND;
 
   /**
    * The brand color type to use for the header. This will default to "primary".
@@ -207,7 +187,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     overflowItems,
     overflowClicked,
     backButtonType,
-    showCenter,
     hideCloseButton,
     hideCloseAndRestartButton,
     brandColor = "primary",
@@ -216,38 +195,28 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     testIdPrefix,
   } = props;
 
-  const backButtonRef = useRef<HTMLButtonElement>();
-  const restartButtonRef = useRef<HTMLButtonElement>();
-  const closeAndRestartButtonRef = useRef<HTMLButtonElement>();
-  const closeButtonRef = useRef<HTMLButtonElement>();
-  const centerObjectsRef = useRef<HTMLDivElement>();
-  const centerGapRef = useRef<HTMLDivElement>();
+  const backButtonRef = useRef<CDSButton>();
+  const restartButtonRef = useRef<CDSButton>();
+  const closeAndRestartButtonRef = useRef<CDSButton>();
+  const closeButtonRef = useRef<CDSButton>();
   const overflowRef = useRef<HTMLDivElement>();
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);
+  const isRTL = document.dir === "rtl";
   const chatHeaderConfig = useSelector(
-    (state: AppState) => state.chatHeaderState.config
-  );
-  const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint
-  );
-  const maxVisibleHeaderObjects = useSelector(
-    (state: AppState) => state.chatHeaderState.maxVisibleHeaderObjects
+    (state: AppState) => state.chatHeaderState.config,
   );
   const [overflowIsOpen, setOverflowIsOpen] = useState(false);
   const [confirmModelOpen, setConfirmModelOpen] = useState(false);
-  // The object map state that keeps track of the values selected in a radio group menus in the chat header.
-  const [selectedGroupMenuitems, setSelectedGroupMenuItems] = useState<
-    ObjectMap<ChatHeaderGroupMenuItem | string>
-  >({});
+
   const [isImageError, setIsImageError] = useState(false);
   const hasHeaderAvatar = Boolean(headerAvatarConfig) && !isImageError;
   const isHidden = useContext(HideComponentContext);
   const prevChatHeaderAvatarURL = usePrevious(headerAvatarConfig?.url);
 
   const { headerConfig } = publicConfig;
-  const isWideWidth = chatWidthBreakpoint === ChatWidthBreakpoint.WIDE;
+
   // The title and name to display in the header from the chat header config.
   const chatHeaderTitle = enableChatHeaderConfig
     ? chatHeaderConfig?.headerTitle?.title
@@ -277,29 +246,59 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const minimizeButtonIconType = headerConfig?.minimizeButtonIconType;
   switch (minimizeButtonIconType) {
     case MinimizeButtonIconType.CLOSE:
-      closeIcon = <CloseLarge className="WACIcon__Close" size={16} />;
+      closeIcon = (
+        <CloseLarge
+          aria-label={languagePack.launcher_isOpen}
+          slot="icon"
+          className="WACIcon__Close"
+        />
+      );
       break;
     case MinimizeButtonIconType.MINIMIZE:
-      closeIcon = <SubtractLarge className="WACIcon__Subtract" size={16} />;
+      closeIcon = (
+        <SubtractLarge
+          aria-label={languagePack.launcher_isOpen}
+          slot="icon"
+          className="WACIcon__Subtract"
+        />
+      );
       break;
     case MinimizeButtonIconType.SIDE_PANEL_LEFT:
       closeIsReversible = false;
-      closeIcon = <SidePanelClose className="WACIcon__SidePanelClose" />;
+      closeIcon = (
+        <SidePanelClose
+          aria-label={languagePack.launcher_isOpen}
+          slot="icon"
+          className="WACIcon__SidePanelClose"
+        />
+      );
       break;
     case MinimizeButtonIconType.SIDE_PANEL_RIGHT:
       closeIsReversible = false;
       closeReverseIcon = true;
-      closeIcon = <SidePanelClose className="WACIcon__SidePanelClose" />;
+      closeIcon = (
+        <SidePanelClose
+          aria-label={languagePack.launcher_isOpen}
+          slot="icon"
+          className="WACIcon__SidePanelClose"
+        />
+      );
       break;
     default: {
-      closeIcon = <SubtractLarge className="WACIcon__Subtract" size={16} />;
+      closeIcon = (
+        <SubtractLarge
+          aria-label={languagePack.launcher_isOpen}
+          slot="icon"
+          className="WACIcon__Subtract"
+        />
+      );
       break;
     }
   }
 
   if (showCloseAndRestartButton && showRestartButton) {
     throw new Error(
-      "You cannot enable both the restart button and the close-and-restart buttons."
+      "You cannot enable both the restart button and the close-and-restart buttons.",
     );
   }
 
@@ -327,186 +326,9 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
-  /**
-   * A function that takes the given menu item type and returns it's associated chat header menu item component.
-   */
-  function getComponentInMenu(
-    item: ChatHeaderMenuItemTypes,
-    index: number,
-    list: ChatHeaderMenuItemTypes[]
-  ) {
-    switch (item.type) {
-      case ChatHeaderObjectType.LINK:
-        return (
-          <ChatHeaderMenuItem
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            label={item.label}
-            url={item.url}
-            isNewTab={item.isNewTab}
-            onClick={() => {
-              // Move focus back to the overflow menu button.
-              doFocusRef(overflowRef);
-            }}
-          />
-        );
-      case ChatHeaderObjectType.BUTTON:
-        // eslint-disable-next-line react/no-array-index-key
-        return (
-          <ChatHeaderMenuItem
-            key={index}
-            label={item.label}
-            onClick={() => {
-              item.onClick?.();
-              // Move focus back to the overflow menu button.
-              doFocusRef(overflowRef);
-            }}
-          />
-        );
-      case ChatHeaderObjectType.RADIO_GROUP: {
-        const nextObject = list[index + 1];
-        return (
-          // eslint-disable-next-line react/no-array-index-key
-          <Fragment key={index}>
-            {index !== 0 && <MenuItemDivider />}
-            <ChatHeaderMenuItemRadioGroup
-              label={item.label}
-              items={item.items}
-              defaultSelectedItem={item.defaultSelectedItem}
-              selectedItem={selectedGroupMenuitems[item.label]}
-              onChange={(selectedItem) => {
-                setSelectedGroupMenuItems((prevState) => ({
-                  ...prevState,
-                  [item.label]: selectedItem,
-                }));
-                item.onChange?.(selectedItem);
-              }}
-            />
-            {Boolean(nextObject) &&
-              nextObject.type !== ChatHeaderObjectType.RADIO_GROUP && (
-                <MenuItemDivider />
-              )}
-          </Fragment>
-        );
-      }
-      case ChatHeaderObjectType.MENU:
-        return (
-          <ChatHeaderMenuItem
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            label={item.label}
-          >
-            {item.items
-              // Filter out menu objects from submenus to prevent having more than 1 level of submenus.
-              .filter(
-                (menuItem) =>
-                  (menuItem.type as string) !== ChatHeaderObjectType.MENU
-              )
-              .map(getComponentInMenu)}
-          </ChatHeaderMenuItem>
-        );
-      default:
-        return null;
-    }
-  }
-
-  /**
-   * A function that takes the given chat header object and returns the associated component.
-   */
-  function getComponentInChatHeader(
-    headerObject: ChatHeaderObjectTypes,
-    index: number
-  ) {
-    switch (headerObject.type) {
-      case ChatHeaderObjectType.LINK:
-        // eslint-disable-next-line react/no-array-index-key
-        return (
-          <ChatHeaderLink
-            key={index}
-            label={headerObject.label}
-            url={headerObject.url}
-            isNewTab={headerObject.isNewTab}
-          />
-        );
-      case ChatHeaderObjectType.MENU:
-        return (
-          // eslint-disable-next-line react/no-array-index-key
-          <ChatHeaderMenuButton
-            key={index}
-            label={headerObject.label}
-            menuAlignment="bottom-start"
-          >
-            {headerObject.items.map(getComponentInMenu)}
-          </ChatHeaderMenuButton>
-        );
-      case ChatHeaderObjectType.BUTTON:
-        return (
-          <Button
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            kind={ButtonKindEnum.GHOST}
-            size={ButtonSizeEnum.MEDIUM}
-            onClick={headerObject.onClick}
-          >
-            {headerObject.label}
-          </Button>
-        );
-      default:
-        return null;
-    }
-  }
-
-  // Determine if there are chat header object that need to be displayed in the overflow menu.
-  let leftObjectsLength = 0;
-  let rightObjectsLength = 0;
-
-  if (enableChatHeaderConfig) {
-    leftObjectsLength = chatHeaderConfig?.left?.length ?? 0;
-    rightObjectsLength = chatHeaderConfig?.right?.length ?? 0;
-  }
-
-  const isLeftObjectsInOverflow = leftObjectsLength > maxVisibleHeaderObjects;
-  const isRightObjectsInOverflow = rightObjectsLength > maxVisibleHeaderObjects;
-
-  const hasChatHeaderObjects = leftObjectsLength || rightObjectsLength;
-  const renderChatHeaderObjectsInOverflow =
-    hasChatHeaderObjects &&
-    (!isWideWidth || isLeftObjectsInOverflow || isRightObjectsInOverflow);
-  const hasOverflow =
-    Boolean(overflowItems?.length) || renderChatHeaderObjectsInOverflow;
-  const isRTL = document.dir === "rtl";
-
-  // The list of component to render in the left chat header container.
-  let leftChatHeaderComponents = null;
-  // The list of component to render in the right chat header container.
-  let rightChatHeaderComponents = null;
-  // The list of components that don't fit in the left chat header container to render in the overflow menu.
-  let leftChatHeaderMenuComponents = null;
-  // The list of components that don't fit in the right chat header container to render in the overflow menu.
-  let rightChatHeaderMenuComponents = null;
-
-  if (enableChatHeaderConfig) {
-    leftChatHeaderComponents = chatHeaderConfig?.left
-      ?.slice(0, isLeftObjectsInOverflow ? maxVisibleHeaderObjects : undefined)
-      .map(getComponentInChatHeader);
-    rightChatHeaderComponents = chatHeaderConfig?.right
-      ?.slice(0, isRightObjectsInOverflow ? maxVisibleHeaderObjects : undefined)
-      .map(getComponentInChatHeader);
-    leftChatHeaderMenuComponents =
-      isLeftObjectsInOverflow &&
-      chatHeaderConfig?.left
-        ?.slice(maxVisibleHeaderObjects)
-        .map(getComponentInMenu);
-    rightChatHeaderMenuComponents =
-      isRightObjectsInOverflow &&
-      chatHeaderConfig?.right
-        ?.slice(maxVisibleHeaderObjects)
-        .map(getComponentInMenu);
-  }
-
   let leftContent;
 
-  if (hasOverflow) {
+  if (overflowItems) {
     // If there are overflow items, we need to show the overflow menu. This overrides any back button that may be
     // present.
     leftContent = (
@@ -516,7 +338,9 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         iconDescription={languagePack.header_overflowMenu_options}
         ariaLabel={languagePack.components_overflow_ariaLabel}
         containerRef={overflowRef}
-        tooltipPosition={isRTL ? "left" : "right"}
+        tooltipPosition={
+          isRTL ? BUTTON_TOOLTIP_POSITION.LEFT : BUTTON_TOOLTIP_POSITION.RIGHT
+        }
         menuAlignment="bottom-start"
         onOpen={() => {
           // This requires a setTimeout because of an apparent bug in the Carbon components. If the icon changes
@@ -542,8 +366,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             }}
           />
         ))}
-        {leftChatHeaderMenuComponents}
-        {rightChatHeaderMenuComponents}
       </ChatHeaderOverflowMenu>
     );
   } else if (showBackButton) {
@@ -555,67 +377,16 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         onClick={onClickBack}
         buttonRef={backButtonRef}
         buttonKind={backButtonType}
-        tooltipPosition={isRTL ? "left" : "right"}
+        tooltipPosition={
+          isRTL ? BUTTON_TOOLTIP_POSITION.LEFT : BUTTON_TOOLTIP_POSITION.RIGHT
+        }
       >
-        {backContent || <DownToBottom />}
+        {backContent || (
+          <DownToBottom aria-label={labelBackButton} slot="icon" />
+        )}
       </HeaderButton>
     );
   }
-
-  // This effect sets a resize observer for the center objects container to set the max number of visible objects in
-  // This helps determine how many elements can be in the chat header and in the overflow menu.
-  useEffect(() => {
-    if (!isWideWidth) {
-      serviceManager.store.dispatch(actions.setMaxVisibleHeaderObjects(0));
-      return undefined;
-    }
-
-    if (!enableChatHeaderConfig) {
-      return undefined;
-    }
-
-    const centerResizeObserver = new ResizeObserver(() => {
-      const centerGapElement = centerGapRef.current;
-      if (centerGapElement) {
-        if (
-          centerGapElement.offsetWidth > HEADER_OBJECTS_GAP_MIN_SIZE ||
-          centerGapElement.offsetWidth === 0
-        ) {
-          // Determine the new max number of visible header objects by:
-          // * Subtracting minimum gap size from current center content width
-          //   - We subtract the gap size from the center content width so it's accounted for when determining max
-          //     number of visible header objects. There will always be a gap between the left and right objects.
-          // * Divide the minimum gap size, multiply by 2
-          //   - The number of header objects on both the left and right side should be even so we mutiply the
-          //     the assumed size of a chat header object (which can be arbitrary) by 2.
-          //
-          // Example: (500 - 100) / (200) = 2 objects on both the left and right side with 100px of space for the
-          //          center gap.
-          let newTotal = Math.floor(
-            (centerObjectsRef.current.offsetWidth -
-              HEADER_OBJECTS_GAP_MIN_SIZE) /
-              (HEADER_OBJECTS_GAP_MIN_SIZE * 2)
-          );
-
-          if (newTotal < 0) {
-            newTotal = 0;
-          }
-
-          setTimeout(() => {
-            serviceManager.store.dispatch(
-              actions.setMaxVisibleHeaderObjects(newTotal)
-            );
-          });
-        }
-      }
-    });
-
-    centerResizeObserver.observe(centerObjectsRef.current);
-
-    return () => {
-      centerResizeObserver.disconnect();
-    };
-  }, [isWideWidth, enableChatHeaderConfig, serviceManager]);
 
   useEffect(() => {
     if (isImageError && prevChatHeaderAvatarURL !== headerAvatarConfig?.url) {
@@ -638,42 +409,24 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             {leftContent}
           </div>
         )}
-        {showCenter && (
-          <div className="WACHeader__CenterContainer">
-            {hasHeaderAvatar && (
-              <ChatHeaderAvatar
-                url={headerAvatarConfig.url}
-                corners={headerAvatarConfig.corners}
-                alt={languagePack.header_ariaBotAvatar}
-                onError={() => setIsImageError(true)}
+        <div className="WACHeader__CenterContainer">
+          {hasHeaderAvatar && (
+            <ChatHeaderAvatar
+              url={headerAvatarConfig.url}
+              corners={headerAvatarConfig.corners}
+              alt={languagePack.header_ariaBotAvatar}
+              onError={() => setIsImageError(true)}
+            />
+          )}
+          {(chatHeaderTitle || chatHeaderDisplayName) && (
+            <div className="WACHeader__TitleContainer">
+              <ChatHeaderTitle
+                title={chatHeaderTitle}
+                name={chatHeaderDisplayName}
               />
-            )}
-            {(chatHeaderTitle || chatHeaderDisplayName) && (
-              <div className="WACHeader__TitleContainer">
-                <ChatHeaderTitle
-                  title={chatHeaderTitle}
-                  name={chatHeaderDisplayName}
-                />
-              </div>
-            )}
-            {isWideWidth && Boolean(leftObjectsLength) && (
-              <div className="WACHeader__Separator" />
-            )}
-            <div ref={centerObjectsRef} className="WACHeader__HeaderObjects">
-              {isWideWidth && Boolean(leftObjectsLength) && (
-                <div className="WACHeader__LeftItems">
-                  {leftChatHeaderComponents}
-                </div>
-              )}
-              <div ref={centerGapRef} className="WACHeader__CenterGap" />
-              {isWideWidth && Boolean(rightObjectsLength) && (
-                <div className="WACHeader__RightItems">
-                  {rightChatHeaderComponents}
-                </div>
-              )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <div className="WACHeader__Buttons WACHeader__RightButtons">
           {useAITheme && (
             <AISlug
@@ -709,9 +462,13 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               label={languagePack.buttons_restart}
               onClick={onClickRestart}
               buttonRef={restartButtonRef}
-              tooltipPosition={isRTL ? "right" : "left"}
+              tooltipPosition={
+                isRTL
+                  ? BUTTON_TOOLTIP_POSITION.RIGHT
+                  : BUTTON_TOOLTIP_POSITION.LEFT
+              }
             >
-              <Restart />
+              <Restart aria-label={languagePack.buttons_restart} slot="icon" />
             </HeaderButton>
           )}
           {!useHideCloseButton && (
@@ -725,7 +482,11 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 onClickClose();
               }}
               buttonRef={closeButtonRef}
-              tooltipPosition={isRTL ? "right" : "left"}
+              tooltipPosition={
+                isRTL
+                  ? BUTTON_TOOLTIP_POSITION.RIGHT
+                  : BUTTON_TOOLTIP_POSITION.LEFT
+              }
               testId={makeTestId(PageObjectId.CLOSE_CHAT, testIdPrefix)}
             >
               {closeIcon}
@@ -737,9 +498,17 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               label={languagePack.header_ariaCloseRestart}
               onClick={() => setConfirmModelOpen(true)}
               buttonRef={closeAndRestartButtonRef}
-              tooltipPosition={isRTL ? "right" : "left"}
+              tooltipPosition={
+                isRTL
+                  ? BUTTON_TOOLTIP_POSITION.RIGHT
+                  : BUTTON_TOOLTIP_POSITION.LEFT
+              }
             >
-              <CloseLarge className="WACIcon__Close" />
+              <CloseLarge
+                aria-label={languagePack.header_ariaCloseRestart}
+                slot="icon"
+                className="WACIcon__Close"
+              />
             </HeaderButton>
           )}
         </div>
@@ -769,7 +538,7 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
   /**
    * The ref to use for the actual button element.
    */
-  buttonRef: RefObject<HTMLButtonElement>;
+  buttonRef: RefObject<CDSButton>;
 
   /**
    * The aria label to use on the button.
@@ -779,7 +548,7 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
   /**
    * The carbon button kind to use.
    */
-  buttonKind?: ButtonKindEnum;
+  buttonKind?: BUTTON_KIND;
 
   /**
    * Indicates if the icon should be reversible based on the document direction.
@@ -789,7 +558,7 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
   /**
    * Specify the alignment of the tooltip to the icon-only button. Can be one of: start, center, or end.
    */
-  tooltipPosition?: ButtonTooltipPosition;
+  tooltipPosition?: BUTTON_TOOLTIP_POSITION;
 
   /**
    * Testing id used for e2e tests.
@@ -803,7 +572,6 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
 function HeaderButton({
   onClick,
   buttonRef,
-  label,
   className,
   children,
   buttonKind,
@@ -811,15 +579,14 @@ function HeaderButton({
   tooltipPosition,
   testId,
 }: HeaderButtonProps) {
+  const buttonKindVal = buttonKind || BUTTON_KIND.GHOST;
   return (
     <Button
       ref={buttonRef}
       className={cx(className, { WACDirectionHasReversibleSVG: isReversible })}
       onClick={onClick}
-      hasIconOnly
-      iconDescription={label}
-      size={ButtonSizeEnum.MEDIUM}
-      kind={buttonKind || ButtonKindEnum.GHOST}
+      size={BUTTON_SIZE.MEDIUM}
+      kind={buttonKindVal as BUTTON_KIND}
       tooltipPosition={tooltipPosition}
       data-testid={testId}
     >

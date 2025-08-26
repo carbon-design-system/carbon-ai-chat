@@ -20,9 +20,7 @@ import {
   CarouselItem,
   MessageResponse,
 } from "../../../../../types/messaging/Messages";
-import { lazyCarousel } from "../../../../dynamic-imports/dynamic-imports";
-
-const Carousel = lazyCarousel();
+import Carousel from "./Carousel";
 
 interface CarouselItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<CarouselItem>;
@@ -48,7 +46,7 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
     renderMessageComponent,
   } = props;
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+    (state: AppState) => state.allMessageItemsByID,
   );
   const { itemsLocalMessageItemIDs } = localMessageItem.ui_state;
 

@@ -8,7 +8,7 @@
  */
 
 import {
-  AgentProfile,
+  ResponseUserProfile,
   ServiceDesk,
   ServiceDeskCallback,
   ServiceDeskFactoryParameters,
@@ -21,19 +21,17 @@ import {
   FileUpload,
   ErrorType,
   AgentAvailability,
-  ImageItem,
   MessageResponseTypes,
-  ButtonItem,
-  ButtonItemKind,
-  ButtonItemType,
   VideoItem,
   TextItem,
   UserDefinedItem,
+  UserType,
 } from "@carbon/ai-chat";
 
 import { v4 as uuid } from "uuid";
 
 import { sleep } from "../framework/utils";
+import { MARKDOWN } from "../customSendMessage/constants";
 
 /**
  * This is a no-op function that's for the purpose of verifying at build time that a given item matches a given
@@ -49,7 +47,7 @@ function assertType<TItemType>(item: TItemType): TItemType {
  */
 function createMessageResponseForText(
   text: string,
-  responseType: MessageResponseTypes = MessageResponseTypes.TEXT
+  responseType: MessageResponseTypes = MessageResponseTypes.TEXT,
 ): MessageResponse {
   const textItem: TextItem = {
     response_type: responseType as MessageResponseTypes,
@@ -158,7 +156,7 @@ interface MockState {
   /**
    * The current agent.
    */
-  currentAgent: AgentProfile;
+  currentAgent: ResponseUserProfile;
 }
 
 const HELLO_TEXT = (userName: string) =>
@@ -166,52 +164,28 @@ const HELLO_TEXT = (userName: string) =>
     userName ? ` ${userName}` : ""
   }, I'm Shepard! I'm a **mock** service desk agent. Type *"help"* to see a list of messages you can mock me with. <script>alert("If you see this, it is a serious bug!");</script>`;
 
-const TEXT_LONG =
-  "The biggest problem that teams encounter when dealing with coding standards is the " +
-  "variety of opinions on the subject or the introduction of new team members who are familiar with a" +
-  " different standard. The first point I would make to address this is that I don't believe that what" +
-  " exactly is in your coding standard is nearly as important as having a standard and using it consistently." +
-  " It doesn't matter if you want braces to be on the following line or the same line as long as whatever you" +
-  " do is consistent.\n\nBut those who don't agree to a specific point are likely to feel that it's \"wrong\"" +
-  ' and not just "different." Over my career I have worked on a lot of different projects with a wide range' +
-  " of coding standards and in my experience, it takes relatively little time to adopt a new standard once" +
-  ' you\'ve set aside your resistance to it. You may feel that putting braces on the same line is "wrong"' +
-  ' but I bet that if you try it, in just a few days you will begin to feel that the new style is "right"' +
-  " and it's now your old style that's \"wrong\".\n\nAs an example, I spent 20 years of my life believing that" +
-  " you were supposed to end a sentence with two spaces instead of one. Then one day I started to notice in " +
-  "javadoc comments that other members of my team used just one. I decided to go look up the best practices for " +
-  "this and concluded that the two spaces were outdated and it's now generally accepted to use just one. I made a " +
-  "few weak attempts to change but I just found it hard to switch a habit that I had had for so long. One day I " +
-  "finally decided to practice what I preach and made a serious attempt to relegate that extra space to history " +
-  "and sure enough, within a couple of days I no longer had any difficulty typing one space instead of two and in " +
-  "not much time after that, I found myself occasionally noticing the two spaces in old code of mine and found that " +
-  "it did indeed look odd now...\n\n" +
-  '[More](https://medium.com/@damon.lundin/on-coding-standards-4420e3fa281f)\n\n<script>alert("If you see this, it is a serious bug!")</script>';
-
-const PROFILE_URL_PREFIX =
-  "https://web-chat.assistant.test.watson.cloud.ibm.com";
-
-const MOCK_AGENT_PROFILE_SHEPARD: AgentProfile = {
+const MOCK_AGENT_PROFILE_SHEPARD: ResponseUserProfile = {
   id: "CommanderShepard-id",
   nickname: "Shepard",
-  profile_picture_url: `${PROFILE_URL_PREFIX}/assets/example_avatar_1.png`,
+  user_type: UserType.HUMAN,
 };
 
-const MOCK_AGENT_PROFILE_GARRUS: AgentProfile = {
+const MOCK_AGENT_PROFILE_GARRUS: ResponseUserProfile = {
   id: "GarrusVakarian-id",
   nickname: "Garrus",
-  profile_picture_url: `${PROFILE_URL_PREFIX}/assets/example_avatar_2.png`,
+  user_type: UserType.HUMAN,
 };
 
-const MOCK_AGENT_PROFILE_LEGION: AgentProfile = {
+const MOCK_AGENT_PROFILE_LEGION: ResponseUserProfile = {
   id: "Legion-id",
   nickname: "Legion",
-  profile_picture_url: `${PROFILE_URL_PREFIX}/assets/example_avatar_missing.png`,
+  user_type: UserType.HUMAN,
 };
 
-const MOCK_AGENT_PROFILE_EMPTY: AgentProfile = {
+const MOCK_AGENT_PROFILE_EMPTY: ResponseUserProfile = {
   id: "",
   nickname: "",
+  user_type: UserType.HUMAN,
 };
 
 // The agent we're currently talking to.
@@ -251,7 +225,7 @@ class MockServiceDesk implements ServiceDesk {
   factoryParameters: ServiceDeskFactoryParameters;
 
   /**
-   * The instance of the Carbon AI chat.
+   * The instance of the Carbon AI Chat.
    */
   chatInstance: ChatInstance;
 
@@ -272,17 +246,17 @@ class MockServiceDesk implements ServiceDesk {
   }
 
   getName(): string {
-    return "wac mock service desk";
+    return "mock service desk";
   }
 
   startChat(
     connectMessage: MessageResponse,
-    startChatOptions: StartChatOptions
+    startChatOptions: StartChatOptions,
   ): Promise<void> {
     console.log(`MockServiceDesk [startChat]: connectMessage`, connectMessage);
     console.log(
       `MockServiceDesk [startChat]: startChatOptions`,
-      startChatOptions
+      startChatOptions,
     );
 
     this.preStartChatPayload =
@@ -297,13 +271,13 @@ class MockServiceDesk implements ServiceDesk {
     if (this.mockState.connectDelayFactor === 0) {
       return runSteps(
         this,
-        START_CHAT_IMMEDIATELY(this.preStartChatPayload.userName)
+        START_CHAT_IMMEDIATELY(this.preStartChatPayload.userName),
       );
     }
     if (this.mockState.connectInfoType === ConnectInfoType.NONE) {
       return runSteps(
         this,
-        START_CHAT_NO_INFO(this.preStartChatPayload.userName, this.mockState)
+        START_CHAT_NO_INFO(this.preStartChatPayload.userName, this.mockState),
       );
     }
 
@@ -311,7 +285,7 @@ class MockServiceDesk implements ServiceDesk {
 
     return runSteps(
       this,
-      START_CHAT(this.preStartChatPayload.userName, this.mockState)
+      START_CHAT(this.preStartChatPayload.userName, this.mockState),
     );
   }
 
@@ -322,18 +296,16 @@ class MockServiceDesk implements ServiceDesk {
 
     let surveyResponse;
     if (info.preEndChatPayload?.wasAgentHelpful === true) {
-      surveyResponse =
-        "We understand that you found the agent helpful. He will be given a cookie!";
+      surveyResponse = "We understand that you found the agent helpful.";
     } else if (info.preEndChatPayload?.wasAgentHelpful === false) {
-      surveyResponse =
-        "We are sorry that the agent was not helpful. He will be reassigned to Siberia.";
+      surveyResponse = "We are sorry that the agent was not helpful.";
     }
 
     if (surveyResponse) {
       const text = `Thank you for responding to our survey. ${surveyResponse}`;
       this.sendMessageToUser(
         createMessageResponseForText(text),
-        this.mockState.currentAgent.id
+        this.mockState.currentAgent.id,
       );
     }
 
@@ -348,12 +320,12 @@ class MockServiceDesk implements ServiceDesk {
   sendMessageToAgent(
     message: MessageRequest,
     _messageID: string,
-    additionalData: AdditionalDataToAgent
+    additionalData: AdditionalDataToAgent,
   ): Promise<void> {
     console.log(
       `MockServiceDesk [sendMessageToAgent]`,
       message,
-      additionalData
+      additionalData,
     );
     const { text } = message.input;
 
@@ -365,8 +337,6 @@ class MockServiceDesk implements ServiceDesk {
       const textLower = text.toLowerCase();
       if (textLower.includes("help")) {
         steps = MESSAGE_TO_AGENT_HELP();
-      } else if (textLower.includes("joke")) {
-        steps = MESSAGE_TO_AGENT_JOKE();
       } else if (textLower.includes("someone else")) {
         if (
           this.mockState.currentAgent === MOCK_AGENT_PROFILE_SHEPARD ||
@@ -378,43 +348,31 @@ class MockServiceDesk implements ServiceDesk {
         } else {
           steps = TRANSFER_TO_EMPTY();
         }
-      } else if (textLower.includes("text long")) {
-        steps = MESSAGE_TO_AGENT_TEXT(TEXT_LONG);
-      } else if (textLower.includes("text medium")) {
-        steps = MESSAGE_TO_AGENT_TEXT(
-          "Thanks for being so interesting! I'm sure we're going to have a *wonderful* conversation. Let's get started..."
-        );
       } else if (textLower.includes("markdown")) {
         steps = MESSAGE_TO_AGENT_TEXT(MARKDOWN);
       } else if (textLower.includes("multiple")) {
         steps = MESSAGE_TO_AGENT_MULTIPLE();
-      } else if (textLower.includes("secret")) {
-        steps = MESSAGE_TO_AGENT_TEXT("I'm afraid I don't know any secrets!");
       } else if (textLower.includes("intl")) {
         const message = this.factoryParameters.instance
           .getState()
           .intl.formatMessage({ id: "input_placeholder" });
         steps = MESSAGE_TO_AGENT_TEXT(
-          `Intl string (input_placeholder): *${message}*`
+          `Intl string (input_placeholder): *${message}*`,
         );
       } else if (textLower.includes("leave")) {
         steps = MESSAGE_TO_AGENT_LEAVE_CHAT();
       } else if (textLower.includes("text")) {
         steps = MESSAGE_TO_AGENT_TEXT(
-          "TypeScript is awesome! I don't know how anyone can live without it. Seriously?!"
+          "Carbon is awesome! I don't know how anyone can live without it.",
         );
       } else if (textLower.includes("upload")) {
         steps = MESSAGE_TO_AGENT_TEXT(
           "Alright, you can upload some files. But only .png files please.",
           0,
-          false
+          false,
         );
       } else if (textLower.includes("message throw")) {
         steps = MESSAGE_THROW();
-      } else if (textLower.includes("image")) {
-        steps = MESSAGE_IMAGE();
-      } else if (textLower.includes("files")) {
-        steps = MESSAGE_FILES();
       } else if (textLower.includes("video")) {
         steps = MESSAGE_VIDEO();
       } else if (textLower.includes("custom")) {
@@ -423,7 +381,7 @@ class MockServiceDesk implements ServiceDesk {
         steps = HANG_MESSAGE();
       } else {
         steps = MESSAGE_TO_AGENT_TEXT(
-          'If you say so. Type *"help"* for a list of other things you can say.'
+          'If you say so. Type *"help"* for a list of other things you can say.',
         );
       }
     }
@@ -432,17 +390,20 @@ class MockServiceDesk implements ServiceDesk {
     if (additionalData.filesToUpload) {
       additionalData.filesToUpload.forEach((file) => {
         // Use a setTimeout to simulate a random amount of time it takes to upload a file.
-        setTimeout(() => {
-          let errorMessage: string = "";
-          if (!file.file.name.endsWith(".png")) {
-            errorMessage = "Only .png files may be uploaded.";
-          }
-          this.callback.setFileUploadStatus(
-            file.id,
-            Boolean(errorMessage.length),
-            errorMessage
-          );
-        }, Math.random() * 5000 + 1);
+        setTimeout(
+          () => {
+            let errorMessage = "";
+            if (!file.file.name.endsWith(".png")) {
+              errorMessage = "Only .png files may be uploaded.";
+            }
+            this.callback.setFileUploadStatus(
+              file.id,
+              Boolean(errorMessage.length),
+              errorMessage,
+            );
+          },
+          Math.random() * 5000 + 1,
+        );
       });
     }
 
@@ -456,7 +417,7 @@ class MockServiceDesk implements ServiceDesk {
         this.callback.setFileUploadStatus(
           file.id,
           true,
-          'You may not upload files that start with the letter "A"! Duh.'
+          'You may not upload files that start with the letter "A"!',
         );
       }
     });
@@ -483,7 +444,7 @@ class MockServiceDesk implements ServiceDesk {
   async screenShareStop() {
     this.callback.sendMessageToUser(
       "Alright, you have stopped sharing your screen.",
-      this.mockState.currentAgent.id
+      this.mockState.currentAgent.id,
     );
   }
 
@@ -525,7 +486,7 @@ function START_CHAT_IMMEDIATELY(userName: string): MockStep[] {
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_SHEPARD);
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -534,7 +495,7 @@ function START_CHAT_IMMEDIATELY(userName: string): MockStep[] {
 
 function START_CHAT_NO_INFO(
   userName: string,
-  mockState: MockState
+  mockState: MockState,
 ): MockStep[] {
   return [
     {
@@ -555,7 +516,7 @@ function START_CHAT_NO_INFO(
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          MOCK_AGENT_PROFILE_SHEPARD.id
+          MOCK_AGENT_PROFILE_SHEPARD.id,
         );
       },
     },
@@ -571,7 +532,7 @@ function START_CHAT_CONNECT_ERROR(mockState: MockState): MockStep[] {
         instance.callback.setErrorStatus({
           type: ErrorType.CONNECTING,
           logInfo: "Error!",
-          messageToUser: "Apparently all our agents are taking naps",
+          messageToUser: "All our agents are offline",
         });
       },
     },
@@ -646,7 +607,7 @@ function START_CHAT(userName: string, mockState: MockState): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          mockState.currentAgent.id
+          mockState.currentAgent.id,
         );
       },
     },
@@ -655,19 +616,13 @@ function START_CHAT(userName: string, mockState: MockState): MockStep[] {
 
 // Help messages
 const HELP_TEXT = `You can send me the messages below to get a specific response from me.\n\n
-**text**: I will say something pithy.
-**text medium**: I will send you a few lines of text.
-**text long**: I will bore you with a treatise on coding standards.
-**joke**: I will tell you a joke with after a longer pause with multiple pauses in between messages.
+**text**: I will say something.
 **someone else**: I will transfer you to someone not as nice as I am.
 **multiple**: I will output a response with multiple items in it.
 **intl**: I will output the current value for a translatable string.
 **message throw**: This will throw an error while sending this message.
 **hang**: The service desk will never respond to this message.
 **leave**: I will leave the chat without ending it.
-**secret**: I will send you a message with the word "secret" in it.
-**image**: I will insert an image response.
-**files**: I will insert some file responses.
 **video**: I will insert a video response.
 **custom**: I will insert a custom response.
 **markdown**: I will insert some markdown.`;
@@ -679,11 +634,11 @@ function MESSAGE_TO_AGENT_HELP(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "***These messages must be sent to an agent and not to the bot.***",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
         instance.sendMessageToUser(
           HELP_TEXT,
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -748,7 +703,7 @@ function AGENT_TYPING(isTyping: boolean): MockStep[] {
   ];
 }
 
-function TRANSFER_TO_AGENT(agent: AgentProfile): MockStep[] {
+function TRANSFER_TO_AGENT(agent: ResponseUserProfile): MockStep[] {
   return [
     {
       delay: 0,
@@ -790,8 +745,8 @@ function AGENT_END_CHAT(): MockStep[] {
 // A message to the agent to respond with some simple text.
 function MESSAGE_TO_AGENT_TEXT(
   text: string,
-  delay: number = 1000,
-  showTyping: boolean = true
+  delay = 1000,
+  showTyping = true,
 ): MockStep[] {
   const steps: MockStep[] = [];
   if (showTyping) {
@@ -828,8 +783,8 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       delay: 1000,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "Noooooo! I thought we were getting along so well!",
-          instance.mockState.currentAgent.id
+          "I thought we were getting along so well!",
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -845,7 +800,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Okay, I'll find **someone else** you can talk to.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -874,7 +829,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Hi! I'm **Garrus** and I'm nicer than **Shepard**!",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -889,7 +844,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "You'll regret this.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -905,7 +860,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.mockState.currentAgent = MOCK_AGENT_PROFILE_LEGION;
         instance.callback.beginTransferToAnotherAgent(
-          MOCK_AGENT_PROFILE_LEGION
+          MOCK_AGENT_PROFILE_LEGION,
         );
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_LEGION);
       },
@@ -915,7 +870,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Shepard-Commander.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
       },
     },
@@ -930,7 +885,7 @@ function MESSAGE_TO_AGENT_LEAVE_CHAT(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "I am leaving now!",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
         instance.callback.agentLeftChat();
       },
@@ -946,7 +901,7 @@ function TRANSFER_TO_EMPTY(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Transferring you to a no-name.",
-          instance.mockState.currentAgent.id
+          instance.mockState.currentAgent.id,
         );
         instance.mockState.currentAgent = MOCK_AGENT_PROFILE_EMPTY;
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_EMPTY);
@@ -967,65 +922,6 @@ function MESSAGE_THROW(): MockStep[] {
   ];
 }
 
-function MESSAGE_IMAGE(): MockStep[] {
-  return [
-    {
-      delay: 0,
-      callback: (instance: MockServiceDesk) => {
-        const message: MessageResponse = {
-          output: {
-            generic: [
-              assertType<ImageItem>({
-                response_type: MessageResponseTypes.IMAGE,
-                source:
-                  "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/cat-1950632_1280.jpg",
-                title: "Grump cat",
-              }),
-            ],
-          },
-        };
-
-        instance.sendMessageToUser(message, instance.mockState.currentAgent.id);
-      },
-    },
-  ];
-}
-
-function MESSAGE_FILES(): MockStep[] {
-  return [
-    {
-      delay: 0,
-      callback: (instance: MockServiceDesk) => {
-        const message: MessageResponse = {
-          output: {
-            generic: [
-              assertType<ButtonItem>({
-                response_type:
-                  MessageResponseTypes.BUTTON as unknown as MessageResponseTypes,
-                kind: ButtonItemKind.LINK,
-                button_type: ButtonItemType.URL,
-                url: "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/cat-1950632_1280.jpg",
-                label: "Grump Cat.png",
-                target: "_blank",
-              }),
-              assertType<ButtonItem>({
-                response_type:
-                  MessageResponseTypes.BUTTON as unknown as MessageResponseTypes,
-                kind: ButtonItemKind.LINK,
-                button_type: ButtonItemType.URL,
-                url: "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/maine-coon-694730_1280.jpg",
-                target: "_blank",
-              }),
-            ],
-          },
-        };
-
-        instance.sendMessageToUser(message, instance.mockState.currentAgent.id);
-      },
-    },
-  ];
-}
-
 function MESSAGE_VIDEO(): MockStep[] {
   return [
     {
@@ -1037,8 +933,7 @@ function MESSAGE_VIDEO(): MockStep[] {
               assertType<VideoItem>({
                 response_type: MessageResponseTypes.VIDEO,
                 title: "The video title",
-                source:
-                  "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/lake%20(720p).mp4",
+                source: "https://www.youtube.com/watch?v=QuW4_bRHbUk",
                 alt_text: "The video alternate text",
                 description: "The video description",
               }),
@@ -1090,19 +985,14 @@ function MESSAGE_TO_AGENT_MULTIPLE(): MockStep[] {
         const message: MessageResponse = {
           output: {
             generic: [
-              assertType<TextItem>({
+              {
                 response_type: MessageResponseTypes.TEXT,
                 text: "This is a text item in this response.",
-              }),
-              assertType<TextItem>({
+              },
+              {
                 response_type: MessageResponseTypes.TEXT,
                 text: "This is a second text item.",
-              }),
-              assertType<ImageItem>({
-                response_type: MessageResponseTypes.IMAGE,
-                source:
-                  "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/cat-1950632_1280.jpg",
-              }),
+              },
             ],
           },
         };
@@ -1124,93 +1014,7 @@ function HANG_MESSAGE(): MockStep[] {
   ];
 }
 
-// A response to a user asking for a joke.
-function MESSAGE_TO_AGENT_JOKE(): MockStep[] {
-  return [
-    {
-      delay: 1000,
-      callback: (instance: MockServiceDesk) => {
-        instance.callback.agentReadMessages();
-        instance.callback.agentTyping(true);
-      },
-    },
-    {
-      delay: 5000,
-      callback: (instance: MockServiceDesk) => {
-        instance.sendMessageToUser(
-          "One atom says to another atom: I think I've lost an electron.",
-          instance.mockState.currentAgent.id
-        );
-      },
-    },
-    {
-      delay: 2000,
-      callback: (instance: MockServiceDesk) => {
-        instance.sendMessageToUser(
-          "The second atom says: are you sure?",
-          instance.mockState.currentAgent.id
-        );
-      },
-    },
-    {
-      delay: 2000,
-      callback: (instance: MockServiceDesk) => {
-        instance.sendMessageToUser(
-          "The first atom says: I'm positive.",
-          instance.mockState.currentAgent.id
-        );
-      },
-    },
-  ];
-}
-
-const FENCE_BLOCK = `
-\`\`\`
-const example = {
-  value: true,
-};
-\`\`\`
-`;
-
-// Note, blockquote is not supported. Our HTML sanitization turns the ">" into "&gt;" which prevents the markdown
-// library from turning it into a blockquote.
-const MARKDOWN = `
-This is **bold**, ***bold and italics***, **bold *italics inside***, *italics **bold inside***, and ~~strikethrough~~.
-
-# H1
-H1 Text
-## H2
-H2 Text
-
-1. Ordered List 1 
-2. Ordered List 2 
-
-- Unordered List 1 
-- Unordered List 2
-
-\`Inline code\`
-
-${FENCE_BLOCK}
-
-| Header 1 | Header 2 |
-| ----------- | ----------- |
-| Text 1 | Text 2 |
-| Text 3 | Text 4 |
-
----
-
-[IBM's HomePage 1 (new tab)](https://ibm.com)
-
-[IBM's HomePage 1 (same tab)](https://ibm.com)
-
-ibm.com (autolink, new tab)
-
-![Cute kitten!](https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/cat-1950632_1280.jpg)
-`;
-
 export {
-  TEXT_LONG,
-  MARKDOWN,
   MockServiceDesk,
   MockPreStartChatPayload,
   MockPreEndChatPayload,
@@ -1223,8 +1027,6 @@ export {
   MOCK_AGENT_PROFILE_EMPTY,
   MESSAGE_TO_AGENT_MULTIPLE,
   MESSAGE_TO_AGENT_TEXT,
-  MESSAGE_IMAGE,
-  MESSAGE_FILES,
   MESSAGE_VIDEO,
   MESSAGE_CUSTOM,
   MESSAGE_GARRUS_MESSAGE,

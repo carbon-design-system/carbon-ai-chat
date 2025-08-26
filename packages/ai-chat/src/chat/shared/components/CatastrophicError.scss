@@ -19,7 +19,7 @@
   flex: 1;
   flex-direction: column;
   justify-content: center;
-  border-radius: var(--cds-chat-BASE-border-radius-med);
+  border-radius: layout.$spacing-03;
 }
 
 .WACCatastrophicError--withHeader {

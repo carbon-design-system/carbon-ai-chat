@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Button, ButtonKind } from "@carbon/react";
+import Button, { BUTTON_KIND } from "../../../../react/carbon/Button";
 import cx from "classnames";
 import React from "react";
 import { useSelector } from "react-redux";
@@ -17,6 +17,7 @@ import { AppState } from "../../../../../types/state/AppState";
 import { HasClassName } from "../../../../../types/utilities/HasClassName";
 import { ClickableImage } from "../util/ClickableImage";
 import { ButtonItemKind } from "../../../../../types/messaging/Messages";
+import { ThemeType } from "../../../../../types/config/PublicConfig";
 
 interface BaseButtonComponentProps extends HasClassName {
   /**
@@ -82,7 +83,7 @@ function BaseButtonItemComponent({
   onClick,
 }: BaseButtonComponentProps) {
   const { errors_imageSource } = useLanguagePack();
-  const useAITheme = useSelector((state: AppState) => state.theme.useAITheme);
+  const theme = useSelector((state: AppState) => state.theme.theme);
   const text = label || url;
   const linkTarget = url ? target : undefined;
 
@@ -99,37 +100,41 @@ function BaseButtonItemComponent({
         onClick={onClick}
         disabled={disabled}
         isLink={Boolean(url)}
-        useAITheme={useAITheme}
+        useAITheme={theme === ThemeType.CARBON_AI}
       />
     );
   }
-
+  const RenderIcon = renderIcon;
+  const buttonKind = getButtonKind(kind) || "primary";
   return (
     <Button
       className={cx("WACButtonItem", className)}
-      as={url ? "a" : undefined}
-      kind={getButtonKind(kind)}
+      kind={buttonKind as BUTTON_KIND}
       href={url}
       target={linkTarget}
       rel={url ? "noopener noreferrer" : undefined}
       disabled={disabled}
-      renderIcon={renderIcon}
       onClick={onClick}
     >
+      {renderIcon && <RenderIcon slot="icon" />}
       {text}
     </Button>
   );
 }
 
-function getButtonKind(style: ButtonItemKind): ButtonKind {
+function getButtonKind(style: ButtonItemKind): BUTTON_KIND {
   switch (style) {
     case ButtonItemKind.LINK:
     case ButtonItemKind.TERTIARY:
-      return "ghost";
+      return "ghost" as BUTTON_KIND;
     case ButtonItemKind.DEFAULT:
-      return "primary";
+      return "primary" as BUTTON_KIND;
+    case ButtonItemKind.SECONDARY:
+      return "secondary" as BUTTON_KIND;
+    case ButtonItemKind.DANGER:
+      return "danger" as BUTTON_KIND;
     default:
-      return style;
+      return "primary" as BUTTON_KIND;
   }
 }
 

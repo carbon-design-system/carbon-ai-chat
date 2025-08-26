@@ -37,7 +37,7 @@ interface CatastrophicErrorProps extends HasLanguagePack {
   showHeader: boolean;
 
   /**
-   * If defined, will show a button to restart the Carbon AI chat by calling this method.
+   * If defined, will show a button to restart the Carbon AI Chat by calling this method.
    */
   onRestart?: () => void;
 
@@ -58,7 +58,7 @@ interface CatastrophicErrorProps extends HasLanguagePack {
 }
 
 /**
- * This component is rendered while the Carbon AI chat is hydrating.
+ * This component is rendered while the Carbon AI Chat is hydrating.
  */
 
 function CatastrophicError({
@@ -70,7 +70,9 @@ function CatastrophicError({
   headerDisplayName,
 }: CatastrophicErrorProps) {
   const intl = useIntl();
-  const carbonTheme = useSelector((state: AppState) => state.theme.carbonTheme);
+  const carbonTheme = useSelector(
+    (state: AppState) => state.theme.derivedCarbonTheme,
+  );
   const isDarkTheme =
     carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
 
@@ -78,7 +80,7 @@ function CatastrophicError({
 
   const errorBodyText = intl.formatMessage({ id: errorKey }, { botName });
   return (
-    <div className="WAC">
+    <>
       {showHeader && (
         <BotHeader
           headerDisplayName={headerDisplayName}
@@ -116,7 +118,7 @@ function CatastrophicError({
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -125,5 +127,3 @@ const CatastrophicErrorExport = React.memo(CatastrophicError);
 export { CatastrophicErrorExport as CatastrophicError };
 
 export default CatastrophicErrorExport;
-
-export type { CatastrophicErrorProps };

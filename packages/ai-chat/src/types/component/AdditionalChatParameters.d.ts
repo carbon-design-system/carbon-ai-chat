@@ -13,7 +13,7 @@ import { RenderFunctionType } from "../../chat/shared/ChatInterface";
  * This interface represents an object of additional parameters that are passed from loadWatsonAssistantChat to
  * Chat. Everything else passed from loadWAC is config info that should be kept separate, this object is
  * specifically info for our use that would not be specified in those configs.
- * This object only came into existence after the v2.3 Carbon AI chat release.
+ * This object only came into existence after the v2.3 Carbon AI Chat release.
  */
 interface AdditionalChatParameters {
   /**

@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { bind } from "bind-decorator";
 import { css, LitElement, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 
@@ -49,10 +48,9 @@ class ChatHeaderAvatarElement extends LitElement {
   /**
    * Called when the onError callback function is fired.
    */
-  @bind
-  _handleOnError() {
+  _handleOnError = () => {
     this.onError?.();
-  }
+  };
 }
 
 export { ChatHeaderAvatarElement };

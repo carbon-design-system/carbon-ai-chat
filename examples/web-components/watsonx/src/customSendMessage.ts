@@ -10,11 +10,9 @@
 import {
   ChatInstance,
   CustomSendMessageOptions,
-  TextItem,
   MessageResponse,
   MessageResponseTypes,
   MessageRequest,
-  InlineErrorItem,
 } from "@carbon/ai-chat";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { getWatsonxConfig } from "./watsonxConfig";
@@ -42,7 +40,7 @@ async function getAccessToken(): Promise<string> {
       throw new Error(
         `Token request failed: ${response.status} ${
           response.statusText
-        }\n${JSON.stringify(errorData)}`
+        }\n${JSON.stringify(errorData)}`,
       );
     }
 
@@ -60,7 +58,7 @@ async function getAccessToken(): Promise<string> {
 async function streamWatsonxResponse(
   input: string,
   _config: ReturnType<typeof getWatsonxConfig>,
-  instance: ChatInstance
+  instance: ChatInstance,
 ): Promise<void> {
   try {
     // Get access token
@@ -106,7 +104,7 @@ async function streamWatsonxResponse(
           // Check if this is an error event from the proxy
           if (parsed.error) {
             throw new Error(
-              `${parsed.error}: ${parsed.details || parsed.message || ""}`
+              `${parsed.error}: ${parsed.details || parsed.message || ""}`,
             );
           }
 
@@ -136,7 +134,7 @@ async function streamWatsonxResponse(
                     streaming_metadata: {
                       id: itemId,
                     },
-                  } as TextItem,
+                  },
                   streaming_metadata: {
                     response_id: responseId,
                   },
@@ -158,7 +156,7 @@ async function streamWatsonxResponse(
                     streaming_metadata: {
                       id: itemId,
                     },
-                  } as TextItem,
+                  },
                   streaming_metadata: {
                     response_id: responseId,
                   },
@@ -175,7 +173,7 @@ async function streamWatsonxResponse(
                   streaming_metadata: {
                     id: itemId,
                   },
-                } as TextItem,
+                },
                 streaming_metadata: {
                   response_id: responseId,
                 },
@@ -211,7 +209,7 @@ async function streamWatsonxResponse(
             text: `Sorry, I encountered an error while connecting to watsonx.ai: ${
               error instanceof Error ? error.message : "Unknown error"
             }`,
-          } as InlineErrorItem,
+          },
         ],
       },
     };
@@ -222,7 +220,7 @@ async function streamWatsonxResponse(
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) {
   if (request.input.text === "") {
     const message: MessageResponse = {
@@ -231,7 +229,7 @@ async function customSendMessage(
           {
             response_type: MessageResponseTypes.TEXT,
             text: WELCOME_TEXT,
-          } as TextItem,
+          },
         ],
       },
     };
@@ -260,7 +258,7 @@ async function customSendMessage(
                   ? configError.message
                   : "Please check your environment variables."
               }`,
-            } as InlineErrorItem,
+            },
           ],
         },
       };

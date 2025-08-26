@@ -16,16 +16,15 @@ import { useCounter } from "../../../hooks/useCounter";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-
-import { sanitizeHTML } from "../../../utils/htmlUtils";
 import { consoleError } from "../../../utils/miscUtils";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
 import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../../types/messaging/Messages";
-import { processMarkdown } from "../../../../web-components/components/markdownText/markdown/markdownToHTML";
-import { MarkdownText } from "../../../../react/components/markdownText/MarkdownText";
+
+import { RichText } from "../util/RichText";
+import { markdownToHTML } from "../../../../web-components/components/markdownText/src/markdownProcessor";
 
 const ChevronUp = carbonIconToReact(ChevronUp16);
 const ChevronDown = carbonIconToReact(ChevronDown16);
@@ -97,15 +96,23 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
 
   useEffect(() => {
     async function getHtml() {
-      const newHtml = await createHTMLWithHighlights(text, highlightCitation);
+      const newHtml = await createHTMLWithHighlights(
+        text,
+        highlightCitation,
+        streamingState && !streamingState.isDone,
+      );
       setHtml(newHtml);
     }
     getHtml();
-  }, [text, highlightCitation, showCitationsToggle]);
+  }, [text, highlightCitation, showCitationsToggle, streamingState]);
 
   return (
     <div className="WACConversationalSearchText">
-      <MarkdownText markdown={html} sanitizeHTML={false} />
+      <RichText
+        text={html}
+        overrideSanitize={false}
+        streaming={streamingState && !streamingState.isDone}
+      />
       {showCitationsToggle && (
         <div className="WACConversationalSearchText__CitationsToggleContainer">
           <div className="WACConversationalSearchText__CitationsToggle">
@@ -143,7 +150,8 @@ const HIGHLIGHT_TOKEN_REGEXP = /@@\/?:wc-source:@@/g;
  */
 async function createHTMLWithHighlights(
   text: string,
-  highlightCitation: ConversationalSearchItemCitation
+  highlightCitation: ConversationalSearchItemCitation,
+  streaming: boolean,
 ) {
   // Highlighting a citation is a bit messy. The back-end provides us with text ranges in the original search result
   // but those ranges don't pay attention to the structure of the content and thus it's possible for a range to
@@ -186,9 +194,7 @@ async function createHTMLWithHighlights(
     text = pieces.join("");
   }
 
-  const md = await processMarkdown(text);
-
-  const afterMarkdownHTML = sanitizeHTML(md);
+  const afterMarkdownHTML = markdownToHTML(text, streaming);
 
   if (ranges) {
     try {
@@ -207,7 +213,7 @@ async function createHTMLWithHighlights(
         "An error occurred processing source highlights.",
         text,
         highlightCitation,
-        error
+        error,
       );
     }
   }
@@ -261,7 +267,7 @@ function insertHighlights(parent: Node, isInHighlight: boolean) {
         if (value) {
           child.setAttribute(
             name,
-            value.replaceAll(HIGHLIGHT_TOKEN_REGEXP, "")
+            value.replaceAll(HIGHLIGHT_TOKEN_REGEXP, ""),
           );
         }
       });
@@ -286,7 +292,7 @@ function addTextSegment(
   text: string,
   highlighted: boolean,
   parent: Node,
-  beforeChild: Node
+  beforeChild: Node,
 ) {
   if (text) {
     const textNode = document.createTextNode(text);

@@ -24,13 +24,13 @@ function RequestScreenShareModal() {
 
   const onConfirm = () => {
     serviceManager.humanAgentService?.screenShareUpdateRequestState(
-      ScreenShareState.ACCEPTED
+      ScreenShareState.ACCEPTED,
     );
   };
 
   const onCancel = () => {
     serviceManager.humanAgentService?.screenShareUpdateRequestState(
-      ScreenShareState.DECLINED
+      ScreenShareState.DECLINED,
     );
   };
 

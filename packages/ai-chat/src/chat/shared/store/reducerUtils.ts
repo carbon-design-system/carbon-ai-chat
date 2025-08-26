@@ -11,7 +11,7 @@ import isEqual from "lodash-es/isEqual.js";
 
 import { VERSION } from "../environmentVariables";
 import {
-  AgentState,
+  HumanAgentState,
   AnnounceMessage,
   AppState,
   AppStateMessages,
@@ -33,9 +33,8 @@ import {
 } from "../../../types/config/LauncherConfig";
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
-import { TourState } from "../../../types/state/TourState";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
-import { LayoutConfig } from "../../../types/config/PublicConfig";
+import { LayoutConfig, ThemeType } from "../../../types/config/PublicConfig";
 import { LocalMessageUIState } from "../../../types/messaging/LocalMessageItem";
 import { Message } from "../../../types/messaging/Messages";
 
@@ -92,11 +91,6 @@ const DEFAULT_CITATION_PANEL_STATE: ViewSourcePanelState = {
 };
 deepFreeze(DEFAULT_CITATION_PANEL_STATE);
 
-const DEFAULT_TOUR_STATE: TourState = {
-  activeTourStepItems: null,
-};
-deepFreeze(DEFAULT_TOUR_STATE);
-
 const DEFAULT_MESSAGE_PANEL_STATE: MessagePanelState<any> = {
   isOpen: false,
   localMessageItem: null,
@@ -108,21 +102,18 @@ deepFreeze(DEFAULT_MESSAGE_PANEL_STATE);
 const VIEW_STATE_ALL_CLOSED: ViewState = {
   launcher: false,
   mainWindow: false,
-  tour: false,
 };
 deepFreeze(VIEW_STATE_ALL_CLOSED);
 
 const VIEW_STATE_LAUNCHER_OPEN: ViewState = {
   launcher: true,
   mainWindow: false,
-  tour: false,
 };
 deepFreeze(VIEW_STATE_LAUNCHER_OPEN);
 
 const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
   mainWindow: true,
   launcher: false,
-  tour: false,
 };
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
@@ -135,21 +126,16 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedToBrowserStorageState = {
       showBackToBot: false,
     },
     hasSentNonWelcomeMessage: false,
-    persistedTourState: {
-      activeTourID: null,
-      activeTourCurrentStepIndex: null,
-    },
-    agentState: {
+    humanAgentState: {
       isConnected: false,
       isSuspended: false,
-      agentProfiles: {},
+      responseUserProfiles: {},
     },
   },
   launcherState: {
     wasLoadedFromBrowser: false,
     version: VERSION,
     viewState: VIEW_STATE_ALL_CLOSED,
-    activeTour: false,
     showUnreadIndicator: false,
     mobileLauncherIsExtended: false,
     mobileLauncherWasReduced: false,
@@ -165,7 +151,6 @@ deepFreeze(DEFAULT_PERSISTED_TO_BROWSER);
 const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
   messageIDs: [],
-  isTypingCounter: 0,
   isLoadingCounter: 0,
   isHydratingCounter: 0,
   isScrollAnchored: false,
@@ -195,21 +180,22 @@ const DEFAULT_INPUT_STATE = (): InputState => ({
   },
 });
 
-const DEFAULT_AGENT_STATE: AgentState = {
+const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
   isConnecting: false,
   isReconnecting: false,
   numUnreadMessages: 0,
   fileUploadInProgress: false,
   showScreenShareRequest: false,
   isScreenSharing: false,
-  isAgentTyping: false,
+  isHumanAgentTyping: false,
   inputState: DEFAULT_INPUT_STATE(),
 };
-deepFreeze(DEFAULT_AGENT_STATE);
+deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_THEME_STATE: ThemeState = {
-  carbonTheme: CarbonTheme.G10,
-  useAITheme: false,
+  derivedCarbonTheme: CarbonTheme.WHITE,
+  originalCarbonTheme: CarbonTheme.WHITE,
+  theme: ThemeType.CARBON_AI,
   corners: CornersType.ROUND,
 };
 deepFreeze(DEFAULT_THEME_STATE);
@@ -230,12 +216,12 @@ deepFreeze(DEFAULT_LAYOUT_STATE);
  */
 function calcAnnouncementForWidgetOpen(
   previousState: AppState,
-  newViewState: ViewState
+  newViewState: ViewState,
 ): AnnounceMessage {
   if (
     isEqual(
       previousState.persistedToBrowserStorage.launcherState.viewState,
-      newViewState
+      newViewState,
     )
   ) {
     // No change in the view state so return the current announcement.
@@ -243,8 +229,6 @@ function calcAnnouncementForWidgetOpen(
   }
 
   // The view has changed so show the appropriate message.
-  // TODO TOUR: I18N. This will need to be updated before ga. For now the announcement only cares if the main window is
-  // opened. If the tour is opened, the announcement will be that the window is closed.
   return {
     messageID: newViewState.mainWindow
       ? "window_ariaWindowOpened"
@@ -258,7 +242,7 @@ function calcAnnouncementForWidgetOpen(
  */
 function applyBotMessageState(
   state: AppState,
-  newState: Partial<ChatMessagesState>
+  newState: Partial<ChatMessagesState>,
 ): AppState {
   return {
     ...state,
@@ -271,15 +255,15 @@ function applyBotMessageState(
 
 function handleViewStateChange(
   state: AppState,
-  viewState: ViewState
+  viewState: ViewState,
 ): AppState {
   // If the main window is opened and the page is visible, mark any unread messages as read.
-  let { agentState } = state;
+  let { humanAgentState } = state;
   let { showUnreadIndicator } = state.persistedToBrowserStorage.launcherState;
   if (viewState.mainWindow && state.isBrowserPageVisible) {
-    if (agentState.numUnreadMessages !== 0) {
-      agentState = {
-        ...agentState,
+    if (humanAgentState.numUnreadMessages !== 0) {
+      humanAgentState = {
+        ...humanAgentState,
         numUnreadMessages: 0,
       };
     }
@@ -289,7 +273,7 @@ function handleViewStateChange(
   return {
     ...state,
     announceMessage: calcAnnouncementForWidgetOpen(state, viewState),
-    agentState,
+    humanAgentState,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
       launcherState: {
@@ -304,7 +288,7 @@ function handleViewStateChange(
 function setHomeScreenOpenState(
   state: AppState,
   isOpen: boolean,
-  showBackToBot?: boolean
+  showBackToBot?: boolean,
 ): AppState {
   if (showBackToBot === undefined) {
     showBackToBot =
@@ -336,12 +320,12 @@ function setHomeScreenOpenState(
  * @param propertyValue The value to set on the property.
  */
 function applyLocalMessageUIState<
-  TPropertyName extends keyof LocalMessageUIState
+  TPropertyName extends keyof LocalMessageUIState,
 >(
   state: AppState,
   localMessageID: string,
   propertyName: TPropertyName,
-  propertyValue: LocalMessageUIState[TPropertyName]
+  propertyValue: LocalMessageUIState[TPropertyName],
 ) {
   const oldMessage = state.allMessageItemsByID[localMessageID];
   if (oldMessage) {
@@ -387,7 +371,7 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 }
 
 export {
-  DEFAULT_AGENT_STATE,
+  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
@@ -399,7 +383,6 @@ export {
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   DEFAULT_LAUNCHER,
-  DEFAULT_TOUR_STATE,
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,
   DEFAULT_LAYOUT_STATE,

@@ -6,7 +6,7 @@
  */
 
 @use "maxWidth" as responseType-maxWidth;
-@use "agent/imports" as responseType-agent;
+@use "humanAgent/imports" as responseType-agent;
 @use "card/imports" as responseType-card;
 @use "carousel/imports" as responseType-carousel;
 @use "conversationalSearch/imports" as responseType-conversationalSearch;
@@ -17,6 +17,4 @@
 @use "image/imports" as responseType-image;
 @use "options/imports" as responseType-options;
 @use "text/imports" as responseType-text;
-@use "tour/imports" as responseType-tour;
 @use "util/imports" as responseType-util;
-@use "table/imports" as responseType-table;

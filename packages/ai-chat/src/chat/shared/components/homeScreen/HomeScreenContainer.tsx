@@ -89,7 +89,7 @@ interface HomeScreenContainerProps {
   homeScreenInputRef: RefObject<InputFunctions>;
 
   /**
-   * The callback that can be called when this component wants the Carbon AI chat to regain focus after a homescreen overflow
+   * The callback that can be called when this component wants the Carbon AI Chat to regain focus after a homescreen overflow
    * menu item is clicked.
    */
   requestFocus?: () => void;
@@ -116,14 +116,14 @@ function HomeScreenContainer({
 }: HomeScreenContainerProps) {
   const serviceManager = useServiceManager();
   const homeScreenConfig = useSelector(
-    (state: AppState) => state.homeScreenConfig
+    (state: AppState) => state.homeScreenConfig,
   );
 
   const isCustomPanelOpen = useSelector(
-    (state: AppState) => state.customPanelState.isOpen
+    (state: AppState) => state.customPanelState.isOpen,
   );
   const prevIsHydrationAnimationComplete = usePrevious(
-    isHydrationAnimationComplete
+    isHydrationAnimationComplete,
   );
   const shouldHide = isCustomPanelOpen;
 
@@ -138,7 +138,7 @@ function HomeScreenContainer({
     (text: string) => {
       onSendBotInput(text);
     },
-    [onSendBotInput]
+    [onSendBotInput],
   );
 
   const handlerStarterClick = useCallback(
@@ -152,10 +152,10 @@ function HomeScreenContainer({
             },
           },
         },
-        THREAD_ID_MAIN
+        THREAD_ID_MAIN,
       );
     },
-    [onSendButtonInput]
+    [onSendButtonInput],
   );
 
   return (

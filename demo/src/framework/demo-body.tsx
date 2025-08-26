@@ -30,7 +30,6 @@ export class DemoBody extends LitElement {
       height: calc(100vh - 48px);
       width: 100%;
       margin-top: 48px;
-      background: var(--cds-layer);
     }
 
     .page {
@@ -47,19 +46,28 @@ export class DemoBody extends LitElement {
       flex-grow: 1;
     }
 
+    cds-accordion {
+      margin-block-start: 0;
+    }
+
+    cds-accordion-item {
+      border: none;
+    }
+
     demo-version-switcher,
+    demo-page-theme-switcher,
     demo-layout-switcher,
     demo-theme-switcher,
     demo-homescreen-switcher,
     demo-writeable-elements-switcher {
       display: block;
+      margin-block-start: 1rem;
     }
 
-    demo-layout-switcher,
-    demo-theme-switcher,
-    demo-homescreen-switcher,
-    demo-writeable-elements-switcher {
-      padding-block-start: 1rem;
+    /* First item in each accordion doesn't need top margin */
+    demo-page-theme-switcher,
+    cds-accordion-item demo-version-switcher:first-child {
+      margin-block-start: 0;
     }
   `;
 
@@ -82,7 +90,7 @@ export class DemoBody extends LitElement {
 
   private _renderReactApp() {
     const container: HTMLElement = document.querySelector(
-      "#root"
+      "#root",
     ) as HTMLElement;
     // If a root already exists, unmount it to avoid memory leaks
     if (this._root) {
@@ -90,16 +98,19 @@ export class DemoBody extends LitElement {
     }
     this._root = createRoot(container);
     this._root.render(
-      <DemoApp config={this.config} settings={this.settings} />
+      <DemoApp config={this.config} settings={this.settings} />,
     );
   }
 
   // Define the element's render template
   render() {
-    return html`<cds-layer
-      ><div class="page">
-        <div class="nav-block">
-          <cds-layer level="1">
+    return html`<div class="page">
+      <div class="nav-block">
+        <cds-accordion>
+          <cds-accordion-item open title="Page Settings">
+            <demo-page-theme-switcher></demo-page-theme-switcher>
+          </cds-accordion-item>
+          <cds-accordion-item open title="Chat Settings">
             <demo-version-switcher
               .settings=${this.settings}
             ></demo-version-switcher>
@@ -113,18 +124,15 @@ export class DemoBody extends LitElement {
             <demo-writeable-elements-switcher
               .settings=${this.settings}
             ></demo-writeable-elements-switcher>
-          </cds-layer>
-        </div>
-        <div class="main">
-          ${this.settings.framework === "web-component"
-            ? html`<demo-app
-                .config=${this.config}
-                .settings=${this.settings}
-              />`
-            : html``}
-        </div>
-      </div></cds-layer
-    >`;
+          </cds-accordion-item>
+        </cds-accordion>
+      </div>
+      <div class="main">
+        ${this.settings.framework === "web-component"
+          ? html`<demo-app .config=${this.config} .settings=${this.settings} />`
+          : html``}
+      </div>
+    </div>`;
   }
 }
 

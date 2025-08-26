@@ -2,7 +2,6 @@ name: Design defect 🎨
 description: Report a visual design issue
 title: '[Bug]: '
 type: 'bug'
-labels: ['status: grooming needed', 'status: design needed']
 body:
   - type: markdown
     attributes:
@@ -40,7 +39,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: example-url
+    id: screenshots
     attributes:
       label: Screenshots
       description: 'Provide screenshots of the problem'
@@ -57,12 +56,12 @@ body:
   - type: checkboxes
     id: terms
     attributes:
-      label: Code of Conduct
+      label: Code of conduct
       description: Please confirm the following
       options:
         - label:
-            I agree to follow this project's [Code of
-            Conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
+            I agree to follow this project's [code of
+            conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
           required: true
         - label:
             I checked the [current

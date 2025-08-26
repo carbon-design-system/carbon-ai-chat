@@ -71,7 +71,7 @@ class OptionComponent extends Component<OptionProps> {
     const { id: responseID } = originalMessage;
     const messageRequest = createMessageRequestForChoice(
       selectedOption,
-      responseID
+      responseID,
     );
     const localMessageID = localMessage.ui_state.id;
 

@@ -133,11 +133,22 @@ class ChainOfThoughtElement extends LitElement {
    * ID we use for a11y.
    */
   @state()
-  _chainOfThoughtPanelID = `${CSS_CLASS_PREFIX}-chain-of-thought-panel-id-${uuid()}`;
+  _chainOfThoughtPanelID =
+    `${CSS_CLASS_PREFIX}-chain-of-thought-panel-id-${uuid()}`;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     // Update the steps saying they are all closed.
     this._steps = this.steps.map((item) => ({ ...item, open: false }));
+  }
+
+  protected updated(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has("steps")) {
+      // Update the steps with current open status.
+      this._steps = this.steps.map((item, index) => ({
+        ...item,
+        open: this._steps[index]?.open,
+      }));
+    }
   }
 }
 

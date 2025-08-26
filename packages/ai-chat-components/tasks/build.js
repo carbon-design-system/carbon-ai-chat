@@ -55,13 +55,13 @@ async function build() {
   for (const format of formats) {
     const outputDirectory = path.join(
       entryPoint.outputDirectory,
-      format.directory
+      format.directory,
     );
 
     const cwcInputConfig = getRollupConfig(
       esInputs,
       entryPoint.rootDir,
-      outputDirectory
+      outputDirectory,
     );
 
     const cwcBundle = await rollup(cwcInputConfig);

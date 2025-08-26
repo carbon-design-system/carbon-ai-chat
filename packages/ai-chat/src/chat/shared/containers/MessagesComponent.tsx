@@ -15,7 +15,7 @@ import React, { Fragment, PureComponent, ReactNode } from "react";
 import { connect } from "react-redux";
 
 import { InlineLoadingComponent } from "../../react/components/inlineLoading/InlineLoadingComponent";
-import { AgentBannerContainer } from "../components/agent/AgentBannerContainer";
+import { HumanAgentBannerContainer } from "../components/humanAgent/HumanAgentBannerContainer";
 import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
 import LatestWelcomeNodes from "../components/LatestWelcomeNodes";
 import { Notifications } from "../components/notifications/Notifications";
@@ -24,7 +24,10 @@ import {
   withServiceManager,
 } from "../hocs/withServiceManager";
 import actions from "../store/actions";
-import { selectAgentDisplayState, selectInputState } from "../store/selectors";
+import {
+  selectHumanAgentDisplayState,
+  selectInputState,
+} from "../store/selectors";
 import { AppState, ChatMessagesState } from "../../../types/state/AppState";
 import { AutoScrollOptions } from "../../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../../types/utilities/HasIntl";
@@ -48,7 +51,7 @@ import MessageComponent, {
   MoveFocusType,
 } from "./MessageComponent";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
-import { Message, MessageRequest } from "../../../types/messaging/Messages";
+import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 
 const DEBUG_AUTO_SCROLL = false;
@@ -59,7 +62,7 @@ const DEBUG_AUTO_SCROLL = false;
 type ScrollElementIntoViewFunction = (
   element: HTMLElement,
   paddingTop?: number,
-  paddingBottom?: number
+  paddingBottom?: number,
 ) => void;
 
 interface MessagesOwnProps extends HasIntl, HasServiceManager {
@@ -86,7 +89,7 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   /**
    * The callback that is called when the user clicks the "end agent chat" button.
    */
-  onEndAgentChat: () => void;
+  onEndHumanAgentChat: () => void;
 
   /**
    * The current locale.
@@ -156,7 +159,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   componentDidMount(): void {
     this.scrollPanelObserver = new ResizeObserver(this.onResize);
     this.scrollPanelObserver.observe(
-      this.messagesContainerWithScrollingRef.current
+      this.messagesContainerWithScrollingRef.current,
     );
 
     this.previousScrollOffsetHeight =
@@ -171,15 +174,14 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const numMessagesChanged =
       oldProps.localMessageItems.length !== newProps.localMessageItems.length;
 
-    const oldAgentDisplayState = selectAgentDisplayState(oldProps);
-    const newAgentDisplayState = selectAgentDisplayState(newProps);
+    const oldHumanAgentDisplayState = selectHumanAgentDisplayState(oldProps);
+    const newHumanAgentDisplayState = selectHumanAgentDisplayState(newProps);
 
     const typingChanged =
-      oldProps.messageState.isTypingCounter !==
-        newProps.messageState.isTypingCounter ||
       oldProps.messageState.isLoadingCounter !==
         newProps.messageState.isLoadingCounter ||
-      oldAgentDisplayState.isAgentTyping !== newAgentDisplayState.isAgentTyping;
+      oldHumanAgentDisplayState.isHumanAgentTyping !==
+        newHumanAgentDisplayState.isHumanAgentTyping;
 
     if (numMessagesChanged || typingChanged) {
       const newLastItem = arrayLastValue(newProps.localMessageItems);
@@ -196,7 +198,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   componentWillUnmount(): void {
     // Remove the listeners and observer we added previously.
     this.scrollPanelObserver.unobserve(
-      this.messagesContainerWithScrollingRef.current
+      this.messagesContainerWithScrollingRef.current,
     );
   }
 
@@ -217,7 +219,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private checkScrollAnchor(
     fromAutoScroll?: boolean,
-    assumeScrollTop?: number
+    assumeScrollTop?: number,
   ) {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -240,8 +242,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         this.props.serviceManager.store.dispatch(
           actions.setChatMessagesStateProperty(
             "isScrollAnchored",
-            isScrollAnchored
-          )
+            isScrollAnchored,
+          ),
         );
       }
     }
@@ -251,7 +253,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   /**
    * This will check to see if the messages list is anchored to the bottom of the panel and if so, ensure that the
-   * list is still scrolled to the bottom.
+   * list is still scrolled to the bottom. It will also run doAutoScroll to ensure proper scrolling behavior
+   * when the window is resized.
    */
   public onResize = () => {
     if (this.props.messageState.isScrollAnchored) {
@@ -260,6 +263,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         element.scrollTop = element.scrollHeight;
       }
     }
+
+    // Run doAutoScroll when the window is resized to maintain proper scroll position
+    // This is important for workspace functionality
+    this.doAutoScroll();
   };
 
   /**
@@ -286,8 +293,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       const { scrollToTop, scrollToBottom } = options;
       const { localMessageItems, messageState, allMessagesByID } = this.props;
-      const { isTypingCounter, isLoadingCounter } = messageState;
-      const { isAgentTyping } = selectAgentDisplayState(this.props);
+      const { isLoadingCounter } = messageState;
+      const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
       const scrollElement = this.messagesContainerWithScrollingRef.current;
 
       if (scrollToTop !== undefined) {
@@ -319,40 +326,52 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         // decide it remembers the previous scroll position and set it for us.
         animate = false;
         setScrollTop = 0;
-      } else if (isTypingCounter > 0 || isLoadingCounter > 0 || isAgentTyping) {
+      } else if (isLoadingCounter > 0 || isHumanAgentTyping) {
         // The typing indicator is visible, so scroll to the bottom.
         setScrollTop = scrollElement.scrollHeight;
-        debugAutoScroll("[doAutoScroll] isTyping visible", isTypingCounter);
+        debugAutoScroll("[doAutoScroll] isLoading visible", isLoadingCounter);
       } else {
         /**
-         * Determines if the message should be scrolled to. The last user message should be scrolled to by default.
-         * However, the last bot message should be scrolled to if there is no user message that can be scrolled to.
+         * Determines if the message should be scrolled to. By default, response messages should be scrolled to,
+         * and request messages should not be scrolled to (inverse of previous behavior).
+         * Special cases:
+         * 1. If a response has history.silent=true, it should not be scrolled to
+         * 2. If a message is from history, we should always scroll to it if possible
          */
         const shouldScrollToMessage = (
           localItem: LocalMessageItem,
-          message: Message
+          message: Message,
         ) => {
-          if (isResponse(message)) {
-            const messageRequest = allMessagesByID[
-              message?.request_id
-            ] as MessageRequest;
-            // If the request for this response was silent, then scroll to it instead of scrolling to where the
-            // silent user message would be. But don't do this if it's an empty message (which happens with a
-            // skip_use_input message from an extension).
-            return (
-              messageRequest?.history?.silent &&
-              messageRequest.input?.text !== ""
-            );
+          // Special case: If message is from history, we should scroll to it regardless of type
+          if (message?.ui_state_internal?.from_history) {
+            return true;
           }
 
-          return isRequest(message);
+          if (isRequest(message)) {
+            // For regular request messages, return false (inverse of previous behavior)
+            return false;
+          }
+
+          if (isResponse(message)) {
+            // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
+            // then we should return false
+            if (message?.history?.silent) {
+              return false;
+            }
+            // For regular response messages, return true (inverse of previous behavior)
+            return true;
+          }
+
+          // Default case - no change in behavior
+          return false;
         };
-        // Iterate backwards until we find the last message to scroll to. By default, the user's last message should be
-        // scrolled to. However, if the user's message was silent, the last response should be scrolled to.
+        // Iterate backwards until we find the last message to scroll to. By default, response messages should be
+        // scrolled to (not request messages). However, if a response has history.silent=true, it should not be scrolled to.
+        // If all messages are not scrollable, we'll default to the bottom of the conversation.
         let messageIndex = localMessageItems.length - 1;
         let localItem = localMessageItems[messageIndex];
         let lastScrollableMessageComponent: MessageClass = this.messageRefs.get(
-          localItem?.ui_state.id
+          localItem?.ui_state.id,
         );
         while (messageIndex >= 1) {
           localItem = localMessageItems[messageIndex];
@@ -360,12 +379,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
           if (shouldScrollToMessage(localItem, message)) {
             lastScrollableMessageComponent = this.messageRefs.get(
-              localItem?.ui_state.id
+              localItem?.ui_state.id,
             );
             debugAutoScroll(
               `[doAutoScroll] lastScrollableMessageComponent=${messageIndex}`,
               localMessageItems[messageIndex],
-              message
+              message,
             );
             break;
           }
@@ -379,7 +398,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             lastScrollableMessageComponent.ref.current?.offsetTop;
           setScrollTop = offsetTop + AUTO_SCROLL_EXTRA;
           debugAutoScroll(
-            `[doAutoScroll] Scrolling to message offsetTop=${offsetTop}`
+            `[doAutoScroll] Scrolling to message offsetTop=${offsetTop}`,
           );
         } else {
           // No message found.
@@ -391,7 +410,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       if (setScrollTop !== -1) {
         if (setScrollTop >= scrollElement.scrollTop) {
           // If this is from history, we don't want to animate.
-          if (lastMessage?.history?.from_history) {
+          if (lastMessage?.ui_state_internal?.from_history) {
             animate = false;
           }
 
@@ -399,7 +418,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             `[doAutoScroll] doScrollElement`,
             scrollElement,
             setScrollTop,
-            animate
+            animate,
           );
           doScrollElement(scrollElement, setScrollTop, 0, animate);
 
@@ -433,7 +452,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public scrollElementIntoView = (
     element: HTMLElement,
     paddingTop = 8,
-    paddingBottom = 8
+    paddingBottom = 8,
   ) => {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -456,7 +475,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     ) {
       // The top of the element is above the fold or the element doesn't fully fit. Scroll it so its top is at the top
       // of the scroll panel.
-      doScrollElement(scrollElement, topDistanceFromTop, 0);
+      doScrollElement(scrollElement, topDistanceFromTop, 0, false);
     } else if (
       bottomDistanceFromTop >
       scrollElement.scrollTop + scrollElement.offsetHeight
@@ -465,7 +484,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       doScrollElement(
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
-        0
+        0,
+        false,
       );
     }
   };
@@ -473,7 +493,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Moves focus to the button in the agent header.
    */
-  public requestAgentBannerFocus() {
+  public requestHumanAgentBannerFocus() {
     if (this.agentBannerRef.current) {
       return this.agentBannerRef.current.requestFocus();
     }
@@ -485,9 +505,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * message, this will scroll the first message to the top of the message window.
    *
    * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to true.
+   * @param animate Whether or not the scroll should be animated. Defaults to false.
    */
-  public doScrollToMessage(messageID: string, animate = true) {
+  public doScrollToMessage(messageID: string, animate = false) {
     try {
       // Find the component that has the message we want to scroll to.
       const { localMessageItems } = this.props;
@@ -507,6 +527,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const setScrollTop = panelComponent.ref.current.offsetTop;
 
         // Do the scrolling.
+        // Always set animate to false as per requirements
         doScrollElement(scrollElement, setScrollTop, 0, animate);
 
         // Update the scroll anchor setting based on this new position.
@@ -594,6 +615,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * node.
    * @param isMessageForInput Indicates if this message is part the most recent message response that allows for input.
    * @param isFirstMessageItem Indicates if this message item is the first item in a message response.
+   * @param isLastMessageItem Indicates if this message item is the last item in a message response.
    * @param lastMessageID The ID of the last full message shown.
    */
   renderMessage(
@@ -603,7 +625,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     showBeforeWelcomeNodeElement: boolean,
     isMessageForInput: boolean,
     isFirstMessageItem: boolean,
-    lastMessageID: string
+    isLastMessageItem: boolean,
+    lastMessageID: string,
   ) {
     const {
       serviceManager,
@@ -619,8 +642,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       useAITheme,
     } = this.props;
     const inputState = selectInputState(this.props);
-    const { isAgentTyping } = selectAgentDisplayState(this.props);
-    const { isTypingCounter, isLoadingCounter } = messageState;
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
+    const { isLoadingCounter } = messageState;
     const { chatState } = persistedToBrowserStorage;
     const { disclaimersAccepted } = chatState;
 
@@ -634,7 +657,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const totalMessagesWithTyping =
       this.props.localMessageItems.length +
-      (isTypingCounter > 0 || isLoadingCounter > 0 || isAgentTyping ? 1 : 0);
+      (isLoadingCounter > 0 || isHumanAgentTyping ? 1 : 0);
 
     const isLastMessage = messagesIndex === totalMessagesWithTyping - 1;
     const className = cx({
@@ -672,6 +695,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         doAutoScroll={this.doAutoScroll}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
+        isLastMessageItem={isLastMessageItem}
         locale={locale}
         carbonTheme={carbonTheme}
         useAITheme={useAITheme}
@@ -701,11 +725,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Renders the agent banner that appears at the top of the messages list when connecting to an agent.
    */
-  private renderAgentBanner() {
+  private renderHumanAgentBanner() {
     return (
-      <AgentBannerContainer
+      <HumanAgentBannerContainer
         bannerRef={this.agentBannerRef}
-        onButtonClick={this.props.onEndAgentChat}
+        onButtonClick={this.props.onEndHumanAgentChat}
       />
     );
   }
@@ -715,7 +739,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private requestMoveFocus = (
     moveFocusType: MoveFocusType,
-    currentMessageIndex: number
+    currentMessageIndex: number,
   ) => {
     if (moveFocusType === MoveFocusType.INPUT) {
       this.props.requestInputFocus();
@@ -781,7 +805,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       : () =>
           this.requestMoveFocus(
             atTop ? MoveFocusType.FIRST : MoveFocusType.LAST,
-            0
+            0,
           );
 
     return (
@@ -854,6 +878,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         previousMessageID !== localMessageItem.fullMessageID;
       const showBeforeWelcomeNodeElement =
         localMessageItem.ui_state.isWelcomeResponse && isFirstMessageItem;
+      const isLastMessageItem =
+        localMessageItems.length - 1 === currentIndex ||
+        localMessageItem.fullMessageID !==
+          localMessageItems[currentIndex + 1].fullMessageID;
 
       previousMessageID = localMessageItem.fullMessageID;
 
@@ -865,8 +893,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           showBeforeWelcomeNodeElement,
           isMessageForInput,
           isFirstMessageItem,
-          lastMessageID
-        )
+          isLastMessageItem,
+          lastMessageID,
+        ),
       );
     }
 
@@ -882,8 +911,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       serviceManager,
       notifications,
     } = this.props;
-    const { isTypingCounter, isLoadingCounter } = messageState;
-    const { isAgentTyping } = selectAgentDisplayState(this.props);
+    const { isLoadingCounter } = messageState;
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus } = this.state;
 
     const messageIDForInput = this.getMessageIDForUserInput();
@@ -891,17 +920,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const regularMessages = this.renderMessages(messageIDForInput);
 
     let isTypingMessage;
-    if (isAgentTyping) {
+    if (isHumanAgentTyping) {
       isTypingMessage = intl.formatMessage({ id: "messages_agentIsTyping" });
-    } else if (isTypingCounter) {
-      isTypingMessage = intl.formatMessage(
-        { id: "messages_botIsTyping" },
-        { botName }
-      );
     } else if (isLoadingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_botIsLoading" },
-        { botName }
+        { botName },
       );
     }
 
@@ -910,7 +934,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         id={`WACMessages--holder${serviceManager.namespace.suffix}`}
         className="WACMessages--holder"
       >
-        {this.renderAgentBanner()}
+        {this.renderHumanAgentBanner()}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className={cx("WACMessages__Wrapper", {
@@ -925,12 +949,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           >
             {this.renderScrollHandle(true)}
             {regularMessages}
-            {(Boolean(isTypingCounter) ||
-              Boolean(isLoadingCounter) ||
-              isAgentTyping) &&
+            {(Boolean(isLoadingCounter) || isHumanAgentTyping) &&
               this.renderTypingIndicator(
                 isTypingMessage,
-                localMessageItems.length
+                localMessageItems.length,
               )}
             <Notifications
               serviceManager={serviceManager}
@@ -957,8 +979,8 @@ export default withServiceManager(
     null,
     {
       forwardRef: true,
-    }
-  )(MessagesComponent)
+    },
+  )(MessagesComponent),
 );
 
 export {

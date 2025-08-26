@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/pagination/index.js";
-import "@carbon/web-components/es-custom/components/select/index.js";
+import "@carbon/web-components/es/components/pagination/index.js";
+import "@carbon/web-components/es/components/select/index.js";
 
 import { html } from "lit";
 
@@ -54,16 +54,21 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     _handlePageChangeEvent: handlePageChangeEvent,
     _handlePageSizeChangeEvent: handlePageSizeChangeEvent,
   } = props;
+
+  if (!filterVisibleRowIDs || !filterVisibleRowIDs.size) {
+    return html``;
+  }
+
   const totalVisibleRows = filterVisibleRowIDs.size;
   const totalRows = rows.length;
 
   // Page sizes will only be included if the page size is less than the total number of rows.
   const supportedPageSizes = POSSIBLE_PAGE_SIZES.filter(
-    (pageSize) => pageSize < totalRows
+    (pageSize) => pageSize < totalRows,
   );
 
   // TODO TABLE: This component is quite wide. Because of the shadow dom we can't select it's contents to hide items
-  // with css, nor can we extend this class to manipulate it's styles because of Carbon's use of :host(cds-custom-pagination)
+  // with css, nor can we extend this class to manipulate it's styles because of Carbon's use of :host(cds-pagination)
   // within their styles. There is however a smaller variation of this component
   // (https://carbondesignsystem.com/components/pagination/usage/#responsive-behavior) but it's only used at a specific
   // breakpoint, when the viewport is narrow (i.e. a mobile device). A Carbon enhancement request has been made to
@@ -71,7 +76,7 @@ function tablePaginationTemplate(props: TablePaginationProps) {
   // (https://github.com/carbon-design-system/carbon/issues/17564). When that enhancement is done, and we can
   // dynamically enable a narrow form factor of this pagination component, then we could use the same css trick we used
   // for the header to make the pagination component sticky (if the carbon component doesn't already do it for us).
-  return html`<cds-custom-pagination
+  return html`<cds-pagination
     page-size=${currentPageSize}
     page=${currentPageNumber}
     total-items=${totalVisibleRows}
@@ -81,19 +86,17 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     items-per-page-text=${itemsPerPageText}
     .formatSupplementalText=${getPaginationSupplementalText}
     .formatStatusWithDeterminateTotal=${getPaginationStatusText}
-    @cds-custom-pagination-changed-current=${handlePageChangeEvent}
-    @cds-custom-page-sizes-select-changed=${handlePageSizeChangeEvent}
+    @cds-pagination-changed-current=${handlePageChangeEvent}
+    @cds-page-sizes-select-changed=${handlePageSizeChangeEvent}
   >
     ${supportedPageSizes.map(
       (pageSize) =>
-        html`<cds-custom-select-item value="${pageSize}"
-          >${pageSize}</cds-custom-select-item
-        >`
+        html`<cds-select-item value="${pageSize}"
+          >${pageSize}</cds-select-item
+        >`,
     )}
-    <cds-custom-select-item value="${totalRows}"
-      >${totalRows}</cds-custom-select-item
-    >
-  </cds-custom-pagination>`;
+    <cds-select-item value="${totalRows}">${totalRows}</cds-select-item>
+  </cds-pagination>`;
 }
 
 export { tablePaginationTemplate };

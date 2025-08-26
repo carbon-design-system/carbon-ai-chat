@@ -39,7 +39,7 @@ function Notifications({ notifications, serviceManager }: NotificationsProps) {
           const item = notification.notification;
           const onClose = () => {
             serviceManager.store.dispatch(
-              actions.removeNotifications({ notificationID: notification.id })
+              actions.removeNotifications({ notificationID: notification.id }),
             );
           };
 

@@ -7,11 +7,16 @@
  *  @license
  */
 
-import React from "react";
+import React, { useMemo } from "react";
+import { useIntl } from "react-intl";
+import { useSelector } from "react-redux";
 
-import { MarkdownText } from "../../../../react/components/markdownText/MarkdownText";
+import { Markdown } from "../../../../react/components/markdown/Markdown";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { removeHTML } from "../../../utils/htmlUtils";
+import { CarbonTheme } from "../../../../../types/config/PublicConfig";
+import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
+import { AppState } from "../../../../../types/state/AppState";
+import { useLanguagePack } from "../../../hooks/useLanguagePack";
 
 interface RichTextProps {
   /**
@@ -29,30 +34,127 @@ interface RichTextProps {
    * If defined, this value indicates if this component should override the default sanitization setting.
    */
   overrideSanitize?: boolean;
+
+  /**
+   * If we are actively streaming to this RichText component.
+   */
+  streaming?: boolean;
 }
 
 /**
  * This component will display some text as formatted HTML in the browser. It will process the provided text and use
- * {@link processMarkdown} to link for links in the text to convert to anchors as well as looking for a limited set of
+ * markdownToHTML to link for links in the text to convert to anchors as well as looking for a limited set of
  * Markdown to format as HTML.
  *
  * Warning: This should only be used with trusted text. Do NOT use this with text that was entered by the end-user.
  */
 function RichText(props: RichTextProps) {
-  const { text, shouldRemoveHTMLBeforeMarkdownConversion, overrideSanitize } =
-    props;
-  const preformattedText = shouldRemoveHTMLBeforeMarkdownConversion
-    ? removeHTML(text)
-    : text;
+  const {
+    text,
+    shouldRemoveHTMLBeforeMarkdownConversion,
+    overrideSanitize,
+    streaming,
+  } = props;
+
   let doSanitize = useShouldSanitizeHTML();
   if (overrideSanitize !== undefined) {
     doSanitize = overrideSanitize;
   }
 
-  return <MarkdownText markdown={preformattedText} sanitizeHTML={doSanitize} />;
+  // Get localization data for markdown components
+  const languagePack = useLanguagePack();
+  const intl = useIntl();
+  const locale = useSelector((state: AppState) => state.locale);
+  const themeState = useSelector((state: AppState) => state.theme);
+
+  // Determine if dark theme should be used based on derivedCarbonTheme
+  const isDarkTheme =
+    themeState.derivedCarbonTheme === CarbonTheme.G90 ||
+    themeState.derivedCarbonTheme === CarbonTheme.G100;
+
+  // Memoize localization object to prevent unnecessary re-renders
+  const localization: LocalizationOptions = useMemo(() => {
+    // Create table localization functions
+    const getTablePaginationSupplementalText = ({
+      count,
+    }: {
+      count: number;
+    }) => {
+      return intl.formatMessage(
+        { id: "table_paginationSupplementalText" },
+        { pagesCount: count },
+      );
+    };
+
+    const getTablePaginationStatusText = ({
+      start,
+      end,
+      count,
+    }: {
+      start: number;
+      end: number;
+      count: number;
+    }) => {
+      return intl.formatMessage(
+        { id: "table_paginationStatus" },
+        { start, end, count },
+      );
+    };
+
+    // Build localization options object
+    return {
+      table: {
+        filterPlaceholderText: languagePack.table_filterPlaceholder,
+        previousPageText: languagePack.table_previousPage,
+        nextPageText: languagePack.table_nextPage,
+        itemsPerPageText: languagePack.table_itemsPerPage,
+        locale,
+        getPaginationSupplementalText: getTablePaginationSupplementalText,
+        getPaginationStatusText: getTablePaginationStatusText,
+      },
+    };
+  }, [
+    languagePack.table_filterPlaceholder,
+    languagePack.table_previousPage,
+    languagePack.table_nextPage,
+    languagePack.table_itemsPerPage,
+    locale,
+    intl,
+  ]);
+
+  return (
+    <Markdown
+      markdown={text}
+      sanitizeHTML={doSanitize}
+      streaming={streaming}
+      localization={localization}
+      dark={isDarkTheme}
+      shouldRemoveHTMLBeforeMarkdownConversion={
+        shouldRemoveHTMLBeforeMarkdownConversion
+      }
+    />
+  );
 }
 
-const RichTextExport = React.memo(RichText);
+const RichTextExport = React.memo(RichText, (prevProps, nextProps) => {
+  // Custom comparison to prevent re-render when only streaming changes but content is the same
+  const textEqual = prevProps.text === nextProps.text;
+  const htmlConversionEqual =
+    prevProps.shouldRemoveHTMLBeforeMarkdownConversion ===
+    nextProps.shouldRemoveHTMLBeforeMarkdownConversion;
+  const sanitizeEqual =
+    prevProps.overrideSanitize === nextProps.overrideSanitize;
+
+  // If text content is identical, we don't need to re-render regardless of streaming state
+  if (textEqual && htmlConversionEqual && sanitizeEqual) {
+    return true; // Skip re-render
+  }
+
+  // If text content changed, check if streaming state is relevant
+  const streamingEqual = prevProps.streaming === nextProps.streaming;
+
+  return textEqual && htmlConversionEqual && sanitizeEqual && streamingEqual;
+});
 
 export { RichTextExport as RichText };
 export default RichTextExport;

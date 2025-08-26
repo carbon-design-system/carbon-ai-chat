@@ -52,7 +52,7 @@ function CitationCard({
       "WACCitationCard--url": type === CitationType.URL,
       "WACCitationCard--no-url": type !== CitationType.URL,
     },
-    "WACWidget__textEllipsis"
+    "WACWidget__textEllipsis",
   );
 
   if (type === CitationType.URL) {

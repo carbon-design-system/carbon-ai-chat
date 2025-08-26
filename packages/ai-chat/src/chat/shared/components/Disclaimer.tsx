@@ -13,8 +13,8 @@
  * When someone views the Web Chat they must respond to the disclaimer before continuing to the main Web Chat if this
  * is enabled. We drop an item in SESSION storage to not ask them again as they go from page to page.
  */
-
-import { Button } from "@carbon/react";
+import Button from "../../react/carbon/Button";
+import CDSButton from "@carbon/web-components/es-custom/components/button/button";
 import React, { RefObject, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -24,15 +24,15 @@ import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
 import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
-import { MaybeDangerouslySetInnerHTML } from "./util/MaybeDangerouslySetInnerHTML";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { OverlayPanelName } from "./OverlayPanel";
+import { ThemeType } from "../../../types/config/PublicConfig";
 
 interface DisclaimerProps {
   onAcceptDisclaimer: () => void;
   disclaimerHTML: string;
   onClose: () => void;
-  disclaimerAcceptButtonRef: RefObject<HTMLButtonElement>;
+  disclaimerAcceptButtonRef: RefObject<CDSButton>;
 }
 
 function Disclaimer({
@@ -43,13 +43,14 @@ function Disclaimer({
 }: DisclaimerProps) {
   const languagePack = useLanguagePack();
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint
+    (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { carbonTheme, useAITheme } = useSelector(
-    (state: AppState) => state.theme
+  const { derivedCarbonTheme, theme } = useSelector(
+    (state: AppState) => state.theme,
   );
   const isDarkTheme =
-    carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
+    derivedCarbonTheme === CarbonTheme.G90 ||
+    derivedCarbonTheme === CarbonTheme.G100;
   const [hasReadDisclaimer, setHasReadDisclaimer] = useState(false);
   const disclaimerContent = useRef<HTMLDivElement>();
 
@@ -74,7 +75,7 @@ function Disclaimer({
     <div className="WACDisclaimerContainer">
       <div className="WAC__disclaimer">
         <SimpleHeader
-          useAITheme={useAITheme}
+          useAITheme={theme === ThemeType.CARBON_AI}
           onClose={onClose}
           testIdPrefix={OverlayPanelName.DISCLAIMER}
         />
@@ -87,9 +88,9 @@ function Disclaimer({
           <h1 className="WAC__disclaimer-title">
             {languagePack.disclaimer_title}
           </h1>
-          <MaybeDangerouslySetInnerHTML
+          <div
+            dangerouslySetInnerHTML={{ __html: disclaimerHTML }}
             className="WAC__disclaimer-description"
-            html={disclaimerHTML}
           />
         </div>
         <div className="WAC__disclaimer-buttons">

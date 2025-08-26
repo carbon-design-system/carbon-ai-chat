@@ -6,10 +6,9 @@
  *
  *  @license
  */
-
-import ArrowUpLeft from "@carbon/icons-react/es/ArrowUpLeft.js";
+import CDSButton from "@carbon/web-components/es-custom/components/button/button.js";
+import Button, { BUTTON_KIND, BUTTON_TYPE } from "../../../react/carbon/Button";
 import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
-import { Button } from "@carbon/react";
 import cx from "classnames";
 import React, {
   forwardRef,
@@ -26,18 +25,23 @@ import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { usePrevious } from "../../hooks/usePrevious";
 import { AppState } from "../../../../types/state/AppState";
+import { ThemeType } from "../../../../types/config/PublicConfig";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
 import { animateWithClass } from "../../utils/animationUtils";
-import { IS_MOBILE } from "../../utils/browserUtils";
+import { IS_MOBILE, isBrowser } from "../../utils/browserUtils";
 import { doFocusRef } from "../../utils/domUtils";
 import { getLauncherButtonAriaLabel } from "./launcherUtils";
-import { ButtonKindEnum } from "../../../../types/utilities/carbonTypes";
 
 interface LauncherExtendedProps extends HasClassName {
   onToggleOpen: () => void;
   launcherConfig: LauncherConfig;
+
+  /**
+   * Indicates if this launcher is being used on mobile.
+   */
+  isMobile?: boolean;
 
   /**
    * Indicates if the mobile launcher should be in the extended state.
@@ -53,11 +57,11 @@ interface LauncherExtendedProps extends HasClassName {
    * The number of unread messages from a human agent that should be displayed on the launcher. If this is 0, no
    * agent indicator will be shown unless showUnreadIndicator is set.
    */
-  unreadAgentCount: number;
+  unreadHumanAgentCount: number;
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
-   * in the session before the user has opened the Carbon AI chat and is superseded by the agent unread indicator if there
+   * in the session before the user has opened the Carbon AI Chat and is superseded by the agent unread indicator if there
    * is one.
    */
   showUnreadIndicator: boolean;
@@ -73,15 +77,9 @@ interface LauncherExtendedProps extends HasClassName {
   onReduceEnd: () => void;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If there's's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 /**
@@ -127,12 +125,13 @@ const MAX_EXTENDED_LAUNCHER_WIDTH = 400;
  */
 function LauncherExtended(
   props: LauncherExtendedProps,
-  ref: Ref<LauncherExtendedFunctions>
+  ref: Ref<LauncherExtendedFunctions>,
 ) {
   const {
-    unreadAgentCount,
+    unreadHumanAgentCount,
     showUnreadIndicator,
     launcherConfig,
+    isMobile,
     isExtended,
     playExtendAnimation,
     onToggleOpen,
@@ -140,21 +139,20 @@ function LauncherExtended(
     onReduceEnd,
     className,
     launcherHidden,
-    activeTour,
   } = props;
   const ariaAnnouncer = useAriaAnnouncer();
   const languagePack = useLanguagePack();
   const intl = useIntl();
   const launcherAvatarURL = useSelector((state: AppState) =>
-    state.theme.useAITheme
+    state.theme.theme === ThemeType.CARBON_AI
       ? undefined
-      : state.launcher.config.mobile.avatar_url_override
+      : state.launcher.config.mobile.avatar_url_override,
   );
   const [animateExtendedState, setAnimateExtendedState] =
     useState(playExtendAnimation);
   const [showGreetingMessage, setShowGreetingMessage] = useState(false);
   const prevIsExtended = usePrevious(isExtended);
-  const buttonRef = useRef<HTMLButtonElement>();
+  const buttonRef = useRef<CDSButton>();
   const extendedContainerRef = useRef<HTMLDivElement>();
   const greetingMessageRef = useRef<HTMLDivElement>();
   const textHolderRef = useRef<HTMLDivElement>();
@@ -169,16 +167,12 @@ function LauncherExtended(
   const extendWithoutAnimation = isExtended && !animateExtendedState;
   const launcherGreetingMessage =
     launcherConfig.mobile.title || languagePack.launcher_mobileGreeting;
-  let ariaLabel = getLauncherButtonAriaLabel(
-    languagePack,
-    launcherHidden,
-    activeTour
-  );
+  let ariaLabel = getLauncherButtonAriaLabel(languagePack, launcherHidden);
 
-  if (unreadAgentCount !== 0) {
+  if (unreadHumanAgentCount !== 0) {
     ariaLabel += `. ${intl.formatMessage(
       { id: "icon_ariaUnreadMessages" },
-      { count: unreadAgentCount }
+      { count: unreadHumanAgentCount },
     )}`;
   }
 
@@ -215,7 +209,7 @@ function LauncherExtended(
     calculateAndSetMaxExtendedLauncherWidth(
       textHolderElement,
       greetingMessageElement,
-      extendedContainerElement
+      extendedContainerElement,
     );
   }, [ariaAnnouncer, extendWithoutAnimation, launcherGreetingMessage]);
 
@@ -230,7 +224,7 @@ function LauncherExtended(
           { fadeInElement: greetingMessageRef.current, fadeInTime: 300 },
           () => {
             setAnimateExtendedState(false);
-          }
+          },
         );
       } else {
         // Only un-hide the greeting message.
@@ -244,7 +238,7 @@ function LauncherExtended(
         checkIfUserSwipedRight(
           event.touches[0],
           touchStartRef.current,
-          onSwipeRight
+          onSwipeRight,
         );
       };
 
@@ -274,7 +268,7 @@ function LauncherExtended(
         setAnimateExtendedState(true);
         extendedContainerRef.current.removeEventListener(
           "animationend",
-          reduceAnimationEndListener
+          reduceAnimationEndListener,
         );
       };
 
@@ -282,7 +276,7 @@ function LauncherExtended(
       // load.
       extendedContainerRef.current.addEventListener(
         "animationend",
-        reduceAnimationEndListener
+        reduceAnimationEndListener,
       );
 
       // Fade out the greeting message.
@@ -308,22 +302,21 @@ function LauncherExtended(
         "WACLauncher__ButtonContainer WACLauncher__ButtonContainer--round WACLauncherExtended__Container",
         className,
         {
+          "WACLauncher__ButtonContainer--mobile": isMobile,
           "WACLauncher__ButtonContainer--hidden": launcherHidden,
           "WACLauncherExtended__Button--extended": extendWithoutAnimation,
           "WACLauncherExtended__Button--extendedAnimation": extendWithAnimation,
           "WACLauncherExtended__Button--reducedAnimation":
             shouldReduceExtendedLauncher,
-        }
+        },
       )}
       ref={extendedContainerRef}
     >
       <Button
         aria-label={ariaLabel}
-        className={cx("WACLauncher__Button", "WACLauncherExtended__Button", {
-          WACLauncher__TourButton: activeTour,
-        })}
-        kind={activeTour ? ButtonKindEnum.GHOST : ButtonKindEnum.PRIMARY}
-        type="button"
+        className="WACLauncher__Button WACLauncherExtended__Button"
+        kind={BUTTON_KIND.PRIMARY}
+        type={"button" as BUTTON_TYPE}
         ref={buttonRef}
         onClick={onToggleOpen}
       >
@@ -347,18 +340,12 @@ function LauncherExtended(
                 </div>
               </div>
             </div>
-            <div className="WACLauncher__IconHolder">
-              {activeTour ? (
-                <ArrowUpLeft size={24} className="WACLauncher__svg" />
-              ) : (
-                launcherAvatar
-              )}
-            </div>
+            <div className="WACLauncher__IconHolder">{launcherAvatar}</div>
           </div>
         </div>
-        {(unreadAgentCount !== 0 || showUnreadIndicator) && (
+        {(unreadHumanAgentCount !== 0 || showUnreadIndicator) && (
           <div className="WAC__countIndicator">
-            {unreadAgentCount !== 0 ? unreadAgentCount : ""}
+            {unreadHumanAgentCount !== 0 ? unreadHumanAgentCount : ""}
           </div>
         )}
       </Button>
@@ -373,7 +360,7 @@ function LauncherExtended(
 function calculateAndSetMaxExtendedLauncherWidth(
   textHolderEl: HTMLDivElement,
   greetingMessageEl: HTMLDivElement,
-  extendedContainerEl: HTMLDivElement
+  extendedContainerEl: HTMLDivElement,
 ) {
   // The number in pixels that don't make up the space the launcher text can fill up.
   // 68px = 6px (left/right button border width) + 50px (launcher icon container) + 12px (text holder left padding)
@@ -392,7 +379,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   greetingMessageEl.style.setProperty("display", "flex");
 
   const { clientWidth } = greetingMessageEl.querySelector(
-    ".WACLauncherExtended__GreetingText"
+    ".WACLauncherExtended__GreetingText",
   );
   // We should add a pixel to compensate for lack of clientWidth precision. It's possible for 1 line of text to be
   // rendered as 2 lines because HTML may render text with a precise width of 219.266 pixels, but clientWidth will
@@ -413,7 +400,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   // Set the extended width property to animate to.
   extendedContainerEl.style.setProperty(
     "--cds-chat--LAUNCHER-EXTENDED-width",
-    `${launcherExtendedWidth}px`
+    `${launcherExtendedWidth}px`,
   );
 }
 
@@ -426,7 +413,7 @@ function doFadeAnimationForElements(
     fadeInElement,
     fadeInTime = 600,
   }: ExtendedFadeAnimationOptions,
-  callback?: () => void
+  callback?: () => void,
 ) {
   if (fadeOutElement) {
     fadeOutElement.classList.remove("WACLauncherExtended__Element--hidden");
@@ -437,13 +424,13 @@ function doFadeAnimationForElements(
       () => {
         fadeOutElement.classList.add("WACLauncherExtended__Element--hidden");
         fadeOutElement.classList.remove(
-          "WACLauncherExtended__Element--FadeOut"
+          "WACLauncherExtended__Element--FadeOut",
         );
         // If there is no element provided to fade in, fire the callback function after the fade out animation is complete.
         if (!fadeInElement && callback) {
           callback();
         }
-      }
+      },
     );
   }
 
@@ -456,13 +443,13 @@ function doFadeAnimationForElements(
         600,
         () => {
           fadeInElement.classList.remove(
-            "WACLauncherExtended__Element--FadeIn"
+            "WACLauncherExtended__Element--FadeIn",
           );
           // Fire the callback after the fade in animation has ended.
           if (callback) {
             callback();
           }
-        }
+        },
       );
     }, fadeInTime);
   }
@@ -475,7 +462,7 @@ function doFadeAnimationForElements(
 function checkIfUserSwipedRight(
   touchList: Touch,
   touchStartCoordinates: LauncherTouchStartCoordinates,
-  callback: () => void
+  callback: () => void,
 ) {
   const { touchStartX, touchStartY } = touchStartCoordinates;
 
@@ -510,6 +497,9 @@ function checkIfUserSwipedRight(
  */
 function getMaxLauncherExtendedWidth() {
   const launcherPosition = IS_MOBILE ? 32 : 64;
+  if (!isBrowser) {
+    return MAX_EXTENDED_LAUNCHER_WIDTH;
+  }
   const { width, height } = window.screen;
   const lowestValue = Math.min(height, width);
   const extendedWidth = lowestValue - launcherPosition;

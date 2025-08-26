@@ -7,7 +7,13 @@
  *  @license
  */
 
-import { ChatInstance, GenericItem, WidthOptions } from "@carbon/ai-chat";
+import {
+  ButtonItemKind,
+  ButtonItemType,
+  ChatInstance,
+  MessageResponseTypes,
+  WidthOptions,
+} from "@carbon/ai-chat";
 
 function doCard(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -16,8 +22,12 @@ function doCard(instance: ChatInstance) {
         {
           body: [
             {
-              response_type: "text",
-              text: "##### Task",
+              response_type: MessageResponseTypes.TEXT,
+              text: "##### Carbon Design System Component",
+            },
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: "The Carbon Design System provides a comprehensive library of components, tokens, and guidelines. We need to implement the new AI Chat component following Carbon's design principles and accessibility standards.",
             },
             {
               rows: [
@@ -26,56 +36,16 @@ function doCard(instance: ChatInstance) {
                     {
                       items: [
                         {
-                          source:
-                            "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/example_avatar_1.png",
-                          response_type: "image",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Matt Hidinger**\nCreated Tue, Feb 14, 2017",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                  ],
-                },
-              ],
-              columns: [
-                {
-                  width: "40px",
-                },
-                {
-                  width: "1",
-                },
-              ],
-              response_type: "grid",
-            },
-            {
-              response_type: "text",
-              text: "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-            },
-            {
-              rows: [
-                {
-                  cells: [
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Board:**\n**List:**\n**Assigned to:**\n**Due date:**",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "**Release:**",
                         },
                       ],
                     },
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "Adaptive Cards\nBacklog\nMatt Hidinger\nNot set",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "v11.45.0",
                         },
                       ],
                     },
@@ -84,32 +54,36 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "84px",
+                  width: "1",
                 },
                 {
                   width: "1",
                 },
               ],
-              response_type: "grid",
+              response_type: MessageResponseTypes.GRID,
             },
           ],
           footer: [
             {
-              url: "https://adaptivecards.io/",
-              kind: "secondary",
-              label: "View",
-              button_type: "url",
-              response_type: "button",
+              url: "https://ibm.com/",
+              kind: ButtonItemKind.SECONDARY,
+              label: "View Carbon Docs",
+              button_type: ButtonItemType.URL,
+              response_type: MessageResponseTypes.BUTTON,
             },
           ],
-          response_type: "card",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.CARD,
+        },
         {
           max_width: WidthOptions.SMALL,
           body: [
             {
-              response_type: "text",
-              text: "##### Task with max_width: WidthOptions.SMALL on card",
+              response_type: MessageResponseTypes.TEXT,
+              text: "##### Carbon Component with max_width: WidthOptions.SMALL on card",
+            },
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: "The Carbon Design System provides a comprehensive library of components, tokens, and guidelines. We need to implement the new AI Chat component following Carbon's design principles and accessibility standards.",
             },
             {
               rows: [
@@ -118,56 +92,16 @@ function doCard(instance: ChatInstance) {
                     {
                       items: [
                         {
-                          source:
-                            "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/example_avatar_1.png",
-                          response_type: "image",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Matt Hidinger**\nCreated Tue, Feb 14, 2017",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                  ],
-                },
-              ],
-              columns: [
-                {
-                  width: "40px",
-                },
-                {
-                  width: "1",
-                },
-              ],
-              response_type: "grid",
-            },
-            {
-              response_type: "text",
-              text: "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-            },
-            {
-              rows: [
-                {
-                  cells: [
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Board:**\n**List:**\n**Assigned to:**\n**Due date:**",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "**Release:**",
                         },
                       ],
                     },
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "Adaptive Cards\nBacklog\nMatt Hidinger\nNot set",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "v11.45.0",
                         },
                       ],
                     },
@@ -176,32 +110,36 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "84px",
+                  width: "1",
                 },
                 {
                   width: "1",
                 },
               ],
-              response_type: "grid",
+              response_type: MessageResponseTypes.GRID,
             },
           ],
           footer: [
             {
-              url: "https://adaptivecards.io/",
-              kind: "secondary",
-              label: "View",
-              button_type: "url",
-              response_type: "button",
+              url: "https://ibm.com/",
+              kind: ButtonItemKind.SECONDARY,
+              label: "View Carbon Docs",
+              button_type: ButtonItemType.URL,
+              response_type: MessageResponseTypes.BUTTON,
             },
           ],
-          response_type: "card",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.CARD,
+        },
         {
           max_width: WidthOptions.MEDIUM,
           body: [
             {
-              response_type: "text",
-              text: "##### Task with max_width: WidthOptions.MEDIUM on card",
+              response_type: MessageResponseTypes.TEXT,
+              text: "##### Carbon Component with max_width: WidthOptions.MEDIUM on card",
+            },
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: "The Carbon Design System provides a comprehensive library of components, tokens, and guidelines. We need to implement the new AI Chat component following Carbon's design principles and accessibility standards.",
             },
             {
               rows: [
@@ -210,56 +148,16 @@ function doCard(instance: ChatInstance) {
                     {
                       items: [
                         {
-                          source:
-                            "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/example_avatar_1.png",
-                          response_type: "image",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Matt Hidinger**\nCreated Tue, Feb 14, 2017",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                  ],
-                },
-              ],
-              columns: [
-                {
-                  width: "40px",
-                },
-                {
-                  width: "1",
-                },
-              ],
-              response_type: "grid",
-            },
-            {
-              response_type: "text",
-              text: "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-            },
-            {
-              rows: [
-                {
-                  cells: [
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Board:**\n**List:**\n**Assigned to:**\n**Due date:**",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "**Release:**",
                         },
                       ],
                     },
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "Adaptive Cards\nBacklog\nMatt Hidinger\nNot set",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "v11.45.0",
                         },
                       ],
                     },
@@ -268,32 +166,36 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "84px",
+                  width: "1",
                 },
                 {
                   width: "1",
                 },
               ],
-              response_type: "grid",
+              response_type: MessageResponseTypes.GRID,
             },
           ],
           footer: [
             {
-              url: "https://adaptivecards.io/",
-              kind: "secondary",
-              label: "View",
-              button_type: "url",
-              response_type: "button",
+              url: "https://ibm.com/",
+              kind: ButtonItemKind.SECONDARY,
+              label: "View Carbon Docs",
+              button_type: ButtonItemType.URL,
+              response_type: MessageResponseTypes.BUTTON,
             },
           ],
-          response_type: "card",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.CARD,
+        },
         {
           max_width: WidthOptions.LARGE,
           body: [
             {
-              response_type: "text",
-              text: "##### Task with max_width: WidthOptions.LARGE on card",
+              response_type: MessageResponseTypes.TEXT,
+              text: "##### Carbon Component with max_width: WidthOptions.LARGE on card",
+            },
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: "The Carbon Design System provides a comprehensive library of components, tokens, and guidelines. We need to implement the new AI Chat component following Carbon's design principles and accessibility standards.",
             },
             {
               rows: [
@@ -302,56 +204,16 @@ function doCard(instance: ChatInstance) {
                     {
                       items: [
                         {
-                          source:
-                            "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/example_avatar_1.png",
-                          response_type: "image",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Matt Hidinger**\nCreated Tue, Feb 14, 2017",
-                        },
-                      ],
-                      vertical_alignment: "center",
-                    },
-                  ],
-                },
-              ],
-              columns: [
-                {
-                  width: "40px",
-                },
-                {
-                  width: "1",
-                },
-              ],
-              response_type: "grid",
-            },
-            {
-              response_type: "text",
-              text: "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-            },
-            {
-              rows: [
-                {
-                  cells: [
-                    {
-                      items: [
-                        {
-                          response_type: "text",
-                          text: "**Board:**\n**List:**\n**Assigned to:**\n**Due date:**",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "**Release:**",
                         },
                       ],
                     },
                     {
                       items: [
                         {
-                          response_type: "text",
-                          text: "Adaptive Cards\nBacklog\nMatt Hidinger\nNot set",
+                          response_type: MessageResponseTypes.TEXT,
+                          text: "v11.45.0",
                         },
                       ],
                     },
@@ -360,26 +222,26 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "84px",
+                  width: "1",
                 },
                 {
                   width: "1",
                 },
               ],
-              response_type: "grid",
+              response_type: MessageResponseTypes.GRID,
             },
           ],
           footer: [
             {
-              url: "https://adaptivecards.io/",
-              kind: "secondary",
-              label: "View",
-              button_type: "url",
-              response_type: "button",
+              url: "https://ibm.com/",
+              kind: ButtonItemKind.SECONDARY,
+              label: "View Carbon Docs",
+              button_type: ButtonItemType.URL,
+              response_type: MessageResponseTypes.BUTTON,
             },
           ],
-          response_type: "card",
-        } as unknown as GenericItem,
+          response_type: MessageResponseTypes.CARD,
+        },
       ],
     },
   });

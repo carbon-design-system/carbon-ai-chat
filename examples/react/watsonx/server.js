@@ -130,7 +130,7 @@ app.post("/api/watsonx/stream", async (req, res) => {
         "watsonx.ai request failed or returned non-SSE:",
         response.status,
         contentType,
-        errorText
+        errorText,
       );
 
       // Set SSE headers first to satisfy fetch-event-source
@@ -148,7 +148,7 @@ app.post("/api/watsonx/stream", async (req, res) => {
           error: "watsonx.ai request failed",
           status: response.status,
           details: errorText,
-        })}\n\n`
+        })}\n\n`,
       );
       res.end();
       return;
@@ -201,7 +201,7 @@ app.post("/api/watsonx/stream", async (req, res) => {
         `data: ${JSON.stringify({
           error: "Internal server error",
           message: error.message,
-        })}\n\n`
+        })}\n\n`,
       );
       res.end();
     }
@@ -213,6 +213,6 @@ app.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Token endpoint: http://localhost:${PORT}/api/token`);
   console.log(
-    `Streaming endpoint: http://localhost:${PORT}/api/watsonx/stream`
+    `Streaming endpoint: http://localhost:${PORT}/api/watsonx/stream`,
   );
 });

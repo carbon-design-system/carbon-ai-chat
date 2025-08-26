@@ -19,7 +19,7 @@ const reLicenseText = new RegExp(licenseText, "s");
 reLicenseText.currentYear = currentYear;
 reLicenseText.reLicenseTextCurrentYear = new RegExp(
   licenseTextCurrentYear,
-  "s"
+  "s",
 );
 reLicenseText.reLicenseTextSingleYear = new RegExp(licenseTextSingleYear, "s");
 reLicenseText.reLicenseTextRange = new RegExp(licenseTextRange, "s");

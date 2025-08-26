@@ -12,6 +12,9 @@
   - [Stable release](#stable-release)
   - [Post release](#post-release)
   - [Patch release](#patch-release)
+- [Troubleshooting](#troubleshooting)
+  - [Force publish](#force-publish)
+  - [Tag already exists](#tag-already-exists)
 
 ## Overview
 
@@ -66,7 +69,6 @@ The prerelease occurs on the first Monday of a sprint. During this stage, the
 release team will need to do the following:
 
 - [ ] Initiate code freeze by creating a release branch from `main`
-
   - This can be done through the GitHub UI
   - Make sure the branch name follows the `release/vx.x.x` format
     ![Screenshot of manually creating release branch from GitHub UI](https://github.com/user-attachments/assets/d4247f09-b1ab-4903-a504-938ddece03a9)
@@ -79,7 +81,6 @@ release team will need to do the following:
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
       to generate the prerelease versions for the packages
-
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `first minor rc` (rc stands for release candidate)
@@ -177,7 +178,6 @@ validated. During this stage, the release team will do the following:
       to generate the full minor versions for the packages
 
   ![Screenshot of minor release workflow with full minor release selected](https://github.com/user-attachments/assets/9ab859fc-f25d-4c52-8f0c-71ee7adacf48)
-
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `full minor release`
@@ -189,11 +189,6 @@ validated. During this stage, the release team will do the following:
       `v0.10.0-rc.1 ---> v0.10.0`).
 - [ ] If the version bumps are expected, run the workflow again with the same
       inputs as above, but this time with dry run unchecked.
-      **Note:**If you run into an issue where Lerna detects no changes (usually when bumping from release candidate to full release), you can run with the `force publish` option.
-      ![Screenshot of lerna not updating due to no changes detected](https://github.com/user-attachments/assets/8c43bd62-f440-45c7-be8d-55daca9a9e4f)
-      Run the workflow again with both `dry run` and `force publish` options set to true so you can confirm the version bump before re-running with `force publish` set to true and `dry run` set to false.
-      ![Screenshot of minor release workflow with force publish option](https://github.com/user-attachments/assets/a1535d5c-058d-4784-a46f-ae65fed3b286)
-
 - [ ] Once job has completed, check the packages on npm to ensure they have been
       published under the `latest` tag:
   - [ ]`@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
@@ -202,7 +197,6 @@ validated. During this stage, the release team will do the following:
       This workflow creates the release tag, generates the release with notes,
       and opens a PR to merge the changelog and version bumps from the release
       branch to `main`.
-
   - [ ] Make sure to specify to release branch and the correct release versions.
         ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/33162cc1-e38f-4c86-9bc8-c0b773c86eda)
     - The `release tag` option is the version that was just published (ie.
@@ -274,3 +268,27 @@ patch release:
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml),
       use the
       [patch release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-patch.yml)
+
+## Troubleshooting
+
+### Force publish
+
+If you run into an issue where Lerna detects no changes (usually when bumping from release candidate to full release), you can run with the `force publish` option.
+
+![Screenshot of lerna not updating due to no changes detected](https://github.com/user-attachments/assets/8c43bd62-f440-45c7-be8d-55daca9a9e4f)
+
+Run the workflow again with both `dry run` and `force publish` options set to true so you can confirm the version bump before re-running with `force publish` set to true and `dry run` set to false.
+
+> **Note:** when running the workflow with the `force publish` option, the workflow does not fail so make sure to cancel the workflow once it has completed running through the publish step.
+
+![Screenshot of minor release workflow with force publish option](https://github.com/user-attachments/assets/a1535d5c-058d-4784-a46f-ae65fed3b286)
+
+### Tag already exists
+
+If you run into an error saying a tag already exists, that usually means the a previous job pushed out the git tags, and then failed afterwards. The current job then tries to push git tags that already exist.
+
+![Screenshot of worfklow error due to tag already existing](https://github.com/user-attachments/assets/fc754557-5c06-4356-bad7-aef05769cdb7)
+
+Delete the git tags by going to the [tags page on GitHub](https://github.com/carbon-design-system/carbon-ai-chat/tags) and select the `Delete tag` option in next to all the appropriate tags. Then re-run the workflow.
+
+![Screenshot of tag page on GitHub](https://github.com/user-attachments/assets/c1c58e29-711a-4f14-81cf-9bb752be2b18)

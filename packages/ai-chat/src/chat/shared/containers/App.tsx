@@ -10,7 +10,7 @@
 import "intl-pluralrules";
 
 import cx from "classnames";
-import React, { Suspense, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { RawIntlProvider, useIntl } from "react-intl";
 import {
   Provider as ReduxProvider,
@@ -30,8 +30,11 @@ import { useOnMount } from "../hooks/useOnMount";
 import actions from "../store/actions";
 import { AppState } from "../../../types/state/AppState";
 import { Dimension } from "../../../types/utilities/Dimension";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { IS_PHONE, IS_PHONE_IN_PORTRAIT_MODE } from "../utils/browserUtils";
+import {
+  IS_PHONE,
+  IS_PHONE_IN_PORTRAIT_MODE,
+  isBrowser,
+} from "../utils/browserUtils";
 import { consoleDebug, consoleError } from "../utils/miscUtils";
 import {
   convertCSSVariablesToString,
@@ -40,9 +43,6 @@ import {
 import MainWindow from "./main/MainWindow";
 import { MainWindowFunctions } from "./main/MainWindowFunctions";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
-import { lazyTourComponent } from "../../dynamic-imports/dynamic-imports";
-
-const TourContainerLazy = lazyTourComponent();
 
 interface AppProps extends HasServiceManager {
   hostElement?: Element;
@@ -83,6 +83,11 @@ interface AppContainerProps extends HasServiceManager {
   applicationStyles: string;
 }
 
+const applicationStylesheet =
+  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
+const cssVariableOverrideStylesheet =
+  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
+
 function AppContainer({
   serviceManager,
   hostElement,
@@ -90,11 +95,13 @@ function AppContainer({
 }: AppContainerProps) {
   const languagePack = useSelector((state: AppState) => state.languagePack);
   const cssVariableOverrides = useSelector(
-    (state: AppState) => state.cssVariableOverrides
+    (state: AppState) => state.cssVariableOverrides,
   );
   const theme = useSelector((state: AppState) => state.theme);
   const config = useSelector((state: AppState) => state.config);
   const layout = useSelector((state: AppState) => state.layout);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { namespace } = serviceManager;
   const { originalName } = namespace;
@@ -102,20 +109,24 @@ function AppContainer({
   const dispatch = useDispatch();
 
   const [windowSize, setWindowSize] = useState<Dimension>({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: isBrowser ? window.innerWidth : 0,
+    height: isBrowser ? window.innerHeight : 0,
   });
 
   const cssVariableOverrideString = useMemo(() => {
     return convertCSSVariablesToString(cssVariableOverrides);
   }, [cssVariableOverrides]);
 
-  // If direction is "rtl" then the Carbon AI chat will render with the right-to-left styles.
-  // If direction is anything else, the Carbon AI chat uses left-to-right styles by default.
+  // If direction is "rtl" then the Carbon AI Chat will render with the right-to-left styles.
+  // If direction is anything else, the Carbon AI Chat uses left-to-right styles by default.
   // If document.dir cannot be determined, using auto will inherit directionality from the page.
-  const dir = document.dir || "auto";
+  const dir = isBrowser ? document.dir || "auto" : "auto";
 
   useOnMount(() => {
+    if (!isBrowser) {
+      return () => {};
+    }
+
     // Add the listener for updating the window size.
     const windowListener = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -125,7 +136,7 @@ function AppContainer({
     // Add the listener for detecting page visibilities changes.
     const visibilityListener = () => {
       dispatch(
-        actions.setIsBrowserPageVisible(document.visibilityState === "visible")
+        actions.setIsBrowserPageVisible(document.visibilityState === "visible"),
       );
     };
     document.addEventListener("visibilitychange", visibilityListener);
@@ -136,26 +147,61 @@ function AppContainer({
     };
   });
 
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    if (hostElement) {
+      // React doesn't let us set "!important" in a style value inline.
+      containerRef.current.style.setProperty("height", "100%", "important");
+      containerRef.current.style.setProperty("width", "100%", "important");
+    }
+
+    const rootNode = containerRef.current.getRootNode();
+
+    const appStyles =
+      applicationStyles || ".WACContainer { visibility: hidden; }";
+    const cssVariableStyles = cssVariableOverrideString || "";
+
+    if (rootNode instanceof ShadowRoot) {
+      if (
+        applicationStylesheet &&
+        "replaceSync" in applicationStylesheet &&
+        cssVariableOverrideStylesheet
+      ) {
+        applicationStylesheet.replaceSync(appStyles);
+        cssVariableOverrideStylesheet.replaceSync(cssVariableStyles);
+
+        rootNode.adoptedStyleSheets = [
+          applicationStylesheet,
+          cssVariableOverrideStylesheet,
+        ];
+      } else {
+        // have fallback when adoptedStylesheets are not supported (ie playwright testing)
+        if (!rootNode.querySelector("style[data-base-styles]")) {
+          const baseStyles = document.createElement("style");
+          baseStyles.dataset.appStyles = "true";
+          baseStyles.textContent = appStyles;
+          rootNode.appendChild(baseStyles);
+        }
+
+        if (!rootNode.querySelector("style[data-variables-custom]")) {
+          const variableCustomStyles = document.createElement("style");
+          variableCustomStyles.dataset.overrideStyles = "true";
+          variableCustomStyles.textContent = cssVariableStyles;
+          rootNode.appendChild(variableCustomStyles);
+        }
+      }
+    }
+  }, [applicationStyles, containerRef, cssVariableOverrideString, hostElement]);
+
   return (
     <div
       className="WACContainer"
       data-namespace={originalName}
-      ref={(node) => {
-        if (node && hostElement) {
-          // React doesn't let us set "!important" in a style value inline.
-          node.style.setProperty("height", "100%", "important");
-          node.style.setProperty("width", "100%", "important");
-        }
-      }}
+      ref={containerRef}
     >
-      <div className="WACContainer--styles">
-        <style data-base-styles="true" nonce={config.public.cspNonce}>
-          {applicationStyles || `.WACContainer { visibility: hidden; }`}
-        </style>
-        <style data-variables-custom="true" nonce={config.public.cspNonce}>
-          {cssVariableOverrideString}
-        </style>
-      </div>
       <div
         className={cx(`WACContainer--render`, getThemeClassNames(theme), {
           "WACContainer-disableMobileEnhancements":
@@ -196,25 +242,12 @@ function MainContainer(props: MainContainerProps) {
   const { hostElement, serviceManager } = props;
 
   // We always render the launcher (unless state.launcher.config.is_on is set to false), but we hide it with CSS
-  // if the tour or main Carbon AI chat window are open.
+  // if the main Carbon AI Chat window is open.
   const showLauncher = useSelector(
-    (state: AppState) => state.launcher.config.is_on
-  );
-  const { viewState } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
+    (state: AppState) => state.launcher.config.is_on,
   );
 
-  const tourContainerRef = useRef<HasRequestFocus>();
   const mainWindowRef = useRef<MainWindowFunctions>();
-  const showTour = viewState.tour;
-
-  // This indicates if the tour has been opened at least once. The tour isn't rendered until it's been opened the first
-  // time. Rendering of the tour is delayed to prevent the tour buttons being clicked by pen testing tools. After the
-  // tour has been opened once it's simply shown and hidden using CSS, instead of unmounting it. CSS is used to show
-  // and hide the tour so that the scroll position and video playback positions can be preserved within steps when
-  // the tour is hidden.
-  const showedTourOnce = useRef(showTour);
-  showedTourOnce.current = showTour || showedTourOnce.current;
 
   const intl = useIntl();
   const namespace = serviceManager.namespace.originalName;
@@ -232,11 +265,7 @@ function MainContainer(props: MainContainerProps) {
         const { persistedToBrowserStorage } = serviceManager.store.getState();
         const { viewState } = persistedToBrowserStorage.launcherState;
 
-        if (viewState.tour) {
-          // If there is a tour visible prioritize focusing on that over the main window.
-          tourContainerRef.current?.requestFocus();
-        } else if (viewState.mainWindow) {
-          // If there is no tour visible then focus on the main window.
+        if (viewState.mainWindow) {
           mainWindowRef.current?.requestFocus();
         }
       } catch (error) {
@@ -247,8 +276,6 @@ function MainContainer(props: MainContainerProps) {
     serviceManager.appWindow = { requestFocus };
   });
 
-  // Always render the main window and let it control whether it should be visible with css. Only render the tour
-  // once it's been opened once.
   return (
     <div
       className="WACWidget__regionContainer"
@@ -260,11 +287,6 @@ function MainContainer(props: MainContainerProps) {
         useCustomHostElement={Boolean(hostElement)}
         serviceManager={serviceManager}
       />
-      {showedTourOnce.current && (
-        <Suspense fallback={null}>
-          <TourContainerLazy ref={tourContainerRef} />
-        </Suspense>
-      )}
       {showLauncher && <LauncherContainer />}
     </div>
   );

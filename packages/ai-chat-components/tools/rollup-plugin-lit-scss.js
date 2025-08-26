@@ -28,7 +28,7 @@ const noop = (s) => s;
  */
 function transformToTemplate(css) {
   return `import { css } from 'lit';export default css([${JSON.stringify(
-    css
+    css,
   )}])`;
 }
 

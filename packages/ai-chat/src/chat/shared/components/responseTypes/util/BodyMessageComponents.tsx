@@ -20,7 +20,7 @@ interface BodyMessageComponentsProps extends MessageTypeComponentProps {
     props: MessageTypeComponentProps & {
       message: any;
       isNestedMessageItem: boolean;
-    }
+    },
   ) => React.ReactNode;
 }
 
@@ -30,7 +30,7 @@ interface BodyMessageComponentsProps extends MessageTypeComponentProps {
 function BodyMessageComponents(props: BodyMessageComponentsProps) {
   const { bodyLocalMessageItemIDs } = props.message.ui_state;
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+    (state: AppState) => state.allMessageItemsByID,
   );
 
   // Loop through the list of supported local message ids and return a message component for each.
@@ -38,14 +38,14 @@ function BodyMessageComponents(props: BodyMessageComponentsProps) {
     (nestedMessageID, index) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
       const isFullWidthMessage = isFullWidthResponseType(
-        nestedLocalMessage.item.response_type
+        nestedLocalMessage.item.response_type,
       );
       // Determine if the next message is a full width message, or not. Messages next to each other that aren't full
       // width should have small bottom padding separating them.
       const nextLocalMessageID = bodyLocalMessageItemIDs[index + 1];
       const nextLocalMessage = allMessageItemsByID[nextLocalMessageID];
       const isNextMessageFullWidth = isFullWidthResponseType(
-        nextLocalMessage?.item.response_type
+        nextLocalMessage?.item.response_type,
       );
 
       const isLastElement = index === bodyLocalMessageItemIDs.length - 1;
@@ -69,7 +69,7 @@ function BodyMessageComponents(props: BodyMessageComponentsProps) {
           })}
         </div>
       );
-    }
+    },
   );
 
   if (!messageComponents?.length) {

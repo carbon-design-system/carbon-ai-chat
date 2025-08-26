@@ -29,11 +29,14 @@ button.WACCarouselContainer__NavigationButton,
   justify-content: flex-end;
   inline-size: 100%;
   max-inline-size: chatTheme.$CARD-max-width;
+
+  cds-custom-button::part(button) {
+    color: currentcolor;
+  }
 }
 
 .WACCarouselContainer__NavigationButton {
   padding: 0;
-  block-size: 32px;
   color: currentcolor;
   inline-size: 32px;
 

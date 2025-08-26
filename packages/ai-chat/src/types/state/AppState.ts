@@ -25,11 +25,11 @@ import type {
 import type { CornersType } from "../../chat/shared/utils/constants";
 import type { AppConfig } from "./AppConfig";
 import type { CarbonTheme } from "../utilities/carbonTypes";
+import type { ThemeType, WhiteLabelTheme } from "../config/PublicConfig";
 import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
-import { PersistedAgentState } from "./PersistedAgentState";
-import type { PersistedTourState, TourState } from "./TourState";
+import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
 import { HomeScreenConfig, HomeScreenState } from "../config/HomeScreenConfig";
 import {
   ConversationalSearchItemCitation,
@@ -46,7 +46,7 @@ import { AgentAvailability } from "../config/ServiceDeskConfig";
  */
 
 /**
- * The list of messages used by Carbon AI chat. These are in their own section for easy ability to restart.
+ * The list of messages used by Carbon AI Chat. These are in their own section for easy ability to restart.
  */
 interface AppStateMessages {
   /**
@@ -78,10 +78,10 @@ interface AppState extends AppStateMessages {
   /**
    * The current state for the human agent system.
    */
-  agentState: AgentState;
+  humanAgentState: HumanAgentState;
 
   /**
-   * Whether we have hydrated Carbon AI chat. This means we have loaded session history if it exists as well as the
+   * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
    * welcome node (if appropriate).
    */
   isHydrated: boolean;
@@ -160,7 +160,7 @@ interface AppState extends AppStateMessages {
 
   /**
    * Any items stored here is also persisted to sessionStorage IF sessionHistory is turned on. We rehydrate the redux
-   * store with this information. Examples of things we store include if the Carbon AI chat is open and if you have an active
+   * store with this information. Examples of things we store include if the Carbon AI Chat is open and if you have an active
    * conversation with an agent.
    */
   persistedToBrowserStorage: PersistedToBrowserStorageState;
@@ -182,12 +182,12 @@ interface AppState extends AppStateMessages {
   chatHeight: number;
 
   /**
-   * Has thrown an error that Carbon AI chat can not recover from.
+   * Has thrown an error that Carbon AI Chat can not recover from.
    */
   catastrophicErrorType?: boolean;
 
   /**
-   * The state of the Carbon AI chat launcher.
+   * The state of the Carbon AI Chat launcher.
    */
   launcher: LauncherState;
 
@@ -230,11 +230,11 @@ interface AppState extends AppStateMessages {
   initialViewChangeComplete: boolean;
 
   /**
-   * Before Carbon AI chat is loaded, the initial view state is set to everything closed (which reflects the reality of the
-   * page as Carbon AI chat is loading). This property is the view state we want Carbon AI chat to try to get to after it is loaded.
+   * Before Carbon AI Chat is loaded, the initial view state is set to everything closed (which reflects the reality of the
+   * page as Carbon AI Chat is loading). This property is the view state we want Carbon AI Chat to try to get to after it is loaded.
    * If a previous session already exists, then this target will be set to the previous view state so we get back to
-   * where we were. If there is no session, this will be set to a default that is based on the current Carbon AI chat
-   * config and page context (such as considering if openChatByDefault is set). After Carbon AI chat is loaded, this value is
+   * where we were. If there is no session, this will be set to a default that is based on the current Carbon AI Chat
+   * config and page context (such as considering if openChatByDefault is set). After Carbon AI Chat is loaded, this value is
    * no longer used.
    */
   targetViewState: ViewState;
@@ -243,11 +243,6 @@ interface AppState extends AppStateMessages {
    * All the currently configured custom menu options.
    */
   customMenuOptions: CustomMenuOption[];
-
-  /**
-   * The non-persisted state for tours.
-   */
-  tourState: TourState;
 
   /**
    * Indicates if we should display a transparent background covering the non-header area of the main window.
@@ -332,9 +327,9 @@ interface StopStreamingButtonState {
  */
 interface PersistedChatState {
   /**
-   * The version of the Carbon AI chat that this data is persisted for. If there are any breaking changes to the
+   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
    * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI chat startup.
+   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
    */
   version: string;
 
@@ -355,14 +350,9 @@ interface PersistedChatState {
   hasSentNonWelcomeMessage: boolean;
 
   /**
-   * The persisted state for tours.
-   */
-  persistedTourState: PersistedTourState;
-
-  /**
    * The persisted state for agents.
    */
-  agentState: PersistedAgentState;
+  humanAgentState: PersistedHumanAgentState;
 }
 
 /**
@@ -375,22 +365,16 @@ interface PersistedLauncherState {
   wasLoadedFromBrowser: boolean;
 
   /**
-   * The version of the Carbon AI chat that this data is persisted for. If there are any breaking changes to the
+   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
    * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI chat startup.
+   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
    */
   version: string;
 
   /**
-   * Indicates which of the Carbon AI chat views are visible and which are hidden.
+   * Indicates which of the Carbon AI Chat views are visible and which are hidden.
    */
   viewState: ViewState;
-
-  /**
-   * Indicates if there is currently an active tour. If there is then clicking on the launcher should open the tour
-   * view.
-   */
-  activeTour: boolean;
 
   /**
    * Indicates if we should show an unread indicator on the launcher. This is a custom flag that is set by
@@ -448,13 +432,13 @@ interface PersistedLauncherState {
  */
 interface PersistedToBrowserStorageState {
   /**
-   * Things stored that are related to the user profile. These are not accessible until the Carbon AI chat has been opened!
+   * Things stored that are related to the user profile. These are not accessible until the Carbon AI Chat has been opened!
    */
   chatState: PersistedChatState;
 
   /**
    * Things stored that are not related to the user profile. These should only be things that are not sensitive like
-   * "is the Carbon AI chat open".
+   * "is the Carbon AI Chat open".
    */
   launcherState: PersistedLauncherState;
 }
@@ -472,12 +456,6 @@ interface ChatMessagesState {
    * An array of message ids to correctly store the order of messages.
    */
   messageIDs: string[];
-
-  /**
-   * Counter that indicates if the other party (not the user) is typing and that a typing indicator should be displayed.
-   * If "0" then we do not show typing indicator.
-   */
-  isTypingCounter: number;
 
   /**
    * Counter that indicates if a message is loading and a loading indicator should be displayed.
@@ -501,14 +479,14 @@ interface ChatMessagesState {
 /**
  * This piece of state contains information about any connection to a human agent system.
  */
-interface AgentState {
+interface HumanAgentState {
   /**
    * Indicates that we are currently attempting to connect the user to an agent.
    */
   isConnecting: boolean;
 
   /**
-   * Indicates that we are currently attempting to re-connect the user to an agent. This occurs when Carbon AI chat is
+   * Indicates that we are currently attempting to re-connect the user to an agent. This occurs when Carbon AI Chat is
    * initially loaded and the user was previously connected to an agent.
    */
   isReconnecting: boolean;
@@ -550,7 +528,7 @@ interface AgentState {
   /**
    * Indicates if the agent is typing.
    */
-  isAgentTyping: boolean;
+  isHumanAgentTyping: boolean;
 
   /**
    * The state of the input field while connecting or connected to an agent.
@@ -561,7 +539,7 @@ interface AgentState {
 /**
  * The state that controls how the agent interaction appears to the user.
  */
-interface AgentDisplayState {
+interface HumanAgentDisplayState {
   /**
    * Indicates if the user should see that they are connecting or connected to an agent.
    */
@@ -580,7 +558,7 @@ interface AgentDisplayState {
   /**
    * Indicates if the agent is typing.
    */
-  isAgentTyping: boolean;
+  isHumanAgentTyping: boolean;
 }
 
 /**
@@ -609,7 +587,7 @@ interface AnnounceMessage {
 }
 
 /**
- * The different available widths of a Carbon AI chat.
+ * The different available widths of a Carbon AI Chat.
  */
 enum ChatWidthBreakpoint {
   // < 360px
@@ -700,40 +678,45 @@ interface MessagePanelState<T extends GenericItem = GenericItem> {
  */
 interface ThemeState {
   /**
-   * Indicates if the carbon for AI theme is enabled.
+   * Specifies which theme configuration to use.
    */
-  useAITheme: boolean;
+  theme?: ThemeType;
 
   /**
    * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
    * https://carbondesignsystem.com/guidelines/color/tokens.
    */
-  carbonTheme: CarbonTheme;
+  derivedCarbonTheme: CarbonTheme;
 
   /**
-   * This flag is used to disable Carbon AI chat's rounded corners.
+   * The original carbon theme that was set by the user before any automatic theme switching.
+   * Used to detect when inherit mode should avoid applying Carbon theme classes.
+   */
+  originalCarbonTheme: CarbonTheme;
+
+  /**
+   * This flag is used to disable Carbon AI Chat's rounded corners.
    */
   corners: CornersType;
+
+  /**
+   * Variables for white labeling.
+   */
+  whiteLabelTheme?: WhiteLabelTheme;
 }
 interface ChatHeaderState {
   /**
    * The chat header config state.
    */
   config: ChatHeaderConfig;
-
-  /**
-   * The total number of chat header objects that are allowed to be visible in the chat header in each of the left and
-   * right containers.
-   */
-  maxVisibleHeaderObjects: number;
 }
 
 export {
   AppStateMessages,
   AppState,
   PersistedToBrowserStorageState,
-  AgentDisplayState,
-  AgentState,
+  HumanAgentDisplayState,
+  HumanAgentState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,

@@ -44,26 +44,19 @@ interface LauncherDesktopContainerProps extends HasRequestFocus {
   launcherRef: RefObject<HasRequestFocus>;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If there's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
-  const { launcherRef, onDoToggle, requestFocus, launcherHidden, activeTour } =
-    props;
+  const { launcherRef, onDoToggle, requestFocus, launcherHidden } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const intl = useIntl();
 
   const browserLauncherState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState
+    (state: AppState) => state.persistedToBrowserStorage.launcherState,
   );
   const {
     desktopLauncherWasMinimized,
@@ -76,8 +69,8 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const launcherConfig = launcherState.config;
   const { time_to_expand, new_expand_time } = launcherConfig.desktop;
   const isExpandedLauncherEnabled = launcherConfig.desktop.is_on;
-  const unreadAgentCount = useSelector(
-    (state: AppState) => state.agentState.numUnreadMessages
+  const unreadHumanAgentCount = useSelector(
+    (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
 
   const [smallLauncherClassName, setSmallLauncherClassName] = useState("");
@@ -112,7 +105,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     if (launcherComplexRef.current?.style?.setProperty) {
       launcherComplexRef.current.style.setProperty(
         "--cds-chat-LAUNCHER-desktop-expanded-height",
-        expandedLauncherHeight
+        expandedLauncherHeight,
       );
     }
   }, []);
@@ -133,13 +126,13 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     // allow the user to pop up a new greeting message even if one has already been minimized.
     if (!launcherHiddenRef.current) {
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("desktopLauncherIsExpanded", true)
+        actions.setLauncherProperty("desktopLauncherIsExpanded", true),
       );
       // Determine the height of the complex launcher.
       determineLauncherHeight();
       // Add the className for the intro animation.
       setComplexLauncherClassName(
-        "WACLauncherComplex__Container--introAnimation"
+        "WACLauncherComplex__Container--introAnimation",
       );
     }
   }, [determineLauncherHeight, serviceManager.store]);
@@ -171,7 +164,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     if (!launcherHiddenRef.current) {
       // Add the bounce animation class to the launcher.
       setSmallLauncherClassName(
-        "WACLauncher__ButtonContainer--bounceAnimation"
+        "WACLauncher__ButtonContainer--bounceAnimation",
       );
     }
   }, []);
@@ -187,7 +180,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       // Increment the bounce turn counter, so we know where to pick up from if the page is reloaded/changed.
       bounceTurnRef.current++;
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("bounceTurn", bounceTurnRef.current)
+        actions.setLauncherProperty("bounceTurn", bounceTurnRef.current),
       );
     }
   }, [serviceManager.store]);
@@ -216,9 +209,14 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       }, BOUNCING_ANIMATION_TIMEOUTS[0] + BOUNCING_ANIMATION_TIMEOUTS[1]);
 
       // After the second bounce is done remove the animation className and send a tracking event.
-      secondBounceAnimationFinishedTimerRef.current = setTimeout(() => {
-        finishBounceAnimation();
-      }, BOUNCING_ANIMATION_TIMEOUTS[0] + BOUNCING_ANIMATION_TIMEOUTS[1] + TIME_FOR_BOUNCE_ANIMATION);
+      secondBounceAnimationFinishedTimerRef.current = setTimeout(
+        () => {
+          finishBounceAnimation();
+        },
+        BOUNCING_ANIMATION_TIMEOUTS[0] +
+          BOUNCING_ANIMATION_TIMEOUTS[1] +
+          TIME_FOR_BOUNCE_ANIMATION,
+      );
     } else if (bounceTurnRef.current === 2) {
       // If there has already been a bounce animation then set a timer for 60s from now for the second bounce.
       secondBounceAnimationStartTimerRef.current = setTimeout(() => {
@@ -307,17 +305,17 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       determineLauncherHeight();
       // Add the className for the simple intro animation.
       setComplexLauncherClassName(
-        "WACLauncherComplex__Container--simpleAnimation"
+        "WACLauncherComplex__Container--simpleAnimation",
       );
       animateOnceVisible.current = false;
     }
   }, [determineLauncherHeight, viewState.launcher]);
 
-  // If the main window or tour have been opened then clear all timers and set the launcher state as if it had been
-  // clicked open. This is to protect against scenarios where the main window or tour are opened using other methods
+  // If the main window has been opened then clear all timers and set the launcher state as if it had been
+  // clicked open. This is to protect against scenarios where the main window is opened using other methods
   // besides clicking on the launcher.
   useEffect(() => {
-    if (viewState.mainWindow || viewState.tour) {
+    if (viewState.mainWindow) {
       // Clear timers and update launcher state so that no more greeting messages or bounces occur.
       setDefaultLauncherState();
     }
@@ -338,8 +336,8 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         actions.setLauncherConfigProperty(
           "new_expand_time",
           false,
-          LauncherType.DESKTOP
-        )
+          LauncherType.DESKTOP,
+        ),
       );
     }
   }, [
@@ -367,7 +365,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
 
   const onMinimize = useCallback(() => {
     setComplexLauncherClassName(
-      "WACLauncherComplex__Container--closeAnimation"
+      "WACLauncherComplex__Container--closeAnimation",
     );
     // Wait for the minimize animation to finish before switching back to the original launcher.
     setTimeout(() => {
@@ -398,11 +396,10 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         launcherConfig={launcherConfig}
         onOpen={onOpen}
         onMinimize={onMinimize}
-        unreadAgentCount={unreadAgentCount}
+        unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         desktopLauncherIsExpanded={desktopLauncherIsExpanded}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
         className={complexLauncherClassName}
       />
     );
@@ -413,11 +410,10 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         intl={intl}
         ref={launcherRef}
         onToggleOpen={onOpen}
-        unreadAgentCount={unreadAgentCount}
+        unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         className={smallLauncherClassName}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
       />
     );
   }

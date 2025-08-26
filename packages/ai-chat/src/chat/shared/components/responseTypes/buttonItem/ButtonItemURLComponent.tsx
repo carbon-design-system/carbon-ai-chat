@@ -36,7 +36,7 @@ function ButtonItemURLComponent({
   // If no image url is provided and should is a normal link, then render a carbon link.
   if (!image_url && kind === ButtonItemKind.LINK) {
     return (
-      <div className="WAC__received--textContent WACButtonItem">
+      <div className="WACButtonItem">
         <Link
           className="WACWidget__breakWord"
           href={url}

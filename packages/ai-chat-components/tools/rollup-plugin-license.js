@@ -69,7 +69,7 @@ export default function rollupPluginLicense({
       const magicString = new MagicString(contents);
 
       const keys = Object.keys(licensesForPackages).filter(
-        (name) => !whitelist || !whitelist.test(name)
+        (name) => !whitelist || !whitelist.test(name),
       );
       if (keys.length > 0) {
         const thirdPartyLicenseNotice = [
@@ -92,7 +92,7 @@ export default function rollupPluginLicense({
       magicString.prepend(
         (typeof licenseSelf === "function"
           ? await licenseSelf()
-          : licenseSelf) || ""
+          : licenseSelf) || "",
       );
 
       const result = { code: magicString.toString() };

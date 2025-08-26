@@ -28,7 +28,7 @@ class ListenerList<TArgType extends any[] = []> {
    */
   public removeListener(listenerToRemove: ListenerFunction<TArgType>) {
     this.listeners = this.listeners.filter(
-      (listener) => listener !== listenerToRemove
+      (listener) => listener !== listenerToRemove,
     );
   }
 

@@ -9,7 +9,6 @@
 
 import { VIEW_STATE_ALL_CLOSED } from "../store/reducerUtils";
 import { AppState, ViewState, ViewType } from "../../../types/state/AppState";
-import { consoleError } from "./miscUtils";
 
 /**
  * Take a newView, either in string format or as a partial {@link ViewState}, and combine it with the current viewState
@@ -17,7 +16,7 @@ import { consoleError } from "./miscUtils";
  */
 function constructViewState(
   newView: ViewType | Partial<ViewState>,
-  appState: AppState
+  appState: AppState,
 ): ViewState {
   const { viewState } = appState.persistedToBrowserStorage.launcherState;
 
@@ -39,23 +38,4 @@ function constructViewState(
   return newViewState;
 }
 
-/**
- * Take a viewState and validate that it makes sense against other pieces of state. For example, we only want to show a
- * tour if there is a tour to be shown. If the validation fails then false will be returned, otherwise true will be.
- */
-function validateViewState(viewState: ViewState, appState: AppState): boolean {
-  const { activeTour } = appState.persistedToBrowserStorage.launcherState;
-
-  if (viewState.tour && !activeTour) {
-    // If the new viewState is supposed to show a tour, but there is no active tour, then log an error and return false.
-    consoleError(
-      "Error changing the view. The new view was supposed to show a tour however there is no active tour to show." +
-        " Changing the view has been canceled."
-    );
-    return false;
-  }
-
-  return true;
-}
-
-export { constructViewState, validateViewState };
+export { constructViewState };

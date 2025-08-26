@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/button/index.js";
-import "@carbon/web-components/es-custom/components/icon-button/index.js";
-import "@carbon/web-components/es-custom/components/layer/index.js";
-import "@carbon/web-components/es-custom/components/textarea/index.js";
+import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
+import "@carbon/web-components/es/components/layer/index.js";
+import "@carbon/web-components/es/components/textarea/index.js";
 import "../../tagListElement/cds-aichat-tag-list";
 
 import cx from "classnames";
@@ -75,19 +75,17 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
       : ""}
     ${showTextArea
       ? html`<div class="${CSS_CLASS_PREFIX}-feedback-text">
-          <cds-custom-layer level="1">
-            <cds-custom-textarea
-              id="${id}-text-area"
-              value="${textInput}"
-              class="${CSS_CLASS_PREFIX}-feedback-text-area"
-              ?disabled="${isReadonly}"
-              placeholder="${placeholder ||
-              enLanguagePack.feedback_defaultPlaceholder}"
-              rows="3"
-              max-count="${MAX_TEXT_COUNT}"
-              @input=${handleTextInput}
-            ></cds-custom-textarea>
-          </cds-custom-layer>
+          <cds-textarea
+            id="${id}-text-area"
+            value="${textInput}"
+            class="${CSS_CLASS_PREFIX}-feedback-text-area"
+            ?disabled="${isReadonly}"
+            placeholder="${placeholder ||
+            enLanguagePack.feedback_defaultPlaceholder}"
+            rows="3"
+            max-count="${MAX_TEXT_COUNT}"
+            @input=${handleTextInput}
+          ></cds-textarea>
         </div>`
       : ""}
     ${disclaimer

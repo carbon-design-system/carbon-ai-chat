@@ -20,7 +20,7 @@ function chatHeaderTitleTemplate(customElementClass: ChatHeaderTitleElement) {
     <span className="WACChatHeaderTitle__Title" ?hidden="${!title}"
       >${title}</span
     >
-    <span class="WACChatHeaderTitle__Name">${name}</span>
+    <span class="WACChatHeaderTitle__Name" ?hidden="${!name}">${name}</span>
   </div>`;
 }
 

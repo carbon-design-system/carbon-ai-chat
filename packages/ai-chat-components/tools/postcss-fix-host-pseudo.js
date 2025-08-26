@@ -76,7 +76,7 @@ export default postcss.plugin(
               ) {
                 // eslint-disable-next-line no-console
                 console.warn(
-                  "Found :host() with more than one child or with a non-selector child. Skipping..."
+                  "Found :host() with more than one child or with a non-selector child. Skipping...",
                 );
               } else {
                 const pseudosToMove = [];
@@ -117,5 +117,5 @@ export default postcss.plugin(
         }).process(rule);
       });
     };
-  }
+  },
 );

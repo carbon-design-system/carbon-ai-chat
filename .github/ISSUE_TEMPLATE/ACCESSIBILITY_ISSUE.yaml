@@ -1,8 +1,7 @@
-name: Accessibility Issue ♿
-description: Report an accessibility or usability issue.
-title: '[a11y]: '
+name: Accessibility issue ♿
+description: Report an accessibility or usability issue
+title: '[A11y]: '
 type: 'bug'
-labels: ['status: grooming needed']
 body:
   - type: markdown
     attributes:
@@ -28,7 +27,7 @@ body:
   - type: dropdown
     id: os
     attributes:
-      label: Operating System
+      label: Operating system
       description: Which operating system are you using?
       multiple: true
       options:
@@ -76,13 +75,13 @@ body:
   - type: input
     id: wcag
     attributes:
-      label: WCAG 2.1 Violation
+      label: WCAG 2.1 violation
       description: 'Does this violate a specific WCAG 2.1 checkpoint?'
       placeholder: e.g Success Criterion 1.4.3 Contrast (Minimum)
   - type: input
     id: example-url
     attributes:
-      label: Reproduction/example
+      label: Reproduction / example
       description: |
         Re-create the issue using [CodeSandbox](https://codesandbox.io/) or [Stackblitz](https://stackblitz.com).
     validations:
@@ -99,7 +98,7 @@ body:
   - type: dropdown
     id: severity
     attributes:
-      label: Suggested Severity
+      label: Suggested severity
       description:
         'Read more to understand our [severity
         levels](https://github.com/carbon-design-system/carbon/blob/main/docs/guides/support.md#severity)'
@@ -116,7 +115,7 @@ body:
   - type: checkboxes
     id: terms
     attributes:
-      label: Code of Conduct
+      label: Code of conduct
       description: Please confirm the following
       options:
         - label:

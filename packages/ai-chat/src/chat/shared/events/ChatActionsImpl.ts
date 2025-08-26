@@ -10,7 +10,7 @@
 import cloneDeep from "lodash-es/cloneDeep.js";
 import isEqual from "lodash-es/isEqual.js";
 import merge from "lodash-es/merge.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
 import { LoadedHistory } from "../schema/historyToMessages";
 import inputItemToLocalItem from "../schema/inputItemToLocalItem";
@@ -18,10 +18,10 @@ import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
 } from "../schema/outputItemToLocalItem";
-import { AgentsOnlineStatus } from "../services/haa/HumanAgentService";
+import { HumanAgentsOnlineStatus } from "../services/haa/HumanAgentService";
 import { ServiceManager } from "../services/ServiceManager";
 import actions from "../store/actions";
-import { agentUpdateIsSuspended } from "../store/agentActions";
+import { agentUpdateIsSuspended } from "../store/humanAgentActions";
 import {
   DEFAULT_PERSISTED_TO_BROWSER,
   VIEW_STATE_LAUNCHER_OPEN,
@@ -48,9 +48,8 @@ import {
   createMessageResponseForText,
   createWelcomeRequest,
   hasServiceDesk,
-  hasTourUserDefinedType,
-  isConnectToAgent,
-  isLiveAgentMessage,
+  isConnectToHumanAgent,
+  isLiveHumanAgentMessage,
   isPause,
   isRequest,
   isResponse,
@@ -74,7 +73,7 @@ import {
   resolvablePromise,
 } from "../utils/resolvablePromise";
 import { mergeCSSVariables } from "../utils/styleUtils";
-import { constructViewState, validateViewState } from "../utils/viewStateUtils";
+import { constructViewState } from "../utils/viewStateUtils";
 import {
   CompleteItemChunk,
   GenericItem,
@@ -98,7 +97,6 @@ import {
   MainWindowCloseReason,
   MainWindowOpenReason,
   MessageSendSource,
-  TourStartReason,
   ViewChangeReason,
 } from "../../../types/events/eventBusTypes";
 import {
@@ -107,6 +105,7 @@ import {
   SendOptions,
 } from "../../../types/instance/ChatInstance";
 import {
+  ThemeType,
   OnErrorData,
   OnErrorType,
   WhiteLabelTheme,
@@ -119,11 +118,11 @@ import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
 import { setIntl } from "../utils/intlUtils";
 
 const VALID_PUBLIC_VARS_IN_AI_THEME_SET = new Set<string>(
-  Object.values(CSSVariable)
+  Object.values(CSSVariable),
 );
 
 const UPDATE_CSS_VARS_AI_THEME_WARNING_MESSAGE = `[updateCSSVariables] The AI theme is enabled and only ${Object.values(
-  CSSVariable
+  CSSVariable,
 ).join(", ")} can be updated.`;
 
 /**
@@ -142,7 +141,7 @@ class ChatActionsImpl {
   private sessionTimer: ReturnType<typeof setTimeout>;
 
   /**
-   * This Promise is used when hydrating the Carbon AI chat. If this Promise is defined, then it means that a hydration
+   * This Promise is used when hydrating the Carbon AI Chat. If this Promise is defined, then it means that a hydration
    * process has begun and any additional attempts to hydrate can wait for it to resolve.
    */
   private hydrationPromise: Promise<void>;
@@ -158,7 +157,7 @@ class ChatActionsImpl {
   private restarting = false;
 
   /**
-   * Indicates if Carbon AI chat has been hydrated at least once. This is used when a rehydration occurs so that we avoid
+   * Indicates if Carbon AI Chat has been hydrated at least once. This is used when a rehydration occurs so that we avoid
    * performing certain operations more than once.
    */
   private alreadyHydrated = false;
@@ -190,7 +189,7 @@ class ChatActionsImpl {
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateWelcomeRequestSource?: MessageSendSource,
-    alternateOptions?: SendOptions
+    alternateOptions?: SendOptions,
   ) {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
     let fireReady = false;
@@ -200,7 +199,7 @@ class ChatActionsImpl {
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
           alternateWelcomeRequestSource,
-          alternateOptions
+          alternateOptions,
         );
         fireReady = true;
       }
@@ -228,13 +227,13 @@ class ChatActionsImpl {
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateWelcomeRequestSource?: MessageSendSource,
-    alternateOptions?: SendOptions
+    alternateOptions?: SendOptions,
   ) {
     debugLog(
-      "Hydrating Carbon AI chat",
+      "Hydrating Carbon AI Chat",
       alternateWelcomeRequest,
       alternateWelcomeRequestSource,
-      alternateOptions
+      alternateOptions,
     );
 
     // Load the history and main config but only if it's the first time we are hydrating.
@@ -271,18 +270,15 @@ class ChatActionsImpl {
             createWelcomeRequest(),
             MessageSendSource.WELCOME_REQUEST,
             { returnBeforeStreaming: true },
-            true
+            true,
           );
         }
       }
     } else {
       // Need to populate the history in redux (specifically botMessageState) before creating elements for custom
-      // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event where users may choose
-      // to call instance.updateHistoryUserDefined(messageID, data). That instance function will fail to save user
-      // data if the messageID provided can't be found in the botMessageState array. So we need to hydrate that
-      // state before firing userDefinedResponse events.
+      // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event.
       serviceManager.store.dispatch(
-        actions.hydrateMessageHistory(history.messageHistory)
+        actions.hydrateMessageHistory(history.messageHistory),
       );
       await this.createElementsForUserDefinedResponses(history.messageHistory);
 
@@ -299,7 +295,7 @@ class ChatActionsImpl {
         alternateWelcomeRequest,
         alternateWelcomeRequestSource,
         alternateOptions,
-        true
+        true,
       );
     }
 
@@ -309,14 +305,17 @@ class ChatActionsImpl {
 
     if (history) {
       const lastMessageID = arrayLastValue(
-        history.messageHistory.botMessageState.localMessageIDs
+        history.messageHistory.botMessageState.localMessageIDs,
       );
       const lastMessage =
         history.messageHistory.allMessageItemsByID[lastMessageID];
       const lastOriginalMessage =
         history.messageHistory.allMessagesByID[lastMessage?.fullMessageID];
 
-      if (!isLiveAgentMessage(lastMessage) && isRequest(lastOriginalMessage)) {
+      if (
+        !isLiveHumanAgentMessage(lastMessage) &&
+        isRequest(lastOriginalMessage)
+      ) {
         // If the last message in history is a request that means that the user left the page before we received the
         // response and the response is actually still being calculated. In this case we want to "reconnect" to the
         // back-end so that we can receive the response when it becomes available. To do that all we have to do is
@@ -324,7 +323,7 @@ class ChatActionsImpl {
         // already there).
         serviceManager.messageService.resendMessage(
           lastOriginalMessage,
-          lastMessage.ui_state.id
+          lastMessage.ui_state.id,
         );
       }
     }
@@ -334,7 +333,7 @@ class ChatActionsImpl {
     const allowReconnect = config.public.serviceDesk.allowReconnect ?? true;
     this.serviceManager?.humanAgentService?.handleHydration(
       allowReconnect,
-      Boolean(history)
+      Boolean(history),
     );
 
     this.alreadyHydrated = true;
@@ -345,18 +344,17 @@ class ChatActionsImpl {
     const { persistedToBrowserStorage } = state;
     const { chatState, launcherState } = persistedToBrowserStorage;
     const publicWebChatState: PublicWebChatState = {
-      isConnectedWithHumanAgent: chatState.agentState.isConnected,
+      isConnectedWithHumanAgent: chatState.humanAgentState.isConnected,
       isWebChatOpen: launcherState.viewState.mainWindow,
-      isConnectingWithHumanAgent: state.agentState.isConnecting,
+      isConnectingWithHumanAgent: state.humanAgentState.isConnecting,
       isHomeScreenOpen: chatState.homeScreenState.isHomeScreenOpen,
       isDebugEnabled: isEnableDebugLog(),
       hasUserSentMessage: chatState.hasSentNonWelcomeMessage,
-      isTourActive: launcherState.activeTour,
       viewState: { ...launcherState.viewState },
       serviceDesk: {
-        isConnected: chatState.agentState.isConnected,
-        isConnecting: state.agentState.isConnecting,
-        isSuspended: chatState.agentState.isSuspended ?? false,
+        isConnected: chatState.humanAgentState.isConnected,
+        isConnecting: state.humanAgentState.isConnecting,
+        isSuspended: chatState.humanAgentState.isSuspended ?? false,
       },
       locale: this.serviceManager.store.getState().locale,
       intl: this.serviceManager.intl,
@@ -373,7 +371,7 @@ class ChatActionsImpl {
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
-    ignoreHydration = false
+    ignoreHydration = false,
   ) {
     try {
       await this.send(message, source, options, ignoreHydration);
@@ -391,14 +389,14 @@ class ChatActionsImpl {
    * @param message The message to send.
    * @param source The source of the message.
    * @param options Options for the sent message.
-   * @param ignoreHydration Indicates if this function should not check to see if the Carbon AI chat is hydrated before
+   * @param ignoreHydration Indicates if this function should not check to see if the Carbon AI Chat is hydrated before
    * performing send.
    */
   async send(
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
-    ignoreHydration = false
+    ignoreHydration = false,
   ) {
     const messageRequest =
       typeof message === "string"
@@ -406,7 +404,7 @@ class ChatActionsImpl {
         : message;
 
     // If the home screen is open, we want to close it as soon as a message is sent. Note that this will also apply
-    // if the Carbon AI chat hasn't been opened yet.
+    // if the Carbon AI Chat hasn't been opened yet.
     if (
       this.serviceManager.store.getState().persistedToBrowserStorage.chatState
         .homeScreenState.isHomeScreenOpen
@@ -445,7 +443,7 @@ class ChatActionsImpl {
   private async doSend(
     message: MessageRequest,
     source: MessageSendSource,
-    options: SendOptions = {}
+    options: SendOptions = {},
   ): Promise<void> {
     const { store } = this.serviceManager;
 
@@ -477,8 +475,8 @@ class ChatActionsImpl {
       store.dispatch(
         actions.messageSetOptionSelected(
           options.setValueSelectedForMessageID,
-          message
-        )
+          message,
+        ),
       );
     }
 
@@ -492,7 +490,7 @@ class ChatActionsImpl {
       cloneDeep(message),
       source,
       localMessage.ui_state.id,
-      options
+      options,
     );
   }
 
@@ -502,7 +500,7 @@ class ChatActionsImpl {
    * This method completes when all message items have been processed (including the time delay that may be introduced
    * by a pause).
    *
-   * @param message A v2 message API Response object.
+   * @param message A {@link MessageResponse} object.
    * @param isLatestWelcomeNode Indicates if this message is a new welcome message that has just been shown to the user
    * and isn't a historical welcome message.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
@@ -512,7 +510,7 @@ class ChatActionsImpl {
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
-    requestOptions?: SendOptions
+    requestOptions?: SendOptions,
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
 
@@ -535,7 +533,7 @@ class ChatActionsImpl {
 
     if (!isLatestWelcomeNode) {
       this.serviceManager.store.dispatch(
-        actions.updateHasSentNonWelcomeMessage(true)
+        actions.updateHasSentNonWelcomeMessage(true),
       );
     }
 
@@ -555,7 +553,7 @@ class ChatActionsImpl {
         message,
         isLatestWelcomeNode,
         requestMessage,
-        requestOptions
+        requestOptions,
       ).catch((error) => {
         consoleError("Error processing the message response", error);
       });
@@ -563,7 +561,7 @@ class ChatActionsImpl {
       const inlineError: MessageResponse = createMessageResponseForText(
         languagePack.errors_singleMessage,
         message.thread_id,
-        MessageResponseTypes.INLINE_ERROR
+        MessageResponseTypes.INLINE_ERROR,
       );
       this.receive(inlineError, false);
     }
@@ -618,7 +616,7 @@ class ChatActionsImpl {
     const newAppStateMessages: AppStateMessages = merge(
       {},
       history.messageHistory,
-      currentAppStateMessages
+      currentAppStateMessages,
     );
 
     // Now make sure the message arrays are merged correctly.
@@ -632,7 +630,7 @@ class ChatActionsImpl {
     ];
 
     this.serviceManager.store.dispatch(
-      actions.hydrateMessageHistory(newAppStateMessages)
+      actions.hydrateMessageHistory(newAppStateMessages),
     );
     await this.createElementsForUserDefinedResponses(history.messageHistory);
 
@@ -648,7 +646,7 @@ class ChatActionsImpl {
   async receiveChunk(
     chunk: StreamChunk,
     messageID?: string,
-    options: AddMessageOptions = {}
+    options: AddMessageOptions = {},
   ) {
     const chunkPromise = resolvablePromise();
     this.chunkQueue.push({ chunk, messageID, options, chunkPromise });
@@ -691,21 +689,21 @@ class ChatActionsImpl {
           messageID,
           item,
           isCompleteItem,
-          options.disableFadeAnimation ?? true
-        )
+          options.disableFadeAnimation ?? true,
+        ),
       );
 
-      if (chunk.partial_response?.history) {
+      if (chunk.partial_response?.message_options) {
         if (Object.keys(chunk.partial_response).length > 1) {
           throw new Error(
-            `The partial_response object only supports the "history" property.`
+            `The partial_response object only supports the "message_options" property.`,
           );
         }
         store.dispatch(
-          actions.streamingMergeHistory(
+          actions.streamingMergeMessageOptions(
             messageID,
-            chunk.partial_response?.history
-          )
+            chunk.partial_response?.message_options,
+          ),
         );
       }
 
@@ -751,7 +749,7 @@ class ChatActionsImpl {
       userDefinedItem.element.setAttribute("slot", userDefinedItem.slotName);
       this.serviceManager.userDefinedElementRegistry.set(
         messageItemID,
-        userDefinedItem
+        userDefinedItem,
       );
     }
     return userDefinedItem;
@@ -764,7 +762,7 @@ class ChatActionsImpl {
    */
   async handleUserDefinedResponseItems(
     localMessage: LocalMessageItem,
-    originalMessage: Message
+    originalMessage: Message,
   ) {
     if (renderAsUserDefinedMessage(localMessage.item)) {
       let element: HTMLElement;
@@ -772,7 +770,7 @@ class ChatActionsImpl {
       if (!localMessage.item.user_defined?.silent) {
         // If the message is silent, don't create a host element for it since it's not going to be rendered.
         ({ element, slotName } = this.getOrCreateUserDefinedElement(
-          localMessage.ui_state.id
+          localMessage.ui_state.id,
         ));
       }
 
@@ -800,12 +798,12 @@ class ChatActionsImpl {
        * Will attempt to create an element for the custom response using the provided local message id.
        */
       const createElementForNestedUserDefinedResponse = (
-        localMessageItemID: string
+        localMessageItemID: string,
       ) => {
         const nestedLocalMessage = allMessageItemsByID[localMessageItemID];
         return this.handleUserDefinedResponseItems(
           nestedLocalMessage,
-          originalMessage
+          originalMessage,
         );
       };
 
@@ -813,30 +811,30 @@ class ChatActionsImpl {
         await asyncForEach(gridLocalMessageItemIDs, (row) =>
           asyncForEach(row, (cell) =>
             asyncForEach(cell, (itemID) =>
-              createElementForNestedUserDefinedResponse(itemID)
-            )
-          )
+              createElementForNestedUserDefinedResponse(itemID),
+            ),
+          ),
         );
       }
 
       if (itemsLocalMessageItemIDs?.length) {
         await asyncForEach(
           itemsLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
+          createElementForNestedUserDefinedResponse,
         );
       }
 
       if (bodyLocalMessageItemIDs?.length) {
         await asyncForEach(
           bodyLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
+          createElementForNestedUserDefinedResponse,
         );
       }
 
       if (footerLocalMessageItemIDs?.length) {
         await asyncForEach(
           footerLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse
+          createElementForNestedUserDefinedResponse,
         );
       }
     }
@@ -852,7 +850,7 @@ class ChatActionsImpl {
   async handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
-    messageItem: DeepPartial<GenericItem>
+    messageItem: DeepPartial<GenericItem>,
   ) {
     if (renderAsUserDefinedMessage(messageItem)) {
       const itemID = streamItemID(messageID, messageItem);
@@ -883,7 +881,7 @@ class ChatActionsImpl {
    * turning this into a formal queue as the pause response_type may cause us to lose correct order in fast
    * conversations.
    *
-   * @param fullMessage A v2 message API Response object.
+   * @param fullMessage A {@link MessageResponse} object.
    * @param isLatestWelcomeNode If it is a new welcome node, we want to pass that data along.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
    * @param requestOptions The options that were included when the request was sent.
@@ -892,7 +890,7 @@ class ChatActionsImpl {
     fullMessage: MessageResponse,
     isLatestWelcomeNode: boolean,
     requestMessage: MessageRequest,
-    requestOptions: SendOptions = {}
+    requestOptions: SendOptions = {},
   ) {
     const { store } = this.serviceManager;
     const { config } = store.getState();
@@ -919,63 +917,14 @@ class ChatActionsImpl {
 
       if (messageItem) {
         const pause = isPause(messageItem);
-        const agent = isConnectToAgent(messageItem);
-        const tour = hasTourUserDefinedType(messageItem);
+        const agent = isConnectToHumanAgent(messageItem);
 
         const localMessageItem = outputItemToLocalItem(
           messageItem,
           fullMessage,
           isLatestWelcomeNode,
-          requestOptions.disableFadeAnimation
+          requestOptions.disableFadeAnimation,
         );
-
-        // If the message item is a tour and the tour card is supposed to be skipped then start the tour now.
-        if (
-          tour &&
-          (requestOptions.skipTourCard || messageItem.user_defined?.skip_card)
-        ) {
-          // Determine the reason the tour is starting. If the startTour method was used and skip_card is true then the
-          // method being used will take priority.
-          const startTourReason = requestOptions.skipTourCard
-            ? TourStartReason.START_TOUR_METHOD
-            : TourStartReason.SKIP_CARD;
-
-          // Determine the reason the view is changing.
-          const { viewState } =
-            store.getState().persistedToBrowserStorage.launcherState;
-          if (viewState.mainWindow) {
-            // If the mainWindow is visible then use the MainWindowCloseReasons and fire the window:close events. If the
-            // startTour method was used and skip_card is true then the method being used will take priority.
-            const mainWindowCloseReason = requestOptions.skipTourCard
-              ? MainWindowCloseReason.CALLED_START_TOUR
-              : MainWindowCloseReason.TOUR_SKIP_CARD;
-            // No need to await startTour() here since there is nothing else in this function that is dependent on
-            // startTours completion.
-            this.startTour(localMessageItem, startTourReason, {
-              mainWindowCloseReason,
-            }).catch((error) => {
-              consoleError("Error starting the tour", error);
-            });
-          } else {
-            // If the mainWindow is not visible then use the ViewChangeReasons and do not fire the window:close events.
-            // If the startTour method was used and skip_card is true then the method being used will take priority.
-            const viewChangeReason = requestOptions.skipTourCard
-              ? ViewChangeReason.CALLED_START_TOUR
-              : ViewChangeReason.TOUR_SKIP_CARD;
-            // No need to await startTour() here since there is nothing else in this function that is dependent on
-            // startTours completion.
-            this.startTour(localMessageItem, startTourReason, {
-              viewChangeReason,
-            }).catch((error) => {
-              consoleError("Error starting the tour", error);
-            });
-          }
-        } else if (!tour && requestOptions.skipTourCard) {
-          // If instance.startTour() was used but a tour response was not received then log an error.
-          consoleError(
-            "The message response received was not a tour, so the tour card was not skipped nor was a tour started by the startTour() call."
-          );
-        }
 
         const nestedLocalMessageItems: LocalMessageItem[] = [];
         createLocalMessageItemsForNestedMessageItems(
@@ -983,7 +932,7 @@ class ChatActionsImpl {
           fullMessage,
           false,
           nestedLocalMessageItems,
-          true
+          true,
         );
 
         store.dispatch(actions.addNestedMessages(nestedLocalMessageItems));
@@ -1009,52 +958,56 @@ class ChatActionsImpl {
 
             // Make sure this state is reflected in history.
             store.dispatch(
-              actions.setMessageHistoryProperty(
+              actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
                 "agent_no_service_desk",
-                true
-              )
+                true,
+              ),
             );
-            partialMessage.history.agent_no_service_desk = true;
+            partialMessage.ui_state_internal.agent_no_service_desk = true;
           }
 
           // eslint-disable-next-line no-await-in-loop
           const agentAvailability =
-            await this.serviceManager.humanAgentService?.checkAreAnyAgentsOnline(
-              fullMessage
+            await this.serviceManager.humanAgentService?.checkAreAnyHumanAgentsOnline(
+              fullMessage,
             );
 
           // If a restart occurred while waiting for the agents online check, then skip the processing below.
           if (initialRestartCount === this.serviceManager.restartCount) {
             // Update the value in the redux store.
             store.dispatch(
-              actions.setMessageHistoryProperty(
+              actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
                 "agent_availability",
-                agentAvailability
-              )
+                agentAvailability,
+              ),
             );
 
-            // Send event to back-end to save the current agent availability state so session history can use it on reload.
-            partialMessage.history.agent_availability = agentAvailability;
+            partialMessage.ui_state_internal =
+              partialMessage.ui_state_internal || {};
 
-            let shouldAutoRequestAgent = false;
+            // Send event to back-end to save the current agent availability state so session history can use it on reload.
+            partialMessage.ui_state_internal.agent_availability =
+              agentAvailability;
+
+            let shouldAutoRequestHumanAgent = false;
 
             // If configured, then auto-connect right now.
-            if (config.public.serviceDesk?.skipConnectAgentCard) {
-              shouldAutoRequestAgent = true;
+            if (config.public.serviceDesk?.skipConnectHumanAgentCard) {
+              shouldAutoRequestHumanAgent = true;
             }
 
             // Decrement the typing counter to get rid of the pause.
             store.dispatch(actions.addIsTypingCounter(-1));
 
             if (
-              shouldAutoRequestAgent &&
-              agentAvailability === AgentsOnlineStatus.ONLINE
+              shouldAutoRequestHumanAgent &&
+              agentAvailability === HumanAgentsOnlineStatus.ONLINE
             ) {
               this.serviceManager.humanAgentService.startChat(
                 localMessageItem,
-                fullMessage
+                fullMessage,
               );
             }
           }
@@ -1084,7 +1037,7 @@ class ChatActionsImpl {
           // eslint-disable-next-line no-await-in-loop
           await this.handleUserDefinedResponseItems(
             localMessageItem,
-            fullMessage
+            fullMessage,
           );
           if (
             !localMessageItem.item.user_defined?.silent &&
@@ -1095,8 +1048,8 @@ class ChatActionsImpl {
                 localMessageItem,
                 fullMessage,
                 false,
-                previousItemID
-              )
+                previousItemID,
+              ),
             );
             previousItemID = localMessageItem.ui_state.id;
           }
@@ -1110,10 +1063,10 @@ class ChatActionsImpl {
    */
   openResponsePanel(
     localMessageItem: LocalMessageItem,
-    isMessageForInput: boolean
+    isMessageForInput: boolean,
   ) {
     this.serviceManager.store.dispatch(
-      actions.setResponsePanelContent(localMessageItem, isMessageForInput)
+      actions.setResponsePanelContent(localMessageItem, isMessageForInput),
     );
     this.serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
   }
@@ -1153,7 +1106,7 @@ class ChatActionsImpl {
    */
   removeNotification(groupID: string) {
     this.serviceManager.store.dispatch(
-      actions.removeNotifications({ groupID })
+      actions.removeNotifications({ groupID }),
     );
   }
 
@@ -1178,14 +1131,14 @@ class ChatActionsImpl {
    */
   updateCSSVariables(
     publicVars: ObjectMap<string>,
-    whiteLabelVariables: WhiteLabelTheme = {}
+    whiteLabelVariables: WhiteLabelTheme = {},
   ) {
     const { store } = this.serviceManager;
     const { theme } = store.getState();
-    const { carbonTheme, useAITheme } = theme;
+    const { derivedCarbonTheme, theme: aiTheme } = theme;
 
     // If the AI theme is enabled, only a set amount of public variables should be allowed.
-    if (useAITheme) {
+    if (aiTheme === ThemeType.CARBON_AI) {
       const usePublicVars = publicVars;
       publicVars = {};
       whiteLabelVariables = {};
@@ -1211,11 +1164,11 @@ class ChatActionsImpl {
     const allVariables = mergeCSSVariables(
       publicVars,
       whiteLabelVariables,
-      carbonTheme,
-      useAITheme
+      derivedCarbonTheme,
+      aiTheme,
     );
     store.dispatch(
-      actions.updateCSSVariables(allVariables, publicVars, whiteLabelVariables)
+      actions.updateCSSVariables(allVariables, publicVars, whiteLabelVariables),
     );
   }
 
@@ -1254,7 +1207,7 @@ class ChatActionsImpl {
    */
   updateHomeScreenConfig(homeScreenConfig: HomeScreenConfig) {
     this.serviceManager.store.dispatch(
-      actions.updateHomeScreenConfig(homeScreenConfig)
+      actions.updateHomeScreenConfig(homeScreenConfig),
     );
   }
 
@@ -1263,14 +1216,14 @@ class ChatActionsImpl {
    */
   updateLauncherConfig(launcherConfig: LauncherConfig) {
     this.serviceManager.store.dispatch(
-      actions.updateLauncherConfig(launcherConfig)
+      actions.updateLauncherConfig(launcherConfig),
     );
   }
 
   /**
    * Construct the newViewState from the newView provided. Fire the view:pre:change and view:change events, as well as
    * window:pre:open, window:open, or window:pre:close, window:close if instructed to do so. If the view change isn't
-   * canceled by the events then change the view. If the main window or tour are open after changing the view, and
+   * canceled by the events then change the view. If the main window is open after changing the view, and
    * doNotHydrate isn't true and the chat is not already hydrated, then hydrate the chat.
    */
   async changeView(
@@ -1281,7 +1234,7 @@ class ChatActionsImpl {
       mainWindowCloseReason?: MainWindowCloseReason;
     },
     tryHydrating = true,
-    forceViewChange = false
+    forceViewChange = false,
   ): Promise<ViewState> {
     const { store } = this.serviceManager;
     const { viewState } =
@@ -1289,11 +1242,6 @@ class ChatActionsImpl {
 
     // Build the new viewState object.
     let newViewState = constructViewState(newView, store.getState());
-
-    if (!validateViewState(newViewState, store.getState())) {
-      // If the newViewState had an issue and was unable to be verified then do not change the view.
-      return viewState;
-    }
 
     if (!isEqual(newViewState, viewState) || forceViewChange) {
       // If the newViewState is different from the current viewState, or the viewChange is being forced to happen, fire
@@ -1305,10 +1253,10 @@ class ChatActionsImpl {
         store.getState().persistedToBrowserStorage.launcherState.viewState;
       if (
         tryHydrating &&
-        (newViewState.mainWindow || newViewState.tour) &&
+        newViewState.mainWindow &&
         !store.getState().isHydrated
       ) {
-        // If it's ok to hydrate, the main window or tour are now visible, and the chat isn't hydrated, then hydrate
+        // If it's ok to hydrate, the main window is now visible, and the chat isn't hydrated, then hydrate
         // the chat. Since this function is only responsible for changing the view don't await hydrateChat(), instead
         // let hydrateChat complete on its own time.
         this.hydrateChat().catch((error) => {
@@ -1338,14 +1286,14 @@ class ChatActionsImpl {
       viewChangeReason?: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
-    }
+    },
   ): Promise<void> {
     const { store } = this.serviceManager;
 
     if (store.getState().viewChanging) {
       // If the view is already in the middle of changing then throw an error.
       throw new Error(
-        "The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events."
+        "The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events.",
       );
     }
 
@@ -1376,14 +1324,6 @@ class ChatActionsImpl {
         return;
       }
 
-      // Validate the view state returned from the view:pre:change event.
-      if (
-        !validateViewState(preViewChangeEvent.newViewState, store.getState())
-      ) {
-        // If the view state had an issue and was unable to be verified then do not change the view.
-        return;
-      }
-
       // If there were no issues with the new view state then use it.
       newViewState = preViewChangeEvent.newViewState;
 
@@ -1408,14 +1348,6 @@ class ChatActionsImpl {
         return;
       }
 
-      // Validate the view state returned from the view:change event.
-      if (!validateViewState(viewChangeEvent.newViewState, store.getState())) {
-        // If the view state had an issue and was unable to be verified then switch the viewState back to what it was
-        // originally.
-        store.dispatch(actions.setViewState(oldViewState));
-        return;
-      }
-
       // If there were no issues with the new view state then use it.
       newViewState = viewChangeEvent.newViewState;
 
@@ -1423,137 +1355,6 @@ class ChatActionsImpl {
       store.dispatch(actions.setViewState(deepFreeze(newViewState)));
     } finally {
       store.dispatch(actions.setViewChanging(false));
-    }
-  }
-
-  /**
-   * To start the tour save all the new tour data in store, fire the view:change events (as well as the window:close
-   * events if the main window is open), and then switch to the tour view. If the view:change events are successful then
-   * fire the tour:start and tour:step events as well.
-   */
-  async startTour(
-    message: LocalMessageItem,
-    startTourReason: TourStartReason,
-    changeViewReason: {
-      viewChangeReason?: ViewChangeReason;
-      mainWindowCloseReason?: MainWindowCloseReason;
-    }
-  ) {
-    // Save all the new tour info in store.
-    this.serviceManager.store.dispatch(
-      actions.setTourData(message.fullMessageID)
-    );
-
-    // Fire the appropriate events and try to open the tour.
-    const newViewState = await this.changeView(ViewType.TOUR, changeViewReason);
-
-    if (newViewState.tour) {
-      // If the tour is now visible then fire the tour:start event.
-      await this.serviceManager.fire({
-        type: BusEventType.TOUR_START,
-        reason: startTourReason,
-      });
-      // Then fire the tour:step event with the first steps info.
-      await this.serviceManager.fire({
-        type: BusEventType.TOUR_STEP,
-        step: this.serviceManager.store.getState().tourState
-          .activeTourStepItems[0],
-      });
-    }
-  }
-
-  /**
-   * To end the tour fire the view:change events and switch to the launcher. If the view:change events are successful
-   * then clear all the tour data from store.
-   */
-  async endTour(reason: {
-    viewChangeReason: ViewChangeReason;
-  }): Promise<boolean> {
-    const { viewState } =
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .launcherState;
-
-    let newViewState = viewState;
-    if (viewState.tour) {
-      // If a tour is open then change to the launcher.
-      newViewState = await this.changeView(ViewType.LAUNCHER, reason);
-    }
-
-    if (!newViewState.tour) {
-      // If the tour is no longer visible or wasn't visible then clear the tour data.
-      this.serviceManager.store.dispatch(actions.clearTourData());
-      return true;
-    }
-
-    // If changeView didn't hide the tour, then the tour data was not cleared, so return false.
-    return false;
-  }
-
-  /**
-   * Look for the provided stepId string within the tour step items. If a step with a matching step_id is found then
-   * move to that step within the tour.
-   */
-  goToSpecificTourStep(stepId: string) {
-    const { activeTourStepItems } =
-      this.serviceManager.store.getState().tourState;
-
-    // Find the index of the step with a step_id string matching the provided stepId.
-    const newStepIndex = activeTourStepItems.findIndex(
-      (stepItem: { step_id: string }) => stepItem.step_id === stepId
-    );
-
-    if (newStepIndex) {
-      // If a matching step is found then change to that step in the tour.
-      this.changeStepInTour({ newStepIndex });
-    } else {
-      // If a matching step is not found then log an error and don't change the tour step.
-      consoleError(
-        `No step with the id "${stepId}" was found within the current tour. As a result, goToTourStep() did not change the current tour step.`
-      );
-    }
-  }
-
-  /**
-   * Change the tour step, either to a specific step, the next step, or the previous step. After changing the step send
-   * a tour:step event.
-   */
-  async changeStepInTour(changeStepOptions: {
-    newStepIndex?: number;
-    nextStep?: boolean;
-    previousStep?: boolean;
-  }) {
-    const { store } = this.serviceManager;
-    const { activeTourStepItems } = store.getState().tourState;
-    const { activeTourCurrentStepIndex } =
-      store.getState().persistedToBrowserStorage.chatState.persistedTourState;
-
-    // Get the new default step number if there is one.
-    let { newStepIndex } = changeStepOptions;
-
-    if (changeStepOptions.nextStep) {
-      newStepIndex = activeTourCurrentStepIndex + 1;
-    } else if (changeStepOptions.previousStep) {
-      newStepIndex = activeTourCurrentStepIndex - 1;
-    }
-
-    // Change to the new step in the tour.
-    store.dispatch(actions.changeStepInTour(newStepIndex));
-
-    // Get the new step number from store in case the number that was provided had been out of bounds for the step array.
-    const actualNewStepIndex =
-      store.getState().persistedToBrowserStorage.chatState.persistedTourState
-        .activeTourCurrentStepIndex;
-
-    if (actualNewStepIndex === newStepIndex) {
-      // Fire the tour step event with the new step info.
-      await this.serviceManager.fire({
-        type: BusEventType.TOUR_STEP,
-        step: activeTourStepItems[actualNewStepIndex],
-      });
-    } else {
-      consoleWarn(
-        "The tour tried to change to a step that was out of bounds for the step array, so no step change was made."
-      );
     }
   }
 
@@ -1569,8 +1370,8 @@ class ChatActionsImpl {
       this.serviceManager.store.dispatch(
         actions.setAppStateValue(
           "catastrophicErrorType",
-          error.catastrophicErrorType
-        )
+          error.catastrophicErrorType,
+        ),
       );
     }
     callOnError(this.serviceManager.additionalChatParameters.onError, error);
@@ -1579,13 +1380,12 @@ class ChatActionsImpl {
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
    * This will clear all the current assistant messages from the main bot view and cancel any outstanding messages.
-   * This will also clear any active tour data and re-show the input field if it was hidden. Lastly, this will clear
-   * the current assistant session which will force a new session to start on the next message.
+   * Lastly, this will clear the current assistant session which will force a new session to start on the next message.
    */
   async restartConversation(options: RestartConversationOptions = {}) {
     const {
       skipHydration = false,
-      endAgentConversation = true,
+      endHumanAgentConversation = true,
       fireEvents = true,
     } = options;
 
@@ -1593,7 +1393,7 @@ class ChatActionsImpl {
 
     if (this.restarting) {
       consoleWarn(
-        "You cannot restart a conversation while a previous restart is still pending."
+        "You cannot restart a conversation while a previous restart is still pending.",
       );
       return;
     }
@@ -1616,33 +1416,17 @@ class ChatActionsImpl {
       }
 
       const currentState = store.getState();
-      const { persistedToBrowserStorage } = currentState;
-      const { viewState } = persistedToBrowserStorage.launcherState;
 
       // If we're connected to an agent, we need to end the agent chat.
-      const { isConnecting } = currentState.agentState;
+      const { isConnecting } = currentState.humanAgentState;
       const { isConnected } =
-        currentState.persistedToBrowserStorage.chatState.agentState;
+        currentState.persistedToBrowserStorage.chatState.humanAgentState;
 
-      if ((isConnected || isConnecting) && endAgentConversation) {
+      if ((isConnected || isConnecting) && endHumanAgentConversation) {
         await serviceManager.humanAgentService.endChat(true, false, false);
       }
 
-      if (viewState.tour) {
-        // If a tour is open then try to open the main window. Specify not to hydrate the chat because hydration is
-        // planned to happen after restart:conversation has fired below. We don't need to clear the tour data in store
-        // since the restartConversation redux action will do that.
-        await this.serviceManager.actions.changeView(
-          ViewType.MAIN_WINDOW,
-          {
-            mainWindowOpenReason:
-              MainWindowOpenReason.CALLED_RESTART_CONVERSATION,
-          },
-          false
-        );
-      }
-
-      this.serviceManager.instance.updateAssistantInputFieldVisibility(true);
+      this.serviceManager.instance.updateInputFieldVisibility(true);
       this.serviceManager.messageService.cancelAllMessageRequests();
 
       store.dispatch(actions.restartConversation());
@@ -1687,21 +1471,12 @@ class ChatActionsImpl {
     const { persistedToBrowserStorage } = store.getState();
     const originalViewState = persistedToBrowserStorage.launcherState.viewState;
     const newPersistedToBrowserStorage = cloneDeep(
-      DEFAULT_PERSISTED_TO_BROWSER
+      DEFAULT_PERSISTED_TO_BROWSER,
     );
 
     if (keepOpenState) {
       // If we want to keep the open state then copy it from browser storage.
       newPersistedToBrowserStorage.launcherState.viewState = originalViewState;
-
-      if (originalViewState.tour) {
-        // If a tour was previously open then change the viewState to close the tour and open the main window instead.
-        newPersistedToBrowserStorage.launcherState.viewState = {
-          ...originalViewState,
-          tour: false,
-          mainWindow: true,
-        };
-      }
     } else {
       // If we don't want to keep the open state then set the launcher to be open.
       newPersistedToBrowserStorage.launcherState.viewState =
@@ -1715,8 +1490,8 @@ class ChatActionsImpl {
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(
         "persistedToBrowserStorage",
-        newPersistedToBrowserStorage
-      )
+        newPersistedToBrowserStorage,
+      ),
     );
   }
 
@@ -1725,7 +1500,7 @@ class ChatActionsImpl {
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
    * returns a Promise that only resolves when the conversation has ended. This includes after the
-   * {@link BusEventType.AGENT_PRE_END_CHAT} and {@link BusEventType.AGENT_END_CHAT} events have been fired and
+   * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
    * resolved.
    */
   agentEndConversation(endedByUser: boolean) {
@@ -1754,9 +1529,9 @@ class ChatActionsImpl {
           messages.allMessagesByID[localMessage.fullMessageID];
         return this.handleUserDefinedResponseItems(
           localMessage,
-          originalMessage
+          originalMessage,
         );
-      }
+      },
     );
   }
 }
@@ -1773,7 +1548,7 @@ interface RestartConversationOptions {
   /**
    * Indicates if a conversation with a human agent should be ended. This defaults to true.
    */
-  endAgentConversation?: boolean;
+  endHumanAgentConversation?: boolean;
 
   /**
    * Indicates if the "pre:restartConversation" and "restartConversation" events should be fired. This defaults to true.

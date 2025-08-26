@@ -6,6 +6,8 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/themes/scss/themes";
 
 // TODO TABLE: The below sticky header workaround should be removed when Carbon adds out of the box functionality for
 // this (re this issue: https://github.com/carbon-design-system/carbon/issues/17735). When the sticky header workaround
@@ -23,17 +25,17 @@
 // component currently has too much content for our smaller widths, and would have an overflow of it's own if we tried
 // to fix it to the container width. For now it's better to just have one scroll bar and let the footer scroll with the
 // table body.
-cds-custom-table-header-title,
-cds-custom-table-header-description,
-cds-custom-table-toolbar {
+cds-table-header-title,
+cds-table-header-description,
+cds-table-toolbar {
   position: sticky;
   inline-size: var(--cds-chat-table-width, auto);
   inset-inline-start: 0;
 }
 
-:dir(rtl) cds-custom-table-header-title,
-:dir(rtl) cds-custom-table-header-description,
-:dir(rtl) cds-custom-table-toolbar {
+:dir(rtl) cds-table-header-title,
+:dir(rtl) cds-table-header-description,
+:dir(rtl) cds-table-toolbar {
   right: 0;
   left: unset;
 }
@@ -44,8 +46,8 @@ cds-custom-table-toolbar {
 // padding is in a shadow root, we can't select the div to override the styles. In order to remove this scroll the
 // padding needs to be offset from the parent div using this negative margin "hack". Then the padding can be reapplied
 // to the component we control so the title is properly indented but doesn't scroll.
-cds-custom-table-header-title,
-cds-custom-table-header-description {
+cds-table-header-title,
+cds-table-header-description {
   padding: 0 layout.$spacing-05;
   inline-size: calc(
     var(--cds-chat-table-width, auto) - layout.$spacing-05 - layout.$spacing-05
@@ -53,12 +55,30 @@ cds-custom-table-header-description {
   margin-inline: -#{layout.$spacing-05};
 }
 
-cds-custom-table-header-description {
+cds-table-header-description {
   margin-block-end: -#{layout.$spacing-03};
 }
 
-// Make the pagination component cover any available width. If the table above the pagination component is wider it will
-// expand to be the same width as the table.
-cds-custom-pagination {
+// Both table and pagination will be placed in the same grid column,
+// ensuring they have the same width that expands to fit the wider element.
+cds-pagination,
+cds-table {
+  grid-column: 1;
   inline-size: 100%;
+}
+
+.cds-ai-chat-table-container {
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr);
+  inline-size: 100%;
+  overflow-x: auto;
+}
+
+// Apply Carbon themes to the table container
+.cds-ai-chat-table-container.cds--white {
+  @include theme.theme(themes.$white);
+}
+
+.cds-ai-chat-table-container.cds--g90 {
+  @include theme.theme(themes.$g90);
 }

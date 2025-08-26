@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Button } from "@carbon/react";
+import Button, { BUTTON_KIND } from "../../../react/carbon/Button";
 import FocusTrap from "focus-trap-react";
 import React, { Component, KeyboardEvent } from "react";
 
@@ -58,8 +58,11 @@ interface ConfirmModalProps extends HasServiceManager, ConfirmModalButtonProps {
    */
   modalAnnounceMessage: string;
 }
+interface WACConfirmModalState {
+  focusTrapActive: boolean;
+}
 
-class ConfirmModal extends Component<ConfirmModalProps> {
+class ConfirmModal extends Component<ConfirmModalProps, WACConfirmModalState> {
   /**
    * The callback that is called when the user clicks the yes button confirming that they do want to end the chat.
    */
@@ -84,6 +87,18 @@ class ConfirmModal extends Component<ConfirmModalProps> {
       this.props.onCancel();
     }
   };
+  constructor(props: ConfirmModalProps) {
+    super(props);
+    this.state = {
+      focusTrapActive: false,
+    };
+  }
+  componentDidMount(): void {
+    // Wait for the custom element to be defined
+    customElements.whenDefined("cds-custom-button").then(() => {
+      this.setState({ focusTrapActive: true });
+    });
+  }
 
   render() {
     const {
@@ -97,7 +112,15 @@ class ConfirmModal extends Component<ConfirmModalProps> {
 
     return (
       <ModalPortal>
-        <FocusTrap>
+        <FocusTrap
+          active={this.state.focusTrapActive}
+          focusTrapOptions={{
+            initialFocus: false,
+            tabbableOptions: {
+              getShadowRoot: true, // Crucial for web components
+            },
+          }}
+        >
           <div
             className="WACConfirmModal"
             role="dialog"
@@ -121,10 +144,11 @@ class ConfirmModal extends Component<ConfirmModalProps> {
               <div className="WACConfirmModal__buttonContainer">
                 <Button
                   className="WACConfirmModal__NoButton"
-                  kind="secondary"
+                  kind={"secondary" as BUTTON_KIND}
                   onClick={this.onNoClick}
                   onKeyDown={this.onKeyDown}
                   size="md"
+                  tab-index="0"
                 >
                   {cancelButtonLabel}
                 </Button>
@@ -133,6 +157,7 @@ class ConfirmModal extends Component<ConfirmModalProps> {
                   onClick={this.onYesClick}
                   onKeyDown={this.onKeyDown}
                   size="md"
+                  tab-index="0"
                 >
                   {confirmButtonLabel}
                 </Button>

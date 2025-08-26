@@ -29,16 +29,16 @@ interface IFramePanelComponentProps extends BasePanelConfigOptions {
 
 /**
  * This panel is used to load the provided source url in an iframe for users to complete some action or view a piece
- * of content without having them leave Carbon AI chat.
+ * of content without having them leave Carbon AI Chat.
  */
 function IFramePanelComponent(
   props: IFramePanelComponentProps,
-  ref: Ref<HasRequestFocus>
+  ref: Ref<HasRequestFocus>,
 ) {
   const languagePack = useLanguagePack();
   const { store } = useServiceManager();
   const { isOpen, messageItem } = useSelector(
-    (state: AppState) => state.iFramePanelState
+    (state: AppState) => state.iFramePanelState,
   );
   const iframeTitle = messageItem?.title || messageItem?.source;
 

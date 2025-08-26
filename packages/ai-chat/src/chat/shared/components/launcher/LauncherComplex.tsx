@@ -42,11 +42,11 @@ interface LauncherComplexProps extends HasIntl, HasClassName {
    * The number of unread messages from a human agent that should be displayed on the launcher. If this is 0, no
    * agent indicator will be shown unless showUnreadIndicator is set.
    */
-  unreadAgentCount: number;
+  unreadHumanAgentCount: number;
 
   /**
    * Indicates if we should show an empty (no number) unread indicator on the launcher. This only applies the first time
-   * in the session before the user has opened the Carbon AI chat and is superseded by the agent unread indicator if there
+   * in the session before the user has opened the Carbon AI Chat and is superseded by the agent unread indicator if there
    * is one.
    */
   showUnreadIndicator: boolean;
@@ -57,15 +57,9 @@ interface LauncherComplexProps extends HasIntl, HasClassName {
   desktopLauncherIsExpanded: boolean;
 
   /**
-   * If the main Carbon AI chat window is open or a tour is visible the launcher should be hidden.
+   * If the main Carbon AI Chat window is open is visible the launcher should be hidden.
    */
   launcherHidden: boolean;
-
-  /**
-   * If theres's an active tour a different launcher icon needs to be shown to communicate that clicking on the launcher
-   * will open a tour.
-   */
-  activeTour: boolean;
 }
 
 function LauncherComplex(props: LauncherComplexProps) {
@@ -77,11 +71,10 @@ function LauncherComplex(props: LauncherComplexProps) {
     launcherRef,
     onOpen,
     onMinimize,
-    unreadAgentCount,
+    unreadHumanAgentCount,
     showUnreadIndicator,
     desktopLauncherIsExpanded,
     launcherHidden,
-    activeTour,
     className,
   } = props;
   const {
@@ -118,7 +111,7 @@ function LauncherComplex(props: LauncherComplexProps) {
         className,
         {
           "WACLauncher__ButtonContainer--hidden": launcherHidden,
-        }
+        },
       )}
       ref={launcherComplexRef}
     >
@@ -142,10 +135,9 @@ function LauncherComplex(props: LauncherComplexProps) {
         ref={launcherRef}
         onToggleOpen={onOpen}
         className="WACLauncherComplex__SmallLauncherContainer"
-        unreadAgentCount={unreadAgentCount}
+        unreadHumanAgentCount={unreadHumanAgentCount}
         showUnreadIndicator={showUnreadIndicator}
         launcherHidden={launcherHidden}
-        activeTour={activeTour}
       />
       {/* Potential close button changes - possibly match the accent color, or change/animate on hover of container */}
       <Tag

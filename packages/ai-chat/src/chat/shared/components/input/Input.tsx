@@ -6,11 +6,21 @@
  *
  *  @license
  */
-
+import Button, {
+  BUTTON_KIND,
+  BUTTON_TYPE,
+  BUTTON_SIZE,
+  BUTTON_TOOLTIP_ALIGNMENT,
+  BUTTON_TOOLTIP_POSITION,
+} from "../../../react/carbon/Button";
+import Send16 from "@carbon/icons/es/send/16.js";
+import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import Attachment from "@carbon/icons-react/es/Attachment.js";
-import Send from "@carbon/icons-react/es/Send.js";
-import SendFilled from "@carbon/icons-react/es/SendFilled.js";
-import { Button, FileUploaderItem } from "@carbon/react";
+import FileUploaderItem, {
+  FILE_UPLOADER_ITEM_SIZE,
+  FILE_UPLOADER_ITEM_STATE,
+} from "../../../react/carbon/FileUploaderItem";
 import cx from "classnames";
 import React, {
   ChangeEvent,
@@ -27,7 +37,7 @@ import { StopStreamingButton } from "../../../react/components/stopStreamingButt
 import { HasServiceManager } from "../../hocs/withServiceManager";
 import { useCounter } from "../../hooks/useCounter";
 import actions from "../../store/actions";
-import { selectIsInputToAgent } from "../../store/selectors";
+import { selectIsInputToHumanAgent } from "../../store/selectors";
 import { FileUpload } from "../../../../types/state/AppState";
 import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
 import { IS_MOBILE } from "../../utils/browserUtils";
@@ -38,13 +48,12 @@ import { ListenerList } from "../../utils/ListenerList";
 import { isValidForUpload } from "../../utils/miscUtils";
 import TextArea from "../responseTypes/text/TextArea";
 import { InstanceInputElement } from "../../../../types/instance/ChatInstance";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../types/utilities/carbonTypes";
 import { BusEventType } from "../../../../types/events/eventBusTypes";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId } from "../../utils/PageObjectId";
+
+const Send = carbonIconToReact(Send16);
+const SendFilled = carbonIconToReact(SendFilled16);
 
 /**
  * The size of the gap between input changes before we indicate that the user has stopped typing.
@@ -208,7 +217,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   // An array of functions that will be called when the text value changes.
   const changeListeners = useRef<ListenerList<[string]>>(
-    new ListenerList<[string]>()
+    new ListenerList<[string]>(),
   );
 
   // The last text value that was sent to the change listeners.
@@ -323,11 +332,11 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    * The callback that is called when the user removes a file from the upload area.
    */
   function onRemoveFile(fileID: string) {
-    const isInputToAgent = selectIsInputToAgent(
-      serviceManager.store.getState()
+    const isInputToHumanAgent = selectIsInputToHumanAgent(
+      serviceManager.store.getState(),
     );
     serviceManager.store.dispatch(
-      actions.removeFileUpload(fileID, isInputToAgent)
+      actions.removeFileUpload(fileID, isInputToHumanAgent),
     );
     // After we remove the file, we need to move focus back to the input field.
     textAreaRef.current.takeFocus();
@@ -337,8 +346,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    * The callback that is called when the user selects a file using the file input.
    */
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const isInputToAgent = selectIsInputToAgent(
-      serviceManager.store.getState()
+    const isInputToHumanAgent = selectIsInputToHumanAgent(
+      serviceManager.store.getState(),
     );
     const { dispatch } = serviceManager.store;
     const { files } = event.target;
@@ -350,7 +359,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         file: files[index],
       };
       newFiles.push(newFile);
-      dispatch(actions.addInputFile(newFile, isInputToAgent));
+      dispatch(actions.addInputFile(newFile, isInputToHumanAgent));
     }
     onFilesSelectedForUpload?.(newFiles);
 
@@ -468,13 +477,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                       iconDescription={
                         languagePack.fileSharing_removeButtonTitle
                       }
-                      name={fileUpload.file.name}
-                      status={FileStatusValue.EDIT}
+                      state={FILE_UPLOADER_ITEM_STATE.EDIT}
                       errorSubject={fileUpload.errorMessage}
                       invalid={fileUpload.isError}
-                      size={ButtonSizeEnum.SMALL}
+                      size={FILE_UPLOADER_ITEM_SIZE.SMALL}
                       onDelete={() => onRemoveFile(fileUpload.id)}
-                    />
+                    >
+                      {fileUpload.file.name}
+                    </FileUploaderItem>
                   );
                 })}
               </div>
@@ -496,19 +506,27 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
             )}
             <Button
               className="WACInputContainer__SendButton"
-              kind={ButtonKindEnum.GHOST}
-              size={ButtonSizeEnum.SMALL}
-              type="button"
+              kind={BUTTON_KIND.GHOST}
+              size={BUTTON_SIZE.SMALL}
+              type={"button" as BUTTON_TYPE}
               onClick={send}
               aria-label={input_buttonLabel}
               disabled={showDisabledSend}
-              renderIcon={hasValidInput ? SendFilled : Send}
-              iconDescription={input_buttonLabel}
-              tooltipAlignment={isRTL ? "start" : "end"}
-              tooltipPosition="top"
-              hasIconOnly
+              tooltip-text={input_buttonLabel}
+              tooltipAlignment={
+                isRTL
+                  ? ("start" as BUTTON_TOOLTIP_ALIGNMENT)
+                  : ("end" as BUTTON_TOOLTIP_ALIGNMENT)
+              }
+              tooltipPosition={"top" as BUTTON_TOOLTIP_POSITION}
               data-testid={makeTestId(PageObjectId.INPUT_SEND, testIdPrefix)}
-            />
+            >
+              {hasValidInput ? (
+                <SendFilled slot="icon" />
+              ) : (
+                <Send slot="icon" />
+              )}
+            </Button>
           </div>
         </div>
       </div>

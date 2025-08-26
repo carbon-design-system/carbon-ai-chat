@@ -22,7 +22,7 @@ jobs:
         run: |
           npm install
           npm run build
-      # ie. https://1.www.s81c.com/common/carbon/ai-chat/feature/demo/index.html
+      # ie. https://chat.carbondesignsystem.com/feature/demo/index.html
       - name: Upload demo to COS
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -34,4 +34,4 @@ jobs:
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "demo/dist"
-          DEST_DIR: "common/carbon/ai-chat/feature/demo"
+          DEST_DIR: "feature/demo"

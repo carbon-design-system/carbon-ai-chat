@@ -9,7 +9,7 @@
 
 /**
  * This component is mostly a pass-through. Its takes any properties passed into the ChatContainer
- * custom element and then renders the React Carbon AI chat application while passing in properties.
+ * custom element and then renders the React Carbon AI Chat application while passing in properties.
  */
 
 import { LitElement } from "lit";
@@ -18,17 +18,17 @@ import isEqual from "lodash-es/isEqual.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
 
+import { AppContainer } from "../../react/components/AppContainer";
 import { consoleWarn } from "../../shared/utils/miscUtils";
 import { carbonElement } from "../decorators/customElement";
 import { PublicConfig } from "../../../types/config/PublicConfig";
 import { ChatInstance } from "../../../types/instance/ChatInstance";
-import { DYNAMIC_IMPORTS } from "../../dynamic-imports/dynamic-imports";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
   /**
-   * The config to use to load Carbon AI chat. Note that the "onLoad" property is overridden by this component. If you
-   * need to perform any actions after Carbon AI chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
+   * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
+   * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
    */
   @property({ type: Object })
   config: PublicConfig;
@@ -40,15 +40,15 @@ class ChatContainerInternal extends LitElement {
   element?: HTMLElement;
 
   /**
-   * This function is called before the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   @property()
   onBeforeRender: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI chat is called. This function can return a Promise
-   * which will cause Carbon AI chat to wait for it before rendering.
+   * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
    */
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
@@ -80,7 +80,7 @@ class ChatContainerInternal extends LitElement {
     ) {
       if (changedProperties.get("config")) {
         consoleWarn(
-          "The config object you have passed to AI chat has updated. Tearing down and re-starting the chat."
+          "The config object you have passed to AI chat has updated. Tearing down and re-starting the chat.",
         );
       }
       if (this.config) {
@@ -95,9 +95,8 @@ class ChatContainerInternal extends LitElement {
   root: Root;
 
   async renderReactApp() {
-    const { AppContainer } = await DYNAMIC_IMPORTS.AppContainer();
     const previousContainer: HTMLElement = this.shadowRoot.querySelector(
-      ".cds--aichat-react-app"
+      ".cds--aichat-react-app",
     );
     previousContainer?.remove();
     const container = document.createElement("div");
@@ -117,7 +116,7 @@ class ChatContainerInternal extends LitElement {
         onAfterRender={this.onAfterRender}
         container={container}
         element={this.element}
-      />
+      />,
     );
   }
 }

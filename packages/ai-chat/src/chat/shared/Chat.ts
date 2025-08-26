@@ -15,14 +15,12 @@ import merge from "lodash-es/merge.js";
 import { createChatInstance } from "./ChatInstanceImpl";
 import { ChatInterface } from "./ChatInterface";
 import { createServiceManager } from "./loadServices";
-import { CreateHumanAgentServiceFunction } from "./services/haa/HumanAgentService";
 import { ServiceManager } from "./services/ServiceManager";
 import actions from "./store/actions";
 import { VIEW_STATE_ALL_CLOSED } from "./store/reducerUtils";
 import { AdditionalChatParameters } from "../../types/component/AdditionalChatParameters";
 import { AppConfig } from "../../types/state/AppConfig";
 import { loadLanguagePack, loadLocale } from "./utils/languages";
-import { hasServiceDesk } from "./utils/messageUtils";
 import { consoleDebug, consoleError } from "./utils/miscUtils";
 import { DEFAULT_PUBLIC_CONFIG } from "./chatEntryFunctions";
 import { PublicConfig } from "../../types/config/PublicConfig";
@@ -32,7 +30,7 @@ import {
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
 import { setIntl } from "./utils/intlUtils";
-import { loadHAA } from "../dynamic-imports/dynamic-imports";
+import createHumanAgentService from "./services/haa/HumanAgentServiceImpl";
 
 // Dayjs is a date library similar to moment, but that allows you to compose how much functionality you need. Here we
 // add the ability to add strings in the format of a given locale.
@@ -49,23 +47,23 @@ class Chat implements ChatInterface {
   private customHostElement?: HTMLElement;
 
   /**
-   * An object with values important to Carbon AI chat that are separate from the external configs.
+   * An object with values important to Carbon AI Chat that are separate from the external configs.
    */
   private additionalChatParameters?: AdditionalChatParameters;
 
   /**
-   * Create new Carbon AI chat instance.
+   * Create new Carbon AI Chat instance.
    *
    * @param publicConfigProvided The public config provided by the user.
    * @param customHostElement The host element into which to render the widget. This is provided in the original public
    * config from the host page.
-   * @param additionalChatParametersProvided An object with values important to Carbon AI chat that are separate from the
+   * @param additionalChatParametersProvided An object with values important to Carbon AI Chat that are separate from the
    * external configs
    */
   constructor(
     publicConfigProvided: PublicConfig,
     customHostElement?: HTMLElement,
-    additionalChatParametersProvided?: AdditionalChatParameters
+    additionalChatParametersProvided?: AdditionalChatParameters,
   ) {
     if (publicConfigProvided?.debug) {
       consoleDebug("Constructed chat widget", publicConfigProvided);
@@ -76,7 +74,7 @@ class Chat implements ChatInterface {
     const publicConfig: PublicConfig = merge(
       {},
       DEFAULT_PUBLIC_CONFIG,
-      publicConfigProvided
+      publicConfigProvided,
     );
     this.additionalChatParameters = additionalChatParametersProvided || {};
 
@@ -112,35 +110,23 @@ class Chat implements ChatInterface {
     instance: ChatInstance;
     serviceManager: ServiceManager;
   }> {
-    // Check if integration has a service desk configured in the tooling. If they do, we will use it with
-    // connect_to_agent response_type.
-    const doesHaveServiceDesk = hasServiceDesk(this.appConfig);
-
     this.serviceManager = await createServiceManager(
       this.appConfig,
-      this.additionalChatParameters
+      this.additionalChatParameters,
     );
 
-    // Asynchronously load all of the various dependencies that the Carbon AI chat depends on.
-    const [languagePack, localePack, render, createHumanAgentService] =
-      await Promise.all([
-        loadLanguagePack(this.serviceManager.store.getState().languagePack),
-        loadLocale(this.serviceManager.store.getState().locale),
-        Promise.resolve(this.additionalChatParameters.render),
-        doesHaveServiceDesk
-          ? loadHAA()
-          : Promise.resolve<CreateHumanAgentServiceFunction>(null),
-      ]);
+    // Asynchronously load all of the various dependencies that the Carbon AI Chat depends on.
+    const [languagePack, localePack, render] = await Promise.all([
+      loadLanguagePack(this.serviceManager.store.getState().languagePack),
+      loadLocale(this.serviceManager.store.getState().locale),
+      Promise.resolve(this.additionalChatParameters.render),
+    ]);
 
     this.serviceManager.customHostElement = this.customHostElement;
 
-    if (createHumanAgentService) {
-      // We'll create the service now but we can't initialize it until we load the service desk information
-      // from the remote config.
-      this.serviceManager.humanAgentService = createHumanAgentService(
-        this.serviceManager
-      );
-    }
+    this.serviceManager.humanAgentService = createHumanAgentService(
+      this.serviceManager,
+    );
 
     // Update Redux with new values for language, locale, and messages.
     setIntl(this.serviceManager, localePack.name, languagePack);
@@ -148,7 +134,7 @@ class Chat implements ChatInterface {
     // Tell dayjs to globally use the locale.
     dayjs.locale(localePack);
 
-    // Here we render the application. If the tour or main window are supposed to be open then we will hydrate the
+    // Here we render the application. If the main window is supposed to be open then we will hydrate the
     // chat if sessionHistory is enabled, or fetch the welcome node if it's disabled.
     const reallyRenderAndReturnInstance = async () => {
       // Render the React application.
@@ -176,13 +162,10 @@ class Chat implements ChatInterface {
           mainWindowOpenReason,
         });
       } else {
-        // If a tour and/or the launcher are supposed to be open, or nothing is supposed to be open, then only fire
-        // the view:change events and try to change the view.
         const viewChangeReason: ViewChangeReason =
           ViewChangeReason.WEB_CHAT_LOADED;
 
-        // If a tour is supposed to be open then try to hydrate the chat.
-        const tryHydrating = targetViewState.tour;
+        const tryHydrating = false;
 
         // If nothing is supposed to be open then force the view:change events to fire. Since the default viewState
         // is all views closed, and the targetViewState is all views closed, changeView would see two equal
@@ -193,14 +176,14 @@ class Chat implements ChatInterface {
           targetViewState,
           { viewChangeReason },
           tryHydrating,
-          forceViewChange
+          forceViewChange,
         );
       }
 
       // Lastly set the initialViewChangeComplete so that the launcher and other components can begin their
       // animations if they're visible.
       this.serviceManager.store.dispatch(
-        actions.setInitialViewChangeComplete(true)
+        actions.setInitialViewChangeComplete(true),
       );
 
       return this.serviceManager.instance;

@@ -7,33 +7,37 @@
  *  @license
  */
 
-import { AppState, AgentDisplayState } from "../../../types/state/AppState";
+import {
+  AppState,
+  HumanAgentDisplayState,
+} from "../../../types/state/AppState";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 
 /** Simple “getters” for the raw pieces of state */
 const getBotInputState = (state: AppState) => state.botInputState;
-const getAgentInputState = (state: AppState) => state.agentState.inputState;
-const getAgentState = (state: AppState) => state.agentState;
-const getPersistedAgent = (state: AppState) =>
-  state.persistedToBrowserStorage.chatState.agentState;
+const getHumanAgentInputState = (state: AppState) =>
+  state.humanAgentState.inputState;
+const getHumanAgentState = (state: AppState) => state.humanAgentState;
+const getPersistedHumanAgent = (state: AppState) =>
+  state.persistedToBrowserStorage.chatState.humanAgentState;
 
 /**
  * Compute the display state for the agent.
  */
-function selectAgentDisplayState(state: AppState): AgentDisplayState {
-  const agentState = getAgentState(state);
-  const persisted = getPersistedAgent(state);
+function selectHumanAgentDisplayState(state: AppState): HumanAgentDisplayState {
+  const humanAgentState = getHumanAgentState(state);
+  const persisted = getPersistedHumanAgent(state);
 
   if (persisted.isSuspended) {
     return {
       isConnectingOrConnected: false,
       disableInput: false,
-      isAgentTyping: false,
+      isHumanAgentTyping: false,
       inputPlaceholderKey: null,
     };
   }
 
-  const { isReconnecting, isConnecting, isAgentTyping } = agentState;
+  const { isReconnecting, isConnecting, isHumanAgentTyping } = humanAgentState;
   const { isConnected } = persisted;
 
   let inputPlaceholderKey: keyof EnglishLanguagePack;
@@ -46,7 +50,7 @@ function selectAgentDisplayState(state: AppState): AgentDisplayState {
   }
 
   return {
-    isAgentTyping,
+    isHumanAgentTyping,
     isConnectingOrConnected: isConnecting || isConnected,
     disableInput: isConnecting || isReconnecting,
     inputPlaceholderKey,
@@ -56,17 +60,21 @@ function selectAgentDisplayState(state: AppState): AgentDisplayState {
 /**
  * Is the chat currently routed to a human agent?
  */
-function selectIsInputToAgent(state: AppState): boolean {
-  return selectAgentDisplayState(state).isConnectingOrConnected;
+function selectIsInputToHumanAgent(state: AppState): boolean {
+  return selectHumanAgentDisplayState(state).isConnectingOrConnected;
 }
 
 /**
  * Pick either the agent’s input slice or the bot’s.
  */
 function selectInputState(state: AppState) {
-  return selectIsInputToAgent(state)
-    ? getAgentInputState(state)
+  return selectIsInputToHumanAgent(state)
+    ? getHumanAgentInputState(state)
     : getBotInputState(state);
 }
 
-export { selectAgentDisplayState, selectIsInputToAgent, selectInputState };
+export {
+  selectHumanAgentDisplayState,
+  selectIsInputToHumanAgent,
+  selectInputState,
+};

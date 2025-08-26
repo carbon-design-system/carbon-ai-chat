@@ -8,7 +8,7 @@
  */
 
 import cloneDeep from "lodash-es/cloneDeep.js";
-import { DeepPartial } from "ts-essentials";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
 import { AppConfig } from "../../../types/state/AppConfig";
 import { AppState, FileUpload } from "../../../types/state/AppState";
@@ -17,13 +17,13 @@ import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
 import { uuid, UUIDType } from "./lang/uuid";
 import {
-  AgentMessageType,
+  HumanAgentMessageType,
   ButtonItem,
   ButtonItemType,
   CardItem,
   CarouselItem,
   CompleteItemChunk,
-  ConnectToAgentItem,
+  ConnectToHumanAgentItem,
   DateItem,
   EventInput,
   FinalResponseChunk,
@@ -60,7 +60,7 @@ function isResponse(message: unknown): message is MessageResponse {
 }
 
 function isDateResponseType(
-  localMessage: LocalMessageItem
+  localMessage: LocalMessageItem,
 ): localMessage is LocalMessageItem<DateItem> {
   return (
     (localMessage?.item.response_type as string) === MessageResponseTypes.DATE
@@ -71,7 +71,7 @@ function isDateResponseType(
  * Adds default values to the given MessageResponse.
  */
 function addDefaultsToMessage<T extends MessageResponse | MessageRequest>(
-  fullMessage: T
+  fullMessage: T,
 ): T {
   if (!fullMessage.id) {
     fullMessage.id = uuid(UUIDType.MESSAGE);
@@ -82,11 +82,14 @@ function addDefaultsToMessage<T extends MessageResponse | MessageRequest>(
   if (!fullMessage.history) {
     fullMessage.history = {};
   }
+  if (!fullMessage.ui_state_internal) {
+    fullMessage.ui_state_internal = {};
+  }
   if (!fullMessage.history.timestamp) {
     fullMessage.history.timestamp = Date.now();
   }
-  if (fullMessage.history.from_history === undefined) {
-    fullMessage.history.from_history = false;
+  if (fullMessage.ui_state_internal.from_history === undefined) {
+    fullMessage.ui_state_internal.from_history = false;
   }
 
   return fullMessage;
@@ -104,18 +107,18 @@ function isRequest(message: unknown): message is MessageRequest<MessageInput> {
 /**
  * Indicates if this message was part of a conversation with a live agent.
  */
-function isLiveAgentMessage(message: LocalMessageItem) {
+function isLiveHumanAgentMessage(message: LocalMessageItem) {
   return Boolean(message.item.agent_message_type);
 }
 
 /**
  * Indicates if this message contains a message that was part of a conversation with a live agent.
  */
-function hasLiveAgentMessage(message: Message) {
+function hasLiveHumanAgentMessage(message: Message) {
   return (
     (isResponse(message) &&
       Boolean(
-        message.output.generic?.find((item) => item?.agent_message_type)
+        message.output.generic?.find((item) => item?.agent_message_type),
       )) ||
     (isRequest(message) && Boolean(message.input.agent_message_type))
   );
@@ -127,7 +130,7 @@ function hasLiveAgentMessage(message: Message) {
  * which will narrow the type to 'MessageRequest<EventInput>' if it returns true.
  */
 function isEventRequest(
-  message: unknown
+  message: unknown,
 ): message is MessageRequest<EventInput> {
   return (
     (message as MessageRequest<EventInput>)?.input?.message_type ===
@@ -170,15 +173,6 @@ function isOptionItem(item: GenericItem): item is OptionItem {
 }
 
 /**
- * Determines if the message is a transfer to agent response.
- */
-function isChannelTransferToAgent(message: MessageResponse) {
-  const { generic } = message.output;
-
-  return generic.some(isConnectToAgent);
-}
-
-/**
  * Generates a {@link MessageRequest} for the given {@link Option} that the user has selected. This is used for
  * generating the request to the server once the user has selected a choice from an option or suggestion list.
  *
@@ -188,7 +182,7 @@ function isChannelTransferToAgent(message: MessageResponse) {
  */
 function createMessageRequestForChoice(
   choice: SingleOption,
-  relatedResponseID?: string
+  relatedResponseID?: string,
 ): MessageRequest {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
@@ -215,7 +209,7 @@ function createMessageRequestForChoice(
  */
 function createMessageRequestForButtonItemOption(
   buttonItem: ButtonItem,
-  relatedResponseID: string
+  relatedResponseID: string,
 ) {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   const messageRequest: MessageRequest = {
@@ -278,7 +272,7 @@ function createMessageRequestForFileUpload(upload: FileUpload): MessageRequest {
       text: upload.file.name,
       message_type:
         InternalMessageRequestType.FILE as unknown as MessageInputType,
-      agent_message_type: AgentMessageType.FROM_USER,
+      agent_message_type: HumanAgentMessageType.FROM_USER,
     },
     history: {
       file_upload_status: FileStatusValue.UPLOADING,
@@ -289,7 +283,7 @@ function createMessageRequestForFileUpload(upload: FileUpload): MessageRequest {
 function createMessageRequestForDate(
   inputString: string,
   userString: string,
-  relatedResponseID: string
+  relatedResponseID: string,
 ) {
   const messageRequest = createMessageRequestForText(inputString);
 
@@ -308,7 +302,7 @@ function createMessageResponseForText(
   text: string,
   threadID: string = THREAD_ID_MAIN,
   responseType = MessageResponseTypes.TEXT,
-  context?: unknown
+  context?: unknown,
 ): MessageResponse {
   const textItem: TextItem = {
     response_type: responseType as MessageResponseTypes,
@@ -333,7 +327,7 @@ function createMessageResponseForText(
  */
 function createMessageResponseForItem<T extends GenericItem>(
   item: T,
-  context?: unknown
+  context?: unknown,
 ): MessageResponse {
   const messageResponse: MessageResponse = {
     output: {
@@ -349,10 +343,12 @@ function createMessageResponseForItem<T extends GenericItem>(
 /**
  * Indicates if the dialog response is a "connect_to_agent" message.
  */
-function isConnectToAgent(
-  response: GenericItem
-): response is ConnectToAgentItem {
-  return response?.response_type === MessageResponseTypes.CONNECT_TO_AGENT;
+function isConnectToHumanAgent(
+  response: GenericItem,
+): response is ConnectToHumanAgentItem {
+  return (
+    response?.response_type === MessageResponseTypes.CONNECT_TO_HUMAN_AGENT
+  );
 }
 
 function isCardResponseType(response: GenericItem): response is CardItem {
@@ -361,7 +357,7 @@ function isCardResponseType(response: GenericItem): response is CardItem {
 }
 
 function isCarouselResponseType(
-  response: GenericItem
+  response: GenericItem,
 ): response is CarouselItem {
   return (response?.response_type as string) === MessageResponseTypes.CAROUSEL;
 }
@@ -404,14 +400,14 @@ function hasBodyOrFooter(item: WithBodyAndFooter) {
  * Determines if the given message should be rendered as custom message.
  */
 function renderAsUserDefinedMessage(
-  messageItem: DeepPartial<GenericItem>
+  messageItem: DeepPartial<GenericItem>,
 ): boolean {
   const responseType = messageItem.response_type;
   switch (responseType) {
     case MessageResponseTypes.TEXT:
     case MessageResponseTypes.IMAGE:
     case MessageResponseTypes.OPTION:
-    case MessageResponseTypes.CONNECT_TO_AGENT:
+    case MessageResponseTypes.CONNECT_TO_HUMAN_AGENT:
     case MessageResponseTypes.IFRAME:
     case MessageResponseTypes.VIDEO:
     case MessageResponseTypes.AUDIO:
@@ -425,25 +421,8 @@ function renderAsUserDefinedMessage(
     case MessageResponseTypes.GRID:
       return false;
     default:
-      // If the custom response is for the tour feature then don't render as a custom message since it will be rendered
-      // as a tour instead.
-      return !renderAsTour(messageItem);
+      return true;
   }
-}
-
-/**
- * Determines if the LocalMessage should be rendered as a tour.
- */
-function renderAsTour(messageItem: DeepPartial<GenericItem>): boolean {
-  return hasTourUserDefinedType(messageItem);
-}
-
-/**
- * Determines if the Generic item's user_defined_type matched the type for the tour beta.
- */
-function hasTourUserDefinedType(message: DeepPartial<GenericItem>): boolean {
-  // For now the tour response will be a custom message with a specific user_defined_type.
-  return message?.user_defined?.user_defined_type === "IBM_BETA_JOURNEYS_TOUR";
 }
 
 /**
@@ -476,13 +455,13 @@ function isItemSupportedInResponseBody(item: GenericItem) {
  * Determines if the message item is a carousel response type with a single item.
  */
 function isSingleItemCarousel(
-  messageItem: GenericItem
+  messageItem: GenericItem,
 ): messageItem is CarouselItem {
   return isCarouselResponseType(messageItem) && messageItem.items.length === 1;
 }
 
 function isFullWidthUserDefined(
-  messageItem: GenericItem
+  messageItem: GenericItem,
 ): messageItem is UserDefinedItem {
   return isUserDefinedItem(messageItem) && messageItem.full_width;
 }
@@ -525,7 +504,7 @@ function isStreamCompleteItem(chunk: StreamChunk): chunk is CompleteItemChunk {
  * Indicates if the given stream chunk is a partial item.
  */
 function isStreamFinalResponse(
-  chunk: StreamChunk
+  chunk: StreamChunk,
 ): chunk is FinalResponseChunk {
   return Boolean((chunk as FinalResponseChunk).final_response);
 }
@@ -559,8 +538,8 @@ function getLastBotResponseWithContext(state: AppState) {
     state.allMessagesByID,
     (message) =>
       isResponse(message) &&
-      !hasLiveAgentMessage(message) &&
-      Boolean(message.context)
+      !hasLiveHumanAgentMessage(message) &&
+      Boolean(message.context),
   ) as MessageResponse;
 }
 
@@ -575,18 +554,15 @@ export {
   isEventRequest,
   isDateResponseType,
   isOptionItem,
-  isChannelTransferToAgent,
   createWelcomeRequest,
   createMessageRequestForChoice,
   createMessageRequestForText,
   createMessageResponseForText,
   createMessageRequestForDate,
-  isConnectToAgent,
+  isConnectToHumanAgent,
   renderAsUserDefinedMessage,
-  renderAsTour,
-  hasTourUserDefinedType,
   hasServiceDesk,
-  isLiveAgentMessage,
+  isLiveHumanAgentMessage,
   isItemSupportedInResponseBody,
   isCarouselResponseType,
   isResponseWithNestedItems,

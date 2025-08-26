@@ -9,15 +9,11 @@
 
 import { html } from "lit";
 
-import { renderTokenTree } from "../markdown/utils/renderTokenTree";
-import MarkdownTextElement from "../cds-aichat-markdown-text";
+import MarkdownElement from "../cds-aichat-markdown-text";
 
-function markdownTextTemplate(customElementClass: MarkdownTextElement) {
-  const { tokenTree, sanitizeHTML } = customElementClass;
-
-  return html`<div class="cds-aichat-markdown-text">
-    ${renderTokenTree(tokenTree, sanitizeHTML)}
-  </div>`;
+function markdownTextTemplate(customElementClass: MarkdownElement) {
+  const { renderedContent } = customElementClass;
+  return html`<div class="cds-aichat-markdown-stack">${renderedContent}</div>`;
 }
 
 export { markdownTextTemplate };

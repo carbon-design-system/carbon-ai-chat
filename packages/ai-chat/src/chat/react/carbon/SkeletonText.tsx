@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonSkeletonText from "@carbon/web-components/es-custom/components/skeleton-text/skeleton-text.js";
+import CarbonSkeletonText from "@carbon/web-components/es/components/skeleton-text/skeleton-text.js";
 
 const SkeletonText = createComponent({
-  tagName: "cds-custom-skeleton-text",
+  tagName: "cds-skeleton-text",
   elementClass: CarbonSkeletonText,
   react: React,
 });

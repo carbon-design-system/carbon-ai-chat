@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es-custom/components/skeleton-icon/index.js";
+import "@carbon/web-components/es/components/skeleton-icon/index.js";
 
 import cx from "classnames";
 import { html } from "lit";
@@ -17,7 +17,7 @@ import { CSS_CLASS_PREFIX } from "../../../../settings";
 import { CornersType } from "../../../../../../types/config/CornersType";
 
 export function chatHeaderAvatarTemplate(
-  classElement: ChatHeaderAvatarElement
+  classElement: ChatHeaderAvatarElement,
 ) {
   const { url, corners, alt, onError } = classElement;
   return html`

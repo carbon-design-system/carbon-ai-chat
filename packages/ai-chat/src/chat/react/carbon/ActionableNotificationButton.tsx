@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonActionableNotificationButtonElement from "@carbon/web-components/es-custom/components/notification/actionable-notification-button.js";
+import CarbonActionableNotificationButtonElement from "@carbon/web-components/es/components/notification/actionable-notification-button.js";
 
 const ActionableNotificationButton = createComponent({
-  tagName: "cds-custom-actionable-notification-button",
+  tagName: "cds-actionable-notification-button",
   elementClass: CarbonActionableNotificationButtonElement,
   react: React,
 });
