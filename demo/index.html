@@ -1,6 +1,6 @@
-<!-- 
+<!--
   Copyright IBM Corp. 2025
-  
+
   This source code is licensed under the Apache-2.0 license found in the
   LICENSE file in the root directory of this source tree.
  -->
@@ -13,6 +13,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@carbon/ai-chat - demo</title>
     <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/latest/plex.css" />
+
+    <!-- Tealium/GA Set up -->
+    <script type="text/javascript">
+      window._ibmAnalytics = {
+        settings: {
+          name: 'CarbonAIChatDemo',
+          isSpa: true,
+          tealiumProfileName: 'ibm-web-app',
+        },
+        onLoad: [['ibmStats.pageview', []]],
+      };
+      digitalData = {
+        page: {
+          pageInfo: {
+            ibm: {
+              siteId: 'IBM_' + _ibmAnalytics.settings.name,
+            },
+          },
+          category: {
+            primaryCategory: 'PC100',
+          },
+        },
+      };
+    </script>
+    <script
+      src="//1.www.s81c.com/common/stats/ibm-common.js"
+      type="text/javascript"
+      async="async"></script>
   </head>
   <body>
     <demo-container>

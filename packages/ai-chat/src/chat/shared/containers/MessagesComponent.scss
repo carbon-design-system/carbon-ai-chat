@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities";
+@use "../../styles/chatTheme";
 
 .WACMessages--holder {
   display: flex;
@@ -55,4 +56,25 @@
   overflow: hidden scroll;
   block-size: 100%;
   inline-size: 100%;
+}
+
+.WAC__messages--scrollDownIndicator {
+  position: absolute;
+  z-index: 1;
+  justify-content: center;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  inline-size: 100%;
+  inset-block-end: 30px;
+  text-align: center;
+}
+
+.WAC__messages--scrollDownIndicatorIcon {
+  padding: 7px 5px 5px;
+  border-radius: 50%;
+  margin: 0 auto;
+  background-color: theme.$layer-01;
+  box-shadow: chatTheme.$AI-box-shadow-outer;
+  inline-size: 32px;
 }

@@ -53,6 +53,7 @@ import MessageComponent, {
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { ArrowDown } from "@carbon/icons-react";
 
 const DEBUG_AUTO_SCROLL = false;
 
@@ -115,6 +116,10 @@ interface MessagesState {
    * panel.
    */
   scrollHandleHasFocus: boolean;
+  /**
+   * Indicates if there are messages below where the scroll bar currently is set.
+   */
+  scrollDown: boolean;
 }
 
 class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
@@ -123,6 +128,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public readonly state: Readonly<MessagesState> = {
     scrollHandleHasFocus: false,
+    scrollDown: false,
   };
 
   /**
@@ -257,6 +263,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * when the window is resized.
    */
   public onResize = () => {
+    this.renderscrollDownNotification();
     if (this.props.messageState.isScrollAnchored) {
       const element = this.messagesContainerWithScrollingRef.current;
       if (element) {
@@ -353,6 +360,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
 
           if (isResponse(message)) {
+            this.renderscrollDownNotification();
             // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
             // then we should return false
             if (message?.history?.silent) {
@@ -537,6 +545,31 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
     }
+  }
+
+  /**
+   * Calculates if there are any messages at the bottom out of the scroll view of the container.
+   * The result determines if the user should be told if they need to scroll down to view more
+   * messages or not.
+   */
+  public checkMessagesOutOfView() {
+    const scrollElement = this.messagesContainerWithScrollingRef.current;
+    const remainingPixelsToScroll =
+      scrollElement.scrollHeight -
+      scrollElement.scrollTop -
+      scrollElement.clientHeight;
+    return remainingPixelsToScroll > 60;
+  }
+
+  /**
+   * Updates the state after checking if there are any unread messages in the chat view
+   */
+  public renderscrollDownNotification() {
+    const shouldRender = this.checkMessagesOutOfView();
+    this.setState({
+      scrollHandleHasFocus: false,
+      scrollDown: shouldRender,
+    });
   }
 
   /**
@@ -819,8 +852,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           languagePack[labelKey] || languagePack.messages_scrollHandle
         }
         onClick={onClick}
-        onFocus={() => this.setState({ scrollHandleHasFocus: true })}
-        onBlur={() => this.setState({ scrollHandleHasFocus: false })}
+        onFocus={() =>
+          this.setState({ scrollHandleHasFocus: true, ...this.state })
+        }
+        onBlur={() =>
+          this.setState({ scrollHandleHasFocus: false, ...this.state })
+        }
       />
     );
   }
@@ -913,7 +950,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
     const { isLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { scrollHandleHasFocus } = this.state;
+    const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = this.getMessageIDForUserInput();
 
@@ -945,7 +982,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             id={`WAC__messages${serviceManager.namespace.suffix}`}
             className="WAC__messages"
             ref={this.messagesContainerWithScrollingRef}
-            onScroll={() => this.checkScrollAnchor()}
+            onScroll={() => {
+              this.checkScrollAnchor();
+              this.renderscrollDownNotification();
+            }}
           >
             {this.renderScrollHandle(true)}
             {regularMessages}
@@ -959,6 +999,17 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
+            {scrollDown && (
+              <button
+                type="button"
+                className="WAC__messages--scrollDownIndicator"
+                onClick={() => this.doAutoScroll({ scrollToBottom: 0 })}
+              >
+                <div className="WAC__messages--scrollDownIndicatorIcon">
+                  <ArrowDown />
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
