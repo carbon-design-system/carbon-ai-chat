@@ -271,6 +271,7 @@ $message-bar-width: 3px;
 
 .WAC__sent--text > span {
   flex: 1;
+  white-space: pre-wrap;
 }
 
 .WAC__sent--text {
