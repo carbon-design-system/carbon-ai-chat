@@ -51,8 +51,9 @@ import MessageComponent, {
   MoveFocusType,
 } from "./MessageComponent";
 import { CarbonTheme } from "../../../types/utilities/carbonTypes";
-import { Message, MessageRequest } from "../../../types/messaging/Messages";
+import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { ArrowDown } from "@carbon/icons-react";
 
 const DEBUG_AUTO_SCROLL = false;
 
@@ -115,6 +116,10 @@ interface MessagesState {
    * panel.
    */
   scrollHandleHasFocus: boolean;
+  /**
+   * Indicates if there are messages below where the scroll bar currently is set.
+   */
+  scrollDown: boolean;
 }
 
 class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
@@ -123,6 +128,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public readonly state: Readonly<MessagesState> = {
     scrollHandleHasFocus: false,
+    scrollDown: false,
   };
 
   /**
@@ -253,15 +259,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   /**
    * This will check to see if the messages list is anchored to the bottom of the panel and if so, ensure that the
-   * list is still scrolled to the bottom.
+   * list is still scrolled to the bottom. It will also run doAutoScroll to ensure proper scrolling behavior
+   * when the window is resized.
    */
   public onResize = () => {
+    this.renderscrollDownNotification();
     if (this.props.messageState.isScrollAnchored) {
       const element = this.messagesContainerWithScrollingRef.current;
       if (element) {
         element.scrollTop = element.scrollHeight;
       }
     }
+
+    // Run doAutoScroll when the window is resized to maintain proper scroll position
+    // This is important for workspace functionality
+    this.doAutoScroll();
   };
 
   /**
@@ -327,30 +339,43 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         debugAutoScroll("[doAutoScroll] isLoading visible", isLoadingCounter);
       } else {
         /**
-         * Determines if the message should be scrolled to. The last user message should be scrolled to by default.
-         * However, the last bot message should be scrolled to if there is no user message that can be scrolled to.
+         * Determines if the message should be scrolled to. By default, response messages should be scrolled to,
+         * and request messages should not be scrolled to (inverse of previous behavior).
+         * Special cases:
+         * 1. If a response has history.silent=true, it should not be scrolled to
+         * 2. If a message is from history, we should always scroll to it if possible
          */
         const shouldScrollToMessage = (
           localItem: LocalMessageItem,
           message: Message,
         ) => {
-          if (isResponse(message)) {
-            const messageRequest = allMessagesByID[
-              message?.request_id
-            ] as MessageRequest;
-            // If the request for this response was silent, then scroll to it instead of scrolling to where the
-            // silent user message would be. But don't do this if it's an empty message (which happens with a
-            // skip_use_input message from an extension).
-            return (
-              messageRequest?.history?.silent &&
-              messageRequest.input?.text !== ""
-            );
+          // Special case: If message is from history, we should scroll to it regardless of type
+          if (message?.ui_state_internal?.from_history) {
+            return true;
           }
 
-          return isRequest(message);
+          if (isRequest(message)) {
+            // For regular request messages, return false (inverse of previous behavior)
+            return false;
+          }
+
+          if (isResponse(message)) {
+            this.renderscrollDownNotification();
+            // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
+            // then we should return false
+            if (message?.history?.silent) {
+              return false;
+            }
+            // For regular response messages, return true (inverse of previous behavior)
+            return true;
+          }
+
+          // Default case - no change in behavior
+          return false;
         };
-        // Iterate backwards until we find the last message to scroll to. By default, the user's last message should be
-        // scrolled to. However, if the user's message was silent, the last response should be scrolled to.
+        // Iterate backwards until we find the last message to scroll to. By default, response messages should be
+        // scrolled to (not request messages). However, if a response has history.silent=true, it should not be scrolled to.
+        // If all messages are not scrollable, we'll default to the bottom of the conversation.
         let messageIndex = localMessageItems.length - 1;
         let localItem = localMessageItems[messageIndex];
         let lastScrollableMessageComponent: MessageClass = this.messageRefs.get(
@@ -458,7 +483,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     ) {
       // The top of the element is above the fold or the element doesn't fully fit. Scroll it so its top is at the top
       // of the scroll panel.
-      doScrollElement(scrollElement, topDistanceFromTop, 0);
+      doScrollElement(scrollElement, topDistanceFromTop, 0, false);
     } else if (
       bottomDistanceFromTop >
       scrollElement.scrollTop + scrollElement.offsetHeight
@@ -468,6 +493,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
         0,
+        false,
       );
     }
   };
@@ -487,9 +513,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * message, this will scroll the first message to the top of the message window.
    *
    * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to true.
+   * @param animate Whether or not the scroll should be animated. Defaults to false.
    */
-  public doScrollToMessage(messageID: string, animate = true) {
+  public doScrollToMessage(messageID: string, animate = false) {
     try {
       // Find the component that has the message we want to scroll to.
       const { localMessageItems } = this.props;
@@ -509,6 +535,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const setScrollTop = panelComponent.ref.current.offsetTop;
 
         // Do the scrolling.
+        // Always set animate to false as per requirements
         doScrollElement(scrollElement, setScrollTop, 0, animate);
 
         // Update the scroll anchor setting based on this new position.
@@ -518,6 +545,31 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
     }
+  }
+
+  /**
+   * Calculates if there are any messages at the bottom out of the scroll view of the container.
+   * The result determines if the user should be told if they need to scroll down to view more
+   * messages or not.
+   */
+  public checkMessagesOutOfView() {
+    const scrollElement = this.messagesContainerWithScrollingRef.current;
+    const remainingPixelsToScroll =
+      scrollElement.scrollHeight -
+      scrollElement.scrollTop -
+      scrollElement.clientHeight;
+    return remainingPixelsToScroll > 60;
+  }
+
+  /**
+   * Updates the state after checking if there are any unread messages in the chat view
+   */
+  public renderscrollDownNotification() {
+    const shouldRender = this.checkMessagesOutOfView();
+    this.setState({
+      scrollHandleHasFocus: false,
+      scrollDown: shouldRender,
+    });
   }
 
   /**
@@ -800,8 +852,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           languagePack[labelKey] || languagePack.messages_scrollHandle
         }
         onClick={onClick}
-        onFocus={() => this.setState({ scrollHandleHasFocus: true })}
-        onBlur={() => this.setState({ scrollHandleHasFocus: false })}
+        onFocus={() =>
+          this.setState({ scrollHandleHasFocus: true, ...this.state })
+        }
+        onBlur={() =>
+          this.setState({ scrollHandleHasFocus: false, ...this.state })
+        }
       />
     );
   }
@@ -894,7 +950,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
     const { isLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { scrollHandleHasFocus } = this.state;
+    const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = this.getMessageIDForUserInput();
 
@@ -926,7 +982,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             id={`WAC__messages${serviceManager.namespace.suffix}`}
             className="WAC__messages"
             ref={this.messagesContainerWithScrollingRef}
-            onScroll={() => this.checkScrollAnchor()}
+            onScroll={() => {
+              this.checkScrollAnchor();
+              this.renderscrollDownNotification();
+            }}
           >
             {this.renderScrollHandle(true)}
             {regularMessages}
@@ -940,6 +999,17 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
+            {scrollDown && (
+              <button
+                type="button"
+                className="WAC__messages--scrollDownIndicator"
+                onClick={() => this.doAutoScroll({ scrollToBottom: 0 })}
+              >
+                <div className="WAC__messages--scrollDownIndicatorIcon">
+                  <ArrowDown />
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
