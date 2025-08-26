@@ -4,19 +4,6 @@ The Carbon AI Chat is a rich and extendable chat component that IBM products use
 
 This project enables the Carbon and watsonx teams to focus on core chat behaviors, allowing other teams to enhance their product's unique extensibility.
 
-### Accessing the Github Repo (IBM Only)
-
-The repository for this work is located at [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat). This repository includes code examples and language string translations in addition to source code and issue boards.
-
-Follow these steps to request access:
-
-_Sometimes the first time the SSO session doesn't correctly get updated with the new permissions until you shutdown your browser completely and log back in._
-
-1. Visit [AccessHub](https://ibm-support.saviyntcloud.com/ECMv6/request/requestHome) and request access to "Carbon Design System internal repository access"
-2. After receiving confirmation of access, onboard your public GitHub account to IBM's Github Enterprise Cloud (GHEC) account at [https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/](https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/)
-3. See [https://github.com/orgs/carbon-design-system/sso](https://github.com/orgs/carbon-design-system/sso) to initiate SSO login to the Github Enterprise Cloud
-4. See [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat) to validate access.
-
 ### Installing the Carbon AI Chat
 
 You can install the Carbon AI Chat into your application in multiple ways.
