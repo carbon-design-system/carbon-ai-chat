@@ -52,7 +52,7 @@ for this background, that works with chat, and we can remove this override. */
 }
 
 /* TODO, we just need a custom version of the tile component. */
-.cds--tile {
+cds-custom-tile {
   border: solid 1px theme.$chat-bubble-border;
   border-radius: chatTheme.$CARD-border-radius;
 }
