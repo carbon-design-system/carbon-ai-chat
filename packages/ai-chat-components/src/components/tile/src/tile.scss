@@ -16,10 +16,10 @@ $css--plex: true !default;
 // tile styles
 :host(#{$prefix}-tile) {
   display: block;
-  border-radius: layout.$spacing-03;
-  border: solid 1px theme.$chat-bubble-border;
-  background-color: theme.$layer;
   overflow: hidden;
+  border: solid 1px theme.$chat-bubble-border;
+  border-radius: layout.$spacing-03;
+  background-color: theme.$layer;
 }
 
 // tile-body styles
@@ -27,8 +27,8 @@ $css--plex: true !default;
   @extend :host(#{$cds-prefix}-tile);
 
   display: block;
-  border-radius: layout.$spacing-03;
   padding: layout.$spacing-05;
+  border-radius: layout.$spacing-03;
 }
 
 // tile-footer styles
