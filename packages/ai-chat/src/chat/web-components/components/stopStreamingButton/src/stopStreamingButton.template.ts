@@ -9,10 +9,9 @@
 
 import "@carbon/web-components/es/components/icon-button/index.js";
 
-import { toString } from "@carbon/icon-helpers";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import StopFilled16 from "@carbon/icons/es/stop--filled/16.js";
 import { html } from "lit";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 import { CSS_CLASS_PREFIX } from "../../../settings";
 import { StopStreamingButtonElement } from "./StopStreamingButtonElement";
@@ -20,8 +19,6 @@ import {
   ButtonKindEnum,
   ButtonSizeEnum,
 } from "../../../../../types/utilities/carbonTypes";
-
-const StopFilled16svg = toString(StopFilled16);
 
 export function stopStreamingButtonTemplate({
   label,
@@ -41,7 +38,7 @@ export function stopStreamingButtonTemplate({
       <span
         class="${disabled ? `${CSS_CLASS_PREFIX}-stop-icon` : ""}"
         slot="icon"
-        >${unsafeSVG(StopFilled16svg)}</span
+        >${iconLoader(StopFilled16)}</span
       >
       <span slot="tooltip-content">${label}</span>
     </cds-icon-button>

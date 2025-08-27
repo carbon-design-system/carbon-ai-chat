@@ -10,22 +10,16 @@
 import "@carbon/web-components/es/components/textarea/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 
-import { toString } from "@carbon/icon-helpers";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ThumbsDown16 from "@carbon/icons/es/thumbs-down/16.js";
 import ThumbsDownFilled16 from "@carbon/icons/es/thumbs-down--filled/16.js";
 import ThumbsUp16 from "@carbon/icons/es/thumbs-up/16.js";
 import ThumbsUpFilled16 from "@carbon/icons/es/thumbs-up--filled/16.js";
 import { html, nothing } from "lit";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 import { CSS_CLASS_PREFIX } from "../../../settings";
 import { FeedbackButtonsElement } from "./FeedbackButtonsElement.js";
 import { enLanguagePack } from "../../../../../types/instance/apiTypes";
-
-const ThumbsDown16svg = toString(ThumbsDown16);
-const ThumbsDownFilled16svg = toString(ThumbsDownFilled16);
-const ThumbsUp16svg = toString(ThumbsUp16);
-const ThumbsUpFilled16svg = toString(ThumbsUpFilled16);
 
 function feedbackButtonsElementTemplate(
   customElementClass: FeedbackButtonsElement,
@@ -61,9 +55,7 @@ function feedbackButtonsElementTemplate(
       @click="${() => onClick(true)}"
     >
       <span slot="icon"
-        >${unsafeSVG(
-          isPositiveSelected ? ThumbsUpFilled16svg : ThumbsUp16svg,
-        )}</span
+        >${iconLoader(isPositiveSelected ? ThumbsUpFilled16 : ThumbsUp16)}</span
       >
       <span slot="tooltip-content"
         >${positiveLabel || enLanguagePack.feedback_positiveLabel}</span
@@ -84,8 +76,8 @@ function feedbackButtonsElementTemplate(
       @click="${() => onClick(false)}"
     >
       <span slot="icon"
-        >${unsafeSVG(
-          isNegativeSelected ? ThumbsDownFilled16svg : ThumbsDown16svg,
+        >${iconLoader(
+          isNegativeSelected ? ThumbsDownFilled16 : ThumbsDown16,
         )}</span
       >
       <span slot="tooltip-content"

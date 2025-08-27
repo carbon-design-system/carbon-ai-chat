@@ -46,12 +46,11 @@
     "**/web-components/**/*.js"
   ],
   "devDependencies": {
-    "@carbon/icon-helpers": "^10.60.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/react": "^1.68.0",
     "@carbon/styles": "^1.88.0",
     "@carbon/themes": "^11.58.0",
-    "@carbon/web-components": "^2.36.0",
+    "@carbon/web-components": "^2.37.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
@@ -95,12 +94,11 @@
     "typedoc": "^0.28.0"
   },
   "peerDependencies": {
-    "@carbon/icon-helpers": ">=10.53.0 <11.0.0",
     "@carbon/icons": ">=11.53.0 <12.0.0",
     "@carbon/react": ">=1.68.0 <2.0.0",
     "@carbon/styles": ">=1.68.0 <2.0.0",
     "@carbon/themes": ">=11.53.0 <12.0.0",
-    "@carbon/web-components": ">=2.36.0 <3.0.0",
+    "@carbon/web-components": ">=2.37.0 <3.0.0",
     "@floating-ui/react": ">=0.25.0 <1.0.0",
     "classnames": ">=2.5.0 <3.0.0",
     "lit": ">=3.1.0 <4.0.0",
