@@ -55,7 +55,7 @@ export default {
 
 export const Default = {
   args: {
-    maxWidth: "unset",
+    maxWidth: "sm",
     layerLevel: undefined,
   },
 
