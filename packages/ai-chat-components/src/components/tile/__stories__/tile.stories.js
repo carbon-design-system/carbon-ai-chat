@@ -34,19 +34,18 @@ export default {
       description:
         "Sets the max width of the story container. This is a story-only control and does not affect the component itself.",
     },
-layerLevel: {
-  control: {
-    type: "select",
-  },
-  options: [undefined, "0", "1", "2"],
-  labels: {
-    undefined: "Unset",
-    "0": "Level 0",
-    "1": "Level 1",
-    "2": "Level 2",
-  },
-}
-
+    layerLevel: {
+      control: {
+        type: "select",
+      },
+      options: [undefined, "0", "1", "2"],
+      labels: {
+        undefined: "Unset",
+        0: "Level 0",
+        1: "Level 1",
+        2: "Level 2",
+      },
+    },
   },
   decorators: [
     (story, context) =>
@@ -57,25 +56,25 @@ layerLevel: {
 export const Default = {
   args: {
     maxWidth: "unset",
-    layerLevel: undefined
+    layerLevel: undefined,
   },
 
   render: (args) => html`
-  <style>
-    .cds-aichat-tile-body{
-      background-color: red;
-      padding: 1rem;
-    }
-    .example-actions{
-      display: flex;
-    }
-    .example-actions *{
-      width: 100%;
-    }
-    h5{
-      margin-bottom: 12px;
-    }
-  </style>
+    <style>
+      .cds-aichat-tile-body {
+        background-color: red;
+        padding: 1rem;
+      }
+      .example-actions {
+        display: flex;
+      }
+      .example-actions * {
+        width: 100%;
+      }
+      h5 {
+        margin-bottom: 12px;
+      }
+    </style>
     <cds-aichat-tile layer-level=${args.layerLevel}>
       <cds-aichat-tile-body>
         <h5>Carbon Design System Component</h5>

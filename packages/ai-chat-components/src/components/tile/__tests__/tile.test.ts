@@ -28,7 +28,7 @@ import Tile from "../src/tile.js";
 describe("tile", function () {
   it("should render with cds-tile minimum attributes", async () => {
     const el = await fixture<Tile>(
-      html`<cds-aichat-tile> tile </cds-aichat-tile>`
+      html`<cds-aichat-tile> tile </cds-aichat-tile>`,
     );
 
     await expect(el).dom.to.equalSnapshot();
