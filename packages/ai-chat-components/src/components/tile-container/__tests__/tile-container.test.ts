@@ -16,10 +16,10 @@ import Tile from "../src/tile-container.js";
  * Documentation on writing tests, plugins, and commands
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
-describe("tile", function () {
-  it("should render with cds-tile minimum attributes", async () => {
+describe("aichat tile", function () {
+  it("should render cds-aichat-tile-container in DOM", async () => {
     const el = await fixture<Tile>(
-      html`<cds-aichat-tile> tile </cds-aichat-tile>`
+      html`<cds-aichat-tile-container> tile </cds-aichat-tile-container>`,
     );
 
     await expect(el).dom.to.equalSnapshot();

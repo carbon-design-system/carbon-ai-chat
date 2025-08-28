@@ -9,8 +9,8 @@
 
 export const snapshots = {};
 
-snapshots["extended-tile should render with cds-tile minimum attributes"] =
-  `<cds-aichat-tile>
+snapshots["should render cds-aichat-tile-container in DOM"] =
+  `<cds-aichat-tile-container>
     tile
-  </cds-aichat-tile>`;
+  </cds-aichat-tile-container>`;
 /* end snapshot extended-tile should render with cds-tile minimum attributes */
