@@ -14,7 +14,7 @@ import "@carbon/web-components/es/components/tile/clickable-tile.js";
 import { html } from "lit";
 
 export default {
-  title: "Components/tile-container",
+  title: "Components/Tile Container",
   argTypes: {
     maxWidth: {
       control: "radio",
