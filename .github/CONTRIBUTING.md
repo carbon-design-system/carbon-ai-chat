@@ -95,6 +95,15 @@ git pull origin main
 git checkout -b <your_branch_name>
 ```
 
+Note: Create a new branch for each issue or PR. Before creating a branch, always fetch the latest changes from upstream/main and merge them into your local main. This keeps your main branch—and your new branch—up to date.
+
+```sh
+git checkout main
+git fetch upstream
+git merge upstream/main
+git checkout -b <your_branch_name>
+```
+
 #### Build and start the development server
 
 From the root directory, run the following commands:
