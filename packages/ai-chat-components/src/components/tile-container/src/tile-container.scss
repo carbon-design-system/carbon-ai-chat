@@ -20,7 +20,7 @@ $css--plex: true !default;
   display: block;
   overflow: hidden;
   border: solid 1px theme.$chat-bubble-border;
-  border-radius: layout.$spacing-03; // container always has rounded corners
+  border-radius: layout.$spacing-03;
   background-color: theme.$layer;
 
   // only one slotted child → round all corners
@@ -34,16 +34,16 @@ $css--plex: true !default;
   ::slotted(cds-clickable-tile:first-child)::part(link),
   ::slotted(cds-tile:first-child)::part(link),
   ::slotted(.footer:first-child) {
-    border-start-start-radius: layout.$spacing-03;
     border-start-end-radius: layout.$spacing-03;
+    border-start-start-radius: layout.$spacing-03;
   }
 
   // last slotted child → round bottom corners
   ::slotted(cds-clickable-tile:last-child)::part(link),
   ::slotted(cds-tile:last-child)::part(link),
   ::slotted(.footer:last-child) {
-    border-end-start-radius: layout.$spacing-03;
     border-end-end-radius: layout.$spacing-03;
+    border-end-start-radius: layout.$spacing-03;
   }
 
   // middle slotted children → no radius
@@ -53,16 +53,3 @@ $css--plex: true !default;
     border-radius: 0;
   }
 }
-
-// tile style overrides
-::slotted(cds-tile) {
-  // background-color: red;
-  // border-radius: layout.$spacing-03;
-  // border: solid 1px theme.$chat-bubble-border;
-  // overflow: hidden;
-}
-// display: block;
-//
-//
-//
-//
