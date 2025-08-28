@@ -18,7 +18,7 @@ class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
 
   render() {
-    return html`<slot part="link"></slot>`;
+    return html`<slot></slot>`;
   }
 }
 
