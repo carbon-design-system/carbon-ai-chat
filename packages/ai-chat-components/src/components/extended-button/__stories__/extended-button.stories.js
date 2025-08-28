@@ -39,6 +39,6 @@ export const Default = {
    * @returns {TemplateResult<1>}
    */
   render: () => html`
-    <prefix-extended-button>Extended button</prefix-extended-button>
+    <cds-aichat-extended-button>Extended button</cds-aichat-extended-button>
   `,
 };
