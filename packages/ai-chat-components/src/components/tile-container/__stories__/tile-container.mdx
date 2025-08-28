@@ -1,0 +1,39 @@
+import { ArgTypes, Markdown, Meta } from "@storybook/blocks";
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as TileContainerStories from "./tile-container.stories";
+
+<Meta of={TileContainerStories} />
+
+# Extended Button
+
+The `cds-aichat-tile-container` wraps the Carbon Design System's [Tile](https://web-components.carbondesignsystem.com/?path=/docs/components-tile--overview) component to apply AI Chat styles.
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### JS (via import)
+
+```javascript
+import "@carbon/web-components/es/components/tile-container/index.js";
+```
+
+<Markdown>{`${cdnJs({ components: ["tile"] })}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+### HTML
+
+```html
+<cds-aichat-tile-container>
+  <cds-tile> ... </cds-tile>
+  <div class="footer">
+    <cds-button>Action 1</cds-button>
+  </div>
+</cds-aichat-tile-container>
+```
+
+## `<cds-aichat-tile-container>` attributes, properties and events
+
+Note: This component is purely a styling parent, and does not bring in any attributes
+
+<ArgTypes of="cds-aichat-tile-container" />
