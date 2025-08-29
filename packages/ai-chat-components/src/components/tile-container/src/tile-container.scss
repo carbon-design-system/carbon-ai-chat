@@ -15,41 +15,11 @@ $css--plex: true !default;
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/web-components/scss/components/tile/tile";
 
-// tile container styles
+/* tile container styles */
 :host(#{$prefix}-tile-container) {
   display: block;
   overflow: hidden;
   border: solid 1px theme.$chat-bubble-border;
   border-radius: layout.$spacing-03;
   background-color: theme.$layer;
-
-  // only one slotted child → round all corners
-  ::slotted(cds-clickable-tile:only-child)::part(link),
-  ::slotted(cds-tile:only-child)::part(link),
-  ::slotted(.footer:only-child) {
-    border-radius: layout.$spacing-03;
-  }
-
-  // first slotted child → round top corners
-  ::slotted(cds-clickable-tile:first-child)::part(link),
-  ::slotted(cds-tile:first-child)::part(link),
-  ::slotted(.footer:first-child) {
-    border-start-end-radius: layout.$spacing-03;
-    border-start-start-radius: layout.$spacing-03;
-  }
-
-  // last slotted child → round bottom corners
-  ::slotted(cds-clickable-tile:last-child)::part(link),
-  ::slotted(cds-tile:last-child)::part(link),
-  ::slotted(.footer:last-child) {
-    border-end-end-radius: layout.$spacing-03;
-    border-end-start-radius: layout.$spacing-03;
-  }
-
-  // middle slotted children → no radius
-  ::slotted(cds-clickable-tile:not(:first-child, :last-child))::part(link),
-  ::slotted(cds-tile:not(:first-child, :last-child))::part(link),
-  ::slotted(.footer:not(:first-child, :last-child)) {
-    border-radius: 0;
-  }
 }
