@@ -16,7 +16,6 @@ import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { AppState } from "../../../../../types/state/AppState";
 import { HasClassName } from "../../../../../types/utilities/HasClassName";
 import { ClickableImage } from "../util/ClickableImage";
-import { ButtonItemKind } from "../../../../../types/messaging/Messages";
 import { ThemeType } from "../../../../../types/config/PublicConfig";
 
 interface BaseButtonComponentProps extends HasClassName {
@@ -39,7 +38,7 @@ interface BaseButtonComponentProps extends HasClassName {
    * The button style.
    */
   // eslint-disable-next-line react/no-unused-prop-types
-  kind?: ButtonItemKind;
+  kind?: BUTTON_KIND | "LINK";
 
   /**
    * The url to visit when the button is clicked.
@@ -122,20 +121,11 @@ function BaseButtonItemComponent({
   );
 }
 
-function getButtonKind(style: ButtonItemKind): BUTTON_KIND {
-  switch (style) {
-    case ButtonItemKind.LINK:
-    case ButtonItemKind.TERTIARY:
-      return "ghost" as BUTTON_KIND;
-    case ButtonItemKind.DEFAULT:
-      return "primary" as BUTTON_KIND;
-    case ButtonItemKind.SECONDARY:
-      return "secondary" as BUTTON_KIND;
-    case ButtonItemKind.DANGER:
-      return "danger" as BUTTON_KIND;
-    default:
-      return "primary" as BUTTON_KIND;
+function getButtonKind(style: BUTTON_KIND | "LINK"): BUTTON_KIND {
+  if (style == "LINK") {
+    return BUTTON_KIND.GHOST;
   }
+  return style;
 }
 
 export { BaseButtonItemComponent };
