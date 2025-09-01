@@ -94,6 +94,16 @@ function BasePanelComponent(
         clickOutsideDeactivates: true,
         returnFocusOnDeactivate: !IS_MOBILE,
         preventScroll: true,
+        initialFocus: () => {
+          const aiChat = document.querySelector("cds-aichat-react");
+          const layer = aiChat?.shadowRoot?.querySelector("cds-layer");
+          return (
+            layer
+              ?.querySelector(".WACHeader__BackButton")
+              ?.shadowRoot?.querySelector("button") ?? document.body
+          );
+        },
+        fallbackFocus: document.body, // still provide a backup
       }}
     >
       <div className={className}>

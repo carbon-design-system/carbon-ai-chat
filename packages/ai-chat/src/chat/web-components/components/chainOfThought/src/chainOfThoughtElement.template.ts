@@ -10,12 +10,11 @@
 import "../../markdownText/cds-aichat-markdown-text";
 import "@carbon/web-components/es/components/inline-loading/index.js";
 
-import { toString } from "@carbon/icon-helpers";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
 import { html } from "lit";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 import { parseUnknownDataToMarkdown } from "../../../../shared/utils/lang/stringUtils";
 import { CSS_CLASS_PREFIX } from "../../../settings";
@@ -43,10 +42,6 @@ interface ChainOfThoughtStepWithToggle extends ChainOfThoughtStep {
   open: boolean;
 }
 
-const ChevronRight16svg = toString(ChevronRight16);
-const CheckmarkFilled16svg = toString(CheckmarkFilled16);
-const ErrorFilled16svg = toString(ErrorFilled16);
-
 /**
  * Returns the correct icon given the status of the step. If there is no status, we assume it is successful.
  */
@@ -66,13 +61,13 @@ function stepStatus(
       return html`<span
         class="${CSS_CLASS_STATUS_PREFIX}--${ChainOfThoughtStepStatus.FAILURE}"
         aria-label="${statusFailedLabelText}"
-        >${unsafeSVG(ErrorFilled16svg)}</span
+        >${iconLoader(ErrorFilled16)}</span
       >`;
     default:
       return html`<span
         class="${CSS_CLASS_STATUS_PREFIX}--${ChainOfThoughtStepStatus.SUCCESS}"
         aria-label="${statusSucceededLabelText}"
-        >${unsafeSVG(CheckmarkFilled16svg)}</span
+        >${iconLoader(CheckmarkFilled16)}</span
       >`;
   }
 }
@@ -173,7 +168,7 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
           <span
             class="${CSS_CLASS_PREFIX}-chain-of-thought-accordion-item-header-chevron"
             ?data-open=${item.open}
-            >${unsafeSVG(ChevronRight16svg)}</span
+            >${iconLoader(ChevronRight16)}</span
           >
           <span
             class="${CSS_CLASS_PREFIX}-chain-of-thought-accordion-item-header-title"
@@ -224,7 +219,7 @@ function chainOfThoughtElementTemplate(
       aria-controls=${_chainOfThoughtPanelID}
     >
       <span class="${CSS_CLASS_PREFIX}-chain-of-thought-button-chevron"
-        >${unsafeSVG(ChevronRight16svg)}</span
+        >${iconLoader(ChevronRight16)}</span
       >
       ${explainabilityText}
     </button>

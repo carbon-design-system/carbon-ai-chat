@@ -114,6 +114,7 @@ function BaseButtonItemComponent({
       rel={url ? "noopener noreferrer" : undefined}
       disabled={disabled}
       onClick={onClick}
+      tab-index="0"
     >
       {renderIcon && <RenderIcon slot="icon" />}
       {text}

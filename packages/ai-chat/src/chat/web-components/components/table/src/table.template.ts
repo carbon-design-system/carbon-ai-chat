@@ -12,21 +12,12 @@ import "@carbon/web-components/es/components/checkbox/index.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 
-import { toString } from "@carbon/icon-helpers";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Download16 from "@carbon/icons/es/download/16.js";
 import { html } from "lit";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { repeat } from "lit-html/directives/repeat.js";
 
 import type { TableElement } from "../cds-aichat-table";
-
-const Download16svg = toString({
-  ...Download16,
-  attrs: {
-    ...Download16.attrs,
-    slot: "icon",
-  },
-});
 
 /**
  * Table view logic.
@@ -54,7 +45,7 @@ function tableTemplate(tableElement: TableElement) {
             ></cds-table-toolbar-search>`
           : ""}
         <cds-button @click=${handleDownload}
-          >${unsafeSVG(Download16svg)}</cds-button
+          >${iconLoader(Download16)}</cds-button
         >
       </cds-table-toolbar-content>
     </cds-table-toolbar>`;
