@@ -7,7 +7,8 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import { Tile, ClickableTile } from "@carbon/react";
+import TileContainer from "../../../../../react/carbon/TileContainer";
 import React, { useState } from "react";
 
 import { useServiceManager } from "../../../../hooks/useServiceManager";
@@ -18,7 +19,6 @@ import {
   CitationCardProps,
   CitationType,
 } from "./CitationCardContent";
-import { CitationClickableCard } from "./CitationClickableCard";
 
 /**
  * Shows a Citation Card that will add an onClick handler to open up content that doesn't fit in the card IF NEEDED.
@@ -42,44 +42,48 @@ function ExpandToPanelCard({
   // contents in the tile. If it can't fit the contents then it needs to be a clickable tile that can expand into a
   // panel.
   const [isExpandable, setIsExpandable] = useState(
-    Boolean(relatedSearchResult?.body),
+    Boolean(relatedSearchResult?.body)
   );
 
   function onViewSourcePanelButtonClick() {
     // If a search result is provided we want to show that in the panel with the citation text highlighted, otherwise
     // just show the citation.
     serviceManager.store.dispatch(
-      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult),
+      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult)
     );
+    onSelectCitation();
   }
 
-  function renderTile(className?: string) {
-    return (
-      <Tile className={className}>
-        <CitationCardContent
-          citation={citation}
-          type={CitationType.EXPAND_IF_NEEDED}
-          setIsExpandable={setIsExpandable}
-          isExpandable={isExpandable}
-        />
-      </Tile>
-    );
+  function handleKeyDown(e: any) {
+    if ([" ", "Enter"].includes(e.key)) {
+      onViewSourcePanelButtonClick?.();
+    }
   }
 
-  if (isExpandable) {
-    return (
-      <CitationClickableCard
-        className={className}
-        title={title}
-        onClick={onViewSourcePanelButtonClick}
-        onSelectCitation={onSelectCitation}
-      >
-        {renderTile()}
-      </CitationClickableCard>
-    );
-  }
-
-  return renderTile(className);
+  const CardContent = (
+    <CitationCardContent
+      citation={citation}
+      type={CitationType.EXPAND_IF_NEEDED}
+      setIsExpandable={setIsExpandable}
+      isExpandable={isExpandable}
+    />
+  );
+  return (
+    <TileContainer>
+      {isExpandable ? (
+        <ClickableTile
+          className={className}
+          title={title}
+          onClick={onViewSourcePanelButtonClick}
+          onKeyDown={handleKeyDown}
+        >
+          {CardContent}
+        </ClickableTile>
+      ) : (
+        <Tile className={className}>{CardContent}</Tile>
+      )}
+    </TileContainer>
+  );
 }
 
 export { ExpandToPanelCard };

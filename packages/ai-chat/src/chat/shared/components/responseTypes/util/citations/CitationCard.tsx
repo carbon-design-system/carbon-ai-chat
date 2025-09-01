@@ -7,7 +7,8 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import { ClickableTile } from "@carbon/react";
+import TileContainer from "../../../../../react/carbon/TileContainer";
 import cx from "classnames";
 import React from "react";
 import { CitationCardContent, CitationType } from "./CitationCardContent";
@@ -52,24 +53,24 @@ function CitationCard({
       "WACCitationCard--url": type === CitationType.URL,
       "WACCitationCard--no-url": type !== CitationType.URL,
     },
-    "WACWidget__textEllipsis",
+    "WACWidget__textEllipsis"
   );
 
   if (type === CitationType.URL) {
     return (
       // eslint-disable-next-line jsx-a11y/control-has-associated-label
-      <a
-        className={className}
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onSelectCitation}
-        onFocus={onSelectCitation}
-      >
-        <Tile>
+      <TileContainer>
+        <ClickableTile
+          className={className}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onSelectCitation}
+          onFocus={onSelectCitation}
+        >
           <CitationCardContent citation={citation} type={type} />
-        </Tile>
-      </a>
+        </ClickableTile>
+      </TileContainer>
     );
   }
 
