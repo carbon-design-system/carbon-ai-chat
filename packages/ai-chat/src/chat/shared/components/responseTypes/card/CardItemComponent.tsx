@@ -8,7 +8,6 @@
  */
 
 import { Tile } from "@carbon/react";
-import TileContainer from "../../../../react/carbon/TileContainer";
 import cx from "classnames";
 import React from "react";
 
@@ -49,23 +48,21 @@ function CardItemComponent(props: CardItemComponentProps) {
   const { ignoreMaxWidth } = props;
   const item = props.localMessageItem.item as CardItem;
   return (
-    <TileContainer>
-      <Tile
-        className={cx("WACCardMessageComponent", {
-          WACMaxWidthSmall:
-            !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
-          WACMaxWidthMedium:
-            !ignoreMaxWidth && item.max_width === WidthOptions.MEDIUM,
-          WACMaxWidthLarge:
-            !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
-        })}
-      >
-        <BodyWithFooterComponent
-          {...props}
-          renderMessageComponent={props.renderMessageComponent}
-        />
-      </Tile>
-    </TileContainer>
+    <Tile
+      className={cx("WACCardMessageComponent", {
+        WACMaxWidthSmall:
+          !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
+        WACMaxWidthMedium:
+          !ignoreMaxWidth && item.max_width === WidthOptions.MEDIUM,
+        WACMaxWidthLarge:
+          !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
+      })}
+    >
+      <BodyWithFooterComponent
+        {...props}
+        renderMessageComponent={props.renderMessageComponent}
+      />
+    </Tile>
   );
 }
 
