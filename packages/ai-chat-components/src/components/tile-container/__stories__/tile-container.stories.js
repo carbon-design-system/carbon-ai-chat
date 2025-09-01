@@ -12,6 +12,7 @@ import "@carbon/web-components/es/components/tile/tile.js";
 import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/tile/clickable-tile.js";
 import { html } from "lit";
+import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Tile Container",
@@ -81,66 +82,8 @@ export const Default = {
 
     return html`
       <style>
-        .footer {
-          display: flex;
-          width: 100%;
-
-          * {
-            width: 100%;
-          }
-        }
-
-        .footer.vertical {
-          flex-direction: column;
-        }
-
-        h5 {
-          margin-bottom: 12px;
-        }
-
-        /* Light DOM styles */
-        /* Tiles border-radius */
-        cds-aichat-tile-container cds-clickable-tile:first-child::part(link),
-        cds-aichat-tile-container cds-tile:first-child::part(link) {
-          border-top-left-radius: 8px;
-          border-top-right-radius: 8px;
-        }
-
-        cds-aichat-tile-container cds-clickable-tile:last-child::part(link),
-        cds-aichat-tile-container cds-tile:last-child::part(link) {
-          border-bottom-left-radius: 8px;
-          border-bottom-right-radius: 8px;
-        }
-
-        cds-aichat-tile-container cds-clickable-tile:only-child::part(link),
-        cds-aichat-tile-container cds-tile:only-child::part(link) {
-          border-radius: 8px;
-        }
-
-        /* Horizontal footer: first button bottom left last button bottom right radius */
-        cds-aichat-tile-container
-          .footer:not(.vertical)
-          cds-button:first-child::part(button) {
-          border-bottom-left-radius: 8px;
-        }
-        cds-aichat-tile-container
-          .footer:not(.vertical)
-          cds-button:last-child::part(button) {
-          border-bottom-right-radius: 8px;
-        }
-
-        /* Vertical footer: last button gets bottom border radius */
-        cds-aichat-tile-container
-          .footer.vertical
-          cds-button:last-child::part(button),
-        cds-aichat-tile-container
-          .footer.vertical
-          cds-button:only-child::part(button) {
-          border-bottom-left-radius: 8px;
-          border-bottom-right-radius: 8px;
-        }
+        ${styles}
       </style>
-
       ${args.useWrapper
         ? html`
             <cds-aichat-tile-container>

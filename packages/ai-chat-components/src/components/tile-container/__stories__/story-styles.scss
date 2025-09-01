@@ -1,0 +1,65 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "@carbon/layout";
+
+.footer {
+  display: flex;
+  width: 100%;
+
+  * {
+    width: 100%;
+  }
+}
+
+.footer.vertical {
+  flex-direction: column;
+}
+
+h5 {
+  margin-bottom: layout.$spacing-04;
+}
+
+/* Light DOM styles */
+/* Tiles border-radius */
+cds-aichat-tile-container cds-clickable-tile:first-child::part(link),
+cds-aichat-tile-container cds-tile:first-child::part(link) {
+  border-top-left-radius: layout.$spacing-03;
+  border-top-right-radius: layout.$spacing-03;
+}
+
+cds-aichat-tile-container cds-clickable-tile:last-child::part(link),
+cds-aichat-tile-container cds-tile:last-child::part(link) {
+  border-bottom-left-radius: layout.$spacing-03;
+  border-bottom-right-radius: layout.$spacing-03;
+}
+
+cds-aichat-tile-container cds-clickable-tile:only-child::part(link),
+cds-aichat-tile-container cds-tile:only-child::part(link) {
+  border-radius: layout.$spacing-03;
+}
+
+/* Horizontal footer: first button bottom left last button bottom right radius */
+cds-aichat-tile-container
+  .footer:not(.vertical)
+  cds-button:first-child::part(button) {
+  border-bottom-left-radius: layout.$spacing-03;
+}
+cds-aichat-tile-container
+  .footer:not(.vertical)
+  cds-button:last-child::part(button) {
+  border-bottom-right-radius: layout.$spacing-03;
+}
+
+/* Vertical footer: last button gets bottom border radius */
+cds-aichat-tile-container .footer.vertical cds-button:last-child::part(button),
+cds-aichat-tile-container .footer.vertical cds-button:only-child::part(button) {
+  border-bottom-left-radius: layout.$spacing-03;
+  border-bottom-right-radius: layout.$spacing-03;
+}
