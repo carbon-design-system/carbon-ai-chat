@@ -11,10 +11,10 @@
 
 .footer {
   display: flex;
-  width: 100%;
+  inline-size: 100%;
 
   * {
-    width: 100%;
+    inline-size: 100%;
   }
 }
 
@@ -30,14 +30,14 @@ h5 {
 /* Tiles border-radius */
 cds-aichat-tile-container cds-clickable-tile:first-child::part(link),
 cds-aichat-tile-container cds-tile:first-child::part(link) {
-  border-top-left-radius: layout.$spacing-03;
-  border-top-right-radius: layout.$spacing-03;
+  border-start-start-radius: layout.$spacing-03;
+  border-start-end-radius: layout.$spacing-03;
 }
 
 cds-aichat-tile-container cds-clickable-tile:last-child::part(link),
 cds-aichat-tile-container cds-tile:last-child::part(link) {
-  border-bottom-left-radius: layout.$spacing-03;
-  border-bottom-right-radius: layout.$spacing-03;
+  border-end-start-radius: layout.$spacing-03;
+  border-end-end-radius: layout.$spacing-03;
 }
 
 cds-aichat-tile-container cds-clickable-tile:only-child::part(link),
@@ -49,17 +49,17 @@ cds-aichat-tile-container cds-tile:only-child::part(link) {
 cds-aichat-tile-container
   .footer:not(.vertical)
   cds-button:first-child::part(button) {
-  border-bottom-left-radius: layout.$spacing-03;
+  border-end-start-radius: layout.$spacing-03;
 }
 cds-aichat-tile-container
   .footer:not(.vertical)
   cds-button:last-child::part(button) {
-  border-bottom-right-radius: layout.$spacing-03;
+  border-end-end-radius: layout.$spacing-03;
 }
 
 /* Vertical footer: last button gets bottom border radius */
 cds-aichat-tile-container .footer.vertical cds-button:last-child::part(button),
 cds-aichat-tile-container .footer.vertical cds-button:only-child::part(button) {
-  border-bottom-left-radius: layout.$spacing-03;
-  border-bottom-right-radius: layout.$spacing-03;
+  border-end-start-radius: layout.$spacing-03;
+  border-end-end-radius: layout.$spacing-03;
 }
