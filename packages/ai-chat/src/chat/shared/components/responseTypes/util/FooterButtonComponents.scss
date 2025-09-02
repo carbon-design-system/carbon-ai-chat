@@ -12,6 +12,10 @@
 .WACFooterButtonComponents {
   display: flex;
   inline-size: 100%;
+
+  > * {
+    flex-grow: 1;
+  }
 }
 
 .WACFooterButtonComponents--column .WACButtonItem:last-child,
