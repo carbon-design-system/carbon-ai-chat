@@ -16,6 +16,7 @@ import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../instance/apiTypes";
+import { BUTTON_KIND } from "@carbon/web-components/es-custom/components/button/defs";
 
 /**
  * This is the main interface that represents a request from a user sent to a back-end.
@@ -1195,7 +1196,7 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: ButtonItemKind;
+  kind?: BUTTON_KIND | "LINK";
 
   /**
    * The type of button.

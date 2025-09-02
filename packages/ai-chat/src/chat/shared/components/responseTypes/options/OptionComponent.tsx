@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { OnChangeData } from "@carbon/react";
 import React, { Component, MouseEvent } from "react";
 import ChatButton, {
   CHAT_BUTTON_KIND,
@@ -29,6 +28,10 @@ import {
   SingleOption,
 } from "../../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../../types/events/eventBusTypes";
+
+interface OnChangeData<ItemType> {
+  selectedItem: ItemType | null;
+}
 
 interface OptionProps extends HasServiceManager, HasLanguagePack {
   /**

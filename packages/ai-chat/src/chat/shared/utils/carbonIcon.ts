@@ -28,7 +28,7 @@ type CarbonIcon = {
   }>;
 };
 
-type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
+export type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
   slot?: string; // Only add this line
 };
 

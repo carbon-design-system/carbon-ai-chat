@@ -14,17 +14,15 @@ import Button, {
   BUTTON_SIZE,
   BUTTON_TOOLTIP_POSITION,
 } from "../../../react/carbon/Button";
-
-import Close from "@carbon/icons-react/es/Close.js";
-import Menu from "@carbon/icons-react/es/Menu.js";
+import CDSMenu from "@carbon/web-components/es/components/menu/menu";
+import MenuItem from "../../../react/carbon/MenuItem";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
-
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import { MenuItem } from "@carbon/react";
+import Menu16 from "@carbon/icons/es/menu/16.js";
+import Close16 from "@carbon/icons/es/close/16.js";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es-custom/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es-custom/components/popover/defs.js";
 import cx from "classnames";
@@ -40,7 +38,7 @@ import React, {
   useState,
 } from "react";
 import { useSelector } from "react-redux";
-
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
 import { ChatHeaderAvatar } from "../../../react/components/chatHeader/ChatHeaderAvatar";
 import { ChatHeaderOverflowMenu } from "../../../react/components/chatHeader/ChatHeaderOverflowMenu";
@@ -63,6 +61,8 @@ import { MinimizeButtonIconType } from "../../../../types/config/PublicConfig";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
 
+const Close = carbonIconToReact(Close16);
+const Menu = carbonIconToReact(Menu16);
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const DownToBottom = carbonIconToReact(DownToBottom16);
 const Restart = carbonIconToReact(Restart16);
@@ -199,7 +199,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const restartButtonRef = useRef<CDSButton>();
   const closeAndRestartButtonRef = useRef<CDSButton>();
   const closeButtonRef = useRef<CDSButton>();
-  const overflowRef = useRef<HTMLDivElement>();
+  const overflowRef = useRef<CDSMenu>();
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);

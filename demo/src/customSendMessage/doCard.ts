@@ -8,12 +8,12 @@
  */
 
 import {
-  ButtonItemKind,
   ButtonItemType,
   ChatInstance,
   MessageResponseTypes,
   WidthOptions,
 } from "@carbon/ai-chat";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs";
 
 function doCard(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -66,7 +66,7 @@ function doCard(instance: ChatInstance) {
           footer: [
             {
               url: "https://ibm.com/",
-              kind: ButtonItemKind.SECONDARY,
+              kind: BUTTON_KIND.SECONDARY,
               label: "View Carbon Docs",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
@@ -122,7 +122,7 @@ function doCard(instance: ChatInstance) {
           footer: [
             {
               url: "https://ibm.com/",
-              kind: ButtonItemKind.SECONDARY,
+              kind: BUTTON_KIND.SECONDARY,
               label: "View Carbon Docs",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
@@ -178,7 +178,7 @@ function doCard(instance: ChatInstance) {
           footer: [
             {
               url: "https://ibm.com/",
-              kind: ButtonItemKind.SECONDARY,
+              kind: BUTTON_KIND.SECONDARY,
               label: "View Carbon Docs",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
@@ -234,7 +234,7 @@ function doCard(instance: ChatInstance) {
           footer: [
             {
               url: "https://ibm.com/",
-              kind: ButtonItemKind.SECONDARY,
+              kind: BUTTON_KIND.SECONDARY,
               label: "View Carbon Docs",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,

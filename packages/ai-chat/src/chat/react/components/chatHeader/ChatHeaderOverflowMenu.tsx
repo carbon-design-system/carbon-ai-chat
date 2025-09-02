@@ -9,6 +9,8 @@
 
 import { CarbonIconType } from "@carbon/icons-react";
 import { Button } from "@carbon/react";
+import CDSMenu from "@carbon/web-components/es/components/menu/menu";
+import { CarbonIconProps } from "../../../shared/utils/carbonIcon";
 import {
   useClick,
   useDismiss,
@@ -16,7 +18,7 @@ import {
   useInteractions,
 } from "@floating-ui/react";
 import cx from "classnames";
-import React, { MutableRefObject, useState } from "react";
+import React, { MutableRefObject, useState, FunctionComponent } from "react";
 
 import { useUUID } from "../../../shared/hooks/useUUID";
 import { HasChildren } from "../../../../types/utilities/HasChildren";
@@ -31,7 +33,7 @@ interface ChatHeaderOverflowMenuProps extends HasClassName, HasChildren {
   /**
    * The carbon icon to render.
    */
-  renderIcon: CarbonIconType;
+  renderIcon: CarbonIconType | FunctionComponent<CarbonIconProps>;
 
   /**
    * The text for the tooltip when you hover over the button.
@@ -56,7 +58,7 @@ interface ChatHeaderOverflowMenuProps extends HasClassName, HasChildren {
   /**
    * The ref of the containing element, used for positioning and alignment of the menu.
    */
-  containerRef?: MutableRefObject<HTMLDivElement>;
+  containerRef?: MutableRefObject<CDSMenu>;
 
   /**
    * The callback function to fire when the menu is opened.
@@ -85,10 +87,10 @@ function ChatHeaderOverflowMenu(props: ChatHeaderOverflowMenuProps) {
       }
     },
   });
-  const {
-    getReferenceProps: getMenuReferenceProps,
-    getFloatingProps: getMenuFloatingProps,
-  } = useInteractions([useClick(menuContext), useDismiss(menuContext)]);
+  const { getReferenceProps: getMenuReferenceProps } = useInteractions([
+    useClick(menuContext),
+    useDismiss(menuContext),
+  ]);
   const id = useUUID();
 
   return (
@@ -112,21 +114,20 @@ function ChatHeaderOverflowMenu(props: ChatHeaderOverflowMenuProps) {
         aria-expanded={isOpen}
         aria-controls={id}
       />
-      <ChatHeaderMenu
-        id={id}
-        label={props.ariaLabel}
-        isOpen={isOpen}
-        target={menuRefs.floating.current}
-        containerRef={props.containerRef}
-        menuAlignment={props.menuAlignment}
-      >
-        {props.children}
-      </ChatHeaderMenu>
       <div
         ref={menuRefs.setFloating}
         className="WACChatHeaderOverflowMenu__HostElement"
-        {...getMenuFloatingProps()}
-      />
+      >
+        <ChatHeaderMenu
+          id={id}
+          label={props.ariaLabel}
+          isOpen={isOpen}
+          target={menuRefs.floating.current}
+          menuAlignment={props.menuAlignment}
+        >
+          {props.children}
+        </ChatHeaderMenu>
+      </div>
     </div>
   );
 }

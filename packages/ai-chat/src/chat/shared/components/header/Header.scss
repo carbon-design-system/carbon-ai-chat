@@ -123,6 +123,10 @@
   position: absolute;
   z-index: 1;
   inset-block-end: -1px;
+
+  cds-menu {
+    position: static;
+  }
 }
 
 .WACHeader__TitleContainer {
