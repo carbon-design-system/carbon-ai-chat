@@ -56,9 +56,9 @@ import {
   ResponseUserProfile,
   UserType,
 } from "../../../types/messaging/Messages";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 import { ResponseUserAvatar } from "../components/ResponseUserAvatar";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
 enum MoveFocusType {
   /**

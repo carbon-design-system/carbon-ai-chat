@@ -16,7 +16,7 @@
 import React from "react";
 
 import { uuid } from "../utils/lang/uuid";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
 interface AvatarProps {
   theme: CarbonTheme;
