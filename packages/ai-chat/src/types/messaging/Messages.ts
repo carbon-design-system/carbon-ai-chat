@@ -794,7 +794,7 @@ interface OptionItem<TUserDefinedType = Record<string, unknown>>
   description?: string;
 
   /**
-   * The preferred type of control to display.
+   * The preferred type of control to display (e.g. button or dropdown).
    */
   preference?: OptionItemPreference;
 }
