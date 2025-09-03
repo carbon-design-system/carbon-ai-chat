@@ -31,10 +31,6 @@
   @include type.type-style("body-01");
 }
 
-.WACConnectToHumanAgent__RequestButton {
-  display: flex;
-}
-
 .WACConnectToHumanAgent__RequestButton svg {
   margin-inline-start: layout.$spacing-07;
 }

@@ -137,21 +137,21 @@ $message-bar-width: 3px;
   margin-inline: 0 layout.$spacing-05;
 }
 
-.WAC__message a:not(.cds--btn) {
+.WAC__message a:not(button) {
   color: theme.$link-primary;
   outline: none;
   text-decoration: none;
 }
 
-.WAC__message a:visited:not(.cds--btn) {
+.WAC__message a:visited:not(button) {
   color: theme.$link-primary;
 }
 
-.WAC__message a:hover:not(.cds--btn) {
+.WAC__message a:hover:not(button) {
   text-decoration: underline;
 }
 
-.WAC__message a:focus:not(.cds--btn) {
+.WAC__message a:focus:not(button) {
   text-decoration: underline;
 }
 

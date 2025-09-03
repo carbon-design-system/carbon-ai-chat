@@ -8,7 +8,7 @@
  */
 
 import Music from "@carbon/icons-react/es/Music.js";
-import { Tile } from "@carbon/react";
+import Tile from "../../../../react/carbon/Tile";
 import cx from "classnames";
 import React, {
   Suspense,

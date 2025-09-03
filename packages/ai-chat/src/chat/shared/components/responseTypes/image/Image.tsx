@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import Tile from "../../../../react/carbon/Tile";
 import cx from "classnames";
 import AISkeletonPlaceholder from "../../../../react/carbon/AISkeletonPlaceholder";
 import SkeletonPlaceholder from "../../../../react/carbon/SkeletonPlaceholder";

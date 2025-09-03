@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Tile } from "@carbon/react";
+import Tile from "../../../../../react/carbon/Tile";
 import React, { useState } from "react";
 
 import { useServiceManager } from "../../../../hooks/useServiceManager";

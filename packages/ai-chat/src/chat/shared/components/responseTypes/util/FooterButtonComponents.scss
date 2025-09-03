@@ -12,28 +12,32 @@
 .WACFooterButtonComponents {
   display: flex;
   inline-size: 100%;
+
+  cds-custom-button.WACButtonItem {
+    flex: auto;
+  }
 }
 
-.WACFooterButtonComponents--column .WACButtonItem:last-child,
-.WACFooterButtonComponents .WACButtonItem:first-child {
+.WACFooterButtonComponents--column .WACButtonItem:last-child::part(button),
+.WACFooterButtonComponents .WACButtonItem:first-child::part(button) {
   border-end-start-radius: chatTheme.$CARD-border-radius;
 }
 
-.WACFooterButtonComponents .WACButtonItem:last-child {
+.WACFooterButtonComponents .WACButtonItem:last-child::part(button) {
   border-end-end-radius: chatTheme.$CARD-border-radius;
 }
 
 .WACWidget--rounded
   .WAC__overlay-panel
   .WACFooterButtonComponents
-  .WACButtonItem:first-child {
+  .WACButtonItem:first-child::part(button) {
   border-end-start-radius: var(--cds-chat-CONTAINER-border-radius);
 }
 
 .WACWidget--rounded
   .WAC__overlay-panel
   .WACFooterButtonComponents
-  .WACButtonItem:last-child {
+  .WACButtonItem:last-child::part(button) {
   border-end-end-radius: var(--cds-chat-CONTAINER-border-radius);
 }
 
@@ -46,11 +50,11 @@
   )
   .WAC__overlay-panel
   .WACFooterButtonComponents {
-  .WACButtonItem:first-child {
+  .WACButtonItem:first-child::part(button) {
     border-end-start-radius: 0;
   }
 
-  .WACButtonItem:last-child {
+  .WACButtonItem:last-child::part(button) {
     border-end-end-radius: 0;
   }
 }
@@ -62,7 +66,7 @@
 .WACWidget--rounded
   .WAC__overlay-panel
   .WACFooterButtonComponents.WACFooterButtonComponents--column
-  .WACButtonItem:last-child {
+  .WACButtonItem:last-child::part(button) {
   border-end-end-radius: var(--cds-chat-CONTAINER-border-radius);
   border-end-start-radius: var(--cds-chat-CONTAINER-border-radius);
 }
@@ -70,9 +74,9 @@
 .WACWidget__animationContainer--withBrandingBanner
   .WAC__overlay-panel
   .WACFooterButtonComponents--column
-  .WACButtonItem.WACButtonItem:last-child,
+  .WACButtonItem.WACButtonItem:last-child::part(button),
 .WACFooterButtonComponents.WACFooterButtonComponents--column
-  .WACButtonItem.WACButtonItem:not(:last-child) {
+  .WACButtonItem.WACButtonItem:not(:last-child::part(button)) {
   border-end-end-radius: 0;
   border-end-start-radius: 0;
 }

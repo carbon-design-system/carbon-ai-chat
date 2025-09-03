@@ -12,7 +12,7 @@ import Headset16 from "@carbon/icons/es/headset/16.js";
 import HelpDesk16 from "@carbon/icons/es/help-desk/16.js";
 import Logout16 from "@carbon/icons/es/logout/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import { Tile } from "@carbon/react";
+import Tile from "../../../../react/carbon/Tile";
 import Button from "../../../../react/carbon/Button";
 import React, { ReactNode, useState } from "react";
 
