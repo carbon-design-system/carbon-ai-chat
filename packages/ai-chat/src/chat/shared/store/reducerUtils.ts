@@ -33,8 +33,11 @@ import {
 } from "../../../types/config/LauncherConfig";
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
-import { LayoutConfig, ThemeType } from "../../../types/config/PublicConfig";
+import {
+  CarbonTheme,
+  LayoutConfig,
+  ThemeType,
+} from "../../../types/config/PublicConfig";
 import { LocalMessageUIState } from "../../../types/messaging/LocalMessageItem";
 import { Message } from "../../../types/messaging/Messages";
 

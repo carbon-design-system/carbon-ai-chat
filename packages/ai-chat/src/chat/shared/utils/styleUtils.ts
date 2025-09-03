@@ -21,7 +21,13 @@ import {
   CarbonTheme,
   WhiteLabelTheme,
 } from "../../../types/config/PublicConfig";
-import { CarbonThemeClassNames } from "../../../types/utilities/carbonTypes";
+
+enum CarbonThemeClassNames {
+  WHITE = "cds--white",
+  G10 = "cds--g10",
+  G90 = "cds--g90",
+  G100 = "cds--g100",
+}
 
 // The prefix that is added to each CSS variable in the application.
 const CSS_VAR_PREFIX = "--cds-";

@@ -6,9 +6,6 @@
  */
 
 @use "sass:meta";
-@use "@carbon/styles/scss/config" with (
-  $css--font-face: false
-);
 @use "@carbon/styles/scss/layout";
 
 :host {

@@ -50,9 +50,9 @@ import MessageComponent, {
   MessageClass,
   MoveFocusType,
 } from "./MessageComponent";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
 const DEBUG_AUTO_SCROLL = false;
 

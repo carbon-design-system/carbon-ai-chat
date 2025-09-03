@@ -1221,13 +1221,9 @@ class MainWindow
     /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
     return (
       <FocusTrap active={trapActive}>
-        <Layer level={shouldUseLayer ? 1 : 0}>
+        <Layer className="WACWidget__Layer" level={shouldUseLayer ? 1 : 0}>
           <div
-            className={cx(
-              "WACMainWindow",
-              "WACWidget__FocusTrapContainer",
-              ...extraClassNames,
-            )}
+            className={cx("WACMainWindow", ...extraClassNames)}
             ref={this.mainWindowRef}
           >
             {showGlass && <div className="WACWidget__FocusTrapGlass" />}

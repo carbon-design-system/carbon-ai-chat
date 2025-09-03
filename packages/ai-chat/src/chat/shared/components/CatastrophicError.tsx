@@ -24,9 +24,9 @@ import { ErrorMessageDark } from "./ErrorMessageDark";
 import { ErrorMessageLight } from "./ErrorMessageLight";
 import { BotHeader } from "./header/BotHeader";
 import RichText from "./responseTypes/util/RichText";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 import { OverlayPanelName } from "./OverlayPanel";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
 const Restart = carbonIconToReact(Restart16);
 

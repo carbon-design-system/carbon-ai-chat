@@ -24,8 +24,11 @@ import type {
 } from "../instance/ChatInstance";
 import type { CornersType } from "../../chat/shared/utils/constants";
 import type { AppConfig } from "./AppConfig";
-import type { CarbonTheme } from "../utilities/carbonTypes";
-import type { ThemeType, WhiteLabelTheme } from "../config/PublicConfig";
+import type {
+  CarbonTheme,
+  ThemeType,
+  WhiteLabelTheme,
+} from "../config/PublicConfig";
 import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";

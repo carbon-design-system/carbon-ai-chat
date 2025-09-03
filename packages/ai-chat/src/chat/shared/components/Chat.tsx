@@ -46,9 +46,9 @@ import {
   ChatHeaderAvatarConfig,
   InstanceInputElement,
 } from "../../../types/instance/ChatInstance";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { LanguagePack } from "../../../types/instance/apiTypes";
 import { OverlayPanelName } from "./OverlayPanel";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
 interface ChatProps extends HasServiceManager, HasIntl {
   languagePack: LanguagePack;

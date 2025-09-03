@@ -16,9 +16,9 @@ import { html } from "lit";
 import { CSS_CLASS_PREFIX } from "../../../settings";
 import { StopStreamingButtonElement } from "./StopStreamingButtonElement";
 import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../../types/utilities/carbonTypes";
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/web-components/es/components/button/defs.js";
 
 export function stopStreamingButtonTemplate({
   label,
@@ -30,8 +30,8 @@ export function stopStreamingButtonTemplate({
     <cds-icon-button
       class="${CSS_CLASS_PREFIX}-stop-streaming-button"
       align="${tooltipAlignment}"
-      kind="${ButtonKindEnum.GHOST}"
-      size="${ButtonSizeEnum.SMALL}"
+      kind="${BUTTON_KIND.GHOST}"
+      size="${BUTTON_SIZE.SMALL}"
       ?disabled=${disabled}
       @click="${onClick}"
     >

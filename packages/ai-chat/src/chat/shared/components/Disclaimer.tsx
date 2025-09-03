@@ -24,9 +24,8 @@ import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
 import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
-import { CarbonTheme } from "../../../types/utilities/carbonTypes";
 import { OverlayPanelName } from "./OverlayPanel";
-import { ThemeType } from "../../../types/config/PublicConfig";
+import { CarbonTheme, ThemeType } from "../../../types/config/PublicConfig";
 
 interface DisclaimerProps {
   onAcceptDisclaimer: () => void;

@@ -8,7 +8,13 @@
  */
 
 import FocusTrap from "focus-trap-react";
-import React, { Ref, useImperativeHandle, useRef } from "react";
+import React, {
+  Ref,
+  useImperativeHandle,
+  useRef,
+  useEffect,
+  useState,
+} from "react";
 import { useSelector } from "react-redux";
 
 import {
@@ -86,24 +92,51 @@ function BasePanelComponent(
 
   // Reuse the imperative handles from the header.
   useImperativeHandle(ref, () => headerRef.current);
+  const [focusTrapActive, setFocusTrapActive] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFocusTrapActive(false);
+      return undefined;
+    }
+    setFocusTrapActive(true);
+    const timer = setTimeout(() => {
+      try {
+        const aiChat = document.querySelector("cds-aichat-react");
+        const layer = aiChat?.shadowRoot?.querySelector("cds-layer");
+        const backButtonHost = layer?.querySelector(".WACHeader__BackButton");
+        const innerButton = backButtonHost?.shadowRoot?.querySelector(
+          "button",
+        ) as HTMLElement;
+        if (innerButton && innerButton.offsetParent !== null) {
+          innerButton.focus();
+        }
+      } catch (error) {
+        console.warn("Manual focus failed:", error);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   return (
     <FocusTrap
-      active={isOpen}
+      active={focusTrapActive}
       focusTrapOptions={{
         clickOutsideDeactivates: true,
         returnFocusOnDeactivate: !IS_MOBILE,
         preventScroll: true,
-        initialFocus: () => {
+        tabbableOptions: {
+          getShadowRoot: true,
+        },
+        fallbackFocus: () => {
           const aiChat = document.querySelector("cds-aichat-react");
           const layer = aiChat?.shadowRoot?.querySelector("cds-layer");
-          return (
-            layer
-              ?.querySelector(".WACHeader__BackButton")
-              ?.shadowRoot?.querySelector("button") ?? document.body
-          );
+          const backButtonHost = layer?.querySelector(".WACHeader__BackButton");
+          const innerButton =
+            backButtonHost?.shadowRoot?.querySelector("button");
+          return innerButton;
         },
-        fallbackFocus: document.body, // still provide a backup
       }}
     >
       <div className={className}>

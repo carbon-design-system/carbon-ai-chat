@@ -8,7 +8,6 @@
  */
 
 import { CarbonIconType } from "@carbon/icons-react";
-import { Button } from "@carbon/react";
 import CDSMenu from "@carbon/web-components/es/components/menu/menu";
 import { CarbonIconProps } from "../../../shared/utils/carbonIcon";
 import {
@@ -24,10 +23,11 @@ import { useUUID } from "../../../shared/hooks/useUUID";
 import { HasChildren } from "../../../../types/utilities/HasChildren";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { ChatHeaderMenu } from "./ChatHeaderMenu";
-import {
-  ButtonKindEnum,
-  ButtonSizeEnum,
-} from "../../../../types/utilities/carbonTypes";
+import Button, {
+  BUTTON_SIZE,
+  BUTTON_TOOLTIP_POSITION,
+  BUTTON_KIND,
+} from "../../carbon/Button";
 
 interface ChatHeaderOverflowMenuProps extends HasClassName, HasChildren {
   /**
@@ -53,7 +53,7 @@ interface ChatHeaderOverflowMenuProps extends HasClassName, HasChildren {
   /**
    * The direction of the tooltip for icon-only buttons.
    */
-  tooltipPosition?: string;
+  tooltipPosition?: BUTTON_TOOLTIP_POSITION;
 
   /**
    * The ref of the containing element, used for positioning and alignment of the menu.
@@ -101,19 +101,19 @@ function ChatHeaderOverflowMenu(props: ChatHeaderOverflowMenuProps) {
     >
       <Button
         className={cx("WACChatHeaderOverflowMenu__Button", props.className)}
-        size={ButtonSizeEnum.MEDIUM}
-        kind={ButtonKindEnum.GHOST}
+        size={BUTTON_SIZE.MEDIUM}
+        kind={BUTTON_KIND.GHOST}
         onClick={() => setIsOpen(!isOpen)}
         tooltipPosition={props.tooltipPosition}
-        renderIcon={props.renderIcon}
         onMouseDown={(event) => event.preventDefault()}
-        iconDescription={props.iconDescription}
-        hasIconOnly
+        tooltipText={props.iconDescription}
         aria-label={props.ariaLabel}
         aria-haspopup
         aria-expanded={isOpen}
         aria-controls={id}
-      />
+      >
+        <props.renderIcon slot="icon"></props.renderIcon>
+      </Button>
       <div
         ref={menuRefs.setFloating}
         className="WACChatHeaderOverflowMenu__HostElement"

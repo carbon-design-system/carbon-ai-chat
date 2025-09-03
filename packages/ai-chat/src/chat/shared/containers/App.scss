@@ -233,7 +233,8 @@ in. */
   inset-inline-start: 0;
 }
 
-.WACWidget__FocusTrapContainer {
+.WACMainWindow,
+.WACWidget__Layer {
   block-size: 100%;
   inline-size: 100%;
 }

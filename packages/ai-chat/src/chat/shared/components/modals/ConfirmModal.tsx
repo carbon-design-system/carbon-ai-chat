@@ -63,6 +63,8 @@ interface WACConfirmModalState {
 }
 
 class ConfirmModal extends Component<ConfirmModalProps, WACConfirmModalState> {
+  private focusTimer?: NodeJS.Timeout;
+
   /**
    * The callback that is called when the user clicks the yes button confirming that they do want to end the chat.
    */
@@ -94,9 +96,25 @@ class ConfirmModal extends Component<ConfirmModalProps, WACConfirmModalState> {
     };
   }
   componentDidMount(): void {
-    // Wait for the custom element to be defined
     customElements.whenDefined("cds-custom-button").then(() => {
       this.setState({ focusTrapActive: true });
+      const timer = setTimeout(() => {
+        try {
+          const aiChat = document.querySelector("cds-aichat-react");
+          const layer = aiChat?.shadowRoot?.querySelector("cds-layer");
+          const buttonNo = layer?.querySelector(".WACConfirmModal__NoButton");
+          const innerButton = buttonNo?.shadowRoot?.querySelector(
+            "button",
+          ) as HTMLElement;
+          if (innerButton && innerButton.offsetParent !== null) {
+            innerButton.focus();
+          }
+        } catch (error) {
+          console.warn("Manual focus failed:", error);
+        }
+      }, 100);
+
+      this.focusTimer = timer;
     });
   }
 
@@ -167,6 +185,12 @@ class ConfirmModal extends Component<ConfirmModalProps, WACConfirmModalState> {
         </FocusTrap>
       </ModalPortal>
     );
+  }
+
+  componentWillUnmount(): void {
+    if (this.focusTimer) {
+      clearTimeout(this.focusTimer);
+    }
   }
 }
 
