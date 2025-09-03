@@ -96,7 +96,7 @@ class ConfirmModal extends Component<ConfirmModalProps, WACConfirmModalState> {
     };
   }
   componentDidMount(): void {
-    customElements.whenDefined("cds-custom-button").then(() => {
+    customElements.whenDefined("cds-button").then(() => {
       this.setState({ focusTrapActive: true });
       const timer = setTimeout(() => {
         try {

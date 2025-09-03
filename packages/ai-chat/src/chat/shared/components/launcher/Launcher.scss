@@ -185,7 +185,7 @@ $launcher-expanded-message-color-focus-border: theme.$text-on-color;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
-  cds-custom-button.WACLauncher__Button {
+  cds-button.WACLauncher__Button {
     position: static;
     display: flex;
     align-items: center;
@@ -199,7 +199,7 @@ $launcher-expanded-message-color-focus-border: theme.$text-on-color;
   }
 }
 
-cds-custom-button.WACLauncher__Button {
+cds-button.WACLauncher__Button {
   &::part(button) {
     svg {
       block-size: 24px;

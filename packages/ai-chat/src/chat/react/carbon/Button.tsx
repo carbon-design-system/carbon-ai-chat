@@ -20,7 +20,7 @@ import {
 import CarbonButtonElement from "@carbon/web-components/es-custom/components/button/button.js";
 
 const Button = createComponent({
-  tagName: "cds-custom-button",
+  tagName: "cds-button",
   elementClass: CarbonButtonElement,
   react: React,
 });

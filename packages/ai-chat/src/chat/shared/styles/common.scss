@@ -27,8 +27,14 @@
   text-decoration: none;
 }
 
+.cds-aichat--dark,
+.cds--g90,
+.cds--g100 {
+  scrollbar-color: theme.$layer-03 theme.$layer-01;
+}
+
 /* TODO, we just need a custom version of the tile component. */
-cds-custom-tile {
+cds-tile {
   border: solid 1px theme.$chat-bubble-border;
   border-radius: chatTheme.$CARD-border-radius;
 }

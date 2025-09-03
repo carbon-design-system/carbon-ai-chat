@@ -11,10 +11,10 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonTileElement from "@carbon/web-components/es-custom/components/tile/tile.js";
+import CarbonTileElement from "@carbon/web-components/es/components/tile/tile.js";
 
 const Tile = createComponent({
-  tagName: "cds-custom-tile",
+  tagName: "cds-tile",
   elementClass: CarbonTileElement,
   react: React,
 });
