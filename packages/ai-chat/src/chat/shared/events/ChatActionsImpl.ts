@@ -664,79 +664,93 @@ class ChatActionsImpl {
   async processChunkQueue() {
     const { chunk, options, chunkPromise } = this.chunkQueue[0];
     let { messageID } = this.chunkQueue[0];
-    const isCompleteItem = isStreamCompleteItem(chunk);
-    const isPartialItem = isStreamPartialItem(chunk);
     const { store } = this.serviceManager;
-    const isStopGeneratingVisible =
-      store.getState().botInputState.stopStreamingButtonState.isVisible;
+    try {
+      const isCompleteItem = isStreamCompleteItem(chunk);
+      const isPartialItem = isStreamPartialItem(chunk);
+      const isStopGeneratingVisible =
+        store.getState().botInputState.stopStreamingButtonState.isVisible;
 
-    if (isPartialItem) {
-      const streamingData = chunk.partial_item.streaming_metadata;
-      if (streamingData.cancellable && !isStopGeneratingVisible) {
-        store.dispatch(actions.setStopStreamingButtonVisible(true));
-      }
-    }
-
-    if (isCompleteItem || isPartialItem) {
-      if (!messageID) {
-        messageID = chunk.streaming_metadata.response_id;
+      if (isPartialItem) {
+        const streamingData = chunk.partial_item.streaming_metadata;
+        if (streamingData?.cancellable && !isStopGeneratingVisible) {
+          store.dispatch(actions.setStopStreamingButtonVisible(true));
+        }
       }
 
-      if (!store.getState().allMessagesByID[messageID]) {
-        store.dispatch(actions.streamingStart(messageID));
-      }
+      if (isCompleteItem || isPartialItem) {
+        if (!messageID) {
+          messageID = chunk.streaming_metadata?.response_id;
+        }
 
-      const item =
-        (chunk as PartialItemChunk).partial_item ||
-        (chunk as CompleteItemChunk).complete_item;
-      store.dispatch(
-        actions.streamingAddChunk(
-          messageID,
-          item,
-          isCompleteItem,
-          options.disableFadeAnimation ?? true,
-        ),
-      );
+        if (messageID && !store.getState().allMessagesByID[messageID]) {
+          store.dispatch(actions.streamingStart(messageID));
+        }
 
-      if (chunk.partial_response?.message_options) {
-        if (Object.keys(chunk.partial_response).length > 1) {
-          throw new Error(
-            `The partial_response object only supports the "message_options" property.`,
+        const item =
+          (chunk as PartialItemChunk).partial_item ||
+          (chunk as CompleteItemChunk).complete_item;
+
+        if (messageID && item) {
+          store.dispatch(
+            actions.streamingAddChunk(
+              messageID,
+              item,
+              isCompleteItem,
+              options.disableFadeAnimation ?? true,
+            ),
           );
         }
-        store.dispatch(
-          actions.streamingMergeMessageOptions(
+
+        // Only merge message_options; ignore any other unexpected fields in partial_response
+        if (chunk.partial_response?.message_options && messageID) {
+          store.dispatch(
+            actions.streamingMergeMessageOptions(
+              messageID,
+              chunk.partial_response.message_options,
+            ),
+          );
+        }
+
+        // Now make sure to handle any user_defined response items in the chunk.
+        if (messageID && item) {
+          await this.handleUserDefinedResponseItemsChunk(
             messageID,
-            chunk.partial_response?.message_options,
-          ),
-        );
+            chunk,
+            item,
+          );
+        }
+      } else if (isStreamFinalResponse(chunk)) {
+        // Note that while this function is called from the streaming handler in the MessageService, the final_response
+        // path here is not taken. The MessageService uses the processSuccess path instead after the stream is
+        // complete. This path is only taken by custom code calling the public receiveChunk method.
+        this.receive(chunk.final_response, options.isLatestWelcomeNode, null, {
+          disableFadeAnimation: true,
+        });
       }
 
-      // Now make sure to handle any user_defined response items in the chunk.
-      await this.handleUserDefinedResponseItemsChunk(messageID, chunk, item);
-    } else if (isStreamFinalResponse(chunk)) {
-      // Note that while this function is called from the streaming handler in the MessageService, the final_response
-      // path here is not taken. The MessageService uses the processSuccess path instead after the stream is
-      // complete. This path is only taken by custom code calling the public receiveChunk method.
-      this.receive(chunk.final_response, options.isLatestWelcomeNode, null, {
-        disableFadeAnimation: true,
-      });
-    }
+      // Reset stop streaming button when a complete/final chunk arrives
+      if (
+        (isCompleteItem || isStreamFinalResponse(chunk)) &&
+        store.getState().botInputState.stopStreamingButtonState.isVisible
+      ) {
+        store.dispatch(actions.setStopStreamingButtonDisabled(false));
+        store.dispatch(actions.setStopStreamingButtonVisible(false));
+      }
 
-    if (
-      (isCompleteItem || isStreamFinalResponse(chunk)) &&
-      isStopGeneratingVisible
-    ) {
-      // Once a complete or final response is received, reset the visible and disabled states for the "stop streaming"
-      // button.
-      store.dispatch(actions.setStopStreamingButtonDisabled(false));
-      store.dispatch(actions.setStopStreamingButtonVisible(false));
-    }
-
-    this.chunkQueue.shift();
-    chunkPromise.doResolve();
-    if (this.chunkQueue[0]) {
-      this.processChunkQueue();
+      this.chunkQueue.shift();
+      chunkPromise.doResolve();
+      if (this.chunkQueue[0]) {
+        this.processChunkQueue();
+      }
+    } catch (error) {
+      consoleError("Error processing stream chunk", error);
+      // Ensure queue continues processing and promise is rejected for callers
+      this.chunkQueue.shift();
+      chunkPromise.doReject(error);
+      if (this.chunkQueue[0]) {
+        this.processChunkQueue();
+      }
     }
   }
 

@@ -465,7 +465,12 @@ function createChatInstance({
       ) => {
         debugLog("Called instance.messaging.addMessageChunk", chunk, options);
         serviceManager.messageService.messageLoadingManager.end();
-        await serviceManager.actions.receiveChunk(chunk, null, options);
+        try {
+          await serviceManager.actions.receiveChunk(chunk, null, options);
+        } catch (error) {
+          consoleError("Error in addMessageChunk", error);
+          throw error;
+        }
       },
 
       removeMessages: async (messageIDs: string[]) => {
