@@ -7,7 +7,8 @@
  *  @license
  */
 
-import Music from "@carbon/icons-react/es/Music.js";
+import Music32 from "@carbon/icons/es/music/32.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import Tile from "../../../../react/carbon/Tile";
 import cx from "classnames";
 import React, {
@@ -146,6 +147,7 @@ function MediaPlayerComponent({
     : getResponsiveElementPaddingValue(baseHeight);
 
   const isAudio = type === MessageResponseTypes.AUDIO;
+  const Music = carbonIconToReact(Music32);
   const errorMessage = isAudio ? errors_audioSource : errors_videoSource;
   const prevSource = usePrevious(source);
   // This ref is for merely saving the initial value of shouldAnnounce prop.
@@ -236,7 +238,7 @@ function MediaPlayerComponent({
           "WACMediaPlayer__Background--audio": isAudio,
         })}
       >
-        {isAudio && <Music size={32} className="WACMediaPlayer__MusicIcon" />}
+        {isAudio && <Music className="WACMediaPlayer__MusicIcon" />}
       </div>
     );
   }

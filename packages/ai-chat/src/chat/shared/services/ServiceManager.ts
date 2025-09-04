@@ -14,7 +14,6 @@ import { AppWindowFunctions } from "../containers/AppWindowFunctions";
 import { MainWindowFunctions } from "../containers/main/MainWindowFunctions";
 import { ChatActionsImpl } from "../events/ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
-import { AdditionalChatParameters } from "../../../types/component/AdditionalChatParameters";
 import { AppState } from "../../../types/state/AppState";
 import { CustomPanelManager } from "./CustomPanelManager";
 import { HumanAgentService } from "./haa/HumanAgentService";
@@ -31,7 +30,6 @@ import { BusEvent } from "../../../types/events/eventBusTypes";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
-  element: HTMLElement;
 }
 
 /**
@@ -123,17 +121,12 @@ class ServiceManager {
   namespace: NamespaceService;
 
   /**
-   * The additional, non-redux safe parameters that were passed as config options for the Carbon AI Chat.
-   */
-  additionalChatParameters: AdditionalChatParameters;
-
-  /**
    * This is a custom panel manager that currently only fetches 1 custom panel.
    */
   customPanelManager: CustomPanelManager;
 
   /**
-   * Service that watches CSS variables and updates theme when CarbonTheme.INHERIT is used.
+   * Service that watches CSS variables and updates theme when CarbonTheme is not set.
    */
   themeWatcherService: ThemeWatcherService;
 

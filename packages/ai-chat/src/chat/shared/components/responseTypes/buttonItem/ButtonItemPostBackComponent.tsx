@@ -7,11 +7,14 @@
  *  @license
  */
 
-import Send from "@carbon/icons-react/es/Send.js";
+import Send16 from "@carbon/icons/es/send/16.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React, { useCallback } from "react";
+import { useSelector } from "react-redux";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import actions from "../../../store/actions";
+import { selectInputState } from "../../../store/selectors";
 import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
 import { WA_CONSOLE_PREFIX } from "../../../utils/constants";
@@ -40,10 +43,15 @@ function ButtonItemPostBackComponent({
   isMessageForInput,
 }: ButtonItemPostBackComponentProps) {
   const serviceManager = useServiceManager();
+  const Send = carbonIconToReact(Send16);
   const messageItem = localMessageItem.item;
   const { ui_state, fullMessageID } = localMessageItem;
   const { image_url, alt_text, label, kind } = messageItem;
-  const isDisabled = !isMessageForInput || Boolean(ui_state.optionSelected);
+  const inputState = useSelector(selectInputState);
+  const isDisabled =
+    !isMessageForInput ||
+    Boolean(ui_state.optionSelected) ||
+    inputState.isReadonly;
 
   const onClickHandler = useCallback(() => {
     const isInputAvailable = Boolean(messageItem.value?.input?.text || label);

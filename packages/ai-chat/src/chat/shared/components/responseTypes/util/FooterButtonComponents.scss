@@ -31,14 +31,14 @@
   .WAC__overlay-panel
   .WACFooterButtonComponents
   .WACButtonItem:first-child::part(button) {
-  border-end-start-radius: var(--cds-chat-CONTAINER-border-radius);
+  border-end-start-radius: var(--cds-chat-border-radius);
 }
 
 .WACWidget--rounded
   .WAC__overlay-panel
   .WACFooterButtonComponents
   .WACButtonItem:last-child::part(button) {
-  border-end-end-radius: var(--cds-chat-CONTAINER-border-radius);
+  border-end-end-radius: var(--cds-chat-border-radius);
 }
 
 .WACWidget__animationContainer--withBrandingBanner
@@ -67,8 +67,8 @@
   .WAC__overlay-panel
   .WACFooterButtonComponents.WACFooterButtonComponents--column
   .WACButtonItem:last-child::part(button) {
-  border-end-end-radius: var(--cds-chat-CONTAINER-border-radius);
-  border-end-start-radius: var(--cds-chat-CONTAINER-border-radius);
+  border-end-end-radius: var(--cds-chat-border-radius);
+  border-end-start-radius: var(--cds-chat-border-radius);
 }
 
 .WACWidget__animationContainer--withBrandingBanner

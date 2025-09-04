@@ -53,13 +53,13 @@ cds-skeleton-placeholder.WACImage__Skeleton::part(placeholder) {
 .WACImage__Image--loaded {
   animation-duration: motion.$duration-fast-02;
   animation-iteration-count: 1;
-  animation-name: WACfadeInImg;
+  animation-name: cds-chat-fade-in-img;
   animation-timing-function: motion.motion(standard, productive);
   block-size: auto;
   opacity: 1;
 }
 
-@keyframes WACfadeInImg {
+@keyframes cds-chat-fade-in-img {
   0% {
     filter: grayscale(100%);
     opacity: 0;

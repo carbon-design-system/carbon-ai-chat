@@ -162,7 +162,7 @@ class ConfirmModal extends Component<ConfirmModalProps, WACConfirmModalState> {
               <div className="WACConfirmModal__buttonContainer">
                 <Button
                   className="WACConfirmModal__NoButton"
-                  kind={"secondary" as BUTTON_KIND}
+                  kind={BUTTON_KIND.SECONDARY}
                   onClick={this.onNoClick}
                   onKeyDown={this.onKeyDown}
                   size="md"

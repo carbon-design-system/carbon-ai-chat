@@ -9,10 +9,10 @@
 @use "@carbon/layout";
 
 // Web chat widget
-$BASE-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
+$box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
 
 // Web chat content container
-$CONTAINER-max-width: 672px;
+$max-width: 672px;
 
 // AI theming
 $AI-background-image: linear-gradient(

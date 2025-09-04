@@ -11,7 +11,8 @@
  * Displays an image for a human agent's avatar or a default icon if no image is available.
  */
 
-import UserAvatar from "@carbon/icons-react/es/UserAvatar.js";
+import UserAvatar32 from "@carbon/icons/es/user--avatar/32.js";
+import { carbonIconToReact } from "../utils/carbonIcon";
 import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 
 import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
@@ -33,6 +34,8 @@ interface ResponseUserAvatarProps extends HasLanguagePack {
    */
   height?: string;
 }
+
+const UserAvatar = carbonIconToReact(UserAvatar32);
 
 function ResponseUserAvatar(props: ResponseUserAvatarProps) {
   const { responseUserProfile, languagePack, width, height } = props;
@@ -86,7 +89,6 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
     // If the agentName contains any non-ASCII characters, then show the default agent avatar.
     component = (
       <UserAvatar
-        size={32}
         width={width ? Number(width.replace("px", "")) : undefined}
         height={height ? Number(height.replace("px", "")) : undefined}
         aria-label={languagePack.agent_ariaResponseUserAvatar}

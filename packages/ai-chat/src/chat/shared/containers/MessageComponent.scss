@@ -30,7 +30,7 @@ $message-bar-width: 3px;
   /* We cannot use margin on messages as that affects the position calculations that determine how to auto-scroll the
    panel. Padding on the .WAC__message--padding element must be used instead. */
   margin: 0;
-  animation: WACMessageIn motion.$duration-moderate-02
+  animation: cds-chat-message-in motion.$duration-moderate-02
     motion.motion(entrance, productive) forwards;
 }
 
@@ -251,7 +251,7 @@ $message-bar-width: 3px;
 
 .WAC__sent-container .WAC__message-status-file-success svg {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2s
-    WACFadeOut forwards;
+    cds-chat-fade-out forwards;
   fill: theme.$interactive;
 }
 
@@ -420,7 +420,7 @@ svg.WAC__sent-fileIcon {
 }
 
 .WAC__message--response .WACMessage__AvatarLine {
-  padding-inline-start: layout.$spacing-05;
+  padding-inline-start: layout.$spacing-03;
 
   .WACMessage__Label {
     padding-block: layout.$spacing-03;
@@ -447,7 +447,7 @@ svg.WAC__sent-fileIcon {
   background-color: theme.$chat-avatar-bot;
 }
 
-@keyframes WACMessageIn {
+@keyframes cds-chat-message-in {
   0% {
     opacity: 0;
   }
@@ -479,7 +479,7 @@ svg.WAC__sent-fileIcon {
 .WAC--standardWidth .WAC__message .WAC__sent-container {
   /* Start = left padding + avatar + right padding. */
   margin-inline: calc(
-      #{layout.$spacing-05} + #{layout.$spacing-07} + #{layout.$spacing-03}
+      #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
     )
     layout.$spacing-05;
 }

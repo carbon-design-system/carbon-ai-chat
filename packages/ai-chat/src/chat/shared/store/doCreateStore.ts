@@ -15,9 +15,7 @@ import { AppConfig } from "../../../types/state/AppConfig";
 import { AppState, ThemeState } from "../../../types/state/AppState";
 import { IS_PHONE } from "../utils/browserUtils";
 import { CornersType } from "../utils/constants";
-import { ThemeType } from "../../../types/config/PublicConfig";
-import { withoutEmptyStarters } from "../utils/homeScreenUtils";
-import { getBotName } from "../utils/miscUtils";
+import { PublicConfig } from "../../../types/config/PublicConfig";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import {
@@ -39,81 +37,74 @@ import {
 import { enLanguagePack } from "../../../types/instance/apiTypes";
 import { LayoutConfig } from "../../../types/config/PublicConfig";
 
-function doCreateStore(
-  config: AppConfig,
-  serviceManager: ServiceManager,
-): Store<AppState> {
-  // The theme state uses a default for each property which can be overridden by the public config if specified.
-  const themeState: ThemeState = {
+/**
+ * Creates a complete AppConfig with derived values computed from the public config.
+ */
+function createAppConfig(publicConfig: PublicConfig): AppConfig {
+  // Create the theme state with defaults applied and corners computed
+  const themeWithDefaults: ThemeState = {
     originalCarbonTheme:
-      config.public.themeConfig?.carbonTheme ||
-      DEFAULT_THEME_STATE.originalCarbonTheme,
+      publicConfig.injectCarbonTheme ?? DEFAULT_THEME_STATE.originalCarbonTheme,
     derivedCarbonTheme:
-      config.public.themeConfig?.carbonTheme ||
-      DEFAULT_THEME_STATE.derivedCarbonTheme,
-    theme: config.public.themeConfig?.theme || DEFAULT_THEME_STATE.theme,
-    corners: getThemeCornersType(config),
-    whiteLabelTheme: config.public.themeConfig?.whiteLabelTheme,
+      publicConfig.injectCarbonTheme ?? DEFAULT_THEME_STATE.derivedCarbonTheme,
+    aiEnabled: publicConfig.aiEnabled ?? DEFAULT_THEME_STATE.aiEnabled,
+    corners: getThemeCornersType(publicConfig),
   };
 
-  const botName = getBotName(themeState.theme, config);
+  // Compute CSS variable overrides from theme configuration
+  const cssVariableOverrides = mergeCSSVariables(
+    (publicConfig.layout?.cssVariables as any) || {},
+    {},
+    themeWithDefaults.derivedCarbonTheme,
+    themeWithDefaults.aiEnabled,
+  );
+
+  return {
+    public: publicConfig,
+    derived: {
+      cssVariableOverrides,
+      themeWithDefaults,
+    },
+  };
+}
+
+function doCreateStore(
+  publicConfig: PublicConfig,
+  serviceManager: ServiceManager,
+): Store<AppState> {
+  // Build the complete AppConfig with derived values
+  const config = createAppConfig(publicConfig);
 
   const initialState: AppState = {
+    // Config with derived values
+    config,
+
+    // Messaging state
     ...DEFAULT_MESSAGE_STATE,
+
+    // UI state
     notifications: [],
+    suspendScrollDetection: false,
+    showNonHeaderBackgroundCover: false,
+    isBrowserPageVisible: true,
+
+    // Input state
     botInputState: {
       ...DEFAULT_INPUT_STATE(),
-      isReadonly: config.public.isReadonly,
-      fieldVisible: !config.public.isReadonly,
+      isReadonly: config.public.isReadonly || false,
     },
+
+    // Agent state
     humanAgentState: { ...DEFAULT_HUMAN_AGENT_STATE },
-    botName,
-    headerDisplayName: null,
-    botAvatarURL: config.public.botAvatarURL || null,
-    headerAvatarConfig: null,
+
+    // Layout/responsive state
     chatWidthBreakpoint: null,
     chatWidth: null,
     chatHeight: null,
-    cssVariableOverrides: mergeCSSVariables(
-      {},
-      themeState.theme === ThemeType.WHITE_LABEL
-        ? themeState.whiteLabelTheme || {}
-        : {},
-      themeState.derivedCarbonTheme,
-      themeState.theme,
-    ),
+    layout: getLayoutState(publicConfig),
+
+    // Lifecycle state
     isHydrated: false,
-    // The language pack will start as English. If a different language pack is provided or updated, it will be
-    // merged in with a redux action.
-    languagePack: enLanguagePack,
-    locale: "en",
-    config,
-    originalConfig: config,
-    suspendScrollDetection: false,
-    homeScreenConfig: withoutEmptyStarters({}),
-    persistedToBrowserStorage: {
-      ...DEFAULT_PERSISTED_TO_BROWSER,
-      chatState: {
-        ...DEFAULT_PERSISTED_TO_BROWSER.chatState,
-        homeScreenState: {
-          ...DEFAULT_PERSISTED_TO_BROWSER.chatState.homeScreenState,
-        },
-      },
-    },
-    launcher: merge({}, DEFAULT_LAUNCHER, {
-      config: merge(
-        {},
-        {},
-        {
-          mobile: {},
-        },
-        { is_on: config.public.showLauncher },
-      ),
-    }),
-    iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
-    viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
-    isDestroyed: false,
-    customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
     viewChanging: false,
     initialViewChangeComplete: false,
     targetViewState:
@@ -123,15 +114,38 @@ function doCreateStore(
       config.public.openChatByDefault
         ? VIEW_STATE_MAIN_WINDOW_OPEN
         : VIEW_STATE_LAUNCHER_OPEN,
-    responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
-    customMenuOptions: null,
-    isBrowserPageVisible: true,
-    showNonHeaderBackgroundCover: false,
-    theme: themeState,
-    layout: getLayoutState(config),
-    chatHeaderState: {
-      config: null,
+
+    // Language state
+    languagePack: enLanguagePack,
+
+    // Session state
+    persistedToBrowserStorage: {
+      ...DEFAULT_PERSISTED_TO_BROWSER,
+      chatState: {
+        ...DEFAULT_PERSISTED_TO_BROWSER.chatState,
+        homeScreenState: {
+          ...DEFAULT_PERSISTED_TO_BROWSER.chatState.homeScreenState,
+        },
+      },
     },
+
+    // Launcher state
+    launcher: merge({}, DEFAULT_LAUNCHER, {
+      config: merge(
+        {},
+        {},
+        {
+          mobile: {},
+        },
+        config.public.launcher || {},
+      ),
+    }),
+
+    // Panel states
+    iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
+    viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
+    customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
+    responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
   };
 
   // Go pre-fill the launcher state from session storage if it exists.
@@ -154,7 +168,7 @@ function doCreateStore(
   }
 
   const enhancer =
-    config.public.debug || NODE_ENV === "development"
+    publicConfig.debug || NODE_ENV === "development"
       ? (window as any).__REDUX_DEVTOOLS_EXTENSION__ &&
         (window as any).__REDUX_DEVTOOLS_EXTENSION__({
           name: "CarbonAIChat",
@@ -168,11 +182,11 @@ function doCreateStore(
 /**
  * Returns the corner type for the Carbon AI Chat widget.
  */
-function getThemeCornersType(config: AppConfig) {
+function getThemeCornersType(publicConfig: PublicConfig) {
   if (
-    getLayoutState(config).showFrame === false ||
+    getLayoutState(publicConfig).showFrame === false ||
     IS_PHONE ||
-    config.public.themeConfig?.corners === CornersType.SQUARE
+    publicConfig.layout?.corners === CornersType.SQUARE
   ) {
     return CornersType.SQUARE;
   }
@@ -180,15 +194,15 @@ function getThemeCornersType(config: AppConfig) {
   return DEFAULT_THEME_STATE.corners;
 }
 
-function getLayoutState(config: AppConfig): LayoutConfig {
-  if (config.public.themeConfig?.theme === ThemeType.CARBON_AI) {
+function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
+  if (publicConfig.aiEnabled ?? true) {
     return {
-      showFrame: config.public.layout?.showFrame ?? true,
-      hasContentMaxWidth: config.public.layout?.hasContentMaxWidth ?? true,
+      showFrame: publicConfig.layout?.showFrame ?? true,
+      hasContentMaxWidth: publicConfig.layout?.hasContentMaxWidth ?? true,
     };
   }
 
-  return merge({}, DEFAULT_LAYOUT_STATE, config.public.layout);
+  return merge({}, DEFAULT_LAYOUT_STATE, publicConfig.layout);
 }
 
 /**
@@ -201,4 +215,4 @@ function reducerFunction(state: AppState, action?: any): AppState {
     : state;
 }
 
-export { doCreateStore };
+export { doCreateStore, createAppConfig };

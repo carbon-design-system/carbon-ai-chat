@@ -161,7 +161,7 @@ class MessageService {
   /**
    * The amount of time in milliseconds to wait before timing out a message.
    */
-  private timeoutMS: number;
+  public timeoutMS: number;
 
   /**
    * This queue will take any messages sent to the service and will process them in the order they were received,

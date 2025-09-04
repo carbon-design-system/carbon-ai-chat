@@ -32,7 +32,7 @@ $launcher-expanded-message-color-background-hover: button.$button-primary-hover;
 $launcher-expanded-message-color-background-active: button.$button-primary-active;
 $launcher-expanded-message-color-focus-border: theme.$text-on-color;
 
-@keyframes WACLauncherIn {
+@keyframes cds-chat-launcher-in {
   0% {
     /* Launcher positioning should probably be handled by remote config not CSS. */
     inset-block-end: calc($launcher-position-bottom - #{layout.$spacing-05});
@@ -53,7 +53,7 @@ $launcher-expanded-message-color-focus-border: theme.$text-on-color;
     border-radius: layout.$spacing-01;
     animation: none;
     background-color: theme.$background;
-    box-shadow: chatTheme.$BASE-box-shadow;
+    box-shadow: chatTheme.$box-shadow;
     inset-block-end: $launcher-position-bottom;
     inset-inline-end: $launcher-position-bottom;
   }
@@ -63,10 +63,10 @@ $launcher-expanded-message-color-focus-border: theme.$text-on-color;
   position: fixed;
   z-index: var(--cds-chat-BASE-z-index);
   border-radius: layout.$spacing-01;
-  animation: WACLauncherIn motion.$duration-moderate-01
+  animation: cds-chat-launcher-in motion.$duration-moderate-01
     motion.motion(entrance, expressive) both;
   background-color: theme.$background;
-  box-shadow: chatTheme.$BASE-box-shadow;
+  box-shadow: chatTheme.$box-shadow;
   inset-block-end: $launcher-position-bottom;
   inset-inline-end: $launcher-position-bottom;
 }
@@ -86,7 +86,7 @@ $launcher-expanded-message-color-focus-border: theme.$text-on-color;
 // launcher button depending on how css decides to round the corners.
 .WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--round {
   border-radius: 28px;
-  box-shadow: chatTheme.$BASE-box-shadow;
+  box-shadow: chatTheme.$box-shadow;
 }
 
 // This is the actual small launcher button itself, it's color and box shadow are already set, we just need to make it
@@ -260,11 +260,11 @@ cds-button.WACLauncher__Button {
 }
 
 .WACLauncher__ButtonContainer.WACLauncher__ButtonContainer--bounceAnimation {
-  animation: WACLauncherBounce 500ms motion.motion(entrance, expressive)
+  animation: cds-chat-launcher-bounce 500ms motion.motion(entrance, expressive)
     forwards;
 }
 
-@keyframes WACLauncherBounce {
+@keyframes cds-chat-launcher-bounce {
   0% {
     transform: translateY(0);
   }
@@ -432,8 +432,8 @@ cds-button.WACLauncher__Button {
     }
 
     .WACLauncher__Avatar {
-      animation: motion.$duration-slow-02 WACAnimLauncherComplex__AvatarResize
-        forwards;
+      animation: motion.$duration-slow-02
+        cds-chat-anim-launcher-complex-avatar-resize forwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__Text {
@@ -442,8 +442,8 @@ cds-button.WACLauncher__Button {
     }
 
     .WACLauncherComplex__Text {
-      animation: motion.$duration-slow-02 WACAnimLauncherComplex__FadeInText
-        forwards;
+      animation: motion.$duration-slow-02
+        cds-chat-anim-launcher-complex-fade-in-text forwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
@@ -471,7 +471,7 @@ cds-button.WACLauncher__Button {
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
       .WACLauncher__Button {
       animation: motion.$duration-slow-02
-        WACAnimLauncherComplex__SmallLauncherResizeReposition forwards;
+        cds-chat-anim-launcher-complex-small-launcher-resize-reposition forwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncher__CloseButton {
@@ -481,14 +481,14 @@ cds-button.WACLauncher__Button {
 
     .WACLauncher__CloseButton {
       animation: motion.$duration-slow-02
-        WACAnimLauncherComplex__FadeInCloseButton forwards;
+        cds-chat-anim-launcher-complex-fade-in-close-button forwards;
     }
   }
 }
 
 .WACLauncherComplex__Container--introAnimation {
-  animation: motion.$duration-slow-02 WACAnimLauncherComplex__FadeInSlideUp
-    forwards;
+  animation: motion.$duration-slow-02
+    cds-chat-anim-launcher-complex-fade-in-slide-up forwards;
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncher__Avatar {
       animation: none;
@@ -496,8 +496,8 @@ cds-button.WACLauncher__Button {
   }
 
   .WACLauncher__Avatar {
-    animation: motion.$duration-slow-02 WACAnimLauncherComplex__AvatarResize
-      forwards;
+    animation: motion.$duration-slow-02
+      cds-chat-anim-launcher-complex-avatar-resize forwards;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__Text {
@@ -506,8 +506,8 @@ cds-button.WACLauncher__Button {
   }
 
   .WACLauncherComplex__Text {
-    animation: motion.$duration-slow-02 WACAnimLauncherComplex__FadeInText
-      forwards;
+    animation: motion.$duration-slow-02
+      cds-chat-anim-launcher-complex-fade-in-text forwards;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
@@ -535,7 +535,7 @@ cds-button.WACLauncher__Button {
   .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
     .WACLauncher__Button {
     animation: motion.$duration-slow-02
-      WACAnimLauncherComplex__SmallLauncherResizeReposition forwards;
+      cds-chat-anim-launcher-complex-small-launcher-resize-reposition forwards;
   }
 
   @media screen and (prefers-reduced-motion: reduce) {
@@ -546,7 +546,7 @@ cds-button.WACLauncher__Button {
 
   .WACLauncher__CloseButton {
     animation: motion.$duration-slow-02
-      WACAnimLauncherComplex__FadeInCloseButton forwards;
+      cds-chat-anim-launcher-complex-fade-in-close-button forwards;
   }
 }
 
@@ -578,11 +578,12 @@ cds-button.WACLauncher__Button {
   .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
     .WACLauncher__Button {
     animation: motion.$duration-slow-02
-      WACAnimLauncherComplex__SmallLauncherResizeRepositionRTL forwards;
+      cds-chat-anim-launcher-complex-small-launcher-resize-reposition-rtl
+      forwards;
   }
 }
 
-@keyframes WACAnimLauncherComplex__FadeInSlideUp {
+@keyframes cds-chat-anim-launcher-complex-fade-in-slide-up {
   0% {
     background: transparent;
     box-shadow: none;
@@ -605,14 +606,14 @@ cds-button.WACLauncher__Button {
 
   100% {
     background: $launcher-expanded-message-color-background;
-    box-shadow: chatTheme.$BASE-box-shadow;
+    box-shadow: chatTheme.$box-shadow;
     // 64px of distance between the bottom of the medium container and the bottom of the page, so that theres a slight
     // overlap between the container and the small launcher which has an 80px height when it's expanded.
     inset-block-end: layout.$spacing-10;
   }
 }
 
-@keyframes WACAnimLauncherComplex__FadeInText {
+@keyframes cds-chat-anim-launcher-complex-fade-in-text {
   0% {
     opacity: 0;
   }
@@ -626,7 +627,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__SmallLauncherResizeReposition {
+@keyframes cds-chat-anim-launcher-complex-small-launcher-resize-reposition {
   0% {
     padding: 0;
     border-radius: 28px;
@@ -646,7 +647,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__SmallLauncherResizeRepositionRTL {
+@keyframes cds-chat-anim-launcher-complex-small-launcher-resize-reposition-rtl {
   0% {
     padding: 0;
     border-radius: 28px;
@@ -666,7 +667,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__FadeInCloseButton {
+@keyframes cds-chat-anim-launcher-complex-fade-in-close-button {
   0% {
     opacity: 0;
   }
@@ -691,7 +692,7 @@ cds-button.WACLauncher__Button {
 
     .WACLauncher__Avatar {
       animation: motion.$duration-moderate-01
-        WACAnimLauncherComplex__AvatarResize forwards;
+        cds-chat-anim-launcher-complex-avatar-resize forwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__Text {
@@ -700,8 +701,8 @@ cds-button.WACLauncher__Button {
     }
 
     .WACLauncherComplex__Text {
-      animation: motion.$duration-moderate-01 WACAnimLauncherComplex__FadeInText
-        forwards;
+      animation: motion.$duration-moderate-01
+        cds-chat-anim-launcher-complex-fade-in-text forwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
@@ -746,7 +747,8 @@ cds-button.WACLauncher__Button {
       padding: 0 60px 60px 0;
       border-radius: layout.$spacing-11;
       animation: motion.$duration-moderate-01
-        WACAnimLauncherComplex__FadeInSlideUpSmallExpandedLauncher forwards;
+        cds-chat-anim-launcher-complex-fade-in-slide-up-small-expanded-launcher
+        forwards;
       block-size: layout.$spacing-13;
       inline-size: layout.$spacing-13;
       inset-inline-end: calc(-1 * #{layout.$spacing-11});
@@ -759,14 +761,14 @@ cds-button.WACLauncher__Button {
 
     .WACLauncher__CloseButton {
       animation: motion.$duration-moderate-01
-        WACAnimLauncherComplex__FadeInCloseButton forwards;
+        cds-chat-anim-launcher-complex-fade-in-close-button forwards;
     }
   }
 }
 
 .WACLauncherComplex__Container--simpleAnimation {
-  animation: motion.$duration-moderate-01 WACAnimLauncherComplex__FadeInSlideUp
-    forwards;
+  animation: motion.$duration-moderate-01
+    cds-chat-anim-launcher-complex-fade-in-slide-up forwards;
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncher__Avatar {
       animation: none;
@@ -774,8 +776,8 @@ cds-button.WACLauncher__Button {
   }
 
   .WACLauncher__Avatar {
-    animation: motion.$duration-moderate-01 WACAnimLauncherComplex__AvatarResize
-      forwards;
+    animation: motion.$duration-moderate-01
+      cds-chat-anim-launcher-complex-avatar-resize forwards;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__Text {
@@ -784,8 +786,8 @@ cds-button.WACLauncher__Button {
   }
 
   .WACLauncherComplex__Text {
-    animation: motion.$duration-moderate-01 WACAnimLauncherComplex__FadeInText
-      forwards;
+    animation: motion.$duration-moderate-01
+      cds-chat-anim-launcher-complex-fade-in-text forwards;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
@@ -830,7 +832,8 @@ cds-button.WACLauncher__Button {
     padding: 0 60px 60px 0;
     border-radius: layout.$spacing-11;
     animation: motion.$duration-moderate-01
-      WACAnimLauncherComplex__FadeInSlideUpSmallExpandedLauncher forwards;
+      cds-chat-anim-launcher-complex-fade-in-slide-up-small-expanded-launcher
+      forwards;
     block-size: layout.$spacing-13;
     inline-size: layout.$spacing-13;
     inset-inline-end: calc(-1 * #{layout.$spacing-11});
@@ -843,7 +846,7 @@ cds-button.WACLauncher__Button {
 
   .WACLauncher__CloseButton {
     animation: motion.$duration-moderate-01
-      WACAnimLauncherComplex__FadeInCloseButton forwards;
+      cds-chat-anim-launcher-complex-fade-in-close-button forwards;
   }
 }
 
@@ -857,7 +860,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__AvatarResize {
+@keyframes cds-chat-anim-launcher-complex-avatar-resize {
   0% {
     block-size: 32px;
     inline-size: 32px;
@@ -869,7 +872,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__FadeInSlideUpSmallExpandedLauncher {
+@keyframes cds-chat-anim-launcher-complex-fade-in-slide-up-small-expanded-launcher {
   0% {
     inset-block-end: -160px;
     opacity: 0;
@@ -887,7 +890,7 @@ cds-button.WACLauncher__Button {
 
 .WACLauncherComplex__Container--toolingPreview {
   background: $launcher-expanded-message-color-background;
-  box-shadow: chatTheme.$BASE-box-shadow;
+  box-shadow: chatTheme.$box-shadow;
   // 64px of distance between the bottom of the medium container and the bottom of the page, so that theres a slight
   // overlap between the container and the small launcher which has an 80px height when it's expanded.
   inset-block-end: layout.$spacing-10;
@@ -962,8 +965,8 @@ cds-button.WACLauncher__Button {
     }
 
     .WACLauncher__Avatar {
-      animation: motion.$duration-slow-01 WACAnimLauncherComplex__AvatarResize
-        backwards;
+      animation: motion.$duration-slow-01
+        cds-chat-anim-launcher-complex-avatar-resize backwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__Text,
@@ -986,8 +989,8 @@ cds-button.WACLauncher__Button {
 
     .WACLauncherComplex__Text,
     .WACLauncher__CloseButton {
-      animation: motion.$duration-slow-01 WACAnimLauncherComplex__FadeOut
-        forwards;
+      animation: motion.$duration-slow-01
+        cds-chat-anim-launcher-complex-fade-out forwards;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncherComplex__SmallLauncherContainer,
@@ -1015,14 +1018,15 @@ cds-button.WACLauncher__Button {
     .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
       .WACLauncher__Button {
       animation: motion.$duration-slow-01
-        WACAnimLauncherComplex__SmallLauncherDefaultSizePosition forwards;
+        cds-chat-anim-launcher-complex-small-launcher-default-size-position
+        forwards;
     }
   }
 }
 
 .WACLauncherComplex__Container--closeAnimation {
-  animation: motion.$duration-slow-01 WACAnimLauncherComplex__FadeOutSlideDown
-    forwards;
+  animation: motion.$duration-slow-01
+    cds-chat-anim-launcher-complex-fade-out-slide-down forwards;
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncher__Avatar {
       animation: none;
@@ -1030,8 +1034,8 @@ cds-button.WACLauncher__Button {
   }
 
   .WACLauncher__Avatar {
-    animation: motion.$duration-slow-01 WACAnimLauncherComplex__AvatarResize
-      backwards;
+    animation: motion.$duration-slow-01
+      cds-chat-anim-launcher-complex-avatar-resize backwards;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__Text,
@@ -1048,7 +1052,8 @@ cds-button.WACLauncher__Button {
 
   .WACLauncherComplex__Text,
   .WACLauncher__CloseButton {
-    animation: motion.$duration-slow-01 WACAnimLauncherComplex__FadeOut forwards;
+    animation: motion.$duration-slow-01 cds-chat-anim-launcher-complex-fade-out
+      forwards;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncherComplex__SmallLauncherContainer,
@@ -1069,7 +1074,8 @@ cds-button.WACLauncher__Button {
   .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
     .WACLauncher__Button {
     animation: motion.$duration-slow-01
-      WACAnimLauncherComplex__SmallLauncherDefaultSizePosition forwards;
+      cds-chat-anim-launcher-complex-small-launcher-default-size-position
+      forwards;
   }
 }
 
@@ -1094,14 +1100,15 @@ cds-button.WACLauncher__Button {
   .WACLauncher__ButtonContainer.WACLauncherComplex__SmallLauncherContainer
     .WACLauncher__Button {
     animation: motion.$duration-slow-02
-      WACAnimLauncherComplex__SmallLauncherDefaultSizePositionRTL forwards;
+      cds-chat-anim-launcher-complex-small-launcher-default-size-position-rtl
+      forwards;
   }
 }
 
-@keyframes WACAnimLauncherComplex__FadeOutSlideDown {
+@keyframes cds-chat-anim-launcher-complex-fade-out-slide-down {
   0% {
     background: $launcher-expanded-message-color-background;
-    box-shadow: chatTheme.$BASE-box-shadow;
+    box-shadow: chatTheme.$box-shadow;
     inset-block-end: layout.$spacing-10;
   }
 
@@ -1122,7 +1129,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__FadeOut {
+@keyframes cds-chat-anim-launcher-complex-fade-out {
   0% {
     opacity: 1;
   }
@@ -1136,7 +1143,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__SmallLauncherDefaultSizePosition {
+@keyframes cds-chat-anim-launcher-complex-small-launcher-default-size-position {
   0% {
     padding: 0 60px 60px 0;
     border-radius: layout.$spacing-11;
@@ -1156,7 +1163,7 @@ cds-button.WACLauncher__Button {
   }
 }
 
-@keyframes WACAnimLauncherComplex__SmallLauncherDefaultSizePositionRTL {
+@keyframes cds-chat-anim-launcher-complex-small-launcher-default-size-position-rtl {
   0% {
     padding: 0 0 60px 60px;
     border-radius: layout.$spacing-11;
@@ -1274,7 +1281,7 @@ button.WACLauncherExtended__Button {
 }
 
 .WACLauncherExtended__Button .WACLauncherExtended__Element--FadeOut {
-  animation: WACLauncherExtendedElementFadeOut 0.5s ease-out 0.4s both;
+  animation: cds-chat-launcher-extended-element-fade-out 0.5s ease-out 0.4s both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -1284,7 +1291,7 @@ button.WACLauncherExtended__Button {
 }
 
 .WACLauncherExtended__Button .WACLauncherExtended__Element--FadeIn {
-  animation: WACLauncherExtendedElementFadeIn 0.5s ease-out 0.4s both;
+  animation: cds-chat-launcher-extended-element-fade-in 0.5s ease-out 0.4s both;
 }
 
 .WACLauncher__ButtonContainer.WACLauncherExtended__Button--extended {
@@ -1310,7 +1317,7 @@ button.WACLauncherExtended__Button {
     }
 
     button.WACLauncherExtended__Button {
-      animation: WACLauncherPartiallyRound 0.3s ease-in 0.5s both;
+      animation: cds-chat-launcher-partially-round 0.3s ease-in 0.5s both;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncher__svg {
@@ -1319,15 +1326,15 @@ button.WACLauncherExtended__Button {
     }
 
     .WACLauncher__svg {
-      animation: WACLauncherIconTo24 0.3s ease-out 0.5s both;
+      animation: cds-chat-launcher-icon-to-24 0.3s ease-out 0.5s both;
     }
   }
 }
 
 .WACLauncher__ButtonContainer.WACLauncherExtended__Button--extendedAnimation {
   animation:
-    WACLauncherExtend 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both,
-    WACLauncherPartiallyRound 0.3s ease-in 0.5s both;
+    cds-chat-launcher-extend 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both,
+    cds-chat-launcher-partially-round 0.3s ease-in 0.5s both;
   @media screen and (prefers-reduced-motion: reduce) {
     button.WACLauncherExtended__Button {
       animation: none;
@@ -1335,7 +1342,7 @@ button.WACLauncherExtended__Button {
   }
 
   button.WACLauncherExtended__Button {
-    animation: WACLauncherPartiallyRound 0.3s ease-in 0.5s both;
+    animation: cds-chat-launcher-partially-round 0.3s ease-in 0.5s both;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncher__svg {
@@ -1344,7 +1351,7 @@ button.WACLauncherExtended__Button {
   }
 
   .WACLauncher__svg {
-    animation: WACLauncherIconTo24 0.3s ease-out 0.5s both;
+    animation: cds-chat-launcher-icon-to-24 0.3s ease-out 0.5s both;
   }
 }
 
@@ -1358,7 +1365,7 @@ button.WACLauncherExtended__Button {
     }
 
     button.WACLauncherExtended__Button {
-      animation: WACLauncherCompletelyRound 0.3s ease-out 0.5s both;
+      animation: cds-chat-launcher-completely-round 0.3s ease-out 0.5s both;
     }
     @media screen and (prefers-reduced-motion: reduce) {
       .WACLauncher__svg {
@@ -1367,15 +1374,15 @@ button.WACLauncherExtended__Button {
     }
 
     .WACLauncher__svg {
-      animation: WACLauncherIconTo32 0.3s ease-out 0.5s both;
+      animation: cds-chat-launcher-icon-to-32 0.3s ease-out 0.5s both;
     }
   }
 }
 
 .WACLauncher__ButtonContainer.WACLauncherExtended__Button--reducedAnimation {
   animation:
-    WACLauncherReduce 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both,
-    WACLauncherCompletelyRound 0.3s ease-out 0.5s both;
+    cds-chat-launcher-reduce 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both,
+    cds-chat-launcher-completely-round 0.3s ease-out 0.5s both;
   @media screen and (prefers-reduced-motion: reduce) {
     button.WACLauncherExtended__Button {
       animation: none;
@@ -1383,7 +1390,7 @@ button.WACLauncherExtended__Button {
   }
 
   button.WACLauncherExtended__Button {
-    animation: WACLauncherCompletelyRound 0.3s ease-out 0.5s both;
+    animation: cds-chat-launcher-completely-round 0.3s ease-out 0.5s both;
   }
   @media screen and (prefers-reduced-motion: reduce) {
     .WACLauncher__svg {
@@ -1392,7 +1399,7 @@ button.WACLauncherExtended__Button {
   }
 
   .WACLauncher__svg {
-    animation: WACLauncherIconTo32 0.3s ease-out 0.5s both;
+    animation: cds-chat-launcher-icon-to-32 0.3s ease-out 0.5s both;
   }
 }
 
@@ -1406,7 +1413,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherIconTo32 {
+@keyframes cds-chat-launcher-icon-to-32 {
   0% {
     inline-size: 24px;
   }
@@ -1416,7 +1423,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherIconTo24 {
+@keyframes cds-chat-launcher-icon-to-24 {
   0% {
     inline-size: 32px;
   }
@@ -1426,7 +1433,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherPartiallyRound {
+@keyframes cds-chat-launcher-partially-round {
   0% {
     border-radius: 28px;
   }
@@ -1436,7 +1443,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherCompletelyRound {
+@keyframes cds-chat-launcher-completely-round {
   0% {
     border-radius: 14px;
   }
@@ -1446,7 +1453,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherExtend {
+@keyframes cds-chat-launcher-extend {
   0% {
     inline-size: $launcher-default-size;
   }
@@ -1456,7 +1463,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherReduce {
+@keyframes cds-chat-launcher-reduce {
   0% {
     inline-size: var(--cds-chat--LAUNCHER-EXTENDED-width);
   }
@@ -1466,7 +1473,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherExtendedElementFadeIn {
+@keyframes cds-chat-launcher-extended-element-fade-in {
   0% {
     inset-block-end: -12px;
     opacity: 0;
@@ -1479,7 +1486,7 @@ button.WACLauncherExtended__Button {
   }
 }
 
-@keyframes WACLauncherExtendedElementFadeOut {
+@keyframes cds-chat-launcher-extended-element-fade-out {
   0% {
     inset-block-start: 0;
     opacity: 1;

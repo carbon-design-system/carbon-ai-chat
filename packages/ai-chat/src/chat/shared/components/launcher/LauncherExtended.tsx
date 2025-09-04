@@ -8,7 +8,8 @@
  */
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import Button, { BUTTON_KIND, BUTTON_TYPE } from "../../../react/carbon/Button";
-import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
+import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import cx from "classnames";
 import React, {
   forwardRef,
@@ -25,7 +26,6 @@ import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { usePrevious } from "../../hooks/usePrevious";
 import { AppState } from "../../../../types/state/AppState";
-import { ThemeType } from "../../../../types/config/PublicConfig";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LauncherConfig } from "../../../../types/config/LauncherConfig";
@@ -36,7 +36,7 @@ import { getLauncherButtonAriaLabel } from "./launcherUtils";
 
 interface LauncherExtendedProps extends HasClassName {
   onToggleOpen: () => void;
-  launcherConfig: LauncherConfig;
+  launcher: LauncherConfig;
 
   /**
    * Indicates if this launcher is being used on mobile.
@@ -130,7 +130,7 @@ function LauncherExtended(
   const {
     unreadHumanAgentCount,
     showUnreadIndicator,
-    launcherConfig,
+    launcher,
     isMobile,
     isExtended,
     playExtendAnimation,
@@ -144,7 +144,7 @@ function LauncherExtended(
   const languagePack = useLanguagePack();
   const intl = useIntl();
   const launcherAvatarURL = useSelector((state: AppState) =>
-    state.theme.theme === ThemeType.CARBON_AI
+    state.config.derived.themeWithDefaults.aiEnabled
       ? undefined
       : state.launcher.config.mobile.avatar_url_override,
   );
@@ -166,7 +166,7 @@ function LauncherExtended(
   const extendWithAnimation = isExtended && animateExtendedState;
   const extendWithoutAnimation = isExtended && !animateExtendedState;
   const launcherGreetingMessage =
-    launcherConfig.mobile.title || languagePack.launcher_mobileGreeting;
+    launcher.mobile.title || languagePack.launcher_mobileGreeting;
   let ariaLabel = getLauncherButtonAriaLabel(languagePack, launcherHidden);
 
   if (unreadHumanAgentCount !== 0) {
@@ -176,7 +176,8 @@ function LauncherExtended(
     )}`;
   }
 
-  let launcherAvatar = <ChatLaunch size={24} className="WACLauncher__svg" />;
+  const ChatLaunch = carbonIconToReact(ChatLaunch24);
+  let launcherAvatar = <ChatLaunch className="WACLauncher__svg" />;
 
   if (launcherAvatarURL) {
     // eslint-disable-next-line jsx-a11y/alt-text
@@ -316,7 +317,7 @@ function LauncherExtended(
         aria-label={ariaLabel}
         className="WACLauncher__Button WACLauncherExtended__Button"
         kind={BUTTON_KIND.PRIMARY}
-        type={"button" as BUTTON_TYPE}
+        type={BUTTON_TYPE.BUTTON}
         ref={buttonRef}
         onClick={onToggleOpen}
       >
@@ -399,7 +400,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   // setWrapperExtendedWidth(launcherExtendedWidth - 6);
   // Set the extended width property to animate to.
   extendedContainerEl.style.setProperty(
-    "--cds-chat--LAUNCHER-EXTENDED-width",
+    "--cds-chat--launcher-extended-width",
     `${launcherExtendedWidth}px`,
   );
 }

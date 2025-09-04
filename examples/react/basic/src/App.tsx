@@ -65,7 +65,7 @@ function App() {
 
   return (
     <ChatContainer
-      config={config}
+      {...config}
       // Set the instance into state for usage.
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}

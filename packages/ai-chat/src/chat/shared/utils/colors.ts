@@ -11,12 +11,7 @@
  * A set of utilities for manipulating colors.
  */
 
-import { gray100, white } from "@carbon/colors";
-
 import { consoleError } from "./miscUtils";
-
-// The minimum allowed contrast for accessibility rules.
-const MIN_CONTRAST = 4.5;
 
 /**
  * Converts the given color string into an array with the red, green and blue components
@@ -128,29 +123,6 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 }
 
 /**
- * Calculates the contrast ratio between the two colors. Contrast values can range from 1 to 21. A value of 4.5 is
- * considered the minimum between a foreground and background color to meet accessibility guidelines.
- *
- * @see https://www.w3.org/TR/WCAG20/#contrast-ratiodef
- */
-function calculateContrast(color1: string, color2: string) {
-  const rgb1 = colorToRGB(color1);
-  const rgb2 = colorToRGB(color2);
-
-  const luminance1 = calculateRelativeLuminance(rgb1);
-  const luminance2 = calculateRelativeLuminance(rgb2);
-
-  let contrast;
-  if (luminance1 > luminance2) {
-    contrast = (luminance1 + 0.05) / (luminance2 + 0.05);
-  } else {
-    contrast = (luminance2 + 0.05) / (luminance1 + 0.05);
-  }
-
-  return contrast;
-}
-
-/**
  * Calculates the relative luminance of the given color (provided as separate RGB values).
  *
  * @see https://www.w3.org/TR/WCAG20/#relativeluminancedef
@@ -170,16 +142,6 @@ function calculateRelativeLuminance([r8, g8, b8]: [
 
   const luminance = 0.2126 * R + 0.7152 * G + 0.0722 * B;
   return luminance;
-}
-
-/**
- * Returns either a white or a black color to use as the text color on a background of the given background color.
- * This will ensure that the text color chosen is of sufficient contrast.
- */
-function whiteOrBlackText(background: string): string {
-  return calculateContrast(gray100, background) >= MIN_CONTRAST
-    ? gray100
-    : white;
 }
 
 /**
@@ -252,12 +214,4 @@ function getCSSVariableValue(variableName: string): string | null {
   }
 }
 
-export {
-  MIN_CONTRAST,
-  calculateContrast,
-  hexCodeToRGB,
-  adjustLightness,
-  whiteOrBlackText,
-  isColorLighterThan,
-  getCSSVariableValue,
-};
+export { adjustLightness, isColorLighterThan, getCSSVariableValue };

@@ -14,15 +14,20 @@
 
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import isEqual from "lodash-es/isEqual.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
 
-import { AppContainer } from "../../react/components/AppContainer";
-import { consoleWarn } from "../../shared/utils/miscUtils";
+import App from "../../shared/containers/App";
 import { carbonElement } from "../decorators/customElement";
 import { PublicConfig } from "../../../types/config/PublicConfig";
 import { ChatInstance } from "../../../types/instance/ChatInstance";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
+import { LanguagePack } from "../../../types/instance/apiTypes";
+import type {
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
+  ServiceDeskPublicConfig,
+} from "../../../types/config/ServiceDeskConfig";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -32,6 +37,20 @@ class ChatContainerInternal extends LitElement {
    */
   @property({ type: Object })
   config: PublicConfig;
+
+  /** Optional partial language pack overrides */
+  @property({ type: Object })
+  strings?: DeepPartial<LanguagePack>;
+
+  /** A factory for the {@link ServiceDesk} integration. */
+  @property({ attribute: false })
+  serviceDeskFactory?: (
+    parameters: ServiceDeskFactoryParameters,
+  ) => Promise<ServiceDesk>;
+
+  /** Public configuration for the service desk integration. */
+  @property({ type: Object })
+  serviceDesk?: ServiceDeskPublicConfig;
 
   /**
    * The optional HTML element to mount the chat to.
@@ -62,30 +81,12 @@ class ChatContainerInternal extends LitElement {
         width: 100%;
         height: 100%;
         box-sizing: border-box;
-        ${this.element ? "" : "z-index: var(--cds-chat-BASE-z-index);"}
+        ${this.element ? "" : "z-index: var(--cds-chat-z-index);"}
       }
     `;
     this.appendChild(style);
     if (this.config) {
       this.renderReactApp();
-    }
-  }
-
-  updated(changedProperties: Map<string, any>) {
-    // Render the React component with any updated properties if necessary. isEqual performs a deep check, but for
-    // elements only checks the reference.
-    if (
-      changedProperties.has("config") &&
-      !isEqual(this.config, changedProperties.get("config"))
-    ) {
-      if (changedProperties.get("config")) {
-        consoleWarn(
-          "The config object you have passed to AI chat has updated. Tearing down and re-starting the chat.",
-        );
-      }
-      if (this.config) {
-        this.renderReactApp();
-      }
     }
   }
 
@@ -110,8 +111,11 @@ class ChatContainerInternal extends LitElement {
 
     this.root = createRoot(container);
     this.root.render(
-      <AppContainer
+      <App
         config={this.config}
+        strings={this.strings}
+        serviceDeskFactory={this.serviceDeskFactory}
+        serviceDesk={this.serviceDesk}
         onBeforeRender={this.onBeforeRender}
         onAfterRender={this.onAfterRender}
         container={container}

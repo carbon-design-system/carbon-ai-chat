@@ -18,14 +18,8 @@ import dayjs from "dayjs";
 import enLocaleData from "dayjs/locale/en.js";
 import { IntlMessageFormat } from "intl-messageformat";
 import React from "react";
-import { IntlShape } from "react-intl";
-
 import { consoleError } from "./miscUtils";
-import {
-  EnglishLanguagePack,
-  enLanguagePack,
-  LanguagePack,
-} from "../../../types/instance/apiTypes";
+import { enLanguagePack, LanguagePack } from "../../../types/instance/apiTypes";
 
 const locales = {
   ar: () => import("dayjs/locale/ar.js" as any),
@@ -165,9 +159,7 @@ async function loadLocale(requestedLocale: string): Promise<ILocale> {
  * @returns The appropriate language pack for the given locale. Any values that are missing will be set with
  * their English values when the instance's language pack is updated.
  */
-async function loadLanguagePack(
-  providedLanguagePack?: LanguagePack,
-): Promise<LanguagePack> {
+function loadLanguagePack(providedLanguagePack?: LanguagePack): LanguagePack {
   if (providedLanguagePack) {
     // Use the language pack that was provided.
     return fillWithEnglish(providedLanguagePack);
@@ -239,14 +231,6 @@ async function loadDayjsLocale(locale: string): Promise<string> {
   return locale;
 }
 
-function formatMessage(
-  intl: IntlShape,
-  id: keyof EnglishLanguagePack,
-  values: Record<string, string>,
-) {
-  return intl.formatMessage({ id }, values);
-}
-
 function createEnglishFormat(key: keyof LanguagePack) {
   return new IntlMessageFormat(enLanguagePack[key], "en-US");
 }
@@ -256,6 +240,5 @@ export {
   loadLocale,
   addHTMLSupport,
   loadDayjsLocale,
-  formatMessage,
   createEnglishFormat,
 };

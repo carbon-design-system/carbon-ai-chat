@@ -11,28 +11,49 @@
 @use "@carbon/styles/scss/type";
 @use "../../styles/chatTheme";
 
+.WACContainer--render {
+  box-sizing: border-box;
+  block-size: 100%;
+  color: theme.$text-primary;
+  font-family: "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
+  inline-size: 100%;
+}
+
+.WACContainer--render[dir="rtl"] {
+  direction: rtl;
+}
+
+.WACContainer--render > div > div[role="log"] {
+  position: absolute;
+  overflow: hidden;
+  block-size: 1px;
+  inline-size: 1px;
+  inset-inline-start: -10000px;
+}
+
 .WACWidget__regionContainer {
   block-size: 100%;
   inline-size: 100%;
 }
 
-.WACWidget.WACWidget {
+.WACWidget {
   position: relative;
   display: flex;
   flex-direction: column;
   block-size: 100%;
-  @include type.type-style("body-01");
-
-  /* TODO: What to do with this? */
-  box-shadow: chatTheme.$BASE-box-shadow;
+  box-shadow: chatTheme.$box-shadow;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  inline-size: 100%;
   -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
   text-rendering: optimizelegibility;
+
+  /* TODO: What to do with this? */
   visibility: visible;
+  @include type.type-style("body-01");
 }
 
-.WAC--aiTheme .WACWidget.WACWidget {
+.WAC--aiTheme .WACWidget {
   border: solid 1px transparent;
   background: linear-gradient(
       to bottom,
@@ -45,7 +66,7 @@
   box-shadow: chatTheme.$AI-box-shadow-outer;
 }
 
-.WAC--frameless .WACWidget.WACWidget {
+.WAC--frameless .WACWidget {
   border: none;
   box-shadow: none;
 }
@@ -129,7 +150,7 @@ in. */
 }
 
 .WACWidget.WACWidget--launched.WACWidget--defaultElement {
-  animation: WACWidgetIn motion.$duration-moderate-02
+  animation: cds-chat-widget-in motion.$duration-moderate-02
     motion.motion(entrance, expressive) both;
 }
 
@@ -140,7 +161,7 @@ in. */
 }
 
 .WACWidget.WACWidget--closing.WACWidget--defaultElement {
-  animation: WACWidgetOut motion.$duration-fast-02
+  animation: cds-chat-widget-out motion.$duration-fast-02
     motion.motion(exit, expressive) both;
 }
 
@@ -150,46 +171,42 @@ in. */
   box-shadow: none;
 }
 
-/* Note that we do not apply this when using a custom element. The user is responsible for showing or hiding the custom
- element on their own. This gives them the opportunity to apply animations to the element. */
-
-.WACWidget.WACWidget--closed.WACWidget--defaultElement {
+/* MainWindow hides itself consistently in both default floating mode and custom element mode */
+.WACWidget.WACWidget--closed {
   display: none;
 }
 
 /* The following four blocks are duplicates so make sure to keep them all up-to-date. */
 .WACWidget.WACWidget--defaultElement {
   position: fixed;
-  z-index: var(--cds-chat-BASE-z-index);
-  block-size: var(--cds-chat-BASE-height);
-  inline-size: var(--cds-chat-BASE-width);
-  inset: var(--cds-chat-BASE-top-position) var(--cds-chat-BASE-right-position)
-    var(--cds-chat-BASE-bottom-position) var(--cds-chat-BASE-left-position);
-  max-block-size: var(--cds-chat-BASE-max-height);
-  max-inline-size: var(--cds-chat-BASE-max-width);
-  min-block-size: var(--cds-chat-BASE-min-height);
+  z-index: var(--cds-chat-z-index);
+  block-size: var(--cds-chat-height);
+  inline-size: var(--cds-chat-width);
+  inset: var(--cds-chat-top-position) var(--cds-chat-right-position)
+    var(--cds-chat-bottom-position) var(--cds-chat-left-position);
+  max-block-size: var(--cds-chat-max-height);
+  max-inline-size: var(--cds-chat-max-width);
+  min-block-size: var(--cds-chat-min-height);
 }
 
 .WACContainer--render[dir="rtl"] .WACWidget.WACWidget--defaultElement {
-  inset-inline: var(--cds-chat-BASE-right-position)
-    var(--cds-chat-BASE-left-position);
+  inset-inline: var(--cds-chat-right-position) var(--cds-chat-left-position);
 }
 
 .WAC-isPhone:not(.WACContainer-disableMobileEnhancements) .WACWidget {
   position: fixed;
-  z-index: var(--cds-chat-BASE-z-index);
-  block-size: var(--cds-chat-BASE-height);
-  inline-size: var(--cds-chat-BASE-width);
-  inset: var(--cds-chat-BASE-top-position) var(--cds-chat-BASE-right-position)
-    var(--cds-chat-BASE-bottom-position) var(--cds-chat-BASE-left-position);
-  max-block-size: var(--cds-chat-BASE-max-height);
-  min-block-size: var(--cds-chat-BASE-min-height);
+  z-index: var(--cds-chat-z-index);
+  block-size: var(--cds-chat-height);
+  inline-size: var(--cds-chat-width);
+  inset: var(--cds-chat-top-position) var(--cds-chat-right-position)
+    var(--cds-chat-bottom-position) var(--cds-chat-left-position);
+  max-block-size: var(--cds-chat-max-height);
+  min-block-size: var(--cds-chat-min-height);
 }
 
 .WAC-isPhone[dir="rtl"]:not(.WACContainer-disableMobileEnhancements)
   .WACWidget {
-  inset-inline: var(--cds-chat-BASE-right-position)
-    var(--cds-chat-BASE-left-position);
+  inset-inline: var(--cds-chat-right-position) var(--cds-chat-left-position);
 }
 
 .WAC {
@@ -241,7 +258,7 @@ in. */
 
 .WACWidget__FocusTrapGlass {
   position: fixed;
-  z-index: var(--cds-chat-BASE-z-index);
+  z-index: var(--cds-chat-z-index);
   overflow: hidden;
   background: theme.$overlay;
   block-size: 100vh;
@@ -251,21 +268,21 @@ in. */
   opacity: 0.5;
 }
 
-@keyframes WACWidgetIn {
+@keyframes cds-chat-widget-in {
   0% {
     inset-block-end: calc(
-      var(--cds-chat-BASE-bottom-position) - #{layout.$spacing-07}
+      var(--cds-chat-bottom-position) - #{layout.$spacing-07}
     );
     opacity: 0;
   }
 
   100% {
-    inset-block-end: var(--cds-chat-BASE-bottom-position);
+    inset-block-end: var(--cds-chat-bottom-position);
     opacity: 1;
   }
 }
 
-@keyframes WACWidgetOut {
+@keyframes cds-chat-widget-out {
   0% {
     opacity: 1;
   }
@@ -298,7 +315,7 @@ svg.WACIcon__Logout--reverse {
 .WACBackgroundCover {
   position: absolute;
   z-index: 2;
-  animation: WACAnimBackgroundCover motion.$duration-moderate-02
+  animation: cds-chat-anim-background-cover motion.$duration-moderate-02
     motion.motion(standard, productive);
   background: theme.$overlay;
   block-size: 100%;
@@ -314,7 +331,7 @@ svg.WACIcon__Logout--reverse {
   inset-block-start: 40px;
 }
 
-@keyframes WACAnimBackgroundCover {
+@keyframes cds-chat-anim-background-cover {
   0% {
     opacity: 0;
   }
@@ -358,16 +375,6 @@ svg.WACIcon__Logout--reverse {
   transform: scaleX(1);
 }
 
-@keyframes WACLoadingBar__ConnectingAnimationKeyFrames {
-  0% {
-    background-position: 0 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 /* This class is is meant to wrap panel content that doesn't include the header. When panel content is given a max-width
  elements with this class will be constrained. */
 
@@ -376,13 +383,13 @@ svg.WACIcon__Logout--reverse {
 }
 
 .WACWidget--maxWidth {
-  --cds-chat-CONTAINER-border-radius: 0;
+  --cds-chat-border-radius: 0;
 
   .WACPanelContent {
     flex: 1;
     margin: auto;
     inline-size: 100%;
-    max-inline-size: chatTheme.$CONTAINER-max-width;
+    max-inline-size: chatTheme.$max-width;
   }
 }
 
@@ -400,8 +407,8 @@ svg.WACIcon__Logout--reverse {
       .WACWidget__animationContainer--withBrandingBanner
     )
     .WACPanelContent {
-    border-end-end-radius: var(--cds-chat-CONTAINER-border-radius);
-    border-end-start-radius: var(--cds-chat-CONTAINER-border-radius);
+    border-end-end-radius: var(--cds-chat-border-radius);
+    border-end-start-radius: var(--cds-chat-border-radius);
   }
 
   .WACWidget__animationContainer .WACCustomPanel .WACHeader ~ .WACPanelContent {
@@ -410,7 +417,7 @@ svg.WACIcon__Logout--reverse {
   }
 
   .WACWidget__animationContainer .WACCustomPanel .WACPanelContent {
-    border-start-end-radius: var(--cds-chat-CONTAINER-border-radius);
-    border-start-start-radius: var(--cds-chat-CONTAINER-border-radius);
+    border-start-end-radius: var(--cds-chat-border-radius);
+    border-start-start-radius: var(--cds-chat-border-radius);
   }
 }

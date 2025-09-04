@@ -9,7 +9,8 @@
 
 /* eslint-disable react/no-array-index-key */
 
-import Attachment from "@carbon/icons-react/es/Attachment.js";
+import Attachment16 from "@carbon/icons/es/attachment/16.js";
+import { carbonIconToReact } from "../utils/carbonIcon";
 import React, { useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { shallowEqual, useSelector } from "react-redux";
@@ -48,7 +49,6 @@ import { useUUID } from "../hooks/useUUID";
 import actions from "../store/actions";
 import { selectHumanAgentDisplayState } from "../store/selectors";
 import { AppState } from "../../../types/state/AppState";
-import { ThemeType } from "../../../types/config/PublicConfig";
 import {
   LocalMessageItem,
   MessageErrorState,
@@ -381,7 +381,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderImage(message: LocalMessageItem<ImageItem>) {
     const { languagePack, serviceManager } = props;
-    const { theme } = serviceManager.store.getState().theme;
+    const { aiEnabled } =
+      serviceManager.store.getState().config.derived.themeWithDefaults;
 
     return (
       <Image
@@ -391,7 +392,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         description={message.item.description}
         altText={message.item.alt_text}
         needsAnnouncement={message.ui_state.needsAnnouncement}
-        useAITheme={theme === ThemeType.CARBON_AI}
+        useAITheme={aiEnabled}
       />
     );
   }
@@ -838,3 +839,4 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 }
 
 export { MessageTypeComponent };
+const Attachment = carbonIconToReact(Attachment16);

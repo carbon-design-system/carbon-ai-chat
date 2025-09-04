@@ -25,7 +25,7 @@ import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
 import { OverlayPanelName } from "./OverlayPanel";
-import { CarbonTheme, ThemeType } from "../../../types/config/PublicConfig";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
 interface DisclaimerProps {
   onAcceptDisclaimer: () => void;
@@ -44,8 +44,8 @@ function Disclaimer({
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { derivedCarbonTheme, theme } = useSelector(
-    (state: AppState) => state.theme,
+  const { derivedCarbonTheme, aiEnabled } = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults,
   );
   const isDarkTheme =
     derivedCarbonTheme === CarbonTheme.G90 ||
@@ -74,7 +74,7 @@ function Disclaimer({
     <div className="WACDisclaimerContainer">
       <div className="WAC__disclaimer">
         <SimpleHeader
-          useAITheme={theme === ThemeType.CARBON_AI}
+          useAITheme={aiEnabled}
           onClose={onClose}
           testIdPrefix={OverlayPanelName.DISCLAIMER}
         />

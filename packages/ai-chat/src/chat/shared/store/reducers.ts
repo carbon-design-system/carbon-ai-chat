@@ -8,13 +8,10 @@
  */
 
 import merge from "lodash-es/merge.js";
-import mergeWith from "lodash-es/mergeWith.js";
 import { DeepPartial } from "../../../types/utilities/DeepPartial";
 import { isBrowser } from "../utils/browserUtils";
 
-import { ThemeType } from "../../../types/config/PublicConfig";
 import { outputItemToLocalItem } from "../schema/outputItemToLocalItem";
-import { AppConfig } from "../../../types/state/AppConfig";
 import {
   AnnounceMessage,
   AppState,
@@ -28,17 +25,12 @@ import {
   ThemeState,
   ViewState,
 } from "../../../types/state/AppState";
-import {
-  LauncherConfig,
-  LauncherInternalCallToActionConfig,
-} from "../../../types/config/LauncherConfig";
+import { LauncherInternalCallToActionConfig } from "../../../types/config/LauncherConfig";
 import {
   LocalMessageItem,
   LocalMessageUIState,
 } from "../../../types/messaging/LocalMessageItem";
-import ObjectMap from "../../../types/utilities/ObjectMap";
 import { FileStatusValue } from "../utils/constants";
-import { replaceCurrentArrayValue } from "../utils/customizers";
 import { isRequest, isResponse, streamItemID } from "../utils/messageUtils";
 import {
   ACCEPTED_DISCLAIMER,
@@ -90,20 +82,12 @@ import {
   STREAMING_MERGE_MESSAGE_OPTIONS,
   STREAMING_START,
   TOGGLE_HOME_SCREEN,
-  UPDATE_BOT_AVATAR_URL,
-  UPDATE_BOT_NAME,
-  UPDATE_CSS_VARIABLES,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
-  UPDATE_HOME_SCREEN_CONFIG,
   UPDATE_INPUT_STATE,
   UPDATE_LAUNCHER_AVATAR_URL,
-  UPDATE_LAUNCHER_CONFIG,
   UPDATE_LOCAL_MESSAGE_ITEM,
-  UPDATE_MAIN_HEADER_AVATAR,
-  UPDATE_MAIN_HEADER_TITLE,
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
-  UPDATE_CHAT_HEADER_CONFIG,
   UPDATE_THEME_STATE,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
@@ -117,7 +101,6 @@ import {
   handleViewStateChange,
   setHomeScreenOpenState,
 } from "./reducerUtils";
-import { ChatHeaderAvatarConfig } from "../../../types/instance/ChatInstance";
 import {
   HumanAgentMessageType,
   ConversationalSearchItemCitation,
@@ -132,13 +115,10 @@ import {
   MessageResponseHistory,
   MessageRequestHistory,
 } from "../../../types/messaging/Messages";
-import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
-import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
 import {
   LauncherType,
   NotificationMessage,
 } from "../../../types/instance/apiTypes";
-import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 
 type ReducerType = (state: AppState, action?: any) => AppState;
 
@@ -194,7 +174,7 @@ const reducers: { [key: string]: ReducerType } = {
       catastrophicErrorType: null,
     };
 
-    if (newState.homeScreenConfig.is_on) {
+    if (newState.config.public.homescreen?.is_on) {
       newState = setHomeScreenOpenState(newState, true);
     }
     return newState;
@@ -596,25 +576,6 @@ const reducers: { [key: string]: ReducerType } = {
     initialViewChangeComplete: action.changeComplete,
   }),
 
-  [UPDATE_BOT_NAME]: (state: AppState, action: { name: string }): AppState => {
-    return {
-      ...state,
-      botName: action.name,
-      headerDisplayName:
-        state.theme.theme === ThemeType.CARBON_AI
-          ? state.headerDisplayName
-          : action.name,
-    };
-  },
-
-  [UPDATE_BOT_AVATAR_URL]: (
-    state: AppState,
-    action: { url: string },
-  ): AppState => ({
-    ...state,
-    botAvatarURL: action.url,
-  }),
-
   [UPDATE_LAUNCHER_AVATAR_URL]: (
     state: AppState,
     action: { source: string },
@@ -635,60 +596,6 @@ const reducers: { [key: string]: ReducerType } = {
       },
     },
   }),
-
-  [UPDATE_MAIN_HEADER_TITLE]: (
-    state: AppState,
-    action: { title: null | string },
-  ): AppState => ({
-    ...state,
-    headerDisplayName: action.title,
-  }),
-
-  [UPDATE_CSS_VARIABLES]: (
-    state: AppState,
-    action: {
-      variables: ObjectMap<string>;
-      publicVars: ObjectMap<string>;
-      whiteLabelVariables: WhiteLabelTheme;
-    },
-  ): AppState => {
-    const { config } = state;
-    const { variables } = action;
-    // Update css variables in app config with merged css variables.
-    const newConfig: AppConfig = {
-      public: {
-        ...config.public,
-      },
-    };
-    return {
-      ...state,
-      // This is modifying the original config objects. We may need to hold a reference to the original at some point.
-      config: newConfig,
-      cssVariableOverrides: variables,
-    };
-  },
-
-  // Right now we just merge here. When we understand home screen enough to open up these values to a developer,
-  // we will probably want to split this reducer into individual parts.
-  [UPDATE_HOME_SCREEN_CONFIG]: (
-    state: AppState,
-    action: { homeScreenConfig: HomeScreenConfig },
-  ): AppState => {
-    // background_gradient is deprecated. When it's removed the following config manipulation function can be removed
-    // and the merge in this reducer can go back to using action.homeScreenConfig for the new value instead of
-    // newHomeScreenConfig.
-    const newHomeScreenConfig = action.homeScreenConfig;
-
-    return {
-      ...state,
-      homeScreenConfig: mergeWith(
-        {},
-        state.homeScreenConfig,
-        newHomeScreenConfig,
-        replaceCurrentArrayValue,
-      ),
-    };
-  },
 
   [SET_MESSAGE_UI_PROPERTY]: <TPropertyName extends keyof LocalMessageUIState>(
     state: AppState,
@@ -823,36 +730,6 @@ const reducers: { [key: string]: ReducerType } = {
         .isHomeScreenOpen,
       true,
     ),
-
-  [UPDATE_LAUNCHER_CONFIG]: (
-    state: AppState,
-    action: { launcherConfig: LauncherConfig },
-  ) => {
-    const newConfig = merge({}, state.launcher.config, action.launcherConfig);
-    return {
-      ...state,
-      launcher: {
-        ...state.launcher,
-        config: newConfig,
-      },
-      persistedToBrowserStorage: {
-        ...state.persistedToBrowserStorage,
-        launcherState: {
-          ...state.persistedToBrowserStorage.launcherState,
-          desktopLauncherIsExpanded:
-            newConfig.is_on && newConfig.desktop.is_on
-              ? state.persistedToBrowserStorage.launcherState
-                  .desktopLauncherIsExpanded
-              : false,
-          mobileLauncherIsExtended:
-            newConfig.is_on && newConfig.mobile.is_on
-              ? state.persistedToBrowserStorage.launcherState
-                  .mobileLauncherIsExtended
-              : false,
-        },
-      },
-    };
-  },
 
   [SET_LAUNCHER_PROPERTY]: <TPropertyName extends keyof PersistedLauncherState>(
     state: AppState,
@@ -1382,22 +1259,6 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [UPDATE_CHAT_HEADER_CONFIG]: (
-    state: AppState,
-    { chatHeaderConfig }: { chatHeaderConfig: ChatHeaderConfig },
-  ) => {
-    return {
-      ...state,
-      chatHeaderState: {
-        ...state.chatHeaderState,
-        config: {
-          ...state.chatHeaderState.config,
-          ...chatHeaderConfig,
-        },
-      },
-    };
-  },
-
   [SET_STOP_STREAMING_BUTTON_VISIBLE]: (
     state: AppState,
     { isVisible }: { isVisible: boolean },
@@ -1446,23 +1307,19 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [UPDATE_MAIN_HEADER_AVATAR]: (
-    state: AppState,
-    { config }: { config: ChatHeaderAvatarConfig },
-  ) => {
-    return {
-      ...state,
-      headerAvatarConfig: config,
-    };
-  },
-
   [UPDATE_THEME_STATE]: (
     state: AppState,
     { themeState }: { themeState: ThemeState },
   ) => {
     return {
       ...state,
-      theme: themeState,
+      config: {
+        ...state.config,
+        derived: {
+          ...state.config.derived,
+          themeWithDefaults: themeState,
+        },
+      },
     };
   },
 };

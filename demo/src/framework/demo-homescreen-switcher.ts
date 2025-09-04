@@ -9,28 +9,74 @@
 
 import "@carbon/web-components/es/components/dropdown/index.js";
 
+import { PublicConfig, HomeScreenConfig } from "@carbon/ai-chat";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-
-import { Settings } from "./types";
 
 @customElement("demo-homescreen-switcher")
 export class DemoHomeScreenSwitcher extends LitElement {
   @property({ type: Object })
-  accessor settings!: Settings;
+  accessor config!: PublicConfig;
 
   dropdownSelected = (event: Event) => {
     const customEvent = event as CustomEvent;
-    // Emit a custom event `settings-changed` with the new framework value
+    const selectedValue = customEvent.detail.item.value;
+
+    let homescreen: HomeScreenConfig | undefined;
+
+    switch (selectedValue) {
+      case "default":
+        homescreen = {
+          is_on: true,
+          disable_return: false,
+          greeting: "Hello!\n\nThis is some text to introduce your chat.",
+          starters: {
+            is_on: true,
+            buttons: [
+              { label: "text (stream)" },
+              { label: "code (stream)" },
+              { label: "text" },
+              { label: "code" },
+            ],
+          },
+        };
+        break;
+      case "splash":
+        homescreen = {
+          is_on: true,
+          disable_return: true,
+          greeting:
+            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
+          starters: {
+            is_on: true,
+            buttons: [
+              { label: "text (stream)" },
+              { label: "code (stream)" },
+              { label: "text" },
+              { label: "code" },
+            ],
+          },
+        };
+        break;
+      case "custom":
+        homescreen = {
+          is_on: true,
+          disable_return: false,
+          custom_content_only: true,
+        };
+        break;
+      case "none":
+      default:
+        homescreen = undefined;
+        break;
+    }
+
+    // Emit a custom event `config-changed` with the new home screen configuration
     this.dispatchEvent(
-      new CustomEvent("settings-changed", {
+      new CustomEvent("config-changed", {
         detail: {
-          ...this.settings,
-          homescreen: customEvent.detail.item.value,
-          writeableElements:
-            customEvent.detail.item.value === "custom"
-              ? "true"
-              : this.settings.writeableElements,
+          ...this.config,
+          homescreen,
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
@@ -38,10 +84,24 @@ export class DemoHomeScreenSwitcher extends LitElement {
     );
   };
 
+  private getCurrentHomescreenValue(): string {
+    if (!this.config?.homescreen?.is_on) {
+      return "none";
+    }
+    if (this.config.homescreen.custom_content_only) {
+      return "custom";
+    }
+    if (this.config.homescreen.disable_return) {
+      return "splash";
+    }
+    return "default";
+  }
+
   render() {
     return html`<cds-dropdown
-      value="${this.settings.homescreen}"
+      value="${this.getCurrentHomescreenValue()}"
       title-text="Homescreen"
+      helper-text="If you have already sent messages, refresh the page to ensure seeing the initial homescreen state."
       @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="none">None</cds-dropdown-item>

@@ -17,7 +17,7 @@
 .WACConnectToAgent__Title {
   @include type.type-style("body-02");
 
-  font-weight: var(--cds-chat-BASE-weight-semibold);
+  font-weight: 600;
   inline-size: 100%;
   padding-block-end: layout.$spacing-02;
 }
