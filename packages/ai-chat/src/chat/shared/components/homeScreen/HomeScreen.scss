@@ -30,7 +30,7 @@
   position: relative;
   margin: auto;
   inline-size: 100%;
-  max-inline-size: chatTheme.$CONTAINER-max-width;
+  max-inline-size: chatTheme.$max-width;
 }
 
 /* Used to hide some of the AI theme box shadow that tries to overlay the header. The chat window does the same thing. */
@@ -51,7 +51,7 @@
 
 .WACHomeScreen--firstRender .WACHomeScreen__content {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeIn 0.07s both;
+    cds-chat-fade-in 0.07s both;
 }
 
 .WACHomeScreen__bodyWrapper {
@@ -116,7 +116,7 @@
 
 .WACHomeScreen.WACHomeScreen--hydrationComplete .WACHomeScreen__avatarHolder {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeIn 0.07s both;
+    cds-chat-fade-in 0.07s both;
 }
 
 .WACHomeScreen__avatarHolder img {
@@ -145,7 +145,7 @@
 
 .WACHomeScreen.WACHomeScreen--hydrationComplete .WACHomeScreen__greeting {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeInUp 0.07s both;
+    cds-chat-fade-in-up 0.07s both;
 }
 
 .WACHomeScreen__starters {
@@ -184,71 +184,12 @@ close to overflowing. */
   }
 }
 
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    cds-chat-button.WACHomeScreen__starter {
-    display: block;
-    animation: none;
-    margin-block-end: layout.$spacing-04;
-    max-inline-size: 100%;
-    word-break: break-word;
-
-    &:last-child {
-      margin-block-end: 0;
-    }
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    cds-chat-button.WACHomeScreen__starter {
-    display: block;
-    animation: none;
-    margin-block-end: layout.$spacing-04;
-    max-inline-size: 100%;
-    word-break: break-word;
-
-    &:last-child {
-      margin-block-end: 0;
-    }
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    cds-chat-button.WACHomeScreen__starter {
-    display: block;
-    animation: none;
-    margin-block-end: layout.$spacing-04;
-    max-inline-size: 100%;
-    word-break: break-word;
-
-    &:last-child {
-      margin-block-end: 0;
-    }
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    cds-chat-button.WACHomeScreen__starter {
-    display: block;
-    animation: none;
-    margin-block-end: layout.$spacing-04;
-    max-inline-size: 100%;
-    word-break: break-word;
-
-    &:last-child {
-      margin-block-end: 0;
-    }
-  }
-}
-
 .WACHomeScreen.WACHomeScreen--hydrationComplete
   cds-chat-button.WACHomeScreen__starter {
   display: block;
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeInUp calc(var(--cds-chat-HomeScreenStarter-index) * 0.12s) both;
+    cds-chat-fade-in-up calc(var(--cds-chat-homescreen-starter-index) * 0.12s)
+    both;
   margin-block-end: layout.$spacing-04;
   max-inline-size: 100%;
   word-break: break-word;
@@ -266,63 +207,38 @@ close to overflowing. */
   }
 }
 
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    .WACHomeScreen__starters--animateGroup
-    cds-chat-button.WACHomeScreen__starter {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    .WACHomeScreen__starters--animateGroup
-    cds-chat-button.WACHomeScreen__starter {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    .WACHomeScreen__starters--animateGroup
-    cds-chat-button.WACHomeScreen__starter {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .WACHomeScreen.WACHomeScreen--hydrationComplete
-    .WACHomeScreen__starters--animateGroup
-    cds-chat-button.WACHomeScreen__starter {
-    animation: none;
-  }
-}
-
 .WACHomeScreen.WACHomeScreen--hydrationComplete
   .WACHomeScreen__starters--animateGroup
   cds-chat-button.WACHomeScreen__starter {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeInUp 0.12s both;
+    cds-chat-fade-in-up 0.12s both;
 }
 
 cds-chat-button.WACHomeScreen__starter:nth-child(1) {
-  --cds-chat-HomeScreenStarter-index: 1;
+  --cds-chat-homescreen-starter-index: 1;
 }
 
 cds-chat-button.WACHomeScreen__starter:nth-child(2) {
-  --cds-chat-HomeScreenStarter-index: 2;
+  --cds-chat-homescreen-starter-index: 2;
 }
 
 cds-chat-button.WACHomeScreen__starter:nth-child(3) {
-  --cds-chat-HomeScreenStarter-index: 3;
+  --cds-chat-homescreen-starter-index: 3;
 }
 
 cds-chat-button.WACHomeScreen__starter:nth-child(4) {
-  --cds-chat-HomeScreenStarter-index: 4;
+  --cds-chat-homescreen-starter-index: 4;
 }
 
 cds-chat-button.WACHomeScreen__starter:nth-child(5) {
-  --cds-chat-HomeScreenStarter-index: 5;
+  --cds-chat-homescreen-starter-index: 5;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACHomeScreen.WACHomeScreen--hydrationComplete
+    .WACHomeScreen__customContent--animation {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -363,7 +279,7 @@ cds-chat-button.WACHomeScreen__starter:nth-child(5) {
 .WACHomeScreen.WACHomeScreen--hydrationComplete
   .WACHomeScreen__customContent--animation {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeInUp 0.33s both;
+    cds-chat-fade-in-up 0.33s both;
 }
 
 .WACHomeScreen__backButton {
@@ -391,7 +307,7 @@ cds-chat-button.WACHomeScreen__starter:nth-child(5) {
   margin-inline: layout.$spacing-03 unset;
 }
 
-@keyframes WACFadeInUpBackButton {
+@keyframes cds-chat-fade-in-up-back-button {
   0% {
     opacity: 0;
     /* Building on the same transform above, except we want the button to start 32px lower. */
@@ -422,7 +338,7 @@ cds-chat-button.WACHomeScreen__starter:nth-child(5) {
 
 .WACHomeScreen.WACHomeScreen--hydrationComplete .WACHomeScreen__backButton {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeInUpBackButton 0.35s both;
+    cds-chat-fade-in-up-back-button 0.35s both;
 }
 
 .WACHomeScreen__inputContainerWrapper,
@@ -446,5 +362,5 @@ cds-chat-button.WACHomeScreen__starter:nth-child(5) {
 
 .WACHomeScreen.WACHomeScreen--firstRender .WACInputContainer {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeInUp 0.37s both;
+    cds-chat-fade-in-up 0.37s both;
 }

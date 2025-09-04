@@ -22,12 +22,16 @@ You can render this component anywhere in your application and provide the Carbo
 import React from "react";
 import { ChatContainer } from "@carbon/ai-chat";
 
-const chatOptions = {
-  // Your configuration object.
-};
-
 function App() {
-  return <ChatContainer config={chatOptions} />;
+  return (
+    <ChatContainer
+      debug={true}
+      aiEnabled={true}
+      header={{ title: "My Assistant" }}
+      launcher={{ is_on: true }}
+      // ... other config properties as individual props
+    />
+  );
 }
 ```
 
@@ -47,17 +51,20 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
-const config = {
-  // Your configuration object.
-};
-
 @customElement("my-app")
 export class MyApp extends LitElement {
   render() {
-    return html`<cds-aichat-container .config="{config}" />`;
+    return html`<cds-aichat-container
+      .debug=${true}
+      .aiEnabled=${true}
+      .header=${{ title: "My Assistant" }}
+      .launcher=${{ is_on: true }}
+    />`;
   }
 }
 ```
+
+Note: The AI theme is enabled by default. To disable it in plain HTML, use `ai-disabled` or set `ai-enabled="false"`.
 
 For more information, see the [web component](WebComponent.md) documentation.
 
@@ -109,11 +116,25 @@ The Carbon AI Chat integration complies with the [Web Content Accessibility 2.1 
 
 Most of the content that displays in the Carbon AI Chat originates from an assistant and displays the language that the content is written in. However, some content that displays in the Carbon AI Chat is static text that is hard-coded inside of the Carbon AI Chat. This includes items such as the "Type something..." message that appears as the placeholder text in the input field or the "Choose a date" text that appears on a date picker. By default, these texts display in English but you can change the language of the texts.
 
-To change any text string, use the {@link ChatInstance.updateLanguagePack} instance method. The JSON object specifies the replacement strings. You can find the strings that the Carbon AI Chat uses in the [languages folder](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat/src/languages).
+To change any text string, pass a `strings` prop to the React or web component. Provide a partial language pack object and it will merge with the defaults. You can find the available string keys in the [languages folder](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat/src/languages).
 
 These files are in the [ICU Message Format](http://userguide.icu-project.org/formatparse/messages).
 
-**Note:** The provided JSON object does not need to contain all strings, just the strings you want to update. Your changes merge with the existing language strings.
+Example (React):
+
+```tsx
+<ChatContainer strings={{ input_placeholder: "Ask me anything…" }} />
+```
+
+Example (web component):
+
+```html
+<cds-aichat-container id="chat"></cds-aichat-container>
+<script type="module">
+  const el = document.getElementById("chat");
+  el.strings = { input_placeholder: "Ask me anything…" };
+</script>
+```
 
 #### Locales
 
@@ -121,7 +142,7 @@ In addition to languages, the Carbon AI Chat supports locales with a more specif
 
 The Carbon AI Chat supports the locales that the [dayjs library](https://github.com/iamkun/dayjs/tree/dev/src/locale) provide.
 
-You can switch the locale by calling the {@link ChatInstance.updateLocale} instance method and by using the appropriate language code to get correct date formatting in the chat.
+You can switch the locale by updating the {@link PublicConfig.locale} config using the appropriate language code to get correct date formatting in the chat.
 
 #### Bi-directional Support
 

@@ -139,7 +139,7 @@ function HumanAgentBanner(
       {isScreenSharing && (
         <Button
           className="WACHumanAgentBanner__Button WACHumanAgentBanner__StopSharingButton"
-          kind={"danger" as BUTTON_KIND}
+          kind={BUTTON_KIND.DANGER}
           size="sm"
           onClick={onStopSharing}
         >

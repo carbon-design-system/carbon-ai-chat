@@ -11,7 +11,8 @@ import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from "../../../react/carbon/ChatButton";
-import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
+import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import cx from "classnames";
 import React, { RefObject } from "react";
 import { useSelector } from "react-redux";
@@ -21,17 +22,15 @@ import { usePrevious } from "../../hooks/usePrevious";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../../types/state/AppState";
 
-import { BrandColorKind, WriteableElementName } from "../../utils/constants";
+import { WriteableElementName } from "../../utils/constants";
 import { Input, InputFunctions } from "../input/Input";
 import WriteableElement from "../WriteableElement";
 import { HomeScreenHeader } from "./HomeScreenHeader";
 import {
-  HomeScreenBackgroundType,
   HomeScreenConfig,
   HomeScreenStarterButton,
 } from "../../../../types/config/HomeScreenConfig";
 import { OverlayPanelName } from "../OverlayPanel";
-import { ThemeType } from "../../../../types/config/PublicConfig";
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -39,7 +38,7 @@ interface HomeScreenProps {
   /**
    * Active config for home screen derived from combining remote and local config.
    */
-  homeScreenConfig: HomeScreenConfig;
+  homescreen: HomeScreenConfig;
 
   /**
    * The callback function to fire when the user clicks the send button which gets the input text passed into it.
@@ -63,11 +62,6 @@ interface HomeScreenProps {
   onClose: () => void;
 
   /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart?: () => void;
-
-  /**
    * Method to call when restart button is pressed.
    */
   onRestart: () => void;
@@ -79,13 +73,12 @@ interface HomeScreenProps {
 }
 
 function HomeScreenComponent({
-  homeScreenConfig,
+  homescreen,
   homeScreenMessageInputRef,
   onStarterClick,
   onSendInput,
   isHydrated,
   onClose,
-  onCloseAndRestart,
   onRestart,
   onToggleHomeScreen,
 }: HomeScreenProps) {
@@ -98,8 +91,11 @@ function HomeScreenComponent({
   );
 
   const prevIsHydrated = usePrevious(isHydrated);
+  const ArrowRight = carbonIconToReact(ArrowRight16);
 
-  const theme = useSelector((state: AppState) => state.theme.theme);
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
 
   const homeScreenWriteableElement =
     serviceManager.writeableElements[
@@ -107,33 +103,20 @@ function HomeScreenComponent({
     ];
   const hasCustomContent = homeScreenWriteableElement.hasChildNodes();
 
-  const { greeting, starters, background, custom_content_only } =
-    homeScreenConfig;
+  const { greeting, starters, custom_content_only } = homescreen || {};
   const homeScreenWithStarters =
     starters?.is_on && Boolean(starters.buttons?.length);
-
-  const backgroundSolid =
-    theme !== ThemeType.CARBON_AI &&
-    background === HomeScreenBackgroundType.SOLID;
 
   const firstRender = isHydrated && !prevIsHydrated;
   return (
     <div
       className={cx("WACHomeScreen", {
-        "WACHomeScreen--backgroundAITheme": theme === ThemeType.CARBON_AI,
+        "WACHomeScreen--backgroundAITheme": aiEnabled,
         "WACHomeScreen--hydrationComplete": isHydrated,
         "WACHomeScreen--firstRender": firstRender,
-        "WACHomeScreen--backgroundSolid": backgroundSolid,
       })}
     >
-      <HomeScreenHeader
-        brandColor={
-          backgroundSolid ? BrandColorKind.ACCENT : BrandColorKind.PRIMARY
-        }
-        onRestart={onRestart}
-        onClose={onClose}
-        onCloseAndRestart={onCloseAndRestart}
-      />
+      <HomeScreenHeader onRestart={onRestart} onClose={onClose} />
       <WriteableElement
         slotName={WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT}
         className="WACHomeScreen__HomeScreenBottomElement"
@@ -182,7 +165,7 @@ function HomeScreenComponent({
               "WACHomeScreen__customContent--customContentOnly":
                 custom_content_only,
               "WACHomeScreen__customContent--animation":
-                (hasCustomContent || custom_content_only) && !backgroundSolid,
+                hasCustomContent || custom_content_only,
             })}
           >
             <WriteableElement

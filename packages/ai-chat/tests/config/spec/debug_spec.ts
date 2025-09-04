@@ -10,13 +10,13 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
 
 describe("Config Debug", () => {
-  const createBaseConfig = (): PublicConfig => ({
-    ...createBaseTestConfig(),
+  const createBaseProps = (): Partial<ChatContainerProps> => ({
+    ...createBaseTestProps(),
   });
 
   beforeEach(() => {
@@ -36,8 +36,8 @@ describe("Config Debug", () => {
       const mockReduxDevTools = jest.fn((): undefined => undefined);
       (window as any).__REDUX_DEVTOOLS_EXTENSION__ = mockReduxDevTools;
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         debug: true,
       };
 
@@ -46,12 +46,7 @@ describe("Config Debug", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       // Wait for the chat to be instantiated
       await waitFor(
@@ -77,8 +72,8 @@ describe("Config Debug", () => {
       // Ensure no Redux DevTools extension is available
       delete (window as any).__REDUX_DEVTOOLS_EXTENSION__;
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         debug: true,
       };
 
@@ -87,12 +82,7 @@ describe("Config Debug", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       // Wait for the chat to be instantiated
       await waitFor(
@@ -115,8 +105,8 @@ describe("Config Debug", () => {
       const mockReduxDevTools = jest.fn((): undefined => undefined);
       (window as any).__REDUX_DEVTOOLS_EXTENSION__ = mockReduxDevTools;
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         debug: false,
       };
 
@@ -125,12 +115,7 @@ describe("Config Debug", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       // Wait for the chat to be instantiated
       await waitFor(
@@ -156,8 +141,8 @@ describe("Config Debug", () => {
       const mockReduxDevTools = jest.fn((): undefined => undefined);
       (window as any).__REDUX_DEVTOOLS_EXTENSION__ = mockReduxDevTools;
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         // debug property is intentionally omitted
       };
 
@@ -168,7 +153,7 @@ describe("Config Debug", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );

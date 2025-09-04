@@ -24,7 +24,6 @@ function setIntl(
   serviceManager.store.dispatch(
     actions.setAppStateValue("languagePack", messages),
   );
-  serviceManager.store.dispatch(actions.setAppStateValue("locale", locale));
 }
 
 export { setIntl };

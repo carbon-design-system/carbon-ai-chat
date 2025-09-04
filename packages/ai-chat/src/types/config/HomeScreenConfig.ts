@@ -8,18 +8,6 @@
  */
 
 /**
- * The types of home screen backgrounds supported. This only applies when white labeling.
- *
- * @category Config
- *
- * @experimental
- */
-enum HomeScreenBackgroundType {
-  NONE = "none", // The home screen background is the same color as the chat background.
-  SOLID = "solid", // All solid color for home screen.
-}
-
-/**
  * A conversation starter button on the home screen. Currently, only label is provided by tooling.
  *
  * @category Config
@@ -69,27 +57,15 @@ interface HomeScreenConfig {
   starters?: HomeScreenStarterButtons;
 
   /**
-   * An image url that will override the bot avatar displayed in home screen.
-   *
-   * @internal
-   */
-  bot_avatar_url?: string;
-
-  /**
-   * Do not show the greeting, starters, or avatar url.
+   * Do not show the greeting or starters.
    */
   custom_content_only?: boolean;
 
   /**
-   * Defaults to true. If enabled, a user can navigate back to the home screen after they have sent a message to the
-   * assistant. If false, the home screen disappears forever after a message is sent.
+   * Defaults to false. If enabled, a user can not navigate back to the home screen after they have sent a message to the
+   * assistant. If false, the home screen is navigatable after an initial message is sent.
    */
-  allow_return?: boolean;
-
-  /**
-   * The type of home screen background to render.
-   */
-  background?: HomeScreenBackgroundType;
+  disable_return?: boolean;
 }
 
 /**
@@ -115,5 +91,4 @@ export {
   HomeScreenStarterButtons,
   HomeScreenState,
   HomeScreenStarterButton,
-  HomeScreenBackgroundType,
 };

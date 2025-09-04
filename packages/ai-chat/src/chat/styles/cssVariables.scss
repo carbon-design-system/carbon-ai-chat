@@ -21,45 +21,43 @@
   /* Internal properties where reuse is needed */
 
   /* Application */
-  --cds-chat-BASE-max-height: 640px;
+  --cds-chat-max-height: 640px;
 
   /* WCAG 2.1 states that the widget must be usable at 320x256 (or the equivalent from zoom happening) https://www.w3.org/WAI/WCAG21/Understanding/reflow.html
   We make sure the min-height at least 150px (to show at least the header/footer and one line of text) and is the lower of 256px minus the spacing from the bottom of the view port or 100vh - the bottom position. */
-  --cds-chat-BASE-min-height: max(
+  --cds-chat-min-height: max(
     150px,
-    calc(min(256px, 100vh) - var(--cds-chat-BASE-bottom-position))
+    calc(min(256px, 100vh) - var(--cds-chat-bottom-position))
   );
-  --cds-chat-BASE-max-width: calc(
-    100vw - (2 * var(--cds-chat-BASE-right-position))
-  );
-  --cds-chat-BASE-bottom-position: #{layout.$spacing-07};
-  --cds-chat-BASE-right-position: #{layout.$spacing-07};
-  --cds-chat-BASE-top-position: auto;
-  --cds-chat-BASE-left-position: auto;
+  --cds-chat-max-width: calc(100vw - (2 * var(--cds-chat-right-position)));
+  --cds-chat-bottom-position: #{layout.$spacing-07};
+  --cds-chat-right-position: #{layout.$spacing-07};
+  --cds-chat-top-position: auto;
+  --cds-chat-left-position: auto;
 
   /* **************************************************************************************************************** */
 
   /* Customizations applied by tooling or developer configuration */
 
   /* Miscellaneous */
-  --cds-chat-BASE-z-index: 99999;
+  --cds-chat-z-index: 99999;
 
   /* The smaller of 380px or the available width of the screen. The is to account for zoom levels pushing us to 320px. */
-  --cds-chat-BASE-width: min(380px, var(--cds-chat-BASE-max-width));
-  --cds-chat-BASE-height: calc(100vh - (2 * #{layout.$spacing-07}));
+  --cds-chat-width: min(380px, var(--cds-chat-max-width));
+  --cds-chat-height: calc(100vh - (2 * #{layout.$spacing-07}));
 }
 
 .WACWidget--rounded {
-  --cds-chat-CONTAINER-border-radius: #{layout.$spacing-03};
+  --cds-chat-border-radius: #{layout.$spacing-03};
 }
 
 /* We will have to think on what this looks like if we are going to remove these CSS variables and make them SASS based. */
 .WAC-isPhone {
-  --cds-chat-BASE-width: var(--cds-chat-viewport-width, "100vw");
-  --cds-chat-BASE-height: var(--cds-chat-viewport-height, "100vh");
-  --cds-chat-BASE-left-position: var(--cds-chat-viewport-offsetLeft, "0");
-  --cds-chat-BASE-top-position: var(--cds-chat-viewport-offsetTop, "0");
-  --cds-chat-BASE-max-height: auto;
-  --cds-chat-BASE-min-height: auto;
-  --cds-chat-BASE-right-position: auto;
+  --cds-chat-width: var(--cds-chat-viewport-width, "100vw");
+  --cds-chat-height: var(--cds-chat-viewport-height, "100vh");
+  --cds-chat-left-position: var(--cds-chat-viewport-offsetLeft, "0");
+  --cds-chat-top-position: var(--cds-chat-viewport-offsetTop, "0");
+  --cds-chat-max-height: auto;
+  --cds-chat-min-height: auto;
+  --cds-chat-right-position: auto;
 }

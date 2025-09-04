@@ -15,15 +15,11 @@ import Button, {
   BUTTON_TOOLTIP_POSITION,
   BUTTON_TOOLTIP_ALIGNMENT,
 } from "../../../react/carbon/Button";
-import CDSMenu from "@carbon/web-components/es/components/menu/menu.js";
-import MenuItem from "../../../react/carbon/MenuItem";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
-import Menu16 from "@carbon/icons/es/menu/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
 import cx from "classnames";
@@ -31,39 +27,31 @@ import React, {
   forwardRef,
   Ref,
   RefObject,
-  useCallback,
   useContext,
-  useEffect,
   useImperativeHandle,
   useRef,
-  useState,
 } from "react";
 import { useSelector } from "react-redux";
 import { carbonIconToReact } from "../../utils/carbonIcon";
-import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
-import { ChatHeaderAvatar } from "../../../react/components/chatHeader/ChatHeaderAvatar";
-import { ChatHeaderOverflowMenu } from "../../../react/components/chatHeader/ChatHeaderOverflowMenu";
+import OverflowMenu from "../../../react/carbon/OverflowMenu";
+import OverflowMenuItem from "../../../react/carbon/OverflowMenuItem";
+import CDSOverflowMenu from "@carbon/web-components/es/components/overflow-menu/overflow-menu";
 import { ChatHeaderTitle } from "../../../react/components/chatHeader/ChatHeaderTitle";
 import { HideComponentContext } from "../../contexts/HideComponentContext";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
-import { usePrevious } from "../../hooks/usePrevious";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../../types/state/AppState";
 import { HasChildren } from "../../../../types/utilities/HasChildren";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { BrandColorKind, WriteableElementName } from "../../utils/constants";
+import { WriteableElementName } from "../../utils/constants";
 import { doFocusRef } from "../../utils/domUtils";
-import { ConfirmModal } from "../modals/ConfirmModal";
 import WriteableElement from "../WriteableElement";
-// The React AI Slug from @carbon/react doesn't work in ShadowRoot, so we need to use the web component one.
 import { AISlug } from "./AISlug";
 import { MinimizeButtonIconType } from "../../../../types/config/PublicConfig";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
 
-const Close = carbonIconToReact(Close16);
-const Menu = carbonIconToReact(Menu16);
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const DownToBottom = carbonIconToReact(DownToBottom16);
 const Restart = carbonIconToReact(Restart16);
@@ -77,21 +65,10 @@ interface HeaderProps {
   displayName?: string;
 
   /**
-   * The config of the chat header avatar.
-   */
-  headerAvatarConfig?: ChatHeaderAvatarConfig;
-
-  /**
    * Indicates if the close button should be hidden. This value is overridden if the top-level public config
    * hideCloseButton option is set to true.
    */
   hideCloseButton?: boolean;
-
-  /**
-   * Indicates if the close-and-restart button should be hidden. This property only applies if the close-and-restart
-   * button is enabled.
-   */
-  hideCloseAndRestartButton?: boolean;
 
   /**
    * Indicates if the back button should be rendered.
@@ -119,11 +96,6 @@ interface HeaderProps {
   backButtonType?: BUTTON_KIND;
 
   /**
-   * The brand color type to use for the header. This will default to "primary".
-   */
-  brandColor?: BrandColorKind;
-
-  /**
    * Determines if the chat header items should be visible.
    */
   enableChatHeaderConfig?: boolean;
@@ -142,11 +114,6 @@ interface HeaderProps {
    * Called when the restart button is clicked.
    */
   onClickRestart?: () => void;
-
-  /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart?: () => void;
 
   /**
    * The contents/icon to display for the "back" button.
@@ -183,68 +150,46 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     labelBackButton,
     onClickClose,
     onClickRestart,
-    onCloseAndRestart,
     onClickBack,
     overflowItems,
     overflowClicked,
     backButtonType,
     hideCloseButton,
-    hideCloseAndRestartButton,
-    brandColor = "primary",
     enableChatHeaderConfig,
-    headerAvatarConfig,
     testIdPrefix,
   } = props;
 
   const backButtonRef = useRef<CDSButton>();
   const restartButtonRef = useRef<CDSButton>();
-  const closeAndRestartButtonRef = useRef<CDSButton>();
   const closeButtonRef = useRef<CDSButton>();
-  const overflowRef = useRef<CDSMenu>();
+  const overflowRef = useRef<CDSOverflowMenu>();
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const isRTL = document.dir === "rtl";
-  const chatHeaderConfig = useSelector(
-    (state: AppState) => state.chatHeaderState.config,
-  );
-  const [overflowIsOpen, setOverflowIsOpen] = useState(false);
-  const [confirmModelOpen, setConfirmModelOpen] = useState(false);
+  const chatHeaderConfig = publicConfig.header;
 
-  const [isImageError, setIsImageError] = useState(false);
-  const hasHeaderAvatar = Boolean(headerAvatarConfig) && !isImageError;
   const isHidden = useContext(HideComponentContext);
-  const prevChatHeaderAvatarURL = usePrevious(headerAvatarConfig?.url);
 
-  const { headerConfig } = publicConfig;
+  const { header } = publicConfig;
 
   // The title and name to display in the header from the chat header config.
   const chatHeaderTitle = enableChatHeaderConfig
-    ? chatHeaderConfig?.headerTitle?.title
+    ? chatHeaderConfig?.title
     : undefined;
   const chatHeaderName = enableChatHeaderConfig
-    ? chatHeaderConfig?.headerTitle?.name
+    ? chatHeaderConfig?.name
     : undefined;
   // The chat name to display in the chat header, the configured chat header name should take priority.
   const chatHeaderDisplayName = chatHeaderName || displayName;
 
-  const closeConfirmModel = useCallback(() => {
-    setConfirmModelOpen(false);
-  }, []);
-
-  const showCloseAndRestartButton =
-    headerConfig?.showCloseAndRestartButton &&
-    !hideCloseAndRestartButton &&
-    onCloseAndRestart;
-
-  const useHideCloseButton =
-    headerConfig?.hideMinimizeButton || hideCloseButton;
+  const useHideCloseButton = header?.hideMinimizeButton || hideCloseButton;
 
   // The icon to use for the close button.
   let closeIcon: React.ReactNode;
   let closeReverseIcon = false;
   let closeIsReversible = true;
-  const minimizeButtonIconType = headerConfig?.minimizeButtonIconType;
+  const minimizeButtonIconType = header?.minimizeButtonIconType;
   switch (minimizeButtonIconType) {
     case MinimizeButtonIconType.CLOSE:
       closeIcon = (
@@ -297,17 +242,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     }
   }
 
-  if (showCloseAndRestartButton && showRestartButton) {
-    throw new Error(
-      "You cannot enable both the restart button and the close-and-restart buttons.",
-    );
-  }
-
-  const onConfirm = useCallback(() => {
-    setConfirmModelOpen(false);
-    onCloseAndRestart();
-  }, [onCloseAndRestart]);
-
   // Add a "requestFocus" imperative function to the ref so other components can trigger focus here.
   useImperativeHandle(ref, () => ({
     requestFocus: () => {
@@ -333,41 +267,25 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     // If there are overflow items, we need to show the overflow menu. This overrides any back button that may be
     // present.
     leftContent = (
-      <ChatHeaderOverflowMenu
+      <OverflowMenu
         className="WACHeader__OverflowMenu"
-        renderIcon={overflowIsOpen ? Close : Menu}
-        iconDescription={languagePack.header_overflowMenu_options}
-        ariaLabel={languagePack.components_overflow_ariaLabel}
-        containerRef={overflowRef}
-        tooltipPosition={
-          isRTL ? BUTTON_TOOLTIP_POSITION.LEFT : BUTTON_TOOLTIP_POSITION.RIGHT
-        }
-        menuAlignment="bottom-start"
-        onOpen={() => {
-          // This requires a setTimeout because of an apparent bug in the Carbon components. If the icon changes
-          // when you click on it, the component swaps in a new icon meaning the old icon is no longer part of the
-          // DOM and the component detects this as a "clicked outside" which triggers the component to close. This will
-          // delay the swapping of the icon until after component is open.
-          setTimeout(() => {
-            setOverflowIsOpen(true);
-          });
-        }}
-        onClose={() => {
-          setOverflowIsOpen(false);
-        }}
+        ref={overflowRef}
+        tooltip-text={languagePack.header_overflowMenu_options}
+        aria-label={languagePack.components_overflow_ariaLabel}
       >
         {overflowItems?.map((item, index) => (
-          <MenuItem
+          <OverflowMenuItem
             key={item}
-            label={item}
             onClick={() => {
               // Move focus back to the overflow menu button.
               doFocusRef(overflowRef);
               overflowClicked(index);
             }}
-          />
+          >
+            {item}
+          </OverflowMenuItem>
         ))}
-      </ChatHeaderOverflowMenu>
+      </OverflowMenu>
     );
   } else if (showBackButton) {
     // With no overflow items, just show the back button.
@@ -389,20 +307,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     );
   }
 
-  useEffect(() => {
-    if (isImageError && prevChatHeaderAvatarURL !== headerAvatarConfig?.url) {
-      setIsImageError(false);
-    }
-  }, [prevChatHeaderAvatarURL, headerAvatarConfig?.url, isImageError]);
-
   return (
-    <div
-      className={cx("WACHeader", `WAC--${brandColor}Color`, {
-        "WACHeader--withAvatar": hasHeaderAvatar,
-      })}
-    >
+    <div className={cx("WACHeader", `WAC--primaryColor`)}>
       <div
-        className={cx("WACHeader--content", `WAC--${brandColor}Color`)}
+        className={cx("WACHeader--content", `WAC--primaryColor`)}
         data-floating-menu-container
       >
         {leftContent && (
@@ -411,14 +319,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           </div>
         )}
         <div className="WACHeader__CenterContainer">
-          {hasHeaderAvatar && (
-            <ChatHeaderAvatar
-              url={headerAvatarConfig.url}
-              corners={headerAvatarConfig.corners}
-              alt={languagePack.header_ariaBotAvatar}
-              onError={() => setIsImageError(true)}
-            />
-          )}
           {(chatHeaderTitle || chatHeaderDisplayName) && (
             <div className="WACHeader__TitleContainer">
               <ChatHeaderTitle
@@ -495,39 +395,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               {closeIcon}
             </HeaderButton>
           )}
-          {showCloseAndRestartButton && (
-            <HeaderButton
-              className="WACHeader__CloseAndRestartButton"
-              tooltipText={languagePack.header_ariaCloseRestart}
-              onClick={() => setConfirmModelOpen(true)}
-              buttonRef={closeAndRestartButtonRef}
-              tooltipAlignment={
-                isRTL
-                  ? BUTTON_TOOLTIP_ALIGNMENT.START
-                  : BUTTON_TOOLTIP_ALIGNMENT.END
-              }
-              tooltipPosition={BUTTON_TOOLTIP_POSITION.BOTTOM}
-            >
-              <CloseLarge
-                aria-label={languagePack.header_ariaCloseRestart}
-                slot="icon"
-                className="WACIcon__Close"
-              />
-            </HeaderButton>
-          )}
         </div>
-        {confirmModelOpen && (
-          <ConfirmModal
-            title={languagePack.closeAndRestartModal_title}
-            message={languagePack.closeAndRestartModal_message}
-            onConfirm={onConfirm}
-            onCancel={closeConfirmModel}
-            cancelButtonLabel={languagePack.closeAndRestartModal_cancel}
-            confirmButtonLabel={languagePack.closeAndRestartModal_confirm}
-            modalAnnounceMessage={languagePack.closeAndRestartModal_message}
-            serviceManager={serviceManager}
-          />
-        )}
       </div>
     </div>
   );

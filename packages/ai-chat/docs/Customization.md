@@ -116,26 +116,28 @@ For more information, see the documentation for [React](React.md) and [web compo
 
 #### Theming
 
-You can customize the Carbon theme of the Carbon AI Chat. Choose one of four Carbon themes by using the `carbonTheme` property:
+You can customize the Carbon theme of the Carbon AI Chat. By default, it will inherit a Carbon theme from the host page. If the rest of your site does not use Carbon, choose one of four Carbon themes by using the `carbonTheme` property:
 
 - White
 - Gray 10
 - Gray 90
 - Gray 100
 
-For more information, see the documentation for {@link PublicConfig.themeConfig}.
+This will inject the correct CSS custom properties into the Carbon AI Chat's ShadowRoot.
+
+For more information, see the documentation for {@link PublicConfig}.
 
 #### Homescreen
 
 The Carbon AI Chat displays an optional home screen featuring content presented to users during their initial interaction and accessible later in the conversation. Many use it to provide sample prompts for their assistant, but there is considerable freedom on this page to introduce your particular assistant.
 
-For more information, see the documentation for {@link ChatInstance.updateHomeScreenConfig}.
+For more information, see the documentation for {@link PublicConfig.homescreen}.
 
 #### Launcher
 
 The Carbon AI Chat launcher welcomes and engages customers so they know where to find help if they need it. You can also provide your own launcher.
 
-For more information, see the documentation for {@link ChatInstance.updateLauncherConfig}.
+For more information, see the documentation for {@link PublicConfig.launcher}.
 
 #### Writeable elements
 

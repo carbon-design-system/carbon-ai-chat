@@ -10,7 +10,6 @@
 import cloneDeep from "lodash-es/cloneDeep.js";
 import isEqual from "lodash-es/isEqual.js";
 import merge from "lodash-es/merge.js";
-import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
 import { LoadedHistory } from "../schema/historyToMessages";
 import inputItemToLocalItem from "../schema/inputItemToLocalItem";
@@ -32,9 +31,7 @@ import {
   ViewType,
 } from "../../../types/state/AppState";
 
-import { LauncherConfig } from "../../../types/config/LauncherConfig";
 import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
-import ObjectMap from "../../../types/utilities/ObjectMap";
 
 import { HistoryItem, HistoryNote } from "../../../types/messaging/History";
 
@@ -72,7 +69,6 @@ import {
   ResolvablePromise,
   resolvablePromise,
 } from "../utils/resolvablePromise";
-import { mergeCSSVariables } from "../utils/styleUtils";
 import { constructViewState } from "../utils/viewStateUtils";
 import {
   CompleteItemChunk,
@@ -100,30 +96,14 @@ import {
   ViewChangeReason,
 } from "../../../types/events/eventBusTypes";
 import {
-  CSSVariable,
   PublicWebChatState,
   SendOptions,
 } from "../../../types/instance/ChatInstance";
-import {
-  ThemeType,
-  OnErrorData,
-  OnErrorType,
-  WhiteLabelTheme,
-} from "../../../types/config/PublicConfig";
-import {
-  LanguagePack,
-  NotificationMessage,
-} from "../../../types/instance/apiTypes";
-import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
-import { setIntl } from "../utils/intlUtils";
+import { OnErrorData, OnErrorType } from "../../../types/config/PublicConfig";
+import { NotificationMessage } from "../../../types/instance/apiTypes";
+import { DeepPartial } from "../../../types/utilities/DeepPartial";
 
-const VALID_PUBLIC_VARS_IN_AI_THEME_SET = new Set<string>(
-  Object.values(CSSVariable),
-);
-
-const UPDATE_CSS_VARS_AI_THEME_WARNING_MESSAGE = `[updateCSSVariables] The AI theme is enabled and only ${Object.values(
-  CSSVariable,
-).join(", ")} can be updated.`;
+// updateCSSVariables is deprecated in favor of layout.cssVariables; keep minimal styling here.
 
 /**
  * This class is responsible for handling various "actions" that the system can perform including actions that can
@@ -258,7 +238,7 @@ class ChatActionsImpl {
     if (!history) {
       if (!alternateWelcomeRequest) {
         const state = serviceManager.store.getState();
-        if (state.homeScreenConfig?.is_on) {
+        if (state.config.public.homescreen?.is_on) {
           // If no history was loaded, there are no messages already sent, and there is a home screen,
           // then we need to show the home screen.
           serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
@@ -356,7 +336,7 @@ class ChatActionsImpl {
         isConnecting: state.humanAgentState.isConnecting,
         isSuspended: chatState.humanAgentState.isSuspended ?? false,
       },
-      locale: this.serviceManager.store.getState().locale,
+      locale: this.serviceManager.store.getState().config.public.locale || "en",
       intl: this.serviceManager.intl,
     };
 
@@ -762,10 +742,8 @@ class ChatActionsImpl {
       this.serviceManager.userDefinedElementRegistry.get(messageItemID);
     if (!userDefinedItem) {
       userDefinedItem = {
-        element: document.createElement("div"),
         slotName: `slot-user-defined-${uuid()}`,
       };
-      userDefinedItem.element.setAttribute("slot", userDefinedItem.slotName);
       this.serviceManager.userDefinedElementRegistry.set(
         messageItemID,
         userDefinedItem,
@@ -784,11 +762,10 @@ class ChatActionsImpl {
     originalMessage: Message,
   ) {
     if (renderAsUserDefinedMessage(localMessage.item)) {
-      let element: HTMLElement;
       let slotName: string;
       if (!localMessage.item.user_defined?.silent) {
         // If the message is silent, don't create a host element for it since it's not going to be rendered.
-        ({ element, slotName } = this.getOrCreateUserDefinedElement(
+        ({ slotName } = this.getOrCreateUserDefinedElement(
           localMessage.ui_state.id,
         ));
       }
@@ -798,7 +775,6 @@ class ChatActionsImpl {
         data: {
           message: localMessage.item,
           fullMessage: originalMessage,
-          element,
           slot: slotName,
         },
       };
@@ -874,11 +850,10 @@ class ChatActionsImpl {
     if (renderAsUserDefinedMessage(messageItem)) {
       const itemID = streamItemID(messageID, messageItem);
 
-      let element: HTMLElement;
       let slotName: string;
       if (!messageItem.user_defined?.silent) {
         // If the message is silent, don't create a host element for it since it's not going to be rendered.
-        ({ element, slotName } = this.getOrCreateUserDefinedElement(itemID));
+        ({ slotName } = this.getOrCreateUserDefinedElement(itemID));
       }
 
       const userDefinedResponseEvent: BusEventChunkUserDefinedResponse = {
@@ -886,7 +861,6 @@ class ChatActionsImpl {
         data: {
           messageItem,
           chunk,
-          element,
           slot: slotName,
         },
       };
@@ -1098,20 +1072,7 @@ class ChatActionsImpl {
     await this.processMessageResponse(message, false, null, {});
   }
 
-  /**
-   * Updates the language pack in use by the widget. This will merge in the provided language pack with the existing
-   * one, leaving any missing keys unchanged.
-   */
-  updateLanguagePack(changes: DeepPartial<LanguagePack>) {
-    const { languagePack, locale } = this.serviceManager.store.getState();
-
-    const messages = {
-      ...languagePack,
-      ...changes,
-    };
-
-    setIntl(this.serviceManager, locale, messages);
-  }
+  // updateLanguagePack removed; use top-level `strings` prop on components.
 
   /**
    * Adds a new notification to be shown in the UI.
@@ -1136,108 +1097,7 @@ class ChatActionsImpl {
     this.serviceManager.store.dispatch(actions.removeAllNotifications());
   }
 
-  /**
-   * This updates the map that can be used to override the values for CSS variables in the application. Each key of the
-   * map is the name of a variable (without the "--cds-chat-" prefix) and the value is whatever the value of
-   * the variable should be set at. The values in the provided map will be merged with any variables that may already be defined in
-   * the public config which allows this function to update only the specific variables desired.
-   *
-   * @param publicVars A map of CSS variables. Each key of the map is the name of a variable (without the
-   * "--cds-chat-" prefix) and the value is whatever the value of the variable should be set at.
-   * @param whiteLabelVariables The set of variables for white labeling. These
-   * are not directly set as CSS variables but go through a translation process first that turns them into CSS
-   * variables.
-   */
-  updateCSSVariables(
-    publicVars: ObjectMap<string>,
-    whiteLabelVariables: WhiteLabelTheme = {},
-  ) {
-    const { store } = this.serviceManager;
-    const { theme } = store.getState();
-    const { derivedCarbonTheme, theme: aiTheme } = theme;
-
-    // If the AI theme is enabled, only a set amount of public variables should be allowed.
-    if (aiTheme === ThemeType.CARBON_AI) {
-      const usePublicVars = publicVars;
-      publicVars = {};
-      whiteLabelVariables = {};
-
-      usePublicVars &&
-        Object.entries(usePublicVars).forEach(([variable]) => {
-          if (VALID_PUBLIC_VARS_IN_AI_THEME_SET.has(variable)) {
-            publicVars[variable] = usePublicVars[variable];
-          } else {
-            consoleWarn(UPDATE_CSS_VARS_AI_THEME_WARNING_MESSAGE);
-          }
-        });
-    } else {
-      // Merge css variables in config objects with those passed into this function.
-      publicVars = {
-        ...publicVars,
-      };
-      whiteLabelVariables = {
-        ...whiteLabelVariables,
-      };
-    }
-
-    const allVariables = mergeCSSVariables(
-      publicVars,
-      whiteLabelVariables,
-      derivedCarbonTheme,
-      aiTheme,
-    );
-    store.dispatch(
-      actions.updateCSSVariables(allVariables, publicVars, whiteLabelVariables),
-    );
-  }
-
-  /**
-   * Updates the bot name used in, amongst other places, as the default for the title in the header bar of the chat
-   * widget when AI theme is off. We use this method currently only when in WYSIWYG mode in the tooling configuration
-   * page.
-   *
-   * @param name A new name for the bot.
-   */
-  updateBotName(name: string) {
-    this.serviceManager.store.dispatch(actions.updateBotName(name));
-  }
-
-  /**
-   * Public method to update the title of the main bot header. This would be used instead of the botName if it is
-   * defined.
-   */
-  updateMainHeaderTitle(title: null | string) {
-    this.serviceManager.store.dispatch(actions.updateMainHeaderTitle(title));
-  }
-
-  /**
-   * Updates the bot avatar in the header bar of the chat widget. We use this method currently only when in WYSIWYG mode
-   * in the tooling configuration page.
-   *
-   * @param url A new avatar image url for the bot.
-   */
-  updateBotAvatarURL(url: string) {
-    this.serviceManager.store.dispatch(actions.updateBotAvatarURL(url));
-  }
-
-  /**
-   * Updates the currently active homeScreenConfig. Currently only used in tooling to show live updates when editing web
-   * chat configuration.
-   */
-  updateHomeScreenConfig(homeScreenConfig: HomeScreenConfig) {
-    this.serviceManager.store.dispatch(
-      actions.updateHomeScreenConfig(homeScreenConfig),
-    );
-  }
-
-  /**
-   * Updates the current state of the launcher.
-   */
-  updateLauncherConfig(launcherConfig: LauncherConfig) {
-    this.serviceManager.store.dispatch(
-      actions.updateLauncherConfig(launcherConfig),
-    );
-  }
+  // updateCSSVariables removed; use `layout.cssVariables` in PublicConfig.
 
   /**
    * Construct the newViewState from the newView provided. Fire the view:pre:change and view:change events, as well as
@@ -1393,7 +1253,10 @@ class ChatActionsImpl {
         ),
       );
     }
-    callOnError(this.serviceManager.additionalChatParameters.onError, error);
+    callOnError(
+      this.serviceManager.store.getState().config.public.onError,
+      error,
+    );
   }
 
   /**

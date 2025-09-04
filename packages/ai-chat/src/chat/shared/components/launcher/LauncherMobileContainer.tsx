@@ -47,9 +47,7 @@ interface LauncherMobileContainerProps {
 function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const { launcherRef, onToggleOpen, launcherHidden } = props;
   const serviceManager = useServiceManager();
-  const { config: launcherConfig } = useSelector(
-    (state: AppState) => state.launcher,
-  );
+  const { config: launcher } = useSelector((state: AppState) => state.launcher);
   const unreadHumanAgentCount = useSelector(
     (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
@@ -80,9 +78,8 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
     previouslyPlayedExtendAnimation && !disableBounce,
   );
 
-  const { time_to_expand, new_expand_time, time_to_reduce } =
-    launcherConfig.mobile;
-  const isExpandedLauncherEnabled = launcherConfig.mobile.is_on;
+  const { time_to_expand, new_expand_time, time_to_reduce } = launcher.mobile;
+  const isExpandedLauncherEnabled = launcher.mobile.is_on;
 
   // If the launcher container mounted with the mobile launcher not in the extended state, and it's previous value is
   // undefined, this means the launcher should be in the extended state playing the extended animation if not in the
@@ -306,7 +303,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
         "WACLauncher__ButtonContainer--noAnimation": disableIntroAnimation,
       })}
       ref={launcherRef}
-      launcherConfig={launcherConfig}
+      launcher={launcher}
       isMobile={true}
       showUnreadIndicator={showUnreadIndicator}
       unreadHumanAgentCount={unreadHumanAgentCount}

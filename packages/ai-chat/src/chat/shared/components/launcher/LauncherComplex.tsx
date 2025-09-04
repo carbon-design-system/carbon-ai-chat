@@ -24,7 +24,7 @@ const CloseIcon = carbonIconToReact(Close16);
 
 interface LauncherComplexProps extends HasIntl, HasClassName {
   languagePack: LanguagePack;
-  launcherConfig: LauncherConfig;
+  launcher: LauncherConfig;
   onOpen: () => void;
   onMinimize: () => void;
 
@@ -66,7 +66,7 @@ function LauncherComplex(props: LauncherComplexProps) {
   const {
     languagePack,
     intl,
-    launcherConfig,
+    launcher,
     launcherComplexRef,
     launcherRef,
     onOpen,
@@ -85,8 +85,8 @@ function LauncherComplex(props: LauncherComplexProps) {
 
   function getLauncherContent() {
     // Use the title from the launcher config.
-    if (launcherConfig.desktop.title) {
-      return launcherConfig.desktop.title;
+    if (launcher.desktop.title) {
+      return launcher.desktop.title;
     }
 
     // If there is nothing set in the launcher config then use our own default.

@@ -25,7 +25,9 @@ const config: PublicConfig = {
 export class Demo extends LitElement {
   render() {
     return html`
-      <cds-aichat-container .config=${config}></cds-aichat-container>
+      <cds-aichat-container
+        .messaging=${config.messaging}
+      ></cds-aichat-container>
     `;
   }
 }

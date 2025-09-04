@@ -47,9 +47,9 @@ interface CatastrophicErrorProps extends HasLanguagePack {
   onClose?: () => void;
 
   /**
-   * Name of the bot!
+   * Name of the assistant!
    */
-  botName: string;
+  assistantName: string;
 
   /**
    * Name to show in header.
@@ -66,19 +66,20 @@ function CatastrophicError({
   languagePack,
   onRestart,
   showHeader,
-  botName,
+  assistantName,
   headerDisplayName,
 }: CatastrophicErrorProps) {
   const intl = useIntl();
   const carbonTheme = useSelector(
-    (state: AppState) => state.theme.derivedCarbonTheme,
+    (state: AppState) =>
+      state.config.derived.themeWithDefaults.derivedCarbonTheme,
   );
   const isDarkTheme =
     carbonTheme === CarbonTheme.G90 || carbonTheme === CarbonTheme.G100;
 
   const errorKey: keyof EnglishLanguagePack = "errors_communicating";
 
-  const errorBodyText = intl.formatMessage({ id: errorKey }, { botName });
+  const errorBodyText = intl.formatMessage({ id: errorKey }, { assistantName });
   return (
     <>
       {showHeader && (

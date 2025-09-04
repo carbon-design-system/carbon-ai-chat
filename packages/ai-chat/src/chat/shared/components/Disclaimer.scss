@@ -80,8 +80,8 @@
     max-inline-size: unset;
 
     &::part(button) {
-      border-end-end-radius: var(--cds-chat-CONTAINER-border-radius);
-      border-end-start-radius: var(--cds-chat-CONTAINER-border-radius);
+      border-end-end-radius: var(--cds-chat-border-radius);
+      border-end-start-radius: var(--cds-chat-border-radius);
     }
   }
 
@@ -109,6 +109,6 @@
     display: flex;
     justify-content: flex-end;
     margin: auto;
-    inline-size: chatTheme.$CONTAINER-max-width;
+    inline-size: chatTheme.$max-width;
   }
 }

@@ -7,12 +7,14 @@
  *  @license
  */
 
-import Home from "@carbon/icons-react/es/Home.js";
+import Home16 from "@carbon/icons/es/home/16.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import React, {
   forwardRef,
   RefObject,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -25,9 +27,7 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
 import WriteableElement from "../WriteableElement";
 import { Header } from "./Header";
-import { ChatHeaderAvatarConfig } from "../../../../types/instance/ChatInstance";
 import { OverlayPanelName } from "../OverlayPanel";
-import { ThemeType } from "../../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -45,11 +45,6 @@ interface BotHeaderProps {
   onRestart?: () => void;
 
   /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart?: () => void;
-
-  /**
    * The callback that can be called to toggle between the home screen and the bot view.
    */
   onToggleHomeScreen: () => void;
@@ -63,11 +58,6 @@ interface BotHeaderProps {
    * Indicates if the writeable element should be rendered.
    */
   includeWriteableElement: boolean;
-
-  /**
-   * The config of the chat header avatar.
-   */
-  headerAvatarConfig?: ChatHeaderAvatarConfig;
 
   /**
    * Determines if the chat header items should be visible. If not enabled, the updateChatHeaderConfig method will
@@ -86,35 +76,38 @@ interface BotHeaderProps {
 function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   const {
     onClose,
-    onCloseAndRestart,
     onRestart,
     onToggleHomeScreen,
     headerDisplayName,
     includeWriteableElement,
     enableChatHeaderConfig,
-    headerAvatarConfig,
     testIdPrefix,
   } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
-  const homeScreenIsOn = useSelector(
-    (state: AppState) =>
-      state.homeScreenConfig.is_on && state.homeScreenConfig.allow_return,
-  );
+  const homeScreenIsOn = useSelector((state: AppState) => {
+    const homescreen = state.config.public.homescreen;
+    return homescreen?.is_on && !homescreen?.disable_return;
+  });
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const customMenuOptions = useSelector(
-    (state: AppState) => state.customMenuOptions,
+    (state: AppState) => state.config.public.header?.menuOptions,
+  );
+  const memoizedCustomMenuOptions = useMemo(
+    () => customMenuOptions || undefined,
+    [customMenuOptions],
   );
   const { isConnectingOrConnected } = useSelector(
     selectHumanAgentDisplayState,
     shallowEqual,
   );
-  const theme = useSelector((state: AppState) => state.theme.theme);
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
   const headerRef = useRef<HasRequestFocus>();
+  const Home = carbonIconToReact(Home16);
 
-  const showRestartButton =
-    publicConfig.showRestartButton ||
-    publicConfig.headerConfig?.showRestartButton;
+  const showRestartButton = publicConfig.header?.showRestartButton;
 
   // We can't allow the user to return to the home screen if the user is connecting or connected to an agent.
   const allowHomeScreen = homeScreenIsOn && !isConnectingOrConnected;
@@ -125,20 +118,17 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         onToggleHomeScreen?.();
       } else {
         const { handler } =
-          customMenuOptions[allowHomeScreen ? index - 1 : index];
+          memoizedCustomMenuOptions[allowHomeScreen ? index - 1 : index];
         handler();
       }
     },
-    [customMenuOptions, onToggleHomeScreen, allowHomeScreen],
+    [memoizedCustomMenuOptions, onToggleHomeScreen, allowHomeScreen],
   );
 
-  let overflowItems = customMenuOptions?.map((option) => option.text);
+  const overflowItems = memoizedCustomMenuOptions?.map((option) => option.text);
   if (overflowItems && allowHomeScreen) {
     // Insert a "Home screen" option at the top.
     overflowItems.splice(0, 0, languagePack.homeScreen_overflowMenuHomeScreen);
-  } else if (!overflowItems && allowHomeScreen) {
-    // If there are header objects in the overflow menu, insert the "Home screen" option.
-    overflowItems = [languagePack.homeScreen_overflowMenuHomeScreen];
   }
 
   // Reuse the imperative handles from the header.
@@ -148,16 +138,14 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     <div className="WACHeader__Container">
       <Header
         ref={headerRef}
-        headerAvatarConfig={headerAvatarConfig}
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
         showRestartButton={showRestartButton}
-        useAITheme={theme === ThemeType.CARBON_AI}
-        backContent={<Home />}
+        useAITheme={aiEnabled}
+        backContent={<Home slot="icon" />}
         labelBackButton={languagePack.homeScreen_returnToHome}
         onClickRestart={onRestart}
         onClickClose={onClose}
-        onCloseAndRestart={onCloseAndRestart}
         onClickBack={onToggleHomeScreen}
         overflowItems={overflowItems}
         overflowClicked={overflowClicked}

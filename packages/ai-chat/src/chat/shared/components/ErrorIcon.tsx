@@ -7,11 +7,14 @@
  *  @license
  */
 
-import ErrorFilled from "@carbon/icons-react/es/ErrorFilled.js";
+import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
+import { carbonIconToReact } from "../utils/carbonIcon";
 import cx from "classnames";
 import React from "react";
 
 import { HasClassName } from "../../../types/utilities/HasClassName";
+
+const ErrorFilled = carbonIconToReact(ErrorFilled16);
 
 function ErrorIcon(props: HasClassName) {
   return <ErrorFilled className={cx("WACErrorIcon", props.className)} />;

@@ -18,11 +18,4 @@ function isNil(value: any): boolean {
   return value === undefined || value === null;
 }
 
-/**
- * Determines if a given number is odd.
- */
-function isOdd(value: number): boolean {
-  return Math.abs(value % 2) === 1;
-}
-
-export { isNil, isOdd };
+export { isNil };

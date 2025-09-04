@@ -364,7 +364,7 @@ describe("ChatInstance.messaging.removeMessages", () => {
       const initialState = store.getState();
       const initialHumanAgentState = { ...initialState.humanAgentState };
       const initialIsHydrated = initialState.isHydrated;
-      const initialBotName = initialState.botName;
+      const initialBotName = initialState.config.public.assistantName;
 
       // Remove the message
       await instance.messaging.removeMessages(["state-preserve-msg"]);
@@ -378,7 +378,7 @@ describe("ChatInstance.messaging.removeMessages", () => {
         initialHumanAgentState.isReconnecting,
       );
       expect(finalState.isHydrated).toBe(initialIsHydrated);
-      expect(finalState.botName).toBe(initialBotName);
+      expect(finalState.config.public.assistantName).toBe(initialBotName);
     });
   });
 

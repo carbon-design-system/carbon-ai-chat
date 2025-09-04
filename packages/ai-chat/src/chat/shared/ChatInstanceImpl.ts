@@ -14,21 +14,14 @@
  * has been called.
  */
 
-import dayjs from "dayjs";
-import cloneDeep from "lodash-es/cloneDeep.js";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-
 import { ServiceManager } from "./services/ServiceManager";
 import actions from "./store/actions";
 import { selectInputState } from "./store/selectors";
 import { ViewState, ViewType } from "../../types/state/AppState";
 
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
-import { LauncherConfig } from "../../types/config/LauncherConfig";
 import { HistoryItem } from "../../types/messaging/History";
 import { WriteableElementName } from "./utils/constants";
-import { withoutEmptyStarters } from "./utils/homeScreenUtils";
-import { loadLanguagePack, loadLocale } from "./utils/languages";
 import {
   consoleDebug,
   consoleError,
@@ -36,46 +29,28 @@ import {
   debugLog,
 } from "./utils/miscUtils";
 import {
-  ChangeFunction,
-  ChatHeaderAvatarConfig,
   ChatInstance,
-  CSSVariable,
-  InstanceInputElement,
   SendOptions,
   TypeAndHandler,
   WriteableElements,
 } from "../../types/instance/ChatInstance";
 import { AddMessageOptions } from "../../types/config/MessagingConfig";
-import { WhiteLabelTheme } from "../../types/config/PublicConfig";
 import {
   MessageSendSource,
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
-import {
-  CustomMenuOption,
-  LanguagePack,
-  NotificationMessage,
-} from "../../types/instance/apiTypes";
+import { NotificationMessage } from "../../types/instance/apiTypes";
 import {
   MessageRequest,
   MessageResponse,
   StreamChunk,
 } from "../../types/messaging/Messages";
-import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
-import { ThemeType } from "../../types/config/PublicConfig";
-import { setIntl } from "./utils/intlUtils";
-import { ChatHeaderConfig } from "../../types/config/ChatHeaderConfig";
 
 interface CreateChatInstance {
   /**
    * The service manager to use.
    */
   serviceManager: ServiceManager;
-
-  /**
-   * Render the chat widget in the DOM after fetching welcome and history.
-   */
-  callRender: () => Promise<ChatInstance>;
 }
 
 /**
@@ -87,70 +62,8 @@ interface CreateChatInstance {
  */
 function createChatInstance({
   serviceManager,
-  callRender,
 }: CreateChatInstance): ChatInstance {
-  // A flag to keep track if the instance has already been rendered.
-  let wasRendered = false;
-
-  function getMainWindow() {
-    return {
-      addClassName: (name: string) =>
-        serviceManager.mainWindow?.addClassName(name),
-      removeClassName: (name: string) =>
-        serviceManager.mainWindow?.removeClassName(name),
-    };
-  }
-
-  function getMessageInput(): InstanceInputElement {
-    return {
-      getHTMLElement: () =>
-        serviceManager.mainWindow?.getMessageInput()?.getHTMLElement(),
-      setValue: (value: string) =>
-        serviceManager.mainWindow?.getMessageInput()?.setValue(value),
-      setEnableEnterKey: (value: boolean) =>
-        serviceManager.mainWindow?.getMessageInput()?.setEnableEnterKey(value),
-      addChangeListener: (listener: ChangeFunction) =>
-        serviceManager.mainWindow
-          ?.getMessageInput()
-          ?.addChangeListener(listener),
-      removeChangeListener: (listener: ChangeFunction) =>
-        serviceManager.mainWindow
-          ?.getMessageInput()
-          ?.removeChangeListener(listener),
-    };
-  }
-
-  function getHomeScreenInput(): InstanceInputElement {
-    return {
-      getHTMLElement: () =>
-        serviceManager.mainWindow?.getHomeScreenInput()?.getHTMLElement(),
-      setValue: (value: string) =>
-        serviceManager.mainWindow?.getHomeScreenInput()?.setValue(value),
-      setEnableEnterKey: (value: boolean) =>
-        serviceManager.mainWindow
-          ?.getHomeScreenInput()
-          ?.setEnableEnterKey(value),
-      addChangeListener: (listener: ChangeFunction) =>
-        serviceManager.mainWindow
-          ?.getHomeScreenInput()
-          ?.addChangeListener(listener),
-      removeChangeListener: (listener: ChangeFunction) =>
-        serviceManager.mainWindow
-          ?.getHomeScreenInput()
-          ?.removeChangeListener(listener),
-    };
-  }
-
-  let instance: ChatInstance = {
-    render: () => {
-      if (wasRendered) {
-        consoleError("The render function has already been called!");
-        return Promise.resolve(instance);
-      }
-      wasRendered = true;
-      return callRender();
-    },
-
+  const instance: ChatInstance = {
     on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
       serviceManager.eventBus.on(handlers);
       return instance;
@@ -166,40 +79,8 @@ function createChatInstance({
       return instance;
     },
 
-    updateLanguagePack: (newPack: DeepPartial<LanguagePack>): void => {
-      debugLog("Called instance.updateLanguagePack", newPack);
-      return serviceManager.actions.updateLanguagePack(newPack);
-    },
-
-    updateLocale: (newLocale: string): Promise<void> => {
-      debugLog("Called instance.updateLocale", newLocale);
-      // Get date formatting for locale.
-      const localePromise = loadLocale(newLocale);
-      const languagePackPromise = loadLanguagePack(
-        serviceManager.store.getState().languagePack,
-      );
-
-      return Promise.all([localePromise, languagePackPromise]).then(
-        ([localePack, languagePack]) => {
-          // Update Redux with new values for language, locale, and messages.
-          dayjs.locale(localePack);
-          setIntl(serviceManager, localePack.name, languagePack);
-          serviceManager.messageService.pendingLocale = true;
-          serviceManager.messageService.localeIsExplicit = true;
-        },
-      );
-    },
-
-    updateCSSVariables: (
-      variables: Partial<Record<CSSVariable, string>>,
-      whiteLabelVariables?: WhiteLabelTheme,
-    ): void => {
-      debugLog("Called instance.updateCSSVariables", variables);
-      return serviceManager.actions.updateCSSVariables(
-        variables,
-        whiteLabelVariables,
-      );
-    },
+    // updateLanguagePack removed: use top-level `strings` prop on components.
+    // updateCSSVariables removed: use `layout.cssVariables` in PublicConfig.
 
     send: async (message: MessageRequest | string, options?: SendOptions) => {
       debugLog("Called instance.send", message, options);
@@ -216,16 +97,6 @@ function createChatInstance({
     doAutoScroll: (options: AutoScrollOptions = {}) => {
       debugLog("Called instance.doAutoScroll", options);
       serviceManager.mainWindow?.doAutoScroll?.(options);
-    },
-
-    destroy: () => {
-      debugLog("Called instance.destroy");
-      // Trigger an unmounting of all the components.
-      serviceManager.store.dispatch(
-        actions.setAppStateValue("isDestroyed", true),
-      );
-      serviceManager.container?.remove();
-      instance = undefined;
     },
 
     updateInputFieldVisibility: (isVisible: boolean) => {
@@ -255,13 +126,6 @@ function createChatInstance({
       debugLog("Called instance.changeView", newView);
 
       let issueWithNewView = false;
-
-      if (!wasRendered) {
-        consoleError(
-          `You tried to call "changeView" without ever having called the "render" method. There is no view to change!`,
-        );
-        issueWithNewView = true;
-      }
 
       const viewTypeValues = Object.values<string>(ViewType);
       if (typeof newView === "string") {
@@ -319,38 +183,6 @@ function createChatInstance({
       },
     },
 
-    updateMainHeaderTitle: (title?: string): void => {
-      debugLog("Called instance.updateMainHeaderTitle", title);
-      if (!title) {
-        title = null;
-      }
-      serviceManager.actions.updateMainHeaderTitle(title);
-    },
-
-    updateHomeScreenConfig: (homeScreenConfig: HomeScreenConfig): void => {
-      debugLog("Called instance.updateHomeScreenConfig", homeScreenConfig);
-      const homeScreenConfigClone = cloneDeep(homeScreenConfig);
-
-      const isAIThemeEnabled =
-        serviceManager.store.getState().theme.theme === ThemeType.CARBON_AI;
-
-      if (isAIThemeEnabled) {
-        if (homeScreenConfig?.background) {
-          // If the AI theme is enabled and the user is trying to change the home screen background then log a warning
-          // and ignore / remove the updates for the background. This is following the same behavior as
-          // updateCSSVariables which logs a warning and ignores updates for variables not supported in the AI theme.
-          consoleWarn(
-            "The home screen background can not be changed when the AI theme is enabled.",
-          );
-          delete homeScreenConfigClone.background;
-        }
-      }
-
-      serviceManager.actions.updateHomeScreenConfig(
-        withoutEmptyStarters(homeScreenConfigClone),
-      );
-    },
-
     getState: () => serviceManager.actions.getPublicWebChatState(),
 
     writeableElements: createWriteableElementsProxy(serviceManager),
@@ -360,17 +192,7 @@ function createChatInstance({
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
-    updateLauncherConfig: (config: LauncherConfig) =>
-      serviceManager.actions.updateLauncherConfig(config),
-
     customPanels: serviceManager.customPanelManager,
-
-    updateCustomMenuOptions: (options: CustomMenuOption[]) => {
-      debugLog("Called instance.updateCustomMenuOptions", options);
-      serviceManager.store.dispatch(
-        actions.setAppStateValue("customMenuOptions", options),
-      );
-    },
 
     restartConversation: async () => {
       debugLog("Called instance.restartConversation");
@@ -420,26 +242,6 @@ function createChatInstance({
           `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "increase" and "decrease".`,
         );
       }
-    },
-
-    updateHeaderConfig: (config: ChatHeaderConfig) => {
-      const configCopy = cloneDeep(config);
-      serviceManager.store.dispatch(actions.updateChatHeaderConfig(configCopy));
-    },
-
-    updateMainHeaderAvatar: (config: ChatHeaderAvatarConfig) => {
-      serviceManager.store.dispatch(actions.updateMainHeaderAvatar(config));
-    },
-
-    updateBotName: (name: string): void =>
-      serviceManager.actions.updateBotName(name),
-    updateBotAvatarURL: (url: string): void =>
-      serviceManager.actions.updateBotAvatarURL(url),
-
-    elements: {
-      getMainWindow,
-      getMessageInput,
-      getHomeScreenInput,
     },
 
     messaging: {

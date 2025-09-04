@@ -7,9 +7,10 @@
  *  @license
  */
 
-import ChatBot from "@carbon/icons-react/es/ChatBot.js";
-import CheckmarkFilled from "@carbon/icons-react/es/CheckmarkFilled.js";
-import Headset from "@carbon/icons-react/es/Headset.js";
+import ChatBot32 from "@carbon/icons/es/chat-bot/32.js";
+import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
+import Headset32 from "@carbon/icons/es/headset/32.js";
+import { carbonIconToReact } from "../utils/carbonIcon";
 import Loading from "../../react/carbon/Loading";
 import cx from "classnames";
 import React, { KeyboardEvent, PureComponent } from "react";
@@ -59,6 +60,10 @@ import {
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
 import { ResponseUserAvatar } from "../components/ResponseUserAvatar";
 import { CarbonTheme } from "../../../types/config/PublicConfig";
+
+const ChatBot = carbonIconToReact(ChatBot32);
+const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
+const Headset = carbonIconToReact(Headset32);
 
 enum MoveFocusType {
   /**
@@ -112,9 +117,9 @@ interface MessageProps
   messagesIndex: number;
 
   /**
-   * The name of the bot.
+   * The name of the assistant.
    */
-  botName: string;
+  assistantName: string;
 
   /**
    * Indicates if any user inputs on this message should be disabled such as buttons or dropdowns.
@@ -160,11 +165,6 @@ interface MessageProps
    * component re-renders if the locale changes.
    */
   locale: string;
-
-  /**
-   * The URL for the bot avatar.
-   */
-  botAvatarURL: string;
 
   /**
    * Indicates if the avatar line should be shown for this message.
@@ -245,7 +245,7 @@ class MessageComponent extends PureComponent<
    * saying a specific message.
    */
   private getWidgetSaidMessage() {
-    const { intl, botName, localMessageItem } = this.props;
+    const { intl, assistantName, localMessageItem } = this.props;
     let messageId: keyof EnglishLanguagePack;
     if (localMessageItem.item.agent_message_type) {
       // For the human agent view, we only want to say "agent said" for messages that are text. The status messages
@@ -258,7 +258,7 @@ class MessageComponent extends PureComponent<
     }
 
     return messageId
-      ? intl.formatMessage({ id: messageId }, { botName })
+      ? intl.formatMessage({ id: messageId }, { assistantName })
       : null;
   }
 
@@ -321,14 +321,14 @@ class MessageComponent extends PureComponent<
    * @see renderFocusHandle
    */
   public requestHandleFocus() {
-    const { languagePack, intl, message, botName } = this.props;
+    const { languagePack, intl, message, assistantName } = this.props;
 
     // Announce who said it and then the actual message. The "Bot said" text is normally only read once per
     // MessageResponse instead of once per LocalMessage but since we're moving focus between each LocalMessage, go
     // ahead and announce the "who" part for each one.
     const whoAnnouncement = isRequest(message)
       ? languagePack.messages_youSaid
-      : intl.formatMessage({ id: "messages_botSaid" }, { botName });
+      : intl.formatMessage({ id: "messages_botSaid" }, { assistantName });
 
     const strings: string[] = [whoAnnouncement];
     nodeToText(this.messageRef.current, strings);
@@ -375,8 +375,7 @@ class MessageComponent extends PureComponent<
     message: Message,
   ) {
     let avatar;
-    const { languagePack, botName, botAvatarURL, useAITheme, carbonTheme } =
-      this.props;
+    const { languagePack, assistantName, useAITheme, carbonTheme } = this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
 
@@ -418,7 +417,7 @@ class MessageComponent extends PureComponent<
         iconClassName = "WACMessage__Avatar--agent";
         actorName = responseUserProfile?.nickname || "";
       } else {
-        actorName = responseUserProfile?.nickname || botName;
+        actorName = responseUserProfile?.nickname || assistantName;
 
         let icon = <IconHolder icon={<ChatBot />} />;
 
@@ -428,7 +427,7 @@ class MessageComponent extends PureComponent<
 
         avatar = (
           <ImageWithFallback
-            url={botAvatarURL}
+            url={responseUserProfile?.profile_picture_url}
             alt={languagePack.agent_ariaGenericBotAvatar}
             fallback={icon}
           />

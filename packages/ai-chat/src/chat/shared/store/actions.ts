@@ -22,18 +22,13 @@ import {
   ThemeState,
   ViewState,
 } from "../../../types/state/AppState";
-import {
-  LauncherConfig,
-  LauncherInternalCallToActionConfig,
-} from "../../../types/config/LauncherConfig";
+import { LauncherInternalCallToActionConfig } from "../../../types/config/LauncherConfig";
 import {
   LocalMessageItem,
   LocalMessageUIState,
   MessageErrorState,
 } from "../../../types/messaging/LocalMessageItem";
-import ObjectMap from "../../../types/utilities/ObjectMap";
 import { uuid } from "../utils/lang/uuid";
-import { ChatHeaderAvatarConfig } from "../../../types/instance/ChatInstance";
 import {
   ConversationalSearchItemCitation,
   GenericItem,
@@ -46,19 +41,13 @@ import {
   MessageUIStateInternal,
   SearchResult,
 } from "../../../types/messaging/Messages";
-import { WhiteLabelTheme } from "../../../types/config/PublicConfig";
-import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
 import {
   LauncherType,
   NotificationMessage,
 } from "../../../types/instance/apiTypes";
-import { ChatHeaderConfig } from "../../../types/config/ChatHeaderConfig";
 
 const CHANGE_STATE = "CHANGE_STATE";
-const UPDATE_BOT_NAME = "UPDATE_BOT_NAME";
-const UPDATE_BOT_AVATAR_URL = "UPDATE_BOT_AVATAR_URL";
 const UPDATE_LAUNCHER_AVATAR_URL = "UPDATE_LAUNCHER_AVATAR_URL";
-const UPDATE_MAIN_HEADER_TITLE = "UPDATE_MAIN_HEADER_TITLE";
 const HYDRATE_CHAT = "HYDRATE_CHAT";
 const HYDRATE_MESSAGE_HISTORY = "HYDRATE_MESSAGE_HISTORY";
 const ADD_LOCAL_MESSAGE_ITEM = "ADD_LOCAL_MESSAGE_ITEM";
@@ -71,7 +60,6 @@ const ADD_IS_HYDRATING_COUNTER = "ADD_IS_HYDRATING_COUNTER";
 const SET_VIEW_STATE = "SET_VIEW_STATE";
 const SET_VIEW_CHANGING = "SET_VIEW_CHANGING";
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = "SET_INITIAL_VIEW_CHANGE_COMPLETE";
-const UPDATE_CSS_VARIABLES = "UPDATE_CSS_VARIABLES";
 const MESSAGE_SET_OPTION_SELECTED = "MESSAGE_SET_OPTION_SELECTED";
 const SET_MESSAGE_UI_PROPERTY = "SET_MESSAGE_UI_PROPERTY";
 const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
@@ -86,12 +74,10 @@ const SET_CHAT_MESSAGES_PROPERTY = "SET_CHAT_MESSAGES_PROPERTY";
 const RESTART_CONVERSATION = "RESTART_CONVERSATION";
 const ACCEPTED_DISCLAIMER = "ACCEPTED_DISCLAIMER";
 const ADD_MESSAGE = "ADD_MESSAGE";
-const UPDATE_HOME_SCREEN_CONFIG = "UPDATE_HOME_SCREEN_CONFIG";
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   "UPDATE_HAS_SENT_NON_WELCOME_MESSAGE";
 const UPDATE_PERSISTED_CHAT_STATE = "UPDATE_PERSISTED_CHAT_STATE";
 const SET_HOME_SCREEN_IS_OPEN = "SET_HOME_SCREEN_IS_OPEN";
-const UPDATE_LAUNCHER_CONFIG = "UPDATE_LAUNCHER_CONFIG";
 const UPDATE_MESSAGE = "UPDATE_MESSAGE";
 const SET_LAUNCHER_MINIMIZED = "SET_LAUNCHER_MINIMIZED";
 const CLOSE_IFRAME_PANEL = "CLOSE_IFRAME_PANEL";
@@ -117,11 +103,9 @@ const STREAMING_MERGE_MESSAGE_OPTIONS = "STREAMING_MERGE_MESSAGE_OPTIONS";
 const ADD_NOTIFICATION = "ADD_NOTIFICATION";
 const REMOVE_ALL_NOTIFICATIONS = "REMOVE_ALL_NOTIFICATIONS";
 const REMOVE_NOTIFICATIONS = "REMOVE_NOTIFICATIONS";
-const UPDATE_CHAT_HEADER_CONFIG = "UPDATE_CHAT_HEADER_CONFIG";
 const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
 const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
-const UPDATE_MAIN_HEADER_AVATAR = "UPDATE_MAIN_HEADER_AVATAR";
 const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
 
 /**
@@ -254,35 +238,6 @@ const actions = {
       type: ADD_IS_HYDRATING_COUNTER,
       addToIsHydrating,
     };
-  },
-
-  updateBotName(name: string) {
-    return { type: UPDATE_BOT_NAME, name };
-  },
-
-  updateMainHeaderTitle(title?: string) {
-    return { type: UPDATE_MAIN_HEADER_TITLE, title };
-  },
-
-  updateBotAvatarURL(url: string) {
-    return { type: UPDATE_BOT_AVATAR_URL, url };
-  },
-
-  updateCSSVariables(
-    variables: ObjectMap<string>,
-    publicVars: ObjectMap<string>,
-    whiteLabelVariables: WhiteLabelTheme,
-  ) {
-    return {
-      type: UPDATE_CSS_VARIABLES,
-      variables,
-      publicVars,
-      whiteLabelVariables,
-    };
-  },
-
-  updateHomeScreenConfig(homeScreenConfig: HomeScreenConfig) {
-    return { type: UPDATE_HOME_SCREEN_CONFIG, homeScreenConfig };
   },
 
   setViewState(viewState: ViewState) {
@@ -474,10 +429,6 @@ const actions = {
     return { type: SET_HOME_SCREEN_IS_OPEN, isOpen };
   },
 
-  updateLauncherConfig(launcherConfig: LauncherConfig) {
-    return { type: UPDATE_LAUNCHER_CONFIG, launcherConfig };
-  },
-
   setLauncherMinimized() {
     return { type: SET_LAUNCHER_MINIMIZED };
   },
@@ -637,10 +588,6 @@ const actions = {
     };
   },
 
-  updateChatHeaderConfig(chatHeaderConfig: ChatHeaderConfig) {
-    return { type: UPDATE_CHAT_HEADER_CONFIG, chatHeaderConfig };
-  },
-
   setStopStreamingButtonVisible(isVisible: boolean) {
     return { type: SET_STOP_STREAMING_BUTTON_VISIBLE, isVisible };
   },
@@ -653,9 +600,6 @@ const actions = {
     return { type: SET_STREAM_ID, currentStreamID };
   },
 
-  updateMainHeaderAvatar(config: ChatHeaderAvatarConfig) {
-    return { type: UPDATE_MAIN_HEADER_AVATAR, config };
-  },
   updateThemeState(themeState: ThemeState) {
     return { type: UPDATE_THEME_STATE, themeState };
   },
@@ -666,7 +610,6 @@ export default actions;
 export {
   CHANGE_STATE,
   ADD_IS_LOADING_COUNTER,
-  ADD_IS_TYPING_COUNTER,
   ADD_IS_HYDRATING_COUNTER,
   SET_APP_STATE_VALUE,
   ADD_LOCAL_MESSAGE_ITEM,
@@ -676,22 +619,16 @@ export {
   SET_VIEW_STATE,
   SET_VIEW_CHANGING,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
-  UPDATE_BOT_NAME,
-  UPDATE_BOT_AVATAR_URL,
   UPDATE_LAUNCHER_AVATAR_URL,
-  UPDATE_MAIN_HEADER_TITLE,
-  UPDATE_CSS_VARIABLES,
   MESSAGE_SET_OPTION_SELECTED,
   SET_MESSAGE_UI_PROPERTY,
   ANNOUNCE_MESSAGE,
   RESTART_CONVERSATION,
   ACCEPTED_DISCLAIMER,
   ADD_MESSAGE,
-  UPDATE_HOME_SCREEN_CONFIG,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_PERSISTED_CHAT_STATE,
   SET_HOME_SCREEN_IS_OPEN,
-  UPDATE_LAUNCHER_CONFIG,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
   SET_LAUNCHER_PROPERTY,
@@ -722,11 +659,9 @@ export {
   REMOVE_ALL_NOTIFICATIONS,
   REMOVE_NOTIFICATIONS,
   MERGE_HISTORY,
-  UPDATE_CHAT_HEADER_CONFIG,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STREAM_ID,
-  UPDATE_MAIN_HEADER_AVATAR,
   UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
 };

@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   padding: layout.$spacing-05;
-  background-color: theme.$layer-01;
+  background-color: theme.$chat-shell-background;
   border-block-end: 1px solid theme.$border-subtle-01;
   @include type.type-style("body-01");
 
@@ -47,7 +47,7 @@
 }
 
 .WACHumanAgentBanner__HumanAgentLine1 {
-  font-weight: var(--cds-chat-BASE-weight-semibold);
+  font-weight: 600;
 }
 
 .WACHumanAgentBanner--connected .WACAgentBanner__AgentLine1 {

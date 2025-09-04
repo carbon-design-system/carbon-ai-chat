@@ -8,11 +8,11 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 
-.WAC__ChatNonHeaderContainer {
+.WAC__NonHeaderContainer {
   position: relative;
   display: flex;
   overflow: hidden;
-  flex: 1;
+  flex: 1 1 0%;
 }
 
 .WAC__messagesAndInputContainer {

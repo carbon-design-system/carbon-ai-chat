@@ -7,8 +7,14 @@
  *  @license
  */
 
+import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
 import enLanguagePack from "../../chat/languages/en.json";
 
+/**
+ * The English language pack type, representing the structure of all language packs.
+ *
+ * @category Instance
+ */
 export type EnglishLanguagePack = typeof enLanguagePack;
 
 export { enLanguagePack };
@@ -81,13 +87,7 @@ export interface ViewState {
  * @category Instance
  */
 export interface NotificationMessage {
-  kind:
-    | "error"
-    | "info"
-    | "info-square"
-    | "success"
-    | "warning"
-    | "warning-alt";
+  kind: NOTIFICATION_KIND;
 
   /**
    * The title to show in the message.
@@ -138,6 +138,7 @@ export interface NotificationStateObject {
 
 /**
  * A language pack represent the set of display strings for a particular language.
+ * It defines all the text strings that can be customized for different languages.
  *
  * @category Instance
  */
@@ -235,12 +236,6 @@ export interface BasePanelConfigOptions {
   hideCloseButton?: boolean;
 
   /**
-   * Indicates if the close-and-restart (X) button in the custom panel should be hidden. This value only applies if
-   * the close-and-restart button is enabled.
-   */
-  hideCloseAndRestartButton?: boolean;
-
-  /**
    * Indicates if the panel header should be hidden.
    */
   hidePanelHeader?: boolean;
@@ -255,12 +250,6 @@ export interface BasePanelConfigOptions {
    * is set to true.
    */
   onClickClose?: () => void;
-
-  /**
-   * This callback is called when the close-and-restart button is clicked. This is called even if {@link disableDefaultCloseAction}
-   * is set to true.
-   */
-  onClickCloseAndRestart?: () => void;
 
   /**
    * Called when the restart button is clicked.
@@ -285,9 +274,9 @@ export interface CustomPanelConfigOptions extends BasePanelConfigOptions {
   disableAnimation?: boolean;
 
   /**
-   * Disables the default action that is taken when the close or close-and-restart buttons are clicked. The default
+   * Disables the default action that is taken when the close button is clicked. The default
    * action closes Carbon AI Chat and disabling this will cause the button to not do anything. You can override the button
-   * behavior by using the {@link onClickClose} or {@link onClickCloseAndRestart} callback.
+   * behavior by using the {@link onClickClose} callback.
    */
   disableDefaultCloseAction?: boolean;
 }

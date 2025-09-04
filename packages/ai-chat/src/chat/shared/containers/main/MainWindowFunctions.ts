@@ -7,8 +7,6 @@
  *  @license
  */
 
-import { InstanceInputElement } from "../../../../types/instance/ChatInstance";
-import { HasAddRemoveClassName } from "../../../../types/utilities/HasAddRemoveClassName";
 import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 
@@ -16,10 +14,7 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
  * These are the public imperative functions that are available on the MainWindow component. This interface is
  * declared separately to avoid a direct dependency on a React component.
  */
-interface MainWindowFunctions
-  extends HasAddRemoveClassName,
-    HasRequestFocus,
-    HasDoAutoScroll {
+interface MainWindowFunctions extends HasRequestFocus, HasDoAutoScroll {
   /**
    * Scrolls to the (full) message with the given ID. Since there may be multiple message items in a given
    * message, this will scroll the first message to the top of the message window.
@@ -33,16 +28,6 @@ interface MainWindowFunctions
    * Returns the current scrollBottom value for the message scroll panel.
    */
   getMessagesScrollBottom(): number;
-
-  /**
-   * Returns the element that represents the input field (text area) on the main message area.
-   */
-  getMessageInput(): InstanceInputElement;
-
-  /**
-   * Returns the element that represents the input field (text area) on the home screen.
-   */
-  getHomeScreenInput(): InstanceInputElement;
 }
 
 export { MainWindowFunctions };

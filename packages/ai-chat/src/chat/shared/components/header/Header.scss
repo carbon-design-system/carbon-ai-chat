@@ -30,7 +30,7 @@
 }
 
 .WACWidget--maxWidth .WACHeader--content {
-  max-inline-size: chatTheme.$CONTAINER-max-width;
+  max-inline-size: chatTheme.$max-width;
 }
 
 .WACHeader__Buttons {
@@ -43,8 +43,8 @@
 }
 
 .WACWidget.WACWidget--rounded .WACHeader--content {
-  border-start-end-radius: var(--cds-chat-CONTAINER-border-radius);
-  border-start-start-radius: var(--cds-chat-CONTAINER-border-radius);
+  border-start-end-radius: var(--cds-chat-border-radius);
+  border-start-start-radius: var(--cds-chat-border-radius);
 }
 
 .WACHeader__CenterContainer:first-child {
@@ -77,8 +77,7 @@
 .WACHeader__OverflowMenu svg,
 .WACHeader__BackButton svg,
 .WACHeader__RestartButton svg,
-.WACHeader__CloseButton svg,
-.WACHeader__CloseAndRestartButton svg {
+.WACHeader__CloseButton svg {
   block-size: 16px;
   inline-size: 16px;
 }

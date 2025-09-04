@@ -161,13 +161,6 @@
           "severity": "warning"
         }
       ],
-      "keyframes-name-pattern": [
-        "^[a-z][a-z0-9\\-]+$",
-        {
-          "message": "Keyframe names should be kebab-case",
-          "severity": "warning"
-        }
-      ],
       "declaration-property-unit-allowed-list": [
         {
           "font-size": [

@@ -13,7 +13,7 @@ import cx from "classnames";
 import throttle from "lodash-es/throttle.js";
 import React, { Fragment, PureComponent, ReactNode } from "react";
 import { connect } from "react-redux";
-
+import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { InlineLoadingComponent } from "../../react/components/inlineLoading/InlineLoadingComponent";
 import { HumanAgentBannerContainer } from "../components/humanAgent/HumanAgentBannerContainer";
 import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
@@ -52,8 +52,10 @@ import MessageComponent, {
 } from "./MessageComponent";
 import { Message } from "../../../types/messaging/Messages";
 import { EnglishLanguagePack } from "../../../types/instance/apiTypes";
-import DownToBottom from "@carbon/icons-react/es/DownToBottom.js";
 import { CarbonTheme } from "../../../types/config/PublicConfig";
+import { carbonIconToReact } from "../utils/carbonIcon";
+
+const DownToBottom = carbonIconToReact(DownToBottom16);
 
 const DEBUG_AUTO_SCROLL = false;
 
@@ -83,9 +85,9 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   requestInputFocus: () => void;
 
   /**
-   * The name of the bot.
+   * The name of the assistant.
    */
-  botName: string;
+  assistantName: string;
 
   /**
    * The callback that is called when the user clicks the "end agent chat" button.
@@ -673,10 +675,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       languagePack,
       requestInputFocus,
       persistedToBrowserStorage,
-      botName,
+      config: {
+        public: { assistantName },
+      },
       messageState,
-      locale,
-      botAvatarURL,
       carbonTheme,
       useAITheme,
     } = this.props;
@@ -725,17 +727,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
         messagesIndex={messagesIndex}
-        botName={botName}
+        assistantName={assistantName}
         disableUserInputs={inputState.isReadonly}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
-        botAvatarURL={botAvatarURL}
         requestMoveFocus={this.requestMoveFocus}
         doAutoScroll={this.doAutoScroll}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
         isLastMessageItem={isLastMessageItem}
-        locale={locale}
+        locale={config.public.locale || "en"}
         carbonTheme={carbonTheme}
         useAITheme={useAITheme}
         allowNewFeedback={allowNewFeedback}
@@ -950,7 +951,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       localMessageItems,
       messageState,
       intl,
-      botName,
+      assistantName,
       serviceManager,
       notifications,
       languagePack,
@@ -969,7 +970,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } else if (isLoadingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_botIsLoading" },
-        { botName },
+        { assistantName },
       );
     }
 

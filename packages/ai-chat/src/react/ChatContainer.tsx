@@ -9,18 +9,20 @@
 
 import { createComponent } from "@lit/react";
 import { css, LitElement, PropertyValues } from "lit";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 
-import { AppContainer } from "../chat/react/components/AppContainer";
+import App from "../chat/shared/containers/App";
 import { carbonElement } from "../chat/web-components/decorators/customElement";
 import { ChatContainerProps } from "../types/component/ChatContainer";
-import {
-  BusEventChunkUserDefinedResponse,
-  BusEventType,
-  BusEventUserDefinedResponse,
-} from "../types/events/eventBusTypes";
 import { ChatInstance } from "../types/instance/ChatInstance";
+import { PublicConfig } from "../types/config/PublicConfig";
 import { isBrowser } from "../chat/shared/utils/browserUtils";
 
 /**
@@ -63,24 +65,92 @@ const ReactChatContainer = React.memo(
 );
 
 /**
+ * @category React
  * The ChatContainer controls rendering the React application into the ShadowRoot of the cds-aichat-react web component.
  * It also injects the writeable element and user_defined response slots into said web component.
  */
 function ChatContainer({
   onBeforeRender,
   onAfterRender,
-  config,
+  strings,
+  serviceDeskFactory,
+  serviceDesk,
   renderUserDefinedResponse,
   renderWriteableElements,
   element,
+  // Flattened PublicConfig properties
+  onError,
+  openChatByDefault,
+  disclaimer,
+  disableCustomElementMobileEnhancements,
+  debug,
+  exposeServiceManagerForTesting,
+  injectCarbonTheme,
+  aiEnabled,
+  shouldTakeFocusIfOpensAutomatically,
+  namespace,
+  enableFocusTrap,
+  shouldSanitizeHTML,
+  header,
+  layout,
+  messaging,
+  isReadonly,
+  assistantName,
+  locale,
+  homescreen,
+  launcher,
 }: ChatContainerProps) {
+  // Reconstruct PublicConfig from flattened props
+  const config = useMemo(
+    (): PublicConfig => ({
+      onError,
+      openChatByDefault,
+      disclaimer,
+      disableCustomElementMobileEnhancements,
+      debug,
+      exposeServiceManagerForTesting,
+      injectCarbonTheme,
+      aiEnabled,
+      shouldTakeFocusIfOpensAutomatically,
+      namespace,
+      enableFocusTrap,
+      shouldSanitizeHTML,
+      header,
+      layout,
+      messaging,
+      isReadonly,
+      assistantName,
+      locale,
+      homescreen,
+      launcher,
+    }),
+    [
+      onError,
+      openChatByDefault,
+      disclaimer,
+      disableCustomElementMobileEnhancements,
+      debug,
+      exposeServiceManagerForTesting,
+      injectCarbonTheme,
+      aiEnabled,
+      shouldTakeFocusIfOpensAutomatically,
+      namespace,
+      enableFocusTrap,
+      shouldSanitizeHTML,
+      header,
+      layout,
+      messaging,
+      isReadonly,
+      assistantName,
+      locale,
+      homescreen,
+      launcher,
+    ],
+  );
   const wrapperRef = useRef(null); // Ref for the React wrapper component
   const [wrapper, setWrapper] = useState(null);
   const [container, setContainer] = useState<HTMLElement | null>(null); // Actual element we render the React Portal to in the Shadowroot.
 
-  const [userDefinedElements, setUserDefinedElements] = useState<HTMLElement[]>(
-    [],
-  );
   const [writeableElementSlots, setWriteableElementSlots] = useState<
     HTMLElement[]
   >([]);
@@ -101,10 +171,6 @@ function ChatContainer({
 
     // We need to check if the element in the ShadowRoot we are render the React application to exists.
     // If it doesn't, we need to create and append it.
-
-    // When the Carbon AI Chat is destroyed (either via a config change or by calling instance.destroy), this element is
-    // removed again. When the chat is destroyed the instance is set to null. The useEffect watches the instance
-    // value and runs if it changes, re-creating the container element if needed.
 
     const handleShadowReady = () => {
       // Now we know shadowRoot is definitely available
@@ -149,10 +215,7 @@ function ChatContainer({
    */
   useEffect(() => {
     if (wrapper) {
-      const combinedNodes: HTMLElement[] = [
-        ...userDefinedElements,
-        ...writeableElementSlots,
-      ];
+      const combinedNodes: HTMLElement[] = [...writeableElementSlots];
       const currentNodes: HTMLElement[] = Array.from(
         wrapper.childNodes,
       ) as HTMLElement[];
@@ -172,18 +235,7 @@ function ChatContainer({
         }
       });
     }
-  }, [userDefinedElements, writeableElementSlots, wrapper]);
-
-  const userDefinedHandler = useCallback(
-    (event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse) => {
-      const { element } = event.data;
-      setUserDefinedElements((previousUserDefinedElements) => [
-        ...previousUserDefinedElements,
-        element,
-      ]);
-    },
-    [],
-  );
+  }, [writeableElementSlots, wrapper]);
 
   const onBeforeRenderOverride = useCallback(
     (instance: ChatInstance) => {
@@ -198,19 +250,12 @@ function ChatContainer({
           });
           setWriteableElementSlots(slots);
         };
-        instance.on({
-          type: BusEventType.USER_DEFINED_RESPONSE,
-          handler: userDefinedHandler,
-        });
-        instance.on({
-          type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-          handler: userDefinedHandler,
-        });
+
         addWriteableElementSlots();
         onBeforeRender?.(instance);
       }
     },
-    [onBeforeRender, userDefinedHandler],
+    [onBeforeRender],
   );
 
   // If we are in SSR mode, just short circuit here. This prevents all of our window.* and document.* stuff from trying
@@ -224,8 +269,12 @@ function ChatContainer({
       <ReactChatContainer ref={wrapperRef} />
       {container &&
         createPortal(
-          <AppContainer
+          <App
+            key="stable-chat-instance" // Prevent remounting on config changes
             config={config}
+            strings={strings}
+            serviceDeskFactory={serviceDeskFactory}
+            serviceDesk={serviceDesk}
             renderUserDefinedResponse={renderUserDefinedResponse}
             renderWriteableElements={renderWriteableElements}
             onBeforeRender={onBeforeRenderOverride}
@@ -233,6 +282,7 @@ function ChatContainer({
             container={container}
             setParentInstance={setCurrentInstance}
             element={element}
+            chatWrapper={wrapper}
           />,
           container, // Render AppContainer into the shadowRoot
         )}
@@ -240,9 +290,4 @@ function ChatContainer({
   );
 }
 
-/** @category React */
-const ChatContainerExport = React.memo(
-  ChatContainer,
-) as React.FC<ChatContainerProps>;
-
-export { ChatContainerExport as ChatContainer, ChatContainerProps };
+export { ChatContainer, ChatContainerProps };

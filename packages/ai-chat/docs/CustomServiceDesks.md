@@ -11,7 +11,11 @@ For the Carbon AI Chat to integrate with a custom service desk, two basic steps 
 1. Write code to communicate with the service desk, enabling actions like starting a conversation or sending messages to a human agent. Make sure that the code meets the API requirements that the Carbon AI Chat specifies.
 2. Give the Carbon AI Chat access to that code by using a factory function, so it can run it.
 
-See {@link PublicConfig} and note `serviceDesk` and `serviceDeskFactory` to view the configuration object that is passed into the Carbon AI Chat for a service desk.
+Provide your service desk integration to the container components as top‑level props:
+
+- React: `<ChatContainer serviceDeskFactory={...} serviceDesk={{ ... }} />`
+- Web component (float): `<cds-aichat-container .serviceDeskFactory=${'{}'} .serviceDesk=${'{}'} />`
+- Web component (custom element): `<cds-aichat-custom-element .serviceDeskFactory=${'{}'} .serviceDesk=${'{}'} />`
 
 ### Service desk requirements
 
@@ -25,7 +29,7 @@ If the service desk operates on a domain different from your website, make sure 
 
 If you implement a service integration that satisfies the service desk API, getting the Carbon AI Chat to use it requires a factory function to create a new instance of your integration. The example shows an empty integration (that doesn't communicate with a service desk) to show how to register an integration with the Carbon AI Chat. See the following example:
 
-```javascript
+````javascript
 // Your custom service desk integration which can be located anywhere in your codebase.
 class MyServiceDesk {
   constructor(callback) {
@@ -47,11 +51,45 @@ class MyServiceDesk {
   }
 }
 
-const options = {
-  // ... other configuration options
-  serviceDeskFactory: (parameters) => new MyServiceDesk(parameters),
-};
+// React usage
+<ChatContainer
+  serviceDeskFactory={(parameters) => new MyServiceDesk(parameters)}
+  serviceDesk={{ allowReconnect: true }}
+  // ...other flattened config props
+/>;
+
+### Keep the service desk factory stable
+
+Because changing `serviceDeskFactory` at runtime will end any connecting/active human‑agent chat and reinitialize the integration, prefer a stable factory identity.
+
+React (stable via useCallback):
+
+```tsx
+const myFactory = useCallback(
+  (params: ServiceDeskFactoryParameters) => new MyServiceDesk(params),
+  []
+);
+
+<ChatContainer serviceDeskFactory={myFactory} />;
+````
+
+Web Components / Lit (stable class field):
+
+```ts
+@customElement("my-app")
+export class MyApp extends LitElement {
+  private readonly serviceDeskFactory = (
+    params: ServiceDeskFactoryParameters,
+  ) => new MyServiceDesk(params);
+  render() {
+    return html`<cds-aichat-container
+      .serviceDeskFactory=${this.serviceDeskFactory}
+    />`;
+  }
+}
 ```
+
+````
 
 ### API Overview
 
@@ -69,7 +107,7 @@ One of the items that are passed into the factory is a callback object. The Type
 
 The following section outlines the steps and actions that typically occur when a user connects to a service desk. It also explains how the Carbon AI Chat interacts with the service desk integration.
 
-1. When the Carbon AI Chat starts, it creates a single instance of the service desk integration by using the `serviceDeskFactory` configuration property.
+1. When the Carbon AI Chat starts, it creates a single instance of the service desk integration by using the `serviceDeskFactory` prop.
 2. A user sends a message to the assistant and it returns a "Connect to Agent" response (response_type="connect_to_agent").
 3. If the service desk integration implements it, the Carbon AI Chat calls `areAnyAgentsOnline` to determine whether any agents are online. This determines whether the Carbon AI Chat displays a "request agent" button or if it shows the "no agents available" message instead.
 4. User clicks the "request agent" button.
@@ -135,7 +173,7 @@ this.callback.updateCapabilities({
   allowedFileUploadTypes: "image/*,.txt",
   allowMultipleFileUploads: true,
 });
-```
+````
 
 #### Validating files before uploading
 
