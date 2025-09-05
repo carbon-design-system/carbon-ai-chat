@@ -23,7 +23,7 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
-    "./dist/es/*": "./dist/es/"
+    "./dist/es/": "./dist/es/"
   },
   "files": [
     "dist/es",

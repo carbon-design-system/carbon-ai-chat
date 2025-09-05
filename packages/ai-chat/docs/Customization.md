@@ -10,7 +10,66 @@ The Carbon AI Chat also supports basic styling inside `text` responses to match 
 
 ##### Markdown
 
-The Carbon AI Chat supports common Markdown syntax (bold, italics, lists, images, tables, code blocks, headings, blockquotes, and so on) in the `text` response type. The Carbon AI Chat follows standard CommonMark rules.
+The Carbon AI Chat supports the following Markdown syntax in the `text` response type:
+
+**Text formatting:**
+
+- `**bold text**` or `__bold text__` for **bold text**
+- `*italic text*` or `_italic text_` for _italic text_
+- `~~strikethrough~~` for ~~strikethrough text~~
+- `==highlighted text==` for ==highlighted text==
+- `^superscript^` for superscript text
+- `~subscript~` for subscript text
+
+**Code:**
+
+- `` `inline code` `` for `inline code`
+- Fenced code blocks with syntax highlighting:
+
+  ````
+  ```javascript
+  console.log('Hello, world!');
+  ````
+
+  ```
+
+  ```
+
+**Headers:**
+
+- `# H1`, `## H2`, `### H3`, `#### H4`, `##### H5`, `###### H6`
+
+**Lists:**
+
+- Unordered lists using `*`, `+`, or `-`
+- Ordered lists using `1.`, `2.`, etc.
+- Nested lists are supported
+
+**Links and images:**
+
+- `[link text](URL)` for links (opens in new tab by default)
+- `![alt text](image URL)` for images
+
+**Other elements:**
+
+- `> blockquote text` for blockquotes
+- Tables using pipe syntax with automatic pagination and sorting
+- Horizontal rules using `---` or `***`
+- Line breaks are preserved (breaks: true)
+- Automatic URL detection and conversion to links
+
+**Attributes:**
+
+- Custom attributes using `{{class="my-class" id="my-id"}}` syntax
+- Supported attributes: `target`, `rel`, `class`, `id`
+
+**HTML support:**
+
+- Raw HTML is supported when enabled
+- Custom elements and web components are allowed
+- Content is sanitized for security when sanitization is enabled
+
+The Carbon AI Chat follows CommonMark rules with these extensions and enhancements.
 
 ##### HTML content
 

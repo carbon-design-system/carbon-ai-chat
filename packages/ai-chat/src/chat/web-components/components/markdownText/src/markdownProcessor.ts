@@ -15,11 +15,12 @@
  */
 
 import DOMPurify from "dompurify";
-import { html, render, TemplateResult } from "lit";
+import { html, TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import MarkdownIt, { Token } from "markdown-it";
 import markdownItAttrs from "markdown-it-attrs";
+import { markdownItHighlight } from "./plugins/markdownItHighlight";
 
 import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
 import "@carbon/web-components/es-custom/components/list/index.js";
@@ -72,11 +73,13 @@ const htmlMarkdown = new MarkdownIt({
   html: true,
   breaks: true,
   linkify: true,
-}).use(markdownItAttrs, {
-  leftDelimiter: "{{",
-  rightDelimiter: "}}",
-  allowedAttributes: ["target", "rel", "class", "id"],
-});
+})
+  .use(markdownItAttrs, {
+    leftDelimiter: "{{",
+    rightDelimiter: "}}",
+    allowedAttributes: ["target", "rel", "class", "id"],
+  })
+  .use(markdownItHighlight);
 
 /**
  * Pre-configured markdown-it instance that strips HTML content.
@@ -86,11 +89,13 @@ const noHtmlMarkdown = new MarkdownIt({
   html: false,
   breaks: true,
   linkify: true,
-}).use(markdownItAttrs, {
-  leftDelimiter: "{{",
-  rightDelimiter: "}}",
-  allowedAttributes: ["target", "rel", "class", "id"],
-});
+})
+  .use(markdownItAttrs, {
+    leftDelimiter: "{{",
+    rightDelimiter: "}}",
+    allowedAttributes: ["target", "rel", "class", "id"],
+  })
+  .use(markdownItHighlight);
 
 /**
  * Parses markdown text into a flat array of markdown-it tokens.
@@ -236,35 +241,6 @@ function markdownToTokenTree(
 
   // Optimize by reusing unchanged parts of previous tree
   return diffTokenTree(lastTree, tree);
-}
-
-/**
- * Convert a Lit TemplateResult to an HTML string. I'm not sure if this is the best way to do this, but its working.
- */
-function templateToString(result: TemplateResult): string {
-  // Create temporary container element
-  const container = document.createElement("div");
-
-  // Render template into container
-  render(result, container);
-
-  // Extract the generated HTML
-  const htmlString = container.innerHTML;
-
-  // Clean up to prevent memory leaks
-  render(html``, container);
-
-  return htmlString;
-}
-
-/**
- * Complete Markdown to HTML. This is only used in conversational search which wants HTML sanitized, so its just forced
- * for now.
- */
-function markdownToHTML(value: string, streaming = false): string {
-  const tokenTree = markdownToTokenTree(value);
-  const template = renderTokenTree(tokenTree, { sanitize: true, streaming });
-  return templateToString(template);
 }
 
 // Static constants to provide the table component when we are just showing the skeleton.
@@ -672,7 +648,6 @@ export {
   type RenderTokenTreeOptions,
   markdownToMarkdownItTokens,
   markdownToTokenTree,
-  markdownToHTML,
   renderTokenTree,
   buildTokenTree,
   diffTokenTree,
