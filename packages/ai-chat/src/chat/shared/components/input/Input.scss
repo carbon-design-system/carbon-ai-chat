@@ -23,7 +23,7 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  background-color: var(--cds-chat-prompt-background);
+  background-color: theme.$chat-prompt-background;
   border-block-start: button.$button-outline-width solid theme.$border-subtle-00;
   color: theme.$text-primary;
   inline-size: 100%;
@@ -51,8 +51,8 @@
     // creates an image which is what the background prop requires.
     linear-gradient(
         to bottom,
-        var(--cds-chat-prompt-background),
-        var(--cds-chat-prompt-background)
+        theme.$chat-prompt-background,
+        theme.$chat-prompt-background
       )
       padding-box,
     // Set a background gradient that fades from the border color to the background color. This gradient covers the
@@ -61,7 +61,7 @@
     linear-gradient(
         to bottom,
         theme.$border-subtle-00,
-        var(--cds-chat-prompt-background)
+        theme.$chat-prompt-background
       )
       border-box;
 }

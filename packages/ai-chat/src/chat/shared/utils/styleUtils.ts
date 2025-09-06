@@ -16,11 +16,8 @@ import { ThemeState } from "../../../types/state/AppState";
 import ObjectMap from "../../../types/utilities/ObjectMap";
 import { adjustLightness } from "./colors";
 import { WA_CONSOLE_PREFIX } from "./constants";
-import {
-  ThemeType,
-  CarbonTheme,
-  WhiteLabelTheme,
-} from "../../../types/config/PublicConfig";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
+import { WhiteLabelTheme } from "../../../types/config/WhiteLabelTheme";
 
 enum CarbonThemeClassNames {
   WHITE = "cds--white",
@@ -75,13 +72,17 @@ function convertCSSVariablesToString(cssVariables: ObjectMap<string>): string {
  */
 async function remoteStylesToCSSVars(
   whiteLabelVariables: WhiteLabelTheme,
-  carbonTheme: CarbonTheme,
+  carbonTheme: CarbonTheme | null,
 ): Promise<ObjectMap<string>> {
   const cssOverrides: ObjectMap<string> = {};
 
   const themeColor = whiteLabelVariables.quickThemeHex;
 
   if (themeColor) {
+    if (!carbonTheme) {
+      // Inherit mode: do not override Carbon token colors
+      return cssOverrides;
+    }
     const colorMap = ACCENT_COLOR_MAPS[carbonTheme];
 
     // The custom color basically corresponds to Blue 60 are we will replace all the occurrences of Blue 60 with
@@ -110,7 +111,6 @@ async function remoteStylesToCSSVars(
  */
 
 const ACCENT_COLOR_MAPS: Record<CarbonTheme, { [key: string]: string[] }> = {
-  inherit: {},
   white: {
     blue20: ["$highlight"],
     blue60: [
@@ -193,7 +193,7 @@ function mergeCSSVariables(
   publicVars: ObjectMap<string>,
   whiteLabelVariables: WhiteLabelTheme,
   carbonTheme: CarbonTheme,
-  _theme: ThemeType | undefined,
+  _aiEnabled: boolean,
 ): ObjectMap<string> {
   carbonTheme = carbonTheme || CarbonTheme.G10;
   publicVars = publicVars || {};
@@ -229,8 +229,7 @@ function mergeCSSVariables(
 function getThemeClassNames(themeState: ThemeState) {
   let themeClassnames: string;
 
-  // Check if the original theme was INHERIT - if so, don't apply any Carbon theme classes
-  // This allows the component to inherit CSS variables from the parent page
+  // If no explicit theme was provided, inherit from host and avoid applying Carbon theme classes
   switch (themeState?.originalCarbonTheme) {
     case CarbonTheme.WHITE:
       themeClassnames = CarbonThemeClassNames.WHITE;
@@ -244,8 +243,8 @@ function getThemeClassNames(themeState: ThemeState) {
     case CarbonTheme.G100:
       themeClassnames = CarbonThemeClassNames.G100;
       break;
-    case CarbonTheme.INHERIT:
-      // INHERIT mode - don't apply theme classes, inherit from parent
+    case null:
+      // Inherit mode - don't apply theme classes, inherit from parent
       themeClassnames = "";
       // Apply dark theme class if derived theme is dark
       if (
@@ -262,7 +261,7 @@ function getThemeClassNames(themeState: ThemeState) {
       break;
   }
 
-  if (themeState?.theme === ThemeType.CARBON_AI) {
+  if (themeState?.aiEnabled) {
     themeClassnames += " WAC--aiTheme";
   }
 

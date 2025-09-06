@@ -59,11 +59,6 @@ interface CustomPanelProps {
   onClose: () => void;
 
   /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart: () => void;
-
-  /**
    * Called when the restart button is clicked.
    */
   onClickRestart?: () => void;
@@ -80,7 +75,6 @@ function CustomPanel(props: CustomPanelProps) {
     onPanelOpenStart,
     onPanelCloseStart,
     onClose,
-    onCloseAndRestart,
     onClickRestart,
   } = props;
   const languagePack = useLanguagePack();
@@ -94,7 +88,6 @@ function CustomPanel(props: CustomPanelProps) {
     disableAnimation,
     onClickBack,
     onClickClose,
-    onClickCloseAndRestart,
   } = options;
   const serviceManager = useServiceManager();
   const ariaAnnouncer = useAriaAnnouncer();
@@ -128,21 +121,6 @@ function CustomPanel(props: CustomPanelProps) {
 
     onClickClose?.();
   }, [disableDefaultCloseAction, onClickClose, onClose, serviceManager]);
-
-  // Note that this is not called until after the user has confirmed the action.
-  const onCloseAndRestartLocal = useCallback(() => {
-    if (!disableDefaultCloseAction) {
-      checkAllowClose(serviceManager.store.getState().viewChanging);
-      onCloseAndRestart();
-    }
-
-    onClickCloseAndRestart?.();
-  }, [
-    disableDefaultCloseAction,
-    onClickCloseAndRestart,
-    onCloseAndRestart,
-    serviceManager,
-  ]);
 
   return (
     <OverlayPanel
@@ -196,12 +174,10 @@ function CustomPanel(props: CustomPanelProps) {
         useAITheme={useAITheme}
         onClickBack={onClickBackLocal}
         onClickClose={onClickCloseLocal}
-        onClickCloseAndRestart={onCloseAndRestartLocal}
         onClickRestart={onClickRestart}
         hidePanelHeader={hidePanelHeader}
         hideBackButton={options.hideBackButton}
         hideCloseButton={options.hideCloseButton}
-        hideCloseAndRestartButton={options.hideCloseAndRestartButton}
         testIdPrefix={OverlayPanelName.CUSTOM}
       >
         <WriteableElement

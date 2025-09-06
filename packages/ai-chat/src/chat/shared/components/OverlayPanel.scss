@@ -107,7 +107,7 @@
 
 .WAC__overlay-panel--opening--fadeIn {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    WACFadeIn both;
+    cds-chat-fade-in both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -118,7 +118,7 @@
 
 .WAC__overlay-panel--opening--slideInFromLeft {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    WACSlideInFromLeft both;
+    cds-chat-slide-in-from-left both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -129,7 +129,14 @@
 
 .WAC__overlay-panel--opening--slideInFromRight {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    WACSlideInFromRight both;
+    cds-chat-slide-in-from-right both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--opening--slideInFromLeft {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -148,7 +155,14 @@
 
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--opening--slideInFromLeft {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    WACSlideInFromRight both;
+    cds-chat-slide-in-from-right both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--opening--slideInFromRight {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -168,7 +182,7 @@
 .WACContainer--render[dir="rtl"]
   .WAC__overlay-panel--opening--slideInFromRight {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    WACSlideInFromLeft both;
+    cds-chat-slide-in-from-left both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -179,7 +193,7 @@
 
 .WAC__overlay-panel--opening--slideInFromBottom {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    WACSlideInFromBottom both;
+    cds-chat-slide-in-from-bottom both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -190,7 +204,7 @@
 
 .WAC__overlay-panel--opening--brandingSlideInFromBottom {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    WACSlideInFromBottom both;
+    cds-chat-slide-in-from-bottom both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -201,7 +215,7 @@
 
 .WAC__overlay-panel--closing--fadeOut {
   animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
-    WACFadeOut both;
+    cds-chat-fade-out both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -212,7 +226,7 @@
 
 .WAC__overlay-panel--closing--slideOutToLeft {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    WACSlideOutToLeft both;
+    cds-chat-slide-out-to-left both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -223,7 +237,7 @@
 
 .WAC__overlay-panel--closing--slideOutToRight {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    WACSlideOutToRight both;
+    cds-chat-slide-out-to-right both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -234,7 +248,14 @@
 
 .WAC__overlay-panel--closing--slideOutToTop {
   animation: motion.$duration-slow-01 motion.motion(exit, expressive)
-    WACSlideOutToTop both;
+    cds-chat-slide-out-to-top both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--closing--slideOutToLeft {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -253,7 +274,14 @@
 
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--closing--slideOutToLeft {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    WACSlideOutToRight both;
+    cds-chat-slide-out-to-right both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .WACContainer--render[dir="rtl"]
+    .WAC__overlay-panel--closing--slideOutToRight {
+    animation: none;
+  }
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -272,7 +300,7 @@
 
 .WACContainer--render[dir="rtl"] .WAC__overlay-panel--closing--slideOutToRight {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    WACSlideOutToLeft both;
+    cds-chat-slide-out-to-left both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -283,5 +311,5 @@
 
 .WAC__overlay-panel--closing--slideOutToBottom {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    WACSlideOutToBottom both;
+    cds-chat-slide-out-to-bottom both;
 }

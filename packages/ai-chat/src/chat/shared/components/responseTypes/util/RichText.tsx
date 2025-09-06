@@ -64,8 +64,12 @@ function RichText(props: RichTextProps) {
   // Get localization data for markdown components
   const languagePack = useLanguagePack();
   const intl = useIntl();
-  const locale = useSelector((state: AppState) => state.locale);
-  const themeState = useSelector((state: AppState) => state.theme);
+  const locale = useSelector(
+    (state: AppState) => state.config.public.locale || "en",
+  );
+  const themeState = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults,
+  );
 
   // Determine if dark theme should be used based on derivedCarbonTheme
   const isDarkTheme =

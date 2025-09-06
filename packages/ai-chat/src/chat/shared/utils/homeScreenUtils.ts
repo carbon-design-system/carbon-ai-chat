@@ -16,7 +16,6 @@ function withoutEmptyStarters(config: HomeScreenConfig): HomeScreenConfig {
   let newConfig = config;
   if (config?.starters?.buttons?.length) {
     newConfig = {
-      allow_return: true,
       ...config,
       starters: {
         ...config.starters,

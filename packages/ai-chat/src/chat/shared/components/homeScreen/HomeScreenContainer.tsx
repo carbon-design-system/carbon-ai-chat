@@ -29,11 +29,6 @@ interface HomeScreenContainerProps {
   onClose: () => void;
 
   /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart?: () => void;
-
-  /**
    * Update the panel counter to show a panel has opened, and add any proper focus.
    */
   onPanelOpenStart: () => void;
@@ -101,7 +96,6 @@ interface HomeScreenContainerProps {
  */
 function HomeScreenContainer({
   onClose,
-  onCloseAndRestart,
   onPanelCloseStart,
   onPanelOpenStart,
   onPanelCloseEnd,
@@ -115,8 +109,8 @@ function HomeScreenContainer({
   onToggleHomeScreen,
 }: HomeScreenContainerProps) {
   const serviceManager = useServiceManager();
-  const homeScreenConfig = useSelector(
-    (state: AppState) => state.homeScreenConfig,
+  const homescreen = useSelector(
+    (state: AppState) => state.config.public.homescreen,
   );
 
   const isCustomPanelOpen = useSelector(
@@ -178,11 +172,10 @@ function HomeScreenContainer({
       <HomeScreen
         isHydrated={isHydrationAnimationComplete}
         homeScreenMessageInputRef={homeScreenInputRef}
-        homeScreenConfig={homeScreenConfig}
+        homescreen={homescreen}
         onSendInput={handleSendInput}
         onStarterClick={handlerStarterClick}
         onClose={onClose}
-        onCloseAndRestart={onCloseAndRestart}
         onRestart={onRestart}
         onToggleHomeScreen={onToggleHomeScreen}
       />

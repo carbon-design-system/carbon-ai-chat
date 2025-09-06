@@ -29,7 +29,7 @@ interface LauncherConfig {
   desktop?: LauncherCallToActionConfig;
 }
 
-interface LauncherInternalConfig extends LauncherConfig {
+interface LauncherInternalConfig {
   /**
    * If the launcher is visible. Defaults to true.
    */
@@ -68,8 +68,7 @@ interface LauncherCallToActionConfig {
   time_to_expand?: number;
 
   /**
-   * @internal
-   * An optional override of the icon shown on the launcher. This is ignored if the Carbon AI Chat theme is turned on.
+   * An optional override of the icon shown on the launcher.
    */
   avatar_url_override?: string;
 }

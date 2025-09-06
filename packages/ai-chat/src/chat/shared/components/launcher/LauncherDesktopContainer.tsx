@@ -354,7 +354,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const prevLauncherTitle = usePrevious(launcherConfig.desktop.title);
   useEffect(() => {
     // The check at the end that makes sure one of the two values is truthy has been added to stop this from running
-    // when prevLauncherTitle was undefined and launcherConfig.desktop.title was an empty string.
+    // when prevLauncherTitle was undefined and launcher.desktop.title was an empty string.
     if (
       prevLauncherTitle !== launcherConfig.desktop.title &&
       (launcherConfig.desktop.title || prevLauncherTitle)
@@ -393,7 +393,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
         intl={intl}
         launcherComplexRef={launcherComplexRef}
         launcherRef={launcherRef}
-        launcherConfig={launcherConfig}
+        launcher={launcherConfig}
         onOpen={onOpen}
         onMinimize={onMinimize}
         unreadHumanAgentCount={unreadHumanAgentCount}

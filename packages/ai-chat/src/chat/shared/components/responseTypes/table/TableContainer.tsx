@@ -32,7 +32,9 @@ function TableContainer(props: TableContainerProps) {
   const { tableItem } = props;
   const { title, description, headers, rows } = tableItem;
 
-  const locale = useSelector((state: AppState) => state.locale);
+  const locale = useSelector(
+    (state: AppState) => state.config.public.locale || "en",
+  );
 
   const languagePack = useLanguagePack();
   const intl = useIntl();

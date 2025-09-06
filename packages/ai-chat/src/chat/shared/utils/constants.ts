@@ -8,10 +8,7 @@
  */
 
 import { FileStatusValue } from "../../../types/instance/apiTypes";
-import {
-  type IncreaseOrDecrease,
-  WriteableElementName,
-} from "../../../types/instance/ChatInstance";
+import { WriteableElementName } from "../../../types/instance/ChatInstance";
 import { CornersType } from "../../../types/config/CornersType";
 
 // Prefix used to distinguish console logs omitted from our code
@@ -37,14 +34,6 @@ function THROW_ERROR() {
   throw Error("Not implemented.");
 }
 
-/**
- * The brand color types configurable for Carbon AI Chat.
- */
-enum BrandColorKind {
-  PRIMARY = "primary",
-  ACCENT = "accent",
-}
-
 // When we auto-scroll to a message, we want to scroll a bit more than necessary because messages have a lot of
 // padding on the top that we want to cut off when scrolling. This is the extra amount we scroll by. There's 28px of
 // padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
@@ -63,8 +52,6 @@ export {
   WriteableElementName,
   FileStatusValue,
   THROW_ERROR,
-  BrandColorKind,
   CornersType,
-  IncreaseOrDecrease,
   AUTO_SCROLL_EXTRA,
 };

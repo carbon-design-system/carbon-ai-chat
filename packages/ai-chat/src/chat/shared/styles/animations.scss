@@ -13,7 +13,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 
-@keyframes WACFadeIn {
+@keyframes cds-chat-fade-in {
   0% {
     opacity: 0;
   }
@@ -23,7 +23,7 @@
   }
 }
 
-@keyframes WACFadeInUp {
+@keyframes cds-chat-fade-in-up {
   0% {
     opacity: 0;
     transform: translateY(32px);
@@ -38,7 +38,7 @@
   }
 }
 
-@keyframes WACFadeOut {
+@keyframes cds-chat-fade-out {
   0% {
     opacity: 1;
   }
@@ -48,7 +48,7 @@
   }
 }
 
-@keyframes WACSlideInFromRight {
+@keyframes cds-chat-slide-in-from-right {
   from {
     inset-inline-start: 100%;
   }
@@ -58,7 +58,7 @@
   }
 }
 
-@keyframes WACSlideOutToRight {
+@keyframes cds-chat-slide-out-to-right {
   from {
     inset-inline-start: 0;
   }
@@ -68,7 +68,7 @@
   }
 }
 
-@keyframes WACSlideOutToTop {
+@keyframes cds-chat-slide-out-to-top {
   from {
     inset-block-start: 0;
   }
@@ -78,7 +78,7 @@
   }
 }
 
-@keyframes WACSlideInFromLeft {
+@keyframes cds-chat-slide-in-from-left {
   from {
     inset-inline-end: 100%;
   }
@@ -88,7 +88,7 @@
   }
 }
 
-@keyframes WACSlideOutToLeft {
+@keyframes cds-chat-slide-out-to-left {
   from {
     inset-inline-end: 0;
   }
@@ -98,7 +98,7 @@
   }
 }
 
-@keyframes WACSlideInFromBottom {
+@keyframes cds-chat-slide-in-from-bottom {
   from {
     inset-block-start: 100%;
   }
@@ -108,22 +108,12 @@
   }
 }
 
-@keyframes WACSlideOutToBottom {
+@keyframes cds-chat-slide-out-to-bottom {
   from {
     inset-block-start: 0;
   }
 
   to {
     inset-block-start: 100%;
-  }
-}
-
-@keyframes WACAnimateHeight {
-  0% {
-    block-size: var(--cds-chat-Animate-Start-Height);
-  }
-
-  100% {
-    block-size: var(--cds-chat-Animate-End-Height);
   }
 }

@@ -82,9 +82,9 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   requestInputFocus: () => void;
 
   /**
-   * The name of the bot.
+   * The name of the assistant.
    */
-  botName: string;
+  assistantName: string;
 
   /**
    * The callback that is called when the user clicks the "end agent chat" button.
@@ -634,10 +634,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       languagePack,
       requestInputFocus,
       persistedToBrowserStorage,
-      botName,
+      config: {
+        public: { assistantName },
+      },
       messageState,
-      locale,
-      botAvatarURL,
       carbonTheme,
       useAITheme,
     } = this.props;
@@ -686,17 +686,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
         messagesIndex={messagesIndex}
-        botName={botName}
+        assistantName={assistantName}
         disableUserInputs={inputState.isReadonly}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
-        botAvatarURL={botAvatarURL}
         requestMoveFocus={this.requestMoveFocus}
         doAutoScroll={this.doAutoScroll}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
         isLastMessageItem={isLastMessageItem}
-        locale={locale}
+        locale={config.public.locale || "en"}
         carbonTheme={carbonTheme}
         useAITheme={useAITheme}
         allowNewFeedback={allowNewFeedback}
@@ -907,7 +906,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       localMessageItems,
       messageState,
       intl,
-      botName,
+      assistantName,
       serviceManager,
       notifications,
     } = this.props;
@@ -925,7 +924,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } else if (isLoadingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_botIsLoading" },
-        { botName },
+        { assistantName },
       );
     }
 

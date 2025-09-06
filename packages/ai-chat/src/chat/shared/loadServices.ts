@@ -17,11 +17,7 @@ import { ServiceManager } from "./services/ServiceManager";
 import { ThemeWatcherService } from "./services/ThemeWatcherService";
 import { UserSessionStorageService } from "./services/UserSessionStorageService";
 import { doCreateStore } from "./store/doCreateStore";
-import {
-  copyToSessionStorage,
-  createHandleWindowTitle,
-} from "./store/subscriptions";
-import { AdditionalChatParameters } from "../../types/component/AdditionalChatParameters";
+import { copyToSessionStorage } from "./store/subscriptions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { WriteableElementName } from "./utils/constants";
 import {
@@ -32,49 +28,41 @@ import {
 import { setIntl } from "./utils/intlUtils";
 import { isBrowser } from "./utils/browserUtils";
 
-type CreateServiceManagerFunction = (
-  appConfig: AppConfig,
-  additionalChatParameters: AdditionalChatParameters,
-) => Promise<ServiceManager>;
+type CreateServiceManagerFunction = (appConfig: AppConfig) => ServiceManager;
 
 /**
  * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
  * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
-async function createServiceManager(
-  appConfig: AppConfig,
-  additionalChatParameters: AdditionalChatParameters,
-) {
+function createServiceManager(appConfig: AppConfig) {
   const publicConfig = appConfig.public;
 
   const serviceManager = new ServiceManager();
 
   // Create all the services we will be using.
-  serviceManager.additionalChatParameters = additionalChatParameters;
   serviceManager.namespace = new NamespaceService(publicConfig.namespace);
   serviceManager.userSessionStorageService = new UserSessionStorageService(
     serviceManager,
   );
   serviceManager.actions = new ChatActionsImpl(serviceManager);
   serviceManager.eventBus = new EventBus();
-  serviceManager.store = doCreateStore(appConfig, serviceManager);
+  serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageService = new MessageService(
     serviceManager,
     publicConfig,
   );
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
-  if (!publicConfig.disableWindowTitleChanges) {
-    serviceManager.store.subscribe(createHandleWindowTitle(serviceManager));
-  }
 
   // Subscribe to theme changes to start/stop the theme watcher as needed
   let currentOriginalTheme =
-    serviceManager.store.getState().theme.originalCarbonTheme;
+    serviceManager.store.getState().config.derived.themeWithDefaults
+      .originalCarbonTheme;
 
   serviceManager.store.subscribe(() => {
     const newOriginalTheme =
-      serviceManager.store.getState().theme.originalCarbonTheme;
+      serviceManager.store.getState().config.derived.themeWithDefaults
+        .originalCarbonTheme;
     if (newOriginalTheme !== currentOriginalTheme) {
       serviceManager.themeWatcherService.onThemeChange(newOriginalTheme);
       currentOriginalTheme = newOriginalTheme;
@@ -85,13 +73,13 @@ async function createServiceManager(
     serviceManager.store,
   );
 
-  // Start theme watching if initially set to INHERIT
+  // Start theme watching if initially inheriting tokens
   // If later we make the theme mutable, we will have to consider that here.
   serviceManager.themeWatcherService.onThemeChange(currentOriginalTheme);
 
   setIntl(
     serviceManager,
-    serviceManager.store.getState().locale,
+    serviceManager.store.getState().config.public.locale || "en",
     serviceManager.store.getState().languagePack,
   );
 
@@ -122,7 +110,7 @@ async function createServiceManager(
     setEnableDebugLog(true);
   }
 
-  if (publicConfig.debugStackTraces) {
+  if (publicConfig.debug) {
     setEnableDebugStackTracesLog(true);
   }
 

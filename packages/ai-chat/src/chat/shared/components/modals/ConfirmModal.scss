@@ -54,6 +54,6 @@
 .WAC--wideWidth .WACConfirmModal .WACConfirmModal__container {
   margin: auto;
   max-inline-size: calc(
-    #{chatTheme.$CONTAINER-max-width} - calc(#{layout.$spacing-05} * 2)
+    #{chatTheme.$max-width} - calc(#{layout.$spacing-05} * 2)
   );
 }

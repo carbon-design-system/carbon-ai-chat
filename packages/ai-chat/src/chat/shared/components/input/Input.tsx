@@ -6,17 +6,11 @@
  *
  *  @license
  */
-import Button, {
-  BUTTON_KIND,
-  BUTTON_TYPE,
-  BUTTON_SIZE,
-  BUTTON_TOOLTIP_ALIGNMENT,
-  BUTTON_TOOLTIP_POSITION,
-} from "../../../react/carbon/Button";
+import Button from "../../../react/carbon/Button";
 import Send16 from "@carbon/icons/es/send/16.js";
 import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
-import Attachment from "@carbon/icons-react/es/Attachment.js";
+import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import FileUploaderItem, {
   FILE_UPLOADER_ITEM_SIZE,
   FILE_UPLOADER_ITEM_STATE,
@@ -51,9 +45,17 @@ import { InstanceInputElement } from "../../../../types/instance/ChatInstance";
 import { BusEventType } from "../../../../types/events/eventBusTypes";
 import { OverlayPanelName } from "../OverlayPanel";
 import { makeTestId, PageObjectId } from "../../utils/PageObjectId";
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+  BUTTON_TOOLTIP_ALIGNMENT,
+  BUTTON_TOOLTIP_POSITION,
+  BUTTON_TYPE,
+} from "@carbon/web-components/es/components/button/defs.js";
 
 const Send = carbonIconToReact(Send16);
 const SendFilled = carbonIconToReact(SendFilled16);
+const Attachment = carbonIconToReact(Attachment16);
 
 /**
  * The size of the gap between input changes before we indicate that the user has stopped typing.
@@ -508,17 +510,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               className="WACInputContainer__SendButton"
               kind={BUTTON_KIND.GHOST}
               size={BUTTON_SIZE.SMALL}
-              type={"button" as BUTTON_TYPE}
+              type={BUTTON_TYPE.BUTTON}
               onClick={send}
               aria-label={input_buttonLabel}
               disabled={showDisabledSend}
               tooltip-text={input_buttonLabel}
               tooltipAlignment={
                 isRTL
-                  ? ("start" as BUTTON_TOOLTIP_ALIGNMENT)
-                  : ("end" as BUTTON_TOOLTIP_ALIGNMENT)
+                  ? BUTTON_TOOLTIP_ALIGNMENT.START
+                  : BUTTON_TOOLTIP_ALIGNMENT.END
               }
-              tooltipPosition={"top" as BUTTON_TOOLTIP_POSITION}
+              tooltipPosition={BUTTON_TOOLTIP_POSITION.TOP}
               data-testid={makeTestId(PageObjectId.INPUT_SEND, testIdPrefix)}
             >
               {hasValidInput ? (

@@ -23,6 +23,8 @@ export {
   CustomPanelConfigOptions,
   CustomPanelInstance,
   CustomPanels,
+  EnglishLanguagePack,
+  enLanguagePack,
   FileStatusValue,
   FileUpload,
   LauncherType,
@@ -39,7 +41,6 @@ export {
   ChatInstance,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
-  CSSVariable,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
@@ -54,6 +55,7 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { LayoutCSSVariables } from "./types/config/LayoutCSSVariables";
 
 export { CornersType } from "./types/config/CornersType";
 
@@ -94,7 +96,6 @@ export {
 } from "./types/events/eventBusTypes";
 
 export {
-  HomeScreenBackgroundType,
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
@@ -115,7 +116,6 @@ export {
   OnErrorType,
   PublicConfig,
   PublicConfigMessaging,
-  ThemeConfig,
 } from "./types/config/PublicConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";

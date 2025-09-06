@@ -78,7 +78,6 @@ function BasePanelComponent(
     title,
     hideBackButton,
     useAITheme,
-    onClickCloseAndRestart,
     onClickRestart,
     testIdPrefix,
     ...headerProps
@@ -86,7 +85,7 @@ function BasePanelComponent(
   ref: Ref<HasRequestFocus>,
 ) {
   const showRestartButton = useSelector(
-    (state: AppState) => state.config.public.headerConfig?.showRestartButton,
+    (state: AppState) => state.config.public.header?.showRestartButton,
   );
   const headerRef = useRef<HasRequestFocus>();
 
@@ -146,7 +145,6 @@ function BasePanelComponent(
             ref={headerRef}
             showRestartButton={showRestartButton}
             onClickRestart={onClickRestart}
-            onCloseAndRestart={onClickCloseAndRestart}
             showBackButton={!hideBackButton}
             labelBackButton={labelBackButton}
             displayName={title}

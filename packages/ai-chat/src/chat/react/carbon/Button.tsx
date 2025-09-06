@@ -17,7 +17,7 @@ import {
   BUTTON_TOOLTIP_POSITION,
 } from "@carbon/web-components/es/components/button/defs.js";
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonButtonElement from "@carbon/web-components/es-custom/components/button/button.js";
+import CarbonButtonElement from "@carbon/web-components/es/components/button/button.js";
 
 const Button = createComponent({
   tagName: "cds-button",

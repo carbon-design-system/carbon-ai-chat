@@ -10,15 +10,15 @@
 /* eslint-disable react/no-danger */
 
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
-import AiLaunch from "@carbon/icons-react/es/AiLaunch.js";
-import ChatLaunch from "@carbon/icons-react/es/ChatLaunch.js";
+import AiLaunch24 from "@carbon/icons/es/ai-launch/24.js";
+import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import Button, { BUTTON_KIND, BUTTON_TYPE } from "../../../react/carbon/Button";
 import cx from "classnames";
 import React, { forwardRef, Ref, RefObject, useImperativeHandle } from "react";
 import { useSelector } from "react-redux";
 
 import { AppState } from "../../../../types/state/AppState";
-import { ThemeType } from "../../../../types/config/PublicConfig";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import HasIntl from "../../../../types/utilities/HasIntl";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
@@ -66,13 +66,11 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     tabIndex,
     launcherHidden,
   } = props;
-  const launcherAvatarURL = useSelector((state: AppState) =>
-    state.theme.theme === ThemeType.CARBON_AI
-      ? undefined
-      : state.launcher.config.desktop.avatar_url_override,
+  const launcherAvatarURL = useSelector(
+    (state: AppState) => state.launcher.config.desktop.avatar_url_override,
   );
   const useAITheme = useSelector(
-    (state: AppState) => state.theme.theme === ThemeType.CARBON_AI,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
   );
 
   /**
@@ -99,10 +97,12 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     )}`;
   }
 
+  const AiLaunch = carbonIconToReact(AiLaunch24);
+  const ChatLaunch = carbonIconToReact(ChatLaunch24);
   let launcherAvatar = useAITheme ? (
-    <AiLaunch size={24} className="WACLauncher_svg" />
+    <AiLaunch className="WACLauncher_svg" />
   ) : (
-    <ChatLaunch size={24} className="WACLauncher__svg" />
+    <ChatLaunch className="WACLauncher__svg" />
   );
 
   if (launcherAvatarURL) {
@@ -135,7 +135,7 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
         className="WACLauncher__Button"
         data-testid={PageObjectId.LAUNCHER}
         kind={BUTTON_KIND.PRIMARY}
-        type={"button" as BUTTON_TYPE}
+        type={BUTTON_TYPE.BUTTON}
         onClick={onToggleOpen}
         ref={buttonRef}
         tabIndex={tabIndex}

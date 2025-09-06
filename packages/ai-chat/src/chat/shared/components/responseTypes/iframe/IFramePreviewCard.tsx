@@ -7,7 +7,8 @@
  *  @license
  */
 
-import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
+import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
@@ -21,7 +22,6 @@ import { getURLHostName } from "../../../utils/browserUtils";
 import VisuallyHidden from "../../util/VisuallyHidden";
 import { ClickableImage } from "../util/ClickableImage";
 import { IFrameItem } from "../../../../../types/messaging/Messages";
-import { ThemeType } from "../../../../../types/config/PublicConfig";
 
 interface IFramePreviewCardComponentProps extends HasDoAutoScroll {
   /**
@@ -38,7 +38,9 @@ function IFramePreviewCardComponent({
   doAutoScroll,
 }: IFramePreviewCardComponentProps) {
   const { source, image_url, title, description } = messageItem;
-  const theme = useSelector((state: AppState) => state.theme.theme);
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
   const { iframe_ariaImageAltText } = useLanguagePack();
@@ -47,6 +49,7 @@ function IFramePreviewCardComponent({
     { id: "iframe_ariaClickPreviewCard" },
     { source: urlHostName },
   );
+  const ArrowRight = carbonIconToReact(ArrowRight16);
 
   /**
    * Set iframe content to be loaded in the iframe panel.
@@ -79,7 +82,7 @@ function IFramePreviewCardComponent({
         renderIcon={ArrowRight}
         onClick={handleCardClick}
         preventInlineError
-        useAITheme={theme === ThemeType.CARBON_AI}
+        useAITheme={aiEnabled}
       />
       <VisuallyHidden>{iframeAriaClickPreviewCardMessage}</VisuallyHidden>
     </div>

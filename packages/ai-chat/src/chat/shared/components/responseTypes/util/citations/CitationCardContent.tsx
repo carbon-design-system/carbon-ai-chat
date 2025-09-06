@@ -7,8 +7,9 @@
  *  @license
  */
 
-import Link from "@carbon/icons-react/es/Link.js";
-import Maximize from "@carbon/icons-react/es/Maximize.js";
+import Link16 from "@carbon/icons/es/link/16.js";
+import Maximize16 from "@carbon/icons/es/maximize/16.js";
+import { carbonIconToReact } from "../../../../utils/carbonIcon";
 import React, { useLayoutEffect, useRef } from "react";
 
 import { useLanguagePack } from "../../../../hooks/useLanguagePack";
@@ -89,6 +90,8 @@ function CitationCardContent({
   const { width } = useWindowSize();
   const { conversationalSearch_viewSourceDocument } = languagePack;
   const ref = useRef<HTMLDivElement>(null);
+  const Link = carbonIconToReact(Link16);
+  const Maximize = carbonIconToReact(Maximize16);
 
   // If citation has a "text" property, we know its from conversational search. If not, its legacy search and needs to
   // be processed differently.
@@ -110,9 +113,9 @@ function CitationCardContent({
 
   if (type === CitationType.URL && citation.url) {
     label = new URL(citation.url).hostname;
-    icon = <Link size={16} />;
+    icon = <Link />;
   } else if (isExpandable) {
-    icon = <Maximize size={16} />;
+    icon = <Maximize />;
     label = conversationalSearch_viewSourceDocument;
   }
 

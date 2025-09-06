@@ -25,10 +25,11 @@ export class DemoThemeSwitcher extends LitElement {
       new CustomEvent("config-changed", {
         detail: {
           ...this.config,
-          themeConfig: {
-            ...this.config.themeConfig,
-            carbonTheme: customEvent.detail.item.value,
-          },
+          // Map "inherit" to undefined to inherit from host
+          injectCarbonTheme:
+            customEvent.detail.item.value === "inherit"
+              ? undefined
+              : (customEvent.detail.item.value as CarbonTheme),
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
@@ -38,7 +39,7 @@ export class DemoThemeSwitcher extends LitElement {
 
   render() {
     return html`<cds-dropdown
-      value="${this.config?.themeConfig?.carbonTheme || CarbonTheme.WHITE}"
+      value="${this.config?.injectCarbonTheme ?? "inherit"}"
       title-text="Carbon theme"
       @cds-dropdown-selected=${this.dropdownSelected}
     >

@@ -105,11 +105,6 @@ interface BodyAndFooterPanelComponentProps
   onClose: () => void;
 
   /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart: () => void;
-
-  /**
    * Called when the restart button is clicked.
    */
   onClickRestart?: () => void;
@@ -144,7 +139,6 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     onClickBack,
     onClose,
     onClickRestart,
-    onCloseAndRestart,
     onPanelOpenEnd,
     onPanelCloseEnd,
     onPanelOpenStart,
@@ -191,7 +185,6 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
         onClickBack={onClickBack}
         onClickClose={onClose}
         onClickRestart={onClickRestart}
-        onClickCloseAndRestart={onCloseAndRestart}
         testIdPrefix={testIdPrefix}
       >
         {originalMessage && (

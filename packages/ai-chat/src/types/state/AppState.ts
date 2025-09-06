@@ -8,7 +8,6 @@
  */
 
 import {
-  CustomMenuOption,
   type CustomPanelConfigOptions,
   EnglishLanguagePack,
   type FileUpload,
@@ -17,23 +16,16 @@ import {
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
-import type { ChatHeaderConfig } from "../config/ChatHeaderConfig";
-import type {
-  ChatHeaderAvatarConfig,
-  FileUploadCapabilities,
-} from "../instance/ChatInstance";
+
+import type { FileUploadCapabilities } from "../instance/ChatInstance";
 import type { CornersType } from "../../chat/shared/utils/constants";
 import type { AppConfig } from "./AppConfig";
-import type {
-  CarbonTheme,
-  ThemeType,
-  WhiteLabelTheme,
-} from "../config/PublicConfig";
+import type { CarbonTheme } from "../config/PublicConfig";
 import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
 import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
-import { HomeScreenConfig, HomeScreenState } from "../config/HomeScreenConfig";
+import { HomeScreenState } from "../config/HomeScreenConfig";
 import {
   ConversationalSearchItemCitation,
   GenericItem,
@@ -45,24 +37,16 @@ import { LayoutConfig } from "../config/PublicConfig";
 import { AgentAvailability } from "../config/ServiceDeskConfig";
 
 /**
- * This contains the definitions for the redux application state.
- */
-
-/**
- * The list of messages used by Carbon AI Chat. These are in their own section for easy ability to restart.
+ * The message-related portion of AppState. Used for message history operations.
  */
 interface AppStateMessages {
   /**
-   * This is the global map/registry of all the local message items by their IDs. This includes messages from
-   * the bot as well as messages with a human agent. The order of the messages is controlled by the array of
-   * local message IDs contained in {@link ChatMessagesState}.
+   * This is the global map/registry of all the local message items by their IDs.
    */
   allMessageItemsByID: ObjectMap<LocalMessageItem>;
 
   /**
-   * This is the global map/registry of all full messages (as opposed to the local message items) in the system by their
-   * message IDs. This includes messages with a human agent. The order of the messages is controlled by the array of
-   * local message IDs contained in {@link ChatMessagesState}.
+   * This is the global map/registry of all full messages by their message IDs.
    */
   allMessagesByID: ObjectMap<Message>;
 
@@ -72,6 +56,9 @@ interface AppStateMessages {
   botMessageState: ChatMessagesState;
 }
 
+/**
+ * This contains the definitions for the redux application state.
+ */
 interface AppState extends AppStateMessages {
   /**
    * The state of the input area when the user is interacting with a bot (not a human agent).
@@ -90,44 +77,10 @@ interface AppState extends AppStateMessages {
   isHydrated: boolean;
 
   /**
-   * The name visible on the header bar. Also used in logs and other messages. This value is first populated via config.
-   */
-  botName: string;
-
-  /**
-   * An override for specifically just the title in the header bar. Useful if you don't want to always show the name of
-   * the assistant in the title bar, but want to keep it in the message. Also useful if you want the title of your chat
-   * and the name of your assistant to be different values.
-   */
-  headerDisplayName: string;
-
-  /**
-   * The config of the chat header avatar.
-   */
-  headerAvatarConfig: ChatHeaderAvatarConfig;
-
-  /**
-   * The avatar visible on the header bar. This value (image url) is first populated via config.
-   */
-  botAvatarURL: string;
-
-  /**
-   * The current CSS variables added as overrides. We store this because as we live update we merge with the previous
-   * value. If there are no overrides this can be undefined.
-   */
-  cssVariableOverrides: ObjectMap<string>;
-
-  /**
    * The external configuration for the chat widget that includes the public config provided by the host page as well
    * as the remote config provided by the tooling.
    */
   config: AppConfig;
-
-  /**
-   * The config above gets manipulated by some reducers (particularly the updateCSSVariables action). Store the original
-   * config in case we ever need to refer back to the non manipulated version.
-   */
-  originalConfig: AppConfig;
 
   /**
    * The language pack currently in use by the widget. This may be different from the language pack provided in the
@@ -135,13 +88,6 @@ interface AppState extends AppStateMessages {
    * will be set by the locale and is updated if the locale is changed.
    */
   languagePack: LanguagePack;
-
-  /**
-   * The locale currently in use by the widget. This may be different from the locale provided in the original
-   * public config if it has been updated since. If this value is updated, the language pack will be updated as well
-   * as long as one was not originally provided in the public config.
-   */
-  locale: string;
 
   /**
    * An ARIA message to be announced to the user. This will be announced whenever the message text changes.
@@ -155,11 +101,6 @@ interface AppState extends AppStateMessages {
    * resizes that are not the result of the user scrolling. We want to ignore these scroll events.
    */
   suspendScrollDetection: boolean;
-
-  /**
-   * Active config for home screen derived from combining remote and local config.
-   */
-  homeScreenConfig: HomeScreenConfig;
 
   /**
    * Any items stored here is also persisted to sessionStorage IF sessionHistory is turned on. We rehydrate the redux
@@ -205,11 +146,6 @@ interface AppState extends AppStateMessages {
   viewSourcePanelState: ViewSourcePanelState;
 
   /**
-   * Indicates if the app has been destroyed and should no longer be rendered.
-   */
-  isDestroyed: boolean;
-
-  /**
    * The custom panel state.
    */
   customPanelState: CustomPanelState;
@@ -243,11 +179,6 @@ interface AppState extends AppStateMessages {
   targetViewState: ViewState;
 
   /**
-   * All the currently configured custom menu options.
-   */
-  customMenuOptions: CustomMenuOption[];
-
-  /**
    * Indicates if we should display a transparent background covering the non-header area of the main window.
    */
   showNonHeaderBackgroundCover: boolean;
@@ -262,11 +193,6 @@ interface AppState extends AppStateMessages {
    */
   isBrowserPageVisible: boolean;
 
-  /**
-   * Which carbon theme to use and whether the AI theme is enabled.
-   */
-  theme: ThemeState;
-
   layout: LayoutConfig;
 
   /**
@@ -277,7 +203,6 @@ interface AppState extends AppStateMessages {
   /**
    * The chat header state.
    */
-  chatHeaderState: ChatHeaderState;
 }
 
 /**
@@ -681,37 +606,25 @@ interface MessagePanelState<T extends GenericItem = GenericItem> {
  */
 interface ThemeState {
   /**
-   * Specifies which theme configuration to use.
+   * Enables Carbon AI theme styling. Defaults to true.
    */
-  theme?: ThemeType;
+  aiEnabled: boolean;
 
   /**
-   * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
-   * https://carbondesignsystem.com/guidelines/color/tokens.
+   * Which Carbon theme tokens are currently in effect.
+   * Null indicates the chat inherits tokens from the host page.
    */
-  derivedCarbonTheme: CarbonTheme;
+  derivedCarbonTheme: CarbonTheme | null;
 
   /**
-   * The original carbon theme that was set by the user before any automatic theme switching.
-   * Used to detect when inherit mode should avoid applying Carbon theme classes.
+   * The originally selected Carbon theme tokens. Null indicates inheritance from the host page.
    */
-  originalCarbonTheme: CarbonTheme;
+  originalCarbonTheme: CarbonTheme | null;
 
   /**
    * This flag is used to disable Carbon AI Chat's rounded corners.
    */
   corners: CornersType;
-
-  /**
-   * Variables for white labeling.
-   */
-  whiteLabelTheme?: WhiteLabelTheme;
-}
-interface ChatHeaderState {
-  /**
-   * The chat header config state.
-   */
-  config: ChatHeaderConfig;
 }
 
 export {

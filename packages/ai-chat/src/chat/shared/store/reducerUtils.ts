@@ -33,11 +33,7 @@ import {
 } from "../../../types/config/LauncherConfig";
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
-import {
-  CarbonTheme,
-  LayoutConfig,
-  ThemeType,
-} from "../../../types/config/PublicConfig";
+import { LayoutConfig } from "../../../types/config/PublicConfig";
 import { LocalMessageUIState } from "../../../types/messaging/LocalMessageItem";
 import { Message } from "../../../types/messaging/Messages";
 
@@ -196,9 +192,9 @@ const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
 deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_THEME_STATE: ThemeState = {
-  derivedCarbonTheme: CarbonTheme.WHITE,
-  originalCarbonTheme: CarbonTheme.WHITE,
-  theme: ThemeType.CARBON_AI,
+  derivedCarbonTheme: null,
+  originalCarbonTheme: null,
+  aiEnabled: true,
   corners: CornersType.ROUND,
 };
 deepFreeze(DEFAULT_THEME_STATE);

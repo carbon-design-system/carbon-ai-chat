@@ -14,7 +14,7 @@ import FocusTrap from "focus-trap-react";
 import React, { Component, MutableRefObject, RefObject } from "react";
 import { connect } from "react-redux";
 
-import Chat, { ChatClass } from "../../components/Chat";
+import ChatInterface, { ChatClass } from "../../components/ChatInterface";
 import { HydrationPanel } from "../../components/HydrationPanel";
 import { InputFunctions } from "../../components/input/Input";
 import { MessageTypeComponent } from "../MessageTypeComponent";
@@ -41,11 +41,6 @@ import {
   ChatWidthBreakpoint,
   ViewType,
 } from "../../../../types/state/AppState";
-import {
-  addClassNameToState,
-  HasExtraClassNames,
-  removeClassNameFromState,
-} from "../../../../types/utilities/HasAddRemoveClassName";
 import { AutoScrollOptions } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { IS_IOS, IS_MOBILE, isBrowser } from "../../utils/browserUtils";
@@ -62,10 +57,7 @@ import {
   MainWindowCloseReason,
   MessageSendSource,
 } from "../../../../types/events/eventBusTypes";
-import {
-  InstanceInputElement,
-  SendOptions,
-} from "../../../../types/instance/ChatInstance";
+import { SendOptions } from "../../../../types/instance/ChatInstance";
 import { ButtonItem, SingleOption } from "../../../../types/messaging/Messages";
 import CatastrophicError from "../../components/CatastrophicError";
 import Disclaimer from "../../components/Disclaimer";
@@ -73,7 +65,7 @@ import HomeScreenContainer from "../../components/homeScreen/HomeScreenContainer
 import IFramePanel from "../../components/responseTypes/iframe/IFramePanel";
 import ViewSourcePanel from "../../components/responseTypes/util/citations/ViewSourcePanel";
 import BodyAndFooterPanelComponent from "../../components/panels/BodyAndFooterPanelComponent";
-import { CarbonTheme, ThemeType } from "../../../../types/config/PublicConfig";
+import { CarbonTheme } from "../../../../types/config/PublicConfig";
 import Layer from "../../../react/carbon/Layer";
 
 // Indicates the messages container is at the standard, default width.
@@ -98,7 +90,7 @@ interface MainWindowOwnProps extends HasServiceManager {
   mainWindowRef: MutableRefObject<MainWindowFunctions>;
 }
 
-interface MainWindowState extends HasExtraClassNames {
+interface MainWindowState {
   open: boolean;
   closing: boolean;
 
@@ -157,7 +149,6 @@ class MainWindow
     isHydrationAnimationComplete: this.props.isHydrated,
     shouldAutoFocus:
       this.props.config.public.shouldTakeFocusIfOpensAutomatically,
-    extraClassNames: [],
   };
 
   /**
@@ -283,30 +274,6 @@ class MainWindow
     );
   };
 
-  /**
-   * This function is called when the app is destroyed. This component is never actually unmounted; the entire
-   * container holding the Carbon AI Chat is simply removed from the DOM.
-   */
-  destroy() {
-    if (
-      IS_MOBILE &&
-      !this.props.config.public.disableCustomElementMobileEnhancements
-    ) {
-      const { visualViewport } = window;
-      if (visualViewport) {
-        (visualViewport as any).removeEventListener(
-          "resize",
-          this.onVisualViewportResize,
-        );
-        (visualViewport as any).removeEventListener(
-          "scroll",
-          this.updateFromVisualViewport,
-        );
-      }
-    }
-    this.updateBody(true);
-  }
-
   componentDidUpdate(
     oldProps: Readonly<MainWindowProps>,
     oldState: Readonly<MainWindowState>,
@@ -314,8 +281,7 @@ class MainWindow
     const newProps = this.props;
     const newState = this.state;
 
-    const { persistedToBrowserStorage, useCustomHostElement, isDestroyed } =
-      newProps;
+    const { persistedToBrowserStorage, useCustomHostElement } = newProps;
     const { viewState } = persistedToBrowserStorage.launcherState;
     const { open } = newState;
     const prevViewState =
@@ -325,10 +291,6 @@ class MainWindow
       // If viewState.mainWindow has changed then perform the necessary updates.
       this.updateBody(false);
       this.updateFromVisualViewport();
-    }
-
-    if (isDestroyed && !oldProps.isDestroyed) {
-      this.destroy();
     }
 
     if (oldProps.isHydrated !== newProps.isHydrated && newProps.isHydrated) {
@@ -576,45 +538,22 @@ class MainWindow
 
   // Close window.
   onClose = async () => {
-    return this.doClose(false);
+    return this.doClose();
   };
 
   /**
-   * Closes the main window and optional performs a close-and-restart.
+   * Closes the main window.
    */
-  async doClose(fromCloseAndRestart: boolean) {
+  async doClose() {
     const { serviceManager } = this.props;
 
     // Fire the view:change and window:close events. If the view change is canceled then the main window will stay open.
-    if (fromCloseAndRestart) {
-      // If the chat is restarting then try to open the launcher.
-      const newViewState = await serviceManager.actions.changeView(
-        ViewType.LAUNCHER,
-        {
-          mainWindowCloseReason:
-            MainWindowCloseReason.MAIN_WINDOW_CLOSED_AND_RESTARTED,
-        },
-      );
-      if (!newViewState.mainWindow) {
-        // If the main window is no longer visible restart the conversation.
-        await serviceManager.actions.restartConversation();
-      }
-    } else {
-      // If the chat is not restarting try to open the launcher.
-      await serviceManager.actions.changeView(ViewType.LAUNCHER, {
-        mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
-      });
-    }
+    await serviceManager.actions.changeView(ViewType.LAUNCHER, {
+      mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
+    });
   }
 
-  /**
-   * Called when the close-and-restart button is clicked. This will close the chat window and restart the bot
-   * conversation. It will in addition, end any agent conversation that is active and switch back to the bot view. This
-   * will be called after the user is presented with a confirmation panel.
-   */
-  onCloseAndRestart = async () => {
-    return this.doClose(true);
-  };
+  // No longer supports close-and-restart; use onClose and onRestart as separate actions
 
   /**
    * The callback that can be called to toggle between the home screen and the bot view.
@@ -661,7 +600,7 @@ class MainWindow
    */
   private getShowHomeScreen() {
     return (
-      this.props.homeScreenConfig.is_on &&
+      this.props.config.public.homescreen?.is_on &&
       this.props.persistedToBrowserStorage.chatState.homeScreenState
         .isHomeScreenOpen &&
       !this.getShowDisclaimer()
@@ -701,34 +640,6 @@ class MainWindow
    */
   public doScrollToMessage(messageID: string, animate = true) {
     this.botChatRef.current?.doScrollToMessage(messageID, animate);
-  }
-
-  /**
-   * Returns the element that represents the input field (text area) on the main message area.
-   */
-  public getMessageInput(): InstanceInputElement {
-    return this.botChatRef.current?.getMessageInput();
-  }
-
-  /**
-   * Returns the element that represents the input field (text area) on the home screen.
-   */
-  public getHomeScreenInput(): InstanceInputElement {
-    return this.homeScreenInputRef.current?.getMessageInput();
-  }
-
-  /**
-   * Adds the given class name to the main window element.
-   */
-  public addClassName(name: string) {
-    this.setState(addClassNameToState(name));
-  }
-
-  /**
-   * Removes the given class name from the main window element.
-   */
-  public removeClassName(name: string) {
-    this.setState(removeClassNameFromState(name));
   }
 
   /**
@@ -841,7 +752,10 @@ class MainWindow
    */
   renderBotChat() {
     const {
-      botName,
+      config: {
+        derived: { themeWithDefaults: theme },
+        public: { assistantName },
+      },
       languagePack,
       config,
       serviceManager,
@@ -849,10 +763,6 @@ class MainWindow
       humanAgentState,
       allMessageItemsByID,
       isHydrated,
-      locale,
-      theme,
-      headerDisplayName,
-      headerAvatarConfig: headerAvatar,
     } = this.props;
     const { numPanelsAnimating, numPanelsOpen, isHydrationAnimationComplete } =
       this.state;
@@ -875,16 +785,14 @@ class MainWindow
 
     return (
       <HideComponent className="WACBotContainer" hidden={hideBotContainer}>
-        <Chat
-          botName={botName}
-          headerDisplayName={headerDisplayName}
-          headerAvatarConfig={headerAvatar}
+        <ChatInterface
+          assistantName={assistantName}
+          headerDisplayName={config.public.header?.name || assistantName}
           ref={this.botChatRef}
           languagePack={languagePack}
           config={config}
           serviceManager={serviceManager}
           onClose={this.onClose}
-          onCloseAndRestart={this.onCloseAndRestart}
           messageState={botMessageState}
           onSendInput={(text: string) =>
             this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
@@ -900,8 +808,8 @@ class MainWindow
           inputState={inputState}
           onToggleHomeScreen={this.onToggleHomeScreen}
           onUserTyping={this.onUserTyping}
-          locale={locale}
-          useAITheme={theme.theme === ThemeType.CARBON_AI}
+          locale={config.public.locale || "en"}
+          useAITheme={theme.aiEnabled}
           carbonTheme={theme.derivedCarbonTheme}
         />
       </HideComponent>
@@ -913,18 +821,20 @@ class MainWindow
       botMessageState,
       serviceManager,
       languagePack,
-      headerDisplayName,
       persistedToBrowserStorage,
-      homeScreenConfig,
+      config,
     } = this.props;
 
     // We need to make an educated guess whether the home screen is going to be displayed after hydration is
     // complete, so we can show a version of the hydration panel that matches to avoid a flickering transition when
     // the hydration panel is only displayed very briefly. If the user's assistant session has expired, this will be
     // wrong, but it's rare enough to be not worth addressing.
+    const homescreen = config.public.homescreen;
     const useHomeScreenVersion =
-      homeScreenConfig.is_on &&
+      homescreen?.is_on &&
       !persistedToBrowserStorage.launcherState.hasSentNonWelcomeMessage;
+    const headerDisplayName =
+      config.public.header?.name || config.public.assistantName;
     return (
       <HydrationPanel
         headerDisplayName={headerDisplayName}
@@ -978,8 +888,16 @@ class MainWindow
    * Render the panel for when the Carbon AI Chat completely fails.
    */
   renderCatastrophicPanel() {
-    const { serviceManager, botName, languagePack, headerDisplayName } =
-      this.props;
+    const {
+      serviceManager,
+      config: {
+        public: { assistantName },
+      },
+      languagePack,
+    } = this.props;
+    const headerDisplayName =
+      this.props.config.public.header?.name ||
+      this.props.config.public.assistantName;
     return (
       <OverlayPanel
         animationOnOpen={AnimationInType.NONE}
@@ -994,7 +912,7 @@ class MainWindow
           languagePack={languagePack}
           onRestart={this.onRestart}
           showHeader
-          botName={botName}
+          assistantName={assistantName}
         />
       </OverlayPanel>
     );
@@ -1044,7 +962,6 @@ class MainWindow
         onPanelCloseStart={this.onPanelCloseStart}
         onPanelCloseEnd={() => this.onPanelCloseEnd(false)}
         onClose={this.onClose}
-        onCloseAndRestart={this.onCloseAndRestart}
         onSendBotInput={(text: string) =>
           this.onSendInput(text, MessageSendSource.HOME_SCREEN_INPUT)
         }
@@ -1081,11 +998,10 @@ class MainWindow
         overlayPanelName={OverlayPanelName.IFRAME}
       >
         <IFramePanel
-          useAITheme={this.props.theme.theme === ThemeType.CARBON_AI}
+          useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
           ref={this.iframePanelRef}
           onClickClose={this.onClose}
           onClickRestart={this.onRestart}
-          onClickCloseAndRestart={this.onCloseAndRestart}
         />
       </OverlayPanel>
     );
@@ -1111,7 +1027,6 @@ class MainWindow
           ref={this.viewSourcePanelRef}
           onClickClose={this.onClose}
           onClickRestart={this.onRestart}
-          onClickCloseAndRestart={this.onCloseAndRestart}
         />
       </OverlayPanel>
     );
@@ -1123,10 +1038,9 @@ class MainWindow
   renderCustomPanel() {
     return (
       <CustomPanel
-        useAITheme={this.props.theme.theme === ThemeType.CARBON_AI}
+        useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
-        onCloseAndRestart={this.onCloseAndRestart}
         onPanelOpenStart={() => this.onPanelOpenStart(true)}
         onPanelOpenEnd={this.onPanelOpenEnd}
         onPanelCloseStart={this.onPanelCloseStart}
@@ -1162,11 +1076,10 @@ class MainWindow
         localMessageItem={localMessageItem}
         title={panelOptions?.title}
         showAnimations={panelOptions?.show_animations}
-        useAITheme={this.props.theme.theme === ThemeType.CARBON_AI}
+        useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
         requestFocus={this.requestFocus}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
-        onCloseAndRestart={this.onCloseAndRestart}
         onClickBack={() =>
           this.props.serviceManager.store.dispatch(
             actions.setResponsePanelIsOpen(false),
@@ -1192,17 +1105,19 @@ class MainWindow
     const {
       serviceManager,
       useCustomHostElement,
-      locale,
       catastrophicErrorType,
       config,
       isHydrated,
-      theme,
+      config: {
+        derived: { themeWithDefaults: theme },
+      },
       chatWidthBreakpoint,
       layout,
       languagePack,
     } = this.props;
-    const { closing, open, extraClassNames } = this.state;
-    const localeClassName = `WACLocale-${locale || "en"}`;
+    const { closing, open } = this.state;
+    const locale = config.public.locale || "en";
+    const localeClassName = `WACLocale-${locale}`;
 
     const shouldUseLayer =
       theme.derivedCarbonTheme === CarbonTheme.G10 ||
@@ -1211,8 +1126,7 @@ class MainWindow
     const showGlass =
       config.public.enableFocusTrap &&
       open &&
-      !config.public.hideCloseButton &&
-      !config.public.headerConfig.hideMinimizeButton;
+      !config.public.header?.hideMinimizeButton;
     const trapActive = Boolean(showGlass && isHydrated);
     const isWideWidth = chatWidthBreakpoint === ChatWidthBreakpoint.WIDE;
 
@@ -1222,10 +1136,7 @@ class MainWindow
     return (
       <FocusTrap active={trapActive}>
         <Layer className="WACWidget__Layer" level={shouldUseLayer ? 1 : 0}>
-          <div
-            className={cx("WACMainWindow", ...extraClassNames)}
-            ref={this.mainWindowRef}
-          >
+          <div className="WACMainWindow" ref={this.mainWindowRef}>
             {showGlass && <div className="WACWidget__FocusTrapGlass" />}
             <div
               id={`WACWidget${serviceManager.namespace.suffix}`}

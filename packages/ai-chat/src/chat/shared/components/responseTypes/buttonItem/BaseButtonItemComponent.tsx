@@ -16,7 +16,6 @@ import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { AppState } from "../../../../../types/state/AppState";
 import { HasClassName } from "../../../../../types/utilities/HasClassName";
 import { ClickableImage } from "../util/ClickableImage";
-import { ThemeType } from "../../../../../types/config/PublicConfig";
 
 interface BaseButtonComponentProps extends HasClassName {
   /**
@@ -82,7 +81,9 @@ function BaseButtonItemComponent({
   onClick,
 }: BaseButtonComponentProps) {
   const { errors_imageSource } = useLanguagePack();
-  const theme = useSelector((state: AppState) => state.theme.theme);
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
   const text = label || url;
   const linkTarget = url ? target : undefined;
 
@@ -99,7 +100,7 @@ function BaseButtonItemComponent({
         onClick={onClick}
         disabled={disabled}
         isLink={Boolean(url)}
-        useAITheme={theme === ThemeType.CARBON_AI}
+        useAITheme={aiEnabled}
       />
     );
   }

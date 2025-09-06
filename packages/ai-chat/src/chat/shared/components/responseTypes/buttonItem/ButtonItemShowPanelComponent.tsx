@@ -7,11 +7,14 @@
  *  @license
  */
 
-import ArrowRight from "@carbon/icons-react/es/ArrowRight.js";
+import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
+import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React, { useCallback } from "react";
+import { useSelector } from "react-redux";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import actions from "../../../store/actions";
+import { selectInputState } from "../../../store/selectors";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
 import { ButtonItem } from "../../../../../types/messaging/Messages";
 import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
@@ -36,6 +39,9 @@ function ButtonItemShowPanelComponent({
 }: ButtonItemShowPanelComponentProps) {
   const serviceManager = useServiceManager();
   const { image_url, alt_text, label, kind } = localMessageItem.item;
+  const inputState = useSelector(selectInputState);
+  const ArrowRight = carbonIconToReact(ArrowRight16);
+  const isDisabled = inputState.isReadonly;
 
   /**
    * Once the button is clicked, render the panel content and update the message history to remember the panel being.
@@ -56,6 +62,7 @@ function ButtonItemShowPanelComponent({
       kind={kind}
       renderIcon={(image_url && ArrowRight) || undefined}
       onClick={onClickHandler}
+      disabled={isDisabled}
     />
   );
 }

@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { InstanceInputElement } from "../../../../types/instance/ChatInstance";
 import { HasAddRemoveClassName } from "../../../../types/utilities/HasAddRemoveClassName";
 import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
@@ -33,16 +32,6 @@ interface MainWindowFunctions
    * Returns the current scrollBottom value for the message scroll panel.
    */
   getMessagesScrollBottom(): number;
-
-  /**
-   * Returns the element that represents the input field (text area) on the main message area.
-   */
-  getMessageInput(): InstanceInputElement;
-
-  /**
-   * Returns the element that represents the input field (text area) on the home screen.
-   */
-  getHomeScreenInput(): InstanceInputElement;
 }
 
 export { MainWindowFunctions };

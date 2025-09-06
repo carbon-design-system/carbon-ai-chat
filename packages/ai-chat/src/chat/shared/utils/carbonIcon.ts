@@ -29,8 +29,29 @@ type CarbonIcon = {
 };
 
 export type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
-  slot?: string; // Only add this line
+  slot?: string;
+  [key: string]: unknown;
 };
+
+function kebabToCamel(str: string): string {
+  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function transformProps(
+  props: Record<string, unknown>,
+): Record<string, unknown> {
+  const transformed: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(props)) {
+    // Keep aria-* and data-* attributes in kebab-case as React expects them
+    if (key.startsWith("aria-") || key.startsWith("data-")) {
+      transformed[key] = value;
+    } else {
+      const camelKey = kebabToCamel(key);
+      transformed[camelKey] = value;
+    }
+  }
+  return transformed;
+}
 
 /**
  * Creates a React component from a Carbon icon object.
@@ -38,13 +59,15 @@ export type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
  * @example
  * import Launch16 from '@carbon/icons/es/launch/16';
  * const Icon = carbonIconToReact(Launch16);
- * <Icon aria-label="Launch" className="icon" />
+ * <Icon aria-label="Launch" className="icon" strokeWidth={2} />
  */
 
 export function carbonIconToReact(
   icon: CarbonIcon,
 ): FunctionComponent<CarbonIconProps> {
   return function IconComponent(props = {}) {
+    const transformedProps = transformProps(props as Record<string, unknown>);
+
     return createElement(
       "svg",
       {
@@ -52,12 +75,12 @@ export function carbonIconToReact(
         width: icon.attrs.width || 16,
         height: icon.attrs.height || 16,
         fill: icon.attrs.fill || "currentColor",
-        ...props,
+        ...transformedProps,
       },
       icon.content.map((child, i) =>
         createElement(child.elem, {
           key: i,
-          ...child.attrs,
+          ...transformProps(child.attrs || {}),
         }),
       ),
     );

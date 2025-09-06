@@ -16,7 +16,7 @@ import { UPDATE_THEME_STATE } from "../store/actions";
 import { white, g10, g90, g100 } from "@carbon/themes";
 
 /**
- * Service that watches CSS variables and updates the theme accordingly when CarbonTheme.INHERIT is used.
+ * Service that watches CSS variables and updates the theme accordingly when no explicit Carbon theme is injected (inherit mode).
  * Specifically monitors --cds-background and switches between themes based on detected values.
  */
 class ThemeWatcherService {
@@ -32,7 +32,7 @@ class ThemeWatcherService {
   }
 
   /**
-   * Starts watching for CSS variable changes when the theme is set to INHERIT.
+   * Starts watching for CSS variable changes when inheriting from host tokens.
    */
   public startWatching(): void {
     if (this.isWatching) {
@@ -40,7 +40,9 @@ class ThemeWatcherService {
     }
 
     const currentState = this.store.getState();
-    if (currentState.theme.originalCarbonTheme !== CarbonTheme.INHERIT) {
+    if (
+      currentState.config.derived.themeWithDefaults.originalCarbonTheme !== null
+    ) {
       return;
     }
 
@@ -82,7 +84,7 @@ class ThemeWatcherService {
    * Starts polling the CSS variable as a fallback detection method.
    */
   private startPolling(): void {
-    // Poll every 1 second when in INHERIT mode
+    // Poll every 1 second when in inherit mode
     this.pollInterval = window.setInterval(() => {
       this.checkAndUpdateTheme();
     }, 1000);
@@ -135,18 +137,20 @@ class ThemeWatcherService {
       this.lastBgColor = bgColor;
 
       const currentState = this.store.getState();
-      const currentTheme = currentState.theme.derivedCarbonTheme;
+      const currentTheme =
+        currentState.config.derived.themeWithDefaults.derivedCarbonTheme;
 
-      // Only act if we're currently in INHERIT mode or derived from it
+      // Only act if we're currently in inherit mode or derived from it
       if (
-        this.originalTheme !== CarbonTheme.INHERIT &&
-        currentState.theme.originalCarbonTheme !== CarbonTheme.INHERIT
+        this.originalTheme &&
+        currentState.config.derived.themeWithDefaults.originalCarbonTheme
       ) {
         return;
       }
 
       // First check for exact matches with Carbon theme background values
       let targetTheme: CarbonTheme;
+
       if (bgColor === white.background) {
         targetTheme = CarbonTheme.WHITE;
       } else if (bgColor === g10.background) {
@@ -176,7 +180,7 @@ class ThemeWatcherService {
   private updateTheme(newTheme: CarbonTheme): void {
     const currentState = this.store.getState();
     const newThemeState: ThemeState = {
-      ...currentState.theme,
+      ...currentState.config.derived.themeWithDefaults,
       derivedCarbonTheme: newTheme,
     };
 
@@ -189,8 +193,8 @@ class ThemeWatcherService {
   /**
    * Should be called when the theme configuration changes to start/stop watching as needed.
    */
-  public onThemeChange(newTheme: CarbonTheme): void {
-    if (newTheme === CarbonTheme.INHERIT) {
+  public onThemeChange(newTheme: CarbonTheme | null): void {
+    if (newTheme === null) {
       this.startWatching();
     } else {
       this.stopWatching();

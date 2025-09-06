@@ -12,16 +12,15 @@ import React, {
   Ref,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from "react";
 import { useSelector } from "react-redux";
 
 import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { BrandColorKind } from "../../utils/constants";
 import { Header } from "../header/Header";
 import { OverlayPanelName } from "../OverlayPanel";
-import { ThemeType } from "../../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -34,73 +33,54 @@ interface HomeScreenHeaderProps {
   onClose: () => void;
 
   /**
-   * This callback is called when the user clicks the close-and-restart button and confirms the action.
-   */
-  onCloseAndRestart?: () => void;
-
-  /**
    * This callback is called when the user clicks the restart button.
    */
   onRestart?: () => void;
-
-  /**
-   * The brand color type to use for the header. This will default to "primary".
-   */
-  brandColor?: BrandColorKind;
 }
 
 function HomeScreenHeader(
   props: HomeScreenHeaderProps,
   ref: Ref<HasRequestFocus>,
 ) {
-  const { brandColor, onClose, onRestart, onCloseAndRestart } = props;
+  const { onClose, onRestart } = props;
   const showRestartButton = useSelector(
-    (state: AppState) =>
-      state.config.public.showRestartButton ||
-      state.config.public.headerConfig?.showRestartButton,
+    (state: AppState) => state.config.public.header?.showRestartButton,
   );
-  const showBackButton = useSelector(
-    (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.homeScreenState.showBackToBot,
-  );
-  const displayName = useSelector((state: AppState) => state.headerDisplayName);
   const customMenuOptions = useSelector(
-    (state: AppState) => state.customMenuOptions,
+    (state: AppState) => state.config.public.header?.menuOptions,
   );
-  const theme = useSelector((state: AppState) => state.theme.theme);
+  const memoizedCustomMenuOptions = useMemo(
+    () => customMenuOptions || undefined,
+    [customMenuOptions],
+  );
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
   useImperativeHandle(ref, () => headerRef.current);
 
-  // If there's no back button, it means this is the start of the conversation in which case there's no point in
-  // showing the close-and-restart button.
-  const hideCloseAndRestartButton = !showBackButton;
-
   const overflowClicked = useCallback(
     (index: number) => {
-      const { handler } = customMenuOptions[index];
+      const { handler } = memoizedCustomMenuOptions[index];
       handler();
     },
-    [customMenuOptions],
+    [memoizedCustomMenuOptions],
   );
 
-  const overflowItems = customMenuOptions?.map((option) => option.text);
+  const overflowItems = memoizedCustomMenuOptions?.map((option) => option.text);
 
   return (
     <div className="WACHomeScreenHeader">
       <Header
         ref={headerRef}
-        displayName={displayName}
         showRestartButton={showRestartButton}
-        hideCloseAndRestartButton={hideCloseAndRestartButton}
         onClickRestart={onRestart}
         onClickClose={onClose}
-        onCloseAndRestart={onCloseAndRestart}
         overflowClicked={overflowClicked}
         overflowItems={overflowItems}
-        useAITheme={theme === ThemeType.CARBON_AI}
-        brandColor={brandColor}
+        useAITheme={aiEnabled}
         testIdPrefix={OverlayPanelName.HOME_SCREEN}
       />
     </div>

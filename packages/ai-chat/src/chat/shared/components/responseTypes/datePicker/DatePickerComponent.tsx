@@ -70,7 +70,9 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const { localMessage, disabled, scrollElementIntoView } = props;
   const serviceManager = useServiceManager();
   const intl = useIntl();
-  const webChatLocale = useSelector((state: AppState) => state.locale);
+  const webChatLocale = useSelector(
+    (state: AppState) => state.config.public.locale || "en",
+  );
   const originalMessage = useSelector(
     (state: AppState) => state.allMessagesByID[localMessage.fullMessageID],
   ) as MessageResponse;

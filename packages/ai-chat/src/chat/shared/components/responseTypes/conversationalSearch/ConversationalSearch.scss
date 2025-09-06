@@ -40,7 +40,7 @@
   // For this "icon", we want to stick with the IBM font and ignore any custom font that may be used.
   font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   font-size: 9px;
-  font-weight: var(--cds-chat-BASE-weight-semibold);
+  font-weight: 600;
   inline-size: 16px;
   line-height: 14px;
 }
@@ -58,7 +58,7 @@
 
 .WACConversationalSearch_Citations {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
-    WACFadeIn both;
+    cds-chat-fade-in both;
   padding-block-start: 16px;
 }
 
