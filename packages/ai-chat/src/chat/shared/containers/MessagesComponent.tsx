@@ -330,6 +330,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param options The options to control how the scrolling should occur.
    */
   public doAutoScroll = throttle((options: AutoScrollOptions = {}) => {
+    let animate = options.preferAnimate || false;
+
     try {
       debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
 
@@ -349,7 +351,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           scrollElement.scrollHeight -
           scrollElement.offsetHeight -
           scrollToBottom;
-        doScrollElement(scrollElement, scrollTop, 0);
+        doScrollElement(scrollElement, scrollTop, 0, animate);
         return;
       }
 
@@ -359,6 +361,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       const lastLocalItem = localMessageItems.length
         ? localMessageItems[lastLocalItemIndex]
         : null;
+      const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
 
       if (!lastLocalItem) {
         debugAutoScroll("[doAutoScroll] No last time");
@@ -422,6 +425,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       if (setScrollTop !== -1) {
         if (setScrollTop >= scrollElement.scrollTop) {
+          if (lastMessage?.ui_state_internal?.from_history) {
+            animate = false;
+          }
           debugAutoScroll(
             `[doAutoScroll] doScrollElement`,
             scrollElement,
@@ -455,11 +461,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * the element and the top of the scroll area.
    * @param paddingBottom An additional pixel value that will over scroll by this amount to give a little padding
    * between the element and the top of the scroll area.
+   * @param animate Prefer animation
    */
   public scrollElementIntoView = (
     element: HTMLElement,
     paddingTop = 8,
     paddingBottom = 8,
+    animate = false,
   ) => {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -492,6 +500,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
         0,
+        animate,
       );
     }
   };
@@ -1002,7 +1011,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 type="button"
                 aria-label={languagePack.messages_scrollMoreButton}
                 className="WAC__messages--scrollDownIndicatorIcon"
-                onClick={() => this.doAutoScroll({ scrollToBottom: 0 })}
+                onClick={() =>
+                  this.doAutoScroll({ scrollToBottom: 0, preferAnimate: true })
+                }
               >
                 <DownToBottom />
               </button>
