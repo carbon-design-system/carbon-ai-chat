@@ -17,6 +17,7 @@ import { CarbonTheme } from "../../../../../types/config/PublicConfig";
 import { LocalizationOptions } from "../../../../../types/localization/LocalizationOptions";
 import { AppState } from "../../../../../types/state/AppState";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { debugLog } from "../../../utils/miscUtils";
 
 interface RichTextProps {
   /**
@@ -66,6 +67,7 @@ function RichText(props: RichTextProps) {
   const intl = useIntl();
   const locale = useSelector((state: AppState) => state.locale);
   const config = useSelector((state: AppState) => state.config.public);
+  const { debug } = config;
   const { carbonTheme } = config.themeConfig;
 
   // Determine if dark theme should be used based on carbonTheme
@@ -122,8 +124,13 @@ function RichText(props: RichTextProps) {
     intl,
   ]);
 
+  if (debug) {
+    debugLog("Receiving markdown text", { text, streaming });
+  }
+
   return (
     <Markdown
+      debug={debug}
       markdown={text}
       sanitizeHTML={doSanitize}
       streaming={streaming}

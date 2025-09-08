@@ -17,8 +17,12 @@ import {
   renderTokenTree,
   markdownToTokenTree,
 } from "./markdownProcessor";
+import { consoleError, consoleLog } from "../../../../shared/utils/miscUtils";
 
 class MarkdownElement extends LitElement {
+  @property({ type: Boolean })
+  debug = false;
+
   @property({ type: String })
   set markdown(newMarkdown: string) {
     if (newMarkdown !== this.fullText) {
@@ -96,16 +100,23 @@ class MarkdownElement extends LitElement {
    * to avoid duplicate work when content updates.
    */
   private scheduleTokenParse = throttle(async () => {
-    this.tokenTree = markdownToTokenTree(
-      this.fullText,
-      this.tokenTree,
-      !this.shouldRemoveHTMLBeforeMarkdownConversion,
-    );
+    if (this.debug) {
+      consoleLog("Parsing markdown", this.fullText);
+    }
+    try {
+      this.tokenTree = markdownToTokenTree(
+        this.fullText,
+        this.tokenTree,
+        !this.shouldRemoveHTMLBeforeMarkdownConversion,
+      );
 
-    this.renderedContent = renderTokenTree(this.tokenTree, {
-      sanitize: this.sanitizeHTML,
-      streaming: this.streaming,
-    });
+      this.renderedContent = renderTokenTree(this.tokenTree, {
+        sanitize: this.sanitizeHTML,
+        streaming: this.streaming,
+      });
+    } catch (error) {
+      consoleError("Failed to parse markdown", error);
+    }
   }, 100);
 
   /**

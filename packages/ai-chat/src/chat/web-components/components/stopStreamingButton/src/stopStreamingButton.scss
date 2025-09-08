@@ -8,5 +8,9 @@
 @use "@carbon/styles/scss/theme";
 
 .cds--aichat-stop-icon svg {
+  padding-block-start: 4px;
+}
+
+.cds--aichat-stop-icon--disabled svg {
   fill: theme.$icon-disabled;
 }
