@@ -1,3 +1,7 @@
+---
+title: Migration steps - 0.5.0
+---
+
 # Upgrading from @carbon/ai-chat 0.4.0 to 0.5.0
 
 Summary: tours feature removed, human agent events renamed for clarity, some ChatInstance methods changed, and Chain of Thought feature changed.

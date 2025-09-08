@@ -49,6 +49,7 @@
   "messages_scrollHandleDetailed": "Chat history begin. Activate to focus the first message then use the arrow, home, and end keys to move between messages. Press escape to exit.",
   "messages_scrollHandleEnd": "Chat history end",
   "messages_scrollHandleEndDetailed": "Chat history end. Activate to focus the last message then use the arrow, home, and end keys to move between messages. Press escape to exit.",
+  "messages_scrollMoreButton": "Scroll to bottom",
   "message_labelBot": "{actorName} {timestamp}",
   "message_labelYou": "You {timestamp}",
   "notifications_toastClose": "Close notification",
