@@ -1,0 +1,109 @@
+# Check for peer dependency changes in packages/ai-chat/package.json
+# and update peer-dependency-changes.md file if there are changes
+name: Check for peer dependency changes
+
+# Gets triggered every time a full/stable release tag has been published from the
+# `create-release-tag-and-pr` workflow
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [check-peer-dependencies]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-peer-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: "0"
+          ref: ${{ github.event.client_payload.branch }}
+
+      - name: Get package.json from previous release
+        run: |
+          git show ${{ github.event.client_payload.previous-tag }}:packages/ai-chat/package.json > package-old.json
+
+      - name: Get package.json from current release
+        run: |
+          cp packages/ai-chat/package.json package-new.json
+
+      - name: Compare peerDependencies and prepend to release notes
+        id: diff
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const path = 'docs/peer-dependency-changes.md';
+
+          const oldPkg = JSON.parse(fs.readFileSync('package-old.json', 'utf8'));
+          const newPkg = JSON.parse(fs.readFileSync('package-new.json', 'utf8'));
+
+          const version = newPkg.version || "Unspecified Version";
+          const oldPeers = oldPkg.peerDependencies || {};
+          const newPeers = newPkg.peerDependencies || {};
+
+          const added = [];
+          const removed = [];
+          const updated = [];
+
+          const allDeps = new Set([...Object.keys(oldPeers), ...Object.keys(newPeers)]);
+
+          for (const dep of allDeps) {
+            const oldVer = oldPeers[dep];
+            const newVer = newPeers[dep];
+
+            if (!oldVer && newVer) {
+              added.push(`- **${dep}**: \`${newVer}\``);
+            } else if (oldVer && !newVer) {
+              removed.push(`- **${dep}** (was \`${oldVer}\`)`);
+            } else if (oldVer !== newVer) {
+              updated.push(`- **${dep}**: \`${oldVer}\` → \`${newVer}\``);
+            }
+          }
+
+          let hasChanges = false;
+          let content = fs.readFileSync(path, 'utf8');
+
+          if (added.length > 0 || removed.length > 0 || updated.length > 0) {
+            hasChanges = true;
+            let newSection = `\n\n---\n\n# Version ${version}\n`;
+
+            if (added.length > 0) {
+              newSection += "\n**Added**\n" + added.join("\n");
+            }
+            if (removed.length > 0) {
+              newSection += "\n**Removed**\n" + removed.join("\n");
+            }
+            if (updated.length > 0) {
+              newSection += "\n**Updated**\n" + updated.join("\n");
+            }
+
+            // Prepend new changes below description
+            const firstLineBreak = content.indexOf('\n\n');
+            if (firstLineBreak >= 0) {
+              const description = content.slice(0, firstLineBreak + 2);
+              const oldContent = content.slice(firstLineBreak + 2);
+              content = description + newSection + oldContent;
+            } else {
+              content = newSection + content;
+            }
+
+            fs.writeFileSync(path, content, 'utf8');
+          }
+
+          console.log(hasChanges ? "changes" : "no-changes");
+          EOF
+
+      - name: Commit updated peer-dependency-changes.md
+        if: steps.diff.outputs == 'changes'
+        run: |
+          git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
+          git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
+          git add docs/peer-dependency-changes.md
+          git commit -m "chore: update peer dependency changes"
+          git push origin chore/${{ github.event.client_payload.tag }}-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
