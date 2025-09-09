@@ -8,60 +8,6 @@
  */
 
 import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
-import enLanguagePack from "../../chat/languages/en.json";
-
-/**
- * The English language pack type, representing the structure of all language packs.
- *
- * @category Instance
- */
-export type EnglishLanguagePack = typeof enLanguagePack;
-
-export { enLanguagePack };
-
-/**
- * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
- *
- * @category Instance
- */
-export enum FileStatusValue {
-  COMPLETE = "complete",
-  EDIT = "edit",
-  UPLOADING = "uploading",
-  SUCCESS = "success",
-}
-
-/**
- * An interface that represents a file to upload and its current upload status.
- *
- * @category Instance
- */
-export interface FileUpload {
-  /**
-   * A unique ID for the file.
-   */
-  id: string;
-
-  /**
-   * The file to upload.
-   */
-  file: File;
-
-  /**
-   * The current upload status.
-   */
-  status: FileStatusValue;
-
-  /**
-   * Indicates if the file contains an error or failed to upload.
-   */
-  isError?: boolean;
-
-  /**
-   * If the file failed to upload, this is an optional error message to display.
-   */
-  errorMessage?: string;
-}
 
 /**
  * Whether a particular Carbon AI Chat view is visible or not.
@@ -137,14 +83,6 @@ export interface NotificationStateObject {
 }
 
 /**
- * A language pack represent the set of display strings for a particular language.
- * It defines all the text strings that can be customized for different languages.
- *
- * @category Instance
- */
-export type LanguagePack = EnglishLanguagePack;
-
-/**
  * The different views that can be shown by Carbon AI Chat.
  *
  * @category Instance
@@ -160,23 +98,6 @@ export enum ViewType {
    * string value is kept camel case to align with the viewState mainWindow property.
    */
   MAIN_WINDOW = "mainWindow",
-}
-
-/**
- * The different variations of the launcher that can exist.
- *
- * @category Instance
- */
-export enum LauncherType {
-  /**
-   * The launcher that expands to a "complex" variation on desktop.
-   */
-  DESKTOP = "desktop",
-
-  /**
-   * The launcher that expands to an "extended" variation on mobile.
-   */
-  MOBILE = "mobile",
 }
 
 /**
@@ -279,21 +200,4 @@ export interface CustomPanelConfigOptions extends BasePanelConfigOptions {
    * behavior by using the {@link onClickClose} callback.
    */
   disableDefaultCloseAction?: boolean;
-}
-
-/**
- * A single menu option.
- *
- * @category Instance
- */
-export interface CustomMenuOption {
-  /**
-   * The text to display for the menu option.
-   */
-  text: string;
-
-  /**
-   * The callback handler to call when the option is selected. Provide this of "url".
-   */
-  handler: () => void;
 }

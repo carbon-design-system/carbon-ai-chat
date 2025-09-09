@@ -217,7 +217,7 @@ interface ChatActions {
   ) => Promise<void>;
 
   // updateLanguagePack removed in favor of top-level `strings` prop on components.
-  // updateCSSVariables removed in favor of `layout.cssVariables` in config.
+  // updateCSSVariables removed in favor of `layout.custom-properties` in config.
 
   /**
    * Fire the view:pre:change and view:change events and change the view of the Carbon AI Chat. If a {@link ViewType} is

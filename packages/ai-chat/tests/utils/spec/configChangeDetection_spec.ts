@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { detectConfigChanges } from "../../../src/chat/shared/utils/configChangeDetection";
+import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 
 describe("configChangeDetection", () => {

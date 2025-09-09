@@ -1,0 +1,53 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+// Text and layout utilities following @carbon/styles patterns
+// These mixins can be used in components instead of utility classes
+
+@use "@carbon/layout";
+
+// =============================================================================
+// Text Utilities
+// =============================================================================
+
+/// Break long words to prevent overflow
+@mixin break-word {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+/// Truncate text with ellipsis
+@mixin text-ellipsis {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+// =============================================================================
+// Layout Utilities
+// =============================================================================
+
+/// Hide element completely
+@mixin hidden {
+  display: none;
+}
+
+/// Visually hide element but keep it accessible to screen readers
+@mixin visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  block-size: 1px;
+  clip: rect(0 0 0 0);
+  inline-size: 1px;
+  white-space: nowrap;
+}

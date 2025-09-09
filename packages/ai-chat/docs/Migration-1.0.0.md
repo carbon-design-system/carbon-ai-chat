@@ -1,41 +1,42 @@
 ---
-title: Migration 0.5.0 -> 1.0.0
+title: Migration 0.5.x -> 1.0.0
 ---
 
-## What's New
+# Upgrading from @carbon/ai-chat 0.5.x to 1.0.0
 
 Version 1.0.0 introduces **live config updates**. Changes to `PublicConfig` now apply automatically without restarting the chat. This simplifies usage and removes many imperative methods.
 
 ## Breaking Changes
 
-**Config Structure:**
+### Config Structure:
 
 - `showLauncher` -> `launcher.is_on`
 - `headerConfig` -> `header`
 - `themeConfig` -> removed (see theming below)
 - All `PublicConfig` properties are now top-level props (no more `config` prop)
 
-**Service Desk:**
+### Service Desk:
 
 - `serviceDesk` and `serviceDeskFactory` moved out of config to top-level props
 
-**Theming:**
+### Theming:
 
 - Use `aiEnabled` for AI theme toggle (default: `true`)
 - Use `injectCarbonTheme` for Carbon tokens (default: inherit from page)
 - Use `layout.corners` for rounded/square corners
 
-**Header:**
+### Header:
 
 - New: `header.title`, `header.name`, `header.menuOptions`
 - Removed: `header.showCloseAndRestartButton`
 
-**Home Screen:**
+### Home Screen:
 
 - Removed: `homescreen.background` (background styling is now managed automatically)
 
-**Removed Methods:**
-All `updateX` methods on `ChatInstance` removed. Update config instead.
+### Removed Methods:
+
+Many `updateX` methods on `ChatInstance` removed. Update config instead.
 
 Key replacements:
 
@@ -48,7 +49,7 @@ Key replacements:
 - `updateCustomMenuOptions()` -> set `header.menuOptions` config
 - `updateHeaderConfig()` -> set `header` config
 
-**Removed functionality:**
+### Removed functionality:
 
 - `updateMainHeaderAvatar()` -> no replacement (functionality removed)
 - `instance.elements` -> no replacement (functionality removed)

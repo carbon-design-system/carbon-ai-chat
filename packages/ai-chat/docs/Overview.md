@@ -70,11 +70,13 @@ For more information, see the [web component](WebComponent.md) documentation.
 
 ### Using the API
 
-#### Configuration
+#### Picking your component
 
-When using the React or web component version of the Carbon AI Chat, you pass in a configuration object that sets various immutable options as a `config` property. By editing the configuration object, you can control the appearance and behavior of the Carbon AI Chat before your users see it. The configuration options enable you to specify where the Carbon AI Chat widget appears on your page, choose whether to use the IBM-provided launcher or your own, and more.
+This package provides both React and web component versions of Carbon AI Chat. There are two versions for each framework exported. One provides a "float" layout, the classic lower right hand corner with a launch icon chat widget. The other provides the ability for you to render the Carbon AI Chat into a containing element of your choice. The Carbon AI Chat will responsively grow to fill the size of the container you provide.
 
-See the type documentation for {@link PublicConfig}.
+See [React](React.md) documentation and [web component](WebComponent.md) documentation.
+
+Each of these components allow you to pass props to can control the appearance and behavior of the Carbon AI Chat before your users see it. The configuration options enable you to specify where the Carbon AI Chat widget appears on your page, choose whether to use the IBM-provided launcher or your own, and more.
 
 #### Instance methods
 
@@ -123,17 +125,13 @@ These files are in the [ICU Message Format](http://userguide.icu-project.org/for
 Example (React):
 
 ```tsx
-<ChatContainer strings={{ input_placeholder: "Ask me anything…" }} />
+<ChatContainer strings={{ input_placeholder: "Ask me anything..." }} />
 ```
 
 Example (web component):
 
 ```html
-<cds-aichat-container id="chat"></cds-aichat-container>
-<script type="module">
-  const el = document.getElementById("chat");
-  el.strings = { input_placeholder: "Ask me anything…" };
-</script>
+<cds-aichat-container id="chat" .strings=${{ input_placeholder: "Ask me anything..." }} ></cds-aichat-container>
 ```
 
 #### Locales

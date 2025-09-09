@@ -1,0 +1,231 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button/tokens";
+@use "@carbon/styles/scss/components/button" as button;
+
+.cds-aichat--input-and-completions {
+  position: relative;
+  inline-size: 100%;
+}
+
+.cds-aichat--input-container {
+  position: relative;
+  // This ensures the input field sits on top of the completions.
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  background-color: theme.$chat-prompt-background;
+  border-block-start: button.$button-outline-width solid theme.$border-subtle-00;
+  color: theme.$text-primary;
+  inline-size: 100%;
+  min-block-size: 0;
+  outline: button.$button-border-width solid transparent;
+  outline-offset: -2px;
+  padding-block: layout.$spacing-04;
+  padding-inline: layout.$spacing-05 layout.$spacing-03;
+}
+
+.cds-aichat--widget--max-width.cds-aichat--wide-width
+  .cds-aichat--input-container {
+  border: button.$button-outline-width solid theme.$border-subtle-00;
+  border-radius: layout.$spacing-03;
+  margin-block-end: 32px;
+}
+
+// For the aiTheme we want a gradient border instead of a top border.
+.cds-aichat--ai-theme .cds-aichat--input-container {
+  // Lastly create a transparent border. The color of this border will end up being the second linear-gradient specified
+  // while the padding and content of the input field will just be the normal background color from the first gradient.
+  border: button.$button-outline-width solid transparent;
+  background: 
+    // Set a background gradient that is really just a solid color for the input field background color. This gradient
+    // covers the input containers padding and content, but not the border. We need a gradient here because that
+    // creates an image which is what the background prop requires.
+    linear-gradient(
+        to bottom,
+        theme.$chat-prompt-background,
+        theme.$chat-prompt-background
+      )
+      padding-box,
+    // Set a background gradient that fades from the border color to the background color. This gradient covers the
+    // input containers border, padding, and content and sits beneath the previous background layer. Because this
+    // layer is the only one of the two that covers the border it will underlay the transparent border created below.
+    linear-gradient(
+        to bottom,
+        theme.$border-subtle-00,
+        theme.$chat-prompt-background
+      )
+      border-box;
+}
+
+.cds-aichat--input-container--show-upload-button {
+  padding-inline-start: layout.$spacing-03;
+}
+
+.cds-aichat--input-container__text-and-upload {
+  display: flex;
+  align-items: center;
+}
+
+.cds-aichat--input-container__text-and-upload > *:not(:last-child),
+.cds-aichat--input-container > *:not(:last-child) {
+  margin-inline-end: layout.$spacing-03;
+}
+
+.cds-aichat--input-container__files-container {
+  overflow: auto;
+  margin-block-start: layout.$spacing-03;
+  max-block-size: 200px;
+
+  cds-file-uploader-item {
+    margin-block-end: 0;
+  }
+}
+
+.cds-aichat--input-container__upload-button-container {
+  display: inline-block;
+  inline-size: 32px;
+  vertical-align: top;
+}
+
+.cds-aichat--input-container .cds-aichat--input-container__upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 32px;
+  color: theme.$text-primary;
+  cursor: pointer;
+  inline-size: 32px;
+}
+
+.cds-aichat--input-container__upload-input:focus
+  + .cds-aichat--input-container__upload-button {
+  box-shadow: inset 0 0 0 button.$button-border-width theme.$focus;
+}
+
+.cds-aichat--input-container__upload-button:hover {
+  background-color: theme.$background-hover;
+}
+
+.cds-aichat--input-container__upload-button:active {
+  background-color: theme.$background-active;
+}
+
+.cds-aichat--input-container
+  .cds-aichat--input-container__upload-button--disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+label.cds-aichat--input-container__upload-button--disabled:hover {
+  background-color: transparent;
+}
+
+.cds-aichat--input-container__left-container {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  flex: 1 0;
+  flex-direction: column;
+  justify-content: center;
+  block-size: 100%;
+}
+
+.cds-aichat--input-container--has-focus {
+  outline-color: theme.$focus;
+}
+
+.cds-aichat--input-container
+  .cds-aichat--input-container__left-container
+  .cds-aichat--text-area
+  .cds-aichat--text-area-textarea {
+  // The focus border is simulated by adding it to the container.
+  border: none;
+}
+
+.cds-aichat--bot-container .cds-aichat--input-container {
+  display: flex;
+}
+
+.cds-aichat--input-container .cds-aichat--text-area {
+  display: inline-block;
+  overflow: hidden;
+  @include type.type-style("body-01");
+
+  inline-size: 100%;
+  min-block-size: 0;
+}
+
+.cds-aichat--input-container--show-upload-button .cds-aichat--text-area {
+  inline-size: calc(100% - 32px);
+}
+
+.cds-aichat--input-container
+  .cds-aichat--text-area
+  textarea.cds-aichat--text-area-textarea {
+  margin: 0;
+  background: transparent;
+  color: theme.$text-primary;
+  resize: none;
+}
+
+.cds-aichat--input-container
+  .cds-aichat--text-area
+  .cds-aichat--text-area-textarea,
+.cds-aichat--input-container
+  .cds-aichat--text-area
+  .cds-aichat--text-area-sizer {
+  max-block-size: 157px;
+}
+
+.cds-aichat--input-container
+  .cds-aichat--text-area
+  .cds-aichat--text-area-textarea::placeholder {
+  color: theme.$text-placeholder;
+  @include type.type-style("body-01");
+
+  font-family: inherit;
+}
+
+.cds-aichat--input-container__send-button-container,
+.cds-aichat--input-container__upload-button-container {
+  display: flex;
+  flex: 0 1;
+  align-self: flex-start;
+}
+
+button.cds-aichat--input-container__send-button svg {
+  cursor: inherit;
+}
+
+button.cds-aichat--input-container__send-button:enabled svg,
+button.cds-aichat--input-container__send-button:active svg,
+button.cds-aichat--input-container__send-button:focus svg,
+button.cds-aichat--input-container__send-button:active:focus svg {
+  fill: theme.$interactive;
+}
+
+button.cds-aichat--input-container__send-button:disabled:hover svg,
+button.cds-aichat--input-container__send-button:disabled svg {
+  fill: theme.$icon-disabled;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--input-container__send-button
+  svg {
+  transform: scale(-1, 1);
+}
+
+.cds-aichat--input-container__send-button svg {
+  block-size: layout.$spacing-05;
+  inline-size: layout.$spacing-05;
+}

@@ -9,16 +9,15 @@
 
 import {
   type CustomPanelConfigOptions,
-  EnglishLanguagePack,
-  type FileUpload,
-  LanguagePack,
   NotificationStateObject,
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
+import { LanguagePack } from "../config/PublicConfig";
+import { type FileUpload } from "../config/ServiceDeskConfig";
 
 import type { FileUploadCapabilities } from "../instance/ChatInstance";
-import type { CornersType } from "../../chat/shared/utils/constants";
+import type { CornersType } from "../../chat/utils/constants";
 import type { AppConfig } from "./AppConfig";
 import type { CarbonTheme } from "../config/PublicConfig";
 import type { LauncherInternalConfig } from "../config/LauncherConfig";
@@ -481,7 +480,7 @@ interface HumanAgentDisplayState {
   /**
    * The language pack key to show for the placeholder text in the input field (if the default should be overridden).
    */
-  inputPlaceholderKey: keyof EnglishLanguagePack;
+  inputPlaceholderKey: keyof LanguagePack;
 
   /**
    * Indicates if the agent is typing.
@@ -505,7 +504,7 @@ interface AnnounceMessage {
    * If the text is defined by a message id that corresponds to one of the messages in our language pack, that
    * message id can be specified here. The message text will be formatted using this message id.
    */
-  messageID?: keyof EnglishLanguagePack;
+  messageID?: keyof LanguagePack;
 
   /**
    * If the text is defined by a message id that corresponds to one of the messages in our language pack, any

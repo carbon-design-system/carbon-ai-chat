@@ -105,6 +105,21 @@ enum NotificationType {
   TEXT_NOTIFICATION = "text_notification",
 }
 
+/**
+ * The different types of launchers.
+ */
+enum LauncherType {
+  /**
+   * The launcher that expands to a "complex" variation on desktop.
+   */
+  DESKTOP = "desktop",
+
+  /**
+   * The launcher that expands to an "extended" variation on mobile.
+   */
+  MOBILE = "mobile",
+}
+
 // The array of timeouts that will dictate the amount of intervals the bounce animation should play for the launcher.
 const BOUNCING_ANIMATION_TIMEOUTS = [15000, 60000];
 
@@ -116,6 +131,7 @@ export {
   LauncherInternalConfig,
   LauncherCallToActionConfig,
   LauncherInternalCallToActionConfig,
+  LauncherType,
   NotificationType,
   BOUNCING_ANIMATION_TIMEOUTS,
   TIME_TO_ENTRANCE_ANIMATION_START,

@@ -26,15 +26,6 @@ The Carbon AI Chat supports the following Markdown syntax in the `text` response
 - `` `inline code` `` for `inline code`
 - Fenced code blocks with syntax highlighting:
 
-  ````
-  ```javascript
-  console.log('Hello, world!');
-  ````
-
-  ```
-
-  ```
-
 **Headers:**
 
 - `# H1`, `## H2`, `### H3`, `#### H4`, `##### H5`, `###### H6`

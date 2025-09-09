@@ -12,7 +12,8 @@
       "./docs/CustomServiceDesks.md",
       "./docs/CustomServer.md",
       "./docs/DemoAndExamples.md",
-      "./docs/migration-0.5.0.md"
+      "./docs/migration-0.5.0.md",
+      "./docs/Migration-1.0.0.md"
     ],
     "categoryOrder": [
       "React",

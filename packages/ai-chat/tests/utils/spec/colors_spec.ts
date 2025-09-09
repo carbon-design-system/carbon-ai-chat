@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { adjustLightness } from "../../../src/chat/shared/utils/colors";
+import { adjustLightness } from "../../../src/chat/utils/colors";
 
 describe("colors", () => {
   describe("adjustLightness", () => {

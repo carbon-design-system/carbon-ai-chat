@@ -15,7 +15,7 @@ import { CarbonTheme } from "../../../src/types/config/PublicConfig";
 import { CornersType } from "../../../src/types/config/CornersType";
 import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
-import { applyConfigChangesDynamically } from "../../../src/chat/shared/utils/dynamicConfigUpdates";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
 
 describe("Config Theme", () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({

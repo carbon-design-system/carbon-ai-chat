@@ -16,19 +16,12 @@
  * To use the web components, directly import them.
  */
 
-export { OverlayPanelName } from "./chat/shared/components/OverlayPanel";
+export { OverlayPanelName } from "./chat/legacy/components/OverlayPanel";
 
 export {
-  CustomMenuOption,
   CustomPanelConfigOptions,
   CustomPanelInstance,
   CustomPanels,
-  EnglishLanguagePack,
-  enLanguagePack,
-  FileStatusValue,
-  FileUpload,
-  LauncherType,
-  LanguagePack,
   NotificationMessage,
   ViewState,
   ViewType,
@@ -52,7 +45,7 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
-export { LayoutCSSVariables } from "./types/config/LayoutCSSVariables";
+export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
 
@@ -105,8 +98,11 @@ export {
 
 export {
   CarbonTheme,
+  CustomMenuOption,
   DisclaimerPublicConfig,
+  enLanguagePack,
   HeaderConfig,
+  LanguagePack,
   LayoutConfig,
   MinimizeButtonIconType,
   OnErrorData,
@@ -125,6 +121,8 @@ export {
   DisconnectedErrorInfo,
   EndChatInfo,
   ErrorType,
+  FileStatusValue,
+  FileUpload,
   ScreenShareState,
   ServiceDesk,
   ServiceDeskCallback,
@@ -236,4 +234,4 @@ export {
   makeTestId,
   TestId,
   PrefixedId,
-} from "./chat/shared/utils/PageObjectId";
+} from "./chat/utils/PageObjectId";

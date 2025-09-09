@@ -29,7 +29,7 @@ If the service desk operates on a domain different from your website, make sure 
 
 If you implement a service integration that satisfies the service desk API, getting the Carbon AI Chat to use it requires a factory function to create a new instance of your integration. The example shows an empty integration (that doesn't communicate with a service desk) to show how to register an integration with the Carbon AI Chat. See the following example:
 
-````javascript
+```javascript
 // Your custom service desk integration which can be located anywhere in your codebase.
 class MyServiceDesk {
   constructor(callback) {
@@ -57,6 +57,7 @@ class MyServiceDesk {
   serviceDesk={{ allowReconnect: true }}
   // ...other flattened config props
 />;
+```
 
 ### Keep the service desk factory stable
 
@@ -67,11 +68,11 @@ React (stable via useCallback):
 ```tsx
 const myFactory = useCallback(
   (params: ServiceDeskFactoryParameters) => new MyServiceDesk(params),
-  []
+  [],
 );
 
 <ChatContainer serviceDeskFactory={myFactory} />;
-````
+```
 
 Web Components / Lit (stable class field):
 
@@ -88,8 +89,6 @@ export class MyApp extends LitElement {
   }
 }
 ```
-
-````
 
 ### API Overview
 
@@ -173,7 +172,7 @@ this.callback.updateCapabilities({
   allowedFileUploadTypes: "image/*,.txt",
   allowMultipleFileUploads: true,
 });
-````
+```
 
 #### Validating files before uploading
 

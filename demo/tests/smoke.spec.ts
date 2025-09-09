@@ -34,7 +34,9 @@ test("smoke React", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
+  await expect(page.locator("#cds-aichat--message-3")).toContainText(
+    "Carbon is a",
+  );
   await close.click();
 });
 
@@ -69,6 +71,8 @@ test("smoke web component", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
+  await expect(page.locator("#cds-aichat--message-3")).toContainText(
+    "Carbon is a",
+  );
   await close.click();
 });

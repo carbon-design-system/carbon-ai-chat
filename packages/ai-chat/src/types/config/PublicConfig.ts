@@ -11,9 +11,8 @@ import { ChatInstance } from "../instance/ChatInstance";
 import { CustomSendMessageOptions } from "./MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
 import { CornersType } from "./CornersType";
-import { CustomMenuOption } from "../instance/apiTypes";
 import { HomeScreenConfig } from "./HomeScreenConfig";
-import type { LayoutCSSVariables } from "./LayoutCSSVariables";
+import type { LayoutCustomProperties } from "./LayoutCustomProperties";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -21,11 +20,23 @@ import type {
 } from "./ServiceDeskConfig";
 import { HistoryItem } from "../messaging/History";
 import { LauncherConfig } from "./LauncherConfig";
+import { DeepPartial } from "../utilities/DeepPartial";
+import enLanguagePack from "../../chat/languages/en.json";
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
  * host page.
  */
+
+/**
+ * A language pack represents the set of display strings for a particular language.
+ * It defines all the text strings that can be customized for different languages.
+ *
+ * @category Config
+ */
+export type LanguagePack = typeof enLanguagePack;
+
+export { enLanguagePack };
 
 /**
  * @category Config
@@ -81,8 +92,6 @@ export interface PublicConfig {
   /**
    * This is a factory for producing custom implementations of service desks. If this value is set, then this will
    * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
-   *
-   * @internal
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters,
@@ -90,8 +99,6 @@ export interface PublicConfig {
 
   /**
    * Any public config to apply to service desks.
-   *
-   * @internal
    */
   serviceDesk?: ServiceDeskPublicConfig;
 
@@ -163,6 +170,28 @@ export interface PublicConfig {
    * Configuration for the launcher.
    */
   launcher?: LauncherConfig;
+
+  /**
+   * Optional partial language pack overrides. Values merge with defaults.
+   */
+  strings?: DeepPartial<LanguagePack>;
+}
+
+/**
+ * A single menu option.
+ *
+ * @category Config
+ */
+export interface CustomMenuOption {
+  /**
+   * The text to display for the menu option.
+   */
+  text: string;
+
+  /**
+   * The callback handler to call when the option is selected. Provide this of "url".
+   */
+  handler: () => void;
 }
 
 /**
@@ -250,14 +279,14 @@ export interface LayoutConfig {
   /**
    * CSS variable overrides for the chat UI.
    *
-   * Keys correspond to values from `LayoutCSSVariables` (e.g. `LayoutCSSVariables.HEIGHT`),
-   * which map to the underlying `--cds-chat-…` custom properties.
+   * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.HEIGHT`),
+   * which map to the underlying `--cds-aichat-…` custom properties.
    * Values are raw CSS values such as `"420px"`, `"9999"`, etc.
    *
    * Example:
    * { HEIGHT: "560px", WIDTH: "420px" }
    */
-  cssVariables?: Partial<Record<LayoutCSSVariables, string>>;
+  "custom-properties"?: Partial<Record<LayoutCustomProperties, string>>;
 }
 
 /**

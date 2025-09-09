@@ -22,7 +22,8 @@ import {
   MessageResponse,
   PartialOrCompleteItemChunk,
 } from "../messaging/Messages";
-import { FileUpload, ViewState } from "../instance/apiTypes";
+import { ViewState } from "../instance/apiTypes";
+import { FileUpload } from "../config/ServiceDeskConfig";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 
 /** @category Events */

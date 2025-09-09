@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { FileStatusValue } from "../../../src/aiChatEntry";
 import {
   assertType,
   getResponsiveElementPaddingValue,
@@ -18,8 +19,7 @@ import {
   consoleLog,
   consoleWarn,
   consoleDebug,
-} from "../../../src/chat/shared/utils/miscUtils";
-import { FileStatusValue } from "../../../src/chat/shared/utils/constants";
+} from "../../../src/chat/utils/miscUtils";
 
 describe("miscUtils", () => {
   describe("assertType", () => {

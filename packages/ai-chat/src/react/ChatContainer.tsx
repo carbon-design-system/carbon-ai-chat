@@ -18,12 +18,12 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 
-import App from "../chat/shared/containers/App";
-import { carbonElement } from "../chat/web-components/decorators/customElement";
+import App from "../chat/ChatAppEntry";
+import { carbonElement } from "../chat/ai-chat-components/web-components/decorators/customElement";
 import { ChatContainerProps } from "../types/component/ChatContainer";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
-import { isBrowser } from "../chat/shared/utils/browserUtils";
+import { isBrowser } from "../chat/utils/browserUtils";
 
 /**
  * This component creates a custom element protected by a ShadowRoot to render the React application into. It creates
@@ -175,12 +175,12 @@ function ChatContainer({
     const handleShadowReady = () => {
       // Now we know shadowRoot is definitely available
       let reactElement = wrapperElement.shadowRoot.querySelector(
-        ".cds--aichat-react-app",
+        ".cds-aichat--react-app",
       ) as HTMLElement;
 
       if (!reactElement) {
         reactElement = document.createElement("div");
-        reactElement.classList.add("cds--aichat-react-app");
+        reactElement.classList.add("cds-aichat--react-app");
         wrapperElement.shadowRoot.appendChild(reactElement);
       }
 

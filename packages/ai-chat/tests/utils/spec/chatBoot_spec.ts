@@ -12,7 +12,7 @@ import {
   initServiceManagerAndInstance,
   performInitialViewChange,
   attachUserDefinedResponseHandlers,
-} from "../../../src/chat/shared/utils/chatBoot";
+} from "../../../src/chat/utils/chatBoot";
 
 import { createBaseTestProps } from "../../utils/testHelpers";
 import type { ChatInstance } from "../../../src/types/instance/ChatInstance";

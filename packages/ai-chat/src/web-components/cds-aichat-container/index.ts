@@ -11,12 +11,12 @@
  * This is the exposed web component for a basic floating chat.
  */
 
-import "../../chat/web-components/internal/cds-aichat-internal";
+import "./cds-aichat-internal";
 
 import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
-import { carbonElement } from "../../chat/web-components/decorators/customElement";
+import { carbonElement } from "../../chat/ai-chat-components/web-components/decorators/customElement";
 import {
   PublicConfig,
   OnErrorData,
@@ -27,7 +27,7 @@ import {
   PublicConfigMessaging,
 } from "../../types/config/PublicConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/instance/apiTypes";
+import { LanguagePack } from "../../types/config/PublicConfig";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
 import { LauncherConfig } from "../../types/config/LauncherConfig";
 import type {
@@ -213,6 +213,8 @@ class ChatContainer extends LitElement {
       exposeServiceManagerForTesting: this.exposeServiceManagerForTesting,
       injectCarbonTheme: this.injectCarbonTheme,
       aiEnabled: this.aiDisabled === true ? false : this.aiEnabled,
+      serviceDeskFactory: this.serviceDeskFactory,
+      serviceDesk: this.serviceDesk,
       shouldTakeFocusIfOpensAutomatically:
         this.shouldTakeFocusIfOpensAutomatically,
       namespace: this.namespace,
@@ -226,6 +228,7 @@ class ChatContainer extends LitElement {
       locale: this.locale,
       homescreen: this.homescreen,
       launcher: this.launcher,
+      strings: this.strings,
     };
   }
 
@@ -259,9 +262,6 @@ class ChatContainer extends LitElement {
   render() {
     return html`<cds-aichat-internal
       .config=${this.config}
-      .strings=${this.strings}
-      .serviceDeskFactory=${this.serviceDeskFactory}
-      .serviceDesk=${this.serviceDesk}
       .onAfterRender=${this.onAfterRender}
       .onBeforeRender=${this.onBeforeRenderOverride}
       .element=${this.element}
@@ -284,27 +284,12 @@ declare global {
 
 /**
  * Attributes interface for the cds-aichat-container web component.
- * This interface extends PublicConfig with additional component-specific props,
+ * This interface extends {@link PublicConfig} with additional component-specific props,
  * flattening all config properties as top-level properties for better TypeScript IntelliSense.
  *
  * @category Web component
  */
 interface CdsAiChatContainerAttributes extends PublicConfig {
-  /** Optional partial language pack overrides */
-  strings?: DeepPartial<LanguagePack>;
-
-  /**
-   * A factory to create a {@link ServiceDesk} integration instance.
-   */
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-
-  /**
-   * Public configuration for the service desk integration.
-   */
-  serviceDesk?: ServiceDeskPublicConfig;
-
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

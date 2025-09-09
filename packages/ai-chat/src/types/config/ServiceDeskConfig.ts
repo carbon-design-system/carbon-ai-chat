@@ -14,11 +14,54 @@ import {
   MessageRequest,
   MessageResponse,
 } from "../messaging/Messages";
-import { FileUpload } from "../instance/apiTypes";
 import type {
   ChatInstance,
   FileUploadCapabilities,
 } from "../instance/ChatInstance";
+
+/**
+ * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
+ *
+ * @category Service desk
+ */
+export enum FileStatusValue {
+  COMPLETE = "complete",
+  EDIT = "edit",
+  UPLOADING = "uploading",
+  SUCCESS = "success",
+}
+
+/**
+ * An interface that represents a file to upload and its current upload status.
+ *
+ * @category Service desk
+ */
+export interface FileUpload {
+  /**
+   * A unique ID for the file.
+   */
+  id: string;
+
+  /**
+   * The file to upload.
+   */
+  file: File;
+
+  /**
+   * The current upload status.
+   */
+  status: FileStatusValue;
+
+  /**
+   * Indicates if the file contains an error or failed to upload.
+   */
+  isError?: boolean;
+
+  /**
+   * If the file failed to upload, this is an optional error message to display.
+   */
+  errorMessage?: string;
+}
 
 /**
  * The section of the public config that contains configuration options for service desk integrations.

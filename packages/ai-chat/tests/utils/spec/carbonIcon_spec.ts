@@ -8,7 +8,7 @@
  */
 
 import { render } from "@testing-library/react";
-import { carbonIconToReact } from "../../../src/chat/shared/utils/carbonIcon";
+import { carbonIconToReact } from "../../../src/chat/utils/carbonIcon";
 
 const mockIcon = {
   elem: "svg" as const,

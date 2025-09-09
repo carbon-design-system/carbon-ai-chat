@@ -16,7 +16,13 @@ import {
 } from "../types/events/eventBusTypes";
 import { ChatContainer, ChatContainerProps } from "./ChatContainer";
 
-/** @category React */
+/**
+ * Properties for the ChatContainer React component. This interface extends
+ * {@link ChatContainerProps} and {@link PublicConfig} with additional component-specific props, flattening all
+ * config properties as top-level props for better TypeScript IntelliSense.
+ *
+ * @category React
+ */
 interface ChatCustomElementProps extends ChatContainerProps {
   /**
    * An optional classname that will be added to the custom element.

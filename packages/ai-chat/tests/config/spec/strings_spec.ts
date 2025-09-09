@@ -13,7 +13,7 @@ import { ChatContainer } from "../../../src/react/ChatContainer";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
-import { enLanguagePack } from "../../../src/types/instance/apiTypes";
+import { enLanguagePack } from "../../../src/types/config/PublicConfig";
 
 describe("Config Strings", () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({

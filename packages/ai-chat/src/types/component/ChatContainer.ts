@@ -8,17 +8,10 @@
  */
 
 import { type ReactNode } from "react";
-import { DeepPartial } from "../utilities/DeepPartial";
-import { LanguagePack } from "../instance/apiTypes";
-
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message } from "../messaging/Messages";
-import {
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
-  ServiceDeskPublicConfig,
-} from "../config/ServiceDeskConfig";
 import { PublicConfig } from "../config/PublicConfig";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 /**
  * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
@@ -73,29 +66,12 @@ type RenderWriteableElementResponse = {
 
 /**
  * Properties for the ChatContainer React component. This interface extends
- * PublicConfig with additional component-specific props, flattening all
+ * {@link PublicConfig} with additional component-specific props, flattening all
  * config properties as top-level props for better TypeScript IntelliSense.
  *
  * @category React
  */
 interface ChatContainerProps extends PublicConfig {
-  /**
-   * Optional partial language pack overrides. Values merge with defaults.
-   */
-  strings?: DeepPartial<LanguagePack>;
-
-  /**
-   * A factory for creating a {@link ServiceDesk} integration instance.
-   */
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-
-  /**
-   * Public configuration for the service desk integration.
-   */
-  serviceDesk?: ServiceDeskPublicConfig;
-
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

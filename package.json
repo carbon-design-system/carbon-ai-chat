@@ -154,28 +154,17 @@
       "stylelint-config-carbon"
     ],
     "rules": {
-      "max-nesting-depth": 4,
+      "max-nesting-depth": null,
+      "declaration-property-unit-allowed-list": null,
+      "no-descending-specificity": [
+        true,
+        { "severity": "warning" }
+      ],
       "a11y/media-prefers-reduced-motion": [
         true,
         {
-          "severity": "warning"
-        }
-      ],
-      "declaration-property-unit-allowed-list": [
-        {
-          "font-size": [
-            "em",
-            "rem",
-            "px"
-          ],
-          "line-height": [
-            "unitless",
-            "em",
-            "rem"
-          ]
-        },
-        {
-          "severity": "warning"
+          "severity": "warning",
+          "disableFix": true
         }
       ],
       "selector-type-no-unknown": [
@@ -184,12 +173,7 @@
           "severity": "warning"
         }
       ],
-      "no-descending-specificity": [
-        true,
-        {
-          "severity": "warning"
-        }
-      ],
+      
       "selector-pseudo-class-no-unknown": [
         true,
         {

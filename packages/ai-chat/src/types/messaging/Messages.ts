@@ -15,7 +15,7 @@
 import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { FileStatusValue } from "../instance/apiTypes";
+import { FileStatusValue } from "../config/ServiceDeskConfig";
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 /**

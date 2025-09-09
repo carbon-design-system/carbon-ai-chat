@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { isNil } from "../../../src/chat/shared/utils/lang/langUtils";
+import { isNil } from "lodash-es";
 
 describe("langUtils", () => {
   describe("isNil", () => {

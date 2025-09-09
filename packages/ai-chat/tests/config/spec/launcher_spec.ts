@@ -13,11 +13,11 @@ import { ChatContainer } from "../../../src/react/ChatContainer";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
-import { applyConfigChangesDynamically } from "../../../src/chat/shared/utils/dynamicConfigUpdates";
-import { detectConfigChanges } from "../../../src/chat/shared/utils/configChangeDetection";
-import { doCreateStore } from "../../../src/chat/shared/store/doCreateStore";
-import { ServiceManager } from "../../../src/chat/shared/services/ServiceManager";
-import { NamespaceService } from "../../../src/chat/shared/services/NamespaceService";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
+import { doCreateStore } from "../../../src/chat/store/doCreateStore";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
+import { NamespaceService } from "../../../src/chat/services/NamespaceService";
 import { PublicConfig } from "../../../src/types/config/PublicConfig";
 
 describe("Config Launcher", () => {

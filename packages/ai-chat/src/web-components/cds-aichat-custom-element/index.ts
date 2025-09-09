@@ -12,10 +12,10 @@ import "../cds-aichat-container";
 import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
-import { carbonElement } from "../../chat/web-components/decorators/customElement";
+import { carbonElement } from "../../chat/ai-chat-components/web-components/decorators/customElement";
 import { PublicConfig, OnErrorData } from "../../types/config/PublicConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/instance/apiTypes";
+import { LanguagePack } from "../../types/config/PublicConfig";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -262,6 +262,8 @@ class ChatCustomElement extends LitElement {
       exposeServiceManagerForTesting: this.exposeServiceManagerForTesting,
       injectCarbonTheme: this.injectCarbonTheme,
       aiEnabled: this.aiDisabled === true ? false : this.aiEnabled,
+      serviceDeskFactory: this.serviceDeskFactory,
+      serviceDesk: this.serviceDesk,
       shouldTakeFocusIfOpensAutomatically:
         this.shouldTakeFocusIfOpensAutomatically,
       namespace: this.namespace,
@@ -275,6 +277,7 @@ class ChatCustomElement extends LitElement {
       locale: this.locale,
       homescreen: this.homescreen,
       launcher: this.launcher,
+      strings: this.strings,
     };
   }
 
@@ -304,9 +307,6 @@ class ChatCustomElement extends LitElement {
     return html`
       <cds-aichat-container
         .config=${this.config}
-        .strings=${this.strings}
-        .serviceDeskFactory=${this.serviceDeskFactory}
-        .serviceDesk=${this.serviceDesk}
         .onAfterRender=${this.onAfterRender}
         .onBeforeRender=${this.onBeforeRenderOverride}
         .element=${this}
@@ -324,27 +324,12 @@ class ChatCustomElement extends LitElement {
 
 /**
  * Attributes interface for the cds-aichat-custom-element web component.
- * This interface extends PublicConfig with additional component-specific props,
+ * This interface extends {@link CdsAiChatContainerAttributes} and {@link PublicConfig} with additional component-specific props,
  * flattening all config properties as top-level properties for better TypeScript IntelliSense.
  *
  * @category Web component
  */
 interface CdsAiChatCustomElementAttributes extends PublicConfig {
-  /** Optional partial language pack overrides */
-  strings?: DeepPartial<LanguagePack>;
-
-  /**
-   * A factory for the {@link ServiceDesk} integration.
-   */
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-
-  /**
-   * Public configuration for the service desk integration.
-   */
-  serviceDesk?: ServiceDeskPublicConfig;
-
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

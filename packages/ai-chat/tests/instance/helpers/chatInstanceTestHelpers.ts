@@ -13,9 +13,9 @@ import { ChatContainer } from "../../../src/react/ChatContainer";
 import { PublicConfig } from "../../../src/types/config/PublicConfig";
 import { createBaseTestProps } from "../../utils/testHelpers";
 import { ChatInstance } from "../../../src/types/instance/ChatInstance";
-import { ServiceManager } from "../../../src/chat/shared/services/ServiceManager";
 import { Store } from "redux";
 import { AppState } from "../../../src/types/state/AppState";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 
 export const createBaseConfig = (): PublicConfig => ({
   ...createBaseTestProps(),
