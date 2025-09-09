@@ -374,7 +374,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     leftContent = (
       <HeaderButton
         className="WACHeader__BackButton"
-        label={labelBackButton}
+        tooltipText={labelBackButton}
         onClick={onClickBack}
         buttonRef={backButtonRef}
         buttonKind={backButtonType}
@@ -460,7 +460,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           {showRestartButton && (
             <HeaderButton
               className="WACHeader__RestartButton"
-              label={languagePack.buttons_restart}
+              tooltipText={languagePack.buttons_restart}
               onClick={onClickRestart}
               buttonRef={restartButtonRef}
               tooltipAlignment={
@@ -479,7 +479,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 WACReverseIcon: closeReverseIcon,
               })}
               isReversible={closeIsReversible}
-              label={languagePack.launcher_isOpen}
+              tooltipText={languagePack.launcher_isOpen}
               onClick={async () => {
                 onClickClose();
               }}
@@ -498,7 +498,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           {showCloseAndRestartButton && (
             <HeaderButton
               className="WACHeader__CloseAndRestartButton"
-              label={languagePack.header_ariaCloseRestart}
+              tooltipText={languagePack.header_ariaCloseRestart}
               onClick={() => setConfirmModelOpen(true)}
               buttonRef={closeAndRestartButtonRef}
               tooltipAlignment={
@@ -545,9 +545,9 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
   buttonRef: RefObject<CDSButton>;
 
   /**
-   * The aria label to use on the button.
+   * Specify the text to be rendered in the tooltip.
    */
-  label: string;
+  tooltipText: string;
 
   /**
    * The carbon button kind to use.
@@ -587,6 +587,7 @@ function HeaderButton({
   isReversible = true,
   tooltipAlignment,
   tooltipPosition,
+  tooltipText,
   testId,
 }: HeaderButtonProps) {
   const buttonKindVal = buttonKind || BUTTON_KIND.GHOST;
@@ -599,6 +600,7 @@ function HeaderButton({
       kind={buttonKindVal as BUTTON_KIND}
       tooltipAlignment={tooltipAlignment}
       tooltipPosition={tooltipPosition}
+      tooltipText={tooltipText}
       data-testid={testId}
     >
       {children}
