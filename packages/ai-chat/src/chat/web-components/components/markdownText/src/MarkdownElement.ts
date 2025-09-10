@@ -26,10 +26,15 @@ class MarkdownElement extends LitElement {
   @property({ type: String })
   set markdown(newMarkdown: string) {
     if (newMarkdown !== this.fullText) {
-      this.fullText = newMarkdown;
+      const old = this.fullText;
+      this.fullText = newMarkdown ?? "";
+      this.requestUpdate("markdown", old);
+      if (this.debug) {
+        consoleLog("markdown prop updated");
+      }
+      this.scheduleTokenParse();
     }
   }
-
   get markdown(): string {
     return this.fullText;
   }
@@ -114,6 +119,10 @@ class MarkdownElement extends LitElement {
         sanitize: this.sanitizeHTML,
         streaming: this.streaming,
       });
+
+      if (this.debug) {
+        consoleLog("Markdown component renderedContent", this.renderedContent);
+      }
     } catch (error) {
       consoleError("Failed to parse markdown", error);
     }
