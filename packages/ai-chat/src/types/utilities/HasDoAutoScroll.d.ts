@@ -34,6 +34,11 @@ interface AutoScrollOptions {
    * from the bottom by that amount. A value of 0 will scroll to the very bottom.
    */
   scrollToBottom?: number;
+
+  /**
+   * If appropriate, prefer animations.
+   */
+  preferAnimate?: true;
 }
 
 export { HasDoAutoScroll, AutoScrollOptions };

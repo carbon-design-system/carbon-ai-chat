@@ -103,7 +103,7 @@ function SelectComponent(props: SelectProps) {
       setTimeout(() => {
         if (rootRef?.current) {
           setIsBeingOpened(true);
-          doScrollElementIntoView(rootRef.current, true);
+          doScrollElementIntoView(rootRef.current);
           setIsBeingOpened(false);
         }
       }, 70 * 2);
