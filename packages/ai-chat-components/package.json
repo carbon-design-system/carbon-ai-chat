@@ -82,7 +82,7 @@
     "rollup-plugin-postcss-lit": "^2.1.0",
     "storybook": "^8.0.0",
     "typescript": "^5.2.2",
-    "vite": "^4.4.5",
+    "vite": "^5.4.20",
     "web-dev-server-plugin-lit-css": "^3.0.1"
   }
 }
