@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-watsonx",
-  "version": "0.2.1-rc.0",
+  "version": "0.2.1-rc.1",
   "private": true,
   "type": "module",
   "description": "A basic example using @carbon/ai-chat as a web component connected to watsonx.ai.",
@@ -15,7 +15,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^0.5.1-rc.0",
+    "@carbon/ai-chat": "^0.5.1-rc.1",
     "@carbon/icons": "^11.53.0",
     "@carbon/web-components": "^2.25.0",
     "@microsoft/fetch-event-source": "^2.0.1",
