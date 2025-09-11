@@ -112,9 +112,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   const theme = useSelector((state: AppState) => state.theme.theme);
   const headerRef = useRef<HasRequestFocus>();
 
-  const showRestartButton =
-    publicConfig.showRestartButton ||
-    publicConfig.headerConfig?.showRestartButton;
+  const showRestartButton = publicConfig.headerConfig?.showRestartButton;
 
   // We can't allow the user to return to the home screen if the user is connecting or connected to an agent.
   const allowHomeScreen = homeScreenIsOn && !isConnectingOrConnected;

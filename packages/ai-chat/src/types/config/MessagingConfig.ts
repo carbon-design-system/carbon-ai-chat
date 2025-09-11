@@ -81,4 +81,9 @@ export interface CustomSendMessageOptions {
    * A signal to let customSendMessage to cancel a request if it has exceeded Carbon AI Chat's timeout.
    */
   signal: AbortSignal;
+
+  /**
+   * If the message was sent with "silent" set to true to not be displayed in the conversation history.
+   */
+  silent: boolean;
 }

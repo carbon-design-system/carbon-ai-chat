@@ -21,7 +21,6 @@ import {
   consoleLog,
   consoleWarn,
   debugLog,
-  debugStackTrace,
   isEnableDebugLog,
 } from "../utils/miscUtils";
 import {
@@ -184,7 +183,6 @@ class EventBus {
           this.handlersByType.set(type, []);
         }
         const handlersForType = this.handlersByType.get(type);
-        debugStackTrace(`[EventBus] Adding ${type} event handler`, handler);
         handlersForType.push(handler);
       } else {
         consoleError(HANDLER_NOT_FUNCTION, handler);
@@ -207,15 +205,10 @@ class EventBus {
         if (handler) {
           const index = handlersForType.indexOf(handler);
           if (index !== -1) {
-            const removed = handlersForType.splice(index, 1);
-            debugStackTrace(
-              `[EventBus] Removing ${type} event handlers`,
-              removed,
-            );
+            handlersForType.splice(index, 1);
           }
         } else {
           // If no handler is specified, unsubscribe all the handlers.
-          debugStackTrace(`[EventBus] Removing all ${type} event handlers`);
           this.handlersByType.set(type, []);
         }
       }

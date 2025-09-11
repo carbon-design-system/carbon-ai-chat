@@ -30,12 +30,6 @@ import {
 let enableDebugLog = false;
 
 /**
- * A global flag to indicate if we want to show stack trace debug messages in the browser console. This is generally set
- * from {@link PublicConfig.debugStackTraces}.
- */
-let enableDebugStackTracesLog = false;
-
-/**
  * This is a no-op function that's for the purpose of verifying at build time that a given item matches a given
  * type. To use, pass the item as the "item" parameter and pass the type as the "TItemType" type parameter. Since
  * this is incurring a runtime call for what is really a build-time check, this function should be used sparingly.
@@ -50,20 +44,6 @@ function assertType<TItemType>(item: TItemType): TItemType {
 function debugLog(message: string, ...args: any[]) {
   if (enableDebugLog) {
     console.log(`${WA_CONSOLE_PREFIX} ${message}`, ...args);
-  }
-}
-
-/**
- * A simple utility to send a message to the console log but only if debug stack traces logging is enabled.
- */
-function debugStackTrace(message: string, ...args: any[]) {
-  if (enableDebugStackTracesLog) {
-    const stack = new Error(
-      'This is not an error; it is a stack trace used for debugging purposes. It is enabled by the "debugStackTraces: true" configuration option.',
-    );
-    debugLog(message, stack, ...args);
-  } else {
-    debugLog(message, ...args);
   }
 }
 
@@ -101,14 +81,6 @@ function consoleWarn(message: string, ...args: any[]) {
  */
 function setEnableDebugLog(debug: boolean) {
   enableDebugLog = debug;
-}
-
-/**
- * Sets a global flag to indicate if we want to show debug stack trace messages in the browser console. This is
- * generally set from {@link PublicConfig.debugStackTraces}.
- */
-function setEnableDebugStackTracesLog(debug: boolean) {
-  enableDebugStackTracesLog = debug;
 }
 
 /**
@@ -199,12 +171,10 @@ export {
   consoleError,
   consoleWarn,
   setEnableDebugLog,
-  setEnableDebugStackTracesLog,
   createDidCatchErrorData,
   consoleDebug,
   consoleLog,
   isEnableDebugLog,
-  debugStackTrace,
   getResponsiveElementPaddingValue,
   isValidForUpload,
   safeFetchTextWithTimeout,

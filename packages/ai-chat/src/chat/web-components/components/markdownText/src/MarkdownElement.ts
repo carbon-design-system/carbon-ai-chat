@@ -66,7 +66,7 @@ class MarkdownElement extends LitElement {
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
-    if (changed.has("sanitizeHTML")) {
+    if (changed.has("sanitizeHTML") || changed.has("streaming")) {
       this.scheduleRender();
     }
   }
