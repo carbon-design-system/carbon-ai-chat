@@ -33,13 +33,14 @@
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "storybook": "npm run custom-elements && storybook dev -p 6006",
     "storybook:build": "npm run custom-elements && storybook build",
+    "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
     "test": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve",
     "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots"
   },
   "dependencies": {
     "@carbon/styles": "^1.39.0",
     "@carbon/web-components": "^2.13.0",
-    "@ibm/telemetry-js": "^1.9.1",
+    "@ibm/telemetry-js": "^1.10.2",
     "lit": "^3.0.0",
     "tslib": "^2.6.3"
   },
