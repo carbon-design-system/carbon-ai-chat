@@ -79,7 +79,7 @@ jobs:
           git push origin ${{ github.event.inputs.tag }}
 
   # This job dispatches workflow to check if there is a change in peerDependencies and updates
-  # the peer-dependency-changes.md file
+  # the peer-dependency-changes.md file pushes the changes to the release PR to be merged into main
   check-change-in-peer-dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 60

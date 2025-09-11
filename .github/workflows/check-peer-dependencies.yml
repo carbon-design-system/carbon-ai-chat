@@ -3,9 +3,26 @@
 name: Check for peer dependency changes
 
 # Gets triggered every time a full/stable release tag has been published from the
-# `create-release-tag-and-pr` workflow
+# `create-release-tag-and-pr` workflow or can also be triggered manually
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        # Recently published stable version
+        required: true
+        description: "release tag (ie. v1.1.0)"
+        type: string
+        default: "v1.1.0"
+      previous-tag:
+        # Previous release tag to grab changelogs from
+        # To pick the previous tag:
+        # - If published tag is the first release candidate, choose the previous full release tag.
+        # - If published tag is a subsequent release candidate, choose the previous release candidate.
+        # - If published tag is a full release, choose the previous full release tag.
+        required: true
+        description: "previous release tag (ie. v1.0.0)"
+        type: string
+        default: "v1.0.0"
   repository_dispatch:
     types: [check-peer-dependencies]
 
@@ -21,11 +38,11 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: "0"
-          ref: ${{ github.event.client_payload.branch }}
+          ref: ${{ github.event.client_payload.branch || github.ref_name }}
 
       - name: Get package.json from previous release
         run: |
-          git show ${{ github.event.client_payload.previous-tag }}:packages/ai-chat/package.json > package-old.json
+          git show ${{ github.event.client_payload.previous-tag || github.event.inputs.previous-tag }}:packages/ai-chat/package.json > package-old.json
 
       - name: Get package.json from current release
         run: |
@@ -66,10 +83,11 @@ jobs:
 
           let hasChanges = false;
           let content = fs.readFileSync(path, 'utf8');
+          let newSection = "";
 
           if (added.length > 0 || removed.length > 0 || updated.length > 0) {
             hasChanges = true;
-            let newSection = `\n\n---\n\n# Version ${version}\n`;
+            newSection = `\n\n## Version ${version}\n`;
 
             if (added.length > 0) {
               newSection += "\n**Added**\n" + added.join("\n");
@@ -81,29 +99,49 @@ jobs:
               newSection += "\n**Updated**\n" + updated.join("\n");
             }
 
-            // Prepend new changes below description
-            const firstLineBreak = content.indexOf('\n\n');
-            if (firstLineBreak >= 0) {
-              const description = content.slice(0, firstLineBreak + 2);
-              const oldContent = content.slice(firstLineBreak + 2);
-              content = description + newSection + oldContent;
-            } else {
-              content = newSection + content;
+            // Log the new section
+            console.log("Changes detected, inserting:\n", newSection);
+
+            // Find the first "## Version"
+            let insertIndex = content.indexOf("## Version");
+
+            if (insertIndex === -1) {
+              // No previous versions, append to the end
+              insertIndex = content.length;
             }
+
+            const before = content.slice(0, insertIndex).trimEnd();
+            const after = content.slice(insertIndex).trimStart();
+
+            // Ensure spacing between sections
+            content = before + "\n\n" + newSection.trimEnd() + "\n\n" + after;
 
             fs.writeFileSync(path, content, 'utf8');
           }
 
           console.log(hasChanges ? "changes" : "no-changes");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_changes=${hasChanges}\n`);
           EOF
 
       - name: Commit updated peer-dependency-changes.md
-        if: steps.diff.outputs == 'changes'
+        if: steps.diff.outputs.has_changes == 'true'
         run: |
           git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
           git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
+
+          BRANCH="chore/${{ github.event.client_payload.tag || github.event.inputs.tag }}-release"
+          git fetch origin $BRANCH || true
+
+          if git rev-parse --verify origin/$BRANCH >/dev/null 2>&1; then
+            echo "Branch $BRANCH exists, checking it out"
+            git checkout -b $BRANCH origin/$BRANCH
+          else
+            echo "Branch $BRANCH does not exist, creating it"
+            git checkout -b $BRANCH
+          fi
+
           git add docs/peer-dependency-changes.md
           git commit -m "chore: update peer dependency changes"
-          git push origin chore/${{ github.event.client_payload.tag }}-release
+          git push origin $BRANCH
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
