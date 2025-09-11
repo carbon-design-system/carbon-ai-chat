@@ -119,7 +119,7 @@ jobs:
             fs.writeFileSync(path, content, 'utf8');
           }
 
-          console.log(hasChanges ? "changes" : "no-changes");
+          console.log(hasChanges ? "" : "no changes to output");
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_changes=${hasChanges}\n`);
           EOF
 
