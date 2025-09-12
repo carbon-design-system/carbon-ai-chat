@@ -125,7 +125,7 @@ export class Demo extends LitElement {
     return html`
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
-        .config=${config}
+        .messaging=${config.messaging}
         >${this.renderUserDefinedSlots()}</cds-aichat-container
       >
     `;

@@ -12,7 +12,7 @@ import {
   convertToEmptyStringIfStringifiedNull,
   convertPossibleStringifiedArrayToFirstString,
   parseUnknownDataToMarkdown,
-} from "../../../src/chat/shared/utils/lang/stringUtils";
+} from "../../../src/chat/utils/lang/stringUtils";
 
 describe("stringUtils", () => {
   describe("isEmptyString", () => {

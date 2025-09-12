@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { isValidURL } from "../../../src/chat/shared/utils/htmlUtils";
+import { isValidURL } from "../../../src/chat/utils/htmlUtils";
 
 describe("htmlUtils", () => {
   describe("isValidURL", () => {

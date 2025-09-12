@@ -36,14 +36,15 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
-const config = {
-  // Your configuration object.
-};
-
 @customElement("my-app")
 export class MyApp extends LitElement {
   render() {
-    return html`<cds-aichat-container .config="{config}" />`;
+    return html`<cds-aichat-container
+      .debug=${true}
+      .aiEnabled=${true}
+      .header=${{ title: "My Assistant" }}
+      .launcher=${{ isOn: true }}
+    />`;
   }
 }
 ```
@@ -53,6 +54,17 @@ export class MyApp extends LitElement {
 The `cds-aichat-container` component loads and renders an instance of the Carbon AI Chat when it mounts and deletes that instance when unmounted. If option changes occur in the Carbon AI Chat configuration, it also deletes the previous Carbon AI Chat and creates a new one with the new configuration.
 
 See {@link CdsAiChatContainerAttributes} for an explanation of the various accepted properties and attributes.
+
+#### AI theme toggle
+
+`ai-enabled` is on by default when not specified. To disable the AI theme in plain HTML, either:
+
+- Use `ai-disabled`:
+  `<cds-aichat-container ai-disabled></cds-aichat-container>`
+- Or set a falsey string on `ai-enabled`:
+  `<cds-aichat-container ai-enabled="false"></cds-aichat-container>`
+
+Accepted falsey strings for `ai-enabled` are `"false"`, `"0"`, `"off"`, and `"no"` (case‑insensitive). If present and not one of those values, the AI theme is enabled.
 
 #### Using `cds-aichat-custom-element`
 
@@ -72,10 +84,6 @@ import "@carbon/ai-chat/dist/es/cds-aichat-custom-element/index.js";
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
-const config = {
-  // Your configuration object.
-};
-
 @customElement("my-app")
 export class MyApp extends LitElement {
   static styles = css`
@@ -87,7 +95,10 @@ export class MyApp extends LitElement {
   render() {
     return html`<cds-aichat-custom-element
       class="fullscreen"
-      .config="{config}"
+      .debug=${true}
+      .aiEnabled=${true}
+      .header=${{ title: "My Assistant" }}
+      .launcher=${{ isOn: true }}
     />`;
   }
 }
@@ -120,8 +131,9 @@ export class MyApp extends LitElement {
 
   render() {
     return html`<cds-aichat-container
-        .config=${config}
         .onBeforeRender=${this.onBeforeRender}
+        .header=${{ title: "My Assistant" }}
+        .launcher=${{ isOn: true }}
       />${this._instance ? "<span>Instance loaded</span>" : ""}`;
   }
 }
@@ -231,7 +243,7 @@ export class Demo extends LitElement {
       <h1>Welcome!</h1>
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
-        .config=${config}
+        .messaging=${config.messaging}
         >${this.renderUserDefinedSlots()}</cds-aichat-container
       >
     `;
@@ -255,7 +267,7 @@ const config = {
 @customElement("my-app")
 export class MyApp extends LitElement {
   render() {
-    return html`<cds-aichat-container .config="{config}">
+    return html`<cds-aichat-container>
       <div slot="customPanelElement">Hello world!</div>
     </cds-aichat-container>`;
   }

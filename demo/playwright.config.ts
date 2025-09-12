@@ -11,8 +11,8 @@ export default defineConfig({
   testDir: "./tests",
   // automatically start your dev server before running tests:
   webServer: {
-    command: "npm run start", // or whatever starts localhost
-    url: "http://localhost:3001",
+    command: "PORT=3001 npm run start", // or whatever starts localhost
+    port: 3001,
     timeout: 120 * 1000, // wait up to 2m for the server
     reuseExistingServer: !process.env.CI,
   },

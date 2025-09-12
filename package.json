@@ -158,7 +158,8 @@
       "a11y/media-prefers-reduced-motion": [
         true,
         {
-          "severity": "warning"
+          "severity": "warning",
+          "disableFix": true
         }
       ],
       "keyframes-name-pattern": [

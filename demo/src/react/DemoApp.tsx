@@ -11,6 +11,8 @@ import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
 
 import {
+  BusEvent,
+  BusEventMessageItemCustom,
   BusEventType,
   BusEventViewChange,
   ChatContainer,
@@ -19,6 +21,8 @@ import {
   FeedbackInteractionType,
   PublicConfig,
   RenderUserDefinedState,
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
   ViewType,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
@@ -28,6 +32,10 @@ import { Settings } from "../framework/types";
 import { SideBar } from "./DemoSideBarNav";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
+import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
+  Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
 
 interface AppProps {
   config: PublicConfig;
@@ -81,7 +89,7 @@ function DemoApp({ config, settings }: AppProps) {
    *
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
    */
-  const renderWriteableElements = useMemo(
+  const allWriteableElements = useMemo(
     () => ({
       headerBottomElement: (
         <WriteableElementExample
@@ -123,6 +131,32 @@ function DemoApp({ config, settings }: AppProps) {
     [stateText],
   );
 
+  /**
+   * Determines which writeable elements to render based on settings and config.
+   * - If writeableElements is true: show all elements
+   * - If writeableElements is false AND homescreen is custom: show only home screen specific elements
+   * - Otherwise: show no elements
+   */
+  const renderWriteableElements = useMemo(() => {
+    const isCustomHomeScreen = config.homescreen?.customContentOnly === true;
+    const showAllWriteableElements = settings.writeableElements === "true";
+    const showHomeScreenElements =
+      !showAllWriteableElements && isCustomHomeScreen;
+
+    if (showAllWriteableElements) {
+      return allWriteableElements;
+    } else if (showHomeScreenElements) {
+      return {
+        homeScreenHeaderBottomElement:
+          allWriteableElements.homeScreenHeaderBottomElement,
+        homeScreenAfterStartersElement:
+          allWriteableElements.homeScreenAfterStartersElement,
+      };
+    } else {
+      return undefined;
+    }
+  }, [allWriteableElements, settings.writeableElements, config.homescreen]);
+
   const onBeforeRender = (instance: ChatInstance) => {
     // You can set the instance to access it later if you need to.
     setInstance(instance);
@@ -136,68 +170,6 @@ function DemoApp({ config, settings }: AppProps) {
 
     // Handle feedback event.
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
-
-    switch (settings.homescreen) {
-      case "default":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          greeting: "Hello!\n\nThis is some text to introduce your chat.",
-          starters: {
-            is_on: true,
-            buttons: [
-              {
-                label: "text (stream)",
-              },
-              {
-                label: "code (stream)",
-              },
-              {
-                label: "text",
-              },
-              {
-                label: "code",
-              },
-            ],
-          },
-        });
-        break;
-
-      case "splash":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          allow_return: false,
-          greeting:
-            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
-          starters: {
-            is_on: true,
-            buttons: [
-              {
-                label: "text (stream)",
-              },
-              {
-                label: "code (stream)",
-              },
-              {
-                label: "text",
-              },
-              {
-                label: "code",
-              },
-            ],
-          },
-        });
-        break;
-
-      case "custom":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          custom_content_only: true,
-        });
-        break;
-
-      default:
-        break;
-    }
   };
 
   /**
@@ -238,28 +210,22 @@ function DemoApp({ config, settings }: AppProps) {
 
   return settings.layout === "float" ? (
     <ChatContainer
-      config={config}
+      {...config}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
-      renderWriteableElements={
-        settings.writeableElements === "true"
-          ? renderWriteableElements
-          : undefined
-      }
+      renderWriteableElements={renderWriteableElements}
+      serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
     <>
       <ChatCustomElement
-        config={config}
+        {...config}
         className={className}
         onViewChange={onViewChange}
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
-        renderWriteableElements={
-          settings.writeableElements === "true"
-            ? renderWriteableElements
-            : undefined
-        }
+        renderWriteableElements={renderWriteableElements}
+        serviceDeskFactory={serviceDeskFactory}
       />
       {settings.layout === "sidebar" && !sideBarOpen && (
         <SideBar openSideBar={openSideBar} />
@@ -286,15 +252,12 @@ function feedbackHandler(event: any) {
  *
  * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#messageItemCustom
  */
-function customButtonHandler(event: any) {
-  const { customEventType, messageItem } = event;
+function customButtonHandler(event: BusEvent) {
+  const { messageItem } = event as BusEventMessageItemCustom;
   // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
-  if (
-    customEventType === "buttonItemClicked" &&
-    messageItem.custom_event_name === "alert_button"
-  ) {
+  if (messageItem.custom_event_name === "alert_button") {
     // eslint-disable-next-line no-alert
-    window.alert(messageItem.user_defined.text);
+    window.alert(messageItem.user_defined?.text);
   }
 }
 

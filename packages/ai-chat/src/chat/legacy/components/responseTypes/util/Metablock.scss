@@ -1,0 +1,19 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+.cds-aichat--received--metablock {
+  color: theme.$text-primary;
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--received--metablock-content:nth-child(2) {
+  margin-block-start: layout.$spacing-03;
+}

@@ -36,12 +36,16 @@ Render this component in your application and provide the configuration options 
 import React from "react";
 import { ChatContainer } from "@carbon/ai-chat";
 
-const chatOptions = {
-  // Your configuration object.
-};
-
 function App() {
-  return <ChatContainer config={chatOptions} />;
+  return (
+    <ChatContainer
+      debug={true}
+      aiEnabled={true}
+      header={{ title: "My Assistant" }}
+      launcher={{ isOn: true }}
+      // ... other config properties as individual props
+    />
+  );
 }
 ```
 
@@ -69,12 +73,17 @@ import { ChatCustomElement } from "@carbon/ai-chat";
 
 import "./App.css";
 
-const chatOptions = {
-  /* Carbon AI Chat options */
-};
-
 function App() {
-  return <ChatCustomElement className="MyCustomElement" config={chatOptions} />;
+  return (
+    <ChatCustomElement
+      className="MyCustomElement"
+      debug={true}
+      aiEnabled={true}
+      header={{ title: "My Assistant" }}
+      launcher={{ isOn: true }}
+      // ... other config properties as individual props
+    />
+  );
 }
 ```
 
@@ -88,86 +97,75 @@ function App() {
 }
 ```
 
-### Config object changes
+### Live config updates
 
-The chat is not capable of handling in-place changes to the config object. If any of the properties in the config object are changed, then the existing chat will be discarded and a whole new chat will be created using the new config properties. A deep equal comparison of the config object is done to detect changes. Note that DOM elements and functions are compared using a strict `===` comparison.
+The chat observes prop changes and applies them in place. Most configuration updates do not remount or discard the chat; instead, they are applied live. This simplifies integration with state and reactive frameworks.
 
-Of note, the above means that if you are creating a new callback function for something like {@link PublicConfigMessaging.customSendMessage} on each render of your component, this would cause the chat to be discarded and recreated each time your component is rendered.
+Notes:
 
-Below is an example of bad code where a new {@link PublicConfigMessaging.customSendMessage} function causes the chat to get recreated each time `App` is rendered.
+- Functions and objects are compared by identity. Rapidly creating new functions/objects every render can cause unnecessary updates. Prefer stable references where possible.
+- Human‑agent integrations: Updating `serviceDeskFactory` or `serviceDesk` while a human‑agent chat is connecting/active ends that conversation and reinitializes the integration to apply the new settings. See CustomServiceDesks.md for guidance.
 
-#### Wrong example
+#### Stable callbacks (messaging)
+
+Avoid re‑creating callbacks like {@link PublicConfigMessaging.customSendMessage} on every render.
+
+Wrong (new function each render):
 
 ```javascript
-// DO NOT DO THIS!
-
 function App() {
-  // This is bad because it creates a new customSendMessage function every time App is rendered which will cause the
-  // ChatContainer to create a new chat every time.
   const customSendMessage = (message: MessageRequest) => {
     console.log("Sending message", message);
   };
-
-  const config: PublicConfig = { messaging: { customSendMessage } };
-
-  return <ChatContainer config={config} />;
+  return <ChatContainer messaging={{ customSendMessage }} />;
 }
 ```
 
-The quickest solution to this is to move the config object outside of your render function.
-
-#### Correct example #1
+Better (hoist):
 
 ```javascript
 const customSendMessage = (message: MessageRequest) => {
   console.log("Sending message", message);
 };
 
-const config: PublicConfig = { messaging: { customSendMessage } };
-
 function App() {
-  return <ChatContainer config={config} />;
+  return <ChatContainer messaging={{ customSendMessage }} />;
 }
 ```
 
-However this does not work if your {@link PublicConfigMessaging.customSendMessage} function requires access to state or props from your application. If you need that, you can use `useCallback` to ensure only a single instance is created from the dependencies. Note in this example that if the instance of the `messageService` prop changes, the whole chat will get recreated. If you don't expect that to happen, this will work for you. Otherwise, you may need to use a ref.
-
-#### Correct example #2
+Best (needs props/state):
 
 ```javascript
 function App({ messageService }: any) {
-  // Creates a new customSendMessage for each instance of messageService.
   const customSendMessage = useCallback(
-    (message: MessageRequest) => {
-      messageService(message);
-    },
-    [messageService] // If messageService changes, the chat will be recreated.
+    (message: MessageRequest) => messageService(message),
+    [messageService]
   );
-
-  const config: PublicConfig = { messaging: { customSendMessage } };
-
-  return <ChatContainer config={config} />;
+  return <ChatContainer messaging={{ customSendMessage }} />;
 }
 ```
 
-If you have dependencies that shouldn't recreate the chat, you can store them in a ref. In this example, the chat will not be recreated.
-
-#### Correct example #3
+No‑churn variant using a ref:
 
 ```javascript
 function App({ messageService }: any) {
   const messageServiceRef = useRef(messageService);
   messageServiceRef.current = messageService;
 
-  const customSendMessage = useCallback((message: MessageRequest) => {
-    messageServiceRef.current(message);
-  }, []);
+  const customSendMessage = useCallback(
+    (message: MessageRequest) => messageServiceRef.current(message),
+    []
+  );
 
-  const config: PublicConfig = { messaging: { customSendMessage } };
-
-  return <ChatContainer config={config} />;
+  return <ChatContainer messaging={{ customSendMessage }} />;
 }
 ```
+
+#### Stable service desk factory
+
+Keep `serviceDeskFactory` identity stable to avoid unintended integration resets. When you must change it, be aware that any active or connecting human‑agent session will end and the integration will be reinitialized.
+
+Examples and deeper guidance are in CustomServiceDesks.md, including patterns using `useCallback` in React and stable class fields in web components/Lit.
 
 ### Accessing instance methods
 
@@ -200,7 +198,12 @@ function App() {
           Toggle Carbon AI Chat
         </button>
       )}
-      <ChatContainer config={chatOptions} onBeforeRender={onBeforeRender} />
+      <ChatContainer
+        debug
+        aiEnabled
+        // ...other flattened config props
+        onBeforeRender={onBeforeRender}
+      />
     </>
   );
 }
@@ -225,7 +228,14 @@ const chatOptions = {
 };
 
 function App() {
-  return <ChatContainer renderUserDefinedResponse={renderUserDefinedResponse} config={chatOptions} />;
+  return (
+    <ChatContainer
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
 }
 
 function someFunction() {}
@@ -300,7 +310,14 @@ function App() {
     [stateText], // Only update if stateText changes.
   );
 
-  return <ChatContainer renderUserDefinedResponse={renderUserDefinedResponse} config={chatOptions} />;
+  return (
+    <ChatContainer
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
 }
 ```
 
@@ -336,12 +353,7 @@ function App() {
     [modelsInUse],
   );
 
-  return (
-    <ChatContainer
-      renderWriteableElements={renderWriteableElements}
-      config={chatOptions}
-    />
-  );
+  return <ChatContainer renderWriteableElements={renderWriteableElements} />;
 }
 ```
 

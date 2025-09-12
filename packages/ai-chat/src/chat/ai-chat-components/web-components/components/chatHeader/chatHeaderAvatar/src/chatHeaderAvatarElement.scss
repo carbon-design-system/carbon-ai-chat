@@ -1,0 +1,16 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+.cds-aichat--chat-header-avatar {
+  display: block;
+  block-size: 20px;
+  max-block-size: 20px;
+}
+
+.cds-aichat--chat-header-avatar--round {
+  border-radius: 10px;
+}

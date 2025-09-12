@@ -8,12 +8,11 @@
  */
 
 import {
-  ButtonItemKind,
   ButtonItemType,
   ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
-
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 function doImage(instance: ChatInstance) {
   instance.messaging.addMessage({
     output: {
@@ -44,7 +43,7 @@ function doImage(instance: ChatInstance) {
         },
         {
           url: "https://v10.carbondesignsystem.com/",
-          kind: ButtonItemKind.LINK,
+          kind: "LINK",
           label: "Carbon Design System",
           target: "_blank",
           image_url:
@@ -73,7 +72,7 @@ function doImage(instance: ChatInstance) {
           text: "This is a **show_panel** button:",
         },
         {
-          kind: ButtonItemKind.SECONDARY,
+          kind: BUTTON_KIND.SECONDARY,
           panel: {
             body: [
               {
@@ -107,7 +106,7 @@ function doImage(instance: ChatInstance) {
           text: "This is a **custom_event** button:",
         },
         {
-          kind: ButtonItemKind.TERTIARY,
+          kind: BUTTON_KIND.TERTIARY,
           image_url:
             "https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg",
           button_type: ButtonItemType.CUSTOM_EVENT,

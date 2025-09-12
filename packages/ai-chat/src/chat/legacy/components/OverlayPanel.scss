@@ -1,0 +1,326 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+
+.cds-aichat--overlay-panel--disclaimer {
+  z-index: 99;
+}
+
+.cds-aichat--overlay-panel--custom {
+  z-index: 95;
+}
+
+.cds-aichat--overlay-panel--panel-response {
+  z-index: 94;
+}
+
+.cds-aichat--overlay-panel--show-panel {
+  z-index: 93;
+}
+
+.cds-aichat--overlay-panel--hydrating {
+  z-index: 90;
+}
+
+.cds-aichat--overlay-panel--catastrophic {
+  z-index: 80;
+}
+
+.cds-aichat--overlay-panel--home-screen {
+  z-index: 30;
+}
+
+.cds-aichat--overlay-panel--conversational-search-citation {
+  z-index: 6;
+}
+
+.cds-aichat--overlay-panel--iframe {
+  z-index: 5;
+}
+
+.cds-aichat--overlay-panel-container {
+  position: absolute;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+}
+
+.cds-aichat--overlay--covering.cds-aichat--overlay-panel-container--animating {
+  overflow: hidden;
+}
+
+.cds-aichat--widget--rounded
+  .cds-aichat--overlay--covering.cds-aichat--overlay-panel-container
+  .cds-aichat--header--content {
+  border-start-end-radius: layout.$spacing-03;
+  border-start-start-radius: layout.$spacing-03;
+}
+
+.cds-aichat--widget--rounded
+  .cds-aichat--wide-width
+  .cds-aichat--overlay--covering
+  .cds-aichat--header__left-buttons {
+  border-start-start-radius: layout.$spacing-03;
+}
+
+.cds-aichat--widget--rounded
+  .cds-aichat--wide-width
+  .cds-aichat--overlay--covering
+  .cds-aichat--header__right-buttons {
+  border-start-end-radius: layout.$spacing-03;
+}
+
+.cds-aichat--overlay-panel {
+  position: absolute;
+  display: block;
+  box-sizing: border-box;
+  border-radius: 0;
+  margin: 0;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+  min-block-size: 100%;
+  text-align: start;
+}
+
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--overlay-panel {
+  inset-inline: unset 0;
+  text-align: end;
+}
+
+.cds-aichat--overlay-panel--closed {
+  display: none;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--opening--fade-in {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--opening--fade-in {
+  animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
+    cds-chat-fade-in both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--opening--slide-in-from-left {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--opening--slide-in-from-left {
+  animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
+    cds-chat-slide-in-from-left both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--opening--slide-in-from-right {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--opening--slide-in-from-right {
+  animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
+    cds-chat-slide-in-from-right both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-left {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-left {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-left {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-left {
+    animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
+      cds-chat-slide-in-from-right both;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-right {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-right {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-right {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--opening--slide-in-from-right {
+    animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
+      cds-chat-slide-in-from-left both;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--opening--slide-in-from-bottom {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--opening--slide-in-from-bottom {
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+    cds-chat-slide-in-from-bottom both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--opening--branding-slide-in-from-bottom {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--opening--branding-slide-in-from-bottom {
+  animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
+    cds-chat-slide-in-from-bottom both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--closing--fade-out {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--closing--fade-out {
+  animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
+    cds-chat-fade-out both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--closing--slide-out-to-left {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--closing--slide-out-to-left {
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+    cds-chat-slide-out-to-left both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--closing--slide-out-to-right {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--closing--slide-out-to-right {
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+    cds-chat-slide-out-to-right both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--closing--slide-out-to-top {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--closing--slide-out-to-top {
+  animation: motion.$duration-slow-01 motion.motion(exit, expressive)
+    cds-chat-slide-out-to-top both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-left {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-left {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-left {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-left {
+    animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+      cds-chat-slide-out-to-right both;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-right {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-right {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-right {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--container--render[dir="rtl"]
+    .cds-aichat--overlay-panel--closing--slide-out-to-right {
+    animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+      cds-chat-slide-out-to-left both;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--closing--slide-out-to-bottom {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--closing--slide-out-to-bottom {
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+    cds-chat-slide-out-to-bottom both;
+}

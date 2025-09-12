@@ -1,0 +1,391 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
+@use "../../styles/chat-theme";
+
+.cds-aichat--hidden {
+  display: none;
+}
+
+.cds-aichat--widget__break-word {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+.cds-aichat--widget__text-ellipsis {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+.cds-aichat--container--render {
+  box-sizing: border-box;
+  block-size: 100%;
+  color: theme.$text-primary;
+  font-family: "IBM Plex Sans", "Helvetica Neue", arial, sans-serif;
+  inline-size: 100%;
+}
+
+.cds-aichat--container--render[dir="rtl"] {
+  direction: rtl;
+}
+
+.cds-aichat--container--render > div > div[role="log"] {
+  position: absolute;
+  overflow: hidden;
+  block-size: 1px;
+  inline-size: 1px;
+  inset-inline-start: -10000px;
+}
+
+.cds-aichat--widget__region-container {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--widget {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  box-shadow: chat-theme.$box-shadow;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  inline-size: 100%;
+  -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
+  text-rendering: optimizelegibility;
+
+  /* TODO: What to do with this? */
+  visibility: visible;
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--ai-theme .cds-aichat--widget {
+  border: solid 1px transparent;
+  background: linear-gradient(
+      to bottom,
+      theme.$ai-border-start,
+      theme.$ai-border-end
+    )
+    border-box;
+  /* TODO: For AI theme only?
+  These give us the 1px border on the outside that gets darker toward the top. */
+  box-shadow: chat-theme.$ai-box-shadow-outer;
+}
+
+.cds-aichat--frameless .cds-aichat--widget {
+  border: none;
+  box-shadow: none;
+}
+
+/* Generic widget animation container should come before more specific rounded variants */
+.cds-aichat--widget .cds-aichat--widget__animation-container {
+  position: relative;
+  z-index: 1;
+  /* Using height 100% causes anything under the animation container to go out of view by a couple of pixels, so we
+  should use flex instead. */
+  flex: 1;
+  background: theme.$chat-shell-background;
+  inline-size: 100%;
+}
+
+/* Generic bot container before rounded variants */
+.cds-aichat--bot-container {
+  position: absolute;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+
+/* Generic background cover before rounded variants */
+.cds-aichat--background-cover {
+  position: absolute;
+  z-index: 2;
+  animation: cds-chat-anim-background-cover motion.$duration-moderate-02
+    motion.motion(standard, productive);
+  background: theme.$overlay;
+  block-size: 100%;
+  inline-size: 100%;
+  opacity: 0.5;
+}
+
+/* These selectors apply a border radius to containers/elements that need to match the widget frame's border radius when
+
+rounded corners are enabled. */
+
+.cds-aichat--widget.cds-aichat--widget--rounded {
+  border-radius: chat-theme.$border-radius;
+  /* Rounded corners because .cds-aichat--widget doesn't have overflow: hidden to easily apply rounded corners at the top level.
+   We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI Chat widget with */
+
+  .cds-aichat--view-source-panel,
+  .cds-aichat--home-screen,
+  .cds-aichat--confirm-modal,
+  .cds-aichat--widget__animation-container,
+  .cds-aichat--bot-container,
+  .cds-aichat--overlay-panel,
+  .cds-aichat--hydrating-container,
+  .cds-aichat--background-cover {
+    border-end-end-radius: layout.$spacing-03;
+    border-end-start-radius: layout.$spacing-03;
+    border-start-end-radius: layout.$spacing-03;
+    border-start-start-radius: layout.$spacing-03;
+  }
+
+  /* For the top right and left corners when the widget is rounded. */
+  .cds-aichat--header {
+    border-start-end-radius: layout.$spacing-03;
+    border-start-start-radius: layout.$spacing-03;
+  }
+
+  /* For the bottom right and left corners when the widget is rounded. */
+  .cds-aichat--input-container {
+    border-end-end-radius: layout.$spacing-03;
+    border-end-start-radius: layout.$spacing-03;
+  }
+}
+
+/* Nested response types with cards should not have rounded corners since they fill the width of the container they're
+
+in. */
+
+.cds-aichat--grid,
+.cds-aichat--body-message-components__message-wrapper {
+  .cds-aichat--image,
+  .cds-aichat--media-player,
+  .cds-aichat--media-player__skeleton {
+    border-radius: 0;
+  }
+}
+
+.cds-aichat--widget.cds-aichat--widget--closed
+  .cds-aichat--widget__animation-container {
+  overflow: hidden;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element {
+    animation: none;
+  }
+}
+
+.cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element {
+  animation: cds-aichat-widget-in motion.$duration-moderate-02
+    motion.motion(entrance, expressive) both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
+    animation: none;
+  }
+}
+
+.cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
+  animation: cds-aichat-widget-out motion.$duration-fast-02
+    motion.motion(exit, expressive) both;
+}
+
+.cds-aichat--widget.cds-aichat--widget.cds-aichat--widget--closed,
+.cds-aichat--ai-theme
+  .cds-aichat--widget.cds-aichat--widget.cds-aichat--widget--closed {
+  border: none;
+  box-shadow: none;
+}
+
+/* MainWindow hides itself consistently in both default floating mode and custom element mode */
+.cds-aichat--widget.cds-aichat--widget--closed {
+  display: none;
+}
+
+/* The following four blocks are duplicates so make sure to keep them all up-to-date. */
+.cds-aichat--widget.cds-aichat--widget--default-element {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  block-size: chat-theme.$height;
+  inline-size: chat-theme.$width;
+  inset: chat-theme.$top-position chat-theme.$right-position
+    chat-theme.$bottom-position chat-theme.$left-position;
+  max-block-size: chat-theme.$max-height;
+  max-inline-size: chat-theme.$max-width;
+  min-block-size: chat-theme.$min-height;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--widget.cds-aichat--widget--default-element {
+  inset-inline: chat-theme.$right-position chat-theme.$left-position;
+}
+
+.cds-aichat---is-phone:not(.cds-aichat--container-disable-mobile-enhancements)
+  .cds-aichat--widget {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  block-size: chat-theme.$height;
+  inline-size: chat-theme.$width;
+  inset: chat-theme.$top-position chat-theme.$right-position
+    chat-theme.$bottom-position chat-theme.$left-position;
+  max-block-size: chat-theme.$max-height;
+  min-block-size: chat-theme.$min-height;
+}
+
+.cds-aichat---is-phone[dir="rtl"]:not(
+    .cds-aichat--container-disable-mobile-enhancements
+  )
+  .cds-aichat--widget {
+  inset-inline: chat-theme.$right-position chat-theme.$left-position;
+}
+
+.cds-aichat {
+  display: flex;
+  box-sizing: border-box;
+  flex: 1;
+  flex-direction: column;
+  align-content: stretch;
+  align-items: stretch;
+  border-radius: 0;
+  margin: 0;
+  background-color: theme.$chat-shell-background;
+  block-size: 100%;
+  color: theme.$text-primary;
+  inline-size: 100%;
+  text-align: start;
+}
+
+.cds-aichat--widget--rounded .cds-aichat {
+  border-radius: chat-theme.$border-radius;
+}
+
+.cds-aichat--ai-theme .cds-aichat {
+  background-image: chat-theme.$ai-background-image;
+  box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
+}
+
+.cds-aichat--frameless.cds-aichat--ai-theme .cds-aichat {
+  box-shadow: chat-theme.$ai-box-shadow-inner;
+}
+
+.cds-aichat.cds-aichat--human-agent-app {
+  min-inline-size: unset;
+}
+
+.cds-aichat--container--render[dir="rtl"] .cds-aichat {
+  text-align: end;
+}
+
+.cds-aichat--main-window,
+.cds-aichat--widget__layer {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--widget__focus-trap-glass {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  overflow: hidden;
+  background: theme.$overlay;
+  block-size: 100vh;
+  inline-size: 100vw;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  opacity: 0.5;
+}
+
+// Keyframes moved to ../../styles/_keyframes.scss
+svg.cds-aichat--icon__logout--reverse {
+  transform: scaleX(-1);
+}
+
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--icon__logout--reverse {
+  transform: none;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--background-cover {
+    position: absolute;
+    z-index: 2;
+    animation: none;
+    background: theme.$overlay;
+    block-size: 100%;
+    inline-size: 100%;
+    opacity: 0.5;
+  }
+}
+
+.cds-aichat--background-cover.cds-aichat--background-cover__non-header,
+.cds-aichat--widget.cds-aichat--widget--rounded
+  .cds-aichat--background-cover.cds-aichat--background-cover__non-header {
+  block-size: calc(100% - 40px);
+  border-start-end-radius: 0;
+  border-start-start-radius: 0;
+  inset-block-start: 40px;
+}
+
+.cds-aichat--scroll-focus:focus-visible::before {
+  /* This keeps this element stuck at the top so it doesn't scroll with the parent content. */
+  position: sticky;
+  z-index: 1;
+  display: block;
+  box-sizing: border-box;
+  border: solid 2px theme.$focus;
+  block-size: 100%;
+  content: "";
+  /* These stop this element from actually taking up space. */
+  float: inline-start;
+  inline-size: 100%;
+  inset-block-start: 0;
+  margin-block-start: -100%;
+  pointer-events: none;
+}
+
+.cds-aichat--container--render .cds-aichat--reverse-icon svg,  /* This class is simply for reversing icons not specifically for rtl purposes. */
+
+.cds-aichat--container--render[dir='rtl'] .cds-aichat--direction-has-reversible-svg svg {
+  transform: scaleX(-1);
+}
+
+/* This is to reverse a reversed icon in rtl. yeah */
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--direction-has-reversible-svg.cds-aichat--reverse-icon
+  svg {
+  transform: scaleX(1);
+}
+
+/* This class is is meant to wrap panel content that doesn't include the header. When panel content is given a max-width
+
+ elements with this class will be constrained. */
+
+.cds-aichat--panel-content {
+  overflow: hidden;
+}
+
+.cds-aichat--widget--max-width {
+  --cds-aichat-border-radius: 0;
+
+  .cds-aichat--panel-content {
+    flex: 1;
+    margin: auto;
+    inline-size: 100%;
+    max-inline-size: chat-theme.$max-width;
+  }
+}
+
+/* These selectors apply a border radius to panel content. */
+.cds-aichat--widget--rounded {
+  .cds-aichat--body-and-footer-component {
+    border-end-end-radius: chat-theme.$border-radius;
+    border-end-start-radius: chat-theme.$border-radius;
+    border-start-end-radius: chat-theme.$border-radius;
+    border-start-start-radius: chat-theme.$border-radius;
+  }
+}

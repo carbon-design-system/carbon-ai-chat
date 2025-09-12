@@ -1,0 +1,27 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+.cds-aichat--body-and-footer-component {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+.cds-aichat--body-and-footer-component .cds-aichat--body-message-components {
+  overflow: auto;
+  flex: 1;
+}
+
+.cds-aichat--body-and-footer-component .cds-aichat--panel-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: theme.$chat-shell-background;
+}

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { timestampToTimeString } from "../../../src/chat/shared/utils/timeUtils";
+import { timestampToTimeString } from "../../../src/chat/utils/timeUtils";
 
 // Mock dayjs to have consistent test results
 jest.mock("dayjs", () => {

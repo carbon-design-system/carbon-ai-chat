@@ -15,7 +15,7 @@ import {
   isImageNode,
   isEnterKey,
   getScrollBottom,
-} from "../../../src/chat/shared/utils/domUtils";
+} from "../../../src/chat/utils/domUtils";
 
 // Mock DOM environment
 const createMockNode = (nodeType: number, tagName?: string) => ({

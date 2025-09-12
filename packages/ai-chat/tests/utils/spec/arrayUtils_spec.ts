@@ -7,13 +7,13 @@
  *  @license
  */
 
+import { findLast } from "lodash-es";
 import {
   asArray,
   asyncForEach,
-  findLast,
   findLastWithMap,
   arrayLastValue,
-} from "../../../src/chat/shared/utils/lang/arrayUtils";
+} from "../../../src/chat/utils/lang/arrayUtils";
 
 describe("arrayUtils", () => {
   describe("asArray", () => {
