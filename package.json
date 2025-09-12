@@ -154,17 +154,36 @@
       "stylelint-config-carbon"
     ],
     "rules": {
-      "max-nesting-depth": null,
-      "declaration-property-unit-allowed-list": null,
-      "no-descending-specificity": [
-        true,
-        { "severity": "warning" }
-      ],
+      "max-nesting-depth": 4,
       "a11y/media-prefers-reduced-motion": [
         true,
         {
           "severity": "warning",
           "disableFix": true
+        }
+      ],
+      "keyframes-name-pattern": [
+        "^[a-z][a-z0-9\\-]+$",
+        {
+          "message": "Keyframe names should be kebab-case",
+          "severity": "warning"
+        }
+      ],
+      "declaration-property-unit-allowed-list": [
+        {
+          "font-size": [
+            "em",
+            "rem",
+            "px"
+          ],
+          "line-height": [
+            "unitless",
+            "em",
+            "rem"
+          ]
+        },
+        {
+          "severity": "warning"
         }
       ],
       "selector-type-no-unknown": [
@@ -173,7 +192,12 @@
           "severity": "warning"
         }
       ],
-      
+      "no-descending-specificity": [
+        true,
+        {
+          "severity": "warning"
+        }
+      ],
       "selector-pseudo-class-no-unknown": [
         true,
         {
