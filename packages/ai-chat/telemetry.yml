@@ -4,6 +4,76 @@ version: 1
 projectId: ef967584-5788-47d4-b9c2-a60da7ad901d
 endpoint: https://www-api.ibm.com/ibm-telemetry/v1/metrics
 collect:
+  wc:
+    elements:
+      allowedAttributeNames:
+        # General
+        - config
+        - element
+        - onAfterRender
+        - onBeforeRender
+        # cds-aichat-chain-of-thought
+        - explainability-text
+        - input-label-text
+        - open
+        - output-label-text
+        - status-failed-label-text
+        - status-processing-label-text
+        - status-succeeded-label-text
+        - steps
+        - tool-label-text
+        # cds-aichat-chat-header-avatar
+        - alt
+        - corners
+        - onError
+        - url
+        # cds-aichat-feedback
+        - cancel-label
+        - categories
+        - class
+        - disclaimer
+        - id
+        - initial-values
+        - is-open
+        - is-readonly
+        - on-close
+        - on-submit
+        - prompt
+        - show-prompt
+        - show-text-area
+        - submit-label
+        - text-area-placeholder
+        - title
+        # cds-aichat-feedback-buttons
+        - has-negative-details
+        - has-positive-details
+        - is-negative-disabled
+        - is-negative-open
+        - is-negative-selected
+        - is-positive-disabled
+        - is-positive-open
+        - is-positive-selected
+        - negative-label
+        - on-click
+        - panel-id
+        - positive-label
+        # cds-aichat-stop-streaming-button
+        - disabled
+        - label
+        - onClick
+        - tooltip-alignment
+        # cds-aichat-tag-list
+        - initial-selected-tags
+        - multi-select
+        - on-tags-changed
+        - tags
+      allowedAttributeStringValues:
+        # General - boolean attributes
+        - "true"
+        - "false"
+        # cds-aichat-chat-header-avatar - corners
+        - round
+        - square
   npm:
     dependencies: null
   js:
