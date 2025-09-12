@@ -672,11 +672,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const {
       serviceManager,
       config,
-      languagePack,
       requestInputFocus,
       persistedToBrowserStorage,
       config: {
         public: { assistantName },
+        derived: { languagePack },
       },
       messageState,
       carbonTheme,
@@ -685,12 +685,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const inputState = selectInputState(this.props);
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { isLoadingCounter } = messageState;
-    const { chatState } = persistedToBrowserStorage;
-    const { disclaimersAccepted } = chatState;
+    const { disclaimersAccepted } = persistedToBrowserStorage;
 
     // If there is a disclaimer, messages should only be rendered once it's accepted.
     if (
-      config.public.disclaimer?.is_on &&
+      config.public.disclaimer?.isOn &&
       !disclaimersAccepted[window.location.hostname]
     ) {
       return null;
@@ -829,7 +828,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param atTop Indicates if we're rendering the scroll handle at the top or bottom of the scroll panel.
    */
   private renderScrollHandle(atTop: boolean) {
-    const { languagePack } = this.props;
+    const { languagePack } = this.props.config.derived;
 
     let labelKey: keyof LanguagePack;
     if (IS_MOBILE) {
@@ -954,7 +953,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       assistantName,
       serviceManager,
       notifications,
-      languagePack,
+      config: {
+        derived: { languagePack },
+      },
     } = this.props;
     const { isLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);

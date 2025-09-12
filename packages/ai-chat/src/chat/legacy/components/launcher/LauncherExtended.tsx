@@ -149,7 +149,7 @@ function LauncherExtended(
   const launcherAvatarURL = useSelector((state: AppState) =>
     state.config.derived.themeWithDefaults.aiEnabled
       ? undefined
-      : state.launcher.config.mobile.avatar_url_override,
+      : state.config.derived.launcher.mobile.avatarUrlOverride,
   );
   const [animateExtendedState, setAnimateExtendedState] =
     useState(playExtendAnimation);

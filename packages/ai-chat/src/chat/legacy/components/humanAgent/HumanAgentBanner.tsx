@@ -52,8 +52,7 @@ function HumanAgentBanner(
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
   const persistedHumanAgentState = useSelector(
-    (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.humanAgentState,
+    (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
   );
   const humanAgentState = useSelector(
     (state: AppState) => state.humanAgentState,

@@ -13,9 +13,19 @@ import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { carbonElement } from "../../chat/ai-chat-components/web-components/decorators/customElement";
-import { PublicConfig, OnErrorData } from "../../types/config/PublicConfig";
+import {
+  PublicConfig,
+  OnErrorData,
+  DisclaimerPublicConfig,
+  CarbonTheme,
+  HeaderConfig,
+  LayoutConfig,
+  PublicConfigMessaging,
+  LanguagePack,
+} from "../../types/config/PublicConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
+import { LauncherConfig } from "../../types/config/LauncherConfig";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -75,15 +85,13 @@ class ChatCustomElement extends LitElement {
 
   // Flattened PublicConfig properties
   @property({ attribute: false })
-  onError?: (
-    data: import("../../types/config/PublicConfig").OnErrorData,
-  ) => void;
+  onError?: (data: OnErrorData) => void;
 
   @property({ type: Boolean, attribute: "open-chat-by-default" })
   openChatByDefault?: boolean;
 
   @property({ type: Object })
-  disclaimer?: import("../../types/config/PublicConfig").DisclaimerPublicConfig;
+  disclaimer?: DisclaimerPublicConfig;
 
   @property({
     type: Boolean,
@@ -98,7 +106,7 @@ class ChatCustomElement extends LitElement {
   exposeServiceManagerForTesting?: boolean;
 
   @property({ type: String, attribute: "inject-carbon-theme" })
-  injectCarbonTheme?: import("../../types/config/PublicConfig").CarbonTheme;
+  injectCarbonTheme?: CarbonTheme;
 
   @property({
     attribute: "ai-enabled",
@@ -134,13 +142,13 @@ class ChatCustomElement extends LitElement {
   shouldSanitizeHTML?: boolean;
 
   @property({ type: Object })
-  header?: import("../../types/config/PublicConfig").HeaderConfig;
+  header?: HeaderConfig;
 
   @property({ type: Object })
-  layout?: import("../../types/config/PublicConfig").LayoutConfig;
+  layout?: LayoutConfig;
 
   @property({ type: Object })
-  messaging?: import("../../types/config/PublicConfig").PublicConfigMessaging;
+  messaging?: PublicConfigMessaging;
 
   @property({ type: Boolean, attribute: "is-readonly" })
   isReadonly?: boolean;
@@ -152,10 +160,10 @@ class ChatCustomElement extends LitElement {
   locale?: string;
 
   @property({ type: Object })
-  homescreen?: import("../../types/config/HomeScreenConfig").HomeScreenConfig;
+  homescreen?: HomeScreenConfig;
 
   @property({ type: Object })
-  launcher?: import("../../types/config/LauncherConfig").LauncherConfig;
+  launcher?: LauncherConfig;
 
   /** A factory for the {@link ServiceDesk} integration. */
   @property({ attribute: false })

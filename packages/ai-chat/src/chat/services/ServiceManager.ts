@@ -15,8 +15,8 @@ import { MainWindowFunctions } from "../legacy/containers/main/MainWindowFunctio
 import { ChatActionsImpl } from "../events/ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
-import { CustomPanelManager } from "./CustomPanelManager";
 import { HumanAgentService } from "./haa/HumanAgentService";
+import { CustomPanelManager } from "./CustomPanelManager";
 import { HistoryService } from "./HistoryService";
 import MessageService from "./MessageService";
 import { NamespaceService } from "./NamespaceService";

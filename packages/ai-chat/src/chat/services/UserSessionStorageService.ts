@@ -13,10 +13,7 @@
  */
 
 import { VERSION } from "../utils/environmentVariables";
-import {
-  PersistedChatState,
-  PersistedLauncherState,
-} from "../../types/state/AppState";
+import { PersistedState } from "../../types/state/AppState";
 import { IS_SESSION_STORAGE } from "../utils/browserUtils";
 import { consoleError } from "../utils/miscUtils";
 import mockStorage from "./mockStorage";
@@ -41,46 +38,24 @@ class UserSessionStorageService {
   /**
    * Get the session object.
    */
-  loadChatSession(): Partial<PersistedChatState> | null {
+  loadSession(): PersistedState | null {
     try {
-      const chatSessionString = storage.getItem(this.getChatSessionKey());
-      const chatSession = chatSessionString
-        ? JSON.parse(chatSessionString)
+      const sessionString = storage.getItem(this.getSessionKey());
+      const session: PersistedState = sessionString
+        ? JSON.parse(sessionString)
         : null;
       // If the saved session is from a previous version of Carbon AI Chat, we just throw it away to avoid having to deal with
       // having to make sure these sessions are backwards compatible.
-      if (chatSession?.version === VERSION) {
-        return chatSession;
+      if (session?.version === VERSION) {
+        session.wasLoadedFromBrowser = true;
+        session.desktopLauncherIsExpanded = false;
+        session.mobileLauncherIsExtended = false;
+        return session;
       }
-      this.clearChatSession();
+      this.clearSession();
       return null;
     } catch (error) {
-      this.clearChatSession();
-      return null;
-    }
-  }
-
-  /**
-   * Get the session object.
-   */
-  loadLauncherSession(): PersistedLauncherState | null {
-    try {
-      const launcherSessionString = storage.getItem(
-        this.getLauncherSessionKey(),
-      );
-      const launcherSession: PersistedLauncherState = launcherSessionString
-        ? JSON.parse(launcherSessionString)
-        : null;
-      // If the saved session is from a previous version of Carbon AI Chat, we just throw it away to avoid having to deal with
-      // having to make sure these sessions are backwards compatible.
-      if (launcherSession?.version === VERSION) {
-        launcherSession.wasLoadedFromBrowser = true;
-        return launcherSession;
-      }
-      this.clearLauncherSession();
-      return null;
-    } catch (error) {
-      this.clearLauncherSession();
+      this.clearSession();
       return null;
     }
   }
@@ -88,58 +63,29 @@ class UserSessionStorageService {
   /**
    * Set a new version of the user based session.
    */
-  persistChatSession(session: Partial<PersistedChatState>) {
+  persistSession(session: PersistedState) {
     try {
-      storage.setItem(this.getChatSessionKey(), JSON.stringify(session));
+      storage.setItem(this.getSessionKey(), JSON.stringify(session));
     } catch (error) {
-      consoleError("Error in persistChatSession", error);
-    }
-  }
-
-  /**
-   * Set a new version of the user based session.
-   */
-  persistLauncherSession(session: PersistedLauncherState) {
-    try {
-      storage.setItem(this.getLauncherSessionKey(), JSON.stringify(session));
-    } catch (error) {
-      consoleError("Error in persistLauncherSession", error);
+      consoleError("Error in persistSession", error);
     }
   }
 
   /**
    * Remove the given session from storage.
    */
-  clearChatSession() {
+  clearSession() {
     try {
-      storage.removeItem(this.getChatSessionKey());
+      storage.removeItem(this.getSessionKey());
     } catch (error) {
-      consoleError("Error in clearChatSession", error);
-    }
-  }
-
-  /**
-   * Remove the given session from storage.
-   */
-  clearLauncherSession() {
-    try {
-      storage.removeItem(this.getLauncherSessionKey());
-    } catch (error) {
-      consoleError("Error in clearLauncherSession", error);
+      consoleError("Error in clearSession", error);
     }
   }
 
   /**
    * Returns the sessionStorage key for the session id for the given user.
    */
-  getChatSessionKey() {
-    return this.prefix;
-  }
-
-  /**
-   * Returns the sessionStorage key for the session id for the given user.
-   */
-  getLauncherSessionKey() {
+  getSessionKey() {
     return this.prefix;
   }
 }

@@ -32,13 +32,12 @@ export default function AppRegion({
   const languageKey = namespace
     ? "window_ariaChatRegionNamespace"
     : "window_ariaChatRegion";
-  const regionLabel = intl.formatMessage(
-    { id: languageKey as any },
-    { namespace },
-  );
+  const regionLabel = intl.formatMessage({ id: languageKey }, { namespace });
 
   const showLauncher = useSelector(
-    (state: AppState) => state.launcher.config.is_on,
+    (state: AppState) =>
+      state.config.derived.launcher.isOn &&
+      state.persistedToBrowserStorage.viewState.launcher,
   );
   const mainWindowRef = useRef<MainWindowFunctions>();
 
@@ -46,7 +45,7 @@ export default function AppRegion({
     function requestFocus() {
       try {
         const { persistedToBrowserStorage } = serviceManager.store.getState();
-        const { viewState } = persistedToBrowserStorage.launcherState;
+        const { viewState } = persistedToBrowserStorage;
         if (viewState.mainWindow) {
           mainWindowRef.current?.requestFocus();
         }

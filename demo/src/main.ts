@@ -27,10 +27,7 @@ import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { Settings } from "./framework/types";
-import {
-  getSettings,
-  updateQueryParamsWithoutRefresh,
-} from "./framework/utils";
+import { getSettings } from "./framework/utils";
 
 const { defaultConfig, defaultSettings } = getSettings();
 
@@ -41,66 +38,6 @@ export class Demo extends LitElement {
 
   @state()
   accessor config: PublicConfig = defaultConfig;
-
-  firstUpdated() {
-    this.addEventListener("config-changed", this._onConfigChanged);
-    this.addEventListener("settings-changed", this._onSettingsChanged);
-  }
-
-  private _onSettingsChanged(event: Event) {
-    const customEvent = event as CustomEvent;
-    const settings = customEvent.detail;
-    this.settings = settings;
-
-    // Create a copy for serialization without customSendMessage
-    const configForSerialization: PublicConfig = {
-      ...this.config,
-      messaging: this.config.messaging
-        ? {
-            ...this.config.messaging,
-            customSendMessage: undefined,
-          }
-        : undefined,
-    };
-
-    updateQueryParamsWithoutRefresh([
-      { key: "settings", value: JSON.stringify(settings) },
-      { key: "config", value: JSON.stringify(configForSerialization) },
-    ]);
-  }
-
-  private _onConfigChanged(event: Event) {
-    const customEvent = event as CustomEvent;
-    const settings = { ...this.settings };
-    const newConfig: PublicConfig = customEvent.detail;
-
-    // Preserve the customSendMessage function from the existing config
-    const config: PublicConfig = {
-      ...newConfig,
-      messaging: {
-        ...newConfig.messaging,
-        customSendMessage: this.config.messaging?.customSendMessage,
-      },
-    };
-
-    this.config = config;
-
-    // Create a copy for serialization without customSendMessage
-    const configForSerialization: PublicConfig = {
-      ...config,
-      messaging: config.messaging
-        ? {
-            ...config.messaging,
-            customSendMessage: undefined,
-          }
-        : undefined,
-    };
-
-    updateQueryParamsWithoutRefresh([
-      { key: "settings", value: JSON.stringify(settings) },
-      { key: "config", value: JSON.stringify(configForSerialization) },
-    ]);
-  }
 
   render() {
     return html`<slot name="demo-header"></slot>

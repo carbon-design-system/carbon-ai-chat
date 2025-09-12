@@ -27,11 +27,11 @@ export class DemoHomeScreenSwitcher extends LitElement {
     switch (selectedValue) {
       case "default":
         homescreen = {
-          is_on: true,
-          disable_return: false,
+          isOn: true,
+          disableReturn: false,
           greeting: "Hello!\n\nThis is some text to introduce your chat.",
           starters: {
-            is_on: true,
+            isOn: true,
             buttons: [
               { label: "text (stream)" },
               { label: "code (stream)" },
@@ -43,12 +43,12 @@ export class DemoHomeScreenSwitcher extends LitElement {
         break;
       case "splash":
         homescreen = {
-          is_on: true,
-          disable_return: true,
+          isOn: true,
+          disableReturn: true,
           greeting:
             "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
           starters: {
-            is_on: true,
+            isOn: true,
             buttons: [
               { label: "text (stream)" },
               { label: "code (stream)" },
@@ -60,14 +60,16 @@ export class DemoHomeScreenSwitcher extends LitElement {
         break;
       case "custom":
         homescreen = {
-          is_on: true,
-          disable_return: false,
-          custom_content_only: true,
+          isOn: true,
+          disableReturn: false,
+          customContentOnly: true,
         };
         break;
       case "none":
       default:
-        homescreen = undefined;
+        homescreen = {
+          isOn: false,
+        };
         break;
     }
 
@@ -85,13 +87,13 @@ export class DemoHomeScreenSwitcher extends LitElement {
   };
 
   private getCurrentHomescreenValue(): string {
-    if (!this.config?.homescreen?.is_on) {
+    if (!this.config?.homescreen?.isOn) {
       return "none";
     }
-    if (this.config.homescreen.custom_content_only) {
+    if (this.config.homescreen.customContentOnly) {
       return "custom";
     }
-    if (this.config.homescreen.disable_return) {
+    if (this.config.homescreen.disableReturn) {
       return "splash";
     }
     return "default";
@@ -101,7 +103,6 @@ export class DemoHomeScreenSwitcher extends LitElement {
     return html`<cds-dropdown
       value="${this.getCurrentHomescreenValue()}"
       title-text="Homescreen"
-      helper-text="If you have already sent messages, refresh the page to ensure seeing the initial homescreen state."
       @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="none">None</cds-dropdown-item>

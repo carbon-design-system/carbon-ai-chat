@@ -28,7 +28,6 @@ import {
   LauncherExtended,
   LauncherExtendedFunctions,
 } from "./LauncherExtended";
-import { LauncherType } from "../../../../types/config/LauncherConfig";
 
 interface LauncherMobileContainerProps {
   onToggleOpen: () => void;
@@ -47,7 +46,7 @@ interface LauncherMobileContainerProps {
 function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const { launcherRef, onToggleOpen, launcherHidden } = props;
   const serviceManager = useServiceManager();
-  const { config: launcher } = useSelector((state: AppState) => state.launcher);
+  const { launcher } = useSelector((state: AppState) => state.config.derived);
   const unreadHumanAgentCount = useSelector(
     (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
@@ -58,9 +57,7 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
     bounceTurn,
     showUnreadIndicator,
     viewState,
-  } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState,
-  );
+  } = useSelector((state: AppState) => state.persistedToBrowserStorage);
 
   const [isStartingBounceAnimation, setIsStartingBounceAnimation] =
     useState(false);
@@ -78,8 +75,8 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
     previouslyPlayedExtendAnimation && !disableBounce,
   );
 
-  const { time_to_expand, new_expand_time, time_to_reduce } = launcher.mobile;
-  const isExpandedLauncherEnabled = launcher.mobile.is_on;
+  const { timeToExpand } = launcher.mobile;
+  const isExpandedLauncherEnabled = launcher.mobile.isOn;
 
   // If the launcher container mounted with the mobile launcher not in the extended state, and it's previous value is
   // undefined, this means the launcher should be in the extended state playing the extended animation if not in the
@@ -129,8 +126,8 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
           actions.setLauncherProperty("mobileLauncherIsExtended", true),
         );
       }
-    }, time_to_expand);
-  }, [isExtended, isExtending, serviceManager.store, time_to_expand]);
+    }, timeToExpand);
+  }, [isExtended, isExtending, serviceManager.store, timeToExpand]);
 
   // Clear the expand and bounce timers and set the launcher state to reduced and bounce disabled. This way if the page
   // is reloaded the launcher will behave as if it has already been opened and won't try and show a greeting.
@@ -223,40 +220,6 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
     }
   }, [viewState, setDefaultLauncherState]);
 
-  // If the launcher time_to_expand changes then we need to clear the existing timers and start new ones with the new time.
-  useEffect(() => {
-    if (new_expand_time) {
-      // If the launcher was supposed to bounce make sure it doesn't.
-      if (shouldBounceRef.current) {
-        shouldBounceRef.current = false;
-      }
-      // If there was an existing bounce timer going then clear the timeout so the bounce animation doesn't show.
-      const endBounceAnimation = endBounceAnimationRef.current;
-      if (endBounceAnimation) {
-        endBounceAnimation();
-        endBounceAnimationRef.current = null;
-      }
-      // If there was an existing "extend" timer going then clear the timeout so the original extend doesn't occur.
-      if (extendLauncherTimeoutIDRef.current) {
-        clearTimeout(extendLauncherTimeoutIDRef.current);
-      }
-      // Set the "expand" timers again with the new timeout that's been provided.
-      setExpandAnimationTimeout();
-      serviceManager.store.dispatch(
-        actions.setLauncherConfigProperty(
-          "new_expand_time",
-          false,
-          LauncherType.MOBILE,
-        ),
-      );
-    }
-  }, [
-    setExpandAnimationTimeout,
-    new_expand_time,
-    serviceManager.store,
-    shouldBounceRef,
-  ]);
-
   function clearTimeouts() {
     const extendLauncherTimeoutID = extendLauncherTimeoutIDRef.current;
     const reduceLauncherTimeoutID = reduceLauncherTimeoutIDRef.current;
@@ -282,20 +245,6 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   const handleSwipeRight = useCallback(() => {
     reduceLauncher();
   }, [reduceLauncher]);
-
-  // When the launcher extends and a proper reduce timeout is set, we should kick off the timeout that will reduce the
-  // launcher.
-  useEffect(() => {
-    if (isExtended) {
-      // Begin timeout to reduce extended launcher.
-      reduceLauncherTimeoutIDRef.current = setTimeout(() => {
-        reduceLauncher();
-      }, time_to_reduce);
-
-      // Detect the user scrolling the page to begin reducing the launcher.
-      document.addEventListener("scroll", reduceLauncher);
-    }
-  }, [isExtended, reduceLauncher, time_to_reduce, serviceManager]);
 
   return (
     <LauncherExtended

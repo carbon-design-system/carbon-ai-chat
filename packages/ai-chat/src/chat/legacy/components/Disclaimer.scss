@@ -97,13 +97,6 @@
       border-end-start-radius: chat-theme.$border-radius;
     }
   }
-
-  .cds-aichat--widget__animation-container--with-branding-banner
-    .cds-aichat--disclaimer__buttons
-    cds-button.cds-aichat--disclaimer__accept-button {
-    border-end-end-radius: 0;
-    border-end-start-radius: 0;
-  }
 }
 
 .cds-aichat--widget--max-width.cds-aichat--wide-width {

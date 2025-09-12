@@ -49,7 +49,9 @@ export default function AppShell({
   hostElement,
   styles,
 }: AppShellProps) {
-  const languagePack = useSelector((state: AppState) => state.languagePack);
+  const languagePack = useSelector(
+    (state: AppState) => state.config.derived.languagePack,
+  );
   const cssVariableOverrides = useSelector(
     (state: AppState) => state.config.derived.cssVariableOverrides,
   );
@@ -57,7 +59,7 @@ export default function AppShell({
     (state: AppState) => state.config.derived.themeWithDefaults,
   );
   const config = useSelector((state: AppState) => state.config);
-  const layout = useSelector((state: AppState) => state.layout);
+  const layout = useSelector((state: AppState) => state.config.derived.layout);
 
   const containerRef = useRef<HTMLDivElement>(null);
 

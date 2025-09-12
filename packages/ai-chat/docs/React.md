@@ -42,7 +42,7 @@ function App() {
       debug={true}
       aiEnabled={true}
       header={{ title: "My Assistant" }}
-      launcher={{ is_on: true }}
+      launcher={{ isOn: true }}
       // ... other config properties as individual props
     />
   );
@@ -80,7 +80,7 @@ function App() {
       debug={true}
       aiEnabled={true}
       header={{ title: "My Assistant" }}
-      launcher={{ is_on: true }}
+      launcher={{ isOn: true }}
       // ... other config properties as individual props
     />
   );

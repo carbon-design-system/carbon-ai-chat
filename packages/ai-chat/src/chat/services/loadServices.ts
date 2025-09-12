@@ -9,8 +9,8 @@
 
 import { ChatActionsImpl } from "../events/ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
-import { createCustomPanelManager } from "./CustomPanelManager";
 import { HistoryService } from "./HistoryService";
+import { createCustomPanelManager } from "./CustomPanelManager";
 import MessageService from "./MessageService";
 import { NamespaceService } from "./NamespaceService";
 import { ServiceManager } from "./ServiceManager";
@@ -80,7 +80,7 @@ function createServiceManager(appConfig: AppConfig) {
   setIntl(
     serviceManager,
     serviceManager.store.getState().config.public.locale || "en",
-    serviceManager.store.getState().languagePack,
+    serviceManager.store.getState().config.derived.languagePack,
   );
 
   // Create all custom elements for Deb.

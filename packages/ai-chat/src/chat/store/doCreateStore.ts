@@ -19,7 +19,6 @@ import { PublicConfig } from "../../types/config/PublicConfig";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import {
-  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
@@ -29,6 +28,7 @@ import {
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
+  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_THEME_STATE,
   VIEW_STATE_ALL_CLOSED,
   VIEW_STATE_LAUNCHER_OPEN,
@@ -53,7 +53,7 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
 
   // Compute CSS variable overrides from theme configuration
   const cssVariableOverrides = mergeCSSVariables(
-    (publicConfig.layout?.["custom-properties"] as any) || {},
+    publicConfig.layout?.customProperties || {},
     {},
     themeWithDefaults.derivedCarbonTheme,
     themeWithDefaults.aiEnabled,
@@ -64,6 +64,26 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
     derived: {
       cssVariableOverrides,
       themeWithDefaults,
+      languagePack: {
+        ...enLanguagePack,
+        ...publicConfig.strings,
+      },
+      layout: {
+        ...DEFAULT_LAYOUT_STATE,
+        ...publicConfig.layout,
+      },
+      launcher: {
+        ...DEFAULT_LAUNCHER,
+        ...publicConfig.launcher,
+        desktop: {
+          ...DEFAULT_LAUNCHER.desktop,
+          ...publicConfig.launcher?.desktop,
+        },
+        mobile: {
+          ...DEFAULT_LAUNCHER.mobile,
+          ...publicConfig.launcher?.mobile,
+        },
+      },
     },
   };
 }
@@ -89,19 +109,12 @@ function doCreateStore(
     isBrowserPageVisible: true,
 
     // Input state
-    botInputState: {
-      ...DEFAULT_INPUT_STATE(),
-      isReadonly: config.public.isReadonly || false,
-    },
-
-    // Agent state
-    humanAgentState: { ...DEFAULT_HUMAN_AGENT_STATE },
+    botInputState: DEFAULT_INPUT_STATE,
 
     // Layout/responsive state
     chatWidthBreakpoint: null,
     chatWidth: null,
     chatHeight: null,
-    layout: getLayoutState(publicConfig),
 
     // Lifecycle state
     isHydrated: false,
@@ -115,31 +128,11 @@ function doCreateStore(
         ? VIEW_STATE_MAIN_WINDOW_OPEN
         : VIEW_STATE_LAUNCHER_OPEN,
 
-    // Language state
-    languagePack: enLanguagePack,
-
     // Session state
-    persistedToBrowserStorage: {
-      ...DEFAULT_PERSISTED_TO_BROWSER,
-      chatState: {
-        ...DEFAULT_PERSISTED_TO_BROWSER.chatState,
-        homeScreenState: {
-          ...DEFAULT_PERSISTED_TO_BROWSER.chatState.homeScreenState,
-        },
-      },
-    },
+    persistedToBrowserStorage: DEFAULT_PERSISTED_TO_BROWSER,
 
-    // Launcher state
-    launcher: merge({}, DEFAULT_LAUNCHER, {
-      config: merge(
-        {},
-        {},
-        {
-          mobile: {},
-        },
-        config.public.launcher || {},
-      ),
-    }),
+    // Agent UI State (volatile)
+    humanAgentState: DEFAULT_HUMAN_AGENT_STATE,
 
     // Panel states
     iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
@@ -149,22 +142,33 @@ function doCreateStore(
   };
 
   // Go pre-fill the launcher state from session storage if it exists.
-  const sessionStorageLauncherState =
-    serviceManager.userSessionStorageService?.loadLauncherSession();
+  const sessionStorageState =
+    serviceManager.userSessionStorageService?.loadSession();
 
-  if (sessionStorageLauncherState) {
+  if (sessionStorageState) {
     // Use the viewState from session storage as the targetViewState. Note, this overwrites the value that was set for
     // targetViewState above, which took into account if openChatByDefault is true. This overwriting is intentional
     // since we only want those openChatByDefault to open the main window the first time the chat loads for a user.
     // After doCreateStore is finished Chat.startInternal() will try to change the view to this
     // targetViewState.
-    initialState.targetViewState = sessionStorageLauncherState.viewState;
+    initialState.targetViewState = sessionStorageState.viewState;
     // In order to keep the initial view state as the default view state we need to change the session storage
     // view state to the default before replacing the launcher state with the session storage state.
-    sessionStorageLauncherState.viewState = VIEW_STATE_ALL_CLOSED;
+    sessionStorageState.viewState = VIEW_STATE_ALL_CLOSED;
     // Replace the launcher state with the session storage state.
-    initialState.persistedToBrowserStorage.launcherState =
-      sessionStorageLauncherState;
+    initialState.persistedToBrowserStorage = sessionStorageState;
+    // Initialize volatile state from defaults but mirror persisted flags
+    initialState.humanAgentState = {
+      ...DEFAULT_HUMAN_AGENT_STATE,
+      isConnected: sessionStorageState.humanAgentState?.isConnected ?? false,
+      isSuspended: sessionStorageState.humanAgentState?.isSuspended ?? false,
+      responseUserProfile:
+        sessionStorageState.humanAgentState?.responseUserProfile ?? null,
+      responseUserProfiles:
+        sessionStorageState.humanAgentState?.responseUserProfiles ?? {},
+      serviceDeskState:
+        sessionStorageState.humanAgentState?.serviceDeskState ?? undefined,
+    };
   }
 
   const enhancer =
@@ -176,7 +180,7 @@ function doCreateStore(
         })
       : undefined;
 
-  return createStore(reducerFunction, initialState as any, enhancer);
+  return createStore(reducerFunction, initialState, enhancer);
 }
 
 /**

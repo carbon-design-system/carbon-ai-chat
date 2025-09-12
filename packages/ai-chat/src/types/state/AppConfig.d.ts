@@ -7,9 +7,14 @@
  *  @license
  */
 
-import { PublicConfig } from "../config/PublicConfig";
+import {
+  LanguagePack,
+  LayoutConfig,
+  PublicConfig,
+} from "../config/PublicConfig";
 import { ThemeState } from "./AppState";
 import ObjectMap from "../utilities/ObjectMap";
+import { LauncherConfig } from "../config/LauncherConfig";
 
 /**
  * This contains the top level interface that defines the configuration options for the application.
@@ -36,6 +41,21 @@ interface AppConfig {
      * Complete theme state with defaults applied and corners computed based on layout/device.
      */
     themeWithDefaults: ThemeState;
+
+    /**
+     * Passed strings merged with defaults.
+     */
+    languagePack: LanguagePack;
+
+    /**
+     * Passed layout merged with defaults.
+     */
+    layout: LayoutConfig;
+
+    /**
+     * Passed launcher config merged with defaults.
+     */
+    launcher: LauncherConfig;
   };
 }
 

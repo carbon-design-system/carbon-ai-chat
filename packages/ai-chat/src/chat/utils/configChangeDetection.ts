@@ -110,7 +110,6 @@ export function detectConfigChanges(
     previousConfig.homescreen,
     newConfig.homescreen,
   );
-
   const lightweightUIChanged =
     !isEqual(previousConfig.launcher, newConfig.launcher) ||
     previousConfig.openChatByDefault !== newConfig.openChatByDefault ||
@@ -122,7 +121,6 @@ export function detectConfigChanges(
     previousConfig.assistantName !== newConfig.assistantName ||
     previousConfig.isReadonly !== newConfig.isReadonly ||
     previousConfig.locale !== newConfig.locale ||
-    !isEqual(previousConfig.homescreen, newConfig.homescreen) ||
     previousConfig.disableCustomElementMobileEnhancements !==
       newConfig.disableCustomElementMobileEnhancements;
 
@@ -147,7 +145,7 @@ export function isHumanAgentChatActive(
 ): boolean {
   const state = serviceManager.store.getState();
   return (
-    state.persistedToBrowserStorage.chatState.humanAgentState.isConnected ||
+    state.persistedToBrowserStorage.humanAgentState.isConnected ||
     state.humanAgentState.isConnecting
   );
 }

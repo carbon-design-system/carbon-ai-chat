@@ -7,17 +7,13 @@
  *  @license
  */
 
-import { PublicConfig, LayoutConfig } from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
 import { ServiceManager } from "../services/ServiceManager";
 import { NamespaceService } from "../services/NamespaceService";
 import { ConfigChanges, isHumanAgentChatActive } from "./configChangeDetection";
 import actions from "../store/actions";
 import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
 import { consoleError } from "./miscUtils";
-import {
-  DEFAULT_LAYOUT_STATE,
-  DEFAULT_THEME_STATE,
-} from "../store/reducerUtils";
 import { createAppConfig } from "../store/doCreateStore";
 
 /**
@@ -47,40 +43,29 @@ export async function applyConfigChangesDynamically(
   if (changes.homescreenChanged) {
     // If homescreen is going from off to on, make it open as long as there are not any messages in the message list.
     if (
-      newConfig.homescreen?.is_on &&
-      !currentState.config.public.homescreen?.is_on &&
+      newConfig.homescreen?.isOn &&
+      !currentState.config.public.homescreen?.isOn &&
       currentState.botMessageState.messageIDs.length === 0
     ) {
       store.dispatch(actions.setHomeScreenIsOpen(true));
     }
     // If homescreen if going from on to off, make sure we aren't trying to show it. If its moving to "splash" and there are active messages, hide it.
     if (
-      (!newConfig.homescreen?.is_on &&
-        currentState.config.public.homescreen?.is_on) ||
-      (newConfig.homescreen?.disable_return &&
+      (!newConfig.homescreen?.isOn &&
+        currentState.config.public.homescreen?.isOn) ||
+      (newConfig.homescreen?.disableReturn &&
         currentState.botMessageState.messageIDs.length > 0)
     ) {
       store.dispatch(actions.setHomeScreenIsOpen(false));
     }
   }
 
+  // Custom panel is driven by ChatInstance; no dynamic updates needed
+
   // Handle namespace changes
   if (changes.namespaceChanged) {
     serviceManager.namespace = new NamespaceService(newConfig.namespace);
     // Session storage will adapt automatically on next access
-  }
-
-  // Handle layout changes that affect non-derived state
-  if (changes.themingChanged || changes.layoutChanged) {
-    // Update layout state (this may still be separate from derived config)
-    const aiEnabled = newConfig.aiEnabled ?? DEFAULT_THEME_STATE.aiEnabled;
-    const computedLayout: LayoutConfig = aiEnabled
-      ? {
-          showFrame: newConfig.layout?.showFrame ?? true,
-          hasContentMaxWidth: newConfig.layout?.hasContentMaxWidth ?? true,
-        }
-      : { ...DEFAULT_LAYOUT_STATE, ...newConfig.layout };
-    store.dispatch(actions.changeState({ layout: computedLayout } as any));
   }
 
   // Handle messaging changes
@@ -121,18 +106,6 @@ export async function applyConfigChangesDynamically(
   // Layout, header, disclaimer, and other lightweight changes are handled
   // automatically by the Redux store update and React re-rendering
 
-  // Apply layout changes (when theme did not handle it above)
-  if (changes.layoutChanged && !changes.themingChanged) {
-    const aiEnabled = newConfig.aiEnabled ?? DEFAULT_THEME_STATE.aiEnabled;
-    const computedLayout: LayoutConfig = aiEnabled
-      ? {
-          showFrame: newConfig.layout?.showFrame ?? true,
-          hasContentMaxWidth: newConfig.layout?.hasContentMaxWidth ?? true,
-        }
-      : { ...DEFAULT_LAYOUT_STATE, ...newConfig.layout };
-    store.dispatch(actions.changeState({ layout: computedLayout } as any));
-  }
-
   // Handle lightweight UI changes coming from public config
   if (changes.lightweightUIChanged) {
     // Readonly input for bot
@@ -142,7 +115,7 @@ export async function applyConfigChangesDynamically(
         ...current,
         isReadonly: newConfig.isReadonly,
       };
-      store.dispatch(actions.changeState({ botInputState: next } as any));
+      store.dispatch(actions.changeState({ botInputState: next }));
     }
   }
 }

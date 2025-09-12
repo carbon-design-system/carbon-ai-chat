@@ -10,7 +10,6 @@
 import { createIntl } from "react-intl";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { ServiceManager } from "../services/ServiceManager";
-import actions from "../store/actions";
 
 /**
  * A simple utility function to set the intl object on the given service manager.
@@ -21,9 +20,6 @@ function setIntl(
   messages: LanguagePack,
 ) {
   serviceManager.intl = createIntl({ locale, messages });
-  serviceManager.store.dispatch(
-    actions.setAppStateValue("languagePack", messages),
-  );
 }
 
 export { setIntl };

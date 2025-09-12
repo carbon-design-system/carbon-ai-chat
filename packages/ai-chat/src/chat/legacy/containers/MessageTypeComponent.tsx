@@ -113,8 +113,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     (state: AppState) => state.humanAgentState,
   );
   const persistedHumanAgentState = useSelector(
-    (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.humanAgentState,
+    (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
   );
   const feedbackID = message.item.message_item_options?.feedback?.id;
   const feedbackPanelID = useUUID();
@@ -652,7 +651,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     const {
       id: feedbackID,
-      is_on,
+      isOn,
       show_positive_details = true,
       show_negative_details = true,
       show_text_area = true,
@@ -668,7 +667,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       props.isNestedMessageItem ||
       hideFeedback ||
       (!allowNewFeedback && !feedbackHistory) ||
-      !is_on
+      !isOn
     ) {
       return false;
     }

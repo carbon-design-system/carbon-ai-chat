@@ -541,7 +541,7 @@ export interface GenericItemMessageFeedbackOptions {
   /**
    * Indicates if a request for feedback should be displayed.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.

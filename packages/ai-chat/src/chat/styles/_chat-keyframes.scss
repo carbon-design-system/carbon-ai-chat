@@ -138,9 +138,7 @@
 
 @keyframes #{$prefix}-widget-in {
   0% {
-    inset-block-end: calc(
-      var(--#{$prefix}-bottom-position) - #{layout.$spacing-07}
-    );
+    inset-block-end: 0;
     opacity: 0;
   }
 
@@ -171,8 +169,6 @@
 }
 
 // Message Animations
-
-// #{$prefix}-message-in removed - identical to #{$prefix}-fade-in
 
 @keyframes #{$prefix}-fade-in-up-back-button {
   0% {

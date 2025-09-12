@@ -12,7 +12,7 @@ import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 
 describe("configChangeDetection", () => {
   const baseConfig: Partial<ChatContainerProps> = {
-    launcher: { is_on: true },
+    launcher: { isOn: true },
     aiEnabled: false,
     messaging: { skipWelcome: false },
     namespace: "test",

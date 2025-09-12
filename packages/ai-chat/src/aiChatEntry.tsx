@@ -19,15 +19,18 @@
 export { OverlayPanelName } from "./chat/legacy/components/OverlayPanel";
 
 export {
-  CustomPanelConfigOptions,
-  CustomPanelInstance,
-  CustomPanels,
   NotificationMessage,
   ViewState,
   ViewType,
 } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
+
+export {
+  CustomPanelConfigOptions,
+  CustomPanelInstance,
+  CustomPanels,
+} from "./types/instance/apiTypes";
 
 export {
   ChangeFunction,

@@ -51,15 +51,11 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          humanAgentState: {
-            ...state.persistedToBrowserStorage.chatState.humanAgentState,
-            isSuspended: isConnecting
-              ? state.persistedToBrowserStorage.chatState.humanAgentState
-                  .isSuspended
-              : false,
-          },
+        humanAgentState: {
+          ...state.persistedToBrowserStorage.humanAgentState,
+          isSuspended: isConnecting
+            ? state.persistedToBrowserStorage.humanAgentState.isSuspended
+            : false,
         },
       },
     };
@@ -116,8 +112,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     action: { responseUserProfile?: ResponseUserProfile },
   ): AppState => {
     const responseUserProfiles = {
-      ...state.persistedToBrowserStorage.chatState.humanAgentState
-        .responseUserProfiles,
+      ...state.persistedToBrowserStorage.humanAgentState.responseUserProfiles,
     };
     const { responseUserProfile } = action;
     if (responseUserProfile) {
@@ -134,14 +129,11 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          humanAgentState: {
-            ...state.persistedToBrowserStorage.chatState.humanAgentState,
-            isConnected: true,
-            responseUserProfile,
-            responseUserProfiles,
-          },
+        humanAgentState: {
+          ...state.persistedToBrowserStorage.humanAgentState,
+          isConnected: true,
+          responseUserProfile,
+          responseUserProfiles,
         },
       },
     };
@@ -154,12 +146,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     ...state,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
-      chatState: {
-        ...state.persistedToBrowserStorage.chatState,
-        humanAgentState: {
-          ...state.persistedToBrowserStorage.chatState.humanAgentState,
-          serviceDeskState: action.state,
-        },
+      humanAgentState: {
+        ...state.persistedToBrowserStorage.humanAgentState,
+        serviceDeskState: action.state,
       },
     },
   }),
@@ -170,7 +159,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
   ): AppState => {
     if (
       !state.humanAgentState.isConnecting &&
-      !state.persistedToBrowserStorage.chatState.humanAgentState.isConnected
+      !state.persistedToBrowserStorage.humanAgentState.isConnected
     ) {
       // If the user is not connecting or connected to an agent, then we can't update the suspended state.
       return state;
@@ -179,12 +168,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
       ...state,
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          humanAgentState: {
-            ...state.persistedToBrowserStorage.chatState.humanAgentState,
-            isSuspended: action.isSuspended,
-          },
+        humanAgentState: {
+          ...state.persistedToBrowserStorage.humanAgentState,
+          isSuspended: action.isSuspended,
         },
       },
     };
@@ -216,12 +202,9 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          humanAgentState: {
-            ...state.persistedToBrowserStorage.chatState.humanAgentState,
-            responseUserProfile: null,
-          },
+        humanAgentState: {
+          ...state.persistedToBrowserStorage.humanAgentState,
+          responseUserProfile: null,
         },
       },
     }),
@@ -294,14 +277,11 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
       },
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          humanAgentState: {
-            ...state.persistedToBrowserStorage.chatState.humanAgentState,
-            isConnected: false,
-            isSuspended: false,
-            responseUserProfile: null,
-          },
+        humanAgentState: {
+          ...state.persistedToBrowserStorage.humanAgentState,
+          isConnected: false,
+          isSuspended: false,
+          responseUserProfile: null,
         },
       },
     };

@@ -151,33 +151,6 @@ async function loadLocale(requestedLocale: string): Promise<ILocale> {
 }
 
 /**
- * Loads the language pack for the given locale if a language pack was not already provided. This may incur an
- * asynchronous load of the language pack files.
- *
- * @param providedLanguagePack A language pack that was provided by the configuration from the host page. If this
- * value is defined, it will always be used instead instead of loading a separate pack.
- * @returns The appropriate language pack for the given locale. Any values that are missing will be set with
- * their English values when the instance's language pack is updated.
- */
-function loadLanguagePack(providedLanguagePack?: LanguagePack): LanguagePack {
-  if (providedLanguagePack) {
-    // Use the language pack that was provided.
-    return fillWithEnglish(providedLanguagePack);
-  }
-  return enLanguagePack;
-}
-
-/**
- * Returns the given language pack filled with english messages for keys that are missing values.
- */
-function fillWithEnglish(languagePack: LanguagePack): LanguagePack {
-  return {
-    ...enLanguagePack,
-    ...languagePack,
-  };
-}
-
-/**
  * Handles a "b" tag.
  */
 function handleBTag(chunks: any) {
@@ -235,10 +208,4 @@ function createEnglishFormat(key: keyof LanguagePack) {
   return new IntlMessageFormat(enLanguagePack[key], "en-US");
 }
 
-export {
-  loadLanguagePack,
-  loadLocale,
-  addHTMLSupport,
-  loadDayjsLocale,
-  createEnglishFormat,
-};
+export { loadLocale, addHTMLSupport, loadDayjsLocale, createEnglishFormat };

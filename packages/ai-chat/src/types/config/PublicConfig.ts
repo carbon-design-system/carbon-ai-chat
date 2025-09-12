@@ -21,12 +21,19 @@ import type {
 import { HistoryItem } from "../messaging/History";
 import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
-import enLanguagePack from "../../chat/languages/en.json";
+import enLanguagePackData from "../../chat/languages/en.json";
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
  * host page.
  */
+
+/**
+ * The raw strings used for {@link PublicConfig.strings}. Presented in ICU format.
+ *
+ * @category Config
+ */
+export const enLanguagePack = enLanguagePackData;
 
 /**
  * A language pack represents the set of display strings for a particular language.
@@ -35,8 +42,6 @@ import enLanguagePack from "../../chat/languages/en.json";
  * @category Config
  */
 export type LanguagePack = typeof enLanguagePack;
-
-export { enLanguagePack };
 
 /**
  * @category Config
@@ -171,6 +176,8 @@ export interface PublicConfig {
    */
   launcher?: LauncherConfig;
 
+  // Custom panel is controlled via ChatInstance (not PublicConfig)
+
   /**
    * Optional partial language pack overrides. Values merge with defaults.
    */
@@ -286,7 +293,7 @@ export interface LayoutConfig {
    * Example:
    * { HEIGHT: "560px", WIDTH: "420px" }
    */
-  "custom-properties"?: Partial<Record<LayoutCustomProperties, string>>;
+  customProperties?: Partial<Record<LayoutCustomProperties, string>>;
 }
 
 /**
@@ -344,7 +351,7 @@ export interface DisclaimerPublicConfig {
   /**
    * If the disclaimer is turned on.
    */
-  is_on: boolean;
+  isOn: boolean;
 
   /**
    * HTML content to show in disclaimer.

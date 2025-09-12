@@ -34,10 +34,10 @@ describe("Config Launcher", () => {
   });
 
   describe("launcher", () => {
-    it("should store launcher.is_on: true in Redux state", async () => {
+    it("should store launcher.isOn: true in Redux state", async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
-        launcher: { is_on: true },
+        launcher: { isOn: true },
       };
 
       let capturedInstance: any = null;
@@ -56,13 +56,13 @@ describe("Config Launcher", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.launcher.config.is_on).toBe(true);
+      expect(state.config.derived.launcher.isOn).toBe(true);
     });
 
-    it("should store launcher.is_on: false in Redux state", async () => {
+    it("should store launcher.isOn: false in Redux state", async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
-        launcher: { is_on: false },
+        launcher: { isOn: false },
       };
 
       let capturedInstance: any = null;
@@ -81,10 +81,10 @@ describe("Config Launcher", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.launcher.config.is_on).toBe(false);
+      expect(state.config.derived.launcher.isOn).toBe(false);
     });
 
-    it("should use default launcher.is_on value when not specified", async () => {
+    it("should use default launcher.isOn value when not specified", async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // launcher intentionally omitted
@@ -106,7 +106,7 @@ describe("Config Launcher", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.launcher.config.is_on).toBe(true); // default value
+      expect(state.config.derived.launcher.isOn).toBe(true); // default value
     });
   });
 
@@ -217,7 +217,7 @@ describe("Config Launcher", () => {
     it("should handle launcher config changes dynamically", async () => {
       const previousConfig: PublicConfig = {
         launcher: {
-          is_on: true,
+          isOn: true,
           desktop: { title: "Old Desktop Title" },
           mobile: { title: "Old Mobile Title" },
         },
@@ -225,7 +225,7 @@ describe("Config Launcher", () => {
 
       const newConfig: PublicConfig = {
         launcher: {
-          is_on: false,
+          isOn: false,
           desktop: { title: "New Desktop Title" },
           mobile: { title: "New Mobile Title" },
         },
@@ -237,7 +237,7 @@ describe("Config Launcher", () => {
       await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const state: AppState = serviceManager.store.getState();
-      expect(state.config.public.launcher?.is_on).toBe(false);
+      expect(state.config.public.launcher?.isOn).toBe(false);
       expect(state.config.public.launcher?.desktop?.title).toBe(
         "New Desktop Title",
       );

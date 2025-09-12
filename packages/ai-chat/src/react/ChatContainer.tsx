@@ -65,9 +65,10 @@ const ReactChatContainer = React.memo(
 );
 
 /**
- * @category React
  * The ChatContainer controls rendering the React application into the ShadowRoot of the cds-aichat-react web component.
  * It also injects the writeable element and user_defined response slots into said web component.
+ *
+ * @category React
  */
 function ChatContainer({
   onBeforeRender,

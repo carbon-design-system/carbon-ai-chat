@@ -10,10 +10,9 @@
 
 // Configuration and utilities
 @forward "chat-config";
-@forward "chat-utilities";
 @forward "chat-keyframes";
 
-// CSS custom properties (applied via :host)
+// CSS custom properties
 @forward "chat-custom-properties";
 
 // SASS variables and theme tokens

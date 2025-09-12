@@ -33,7 +33,7 @@ describe("chatBoot utils", () => {
 
       // Defaults applied
       expect(publicConfig.openChatByDefault).toBe(false);
-      expect(publicConfig.launcher?.is_on).toBe(true);
+      expect(publicConfig.launcher?.isOn).toBe(true);
       expect(publicConfig.shouldTakeFocusIfOpensAutomatically).toBe(true);
 
       // Provided fields preserved

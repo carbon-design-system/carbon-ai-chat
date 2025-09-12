@@ -146,8 +146,7 @@ class MainWindow
    */
   public readonly state: Readonly<MainWindowState> = {
     closing: false,
-    open: this.props.persistedToBrowserStorage.launcherState.viewState
-      .mainWindow,
+    open: this.props.persistedToBrowserStorage.viewState.mainWindow,
     modalPortalHostElement: null,
     numPanelsOpen: 0,
     numPanelsAnimating: 0,
@@ -225,11 +224,8 @@ class MainWindow
     if (IS_MOBILE && !publicConfig.disableCustomElementMobileEnhancements) {
       const { visualViewport } = window;
       if (visualViewport) {
-        (visualViewport as any).addEventListener(
-          "resize",
-          this.onVisualViewportResize,
-        );
-        (visualViewport as any).addEventListener(
+        visualViewport.addEventListener("resize", this.onVisualViewportResize);
+        visualViewport.addEventListener(
           "scroll",
           this.updateFromVisualViewport,
         );
@@ -288,10 +284,9 @@ class MainWindow
     const newState = this.state;
 
     const { persistedToBrowserStorage, useCustomHostElement } = newProps;
-    const { viewState } = persistedToBrowserStorage.launcherState;
+    const { viewState } = persistedToBrowserStorage;
     const { open } = newState;
-    const prevViewState =
-      oldProps.persistedToBrowserStorage.launcherState.viewState;
+    const prevViewState = oldProps.persistedToBrowserStorage.viewState;
 
     if (viewState.mainWindow !== prevViewState.mainWindow) {
       // If viewState.mainWindow has changed then perform the necessary updates.
@@ -339,9 +334,8 @@ class MainWindow
       // This code is to prevent the widget from grabbing focus when a reset occurs. The autofocus value starts as
       // true but when we detect a reset, we turn the autofocus off until the user sends a message.
       if (
-        !oldProps.persistedToBrowserStorage.chatState
-          .hasSentNonWelcomeMessage &&
-        newProps.persistedToBrowserStorage.chatState.hasSentNonWelcomeMessage &&
+        !oldProps.persistedToBrowserStorage.hasSentNonWelcomeMessage &&
+        newProps.persistedToBrowserStorage.hasSentNonWelcomeMessage &&
         !this.state.shouldAutoFocus
       ) {
         // eslint-disable-next-line react/no-did-update-set-state
@@ -400,8 +394,7 @@ class MainWindow
       if (isBrowser) {
         if (
           (window.screen.width <= 500 || window.screen.height <= 500) &&
-          this.props.persistedToBrowserStorage.launcherState.viewState
-            .mainWindow &&
+          this.props.persistedToBrowserStorage.viewState.mainWindow &&
           !unmounting
         ) {
           this.previousBodyVisibility =
@@ -453,19 +446,19 @@ class MainWindow
       // viewport scrolling occurs on iOS devices when the keyboard is open but not on android.
       element.style.setProperty(
         "--cds-aichat-viewport-height",
-        `${(visualViewport as any).height}px`,
+        `${visualViewport.height}px`,
       );
       element.style.setProperty(
         "--cds-aichat-viewport-width",
-        `${(visualViewport as any).width}px`,
+        `${visualViewport.width}px`,
       );
       element.style.setProperty(
         "--cds-aichat-viewport-offsetTop",
-        `${(visualViewport as any).offsetTop}px`,
+        `${visualViewport.offsetTop}px`,
       );
       element.style.setProperty(
         "--cds-aichat-viewport-offsetLeft",
-        `${(visualViewport as any).offsetLeft}px`,
+        `${visualViewport.offsetLeft}px`,
       );
     } else {
       // For browsers that don't support the visual viewport, for now we'll just settle on these values which only
@@ -606,9 +599,8 @@ class MainWindow
    */
   private getShowHomeScreen() {
     return (
-      this.props.config.public.homescreen?.is_on &&
-      this.props.persistedToBrowserStorage.chatState.homeScreenState
-        .isHomeScreenOpen &&
+      this.props.config.public.homescreen?.isOn &&
+      this.props.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen &&
       !this.getShowDisclaimer()
     );
   }
@@ -616,10 +608,8 @@ class MainWindow
   private getShowDisclaimer() {
     const hostname = isBrowser ? window.location.hostname : "localhost";
     return (
-      this.props.config.public.disclaimer?.is_on &&
-      !this.props.persistedToBrowserStorage.chatState.disclaimersAccepted[
-        hostname
-      ]
+      this.props.config.public.disclaimer?.isOn &&
+      !this.props.persistedToBrowserStorage.disclaimersAccepted[hostname]
     );
   }
 
@@ -654,7 +644,7 @@ class MainWindow
   onUserTyping = (isTyping: boolean) => {
     if (
       this.props.serviceManager.store.getState().persistedToBrowserStorage
-        .chatState.humanAgentState.isConnected
+        .humanAgentState.isConnected
     ) {
       this.props.serviceManager.humanAgentService.userTyping(isTyping);
     }
@@ -705,11 +695,15 @@ class MainWindow
    * Update the panel counter to show a panel has started to close.
    */
   onPanelCloseEnd = (coverBackground: boolean) => {
+    // TODO: Checking if the numPanelsOpen > 0 is a hack. It should never get there!
     this.setState((prevState) => ({
-      numPanelsOpen: prevState.numPanelsOpen - 1,
+      numPanelsOpen:
+        prevState.numPanelsOpen > 0 ? prevState.numPanelsOpen - 1 : 0,
       numPanelsAnimating: prevState.numPanelsAnimating - 1,
       numPanelsCovering:
-        prevState.numPanelsCovering - (coverBackground ? 1 : 0),
+        prevState.numPanelsCovering > 0
+          ? prevState.numPanelsCovering - (coverBackground ? 1 : 0)
+          : 0,
     }));
   };
 
@@ -759,10 +753,9 @@ class MainWindow
   renderBotChat() {
     const {
       config: {
-        derived: { themeWithDefaults: theme },
+        derived: { themeWithDefaults: theme, languagePack },
         public: { assistantName },
       },
-      languagePack,
       config,
       serviceManager,
       botMessageState,
@@ -829,9 +822,11 @@ class MainWindow
     const {
       botMessageState,
       serviceManager,
-      languagePack,
       persistedToBrowserStorage,
       config,
+      config: {
+        derived: { languagePack },
+      },
     } = this.props;
 
     // We need to make an educated guess whether the home screen is going to be displayed after hydration is
@@ -840,8 +835,7 @@ class MainWindow
     // wrong, but it's rare enough to be not worth addressing.
     const homescreen = config.public.homescreen;
     const useHomeScreenVersion =
-      homescreen?.is_on &&
-      !persistedToBrowserStorage.launcherState.hasSentNonWelcomeMessage;
+      homescreen?.isOn && !persistedToBrowserStorage.hasSentNonWelcomeMessage;
     const headerDisplayName =
       config.public.header?.name || config.public.assistantName;
     return (
@@ -866,7 +860,7 @@ class MainWindow
       catastrophicErrorType,
       persistedToBrowserStorage,
     } = this.props;
-    const { viewState } = persistedToBrowserStorage.launcherState;
+    const { viewState } = persistedToBrowserStorage;
 
     return (
       <OverlayPanel
@@ -901,8 +895,8 @@ class MainWindow
       serviceManager,
       config: {
         public: { assistantName },
+        derived: { languagePack },
       },
-      languagePack,
     } = this.props;
     const headerDisplayName =
       this.props.config.public.header?.name ||
@@ -935,7 +929,7 @@ class MainWindow
 
     const showDisclaimer = this.getShowDisclaimer();
 
-    return config.public.disclaimer?.is_on ? (
+    return config.public.disclaimer?.isOn ? (
       <OverlayPanel
         onOpenStart={() => this.onPanelOpenStart(false)}
         onCloseStart={this.onPanelCloseStart}
@@ -1118,11 +1112,9 @@ class MainWindow
       config,
       isHydrated,
       config: {
-        derived: { themeWithDefaults: theme },
+        derived: { themeWithDefaults: theme, layout, languagePack },
       },
       chatWidthBreakpoint,
-      layout,
-      languagePack,
     } = this.props;
     const { closing, open } = this.state;
     const locale = config.public.locale || "en";

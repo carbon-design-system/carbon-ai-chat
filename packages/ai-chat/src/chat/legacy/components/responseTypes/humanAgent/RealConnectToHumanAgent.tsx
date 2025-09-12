@@ -22,10 +22,10 @@ import {
   HumanAgentDisplayState,
   HumanAgentState,
 } from "../../../../../types/state/AppState";
+import { PersistedHumanAgentState } from "../../../../../types/state/PersistedHumanAgentState";
 import HasLanguagePack from "../../../../../types/utilities/HasLanguagePack";
 import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-import { PersistedHumanAgentState } from "../../../../../types/state/PersistedHumanAgentState";
 import { AvailabilityMessage } from "../../humanAgent/AvailabilityMessage";
 import { EndHumanAgentChatModal } from "../../modals/EndHumanAgentChatModal";
 import {

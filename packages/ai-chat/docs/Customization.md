@@ -107,7 +107,7 @@ For more information, see the documentation for [React](React.md) and [web compo
 
 #### Theming
 
-You can customize the Carbon theme of the Carbon AI Chat. By default, it will inherit a Carbon theme from the host page. If the rest of your site does not use Carbon, choose one of four Carbon themes by using the `carbonTheme` property:
+You can customize the Carbon theme of the Carbon AI Chat. By default, it will inherit a Carbon theme from the host page. If the rest of your site does not use Carbon, choose one of four Carbon themes by using the {@link PublicConfig.injectCarbonTheme} property:
 
 - White
 - Gray 10
@@ -138,6 +138,21 @@ For more information, see the documentation for [React](React.md) and [web compo
 
 #### Custom Panel
 
-The Carbon AI Chat can open an overlay panel with custom content at any time. Panels are effective for use cases that range from pre-chat content forms, post-chat feedback forms, or multi-step processes. You can open the panel at any time, whether from an event, a `user_defined` response, or even an action a user takes on your website.
+The Carbon AI Chat can open an overlay panel with custom content at any time. Panels are effective for use cases that range from pre‑chat content forms, post‑chat feedback forms, or multi‑step processes. You can open the panel at any time, whether from an event, a `user_defined` response, or even an action a user takes on your website.
 
-For more information, see {@link ChatInstance.customPanels}. The custom panel is just another {@link WriteableElementName}. For more information on displaying a writeable element, see the documentation for [React](React.md) and [web components](WebComponent.md).
+Custom panels are controlled via {@link ChatInstance.customPanels}. Use `instance.customPanels.getPanel()` to obtain the panel, then call `open(options)` and `close()` as needed. Supported options are described by {@link CustomPanelConfigOptions}.
+
+Example:
+
+```ts
+const panel = instance.customPanels.getPanel();
+panel.open({
+  title: "My Custom Panel",
+  hideCloseButton: true,
+  disableAnimation: true,
+});
+// ... later
+panel.close();
+```
+
+The custom panel renders content through the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT} writeable element. For more on rendering writeable elements, see the documentation for [React](React.md) and [web components](WebComponent.md).

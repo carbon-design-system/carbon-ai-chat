@@ -28,7 +28,7 @@ function App() {
       debug={true}
       aiEnabled={true}
       header={{ title: "My Assistant" }}
-      launcher={{ is_on: true }}
+      launcher={{ isOn: true }}
       // ... other config properties as individual props
     />
   );
@@ -58,7 +58,7 @@ export class MyApp extends LitElement {
       .debug=${true}
       .aiEnabled=${true}
       .header=${{ title: "My Assistant" }}
-      .launcher=${{ is_on: true }}
+      .launcher=${{ isOn: true }}
     />`;
   }
 }

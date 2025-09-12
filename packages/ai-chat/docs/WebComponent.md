@@ -43,7 +43,7 @@ export class MyApp extends LitElement {
       .debug=${true}
       .aiEnabled=${true}
       .header=${{ title: "My Assistant" }}
-      .launcher=${{ is_on: true }}
+      .launcher=${{ isOn: true }}
     />`;
   }
 }
@@ -98,7 +98,7 @@ export class MyApp extends LitElement {
       .debug=${true}
       .aiEnabled=${true}
       .header=${{ title: "My Assistant" }}
-      .launcher=${{ is_on: true }}
+      .launcher=${{ isOn: true }}
     />`;
   }
 }
@@ -133,7 +133,7 @@ export class MyApp extends LitElement {
     return html`<cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .header=${{ title: "My Assistant" }}
-        .launcher=${{ is_on: true }}
+        .launcher=${{ isOn: true }}
       />${this._instance ? "<span>Instance loaded</span>" : ""}`;
   }
 }

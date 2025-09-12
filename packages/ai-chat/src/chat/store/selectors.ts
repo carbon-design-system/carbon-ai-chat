@@ -14,9 +14,10 @@ import { LanguagePack } from "../../types/config/PublicConfig";
 const getBotInputState = (state: AppState) => state.botInputState;
 const getHumanAgentInputState = (state: AppState) =>
   state.humanAgentState.inputState;
+// Volatile UI state for human agent lives at top-level
 const getHumanAgentState = (state: AppState) => state.humanAgentState;
 const getPersistedHumanAgent = (state: AppState) =>
-  state.persistedToBrowserStorage.chatState.humanAgentState;
+  state.persistedToBrowserStorage.humanAgentState;
 
 /**
  * Compute the display state for the agent.

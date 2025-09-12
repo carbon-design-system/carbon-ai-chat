@@ -17,8 +17,8 @@ import { AppState } from "../../../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../../../types/utilities/HasRequestFocus";
 import { BasePanelComponent } from "../../../BasePanelComponent";
 import { SearchResultBodyWithCitationHighlighted } from "../SearchResultBody";
-import { BasePanelConfigOptions } from "../../../../../../types/instance/apiTypes";
 import { OverlayPanelName } from "../../../OverlayPanel";
+import { BasePanelConfigOptions } from "../../../../../../types/utilities/BasePanelConfigOptions";
 
 /**
  * This panel is used to show the text of a conversational search citation.

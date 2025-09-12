@@ -87,7 +87,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   const languagePack = useLanguagePack();
   const homeScreenIsOn = useSelector((state: AppState) => {
     const homescreen = state.config.public.homescreen;
-    return homescreen?.is_on && !homescreen?.disable_return;
+    return homescreen?.isOn && !homescreen?.disableReturn;
   });
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const customMenuOptions = useSelector(

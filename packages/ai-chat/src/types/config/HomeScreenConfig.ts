@@ -31,7 +31,7 @@ interface HomeScreenStarterButton {
  * @category Config
  */
 interface HomeScreenStarterButtons {
-  is_on?: boolean;
+  isOn?: boolean;
   buttons?: HomeScreenStarterButton[];
 }
 
@@ -44,7 +44,7 @@ interface HomeScreenConfig {
   /**
    * If the home page is turned on via config or remote config.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * The greeting to show to the user to prompt them to start a conversation.
@@ -59,13 +59,13 @@ interface HomeScreenConfig {
   /**
    * Do not show the greeting or starters.
    */
-  custom_content_only?: boolean;
+  customContentOnly?: boolean;
 
   /**
    * Defaults to false. If enabled, a user can not navigate back to the home screen after they have sent a message to the
    * assistant. If false, the home screen is navigatable after an initial message is sent.
    */
-  disable_return?: boolean;
+  disableReturn?: boolean;
 }
 
 /**

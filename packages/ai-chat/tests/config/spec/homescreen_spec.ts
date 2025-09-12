@@ -37,17 +37,17 @@ describe("Config Homescreen", () => {
   describe("homescreen", () => {
     it("should store complete homescreen config in Redux state", async () => {
       const homescreen: HomeScreenConfig = {
-        is_on: true,
+        isOn: true,
         greeting: "Welcome to the assistant!",
         starters: {
-          is_on: true,
+          isOn: true,
           buttons: [
             { label: "Get started", isSelected: true },
             { label: "What can you do?" },
           ],
         },
-        custom_content_only: false,
-        disable_return: false,
+        customContentOnly: false,
+        disableReturn: false,
       };
 
       const props: Partial<ChatContainerProps> = {
@@ -74,9 +74,9 @@ describe("Config Homescreen", () => {
       expect(state.config.public.homescreen).toEqual(homescreen);
     });
 
-    it("should store partial homescreen config (is_on + greeting)", async () => {
+    it("should store partial homescreen config (isOn + greeting)", async () => {
       const homescreen: HomeScreenConfig = {
-        is_on: true,
+        isOn: true,
         greeting: "Hello!",
       };
 
@@ -149,28 +149,50 @@ describe("Config Homescreen", () => {
       it("should handle homescreen config changes dynamically", async () => {
         const previousConfig: PublicConfig = {
           homescreen: {
-            is_on: true,
+            isOn: true,
             greeting: "Old greeting",
           },
         };
 
         const newConfig: PublicConfig = {
           homescreen: {
-            is_on: false,
+            isOn: false,
             greeting: "New greeting",
-            custom_content_only: true,
+            customContentOnly: true,
           },
         };
 
         const changes = detectConfigChanges(previousConfig, newConfig);
-        expect(changes.lightweightUIChanged).toBe(true);
+        expect(changes.homescreenChanged).toBe(true);
 
         await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
         const state: AppState = serviceManager.store.getState();
-        expect(state.config.public.homescreen?.is_on).toBe(false);
+        expect(state.config.public.homescreen?.isOn).toBe(false);
         expect(state.config.public.homescreen?.greeting).toBe("New greeting");
-        expect(state.config.public.homescreen?.custom_content_only).toBe(true);
+        expect(state.config.public.homescreen?.customContentOnly).toBe(true);
+      });
+
+      it("should handle homescreen config changes dynamically when made undefined", async () => {
+        const previousConfig: PublicConfig = {
+          homescreen: {
+            isOn: true,
+            greeting: "Old greeting",
+          },
+        };
+
+        const newConfig: PublicConfig = {};
+
+        const changes = detectConfigChanges(previousConfig, newConfig);
+        expect(changes.homescreenChanged).toBe(true);
+
+        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+        const state: AppState = serviceManager.store.getState();
+        expect(state.config.public.homescreen?.isOn).toBe(undefined);
+        expect(
+          state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+        ).toBe(false);
       });
     });
   });

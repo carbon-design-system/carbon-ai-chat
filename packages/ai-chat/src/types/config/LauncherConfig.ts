@@ -16,7 +16,7 @@ interface LauncherConfig {
   /**
    * If the launcher is visible. Defaults to true.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * Properties specific to the mobile launcher.
@@ -29,23 +29,6 @@ interface LauncherConfig {
   desktop?: LauncherCallToActionConfig;
 }
 
-interface LauncherInternalConfig {
-  /**
-   * If the launcher is visible. Defaults to true.
-   */
-  is_on?: boolean;
-
-  /**
-   * Properties specific to the mobile launcher.
-   */
-  mobile?: LauncherInternalCallToActionConfig;
-
-  /**
-   * Properties specific to the desktop launcher.
-   */
-  desktop?: LauncherInternalCallToActionConfig;
-}
-
 /**
  * @category Config
  */
@@ -53,7 +36,7 @@ interface LauncherCallToActionConfig {
   /**
    * If the launcher will expand with a call to action.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * The title that will be used by the expanded state of the launcher. If nothing is set in the config then a default
@@ -65,59 +48,12 @@ interface LauncherCallToActionConfig {
    * The amount of time to wait before extending the launcher. If nothing is set then the default time of
    * 15s will be used.
    */
-  time_to_expand?: number;
+  timeToExpand?: number;
 
   /**
    * An optional override of the icon shown on the launcher.
    */
-  avatar_url_override?: string;
-}
-
-/**
- * Internal nterface for controlling the Launcher call to action popup.
- */
-interface LauncherInternalCallToActionConfig
-  extends LauncherCallToActionConfig {
-  /**
-   * Whether a new time_to_expand value has been set or not. This only applies to the mobile launcher.
-   */
-  new_expand_time: boolean;
-
-  /**
-   * Define the type of notification that is appearing.
-   */
-  notification_type: NotificationType;
-
-  /**
-   * The amount of time to wait before reducing the extended launcher (This is only relevant to the mobile launcher
-   * even though it exists within both configs).
-   */
-  time_to_reduce?: number;
-}
-
-/**
- * In the future we may want different types of notification messages, for example one of them will be a
- * text_notification.
- *
- * @category Config
- */
-enum NotificationType {
-  TEXT_NOTIFICATION = "text_notification",
-}
-
-/**
- * The different types of launchers.
- */
-enum LauncherType {
-  /**
-   * The launcher that expands to a "complex" variation on desktop.
-   */
-  DESKTOP = "desktop",
-
-  /**
-   * The launcher that expands to an "extended" variation on mobile.
-   */
-  MOBILE = "mobile",
+  avatarUrlOverride?: string;
 }
 
 // The array of timeouts that will dictate the amount of intervals the bounce animation should play for the launcher.
@@ -128,11 +64,7 @@ const TIME_TO_ENTRANCE_ANIMATION_START = 15000;
 
 export {
   LauncherConfig,
-  LauncherInternalConfig,
   LauncherCallToActionConfig,
-  LauncherInternalCallToActionConfig,
-  LauncherType,
-  NotificationType,
   BOUNCING_ANIMATION_TIMEOUTS,
   TIME_TO_ENTRANCE_ANIMATION_START,
 };

@@ -17,7 +17,7 @@ import { createServiceManager } from "../services/loadServices";
 import { ServiceManager } from "../services/ServiceManager";
 import { createChatInstance } from "../instance/ChatInstanceImpl";
 import { createAppConfig } from "../store/doCreateStore";
-import { loadLanguagePack, loadLocale } from "./languages";
+import { loadLocale } from "./languages";
 import { setIntl } from "./intlUtils";
 import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
 
@@ -40,7 +40,7 @@ export const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
   serviceDesk: {},
   messaging: {},
   launcher: {
-    is_on: true,
+    isOn: true,
   },
 };
 
@@ -86,9 +86,8 @@ export async function initServiceManagerAndInstance(options: {
   }
 
   // Load language and locale
-  const languagePack = loadLanguagePack(
-    serviceManager.store.getState().languagePack,
-  );
+  const languagePack =
+    serviceManager.store.getState().config.derived.languagePack;
   const localePack = await loadLocale(
     serviceManager.store.getState().config.public.locale || "en",
   );
@@ -117,8 +116,7 @@ export async function initServiceManagerAndInstance(options: {
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
   const initialState = serviceManager.store.getState();
-  const { wasLoadedFromBrowser } =
-    initialState.persistedToBrowserStorage.launcherState;
+  const { wasLoadedFromBrowser } = initialState.persistedToBrowserStorage;
   const { targetViewState } = initialState;
   const { openChatByDefault } = initialState.config.public;
 

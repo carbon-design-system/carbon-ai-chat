@@ -24,6 +24,8 @@ import {
   MessageResponse,
   PartialItemChunk,
   PublicConfig,
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
   UserDefinedItem,
   ViewType,
 } from "@carbon/ai-chat";
@@ -32,6 +34,10 @@ import { customElement, property, state } from "lit/decorators.js";
 import { DeepPartial } from "../types/DeepPartial";
 
 import { Settings } from "../framework/types";
+import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
+  Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
 
 interface UserDefinedSlotsMap {
   [key: string]: UserDefinedSlot;
@@ -264,7 +270,7 @@ export class DemoApp extends LitElement {
     }
 
     const isCustomHomeScreen =
-      this.config.homescreen?.custom_content_only === true;
+      this.config.homescreen?.customContentOnly === true;
     const showAllWriteableElements = this.settings.writeableElements === "true";
     const showHomeScreenElements =
       !showAllWriteableElements && isCustomHomeScreen;
@@ -327,6 +333,7 @@ export class DemoApp extends LitElement {
             .homescreen=${this.config.homescreen}
             .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
+            .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-container
           >`
         : html``}
@@ -356,6 +363,7 @@ export class DemoApp extends LitElement {
             .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
             .onViewChange=${this.onViewChange}
+            .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
           >`
         : html``}
@@ -385,6 +393,7 @@ export class DemoApp extends LitElement {
             .homescreen=${this.config.homescreen}
             .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
+            .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
           >`
         : html``}

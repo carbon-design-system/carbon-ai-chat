@@ -21,6 +21,8 @@ import {
   FeedbackInteractionType,
   PublicConfig,
   RenderUserDefinedState,
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
   ViewType,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
@@ -30,6 +32,10 @@ import { Settings } from "../framework/types";
 import { SideBar } from "./DemoSideBarNav";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
+import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
+  Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
 
 interface AppProps {
   config: PublicConfig;
@@ -132,7 +138,7 @@ function DemoApp({ config, settings }: AppProps) {
    * - Otherwise: show no elements
    */
   const renderWriteableElements = useMemo(() => {
-    const isCustomHomeScreen = config.homescreen?.custom_content_only === true;
+    const isCustomHomeScreen = config.homescreen?.customContentOnly === true;
     const showAllWriteableElements = settings.writeableElements === "true";
     const showHomeScreenElements =
       !showAllWriteableElements && isCustomHomeScreen;
@@ -208,6 +214,7 @@ function DemoApp({ config, settings }: AppProps) {
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderWriteableElements={renderWriteableElements}
+      serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
     <>
@@ -218,6 +225,7 @@ function DemoApp({ config, settings }: AppProps) {
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
         renderWriteableElements={renderWriteableElements}
+        serviceDeskFactory={serviceDeskFactory}
       />
       {settings.layout === "sidebar" && !sideBarOpen && (
         <SideBar openSideBar={openSideBar} />

@@ -63,7 +63,6 @@ import {
   consoleError,
   consoleWarn,
   debugLog,
-  isEnableDebugLog,
 } from "../utils/miscUtils";
 import {
   ResolvablePromise,
@@ -103,8 +102,6 @@ import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
 import { NotificationMessage } from "../../types/instance/apiTypes";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 
-// updateCSSVariables is deprecated in favor of layout.custom-properties; keep minimal styling here.
-
 /**
  * This class is responsible for handling various "actions" that the system can perform including actions that can
  * be initiated by custom code running in the host page and is an implementation of the public interface to the widget.
@@ -114,11 +111,6 @@ class ChatActionsImpl {
    * The service manager to use to access services.
    */
   private serviceManager: ServiceManager;
-
-  /**
-   * The timer used to show a message to the end user when the session expires.
-   */
-  private sessionTimer: ReturnType<typeof setTimeout>;
 
   /**
    * This Promise is used when hydrating the Carbon AI Chat. If this Promise is defined, then it means that a hydration
@@ -238,7 +230,7 @@ class ChatActionsImpl {
     if (!history) {
       if (!alternateWelcomeRequest) {
         const state = serviceManager.store.getState();
-        if (state.config.public.homescreen?.is_on) {
+        if (state.config.public.homescreen?.isOn) {
           // If no history was loaded, there are no messages already sent, and there is a home screen,
           // then we need to show the home screen.
           serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
@@ -322,22 +314,21 @@ class ChatActionsImpl {
   getPublicWebChatState(): PublicWebChatState {
     const state = this.serviceManager.store.getState();
     const { persistedToBrowserStorage } = state;
-    const { chatState, launcherState } = persistedToBrowserStorage;
     const publicWebChatState: PublicWebChatState = {
-      isConnectedWithHumanAgent: chatState.humanAgentState.isConnected,
-      isWebChatOpen: launcherState.viewState.mainWindow,
+      isConnectedWithHumanAgent:
+        persistedToBrowserStorage.humanAgentState.isConnected,
+      isWebChatOpen: persistedToBrowserStorage.viewState.mainWindow,
       isConnectingWithHumanAgent: state.humanAgentState.isConnecting,
-      isHomeScreenOpen: chatState.homeScreenState.isHomeScreenOpen,
-      isDebugEnabled: isEnableDebugLog(),
-      hasUserSentMessage: chatState.hasSentNonWelcomeMessage,
-      viewState: { ...launcherState.viewState },
+      isHomeScreenOpen:
+        persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+      hasUserSentMessage: persistedToBrowserStorage.hasSentNonWelcomeMessage,
+      viewState: { ...persistedToBrowserStorage.viewState },
       serviceDesk: {
-        isConnected: chatState.humanAgentState.isConnected,
+        isConnected: persistedToBrowserStorage.humanAgentState.isConnected,
         isConnecting: state.humanAgentState.isConnecting,
-        isSuspended: chatState.humanAgentState.isSuspended ?? false,
+        isSuspended:
+          persistedToBrowserStorage.humanAgentState.isSuspended ?? false,
       },
-      locale: this.serviceManager.store.getState().config.public.locale || "en",
-      intl: this.serviceManager.intl,
     };
 
     return publicWebChatState;
@@ -386,7 +377,7 @@ class ChatActionsImpl {
     // If the home screen is open, we want to close it as soon as a message is sent. Note that this will also apply
     // if the Carbon AI Chat hasn't been opened yet.
     if (
-      this.serviceManager.store.getState().persistedToBrowserStorage.chatState
+      this.serviceManager.store.getState().persistedToBrowserStorage
         .homeScreenState.isHomeScreenOpen
     ) {
       this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
@@ -522,7 +513,8 @@ class ChatActionsImpl {
       return;
     }
 
-    const { languagePack } = this.serviceManager.store.getState();
+    const { languagePack } =
+      this.serviceManager.store.getState().config.derived;
 
     if (isResponse(message as any)) {
       // Even though processMessageResponse is an async function we do not await it in case a pause response type is
@@ -540,7 +532,7 @@ class ChatActionsImpl {
     } else {
       const inlineError: MessageResponse = createMessageResponseForText(
         languagePack.errors_singleMessage,
-        message.thread_id,
+        message?.thread_id,
         MessageResponseTypes.INLINE_ERROR,
       );
       this.receive(inlineError, false);
@@ -1097,8 +1089,6 @@ class ChatActionsImpl {
     this.serviceManager.store.dispatch(actions.removeAllNotifications());
   }
 
-  // updateCSSVariables removed; use `layout.custom-properties` in PublicConfig.
-
   /**
    * Construct the newViewState from the newView provided. Fire the view:pre:change and view:change events, as well as
    * window:pre:open, window:open, or window:pre:close, window:close if instructed to do so. If the view change isn't
@@ -1116,8 +1106,7 @@ class ChatActionsImpl {
     forceViewChange = false,
   ): Promise<ViewState> {
     const { store } = this.serviceManager;
-    const { viewState } =
-      store.getState().persistedToBrowserStorage.launcherState;
+    const { viewState } = store.getState().persistedToBrowserStorage;
 
     // Build the new viewState object.
     let newViewState = constructViewState(newView, store.getState());
@@ -1128,8 +1117,7 @@ class ChatActionsImpl {
       await this.fireViewChangeEventsAndChangeView(newViewState, reason);
 
       // Check and see if the chat should be hydrated.
-      newViewState =
-        store.getState().persistedToBrowserStorage.launcherState.viewState;
+      newViewState = store.getState().persistedToBrowserStorage.viewState;
       if (
         tryHydrating &&
         newViewState.mainWindow &&
@@ -1178,8 +1166,7 @@ class ChatActionsImpl {
 
     store.dispatch(actions.setViewChanging(true));
 
-    const { viewState } =
-      store.getState().persistedToBrowserStorage.launcherState;
+    const { viewState } = store.getState().persistedToBrowserStorage;
     // If we have a mainWindowOpenReason or mainWindowCloseReason then this viewChangeReason will be determined lower down.
     const { viewChangeReason } = reason;
 
@@ -1302,7 +1289,7 @@ class ChatActionsImpl {
       // If we're connected to an agent, we need to end the agent chat.
       const { isConnecting } = currentState.humanAgentState;
       const { isConnected } =
-        currentState.persistedToBrowserStorage.chatState.humanAgentState;
+        currentState.persistedToBrowserStorage.humanAgentState;
 
       if ((isConnected || isConnecting) && endHumanAgentConversation) {
         await serviceManager.humanAgentService.endChat(true, false, false);
@@ -1328,10 +1315,7 @@ class ChatActionsImpl {
       if (!skipHydration && !serviceManager.store.getState().isHydrated) {
         // Trigger re-hydration.
         this.hydrationPromise = null;
-        if (
-          store.getState().persistedToBrowserStorage.launcherState.viewState
-            .mainWindow
-        ) {
+        if (store.getState().persistedToBrowserStorage.viewState.mainWindow) {
           await serviceManager.actions.hydrateChat();
         }
       } else {
@@ -1351,23 +1335,21 @@ class ChatActionsImpl {
   async destroySession(keepOpenState: boolean) {
     const { store } = this.serviceManager;
     const { persistedToBrowserStorage } = store.getState();
-    const originalViewState = persistedToBrowserStorage.launcherState.viewState;
+    const originalViewState = persistedToBrowserStorage.viewState;
     const newPersistedToBrowserStorage = cloneDeep(
       DEFAULT_PERSISTED_TO_BROWSER,
     );
 
     if (keepOpenState) {
       // If we want to keep the open state then copy it from browser storage.
-      newPersistedToBrowserStorage.launcherState.viewState = originalViewState;
+      newPersistedToBrowserStorage.viewState = originalViewState;
     } else {
       // If we don't want to keep the open state then set the launcher to be open.
-      newPersistedToBrowserStorage.launcherState.viewState =
-        VIEW_STATE_LAUNCHER_OPEN;
+      newPersistedToBrowserStorage.viewState = VIEW_STATE_LAUNCHER_OPEN;
     }
     this.serviceManager.messageService.cancelAllMessageRequests();
 
-    this.serviceManager.userSessionStorageService.clearLauncherSession();
-    this.serviceManager.userSessionStorageService.clearChatSession();
+    this.serviceManager.userSessionStorageService.clearSession();
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(

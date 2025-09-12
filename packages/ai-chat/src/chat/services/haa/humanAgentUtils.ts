@@ -167,7 +167,7 @@ async function addBotReturnMessage(
   serviceManager: ServiceManager,
 ) {
   const botReturn = createBotReturnMessage(
-    serviceManager.store.getState().languagePack,
+    serviceManager.store.getState().config.derived.languagePack,
   );
   if (botReturn) {
     const initialRestartCount = serviceManager.restartCount;

@@ -31,12 +31,12 @@ function AvailabilityMessage({
   let availabilityKey: keyof LanguagePack;
   let availabilityValues: Record<string, any>;
   let availabilityText: string;
-  if (!isNil(availability?.estimated_wait_time)) {
+  if (!isNil(availability?.estimatedWaitTime)) {
     availabilityKey = "agent_connectingMinutes";
-    availabilityValues = { time: availability.estimated_wait_time };
-  } else if (!isNil(availability?.position_in_queue)) {
+    availabilityValues = { time: availability.estimatedWaitTime };
+  } else if (!isNil(availability?.positionInQueue)) {
     availabilityKey = "agent_connectingQueue";
-    availabilityValues = { position: availability.position_in_queue };
+    availabilityValues = { position: availability.positionInQueue };
   } else if (availability?.message) {
     availabilityText = availability.message;
   } else {

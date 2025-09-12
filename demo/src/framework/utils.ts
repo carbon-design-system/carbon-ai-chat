@@ -11,13 +11,10 @@ import {
   CornersType,
   MinimizeButtonIconType,
   PublicConfig,
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { KeyPairs, Settings } from "./types";
-import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -94,8 +91,6 @@ function getSettings() {
       customSendMessage,
       ...config.messaging,
     },
-    serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) =>
-      Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk),
   };
 
   const defaultSettings: Settings = {

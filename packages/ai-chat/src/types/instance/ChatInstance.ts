@@ -7,8 +7,6 @@
  *  @license
  */
 
-import { IntlShape } from "react-intl";
-
 import {
   CustomPanels,
   NotificationMessage,
@@ -30,6 +28,11 @@ export interface ChatInstance extends EventHandlers, ChatActions {
    * Returns state information of the Carbon AI Chat that could be useful.
    */
   getState: () => PublicWebChatState;
+
+  /**
+   * Manager for accessing and controlling custom panels.
+   */
+  customPanels?: CustomPanels;
 
   /**
    * Internal testing property that exposes the serviceManager.
@@ -68,11 +71,6 @@ export interface PublicWebChatState {
   isHomeScreenOpen: boolean;
 
   /**
-   * Indicates if debugging is enabled.
-   */
-  isDebugEnabled: boolean;
-
-  /**
    * Has the user sent a message that isn't requesting the welcome node.
    */
   hasUserSentMessage: boolean;
@@ -86,20 +84,6 @@ export interface PublicWebChatState {
    * State regarding service desks.
    */
   serviceDesk: PublicWebChatServiceDeskState;
-
-  /**
-   * Returns the current locale in use by the widget. This may not match the locale that was provided in the
-   * original public configuration if that value was invalid or if the locale has been changed since then.
-   *
-   * Example values include: 'en' and 'en-us'.
-   */
-  locale: string;
-
-  /**
-   * Returns an instance of the intl object that is used for generating translated text. Note that the object
-   * returned from this function changes each time the locale or language pack is changed.
-   */
-  intl: IntlShape;
 }
 
 /**
@@ -216,9 +200,6 @@ interface ChatActions {
     options?: SendOptions,
   ) => Promise<void>;
 
-  // updateLanguagePack removed in favor of top-level `strings` prop on components.
-  // updateCSSVariables removed in favor of `layout.custom-properties` in config.
-
   /**
    * Fire the view:pre:change and view:change events and change the view of the Carbon AI Chat. If a {@link ViewType} is
    * provided then that view will become visible and the rest will be hidden. If a {@link ViewState} is provided that
@@ -259,11 +240,6 @@ interface ChatActions {
    * @param animate Whether or not the scroll should be animated. Defaults to true.
    */
   scrollToMessage: (messageID: string, animate?: boolean) => void;
-
-  /**
-   * An instance of the custom panel with methods to manipulate the behavior of the custom panels.
-   */
-  customPanels: CustomPanels;
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.

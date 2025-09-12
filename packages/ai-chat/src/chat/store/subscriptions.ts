@@ -27,11 +27,8 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
     if (persistChatSession) {
       previousPersistedToBrowserStorage = persistedToBrowserStorage;
 
-      serviceManager.userSessionStorageService.persistChatSession(
-        persistedToBrowserStorage.chatState,
-      );
-      serviceManager.userSessionStorageService.persistLauncherSession(
-        persistedToBrowserStorage.launcherState,
+      serviceManager.userSessionStorageService.persistSession(
+        persistedToBrowserStorage,
       );
     }
   };

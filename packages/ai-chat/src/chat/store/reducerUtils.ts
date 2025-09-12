@@ -11,24 +11,24 @@ import isEqual from "lodash-es/isEqual.js";
 
 import { VERSION } from "../utils/environmentVariables";
 import {
-  HumanAgentState,
   AnnounceMessage,
   AppState,
   AppStateMessages,
   ChatMessagesState,
-  CustomPanelConfigOptions,
   CustomPanelState,
+  HumanAgentState,
   IFramePanelState,
   InputState,
-  LauncherState,
   MessagePanelState,
-  PersistedToBrowserStorageState,
   ThemeState,
   ViewSourcePanelState,
   ViewState,
+  PersistedState,
 } from "../../types/state/AppState";
+import { PersistedHumanAgentState } from "../../types/state/PersistedHumanAgentState";
+import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
 import {
-  NotificationType,
+  LauncherConfig,
   TIME_TO_ENTRANCE_ANIMATION_START,
 } from "../../types/config/LauncherConfig";
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
@@ -41,24 +41,17 @@ import { Message } from "../../types/messaging/Messages";
  * Miscellaneous utilities to help in reducers.
  */
 
-const DEFAULT_LAUNCHER: LauncherState = {
-  config: {
-    is_on: true,
-    mobile: {
-      is_on: true,
-      title: "",
-      time_to_expand: TIME_TO_ENTRANCE_ANIMATION_START,
-      new_expand_time: false,
-      time_to_reduce: 10000,
-      notification_type: NotificationType.TEXT_NOTIFICATION,
-    },
-    desktop: {
-      is_on: true,
-      title: "",
-      new_expand_time: false,
-      time_to_expand: TIME_TO_ENTRANCE_ANIMATION_START,
-      notification_type: NotificationType.TEXT_NOTIFICATION,
-    },
+const DEFAULT_LAUNCHER: LauncherConfig = {
+  isOn: true,
+  mobile: {
+    isOn: true,
+    title: "",
+    timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
+  },
+  desktop: {
+    isOn: true,
+    title: "",
+    timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
 };
 deepFreeze(DEFAULT_LAUNCHER);
@@ -116,36 +109,69 @@ const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
 };
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
-const DEFAULT_PERSISTED_TO_BROWSER: PersistedToBrowserStorageState = {
-  chatState: {
-    version: VERSION,
-    disclaimersAccepted: {},
-    homeScreenState: {
-      isHomeScreenOpen: false,
-      showBackToBot: false,
-    },
-    hasSentNonWelcomeMessage: false,
-    humanAgentState: {
-      isConnected: false,
-      isSuspended: false,
-      responseUserProfiles: {},
-    },
-  },
-  launcherState: {
-    wasLoadedFromBrowser: false,
-    version: VERSION,
-    viewState: VIEW_STATE_ALL_CLOSED,
-    showUnreadIndicator: false,
-    mobileLauncherIsExtended: false,
-    mobileLauncherWasReduced: false,
-    mobileLauncherDisableBounce: false,
-    desktopLauncherIsExpanded: false,
-    desktopLauncherWasMinimized: false,
-    bounceTurn: 1,
-    hasSentNonWelcomeMessage: false,
+const DEFAULT_INPUT_STATE: InputState = {
+  fieldVisible: true,
+  isReadonly: false,
+  files: [],
+  allowFileUploads: false,
+  allowMultipleFileUploads: false,
+  allowedFileUploadTypes: null,
+  stopStreamingButtonState: {
+    currentStreamID: null,
+    isVisible: false,
+    isDisabled: false,
   },
 };
+
+deepFreeze(DEFAULT_INPUT_STATE);
+
+const DEFAULT_PERSISTED_TO_BROWSER: PersistedState = {
+  disclaimersAccepted: {},
+  homeScreenState: {
+    isHomeScreenOpen: false,
+    showBackToBot: false,
+  },
+  humanAgentState: {
+    isConnected: false,
+    isSuspended: false,
+    responseUserProfiles: {},
+    responseUserProfile: null,
+  } as PersistedHumanAgentState,
+  hasSentNonWelcomeMessage: false,
+  wasLoadedFromBrowser: false,
+  version: VERSION,
+  viewState: VIEW_STATE_ALL_CLOSED,
+  showUnreadIndicator: false,
+  mobileLauncherIsExtended: false,
+  mobileLauncherWasReduced: false,
+  mobileLauncherDisableBounce: false,
+  desktopLauncherIsExpanded: false,
+  desktopLauncherWasMinimized: false,
+  bounceTurn: 1,
+};
 deepFreeze(DEFAULT_PERSISTED_TO_BROWSER);
+
+const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
+  // Volatile state (not persisted)
+  isConnecting: false,
+  isReconnecting: false,
+  availability: null,
+  numUnreadMessages: 0,
+  fileUploadInProgress: false,
+  activeLocalMessageID: null,
+  showScreenShareRequest: false,
+  isScreenSharing: false,
+  isHumanAgentTyping: false,
+  inputState: DEFAULT_INPUT_STATE,
+
+  // Mirror of persisted state for convenience at runtime (will be maintained by reducers)
+  isConnected: false,
+  isSuspended: false,
+  responseUserProfile: null,
+  responseUserProfiles: {},
+  serviceDeskState: undefined,
+};
+deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
@@ -164,32 +190,6 @@ const DEFAULT_MESSAGE_STATE: AppStateMessages = {
   },
 };
 deepFreeze(DEFAULT_MESSAGE_STATE);
-
-const DEFAULT_INPUT_STATE = (): InputState => ({
-  fieldVisible: true,
-  isReadonly: false,
-  files: [],
-  allowFileUploads: false,
-  allowMultipleFileUploads: false,
-  allowedFileUploadTypes: null,
-  stopStreamingButtonState: {
-    currentStreamID: null,
-    isVisible: false,
-    isDisabled: false,
-  },
-});
-
-const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
-  isConnecting: false,
-  isReconnecting: false,
-  numUnreadMessages: 0,
-  fileUploadInProgress: false,
-  showScreenShareRequest: false,
-  isScreenSharing: false,
-  isHumanAgentTyping: false,
-  inputState: DEFAULT_INPUT_STATE(),
-};
-deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 
 const DEFAULT_THEME_STATE: ThemeState = {
   derivedCarbonTheme: null,
@@ -218,10 +218,7 @@ function calcAnnouncementForWidgetOpen(
   newViewState: ViewState,
 ): AnnounceMessage {
   if (
-    isEqual(
-      previousState.persistedToBrowserStorage.launcherState.viewState,
-      newViewState,
-    )
+    isEqual(previousState.persistedToBrowserStorage.viewState, newViewState)
   ) {
     // No change in the view state so return the current announcement.
     return previousState.announceMessage;
@@ -257,12 +254,12 @@ function handleViewStateChange(
   viewState: ViewState,
 ): AppState {
   // If the main window is opened and the page is visible, mark any unread messages as read.
-  let { humanAgentState } = state;
-  let { showUnreadIndicator } = state.persistedToBrowserStorage.launcherState;
+  let { showUnreadIndicator } = state.persistedToBrowserStorage;
+  let topHuman = state.humanAgentState;
   if (viewState.mainWindow && state.isBrowserPageVisible) {
-    if (humanAgentState.numUnreadMessages !== 0) {
-      humanAgentState = {
-        ...humanAgentState,
+    if (topHuman.numUnreadMessages !== 0) {
+      topHuman = {
+        ...topHuman,
         numUnreadMessages: 0,
       };
     }
@@ -271,15 +268,12 @@ function handleViewStateChange(
 
   return {
     ...state,
+    humanAgentState: topHuman,
     announceMessage: calcAnnouncementForWidgetOpen(state, viewState),
-    humanAgentState,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
-      launcherState: {
-        ...state.persistedToBrowserStorage.launcherState,
-        viewState,
-        showUnreadIndicator,
-      },
+      viewState,
+      showUnreadIndicator,
     },
   };
 }
@@ -291,19 +285,16 @@ function setHomeScreenOpenState(
 ): AppState {
   if (showBackToBot === undefined) {
     showBackToBot =
-      state.persistedToBrowserStorage.chatState.homeScreenState.showBackToBot;
+      state.persistedToBrowserStorage.homeScreenState.showBackToBot;
   }
   return {
     ...state,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
-      chatState: {
-        ...state.persistedToBrowserStorage.chatState,
-        homeScreenState: {
-          ...state.persistedToBrowserStorage.chatState.homeScreenState,
-          isHomeScreenOpen: isOpen,
-          showBackToBot,
-        },
+      homeScreenState: {
+        ...state.persistedToBrowserStorage.homeScreenState,
+        isHomeScreenOpen: isOpen,
+        showBackToBot,
       },
     },
   };
@@ -370,10 +361,10 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 }
 
 export {
-  DEFAULT_HUMAN_AGENT_STATE,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
+  DEFAULT_HUMAN_AGENT_STATE,
   VIEW_STATE_ALL_CLOSED,
   VIEW_STATE_MAIN_WINDOW_OPEN,
   VIEW_STATE_LAUNCHER_OPEN,

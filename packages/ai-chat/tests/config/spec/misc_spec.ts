@@ -166,7 +166,7 @@ describe("Config Miscellaneous", () => {
   describe("disclaimer", () => {
     it("should store disclaimer config in Redux state", async () => {
       const disclaimer = {
-        is_on: true,
+        isOn: true,
         disclaimerHTML: "<p>This is a disclaimer</p>",
       };
 
@@ -194,9 +194,9 @@ describe("Config Miscellaneous", () => {
       expect(state.config.public.disclaimer).toEqual(disclaimer);
     });
 
-    it("should store disclaimer with is_on false in Redux state", async () => {
+    it("should store disclaimer with isOn false in Redux state", async () => {
       const disclaimer = {
-        is_on: false,
+        isOn: false,
         disclaimerHTML: "<p>Disabled disclaimer</p>",
       };
 
@@ -245,14 +245,14 @@ describe("Config Miscellaneous", () => {
         const previousConfig: PublicConfig = {
           disclaimer: {
             disclaimerHTML: "<p>Old disclaimer</p>",
-            is_on: true,
+            isOn: true,
           },
         };
 
         const newConfig: PublicConfig = {
           disclaimer: {
             disclaimerHTML: "<p>New disclaimer</p>",
-            is_on: false,
+            isOn: false,
           },
         };
 
@@ -265,7 +265,7 @@ describe("Config Miscellaneous", () => {
         expect(state.config.public.disclaimer?.disclaimerHTML).toBe(
           "<p>New disclaimer</p>",
         );
-        expect(state.config.public.disclaimer?.is_on).toBe(false);
+        expect(state.config.public.disclaimer?.isOn).toBe(false);
       });
     });
   });

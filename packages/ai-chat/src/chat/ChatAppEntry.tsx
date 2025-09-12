@@ -126,10 +126,10 @@ export function App({
         // Merge top-level service desk props into an effective config used internally
         const publicConfig = mergePublicConfig(config);
         if (serviceDeskFactory) {
-          (publicConfig as any).serviceDeskFactory = serviceDeskFactory;
+          publicConfig.serviceDeskFactory = serviceDeskFactory;
         }
         if (serviceDesk) {
-          (publicConfig as any).serviceDesk = serviceDesk;
+          publicConfig.serviceDesk = serviceDesk;
         }
         const { serviceManager, instance } =
           await initServiceManagerAndInstance({
@@ -139,14 +139,20 @@ export function App({
           });
 
         // Apply strings overrides before initial render, if provided
-        if (strings && Object.keys(strings as any).length) {
+        if (strings && Object.keys(strings).length) {
           const merged: LanguagePack = {
             ...enLanguagePack,
-            ...(strings as any),
+            ...strings,
           };
           const locale =
             serviceManager.store.getState().config.public.locale || "en";
           setIntl(serviceManager, locale, merged);
+          // Keep Redux language pack in sync so selectors/components read overrides
+          serviceManager.store.dispatch(
+            appActions.changeState({
+              config: { derived: { languagePack: merged } },
+            }),
+          );
         }
 
         attachUserDefinedResponseHandlers(
@@ -194,20 +200,17 @@ export function App({
       const prevEffective = mergePublicConfig(previousConfig || {});
       const nextEffective = mergePublicConfig(config);
       if (serviceDeskFactory) {
-        (nextEffective as any).serviceDeskFactory = serviceDeskFactory;
+        nextEffective.serviceDeskFactory = serviceDeskFactory;
       }
       if (serviceDesk) {
-        (nextEffective as any).serviceDesk = serviceDesk;
+        nextEffective.serviceDesk = serviceDesk;
       }
-      const configChanges = detectConfigChanges(
-        prevEffective as any,
-        nextEffective as any,
-      );
+      const configChanges = detectConfigChanges(prevEffective, nextEffective);
       const currentServiceManager = serviceManager;
 
       const handleDynamicUpdate = async () => {
         try {
-          const publicConfig = nextEffective as any;
+          const publicConfig = nextEffective;
           await applyConfigChangesDynamically(
             configChanges,
             publicConfig,
@@ -228,10 +231,16 @@ export function App({
     }
     const overrides = strings as DeepPartial<LanguagePack> | undefined;
     if (overrides) {
-      const merged: LanguagePack = { ...enLanguagePack, ...(overrides as any) };
+      const merged: LanguagePack = { ...enLanguagePack, ...overrides };
       const locale =
         serviceManager.store.getState().config.public.locale || "en";
       setIntl(serviceManager, locale, merged);
+      // Update Redux language pack so state reflects overrides
+      serviceManager.store.dispatch(
+        appActions.changeState({
+          config: { derived: { languagePack: merged } },
+        }),
+      );
     }
   }, [strings, serviceManager]);
 

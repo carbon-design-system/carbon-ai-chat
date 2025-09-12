@@ -51,7 +51,7 @@ $width: config.get-var("width", min(380px, #{$max-width}));
 $height: config.get-var("height", calc(100vh - (2 * #{layout.$spacing-07})));
 
 // Position Variables
-$bottom-position: config.get-var("bottom-position", #{layout.$spacing-07});
+$bottom-position: config.get-var("bottom-position", #{layout.$spacing-09});
 $right-position: config.get-var("right-position", #{layout.$spacing-07});
 $top-position: config.get-var("top-position", auto);
 $left-position: config.get-var("left-position", auto);
@@ -70,7 +70,7 @@ $viewport-offset-top: config.get-var("viewport-offsetTop", 0);
 $launcher-default-size: config.get-var("launcher-default-size", 56px);
 $launcher-position-bottom: config.get-var(
   "launcher-position-bottom",
-  #{layout.$spacing-07}
+  #{layout.$spacing-09}
 );
 $launcher-position-right: config.get-var(
   "launcher-position-right",

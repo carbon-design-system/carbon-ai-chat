@@ -7,8 +7,6 @@
  *  @license
  */
 
-/* eslint-disable react/no-danger */
-
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import AiLaunch24 from "@carbon/icons/es/ai-launch/24.js";
 import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
@@ -70,7 +68,8 @@ function Launcher(props: LauncherProps, ref: Ref<HasRequestFocus>) {
     launcherHidden,
   } = props;
   const launcherAvatarURL = useSelector(
-    (state: AppState) => state.launcher.config.desktop.avatar_url_override,
+    (state: AppState) =>
+      state.config.derived.launcher.desktop.avatarUrlOverride,
   );
   const useAITheme = useSelector(
     (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,

@@ -11,7 +11,7 @@
 @use "@carbon/styles/scss/components/button/tokens";
 @use "@carbon/styles/scss/motion";
 
-:host {
+.cds-aichat--container--render {
   /* **************************************************************************************************************** */
 
   /* Generic variables using for common values that are repeated throughout the widget. */
@@ -30,7 +30,7 @@
     calc(min(256px, 100vh) - var(--cds-aichat-bottom-position))
   );
   --cds-aichat-max-width: calc(100vw - (2 * var(--cds-aichat-right-position)));
-  --cds-aichat-bottom-position: #{layout.$spacing-07};
+  --cds-aichat-bottom-position: #{layout.$spacing-09};
   --cds-aichat-right-position: #{layout.$spacing-07};
   --cds-aichat-top-position: auto;
   --cds-aichat-left-position: auto;
@@ -74,7 +74,7 @@
 
   /* Launcher Variables */
   --cds-aichat-launcher-default-size: 56px;
-  --cds-aichat-launcher-position-bottom: #{layout.$spacing-07};
+  --cds-aichat-launcher-position-bottom: #{layout.$spacing-09};
   --cds-aichat-launcher-position-right: #{layout.$spacing-07};
   --cds-aichat-launcher-extended-width: 280px;
   --cds-aichat-launcher-desktop-expanded-height: 320px;
@@ -98,12 +98,12 @@
   --cds-aichat-unread-indicator-color-text: #{theme.$text-on-color};
 }
 
-.cds-aichat--widget--rounded {
+.cds-aichat--container--render .cds-aichat--widget--rounded {
   --cds-aichat-border-radius: #{layout.$spacing-03};
 }
 
 /* We will have to think on what this looks like if we are going to remove these CSS variables and make them SASS based. */
-.cds-aichat---is-phone {
+.cds-aichat--container--render .cds-aichat---is-phone {
   --cds-aichat-width: var(--cds-aichat-viewport-width, 100vw);
   --cds-aichat-height: var(--cds-aichat-viewport-height, 100vh);
   --cds-aichat-left-position: var(--cds-aichat-viewport-offsetLeft, 0);

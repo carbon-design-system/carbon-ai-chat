@@ -11,6 +11,24 @@
 @use "@carbon/styles/scss/type";
 @use "../../styles/chat-theme";
 
+.cds-aichat--hidden {
+  display: none;
+}
+
+.cds-aichat--widget__break-word {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+.cds-aichat--widget__text-ellipsis {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
 .cds-aichat--container--render {
   box-sizing: border-box;
   block-size: 100%;
@@ -108,7 +126,7 @@
 rounded corners are enabled. */
 
 .cds-aichat--widget.cds-aichat--widget--rounded {
-  border-radius: layout.$spacing-03;
+  border-radius: chat-theme.$border-radius;
   /* Rounded corners because .cds-aichat--widget doesn't have overflow: hidden to easily apply rounded corners at the top level.
    We need to apply a border radius to certain elements within the widget in order to achieve a Carbon AI Chat widget with */
 
@@ -117,10 +135,14 @@ rounded corners are enabled. */
   .cds-aichat--confirm-modal,
   .cds-aichat--widget__animation-container,
   .cds-aichat--bot-container,
-  /* removed invalid selector */
   .cds-aichat--overlay-panel,
   .cds-aichat--hydrating-container,
-  .cds-aichat--background-cover,
+  .cds-aichat--background-cover {
+    border-end-end-radius: layout.$spacing-03;
+    border-end-start-radius: layout.$spacing-03;
+    border-start-end-radius: layout.$spacing-03;
+    border-start-start-radius: layout.$spacing-03;
+  }
 
   /* For the top right and left corners when the widget is rounded. */
   .cds-aichat--header {
@@ -132,26 +154,6 @@ rounded corners are enabled. */
   .cds-aichat--input-container {
     border-end-end-radius: layout.$spacing-03;
     border-end-start-radius: layout.$spacing-03;
-  }
-
-  .cds-aichat--branding-banner {
-    border-end-end-radius: layout.$spacing-03;
-    border-end-start-radius: layout.$spacing-03;
-  }
-
-  /* If the branding banner is visible, the animation container should not have a bottom left/right border radius since
-  the branding banner will have them applied instead. */
-
-  &:not(.cds-aichat--widget--max-width)
-    .cds-aichat--widget__animation-container--with-branding-banner
-    .cds-aichat--input-container {
-    border-end-end-radius: 0;
-    border-end-start-radius: 0;
-  }
-
-  .cds-aichat--widget__animation-container--with-branding-banner {
-    border-end-end-radius: 0;
-    border-end-start-radius: 0;
   }
 }
 
@@ -168,7 +170,6 @@ in. */
   }
 }
 
-/* moved earlier: .cds-aichat--widget .cds-aichat--widget__animation-container */
 .cds-aichat--widget.cds-aichat--widget--closed
   .cds-aichat--widget__animation-container {
   overflow: hidden;
@@ -261,6 +262,10 @@ in. */
   text-align: start;
 }
 
+.cds-aichat--widget--rounded .cds-aichat {
+  border-radius: chat-theme.$border-radius;
+}
+
 .cds-aichat--ai-theme .cds-aichat {
   background-image: chat-theme.$ai-background-image;
   box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
@@ -278,7 +283,6 @@ in. */
   text-align: end;
 }
 
-/* moved earlier: .cds-aichat--bot-container */
 .cds-aichat--main-window,
 .cds-aichat--widget__layer {
   block-size: 100%;
@@ -318,7 +322,6 @@ svg.cds-aichat--icon__logout--reverse {
   }
 }
 
-/* moved earlier: .cds-aichat--background-cover */
 .cds-aichat--background-cover.cds-aichat--background-cover__non-header,
 .cds-aichat--widget.cds-aichat--widget--rounded
   .cds-aichat--background-cover.cds-aichat--background-cover__non-header {
@@ -377,36 +380,12 @@ svg.cds-aichat--icon__logout--reverse {
   }
 }
 
-/* Remove top rounded corners for panel content when a header is visible. */
-.cds-aichat--widget .cds-aichat--header__container ~ .cds-aichat--panel-content,
-.cds-aichat--widget .cds-aichat--header ~ .cds-aichat--panel-content {
-  border-start-end-radius: 0;
-  border-start-start-radius: 0;
-}
-
 /* These selectors apply a border radius to panel content. */
 .cds-aichat--widget--rounded {
-  .cds-aichat--body-and-footer-component,
-  .cds-aichat--widget__animation-container:not(
-      .cds-aichat--widget__animation-container--with-branding-banner
-    )
-    .cds-aichat--panel-content {
+  .cds-aichat--body-and-footer-component {
     border-end-end-radius: chat-theme.$border-radius;
     border-end-start-radius: chat-theme.$border-radius;
-  }
-
-  .cds-aichat--widget__animation-container
-    .cds-aichat--custom-panel
-    .cds-aichat--panel-content {
     border-start-end-radius: chat-theme.$border-radius;
     border-start-start-radius: chat-theme.$border-radius;
-  }
-
-  .cds-aichat--widget__animation-container
-    .cds-aichat--custom-panel
-    .cds-aichat--header
-    ~ .cds-aichat--panel-content {
-    border-start-end-radius: 0;
-    border-start-start-radius: 0;
   }
 }

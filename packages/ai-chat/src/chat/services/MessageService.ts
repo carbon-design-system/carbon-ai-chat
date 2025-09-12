@@ -286,7 +286,8 @@ class MessageService {
    */
   private addErrorMessage() {
     const { store } = this.serviceManager;
-    const errorMessage = store.getState().languagePack.errors_singleMessage;
+    const errorMessage =
+      store.getState().config.derived.languagePack.errors_singleMessage;
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(errorMessage);
     store.dispatch(

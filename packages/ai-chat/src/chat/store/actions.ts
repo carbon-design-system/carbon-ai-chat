@@ -14,15 +14,13 @@ import {
   AppState,
   AppStateMessages,
   ChatMessagesState,
-  CustomPanelConfigOptions,
   FileUpload,
   InputState,
-  PersistedChatState,
-  PersistedLauncherState,
+  PersistedState,
   ThemeState,
   ViewState,
 } from "../../types/state/AppState";
-import { LauncherInternalCallToActionConfig } from "../../types/config/LauncherConfig";
+import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -42,10 +40,8 @@ import {
   SearchResult,
 } from "../../types/messaging/Messages";
 import { NotificationMessage } from "../../types/instance/apiTypes";
-import { LauncherType } from "../../types/config/LauncherConfig";
 
 const CHANGE_STATE = "CHANGE_STATE";
-const UPDATE_LAUNCHER_AVATAR_URL = "UPDATE_LAUNCHER_AVATAR_URL";
 const HYDRATE_CHAT = "HYDRATE_CHAT";
 const HYDRATE_MESSAGE_HISTORY = "HYDRATE_MESSAGE_HISTORY";
 const ADD_LOCAL_MESSAGE_ITEM = "ADD_LOCAL_MESSAGE_ITEM";
@@ -66,7 +62,6 @@ const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
   "SET_MESSAGE_RESPONSE_HISTORY_PROPERTY";
 const MERGE_HISTORY = "MERGE_HISTORY";
 const SET_LAUNCHER_PROPERTY = "SET_LAUNCHER_PROPERTY";
-const SET_LAUNCHER_CONFIG_PROPERTY = "SET_LAUNCHER_CONFIG_PROPERTY";
 const ANNOUNCE_MESSAGE = "ANNOUNCE_MESSAGE";
 const SET_CHAT_MESSAGES_PROPERTY = "SET_CHAT_MESSAGES_PROPERTY";
 const RESTART_CONVERSATION = "RESTART_CONVERSATION";
@@ -74,7 +69,7 @@ const ACCEPTED_DISCLAIMER = "ACCEPTED_DISCLAIMER";
 const ADD_MESSAGE = "ADD_MESSAGE";
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   "UPDATE_HAS_SENT_NON_WELCOME_MESSAGE";
-const UPDATE_PERSISTED_CHAT_STATE = "UPDATE_PERSISTED_CHAT_STATE";
+const UPDATE_PERSISTED_STATE = "UPDATE_PERSISTED_STATE";
 const SET_HOME_SCREEN_IS_OPEN = "SET_HOME_SCREEN_IS_OPEN";
 const UPDATE_MESSAGE = "UPDATE_MESSAGE";
 const SET_LAUNCHER_MINIMIZED = "SET_LAUNCHER_MINIMIZED";
@@ -195,9 +190,9 @@ const actions = {
     };
   },
 
-  updatePersistedChatState(chatState: Partial<PersistedChatState>) {
+  updatePersistedState(chatState: Partial<PersistedState>) {
     return {
-      type: UPDATE_PERSISTED_CHAT_STATE,
+      type: UPDATE_PERSISTED_STATE,
       chatState,
     };
   },
@@ -272,28 +267,13 @@ const actions = {
   },
 
   /**
-   * Sets the value of one of the properties of {@link PersistedLauncherState}.
+   * Sets the value of one of the properties of {@link PersistedState}.
    */
-  setLauncherProperty<TPropertyName extends keyof PersistedLauncherState>(
+  setLauncherProperty<TPropertyName extends keyof PersistedState>(
     propertyName: TPropertyName,
-    propertyValue: PersistedLauncherState[TPropertyName],
+    propertyValue: PersistedState[TPropertyName],
   ) {
     return { type: SET_LAUNCHER_PROPERTY, propertyName, propertyValue };
-  },
-
-  setLauncherConfigProperty<
-    TPropertyName extends keyof LauncherInternalCallToActionConfig,
-  >(
-    propertyName: TPropertyName,
-    propertyValue: LauncherInternalCallToActionConfig[TPropertyName],
-    launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE,
-  ) {
-    return {
-      type: SET_LAUNCHER_CONFIG_PROPERTY,
-      propertyName,
-      propertyValue,
-      launcherType,
-    };
   },
 
   /**
@@ -617,7 +597,6 @@ export {
   SET_VIEW_STATE,
   SET_VIEW_CHANGING,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
-  UPDATE_LAUNCHER_AVATAR_URL,
   MESSAGE_SET_OPTION_SELECTED,
   SET_MESSAGE_UI_PROPERTY,
   ANNOUNCE_MESSAGE,
@@ -625,12 +604,11 @@ export {
   ACCEPTED_DISCLAIMER,
   ADD_MESSAGE,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
-  UPDATE_PERSISTED_CHAT_STATE,
+  UPDATE_PERSISTED_STATE,
   SET_HOME_SCREEN_IS_OPEN,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
   SET_LAUNCHER_PROPERTY,
-  SET_LAUNCHER_CONFIG_PROPERTY,
   SET_LAUNCHER_MINIMIZED,
   CLOSE_IFRAME_PANEL,
   OPEN_IFRAME_CONTENT,

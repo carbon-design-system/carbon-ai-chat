@@ -28,15 +28,18 @@ export {
 
 // Export all types without the web component implementations
 export {
-  CustomPanelConfigOptions,
-  CustomPanelInstance,
-  CustomPanels,
   NotificationMessage,
   ViewState,
   ViewType,
 } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
+
+export {
+  CustomPanelConfigOptions,
+  CustomPanelInstance,
+  CustomPanels,
+} from "./types/instance/apiTypes";
 
 export {
   ChatInstance,

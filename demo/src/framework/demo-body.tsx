@@ -116,6 +116,7 @@ export class DemoBody extends LitElement {
     const customEvent = event as CustomEvent;
     const settings = { ...this.settings };
     const newConfig: PublicConfig = customEvent.detail;
+    const oldConfig = this.config;
 
     // Preserve the customSendMessage function from the existing config
     const config: PublicConfig = {
@@ -125,6 +126,10 @@ export class DemoBody extends LitElement {
         customSendMessage: this.config.messaging?.customSendMessage,
       },
     };
+
+    // Check if homescreen changed
+    const homescreenChanged = oldConfig.homescreen !== newConfig.homescreen;
+    const shouldRefresh = homescreenChanged;
 
     this.config = config;
 
@@ -139,10 +144,17 @@ export class DemoBody extends LitElement {
         : undefined,
     };
 
-    updateQueryParamsWithoutRefresh([
-      { key: "settings", value: JSON.stringify(settings) },
-      { key: "config", value: JSON.stringify(configForSerialization) },
-    ]);
+    if (shouldRefresh) {
+      updateQueryParams([
+        { key: "settings", value: JSON.stringify(settings) },
+        { key: "config", value: JSON.stringify(configForSerialization) },
+      ]);
+    } else {
+      updateQueryParamsWithoutRefresh([
+        { key: "settings", value: JSON.stringify(settings) },
+        { key: "config", value: JSON.stringify(configForSerialization) },
+      ]);
+    }
 
     // Re-render React app if using React framework
     if (this.settings.framework === "react") {

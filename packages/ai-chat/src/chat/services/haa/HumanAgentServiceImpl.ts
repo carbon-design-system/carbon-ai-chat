@@ -214,7 +214,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const state = store.getState();
     const { config, persistedToBrowserStorage } = state;
     const serviceDeskState = cloneDeep(
-      persistedToBrowserStorage.chatState.humanAgentState.serviceDeskState,
+      persistedToBrowserStorage.humanAgentState.serviceDeskState,
     );
 
     this.serviceDeskCallback = new ServiceDeskCallbackImpl(
@@ -257,7 +257,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     if (
-      this.serviceManager.store.getState().persistedToBrowserStorage.chatState
+      this.serviceManager.store.getState().persistedToBrowserStorage
         .humanAgentState.isSuspended
     ) {
       // If the user is currently engaged in a conversation with an agent that is suspended and we start a new chat, we
@@ -711,7 +711,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   private async handleHumanAgentJoinedTimeout() {
     // Display an error to the user.
     const message =
-      this.serviceManager.store.getState().languagePack
+      this.serviceManager.store.getState().config.derived.languagePack
         .errors_noHumanAgentsJoined;
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(message);
@@ -889,7 +889,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   persistedHumanAgentState() {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.humanAgentState;
+      .humanAgentState;
   }
 
   /**
@@ -897,7 +897,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   isSuspended() {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.humanAgentState.isSuspended;
+      .humanAgentState.isSuspended;
   }
 }
 
@@ -1195,7 +1195,8 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
       }
       case ErrorType.CONNECTING: {
         // If we can't connect, display an inline error message on the bot view.
-        const { languagePack } = this.serviceManager.store.getState();
+        const { languagePack } =
+          this.serviceManager.store.getState().config.derived;
         const message =
           errorInfo.messageToUser || languagePack.errors_connectingToHumanAgent;
         const { originalMessage, localMessage } =
@@ -1360,7 +1361,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    */
   persistedHumanAgentState() {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.humanAgentState;
+      .humanAgentState;
   }
 
   /**
@@ -1369,7 +1370,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
    */
   persistedState(): TPersistedStateType {
     return this.serviceManager.store.getState().persistedToBrowserStorage
-      .chatState.humanAgentState.serviceDeskState as TPersistedStateType;
+      .humanAgentState.serviceDeskState as TPersistedStateType;
   }
 
   /**
@@ -1394,7 +1395,7 @@ class ServiceDeskCallbackImpl<TPersistedStateType>
     if (mergeWithCurrent) {
       newState = merge(
         {},
-        store.getState().persistedToBrowserStorage.chatState.humanAgentState
+        store.getState().persistedToBrowserStorage.humanAgentState
           .serviceDeskState,
         state,
       );

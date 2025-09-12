@@ -48,9 +48,9 @@ function feedbackButtonsElementTemplate(
       role="button"
       disabled="${isPositiveDisabled || nothing}"
       aria-expanded="${isPositiveDisabled || !hasPositiveDetails
-        ? (nothing as any)
+        ? nothing
         : isPositiveOpen}"
-      aria-pressed="${isPositiveSelected || (nothing as any)}"
+      aria-pressed="${isPositiveSelected || nothing}"
       aria-controls="${panelID}-feedback-positive"
       @click="${() => onClick(true)}"
     >
@@ -69,9 +69,9 @@ function feedbackButtonsElementTemplate(
       role="button"
       disabled="${isNegativeDisabled || nothing}"
       aria-expanded="${isNegativeDisabled || !hasNegativeDetails
-        ? (nothing as any)
+        ? nothing
         : isNegativeOpen}"
-      aria-pressed="${isNegativeSelected || (nothing as unknown as any)}"
+      aria-pressed="${isNegativeSelected || nothing}"
       aria-controls="${panelID}-feedback-positive"
       @click="${() => onClick(false)}"
     >

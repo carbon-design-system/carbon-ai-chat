@@ -86,8 +86,7 @@ function HomeScreenComponent({
   const serviceManager = useServiceManager();
 
   const { showBackToBot } = useSelector(
-    (state: AppState) =>
-      state.persistedToBrowserStorage.chatState.homeScreenState,
+    (state: AppState) => state.persistedToBrowserStorage.homeScreenState,
   );
 
   const prevIsHydrated = usePrevious(isHydrated);
@@ -103,9 +102,9 @@ function HomeScreenComponent({
     ];
   const hasCustomContent = homeScreenWriteableElement.hasChildNodes();
 
-  const { greeting, starters, custom_content_only } = homescreen || {};
+  const { greeting, starters, customContentOnly } = homescreen || {};
   const homeScreenWithStarters =
-    starters?.is_on && Boolean(starters.buttons?.length);
+    starters?.isOn && Boolean(starters.buttons?.length);
 
   const firstRender = isHydrated && !prevIsHydrated;
   return (
@@ -130,16 +129,16 @@ function HomeScreenComponent({
                 !hasCustomContent,
               "cds-aichat--home-screen__body--custom-content": hasCustomContent,
               "cds-aichat--home-screen__body--custom-content-only":
-                custom_content_only,
+                customContentOnly,
             })}
           >
             <div className="cds-aichat--home-screen__initial-content">
-              {!custom_content_only && (
+              {!customContentOnly && (
                 <div className="cds-aichat--home-screen__greeting">
                   {greeting}
                 </div>
               )}
-              {!custom_content_only && homeScreenWithStarters && (
+              {!customContentOnly && homeScreenWithStarters && (
                 <div
                   className={cx("cds-aichat--home-screen__starters", {
                     // If there are more than 5 starters, animate in all starters at once.
@@ -167,9 +166,9 @@ function HomeScreenComponent({
           <div
             className={cx("cds-aichat--home-screen__custom-content", {
               "cds-aichat--home-screen__custom-content--custom-content-only":
-                custom_content_only,
+                customContentOnly,
               "cds-aichat--home-screen__custom-content--animation":
-                hasCustomContent || custom_content_only,
+                hasCustomContent || customContentOnly,
             })}
           >
             <WriteableElement
@@ -181,7 +180,7 @@ function HomeScreenComponent({
         <div
           className={cx("cds-aichat--home-screen__input-container-wrapper", {
             "cds-aichat--home-screen__input-container-wrapper--no-custom-content":
-              !hasCustomContent && !custom_content_only,
+              !hasCustomContent && !customContentOnly,
           })}
         >
           {showBackToBot && (

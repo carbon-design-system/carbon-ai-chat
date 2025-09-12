@@ -79,9 +79,6 @@ function createChatInstance({
       return instance;
     },
 
-    // updateLanguagePack removed: use top-level `strings` prop on components.
-    // updateCSSVariables removed: use `layout.custom-properties` in PublicConfig.
-
     send: async (message: MessageRequest | string, options?: SendOptions) => {
       debugLog("Called instance.send", message, options);
       if (selectInputState(serviceManager.store.getState()).isReadonly) {
@@ -323,7 +320,7 @@ function createChatInstance({
     serviceManager.store.getState().config.public.exposeServiceManagerForTesting
   ) {
     const { instance: _, ...serviceManagerForTesting } = serviceManager;
-    (instance as any).serviceManager = serviceManagerForTesting;
+    instance.serviceManager = serviceManagerForTesting;
   }
 
   if (serviceManager.store.getState().config.public.debug) {

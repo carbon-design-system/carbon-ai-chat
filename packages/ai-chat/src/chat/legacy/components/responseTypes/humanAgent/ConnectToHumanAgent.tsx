@@ -15,10 +15,10 @@ import {
   HumanAgentDisplayState,
   HumanAgentState,
 } from "../../../../../types/state/AppState";
+import { PersistedHumanAgentState } from "../../../../../types/state/PersistedHumanAgentState";
 import HasLanguagePack from "../../../../../types/utilities/HasLanguagePack";
 import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../../types/messaging/LocalMessageItem";
-import { PersistedHumanAgentState } from "../../../../../types/state/PersistedHumanAgentState";
 import { hasServiceDesk } from "../../../../utils/messageUtils";
 import { RealConnectToHumanAgent } from "./RealConnectToHumanAgent";
 import {

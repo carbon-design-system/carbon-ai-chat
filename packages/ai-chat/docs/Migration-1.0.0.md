@@ -10,7 +10,7 @@ Version 1.0.0 introduces **live config updates**. Changes to `PublicConfig` now 
 
 ### Config Structure:
 
-- `showLauncher` -> `launcher.is_on`
+- `showLauncher` -> `launcher.isOn`
 - `headerConfig` -> `header`
 - `themeConfig` -> removed (see theming below)
 - All `PublicConfig` properties are now top-level props (no more `config` prop)
@@ -43,7 +43,7 @@ Key replacements:
 - `updateLanguagePack()` -> pass `strings` prop (DeepPartial<LanguagePack>)
 - `updateHomeScreenConfig()` -> set `homescreen` config
 - `updateLocale()` -> set `locale` config
-- `updateCSSVariables()` -> set `layout.cssVariables` config
+- `updateCSSVariables()` -> set `layout.customProperties` config
 - `updateMainHeaderTitle()` -> set `header.title` config
 - `updateLauncherConfig()` -> set `launcher` config
 - `updateCustomMenuOptions()` -> set `header.menuOptions` config
@@ -67,7 +67,7 @@ Key replacements:
 const config = { showLauncher: true };
 
 // After
-const config = { launcher: { is_on: true } };
+const config = { launcher: { isOn: true } };
 ```
 
 ### Header
@@ -125,7 +125,7 @@ instance.updateCSSVariables({
 // After
 const config = {
   layout: {
-    cssVariables: {
+    customProperties: {
       HEIGHT: "600px",
       WIDTH: "400px",
       Z_INDEX: "9999",
@@ -142,7 +142,7 @@ const config = {
   config={{
     debug: true,
     header: { title: "My Assistant" },
-    launcher: { is_on: true },
+    launcher: { isOn: true },
   }}
   serviceDeskFactory={myFactory}
 />
@@ -151,7 +151,7 @@ const config = {
 <ChatContainer
   debug={true}
   header={{ title: "My Assistant" }}
-  launcher={{ is_on: true }}
+  launcher={{ isOn: true }}
   serviceDeskFactory={myFactory}
 />
 ```
@@ -172,7 +172,7 @@ return <ChatContainer {...config} />;
 
 ```ts
 const el = document.querySelector("cds-aichat-container");
-el.launcher = { is_on: false };
+el.launcher = { isOn: false };
 ```
 
 ## New Features

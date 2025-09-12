@@ -27,7 +27,6 @@ import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { BOUNCING_ANIMATION_TIMEOUTS } from "../../../../types/config/LauncherConfig";
 import { Launcher } from "./Launcher";
 import { LauncherComplex } from "./LauncherComplex";
-import { LauncherType } from "../../../../types/config/LauncherConfig";
 
 // The amount of time it takes the desktop launcher to minimize.
 const TIME_FOR_MINIMIZE_ANIMATION = 400;
@@ -55,20 +54,19 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const languagePack = useLanguagePack();
   const intl = useIntl();
 
-  const browserLauncherState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.launcherState,
-  );
   const {
     desktopLauncherWasMinimized,
     desktopLauncherIsExpanded,
     bounceTurn,
     showUnreadIndicator,
     viewState,
-  } = browserLauncherState;
-  const launcherState = useSelector((state: AppState) => state.launcher);
-  const launcherConfig = launcherState.config;
-  const { time_to_expand, new_expand_time } = launcherConfig.desktop;
-  const isExpandedLauncherEnabled = launcherConfig.desktop.is_on;
+  } = useSelector((state: AppState) => state.persistedToBrowserStorage);
+
+  const launcherConfig = useSelector(
+    (state: AppState) => state.config.derived.launcher,
+  );
+  const { timeToExpand } = launcherConfig.desktop;
+  const isExpandedLauncherEnabled = launcherConfig.desktop.isOn;
   const unreadHumanAgentCount = useSelector(
     (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
@@ -146,8 +144,8 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     // close button.
     animationStartTimerRef.current = setTimeout(() => {
       startExpandLauncher();
-    }, time_to_expand);
-  }, [time_to_expand, startExpandLauncher]);
+    }, timeToExpand);
+  }, [timeToExpand, startExpandLauncher]);
 
   /**
    * Clear the existing expand animation timers.
@@ -324,35 +322,6 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
       setDefaultLauncherState();
     }
   }, [viewState, setDefaultLauncherState]);
-
-  // If the launcher time_to_expand changes then we need to clear the existing timers and start new ones with the new
-  // time.
-  useEffect(() => {
-    if (new_expand_time) {
-      // End any bounce animation timers that may have been in progress, but do not reset the bounce turns counter.
-      // Instead, the user will continue on whatever bounce turn they left off on (15s or 60s) after they've minimized
-      // the new greeting message and refreshed the page.
-      clearBounceAnimationTimers();
-
-      clearExpandAnimationTimers();
-      setExpandAnimationTimers();
-      serviceManager.store.dispatch(
-        actions.setLauncherConfigProperty(
-          "new_expand_time",
-          false,
-          LauncherType.DESKTOP,
-        ),
-      );
-    }
-  }, [
-    animationFinishedTimerRef,
-    animationStartTimerRef,
-    new_expand_time,
-    setExpandAnimationTimers,
-    clearExpandAnimationTimers,
-    clearBounceAnimationTimers,
-    serviceManager.store,
-  ]);
 
   // If the launcher title has changed then we need to recalculate the height and update the styles.
   const prevLauncherTitle = usePrevious(launcherConfig.desktop.title);

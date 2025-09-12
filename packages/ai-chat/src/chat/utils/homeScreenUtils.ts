@@ -26,7 +26,7 @@ function withoutEmptyStarters(config: HomeScreenConfig): HomeScreenConfig {
     };
     if (!newConfig?.starters?.buttons?.length) {
       // If we end up with no starters, then turn them off.
-      newConfig.starters.is_on = false;
+      newConfig.starters.isOn = false;
     }
   }
 

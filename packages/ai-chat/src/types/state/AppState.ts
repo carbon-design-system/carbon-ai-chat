@@ -20,19 +20,17 @@ import type { FileUploadCapabilities } from "../instance/ChatInstance";
 import type { CornersType } from "../../chat/utils/constants";
 import type { AppConfig } from "./AppConfig";
 import type { CarbonTheme } from "../config/PublicConfig";
-import type { LauncherInternalConfig } from "../config/LauncherConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
-import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
 import { HomeScreenState } from "../config/HomeScreenConfig";
 import {
   ConversationalSearchItemCitation,
   GenericItem,
   IFrameItem,
   Message,
+  ResponseUserProfile,
   SearchResult,
 } from "../messaging/Messages";
-import { LayoutConfig } from "../config/PublicConfig";
 import { AgentAvailability } from "../config/ServiceDeskConfig";
 
 /**
@@ -65,11 +63,6 @@ interface AppState extends AppStateMessages {
   botInputState: InputState;
 
   /**
-   * The current state for the human agent system.
-   */
-  humanAgentState: HumanAgentState;
-
-  /**
    * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
    * welcome node (if appropriate).
    */
@@ -80,13 +73,6 @@ interface AppState extends AppStateMessages {
    * as the remote config provided by the tooling.
    */
   config: AppConfig;
-
-  /**
-   * The language pack currently in use by the widget. This may be different from the language pack provided in the
-   * original public config if it has been updated since. If no pack was provided in the public config, this value
-   * will be set by the locale and is updated if the locale is changed.
-   */
-  languagePack: LanguagePack;
 
   /**
    * An ARIA message to be announced to the user. This will be announced whenever the message text changes.
@@ -102,11 +88,10 @@ interface AppState extends AppStateMessages {
   suspendScrollDetection: boolean;
 
   /**
-   * Any items stored here is also persisted to sessionStorage IF sessionHistory is turned on. We rehydrate the redux
-   * store with this information. Examples of things we store include if the Carbon AI Chat is open and if you have an active
-   * conversation with an agent.
+   * Any items stored here is also persisted to sessionStorage. This is used for things you want to maintain
+   * across page reloads like "is the launcher open".
    */
-  persistedToBrowserStorage: PersistedToBrowserStorageState;
+  persistedToBrowserStorage: PersistedState;
 
   /**
    * The current enum value for the width of the chat. Used to drive responsive design and to swap components out
@@ -128,11 +113,6 @@ interface AppState extends AppStateMessages {
    * Has thrown an error that Carbon AI Chat can not recover from.
    */
   catastrophicErrorType?: boolean;
-
-  /**
-   * The state of the Carbon AI Chat launcher.
-   */
-  launcher: LauncherState;
 
   /**
    * The state of the iframe panel.
@@ -178,6 +158,11 @@ interface AppState extends AppStateMessages {
   targetViewState: ViewState;
 
   /**
+   * Volatile UI state related to the current human agent session. This is not persisted and is reset on reload.
+   */
+  humanAgentState: HumanAgentState;
+
+  /**
    * Indicates if we should display a transparent background covering the non-header area of the main window.
    */
   showNonHeaderBackgroundCover: boolean;
@@ -192,16 +177,10 @@ interface AppState extends AppStateMessages {
    */
   isBrowserPageVisible: boolean;
 
-  layout: LayoutConfig;
-
   /**
    * The current state of notifications.
    */
   notifications: NotificationStateObject[];
-
-  /**
-   * The chat header state.
-   */
 }
 
 /**
@@ -250,42 +229,9 @@ interface StopStreamingButtonState {
 }
 
 /**
- * Items current chat state.
- */
-interface PersistedChatState {
-  /**
-   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
-   * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
-   */
-  version: string;
-
-  /**
-   * Map of if a disclaimer has been accepted on a given window.hostname value.
-   */
-  disclaimersAccepted: ObjectMap<boolean>;
-
-  /**
-   * State of home screen.
-   */
-  homeScreenState: HomeScreenState;
-
-  /**
-   * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted
-   * with.
-   */
-  hasSentNonWelcomeMessage: boolean;
-
-  /**
-   * The persisted state for agents.
-   */
-  humanAgentState: PersistedHumanAgentState;
-}
-
-/**
  * Items stored in sessionStorage.
  */
-interface PersistedLauncherState {
+interface PersistedState {
   /**
    * Indicates if this state was loaded from browser session storage or if was created as part of a new session.
    */
@@ -351,23 +297,21 @@ interface PersistedLauncherState {
    * acceptable.
    */
   hasSentNonWelcomeMessage: boolean;
-}
-
-/**
- * State shared with the sessionStorage so that as the user navigates the chat stays in the same UI state. This is in
- * addition to the data that the session history store.
- */
-interface PersistedToBrowserStorageState {
-  /**
-   * Things stored that are related to the user profile. These are not accessible until the Carbon AI Chat has been opened!
-   */
-  chatState: PersistedChatState;
 
   /**
-   * Things stored that are not related to the user profile. These should only be things that are not sensitive like
-   * "is the Carbon AI Chat open".
+   * Map of if a disclaimer has been accepted on a given window.hostname value.
    */
-  launcherState: PersistedLauncherState;
+  disclaimersAccepted: ObjectMap<boolean>;
+
+  /**
+   * State of home screen.
+   */
+  homeScreenState: HomeScreenState;
+
+  /**
+   * The persisted subset of the human agent state.
+   */
+  humanAgentState: import("./PersistedHumanAgentState").PersistedHumanAgentState;
 }
 
 /**
@@ -461,6 +405,36 @@ interface HumanAgentState {
    * The state of the input field while connecting or connected to an agent.
    */
   inputState: InputState;
+
+  /**
+   * Indicates that the user is currently connected to an agent and a chat is in progress. This does not necessarily
+   * mean that an agent has joined the conversation.
+   */
+  isConnected: boolean;
+
+  /**
+   * Indicates if the agent conversation is currently suspended. That means that control has been returned to the
+   * assistant/bot conversation and that information regarding the current again conversation should be hidden. This
+   * means the connecting state is hidden (if in the middle of requesting an agent) and input from the user is routed to
+   * the assistant instead of the service desk.
+   */
+  isSuspended: boolean;
+
+  /**
+   * This is the profile of the last human agent to join a chat within a service desk. This value is preserved even
+   * when the chat is disconnected.
+   */
+  responseUserProfile?: ResponseUserProfile;
+
+  /**
+   * This is a cache of the known agent profiles by agent ID.
+   */
+  responseUserProfiles: Record<string, ResponseUserProfile>;
+
+  /**
+   * Arbitrary state to save by the service desk. The information stored here various by service desk.
+   */
+  serviceDeskState?: unknown;
 }
 
 /**
@@ -523,16 +497,6 @@ enum ChatWidthBreakpoint {
   STANDARD = "standard",
   // > 672 + 16 + 16px
   WIDE = "wide",
-}
-
-/**
- * The launcher config.
- */
-interface LauncherState {
-  /**
-   * The current config state of launcher.
-   */
-  config: LauncherInternalConfig;
 }
 
 interface IFramePanelState {
@@ -629,16 +593,13 @@ interface ThemeState {
 export {
   AppStateMessages,
   AppState,
-  PersistedToBrowserStorageState,
   HumanAgentDisplayState,
   HumanAgentState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,
   ViewType,
-  PersistedChatState,
-  PersistedLauncherState,
-  LauncherState,
+  PersistedState,
   IFramePanelState,
   ViewSourcePanelState,
   CustomPanelConfigOptions,

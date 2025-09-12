@@ -17,15 +17,13 @@ import {
   AppState,
   AppStateMessages,
   ChatMessagesState,
-  CustomPanelConfigOptions,
   FileUpload,
   InputState,
-  PersistedChatState,
-  PersistedLauncherState,
+  PersistedState,
   ThemeState,
   ViewState,
 } from "../../types/state/AppState";
-import { LauncherInternalCallToActionConfig } from "../../types/config/LauncherConfig";
+import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -65,7 +63,6 @@ import {
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   SET_IS_BROWSER_PAGE_VISIBLE,
-  SET_LAUNCHER_CONFIG_PROPERTY,
   SET_LAUNCHER_MINIMIZED,
   SET_LAUNCHER_PROPERTY,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
@@ -84,10 +81,9 @@ import {
   TOGGLE_HOME_SCREEN,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_INPUT_STATE,
-  UPDATE_LAUNCHER_AVATAR_URL,
   UPDATE_LOCAL_MESSAGE_ITEM,
   UPDATE_MESSAGE,
-  UPDATE_PERSISTED_CHAT_STATE,
+  UPDATE_PERSISTED_STATE,
   UPDATE_THEME_STATE,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
@@ -116,7 +112,6 @@ import {
   MessageRequestHistory,
 } from "../../types/messaging/Messages";
 import { NotificationMessage } from "../../types/instance/apiTypes";
-import { LauncherType } from "../../types/config/LauncherConfig";
 
 type ReducerType = (state: AppState, action?: any) => AppState;
 
@@ -158,21 +153,11 @@ const reducers: { [key: string]: ReducerType } = {
       customPanelState: {
         ...DEFAULT_CUSTOM_PANEL_STATE,
       },
-      persistedToBrowserStorage: {
-        ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          homeScreenState: {
-            ...state.persistedToBrowserStorage.chatState.homeScreenState,
-            showBackToBot: false,
-          },
-        },
-      },
       isHydrated: false,
       catastrophicErrorType: null,
     };
 
-    if (newState.config.public.homescreen?.is_on) {
+    if (newState.config.public.homescreen?.isOn) {
       newState = setHomeScreenOpenState(newState, true);
     }
     return newState;
@@ -251,17 +236,14 @@ const reducers: { [key: string]: ReducerType } = {
         },
       };
 
-      if (
-        newState.persistedToBrowserStorage.chatState.homeScreenState
-          .isHomeScreenOpen
-      ) {
+      if (newState.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen) {
         // When a message has been sent, we don't want the home screen open anymore.
         newState = setHomeScreenOpenState(newState, false);
       }
 
       const isBotMessage = !messageItem.item.agent_message_type;
       const isMainWindowOpen =
-        state.persistedToBrowserStorage.launcherState.viewState.mainWindow;
+        state.persistedToBrowserStorage.viewState.mainWindow;
       if (!isBotMessage && (!isMainWindowOpen || !state.isBrowserPageVisible)) {
         // This message is with an agent, and it occurred while the main window was closed or the page is not
         // visible, so it may need to be counted as an unread message.
@@ -511,17 +493,14 @@ const reducers: { [key: string]: ReducerType } = {
     [action.key]: action.value,
   }),
 
-  [UPDATE_PERSISTED_CHAT_STATE]: (
+  [UPDATE_PERSISTED_STATE]: (
     state: AppState,
-    action: { chatState: Partial<PersistedChatState> },
+    action: { chatState: Partial<PersistedState> },
   ): AppState => ({
     ...state,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
-      chatState: {
-        ...state.persistedToBrowserStorage.chatState,
-        ...action.chatState,
-      },
+      ...action.chatState,
     },
   }),
 
@@ -530,7 +509,7 @@ const reducers: { [key: string]: ReducerType } = {
     action: { hasSentNonWelcomeMessage: boolean },
   ): AppState => {
     if (
-      state.persistedToBrowserStorage.chatState.hasSentNonWelcomeMessage ===
+      state.persistedToBrowserStorage.hasSentNonWelcomeMessage ===
       action.hasSentNonWelcomeMessage
     ) {
       return state;
@@ -539,14 +518,7 @@ const reducers: { [key: string]: ReducerType } = {
       ...state,
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        chatState: {
-          ...state.persistedToBrowserStorage.chatState,
-          hasSentNonWelcomeMessage: action.hasSentNonWelcomeMessage,
-        },
-        launcherState: {
-          ...state.persistedToBrowserStorage.launcherState,
-          hasSentNonWelcomeMessage: action.hasSentNonWelcomeMessage,
-        },
+        hasSentNonWelcomeMessage: action.hasSentNonWelcomeMessage,
       },
     };
   },
@@ -572,27 +544,6 @@ const reducers: { [key: string]: ReducerType } = {
   ): AppState => ({
     ...state,
     initialViewChangeComplete: action.changeComplete,
-  }),
-
-  [UPDATE_LAUNCHER_AVATAR_URL]: (
-    state: AppState,
-    action: { source: string },
-  ): AppState => ({
-    ...state,
-    launcher: {
-      ...state.launcher,
-      config: {
-        ...state.launcher.config,
-        mobile: {
-          ...state.launcher.config.mobile,
-          avatar_url_override: action.source,
-        },
-        desktop: {
-          ...state.launcher.config.desktop,
-          avatar_url_override: action.source,
-        },
-      },
-    },
   }),
 
   [SET_MESSAGE_UI_PROPERTY]: <TPropertyName extends keyof LocalMessageUIState>(
@@ -706,12 +657,9 @@ const reducers: { [key: string]: ReducerType } = {
     ...state,
     persistedToBrowserStorage: {
       ...state.persistedToBrowserStorage,
-      chatState: {
-        ...state.persistedToBrowserStorage.chatState,
-        disclaimersAccepted: {
-          ...state.persistedToBrowserStorage.chatState.disclaimersAccepted,
-          [isBrowser ? window.location.hostname : "localhost"]: true,
-        },
+      disclaimersAccepted: {
+        ...state.persistedToBrowserStorage.disclaimersAccepted,
+        [isBrowser ? window.location.hostname : "localhost"]: true,
       },
     },
   }),
@@ -724,65 +672,24 @@ const reducers: { [key: string]: ReducerType } = {
   [TOGGLE_HOME_SCREEN]: (state: AppState) =>
     setHomeScreenOpenState(
       state,
-      !state.persistedToBrowserStorage.chatState.homeScreenState
-        .isHomeScreenOpen,
+      !state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
       true,
     ),
 
-  [SET_LAUNCHER_PROPERTY]: <TPropertyName extends keyof PersistedLauncherState>(
+  [SET_LAUNCHER_PROPERTY]: <TPropertyName extends keyof PersistedState>(
     state: AppState,
     action: {
       propertyName: TPropertyName;
-      propertyValue: PersistedLauncherState[TPropertyName];
+      propertyValue: PersistedState[TPropertyName];
     },
   ) => {
     return {
       ...state,
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        launcherState: {
-          ...state.persistedToBrowserStorage.launcherState,
-          [action.propertyName]: action.propertyValue,
-        },
+        [action.propertyName]: action.propertyValue,
       },
     };
-  },
-
-  [SET_LAUNCHER_CONFIG_PROPERTY]: <
-    TPropertyName extends keyof LauncherInternalCallToActionConfig,
-  >(
-    state: AppState,
-    action: {
-      propertyName: TPropertyName;
-      propertyValue: LauncherInternalCallToActionConfig[TPropertyName];
-      launcherType?: LauncherType.DESKTOP | LauncherType.MOBILE;
-    },
-  ) => {
-    const newState = {
-      ...state,
-      launcher: {
-        ...state.launcher,
-        config: {
-          ...state.launcher.config,
-        },
-      },
-    };
-
-    if (!action.launcherType || action.launcherType === LauncherType.DESKTOP) {
-      newState.launcher.config.desktop = {
-        ...state.launcher.config.desktop,
-        [action.propertyName]: action.propertyValue,
-      };
-    }
-
-    if (!action.launcherType || action.launcherType === LauncherType.MOBILE) {
-      newState.launcher.config.mobile = {
-        ...state.launcher.config.mobile,
-        [action.propertyName]: action.propertyValue,
-      };
-    }
-
-    return newState;
   },
 
   [SET_CHAT_MESSAGES_PROPERTY]: <TPropertyName extends keyof ChatMessagesState>(
@@ -802,11 +709,8 @@ const reducers: { [key: string]: ReducerType } = {
       ...state,
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        launcherState: {
-          ...state.persistedToBrowserStorage.launcherState,
-          desktopLauncherIsExpanded: false,
-          desktopLauncherWasMinimized: true,
-        },
+        desktopLauncherIsExpanded: false,
+        desktopLauncherWasMinimized: true,
       },
     };
   },
@@ -905,14 +809,12 @@ const reducers: { [key: string]: ReducerType } = {
     action: { isVisible: boolean },
   ) => {
     // If the page becomes visible while the main window is open, then clear the number of unread messages.
-    let numUnreadMessages;
     const isMainWindowOpen =
-      state.persistedToBrowserStorage.launcherState.viewState.mainWindow;
-    if (isMainWindowOpen && action.isVisible) {
-      numUnreadMessages = 0;
-    } else {
-      numUnreadMessages = state.humanAgentState.numUnreadMessages;
-    }
+      state.persistedToBrowserStorage.viewState.mainWindow;
+    const numUnreadMessages =
+      isMainWindowOpen && action.isVisible
+        ? 0
+        : state.humanAgentState.numUnreadMessages;
 
     return {
       ...state,
