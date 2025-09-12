@@ -227,8 +227,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     if (isRequest(message)) {
-      // For regular request messages, return false
-      return false;
+      if (message?.history?.silent) {
+        return false;
+      }
+      return true;
     }
 
     if (isResponse(message)) {

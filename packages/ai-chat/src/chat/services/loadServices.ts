@@ -20,11 +20,7 @@ import { doCreateStore } from "../store/doCreateStore";
 import { copyToSessionStorage } from "../store/subscriptions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { WriteableElementName } from "../utils/constants";
-import {
-  assertType,
-  setEnableDebugLog,
-  setEnableDebugStackTracesLog,
-} from "../utils/miscUtils";
+import { assertType, setEnableDebugLog } from "../utils/miscUtils";
 import { setIntl } from "../utils/intlUtils";
 import { isBrowser } from "../utils/browserUtils";
 
@@ -108,10 +104,6 @@ function createServiceManager(appConfig: AppConfig) {
 
   if (publicConfig.debug) {
     setEnableDebugLog(true);
-  }
-
-  if (publicConfig.debug) {
-    setEnableDebugStackTracesLog(true);
   }
 
   return serviceManager;

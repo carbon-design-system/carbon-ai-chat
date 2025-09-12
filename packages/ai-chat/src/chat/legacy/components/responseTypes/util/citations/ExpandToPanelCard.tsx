@@ -66,6 +66,10 @@ function ExpandToPanelCard({
     );
   }
 
+  if (!citation) {
+    return null;
+  }
+
   if (isExpandable) {
     return (
       <CitationClickableCard

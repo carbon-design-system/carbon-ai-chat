@@ -23,6 +23,7 @@ import { sleep } from "../framework/utils";
 import {
   CHAIN_OF_THOUGHT_TEXT,
   CHAIN_OF_THOUGHT_TEXT_STREAM,
+  HTML,
   MARKDOWN,
   WELCOME_TEXT,
   WORD_DELAY,
@@ -426,6 +427,33 @@ function doTextChainOfThought(
   doText(instance, text, userProfile, chainOfThought);
 }
 
+function doHTML(
+  instance: ChatInstance,
+  text: string = HTML,
+  userProfile?: ResponseUserProfile,
+  chainOfThought?: ChainOfThoughtStep[],
+) {
+  doText(instance, text, userProfile, chainOfThought);
+}
+
+async function doHTMLStreaming(
+  instance: ChatInstance,
+  text: string = HTML,
+  cancellable = true,
+  wordDelay = WORD_DELAY,
+  userProfile?: ResponseUserProfile,
+  chainOfThought?: ChainOfThoughtStep[],
+) {
+  await doTextStreaming(
+    instance,
+    text,
+    cancellable,
+    wordDelay,
+    userProfile,
+    chainOfThought,
+  );
+}
+
 export {
   doTextChainOfThoughtStreaming,
   doTextChainOfThought,
@@ -436,4 +464,6 @@ export {
   doTextWithNonWatsonBotProfile,
   doTextStreamingWithNonWatsonBotProfile,
   doTextWithWatsonAgentProfile,
+  doHTML,
+  doHTMLStreaming,
 };

@@ -221,7 +221,6 @@ class MessageService {
     received?: MessageResponse,
   ) {
     const { requestOptions, isProcessed } = current;
-    const isWelcomeNode = Boolean(current.message.history.is_welcome_request);
 
     // If this message was already invalidated, don't do anything.
     if (isProcessed) {
@@ -237,10 +236,6 @@ class MessageService {
     // Do all the normal things for our general message requests, however for event messages we skip this.
     if (received) {
       if (message.input.message_type !== MessageInputType.EVENT) {
-        if (!isWelcomeNode) {
-          this.messageLoadingManager.end();
-        }
-
         received.history = received.history || {};
         received.history.timestamp = received.history.timestamp || Date.now();
 
@@ -252,7 +247,7 @@ class MessageService {
         // Send receive event.
         await this.serviceManager.actions.receive(
           received,
-          isWelcomeNode,
+          Boolean(current.message.history.is_welcome_request),
           message,
           requestOptions,
         );
@@ -296,22 +291,6 @@ class MessageService {
   }
 
   /**
-   * This function is used to resend a message that had been previously sent, but for which we never received a
-   * response. The below will resend the message so we can wait for the response once it is available.
-   */
-  public async resendMessage(message: MessageRequest, localMessageID?: string) {
-    await this.send(
-      cloneDeep(message),
-      MessageSendSource.HYDRATE_RESEND,
-      localMessageID,
-      {
-        skipQueue: true,
-        silent: true,
-      },
-    );
-  }
-
-  /**
    * Send to the assistant API, IF we are inside the window to show an error, also update the error state on the
    * message.
    */
@@ -351,7 +330,6 @@ class MessageService {
     allowRetry: boolean,
   ) {
     const {
-      message,
       timeFirstRequest,
       timeLastRequest,
       tryCount,
@@ -360,9 +338,6 @@ class MessageService {
       requestOptions,
     } = pendingRequest;
 
-    // If we got a 400 response code for a welcome message and it contains the "no skills" message, we should just
-    // stop now and put the widget into a general error state.
-    const isWelcome = message.history.is_welcome_request;
     const now = Date.now();
     const msSinceStarted = now - timeFirstRequest;
     // We are still in the "allow attempts" window if we have not exceeded the total amount of time allowed and if
@@ -386,11 +361,7 @@ class MessageService {
         this.sendToAssistantAndUpdateErrorState(pendingRequest);
       }, retryDelay);
     } else {
-      // Show a catastrophic error if we are just starting out.
-      let catastrophicErrorType = false;
-      if (isWelcome) {
-        catastrophicErrorType = true;
-      } else if (requestOptions.silent) {
+      if (requestOptions.silent) {
         // If we are in the middle of a two-step response or the message that was sent was silent, we have to throw an
         // error manually since there isn't any user message to reference.
         this.addErrorMessage();
@@ -400,7 +371,6 @@ class MessageService {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: "An error occurred sending a message",
         otherData: resultText,
-        catastrophicErrorType,
       });
 
       this.rejectFinalErrorOnMessage(pendingRequest, resultText);
@@ -426,8 +396,7 @@ class MessageService {
     // No need to call this if it's an event message or a welcome node request.
     if (
       pendingRequest === this.queue.current &&
-      message.input.message_type !== MessageInputType.EVENT &&
-      !message.history.is_welcome_request
+      message.input.message_type !== MessageInputType.EVENT
     ) {
       this.messageLoadingManager.end();
     }
@@ -467,9 +436,10 @@ class MessageService {
       const controller = new AbortController();
       current.sendMessageController = controller;
       debugLog("Called customSendMessage", message);
+
       await customSendMessage(
         message,
-        { signal: controller.signal },
+        { signal: controller.signal, silent: current.requestOptions.silent },
         this.serviceManager.instance,
       );
       await this.processSuccess(current, null);
@@ -506,34 +476,28 @@ class MessageService {
           message.thread_id = THREAD_ID_MAIN;
         }
 
-        // Welcome node fetching gets the spinner instead of the progress bar.
-        if (!message.history.is_welcome_request) {
-          const LOADING_INDICATOR_TIMER =
-            !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
-            publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
-              ? MS_MAX_SILENT_LOADING
-              : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs *
-                1000;
-          this.messageLoadingManager.start(
-            () => {
+        const LOADING_INDICATOR_TIMER =
+          !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
+          publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
+            ? MS_MAX_SILENT_LOADING
+            : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
+        this.messageLoadingManager.start(
+          () => {
+            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
+          },
+          (didExceedMaxLoading: boolean) => {
+            if (didExceedMaxLoading) {
               this.serviceManager.store.dispatch(
-                actions.addIsLoadingCounter(1),
+                actions.addIsLoadingCounter(-1),
               );
-            },
-            (didExceedMaxLoading: boolean) => {
-              if (didExceedMaxLoading) {
-                this.serviceManager.store.dispatch(
-                  actions.addIsLoadingCounter(-1),
-                );
-              }
-            },
-            () => {
-              this.cancelMessageRequestByID(message.id, true);
-            },
-            LOADING_INDICATOR_TIMER,
-            this.timeoutMS,
-          );
-        }
+            }
+          },
+          () => {
+            this.cancelMessageRequestByID(message.id, true);
+          },
+          LOADING_INDICATOR_TIMER,
+          this.timeoutMS,
+        );
 
         if (current.isProcessed) {
           // This message was cancelled.

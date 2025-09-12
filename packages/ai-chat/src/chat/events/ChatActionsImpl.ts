@@ -35,7 +35,7 @@ import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 
 import { HistoryItem, HistoryNote } from "../../types/messaging/History";
 
-import { arrayLastValue, asyncForEach } from "../utils/lang/arrayUtils";
+import { asyncForEach } from "../utils/lang/arrayUtils";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { sleep } from "../utils/lang/promiseUtils";
 import { uuid, UUIDType } from "../utils/lang/uuid";
@@ -46,9 +46,7 @@ import {
   createWelcomeRequest,
   hasServiceDesk,
   isConnectToHumanAgent,
-  isLiveHumanAgentMessage,
   isPause,
-  isRequest,
   isResponse,
   isResponseWithNestedItems,
   isStreamCompleteItem,
@@ -236,12 +234,11 @@ class ChatActionsImpl {
           serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
         } else if (!config.public.messaging?.skipWelcome) {
           // If no history was loaded, there are no messages already sent, and there is no home screen, then we need
-          // to fetch the welcome node. We use returnBeforeStreaming to ensure that we don't get stuck in the
-          // loading state if the welcome message happens to return a streaming response.
+          // to fetch the welcome node.
           await serviceManager.actions.send(
             createWelcomeRequest(),
             MessageSendSource.WELCOME_REQUEST,
-            { returnBeforeStreaming: true },
+            {},
             true,
           );
         }
@@ -260,45 +257,9 @@ class ChatActionsImpl {
       }
     }
 
-    if (alternateWelcomeRequest) {
-      // If there was an alternate welcome request, we always want to send it and bypass the home screen.
-      serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
-      await serviceManager.actions.send(
-        alternateWelcomeRequest,
-        alternateWelcomeRequestSource,
-        alternateOptions,
-        true,
-      );
-    }
-
     // After both history and welcome are loaded indicate we've got everything.
     serviceManager.store.dispatch(actions.chatWasHydrated());
     serviceManager.store.dispatch(actions.addIsHydratingCounter(-1));
-
-    if (history) {
-      const lastMessageID = arrayLastValue(
-        history.messageHistory.botMessageState.localMessageIDs,
-      );
-      const lastMessage =
-        history.messageHistory.allMessageItemsByID[lastMessageID];
-      const lastOriginalMessage =
-        history.messageHistory.allMessagesByID[lastMessage?.fullMessageID];
-
-      if (
-        !isLiveHumanAgentMessage(lastMessage) &&
-        isRequest(lastOriginalMessage)
-      ) {
-        // If the last message in history is a request that means that the user left the page before we received the
-        // response and the response is actually still being calculated. In this case we want to "reconnect" to the
-        // back-end so that we can receive the response when it becomes available. To do that all we have to do is
-        // resend the original request. But we don't want the resend to appear in the message list (because it is
-        // already there).
-        serviceManager.messageService.resendMessage(
-          lastOriginalMessage,
-          lastMessage.ui_state.id,
-        );
-      }
-    }
 
     // Note, we're not waiting for the human agent service to handle the hydration. It may start an asynchronous
     // process to reconnect the user to an agent but that is considered separate from the main hydration.
@@ -360,8 +321,7 @@ class ChatActionsImpl {
    * @param message The message to send.
    * @param source The source of the message.
    * @param options Options for the sent message.
-   * @param ignoreHydration Indicates if this function should not check to see if the Carbon AI Chat is hydrated before
-   * performing send.
+   * @param [ignoreHydration=false]
    */
   async send(
     message: MessageRequest | string,
@@ -390,14 +350,15 @@ class ChatActionsImpl {
 
     if (this.hydrationPromise || ignoreHydration) {
       if (!ignoreHydration) {
-        // If hydration has already started, then make sure to wait for it to finish.
         await this.hydrationPromise;
       }
       await this.doSend(messageRequest, source, options);
     } else {
       // If no hydration has started, then we need to start the hydration and use this message as the alternate for
       // the welcome node.
+      this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
       await this.hydrateChat(messageRequest, source, options);
+      await this.doSend(messageRequest, source, options);
     }
   }
 

@@ -26,26 +26,21 @@ class MarkdownElement extends LitElement {
   @property({ type: String })
   set markdown(newMarkdown: string) {
     if (newMarkdown !== this.fullText) {
-      this.fullText = newMarkdown;
+      const old = this.fullText;
+      this.fullText = newMarkdown ?? "";
+      this.requestUpdate("markdown", old);
+      if (this.debug) {
+        consoleLog("markdown prop updated");
+      }
+      this.scheduleTokenParse();
     }
   }
-
   get markdown(): string {
     return this.fullText;
   }
 
   @property({ type: Boolean })
-  set sanitizeHTML(value: boolean) {
-    const oldValue = this._sanitizeHTML;
-    this._sanitizeHTML = value;
-    if (oldValue !== value && this.tokenTree.children.length > 0) {
-      this.scheduleRender();
-    }
-  }
-  get sanitizeHTML() {
-    return this._sanitizeHTML;
-  }
-  private _sanitizeHTML = false;
+  sanitizeHTML = false;
 
   @property({ type: Boolean })
   shouldRemoveHTMLBeforeMarkdownConversion = false;
@@ -61,7 +56,7 @@ class MarkdownElement extends LitElement {
 
   private fullText = "";
 
-  updated(changedProperties: PropertyValues) {
+  protected updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
     // Only schedule token parse if markdown content changed
@@ -75,6 +70,12 @@ class MarkdownElement extends LitElement {
       changedProperties.has("localization") ||
       changedProperties.has("streaming")
     ) {
+      this.scheduleRender();
+    }
+  }
+
+  protected willUpdate(changed: PropertyValues<this>) {
+    if (changed.has("sanitizeHTML") || changed.has("streaming")) {
       this.scheduleRender();
     }
   }
@@ -125,6 +126,10 @@ class MarkdownElement extends LitElement {
         localization: this.localization,
         dark: this.dark,
       });
+
+      if (this.debug) {
+        consoleLog("Markdown component renderedContent", this.renderedContent);
+      }
     } catch (error) {
       consoleError("Failed to parse markdown", error);
     }

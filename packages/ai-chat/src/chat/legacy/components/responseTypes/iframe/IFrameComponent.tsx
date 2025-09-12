@@ -105,7 +105,7 @@ function IFrameComponent({
           className="cds-aichat--i-frame-component__i-frame"
           title={title}
           src={source}
-          sandbox="allow-scripts allow-downloads allow-forms allow-same-origin allow-popups"
+          sandbox="allow-scripts allow-downloads allow-forms allow-popups"
           referrerPolicy="origin"
           onLoad={handleIFrameLoaded}
         />
