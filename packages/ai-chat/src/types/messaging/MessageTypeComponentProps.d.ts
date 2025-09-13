@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ScrollElementIntoViewFunction } from "../../chat/legacy/containers/MessagesComponent";
+import { ScrollElementIntoViewFunction } from "../../chat/components-legacy/MessagesComponent";
 import { HasServiceManager } from "../../chat/hocs/withServiceManager";
 import { AppConfig } from "../state/AppConfig";
 import { HasDisplayOverride } from "../utilities/HasDisplayOverride";

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { OverlayPanelName } from "../legacy/components/OverlayPanel";
+import { OverlayPanelName } from "../components-legacy/OverlayPanel";
 
 /**
  * An enum of all of our data-testid we use.
