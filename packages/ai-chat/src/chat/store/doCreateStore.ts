@@ -8,8 +8,6 @@
  */
 
 import merge from "lodash-es/merge.js";
-import { createStore, Store } from "redux";
-import { NODE_ENV } from "../utils/environmentVariables";
 import { ServiceManager } from "../services/ServiceManager";
 import { AppConfig } from "../../types/state/AppConfig";
 import { AppState, ThemeState } from "../../types/state/AppState";
@@ -18,6 +16,7 @@ import { CornersType } from "../utils/constants";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
+import { AppStore, createAppStore } from "./appStore";
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
@@ -91,7 +90,7 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
 function doCreateStore(
   publicConfig: PublicConfig,
   serviceManager: ServiceManager,
-): Store<AppState> {
+): AppStore<AppState> {
   // Build the complete AppConfig with derived values
   const config = createAppConfig(publicConfig);
 
@@ -131,7 +130,7 @@ function doCreateStore(
     // Session state
     persistedToBrowserStorage: DEFAULT_PERSISTED_TO_BROWSER,
 
-    // Agent UI State (volatile)
+    // Agent UI State
     humanAgentState: DEFAULT_HUMAN_AGENT_STATE,
 
     // Panel states
@@ -171,16 +170,7 @@ function doCreateStore(
     };
   }
 
-  const enhancer =
-    publicConfig.debug || NODE_ENV === "development"
-      ? (window as any).__REDUX_DEVTOOLS_EXTENSION__ &&
-        (window as any).__REDUX_DEVTOOLS_EXTENSION__({
-          name: "CarbonAIChat",
-          instanceId: `Chat${serviceManager.namespace.suffix}`,
-        })
-      : undefined;
-
-  return createStore(reducerFunction, initialState, enhancer);
+  return createAppStore(reducerFunction, initialState);
 }
 
 /**
@@ -199,13 +189,6 @@ function getThemeCornersType(publicConfig: PublicConfig) {
 }
 
 function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
-  if (publicConfig.aiEnabled ?? true) {
-    return {
-      showFrame: publicConfig.layout?.showFrame ?? true,
-      hasContentMaxWidth: publicConfig.layout?.hasContentMaxWidth ?? true,
-    };
-  }
-
   return merge({}, DEFAULT_LAYOUT_STATE, publicConfig.layout);
 }
 
@@ -213,7 +196,10 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
  * This is the global reducer for the redux store. It will use the map of reducers from the "reducers" array to map
  * the action type to the sub-reducer for that specific action.
  */
-function reducerFunction(state: AppState, action?: any): AppState {
+function reducerFunction(
+  state: AppState,
+  action: { type: string; [key: string]: unknown } | undefined,
+): AppState {
   return action && reducers[action.type]
     ? reducers[action.type](state, action)
     : state;

@@ -8,10 +8,10 @@
  */
 
 import { IntlShape } from "react-intl";
-import { Store } from "redux";
+import type { AppStore } from "../store/appStore";
 
-import { AppWindowFunctions } from "../legacy/containers/AppWindowFunctions";
-import { MainWindowFunctions } from "../legacy/containers/main/MainWindowFunctions";
+import { AppWindowFunctions } from "../components-legacy/AppWindowFunctions";
+import { MainWindowFunctions } from "../components-legacy/main/MainWindowFunctions";
 import { ChatActionsImpl } from "../events/ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
@@ -78,7 +78,7 @@ class ServiceManager {
   /**
    * The redux store holding the application state.
    */
-  store: Store<AppState>;
+  store: AppStore<AppState>;
 
   /**
    * The message service used to send and receive messages.

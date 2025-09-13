@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { useSelector } from "react-redux";
+import { useSelector } from "./useSelector";
 
 import { AppState } from "../../types/state/AppState";
 

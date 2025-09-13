@@ -13,7 +13,7 @@ import { ChatContainer } from "../../../src/react/ChatContainer";
 import { PublicConfig } from "../../../src/types/config/PublicConfig";
 import { createBaseTestProps } from "../../utils/testHelpers";
 import { ChatInstance } from "../../../src/types/instance/ChatInstance";
-import { Store } from "redux";
+import type { AppStore } from "../../../src/chat/store/appStore";
 import { AppState } from "../../../src/types/state/AppState";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 
@@ -56,7 +56,7 @@ export const setupAfterEach = () => {
 
 export interface ChatInstanceWithStore {
   instance: ChatInstance;
-  store: Store<AppState>;
+  store: AppStore<AppState>;
   serviceManager: ServiceManager;
 }
 

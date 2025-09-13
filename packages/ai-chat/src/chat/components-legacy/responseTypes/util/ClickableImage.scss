@@ -1,0 +1,90 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "../../../styles/chat-theme";
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--clickable-image {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    border-radius: chat-theme.$card-border-radius;
+    background-color: unset;
+    color: unset;
+    cursor: pointer;
+    inline-size: 100%;
+    max-inline-size: chat-theme.$card-max-width;
+    outline: none;
+    outline-offset: -2px;
+    text-align: unset;
+    transition: none;
+  }
+}
+
+.cds-aichat--clickable-image {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  border-radius: chat-theme.$card-border-radius;
+  background-color: unset;
+  color: unset;
+  cursor: pointer;
+  inline-size: 100%;
+  max-inline-size: chat-theme.$card-max-width;
+  outline: none;
+  outline-offset: -2px;
+  text-align: unset;
+  transition: motion.$duration-moderate-01 motion.motion(standard, productive);
+}
+
+a.cds-aichat--clickable-image .cds-aichat--text-holder-tile__title {
+  color: theme.$text-primary;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--clickable-image .cds-aichat--image {
+    position: unset;
+    transition: none;
+  }
+}
+
+.cds-aichat--clickable-image .cds-aichat--image {
+  position: unset;
+  transition: motion.$duration-moderate-01 motion.motion(standard, productive);
+}
+
+.cds-aichat--clickable-image .cds-aichat--image__image {
+  user-select: none;
+}
+
+.cds-aichat--clickable-image:disabled {
+  cursor: not-allowed;
+}
+
+.cds-aichat--clickable-image:disabled .cds-aichat--image {
+  opacity: 0.5;
+}
+
+.cds-aichat--clickable-image:enabled:focus {
+  outline: 2px solid theme.$focus;
+}
+
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image {
+  background-color: theme.$layer-hover;
+  text-decoration: underline;
+}
+
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image__image {
+  opacity: 0.8;
+}
+
+/* moved earlier: disabled state selectors */

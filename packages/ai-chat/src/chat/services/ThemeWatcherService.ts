@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { Store } from "redux";
+import type { AppStore } from "../store/appStore";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { AppState, ThemeState } from "../../types/state/AppState";
 import { getCSSVariableValue, isColorLighterThan } from "../utils/colors";
@@ -20,14 +20,14 @@ import { white, g10, g90, g100 } from "@carbon/themes";
  * Specifically monitors --cds-background and switches between themes based on detected values.
  */
 class ThemeWatcherService {
-  private store: Store<AppState>;
+  private store: AppStore<AppState>;
   private observer: MutationObserver | null = null;
   private pollInterval: number | null = null;
   private isWatching = false;
   private originalTheme: CarbonTheme | null = null;
   private lastBgColor: string | null = null;
 
-  constructor(store: Store<AppState>) {
+  constructor(store: AppStore<AppState>) {
     this.store = store;
   }
 

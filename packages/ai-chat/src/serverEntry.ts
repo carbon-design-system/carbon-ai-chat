@@ -17,7 +17,7 @@
  */
 
 // Export types and utilities without importing web components
-export { OverlayPanelName } from "./chat/legacy/components/OverlayPanel";
+export { OverlayPanelName } from "./chat/components-legacy/OverlayPanel";
 
 export {
   PageObjectId,

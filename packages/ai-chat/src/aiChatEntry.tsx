@@ -16,7 +16,7 @@
  * To use the web components, directly import them.
  */
 
-export { OverlayPanelName } from "./chat/legacy/components/OverlayPanel";
+export { OverlayPanelName } from "./chat/components-legacy/OverlayPanel";
 
 export {
   NotificationMessage,

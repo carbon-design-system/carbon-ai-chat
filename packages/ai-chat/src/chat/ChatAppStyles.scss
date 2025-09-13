@@ -11,8 +11,7 @@
 @use "@carbon/styles/scss/reset";
 
 @use "./styles";
-@use "./legacy/components/imports" as components;
-@use "./legacy/containers/imports" as containers;
+@use "./components-legacy/imports" as components;
 
 .cds--white {
   @include theme.theme(themes.$white);

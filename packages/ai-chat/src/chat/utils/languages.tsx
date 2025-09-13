@@ -7,13 +7,6 @@
  *  @license
  */
 
-/**
- * Translation files are broken up into two sets: private and public. Strings in the public
- * file are published to the github docs and are able to be adjusted by Deb. Strings in the
- * private file are not meant to be changed by Deb or are strings for features in beta. When
- * the two sets are combined, public strings override private ones.
- */
-
 import dayjs from "dayjs";
 import enLocaleData from "dayjs/locale/en.js";
 import { IntlMessageFormat } from "intl-messageformat";

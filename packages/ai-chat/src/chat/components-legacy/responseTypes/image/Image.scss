@@ -1,0 +1,97 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "../../../styles/chat-theme";
+
+.cds-aichat--image {
+  overflow: hidden;
+  padding: 0;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+cds-ai-skeleton-placeholder.cds-aichat--image__skeleton::part(
+    skeleton-placeholder
+  ),
+cds-skeleton-placeholder.cds-aichat--image__skeleton::part(placeholder) {
+  block-size: 192px;
+  inline-size: 100%;
+}
+
+.cds-aichat--image__image-wrapper {
+  background-color: theme.$layer-02;
+}
+
+.cds-aichat--image__image {
+  display: none;
+  block-size: 0;
+  max-inline-size: 100%;
+  opacity: 0;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--image__image--loaded {
+    animation: none;
+    animation-duration: motion.$duration-fast-02;
+    animation-iteration-count: 1;
+    animation-timing-function: motion.motion(standard, productive);
+    block-size: auto;
+    opacity: 1;
+  }
+}
+
+.cds-aichat--image__image--loaded {
+  animation-duration: motion.$duration-fast-02;
+  animation-iteration-count: 1;
+  animation-name: cds-chat-fade-in-img;
+  animation-timing-function: motion.motion(standard, productive);
+  block-size: auto;
+  opacity: 1;
+}
+
+/* Scoped adjustments when within the image component */
+.cds-aichat--image .cds-aichat--image__image--loaded {
+  display: block;
+  margin: auto;
+}
+
+// Keyframes moved to ../../../../styles/_keyframes.scss
+.cds-aichat--image__text-and-icon .cds-aichat--text-holder-tile__url {
+  padding-inline-end: calc(#{layout.$spacing-05} + 2px);
+}
+
+.cds-aichat--image__icon-only .cds-aichat--image__icon {
+  padding: layout.$spacing-04;
+  border-radius: chat-theme.$card-border-radius;
+  background-color: theme.$overlay;
+  fill: theme.$icon-on-color;
+}
+
+svg.cds-aichat--image__icon {
+  display: block;
+  margin-block-end: layout.$spacing-05;
+  margin-inline: auto layout.$spacing-05;
+}
+
+.cds-aichat--image__icon-only .cds-aichat--image__icon,
+svg.cds-aichat--image__icon--link {
+  position: absolute;
+  margin: 0;
+  inset-block-end: layout.$spacing-05;
+  inset-inline-end: layout.$spacing-05;
+}
+
+svg.cds-aichat--image__icon--link {
+  color: theme.$link-primary;
+}
+
+.cds-aichat--container--render[dir="rtl"] svg.cds-aichat--image__icon--link {
+  inset-inline: layout.$spacing-03 unset;
+}
