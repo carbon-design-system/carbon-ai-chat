@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import { ChatInstance } from "../types/instance/ChatInstance";
 import {
@@ -15,6 +15,7 @@ import {
   BusEventViewChange,
 } from "../types/events/eventBusTypes";
 import { ChatContainer, ChatContainerProps } from "./ChatContainer";
+import { isBrowser } from "../chat/shared/utils/browserUtils";
 
 /**
  * This is the React component for people injecting a Carbon AI Chat with a custom element.
@@ -28,9 +29,10 @@ import { ChatContainer, ChatContainerProps } from "./ChatContainer";
 /** @category React */
 interface ChatCustomElementProps extends ChatContainerProps {
   /**
-   * An optional classname that will be added to the custom element.
+   * A CSS class name that will be added to the custom element. This class must define the size of the
+   * chat when it is open (width and height or using logical inline-size/block-size).
    */
-  className?: string;
+  className: string;
 
   /**
    * An optional id that will be added to the custom element.
@@ -52,6 +54,47 @@ interface ChatCustomElementProps extends ChatContainerProps {
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 }
 
+// CSP-friendly style injection for hiding the chat element
+const customElementStylesheet =
+  isBrowser && typeof CSSStyleSheet !== "undefined"
+    ? new CSSStyleSheet()
+    : null;
+
+const hideStyles = `
+  .cds-aichat--hidden {
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    inline-size: 0 !important;
+    block-size: 0 !important;
+    min-inline-size: 0 !important;
+    min-block-size: 0 !important;
+    max-inline-size: 0 !important;
+    max-block-size: 0 !important;
+    overflow: hidden !important;
+  }
+`;
+
+// Inject styles using adopted stylesheets when available, fallback to style element
+if (isBrowser && !document.getElementById("cds-aichat-custom-element-styles")) {
+  if (customElementStylesheet && "replaceSync" in customElementStylesheet) {
+    customElementStylesheet.replaceSync(hideStyles);
+    document.adoptedStyleSheets = [
+      ...document.adoptedStyleSheets,
+      customElementStylesheet,
+    ];
+  } else {
+    // Fallback for when adoptedStyleSheets are not supported
+    const style = document.createElement("style");
+    style.id = "cds-aichat-custom-element-styles";
+    style.textContent = hideStyles;
+    document.head.appendChild(style);
+  }
+}
+
 function ChatCustomElement({
   config,
   onBeforeRender,
@@ -63,27 +106,22 @@ function ChatCustomElement({
   onViewChange,
 }: ChatCustomElementProps) {
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
-  const originalStyles = useRef({ width: undefined, height: undefined });
 
   const onBeforeRenderOverride = useCallback(
     async (instance: ChatInstance) => {
       /**
        * A default handler for the "view:change" event. This will be used to show or hide the Carbon AI Chat main window
-       * using a simple classname.
+       * by adding/removing a CSS class that sets the element size to 0x0 when hidden.
        */
-      function defaultViewChangeHandler(event: any, instance: ChatInstance) {
-        if (event.newViewState.mainWindow) {
-          customElement.style.width = originalStyles.current.width;
-          customElement.style.height = originalStyles.current.height;
-          instance.elements.getMainWindow().removeClassName("HideWebChat");
-        } else {
-          originalStyles.current = {
-            width: customElement.style.width,
-            height: customElement.style.height,
-          };
-          customElement.style.width = "0px";
-          customElement.style.height = "0px";
-          instance.elements.getMainWindow().addClassName("HideWebChat");
+      function defaultViewChangeHandler(event: any) {
+        if (customElement) {
+          if (event.newViewState.mainWindow) {
+            // Show: remove the hidden class, let the provided className handle sizing
+            customElement.classList.remove("cds-aichat--hidden");
+          } else {
+            // Hide: add the hidden class to set size to 0x0
+            customElement.classList.add("cds-aichat--hidden");
+          }
         }
       }
 

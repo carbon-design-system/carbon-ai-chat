@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@carbon/styles": "^1.39.0",
-    "@carbon/web-components": "^2.13.0",
+    "@carbon/web-components": "^2.25.0",
     "@ibm/telemetry-js": "^1.9.1",
     "lit": "^3.0.0",
     "tslib": "^2.6.3"

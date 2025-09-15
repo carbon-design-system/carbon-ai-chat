@@ -7,6 +7,11 @@
  *  @license
  */
 
+// Ensure the container custom element is registered whenever the
+// custom element module is imported by re-exporting its exports.
+// This prevents bundlers (and our own multi-entry Rollup build)
+// from pruning the side-effect-only import.
+export { default as __cds_aichat_container_register } from "../cds-aichat-container";
 import "../cds-aichat-container";
 
 import { html, LitElement } from "lit";
@@ -27,28 +32,38 @@ import {
  * slotted content and forwards it to cds-aichat-container. It also will setup the custom element with a default viewChange
  * pattern (e.g. hiding and showing the custom element when the chat should be open/closed) if a onViewChange property is not
  * defined. Finally, it registers the custom element with cds-aichat-container so a default "floating" element will not be created.
+ *
+ * The custom element should be sized using external CSS. When hidden, the 'cds-aichat--hidden' class is added to set dimensions to 0x0.
  */
 @carbonElement("cds-aichat-custom-element")
 class ChatCustomElement extends LitElement {
   /**
-   * Shared stylesheet for host-size rules.
+   * Shared stylesheet for hiding styles.
    */
-  private static sizeSheet = new CSSStyleSheet();
+  private static hideSheet = new CSSStyleSheet();
   static {
-    // initial host rule; width/height will be overridden dynamically
-    ChatCustomElement.sizeSheet.replaceSync(`
+    // Hide styles that override any external sizing
+    ChatCustomElement.hideSheet.replaceSync(`
       :host {
         display: block;
-        width: auto;
-        height: auto;
+      }
+      :host(.cds-aichat--hidden) {
+        width: 0 !important;
+        height: 0 !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: 0 !important;
+        max-height: 0 !important;
+        inline-size: 0 !important;
+        block-size: 0 !important;
+        min-inline-size: 0 !important;
+        min-block-size: 0 !important;
+        max-inline-size: 0 !important;
+        max-block-size: 0 !important;
+        overflow: hidden !important;
+        display: block !important;
       }
     `);
-  }
-
-  protected firstUpdated() {
-    // Grab whatever size the host naturally renders at:
-    const { width, height } = getComputedStyle(this);
-    this._originalStyles = { width, height };
   }
 
   /**
@@ -61,7 +76,7 @@ class ChatCustomElement extends LitElement {
     // now TS knows root.adoptedStyleSheets exists
     root.adoptedStyleSheets = [
       ...root.adoptedStyleSheets,
-      ChatCustomElement.sizeSheet,
+      ChatCustomElement.hideSheet,
     ];
     return root;
   }
@@ -98,12 +113,6 @@ class ChatCustomElement extends LitElement {
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
   @state()
-  private _originalStyles: { width: string; height: string } = {
-    width: this.style.width,
-    height: this.style.height,
-  };
-
-  @state()
   private _userDefinedSlotNames: string[] = [];
 
   @state()
@@ -112,31 +121,11 @@ class ChatCustomElement extends LitElement {
   @state()
   private _instance!: ChatInstance;
 
-  /**
-   * Update the CSSStyleSheet’s first rule with new width/height.
-   */
-  private updateHostSize(width: string, height: string) {
-    const rule = ChatCustomElement.sizeSheet.cssRules[0] as CSSStyleRule;
-    rule.style.width = width;
-    rule.style.height = height;
-  }
-
-  private defaultViewChangeHandler = (
-    event: BusEventViewChange,
-    instance: ChatInstance,
-  ) => {
+  private defaultViewChangeHandler = (event: BusEventViewChange) => {
     if (event.newViewState.mainWindow) {
-      // restore original
-      this.updateHostSize(
-        this._originalStyles.width,
-        this._originalStyles.height,
-      );
-      instance.elements.getMainWindow().removeClassName("HideWebChat");
+      this.classList.remove("cds-aichat--hidden");
     } else {
-      const { width, height } = getComputedStyle(this);
-      this._originalStyles = { width, height };
-      this.updateHostSize("0px", "0px");
-      instance.elements.getMainWindow().addClassName("HideWebChat");
+      this.classList.add("cds-aichat--hidden");
     }
   };
 

@@ -15,7 +15,11 @@
   "workspaces": [
     "demo",
     "examples/react/basic",
+    "examples/react/custom-element",
+    "examples/react/history",
     "examples/web-components/basic",
+    "examples/web-components/custom-element",
+    "examples/web-components/history",
     "examples/react/watsonx",
     "examples/web-components/watsonx",
     "packages/ai-chat",
