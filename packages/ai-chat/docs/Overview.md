@@ -4,19 +4,6 @@ The Carbon AI Chat is a rich and extendable chat component that IBM products use
 
 This project enables the Carbon and watsonx teams to focus on core chat behaviors, allowing other teams to enhance their product's unique extensibility.
 
-### Accessing the Github Repo (IBM Only)
-
-The repository for this work is located at [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat). This repository includes code examples and language string translations in addition to source code and issue boards.
-
-Follow these steps to request access:
-
-_Sometimes the first time the SSO session doesn't correctly get updated with the new permissions until you shutdown your browser completely and log back in._
-
-1. Visit [AccessHub](https://ibm-support.saviyntcloud.com/ECMv6/request/requestHome) and request access to "Carbon Design System internal repository access"
-2. After receiving confirmation of access, onboard your public GitHub account to IBM's Github Enterprise Cloud (GHEC) account at [https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/](https://gh-user-map.opensource.dal.dev.cirrus.ibm.com/)
-3. See [https://github.com/orgs/carbon-design-system/sso](https://github.com/orgs/carbon-design-system/sso) to initiate SSO login to the Github Enterprise Cloud
-4. See [https://github.com/carbon-design-system/carbon-ai-chat](https://github.com/carbon-design-system/carbon-ai-chat) to validate access.
-
 ### Installing the Carbon AI Chat
 
 You can install the Carbon AI Chat into your application in multiple ways.
@@ -35,12 +22,16 @@ You can render this component anywhere in your application and provide the Carbo
 import React from "react";
 import { ChatContainer } from "@carbon/ai-chat";
 
-const chatOptions = {
-  // Your configuration object.
-};
-
 function App() {
-  return <ChatContainer config={chatOptions} />;
+  return (
+    <ChatContainer
+      debug={true}
+      aiEnabled={true}
+      header={{ title: "My Assistant" }}
+      launcher={{ isOn: true }}
+      // ... other config properties as individual props
+    />
+  );
 }
 ```
 
@@ -60,27 +51,32 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
-const config = {
-  // Your configuration object.
-};
-
 @customElement("my-app")
 export class MyApp extends LitElement {
   render() {
-    return html`<cds-aichat-container .config="{config}" />`;
+    return html`<cds-aichat-container
+      .debug=${true}
+      .aiEnabled=${true}
+      .header=${{ title: "My Assistant" }}
+      .launcher=${{ isOn: true }}
+    />`;
   }
 }
 ```
+
+Note: The AI theme is enabled by default. To disable it in plain HTML, use `ai-disabled` or set `ai-enabled="false"`.
 
 For more information, see the [web component](WebComponent.md) documentation.
 
 ### Using the API
 
-#### Configuration
+#### Picking your component
 
-When using the React or web component version of the Carbon AI Chat, you pass in a configuration object that sets various immutable options as a `config` property. By editing the configuration object, you can control the appearance and behavior of the Carbon AI Chat before your users see it. The configuration options enable you to specify where the Carbon AI Chat widget appears on your page, choose whether to use the IBM-provided launcher or your own, and more.
+This package provides both React and web component versions of Carbon AI Chat. There are two versions for each framework exported. One provides a "float" layout, the classic lower right hand corner with a launch icon chat widget. The other provides the ability for you to render the Carbon AI Chat into a containing element of your choice. The Carbon AI Chat will responsively grow to fill the size of the container you provide.
 
-See the type documentation for {@link PublicConfig}.
+See [React](React.md) documentation and [web component](WebComponent.md) documentation.
+
+Each of these components allow you to pass props to can control the appearance and behavior of the Carbon AI Chat before your users see it. The configuration options enable you to specify where the Carbon AI Chat widget appears on your page, choose whether to use the IBM-provided launcher or your own, and more.
 
 #### Instance methods
 
@@ -122,11 +118,21 @@ The Carbon AI Chat integration complies with the [Web Content Accessibility 2.1 
 
 Most of the content that displays in the Carbon AI Chat originates from an assistant and displays the language that the content is written in. However, some content that displays in the Carbon AI Chat is static text that is hard-coded inside of the Carbon AI Chat. This includes items such as the "Type something..." message that appears as the placeholder text in the input field or the "Choose a date" text that appears on a date picker. By default, these texts display in English but you can change the language of the texts.
 
-To change any text string, use the {@link ChatInstance.updateLanguagePack} instance method. The JSON object specifies the replacement strings. You can find the strings that the Carbon AI Chat uses in the [languages folder](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat/src/languages).
+To change any text string, pass a `strings` prop to the React or web component. Provide a partial language pack object and it will merge with the defaults. You can find the available string keys in the [languages folder](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat/src/languages).
 
 These files are in the [ICU Message Format](http://userguide.icu-project.org/formatparse/messages).
 
-**Note:** The provided JSON object does not need to contain all strings, just the strings you want to update. Your changes merge with the existing language strings.
+Example (React):
+
+```tsx
+<ChatContainer strings={{ input_placeholder: "Ask me anything..." }} />
+```
+
+Example (web component):
+
+```html
+<cds-aichat-container id="chat" .strings=${{ input_placeholder: "Ask me anything..." }} ></cds-aichat-container>
+```
 
 #### Locales
 
@@ -134,7 +140,7 @@ In addition to languages, the Carbon AI Chat supports locales with a more specif
 
 The Carbon AI Chat supports the locales that the [dayjs library](https://github.com/iamkun/dayjs/tree/dev/src/locale) provide.
 
-You can switch the locale by calling the {@link ChatInstance.updateLocale} instance method and by using the appropriate language code to get correct date formatting in the chat.
+You can switch the locale by updating the {@link PublicConfig.locale} config using the appropriate language code to get correct date formatting in the chat.
 
 #### Bi-directional Support
 

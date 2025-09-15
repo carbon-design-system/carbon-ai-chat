@@ -10,13 +10,19 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
+import { doCreateStore } from "../../../src/chat/store/doCreateStore";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
+import { NamespaceService } from "../../../src/chat/services/NamespaceService";
+import { PublicConfig } from "../../../src/types/config/PublicConfig";
 
 describe("Config Layout", () => {
-  const createBaseConfig = (): PublicConfig => ({
-    ...createBaseTestConfig(),
+  const createBaseProps = (): Partial<ChatContainerProps> => ({
+    ...createBaseTestProps(),
   });
 
   beforeEach(() => {
@@ -34,8 +40,8 @@ describe("Config Layout", () => {
         hasContentMaxWidth: false,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         layout,
       };
 
@@ -44,12 +50,7 @@ describe("Config Layout", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -68,8 +69,8 @@ describe("Config Layout", () => {
         showFrame: false,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         layout,
       };
 
@@ -80,7 +81,7 @@ describe("Config Layout", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );
@@ -102,8 +103,8 @@ describe("Config Layout", () => {
         hasContentMaxWidth: true,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         layout,
       };
 
@@ -114,7 +115,7 @@ describe("Config Layout", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );
@@ -132,8 +133,8 @@ describe("Config Layout", () => {
     });
 
     it("should handle undefined layout in Redux state", async () => {
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         // layout intentionally omitted
       };
 
@@ -144,7 +145,7 @@ describe("Config Layout", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );
@@ -159,6 +160,51 @@ describe("Config Layout", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.public.layout).toBeUndefined();
+    });
+
+    describe("Dynamic Layout Config Updates", () => {
+      let serviceManager: ServiceManager;
+
+      beforeEach(() => {
+        const initialConfig: PublicConfig = {
+          assistantName: "Test Assistant",
+        };
+
+        const store = doCreateStore(initialConfig, {} as ServiceManager);
+        serviceManager = {
+          store,
+          namespace: new NamespaceService("test"),
+          messageService: { timeoutMS: 30000 } as any,
+          humanAgentService: null,
+        } as ServiceManager;
+      });
+
+      it("should handle layout config changes dynamically", async () => {
+        const previousConfig: PublicConfig = {
+          layout: {
+            showFrame: true,
+            hasContentMaxWidth: false,
+          },
+        };
+
+        const newConfig: PublicConfig = {
+          layout: {
+            showFrame: false,
+            hasContentMaxWidth: true,
+            corners: "square" as any,
+          },
+        };
+
+        const changes = detectConfigChanges(previousConfig, newConfig);
+        expect(changes.layoutChanged).toBe(true);
+
+        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+        const state: AppState = serviceManager.store.getState();
+        expect(state.config.public.layout?.showFrame).toBe(false);
+        expect(state.config.public.layout?.hasContentMaxWidth).toBe(true);
+        expect(state.config.public.layout?.corners).toBe("square");
+      });
     });
   });
 });

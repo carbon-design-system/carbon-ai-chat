@@ -45,6 +45,14 @@ export interface ChatInstanceMessaging {
    * and history:end events.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
+
+  /**
+   * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
+   * This will clear all the current assistant messages from the main bot view and cancel any outstanding
+   * messages. This will also clear the current assistant session which will force a new session to start on the
+   * next message.
+   */
+  restartConversation: () => Promise<void>;
 }
 
 /**
@@ -73,4 +81,9 @@ export interface CustomSendMessageOptions {
    * A signal to let customSendMessage to cancel a request if it has exceeded Carbon AI Chat's timeout.
    */
   signal: AbortSignal;
+
+  /**
+   * If the message was sent with "silent" set to true to not be displayed in the conversation history.
+   */
+  silent: boolean;
 }

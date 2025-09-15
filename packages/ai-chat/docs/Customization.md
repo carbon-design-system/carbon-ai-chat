@@ -10,7 +10,57 @@ The Carbon AI Chat also supports basic styling inside `text` responses to match 
 
 ##### Markdown
 
-The Carbon AI Chat supports common Markdown syntax (bold, italics, lists, images, tables, code blocks, headings, blockquotes, and so on) in the `text` response type. The Carbon AI Chat follows standard CommonMark rules.
+The Carbon AI Chat supports the following Markdown syntax in the `text` response type:
+
+**Text formatting:**
+
+- `**bold text**` or `__bold text__` for **bold text**
+- `*italic text*` or `_italic text_` for _italic text_
+- `~~strikethrough~~` for ~~strikethrough text~~
+- `==highlighted text==` for ==highlighted text==
+- `^superscript^` for superscript text
+- `~subscript~` for subscript text
+
+**Code:**
+
+- `` `inline code` `` for `inline code`
+- Fenced code blocks with syntax highlighting:
+
+**Headers:**
+
+- `# H1`, `## H2`, `### H3`, `#### H4`, `##### H5`, `###### H6`
+
+**Lists:**
+
+- Unordered lists using `*`, `+`, or `-`
+- Ordered lists using `1.`, `2.`, etc.
+- Nested lists are supported
+
+**Links and images:**
+
+- `[link text](URL)` for links (opens in new tab by default)
+- `![alt text](image URL)` for images
+
+**Other elements:**
+
+- `> blockquote text` for blockquotes
+- Tables using pipe syntax with automatic pagination and sorting
+- Horizontal rules using `---` or `***`
+- Line breaks are preserved (breaks: true)
+- Automatic URL detection and conversion to links
+
+**Attributes:**
+
+- Custom attributes using `{{class="my-class" id="my-id"}}` syntax
+- Supported attributes: `target`, `rel`, `class`, `id`
+
+**HTML support:**
+
+- Raw HTML is supported when enabled
+- Custom elements and web components are allowed
+- Content is sanitized for security when sanitization is enabled
+
+The Carbon AI Chat follows CommonMark rules with these extensions and enhancements.
 
 ##### HTML content
 
@@ -57,26 +107,28 @@ For more information, see the documentation for [React](React.md) and [web compo
 
 #### Theming
 
-You can customize the Carbon theme of the Carbon AI Chat. Choose one of four Carbon themes by using the `carbonTheme` property:
+You can customize the Carbon theme of the Carbon AI Chat. By default, it will inherit a Carbon theme from the host page. If the rest of your site does not use Carbon, choose one of four Carbon themes by using the {@link PublicConfig.injectCarbonTheme} property:
 
 - White
 - Gray 10
 - Gray 90
 - Gray 100
 
-For more information, see the documentation for {@link PublicConfig.themeConfig}.
+This will inject the correct CSS custom properties into the Carbon AI Chat's ShadowRoot.
+
+For more information, see the documentation for {@link PublicConfig}.
 
 #### Homescreen
 
 The Carbon AI Chat displays an optional home screen featuring content presented to users during their initial interaction and accessible later in the conversation. Many use it to provide sample prompts for their assistant, but there is considerable freedom on this page to introduce your particular assistant.
 
-For more information, see the documentation for {@link ChatInstance.updateHomeScreenConfig}.
+For more information, see the documentation for {@link PublicConfig.homescreen}.
 
 #### Launcher
 
 The Carbon AI Chat launcher welcomes and engages customers so they know where to find help if they need it. You can also provide your own launcher.
 
-For more information, see the documentation for {@link ChatInstance.updateLauncherConfig}.
+For more information, see the documentation for {@link PublicConfig.launcher}.
 
 #### Writeable elements
 
@@ -86,6 +138,21 @@ For more information, see the documentation for [React](React.md) and [web compo
 
 #### Custom Panel
 
-The Carbon AI Chat can open an overlay panel with custom content at any time. Panels are effective for use cases that range from pre-chat content forms, post-chat feedback forms, or multi-step processes. You can open the panel at any time, whether from an event, a `user_defined` response, or even an action a user takes on your website.
+The Carbon AI Chat can open an overlay panel with custom content at any time. Panels are effective for use cases that range from pre‑chat content forms, post‑chat feedback forms, or multi‑step processes. You can open the panel at any time, whether from an event, a `user_defined` response, or even an action a user takes on your website.
 
-For more information, see {@link ChatInstance.customPanels}. The custom panel is just another {@link WriteableElementName}. For more information on displaying a writeable element, see the documentation for [React](React.md) and [web components](WebComponent.md).
+Custom panels are controlled via {@link ChatInstance.customPanels}. Use `instance.customPanels.getPanel()` to obtain the panel, then call `open(options)` and `close()` as needed. Supported options are described by {@link CustomPanelConfigOptions}.
+
+Example:
+
+```ts
+const panel = instance.customPanels.getPanel();
+panel.open({
+  title: "My Custom Panel",
+  hideCloseButton: true,
+  disableAnimation: true,
+});
+// ... later
+panel.close();
+```
+
+The custom panel renders content through the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT} writeable element. For more on rendering writeable elements, see the documentation for [React](React.md) and [web components](WebComponent.md).

@@ -14,6 +14,7 @@ import "./user-defined-response-example";
 import "./writeable-element-example";
 
 import {
+  BusEvent,
   BusEventMessageItemCustom,
   BusEventType,
   BusEventViewChange,
@@ -23,6 +24,8 @@ import {
   MessageResponse,
   PartialItemChunk,
   PublicConfig,
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
   UserDefinedItem,
   ViewType,
 } from "@carbon/ai-chat";
@@ -31,6 +34,10 @@ import { customElement, property, state } from "lit/decorators.js";
 import { DeepPartial } from "../types/DeepPartial";
 
 import { Settings } from "../framework/types";
+import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
+  Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
 
 interface UserDefinedSlotsMap {
   [key: string]: UserDefinedSlot;
@@ -145,7 +152,7 @@ export class DemoApp extends LitElement {
    *
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#messageItemCustom
    */
-  customButtonHandler = (event: any) => {
+  customButtonHandler = (event: BusEvent) => {
     const { messageItem } = event as BusEventMessageItemCustom;
     // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
     if (messageItem.custom_event_name === "alert_button") {
@@ -172,68 +179,6 @@ export class DemoApp extends LitElement {
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
-
-    switch (this.settings.homescreen) {
-      case "default":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          greeting: "Hello!\n\nThis is some text to introduce your chat.",
-          starters: {
-            is_on: true,
-            buttons: [
-              {
-                label: "text (stream)",
-              },
-              {
-                label: "code (stream)",
-              },
-              {
-                label: "text",
-              },
-              {
-                label: "code",
-              },
-            ],
-          },
-        });
-        break;
-
-      case "splash":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          allow_return: false,
-          greeting:
-            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
-          starters: {
-            is_on: true,
-            buttons: [
-              {
-                label: "text (stream)",
-              },
-              {
-                label: "code (stream)",
-              },
-              {
-                label: "text",
-              },
-              {
-                label: "code",
-              },
-            ],
-          },
-        });
-        break;
-
-      case "custom":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          custom_content_only: true,
-        });
-        break;
-
-      default:
-        break;
-    }
   };
 
   /**
@@ -320,10 +265,18 @@ export class DemoApp extends LitElement {
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
    */
   renderWriteableElementSlots() {
-    if (
-      this.settings.writeableElements === "true" &&
-      this.instance?.writeableElements
-    ) {
+    if (!this.instance?.writeableElements) {
+      return null;
+    }
+
+    const isCustomHomeScreen =
+      this.config.homescreen?.customContentOnly === true;
+    const showAllWriteableElements = this.settings.writeableElements === "true";
+    const showHomeScreenElements =
+      !showAllWriteableElements && isCustomHomeScreen;
+
+    if (showAllWriteableElements) {
+      // Show all writeable elements
       return Object.keys(this.instance.writeableElements).map((key) => {
         return html`<div slot=${key}>
           <writeable-element-example
@@ -332,7 +285,24 @@ export class DemoApp extends LitElement {
           ></writeable-element-example>
         </div>`;
       });
+    } else if (showHomeScreenElements) {
+      // Show only home screen specific elements
+      const homeScreenElementKeys = [
+        "homeScreenHeaderBottomElement",
+        "homeScreenAfterStartersElement",
+      ];
+      return homeScreenElementKeys
+        .filter((key) => key in this.instance.writeableElements)
+        .map((key) => {
+          return html`<div slot=${key}>
+            <writeable-element-example
+              location=${key}
+              valueFromParent=${this.valueFromParent}
+            ></writeable-element-example>
+          </div>`;
+        });
     }
+
     return null;
   }
 
@@ -341,17 +311,59 @@ export class DemoApp extends LitElement {
     return html`
       ${this.settings.layout === "float"
         ? html`<cds-aichat-container
-            .config=${this.config}
+            .onError=${this.config.onError}
+            ?open-chat-by-default=${this.config.openChatByDefault}
+            .disclaimer=${this.config.disclaimer}
+            ?disable-custom-element-mobile-enhancements=${this.config
+              .disableCustomElementMobileEnhancements}
+            ?debug=${this.config.debug}
+            inject-carbon-theme=${this.config.injectCarbonTheme}
+            ?ai-enabled=${this.config.aiEnabled}
+            ?should-take-focus-if-opens-automatically=${this.config
+              .shouldTakeFocusIfOpensAutomatically}
+            namespace=${this.config.namespace}
+            ?enable-focus-trap=${this.config.enableFocusTrap}
+            ?should-sanitize-html=${this.config.shouldSanitizeHTML}
+            .header=${this.config.header}
+            .layout=${this.config.layout}
+            .messaging=${this.config.messaging}
+            ?is-readonly=${this.config.isReadonly}
+            assistant-name=${this.config.assistantName}
+            locale=${this.config.locale}
+            .homescreen=${this.config.homescreen}
+            .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
+            .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-container
           >`
         : html``}
       ${this.settings.layout === "sidebar"
         ? html`<cds-aichat-custom-element
             class="sidebar${this.sideBarOpen ? "" : " sidebar--closed"}"
-            .config=${this.config}
+            .onError=${this.config.onError}
+            ?open-chat-by-default=${this.config.openChatByDefault}
+            .disclaimer=${this.config.disclaimer}
+            ?disable-custom-element-mobile-enhancements=${this.config
+              .disableCustomElementMobileEnhancements}
+            ?debug=${this.config.debug}
+            inject-carbon-theme=${this.config.injectCarbonTheme}
+            ?ai-enabled=${this.config.aiEnabled}
+            ?should-take-focus-if-opens-automatically=${this.config
+              .shouldTakeFocusIfOpensAutomatically}
+            namespace=${this.config.namespace}
+            ?enable-focus-trap=${this.config.enableFocusTrap}
+            ?should-sanitize-html=${this.config.shouldSanitizeHTML}
+            .header=${this.config.header}
+            .layout=${this.config.layout}
+            .messaging=${this.config.messaging}
+            ?is-readonly=${this.config.isReadonly}
+            assistant-name=${this.config.assistantName}
+            locale=${this.config.locale}
+            .homescreen=${this.config.homescreen}
+            .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
             .onViewChange=${this.onViewChange}
+            .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
           >`
         : html``}
@@ -359,8 +371,29 @@ export class DemoApp extends LitElement {
       this.settings.layout === "fullscreen-no-gutter"
         ? html`<cds-aichat-custom-element
             class="fullScreen"
-            .config=${this.config}
+            .onError=${this.config.onError}
+            ?open-chat-by-default=${this.config.openChatByDefault}
+            .disclaimer=${this.config.disclaimer}
+            ?disable-custom-element-mobile-enhancements=${this.config
+              .disableCustomElementMobileEnhancements}
+            ?debug=${this.config.debug}
+            inject-carbon-theme=${this.config.injectCarbonTheme}
+            ?ai-enabled=${this.config.aiEnabled}
+            ?should-take-focus-if-opens-automatically=${this.config
+              .shouldTakeFocusIfOpensAutomatically}
+            namespace=${this.config.namespace}
+            ?enable-focus-trap=${this.config.enableFocusTrap}
+            ?should-sanitize-html=${this.config.shouldSanitizeHTML}
+            .header=${this.config.header}
+            .layout=${this.config.layout}
+            .messaging=${this.config.messaging}
+            ?is-readonly=${this.config.isReadonly}
+            assistant-name=${this.config.assistantName}
+            locale=${this.config.locale}
+            .homescreen=${this.config.homescreen}
+            .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
+            .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
           >`
         : html``}

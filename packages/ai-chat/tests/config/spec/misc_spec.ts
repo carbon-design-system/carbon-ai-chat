@@ -10,13 +10,19 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
+import { doCreateStore } from "../../../src/chat/store/doCreateStore";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
+import { NamespaceService } from "../../../src/chat/services/NamespaceService";
+import { PublicConfig } from "../../../src/types/config/PublicConfig";
 
 describe("Config Miscellaneous", () => {
-  const createBaseConfig = (): PublicConfig => ({
-    ...createBaseTestConfig(),
+  const createBaseProps = (): Partial<ChatContainerProps> => ({
+    ...createBaseTestProps(),
   });
 
   beforeEach(() => {
@@ -31,15 +37,14 @@ describe("Config Miscellaneous", () => {
     const booleanProperties = [
       "disableCustomElementMobileEnhancements",
       "shouldSanitizeHTML",
-      "disableWindowTitleChanges",
       "isReadonly",
     ] as const;
 
     booleanProperties.forEach((property) => {
       describe(property, () => {
         it(`should store ${property}: true in Redux state`, async () => {
-          const config: PublicConfig = {
-            ...createBaseConfig(),
+          const props: Partial<ChatContainerProps> = {
+            ...createBaseProps(),
             [property]: true,
           };
 
@@ -50,7 +55,7 @@ describe("Config Miscellaneous", () => {
 
           render(
             React.createElement(ChatContainer, {
-              config,
+              ...props,
               onBeforeRender,
             }),
           );
@@ -68,8 +73,8 @@ describe("Config Miscellaneous", () => {
         });
 
         it(`should store ${property}: false in Redux state`, async () => {
-          const config: PublicConfig = {
-            ...createBaseConfig(),
+          const props: Partial<ChatContainerProps> = {
+            ...createBaseProps(),
             [property]: false,
           };
 
@@ -80,7 +85,7 @@ describe("Config Miscellaneous", () => {
 
           render(
             React.createElement(ChatContainer, {
-              config,
+              ...props,
               onBeforeRender,
             }),
           );
@@ -98,8 +103,8 @@ describe("Config Miscellaneous", () => {
         });
 
         it(`should handle undefined ${property} in Redux state`, async () => {
-          const config: PublicConfig = {
-            ...createBaseConfig(),
+          const props: Partial<ChatContainerProps> = {
+            ...createBaseProps(),
             // property intentionally omitted
           };
 
@@ -110,7 +115,7 @@ describe("Config Miscellaneous", () => {
 
           render(
             React.createElement(ChatContainer, {
-              config,
+              ...props,
               onBeforeRender,
             }),
           );
@@ -131,11 +136,11 @@ describe("Config Miscellaneous", () => {
   });
 
   describe("string", () => {
-    it("should store botAvatarURL in Redux state", async () => {
-      const botAvatarURL = "https://example.com/avatar.png";
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        botAvatarURL,
+    it("should store assistantName in Redux state", async () => {
+      const assistantName = "Assistant Bot";
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        assistantName,
       };
 
       let capturedInstance: any = null;
@@ -143,12 +148,7 @@ describe("Config Miscellaneous", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -159,50 +159,19 @@ describe("Config Miscellaneous", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.public.botAvatarURL).toBe(botAvatarURL);
-    });
-
-    it("should store botName in Redux state", async () => {
-      const botName = "Assistant Bot";
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        botName,
-      };
-
-      let capturedInstance: any = null;
-      const onBeforeRender = jest.fn((instance) => {
-        capturedInstance = instance;
-      });
-
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
-
-      await waitFor(
-        () => {
-          expect(capturedInstance).not.toBeNull();
-        },
-        { timeout: 5000 },
-      );
-
-      const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
-      expect(state.config.public.botName).toBe(botName);
+      expect(state.config.public.assistantName).toBe(assistantName);
     });
   });
 
   describe("disclaimer", () => {
     it("should store disclaimer config in Redux state", async () => {
       const disclaimer = {
-        is_on: true,
+        isOn: true,
         disclaimerHTML: "<p>This is a disclaimer</p>",
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         disclaimer,
       };
 
@@ -211,12 +180,7 @@ describe("Config Miscellaneous", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -230,14 +194,14 @@ describe("Config Miscellaneous", () => {
       expect(state.config.public.disclaimer).toEqual(disclaimer);
     });
 
-    it("should store disclaimer with is_on false in Redux state", async () => {
+    it("should store disclaimer with isOn false in Redux state", async () => {
       const disclaimer = {
-        is_on: false,
+        isOn: false,
         disclaimerHTML: "<p>Disabled disclaimer</p>",
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         disclaimer,
       };
 
@@ -246,12 +210,7 @@ describe("Config Miscellaneous", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -263,6 +222,51 @@ describe("Config Miscellaneous", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.public.disclaimer).toEqual(disclaimer);
+    });
+
+    describe("Dynamic Disclaimer Config Updates", () => {
+      let serviceManager: ServiceManager;
+
+      beforeEach(() => {
+        const initialConfig: PublicConfig = {
+          assistantName: "Test Assistant",
+        };
+
+        const store = doCreateStore(initialConfig, {} as ServiceManager);
+        serviceManager = {
+          store,
+          namespace: new NamespaceService("test"),
+          messageService: { timeoutMS: 30000 } as any,
+          humanAgentService: null,
+        } as ServiceManager;
+      });
+
+      it("should handle disclaimer config changes dynamically", async () => {
+        const previousConfig: PublicConfig = {
+          disclaimer: {
+            disclaimerHTML: "<p>Old disclaimer</p>",
+            isOn: true,
+          },
+        };
+
+        const newConfig: PublicConfig = {
+          disclaimer: {
+            disclaimerHTML: "<p>New disclaimer</p>",
+            isOn: false,
+          },
+        };
+
+        const changes = detectConfigChanges(previousConfig, newConfig);
+        expect(changes.disclaimerChanged).toBe(true);
+
+        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+        const state: AppState = serviceManager.store.getState();
+        expect(state.config.public.disclaimer?.disclaimerHTML).toBe(
+          "<p>New disclaimer</p>",
+        );
+        expect(state.config.public.disclaimer?.isOn).toBe(false);
+      });
     });
   });
 });

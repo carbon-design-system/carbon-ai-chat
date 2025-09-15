@@ -1,0 +1,36 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/components/button" as button;
+
+.cds-aichat--response-user-avatar img {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--response-user-avatar svg {
+  fill: currentcolor;
+}
+
+.cds-aichat--response-user-avatar .cds-aichat--response-user-avatar__circle {
+  border: button.$button-border-width solid currentcolor;
+  border-radius: 50%;
+  background-color: transparent;
+  font-weight: bold;
+}
+
+.cds-aichat--response-user-avatar
+  .cds-aichat--response-user-avatar__circle
+  .cds-aichat--response-user-avatar__letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  text-align: center;
+}

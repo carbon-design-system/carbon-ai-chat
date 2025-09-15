@@ -12,8 +12,25 @@ import "../cds-aichat-container";
 import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
-import { carbonElement } from "../../chat/web-components/decorators/customElement";
-import { PublicConfig } from "../../types/config/PublicConfig";
+import { carbonElement } from "../../chat/ai-chat-components/web-components/decorators/customElement";
+import {
+  PublicConfig,
+  OnErrorData,
+  DisclaimerPublicConfig,
+  CarbonTheme,
+  HeaderConfig,
+  LayoutConfig,
+  PublicConfigMessaging,
+  LanguagePack,
+} from "../../types/config/PublicConfig";
+import { DeepPartial } from "../../types/utilities/DeepPartial";
+import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
+import { LauncherConfig } from "../../types/config/LauncherConfig";
+import type {
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
+  ServiceDeskPublicConfig,
+} from "../../types/config/ServiceDeskConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import {
   BusEventChunkUserDefinedResponse,
@@ -66,20 +83,113 @@ class ChatCustomElement extends LitElement {
     return root;
   }
 
+  // Flattened PublicConfig properties
+  @property({ attribute: false })
+  onError?: (data: OnErrorData) => void;
+
+  @property({ type: Boolean, attribute: "open-chat-by-default" })
+  openChatByDefault?: boolean;
+
   @property({ type: Object })
-  config!: PublicConfig;
+  disclaimer?: DisclaimerPublicConfig;
+
+  @property({
+    type: Boolean,
+    attribute: "disable-custom-element-mobile-enhancements",
+  })
+  disableCustomElementMobileEnhancements?: boolean;
+
+  @property({ type: Boolean })
+  debug?: boolean;
+
+  @property({ type: Boolean, attribute: "expose-service-manager-for-testing" })
+  exposeServiceManagerForTesting?: boolean;
+
+  @property({ type: String, attribute: "inject-carbon-theme" })
+  injectCarbonTheme?: CarbonTheme;
+
+  @property({
+    attribute: "ai-enabled",
+    converter: {
+      fromAttribute: (value: string | null) => {
+        if (value === null) {
+          return undefined;
+        }
+        const v = String(value).trim().toLowerCase();
+        const falsey = v === "false" || v === "0" || v === "off" || v === "no";
+        return !falsey;
+      },
+    },
+  })
+  aiEnabled?: boolean;
+
+  @property({ type: Boolean, attribute: "ai-disabled" })
+  aiDisabled?: boolean;
+
+  @property({
+    type: Boolean,
+    attribute: "should-take-focus-if-opens-automatically",
+  })
+  shouldTakeFocusIfOpensAutomatically?: boolean;
+
+  @property({ type: String })
+  namespace?: string;
+
+  @property({ type: Boolean, attribute: "enable-focus-trap" })
+  enableFocusTrap?: boolean;
+
+  @property({ type: Boolean, attribute: "should-sanitize-html" })
+  shouldSanitizeHTML?: boolean;
+
+  @property({ type: Object })
+  header?: HeaderConfig;
+
+  @property({ type: Object })
+  layout?: LayoutConfig;
+
+  @property({ type: Object })
+  messaging?: PublicConfigMessaging;
+
+  @property({ type: Boolean, attribute: "is-readonly" })
+  isReadonly?: boolean;
+
+  @property({ type: String, attribute: "assistant-name" })
+  assistantName?: string;
+
+  @property({ type: String })
+  locale?: string;
+
+  @property({ type: Object })
+  homescreen?: HomeScreenConfig;
+
+  @property({ type: Object })
+  launcher?: LauncherConfig;
+
+  /** A factory for the {@link ServiceDesk} integration. */
+  @property({ attribute: false })
+  serviceDeskFactory?: (
+    parameters: ServiceDeskFactoryParameters,
+  ) => Promise<ServiceDesk>;
+
+  /** Public configuration for the service desk integration. */
+  @property({ type: Object, attribute: "service-desk" })
+  serviceDesk?: ServiceDeskPublicConfig;
+
+  /** Optional partial language pack overrides */
+  @property({ type: Object })
+  strings?: DeepPartial<LanguagePack>;
 
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
    */
-  @property()
+  @property({ attribute: false })
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
    * This function is called after the render function of Carbon AI Chat is called.
    */
-  @property()
+  @property({ attribute: false })
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
@@ -123,20 +233,19 @@ class ChatCustomElement extends LitElement {
 
   private defaultViewChangeHandler = (
     event: BusEventViewChange,
-    instance: ChatInstance,
+    _instance: ChatInstance,
   ) => {
     if (event.newViewState.mainWindow) {
-      // restore original
+      // restore original host element size
       this.updateHostSize(
         this._originalStyles.width,
         this._originalStyles.height,
       );
-      instance.elements.getMainWindow().removeClassName("HideWebChat");
     } else {
+      // minimize host element size
       const { width, height } = getComputedStyle(this);
       this._originalStyles = { width, height };
       this.updateHostSize("0px", "0px");
-      instance.elements.getMainWindow().addClassName("HideWebChat");
     }
   };
 
@@ -148,6 +257,37 @@ class ChatCustomElement extends LitElement {
       this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
     }
   };
+
+  // Computed property to reconstruct PublicConfig from flattened props
+  private get config(): PublicConfig {
+    return {
+      onError: this.onError,
+      openChatByDefault: this.openChatByDefault,
+      disclaimer: this.disclaimer,
+      disableCustomElementMobileEnhancements:
+        this.disableCustomElementMobileEnhancements,
+      debug: this.debug,
+      exposeServiceManagerForTesting: this.exposeServiceManagerForTesting,
+      injectCarbonTheme: this.injectCarbonTheme,
+      aiEnabled: this.aiDisabled === true ? false : this.aiEnabled,
+      serviceDeskFactory: this.serviceDeskFactory,
+      serviceDesk: this.serviceDesk,
+      shouldTakeFocusIfOpensAutomatically:
+        this.shouldTakeFocusIfOpensAutomatically,
+      namespace: this.namespace,
+      enableFocusTrap: this.enableFocusTrap,
+      shouldSanitizeHTML: this.shouldSanitizeHTML,
+      header: this.header,
+      layout: this.layout,
+      messaging: this.messaging,
+      isReadonly: this.isReadonly,
+      assistantName: this.assistantName,
+      locale: this.locale,
+      homescreen: this.homescreen,
+      launcher: this.launcher,
+      strings: this.strings,
+    };
+  }
 
   private onBeforeRenderOverride = async (instance: ChatInstance) => {
     this._instance = instance;
@@ -190,13 +330,14 @@ class ChatCustomElement extends LitElement {
   }
 }
 
-/** @category Web component */
-interface CdsAiChatCustomElementAttributes {
-  /**
-   * The configuration object used to render Carbon AI Chat.
-   */
-  config: PublicConfig;
-
+/**
+ * Attributes interface for the cds-aichat-custom-element web component.
+ * This interface extends {@link CdsAiChatContainerAttributes} and {@link PublicConfig} with additional component-specific props,
+ * flattening all config properties as top-level properties for better TypeScript IntelliSense.
+ *
+ * @category Web component
+ */
+interface CdsAiChatCustomElementAttributes extends PublicConfig {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

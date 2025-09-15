@@ -13,6 +13,9 @@ import {
 import { test, expect } from "@playwright/test";
 
 test("smoke React", async ({ page }) => {
+  // Block analytics script
+  await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+
   // 1) Navigate to the app
   await page.goto("/");
 
@@ -31,11 +34,16 @@ test("smoke React", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
+  await expect(page.locator("#cds-aichat--message-3")).toContainText(
+    "Carbon is a",
+  );
   await close.click();
 });
 
 test("smoke web component", async ({ page }) => {
+  // Block analytics script
+  await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+
   // 1) Navigate to the app
   await page.goto("/");
 
@@ -63,6 +71,8 @@ test("smoke web component", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
+  await expect(page.locator("#cds-aichat--message-3")).toContainText(
+    "Carbon is a",
+  );
   await close.click();
 });

@@ -12,7 +12,7 @@ import {
   ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 function doImage(instance: ChatInstance) {
   instance.messaging.addMessage({
     output: {

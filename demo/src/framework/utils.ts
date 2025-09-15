@@ -11,13 +11,10 @@ import {
   CornersType,
   MinimizeButtonIconType,
   PublicConfig,
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { KeyPairs, Settings } from "./types";
-import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -38,6 +35,20 @@ function updateQueryParams(items: KeyPairs[]) {
   window.location.search = urlParams.toString();
 }
 
+function updateQueryParamsWithoutRefresh(items: KeyPairs[]) {
+  // Get the current URL's search params
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Set or update the query parameter
+  items.forEach(({ key, value }) => {
+    urlParams.set(key, value);
+  });
+
+  // Update the URL without refreshing the page using History API
+  const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+  window.history.replaceState({}, "", newUrl);
+}
+
 function updatePageTheme(theme: string) {
   // Get the current URL's search params
   const urlParams = new URLSearchParams(window.location.search);
@@ -55,25 +66,36 @@ function getSettings() {
   const settings: Partial<Settings> = urlParams.has("settings")
     ? JSON.parse(urlParams.get("settings") as string)
     : {};
-  const config: Partial<PublicConfig> = urlParams.has("config")
+  const config: any = urlParams.has("config")
     ? JSON.parse(urlParams.get("config") as string)
     : {};
   const pageTheme = urlParams.get("pageTheme") || "cds--white";
 
   let defaultConfig: PublicConfig = {
     ...config,
+    // Default to AI theme enabled; prefer explicit top-level value, otherwise map legacy theme.theme
+    aiEnabled:
+      typeof config.aiEnabled === "boolean"
+        ? config.aiEnabled
+        : config.theme?.theme !== undefined
+          ? config.theme.theme === "CarbonAI"
+          : true,
+    // Map legacy nested theme to top-level injectCarbonTheme; "inherit" => undefined
+    injectCarbonTheme:
+      config.injectCarbonTheme !== undefined
+        ? config.injectCarbonTheme
+        : config.theme?.injectCarbonTheme === "inherit"
+          ? undefined
+          : config.theme?.injectCarbonTheme,
     messaging: {
       customSendMessage,
       ...config.messaging,
     },
-    serviceDeskFactory: (parameters: ServiceDeskFactoryParameters) =>
-      Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk),
   };
 
   const defaultSettings: Settings = {
     framework: "react",
     layout: "float",
-    homescreen: "none",
     writeableElements: "false",
     ...settings,
   };
@@ -83,41 +105,38 @@ function getSettings() {
     case "float":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
-        themeConfig: { ...defaultConfig.themeConfig, corners: undefined },
         layout: {
           ...defaultConfig.layout,
           showFrame: undefined,
           hasContentMaxWidth: undefined,
+          corners: CornersType.SQUARE,
         },
         openChatByDefault: undefined,
       };
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
-      delete defaultConfig.headerConfig?.hideMinimizeButton;
-      delete defaultConfig.themeConfig?.corners;
+      delete defaultConfig.header?.minimizeButtonIconType;
+      delete defaultConfig.header?.hideMinimizeButton;
+      delete defaultConfig.layout?.corners;
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
     case "sidebar":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: MinimizeButtonIconType.SIDE_PANEL_RIGHT,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
         },
         layout: {
           ...defaultConfig.layout,
           showFrame: undefined,
           hasContentMaxWidth: undefined,
+          corners: CornersType.SQUARE,
         },
         openChatByDefault: undefined,
       };
@@ -127,14 +146,10 @@ function getSettings() {
     case "fullscreen":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: true,
           minimizeButtonIconType: undefined,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
         },
         layout: {
           ...defaultConfig.layout,
@@ -143,28 +158,25 @@ function getSettings() {
         },
         openChatByDefault: true,
       };
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      delete defaultConfig.header?.minimizeButtonIconType;
       break;
     case "fullscreen-no-gutter":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: true,
           minimizeButtonIconType: undefined,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
         },
         layout: {
           ...defaultConfig.layout,
           showFrame: false,
           hasContentMaxWidth: false,
+          corners: CornersType.SQUARE,
         },
         openChatByDefault: true,
       };
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      delete defaultConfig.header?.minimizeButtonIconType;
       break;
   }
 
@@ -193,4 +205,11 @@ async function asyncForEach<T>(
   }
 }
 
-export { updateQueryParams, updatePageTheme, getSettings, sleep, asyncForEach };
+export {
+  updateQueryParams,
+  updateQueryParamsWithoutRefresh,
+  updatePageTheme,
+  getSettings,
+  sleep,
+  asyncForEach,
+};

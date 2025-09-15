@@ -15,8 +15,8 @@
 import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { FileStatusValue } from "../instance/apiTypes";
-import { BUTTON_KIND } from "@carbon/web-components/es-custom/components/button/defs";
+import { FileStatusValue } from "../config/ServiceDeskConfig";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 /**
  * This is the main interface that represents a request from a user sent to a back-end.
@@ -541,7 +541,7 @@ export interface GenericItemMessageFeedbackOptions {
   /**
    * Indicates if a request for feedback should be displayed.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
@@ -794,7 +794,7 @@ interface OptionItem<TUserDefinedType = Record<string, unknown>>
   description?: string;
 
   /**
-   * The preferred type of control to display.
+   * The preferred type of control to display (e.g. button or dropdown).
    */
   preference?: OptionItemPreference;
 }
@@ -1595,7 +1595,12 @@ interface PartialItemChunk extends Chunk {
  * previously received from partial chunks. This chunk may contain corrections to previous chunks.
  *
  * Use this when you need to finalize a specific item but the overall message response isn't ready yet.
- * For ending the entire streaming response, use {@link FinalResponseChunk} instead.
+ *
+ * If you are only streaming a single item you can skip
+ * this chunk type entirely. CompleteItemChunk is primarily useful when streaming multiple different message
+ * items and you need to finalize one item while others are still streaming.
+ *
+ * For ending the entire streaming response en masse, use {@link FinalResponseChunk}.
  *
  * @category Messaging
  */

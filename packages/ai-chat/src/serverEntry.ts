@@ -17,25 +17,17 @@
  */
 
 // Export types and utilities without importing web components
-export { OverlayPanelName } from "./chat/shared/components/OverlayPanel";
+export { OverlayPanelName } from "./chat/legacy/components/OverlayPanel";
 
 export {
   PageObjectId,
   makeTestId,
   TestId,
   PrefixedId,
-} from "./chat/shared/utils/PageObjectId";
+} from "./chat/utils/PageObjectId";
 
 // Export all types without the web component implementations
 export {
-  CustomMenuOption,
-  CustomPanelConfigOptions,
-  CustomPanelInstance,
-  CustomPanels,
-  FileStatusValue,
-  FileUpload,
-  LauncherType,
-  LanguagePack,
   NotificationMessage,
   ViewState,
   ViewType,
@@ -44,18 +36,19 @@ export {
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
-  ChangeFunction,
+  CustomPanelConfigOptions,
+  CustomPanelInstance,
+  CustomPanels,
+} from "./types/instance/apiTypes";
+
+export {
   ChatInstance,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
-  CSSVariable,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
-  HasAddRemoveClassName,
   IncreaseOrDecrease,
-  InstanceElements,
-  InstanceInputElement,
   PublicWebChatServiceDeskState,
   PublicWebChatState,
   SendOptions,
@@ -63,6 +56,7 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
 
@@ -103,7 +97,6 @@ export {
 } from "./types/events/eventBusTypes";
 
 export {
-  HomeScreenBackgroundType,
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
@@ -116,15 +109,17 @@ export {
 
 export {
   CarbonTheme,
+  CustomMenuOption,
   DisclaimerPublicConfig,
+  enLanguagePack,
   HeaderConfig,
+  LanguagePack,
   LayoutConfig,
   MinimizeButtonIconType,
   OnErrorData,
   OnErrorType,
   PublicConfig,
   PublicConfigMessaging,
-  ThemeConfig,
 } from "./types/config/PublicConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
@@ -137,6 +132,8 @@ export {
   DisconnectedErrorInfo,
   EndChatInfo,
   ErrorType,
+  FileStatusValue,
+  FileUpload,
   ScreenShareState,
   ServiceDesk,
   ServiceDeskCallback,

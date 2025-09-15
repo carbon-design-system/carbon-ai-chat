@@ -126,6 +126,40 @@ ${UNORDERED_LIST}
 ---
 `;
 
+const HTML = `
+<style>
+    .fun-fact { 
+        background-color: #e8f5e8; 
+        border-left: 4px solid #27ae60; 
+        padding: 10px; 
+        margin: 10px 0; 
+    }
+</style>
+<h2>Carbon <b>(C)</b> - The Element of Life</h2>
+
+<p><strong>Carbon</strong> is a <mark>non-metallic element</mark> with atomic number <strong>6</strong>. It's one of the most important elements on Earth because it forms the backbone of all organic molecules.</p>
+
+<div class="fun-fact">
+    <h4>Fun Fact</h4>
+    <p>Carbon can form more compounds than any other element except hydrogen. There are over <em>10 million</em> known carbon compounds!</p>
+</div>
+
+<blockquote>
+    <p>"We are made of <strong>star stuff</strong>. We are a way for the cosmos to know itself."</p>
+    <cite>— Carl Sagan (referring to carbon-based life)</cite>
+</blockquote>
+
+<h3>Why Carbon Matters</h3>
+<ol>
+    <li>Forms the basis of all <abbr title="deoxyribonucleic acid">DNA</abbr> and proteins</li>
+    <li>Essential for photosynthesis in plants</li>
+    <li>Key component in fossil fuels and climate change</li>
+    <li>Used in advanced materials like carbon nanotubes</li>
+</ol>
+
+<hr>
+<small><em>Carbon's unique ability to form four bonds makes it the perfect element for complex biological molecules.</em></small>`;
+
 const WORD_DELAY = 20;
 
 export {
@@ -140,4 +174,5 @@ export {
   CODE,
   BLOCKQUOTE,
   MARKDOWN,
+  HTML,
 };

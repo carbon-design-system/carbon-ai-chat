@@ -13,7 +13,7 @@ import {
   MessageResponseTypes,
   WidthOptions,
 } from "@carbon/ai-chat";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 function doCard(instance: ChatInstance) {
   instance.messaging.addMessage({

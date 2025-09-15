@@ -10,18 +10,16 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import {
-  ThemeType,
-  PublicConfig,
-  CarbonTheme,
-} from "../../../src/types/config/PublicConfig";
+import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import { CarbonTheme } from "../../../src/types/config/PublicConfig";
 import { CornersType } from "../../../src/types/config/CornersType";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
 
 describe("Config Theme", () => {
-  const createBaseConfig = (): PublicConfig => ({
-    ...createBaseTestConfig(),
+  const createBaseProps = (): Partial<ChatContainerProps> => ({
+    ...createBaseTestProps(),
   });
 
   beforeEach(() => {
@@ -32,20 +30,17 @@ describe("Config Theme", () => {
     document.body.innerHTML = "";
   });
 
-  describe("themeConfig", () => {
-    it("should store complete themeConfig in Redux state", async () => {
-      const themeConfig = {
-        carbonTheme: CarbonTheme.G90,
-        theme: ThemeType.CARBON_AI,
+  describe("theme", () => {
+    it("should store complete theme in Redux state", async () => {
+      const layout = {
         corners: CornersType.SQUARE,
-        whiteLabelTheme: {
-          quickThemeHex: "#ff0000",
-        },
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        themeConfig,
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        injectCarbonTheme: CarbonTheme.G90,
+        aiEnabled: true,
+        layout,
       };
 
       let capturedInstance: any = null;
@@ -53,12 +48,7 @@ describe("Config Theme", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -69,67 +59,19 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme).toEqual({
+      expect(state.config.derived.themeWithDefaults).toEqual({
         originalCarbonTheme: CarbonTheme.G90,
         derivedCarbonTheme: CarbonTheme.G90,
-        theme: ThemeType.CARBON_AI,
+        aiEnabled: true,
         corners: CornersType.SQUARE,
-        whiteLabelTheme: {
-          quickThemeHex: "#ff0000",
-        },
-      });
-    });
-
-    it("should store partial themeConfig in Redux state", async () => {
-      const themeConfig = {
-        carbonTheme: CarbonTheme.WHITE,
-      };
-
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        themeConfig,
-      };
-
-      let capturedInstance: any = null;
-      const onBeforeRender = jest.fn((instance) => {
-        capturedInstance = instance;
-      });
-
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
-
-      await waitFor(
-        () => {
-          expect(capturedInstance).not.toBeNull();
-        },
-        { timeout: 5000 },
-      );
-
-      const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
-      expect(state.theme).toEqual({
-        derivedCarbonTheme: "white",
-        originalCarbonTheme: "white",
-        corners: "round",
-        theme: "CarbonAI",
         whiteLabelTheme: undefined,
       });
     });
 
-    it("should store themeConfig with only whiteLabelTheme in Redux state", async () => {
-      const themeConfig = {
-        whiteLabelTheme: {
-          quickThemeHex: "#123456",
-        },
-      };
-
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        themeConfig,
+    it("should store partial theme in Redux state", async () => {
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        injectCarbonTheme: CarbonTheme.WHITE,
       };
 
       let capturedInstance: any = null;
@@ -137,12 +79,7 @@ describe("Config Theme", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -153,19 +90,18 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme).toEqual({
+      expect(state.config.derived.themeWithDefaults).toEqual({
         derivedCarbonTheme: "white",
         originalCarbonTheme: "white",
         corners: "round",
-        theme: "CarbonAI",
-        whiteLabelTheme: themeConfig.whiteLabelTheme,
+        aiEnabled: true,
+        whiteLabelTheme: undefined,
       });
     });
 
-    it("should use default themeConfig when not specified", async () => {
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        // themeConfig intentionally omitted
+    it("should store theme with default values in Redux state", async () => {
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
       };
 
       let capturedInstance: any = null;
@@ -173,12 +109,7 @@ describe("Config Theme", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -189,19 +120,19 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme.theme).toEqual(ThemeType.CARBON_AI);
-      expect(state.theme.derivedCarbonTheme).toEqual(CarbonTheme.WHITE);
-      expect(state.theme.originalCarbonTheme).toEqual(CarbonTheme.WHITE);
+      expect(state.config.derived.themeWithDefaults).toEqual({
+        derivedCarbonTheme: null,
+        originalCarbonTheme: null,
+        corners: "round",
+        aiEnabled: true,
+        whiteLabelTheme: undefined,
+      });
     });
 
-    it("should handle CarbonTheme.INHERIT property", async () => {
-      const themeConfig = {
-        carbonTheme: CarbonTheme.INHERIT,
-      };
-
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        themeConfig,
+    it("should use default theme when not specified", async () => {
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        // theme intentionally omitted
       };
 
       let capturedInstance: any = null;
@@ -209,12 +140,7 @@ describe("Config Theme", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -225,20 +151,27 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme.derivedCarbonTheme).toEqual(CarbonTheme.INHERIT);
-      expect(state.theme.originalCarbonTheme).toEqual(CarbonTheme.INHERIT);
+      expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
+      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
+        null,
+      );
+      expect(
+        state.config.derived.themeWithDefaults.originalCarbonTheme,
+      ).toEqual(null);
     });
+
+    // When injectCarbonTheme is unset, it inherits tokens from host
 
     it("should properly set derivedCarbonTheme and originalCarbonTheme in Redux state", async () => {
-      const themeConfig = {
-        carbonTheme: CarbonTheme.G90,
-        theme: ThemeType.CARBON_AI,
+      const layout = {
         corners: CornersType.SQUARE,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        themeConfig,
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        injectCarbonTheme: CarbonTheme.G90,
+        aiEnabled: true,
+        layout,
       };
 
       let capturedInstance: any = null;
@@ -246,12 +179,7 @@ describe("Config Theme", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -262,10 +190,84 @@ describe("Config Theme", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.theme.derivedCarbonTheme).toEqual(CarbonTheme.G90);
-      expect(state.theme.originalCarbonTheme).toEqual(CarbonTheme.G90);
-      expect(state.theme.theme).toEqual(ThemeType.CARBON_AI);
-      expect(state.theme.corners).toEqual(CornersType.SQUARE);
+      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
+        CarbonTheme.G90,
+      );
+      expect(
+        state.config.derived.themeWithDefaults.originalCarbonTheme,
+      ).toEqual(CarbonTheme.G90);
+      expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
+      expect(state.config.derived.themeWithDefaults.corners).toEqual(
+        CornersType.SQUARE,
+      );
+    });
+
+    it("should preserve derivedCarbonTheme during dynamic config updates in inherit mode", async () => {
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        // No injectCarbonTheme - inherit mode
+        aiEnabled: true,
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const serviceManager = (capturedInstance as any).serviceManager;
+      const store = serviceManager.store;
+
+      // Simulate ThemeWatcherService setting a detected theme
+      store.dispatch({
+        type: "UPDATE_THEME_STATE",
+        themeState: {
+          originalCarbonTheme: null,
+          derivedCarbonTheme: "g10",
+          aiEnabled: true,
+          corners: "round",
+        },
+      });
+
+      let state: AppState = store.getState();
+      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
+        "g10",
+      );
+
+      // Simulate dynamic config update (e.g., toggling aiEnabled)
+      await applyConfigChangesDynamically(
+        {
+          themingChanged: true,
+          namespaceChanged: false,
+          messagingChanged: false,
+          layoutChanged: false,
+          humanAgentConfigChanged: false,
+          headerChanged: false,
+          disclaimerChanged: false,
+          homescreenChanged: false,
+          lightweightUIChanged: false,
+        },
+        { aiEnabled: false }, // New config
+        serviceManager,
+      );
+
+      // Check that derivedCarbonTheme was preserved
+      state = store.getState();
+      expect(
+        state.config.derived.themeWithDefaults.originalCarbonTheme,
+      ).toEqual(null);
+      expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
+        "g10",
+      ); // Should be preserved
+      expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(false); // Should be updated
     });
   });
 });
