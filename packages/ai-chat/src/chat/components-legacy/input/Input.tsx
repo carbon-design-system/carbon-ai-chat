@@ -504,7 +504,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           </div>
 
           <div className="cds-aichat--input-container__send-button-container">
-            {(true || isStopStreamingButtonVisible) && (
+            {isStopStreamingButtonVisible && (
               <StopStreamingButton
                 label={input_stopResponse}
                 disabled={isStopStreamingButtonDisabled}
