@@ -11,6 +11,7 @@ import { ChatInstance } from "../instance/ChatInstance";
 import { CustomSendMessageOptions } from "./MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
 import { CornersType } from "./CornersType";
+import { BusEventSend } from "../events/eventBusTypes";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -266,6 +267,8 @@ export interface PublicConfigMessaging {
     request: MessageRequest,
     requestOptions: CustomSendMessageOptions,
     instance: ChatInstance,
+    busEventSend?: BusEventSend,
+    isSilent?: boolean,
   ) => Promise<void> | void;
 
   /**
