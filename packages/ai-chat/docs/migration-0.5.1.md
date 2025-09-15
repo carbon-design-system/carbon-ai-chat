@@ -1,10 +1,10 @@
 ---
-title: Migration steps - 0.5.0
+title: Migration steps - 0.5.1
 ---
 
-# Upgrading from @carbon/ai-chat 0.4.0 to 0.5.0
+# Upgrading from @carbon/ai-chat 0.4.0 to 0.5.1
 
-Summary: tours feature removed, human agent events renamed for clarity, some ChatInstance methods changed, and Chain of Thought feature changed.
+Summary: tours feature removed, human agent events renamed for clarity, some ChatInstance methods changed, Chain of Thought feature changed, and custom element sizing behavior simplified with required className for React and consistent class-based approach for both React and Web Component versions.
 
 ## Breaking Changes
 
@@ -59,6 +59,61 @@ Agent related events have been renamed to be more explicit about human agents vs
 **Removed:**
 
 - `cspNonce` - Widget no longer accepts CSP nonce via config as it is no longer needed
+
+### Custom Element Sizing Changes
+
+Both `ChatCustomElement` (React) and `cds-aichat-custom-element` (Web Component) now use a simplified class-based approach for show/hide behavior.
+
+**Breaking changes:**
+
+**React (`ChatCustomElement`):**
+
+- `className` prop is now required (was optional)
+- The className must define width and height for the chat when open
+- Automatic "grow to parent container" behavior has been removed
+
+**Web Component (`cds-aichat-custom-element`):**
+
+- No longer captures and restores computed styles
+- External CSS must define the element's size when visible
+- Uses `cds-aichat--hidden` class for hide/show (same as React)
+
+**Migration steps:**
+
+**For React:**
+
+1. Ensure all `ChatCustomElement` usages include a `className` prop
+2. Define explicit width and height in your CSS class
+
+**For Web Components:**
+
+1. Ensure your CSS defines explicit dimensions for `cds-aichat-custom-element`
+2. Remove any CSS that relied on the old computed style behavior
+
+**CSS examples (works for both):**
+
+```css
+.my-chat-container {
+  width: 500px;
+  height: 600px;
+  /* other positioning styles */
+}
+
+/* Or use logical properties (recommended for international support) */
+.my-chat-container-logical {
+  inline-size: 500px;
+  block-size: 600px;
+  /* other positioning styles */
+}
+```
+
+**Benefits:**
+
+- Eliminates complex computed style detection
+- Works seamlessly with CSS animations and transitions
+- Simpler, more predictable behavior
+- Consistent behavior across React and Web Component versions
+- Both components use the same `cds-aichat--hidden` class
 
 ## New Features
 

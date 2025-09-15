@@ -82,6 +82,7 @@ function getSettings() {
         },
         openChatByDefault: undefined,
       };
+      delete defaultConfig.showLauncher;
       delete defaultConfig.headerConfig?.minimizeButtonIconType;
       delete defaultConfig.headerConfig?.hideMinimizeButton;
       delete defaultConfig.themeConfig?.corners;
@@ -105,6 +106,7 @@ function getSettings() {
           showFrame: undefined,
           hasContentMaxWidth: undefined,
         },
+        showLauncher: false,
         openChatByDefault: undefined,
       };
       delete defaultConfig.layout?.showFrame;
@@ -129,6 +131,7 @@ function getSettings() {
         },
         openChatByDefault: true,
       };
+      delete defaultConfig.showLauncher;
       delete defaultConfig.headerConfig?.minimizeButtonIconType;
       break;
     case "fullscreen-no-gutter":
@@ -150,6 +153,7 @@ function getSettings() {
         },
         openChatByDefault: true,
       };
+      delete defaultConfig.showLauncher;
       delete defaultConfig.headerConfig?.minimizeButtonIconType;
       break;
   }
