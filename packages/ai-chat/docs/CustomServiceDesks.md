@@ -146,7 +146,7 @@ filesSelectedForUpload(uploads: FileUpload[]): void {
   uploads.forEach(upload => {
     if (upload.file.size > this.maxFileSizeKB * 1024) {
       const maxSize = `${this.maxFileSizeKB}KB`;
-      const errorMessage = this.instance.getIntl().formatMessage({ id: 'fileSharing_fileTooLarge' }, { maxSize });
+      const errorMessage = `File exceeds ${maxSize}`;
       this.callback.setFileUploadStatus(upload.id, true, errorMessage);
     }
   });
