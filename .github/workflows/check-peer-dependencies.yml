@@ -1,0 +1,147 @@
+# Check for peer dependency changes in packages/ai-chat/package.json
+# and update peer-dependency-changes.md file if there are changes
+name: Check for peer dependency changes
+
+# Gets triggered every time a full/stable release tag has been published from the
+# `create-release-tag-and-pr` workflow or can also be triggered manually
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        # Recently published stable version
+        required: true
+        description: "release tag (ie. v1.1.0)"
+        type: string
+        default: "v1.1.0"
+      previous-tag:
+        # Previous release tag to grab changelogs from
+        # To pick the previous tag:
+        # - If published tag is the first release candidate, choose the previous full release tag.
+        # - If published tag is a subsequent release candidate, choose the previous release candidate.
+        # - If published tag is a full release, choose the previous full release tag.
+        required: true
+        description: "previous release tag (ie. v1.0.0)"
+        type: string
+        default: "v1.0.0"
+  repository_dispatch:
+    types: [check-peer-dependencies]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-peer-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: "0"
+          ref: ${{ github.event.client_payload.branch || github.ref_name }}
+
+      - name: Get package.json from previous release
+        run: |
+          git show ${{ github.event.client_payload.previous-tag || github.event.inputs.previous-tag }}:packages/ai-chat/package.json > package-old.json
+
+      - name: Get package.json from current release
+        run: |
+          cp packages/ai-chat/package.json package-new.json
+
+      - name: Compare peerDependencies and prepend to release notes
+        id: diff
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const path = 'docs/peer-dependency-changes.md';
+
+          const oldPkg = JSON.parse(fs.readFileSync('package-old.json', 'utf8'));
+          const newPkg = JSON.parse(fs.readFileSync('package-new.json', 'utf8'));
+
+          const version = newPkg.version || "Unspecified Version";
+          const oldPeers = oldPkg.peerDependencies || {};
+          const newPeers = newPkg.peerDependencies || {};
+
+          const added = [];
+          const removed = [];
+          const updated = [];
+
+          const allDeps = new Set([...Object.keys(oldPeers), ...Object.keys(newPeers)]);
+
+          for (const dep of allDeps) {
+            const oldVer = oldPeers[dep];
+            const newVer = newPeers[dep];
+
+            if (!oldVer && newVer) {
+              added.push(`- **${dep}**: \`${newVer}\``);
+            } else if (oldVer && !newVer) {
+              removed.push(`- **${dep}** (was \`${oldVer}\`)`);
+            } else if (oldVer !== newVer) {
+              updated.push(`- **${dep}**: \`${oldVer}\` → \`${newVer}\``);
+            }
+          }
+
+          let hasChanges = false;
+          let content = fs.readFileSync(path, 'utf8');
+          let newSection = "";
+
+          if (added.length > 0 || removed.length > 0 || updated.length > 0) {
+            hasChanges = true;
+            newSection = `\n\n## Version ${version}\n`;
+
+            if (added.length > 0) {
+              newSection += "\n**Added**\n" + added.join("\n");
+            }
+            if (removed.length > 0) {
+              newSection += "\n**Removed**\n" + removed.join("\n");
+            }
+            if (updated.length > 0) {
+              newSection += "\n**Updated**\n" + updated.join("\n");
+            }
+
+            // Log the new section
+            console.log("Changes detected, inserting:\n", newSection);
+
+            // Find the first "## Version"
+            let insertIndex = content.indexOf("## Version");
+
+            if (insertIndex === -1) {
+              // No previous versions, append to the end
+              insertIndex = content.length;
+            }
+
+            const before = content.slice(0, insertIndex).trimEnd();
+            const after = content.slice(insertIndex).trimStart();
+
+            // Ensure spacing between sections
+            content = before + "\n\n" + newSection.trimEnd() + "\n\n" + after;
+
+            fs.writeFileSync(path, content, 'utf8');
+          }
+
+          console.log(hasChanges ? "" : "no changes to output");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_changes=${hasChanges}\n`);
+          EOF
+
+      - name: Commit updated peer-dependency-changes.md
+        if: steps.diff.outputs.has_changes == 'true'
+        run: |
+          git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
+          git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
+
+          BRANCH="chore/${{ github.event.client_payload.tag || github.event.inputs.tag }}-release"
+          git fetch origin $BRANCH || true
+
+          if git rev-parse --verify origin/$BRANCH >/dev/null 2>&1; then
+            echo "Branch $BRANCH exists, checking it out"
+            git checkout -b $BRANCH origin/$BRANCH
+          else
+            echo "Branch $BRANCH does not exist, creating it"
+            git checkout -b $BRANCH
+          fi
+
+          git add docs/peer-dependency-changes.md
+          git commit -m "chore: update peer dependency changes"
+          git push origin $BRANCH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
