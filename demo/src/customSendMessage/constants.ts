@@ -160,7 +160,7 @@ const HTML = `
 <hr>
 <small><em>Carbon's unique ability to form four bonds makes it the perfect element for complex biological molecules.</em></small>`;
 
-const WORD_DELAY = 20;
+const WORD_DELAY = 40;
 
 export {
   CHAIN_OF_THOUGHT_TEXT_STREAM,

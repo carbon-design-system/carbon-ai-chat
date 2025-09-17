@@ -39,6 +39,11 @@ class ChatContainer extends LitElement {
   @property({ type: Object })
   config: PublicConfig;
 
+  /**
+   * The element to render to instead of the default float element.
+   *
+   * @internal
+   */
   @property({ type: HTMLElement })
   element?: HTMLElement;
 

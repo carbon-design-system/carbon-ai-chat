@@ -55,7 +55,7 @@ See {@link ChatContainerProps} for an explanation of the various accepted props.
 
 This library provides the {@link ChatCustomElement} component, which can be used to render the Carbon AI Chat inside a custom element. Use it if you want to change the location where the Carbon AI Chat renders. This component renders an element in your React app and uses that element as the custom element for rendering the Carbon AI Chat. See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
-This component's default behavior adds and removes a class from the main window of the Carbon AI Chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI Chat when it opens or closes. When the Carbon AI Chat closes, it adds a classname to the Carbon AI Chat main window to hide the element. Your custom element receives another classname to set its width and height to 0, so that it doesn't take up space.
+This component requires a `className` prop that defines the size and positioning of the chat when open. The default behavior adds and removes a `cds-aichat--hidden` CSS class to manage visibility. When the Carbon AI Chat closes, the `cds-aichat--hidden` class is added to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
 
 **Note:** In the use case where you are using a custom element but also using the Carbon AI Chat's native launcher, the custom element must remain visible as it also contains the launcher. With that in mind, you should really provide your own launcher.
 
@@ -85,6 +85,15 @@ function App() {
   top: 100px;
   width: 500px;
   height: 500px;
+}
+
+/* Or use logical properties */
+.MyCustomElement {
+  position: absolute;
+  inset-inline-start: 100px;
+  inset-block-start: 100px;
+  inline-size: 500px;
+  block-size: 500px;
 }
 ```
 

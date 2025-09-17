@@ -70,6 +70,9 @@ async function runRollup() {
   const config = [
     // Main build
     {
+      // Allow entry chunks to depend on side-effect imports from
+      // other entry chunks (e.g., custom-element importing container)
+      preserveEntrySignatures: 'exports-only',
       onwarn(warning, warn) {
         // Treat circular dependencies as errors
         if (warning.code === "CIRCULAR_DEPENDENCY") {
