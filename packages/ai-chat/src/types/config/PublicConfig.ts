@@ -242,23 +242,25 @@ export interface PublicConfigMessaging {
   /**
    * Changes the timeout used by the message service when making message calls. The timeout is in seconds. The
    * default is 150 seconds. After this time, an error will be shown in the client and an Abort signal will be sent
-   * to customSendMessage.
+   * to customSendMessage. If set to 0, the chat will never timeout.
    */
   messageTimeoutSecs?: number;
 
   /**
-   * Controls how long AI chat should wait before showing the loading indicator.
+   * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
+   * the loading indicator. This is tied to either {@link ChatInstance.messaging.addMessage} or {@link ChatInstance.messaging.addMessageChunk}
+   * being called after this message was sent.
+   *
+   * If set to 0, the chat will never automatically show a loading indicator.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 
   /**
-   * A callback for Carbon AI Chat to use to send messages to the assistant. When this is provided, this will be used as
-   * an alternative for its built-in message service. Note that this is not used for human agent communication
-   * (except for the event messages to update history).
+   * A callback for Carbon AI Chat to use to send messages to your assistant.
    *
-   * Web chat will queue up any additional user messages until the Promise from a previous call to customSendMessage
-   * has resolved. This does not include event messages. If the Promise rejects, an error indicator will be
-   * displayed next to the user's message.
+   * Carbon AI Chat will queue up any additional user messages until the Promise from a previous call to customSendMessage
+   * has resolved. If you do not make customSendMessage async, it will be up to you to manage what happens when a message is
+   * sent when the previous is still processing. If the Promise rejects, an error indicator will be displayed next to the user's message.
    *
    * If the request takes longer than PublicConfigMessaging.messageTimeoutSecs than the AbortSignal will be sent.
    */
