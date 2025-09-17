@@ -29,6 +29,8 @@ import { doOption } from "./doOption";
 import { doOrderedList } from "./doOrderedList";
 import { doTable, doTableStreaming } from "./doTable";
 import {
+  doHTML,
+  doHTMLStreaming,
   doText,
   doTextChainOfThought,
   doTextChainOfThoughtStreaming,
@@ -72,6 +74,8 @@ const RESPONSE_MAP: Record<
   "text (stream) from third party bot": doTextStreamingWithNonWatsonBotProfile,
   "text with chain of thought": doTextChainOfThought,
   "text (stream) with chain of thought": doTextChainOfThoughtStreaming,
+  html: doHTML,
+  "html (stream)": doHTMLStreaming,
   user_defined: doUserDefined,
   "user_defined (stream)": doUserDefinedStreaming,
   video: doVideo,

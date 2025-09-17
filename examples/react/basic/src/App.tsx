@@ -18,7 +18,6 @@ import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
-import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
 // This function returns a React component for user defined responses.
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
@@ -33,7 +32,6 @@ import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
-    customLoadHistory,
   },
 };
 

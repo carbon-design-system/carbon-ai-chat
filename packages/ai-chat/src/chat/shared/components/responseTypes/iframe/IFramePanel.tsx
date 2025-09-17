@@ -56,13 +56,15 @@ function IFramePanelComponent(
       testIdPrefix={OverlayPanelName.IFRAME}
     >
       <div className="WACIFramePanel__Content">
-        <IFrameComponent
-          key={
-            messageItem?.source /* This is important since it causes the IFrame to re-mount when the source changes */
-          }
-          source={messageItem?.source}
-          title={iframeTitle}
-        />
+        {messageItem?.source && (
+          <IFrameComponent
+            key={
+              messageItem?.source /* This is important since it causes the IFrame to re-mount when the source changes */
+            }
+            source={messageItem?.source}
+            title={iframeTitle}
+          />
+        )}
       </div>
     </BasePanelComponent>
   );

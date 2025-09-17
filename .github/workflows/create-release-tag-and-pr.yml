@@ -77,6 +77,21 @@ jobs:
           git tag -a ${{ github.event.inputs.tag }} -m "Release ${{ github.event.inputs.tag }}"
           git push origin ${{ github.event.inputs.tag }}
 
+  # This job dispatches workflow to check if there is a change in peerDependencies and updates
+  # the peer-dependency-changes.md file pushes the changes to the release PR to be merged into main
+  check-change-in-peer-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: create-release-tag
+    steps:
+      # Triggers only if it is a full release
+      - name: Check for peer dependency changes
+        if: contains(github.event.inputs.tag, '-rc.') == false
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: check-peer-dependencies
+          client-payload: '{"branch": "${{ github.ref_name }}", "previous-tag": "${{ github.event.inputs.previous-tag }}", "tag": "${{ github.event.inputs.tag }}"}'
+
   # This job creates the release with the git tag pushed from job above with the corresponding
   # release notes from the previous version to current
   create-release:

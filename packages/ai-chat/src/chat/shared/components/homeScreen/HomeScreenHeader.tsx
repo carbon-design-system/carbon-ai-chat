@@ -55,9 +55,7 @@ function HomeScreenHeader(
 ) {
   const { brandColor, onClose, onRestart, onCloseAndRestart } = props;
   const showRestartButton = useSelector(
-    (state: AppState) =>
-      state.config.public.showRestartButton ||
-      state.config.public.headerConfig?.showRestartButton,
+    (state: AppState) => state.config.public.headerConfig?.showRestartButton,
   );
   const showBackButton = useSelector(
     (state: AppState) =>

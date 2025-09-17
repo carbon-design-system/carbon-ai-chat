@@ -1205,7 +1205,6 @@ class MainWindow
     const showGlass =
       config.public.enableFocusTrap &&
       open &&
-      !config.public.hideCloseButton &&
       !config.public.headerConfig.hideMinimizeButton;
     const trapActive = Boolean(showGlass && isHydrated);
     const isWideWidth = chatWidthBreakpoint === ChatWidthBreakpoint.WIDE;

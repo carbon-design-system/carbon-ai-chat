@@ -70,12 +70,21 @@ async function runRollup() {
   const config = [
     // Main build
     {
+      // Allow entry chunks to depend on side-effect imports from
+      // other entry chunks (e.g., custom-element importing container)
+      preserveEntrySignatures: 'exports-only',
       onwarn(warning, warn) {
         // Treat circular dependencies as errors
-        if (warning.code === 'CIRCULAR_DEPENDENCY') {
-          throw new Error(`Circular dependency detected: ${warning.message}`);
+        if (warning.code === "CIRCULAR_DEPENDENCY") {
+          // Some Rollup versions provide `ids`, fall back to message string
+          const ids = warning.ids || [];
+          const inNodeModules = ids.some(id => id.includes("node_modules"));
+
+          if (!inNodeModules) {
+            // Circular dep in your own source → error
+            throw new Error(`Circular dependency detected in app code: ${warning.message}`);
+          }
         }
-        
         // For other warnings, use default behavior
         warn(warning);
       },

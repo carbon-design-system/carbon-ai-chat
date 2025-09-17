@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { PublicConfig } from "../config/PublicConfig";
+
 /**
  * This contains the top level interface that defines the configuration options for the application. This is simply
  * a merge of the config data that is provided by the host page and the remote server.

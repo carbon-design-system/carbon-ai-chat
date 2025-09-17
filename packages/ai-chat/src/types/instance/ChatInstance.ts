@@ -478,27 +478,9 @@ export interface SendOptions {
 
   /**
    * @internal
-   * If true indicates that this message should skip to the front of the queue and be sent as the next message
-   * regardless of any other pending messages.
-   */
-  skipQueue?: boolean;
-
-  /**
-   * @internal
    * Indicates if the entrance fade animation for the message should be disabled.
    */
   disableFadeAnimation?: boolean;
-
-  /**
-   * @internal
-   * Indicates if a call to send should return/resolve immediately when a streaming response begins and should not
-   * wait for the entire streaming response to complete. By default, the call will wait until the entire process is
-   * completed and the stream has sent all of its data to the client. If this is true, the function will return as
-   * soon as the streaming begins (the first chunk is received). This is particularly useful when requesting the
-   * welcome node as it would allow the welcome node to provide a streaming response without leaving Carbon AI Chat in a
-   * loading state until the streaming is all done.
-   */
-  returnBeforeStreaming?: boolean;
 }
 
 /**
