@@ -456,15 +456,12 @@ class MessageService {
           message.thread_id = THREAD_ID_MAIN;
         }
 
-        console.log({ messaging: publicConfig.messaging });
-
         const LOADING_INDICATOR_TIMER =
           !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
           publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
             ? MS_MAX_SILENT_LOADING
             : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
 
-        console.log({ LOADING_INDICATOR_TIMER });
         if (LOADING_INDICATOR_TIMER || this.timeoutMS) {
           this.messageLoadingManager.start(
             () => {
