@@ -435,17 +435,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             scrollElement,
             setScrollTop,
           );
-
-          if (this.props.humanAgentState.activeLocalMessageID) {
-            const aiChatReact = document.querySelector("cds-aichat-react");
-            const humanbanner = aiChatReact.shadowRoot.querySelector(
-              ".WACHumanAgentBanner",
-            ) as HTMLElement;
-            const bannerHeight = humanbanner.offsetHeight;
-            doScrollElement(scrollElement, setScrollTop - 2 * bannerHeight, 0);
-          } else {
-            doScrollElement(scrollElement, setScrollTop, 0);
-          }
+          doScrollElement(scrollElement, setScrollTop, 0);
 
           // Update the scroll anchor setting based on this new position.
           this.checkScrollAnchor(true, setScrollTop);
