@@ -1,0 +1,638 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/* ./carbon-styles.min.css is copied from @carbon/styles/css/styles.min.css by carbonThemePlugin.js during build */
+@import url("./carbon-styles.min.css");
+@import url("https://1.www.s81c.com/common/carbon/plex/plex-full.css");
+@import url("https://1.www.s81c.com/common/carbon/web-components/tag/latest/themes.css");
+
+/* Hide Carbon web components until they are defined to prevent FOUC */
+cds-header:not(:defined),
+cds-header-menu-button:not(:defined),
+cds-header-name:not(:defined),
+cds-header-global-action:not(:defined),
+cds-side-nav:not(:defined),
+cds-side-nav-items:not(:defined),
+cds-side-nav-menu:not(:defined),
+cds-side-nav-menu-item:not(:defined),
+cds-side-nav-link:not(:defined),
+cds-breadcrumb:not(:defined),
+cds-breadcrumb-item:not(:defined),
+cds-modal:not(:defined),
+cds-modal-header:not(:defined),
+cds-modal-heading:not(:defined),
+cds-modal-close-button:not(:defined),
+cds-modal-body:not(:defined) {
+  visibility: hidden;
+}
+
+/* Hide main content until key UI shell components are ready */
+cds-header:not(:defined) ~ .carbon-main-content,
+cds-side-nav:not(:defined) ~ .carbon-main-content {
+  visibility: hidden;
+}
+
+/* Ensure white theme is applied to the root */
+:root {
+  /* Override any theme detection to force white theme */
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--cds-background, #ffffff);
+  color: var(--cds-text-primary, #161616);
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--cds-body-02, 1rem);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: var(--cds-productive-heading-05, 2rem);
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--cds-text-primary, #161616);
+  margin: var(--cds-spacing-07, 2rem) 0 var(--cds-spacing-06, 1.5rem) 0;
+}
+
+h2 {
+  font-size: var(--cds-productive-heading-04, 1.75rem);
+  font-weight: 400;
+  line-height: 1.29;
+  color: var(--cds-text-primary, #161616);
+  margin: var(--cds-spacing-07, 2rem) 0 var(--cds-spacing-05, 1rem) 0;
+}
+
+h3 {
+  font-size: var(--cds-productive-heading-03, 1.25rem);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--cds-text-primary, #161616);
+  margin: var(--cds-spacing-06, 1.5rem) 0 var(--cds-spacing-04, 0.75rem) 0;
+}
+
+h4 {
+  font-size: var(--cds-productive-heading-02, 1rem);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--cds-text-primary, #161616);
+  margin: var(--cds-spacing-05, 1rem) 0 var(--cds-spacing-03, 0.5rem) 0;
+}
+
+h5,
+h6 {
+  font-size: var(--cds-productive-heading-01, 0.875rem);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--cds-text-primary, #161616);
+  margin: var(--cds-spacing-05, 1rem) 0 var(--cds-spacing-03, 0.5rem) 0;
+}
+
+p {
+  font-size: var(--cds-body-01, 1rem);
+  line-height: 1.5;
+  color: var(--cds-text-primary, #161616);
+  margin: var(--cds-spacing-04, 0.75rem) 0 0 0;
+}
+
+p:first-child {
+  margin: 0;
+}
+
+a {
+  color: var(--cds-link-primary, #0f62fe);
+  text-decoration: none;
+  transition: color 0.15s ease-in-out;
+}
+
+a:hover {
+  color: var(--cds-link-secondary, #0043ce);
+  text-decoration: underline;
+}
+
+/* Vertical alignment for anchor link elements */
+.tsd-anchor-link {
+  align-items: center;
+  display: flex;
+}
+
+a:visited {
+  color: var(--cds-link-visited, #8a3ffc);
+}
+
+a:focus {
+  outline: 2px solid var(--cds-focus, #0f62fe);
+  outline-offset: 2px;
+}
+
+.carbon-main-content {
+  padding: var(--cds-spacing-09, 4rem) var(--cds-spacing-09, 4rem)
+    var(--cds-spacing-09, 4rem)
+    calc(
+      var(--cds-shell-side-nav-width, 16rem) + var(--cds-spacing-09, 4rem)
+    );
+}
+
+/* Apply Carbon pre styles to TypeDoc signatures */
+pre, .tsd-signature {
+  background-color: var(--cds-layer-01, #f4f4f4);
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  border-radius: var(--cds-border-radius, 0);
+  color: var(--cds-text-primary, #161616);
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', Courier, monospace);
+  font-size: var(--cds-code-01-font-size, 0.75rem);
+  font-weight: var(--cds-code-01-font-weight, 400);
+  letter-spacing: var(--cds-code-01-letter-spacing, 0.32px);
+  line-height: var(--cds-code-01-line-height, 1.25);
+  overflow-x: auto;
+  padding: var(--cds-spacing-03, 0.5rem);
+  white-space: pre;
+
+  button {
+    display: none;
+  }
+}
+
+pre, code {
+  background-color: var(--cds-layer-01, #f4f4f4);
+}
+
+pre, div.tsd-signature, .tsd-member-group, .tsd-comment {
+  margin: var(--cds-spacing-05, 1rem) 0;
+}
+
+cds-breadcrumb {
+  margin: var(--cds-spacing-05, 1rem) 0 var(--cds-spacing-05, 1rem) 0;
+}
+
+/* Carbon styling for core TypeDoc elements */
+.tsd-summary {
+  color: var(--cds-text-secondary, #525252);
+  font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+  line-height: var(--cds-body-compact-01-line-height, 1.29);
+  margin: var(--cds-spacing-03, 0.5rem) 0;
+}
+
+.tsd-type-declaration {
+  margin: var(--cds-spacing-03, 0.5rem) 0;
+  padding: var(--cds-spacing-03, 0.5rem);
+  background-color: var(--cds-layer-01);
+}
+
+/* Carbon Accordion-style for TypeDoc details/summary elements */
+details.tsd-accordion {
+  border-block-start: 1px solid var(--cds-border-subtle, #e0e0e0);
+  display: block;
+  overflow: visible;
+  transition: border-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+  margin: 0;
+}
+
+details.tsd-accordion:last-child {
+  border-block-end: 1px solid var(--cds-border-subtle, #e0e0e0);
+}
+
+details.tsd-accordion:not([open]):hover,
+details.tsd-accordion:not([open]):hover + details.tsd-accordion {
+  border-block-start-color: var(--cds-layer-hover, #e8e8e8);
+}
+
+details.tsd-accordion:not([open]):last-child:hover {
+  border-block-end-color: var(--cds-layer-hover, #e8e8e8);
+}
+
+/* TypeDoc Summary styling to match Carbon accordions */
+details.tsd-accordion > summary,
+details.tsd-accordion > summary.tsd-accordion-summary {
+  align-items: center;
+  color: var(--cds-text-primary, #161616);
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  font-size: var(--cds-body-01-font-size, 0.875rem);
+  font-weight: var(--cds-body-01-font-weight, 400);
+  inline-size: 100%;
+  justify-content: flex-start;
+  letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
+  line-height: var(--cds-body-01-line-height, 1.42857);
+  list-style: none;
+  margin: 0;
+  min-block-size: 2.5rem;
+  padding-inline: 1rem;
+  position: relative;
+  transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+details.tsd-accordion > summary::-webkit-details-marker,
+details.tsd-accordion > summary::marker {
+  display: none;
+}
+
+details.tsd-accordion > summary:hover {
+  background-color: var(--cds-layer-hover, #e8e8e8);
+  outline: none;
+}
+
+details.tsd-accordion > summary:focus {
+  box-shadow:
+    0 -1px 0 0 var(--cds-focus, #0f62fe),
+    inset 0 1px 0 0 var(--cds-focus, #0f62fe),
+    inset 2px 0 0 0 var(--cds-focus, #0f62fe),
+    0 1px 0 0 var(--cds-focus, #0f62fe),
+    inset 0 -1px 0 0 var(--cds-focus, #0f62fe),
+    inset -2px 0 0 0 var(--cds-focus, #0f62fe);
+  outline: none;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hide TypeDoc's existing SVG icon and replace with Carbon-style chevron */
+details.tsd-accordion > summary > svg {
+  display: none;
+}
+
+/* Carbon accordion arrow using CSS */
+details.tsd-accordion > summary::before {
+  content: "";
+  block-size: 1rem;
+  flex: 0 0 1rem;
+  inline-size: 1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='%23161616'%3E%3Cpath d='M8 11L3 6l.7-.7L8 9.6l4.3-4.3L13 6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1rem;
+  transform: rotate(-90deg);
+  transition: transform 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+  margin-inline-end: 0.5rem;
+}
+
+details.tsd-accordion[open] > summary::before {
+  transform: rotate(0deg);
+}
+
+/* Style the TypeDoc h2 and h5 headings within accordion summaries */
+details.tsd-accordion > summary h2,
+details.tsd-accordion > summary h5 {
+  color: var(--cds-text-primary, #161616);
+  font-size: var(--cds-body-01-font-size, 0.875rem);
+  font-weight: var(--cds-body-01-font-weight, 400);
+  letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
+  line-height: var(--cds-body-01-line-height, 1.42857);
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+details.tsd-accordion > summary h5.tsd-index-heading {
+  text-transform: none;
+  font-weight: 400;
+}
+
+/* Accordion content styling */
+details.tsd-accordion > div:not(summary),
+details.tsd-accordion > section:not(summary),
+details.tsd-accordion > .tsd-accordion-details {
+  padding-inline: 1rem;
+  padding-block: 0.5rem 1.5rem;
+}
+
+/* Content inside accordions */
+details.tsd-accordion .tsd-accordion-details > p,
+details.tsd-accordion section > p {
+  font-size: var(--cds-body-01-font-size, 0.875rem);
+  font-weight: var(--cds-body-01-font-weight, 400);
+  letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
+  line-height: var(--cds-body-01-line-height, 1.42857);
+}
+
+/* Carbon Tag styling for TypeDoc tags */
+.tsd-tag,
+code.tsd-tag {
+  background-color: var(--cds-tag-background-gray, #e0e0e0);
+  border: none;
+  border-radius: 9999px;
+  color: var(--cds-text-primary, #161616);
+  display: inline-block;
+  font-family: var(--cds-label-01-font-family, 'IBM Plex Sans', sans-serif);
+  font-size: var(--cds-label-01-font-size, 0.75rem);
+  font-weight: var(--cds-label-01-font-weight, 400);
+  line-height: var(--cds-label-01-line-height, 1.34);
+  letter-spacing: var(--cds-label-01-letter-spacing, 0.32px);
+  margin: 0 var(--cds-spacing-02, 0.125rem) 0 0;
+  padding: var(--cds-spacing-01, 0.125rem) var(--cds-spacing-03, 0.5rem);
+  text-transform: none;
+  white-space: nowrap;
+}
+
+/* Tag variants for common TypeDoc tags */
+/* Blue for optional properties */
+.tsd-tag[title*="Optional" i],
+code.tsd-tag[title*="Optional" i] {
+  background-color: var(--cds-tag-background-blue, #d0e2ff);
+  color: var(--cds-tag-color-blue, #0043ce);
+}
+
+/* Purple for readonly */
+.tsd-tag[title*="Readonly" i],
+code.tsd-tag[title*="Readonly" i] {
+  background-color: var(--cds-tag-background-purple, #e8daff);
+  color: var(--cds-tag-color-purple, #6929c4);
+}
+
+/* Green for static */
+.tsd-tag[title*="Static" i],
+code.tsd-tag[title*="Static" i] {
+  background-color: var(--cds-tag-background-green, #d9fbfb);
+  color: var(--cds-tag-color-green, #198038);
+}
+
+/* Red for private */
+.tsd-tag[title*="Private" i],
+code.tsd-tag[title*="Private" i] {
+  background-color: var(--cds-tag-background-red, #ffd7d9);
+  color: var(--cds-tag-color-red, #da1e28);
+}
+
+/* Yellow for protected */
+.tsd-tag[title*="Protected" i],
+code.tsd-tag[title*="Protected" i] {
+  background-color: var(--cds-tag-background-yellow, #fcf4d6);
+  color: var(--cds-tag-color-yellow, #8e3a00);
+}
+
+/* Alternative approach using text content via CSS (for browsers that support :has) */
+@supports selector(:has(*)) {
+  .tsd-tag:has-text("Optional"),
+  code.tsd-tag:has-text("Optional") {
+    background-color: var(--cds-tag-background-blue, #d0e2ff);
+    color: var(--cds-tag-color-blue, #0043ce);
+  }
+}
+
+/* No hover states for non-interactive tags */
+
+/* Small size variant for compact areas */
+.tsd-tag.tsd-tag--small,
+code.tsd-tag.tsd-tag--small {
+  font-size: var(--cds-helper-text-01-font-size, 0.6875rem);
+  line-height: var(--cds-helper-text-01-line-height, 1.36);
+  padding: var(--cds-spacing-01, 0.125rem) var(--cds-spacing-02, 0.25rem);
+}
+
+/* Deprecated tags styled with red Carbon tag variant */
+.tsd-tag-deprecated h4::before,
+code.tsd-tag-deprecated {
+  content: "Deprecated";
+  background-color: var(--cds-tag-background-red, #ffd7d9);
+  border-radius: 9999px;
+  color: var(--cds-tag-color-red, #da1e28);
+  display: inline-block;
+  font-family: var(--cds-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', roboto, oxygen-sans, ubuntu, cantarell, 'Helvetica Neue', helvetica, arial, sans-serif);
+  font-size: var(--cds-label-01-font-size, 0.75rem);
+  font-weight: var(--cds-label-01-font-weight, 400);
+  line-height: var(--cds-label-01-line-height, 1.34);
+  padding: var(--cds-spacing-01, 0.125rem) var(--cds-spacing-03, 0.5rem);
+}
+
+/* Hide the original "Deprecated" text in the heading */
+.tsd-tag-deprecated h4 {
+  font-size: 0;
+}
+
+/* Hide the anchor link in deprecated headings */
+.tsd-tag-deprecated h4 .tsd-anchor-icon {
+  display: none;
+}
+
+/* Experimental tags styled as Preview (teal/cyan variant) */
+.tsd-tag[data-tag-type="experimental"],
+code.tsd-tag[data-tag-type="experimental"],
+.tsd-tag.tsd-tag--experimental,
+code.tsd-tag.tsd-tag--experimental {
+  background-color: var(--cds-tag-background-teal, #9ef0f0);
+  color: var(--cds-tag-color-teal, #005d5d);
+}
+
+/* JavaScript will handle text replacement and add data-tag-type="experimental" */
+
+/* Since tags - blue variant for version information */
+.tsd-tag-since,
+code.tsd-tag-since {
+  background-color: var(--cds-tag-background-blue, #a6c8ff);
+  color: var(--cds-tag-color-blue, #161616);
+}
+
+/* Example tags - green variant for examples */
+.tsd-tag-example,
+code.tsd-tag-example {
+  background-color: var(--cds-tag-background-green, #a7f0ba);
+  color: var(--cds-tag-color-green, #161616);
+}
+
+.tsd-description {
+  color: var(--cds-text-primary, #161616);
+  font-size: var(--cds-body-01-font-size, 0.875rem);
+  line-height: var(--cds-body-01-line-height, 1.43);
+  margin: var(--cds-spacing-05, 1rem) 0;
+}
+
+.tsd-member {
+  margin-block-end: var(--cds-spacing-07, 2rem);
+}
+
+.tsd-kind-icon {
+  color: var(--cds-icon-secondary, #525252);
+}
+
+.tsd-anchor {
+  color: var(--cds-link-primary, #0f62fe);
+}
+
+.tsd-anchor:hover {
+  color: var(--cds-link-primary-hover, #0043ce);
+}
+
+.tsd-type {
+  color: var(--cds-text-secondary, #525252);
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
+  font-size: var(--cds-code-01-font-size, 0.75rem);
+}
+
+.tsd-type-parameter {
+  color: var(--cds-text-secondary, #525252);
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
+  font-size: var(--cds-code-01-font-size, 0.75rem);
+  font-style: italic;
+}
+
+.tsd-comment {
+  color: var(--cds-text-primary, #161616);
+  font-size: var(--cds-body-01-font-size, 0.875rem);
+  line-height: var(--cds-body-01-line-height, 1.43);
+}
+
+.tsd-comment-tag {
+  background-color: var(--cds-tag-background-gray, #e0e0e0);
+  border-radius: var(--cds-border-radius, 0);
+  color: var(--cds-tag-color-gray, #161616);
+  font-size: var(--cds-label-01-font-size, 0.75rem);
+  font-weight: var(--cds-label-01-font-weight, 400);
+  padding: var(--cds-spacing-02, 0.25rem) var(--cds-spacing-03, 0.5rem);
+  text-transform: uppercase;
+}
+
+.tsd-hierarchy {
+  display: none;
+}
+
+.tsd-index-list {
+  list-style: none;
+  padding: 0;
+}
+
+.tsd-index-list li {
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  padding: var(--cds-spacing-03, 0.5rem) 0;
+}
+
+.tsd-index-list li:last-child {
+  border-bottom: none;
+}
+
+.tsd-index-list a {
+  color: var(--cds-link-primary, #0f62fe);
+  text-decoration: none;
+}
+
+.tsd-index-list a:hover {
+  color: var(--cds-link-primary-hover, #0043ce);
+  text-decoration: underline;
+}
+
+.tsd-index-group {
+  display: none;
+}
+
+.tsd-panel, .tsd-type-declaration {
+  > h1, > h2, > h3, > h4, > h5, > h6 {
+    padding: 0;
+  }
+  > h1:first-child, > h2:first-child, > h3:first-child, > h4:first-child, > h5:first-child, > h6:first-child {
+    margin-top: 0;
+  }
+}
+
+.tsd-search-wrapper {
+  li {
+    padding: 0.5rem;
+  }
+
+  /* Style search input to look like cds-search */
+  input {
+    background-color: var(--cds-field-01, #f4f4f4);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23525252' width='20' height='20' viewBox='0 0 32 32' aria-hidden='true'%3E%3Cpath d='M29 27.5859l-7.5521-7.5521a11.0177 11.0177 0 1 0-1.4141 1.4141L27.5859 29ZM4 13a9 9 0 1 1 9 9A9.01 9.01 0 0 1 4 13Z'%3E%3C/path%3E%3C/svg%3E");
+    background-position: 1rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    border: 1px solid transparent;
+    border-bottom: 1px solid var(--cds-border-strong-01, #8d8d8d);
+    border-radius: 0;
+    color: var(--cds-text-primary, #161616);
+    font-family: var(--cds-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', roboto, oxygen-sans, ubuntu, cantarell, 'Helvetica Neue', helvetica, arial, sans-serif);
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    font-weight: var(--cds-body-compact-01-font-weight, 400);
+    line-height: var(--cds-body-compact-01-line-height, 1.29);
+    min-height: 2.5rem;
+    outline: none;
+    padding: var(--cds-spacing-03, 0.5rem) var(--cds-spacing-05, 1rem) var(--cds-spacing-03, 0.5rem) 3rem;
+    width: calc(100% - 1rem - 3rem);
+    transition: border-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+  }
+
+  input:focus {
+    border-bottom-color: var(--cds-focus, #0f62fe);
+    outline: 2px solid var(--cds-focus, #0f62fe);
+    outline-offset: -2px;
+  }
+
+  input::placeholder {
+    color: var(--cds-text-placeholder, #a8a8a8);
+  }
+}
+
+/* Carbon-style list styling scoped to main content */
+.carbon-main-content ul,
+.carbon-main-content ol {
+  color: var(--cds-text-primary, #161616);
+  font-size: var(--cds-body-01-font-size, 0.875rem);
+  font-weight: var(--cds-body-01-font-weight, 400);
+  line-height: var(--cds-body-01-line-height, 1.43);
+  margin: var(--cds-spacing-05, 1rem) 0;
+  padding-left: var(--cds-spacing-06, 1.5rem);
+}
+
+.carbon-main-content ul {
+  list-style-type: none;
+}
+
+.carbon-main-content ul li {
+  position: relative;
+  margin: var(--cds-spacing-03, 0.5rem) 0;
+  padding-left: var(--cds-spacing-04, 0.75rem);
+}
+
+.carbon-main-content ul li::before {
+  content: "•";
+  color: var(--cds-text-secondary, #525252);
+  font-size: 1rem;
+  font-weight: 600;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.carbon-main-content ol {
+  list-style-type: decimal;
+  counter-reset: list-counter;
+}
+
+.carbon-main-content ol li {
+  margin: var(--cds-spacing-03, 0.5rem) 0;
+  padding-left: var(--cds-spacing-02, 0.25rem);
+  counter-increment: list-counter;
+}
+
+.carbon-main-content ol li::marker {
+  color: var(--cds-text-secondary, #525252);
+  font-weight: 600;
+}
+
+/* Nested list styles */
+.carbon-main-content ul ul,
+.carbon-main-content ol ol,
+.carbon-main-content ul ol,
+.carbon-main-content ol ul {
+  margin: var(--cds-spacing-02, 0.25rem) 0;
+  padding-left: var(--cds-spacing-05, 1rem);
+}
+
+.carbon-main-content ul ul li::before {
+  content: "◦";
+  font-size: 0.875rem;
+}
+
+.carbon-main-content ul ul ul li::before {
+  content: "▪";
+  font-size: 0.75rem;
+}
+
+@media screen and (max-width: 1055px) {
+  .carbon-main-content {
+    padding: var(--cds-spacing-09, 4rem);
+  }
+}

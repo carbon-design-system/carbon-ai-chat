@@ -108,9 +108,7 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the Carbon AI Chat is open on page load. This applies to session history open
-   * states as well as openByChatByDefault. This should be set to false if the Carbon AI Chat is embedded in the tooling, for
-   * instance.
+   * If the Carbon AI Chat should grab focus if the chat is open on page load.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

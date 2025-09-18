@@ -131,7 +131,10 @@ Example (React):
 Example (web component):
 
 ```html
-<cds-aichat-container id="chat" .strings=${{ input_placeholder: "Ask me anything..." }} ></cds-aichat-container>
+<cds-aichat-container
+  .strings=${{ input_placeholder: "Ask me anything..." }}
+>
+</cds-aichat-container>
 ```
 
 #### Locales

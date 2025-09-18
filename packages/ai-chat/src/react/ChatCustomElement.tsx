@@ -51,15 +51,6 @@ interface ChatCustomElementProps extends ChatContainerProps {
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 }
 
-/**
- * This is the React component for people injecting a Carbon AI Chat with a custom element.
- *
- * It provides said element any class or id defined on itself for styling. It then calls ChatContainer with the custom
- * element passed in as a property to be used instead of generating an element with the default properties for a
- * floating chat.
- *
- * @category React
- */
 const customElementStylesheet =
   isBrowser && typeof CSSStyleSheet !== "undefined"
     ? new CSSStyleSheet()
@@ -100,6 +91,15 @@ if (isBrowser && !document.getElementById("cds-aichat-custom-element-styles")) {
   }
 }
 
+/**
+ * This is the React component for people injecting a Carbon AI Chat with a custom element.
+ *
+ * It provides said element any class or id defined on itself for styling. It then calls ChatContainer with the custom
+ * element passed in as a property to be used instead of generating an element with the default properties for a
+ * floating chat.
+ *
+ * @category React
+ */
 function ChatCustomElement({
   strings,
   serviceDeskFactory,

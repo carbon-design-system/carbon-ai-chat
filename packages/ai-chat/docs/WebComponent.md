@@ -49,7 +49,7 @@ export class MyApp extends LitElement {
 }
 ```
 
-### Using `cds-aichat-container`
+### Using cds-aichat-container
 
 The `cds-aichat-container` component loads and renders an instance of the Carbon AI Chat when it mounts and deletes that instance when unmounted. If option changes occur in the Carbon AI Chat configuration, it also deletes the previous Carbon AI Chat and creates a new one with the new configuration.
 
@@ -66,7 +66,7 @@ See {@link CdsAiChatContainerAttributes} for an explanation of the various accep
 
 Accepted falsey strings for `ai-enabled` are `"false"`, `"0"`, `"off"`, and `"no"` (case‑insensitive). If present and not one of those values, the AI theme is enabled.
 
-#### Using `cds-aichat-custom-element`
+#### Using cds-aichat-custom-element
 
 This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. Use this if you need to change the location where the Carbon AI Chat renders.
 

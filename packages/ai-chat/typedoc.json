@@ -1,5 +1,9 @@
 {
-    "plugin": ["./docs/typedoc/moduleNamePlugin.js", "./docs/typedoc/cookiePreferencesPlugin.js"],
+    "plugin": [
+        "./docs/typedoc/moduleNamePlugin.js",
+        "./docs/typedoc/carbonThemePlugin.js"
+    ],
+    "theme": "carbon",
     "entryPoints": ["./src/aiChatEntry.tsx"],
     "out": "./dist/docs/carbon-tsdocs",
     "name": "Carbon AI Chat",
@@ -35,6 +39,5 @@
         "excludeReferences": true
     },
     "categorizeByGroup": false,
-    "hideGenerator": true,
-    "customCss": "./docs/typedoc/typedoc.css"
+    "hideGenerator": true
 }
