@@ -633,13 +633,14 @@ function MESSAGE_TO_AGENT_HELP(): MockStep[] {
       delay: 0,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "***These messages must be sent to an agent and not to the bot.***",
+          "***These messages must be sent to an agent and not to the bot.*** \n" +
+            HELP_TEXT,
           instance.mockState.currentAgent.id,
         );
-        instance.sendMessageToUser(
-          HELP_TEXT,
-          instance.mockState.currentAgent.id,
-        );
+        // instance.sendMessageToUser(
+        //   HELP_TEXT,
+        //   instance.mockState.currentAgent.id,
+        // );
       },
     },
   ];
