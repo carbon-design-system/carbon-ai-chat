@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -20,6 +20,8 @@ import postcss from 'rollup-plugin-postcss';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { parseJsonConfigFileContent, sys } from 'typescript';
 import { fileURLToPath } from 'url';
+import fs from 'fs-extra';
+import { globby } from 'globby';
 
 import pkg from '../package.json' with { type: 'json' };
 
@@ -91,14 +93,14 @@ async function runRollup() {
       input: {
         // Main entry - becomes es/aiChatEntry.js
         'aiChatEntry': path.join(paths.src, '/aiChatEntry.tsx'),
-        
+
         // Server entry without web component side effects - becomes es/serverEntry.js
         'serverEntry': path.join(paths.src, '/serverEntry.ts'),
-        
+
         // Web components - becomes es/web-components/cds-aichat-container/index.js
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
-        
-        // Web components - becomes es/web-components/cds-aichat-custom-element/index.js  
+
+        // Web components - becomes es/web-components/cds-aichat-custom-element/index.js
         'web-components/cds-aichat-custom-element/index': path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
       },
       output: {
@@ -201,10 +203,65 @@ async function runRollup() {
         dts({
           compilerOptions: parsedDtsTsConfig.compilerOptions,
         }),
+        postBuildPlugin(),
       ],
     },
   ];
   return config;
+}
+
+async function postBuild() {
+  const sourceDir = path.resolve(__dirname, "../dist/es");
+  const targetDir = path.resolve(__dirname, "../dist/es-custom");
+
+  // Copy `es` directory to `es-custom`
+  await fs.copy(sourceDir, targetDir);
+
+  // Find all files in the `es-custom` directory
+  const files = await globby([`${targetDir}/**/*`], { onlyFiles: true });
+
+  // Replace "cds" with "cds-custom" in all files
+  await Promise.all(
+    files.map(async (file) => {
+      const lines = (await fs.promises.readFile(file, "utf8")).split("\n");
+
+      const updatedLines = lines.map((line) => {
+        // Replace __cds_aichat to __cds_custom_aichat
+        let newLine = line.replace(/__cds_aichat/g, "__cds_custom_aichat");
+
+        // Replace "cds" only if line does NOT contain 'import' or 'from'
+        if (!/\b(import|from)\b/.test(newLine)) {
+          newLine = newLine.replace(/\bcds\b/g, (match, offset, str) => {
+            // Skip if preceded by -- (ie. --cds-variables)
+            if (offset >= 2 && str.slice(offset - 2, offset) === "--") {
+              return match;
+            }
+            return "cds-custom";
+          });
+        }
+
+        // Rewrite @carbon/web-components imports
+        newLine = newLine.replace(
+          /import\s+['"]@carbon\/web-components\/es\/components\/(.*?)['"]/g,
+          "import '@carbon/web-components/es-custom/components/$1'"
+        );
+
+        return newLine;
+      });
+
+      await fs.promises.writeFile(file, updatedLines.join("\n"));
+    })
+  );
+}
+
+function postBuildPlugin() {
+  return {
+    name: "postbuild-plugin",
+    async writeBundle() {
+      console.log("outputting es-custom folder...");
+      await postBuild();
+    },
+  };
 }
 
 export default () => runRollup();
