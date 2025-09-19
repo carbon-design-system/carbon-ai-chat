@@ -52,14 +52,18 @@ class MessageLoadingManager {
     this.hasExceededMaxSilentLoading = false;
     this.onEnd = onEnd;
 
-    this.onSilentLoading = setTimeout(() => {
-      this.hasExceededMaxSilentLoading = true;
-      onExceededMaxSilentLoading();
-    }, msMaxSilentLoading);
+    if (msMaxSilentLoading) {
+      this.onSilentLoading = setTimeout(() => {
+        this.hasExceededMaxSilentLoading = true;
+        onExceededMaxSilentLoading();
+      }, msMaxSilentLoading);
+    }
 
-    this.onMaxAttempt = setTimeout(() => {
-      onTimeout();
-    }, msMaxAttempt);
+    if (msMaxAttempt) {
+      this.onMaxAttempt = setTimeout(() => {
+        onTimeout();
+      }, msMaxAttempt);
+    }
   }
 
   /**
