@@ -27,7 +27,8 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
-    "./dist/es/": "./dist/es/"
+    "./dist/es/": "./dist/es/",
+    "./dist/es-custom/": "./dist/es-custom/"
   },
   "files": [
     "dist/es",
@@ -104,8 +105,9 @@
     "csv-stringify": "^6.5.2",
     "dayjs": "^1.11.10",
     "dompurify": "^3.1.6",
-    "use-sync-external-store": "^1.2.0",
     "focus-trap-react": "^10.2.3",
+    "fs-extra": "^11.3.2",
+    "globby": "^14.1.0",
     "highlight.js": "^11.9.0",
     "intl-messageformat": "^10.7.15",
     "lodash-es": "^4.17.0",
@@ -114,7 +116,8 @@
     "react-intl": "^7.1.6",
     "react-player": "2.15.1",
     "swiper": "^11.1.1",
-    "tabbable": "^6.2.0"
+    "tabbable": "^6.2.0",
+    "use-sync-external-store": "^1.2.0"
   },
   "scripts": {
     "build": "npm run build:chat && npm run build:typedoc",

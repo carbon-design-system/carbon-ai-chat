@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -20,6 +20,8 @@ import postcss from 'rollup-plugin-postcss';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { parseJsonConfigFileContent, sys } from 'typescript';
 import { fileURLToPath } from 'url';
+import fs from 'fs-extra';
+import { globby } from 'globby';
 
 import pkg from '../package.json' with { type: 'json' };
 
@@ -91,14 +93,14 @@ async function runRollup() {
       input: {
         // Main entry - becomes es/aiChatEntry.js
         'aiChatEntry': path.join(paths.src, '/aiChatEntry.tsx'),
-        
+
         // Server entry without web component side effects - becomes es/serverEntry.js
         'serverEntry': path.join(paths.src, '/serverEntry.ts'),
-        
+
         // Web components - becomes es/web-components/cds-aichat-container/index.js
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
-        
-        // Web components - becomes es/web-components/cds-aichat-custom-element/index.js  
+
+        // Web components - becomes es/web-components/cds-aichat-custom-element/index.js
         'web-components/cds-aichat-custom-element/index': path.join(paths.src, '/web-components/cds-aichat-custom-element/index.ts'),
       },
       output: {
@@ -201,10 +203,102 @@ async function runRollup() {
         dts({
           compilerOptions: parsedDtsTsConfig.compilerOptions,
         }),
+        postBuildPlugin(),
       ],
     },
   ];
   return config;
+}
+
+async function postBuild() {
+  const sourceDir = path.resolve(__dirname, "../dist/es");
+  const targetDir = path.resolve(__dirname, "../dist/es-custom");
+
+  // Copy `es` directory to `es-custom`
+  await fs.copy(sourceDir, targetDir);
+
+  // Find all files in the `es-custom` directory
+  const files = await globby([`${targetDir}/**/*`], { onlyFiles: true });
+
+  await Promise.all(
+    files.map(async (file) => {
+      let content = await fs.promises.readFile(file, "utf8");
+
+      // Find import/export lines and transform only the small, allowed parts in them.
+      // Then replace those lines with placeholders so global replacements don't touch them.
+      const importExportRegex = /^[ \t]*(?:import|export)[^\r\n]*(?:\r?\n|$)/gm;
+      const placeholders = [];
+
+      const masked = content.replace(importExportRegex, (match) => {
+        /**
+         *  In import/export lines we allow:
+         *  1. __cds_aichat -> __cds_custom_aichat
+         *     This is in particular for the
+         *     "export { default as __cds_custom_aichat_container_register } from "../cds-aichat-container/index.js";
+         *     line in the `dist/es/web-components/cds-aichat-custom-element/index.js` file
+         *.  2. rewrite carbon import paths to es-custom
+         *
+         *  but we DO NOT do the generic 'cds' -> 'cds-custom' replacement here.
+         **/
+        let mod = match
+          .replace(/__cds_aichat/g, "__cds_custom_aichat")
+          .replace(
+            /@carbon\/web-components\/es\/components\/(.*?)(?=['"\s;])/g,
+            "@carbon/web-components/es-custom/components/$1"
+          );
+
+        const token = `__IE_PLACEHOLDER_${placeholders.length}__`;
+        placeholders.push(mod);
+        return token;
+      });
+
+      /**
+       * On the rest of the file (masked), perform the global replacements:
+       *  1. cds-aichat -> cds-custom-aichat (class names, etc.)
+       *  2. generic cds -> cds-custom (but skip:
+       *     - occurrences preceded by '-' (so --cds is preserved)
+       *     - occurrences already followed by -custom/_custom to prevent double replace)
+       *  3. rewrite any remaining @carbon import paths that weren't in import/export lines
+       **/
+      let transformed = masked;
+
+      // convert cds-aichat (CSS class prefixes and similar)
+      transformed = transformed.replace(/cds-aichat/g, "cds-custom-aichat");
+
+      // generic cds -> cds-custom with guards:
+      //  (?<!-)  : not immediately preceded by '-'  (so `--cds` or `-cds` won't match)
+      //  (?!-custom|_custom) : not already followed by -custom or _custom (prevent double replace)
+      transformed = transformed.replace(
+        /(?<!-)cds(?!-custom|_custom)([A-Za-z0-9_-]*)/g,
+        (_m, suffix) => `cds-custom${suffix}`
+      );
+
+      // rewrite @carbon paths anywhere else (catch any non-import appearances too)
+      transformed = transformed.replace(
+        /@carbon\/web-components\/es\/components\/(.*?)(?=['"\s;])/g,
+        "@carbon/web-components/es-custom/components/$1"
+      );
+
+      // restore the import/export placeholders back into the content
+      const restored = transformed.replace(/__IE_PLACEHOLDER_(\d+)__/g, (_m, idx) => {
+        return placeholders[Number(idx)];
+      });
+
+      // write file back
+      await fs.promises.writeFile(file, restored);
+    })
+  );
+}
+
+
+function postBuildPlugin() {
+  return {
+    name: "postbuild-plugin",
+    async writeBundle() {
+      console.log("outputting es-custom folder...");
+      await postBuild();
+    },
+  };
 }
 
 export default () => runRollup();
