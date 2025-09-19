@@ -9,39 +9,39 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 
-.cds-aichat--overlay-panel--disclaimer {
+.cds-aichat--overlay-panel--disclaimer_panel {
   z-index: 99;
 }
 
-.cds-aichat--overlay-panel--custom {
+.cds-aichat--overlay-panel--custom_panel {
   z-index: 95;
 }
 
-.cds-aichat--overlay-panel--panel-response {
+.cds-aichat--overlay-panel--panel_response {
   z-index: 94;
 }
 
-.cds-aichat--overlay-panel--show-panel {
+.cds-aichat--overlay-panel--button_response_panel {
   z-index: 93;
 }
 
-.cds-aichat--overlay-panel--hydrating {
+.cds-aichat--overlay-panel--hydrating_panel {
   z-index: 90;
 }
 
-.cds-aichat--overlay-panel--catastrophic {
+.cds-aichat--overlay-panel--catastrophic_panel {
   z-index: 80;
 }
 
-.cds-aichat--overlay-panel--home-screen {
+.cds-aichat--overlay-panel--home_screen_panel {
   z-index: 30;
 }
 
-.cds-aichat--overlay-panel--conversational-search-citation {
+.cds-aichat--overlay-panel--conversational_search_citation_panel {
   z-index: 6;
 }
 
-.cds-aichat--overlay-panel--iframe {
+.cds-aichat--overlay-panel--iframe_panel {
   z-index: 5;
 }
 
@@ -52,7 +52,7 @@
   inset-block-start: 0;
 }
 
-.cds-aichat--overlay--covering.cds-aichat--overlay-panel-container--animating {
+.cds-aichat--overlay-panel-container--animating {
   overflow: hidden;
 }
 
@@ -107,7 +107,7 @@
 
 .cds-aichat--overlay-panel--opening--fade-in {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    cds-chat-fade-in both;
+    cds-aichat-fade-in both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -118,7 +118,7 @@
 
 .cds-aichat--overlay-panel--opening--slide-in-from-left {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    cds-chat-slide-in-from-left both;
+    cds-aichat-slide-in-from-left both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -129,21 +129,7 @@
 
 .cds-aichat--overlay-panel--opening--slide-in-from-right {
   animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    cds-chat-slide-in-from-right both;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--opening--slide-in-from-left {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--opening--slide-in-from-left {
-    animation: none;
-  }
+    cds-aichat-slide-in-from-right both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -157,21 +143,7 @@
   .cds-aichat--container--render[dir="rtl"]
     .cds-aichat--overlay-panel--opening--slide-in-from-left {
     animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-      cds-chat-slide-in-from-right both;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--opening--slide-in-from-right {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--opening--slide-in-from-right {
-    animation: none;
+      cds-aichat-slide-in-from-right both;
   }
 }
 
@@ -186,7 +158,7 @@
   .cds-aichat--container--render[dir="rtl"]
     .cds-aichat--overlay-panel--opening--slide-in-from-right {
     animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-      cds-chat-slide-in-from-left both;
+      cds-aichat-slide-in-from-left both;
   }
 }
 
@@ -197,19 +169,8 @@
 }
 
 .cds-aichat--overlay-panel--opening--slide-in-from-bottom {
-  animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    cds-chat-slide-in-from-bottom both;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--overlay-panel--opening--branding-slide-in-from-bottom {
-    animation: none;
-  }
-}
-
-.cds-aichat--overlay-panel--opening--branding-slide-in-from-bottom {
-  animation: motion.$duration-moderate-02 motion.motion(entrance, expressive)
-    cds-chat-slide-in-from-bottom both;
+  animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
+    cds-aichat-slide-in-from-bottom both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -220,7 +181,7 @@
 
 .cds-aichat--overlay-panel--closing--fade-out {
   animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
-    cds-chat-fade-out both;
+    cds-aichat-fade-out both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -231,7 +192,7 @@
 
 .cds-aichat--overlay-panel--closing--slide-out-to-left {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    cds-chat-slide-out-to-left both;
+    cds-aichat-slide-out-to-left both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -242,7 +203,7 @@
 
 .cds-aichat--overlay-panel--closing--slide-out-to-right {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    cds-chat-slide-out-to-right both;
+    cds-aichat-slide-out-to-right both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -252,22 +213,8 @@
 }
 
 .cds-aichat--overlay-panel--closing--slide-out-to-top {
-  animation: motion.$duration-slow-01 motion.motion(exit, expressive)
-    cds-chat-slide-out-to-top both;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--closing--slide-out-to-left {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--closing--slide-out-to-left {
-    animation: none;
-  }
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+    cds-aichat-slide-out-to-top both;
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -281,21 +228,7 @@
   .cds-aichat--container--render[dir="rtl"]
     .cds-aichat--overlay-panel--closing--slide-out-to-left {
     animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-      cds-chat-slide-out-to-right both;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--closing--slide-out-to-right {
-    animation: none;
-  }
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--container--render[dir="rtl"]
-    .cds-aichat--overlay-panel--closing--slide-out-to-right {
-    animation: none;
+      cds-aichat-slide-out-to-right both;
   }
 }
 
@@ -310,7 +243,7 @@
   .cds-aichat--container--render[dir="rtl"]
     .cds-aichat--overlay-panel--closing--slide-out-to-right {
     animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-      cds-chat-slide-out-to-left both;
+      cds-aichat-slide-out-to-left both;
   }
 }
 
@@ -322,5 +255,5 @@
 
 .cds-aichat--overlay-panel--closing--slide-out-to-bottom {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-    cds-chat-slide-out-to-bottom both;
+    cds-aichat-slide-out-to-bottom both;
 }

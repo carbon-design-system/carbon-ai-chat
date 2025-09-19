@@ -18,7 +18,8 @@ import {
 } from "../../../types/utilities/Animation";
 import { AppState } from "../../../types/state/AppState";
 import { InputFunctions } from "../input/Input";
-import { OverlayPanel, OverlayPanelName } from "../OverlayPanel";
+import { OverlayPanel } from "../OverlayPanel";
+import { PageObjectId } from "../../utils/PageObjectId";
 import { HomeScreen } from "./HomeScreen";
 import { HomeScreenStarterButton } from "../../../types/config/HomeScreenConfig";
 import { SingleOption } from "../../../types/messaging/Messages";
@@ -167,7 +168,7 @@ function HomeScreenContainer({
       shouldOpen={showHomeScreen}
       shouldHide={shouldHide}
       serviceManager={serviceManager}
-      overlayPanelName={OverlayPanelName.HOME_SCREEN}
+      overlayPanelName={PageObjectId.HOME_SCREEN_PANEL}
     >
       <HomeScreen
         isHydrated={isHydrationAnimationComplete}

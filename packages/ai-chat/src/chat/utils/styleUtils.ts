@@ -39,6 +39,11 @@ const HEXADECIMAL_REGEX = /#([a-f0-9]{3}){1,2}\b/i;
 function convertCSSVariablesToString(
   customProperties: ObjectMap<string>,
 ): string {
+  // Handle case where customProperties is undefined or null
+  if (!customProperties) {
+    return "";
+  }
+
   // First convert the variables to a CSS string.
   const pieces = Object.keys(customProperties).map((key) => {
     const value = customProperties[key];

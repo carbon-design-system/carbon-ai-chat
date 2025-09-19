@@ -23,6 +23,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
     const selectedValue = customEvent.detail.item.value;
 
     let homescreen: HomeScreenConfig | undefined;
+    let disclaimer = this.config.disclaimer;
 
     switch (selectedValue) {
       case "default":
@@ -40,6 +41,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
             ],
           },
         };
+        disclaimer = undefined;
         break;
       case "splash":
         homescreen = {
@@ -57,6 +59,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
             ],
           },
         };
+        disclaimer = undefined;
         break;
       case "custom":
         homescreen = {
@@ -64,21 +67,55 @@ export class DemoHomeScreenSwitcher extends LitElement {
           disableReturn: false,
           customContentOnly: true,
         };
+        disclaimer = undefined;
+        break;
+      case "disclaimer-only":
+        homescreen = {
+          isOn: false,
+        };
+        disclaimer = {
+          isOn: true,
+          disclaimerHTML:
+            "<p>This is a demo disclaimer. By using this chat, you agree to our terms and conditions.</p>",
+        };
+        break;
+      case "disclaimer-with-default":
+        homescreen = {
+          isOn: true,
+          disableReturn: false,
+          greeting: "Hello!\n\nThis is some text to introduce your chat.",
+          starters: {
+            isOn: true,
+            buttons: [
+              { label: "text (stream)" },
+              { label: "code (stream)" },
+              { label: "text" },
+              { label: "code" },
+            ],
+          },
+        };
+        disclaimer = {
+          isOn: true,
+          disclaimerHTML:
+            "<p>This is a demo disclaimer. By using this chat, you agree to our terms and conditions.</p>",
+        };
         break;
       case "none":
       default:
         homescreen = {
           isOn: false,
         };
+        disclaimer = undefined;
         break;
     }
 
-    // Emit a custom event `config-changed` with the new home screen configuration
+    // Emit a custom event `config-changed` with the new home screen and disclaimer configuration
     this.dispatchEvent(
       new CustomEvent("config-changed", {
         detail: {
           ...this.config,
           homescreen,
+          disclaimer,
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
@@ -87,7 +124,16 @@ export class DemoHomeScreenSwitcher extends LitElement {
   };
 
   private getCurrentHomescreenValue(): string {
-    if (!this.config?.homescreen?.isOn) {
+    const hasDisclaimer = this.config?.disclaimer?.isOn;
+    const hasHomescreen = this.config?.homescreen?.isOn;
+
+    if (hasDisclaimer && !hasHomescreen) {
+      return "disclaimer-only";
+    }
+    if (hasDisclaimer && hasHomescreen) {
+      return "disclaimer-with-default";
+    }
+    if (!hasHomescreen) {
       return "none";
     }
     if (this.config.homescreen.customContentOnly) {
@@ -102,13 +148,19 @@ export class DemoHomeScreenSwitcher extends LitElement {
   render() {
     return html`<cds-dropdown
       value="${this.getCurrentHomescreenValue()}"
-      title-text="Homescreen"
+      title-text="Homescreen and Disclaimer"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="none">None</cds-dropdown-item>
       <cds-dropdown-item value="default">Default</cds-dropdown-item>
       <cds-dropdown-item value="splash">Splash</cds-dropdown-item>
       <cds-dropdown-item value="custom">Custom</cds-dropdown-item>
+      <cds-dropdown-item value="disclaimer-only"
+        >Disclaimer Only</cds-dropdown-item
+      >
+      <cds-dropdown-item value="disclaimer-with-default"
+        >Disclaimer + Default</cds-dropdown-item
+      >
     </cds-dropdown>`;
   }
 }

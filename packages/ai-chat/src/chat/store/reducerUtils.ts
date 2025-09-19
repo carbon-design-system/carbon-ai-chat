@@ -32,13 +32,24 @@ import {
 } from "../../types/config/LauncherConfig";
 import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
-import { LayoutConfig } from "../../types/config/PublicConfig";
+import {
+  HeaderConfig,
+  LayoutConfig,
+  MinimizeButtonIconType,
+} from "../../types/config/PublicConfig";
 import { LocalMessageUIState } from "../../types/messaging/LocalMessageItem";
 import { Message } from "../../types/messaging/Messages";
 
 /**
  * Miscellaneous utilities to help in reducers.
  */
+
+const DEFAULT_HEADER: HeaderConfig = {
+  minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
+  showAiLabel: true,
+};
+
+deepFreeze(DEFAULT_HEADER);
 
 const DEFAULT_LAUNCHER: LauncherConfig = {
   isOn: true,
@@ -353,6 +364,7 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 }
 
 export {
+  DEFAULT_HEADER,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,

@@ -17,7 +17,6 @@ import { AppState } from "../../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../../types/utilities/HasRequestFocus";
 import { BasePanelComponent } from "../../../BasePanelComponent";
 import { SearchResultBodyWithCitationHighlighted } from "../SearchResultBody";
-import { OverlayPanelName } from "../../../OverlayPanel";
 import { BasePanelConfigOptions } from "../../../../../types/utilities/BasePanelConfigOptions";
 
 /**
@@ -64,7 +63,8 @@ function ViewSourcePanel(
       labelBackButton={languagePack.general_ariaCloseInformationOverlay}
       eventName="Search citation panel opened"
       eventDescription="A user has opened the search citation panel"
-      testIdPrefix={OverlayPanelName.CONVERSATIONAL_SEARCH_CITATION}
+      showAiLabel={false}
+      showRestartButton={false}
     >
       <div className="cds-aichat--view-source-panel__content">{content}</div>
     </BasePanelComponent>

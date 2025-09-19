@@ -23,7 +23,6 @@ import { HasClassName } from "../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { IS_MOBILE } from "../utils/browserUtils";
 import { Header } from "./header/Header";
-import { OverlayPanelName } from "./OverlayPanel";
 
 interface BasePanelComponentProps
   extends HasClassName,
@@ -51,15 +50,14 @@ interface BasePanelComponentProps
   eventDescription?: string;
 
   /**
-   * Indicates if the AI theme should be used.
+   * Controls whether to show the AI label in the header. When undefined, falls back to global config.
    */
-  useAITheme?: boolean;
+  showAiLabel?: boolean;
 
   /**
-   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
-   * in the header obviously unique.
+   * Controls whether to show the restart button in the header. When undefined, falls back to global config.
    */
-  testIdPrefix: OverlayPanelName;
+  showRestartButton?: boolean;
 }
 
 /**
@@ -74,16 +72,20 @@ function BasePanelComponent(
     labelBackButton,
     title,
     hideBackButton,
-    useAITheme,
     onClickRestart,
-    testIdPrefix,
+    showAiLabel,
+    showRestartButton: showRestartButtonProp,
     ...headerProps
   }: BasePanelComponentProps,
   ref: Ref<HasRequestFocus>,
 ) {
-  const showRestartButton = useSelector(
-    (state: AppState) => state.config.public.header?.showRestartButton,
+  const showRestartButtonFromConfig = useSelector(
+    (state: AppState) => state.config.derived.header?.showRestartButton,
   );
+  const showRestartButton =
+    showRestartButtonProp !== undefined
+      ? showRestartButtonProp
+      : showRestartButtonFromConfig;
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -149,8 +151,7 @@ function BasePanelComponent(
             showBackButton={!hideBackButton}
             labelBackButton={labelBackButton}
             displayName={title}
-            useAITheme={useAITheme}
-            testIdPrefix={testIdPrefix}
+            showAiLabel={showAiLabel}
           />
         )}
         <div className="cds-aichat--panel-content">{children}</div>

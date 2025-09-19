@@ -10,7 +10,9 @@
 
 .cds-aichat--select-holder {
   padding: 0 1px;
+  inline-size: 100%;
   margin-block-start: layout.$spacing-05;
+  max-inline-size: 380px;
 }
 
 /* When the dropdown is opened, we want to add some temporary padding while performing the scroll calculations so that
@@ -19,12 +21,6 @@
 
 .cds-aichat--custom-select-temporary-padding {
   padding-block-end: layout.$spacing-11;
-}
-
-.cds-aichat--widget--max-width {
-  .cds-aichat--select-holder {
-    inline-size: 380px;
-  }
 }
 
 cds-dropdown::part(trigger-button) {

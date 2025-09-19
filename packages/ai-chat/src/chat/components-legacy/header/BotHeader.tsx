@@ -28,7 +28,6 @@ import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
 import WriteableElement from "../WriteableElement";
 import { Header } from "./Header";
-import { OverlayPanelName } from "../OverlayPanel";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -66,12 +65,6 @@ interface BotHeaderProps {
    * name.
    */
   enableChatHeaderConfig?: boolean;
-
-  /**
-   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
-   * in the header obviously unique.
-   */
-  testIdPrefix: OverlayPanelName;
 }
 
 function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
@@ -82,7 +75,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     headerDisplayName,
     includeWriteableElement,
     enableChatHeaderConfig,
-    testIdPrefix,
   } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
@@ -92,7 +84,7 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   });
   const publicConfig = useSelector((state: AppState) => state.config.public);
   const customMenuOptions = useSelector(
-    (state: AppState) => state.config.public.header?.menuOptions,
+    (state: AppState) => state.config.derived.header?.menuOptions,
   );
   const memoizedCustomMenuOptions = useMemo(
     () => customMenuOptions || undefined,
@@ -101,9 +93,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   const { isConnectingOrConnected } = useSelector(
     selectHumanAgentDisplayState,
     shallowEqual,
-  );
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
   );
   const headerRef = useRef<HasRequestFocus>();
   const Home = carbonIconToReact(Home16);
@@ -142,7 +131,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
         showRestartButton={showRestartButton}
-        useAITheme={aiEnabled}
         backContent={<Home slot="icon" />}
         labelBackButton={languagePack.homeScreen_returnToHome}
         onClickRestart={onRestart}
@@ -151,7 +139,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         overflowItems={overflowItems}
         overflowClicked={overflowClicked}
         enableChatHeaderConfig={enableChatHeaderConfig}
-        testIdPrefix={testIdPrefix}
       />
       {includeWriteableElement && (
         <WriteableElement

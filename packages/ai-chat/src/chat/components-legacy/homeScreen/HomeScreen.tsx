@@ -30,7 +30,6 @@ import {
   HomeScreenConfig,
   HomeScreenStarterButton,
 } from "../../../types/config/HomeScreenConfig";
-import { OverlayPanelName } from "../OverlayPanel";
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -211,7 +210,6 @@ function HomeScreenComponent({
               disableSend={false}
               languagePack={languagePack}
               serviceManager={serviceManager}
-              testIdPrefix={OverlayPanelName.HOME_SCREEN}
             />
           </div>
         </div>

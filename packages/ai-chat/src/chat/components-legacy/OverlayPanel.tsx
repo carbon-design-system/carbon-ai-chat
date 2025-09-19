@@ -21,69 +21,11 @@ import {
 } from "../../types/utilities/Animation";
 import { HasChildren } from "../../types/utilities/HasChildren";
 import { HasClassName } from "../../types/utilities/HasClassName";
-import { conditionalSetTimeout } from "../utils/browserUtils";
+import { isBrowser } from "../utils/browserUtils";
 import { HideComponent } from "./util/HideComponent";
+import { PageObjectId } from "../utils/PageObjectId";
 
-/**
- * The possible overlay panels.
- *
- * @category Testing
- */
-enum OverlayPanelName {
-  /**
-   * The main chat panel.
-   */
-  MAIN = "main",
-
-  /**
-   * Disclaimer panel.
-   */
-  DISCLAIMER = "disclaimer",
-
-  /**
-   * Homescreen Panel.
-   */
-  HOME_SCREEN = "home_screen",
-
-  /**
-   * Hydration/loading state panel.
-   */
-  HYDRATING = "hydrating",
-
-  /**
-   * Catastrophic error panel.
-   */
-  CATASTROPHIC = "catastrophic",
-
-  /**
-   * Iframe panel.
-   */
-  IFRAME = "iframe",
-
-  /**
-   * Conversational search panel.
-   */
-  CONVERSATIONAL_SEARCH_CITATION = "conversational_search_citation",
-
-  /**
-   * Custom panel.
-   */
-  CUSTOM = "custom",
-
-  /**
-   * Panel coming from a button response type.
-   */
-  SHOW_PANEL = "show_panel",
-
-  /**
-   * The unreleased panel response type.
-   *
-   * @internal
-   */
-  PANEL_RESPONSE = "panel_response",
-}
-
-const ANIMATION_DURATION_IN_MS = 240;
+const ANIMATION_START_DETECTION_DELAY_MS = 120;
 
 interface OverlayPanelProps
   extends HasServiceManager,
@@ -112,9 +54,9 @@ interface OverlayPanelProps
   onCloseStart?: () => void;
 
   /**
-   * Unique name for overlay panel.
+   * Unique name for overlay panel - should use a PageObjectId value for a panel.
    */
-  overlayPanelName: OverlayPanelName;
+  overlayPanelName: PageObjectId;
 
   /**
    * How to animate in (in LTR languages, any directions here will be automatically flipped in a RTL language)
@@ -138,12 +80,12 @@ interface OverlayPanelProps
   shouldHide?: boolean;
 
   /**
-   * The duration of the open animation. This will default to {@link ANIMATION_DURATION_IN_MS} if not specified.
+   * Optional override used to indicate the open animation duration; set to 0 to skip waiting for animation events.
    */
   animationDurationOpen?: number;
 
   /**
-   * The duration of the close animation. This will default to {@link ANIMATION_DURATION_IN_MS} if not specified.
+   * Optional override used to indicate the close animation duration; set to 0 to skip waiting for animation events.
    */
   animationDurationClose?: number;
 }
@@ -166,8 +108,9 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
     isOpening: false,
   };
 
-  private openPanelTimeout: ReturnType<typeof setTimeout> = null;
-  private closePanelTimeout: ReturnType<typeof setTimeout> = null;
+  private pendingAnimation: "opening" | "closing" | null = null;
+  private animationStarted = false;
+  private animationFallbackId: number | null = null;
 
   componentDidMount() {
     const { shouldOpen } = this.props;
@@ -190,69 +133,64 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   }
 
   openPanel = () => {
-    const { onOpenEnd, onOpenStart, animationOnOpen, animationDurationOpen } =
-      this.props;
+    const { onOpenStart, animationOnOpen, animationDurationOpen } = this.props;
 
     onOpenStart?.();
 
-    this.setState({
-      isClosing: false,
-      isOpening: true,
-    });
+    this.clearAnimationFallback();
+    this.pendingAnimation = "opening";
+    this.animationStarted = false;
 
-    // Use a conditional setTimeout to avoid unnecessary flickering if there is no animation.
-    const durationInMS =
-      animationOnOpen === AnimationInType.NONE
-        ? 0
-        : animationDurationOpen || ANIMATION_DURATION_IN_MS;
-    this.openPanelTimeout = conditionalSetTimeout(() => {
-      this.setState({
+    this.setState(
+      {
         isClosing: false,
-        isOpening: false,
-      });
+        isOpening: true,
+      },
+      () => {
+        if (
+          !this.shouldWaitForAnimation(animationOnOpen, animationDurationOpen)
+        ) {
+          this.completeOpen();
+          return;
+        }
 
-      onOpenEnd?.();
-    }, durationInMS);
+        this.scheduleAnimationFallback();
+      },
+    );
   };
 
   closePanel = () => {
-    const {
-      onCloseEnd,
-      onCloseStart,
-      animationOnClose,
-      animationDurationClose,
-    } = this.props;
+    const { onCloseStart, animationOnClose, animationDurationClose } =
+      this.props;
 
     onCloseStart?.();
 
-    this.setState({
-      isClosing: true,
-      isOpening: false,
-    });
+    this.clearAnimationFallback();
+    this.pendingAnimation = "closing";
+    this.animationStarted = false;
 
-    // Use a conditional setTimeout to avoid unnecessary flickering if there is no animation.
-    const durationInMS =
-      animationOnClose === AnimationOutType.NONE
-        ? 0
-        : animationDurationClose || ANIMATION_DURATION_IN_MS;
-    this.closePanelTimeout = conditionalSetTimeout(() => {
-      this.setState({
-        isClosing: false,
+    this.setState(
+      {
+        isClosing: true,
         isOpening: false,
-      });
+      },
+      () => {
+        if (
+          !this.shouldWaitForAnimation(animationOnClose, animationDurationClose)
+        ) {
+          this.completeClose();
+          return;
+        }
 
-      onCloseEnd?.();
-    }, durationInMS);
+        this.scheduleAnimationFallback();
+      },
+    );
   };
 
   componentWillUnmount() {
-    if (this.openPanelTimeout) {
-      clearTimeout(this.openPanelTimeout);
-    }
-
-    if (this.closePanelTimeout) {
-      clearTimeout(this.closePanelTimeout);
-    }
+    this.clearAnimationFallback();
+    this.pendingAnimation = null;
+    this.animationStarted = false;
 
     if (this.props.shouldOpen) {
       if (this.props.onCloseStart) {
@@ -262,6 +200,135 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
         this.props.onCloseEnd();
       }
     }
+  }
+
+  private handleAnimationStart = (
+    event: React.AnimationEvent<HTMLDivElement>,
+  ) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    this.animationStarted = true;
+  };
+
+  private handleAnimationLifecycleEnd = (
+    event: React.AnimationEvent<HTMLDivElement>,
+  ) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (this.pendingAnimation === "opening" && this.state.isOpening) {
+      this.completeOpen();
+      return;
+    }
+
+    if (this.pendingAnimation === "closing" && this.state.isClosing) {
+      this.completeClose();
+    }
+  };
+
+  private shouldWaitForAnimation(
+    animation: AnimationInType | AnimationOutType,
+    durationOverride?: number,
+  ): boolean {
+    if (
+      animation === AnimationInType.NONE ||
+      animation === AnimationOutType.NONE ||
+      durationOverride === 0
+    ) {
+      return false;
+    }
+
+    if (
+      isBrowser &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private scheduleAnimationFallback() {
+    if (!isBrowser) {
+      return;
+    }
+
+    this.clearAnimationFallback();
+
+    this.animationFallbackId = window.setTimeout(() => {
+      if (this.animationStarted) {
+        return;
+      }
+
+      if (this.pendingAnimation === "opening") {
+        this.completeOpen();
+        return;
+      }
+
+      if (this.pendingAnimation === "closing") {
+        this.completeClose();
+      }
+    }, ANIMATION_START_DETECTION_DELAY_MS);
+  }
+
+  private clearAnimationFallback() {
+    if (this.animationFallbackId !== null && isBrowser) {
+      window.clearTimeout(this.animationFallbackId);
+    }
+
+    this.animationFallbackId = null;
+  }
+
+  private completeOpen() {
+    this.clearAnimationFallback();
+
+    if (this.pendingAnimation === "opening") {
+      this.pendingAnimation = null;
+    }
+
+    if (!this.state.isOpening) {
+      return;
+    }
+
+    this.animationStarted = false;
+
+    this.setState(
+      {
+        isOpening: false,
+        isClosing: false,
+      },
+      () => {
+        this.props.onOpenEnd?.();
+      },
+    );
+  }
+
+  private completeClose() {
+    this.clearAnimationFallback();
+
+    if (this.pendingAnimation === "closing") {
+      this.pendingAnimation = null;
+    }
+
+    if (!this.state.isClosing) {
+      return;
+    }
+
+    this.animationStarted = false;
+
+    this.setState(
+      {
+        isClosing: false,
+        isOpening: false,
+      },
+      () => {
+        this.props.onCloseEnd?.();
+      },
+    );
   }
 
   render() {
@@ -278,17 +345,15 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
     return (
       <HideComponent
         hidden={!isClosing && !shouldOpen}
-        className={cx(
-          "cds-aichat--overlay-panel-container",
-          `cds-aichat--overlay--${overlayPanelName}`,
-          className,
-          {
-            "cds-aichat--overlay-panel-container--animating":
-              isOpening || isClosing,
-          },
-        )}
+        className={cx("cds-aichat--overlay-panel-container", className, {
+          "cds-aichat--overlay-panel-container--animating":
+            isOpening || isClosing,
+        })}
       >
         <div
+          onAnimationStart={this.handleAnimationStart}
+          onAnimationEnd={this.handleAnimationLifecycleEnd}
+          data-testid={overlayPanelName}
           className={cx(
             "cds-aichat--overlay-panel",
             `cds-aichat--overlay-panel--${overlayPanelName}`,
@@ -309,4 +374,4 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   }
 }
 
-export { OverlayPanel, OverlayPanelName };
+export { OverlayPanel };

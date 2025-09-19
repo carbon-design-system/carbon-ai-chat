@@ -12,7 +12,7 @@
  * custom element and then renders the React Carbon AI Chat application while passing in properties.
  */
 
-import { LitElement } from "lit";
+import { LitElement, PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
@@ -90,26 +90,35 @@ class ChatContainerInternal extends LitElement {
     }
   }
 
+  updated(changedProperties: PropertyValues) {
+    // Re-render React app when config or other properties change
+    if (
+      this.config &&
+      (changedProperties.has("config") ||
+        changedProperties.has("strings") ||
+        changedProperties.has("serviceDeskFactory") ||
+        changedProperties.has("serviceDesk") ||
+        changedProperties.has("onBeforeRender") ||
+        changedProperties.has("onAfterRender") ||
+        changedProperties.has("element"))
+    ) {
+      this.renderReactApp();
+    }
+  }
+
   /**
    * Track if a previous React 18+ root was already created so we don't create a memory leak on re-renders.
    */
   root: Root;
 
+  /**
+   * Cache the container we hand to React so we can reuse it between renders.
+   */
+  reactContainer?: HTMLDivElement;
+
   async renderReactApp() {
-    const previousContainer: HTMLElement = this.shadowRoot.querySelector(
-      ".cds-aichat--react-app",
-    );
-    previousContainer?.remove();
-    const container = document.createElement("div");
-    container.classList.add("cds-aichat--react-app");
-    this.shadowRoot.appendChild(container);
+    const container = this.ensureReactRoot();
 
-    // Make sure we only have one root.
-    if (this.root) {
-      this.root.unmount();
-    }
-
-    this.root = createRoot(container);
     this.root.render(
       <App
         config={this.config}
@@ -122,6 +131,27 @@ class ChatContainerInternal extends LitElement {
         element={this.element}
       />,
     );
+  }
+
+  private ensureReactRoot(): HTMLDivElement {
+    if (!this.reactContainer) {
+      const container = document.createElement("div");
+      container.classList.add("cds-aichat--react-app");
+      this.shadowRoot.appendChild(container);
+      this.reactContainer = container;
+    }
+
+    // Make sure we only create one root and reuse it for prop updates.
+    if (!this.root) {
+      this.root = createRoot(this.reactContainer);
+    }
+
+    return this.reactContainer;
+  }
+
+  disconnectedCallback(): void {
+    this.root?.unmount();
+    super.disconnectedCallback();
   }
 }
 

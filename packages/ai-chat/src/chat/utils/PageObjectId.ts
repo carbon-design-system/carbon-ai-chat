@@ -7,17 +7,18 @@
  *  @license
  */
 
-import { OverlayPanelName } from "../components-legacy/OverlayPanel";
-
 /**
- * An enum of all of our data-testid we use.
+ * An enum of all of our data-testid we use. For some elements (like INPUT) they can appear in multiple "panels"
+ * (e.g. on the home screen and in the main chat window). There are provided testids for "panels" as well so you
+ * can first select a panel and then select the correct child.
  *
  * @category Testing
+ *
+ * @experimental
  */
-
 export enum PageObjectId {
   /**
-   * When a panel has been closed. This is combined with an OverlayPanelName.
+   * Minimize chat button in header.
    */
   CLOSE_CHAT = "close_chat",
 
@@ -27,39 +28,77 @@ export enum PageObjectId {
   LAUNCHER = "launcher_open_chat",
 
   /**
-   * Input field. This is combined with an OverlayPanelName.
+   * Input field.
    */
   INPUT = "input_field",
 
   /**
-   * Input send button. This is combined with an OverlayPanelName.
+   * Input send button.
    */
   INPUT_SEND = "input_send",
+
+  /**
+   * The chat header title element.
+   */
+  HEADER_TITLE = "header_title",
+
+  /**
+   * The chat header name element.
+   */
+  HEADER_NAME = "header_name",
+
+  // Panel identifiers
+  /**
+   * The main chat panel.
+   */
+  MAIN_PANEL = "main_panel",
+
+  /**
+   * Disclaimer panel.
+   */
+  DISCLAIMER_PANEL = "disclaimer_panel",
+
+  /**
+   * Homescreen Panel.
+   */
+  HOME_SCREEN_PANEL = "home_screen_panel",
+
+  /**
+   * Hydration/loading state panel.
+   */
+  HYDRATING_PANEL = "hydrating_panel",
+
+  /**
+   * Catastrophic error panel.
+   */
+  CATASTROPHIC_PANEL = "catastrophic_panel",
+
+  /**
+   * Iframe panel.
+   */
+  IFRAME_PANEL = "iframe_panel",
+
+  /**
+   * Conversational search panel.
+   */
+  CONVERSATIONAL_SEARCH_CITATION_PANEL = "conversational_search_citation_panel",
+
+  /**
+   * Custom panel.
+   */
+  CUSTOM_PANEL = "custom_panel",
+
+  /**
+   * A panel that opens from a button response.
+   */
+  BUTTON_RESPONSE_PANEL = "button_response_panel",
 }
 
 /**
- * Ids used for data-testid. A `${OverlayPanelName}-${PageObjectId}` combination to account for the fact that some
- * elements inside panels may have multiple copies active in the view to enable animations to and from different states.
+ * Ids used for data-testid.
  *
  * @category Testing
- */
-export type PrefixedId = `${OverlayPanelName}-${PageObjectId}`;
-
-/**
- * Ids used for data-testid. They can either be a PageObjectId or include a prefix of an OverlayPanelName.
  *
- * @category Testing
+ * @experimental
  */
-export type TestId = PageObjectId | PrefixedId;
-
-/**
- * Generate a testId by PageObjectId and optional OverlayPanelName.
- *
- * @category Testing
- */
-export function makeTestId(id: PageObjectId, panel?: OverlayPanelName): TestId {
-  if (panel) {
-    return `${panel}-${id}` as PrefixedId;
-  }
-  return id;
-}
+export type TestId = PageObjectId;

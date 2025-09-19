@@ -7,13 +7,13 @@
  *  @license
  */
 
-import merge from "lodash-es/merge.js";
+import mergeWith from "lodash-es/mergeWith.js";
 import { ServiceManager } from "../services/ServiceManager";
 import { AppConfig } from "../../types/state/AppConfig";
 import { AppState, ThemeState } from "../../types/state/AppState";
 import { IS_PHONE } from "../utils/browserUtils";
 import { CornersType } from "../utils/constants";
-import { PublicConfig } from "../../types/config/PublicConfig";
+import { LanguagePack, PublicConfig } from "../../types/config/PublicConfig";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import { AppStore, createAppStore } from "./appStore";
@@ -32,9 +32,34 @@ import {
   VIEW_STATE_ALL_CLOSED,
   VIEW_STATE_LAUNCHER_OPEN,
   VIEW_STATE_MAIN_WINDOW_OPEN,
+  DEFAULT_HEADER,
 } from "./reducerUtils";
 import { enLanguagePack } from "../../types/config/PublicConfig";
 import { LayoutConfig } from "../../types/config/PublicConfig";
+
+/**
+ * Deep merge helper that:
+ *  - ignores `undefined` in sources (keeps existing/default),
+ *  - replaces arrays wholesale (no index-wise merge),
+ *  - otherwise behaves like lodash merge.
+ */
+function mergeDefaultsDeep<T>(target: Partial<T>, ...sources: Partial<T>[]): T {
+  return mergeWith(
+    target as any,
+    ...(sources as unknown as any[]),
+    (objValue: unknown, srcValue: unknown) => {
+      if (srcValue === undefined) {
+        return objValue;
+      }
+      if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+        // Replace arrays instead of merging by index
+        return srcValue.slice();
+      }
+      // Let mergeWith handle objects/primitives normally
+      return undefined;
+    },
+  ) as T;
+}
 
 /**
  * Creates a complete AppConfig with derived values computed from the public config.
@@ -58,43 +83,38 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
     themeWithDefaults.aiEnabled,
   );
 
+  // Build derived config using deep merge that skips undefined
+  const derived = mergeDefaultsDeep(
+    {},
+    {
+      header: DEFAULT_HEADER,
+      languagePack: enLanguagePack,
+      layout: DEFAULT_LAYOUT_STATE,
+      launcher: DEFAULT_LAUNCHER,
+    },
+    {
+      header: publicConfig.header,
+      languagePack: publicConfig.strings,
+      layout: publicConfig.layout,
+      launcher: publicConfig.launcher,
+    },
+  );
+
   return {
     public: publicConfig,
     derived: {
       cssVariableOverrides,
       themeWithDefaults,
-      languagePack: {
-        ...enLanguagePack,
-        ...publicConfig.strings,
-      },
-      layout: {
-        ...DEFAULT_LAYOUT_STATE,
-        ...publicConfig.layout,
-      },
-      launcher: {
-        ...DEFAULT_LAUNCHER,
-        ...publicConfig.launcher,
-        desktop: {
-          ...DEFAULT_LAUNCHER.desktop,
-          ...publicConfig.launcher?.desktop,
-        },
-        mobile: {
-          ...DEFAULT_LAUNCHER.mobile,
-          ...publicConfig.launcher?.mobile,
-        },
-      },
+      header: derived.header,
+      languagePack: derived.languagePack as LanguagePack,
+      layout: derived.layout,
+      launcher: derived.launcher,
     },
   };
 }
 
-function doCreateStore(
-  publicConfig: PublicConfig,
-  serviceManager: ServiceManager,
-): AppStore<AppState> {
-  // Build the complete AppConfig with derived values
-  const config = createAppConfig(publicConfig);
-
-  const initialState: AppState = {
+function createInitialState(config: AppConfig): AppState {
+  return {
     // Config with derived values
     config,
 
@@ -120,9 +140,8 @@ function doCreateStore(
     viewChanging: false,
     initialViewChangeComplete: false,
     targetViewState:
-      // If openChatByDefault is set to true then the Carbon AI Chat should open automatically. This value will be overridden
-      // by session history if a session exists. This overwriting is intentional since we only want openChatByDefault to
-      // open the main window the first time the chat loads for a user.
+      // If openChatByDefault is true we open on first load, otherwise we use the launcher.
+      // This will be overwritten by session history if it exists.
       config.public.openChatByDefault
         ? VIEW_STATE_MAIN_WINDOW_OPEN
         : VIEW_STATE_LAUNCHER_OPEN,
@@ -139,6 +158,16 @@ function doCreateStore(
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
   };
+}
+
+function doCreateStore(
+  publicConfig: PublicConfig,
+  serviceManager: ServiceManager,
+): AppStore<AppState> {
+  // Build the complete AppConfig with derived values
+  const config = createAppConfig(publicConfig);
+
+  const initialState: AppState = createInitialState(config);
 
   // Go pre-fill the launcher state from session storage if it exists.
   const sessionStorageState =
@@ -197,7 +226,12 @@ function getThemeCornersType(publicConfig: PublicConfig) {
 }
 
 function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
-  return merge({}, DEFAULT_LAYOUT_STATE, publicConfig.layout);
+  // Use the same deep merge semantics for layout specifically
+  return mergeDefaultsDeep<LayoutConfig>(
+    {},
+    DEFAULT_LAYOUT_STATE,
+    publicConfig.layout ?? {},
+  );
 }
 
 /**
@@ -213,4 +247,4 @@ function reducerFunction(
     : state;
 }
 
-export { doCreateStore, createAppConfig };
+export { doCreateStore, createAppConfig, createInitialState };

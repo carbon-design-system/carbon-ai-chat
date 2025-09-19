@@ -19,7 +19,6 @@ function ChatBubbleLight() {
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 80 80"
-      className="chat-bubble-light"
     >
       <defs>
         <linearGradient
@@ -137,50 +136,50 @@ function ChatBubbleLight() {
           <stop offset={0.97} stopColor="#d0d0d0" stopOpacity={0} />
         </linearGradient>
       </defs>
-      <path d="M0 0h80v80H0z" className="chat-bubble-light__background" />
+      <path d="M0 0h80v80H0z" fill="none" />
       <path
         d="M61.3 68.11a.67.67 0 0 0 .09-.14.67.67 0 0 1-.09.14Zm.22-.46a1.58 1.58 0 0 0 0-.32v-7.24 7.24a1.58 1.58 0 0 1 0 .32Zm-.09.26a1.18 1.18 0 0 0 .07-.2 1.18 1.18 0 0 1-.07.2Z"
-        className="chat-bubble-light__gradient-a"
+        fill={`url(#${chatBubbleID}-a)`}
       />
       <path
         d="m15.13 52.11 45.5 26.28 4.25-2.51L19.4 49.63l-4.27 2.48z"
-        className="chat-bubble-light__gradient-b"
+        fill={`url(#${chatBubbleID}-b)`}
       />
       <path
         d="m32.66 52.85-2.25 4.22a1.08 1.08 0 0 1-.36.35l2.83-1.65a1.08 1.08 0 0 0 .36-.35l2.26-4.22Z"
-        className="chat-bubble-light__gradient-c"
+        fill={`url(#${chatBubbleID}-c)`}
       />
       <path
         d="M63.45 26.58 20.63 1.86a1 1 0 0 0-1-.1l-4 2.3a1 1 0 0 1 1 .1l42.85 24.72a3.17 3.17 0 0 1 1.42 2.47l-.1 36.08a1 1 0 0 1-.42.91l4-2.3a1 1 0 0 0 .42-.91L64.88 29a3.14 3.14 0 0 0-1.43-2.42Z"
-        className="chat-bubble-light__gradient-d"
+        fill={`url(#${chatBubbleID}-d)`}
       />
       <path
         d="M59.48 28.88a3.17 3.17 0 0 1 1.42 2.47l-.1 36.08c0 .9-.65 1.26-1.42.81l-26.7-15.4-2.26 4.22a.9.9 0 0 1-1.33.28 3.07 3.07 0 0 1-1.22-1.53l-2.33-7.09-9-5.2a3.15 3.15 0 0 1-1.43-2.46L15.23 5c0-.9.64-1.27 1.43-.81Z"
-        className="chat-bubble-light__gradient-e"
+        fill={`url(#${chatBubbleID}-e)`}
       />
       <path
         d="M59.48 28.88a3.17 3.17 0 0 1 1.42 2.47l-.1 36.08c0 .9-.65 1.26-1.42.81l-26.7-15.4-2.26 4.22a.9.9 0 0 1-1.33.28 3.07 3.07 0 0 1-1.22-1.53l-2.33-7.09-9-5.2a3.15 3.15 0 0 1-1.43-2.46L15.23 5c0-.9.64-1.27 1.43-.81Z"
-        className="chat-bubble-light__gradient-f"
+        fill={`url(#${chatBubbleID}-f)`}
       />
       <path
         d="M59.48 28.88a3.17 3.17 0 0 1 1.42 2.47l-.1 36.08c0 .9-.65 1.26-1.42.81l-26.7-15.4-2.26 4.22a.9.9 0 0 1-1.33.28 3.07 3.07 0 0 1-1.22-1.53l-2.33-7.09-9-5.2a3.15 3.15 0 0 1-1.43-2.46L15.23 5c0-.9.64-1.27 1.43-.81Z"
-        className="chat-bubble-light__gradient-e-duplicate"
+        fill={`url(#${chatBubbleID}-e)`}
       />
       <path
         d="m57.99 37.07-.01 3.9L18.03 17.9l.01-3.9 39.95 23.07z"
-        className="chat-bubble-light__gradient-h"
+        fill={`url(#${chatBubbleID}-h)`}
       />
       <path
         d="m57.99 45.11-.01 3.91-39.95-23.07.01-3.9 39.95 23.06z"
-        className="chat-bubble-light__gradient-i"
+        fill={`url(#${chatBubbleID}-i)`}
       />
       <path
         d="m44.62 45.04-.01 3.9L18.03 33.6l.01-3.9 26.58 15.34z"
-        className="chat-bubble-light__gradient-j"
+        fill={`url(#${chatBubbleID}-j)`}
       />
       <path
         d="M60.76 30.55a2.54 2.54 0 0 1 .14.8v3.95l.41-.13v-3.82a3.54 3.54 0 0 0-1.63-2.82L16.86 3.8a2.09 2.09 0 0 0-.44-.19l-.78.45a1 1 0 0 1 .21-.06h.48l.27.12 21.47 12.4 21.41 12.36a3.19 3.19 0 0 1 1.28 1.67Z"
-        className="chat-bubble-light__gradient-k"
+        fill={`url(#${chatBubbleID}-k)`}
       />
     </svg>
   );

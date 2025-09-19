@@ -38,6 +38,10 @@ Instead of pulling from the `es-custom` folder and using the `cds-custom-*` comp
 
 - Removed: `homescreen.background` (background styling is now managed automatically)
 
+### ChatInstance.getState
+
+`getState()` now returns a frozen `PublicChatState` that exposes the sessionStorage-backed fields as top-level properties (e.g. `version`, `viewState`, `showUnreadIndicator`, `homeScreenState`, etc.). The `humanAgent` block contains the persisted human-agent data plus a live `isConnecting` flag sourced from in-memory state. Treat the returned object as read-only and call `getState()` again when you need fresh values.
+
 ### Removed Methods:
 
 Many `updateX` methods on `ChatInstance` removed. Update config instead.
@@ -210,6 +214,64 @@ return <ChatContainer {...config} />;
 const el = document.querySelector("cds-aichat-container");
 el.launcher = { isOn: false };
 ```
+
+## Testing: Panel-Scoped Test IDs
+
+**Breaking Change**: Test ID structure has been updated to use panel-scoped approach for better testing reliability.
+
+### What Changed
+
+- Removed: `makeTestId()` utility function
+- Removed: `PrefixedId` type
+- Removed: `OverlayPanelName` enum (consolidated into `PageObjectId`)
+- Added: Panel test IDs consolidated into `PageObjectId` for single import convenience
+
+### Migration
+
+**Before (0.5.x):**
+
+```ts
+// Using makeTestId with duplicate test ID issues
+import {
+  makeTestId,
+  PageObjectId,
+  OverlayPanelName,
+} from "@carbon/ai-chat/server";
+
+// Tests had duplicate test ID problems when multiple panels existed
+await expect(page.getByTestId("input_send")).toBeVisible(); // Could find 2+ elements
+await expect(
+  page.getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN)),
+).click();
+```
+
+**After (1.0.0):**
+
+```ts
+// Using panel-scoped approach - cleaner and more reliable
+// PageObjectId now includes all panel identifiers - no need for OverlayPanelName
+import { PageObjectId } from "@carbon/ai-chat/server";
+
+// Each panel has its own scope - no more duplicates
+const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
+await expect(mainPanel.getByTestId(PageObjectId.INPUT)).fill("Hello");
+await expect(mainPanel.getByTestId(PageObjectId.INPUT_SEND)).click();
+await expect(mainPanel.getByTestId(PageObjectId.CLOSE_CHAT)).click();
+```
+
+### Available Panel Test IDs
+
+All panel identifiers are now available through `PageObjectId`:
+
+- `PageObjectId.MAIN_PANEL` (`main_panel`): Main chat interface
+- `PageObjectId.DISCLAIMER_PANEL` (`disclaimer_panel`): Disclaimer screen
+- `PageObjectId.HOME_SCREEN_PANEL` (`home_screen_panel`): Home screen
+- `PageObjectId.HYDRATING_PANEL` (`hydrating_panel`): Loading state
+- `PageObjectId.CATASTROPHIC_PANEL` (`catastrophic_panel`): Error state
+- `PageObjectId.IFRAME_PANEL` (`iframe_panel`): IFrame content panel
+- `PageObjectId.CONVERSATIONAL_SEARCH_CITATION_PANEL` (`conversational_search_citation_panel`): Citation panel
+- `PageObjectId.CUSTOM_PANEL` (`custom_panel`): Custom content panel
+- `PageObjectId.BUTTON_RESPONSE_PANEL` (`button_response_panel`): Panel opened from button responses
 
 ## New Features
 

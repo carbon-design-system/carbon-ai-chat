@@ -71,6 +71,10 @@
   @include type.type-style("body-01");
 }
 
+.cds-aichat--header {
+  background-color: theme.$chat-header-background;
+}
+
 .cds-aichat--ai-theme .cds-aichat--widget {
   border: solid 1px transparent;
   background: linear-gradient(
@@ -375,6 +379,7 @@ svg.cds-aichat--icon__logout--reverse {
   .cds-aichat--panel-content {
     flex: 1;
     margin: auto;
+    block-size: 100%;
     inline-size: 100%;
     max-inline-size: chat-theme.$max-width;
   }
@@ -387,5 +392,10 @@ svg.cds-aichat--icon__logout--reverse {
     border-end-start-radius: chat-theme.$border-radius;
     border-start-end-radius: chat-theme.$border-radius;
     border-start-start-radius: chat-theme.$border-radius;
+  }
+
+  .cds-aichat--panel-content {
+    border-end-end-radius: chat-theme.$border-radius;
+    border-end-start-radius: chat-theme.$border-radius;
   }
 }

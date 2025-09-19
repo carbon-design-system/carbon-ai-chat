@@ -17,14 +17,7 @@
  */
 
 // Export types and utilities without importing web components
-export { OverlayPanelName } from "./chat/components-legacy/OverlayPanel";
-
-export {
-  PageObjectId,
-  makeTestId,
-  TestId,
-  PrefixedId,
-} from "./chat/utils/PageObjectId";
+export { PageObjectId, TestId } from "./chat/utils/PageObjectId";
 
 // Export all types without the web component implementations
 export {
@@ -49,8 +42,8 @@ export {
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
-  PublicWebChatServiceDeskState,
-  PublicWebChatState,
+  PublicChatHumanAgentState,
+  PublicChatState,
   SendOptions,
   TypeAndHandler,
   WriteableElementName,

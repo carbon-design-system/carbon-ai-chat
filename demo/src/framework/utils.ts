@@ -63,12 +63,23 @@ function updatePageTheme(theme: string) {
 
 function getSettings() {
   const urlParams = new URLSearchParams(window.location.search);
-  const settings: Partial<Settings> = urlParams.has("settings")
-    ? JSON.parse(urlParams.get("settings") as string)
-    : {};
-  const config: any = urlParams.has("config")
-    ? JSON.parse(urlParams.get("config") as string)
-    : {};
+
+  // Check if we're in programmatic mode and ignore query params if so
+  const settingsParam = urlParams.get("settings");
+  const configParam = urlParams.get("config");
+  const isProgrammatic =
+    settingsParam === "programatic" || configParam === "programatic";
+
+  const settings: Partial<Settings> =
+    !isProgrammatic &&
+    urlParams.has("settings") &&
+    settingsParam !== "programatic"
+      ? JSON.parse(settingsParam as string)
+      : {};
+  const config: any =
+    !isProgrammatic && urlParams.has("config") && configParam !== "programatic"
+      ? JSON.parse(configParam as string)
+      : {};
   const pageTheme = urlParams.get("pageTheme") || "cds--white";
 
   let defaultConfig: PublicConfig = {
@@ -95,10 +106,19 @@ function getSettings() {
 
   const defaultSettings: Settings = {
     framework: "react",
-    layout: "float",
+    layout: "fullscreen",
     writeableElements: "false",
+    direction: "default",
     ...settings,
   };
+
+  // Apply direction setting to HTML element
+  const htmlElement = document.documentElement;
+  if (defaultSettings.direction === "default") {
+    htmlElement.removeAttribute("dir");
+  } else {
+    htmlElement.setAttribute("dir", defaultSettings.direction);
+  }
 
   // eslint-disable-next-line default-case
   switch (defaultSettings.layout) {
@@ -121,10 +141,6 @@ function getSettings() {
       delete defaultConfig.header?.minimizeButtonIconType;
       delete defaultConfig.header?.hideMinimizeButton;
       delete defaultConfig.layout?.corners;
-      delete defaultConfig.showLauncher;
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
-      delete defaultConfig.headerConfig?.hideMinimizeButton;
-      delete defaultConfig.themeConfig?.corners;
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
@@ -142,7 +158,7 @@ function getSettings() {
           hasContentMaxWidth: undefined,
           corners: CornersType.SQUARE,
         },
-        showLauncher: false,
+        launcher: { isOn: false },
         openChatByDefault: undefined,
       };
       delete defaultConfig.layout?.showFrame;
@@ -164,7 +180,6 @@ function getSettings() {
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
-      delete defaultConfig.showLauncher;
       break;
     case "fullscreen-no-gutter":
       defaultConfig = {
@@ -183,7 +198,6 @@ function getSettings() {
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
-      delete defaultConfig.launcher;
       break;
   }
 

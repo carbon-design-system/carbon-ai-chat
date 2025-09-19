@@ -8,6 +8,7 @@
  */
 
 import {
+  HeaderConfig,
   LanguagePack,
   LayoutConfig,
   PublicConfig,
@@ -46,6 +47,11 @@ interface AppConfig {
      * Passed strings merged with defaults.
      */
     languagePack: LanguagePack;
+
+    /**
+     * Passed header merged with defaults.
+     */
+    header: HeaderConfig;
 
     /**
      * Passed layout merged with defaults.

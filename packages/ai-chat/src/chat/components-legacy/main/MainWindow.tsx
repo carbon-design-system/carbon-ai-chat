@@ -17,7 +17,8 @@ import { HydrationPanel } from "../HydrationPanel";
 import { InputFunctions } from "../input/Input";
 import { MessageTypeComponent } from "../MessageTypeComponent";
 
-import { OverlayPanel, OverlayPanelName } from "../OverlayPanel";
+import { OverlayPanel } from "../OverlayPanel";
+import { PageObjectId } from "../../utils/PageObjectId";
 import { CustomPanel } from "../panels/CustomPanel";
 import { HideComponent } from "../util/HideComponent";
 import VisuallyHidden from "../util/VisuallyHidden";
@@ -720,7 +721,7 @@ class MainWindow
 
     const showCovering =
       this.state.numPanelsCovering > 0 &&
-      config.public.layout?.hasContentMaxWidth &&
+      config.derived.layout.hasContentMaxWidth &&
       chatWidthBreakpoint === ChatWidthBreakpoint.WIDE;
 
     return (
@@ -784,7 +785,7 @@ class MainWindow
       >
         <BotChat
           assistantName={assistantName}
-          headerDisplayName={config.public.header?.name || assistantName}
+          headerDisplayName={config.derived.header?.name || assistantName}
           ref={this.botChatRef}
           languagePack={languagePack}
           config={config}
@@ -813,38 +814,6 @@ class MainWindow
     );
   }
 
-  renderInnerHydrationPanel() {
-    const {
-      botMessageState,
-      serviceManager,
-      persistedToBrowserStorage,
-      config,
-      config: {
-        derived: { languagePack },
-      },
-    } = this.props;
-
-    // We need to make an educated guess whether the home screen is going to be displayed after hydration is
-    // complete, so we can show a version of the hydration panel that matches to avoid a flickering transition when
-    // the hydration panel is only displayed very briefly. If the user's assistant session has expired, this will be
-    // wrong, but it's rare enough to be not worth addressing.
-    const homescreen = config.public.homescreen;
-    const useHomeScreenVersion =
-      homescreen?.isOn && !persistedToBrowserStorage.hasSentNonWelcomeMessage;
-    const headerDisplayName =
-      config.public.header?.name || config.public.assistantName;
-    return (
-      <HydrationPanel
-        headerDisplayName={headerDisplayName}
-        isHydrated={botMessageState.isHydratingCounter === 0}
-        serviceManager={serviceManager}
-        onClose={this.onClose}
-        languagePack={languagePack}
-        useHomeScreenVersion={useHomeScreenVersion}
-      />
-    );
-  }
-
   /**
    * Render the panel with the loading state when we are hydrating the Carbon AI Chat.
    */
@@ -854,8 +823,22 @@ class MainWindow
       serviceManager,
       catastrophicErrorType,
       persistedToBrowserStorage,
+      config,
+      config: {
+        derived: { languagePack },
+      },
     } = this.props;
     const { viewState } = persistedToBrowserStorage;
+
+    // We need to make an educated guess whether the home screen is going to be displayed after hydration is
+    // complete, so we can show a version of the hydration panel that matches to avoid a flickering transition when
+    // the hydration panel is only displayed very briefly. If the user's assistant session has expired, this will be
+    // wrong, but it's rare enough to be not worth addressing.
+    const homescreen = config.public.homescreen;
+    const useHomeScreenVersion =
+      homescreen?.isOn && !persistedToBrowserStorage.hasSentNonWelcomeMessage;
+    const headerDisplayName =
+      config.derived.header?.name || config.public.assistantName;
 
     return (
       <OverlayPanel
@@ -875,9 +858,16 @@ class MainWindow
         }
         shouldHide={false}
         serviceManager={serviceManager}
-        overlayPanelName={OverlayPanelName.HYDRATING}
+        overlayPanelName={PageObjectId.HYDRATING_PANEL}
       >
-        {this.renderInnerHydrationPanel()}
+        <HydrationPanel
+          headerDisplayName={headerDisplayName}
+          isHydrated={botMessageState.isHydratingCounter === 0}
+          serviceManager={serviceManager}
+          onClose={this.onClose}
+          languagePack={languagePack}
+          useHomeScreenVersion={useHomeScreenVersion}
+        />
       </OverlayPanel>
     );
   }
@@ -894,7 +884,7 @@ class MainWindow
       },
     } = this.props;
     const headerDisplayName =
-      this.props.config.public.header?.name ||
+      this.props.config.derived.header?.name ||
       this.props.config.public.assistantName;
     return (
       <OverlayPanel
@@ -902,7 +892,7 @@ class MainWindow
         animationOnClose={AnimationOutType.NONE}
         shouldOpen
         serviceManager={serviceManager}
-        overlayPanelName={OverlayPanelName.CATASTROPHIC}
+        overlayPanelName={PageObjectId.CATASTROPHIC_PANEL}
       >
         <CatastrophicError
           onClose={this.onClose}
@@ -934,7 +924,7 @@ class MainWindow
         animationOnClose={AnimationOutType.FADE_OUT}
         shouldOpen={showDisclaimer}
         serviceManager={serviceManager}
-        overlayPanelName={OverlayPanelName.DISCLAIMER}
+        overlayPanelName={PageObjectId.DISCLAIMER_PANEL}
       >
         <Disclaimer
           onAcceptDisclaimer={this.onAcceptDisclaimer}
@@ -993,10 +983,9 @@ class MainWindow
         animationOnClose={AnimationOutType.SLIDE_OUT_TO_BOTTOM}
         shouldOpen={iFramePanelState.isOpen}
         serviceManager={serviceManager}
-        overlayPanelName={OverlayPanelName.IFRAME}
+        overlayPanelName={PageObjectId.IFRAME_PANEL}
       >
         <IFramePanel
-          useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
           ref={this.iframePanelRef}
           onClickClose={this.onClose}
           onClickRestart={this.onRestart}
@@ -1019,7 +1008,7 @@ class MainWindow
         animationOnClose={AnimationOutType.SLIDE_OUT_TO_BOTTOM}
         shouldOpen={viewSourcePanelState.isOpen}
         serviceManager={serviceManager}
-        overlayPanelName={OverlayPanelName.CONVERSATIONAL_SEARCH_CITATION}
+        overlayPanelName={PageObjectId.CONVERSATIONAL_SEARCH_CITATION_PANEL}
       >
         <ViewSourcePanel
           ref={this.viewSourcePanelRef}
@@ -1036,7 +1025,6 @@ class MainWindow
   renderCustomPanel() {
     return (
       <CustomPanel
-        useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
         onPanelOpenStart={() => this.onPanelOpenStart(true)}
@@ -1052,29 +1040,25 @@ class MainWindow
    * interaction or automatically.
    */
   renderResponsePanel() {
-    if (!this.props.responsePanelState.localMessageItem) {
-      return null;
-    }
-
     const { isOpen, localMessageItem, isMessageForInput } =
       this.props.responsePanelState;
-    const panelOptions = (localMessageItem?.item as ButtonItem).panel;
+    const panelOptions = (localMessageItem?.item as ButtonItem)?.panel;
     const eventName = `"Show panel" opened`;
     const eventDescription = "Panel opened through panel response type";
-    const overlayPanelName = OverlayPanelName.PANEL_RESPONSE;
+    const overlayPanelName = PageObjectId.BUTTON_RESPONSE_PANEL;
 
     return (
       <BodyAndFooterPanelComponent
         eventName={eventName}
         eventDescription={eventDescription}
         overlayPanelName={overlayPanelName}
-        testIdPrefix={overlayPanelName}
         isOpen={isOpen}
         isMessageForInput={isMessageForInput}
         localMessageItem={localMessageItem}
         title={panelOptions?.title}
         showAnimations={panelOptions?.show_animations}
-        useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
+        showAiLabel={false}
+        showRestartButton={false}
         requestFocus={this.requestFocus}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
@@ -1122,7 +1106,7 @@ class MainWindow
     const showGlass =
       config.public.enableFocusTrap &&
       open &&
-      !config.public.header?.hideMinimizeButton;
+      !config.derived.header?.hideMinimizeButton;
     const trapActive = Boolean(showGlass && isHydrated);
     const isWideWidth = chatWidthBreakpoint === ChatWidthBreakpoint.WIDE;
 

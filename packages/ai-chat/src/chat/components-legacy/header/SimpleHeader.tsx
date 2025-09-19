@@ -11,7 +11,6 @@ import React, { forwardRef, Ref, useImperativeHandle, useRef } from "react";
 
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { Header } from "./Header";
-import { OverlayPanelName } from "../OverlayPanel";
 
 /**
  * This component renders a basic header with only a close button.
@@ -19,24 +18,25 @@ import { OverlayPanelName } from "../OverlayPanel";
 
 interface SimpleHeaderProps {
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
-  /**
    * This callback is called when the user clicks the close button.
    */
   onClose: () => void;
 
   /**
-   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
-   * in the header obviously unique.
+   * Controls whether to show the AI label in this specific header instance.
+   * When undefined, falls back to the global config setting.
    */
-  testIdPrefix: OverlayPanelName;
+  showAiLabel?: boolean;
+
+  /**
+   * Controls whether to show the restart button in this specific header instance.
+   * When undefined, falls back to the global config setting.
+   */
+  showRestartButton?: boolean;
 }
 
 function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
-  const { useAITheme, onClose, testIdPrefix } = props;
+  const { onClose, showAiLabel, showRestartButton } = props;
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -46,8 +46,8 @@ function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
     <Header
       ref={headerRef}
       onClickClose={onClose}
-      useAITheme={useAITheme}
-      testIdPrefix={testIdPrefix}
+      showAiLabel={showAiLabel}
+      showRestartButton={showRestartButton}
     />
   );
 }

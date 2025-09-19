@@ -62,7 +62,6 @@ function ErrorMessageDark() {
       <polygon
         points="59.91 78.34 16.91 53.51 21.77 50.7 64.77 75.53 59.91 78.34"
         opacity="0.25"
-        className="error_message_isolate"
       />
       <path
         d="M39,6.92c12.15,7,22,24,21.92,38S51,64.49,38.83,57.48s-22-24-21.92-38S26.83-.09,39,6.92Z"

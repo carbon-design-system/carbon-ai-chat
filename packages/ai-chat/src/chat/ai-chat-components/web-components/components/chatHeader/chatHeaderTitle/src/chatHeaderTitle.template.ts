@@ -17,10 +17,16 @@ import type { ChatHeaderTitleElement } from "../cds-aichat-chat-header-title";
 function chatHeaderTitleTemplate(customElementClass: ChatHeaderTitleElement) {
   const { title, name } = customElementClass;
   return html`<div class="cds-aichat--chat-header-title">
-    <span className="cds-aichat--chat-header-title__title" ?hidden="${!title}"
+    <span
+      className="cds-aichat--chat-header-title__title"
+      data-testid="header_title"
+      ?hidden="${!title}"
       >${title}</span
     >
-    <span class="cds-aichat--chat-header-title__name" ?hidden="${!name}"
+    <span
+      class="cds-aichat--chat-header-title__name"
+      data-testid="header_name"
+      ?hidden="${!name}"
       >${name}</span
     >
   </div>`;

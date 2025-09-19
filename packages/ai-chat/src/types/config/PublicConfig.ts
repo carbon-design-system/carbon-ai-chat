@@ -257,6 +257,14 @@ export interface HeaderConfig {
    * All the currently configured custom menu options.
    */
   menuOptions?: CustomMenuOption[];
+
+  /**
+   * Controls whether to show the AI label/slug in the header. Defaults to true.
+   *
+   * There is currently no version of this that does not include the AI theme
+   * blue gradients.
+   */
+  showAiLabel?: boolean;
 }
 
 /**

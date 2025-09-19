@@ -24,7 +24,6 @@ import { AppState, ChatWidthBreakpoint } from "../../types/state/AppState";
 import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
 import { SimpleHeader } from "./header/SimpleHeader";
-import { OverlayPanelName } from "./OverlayPanel";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 
 interface DisclaimerProps {
@@ -44,7 +43,7 @@ function Disclaimer({
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { derivedCarbonTheme, aiEnabled } = useSelector(
+  const { derivedCarbonTheme } = useSelector(
     (state: AppState) => state.config.derived.themeWithDefaults,
   );
   const isDarkTheme =
@@ -73,11 +72,7 @@ function Disclaimer({
   return (
     <div className="cds-aichat--disclaimer-container">
       <div className="cds-aichat--disclaimer">
-        <SimpleHeader
-          useAITheme={aiEnabled}
-          onClose={onClose}
-          testIdPrefix={OverlayPanelName.DISCLAIMER}
-        />
+        <SimpleHeader onClose={onClose} showRestartButton={false} />
         <div
           className="cds-aichat--panel-content cds-aichat--disclaimer__content"
           onScroll={onScroll}
