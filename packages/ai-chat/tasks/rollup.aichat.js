@@ -279,12 +279,12 @@ async function postBuild() {
         "@carbon/web-components/es-custom/components/$1"
       );
 
-      // 3) restore the import/export placeholders back into the content
+      // restore the import/export placeholders back into the content
       const restored = transformed.replace(/__IE_PLACEHOLDER_(\d+)__/g, (_m, idx) => {
         return placeholders[Number(idx)];
       });
 
-      // 4) write file back
+      // write file back
       await fs.promises.writeFile(file, restored);
     })
   );
