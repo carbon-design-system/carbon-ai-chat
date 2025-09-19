@@ -64,6 +64,8 @@ function ViewSourcePanel(
       labelBackButton={languagePack.general_ariaCloseInformationOverlay}
       eventName="Search citation panel opened"
       eventDescription="A user has opened the search citation panel"
+      showAiLabel={false}
+      showRestartButton={false}
       testIdPrefix={OverlayPanelName.CONVERSATIONAL_SEARCH_CITATION}
     >
       <div className="cds-aichat--view-source-panel__content">{content}</div>

@@ -161,7 +161,7 @@
 
 .cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
   .cds-aichat--launcher__button
-  .cds-aichat__count-indicator {
+  .cds-aichat--count-indicator {
   position: absolute;
   display: flex;
   align-items: center;
@@ -183,7 +183,7 @@
 .cds-aichat--container--render[dir="rtl"]
   .cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
   .cds-aichat--launcher__button
-  .cds-aichat__count-indicator {
+  .cds-aichat--count-indicator {
   inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
 }
 

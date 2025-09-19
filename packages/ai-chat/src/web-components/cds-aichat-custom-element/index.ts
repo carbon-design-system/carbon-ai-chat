@@ -54,6 +54,9 @@ import {
  */
 @carbonElement("cds-aichat-custom-element")
 class ChatCustomElement extends LitElement {
+  @property({ attribute: false, type: Object })
+  config?: PublicConfig;
+
   /**
    * Shared stylesheet for hiding styles.
    */
@@ -248,35 +251,87 @@ class ChatCustomElement extends LitElement {
     }
   };
 
-  // Computed property to reconstruct PublicConfig from flattened props
-  private get config(): PublicConfig {
-    return {
-      onError: this.onError,
-      openChatByDefault: this.openChatByDefault,
-      disclaimer: this.disclaimer,
-      disableCustomElementMobileEnhancements:
-        this.disableCustomElementMobileEnhancements,
-      debug: this.debug,
-      exposeServiceManagerForTesting: this.exposeServiceManagerForTesting,
-      injectCarbonTheme: this.injectCarbonTheme,
-      aiEnabled: this.aiDisabled === true ? false : this.aiEnabled,
-      serviceDeskFactory: this.serviceDeskFactory,
-      serviceDesk: this.serviceDesk,
-      shouldTakeFocusIfOpensAutomatically:
-        this.shouldTakeFocusIfOpensAutomatically,
-      namespace: this.namespace,
-      enableFocusTrap: this.enableFocusTrap,
-      shouldSanitizeHTML: this.shouldSanitizeHTML,
-      header: this.header,
-      layout: this.layout,
-      messaging: this.messaging,
-      isReadonly: this.isReadonly,
-      assistantName: this.assistantName,
-      locale: this.locale,
-      homescreen: this.homescreen,
-      launcher: this.launcher,
-      strings: this.strings,
-    };
+  private get resolvedConfig(): PublicConfig {
+    const baseConfig = this.config ?? {};
+    const resolvedConfig: PublicConfig = { ...baseConfig };
+
+    if (this.onError !== undefined) {
+      resolvedConfig.onError = this.onError;
+    }
+    if (this.openChatByDefault !== undefined) {
+      resolvedConfig.openChatByDefault = this.openChatByDefault;
+    }
+    if (this.disclaimer !== undefined) {
+      resolvedConfig.disclaimer = this.disclaimer;
+    }
+    if (this.disableCustomElementMobileEnhancements !== undefined) {
+      resolvedConfig.disableCustomElementMobileEnhancements =
+        this.disableCustomElementMobileEnhancements;
+    }
+    if (this.debug !== undefined) {
+      resolvedConfig.debug = this.debug;
+    }
+    if (this.exposeServiceManagerForTesting !== undefined) {
+      resolvedConfig.exposeServiceManagerForTesting =
+        this.exposeServiceManagerForTesting;
+    }
+    if (this.injectCarbonTheme !== undefined) {
+      resolvedConfig.injectCarbonTheme = this.injectCarbonTheme;
+    }
+    if (this.serviceDeskFactory !== undefined) {
+      resolvedConfig.serviceDeskFactory = this.serviceDeskFactory;
+    }
+    if (this.serviceDesk !== undefined) {
+      resolvedConfig.serviceDesk = this.serviceDesk;
+    }
+    if (this.shouldTakeFocusIfOpensAutomatically !== undefined) {
+      resolvedConfig.shouldTakeFocusIfOpensAutomatically =
+        this.shouldTakeFocusIfOpensAutomatically;
+    }
+    if (this.namespace !== undefined) {
+      resolvedConfig.namespace = this.namespace;
+    }
+    if (this.enableFocusTrap !== undefined) {
+      resolvedConfig.enableFocusTrap = this.enableFocusTrap;
+    }
+    if (this.shouldSanitizeHTML !== undefined) {
+      resolvedConfig.shouldSanitizeHTML = this.shouldSanitizeHTML;
+    }
+    if (this.header !== undefined) {
+      resolvedConfig.header = this.header;
+    }
+    if (this.layout !== undefined) {
+      resolvedConfig.layout = this.layout;
+    }
+    if (this.messaging !== undefined) {
+      resolvedConfig.messaging = this.messaging;
+    }
+    if (this.isReadonly !== undefined) {
+      resolvedConfig.isReadonly = this.isReadonly;
+    }
+    if (this.assistantName !== undefined) {
+      resolvedConfig.assistantName = this.assistantName;
+    }
+    if (this.locale !== undefined) {
+      resolvedConfig.locale = this.locale;
+    }
+    if (this.homescreen !== undefined) {
+      resolvedConfig.homescreen = this.homescreen;
+    }
+    if (this.launcher !== undefined) {
+      resolvedConfig.launcher = this.launcher;
+    }
+    if (this.strings !== undefined) {
+      resolvedConfig.strings = this.strings;
+    }
+
+    if (this.aiDisabled === true) {
+      resolvedConfig.aiEnabled = false;
+    } else if (this.aiEnabled !== undefined) {
+      resolvedConfig.aiEnabled = this.aiEnabled;
+    }
+
+    return resolvedConfig;
   }
 
   private onBeforeRenderOverride = async (instance: ChatInstance) => {
@@ -304,7 +359,7 @@ class ChatCustomElement extends LitElement {
   render() {
     return html`
       <cds-aichat-container
-        .config=${this.config}
+        .config=${this.resolvedConfig}
         .onAfterRender=${this.onAfterRender}
         .onBeforeRender=${this.onBeforeRenderOverride}
         .element=${this}
@@ -328,6 +383,12 @@ class ChatCustomElement extends LitElement {
  * @category Web component
  */
 interface CdsAiChatCustomElementAttributes extends PublicConfig {
+  /**
+   * Full configuration object that can be passed directly as a property.
+   * Individual attributes still override matching keys, if provided.
+   */
+  config?: PublicConfig;
+
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

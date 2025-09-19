@@ -53,9 +53,6 @@ function HomeScreenHeader(
     () => customMenuOptions || undefined,
     [customMenuOptions],
   );
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
-  );
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -82,7 +79,6 @@ function HomeScreenHeader(
         onClickClose={onClose}
         overflowClicked={overflowClicked}
         overflowItems={overflowItems}
-        useAITheme={aiEnabled}
         testIdPrefix={OverlayPanelName.HOME_SCREEN}
       />
     </div>

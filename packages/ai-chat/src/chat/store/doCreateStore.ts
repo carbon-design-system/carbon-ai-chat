@@ -87,14 +87,8 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
   };
 }
 
-function doCreateStore(
-  publicConfig: PublicConfig,
-  serviceManager: ServiceManager,
-): AppStore<AppState> {
-  // Build the complete AppConfig with derived values
-  const config = createAppConfig(publicConfig);
-
-  const initialState: AppState = {
+function createInitialState(config: AppConfig): AppState {
+  return {
     // Config with derived values
     config,
 
@@ -120,9 +114,8 @@ function doCreateStore(
     viewChanging: false,
     initialViewChangeComplete: false,
     targetViewState:
-      // If openChatByDefault is set to true then the Carbon AI Chat should open automatically. This value will be overridden
-      // by session history if a session exists. This overwriting is intentional since we only want openChatByDefault to
-      // open the main window the first time the chat loads for a user.
+      // If openChatByDefault is true we open on first load, otherwise we use the launcher.
+      // This will be overwritten by session history if it exists.
       config.public.openChatByDefault
         ? VIEW_STATE_MAIN_WINDOW_OPEN
         : VIEW_STATE_LAUNCHER_OPEN,
@@ -139,6 +132,16 @@ function doCreateStore(
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
   };
+}
+
+function doCreateStore(
+  publicConfig: PublicConfig,
+  serviceManager: ServiceManager,
+): AppStore<AppState> {
+  // Build the complete AppConfig with derived values
+  const config = createAppConfig(publicConfig);
+
+  const initialState: AppState = createInitialState(config);
 
   // Go pre-fill the launcher state from session storage if it exists.
   const sessionStorageState =
@@ -213,4 +216,4 @@ function reducerFunction(
     : state;
 }
 
-export { doCreateStore, createAppConfig };
+export { doCreateStore, createAppConfig, createInitialState };

@@ -94,7 +94,7 @@ import {
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
 import {
-  PublicWebChatState,
+  PublicChatState,
   SendOptions,
 } from "../../types/instance/ChatInstance";
 import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
@@ -276,27 +276,23 @@ class ChatActionsImpl {
     this.alreadyHydrated = true;
   }
 
-  getPublicWebChatState(): PublicWebChatState {
+  getPublicChatState(): PublicChatState {
     const state = this.serviceManager.store.getState();
     const { persistedToBrowserStorage } = state;
-    const publicWebChatState: PublicWebChatState = {
-      isConnectedWithHumanAgent:
-        persistedToBrowserStorage.humanAgentState.isConnected,
-      isWebChatOpen: persistedToBrowserStorage.viewState.mainWindow,
-      isConnectingWithHumanAgent: state.humanAgentState.isConnecting,
-      isHomeScreenOpen:
-        persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
-      hasUserSentMessage: persistedToBrowserStorage.hasSentNonWelcomeMessage,
-      viewState: { ...persistedToBrowserStorage.viewState },
-      serviceDesk: {
-        isConnected: persistedToBrowserStorage.humanAgentState.isConnected,
-        isConnecting: state.humanAgentState.isConnecting,
-        isSuspended:
-          persistedToBrowserStorage.humanAgentState.isSuspended ?? false,
-      },
-    };
 
-    return publicWebChatState;
+    const persistedSnapshot = deepFreeze(cloneDeep(persistedToBrowserStorage));
+
+    const { humanAgentState, ...rest } = persistedSnapshot;
+
+    const humanAgent = deepFreeze({
+      ...humanAgentState,
+      isConnecting: state.humanAgentState.isConnecting,
+    });
+
+    return deepFreeze({
+      ...rest,
+      humanAgent,
+    }) as PublicChatState;
   }
 
   /**
@@ -1294,8 +1290,7 @@ class ChatActionsImpl {
   /**
    * Remove any record of the current session from the browser.
    *
-   * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
-   * chat is open.
+   * @param keepOpenState We can optionally just keep around if the chat is currently open or not.
    */
   async destroySession(keepOpenState: boolean) {
     const { store } = this.serviceManager;

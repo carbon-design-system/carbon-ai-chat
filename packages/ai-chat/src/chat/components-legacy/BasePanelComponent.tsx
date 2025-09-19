@@ -51,15 +51,20 @@ interface BasePanelComponentProps
   eventDescription?: string;
 
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
-  /**
    * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
    * in the header obviously unique.
    */
   testIdPrefix: OverlayPanelName;
+
+  /**
+   * Controls whether to show the AI label in the header. When undefined, falls back to global config.
+   */
+  showAiLabel?: boolean;
+
+  /**
+   * Controls whether to show the restart button in the header. When undefined, falls back to global config.
+   */
+  showRestartButton?: boolean;
 }
 
 /**
@@ -74,16 +79,21 @@ function BasePanelComponent(
     labelBackButton,
     title,
     hideBackButton,
-    useAITheme,
     onClickRestart,
+    showAiLabel,
+    showRestartButton: showRestartButtonProp,
     testIdPrefix,
     ...headerProps
   }: BasePanelComponentProps,
   ref: Ref<HasRequestFocus>,
 ) {
-  const showRestartButton = useSelector(
+  const showRestartButtonFromConfig = useSelector(
     (state: AppState) => state.config.public.header?.showRestartButton,
   );
+  const showRestartButton =
+    showRestartButtonProp !== undefined
+      ? showRestartButtonProp
+      : showRestartButtonFromConfig;
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -149,7 +159,7 @@ function BasePanelComponent(
             showBackButton={!hideBackButton}
             labelBackButton={labelBackButton}
             displayName={title}
-            useAITheme={useAITheme}
+            showAiLabel={showAiLabel}
             testIdPrefix={testIdPrefix}
           />
         )}

@@ -19,27 +19,27 @@ enum AnimationInType {
   /**
    * The panel fades in from 0 opacity.
    */
-  FADE_IN = "fadeIn",
+  FADE_IN = "fade-in",
 
   /**
    * The panel slides in from the left over previous content.
    */
-  SLIDE_IN_FROM_LEFT = "slideInFromLeft",
+  SLIDE_IN_FROM_LEFT = "slide-in-from-left",
 
   /**
    * The panel slides in from the right over previous content.
    */
-  SLIDE_IN_FROM_RIGHT = "slideInFromRight",
+  SLIDE_IN_FROM_RIGHT = "slide-in-from-right",
 
   /**
    * The panel slides in from the bottom over the previous context.
    */
-  SLIDE_IN_FROM_BOTTOM = "slideInFromBottom",
+  SLIDE_IN_FROM_BOTTOM = "slide-in-from-bottom",
 
   /**
    * The panel slides in from the bottom over the previous context fast for branding.
    */
-  BRANDING_SLIDE_IN_FROM_BOTTOM = "brandingSlideInFromBottom",
+  BRANDING_SLIDE_IN_FROM_BOTTOM = "branding-slide-in-from-bottom",
 
   /**
    * The custom animation for the home screen.
@@ -59,27 +59,27 @@ enum AnimationOutType {
   /**
    * The panel fades to 0 opacity.
    */
-  FADE_OUT = "fadeOut",
+  FADE_OUT = "fade-out",
 
   /**
    * The panel slides out to left.
    */
-  SLIDE_OUT_TO_LEFT = "slideOutToLeft",
+  SLIDE_OUT_TO_LEFT = "slide-out-to-left",
 
   /**
    * The panel slides out to right.
    */
-  SLIDE_OUT_TO_RIGHT = "slideOutToRight",
+  SLIDE_OUT_TO_RIGHT = "slide-out-to-right",
 
   /**
    * The panel slides out to top.
    */
-  SLIDE_OUT_TO_TOP = "slideOutToTop",
+  SLIDE_OUT_TO_TOP = "slide-out-to-top",
 
   /**
    * The panel slides out to bottom.
    */
-  SLIDE_OUT_TO_BOTTOM = "slideOutToBottom",
+  SLIDE_OUT_TO_BOTTOM = "slide-out-to-bottom",
 
   /**
    * The custom animation for the home screen.

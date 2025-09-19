@@ -66,11 +66,6 @@ interface BodyAndFooterPanelComponentProps
   eventDescription?: string;
 
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
-  /**
    * Unique name for overlay panel.
    */
   overlayPanelName: OverlayPanelName;
@@ -120,6 +115,16 @@ interface BodyAndFooterPanelComponentProps
    * Function to render message components
    */
   renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+
+  /**
+   * Controls whether to show the AI label in the header. When undefined, falls back to global config.
+   */
+  showAiLabel?: boolean;
+
+  /**
+   * Controls whether to show the restart button in the header. When undefined, falls back to global config.
+   */
+  showRestartButton?: boolean;
 }
 
 /**
@@ -135,7 +140,6 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     overlayPanelName,
     className,
     title,
-    useAITheme,
     requestFocus,
     onClickBack,
     onClose,
@@ -146,6 +150,8 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     onPanelCloseStart,
     testIdPrefix,
     renderMessageComponent,
+    showAiLabel,
+    showRestartButton,
   } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
@@ -181,11 +187,12 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
         isOpen={isOpen}
         title={title}
         disableAnimation={disableAnimation}
-        useAITheme={useAITheme}
         labelBackButton={languagePack.general_returnToAssistant}
         onClickBack={onClickBack}
         onClickClose={onClose}
         onClickRestart={onClickRestart}
+        showAiLabel={showAiLabel}
+        showRestartButton={showRestartButton}
         testIdPrefix={testIdPrefix}
       >
         {originalMessage && (
