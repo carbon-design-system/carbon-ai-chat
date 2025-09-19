@@ -1,0 +1,48 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+.cds-aichat--inline-error {
+  display: flex;
+  flex-direction: row;
+  margin-inline-start: -16px; /* can't seem to use negative CSS variables, even with calc() */
+}
+
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--inline-error {
+  margin-inline: unset -16px;
+}
+
+.cds-aichat--inline-error--icon-holder {
+  display: flex;
+  flex: 0 0 layout.$spacing-05;
+  align-items: flex-start;
+  margin: layout.$spacing-01 layout.$spacing-03 0 layout.$spacing-05;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--inline-error--icon-holder {
+  margin: 0 layout.$spacing-05 0 layout.$spacing-03;
+}
+
+.cds-aichat--inline-error--icon {
+  block-size: layout.$spacing-05;
+  inline-size: layout.$spacing-05;
+}
+
+.cds-aichat--inline-error--text {
+  flex: 1;
+  @include type.type-style("body-01");
+
+  margin-block-start: 1px;
+}
+
+.cds-aichat--inline-error .cds-aichat--inline-error--text {
+  color: theme.$text-error;
+}

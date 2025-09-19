@@ -1,0 +1,40 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+
+.cds-aichat--received--conversational-search .cds-aichat--received--feedback,
+.cds-aichat--wide-width .cds-aichat--conversational-search-text,
+.cds-aichat--standard-width .cds-aichat--conversational-search-text {
+  margin-inline: 56px 16px;
+}
+
+.cds-aichat--narrow-width
+  .cds-aichat--received--conversational-search
+  .cds-aichat--received--feedback,
+.cds-aichat--narrow-width .cds-aichat--conversational-search-text {
+  margin-inline-start: 16px;
+}
+
+.cds-aichat--conversational-search-text__citations-toggle-container {
+  display: block;
+  padding-block-start: layout.$spacing-02;
+}
+
+.cds-aichat--conversational-search-text__citations-toggle {
+  margin: 0;
+}
+
+.cds-aichat--container--render[dir="rtl"] {
+  .cds-aichat--conversational-search-text__segment:nth-last-child(
+    1 of .cds-aichat--conversational-search-text__segment
+  ) {
+    margin-inline: layout.$spacing-02 0;
+  }
+}

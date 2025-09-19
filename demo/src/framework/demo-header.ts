@@ -17,9 +17,9 @@ import { customElement } from "lit/decorators.js";
 export class DemoHeader extends LitElement {
   render() {
     return html`
-      <cds-header aria-label="Carbon AI Chat">
+      <cds-header aria-label="Carbon AI Chat" style="height: 40px;">
         <cds-header-name
-          href="https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html"
+          href="https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html"
           prefix="Carbon"
           >AI chat</cds-header-name
         >

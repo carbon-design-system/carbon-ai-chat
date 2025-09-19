@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { resolvablePromise } from "../../../src/chat/shared/utils/resolvablePromise";
+import { resolvablePromise } from "../../../src/chat/utils/resolvablePromise";
 
 describe("resolvablePromise", () => {
   describe("resolvablePromise function", () => {

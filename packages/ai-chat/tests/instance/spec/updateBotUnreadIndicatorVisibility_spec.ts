@@ -26,9 +26,7 @@ describe("ChatInstance.updateBotUnreadIndicatorVisibility", () => {
 
     // Verify Redux state updated
     const state = store.getState();
-    expect(
-      state.persistedToBrowserStorage.launcherState.showUnreadIndicator,
-    ).toBe(true);
+    expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
   });
 
   it("should update bot unread indicator visibility to false in Redux state", async () => {
@@ -39,9 +37,7 @@ describe("ChatInstance.updateBotUnreadIndicatorVisibility", () => {
 
     // Verify Redux state updated
     const state = store.getState();
-    expect(
-      state.persistedToBrowserStorage.launcherState.showUnreadIndicator,
-    ).toBe(false);
+    expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(false);
   });
 
   it("should toggle unread indicator visibility and maintain correct Redux state", async () => {
@@ -51,20 +47,14 @@ describe("ChatInstance.updateBotUnreadIndicatorVisibility", () => {
     // Test multiple toggles
     instance.updateBotUnreadIndicatorVisibility(true);
     let state = store.getState();
-    expect(
-      state.persistedToBrowserStorage.launcherState.showUnreadIndicator,
-    ).toBe(true);
+    expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
 
     instance.updateBotUnreadIndicatorVisibility(false);
     state = store.getState();
-    expect(
-      state.persistedToBrowserStorage.launcherState.showUnreadIndicator,
-    ).toBe(false);
+    expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(false);
 
     instance.updateBotUnreadIndicatorVisibility(true);
     state = store.getState();
-    expect(
-      state.persistedToBrowserStorage.launcherState.showUnreadIndicator,
-    ).toBe(true);
+    expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
   });
 });

@@ -14,11 +14,54 @@ import {
   MessageRequest,
   MessageResponse,
 } from "../messaging/Messages";
-import { FileUpload } from "../instance/apiTypes";
 import type {
   ChatInstance,
   FileUploadCapabilities,
 } from "../instance/ChatInstance";
+
+/**
+ * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
+ *
+ * @category Service desk
+ */
+export enum FileStatusValue {
+  COMPLETE = "complete",
+  EDIT = "edit",
+  UPLOADING = "uploading",
+  SUCCESS = "success",
+}
+
+/**
+ * An interface that represents a file to upload and its current upload status.
+ *
+ * @category Service desk
+ */
+export interface FileUpload {
+  /**
+   * A unique ID for the file.
+   */
+  id: string;
+
+  /**
+   * The file to upload.
+   */
+  file: File;
+
+  /**
+   * The current upload status.
+   */
+  status: FileStatusValue;
+
+  /**
+   * Indicates if the file contains an error or failed to upload.
+   */
+  isError?: boolean;
+
+  /**
+   * If the file failed to upload, this is an optional error message to display.
+   */
+  errorMessage?: string;
+}
 
 /**
  * The section of the public config that contains configuration options for service desk integrations.
@@ -120,9 +163,9 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    * agent (e.g. the user is number 2 in line). This may be called at any point while waiting for the connection to
    * provide newer information.
    *
-   * Note: Of the fields in the AgentAvailability object, only one of position_in_queue and estimated_wait_time can be
-   * rendered in the widget. If both fields are provided, estimated_wait_time will take priority and the
-   * position_in_queue field will be ignored.
+   * Note: Of the fields in the AgentAvailability object, only one of positionInQueue and estimatedWaitTime can be
+   * rendered in the widget. If both fields are provided, estimatedWaitTime will take priority and the
+   * positionInQueue field will be ignored.
    *
    * @param availability The availability information to display to the user.
    */
@@ -291,7 +334,7 @@ export enum ScreenShareState {
  * the Carbon AI Chat will provide generic messaging letting the user know that a request for an agent has been sent.
  *
  * Note that only one of these fields will be used by Carbon AI Chat if more than one has been assigned a value. Priority
- * first goes to estimated_wait_time, then position_in_queue, and then message.
+ * first goes to estimatedWaitTime, then positionInQueue, and then message.
  *
  * @category Service desk
  */
@@ -299,17 +342,15 @@ export interface AgentAvailability {
   /**
    * The current position of the user in a queue. E.g. "You are number 2 in line."
    */
-  position_in_queue?: number;
+  positionInQueue?: number;
 
   /**
    * The estimated wait time for the user in minutes. E.g. "Current wait time is 2 minutes."
    */
-  estimated_wait_time?: number;
+  estimatedWaitTime?: number;
 
   /**
    * A custom message to display to the user containing the updated status. This may contain markdown.
-   *
-   * @since Web chat 6.7.0. This value will be ignored if used with earlier versions of Carbon AI Chat.
    */
   message?: string;
 }

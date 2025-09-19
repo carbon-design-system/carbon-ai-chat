@@ -8,11 +8,10 @@
  */
 
 import { type ReactNode } from "react";
-import { DeepPartial } from "../utilities/DeepPartial";
-
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message } from "../messaging/Messages";
 import { PublicConfig } from "../config/PublicConfig";
+import { DeepPartial } from "../utilities/DeepPartial";
 
 /**
  * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
@@ -65,14 +64,14 @@ type RenderWriteableElementResponse = {
   [K in keyof WriteableElements]?: ReactNode;
 };
 
-/** @category React */
-interface ChatContainerProps {
-  /**
-   * The config to use to load Carbon AI Chat. If you need to perform any actions after Carbon AI Chat been loaded,
-   * use the "onBeforeRender" or "onAfterRender" props.
-   */
-  config: PublicConfig;
-
+/**
+ * Properties for the ChatContainer React component. This interface extends
+ * {@link PublicConfig} with additional component-specific props, flattening all
+ * config properties as top-level props for better TypeScript IntelliSense.
+ *
+ * @category React
+ */
+interface ChatContainerProps extends PublicConfig {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

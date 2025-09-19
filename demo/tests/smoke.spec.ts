@@ -5,7 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { makeTestId, OverlayPanelName, PageObjectId } from "@carbon/ai-chat";
+import {
+  makeTestId,
+  OverlayPanelName,
+  PageObjectId,
+} from "@carbon/ai-chat/server";
 import { test, expect } from "@playwright/test";
 
 test("smoke React", async ({ page }) => {
@@ -13,7 +17,7 @@ test("smoke React", async ({ page }) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
 
   // 1) Navigate to the app
-  await page.goto("http://localhost:3001/");
+  await page.goto("/");
 
   // 2) Open the React chat widget, enter a message, confirm receipt of answer, close the chat.
   await page.getByTestId(PageObjectId.LAUNCHER).click();
@@ -30,7 +34,9 @@ test("smoke React", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
+  await expect(page.locator("#cds-aichat--message-3")).toContainText(
+    "Carbon is a",
+  );
   await close.click();
 });
 
@@ -39,7 +45,7 @@ test("smoke web component", async ({ page }) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
 
   // 1) Navigate to the app
-  await page.goto("http://localhost:3001/");
+  await page.goto("/");
 
   // 2) Select “Web component” and wait for the new page (query string) to load
   await page.getByRole("combobox", { name: "Component framework" }).click();
@@ -65,6 +71,8 @@ test("smoke web component", async ({ page }) => {
   await page
     .getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
     .click();
-  await expect(page.locator("#WAC__message-3")).toContainText("Carbon is a");
+  await expect(page.locator("#cds-aichat--message-3")).toContainText(
+    "Carbon is a",
+  );
   await close.click();
 });

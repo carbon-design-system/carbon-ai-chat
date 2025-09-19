@@ -1,0 +1,47 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../../styles/chat-theme";
+
+.cds-aichat--connect-to-human-agent {
+  max-inline-size: chat-theme.$card-max-width;
+}
+
+.cds-aichat--connect-to-human-agent__title {
+  @include type.type-style("heading-02");
+
+  padding-block-end: 0.25rem;
+}
+
+.cds-aichat--connect-to-human-agent__text {
+  padding-block-end: layout.$spacing-06;
+}
+
+.cds-aichat--connect-to-agent__text p,
+.cds-aichat--connect-to-human-agent__request-button svg {
+  margin-inline-start: layout.$spacing-07;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--connect-to-human-agent__request-button
+  svg {
+  margin-inline: 0 layout.$spacing-07;
+  transform: scaleX(-1);
+}
+
+.cds-aichat--message .cds-aichat--connect-to-human-agent__warning a,
+.cds-aichat--message .cds-aichat--connect-to-human-agent__warning a:visited {
+  color: theme.$link-inverse;
+}
+
+.cds-aichat--connect-to-human-agent__suspended-warning {
+  color: theme.$support-error;
+  padding-block-start: layout.$spacing-04;
+}

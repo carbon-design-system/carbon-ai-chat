@@ -1,0 +1,764 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "chat-config" as *;
+@use "chat-theme";
+
+// AI Chat Keyframe Animations
+// Following @carbon/styles patterns with cds-aichat- prefix
+
+// Basic Fade Animations
+
+@keyframes #{$prefix}-fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes #{$prefix}-fade-in-img {
+  0% {
+    filter: grayscale(100%);
+    opacity: 0;
+  }
+
+  100% {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+}
+
+// Slide Animations
+
+@keyframes #{$prefix}-slide-in-from-right {
+  from {
+    inset-inline-start: 100%;
+  }
+
+  to {
+    inset-inline-start: 0;
+  }
+}
+
+@keyframes #{$prefix}-slide-out-to-right {
+  from {
+    inset-inline-start: 0;
+  }
+
+  to {
+    inset-inline-start: 100%;
+  }
+}
+
+@keyframes #{$prefix}-slide-out-to-top {
+  from {
+    inset-block-start: 0;
+  }
+
+  to {
+    inset-block-start: -100%;
+  }
+}
+
+@keyframes #{$prefix}-slide-in-from-left {
+  from {
+    inset-inline-end: 100%;
+  }
+
+  to {
+    inset-inline-end: 0;
+  }
+}
+
+@keyframes #{$prefix}-slide-out-to-left {
+  from {
+    inset-inline-end: 0;
+  }
+
+  to {
+    inset-inline-end: 100%;
+  }
+}
+
+@keyframes #{$prefix}-slide-in-from-bottom {
+  from {
+    inset-block-start: 100%;
+  }
+
+  to {
+    inset-block-start: 0;
+  }
+}
+
+@keyframes #{$prefix}-slide-out-to-bottom {
+  from {
+    inset-block-start: 0;
+  }
+
+  to {
+    inset-block-start: 100%;
+  }
+}
+
+// Widget Animations
+
+@keyframes #{$prefix}-widget-in {
+  0% {
+    inset-block-end: 0;
+    opacity: 0;
+  }
+
+  100% {
+    inset-block-end: var(--#{$prefix}-bottom-position);
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-widget-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes #{$prefix}-anim-background-cover {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
+}
+
+// Message Animations
+
+@keyframes #{$prefix}-fade-in-up-back-button {
+  0% {
+    opacity: 0;
+    transform: translate(
+      -50%,
+      calc(-100% - #{layout.$spacing-05} + #{layout.$spacing-07})
+    );
+  }
+
+  15% {
+    opacity: 0;
+  }
+
+  50% {
+    transform: translate(-50%, calc(-100% - #{layout.$spacing-05}));
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+// Launcher Animations
+
+@keyframes #{$prefix}-launcher-in {
+  0% {
+    inset-block-end: calc(
+      var(--#{$prefix}-launcher-position-bottom) - #{layout.$spacing-05}
+    );
+    opacity: 0;
+  }
+
+  100% {
+    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-launcher-bounce {
+  0% {
+    transform: translateY(0);
+  }
+
+  30% {
+    transform: translateY(-10px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  70% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes #{$prefix}-launcher-fade-in-slide-up {
+  0% {
+    background: transparent;
+    box-shadow: none;
+    inset-block-end: calc(
+      #{layout.$spacing-05} + var(--#{$prefix}-launcher-default-size) +
+        var(--#{$prefix}-launcher-position-bottom) - var(
+          --#{$prefix}-launcher-desktop-expanded-height
+        )
+    );
+  }
+
+  30% {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  100% {
+    background: var(--#{$prefix}-launcher-expanded-message-color-background);
+    box-shadow: chat-theme.$box-shadow;
+    inset-block-end: layout.$spacing-10;
+  }
+}
+
+@keyframes #{$prefix}-launcher-fade-in-text {
+  0% {
+    opacity: 0;
+  }
+
+  40% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-launcher-resize-reposition {
+  0% {
+    padding: 0;
+    border-radius: 28px;
+    block-size: var(--#{$prefix}-launcher-default-size);
+    inline-size: var(--#{$prefix}-launcher-default-size);
+    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
+    inset-inline-end: var(--#{$prefix}-launcher-position-right);
+  }
+
+  100% {
+    padding: 0 60px 60px 0;
+    border-radius: layout.$spacing-11;
+    block-size: layout.$spacing-13;
+    inline-size: layout.$spacing-13;
+    inset-block-end: calc(-1 * #{layout.$spacing-11});
+    inset-inline-end: calc(-1 * #{layout.$spacing-11});
+  }
+}
+
+@keyframes #{$prefix}-launcher-resize-reposition-rtl {
+  0% {
+    padding: 0;
+    border-radius: 28px;
+    block-size: var(--#{$prefix}-launcher-default-size);
+    inline-size: var(--#{$prefix}-launcher-default-size);
+    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
+    inset-inline-start: var(--#{$prefix}-launcher-position-right);
+  }
+
+  100% {
+    padding: 0 0 60px 60px;
+    border-radius: layout.$spacing-11;
+    block-size: layout.$spacing-13;
+    inline-size: layout.$spacing-13;
+    inset-block-end: calc(-1 * #{layout.$spacing-11});
+    inset-inline-start: calc(-1 * #{layout.$spacing-11});
+  }
+}
+
+@keyframes #{$prefix}-launcher-fade-in-close-button {
+  0% {
+    opacity: 0;
+  }
+
+  80% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-launcher-avatar-resize {
+  0% {
+    block-size: 32px;
+    inline-size: 32px;
+  }
+
+  100% {
+    block-size: 48px;
+    inline-size: 48px;
+  }
+}
+
+@keyframes #{$prefix}-launcher-fade-in-slide-up-small-expanded {
+  0% {
+    inset-block-end: -160px;
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 0;
+  }
+
+  100% {
+    inset-block-end: calc(-1 * #{layout.$spacing-11});
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-launcher-fade-out-slide-down {
+  0% {
+    background: var(--#{$prefix}-launcher-expanded-message-color-background);
+    box-shadow: chat-theme.$box-shadow;
+    inset-block-end: layout.$spacing-10;
+  }
+
+  40% {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  100% {
+    background: transparent;
+    box-shadow: none;
+    inset-block-end: calc(
+      #{layout.$spacing-05} + var(--#{$prefix}-launcher-default-size) +
+        var(--#{$prefix}-launcher-position-bottom) - var(
+          --#{$prefix}-launcher-desktop-expanded-height
+        )
+    );
+  }
+}
+
+@keyframes #{$prefix}-launcher-fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  40% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes #{$prefix}-launcher-default-size-position {
+  0% {
+    padding: 0 60px 60px 0;
+    border-radius: layout.$spacing-11;
+    block-size: layout.$spacing-13;
+    inline-size: layout.$spacing-13;
+    inset-block-end: calc(-1 * #{layout.$spacing-11});
+    inset-inline-end: calc(-1 * #{layout.$spacing-11});
+  }
+
+  100% {
+    padding: 0;
+    border-radius: 28px;
+    block-size: var(--#{$prefix}-launcher-default-size);
+    inline-size: var(--#{$prefix}-launcher-default-size);
+    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
+    inset-inline-end: var(--#{$prefix}-launcher-position-right);
+  }
+}
+
+@keyframes #{$prefix}-launcher-default-size-position-rtl {
+  0% {
+    padding: 0 0 60px 60px;
+    border-radius: layout.$spacing-11;
+    block-size: layout.$spacing-13;
+    inline-size: layout.$spacing-13;
+    inset-block-end: calc(-1 * #{layout.$spacing-11});
+    inset-inline-start: calc(-1 * #{layout.$spacing-11});
+  }
+
+  100% {
+    padding: 0;
+    border-radius: 28px;
+    block-size: var(--#{$prefix}-launcher-default-size);
+    inline-size: var(--#{$prefix}-launcher-default-size);
+    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
+    inset-inline-start: var(--#{$prefix}-launcher-position-right);
+  }
+}
+
+@keyframes #{$prefix}-launcher-icon-to-32 {
+  0% {
+    inline-size: 24px;
+  }
+
+  100% {
+    inline-size: 32px;
+  }
+}
+
+@keyframes #{$prefix}-launcher-icon-to-24 {
+  0% {
+    inline-size: 32px;
+  }
+
+  100% {
+    inline-size: 24px;
+  }
+}
+
+@keyframes #{$prefix}-launcher-partially-round {
+  0% {
+    border-radius: 28px;
+  }
+
+  100% {
+    border-radius: 14px;
+  }
+}
+
+@keyframes #{$prefix}-launcher-completely-round {
+  0% {
+    border-radius: 14px;
+  }
+
+  100% {
+    border-radius: 28px;
+  }
+}
+
+@keyframes #{$prefix}-launcher-extend {
+  0% {
+    inline-size: var(--#{$prefix}-launcher-default-size);
+  }
+
+  100% {
+    inline-size: var(--#{$prefix}-launcher-extended-width);
+  }
+}
+
+@keyframes #{$prefix}-launcher-reduce {
+  0% {
+    inline-size: var(--#{$prefix}-launcher-extended-width);
+  }
+
+  100% {
+    inline-size: var(--#{$prefix}-launcher-default-size);
+  }
+}
+
+@keyframes #{$prefix}-launcher-extended-element-fade-in {
+  0% {
+    inset-block-end: -12px;
+    opacity: 0;
+  }
+
+  50%,
+  100% {
+    inset-block-end: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-launcher-extended-element-fade-out {
+  0% {
+    inset-block-start: 0;
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    inset-block-start: -12px;
+    opacity: 0;
+  }
+}
+
+// =============================================================================
+// Loading Animations
+// =============================================================================
+
+@keyframes #{$prefix}-linear-load-size {
+  0% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 0;
+  }
+
+  25% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 2.5px;
+  }
+
+  83.3% {
+    r: 0.875px;
+  }
+
+  100% {
+    r: 0.875px;
+  }
+}
+
+@keyframes #{$prefix}-linear-load-stroke {
+  0% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    stroke-width: 0;
+  }
+
+  8.33% {
+    stroke-width: 1.72;
+  }
+
+  100% {
+    stroke-width: 1.72;
+  }
+}
+
+@keyframes #{$prefix}-linear-loop-size {
+  0% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 0.875px;
+  }
+
+  25% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 2.5px;
+  }
+
+  91.66% {
+    r: 0.875px;
+  }
+
+  100% {
+    r: 0.875px;
+  }
+}
+
+@keyframes #{$prefix}-linear-loop-stroke {
+  0% {
+    animation-timing-function: cubic-bezier(0.4, 0.14, 1, 1);
+    stroke-width: 1.72;
+  }
+
+  100% {
+    stroke-width: 1.72;
+  }
+}
+
+@keyframes #{$prefix}-linear-unload-size {
+  0% {
+    r: 0.875px;
+  }
+
+  8.33% {
+    r: 0.875px;
+  }
+
+  33.33% {
+    animation-timing-function: cubic-bezier(0.4, 0.14, 1, 1);
+    r: 2.5px;
+  }
+
+  58.33% {
+    r: 0;
+  }
+
+  100% {
+    r: 0;
+  }
+}
+
+@keyframes #{$prefix}-linear-unload-stroke {
+  0% {
+    stroke-width: 1.72;
+  }
+
+  50% {
+    stroke-width: 1.72;
+  }
+
+  58.33% {
+    stroke-width: 0;
+  }
+
+  100% {
+    stroke-width: 0;
+  }
+}
+
+// =============================================================================
+// Additional Keyframes (consolidated from other files)
+// =============================================================================
+
+@keyframes #{$prefix}-widget-in {
+  0% {
+    inset-block-end: calc(
+      var(--#{$prefix}-bottom-position) - #{layout.$spacing-07}
+    );
+    opacity: 0;
+  }
+
+  100% {
+    inset-block-end: var(--#{$prefix}-bottom-position);
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-widget-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+// Web Components Keyframes (duplicate fade-in removed - using existing one above)
+
+// Loading Animation Keyframes (from inlineLoadingElement)
+@keyframes #{$prefix}-linear-load-size {
+  0% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 0;
+  }
+
+  25% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 2.5px;
+  }
+
+  83.3% {
+    r: 0.875px;
+  }
+
+  100% {
+    r: 0.875px;
+  }
+}
+
+@keyframes #{$prefix}-linear-load-stroke {
+  0% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    stroke-width: 0;
+  }
+
+  8.33% {
+    stroke-width: 1.72;
+  }
+
+  100% {
+    stroke-width: 1.72;
+  }
+}
+
+@keyframes #{$prefix}-linear-loop-size {
+  0% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 0.875px;
+  }
+
+  25% {
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    r: 2.5px;
+  }
+
+  91.66% {
+    r: 0.875px;
+  }
+
+  100% {
+    r: 0.875px;
+  }
+}
+
+@keyframes #{$prefix}-linear-loop-stroke {
+  0% {
+    animation-timing-function: cubic-bezier(0.4, 0.14, 1, 1);
+    stroke-width: 1.72;
+  }
+
+  100% {
+    stroke-width: 1.72;
+  }
+}
+
+@keyframes #{$prefix}-linear-unload-size {
+  0% {
+    r: 0.875px;
+  }
+
+  8.33% {
+    r: 0.875px;
+  }
+
+  33.33% {
+    animation-timing-function: cubic-bezier(0.4, 0.14, 1, 1);
+    r: 2.5px;
+  }
+
+  58.33% {
+    r: 0;
+  }
+
+  100% {
+    r: 0;
+  }
+}
+
+@keyframes #{$prefix}-linear-unload-stroke {
+  0% {
+    stroke-width: 1.72;
+  }
+
+  50% {
+    stroke-width: 1.72;
+  }
+
+  58.33% {
+    stroke-width: 0;
+  }
+
+  100% {
+    stroke-width: 0;
+  }
+}

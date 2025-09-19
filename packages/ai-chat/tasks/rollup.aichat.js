@@ -81,7 +81,7 @@ async function runRollup() {
           const inNodeModules = ids.some(id => id.includes("node_modules"));
 
           if (!inNodeModules) {
-            // Circular dep in your own source → error
+            // Circular dep in your own source -> error
             throw new Error(`Circular dependency detected in app code: ${warning.message}`);
           }
         }
@@ -91,6 +91,9 @@ async function runRollup() {
       input: {
         // Main entry - becomes es/aiChatEntry.js
         'aiChatEntry': path.join(paths.src, '/aiChatEntry.tsx'),
+        
+        // Server entry without web component side effects - becomes es/serverEntry.js
+        'serverEntry': path.join(paths.src, '/serverEntry.ts'),
         
         // Web components - becomes es/web-components/cds-aichat-container/index.js
         'web-components/cds-aichat-container/index': path.join(paths.src, '/web-components/cds-aichat-container/index.ts'),
@@ -181,6 +184,7 @@ async function runRollup() {
     {
       input: {
         aiChatEntry: path.join(paths.src, '/aiChatEntry.tsx'),
+        serverEntry: path.join(paths.src, '/serverEntry.ts'),
       },
       output: {
         dir: path.join(paths.dist, '/types'),

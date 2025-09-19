@@ -1,5 +1,5 @@
 ---
-title: Migration steps - 0.5.1
+title: Migration 0.4.0 -> 0.5.1
 ---
 
 # Upgrading from @carbon/ai-chat 0.4.0 to 0.5.1

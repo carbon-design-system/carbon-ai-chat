@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { deepFreeze } from "../../../src/chat/shared/utils/lang/objectUtils";
+import { deepFreeze } from "../../../src/chat/utils/lang/objectUtils";
 
 describe("objectUtils", () => {
   describe("deepFreeze", () => {

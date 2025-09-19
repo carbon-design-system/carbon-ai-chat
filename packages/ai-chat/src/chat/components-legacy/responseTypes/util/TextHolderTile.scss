@@ -1,0 +1,80 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+.cds-aichat--text-holder-tile {
+  display: flex;
+  padding: layout.$spacing-05;
+  min-block-size: initial;
+}
+
+.cds-aichat--text-holder-tile__icon {
+  flex: 0 1 auto;
+  margin: layout.$spacing-01 layout.$spacing-03 0 0;
+}
+
+.cds-aichat--text-holder-tile__wrapper {
+  flex: 1 1;
+  align-self: center;
+}
+
+.cds-aichat--text-holder-tile__title {
+  @include type.type-style("body-02");
+
+  font-weight: 400;
+  min-block-size: unset;
+}
+
+.cds-aichat--text-holder-tile__description {
+  color: theme.$text-secondary;
+}
+
+.cds-aichat--text-holder-tile__description,
+.cds-aichat--text-holder-tile__url {
+  @include type.type-style("caption-01");
+
+  min-block-size: unset;
+}
+
+.cds-aichat--text-holder-tile__description-margin {
+  margin-block-start: layout.$spacing-01;
+}
+
+.cds-aichat--text-holder-tile__url {
+  color: theme.$link-primary;
+}
+
+.cds-aichat--text-holder-tile__url-margin {
+  margin-block-start: layout.$spacing-05;
+}
+
+@supports (-webkit-line-clamp: 3) {
+  .cds-aichat--text-holder-tile__description {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    white-space: normal;
+  }
+}
+
+@supports (-webkit-line-clamp: 2) {
+  .cds-aichat--text-holder-tile__title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--text-holder-tile__icon {
+  margin-inline: layout.$spacing-03 0;
+}

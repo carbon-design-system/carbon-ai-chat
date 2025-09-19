@@ -1,0 +1,46 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+/*
+
+  A message wrapper should have 16px padding to make it consistent with existing card designs in Carbon AI Chat.
+*/
+
+.cds-aichat--body-message-components__message-wrapper {
+  padding: layout.$spacing-05;
+}
+
+.cds-aichat--body-message-components__message-wrapper.cds-aichat--body-message-components__message-wrapper--short-bottom-padding {
+  padding-block-end: layout.$spacing-04;
+}
+
+.cds-aichat--body-message-components .cds-aichat--media-player__skeleton,
+.cds-aichat--body-message-components .cds-aichat--media-player,
+.cds-aichat--body-message-components .cds-aichat--image {
+  border: none;
+}
+
+/*
+
+  Messages with short bottom padding should give their sibling element (that aren't full width) no top padding so
+
+  that there's 12px space between messages.
+*/
+
+.cds-aichat--body-message-components__message-wrapper.cds-aichat--body-message-components__message-wrapper--short-bottom-padding
+  + .cds-aichat--body-message-components__message-wrapper:not(
+    .cds-aichat--body-message-components__message-wrapper--full-width
+  ) {
+  padding-block-start: 0;
+}
+
+.cds-aichat--body-message-components__message-wrapper.cds-aichat--body-message-components__message-wrapper--full-width {
+  padding: 0;
+}

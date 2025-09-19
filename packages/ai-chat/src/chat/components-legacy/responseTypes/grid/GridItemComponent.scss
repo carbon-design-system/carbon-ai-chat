@@ -1,0 +1,54 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+.cds-aichat--grid {
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  row-gap: layout.$spacing-03;
+}
+
+.cds-aichat--grid__row {
+  display: flex;
+  column-gap: layout.$spacing-03;
+  inline-size: 100%;
+}
+
+.cds-aichat--grid__cell {
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  row-gap: layout.$spacing-03;
+}
+
+.cds-aichat--grid__cell .cds-aichat--message-user-defined-response {
+  inline-size: 100%;
+}
+
+.cds-aichat--grid .cds-aichat--image {
+  border: none;
+}
+
+.cds-aichat--grid .cds-aichat--image__image-wrapper {
+  background-color: transparent;
+}
+
+.cds-aichat--grid .cds-aichat--image__skeleton {
+  // Stop the skeleton from displaying for images in the middle of a grid.
+  display: none;
+}
+
+.cds-aichat--grid .cds-aichat--media-player__skeleton {
+  display: none;
+}
+
+.cds-aichat--grid .cds-aichat--media-player__root {
+  inline-size: 100%;
+}

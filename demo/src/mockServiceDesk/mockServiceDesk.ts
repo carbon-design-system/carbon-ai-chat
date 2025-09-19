@@ -554,17 +554,17 @@ function START_CHAT(userName: string, mockState: MockState): MockStep[] {
     }
     case ConnectInfoType.MINUTES: {
       availability = [
-        { estimated_wait_time: 30 },
-        { estimated_wait_time: 2 },
-        { estimated_wait_time: 1 },
+        { estimatedWaitTime: 30 },
+        { estimatedWaitTime: 2 },
+        { estimatedWaitTime: 1 },
       ];
       break;
     }
     default: {
       availability = [
-        { position_in_queue: 30 },
-        { position_in_queue: 2 },
-        { position_in_queue: 1 },
+        { positionInQueue: 30 },
+        { positionInQueue: 2 },
+        { positionInQueue: 1 },
       ];
       break;
     }
