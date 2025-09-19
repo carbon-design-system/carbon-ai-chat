@@ -44,7 +44,7 @@ function Disclaimer({
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { derivedCarbonTheme, aiEnabled } = useSelector(
+  const { derivedCarbonTheme } = useSelector(
     (state: AppState) => state.config.derived.themeWithDefaults,
   );
   const isDarkTheme =
@@ -74,8 +74,8 @@ function Disclaimer({
     <div className="cds-aichat--disclaimer-container">
       <div className="cds-aichat--disclaimer">
         <SimpleHeader
-          useAITheme={aiEnabled}
           onClose={onClose}
+          showRestartButton={false}
           testIdPrefix={OverlayPanelName.DISCLAIMER}
         />
         <div

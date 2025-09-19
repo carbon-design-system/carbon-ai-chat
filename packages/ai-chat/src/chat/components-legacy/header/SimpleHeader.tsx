@@ -19,11 +19,6 @@ import { OverlayPanelName } from "../OverlayPanel";
 
 interface SimpleHeaderProps {
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
-  /**
    * This callback is called when the user clicks the close button.
    */
   onClose: () => void;
@@ -33,10 +28,22 @@ interface SimpleHeaderProps {
    * in the header obviously unique.
    */
   testIdPrefix: OverlayPanelName;
+
+  /**
+   * Controls whether to show the AI label in this specific header instance.
+   * When undefined, falls back to the global config setting.
+   */
+  showAiLabel?: boolean;
+
+  /**
+   * Controls whether to show the restart button in this specific header instance.
+   * When undefined, falls back to the global config setting.
+   */
+  showRestartButton?: boolean;
 }
 
 function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
-  const { useAITheme, onClose, testIdPrefix } = props;
+  const { onClose, testIdPrefix, showAiLabel, showRestartButton } = props;
   const headerRef = useRef<HasRequestFocus>();
 
   // Reuse the imperative handles from the header.
@@ -46,7 +53,8 @@ function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
     <Header
       ref={headerRef}
       onClickClose={onClose}
-      useAITheme={useAITheme}
+      showAiLabel={showAiLabel}
+      showRestartButton={showRestartButton}
       testIdPrefix={testIdPrefix}
     />
   );

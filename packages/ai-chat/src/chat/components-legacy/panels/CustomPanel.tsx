@@ -29,11 +29,6 @@ import WriteableElement from "../WriteableElement";
 
 interface CustomPanelProps {
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
-  /**
    * Update the panel counter to show a panel has opened, and add any proper focus.
    */
   onPanelOpenStart: () => void;
@@ -69,7 +64,6 @@ interface CustomPanelProps {
  */
 function CustomPanel(props: CustomPanelProps) {
   const {
-    useAITheme,
     onPanelOpenEnd,
     onPanelCloseEnd,
     onPanelOpenStart,
@@ -171,13 +165,14 @@ function CustomPanel(props: CustomPanelProps) {
         labelBackButton={languagePack.general_returnToAssistant}
         isOpen={isOpen}
         title={title}
-        useAITheme={useAITheme}
         onClickBack={onClickBackLocal}
         onClickClose={onClickCloseLocal}
         onClickRestart={onClickRestart}
         hidePanelHeader={hidePanelHeader}
         hideBackButton={options.hideBackButton}
         hideCloseButton={options.hideCloseButton}
+        showAiLabel={false}
+        showRestartButton={false}
         testIdPrefix={OverlayPanelName.CUSTOM}
       >
         <WriteableElement

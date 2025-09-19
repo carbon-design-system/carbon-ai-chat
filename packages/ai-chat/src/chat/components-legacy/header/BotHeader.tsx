@@ -102,9 +102,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
     selectHumanAgentDisplayState,
     shallowEqual,
   );
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
-  );
   const headerRef = useRef<HasRequestFocus>();
   const Home = carbonIconToReact(Home16);
 
@@ -142,7 +139,6 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
         showRestartButton={showRestartButton}
-        useAITheme={aiEnabled}
         backContent={<Home slot="icon" />}
         labelBackButton={languagePack.homeScreen_returnToHome}
         onClickRestart={onRestart}

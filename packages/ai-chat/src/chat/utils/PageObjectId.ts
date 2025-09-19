@@ -35,6 +35,16 @@ export enum PageObjectId {
    * Input send button. This is combined with an OverlayPanelName.
    */
   INPUT_SEND = "input_send",
+
+  /**
+   * The chat header title element.
+   */
+  HEADER_TITLE = "header_title",
+
+  /**
+   * The chat header name element.
+   */
+  HEADER_NAME = "header_name",
 }
 
 /**

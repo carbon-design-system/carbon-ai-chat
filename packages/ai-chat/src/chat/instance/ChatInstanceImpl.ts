@@ -178,7 +178,7 @@ function createChatInstance({
       },
     },
 
-    getState: () => serviceManager.actions.getPublicWebChatState(),
+    getState: () => serviceManager.actions.getPublicChatState(),
 
     writeableElements: serviceManager.writeableElements,
 
@@ -310,6 +310,11 @@ function createChatInstance({
         debugLog("Called instance.serviceDesk.updateIsSuspended", isSuspended);
         return serviceManager.actions.agentUpdateIsSuspended(isSuspended);
       },
+    },
+
+    destroySession: async (keepOpenState: boolean) => {
+      debugLog("Called instance.destroySession", keepOpenState);
+      return serviceManager.actions.destroySession(keepOpenState);
     },
   };
 

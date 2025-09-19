@@ -996,7 +996,6 @@ class MainWindow
         overlayPanelName={OverlayPanelName.IFRAME}
       >
         <IFramePanel
-          useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
           ref={this.iframePanelRef}
           onClickClose={this.onClose}
           onClickRestart={this.onRestart}
@@ -1036,7 +1035,6 @@ class MainWindow
   renderCustomPanel() {
     return (
       <CustomPanel
-        useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
         onPanelOpenStart={() => this.onPanelOpenStart(true)}
@@ -1052,13 +1050,9 @@ class MainWindow
    * interaction or automatically.
    */
   renderResponsePanel() {
-    if (!this.props.responsePanelState.localMessageItem) {
-      return null;
-    }
-
     const { isOpen, localMessageItem, isMessageForInput } =
       this.props.responsePanelState;
-    const panelOptions = (localMessageItem?.item as ButtonItem).panel;
+    const panelOptions = (localMessageItem?.item as ButtonItem)?.panel;
     const eventName = `"Show panel" opened`;
     const eventDescription = "Panel opened through panel response type";
     const overlayPanelName = OverlayPanelName.PANEL_RESPONSE;
@@ -1074,7 +1068,8 @@ class MainWindow
         localMessageItem={localMessageItem}
         title={panelOptions?.title}
         showAnimations={panelOptions?.show_animations}
-        useAITheme={this.props.config.derived.themeWithDefaults.aiEnabled}
+        showAiLabel={false}
+        showRestartButton={false}
         requestFocus={this.requestFocus}
         onClose={this.onClose}
         onClickRestart={this.onRestart}

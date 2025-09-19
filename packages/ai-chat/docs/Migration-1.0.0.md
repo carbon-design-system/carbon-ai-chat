@@ -34,6 +34,10 @@ Version 1.0.0 introduces **live config updates**. Changes to `PublicConfig` now 
 
 - Removed: `homescreen.background` (background styling is now managed automatically)
 
+### ChatInstance.getState
+
+`getState()` now returns a frozen `PublicChatState` that exposes the sessionStorage-backed fields as top-level properties (e.g. `version`, `viewState`, `showUnreadIndicator`, `homeScreenState`, etc.). The `humanAgent` block contains the persisted human-agent data plus a live `isConnecting` flag sourced from in-memory state. Treat the returned object as read-only and call `getState()` again when you need fresh values.
+
 ### Removed Methods:
 
 Many `updateX` methods on `ChatInstance` removed. Update config instead.
