@@ -21,7 +21,6 @@ import { ViewState, ViewType } from "../../types/state/AppState";
 
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import { HistoryItem } from "../../types/messaging/History";
-import { WriteableElementName } from "../utils/constants";
 import {
   consoleDebug,
   consoleError,
@@ -32,7 +31,6 @@ import {
   ChatInstance,
   SendOptions,
   TypeAndHandler,
-  WriteableElements,
 } from "../../types/instance/ChatInstance";
 import { AddMessageOptions } from "../../types/config/MessagingConfig";
 import {
@@ -182,7 +180,7 @@ function createChatInstance({
 
     getState: () => serviceManager.actions.getPublicWebChatState(),
 
-    writeableElements: createWriteableElementsProxy(serviceManager),
+    writeableElements: serviceManager.writeableElements,
 
     scrollToMessage: (messageID: string, animate?: boolean) => {
       debugLog("Called instance.scrollToMessage", messageID, animate);
@@ -320,7 +318,7 @@ function createChatInstance({
     serviceManager.store.getState().config.public.exposeServiceManagerForTesting
   ) {
     const { instance: _, ...serviceManagerForTesting } = serviceManager;
-    instance.serviceManager = serviceManagerForTesting;
+    instance.serviceManager = serviceManagerForTesting as ServiceManager;
   }
 
   if (serviceManager.store.getState().config.public.debug) {
@@ -328,27 +326,6 @@ function createChatInstance({
   }
 
   return instance;
-}
-
-/**
- * Returns a proxy object of type WriteableElements that Deb will use to send set her custom content and should only
- * fire amplitude events once.
- */
-function createWriteableElementsProxy(
-  serviceManager: ServiceManager,
-): Partial<WriteableElements> {
-  const elementSet = new Set<WriteableElementName>();
-
-  const handler = {
-    get(target: WriteableElements, element: WriteableElementName) {
-      if (!elementSet.has(element)) {
-        elementSet.add(element);
-      }
-      return target[element];
-    },
-  };
-
-  return new Proxy(serviceManager.writeableElements, handler);
 }
 
 export { createChatInstance };

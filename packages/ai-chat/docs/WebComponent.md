@@ -70,11 +70,15 @@ Accepted falsey strings for `ai-enabled` are `"false"`, `"0"`, `"off"`, and `"no
 
 This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. Use this if you need to change the location where the Carbon AI Chat renders.
 
-This component's default behavior adds and removes a class from the main window of the Carbon AI Chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI Chat when it opens or closes. When the Carbon AI Chat closes, it adds a classname to the Carbon AI Chat main window to hide the element. Another classname is added to your custom element to set its width and height to 0, so that it doesn't take up space.
+The custom element should be sized using external CSS (see example below). The default behavior adds and removes a `cds-aichat--hidden` CSS class to manage visibility. When the Carbon AI Chat closes, the `cds-aichat--hidden` class is added to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
 
 **Note:** The custom element must remain visible if you want to use the built-in Carbon AI Chat launcher, which is also contained in your custom element.
 
-If you don't want these behaviors, then provide your own `onViewChange` prop to `cds-aichat-custom-element` and provide your own logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, use this mechanism to do that. Refer to the following example.
+If you don't want these behaviors, then provide your own `onViewChange` prop to `cds-aichat-custom-element` and provide your own logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, use this mechanism to do that.
+
+**For advanced view change handling:** You can also listen for {@link BusEventType.VIEW_PRE_CHANGE} and {@link BusEventType.VIEW_CHANGE} events directly. These events fire in sequence (PRE_CHANGE -> view state update -> CHANGE), and both are awaited, making async handlers ideal for animations. See the event type documentation for complete details on timing and usage.
+
+Just be aware that the `onViewChange` default behavior will still run if you don't replace that function with your own.
 
 See {@link CdsAiChatCustomElementAttributes} for an explanation of the various accepted properties and attributes.
 
@@ -150,6 +154,7 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
   BusEventType,
+  type BusEventUserDefinedResponse,
   type ChatInstance,
   type GenericItem,
   type MessageResponse,
@@ -197,7 +202,7 @@ export class Demo extends LitElement {
    * Here we make sure we store all these slots along with their relevant data in order to be able to dynamically
    * render the content to be slotted when this.renderUserDefinedSlots() is called in the render function.
    */
-  userDefinedHandler = (event: any) => {
+  userDefinedHandler = (event: BusEventUserDefinedResponse) => {
     const { data } = event;
     this.userDefinedSlotsMap[data.slot] = {
       message: data.message,

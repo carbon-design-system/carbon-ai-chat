@@ -25,7 +25,10 @@ import {
   BusEventChunkUserDefinedResponse,
   BusEventType,
   BusEventUserDefinedResponse,
+  MainWindowOpenReason,
+  ViewChangeReason,
 } from "../../types/events/eventBusTypes";
+import { VIEW_STATE_ALL_CLOSED } from "../store/reducerUtils";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 
@@ -121,22 +124,14 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
   const { openChatByDefault } = initialState.config.public;
 
   if (targetViewState.mainWindow) {
-    let mainWindowOpenReason = (
-      await import("../../types/events/eventBusTypes")
-    ).MainWindowOpenReason.SESSION_HISTORY;
+    let mainWindowOpenReason = MainWindowOpenReason.SESSION_HISTORY;
     if (openChatByDefault && !wasLoadedFromBrowser) {
-      mainWindowOpenReason = (await import("../../types/events/eventBusTypes"))
-        .MainWindowOpenReason.OPEN_BY_DEFAULT;
+      mainWindowOpenReason = MainWindowOpenReason.OPEN_BY_DEFAULT;
     }
     await serviceManager.actions.changeView(targetViewState, {
       mainWindowOpenReason,
     });
   } else {
-    const { ViewChangeReason } = await import(
-      "../../types/events/eventBusTypes"
-    );
-    const { VIEW_STATE_ALL_CLOSED } = await import("../store/reducerUtils");
-
     const viewChangeReason = ViewChangeReason.WEB_CHAT_LOADED;
     const tryHydrating = false;
     const forceViewChange = isEqual(targetViewState, VIEW_STATE_ALL_CLOSED);

@@ -16,6 +16,7 @@ import {
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
+import type { ServiceManager } from "../../chat/services/ServiceManager";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -40,7 +41,7 @@ export interface ChatInstance extends EventHandlers, ChatActions {
    *
    * @internal
    */
-  serviceManager?: any;
+  serviceManager?: ServiceManager;
 }
 
 /**

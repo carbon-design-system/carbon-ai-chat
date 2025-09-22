@@ -7,11 +7,9 @@
  *  @license
  */
 
-import "intl-pluralrules";
-
 import isEqual from "lodash-es/isEqual.js";
 import React, { useEffect, useRef, useState } from "react";
-import { Provider as ReduxProvider } from "react-redux";
+import { StoreProvider } from "./providers/StoreProvider";
 
 import { ServiceManager } from "./services/ServiceManager";
 import {
@@ -26,7 +24,7 @@ import { WriteableElementsPortalsContainer } from "./ai-chat-components/react/co
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";
 import { consoleError } from "./utils/miscUtils";
-import AppShell from "./legacy/containers/AppShell";
+import AppShell from "./components-legacy/AppShell";
 import styles from "./ChatAppEntry.scss";
 
 import { detectConfigChanges } from "./utils/configChangeDetection";
@@ -272,13 +270,13 @@ export function App({
 
   return (
     <>
-      <ReduxProvider store={serviceManager.store}>
+      <StoreProvider store={serviceManager.store}>
         <AppShell
           serviceManager={serviceManager}
           hostElement={serviceManager.customHostElement}
           styles={styles}
         />
-      </ReduxProvider>
+      </StoreProvider>
 
       {renderUserDefinedResponse && (
         <UserDefinedResponsePortalsContainer

@@ -54,9 +54,9 @@ const createPlugins = (includeAnalysis) => {
   return plugins;
 };
 
-export default async (env, args) => {
+export default async () => {
   const port = await portfinder.getPortPromise({
-    port: process.env.PORT || 3005,
+    port: process.env.PORT || 3009,
   });
 
   return {
@@ -87,6 +87,7 @@ export default async (env, args) => {
                 ["@babel/plugin-proposal-decorators", { version: "2023-05" }],
                 "@babel/plugin-proposal-class-properties",
                 "@babel/plugin-transform-private-methods",
+                "@babel/plugin-transform-class-static-block",
               ],
             },
           },

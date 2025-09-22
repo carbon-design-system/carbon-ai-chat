@@ -26,6 +26,7 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
 } from "../store/reducerUtils";
 import {
+  AppState,
   AppStateMessages,
   ViewState,
   ViewType,
@@ -232,9 +233,12 @@ class ChatActionsImpl {
           // If no history was loaded, there are no messages already sent, and there is a home screen,
           // then we need to show the home screen.
           serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true));
-        } else if (!config.public.messaging?.skipWelcome) {
-          // If no history was loaded, there are no messages already sent, and there is no home screen, then we need
-          // to fetch the welcome node.
+        } else if (
+          !config.public.messaging?.skipWelcome &&
+          !this.shouldSkipWelcomeForAgentSession(state)
+        ) {
+          // If no history was loaded, there are no messages already sent, there is no home screen, and the user is not
+          // currently or previously in an agent session, then we need to fetch the welcome node.
           await serviceManager.actions.send(
             createWelcomeRequest(),
             MessageSendSource.WELCOME_REQUEST,
@@ -1358,6 +1362,37 @@ class ChatActionsImpl {
         );
       },
     );
+  }
+
+  /**
+   * Determines if welcome messages should be skipped due to current or previous agent sessions.
+   * This prevents welcome messages when:
+   * 1. User is currently connected to an agent
+   * 2. User was previously connected to an agent (even if reconnection failed)
+   *
+   * @param state The current application state
+   * @returns true if welcome messages should be skipped, false otherwise
+   */
+  private shouldSkipWelcomeForAgentSession(state: AppState): boolean {
+    const { humanAgentState } = state.persistedToBrowserStorage;
+
+    // Skip welcome if currently connected to an agent
+    if (humanAgentState.isConnected) {
+      return true;
+    }
+
+    // Skip welcome if there was a previous agent session (indicated by having a responseUserProfile)
+    // This handles cases where reconnection failed or isn't supported
+    if (humanAgentState.responseUserProfile) {
+      return true;
+    }
+
+    // Skip welcome if there's persisted service desk state, indicating a previous session
+    if (humanAgentState.serviceDeskState) {
+      return true;
+    }
+
+    return false;
   }
 }
 

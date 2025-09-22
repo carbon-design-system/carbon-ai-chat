@@ -81,7 +81,7 @@ class ChatContainer extends LitElement {
     converter: {
       fromAttribute: (value: string | null) => {
         if (value === null) {
-          return undefined; // attribute absent → leave undefined to use defaults
+          return undefined; // attribute absent -> leave undefined to use defaults
         }
         const v = String(value).trim().toLowerCase();
         const falsey = v === "false" || v === "0" || v === "off" || v === "no";
@@ -153,6 +153,11 @@ class ChatContainer extends LitElement {
   @property({ type: Object, attribute: "service-desk" })
   serviceDesk?: ServiceDeskPublicConfig;
 
+  /**
+   * The element to render to instead of the default float element.
+   *
+   * @internal
+   */
   @property({ type: HTMLElement })
   element?: HTMLElement;
 

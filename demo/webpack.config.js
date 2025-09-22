@@ -13,7 +13,7 @@ import portfinder from "portfinder";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default async (env, args) => {
+export default async (_env, args) => {
   const port = await portfinder.getPortPromise({
     port: process.env.PORT || 3001,
   });

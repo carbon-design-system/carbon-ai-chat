@@ -33,8 +33,8 @@
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--left {
       animation: none;
-      animation-delay: 1s, 1s, 2s, 2s;
-      animation-duration: 1s;
+      animation-delay: 1000ms, 1000ms, 2000ms, 2000ms;
+      animation-duration: 1000ms;
       animation-fill-mode: forwards;
       animation-iteration-count: 1, 1, infinite, infinite;
       transform-origin: 25% 50%;
@@ -44,8 +44,8 @@
   .dot--left {
     animation:
       linear-load-size, linear-load-stroke, linear-loop-size, linear-loop-stroke;
-    animation-delay: 1s, 1s, 2s, 2s;
-    animation-duration: 1s;
+    animation-delay: 1000ms, 1000ms, 2000ms, 2000ms;
+    animation-duration: 1000ms;
     animation-fill-mode: forwards;
     animation-iteration-count: 1, 1, infinite, infinite;
     transform-origin: 25% 50%;
@@ -53,8 +53,8 @@
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--center {
       animation: none;
-      animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
-      animation-duration: 1s;
+      animation-delay: 1167ms, 1167ms, 2167ms, 2167ms;
+      animation-duration: 1000ms;
       animation-fill-mode: forwards;
       animation-iteration-count: 1, 1, infinite, infinite;
       transform-origin: 50% 50%;
@@ -64,8 +64,8 @@
   .dot--center {
     animation:
       linear-load-size, linear-load-stroke, linear-loop-size, linear-loop-stroke;
-    animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
-    animation-duration: 1s;
+    animation-delay: 1167ms, 1167ms, 2167ms, 2167ms;
+    animation-duration: 1000ms;
     animation-fill-mode: forwards;
     animation-iteration-count: 1, 1, infinite, infinite;
     transform-origin: 50% 50%;
@@ -73,8 +73,8 @@
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--right {
       animation: none;
-      animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
-      animation-duration: 1s;
+      animation-delay: 1334ms, 1334ms, 2334ms, 2334ms;
+      animation-duration: 1000ms;
       animation-fill-mode: forwards;
       animation-iteration-count: 1, 1, infinite, infinite;
       transform-origin: 75% 50%;
@@ -84,8 +84,8 @@
   .dot--right {
     animation:
       linear-load-size, linear-load-stroke, linear-loop-size, linear-loop-stroke;
-    animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
-    animation-duration: 1s;
+    animation-delay: 1334ms, 1334ms, 2334ms, 2334ms;
+    animation-duration: 1000ms;
     animation-fill-mode: forwards;
     animation-iteration-count: 1, 1, infinite, infinite;
     transform-origin: 75% 50%;
@@ -96,8 +96,8 @@
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--left {
       animation: none;
-      animation-delay: 1s, 1s, 2s, 2s;
-      animation-duration: 1s;
+      animation-delay: 1000ms, 1000ms, 2000ms, 2000ms;
+      animation-duration: 1000ms;
       animation-fill-mode: forwards;
       animation-iteration-count: 1;
       transform-origin: 25% 50%;
@@ -108,8 +108,8 @@
     animation:
       linear-load-size, linear-load-stroke, linear-unload-size,
       linear-unload-stroke;
-    animation-delay: 1s, 1s, 2s, 2s;
-    animation-duration: 1s;
+    animation-delay: 1000ms, 1000ms, 2000ms, 2000ms;
+    animation-duration: 1000ms;
     animation-fill-mode: forwards;
     animation-iteration-count: 1;
     transform-origin: 25% 50%;
@@ -117,8 +117,8 @@
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--center {
       animation: none;
-      animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
-      animation-duration: 1s;
+      animation-delay: 1167ms, 1167ms, 2167ms, 2167ms;
+      animation-duration: 1000ms;
       animation-fill-mode: forwards;
       animation-iteration-count: 1;
       transform-origin: 50% 50%;
@@ -129,8 +129,8 @@
     animation:
       linear-load-size, linear-load-stroke, linear-unload-size,
       linear-unload-stroke;
-    animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
-    animation-duration: 1s;
+    animation-delay: 1167ms, 1167ms, 2167ms, 2167ms;
+    animation-duration: 1000ms;
     animation-fill-mode: forwards;
     animation-iteration-count: 1;
     transform-origin: 50% 50%;
@@ -138,8 +138,8 @@
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--right {
       animation: none;
-      animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
-      animation-duration: 1s;
+      animation-delay: 1334ms, 1334ms, 2334ms, 2334ms;
+      animation-duration: 1000ms;
       animation-fill-mode: forwards;
       animation-iteration-count: 1;
       transform-origin: 75% 50%;
@@ -150,8 +150,8 @@
     animation:
       linear-load-size, linear-load-stroke, linear-unload-size,
       linear-unload-stroke;
-    animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
-    animation-duration: 1s;
+    animation-delay: 1334ms, 1334ms, 2334ms, 2334ms;
+    animation-duration: 1000ms;
     animation-fill-mode: forwards;
     animation-iteration-count: 1;
     transform-origin: 75% 50%;
@@ -160,29 +160,29 @@
 
 [dir="rtl"] .linear {
   .dot--left {
-    animation-delay: 1.334s, 1.334s, 2.334s, 2.334s, 7.334s, 7.334s;
+    animation-delay: 1334ms, 1334ms, 2334ms, 2334ms, 7334ms, 7334ms;
   }
 
   .dot--center {
-    animation-delay: 1.167s, 1.167s, 2.167s, 2.167s, 7.167s, 7.167s;
+    animation-delay: 1167ms, 1167ms, 2167ms, 2167ms, 7167ms, 7167ms;
   }
 
   .dot--right {
-    animation-delay: 1s, 1s, 2s, 2s, 7s, 7s;
+    animation-delay: 1000ms, 1000ms, 2000ms, 2000ms, 7000ms, 7000ms;
   }
 }
 
 [dir="rtl"] .linear--no-loop {
   .dot--left {
-    animation-delay: 1.334s, 1.334s, 2.334s, 2.334s;
+    animation-delay: 1334ms, 1334ms, 2334ms, 2334ms;
   }
 
   .dot--center {
-    animation-delay: 1.167s, 1.167s, 2.167s, 2.167s;
+    animation-delay: 1167ms, 1167ms, 2167ms, 2167ms;
   }
 
   .dot--right {
-    animation-delay: 1s, 1s, 2s, 2s;
+    animation-delay: 1000ms, 1000ms, 2000ms, 2000ms;
   }
 }
 

@@ -121,6 +121,10 @@ function getSettings() {
       delete defaultConfig.header?.minimizeButtonIconType;
       delete defaultConfig.header?.hideMinimizeButton;
       delete defaultConfig.layout?.corners;
+      delete defaultConfig.showLauncher;
+      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      delete defaultConfig.headerConfig?.hideMinimizeButton;
+      delete defaultConfig.themeConfig?.corners;
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
@@ -138,6 +142,7 @@ function getSettings() {
           hasContentMaxWidth: undefined,
           corners: CornersType.SQUARE,
         },
+        showLauncher: false,
         openChatByDefault: undefined,
       };
       delete defaultConfig.layout?.showFrame;
@@ -159,6 +164,7 @@ function getSettings() {
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
+      delete defaultConfig.showLauncher;
       break;
     case "fullscreen-no-gutter":
       defaultConfig = {
@@ -177,6 +183,7 @@ function getSettings() {
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
+      delete defaultConfig.launcher;
       break;
   }
 

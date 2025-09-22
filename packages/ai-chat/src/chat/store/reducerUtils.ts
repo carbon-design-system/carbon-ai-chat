@@ -25,7 +25,6 @@ import {
   ViewState,
   PersistedState,
 } from "../../types/state/AppState";
-import { PersistedHumanAgentState } from "../../types/state/PersistedHumanAgentState";
 import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
 import {
   LauncherConfig,
@@ -136,7 +135,7 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedState = {
     isSuspended: false,
     responseUserProfiles: {},
     responseUserProfile: null,
-  } as PersistedHumanAgentState,
+  },
   hasSentNonWelcomeMessage: false,
   wasLoadedFromBrowser: false,
   version: VERSION,
@@ -163,13 +162,6 @@ const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
   isScreenSharing: false,
   isHumanAgentTyping: false,
   inputState: DEFAULT_INPUT_STATE,
-
-  // Mirror of persisted state for convenience at runtime (will be maintained by reducers)
-  isConnected: false,
-  isSuspended: false,
-  responseUserProfile: null,
-  responseUserProfiles: {},
-  serviceDeskState: undefined,
 };
 deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 

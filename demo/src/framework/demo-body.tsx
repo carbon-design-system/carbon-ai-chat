@@ -32,9 +32,9 @@ export class DemoBody extends LitElement {
   static styles = css`
     :host {
       display: block;
-      height: calc(100vh - 48px);
+      height: calc(100vh - 40px);
       width: 100%;
-      margin-top: 48px;
+      margin-top: 40px;
     }
 
     .page {

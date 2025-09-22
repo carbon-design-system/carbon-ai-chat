@@ -28,10 +28,10 @@ import {
   GenericItem,
   IFrameItem,
   Message,
-  ResponseUserProfile,
   SearchResult,
 } from "../messaging/Messages";
 import { AgentAvailability } from "../config/ServiceDeskConfig";
+import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
 
 /**
  * The message-related portion of AppState. Used for message history operations.
@@ -311,7 +311,7 @@ interface PersistedState {
   /**
    * The persisted subset of the human agent state.
    */
-  humanAgentState: import("./PersistedHumanAgentState").PersistedHumanAgentState;
+  humanAgentState: PersistedHumanAgentState;
 }
 
 /**
@@ -405,36 +405,6 @@ interface HumanAgentState {
    * The state of the input field while connecting or connected to an agent.
    */
   inputState: InputState;
-
-  /**
-   * Indicates that the user is currently connected to an agent and a chat is in progress. This does not necessarily
-   * mean that an agent has joined the conversation.
-   */
-  isConnected: boolean;
-
-  /**
-   * Indicates if the agent conversation is currently suspended. That means that control has been returned to the
-   * assistant/bot conversation and that information regarding the current again conversation should be hidden. This
-   * means the connecting state is hidden (if in the middle of requesting an agent) and input from the user is routed to
-   * the assistant instead of the service desk.
-   */
-  isSuspended: boolean;
-
-  /**
-   * This is the profile of the last human agent to join a chat within a service desk. This value is preserved even
-   * when the chat is disconnected.
-   */
-  responseUserProfile?: ResponseUserProfile;
-
-  /**
-   * This is a cache of the known agent profiles by agent ID.
-   */
-  responseUserProfiles: Record<string, ResponseUserProfile>;
-
-  /**
-   * Arbitrary state to save by the service desk. The information stored here various by service desk.
-   */
-  serviceDeskState?: unknown;
 }
 
 /**

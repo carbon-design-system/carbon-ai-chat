@@ -12,7 +12,7 @@ import { ResponseUserProfile } from "../messaging/Messages";
 /**
  * The subset of HumanAgentState that is persisted to browser storage.
  */
-export interface PersistedHumanAgentState {
+interface PersistedHumanAgentState {
   /** Indicates that the user is connected to a human agent. */
   isConnected: boolean;
 
@@ -29,4 +29,4 @@ export interface PersistedHumanAgentState {
   serviceDeskState?: unknown;
 }
 
-export type { PersistedHumanAgentState as default };
+export type { PersistedHumanAgentState };

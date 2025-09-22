@@ -19,7 +19,7 @@ Provide your service desk integration to the container components as top‑level
 
 ### Service desk requirements
 
-To create an integration between the Carbon AI Chat and a service desk, the service desk must support communication from a web browser and must fulfill the Carbon AI Chat service desk API. Use the HTTP endpoints that the service desk or the web socket interface provides. In particular, the service desk must support the ability to start a chat to receive messages from a user or to deliver messages from an agent to the user.
+To create an integration between the Carbon AI Chat and a service desk, the service desk must fulfill the Carbon AI Chat service desk API. Use the HTTP endpoints that the service desk or the web socket interface provides. In particular, the service desk must support the ability to start a chat to receive messages from a user or to deliver messages from an agent to the user.
 
 If the service desk requires calls to include secrets that cannot be exposed to end users, such as API keys, use middleware on your server to handle the calls. Proxy the calls from the Carbon AI Chat. This middleware receives the calls from the Carbon AI Chat and forwards them to the service desk along with the additional secret.
 
@@ -240,3 +240,61 @@ If the service desk you are connecting to allows users to reconnect to an agent 
 **Note:** The user is unable to interact with the Carbon AI Chat until the `reconnect` function resolves or the user chooses to disconnect from the service desk.
 
 If the integration needs to record a state between page loads, it can use the `updatePersistedState` function. The `updatePersistedState` persists the provided data in the browser's session history along with the session data that the Carbon AI Chat stores. The session storage has a size limit, so avoid putting large amounts of data here.
+
+#### Handling service desks that don't support reconnection
+
+Not all service desks support reconnecting users to their previous agent conversations after a page refresh. The Carbon AI Chat handles these scenarios gracefully:
+
+**Option 1: Don't implement the `reconnect` method (recommended for unsupported service desks)**
+
+If your service desk doesn't support reconnection, simply don't include a `reconnect` method in your integration. The Carbon AI Chat will skip any reconnection attempts.
+
+```javascript
+class MyServiceDesk {
+  startChat() {
+    /* ... */
+  }
+  endChat() {
+    /* ... */
+  }
+  sendMessageToAgent() {
+    /* ... */
+  }
+  // No reconnect method = no reconnection attempts
+}
+```
+
+**Option 2: Implement `reconnect` and return `false`**
+
+If you want to explicitly handle the reconnection attempt, implement the method and return `false`:
+
+```javascript
+class MyServiceDesk {
+  async reconnect() {
+    // Your service desk doesn't support reconnection
+    return false; // This will end the chat gracefully
+  }
+}
+```
+
+**Option 3: Disable reconnection via configuration**
+
+You can also disable reconnection attempts entirely through configuration:
+
+```javascript
+<ChatContainer
+  serviceDeskFactory={myFactory}
+  serviceDesk={{ allowReconnect: false }}
+/>
+```
+
+#### What happens when reconnection fails or isn't supported
+
+When reconnection is not possible, the Carbon AI Chat provides a clean user experience:
+
+1. **Connection state is cleared**: The chat session is properly ended
+2. **User notification**: The user sees the message "You disconnected from the live agent."
+3. **Bot continues**: After a brief delay, the conversation continues with the bot
+4. **Fresh start**: The user can start a new agent conversation if needed
+
+This ensures that users are never stuck in a broken state and can continue their interaction with the chat system.

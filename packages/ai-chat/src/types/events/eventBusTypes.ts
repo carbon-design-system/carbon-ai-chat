@@ -386,6 +386,18 @@ export interface BusEventHumanAgentSend extends BusEvent {
 }
 
 /**
+ * Fires before the view state is updated in the store. This event is awaited, making it ideal for async operations like animations.
+ *
+ * **Event Timing:**
+ * 1. VIEW_PRE_CHANGE fires (awaited)
+ * 2. View state is updated in store
+ * 3. VIEW_CHANGE fires (awaited)
+ *
+ * **Use cases:**
+ * - Run animations before the view changes
+ * - Modify the new view state before it's applied
+ * - Cancel the view change entirely
+ *
  * @category Events
  */
 export interface BusEventViewPreChange extends BusEvent {
@@ -414,6 +426,18 @@ export interface BusEventViewPreChange extends BusEvent {
 }
 
 /**
+ * Fires after the view state has been updated in the store. This event is awaited, making it ideal for async operations that should happen after the view change.
+ *
+ * **Event Timing:**
+ * 1. VIEW_PRE_CHANGE fires (awaited)
+ * 2. View state is updated in store
+ * 3. VIEW_CHANGE fires (awaited) ← You are here
+ *
+ * **Use cases:**
+ * - React to completed view changes
+ * - Run cleanup or follow-up animations
+ * - Cancel and revert the view change (causes immediate revert without firing events)
+ *
  * @category Events
  */
 export interface BusEventViewChange extends BusEvent {

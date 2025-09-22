@@ -1181,6 +1181,11 @@ enum ButtonItemKind {
   DANGER = "danger",
 
   /**
+   * Ghost Carbon button.
+   */
+  GHOST = "ghost",
+
+  /**
    * Button displayed like a link.
    */
   LINK = "link",

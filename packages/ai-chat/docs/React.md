@@ -59,11 +59,13 @@ See {@link ChatContainerProps} for an explanation of the various accepted props.
 
 This library provides the {@link ChatCustomElement} component, which can be used to render the Carbon AI Chat inside a custom element. Use it if you want to change the location where the Carbon AI Chat renders. This component renders an element in your React app and uses that element as the custom element for rendering the Carbon AI Chat. See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
-This component's default behavior adds and removes a class from the main window of the Carbon AI Chat. It also applies the same behavior to your custom element to manage the visibility of the Carbon AI Chat when it opens or closes. When the Carbon AI Chat closes, it adds a classname to the Carbon AI Chat main window to hide the element. Your custom element receives another classname to set its width and height to 0, so that it doesn't take up space.
+This component requires a `className` prop that defines the size and positioning of the chat when open. The default behavior adds and removes a `cds-aichat--hidden` CSS class to manage visibility. When the Carbon AI Chat closes, the `cds-aichat--hidden` class is added to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
 
 **Note:** In the use case where you are using a custom element but also using the Carbon AI Chat's native launcher, the custom element must remain visible as it also contains the launcher. With that in mind, you should really provide your own launcher.
 
-If you don't want these behaviors, provide your own `onViewChange` prop to {@link ChatCustomElementProps.onViewChange} and provide your logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, this is the mechanism to do that. Refer to the following example.
+If you don't want these behaviors, provide your own `onViewChange` prop to {@link ChatCustomElementProps.onViewChange} and provide your logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, this is the mechanism to do that.
+
+**For advanced view change handling:** You can also listen for {@link BusEventType.VIEW_PRE_CHANGE} and {@link BusEventType.VIEW_CHANGE} events directly. These events fire in sequence (PRE_CHANGE -> view state update -> CHANGE), and both are awaited, making async handlers ideal for animations. See the event type documentation for complete details on timing and usage. Just be aware that the `onViewChange` default behavior will still run if you don't replace that function with your own.
 
 See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
@@ -94,6 +96,15 @@ function App() {
   top: 100px;
   width: 500px;
   height: 500px;
+}
+
+/* Or use logical properties */
+.MyCustomElement {
+  position: absolute;
+  inset-inline-start: 100px;
+  inset-block-start: 100px;
+  inline-size: 500px;
+  block-size: 500px;
 }
 ```
 
@@ -136,7 +147,7 @@ function App() {
 Best (needs props/state):
 
 ```javascript
-function App({ messageService }: any) {
+function App({ messageService }: { messageService: (message: MessageRequest) => void }) {
   const customSendMessage = useCallback(
     (message: MessageRequest) => messageService(message),
     [messageService]
@@ -148,7 +159,7 @@ function App({ messageService }: any) {
 No‑churn variant using a ref:
 
 ```javascript
-function App({ messageService }: any) {
+function App({ messageService }: { messageService: (message: MessageRequest) => void }) {
   const messageServiceRef = useRef(messageService);
   messageServiceRef.current = messageService;
 

@@ -21,7 +21,6 @@ import {
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
-import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
 
 interface UserDefinedSlotsMap {
@@ -36,7 +35,6 @@ interface UserDefinedSlot {
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
-    customLoadHistory,
   },
 };
 

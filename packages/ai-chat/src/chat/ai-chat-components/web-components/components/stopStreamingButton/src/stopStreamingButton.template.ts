@@ -37,8 +37,8 @@ export function stopStreamingButtonTemplate({
     >
       <span slot="icon">
         <span
-          class="${prefix}-stop-icon ${disabled
-            ? "${prefix}-stop-icon--disabled"
+          class="${prefix}--stop-icon ${disabled
+            ? "${prefix}--stop-icon--disabled"
             : ""}"
           >${iconLoader(StopFilled16)}</span
         >

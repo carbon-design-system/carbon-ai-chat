@@ -69,14 +69,14 @@
 
 .#{$prefix}--submit {
   flex: 1;
-  --#{$prefix}-rounded-button-bottom-right: var(#{layout.$spacing-03});
+  --#{$prefix}-rounded-button-bottom-right: #{layout.$spacing-03};
   --#{$prefix}-rounded-button-width: 100%;
   --#{$prefix}-rounded-button-max-width: 100%;
 }
 
 .#{$prefix}--cancel {
   flex: 1;
-  --#{$prefix}-rounded-button-bottom-left: var(#{layout.$spacing-03});
+  --#{$prefix}-rounded-button-bottom-left: #{layout.$spacing-03};
   --#{$prefix}-rounded-button-width: 100%;
   --#{$prefix}-rounded-button-max-width: 100%;
 }
