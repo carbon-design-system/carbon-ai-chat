@@ -24,45 +24,31 @@
     inline-size: 100%;
     padding-inline-end: 0;
 
-    cds-tile {
-      border: none;
-      box-shadow: 0 0 0 1px inset theme.$chat-bubble-border;
-      transition: 150ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    @media screen and (prefers-reduced-motion: reduce) {
-      cds-tile {
-        border: none;
-        box-shadow: 0 0 0 1px inset theme.$chat-bubble-border;
-        transition: none;
-      }
-    }
-
     &:focus {
       text-decoration: none;
 
-      cds-tile {
-        box-shadow: 0 0 0 2px inset theme.$focus;
-        text-decoration: none;
-      }
+      // cds-tile {
+      //   box-shadow: 0 0 0 2px inset theme.$focus;
+      //   text-decoration: none;
+      // }
     }
 
     &:hover {
       text-decoration: none;
 
-      cds-tile {
-        background: theme.$layer-hover-01;
-        text-decoration: none;
-      }
+      // cds-tile {
+      //   background: theme.$layer-hover-01;
+      //   text-decoration: none;
+      // }
     }
 
     &:active {
       text-decoration: none;
 
-      cds-tile {
-        box-shadow: 0 0 0 2px inset theme.$focus;
-        text-decoration: none;
-      }
+      // cds-tile {
+      //   box-shadow: 0 0 0 2px inset theme.$focus;
+      //   text-decoration: none;
+      // }
     }
   }
 }
