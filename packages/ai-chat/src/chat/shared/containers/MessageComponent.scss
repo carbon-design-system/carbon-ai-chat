@@ -55,6 +55,10 @@ $message-bar-width: 3px;
   inset-block-start: 0.5rem;
 }
 
+.WAC__message--withAvatarLine.WAC__message--lastMessage {
+  min-block-size: 100%;
+}
+
 .WAC__message.WAC__message--lastMessage.WAC__message--has-focus::after {
   block-size: calc(100% - #{layout.$spacing-07} + 0.5rem);
   inset-block-end: calc(#{layout.$spacing-07} - 0.5rem);
