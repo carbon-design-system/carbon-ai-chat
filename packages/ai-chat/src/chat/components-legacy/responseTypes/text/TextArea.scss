@@ -12,15 +12,19 @@
 .cds-aichat--text-area {
   position: relative;
   block-size: fit-content;
-}
 
-.cds-aichat--text-area .cds-aichat--text-area-textarea {
-  padding: 0;
-  border: button.$button-border-width solid transparent;
-  block-size: 100%;
-  color: inherit;
-  font: inherit;
-  inline-size: 100%;
+  .cds-aichat--text-area-textarea,
+  .cds-aichat--text-area-sizer {
+    padding: 0;
+    border: button.$button-border-width solid transparent;
+    margin: 0;
+    block-size: 100%;
+    color: inherit;
+    font: inherit;
+    inline-size: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
 }
 
 .cds-aichat--text-area .cds-aichat--text-area-textarea:focus {
@@ -38,7 +42,9 @@
 .cds-aichat--text-area.cds-aichat--text-area--auto-size
   .cds-aichat--text-area-textarea {
   position: absolute;
+  overflow: hidden;
   inset-block-start: 0;
+  resize: none;
 }
 
 /*

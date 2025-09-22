@@ -133,6 +133,12 @@ class TextArea extends PureComponent<TextAreaProps> {
   private textAreaRef: RefObject<HTMLTextAreaElement> = React.createRef();
 
   /**
+   * A React ref to the sizer component.
+   * Used to calculate the required height for the textarea content and determine when scrolling is needed.
+   */
+  private sizerRef: RefObject<HTMLDivElement> = React.createRef();
+
+  /**
    * Returns the HTML element.
    */
   public getHTMLElement() {
@@ -151,6 +157,45 @@ class TextArea extends PureComponent<TextAreaProps> {
    */
   doBlur() {
     this.textAreaRef.current.blur();
+  }
+
+  /**
+   * Updates textarea overflow based on whether content exceeds max height.
+   *
+   * This method prevents scrollbar flashing during textarea auto-resize by:
+   * 1. Measuring the actual content height using the hidden sizer div
+   * 2. Comparing it against the max-block-size limit (157px) defined in Input.scss
+   * 3. Only enabling scrolling when content actually exceeds the maximum height
+   *
+   * This ensures smooth resizing without premature scrollbar appearance.
+   */
+  updateOverflow() {
+    if (
+      !this.props.autoSize ||
+      !this.textAreaRef.current ||
+      !this.sizerRef.current
+    ) {
+      return;
+    }
+
+    const sizerHeight = this.sizerRef.current.scrollHeight;
+    const maxHeight = 157; // max-block-size from Input.scss lines 187-188
+
+    if (sizerHeight > maxHeight) {
+      this.textAreaRef.current.style.overflow = "auto";
+    } else {
+      this.textAreaRef.current.style.overflow = "hidden";
+    }
+  }
+
+  componentDidUpdate() {
+    // Re-evaluate scrollbar necessity whenever component updates (e.g., value changes)
+    this.updateOverflow();
+  }
+
+  componentDidMount() {
+    // Initial scrollbar evaluation when component first renders
+    this.updateOverflow();
   }
 
   render() {
@@ -173,7 +218,7 @@ class TextArea extends PureComponent<TextAreaProps> {
       testId,
       onSelect,
     } = this.props;
-
+    console.log({ value });
     // The extra ' ' in the sizer div below makes sure there's at least a space in the area to ensure that we get a
     // min-height of one line of text.
     return (
@@ -209,8 +254,28 @@ class TextArea extends PureComponent<TextAreaProps> {
           data-testid={testId}
         />
         {autoSize && (
-          <div className="cds-aichat--text-area-sizer">
-            {value || placeholder || " "}
+          <div ref={this.sizerRef} className="cds-aichat--text-area-sizer">
+            {/*
+              Split text content by newlines and render each line properly for height calculation.
+
+              Key improvements made:
+              1. Split on '\n' to handle carriage returns correctly
+              2. Use non-breaking space (\u00A0) for empty lines to prevent line collapse
+              3. Insert <br /> tags between lines to maintain proper line spacing
+
+              This ensures accurate height measurement for the sizer, which is critical for:
+              - Proper textarea auto-resizing
+              - Correct scrollbar detection when content exceeds max height (157px)
+              - Handling edge cases like multiple consecutive newlines
+            */}
+            {(value || placeholder || " ")
+              .split("\n")
+              .map((line, index, array) => (
+                <React.Fragment key={index}>
+                  {line || "\u00A0"}
+                  {index < array.length - 1 && <br />}
+                </React.Fragment>
+              ))}
           </div>
         )}
       </div>
