@@ -203,18 +203,6 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   align-self: flex-start;
 }
 
-cds-button.cds-aichat--input-container__send-button:enabled svg,
-cds-button.cds-aichat--input-container__send-button:active svg,
-cds-button.cds-aichat--input-container__send-button:focus svg,
-cds-button.cds-aichat--input-container__send-button:active:focus svg {
-  fill: theme.$interactive;
-}
-
-cds-button.cds-aichat--input-container__send-button:disabled:hover svg,
-cds-button.cds-aichat--input-container__send-button:disabled svg {
-  fill: theme.$icon-disabled;
-}
-
 .cds-aichat--container--render[dir="rtl"]
   .cds-aichat--input-container__send-button
   svg {
@@ -226,4 +214,15 @@ cds-button.cds-aichat--input-container__send-button svg {
   cursor: inherit;
   fill: theme.$interactive;
   inline-size: layout.$spacing-05;
+}
+
+cds-button.cds-aichat--input-container__send-button:active svg,
+cds-button.cds-aichat--input-container__send-button:focus svg,
+cds-button.cds-aichat--input-container__send-button:active:focus svg {
+  fill: theme.$interactive;
+}
+
+cds-button.cds-aichat--input-container__send-button[disabled]:hover svg,
+cds-button.cds-aichat--input-container__send-button[disabled] svg {
+  fill: theme.$icon-disabled;
 }
