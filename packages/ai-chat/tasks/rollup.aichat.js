@@ -109,6 +109,7 @@ async function runRollup() {
         preserveModules: false,
         entryFileNames: '[name].js',
         chunkFileNames: 'chat.[name].js',
+        sourcemap: process.env.NODE_ENV !== 'production',
         banner: `/*
  *  Copyright IBM Corp. 2025
  *
@@ -134,6 +135,8 @@ async function runRollup() {
               {
                 // You can add includePaths here, but often the Sass importer works well without extensive paths.
                 includePaths: [process.cwd(), path.resolve(paths.root, 'node_modules'), path.resolve(paths.root, '../../', 'node_modules')],
+                quietDeps: true,
+                silenceDeprecations: ['legacy-js-api'],
               },
             ],
           ],
