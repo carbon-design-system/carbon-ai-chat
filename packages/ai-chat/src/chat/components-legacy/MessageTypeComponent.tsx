@@ -90,6 +90,7 @@ import {
   UserType,
   VideoItem,
 } from "../../types/messaging/Messages";
+import RichText from "./responseTypes/util/RichText";
 
 /**
  * This component renders a specific message component based on a message's type.
@@ -205,9 +206,13 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           {/* The use of the heading role here is a compromise to enable the use of the
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
-          <span role="heading" aria-level={2}>
-            {userText}
-          </span>
+          <div role="heading" aria-level={2}>
+            <RichText
+              text={userText}
+              shouldRemoveHTMLBeforeMarkdownConversion
+              overrideSanitize={true}
+            ></RichText>
+          </div>
         </div>
       );
     }
