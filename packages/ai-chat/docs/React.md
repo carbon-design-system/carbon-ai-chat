@@ -332,6 +332,82 @@ function App() {
 }
 ```
 
+You may also want your `user_defined` responses to stream. In that case, you will want to make use of {@link RenderUserDefinedState.partialItems}. The partialItems come back as an array of every chunk we have received.
+They are _not_ concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through
+an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case.
+
+```javascript
+import React, { useCallback, useEffect, useState } from 'react';
+import { ChatContainer } from '@carbon/ai-chat';
+
+const chatOptions = {
+  // Your configuration object.
+};
+
+function App() {
+
+  const [stateText, setStateText] = useState<string>('Initial text');
+
+  useEffect(() => {
+    // This just updates the stateText every two seconds with Date.now()
+    setInterval(() => setStateText(Date.now().toString()), 2000);
+  }, []);
+
+  const renderUserDefinedResponse = useCallback(
+    (state: RenderUserDefinedState, instance: ChatInstance) => {
+      const { messageItem } = state;
+      // The event here will contain details for each user defined response that needs to be rendered.
+      if (messageItem) {
+        switch (messageItem.user_defined?.user_defined_type) {
+          case 'green':
+            // Pass in the new state as a prop!
+            return (
+              <UserDefinedResponseExample text={messageItem.user_defined.text as string} parentStateText={stateText} />
+            );
+          default:
+            return null;
+        }
+      }
+
+      if (partialItems) {
+        switch(partialItems[0].user_defined?.user_defined_type) {
+          case "green": {
+            // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+            // concatenation as you want.
+            const text = partialItems.map(item => item.user_defined?.text).join("");
+            return (
+              <UserDefinedResponseExample
+                text={text}
+                parentStateText={stateText}
+              />
+            )
+          }
+          default: {
+            // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+            // streaming behavior for.
+            return <AISkeletonPlaceholder className="fullSkeleton" />;
+          }
+        }
+      }
+
+      // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
+      // switch statement here that does something more specific depending on the component.
+      return <AISkeletonPlaceholder className="fullSkeleton" />;
+    },
+    [stateText], // Only update if stateText changes.
+  );
+
+  return (
+    <ChatContainer
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
+}
+```
+
 ### Writable Elements
 
 This component also has several elements inside the chat that you can add extra content to with a writeable element. The {@link ChatContainerProps.renderWriteableElements} prop is an object with the key as the area you want to render a component to and the value being the component to render there. Be sure to review [UI customization](Customization.md).

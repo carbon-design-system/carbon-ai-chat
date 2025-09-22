@@ -59,7 +59,7 @@ function DemoApp({ config, settings }: AppProps) {
    */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
-      const { messageItem } = state;
+      const { messageItem, partialItems } = state;
       // The event here will contain details for each user defined response that needs to be rendered.
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
@@ -77,9 +77,28 @@ function DemoApp({ config, settings }: AppProps) {
         }
       }
 
-      // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
-      // switch statement here that does something more specific depending on the component.
-      return <AISkeletonPlaceholder className="fullSkeleton" />;
+      if (partialItems) {
+        switch (partialItems[0].user_defined?.user_defined_type) {
+          case "green": {
+            // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+            // concatenation as you want.
+            const text = partialItems
+              .map((item) => item.user_defined?.text)
+              .join("");
+            return (
+              <UserDefinedResponseExample
+                text={text}
+                parentStateText={stateText}
+              />
+            );
+          }
+          default: {
+            // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+            // streaming behavior for.
+            return <AISkeletonPlaceholder className="fullSkeleton" />;
+          }
+        }
+      }
     },
     [stateText],
   );
@@ -194,7 +213,7 @@ function DemoApp({ config, settings }: AppProps) {
       : undefined;
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
-  let className;
+  let className = "";
   if (
     settings.layout === "fullscreen" ||
     settings.layout === "fullscreen-no-gutter"
