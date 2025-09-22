@@ -19,10 +19,8 @@ import {
   BusEventType,
   BusEventViewChange,
   ChatInstance,
-  CompleteItemChunk,
   GenericItem,
   MessageResponse,
-  PartialItemChunk,
   PublicConfig,
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -48,7 +46,7 @@ interface UserDefinedSlot {
   message?: GenericItem;
   fullMessage?: MessageResponse;
   messageItem?: DeepPartial<GenericItem>;
-  chunk?: PartialItemChunk | CompleteItemChunk;
+  partialItems?: GenericItem[];
 }
 
 /**
@@ -190,13 +188,33 @@ export class DemoApp extends LitElement {
    */
   userDefinedHandler = (event: any) => {
     const { data } = event;
-    this.userDefinedSlotsMap[data.slot] = {
-      streaming: Boolean(data.chunk),
-      message: data.message,
-      fullMessage: data.fullMessage,
-      chunk: data.chunk,
-      messageItem: data.messageItem,
-    };
+
+    // Initialize or update the slot
+    const existingSlot = this.userDefinedSlotsMap[data.slot];
+    const isStreaming = Boolean(data.chunk);
+
+    if (isStreaming && data.messageItem) {
+      // For streaming, accumulate partial items
+      const existingPartialItems = existingSlot?.partialItems || [];
+      const newPartialItems = [...existingPartialItems, data.messageItem];
+      this.userDefinedSlotsMap[data.slot] = {
+        streaming: Boolean(newPartialItems.length),
+        message: data.message,
+        fullMessage: data.fullMessage,
+        messageItem: data.messageItem,
+        partialItems: newPartialItems,
+      };
+    } else {
+      // For complete responses
+      this.userDefinedSlotsMap[data.slot] = {
+        streaming: Boolean(existingSlot?.partialItems?.length),
+        message: data.message,
+        fullMessage: data.fullMessage,
+        messageItem: data.messageItem,
+        partialItems: existingSlot?.partialItems,
+      };
+    }
+
     this.requestUpdate();
   };
 
@@ -248,7 +266,33 @@ export class DemoApp extends LitElement {
    * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-render#user-defined-responses
    */
   renderUserDefinedChunk(slot: keyof UserDefinedSlotsMap) {
-    const { messageItem } = this.userDefinedSlotsMap[slot];
+    const { messageItem, partialItems } = this.userDefinedSlotsMap[slot];
+
+    if (partialItems && partialItems.length > 0) {
+      switch (partialItems[0].user_defined?.user_defined_type) {
+        case "green": {
+          // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+          // concatenation as you want.
+          const text = partialItems
+            .map((item) => item.user_defined?.text)
+            .join("");
+          return html`<div slot=${slot}>
+            <user-defined-response-example
+              .text=${text}
+              .valueFromParent=${this.valueFromParent}
+            ></user-defined-response-example>
+          </div>`;
+        }
+        default: {
+          // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+          // streaming behavior for.
+          return html`<div slot=${slot}>
+            <cds-ai-skeleton-text></cds-ai-skeleton-text>
+          </div>`;
+        }
+      }
+    }
+
     switch (messageItem?.user_defined?.user_defined_type) {
       default:
         // We are just going to always return a skeleton here, but you can give yourself more fine grained control.

@@ -189,8 +189,11 @@ interface UserDefinedSlotsMap {
 }
 
 interface UserDefinedSlot {
-  message: GenericItem;
-  fullMessage: MessageResponse;
+  streaming: boolean;
+  message?: GenericItem;
+  fullMessage?: MessageResponse;
+  messageItem?: DeepPartial<GenericItem>;
+  partialItems?: GenericItem[];
 }
 
 const config: PublicConfig = {
@@ -213,6 +216,10 @@ export class Demo extends LitElement {
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: this.userDefinedHandler,
+    });
   };
 
   /**
@@ -222,10 +229,33 @@ export class Demo extends LitElement {
    */
   userDefinedHandler = (event: BusEventUserDefinedResponse) => {
     const { data } = event;
-    this.userDefinedSlotsMap[data.slot] = {
-      message: data.message,
-      fullMessage: data.fullMessage,
-    };
+
+    // Initialize or update the slot
+    const existingSlot = this.userDefinedSlotsMap[data.slot];
+    const isStreaming = Boolean(data.chunk);
+
+    if (isStreaming && data.messageItem) {
+      // For streaming, accumulate partial items
+      const existingPartialItems = existingSlot?.partialItems || [];
+      const newPartialItems = [...existingPartialItems, data.messageItem];
+      this.userDefinedSlotsMap[data.slot] = {
+        streaming: Boolean(newPartialItems.length),
+        message: data.message,
+        fullMessage: data.fullMessage,
+        messageItem: data.messageItem,
+        partialItems: newPartialItems,
+      };
+    } else {
+      // For complete responses
+      this.userDefinedSlotsMap[data.slot] = {
+        streaming: Boolean(existingSlot?.partialItems?.length),
+        message: data.message,
+        fullMessage: data.fullMessage,
+        messageItem: data.messageItem,
+        partialItems: existingSlot?.partialItems,
+      };
+    }
+
     this.requestUpdate();
   };
 
@@ -236,7 +266,9 @@ export class Demo extends LitElement {
   renderUserDefinedSlots() {
     const userDefinedSlotsKeyArray = Object.keys(this.userDefinedSlotsMap);
     return userDefinedSlotsKeyArray.map((slot) => {
-      return this.renderUserDefinedResponse(slot);
+      return this.userDefinedSlotsMap[slot].streaming
+        ? this.renderUserDefinedChunk(slot)
+        : this.renderUserDefinedResponse(slot);
     });
   }
 
@@ -259,6 +291,234 @@ export class Demo extends LitElement {
       default:
         return null;
     }
+  }
+
+  /**
+   * Here we process streaming chunks from this.userDefinedSlotsMap. We go ahead and use a switch statement to decide
+   * which element we should be rendering for streaming content.
+   */
+  renderUserDefinedChunk(slot: keyof UserDefinedSlotsMap) {
+    const { messageItem, partialItems } = this.userDefinedSlotsMap[slot];
+
+    if (partialItems && partialItems.length > 0) {
+      switch (partialItems[0].user_defined?.user_defined_type) {
+        case "my_unique_identifier": {
+          // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+          // concatenation as you want.
+          const text = partialItems
+            .map((item) => item.user_defined?.text)
+            .join("");
+          return html`<div slot=${slot}>${text}</div>`;
+        }
+        default: {
+          // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+          // streaming behavior for.
+          return html`<div slot=${slot}>
+            <cds-ai-skeleton-text></cds-ai-skeleton-text>
+          </div>`;
+        }
+      }
+    }
+
+    // Fallback to skeleton if no partialItems
+    return html`<div slot=${slot}>
+      <cds-ai-skeleton-text></cds-ai-skeleton-text>
+    </div>`;
+  }
+
+  render() {
+    return html`
+      <h1>Welcome!</h1>
+      <cds-aichat-container
+        .onBeforeRender=${this.onBeforeRender}
+        .messaging=${config.messaging}
+        >${this.renderUserDefinedSlots()}</cds-aichat-container
+      >
+    `;
+  }
+}
+```
+
+You may also want your `user_defined` responses to stream. In that case, you will want to listen for both {@link BusEventType.USER*DEFINED_RESPONSE} and {@link BusEventType.CHUNK_USER_DEFINED_RESPONSE} events, and make use of the `partialItems` that accumulate over time. The partialItems come back as an array of every chunk received. They are \_not* concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case.
+
+```typescript
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import "@carbon/web-components/es/components/ai-skeleton/index.js";
+
+import {
+  BusEventType,
+  type BusEventUserDefinedResponse,
+  type ChatInstance,
+  type CompleteItemChunk,
+  type GenericItem,
+  type MessageResponse,
+  type PartialItemChunk,
+  type PublicConfig,
+  type UserDefinedItem,
+} from "@carbon/ai-chat";
+import { html, LitElement } from "lit";
+import { customElement, state } from "lit/decorators.js";
+
+import { customSendMessage } from "./customSendMessage";
+
+interface UserDefinedSlotsMap {
+  [key: string]: UserDefinedSlot;
+}
+
+interface UserDefinedSlot {
+  streaming: boolean;
+  message?: GenericItem;
+  fullMessage?: MessageResponse;
+  messageItem?: DeepPartial<GenericItem>;
+  partialItems?: GenericItem[];
+}
+
+const config: PublicConfig = {
+  messaging: {
+    customSendMessage,
+  },
+};
+
+@customElement("my-app")
+export class Demo extends LitElement {
+  @state()
+  accessor instance!: ChatInstance;
+
+  @state()
+  accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
+
+  @state()
+  accessor valueFromParent: string = Date.now().toString();
+
+  private _interval?: ReturnType<typeof setInterval>;
+
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    this._interval = setInterval(() => {
+      this.valueFromParent = Date.now().toString();
+    }, 1500);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._interval) {
+      clearInterval(this._interval);
+    }
+  }
+
+  onBeforeRender = (instance: ChatInstance) => {
+    this.instance = instance;
+    instance.on({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: this.userDefinedHandler,
+    });
+    instance.on({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      handler: this.userDefinedHandler,
+    });
+  };
+
+  /**
+   * Each user defined event is tied to a slot deeply rendered with-in AI chat that is generated at runtime.
+   * Here we make sure we store all these slots along with their relevant data in order to be able to dynamically
+   * render the content to be slotted when this.renderUserDefinedSlots() is called in the render function.
+   */
+  userDefinedHandler = (event: BusEventUserDefinedResponse) => {
+    const { data } = event;
+
+    // Initialize or update the slot
+    const existingSlot = this.userDefinedSlotsMap[data.slot];
+    const isStreaming = Boolean(data.chunk);
+
+    if (isStreaming && data.messageItem) {
+      // For streaming, accumulate partial items
+      const existingPartialItems = existingSlot?.partialItems || [];
+      const newPartialItems = [...existingPartialItems, data.messageItem];
+      this.userDefinedSlotsMap[data.slot] = {
+        streaming: Boolean(newPartialItems.length),
+        message: data.message,
+        fullMessage: data.fullMessage,
+        messageItem: data.messageItem,
+        partialItems: newPartialItems,
+      };
+    } else {
+      // For complete responses
+      this.userDefinedSlotsMap[data.slot] = {
+        streaming: Boolean(existingSlot?.partialItems?.length),
+        message: data.message,
+        fullMessage: data.fullMessage,
+        messageItem: data.messageItem,
+        partialItems: existingSlot?.partialItems,
+      };
+    }
+
+    this.requestUpdate();
+  };
+
+  /**
+   * This renders each of the dynamically generated slots that were generated by the AI chat by calling
+   * this.renderUserDefinedResponse on each one.
+   */
+  renderUserDefinedSlots() {
+    const userDefinedSlotsKeyArray = Object.keys(this.userDefinedSlotsMap);
+    return userDefinedSlotsKeyArray.map((slot) => {
+      return this.userDefinedSlotsMap[slot].streaming
+        ? this.renderUserDefinedChunk(slot)
+        : this.renderUserDefinedResponse(slot);
+    });
+  }
+
+  /**
+   * Here we process a single item from this.userDefinedSlotsMap. We go ahead and use a switch statement to decide
+   * which element we should be rendering.
+   */
+  renderUserDefinedResponse(slot: keyof UserDefinedSlotsMap) {
+    const { message, fullMessage } = this.userDefinedSlotsMap[slot];
+
+    const userDefinedMessage = message as UserDefinedItem;
+
+    // Check the "type" we have used as our key.
+    switch (userDefinedMessage.user_defined?.user_defined_type) {
+      case "my_unique_identifier":
+        // And here is an example using your own component.
+        return html`<div slot=${slot}>
+          ${userDefinedMessage.user_defined.text as string}
+        </div>`;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Here we process streaming chunks from this.userDefinedSlotsMap. We go ahead and use a switch statement to decide
+   * which element we should be rendering for streaming content.
+   */
+  renderUserDefinedChunk(slot: keyof UserDefinedSlotsMap) {
+    const { messageItem, partialItems } = this.userDefinedSlotsMap[slot];
+
+    if (partialItems && partialItems.length > 0) {
+      switch (partialItems[0].user_defined?.user_defined_type) {
+        case "my_unique_identifier": {
+          // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+          // concatenation as you want.
+          const text = partialItems
+            .map((item) => item.user_defined?.text)
+            .join("");
+          return html`<div slot=${slot}>${text}</div>`;
+        }
+        default: {
+          // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+          // streaming behavior for.
+          return html`<div slot=${slot}>
+            <cds-ai-skeleton-text></cds-ai-skeleton-text>
+          </div>`;
+        }
+      }
+    }
+
+    // Fallback to skeleton if no partialItems
+    return html`<div slot=${slot}>
+      <cds-ai-skeleton-text></cds-ai-skeleton-text>
+    </div>`;
   }
 
   render() {

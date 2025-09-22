@@ -1014,6 +1014,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             {scrollDown && (
               <button
                 type="button"
+                aria-hidden
                 aria-label={languagePack.messages_scrollMoreButton}
                 className="cds-aichat-scrollDownIndicatorIcon"
                 onClick={() =>
