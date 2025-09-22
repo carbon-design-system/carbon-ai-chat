@@ -46,6 +46,7 @@
     "**/web-components/**/*.js"
   ],
   "devDependencies": {
+    "@carbon/ai-chat-components": "*",
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.88.0",
     "@carbon/themes": "^11.58.0",

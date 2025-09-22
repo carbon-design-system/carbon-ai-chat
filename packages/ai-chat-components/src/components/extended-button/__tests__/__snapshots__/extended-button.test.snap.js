@@ -7,9 +7,8 @@
 
 export const snapshots = {};
 
-snapshots[
-  "extended-button should render with cds-button minimum attributes"
-] = `<prefix-extended-button
+snapshots["extended-button should render with cds-button minimum attributes"] =
+  `<cds-aichat-extended-button
   has-main-content=""
   kind="primary"
   size="lg"
@@ -19,6 +18,6 @@ snapshots[
   type="button"
 >
   button
-</prefix-extended-button>
+</cds-aichat-extended-button>
 `;
 /* end snapshot extended-button should render with cds-button minimum attributes */
