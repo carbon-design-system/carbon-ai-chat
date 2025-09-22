@@ -84,6 +84,6 @@
     "storybook": "^8.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.4.20",
-    "web-dev-server-plugin-lit-css": "^3.0.1"
+    "web-dev-server-plugin-lit-css": "^4.0.0"
   }
 }
