@@ -108,6 +108,24 @@ export class MyApp extends LitElement {
 }
 ```
 
+#### Using alongside `carbon-angular-components`
+
+If you are using `@carbon/ai-chat` in your Angular application along with `carbon-angular-components`, you may run into component registry errors as the underlying `@carbon/web-components` subcomponents utilize the same naming structure as components in `carbon-angular-components`. In order to avoid this, import from the `es-custom` build folder rather than `es`. This build folder creates a separate prefix for all the Web Components.
+
+```
+import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
+
+...
+
+render() {
+  return html`
+    <cds-custom-aichat-container ....> </cds-custom-aichat-container>
+    <cds-custom-aichat-custom-element ....> </cds-custom-aichat-custom-element>
+  `;
+}
+```
+
 ### Accessing instance methods
 
 You can use the {@link CdsAiChatContainerAttributes.onBeforeRender} or {@link CdsAiChatContainerAttributes.onAfterRender} props to access the Carbon AI Chat's instance if you need to call instance methods later. This example renders a button that toggles the Carbon AI Chat open and only renders after the instance becomes available. Refer to the following example.

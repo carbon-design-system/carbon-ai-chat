@@ -15,6 +15,10 @@ Version 1.0.0 introduces **live config updates**. Changes to `PublicConfig` now 
 - `themeConfig` -> removed (see theming below)
 - All `PublicConfig` properties are now top-level props (no more `config` prop)
 
+### Separate build folder for custom prefix:
+
+Instead of pulling from the `es-custom` folder and using the `cds-custom-*` components from `@carbon/web-components`, we are now using components straight from `es` and generating our own `es-custom` folder to handle the custom registry issues that may arise from using the `@carbon/ai-chat` package alongside `carbon-angular-components`. See migration examples below for details.
+
 ### Service Desk:
 
 - `serviceDesk` and `serviceDeskFactory` moved out of config to top-level props
@@ -132,6 +136,38 @@ const config = {
     },
   },
 };
+```
+
+### `es-custom` folder
+
+**Note:** You only need to import from the `es-custom` folder if you are facing component registry issues. This usually happens when using the `@carbon/ai-chat` package alongside `carbon-angular-components` where the component names clash with the underlying subcomponents from `@carbon/web-components`.
+
+If not using alongside `carbon-angular-components`, resume importing from the `es` folder and using the `cds-aichat` prefix.
+
+```ts
+// Before
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+
+...
+
+render() {
+  return html`
+    <cds-aichat-container ....> </cds-aichat-container>
+    <cds-aichat-custom-element ....> </cds-aichat-custom-element>
+  `;
+
+// After
+import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
+
+...
+
+render() {
+  return html`
+    <cds-custom-aichat-container ....> </cds-custom-aichat-container>
+    <cds-custom-aichat-custom-element ....> </cds-custom-aichat-custom-element>
+  `;
 ```
 
 ### React Usage (Interface Flattening)
