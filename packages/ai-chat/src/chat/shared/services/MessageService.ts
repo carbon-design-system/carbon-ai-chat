@@ -13,7 +13,7 @@ import inputItemToLocalItem from "../schema/inputItemToLocalItem";
 import { createLocalMessageForInlineError } from "../schema/outputItemToLocalItem";
 import actions from "../store/actions";
 import { MessageErrorState } from "../../../types/messaging/LocalMessageItem";
-
+import { BusEventSend } from "../../../types/events/eventBusTypes";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { MessageLoadingManager } from "../utils/messageServiceUtils";
 import {
@@ -435,10 +435,18 @@ class MessageService {
       const controller = new AbortController();
       current.sendMessageController = controller;
       debugLog("Called customSendMessage", message);
-
+      const busEventSend: BusEventSend = {
+        type: BusEventType.SEND,
+        data: message,
+        source: current.source,
+      };
       await customSendMessage(
         message,
-        { signal: controller.signal, silent: current.requestOptions.silent },
+        {
+          signal: controller.signal,
+          silent: current.requestOptions.silent,
+          busEventSend: busEventSend,
+        },
         this.serviceManager.instance,
       );
       await this.processSuccess(current, null);

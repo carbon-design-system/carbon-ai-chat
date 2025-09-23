@@ -637,10 +637,6 @@ function MESSAGE_TO_AGENT_HELP(): MockStep[] {
             HELP_TEXT,
           instance.mockState.currentAgent.id,
         );
-        // instance.sendMessageToUser(
-        //   HELP_TEXT,
-        //   instance.mockState.currentAgent.id,
-        // );
       },
     },
   ];
