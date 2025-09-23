@@ -18,6 +18,8 @@ $prefix: "cds-aichat";
 #{$prefix}-tile-container {
   .#{$prefix}-tile-container-footer {
     display: flex;
+    border-end-end-radius: layout.$spacing-03;
+    border-end-start-radius: layout.$spacing-03;
     inline-size: 100%;
 
     &:not(:has([kind="ghost"])) {

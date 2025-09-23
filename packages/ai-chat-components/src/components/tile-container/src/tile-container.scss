@@ -18,7 +18,7 @@ $css--plex: true !default;
 /* tile container styles */
 :host(#{$prefix}-tile-container) {
   display: block;
-  border: solid 1px theme.$chat-bubble-border;
   border-radius: layout.$spacing-03;
   background-color: theme.$layer;
+  box-shadow: 0 0 0 1px theme.$chat-bubble-border;
 }
