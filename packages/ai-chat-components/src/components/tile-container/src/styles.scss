@@ -1,0 +1,80 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+$carbon-prefix: "cds";
+$prefix: "cds-aichat";
+
+// Footer buttons styles
+.#{$prefix}-tile-container-footer {
+  display: flex;
+  inline-size: 100%;
+
+  * {
+    inline-size: 100%;
+  }
+
+  &:not(#{$carbon-prefix}-button[kind="ghost"]) {
+    gap: 1px;
+  }
+
+  #{$carbon-prefix}-button {
+    &[kind="ghost"] {
+      // need a confirmation on token
+      border-block-start: 1px solid theme.$border-subtle;
+    }
+  }
+
+  &.vertical {
+    flex-direction: column;
+
+    #{$carbon-prefix}-button {
+      &:last-child::part(button),
+      &:only-child::part(button) {
+        border-end-end-radius: layout.$spacing-03;
+        border-end-start-radius: layout.$spacing-03;
+      }
+    }
+  }
+
+  &:not(.vertical) {
+    #{$carbon-prefix}-button {
+      &:first-child::part(button) {
+        border-end-start-radius: layout.$spacing-03;
+      }
+
+      &:last-child::part(button) {
+        border-end-end-radius: layout.$spacing-03;
+      }
+    }
+  }
+}
+
+// Tile styles
+#{$prefix}-tile-container
+  #{$carbon-prefix}-clickable-tile:first-child::part(link),
+#{$prefix}-tile-container #{$carbon-prefix}-tile:first-child::part(link) {
+  border-start-end-radius: layout.$spacing-03;
+  border-start-start-radius: layout.$spacing-03;
+}
+
+#{$prefix}-tile-container
+  #{$carbon-prefix}-clickable-tile:last-child::part(link),
+#{$prefix}-tile-container #{$carbon-prefix}-tile:last-child::part(link) {
+  border-end-end-radius: layout.$spacing-03;
+  border-end-start-radius: layout.$spacing-03;
+}
+
+#{$prefix}-tile-container
+  #{$carbon-prefix}-clickable-tile:only-child::part(link),
+#{$prefix}-tile-container #{$carbon-prefix}-tile:only-child::part(link) {
+  border-radius: layout.$spacing-03;
+}
