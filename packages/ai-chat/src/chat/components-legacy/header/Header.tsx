@@ -34,6 +34,7 @@ import React, {
 import { useSelector } from "../../hooks/useSelector";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import OverflowMenu from "../../components/carbon/OverflowMenu";
+import OverflowMenuBody from "../../components/carbon/OverflowMenuBody";
 import OverflowMenuItem from "../../components/carbon/OverflowMenuItem";
 import CDSOverflowMenu from "@carbon/web-components/es/components/overflow-menu/overflow-menu";
 import { ChatHeaderTitle } from "../../ai-chat-components/react/components/chatHeader/ChatHeaderTitle";
@@ -50,7 +51,6 @@ import WriteableElement from "../WriteableElement";
 import { AISlug } from "./AISlug";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
 import { PageObjectId, TestId } from "../../utils/PageObjectId";
-import OverflowMenuBody from "../../components/carbon/OverflowMenuBody";
 
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const DownToBottom = carbonIconToReact(DownToBottom16);
@@ -274,6 +274,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       >
         <OverflowMenuVertical
           aria-label={languagePack.components_overflow_ariaLabel}
+          className="cds--overflow-menu__icon"
           slot="icon"
         />
         <OverflowMenuBody>

@@ -13,7 +13,7 @@ import React from "react";
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CarbonOverflowMenuElement from "@carbon/web-components/es/components/overflow-menu/overflow-menu-body.js";
 const OverflowMenuBody = createComponent({
-  tagName: "cds-overflow-body",
+  tagName: "cds-overflow-menu-body",
   elementClass: CarbonOverflowMenuElement,
   react: React,
 });
