@@ -54,6 +54,26 @@
   inline-size: 100%;
 }
 
+.cds-aichat--modal-host {
+  position: fixed;
+  z-index: calc(#{chat-theme.$z-index} + 1);
+  block-size: 100vh;
+  inline-size: 100vw;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  /* Allow pointer events only when there are child elements (modals) */
+  pointer-events: none;
+}
+
+/* When there are modal children, enable pointer events on them and block interaction with background */
+.cds-aichat--modal-host:has(> *) {
+  pointer-events: auto;
+}
+
+.cds-aichat--modal-host > * {
+  pointer-events: auto;
+}
+
 .cds-aichat--widget {
   position: relative;
   display: flex;
@@ -113,18 +133,6 @@
   inset-inline-start: 0;
 }
 
-/* Generic background cover before rounded variants */
-.cds-aichat--background-cover {
-  position: absolute;
-  z-index: 2;
-  animation: cds-chat-anim-background-cover motion.$duration-moderate-02
-    motion.motion(standard, productive);
-  background: theme.$overlay;
-  block-size: 100%;
-  inline-size: 100%;
-  opacity: 0.5;
-}
-
 /* These selectors apply a border radius to containers/elements that need to match the widget frame's border radius when
 
 rounded corners are enabled. */
@@ -140,8 +148,7 @@ rounded corners are enabled. */
   .cds-aichat--widget__animation-container,
   .cds-aichat--bot-container,
   .cds-aichat--overlay-panel,
-  .cds-aichat--hydrating-container,
-  .cds-aichat--background-cover {
+  .cds-aichat--hydrating-container {
     border-end-end-radius: layout.$spacing-03;
     border-end-start-radius: layout.$spacing-03;
     border-start-end-radius: layout.$spacing-03;
@@ -312,27 +319,6 @@ svg.cds-aichat--icon__logout--reverse {
 
 .cds-aichat--container--render[dir="rtl"] .cds-aichat--icon__logout--reverse {
   transform: none;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--background-cover {
-    position: absolute;
-    z-index: 2;
-    animation: none;
-    background: theme.$overlay;
-    block-size: 100%;
-    inline-size: 100%;
-    opacity: 0.5;
-  }
-}
-
-.cds-aichat--background-cover.cds-aichat--background-cover__non-header,
-.cds-aichat--widget.cds-aichat--widget--rounded
-  .cds-aichat--background-cover.cds-aichat--background-cover__non-header {
-  block-size: calc(100% - 40px);
-  border-start-end-radius: 0;
-  border-start-start-radius: 0;
-  inset-block-start: 40px;
 }
 
 .cds-aichat--scroll-focus:focus-visible::before {

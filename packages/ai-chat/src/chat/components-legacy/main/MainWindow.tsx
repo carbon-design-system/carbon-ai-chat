@@ -90,18 +90,16 @@ interface MainWindowOwnProps extends HasServiceManager {
    * The mutable ref object for accessing the main window functions.
    */
   mainWindowRef: MutableRefObject<MainWindowFunctions>;
+
+  /**
+   * The host element for modal portals, provided from a higher level component.
+   */
+  modalPortalHostElement: Element | null;
 }
 
 interface MainWindowState {
   open: boolean;
   closing: boolean;
-
-  /**
-   * This is a reference to the Element that acts as the host for elements from {@link ModalPortal}. We set this in
-   * state instead of a class property to make sure the component re-renders and the context is updated with this
-   * value after the component is mounted.
-   */
-  modalPortalHostElement: Element;
 
   /**
    * Counter to track if there are any panels open. If this is 0, the regular bot content will be visible.
@@ -143,7 +141,6 @@ class MainWindow
   public readonly state: Readonly<MainWindowState> = {
     closing: false,
     open: this.props.persistedToBrowserStorage.viewState.mainWindow,
-    modalPortalHostElement: null,
     numPanelsOpen: 0,
     numPanelsAnimating: 0,
     numPanelsCovering: 0,
@@ -467,15 +464,6 @@ class MainWindow
     }
   };
 
-  /**
-   * Sets the element that is used as the host for {@link ModalPortal}.
-   */
-  setModalPortalHostElement = (ref: Element) => {
-    if (this.state.modalPortalHostElement !== ref) {
-      this.setState({ modalPortalHostElement: ref });
-    }
-  };
-
   onSendInput = async (
     text: string,
     source: MessageSendSource,
@@ -717,12 +705,7 @@ class MainWindow
    * otherwise it appears for a split second before home screen is loaded.
    */
   renderChat() {
-    const { isHydrated, config, chatWidthBreakpoint } = this.props;
-
-    const showCovering =
-      this.state.numPanelsCovering > 0 &&
-      config.derived.layout.hasContentMaxWidth &&
-      chatWidthBreakpoint === ChatWidthBreakpoint.WIDE;
+    const { isHydrated } = this.props;
 
     return (
       <div className="cds-aichat--widget--content">
@@ -735,7 +718,6 @@ class MainWindow
             {this.renderHomeScreenPanel()}
             {this.renderIFramePanel()}
             {this.renderViewSourcePanel()}
-            {showCovering && <div className="cds-aichat--background-cover" />}
             {this.renderBotChat()}
           </>
         )}
@@ -1162,10 +1144,6 @@ class MainWindow
                   {this.renderChat()}
                 </div>
               )}
-              <div
-                className="cds-aichat--main-window-modal-host"
-                ref={this.setModalPortalHostElement}
-              />
             </div>
           </div>
         </Layer>
@@ -1175,7 +1153,7 @@ class MainWindow
 
   render() {
     return (
-      <ModalPortalRootProvider hostElement={this.state.modalPortalHostElement}>
+      <ModalPortalRootProvider hostElement={this.props.modalPortalHostElement}>
         {this.renderWidget()}
       </ModalPortalRootProvider>
     );
