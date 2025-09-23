@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, query } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./tile-container.scss?lit";
 // @ts-ignore
@@ -18,6 +18,24 @@ import prefix from "../../../globals/settings.js";
 @customElement(`${prefix}-tile-container`)
 class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
+  @query("slot") private slotEl!: HTMLSlotElement;
+
+  protected firstUpdated() {
+    this.updateTileLabel();
+    this.slotEl.addEventListener("slotchange", this.updateTileLabel);
+  }
+
+  private updateTileLabel = () => {
+    const slotted = this.slotEl.assignedElements();
+    const tile = slotted[0];
+    const footer = slotted[1];
+
+    if (footer) {
+      requestAnimationFrame(() => {
+        tile.removeAttribute("ai-label");
+      });
+    }
+  };
 
   connectedCallback(): void {
     super.connectedCallback();

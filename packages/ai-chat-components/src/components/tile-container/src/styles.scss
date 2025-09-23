@@ -9,50 +9,51 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/components/button/tokens" as *;
 
 $carbon-prefix: "cds";
 $prefix: "cds-aichat";
 
-// Footer buttons styles
-.#{$prefix}-tile-container-footer {
-  display: flex;
-  inline-size: 100%;
-
-  * {
+#{$prefix}-tile-container {
+  .#{$prefix}-tile-container-footer {
+    display: flex;
     inline-size: 100%;
-  }
 
-  &:not(#{$carbon-prefix}-button[kind="ghost"]) {
-    gap: 1px;
-  }
-
-  #{$carbon-prefix}-button {
-    &[kind="ghost"] {
-      // need a confirmation on token
-      border-block-start: 1px solid theme.$border-subtle;
+    &:not(:has([kind="ghost"])) {
+      background: $button-separator;
+      gap: rem(1px);
     }
-  }
-
-  &.vertical {
-    flex-direction: column;
 
     #{$carbon-prefix}-button {
-      &:last-child::part(button),
-      &:only-child::part(button) {
-        border-end-end-radius: layout.$spacing-03;
-        border-end-start-radius: layout.$spacing-03;
+      inline-size: 100%;
+
+      &[kind="ghost"] {
+        border-block-start: rem(1px) solid theme.$border-subtle;
       }
     }
-  }
 
-  &:not(.vertical) {
-    #{$carbon-prefix}-button {
-      &:first-child::part(button) {
-        border-end-start-radius: layout.$spacing-03;
+    &.vertical {
+      flex-direction: column;
+
+      #{$carbon-prefix}-button {
+        &:last-child::part(button),
+        &:only-child::part(button) {
+          border-end-end-radius: layout.$spacing-03;
+          border-end-start-radius: layout.$spacing-03;
+        }
       }
+    }
 
-      &:last-child::part(button) {
-        border-end-end-radius: layout.$spacing-03;
+    &:not(.vertical) {
+      #{$carbon-prefix}-button {
+        &:first-child::part(button) {
+          border-end-start-radius: layout.$spacing-03;
+        }
+
+        &:last-child::part(button) {
+          border-end-end-radius: layout.$spacing-03;
+        }
       }
     }
   }
@@ -61,20 +62,20 @@ $prefix: "cds-aichat";
 // Tile styles
 #{$prefix}-tile-container
   #{$carbon-prefix}-clickable-tile:first-child::part(link),
-#{$prefix}-tile-container #{$carbon-prefix}-tile:first-child::part(link) {
+#{$prefix}-tile-container #{$carbon-prefix}-tile:first-child {
   border-start-end-radius: layout.$spacing-03;
   border-start-start-radius: layout.$spacing-03;
 }
 
 #{$prefix}-tile-container
   #{$carbon-prefix}-clickable-tile:last-child::part(link),
-#{$prefix}-tile-container #{$carbon-prefix}-tile:last-child::part(link) {
+#{$prefix}-tile-container #{$carbon-prefix}-tile:last-child {
   border-end-end-radius: layout.$spacing-03;
   border-end-start-radius: layout.$spacing-03;
 }
 
 #{$prefix}-tile-container
   #{$carbon-prefix}-clickable-tile:only-child::part(link),
-#{$prefix}-tile-container #{$carbon-prefix}-tile:only-child::part(link) {
+#{$prefix}-tile-container #{$carbon-prefix}-tile:only-child {
   border-radius: layout.$spacing-03;
 }
