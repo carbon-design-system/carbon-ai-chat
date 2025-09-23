@@ -33,13 +33,22 @@ export default {
       control: "boolean",
       description: "Toggle rendering inside <cds-aichat-tile-container>",
     },
-    buttonCount: {
-      control: "select",
-      options: [0, 1, 2, 3],
-      description: "Number of buttons to render in the footer",
-    },
     clickable: {
       control: "boolean",
+    },
+    footerVariation: {
+      control: "select",
+      options: [
+        "primary button",
+        "secondary button",
+        "ghost button",
+        "danger button",
+        "primary, danger buttons",
+        "secondary, primary buttons",
+        "ghost buttons (vertical)",
+        "none",
+      ],
+      description: "Footer button variations",
     },
   },
   decorators: [
@@ -52,15 +61,51 @@ export const Default = {
   args: {
     maxWidth: "sm",
     useWrapper: true,
-    buttonCount: 1,
+    footerVariation: "primary button",
   },
   render: (args) => {
-    const kinds = ["secondary", "primary", "danger"];
+    let buttons = [];
+    let footerClass = "cds-aichat-tile-container-footer";
 
-    const buttons = Array.from({ length: args.buttonCount }, (_, i) => {
-      const kind = kinds[i] ?? "primary"; // fallback to primary if more than 3
-      return html`<cds-button kind=${kind}>Action ${i + 1}</cds-button>`;
-    });
+    switch (args.footerVariation) {
+      case "primary button":
+        buttons = [html`<cds-button kind="primary">Primary</cds-button>`];
+        break;
+      case "secondary button":
+        buttons = [html`<cds-button kind="secondary">Secondary</cds-button>`];
+        break;
+      case "ghost button":
+        buttons = [html`<cds-button kind="ghost">Ghost</cds-button>`];
+        break;
+      case "danger button":
+        buttons = [html`<cds-button kind="danger">Danger</cds-button>`];
+        break;
+      case "primary, danger buttons":
+        buttons = [
+          html`<cds-button kind="primary">Primary</cds-button>`,
+          html`<cds-button kind="danger">Danger</cds-button>`,
+        ];
+        break;
+      case "secondary, primary buttons":
+        buttons = [
+          html`<cds-button kind="secondary">Secondary</cds-button>`,
+          html`<cds-button kind="primary">Primary</cds-button>`,
+        ];
+        break;
+      case "ghost buttons (vertical)":
+        buttons = [
+          html`<cds-button kind="ghost">Ghost</cds-button>`,
+          html`<cds-button kind="ghost">Ghost</cds-button>`,
+          html`<cds-button kind="ghost">Ghost</cds-button>`,
+        ];
+        footerClass = "cds-aichat-tile-container-footer vertical";
+        break;
+      case "none":
+        buttons = [];
+        break;
+      default:
+        buttons = [];
+    }
 
     const heading = args.useWrapper
       ? args.clickable
@@ -70,15 +115,21 @@ export const Default = {
         ? "Clickable Tile"
         : "Tile";
 
-    const tileContent = html`
-      <h5>${heading}</h5>
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Labore fuga
-        enim officiis sint itaque maiores qui harum id impedit repellat?
-      </p>
-    `;
-
-    const footerClass = args.buttonCount === 3 ? "footer vertical" : "footer";
+    const tileContent = args.useWrapper
+      ? html` <h5>${heading}</h5>
+          <p>
+            Carbon Tiles and Buttons wrapped in a custom AI Chat Tile Container.
+            will add all the necessary borders and spacing. and button layout
+            styles following AI Chat design.
+          </p>`
+      : html`
+          <h5>${heading}</h5>
+          <p>
+            Carbon Tiles and Buttons placed without the Tile Container. no AI
+            Chat specific styles are applied. lorem ipsum dolor sit amet,
+            consectetur adipiscing elit.
+          </p>
+        `;
 
     return html`
       <style>
@@ -92,7 +143,7 @@ export const Default = {
                     ${tileContent}
                   </cds-clickable-tile>`
                 : html` <cds-tile> ${tileContent} </cds-tile>`}
-              ${args.buttonCount > 0
+              ${buttons.length > 0
                 ? html`<div class="${footerClass}">${buttons}</div>`
                 : ""}
             </cds-aichat-tile-container>
@@ -101,7 +152,7 @@ export const Default = {
             ${args.clickable
               ? html` <cds-clickable-tile> ${tileContent} </cds-clickable-tile>`
               : html` <cds-tile> ${tileContent} </cds-tile>`}
-            ${args.buttonCount > 0
+            ${buttons.length > 0
               ? html`<div class="${footerClass}">${buttons}</div>`
               : ""}
           `}

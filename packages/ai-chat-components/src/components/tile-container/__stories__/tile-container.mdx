@@ -4,9 +4,10 @@ import * as TileContainerStories from "./tile-container.stories";
 
 <Meta of={TileContainerStories} />
 
-# Extended Button
+# AI Chat Tile Container
 
 The `cds-aichat-tile-container` wraps the Carbon Design System's [Tile](https://web-components.carbondesignsystem.com/?path=/docs/components-tile--overview) component to apply AI Chat styles.
+if using a footer, `cds-aichat-tile-container-footer` class name needs to be added to the footer element, with an additional class vertical to get the vertical button layout.
 
 ## Getting started
 
@@ -18,7 +19,7 @@ Here's a quick example to get you started.
 import "@carbon/web-components/es/components/tile-container/index.js";
 ```
 
-<Markdown>{`${cdnJs({ components: ["tile"] })}`}</Markdown>
+<Markdown>{`${cdnJs({ components: ["tile-container"] })}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ### HTML
@@ -26,8 +27,10 @@ import "@carbon/web-components/es/components/tile-container/index.js";
 ```html
 <cds-aichat-tile-container>
   <cds-tile> ... </cds-tile>
-  <div class="footer">
+  <div class="cds-aichat-tile-container-footer vertical">
     <cds-button>Action 1</cds-button>
+    <cds-button>Action 2</cds-button>
+    <cds-button>Action 3</cds-button>
   </div>
 </cds-aichat-tile-container>
 ```
@@ -35,5 +38,3 @@ import "@carbon/web-components/es/components/tile-container/index.js";
 ## `<cds-aichat-tile-container>` attributes, properties and events
 
 Note: This component is purely a styling parent, and does not bring in any attributes
-
-<ArgTypes of="cds-aichat-tile-container" />
