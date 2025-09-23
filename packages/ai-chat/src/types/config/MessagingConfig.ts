@@ -9,7 +9,7 @@
 
 import { HistoryItem } from "../messaging/History";
 import type { MessageResponse, StreamChunk } from "../messaging/Messages";
-
+import { BusEventSend } from "../events/eventBusTypes";
 /**
  * Messaging actions for a chat instance.
  *
@@ -86,4 +86,9 @@ export interface CustomSendMessageOptions {
    * If the message was sent with "silent" set to true to not be displayed in the conversation history.
    */
   silent: boolean;
+
+  /**
+   *  BusEventSend provides extra context such as MessageSendSource.
+   */
+  busEventSend?: BusEventSend;
 }

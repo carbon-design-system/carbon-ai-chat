@@ -40,6 +40,7 @@ import { IS_MOBILE } from "../utils/browserUtils";
 import {
   AUTO_SCROLL_EXTRA,
   AUTO_SCROLL_THROTTLE_TIMEOUT,
+  ONE_LINE_MESSAGE_HEIGHT,
   WriteableElementName,
 } from "../utils/constants";
 import { doScrollElement, getScrollBottom } from "../utils/domUtils";
@@ -414,7 +415,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Scroll to the top of the message.
           const offsetTop =
             lastScrollableMessageComponent.ref.current?.offsetTop;
-          setScrollTop = offsetTop + AUTO_SCROLL_EXTRA;
+          setScrollTop =
+            offsetTop + AUTO_SCROLL_EXTRA - ONE_LINE_MESSAGE_HEIGHT;
           debugAutoScroll(
             `[doAutoScroll] Scrolling to message offsetTop=${offsetTop}`,
           );
