@@ -12,23 +12,23 @@ import "@carbon/web-components/es/components/tile/tile.js";
 import "@carbon/web-components/es/components/ai-label/ai-label.js";
 import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/tile/clickable-tile.js";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import Link16 from "@carbon/icons/es/link/16.js";
 import { html } from "lit";
 import styles from "./story-styles.scss?lit";
 
-const content = html`
-  <div slot="body-text">
-    <p class="secondary">AI Explained</p>
-    <h2 class="ai-label-heading">84%</h2>
-    <p class="secondary bold">Confidence score</p>
-    <p class="secondary">
-      Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed do
-      eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
-    </p>
-    <hr />
-    <p class="secondary">Model type</p>
-    <p class="bold">Foundation model</p>
-  </div>
-`;
+const aiContent = html`<div slot="body-text">
+  <p class="secondary">AI Explained</p>
+  <h2 class="ai-label-heading">84%</h2>
+  <p class="secondary bold">Confidence score</p>
+  <p class="secondary">
+    Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed do
+    eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
+  </p>
+  <hr />
+  <p class="secondary">Model type</p>
+  <p class="bold">Foundation model</p>
+</div>`;
 
 export default {
   title: "Components/Tile Container",
@@ -49,12 +49,39 @@ export default {
       control: "boolean",
       description: "Toggle rendering inside <cds-aichat-tile-container>",
     },
-    clickable: {
-      control: "boolean",
-      description:
-        "Note: Clickable tiles cannot have child interactive elements. and is an a11y violation",
+    onClick: { action: "onClick" },
+    tileContent: {
+      control: "select",
+      options: ["text", "image", "image and text"],
+      mapping: {
+        text: html`
+          <h5 class="bold">AI Chat Tile</h5>
+          <p class="secondary">
+            Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
+            do eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
+          </p>
+        `,
+        image: html`<img
+          class="full-width"
+          src="https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg"
+          alt="image"
+        />`,
+        "image and text": html`
+          <img
+            class="full-width"
+            src="https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg"
+            alt="image"
+          />
+          <h5 class="bold">AI Chat Tile</h5>
+          <p class="secondary">
+            Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
+            do eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
+          </p>
+        `,
+      },
+      description: "Toggle rendering of the tile content",
     },
-    footerVariation: {
+    footerButtons: {
       control: "select",
       options: [
         "primary button",
@@ -63,15 +90,52 @@ export default {
         "danger button",
         "primary, danger buttons",
         "secondary, primary buttons",
-        "ghost buttons (vertical)",
+        "3 ghost buttons (vertical)",
         "none",
       ],
+      mapping: {
+        "primary button": html`<cds-button kind="primary">Primary</cds-button>`,
+        "secondary button": html`<cds-button kind="secondary"
+          >Secondary</cds-button
+        >`,
+        "ghost button": html`<cds-button kind="ghost">Ghost</cds-button>`,
+        "danger button": html`<cds-button kind="danger">Danger</cds-button>`,
+        "primary, danger buttons": html`
+          <cds-button kind="primary">Primary</cds-button>
+          <cds-button kind="danger">Danger</cds-button>
+        `,
+        "secondary, primary buttons": html`
+          <cds-button kind="secondary">Secondary</cds-button>
+          <cds-button kind="primary">Primary</cds-button>
+        `,
+        "3 ghost buttons (vertical)": html`
+          <cds-button kind="ghost">Ghost 1</cds-button>
+          <cds-button kind="ghost">Ghost 2</cds-button>
+          <cds-button kind="ghost">Ghost 3</cds-button>
+        `,
+        none: "",
+      },
       description: "Footer button variations",
+    },
+
+    footerOrientation: {
+      control: "select",
+      options: ["horizontal", "vertical"],
+      description: "Orientation of the footer buttons defaults to horizontal",
     },
   },
   decorators: [
-    (story, context) =>
-      html`<div style="max-width: ${context.args.maxWidth};">${story()}</div>`,
+    (story, { args }) =>
+      html` <style>
+          ${styles}
+        </style>
+        <div style="max-width: ${args.maxWidth};">
+          ${args.useWrapper
+            ? html` <cds-aichat-tile-container
+                >${story()}</cds-aichat-tile-container
+              >`
+            : story()}
+        </div>`,
   ],
 };
 
@@ -79,101 +143,82 @@ export const Default = {
   args: {
     maxWidth: "sm",
     useWrapper: true,
-    footerVariation: "primary button",
+    tileContent: "text",
+    footerButtons: "primary button",
+    footerOrientation: "horizontal",
   },
   render: (args) => {
-    let buttons = [];
-    let footerClass = "cds-aichat-tile-container-footer";
-
-    switch (args.footerVariation) {
-      case "primary button":
-        buttons = [html`<cds-button kind="primary">Primary</cds-button>`];
-        break;
-      case "secondary button":
-        buttons = [html`<cds-button kind="secondary">Secondary</cds-button>`];
-        break;
-      case "ghost button":
-        buttons = [html`<cds-button kind="ghost">Ghost</cds-button>`];
-        break;
-      case "danger button":
-        buttons = [html`<cds-button kind="danger">Danger</cds-button>`];
-        break;
-      case "primary, danger buttons":
-        buttons = [
-          html`<cds-button kind="primary">Primary</cds-button>`,
-          html`<cds-button kind="danger">Danger</cds-button>`,
-        ];
-        break;
-      case "secondary, primary buttons":
-        buttons = [
-          html`<cds-button kind="secondary">Secondary</cds-button>`,
-          html`<cds-button kind="primary">Primary</cds-button>`,
-        ];
-        break;
-      case "ghost buttons (vertical)":
-        buttons = [
-          html`<cds-button kind="ghost">Ghost</cds-button>`,
-          html`<cds-button kind="ghost">Ghost</cds-button>`,
-          html`<cds-button kind="ghost">Ghost</cds-button>`,
-        ];
-        footerClass = "cds-aichat-tile-container-footer vertical";
-        break;
-      case "none":
-        buttons = [];
-        break;
-      default:
-        buttons = [];
+    const buttonCount =
+      (args.footerButtons.strings &&
+        args.footerButtons.strings[0].trim().split("\n").length) ||
+      0;
+    if (buttonCount >= 3) {
+      args.footerOrientation = "vertical";
     }
 
-    const heading = args.useWrapper
-      ? args.clickable
-        ? "AI Chat Clickable Tile"
-        : "AI Chat Tile"
-      : args.clickable
-        ? "Clickable Tile"
-        : "Tile";
-
-    const tileContent = args.useWrapper
-      ? html` <h5>${heading}</h5>
-          <p>
-            Carbon Tiles and Buttons wrapped in a custom AI Chat Tile Container.
-            will add all the necessary borders and spacing. and button layout
-            styles following AI Chat design.
-          </p>`
-      : html`
-          <h5>${heading}</h5>
-          <p>
-            Carbon Tiles and Buttons placed without the Tile Container. no AI
-            Chat specific styles are applied. lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-          </p>
-        `;
+    let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
 
     return html`
-      <style>
-        ${styles}
-      </style>
-      ${args.useWrapper
-        ? html`
-            <cds-aichat-tile-container>
-              ${args.clickable
-                ? html` <cds-clickable-tile>
-                    ${tileContent}
-                  </cds-clickable-tile>`
-                : html` <cds-tile> ${tileContent} </cds-tile>`}
-              ${buttons.length > 0
-                ? html`<div class="${footerClass}">${buttons}</div>`
-                : ""}
-            </cds-aichat-tile-container>
-          `
-        : html`
-            ${args.clickable
-              ? html` <cds-clickable-tile> ${tileContent} </cds-clickable-tile>`
-              : html` <cds-tile> ${tileContent} </cds-tile>`}
-            ${buttons.length > 0
-              ? html`<div class="${footerClass}">${buttons}</div>`
-              : ""}
-          `}
+      <cds-tile>
+        ${args.tileContent}
+        <div class="${footerClass}">${args.footerButtons}</div>
+      </cds-tile>
+    `;
+  },
+};
+
+export const Clickable = {
+  args: {
+    maxWidth: "sm",
+    useWrapper: true,
+    tileContent: "text",
+  },
+  argTypes: {
+    footerButtons: {
+      control: false,
+      description: "Footer buttons are not applicable for clickable tiles",
+    },
+    footerOrientation: {
+      control: false,
+      description: "Footer orientation is not applicable for clickable tiles",
+    },
+  },
+  render: (args) => {
+    let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
+
+    return html`
+      <cds-clickable-tile @click=${args.onClick} href="#">
+        ${args.tileContent}
+        <div class="${footerClass}">${args.footerButtons}</div>
+      </cds-clickable-tile>
+    `;
+  },
+};
+
+export const ClickableWithCustomIcon = {
+  args: {
+    maxWidth: "sm",
+    useWrapper: true,
+    tileContent: "text",
+  },
+  argTypes: {
+    footerButtons: {
+      control: false,
+      description: "Footer buttons are not applicable for clickable tiles",
+    },
+    footerOrientation: {
+      control: false,
+      description: "Footer orientation is not applicable for clickable tiles",
+    },
+  },
+  render: (args) => {
+    let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
+
+    return html`
+      <cds-clickable-tile @click=${args.onClick}>
+        ${args.tileContent} ${iconLoader(Link16, { slot: "icon" })}
+        <div class="${footerClass}">${args.footerButtons}</div>
+      </cds-clickable-tile>
     `;
   },
 };
@@ -182,128 +227,66 @@ export const WithAiLabel = {
   args: {
     maxWidth: "sm",
     useWrapper: true,
-    footerVariation: "primary button",
+    tileContent: "text",
+    footerButtons: "primary button",
+    footerOrientation: "horizontal",
+  },
+  argTypes: {
+    tileContent: {
+      control: false,
+      description: "default tile content is text for AI label stories",
+    },
   },
   render: (args) => {
-    let buttons = [];
-    let footerClass = "cds-aichat-tile-container-footer";
-
-    switch (args.footerVariation) {
-      case "primary button":
-        buttons = [html`<cds-button kind="primary">Primary</cds-button>`];
-        break;
-      case "secondary button":
-        buttons = [html`<cds-button kind="secondary">Secondary</cds-button>`];
-        break;
-      case "ghost button":
-        buttons = [html`<cds-button kind="ghost">Ghost</cds-button>`];
-        break;
-      case "danger button":
-        buttons = [html`<cds-button kind="danger">Danger</cds-button>`];
-        break;
-      case "primary, danger buttons":
-        buttons = [
-          html`<cds-button kind="primary">Primary</cds-button>`,
-          html`<cds-button kind="danger">Danger</cds-button>`,
-        ];
-        break;
-      case "secondary, primary buttons":
-        buttons = [
-          html`<cds-button kind="secondary">Secondary</cds-button>`,
-          html`<cds-button kind="primary">Primary</cds-button>`,
-        ];
-        break;
-      case "ghost buttons (vertical)":
-        buttons = [
-          html`<cds-button kind="ghost">Ghost</cds-button>`,
-          html`<cds-button kind="ghost">Ghost</cds-button>`,
-          html`<cds-button kind="ghost">Ghost</cds-button>`,
-        ];
-        footerClass = "cds-aichat-tile-container-footer vertical";
-        break;
-      case "none":
-        buttons = [];
-        break;
-      default:
-        buttons = [];
+    const buttonCount =
+      (args.footerButtons.strings &&
+        args.footerButtons.strings[0].trim().split("\n").length) ||
+      0;
+    if (buttonCount >= 3) {
+      args.footerOrientation = "vertical";
     }
-
-    const heading = args.useWrapper
-      ? args.clickable
-        ? "AI Chat Clickable Tile"
-        : "AI Chat Tile"
-      : args.clickable
-        ? "Clickable Tile"
-        : "Tile";
-
-    const tileContent = args.useWrapper
-      ? html` <h5>${heading}</h5>
-          <p>
-            Carbon Tiles and Buttons wrapped in a custom AI Chat Tile Container.
-            will add all the necessary borders and spacing. and button layout
-            styles following AI Chat design.
-          </p>`
-      : html`
-          <h5>${heading}</h5>
-          <p>
-            Carbon Tiles and Buttons placed without the Tile Container. no AI
-            Chat specific styles are applied. lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-          </p>
-        `;
+    let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
 
     return html`
-      <style>
-        ${styles}
-      </style>
-      ${args.useWrapper
-        ? html`
-            <cds-aichat-tile-container>
-              ${args.clickable
-                ? html` <cds-clickable-tile>
-                    ${tileContent}
-                    ${!args.clickable
-                      ? html`<cds-ai-label
-                          alignment="bottom-left"
-                          slot="decorator"
-                        >
-                          ${content}
-                        </cds-ai-label>`
-                      : ""}
-                  </cds-clickable-tile>`
-                : html` <cds-tile>
-                    ${tileContent}<cds-ai-label
-                      alignment="bottom-left"
-                      slot="decorator"
-                    >
-                      ${content}</cds-ai-label
-                    >
-                  </cds-tile>`}
-              ${buttons.length > 0
-                ? html`<div class="${footerClass}">${buttons}</div>`
-                : ""}
-            </cds-aichat-tile-container>
-          `
-        : html`
-            ${args.clickable
-              ? html` <cds-clickable-tile>
-                  ${tileContent}
-                  <cds-ai-label alignment="bottom-left" slot="decorator">
-                    ${content}</cds-ai-label
-                  ></cds-clickable-tile
-                >`
-              : html` <cds-tile>
-                  ${tileContent}<cds-ai-label
-                    alignment="bottom-left"
-                    slot="decorator"
-                  >
-                    ${content}</cds-ai-label
-                  >
-                </cds-tile>`}
-            ${buttons.length > 0
-              ? html`<div class="${footerClass}">${buttons}</div>`
-              : ""}
-          `}
+      <cds-tile>
+        ${args.tileContent}
+        <cds-ai-label autoalign alignment="bottom-left" slot="ai-label">
+          ${aiContent}
+        </cds-ai-label>
+        <div class="${footerClass}">${args.footerButtons}</div>
+      </cds-tile>
+    `;
+  },
+};
+
+export const ClickableWithAiLabel = {
+  args: {
+    maxWidth: "sm",
+    useWrapper: true,
+    tileContent: "text",
+  },
+  argTypes: {
+    tileContent: {
+      control: false,
+      description: "default tile content is text for AI label stories",
+    },
+    footerButtons: {
+      control: false,
+      description: "Footer buttons are not applicable for clickable tiles",
+    },
+    footerOrientation: {
+      control: false,
+      description: "Footer orientation is not applicable for clickable tiles",
+    },
+  },
+  render: (args) => {
+    let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
+
+    return html`
+      <cds-clickable-tile @click=${args.onClick} ai-label>
+        ${args.tileContent}
+        <div class="${footerClass}">${args.footerButtons}</div>
+      </cds-clickable-tile>
     `;
   },
 };

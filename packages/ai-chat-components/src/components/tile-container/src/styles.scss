@@ -18,9 +18,11 @@ $prefix: "cds-aichat";
 #{$prefix}-tile-container {
   .#{$prefix}-tile-container-footer {
     display: flex;
-    border-end-end-radius: layout.$spacing-03;
-    border-end-start-radius: layout.$spacing-03;
-    inline-size: 100%;
+    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+    margin-block-end: calc(-1 * layout.$spacing-05);
+    margin-inline-end: calc(-1 * layout.$spacing-05);
+    margin-inline-start: calc(-1 * layout.$spacing-05);
 
     &:not(:has([kind="ghost"])) {
       background: $button-separator;
@@ -32,6 +34,7 @@ $prefix: "cds-aichat";
 
       &[kind="ghost"] {
         border-block-start: rem(1px) solid theme.$border-subtle;
+        // border-block-start: rem(1px) solid theme.$ai-border-start;
       }
     }
 
@@ -41,8 +44,8 @@ $prefix: "cds-aichat";
       #{$carbon-prefix}-button {
         &:last-child::part(button),
         &:only-child::part(button) {
-          border-end-end-radius: layout.$spacing-03;
-          border-end-start-radius: layout.$spacing-03;
+          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
         }
       }
     }
@@ -50,13 +53,35 @@ $prefix: "cds-aichat";
     &:not(.vertical) {
       #{$carbon-prefix}-button {
         &:first-child::part(button) {
-          border-end-start-radius: layout.$spacing-03;
+          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
         }
 
         &:last-child::part(button) {
-          border-end-end-radius: layout.$spacing-03;
+          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
         }
       }
+    }
+  }
+
+  #{$carbon-prefix}-tile,
+  #{$carbon-prefix}-clickable-tile {
+    img {
+      display: block;
+      // border-radius: calc(layout.$spacing-03 - rem(1px));
+      inline-size: 100%;
+
+      &.full-width {
+        inline-size: calc(100% + (2 * layout.$spacing-05));
+        margin-block-start: calc(-1 * layout.$spacing-05);
+        margin-inline-end: calc(-1 * layout.$spacing-05);
+        margin-inline-start: calc(-1 * layout.$spacing-05);
+      }
+    }
+  }
+
+  #{$carbon-prefix}-clickable-tile {
+    &:hover img {
+      opacity: 0.8;
     }
   }
 }

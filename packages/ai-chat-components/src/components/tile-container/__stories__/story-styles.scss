@@ -8,7 +8,9 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/utilities/convert" as *;
 
-h5 {
+h5,
+p {
   margin-block-end: layout.$spacing-04;
 }

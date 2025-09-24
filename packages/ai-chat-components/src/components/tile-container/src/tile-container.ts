@@ -20,23 +20,6 @@ class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
   @query("slot") private slotEl!: HTMLSlotElement;
 
-  protected firstUpdated() {
-    this.updateTileLabel();
-    this.slotEl.addEventListener("slotchange", this.updateTileLabel);
-  }
-
-  private updateTileLabel = () => {
-    const slotted = this.slotEl.assignedElements();
-    const tile = slotted[0];
-    const footer = slotted[1];
-
-    if (footer) {
-      requestAnimationFrame(() => {
-        tile.removeAttribute("ai-label");
-      });
-    }
-  };
-
   connectedCallback(): void {
     super.connectedCallback();
     // Add only once per document
@@ -48,6 +31,15 @@ class CDSAIChatTileContainer extends LitElement {
       });
       document.head.appendChild(style);
     }
+
+    requestAnimationFrame(() => {
+      const slotted = this.slotEl.assignedElements();
+      const tile = slotted[0];
+      if (tile.hasAttribute("ai-label")) {
+        this.style.border = "none";
+        tile.setAttribute("has-rounded-corners", "true");
+      }
+    });
   }
 
   render() {
