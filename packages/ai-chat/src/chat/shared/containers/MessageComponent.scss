@@ -56,7 +56,9 @@ $one-line-message-height: 88px;
   inset-block-start: 0.5rem;
 }
 
-.WAC__message--withAvatarLine.WAC__message--lastMessage {
+.WAC__message--withAvatarLine.WAC__message--response.WAC__message--lastMessage:not(
+    .WAC__message--with-human-agent
+  ) {
   min-block-size: calc(100% - $one-line-message-height);
 }
 
