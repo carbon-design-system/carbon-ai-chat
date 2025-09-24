@@ -240,6 +240,7 @@ class MessageComponent extends PureComponent<
     return this.props.localMessageItem;
   };
 
+  private isAgent: boolean;
   /**
    * Returns an ARIA message that can be used to indicate that the widget (either bot or agent) was responsible for
    * saying a specific message.
@@ -252,11 +253,12 @@ class MessageComponent extends PureComponent<
       // do not need this announcement.
       if (localMessageItem.item.response_type === MessageResponseTypes.TEXT) {
         messageId = "messages_agentSaid";
+        this.isAgent = true;
       }
     } else {
       messageId = "messages_botSaid";
+      this.isAgent = false;
     }
-
     return messageId
       ? intl.formatMessage({ id: messageId }, { botName })
       : null;
@@ -692,6 +694,7 @@ class MessageComponent extends PureComponent<
           agentMessageType && "WAC__message--agentMessage",
           {
             "WAC__message--withAvatarLine": showAvatarLine,
+            "WAC__message--with-human-agent": this.isAgent,
             "WAC__message--request": messageIsRequest,
             "WAC__message--systemMessage": isSystemMessage,
             "WAC__message--response": !messageIsRequest,
