@@ -1,0 +1,60 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction/Welcome" />
+
+# `@carbon/ai-chat-components`
+
+Welcome to the AI Chat Components Storybook
+This Storybook showcases the AI Chat Components built with the Carbon Design System. These components are designed to enhance user interaction in AI chat applications, providing a consistent and accessible user experience.
+
+## Getting started
+
+To install `@carbon/ai-chat-components` in your project, you will need to run the
+following command using [npm](https://www.npmjs.com/):
+
+```bash
+npm install --save @carbon/ai-chat-components
+```
+
+If you prefer [Yarn](https://yarnpkg.com/en/), use the following command
+instead:
+
+```bash
+yarn add @carbon/ai-chat-components
+```
+
+### Basic usage
+
+Our example at [Stackblitz](#tbd) shows the most basic usage:
+
+The first thing you need is **setting up a module bundler** to resolve ECMAScript `import`s. The above example uses [Vite JS](https://vite.dev/), but you can use other bundlers like [Rollup](https://rollupjs.org/) or [Webpack](https://webpack.js.org) too.
+
+Once you set up a module bundler, you can start importing our component modules, for example:
+
+```javascript
+import '@carbon/ai-chat-components/es/components/tile-container/tile-container.js';
+```
+
+Once you've imported the component modules, you can use our components in the same manner as native HTML tags, for example:
+
+```html
+<cds-dropdown trigger-content="Select an item">
+  <cds-dropdown-item value="all">Option 1</cds-dropdown-item>
+  <cds-dropdown-item value="cloudFoundry">Option 2</cds-dropdown-item>
+  <cds-dropdown-item value="staging">Option 3</cds-dropdown-item>
+  <cds-dropdown-item value="dea">Option 4</cds-dropdown-item>
+  <cds-dropdown-item value="router">Option 5</cds-dropdown-item>
+</cds-dropdown>
+```
+
+### JavaScript framework integration
+
+This package can also be used within other JavaScript frameworks such as Angular and
+Vue. This is achievable since web components are the modern browser standard, and
+work well with other front-end frameworks that exist in the application. In
+turn, this also comes with the benefits of encapsulation within the Shadow DOM:
+
+### Other usage guides
+
+- [Having components participate in form](/?path=/story/introduction-form-paticipation--page)
+- [Using custom styles in components](/?path=/docs/introduction-custom-styles--page)
