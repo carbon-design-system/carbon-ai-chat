@@ -12,8 +12,6 @@ import cloneDeep from "lodash-es/cloneDeep.js";
 import inputItemToLocalItem from "../schema/inputItemToLocalItem";
 import { createLocalMessageForInlineError } from "../schema/outputItemToLocalItem";
 import actions from "../store/actions";
-import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
-
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { MessageLoadingManager } from "../utils/messageServiceUtils";
 import {
@@ -37,14 +35,13 @@ import {
 } from "../../types/messaging/Messages";
 import { SendOptions } from "../../types/instance/ChatInstance";
 import {
+  BusEventSend,
   BusEventType,
   MessageSendSource,
 } from "../../types/events/eventBusTypes";
 import { OnErrorType, PublicConfig } from "../../types/config/PublicConfig";
 import { LanguagePack } from "../../types/config/PublicConfig";
-
-// Time in ms between retry attempts.
-const MS_BETWEEN_RETRIES = [1000, 3000, 5000];
+import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
 
 // The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, stop
 // retrying, and move on to the next item in the queue. 120 seconds is the longest Cerberus allows for, so we'll
@@ -207,7 +204,10 @@ class MessageService {
     };
 
     const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
-    this.timeoutMS = timeoutOverride ? timeoutOverride * 1000 : MS_MAX_ATTEMPT;
+    this.timeoutMS =
+      timeoutOverride || timeoutOverride === 0
+        ? timeoutOverride * 1000
+        : MS_MAX_ATTEMPT;
   }
 
   /**
@@ -322,28 +322,18 @@ class MessageService {
    *
    * @param pendingRequest The current item in the send queue.
    * @param resultText The raw result text or error message (if any) returned from the request.
-   * @param allowRetry Indicates if a retry is permitted.
    */
   private async processError(
     pendingRequest: PendingMessageRequest,
     resultText: string,
-    allowRetry: boolean,
   ) {
     const {
       timeFirstRequest,
       timeLastRequest,
-      tryCount,
       isProcessed,
       trackData,
       requestOptions,
     } = pendingRequest;
-
-    const now = Date.now();
-    const msSinceStarted = now - timeFirstRequest;
-    // We are still in the "allow attempts" window if we have not exceeded the total amount of time allowed and if
-    // we have not exceeded the number of retries allowed.
-    const isInAttemptWindow =
-      this.timeoutMS > msSinceStarted && tryCount < MS_BETWEEN_RETRIES.length;
 
     // If this message was already invalidated, don't do anything.
     if (isProcessed) {
@@ -352,29 +342,20 @@ class MessageService {
 
     trackData.lastRequestTime = Date.now() - timeLastRequest;
     trackData.totalRequestTime = Date.now() - timeFirstRequest;
-    if (isInAttemptWindow && allowRetry) {
-      // This is the general/unknown error case. Pause before trying again.
-      trackData.numErrors++;
-      const retryDelay = MS_BETWEEN_RETRIES[pendingRequest.tryCount++];
 
-      setTimeout(() => {
-        this.sendToAssistantAndUpdateErrorState(pendingRequest);
-      }, retryDelay);
-    } else {
-      if (requestOptions.silent) {
-        // If we are in the middle of a two-step response or the message that was sent was silent, we have to throw an
-        // error manually since there isn't any user message to reference.
-        this.addErrorMessage();
-      }
-
-      this.serviceManager.actions.errorOccurred({
-        errorType: OnErrorType.MESSAGE_COMMUNICATION,
-        message: "An error occurred sending a message",
-        otherData: resultText,
-      });
-
-      this.rejectFinalErrorOnMessage(pendingRequest, resultText);
+    if (requestOptions.silent) {
+      // If we are in the middle of a two-step response or the message that was sent was silent, we have to throw an
+      // error manually since there isn't any user message to reference.
+      this.addErrorMessage();
     }
+
+    this.serviceManager.actions.errorOccurred({
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: "An error occurred sending a message",
+      otherData: resultText,
+    });
+
+    this.rejectFinalErrorOnMessage(pendingRequest, resultText);
   }
 
   /**
@@ -436,10 +417,18 @@ class MessageService {
       const controller = new AbortController();
       current.sendMessageController = controller;
       debugLog("Called customSendMessage", message);
-
+      const busEventSend: BusEventSend = {
+        type: BusEventType.SEND,
+        data: message,
+        source: current.source,
+      };
       await customSendMessage(
         message,
-        { signal: controller.signal, silent: current.requestOptions.silent },
+        {
+          signal: controller.signal,
+          silent: current.requestOptions.silent,
+          busEventSend: busEventSend,
+        },
         this.serviceManager.instance,
       );
       await this.processSuccess(current, null);
@@ -449,7 +438,7 @@ class MessageService {
         (error &&
           (typeof error === "string" ? error : JSON.stringify(error))) ||
         "There was an unidentified error.";
-      this.processError(current, resultText, !customSendMessage);
+      this.processError(current, resultText);
     }
   }
 
@@ -481,23 +470,28 @@ class MessageService {
           publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
             ? MS_MAX_SILENT_LOADING
             : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
-        this.messageLoadingManager.start(
-          () => {
-            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
-          },
-          (didExceedMaxLoading: boolean) => {
-            if (didExceedMaxLoading) {
+
+        if (LOADING_INDICATOR_TIMER || this.timeoutMS) {
+          this.messageLoadingManager.start(
+            () => {
               this.serviceManager.store.dispatch(
-                actions.addIsLoadingCounter(-1),
+                actions.addIsLoadingCounter(1),
               );
-            }
-          },
-          () => {
-            this.cancelMessageRequestByID(message.id, true);
-          },
-          LOADING_INDICATOR_TIMER,
-          this.timeoutMS,
-        );
+            },
+            (didExceedMaxLoading: boolean) => {
+              if (didExceedMaxLoading) {
+                this.serviceManager.store.dispatch(
+                  actions.addIsLoadingCounter(-1),
+                );
+              }
+            },
+            () => {
+              this.cancelMessageRequestByID(message.id, true);
+            },
+            LOADING_INDICATOR_TIMER,
+            this.timeoutMS,
+          );
+        }
 
         if (current.isProcessed) {
           // This message was cancelled.

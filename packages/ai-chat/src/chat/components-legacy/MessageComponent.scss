@@ -11,6 +11,7 @@
 @use "@carbon/styles/scss/type";
 
 $message-bar-width: 3px;
+$one-line-message-height: 88px;
 
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--message {
@@ -53,6 +54,10 @@ $message-bar-width: 3px;
 .cds-aichat--message.cds-aichat--message--first-message.cds-aichat--message--has-focus::after {
   block-size: calc(100% - 0.5rem);
   inset-block-start: 0.5rem;
+}
+
+.cds-aichat--message--with-avatar-line.cds-aichat--message--last-message {
+  min-block-size: calc(100% - $one-line-message-height);
 }
 
 .cds-aichat--message.cds-aichat--message--last-message.cds-aichat--message--has-focus::after {
@@ -227,8 +232,6 @@ $message-bar-width: 3px;
   word-break: break-word;
   word-wrap: break-word;
 }
-
-/* moved earlier: .cds-aichat--sent-container */
 
 /* By default the message state is displayed next to the message. */
 .cds-aichat--sent-and-message-state-container {

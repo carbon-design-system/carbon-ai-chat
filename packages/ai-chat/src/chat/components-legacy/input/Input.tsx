@@ -50,8 +50,7 @@ interface InstanceInputElement {
   removeChangeListener: (listener: (value: string) => void) => void;
 }
 import { BusEventType } from "../../../types/events/eventBusTypes";
-import { OverlayPanelName } from "../OverlayPanel";
-import { makeTestId, PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../utils/PageObjectId";
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
@@ -162,11 +161,6 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
    * the process of cancelling a streamed response is in progress.
    */
   isStopStreamingButtonDisabled?: boolean;
-
-  /**
-   * Testing id used for e2e tests.
-   */
-  testIdPrefix: OverlayPanelName;
 }
 
 interface InputFunctions {
@@ -200,7 +194,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     languagePack,
     isStopStreamingButtonVisible,
     isStopStreamingButtonDisabled,
-    testIdPrefix,
   } = props;
 
   const inputID = `${serviceManager.namespace.suffix}-${useCounter()}`;
@@ -476,7 +469,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 ref={textAreaRef}
                 onFocus={onInputFocus}
                 onBlur={onInputBlur}
-                testId={makeTestId(PageObjectId.INPUT, testIdPrefix)}
+                testId={PageObjectId.INPUT}
               />
             </div>
             {Boolean(pendingUploads?.length) && (
@@ -531,7 +524,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   : BUTTON_TOOLTIP_ALIGNMENT.END
               }
               tooltipPosition={BUTTON_TOOLTIP_POSITION.TOP}
-              data-testid={makeTestId(PageObjectId.INPUT_SEND, testIdPrefix)}
+              data-testid={PageObjectId.INPUT_SEND}
             >
               {hasValidInput ? (
                 <SendFilled slot="icon" />

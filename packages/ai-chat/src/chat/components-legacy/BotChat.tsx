@@ -39,8 +39,8 @@ import { EndHumanAgentChatModal } from "./modals/EndHumanAgentChatModal";
 import { RequestScreenShareModal } from "./modals/RequestScreenShareModal";
 import WriteableElement from "./WriteableElement";
 import { LanguagePack } from "../../types/config/PublicConfig";
-import { OverlayPanelName } from "./OverlayPanel";
 import { CarbonTheme } from "../../types/config/PublicConfig";
+import { PageObjectId } from "../utils/PageObjectId";
 
 interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   languagePack: LanguagePack;
@@ -283,7 +283,6 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           placeholder={languagePack[inputPlaceholderKey]}
           isStopStreamingButtonVisible={stopStreamingButtonState.isVisible}
           isStopStreamingButtonDisabled={stopStreamingButtonState.isDisabled}
-          testIdPrefix={OverlayPanelName.MAIN}
         />
         {this.state.showEndChatConfirmation && (
           <EndHumanAgentChatModal
@@ -311,7 +310,7 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     const { hasCaughtError } = this.state;
 
     return (
-      <div className="cds-aichat">
+      <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
         <BotHeader
           ref={this.headerRef}
           onClose={onClose}
@@ -320,7 +319,6 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           onToggleHomeScreen={onToggleHomeScreen}
           enableChatHeaderConfig
           includeWriteableElement
-          testIdPrefix={OverlayPanelName.MAIN}
         />
         <div className="cds-aichat--non-header-container">
           <div className="cds-aichat--panel-content cds-aichat--non-header-container">

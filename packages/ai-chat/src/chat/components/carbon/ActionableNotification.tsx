@@ -9,8 +9,6 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
-import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
-
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CarbonActionableNotificationElement from "@carbon/web-components/es/components/notification/actionable-notification.js";
 
@@ -25,4 +23,4 @@ const ActionableNotification = createComponent({
 });
 
 export default ActionableNotification;
-export { NOTIFICATION_KIND };
+export { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";

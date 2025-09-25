@@ -108,9 +108,7 @@ export interface PublicConfig {
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the Carbon AI Chat is open on page load. This applies to session history open
-   * states as well as openByChatByDefault. This should be set to false if the Carbon AI Chat is embedded in the tooling, for
-   * instance.
+   * If the Carbon AI Chat should grab focus if the chat is open on page load.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 
@@ -259,6 +257,14 @@ export interface HeaderConfig {
    * All the currently configured custom menu options.
    */
   menuOptions?: CustomMenuOption[];
+
+  /**
+   * Controls whether to show the AI label/slug in the header. Defaults to true.
+   *
+   * There is currently no version of this that does not include the AI theme
+   * blue gradients.
+   */
+  showAiLabel?: boolean;
 }
 
 /**
@@ -286,12 +292,12 @@ export interface LayoutConfig {
   /**
    * CSS variable overrides for the chat UI.
    *
-   * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.HEIGHT`),
+   * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.height`),
    * which map to the underlying `--cds-aichat-…` custom properties.
    * Values are raw CSS values such as `"420px"`, `"9999"`, etc.
    *
    * Example:
-   * { HEIGHT: "560px", WIDTH: "420px" }
+   * { height: "560px", width: "420px" }
    */
   customProperties?: Partial<Record<LayoutCustomProperties, string>>;
 }
@@ -311,23 +317,25 @@ export interface PublicConfigMessaging {
   /**
    * Changes the timeout used by the message service when making message calls. The timeout is in seconds. The
    * default is 150 seconds. After this time, an error will be shown in the client and an Abort signal will be sent
-   * to customSendMessage.
+   * to customSendMessage. If set to 0, the chat will never timeout.
    */
   messageTimeoutSecs?: number;
 
   /**
-   * Controls how long AI chat should wait before showing the loading indicator.
+   * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
+   * the loading indicator. This is tied to either {@link ChatInstance.messaging.addMessage} or {@link ChatInstance.messaging.addMessageChunk}
+   * being called after this message was sent.
+   *
+   * If set to 0, the chat will never automatically show a loading indicator.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 
   /**
-   * A callback for Carbon AI Chat to use to send messages to the assistant. When this is provided, this will be used as
-   * an alternative for its built-in message service. Note that this is not used for human agent communication
-   * (except for the event messages to update history).
+   * A callback for Carbon AI Chat to use to send messages to your assistant.
    *
-   * Web chat will queue up any additional user messages until the Promise from a previous call to customSendMessage
-   * has resolved. This does not include event messages. If the Promise rejects, an error indicator will be
-   * displayed next to the user's message.
+   * Carbon AI Chat will queue up any additional user messages until the Promise from a previous call to customSendMessage
+   * has resolved. If you do not make customSendMessage async, it will be up to you to manage what happens when a message is
+   * sent when the previous is still processing. If the Promise rejects, an error indicator will be displayed next to the user's message.
    *
    * If the request takes longer than PublicConfigMessaging.messageTimeoutSecs than the AbortSignal will be sent.
    */

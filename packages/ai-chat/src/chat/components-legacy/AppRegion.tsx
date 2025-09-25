@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../hooks/useSelector";
 
@@ -40,6 +40,8 @@ export default function AppRegion({
       state.persistedToBrowserStorage.viewState.launcher,
   );
   const mainWindowRef = useRef<MainWindowFunctions>();
+  const [modalPortalHostElement, setModalPortalHostElement] =
+    useState<Element | null>(null);
 
   useOnMount(() => {
     function requestFocus() {
@@ -65,8 +67,10 @@ export default function AppRegion({
       <MainWindow
         mainWindowRef={mainWindowRef}
         useCustomHostElement={Boolean(hostElement)}
+        modalPortalHostElement={modalPortalHostElement}
       />
       {showLauncher && <LauncherContainer />}
+      <div className="cds-aichat--modal-host" ref={setModalPortalHostElement} />
     </div>
   );
 }

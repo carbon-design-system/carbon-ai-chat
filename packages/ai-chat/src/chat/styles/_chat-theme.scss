@@ -43,10 +43,7 @@ $card-max-width: config.get-var("card-max-width", 424px);
 // Application Layout Variables
 $max-height: config.get-var("max-height", 640px);
 $min-height: config.get-var("min-height", 150px);
-$max-width: config.get-var(
-  "max-width",
-  calc(100vw - (2 * #{layout.$spacing-07}))
-);
+$max-width: config.get-var("max-width", 672px);
 $width: config.get-var("width", min(380px, #{$max-width}));
 $height: config.get-var("height", calc(100vh - (2 * #{layout.$spacing-07})));
 

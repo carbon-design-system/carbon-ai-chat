@@ -54,7 +54,15 @@ function doButton(instance: ChatInstance) {
             body: [
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "Carbon!",
+                text: "Carbon is great!",
+              },
+            ],
+            footer: [
+              {
+                response_type: MessageResponseTypes.BUTTON,
+                button_type: ButtonItemType.URL,
+                url: "https://ibm.com",
+                label: "Optional Button",
               },
             ],
           },

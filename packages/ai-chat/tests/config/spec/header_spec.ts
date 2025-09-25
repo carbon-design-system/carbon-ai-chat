@@ -125,6 +125,36 @@ describe("Config Header", () => {
       expect(state.config.public.header).toEqual(header);
     });
 
+    it("should store header with showAiLabel flag", async () => {
+      const header = {
+        showAiLabel: false,
+        showRestartButton: true,
+      };
+
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        header,
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+      const state: AppState = store.getState();
+      expect(state.config.public.header).toEqual(header);
+    });
+
     it("should handle undefined header in Redux state", async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
@@ -181,6 +211,7 @@ describe("Config Header", () => {
           title: "New Header",
           hideMinimizeButton: true,
           showRestartButton: true,
+          showAiLabel: false,
         },
       };
 
@@ -193,6 +224,7 @@ describe("Config Header", () => {
       expect(state.config.public.header?.title).toBe("New Header");
       expect(state.config.public.header?.hideMinimizeButton).toBe(true);
       expect(state.config.public.header?.showRestartButton).toBe(true);
+      expect(state.config.public.header?.showAiLabel).toBe(false);
     });
 
     it("should detect no changes when header config is identical", async () => {

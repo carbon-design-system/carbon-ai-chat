@@ -14,7 +14,6 @@
 
 :host {
   display: block;
-  container-type: inline-size;
   inline-size: 100%;
   max-inline-size: 100%;
 
@@ -118,14 +117,5 @@
 
   cds-ordered-list:not([nested]) cds-list-item {
     margin-inline-start: layout.$spacing-06;
-  }
-
-  // Apply styles for narrow and standard widths (< 704px) using container queries
-  // Carbon displays cds--link using display: inline-flex to allow icons to align well. In our narrow viewport this can
-  // lead to some funky linebreaks. This CSS will set cds--link to be display: inline if there is no icon.
-  @container (max-width: 703px) {
-    .cds--link:not(:has(.cds--link__icon)) {
-      display: inline;
-    }
   }
 }

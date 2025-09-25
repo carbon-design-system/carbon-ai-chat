@@ -12,6 +12,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  background-color: theme.$chat-shell-background;
   block-size: 100%;
 }
 

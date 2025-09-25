@@ -17,11 +17,11 @@
  */
 export enum LayoutCustomProperties {
   /** Minimum height of the chat container (float layout). */
-  HEIGHT = "height",
+  height = "height",
   /** Maximum height of the chat container (float layout). */
-  MAX_HEIGHT = "max-height",
+  max_height = "max-height",
   /** Width of the chat panel (float layout). */
-  WIDTH = "width",
+  width = "width",
   /** z-index of the chat overlay or container (float layout). */
-  Z_INDEX = "z-index",
+  z_index = "z-index",
 }

@@ -11,6 +11,7 @@ interface Settings {
   framework: "react" | "web-component";
   layout: "float" | "sidebar" | "fullscreen" | "fullscreen-no-gutter";
   writeableElements: "true" | "false";
+  direction: "default" | "ltr" | "rtl";
 }
 
 interface KeyPairs {

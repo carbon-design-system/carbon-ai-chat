@@ -16,8 +16,6 @@
  * To use the web components, directly import them.
  */
 
-export { OverlayPanelName } from "./chat/components-legacy/OverlayPanel";
-
 export {
   NotificationMessage,
   ViewState,
@@ -41,8 +39,8 @@ export {
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
-  PublicWebChatServiceDeskState,
-  PublicWebChatState,
+  PublicChatHumanAgentState,
+  PublicChatState,
   SendOptions,
   TypeAndHandler,
   WriteableElementName,
@@ -232,9 +230,4 @@ export {
   ChatCustomElementProps,
 } from "./react/ChatCustomElement";
 
-export {
-  PageObjectId,
-  makeTestId,
-  TestId,
-  PrefixedId,
-} from "./chat/utils/PageObjectId";
+export { PageObjectId, TestId } from "./chat/utils/PageObjectId";

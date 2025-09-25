@@ -39,6 +39,9 @@ function THROW_ERROR() {
 // padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
 const AUTO_SCROLL_EXTRA = 28 - 8;
 
+// Height of one line message including the message avatar line label
+const ONE_LINE_MESSAGE_HEIGHT = 88;
+
 // How much to throttle auto scrolling. When we are in test mode, we set this to zero.
 const AUTO_SCROLL_THROTTLE_TIMEOUT = 100;
 
@@ -54,4 +57,5 @@ export {
   THROW_ERROR,
   CornersType,
   AUTO_SCROLL_EXTRA,
+  ONE_LINE_MESSAGE_HEIGHT,
 };

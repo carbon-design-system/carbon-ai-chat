@@ -17,7 +17,6 @@ import { MessageTypeComponentProps } from "../../../../types/messaging/MessageTy
 interface FooterButtonComponentsProps extends MessageTypeComponentProps {
   renderMessageComponent: (
     props: MessageTypeComponentProps & {
-      message: any;
       isNestedMessageItem: boolean;
     },
   ) => React.ReactNode;

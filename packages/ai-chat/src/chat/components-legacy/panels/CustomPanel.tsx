@@ -24,15 +24,11 @@ import {
 import { AppState } from "../../../types/state/AppState";
 import { consoleError } from "../../utils/miscUtils";
 import { BasePanelComponent } from "../BasePanelComponent";
-import { OverlayPanel, OverlayPanelName } from "../OverlayPanel";
+import { OverlayPanel } from "../OverlayPanel";
+import { PageObjectId } from "../../utils/PageObjectId";
 import WriteableElement from "../WriteableElement";
 
 interface CustomPanelProps {
-  /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
   /**
    * Update the panel counter to show a panel has opened, and add any proper focus.
    */
@@ -69,7 +65,6 @@ interface CustomPanelProps {
  */
 function CustomPanel(props: CustomPanelProps) {
   const {
-    useAITheme,
     onPanelOpenEnd,
     onPanelCloseEnd,
     onPanelOpenStart,
@@ -162,7 +157,7 @@ function CustomPanel(props: CustomPanelProps) {
       animationOnClose={closeAnimation}
       shouldOpen={isOpen}
       serviceManager={serviceManager}
-      overlayPanelName={OverlayPanelName.CUSTOM}
+      overlayPanelName={PageObjectId.CUSTOM_PANEL}
     >
       <BasePanelComponent
         className="cds-aichat--custom-panel"
@@ -171,14 +166,14 @@ function CustomPanel(props: CustomPanelProps) {
         labelBackButton={languagePack.general_returnToAssistant}
         isOpen={isOpen}
         title={title}
-        useAITheme={useAITheme}
         onClickBack={onClickBackLocal}
         onClickClose={onClickCloseLocal}
         onClickRestart={onClickRestart}
         hidePanelHeader={hidePanelHeader}
         hideBackButton={options.hideBackButton}
         hideCloseButton={options.hideCloseButton}
-        testIdPrefix={OverlayPanelName.CUSTOM}
+        showAiLabel={false}
+        showRestartButton={false}
       >
         <WriteableElement
           slotName="customPanelElement"

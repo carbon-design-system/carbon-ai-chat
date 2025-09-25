@@ -16,6 +16,7 @@ import Button, {
 } from "../../components/carbon/Button";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
+import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
@@ -33,6 +34,7 @@ import React, {
 import { useSelector } from "../../hooks/useSelector";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import OverflowMenu from "../../components/carbon/OverflowMenu";
+import OverflowMenuBody from "../../components/carbon/OverflowMenuBody";
 import OverflowMenuItem from "../../components/carbon/OverflowMenuItem";
 import CDSOverflowMenu from "@carbon/web-components/es/components/overflow-menu/overflow-menu";
 import { ChatHeaderTitle } from "../../ai-chat-components/react/components/chatHeader/ChatHeaderTitle";
@@ -48,11 +50,11 @@ import { doFocusRef } from "../../utils/domUtils";
 import WriteableElement from "../WriteableElement";
 import { AISlug } from "./AISlug";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
-import { OverlayPanelName } from "../OverlayPanel";
-import { makeTestId, PageObjectId, TestId } from "../../utils/PageObjectId";
+import { PageObjectId, TestId } from "../../utils/PageObjectId";
 
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const DownToBottom = carbonIconToReact(DownToBottom16);
+const OverflowMenuVertical = carbonIconToReact(OverflowMenuVertical16);
 const Restart = carbonIconToReact(Restart16);
 const SidePanelClose = carbonIconToReact(SidePanelClose16);
 const SubtractLarge = carbonIconToReact(SubtractLarge16);
@@ -80,11 +82,6 @@ interface HeaderProps {
   showRestartButton?: boolean;
 
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme?: boolean;
-
-  /**
    * The aria label to display on the back button.
    */
   labelBackButton?: string;
@@ -98,6 +95,12 @@ interface HeaderProps {
    * Determines if the chat header items should be visible.
    */
   enableChatHeaderConfig?: boolean;
+
+  /**
+   * Controls whether to show the AI label in this specific header instance.
+   * When undefined, falls back to the global config setting.
+   */
+  showAiLabel?: boolean;
 
   /**
    * Called when the close button is clicked.
@@ -128,12 +131,6 @@ interface HeaderProps {
    * The callback to call when an overflow item is chosen. This will return the index of the item that was clicked.
    */
   overflowClicked?: (index: number) => void;
-
-  /**
-   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
-   * in the header obviously unique.
-   */
-  testIdPrefix: OverlayPanelName;
 }
 
 /**
@@ -145,7 +142,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     backContent,
     showRestartButton,
     showBackButton,
-    useAITheme,
     labelBackButton,
     onClickClose,
     onClickRestart,
@@ -155,7 +151,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     backButtonType,
     hideCloseButton,
     enableChatHeaderConfig,
-    testIdPrefix,
+    showAiLabel,
   } = props;
 
   const backButtonRef = useRef<CDSButton>();
@@ -171,6 +167,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const isHidden = useContext(HideComponentContext);
 
   const { header } = publicConfig;
+
+  // Determine whether to show AI label - use prop if provided, otherwise use config value with default true
+  const shouldShowAiLabel =
+    showAiLabel !== undefined ? showAiLabel : header?.showAiLabel !== false;
 
   // The title and name to display in the header from the chat header config.
   const chatHeaderTitle = enableChatHeaderConfig
@@ -272,18 +272,25 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         tooltip-text={languagePack.header_overflowMenu_options}
         aria-label={languagePack.components_overflow_ariaLabel}
       >
-        {overflowItems?.map((item, index) => (
-          <OverflowMenuItem
-            key={item}
-            onClick={() => {
-              // Move focus back to the overflow menu button.
-              doFocusRef(overflowRef);
-              overflowClicked(index);
-            }}
-          >
-            {item}
-          </OverflowMenuItem>
-        ))}
+        <OverflowMenuVertical
+          aria-label={languagePack.components_overflow_ariaLabel}
+          className="cds--overflow-menu__icon"
+          slot="icon"
+        />
+        <OverflowMenuBody>
+          {overflowItems?.map((item, index) => (
+            <OverflowMenuItem
+              key={item}
+              onClick={() => {
+                // Move focus back to the overflow menu button.
+                doFocusRef(overflowRef);
+                overflowClicked(index);
+              }}
+            >
+              {item}
+            </OverflowMenuItem>
+          ))}
+        </OverflowMenuBody>
       </OverflowMenu>
     );
   } else if (showBackButton) {
@@ -307,16 +314,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   }
 
   return (
-    <div className={cx("cds-aichat--header", `cds-aichat--primary-color`)}>
-      <div
-        className={cx(
-          "cds-aichat--header--content",
-          `cds-aichat--primary-color`,
-        )}
-        data-floating-menu-container
-      >
+    <div className="cds-aichat--header">
+      <div className="cds-aichat--header--content" data-floating-menu-container>
         {leftContent && (
-          <div className="cds-aichat--header__buttons cds-aichat--header__left-buttons">
+          <div className="cds-aichat--header__buttons cds-aichat--header__left-items">
             {leftContent}
           </div>
         )}
@@ -331,7 +332,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           )}
         </div>
         <div className="cds-aichat--header__buttons cds-aichat--header__right-buttons">
-          {useAITheme && (
+          {shouldShowAiLabel && (
             <AISlug
               className="cds-aichat--header__slug"
               size={AI_LABEL_SIZE.EXTRA_SMALL}
@@ -390,7 +391,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                   ? BUTTON_TOOLTIP_POSITION.RIGHT
                   : BUTTON_TOOLTIP_POSITION.LEFT
               }
-              testId={makeTestId(PageObjectId.CLOSE_CHAT, testIdPrefix)}
+              testId={PageObjectId.CLOSE_CHAT}
             >
               {closeIcon}
             </HeaderButton>

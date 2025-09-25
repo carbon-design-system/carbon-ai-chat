@@ -15,6 +15,8 @@ import {
 } from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
+import type { PersistedState } from "../state/AppState";
+import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { MessageRequest } from "../messaging/Messages";
 import type { ServiceManager } from "../../chat/services/ServiceManager";
 
@@ -28,7 +30,7 @@ export interface ChatInstance extends EventHandlers, ChatActions {
   /**
    * Returns state information of the Carbon AI Chat that could be useful.
    */
-  getState: () => PublicWebChatState;
+  getState: () => PublicChatState;
 
   /**
    * Manager for accessing and controlling custom panels.
@@ -49,64 +51,23 @@ export interface ChatInstance extends EventHandlers, ChatActions {
  *
  * @category Instance
  */
-export interface PublicWebChatState {
-  /**
-   * Is the Carbon AI Chat currently in an open state.
-   */
-  isWebChatOpen: boolean;
-
-  /**
-   * Is the Carbon AI Chat currently connected with a human agent.
-   */
-  isConnectedWithHumanAgent: boolean;
-
-  /**
-   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
-   * conversation.
-   */
-  isConnectingWithHumanAgent: boolean;
-
-  /**
-   * Is the home screen open.
-   */
-  isHomeScreenOpen: boolean;
-
-  /**
-   * Has the user sent a message that isn't requesting the welcome node.
-   */
-  hasUserSentMessage: boolean;
-
-  /**
-   * The current viewState of the Carbon AI Chat.
-   */
-  viewState: ViewState;
-
-  /**
-   * State regarding service desks.
-   */
-  serviceDesk: PublicWebChatServiceDeskState;
-}
+export type PublicChatState = Readonly<
+  Omit<PersistedState, "humanAgentState"> & {
+    humanAgent: PublicChatHumanAgentState;
+  }
+>;
 
 /**
+ * Current connection state of the human agent experience.
+ *
  * @category Instance
  */
-export interface PublicWebChatServiceDeskState {
-  /**
-   * Is the Carbon AI Chat currently connected with a human agent.
-   */
-  isConnected: boolean;
-
-  /**
-   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
-   * conversation.
-   */
-  isConnecting: boolean;
-
-  /**
-   * Indicates if a conversation with a human agent has been suspended.
-   */
-  isSuspended: boolean;
-}
+export type PublicChatHumanAgentState = Readonly<
+  PersistedHumanAgentState & {
+    /** Indicates if Carbon AI Chat is attempting to connect to an agent. */
+    isConnecting: boolean;
+  }
+>;
 
 /**
  * This is a subset of the public interface that is managed by the event bus that is used for registering and
@@ -282,6 +243,14 @@ interface ChatActions {
    * Actions that are related to a service desk integration.
    */
   serviceDesk: ChatInstanceServiceDeskActions;
+
+  /**
+   * Remove any record of the current session from the browser.
+   *
+   * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
+   * chat is open.
+   */
+  destroySession: (keepOpenState?: boolean) => Promise<void>;
 }
 
 /**

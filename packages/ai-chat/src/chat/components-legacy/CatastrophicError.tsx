@@ -25,7 +25,6 @@ import { ErrorMessageLight } from "./ErrorMessageLight";
 import { BotHeader } from "./header/BotHeader";
 import RichText from "./responseTypes/util/RichText";
 import { LanguagePack } from "../../types/config/PublicConfig";
-import { OverlayPanelName } from "./OverlayPanel";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 
 const Restart = carbonIconToReact(Restart16);
@@ -88,7 +87,6 @@ function CatastrophicError({
           onClose={onClose}
           onToggleHomeScreen={null}
           includeWriteableElement={false}
-          testIdPrefix={OverlayPanelName.CATASTROPHIC}
         />
       )}
       <div

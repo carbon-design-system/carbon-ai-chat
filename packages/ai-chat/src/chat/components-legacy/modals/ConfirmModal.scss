@@ -25,8 +25,12 @@
 }
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__container {
-  margin: layout.$spacing-06;
+  margin: auto;
   background-color: theme.$background;
+  max-inline-size: min(
+    calc(#{chat-theme.$max-width} - calc(#{layout.$spacing-05} * 2)),
+    512px
+  );
 }
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__title {
@@ -49,13 +53,4 @@
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__button-container * {
   flex: 1;
-}
-
-.cds-aichat--wide-width
-  .cds-aichat--confirm-modal
-  .cds-aichat--confirm-modal__container {
-  margin: auto;
-  max-inline-size: calc(
-    #{chat-theme.$max-width} - calc(#{layout.$spacing-05} * 2)
-  );
 }

@@ -20,7 +20,6 @@ import { useSelector } from "../../hooks/useSelector";
 import { AppState } from "../../../types/state/AppState";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { Header } from "../header/Header";
-import { OverlayPanelName } from "../OverlayPanel";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -44,17 +43,14 @@ function HomeScreenHeader(
 ) {
   const { onClose, onRestart } = props;
   const showRestartButton = useSelector(
-    (state: AppState) => state.config.public.header?.showRestartButton,
+    (state: AppState) => state.config.derived.header?.showRestartButton,
   );
   const customMenuOptions = useSelector(
-    (state: AppState) => state.config.public.header?.menuOptions,
+    (state: AppState) => state.config.derived.header?.menuOptions,
   );
   const memoizedCustomMenuOptions = useMemo(
     () => customMenuOptions || undefined,
     [customMenuOptions],
-  );
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
   );
   const headerRef = useRef<HasRequestFocus>();
 
@@ -82,8 +78,6 @@ function HomeScreenHeader(
         onClickClose={onClose}
         overflowClicked={overflowClicked}
         overflowItems={overflowItems}
-        useAITheme={aiEnabled}
-        testIdPrefix={OverlayPanelName.HOME_SCREEN}
       />
     </div>
   );

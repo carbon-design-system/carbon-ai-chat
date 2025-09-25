@@ -37,7 +37,9 @@ export class Demo extends LitElement {
   render() {
     return html`
       <cds-aichat-custom-element
-        .config=${config}
+        .messaging=${config.messaging}
+        .layout=${config.layout}
+        .openChatByDefault=${config.openChatByDefault}
         class="chat-custom-element"
       ></cds-aichat-custom-element>
     `;

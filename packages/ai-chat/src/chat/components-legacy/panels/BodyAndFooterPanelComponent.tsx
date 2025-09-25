@@ -24,8 +24,9 @@ import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
 import { BasePanelComponent } from "../BasePanelComponent";
 import { BodyWithFooterComponent } from "../BodyWithFooterComponent";
 import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps";
-import { OverlayPanel, OverlayPanelName } from "../OverlayPanel";
+import { OverlayPanel } from "../OverlayPanel";
 import { MessageResponse } from "../../../types/messaging/Messages";
+import { PageObjectId } from "../../utils/PageObjectId";
 
 interface BodyAndFooterPanelComponentProps
   extends HasRequestFocus,
@@ -66,14 +67,9 @@ interface BodyAndFooterPanelComponentProps
   eventDescription?: string;
 
   /**
-   * Indicates if the AI theme should be used.
+   * Unique name for overlay panel - should use a PageObjectId value.
    */
-  useAITheme?: boolean;
-
-  /**
-   * Unique name for overlay panel.
-   */
-  overlayPanelName: OverlayPanelName;
+  overlayPanelName: PageObjectId;
 
   /**
    * This callback is called when the back button is clicked.
@@ -111,15 +107,19 @@ interface BodyAndFooterPanelComponentProps
   onClickRestart?: () => void;
 
   /**
-   * The header component is used by multiple panels. This is a prefix for data-testid to keep buttons
-   * in the header obviously unique.
-   */
-  testIdPrefix: OverlayPanelName;
-
-  /**
    * Function to render message components
    */
   renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+
+  /**
+   * Controls whether to show the AI label in the header. When undefined, falls back to global config.
+   */
+  showAiLabel?: boolean;
+
+  /**
+   * Controls whether to show the restart button in the header. When undefined, falls back to global config.
+   */
+  showRestartButton?: boolean;
 }
 
 /**
@@ -135,7 +135,6 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     overlayPanelName,
     className,
     title,
-    useAITheme,
     requestFocus,
     onClickBack,
     onClose,
@@ -144,8 +143,9 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
     onPanelCloseEnd,
     onPanelOpenStart,
     onPanelCloseStart,
-    testIdPrefix,
     renderMessageComponent,
+    showAiLabel,
+    showRestartButton,
   } = props;
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
@@ -181,12 +181,12 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
         isOpen={isOpen}
         title={title}
         disableAnimation={disableAnimation}
-        useAITheme={useAITheme}
         labelBackButton={languagePack.general_returnToAssistant}
         onClickBack={onClickBack}
         onClickClose={onClose}
         onClickRestart={onClickRestart}
-        testIdPrefix={testIdPrefix}
+        showAiLabel={showAiLabel}
+        showRestartButton={showRestartButton}
       >
         {originalMessage && (
           <BodyWithFooterComponent

@@ -15,6 +15,10 @@ Version 1.0.0 introduces **live config updates**. Changes to `PublicConfig` now 
 - `themeConfig` -> removed (see theming below)
 - All `PublicConfig` properties are now top-level props (no more `config` prop)
 
+### Separate build folder for custom prefix:
+
+Instead of pulling from the `es-custom` folder and using the `cds-custom-*` components from `@carbon/web-components`, we are now using components straight from `es` and generating our own `es-custom` folder to handle the custom registry issues that may arise from using the `@carbon/ai-chat` package alongside `carbon-angular-components`. See migration examples below for details.
+
 ### Service Desk:
 
 - `serviceDesk` and `serviceDeskFactory` moved out of config to top-level props
@@ -33,6 +37,10 @@ Version 1.0.0 introduces **live config updates**. Changes to `PublicConfig` now 
 ### Home Screen:
 
 - Removed: `homescreen.background` (background styling is now managed automatically)
+
+### ChatInstance.getState
+
+`getState()` now returns a frozen `PublicChatState` that exposes the sessionStorage-backed fields as top-level properties (e.g. `version`, `viewState`, `showUnreadIndicator`, `homeScreenState`, etc.). The `humanAgent` block contains the persisted human-agent data plus a live `isConnecting` flag sourced from in-memory state. Treat the returned object as read-only and call `getState()` again when you need fresh values.
 
 ### Removed Methods:
 
@@ -126,12 +134,44 @@ instance.updateCSSVariables({
 const config = {
   layout: {
     customProperties: {
-      HEIGHT: "600px",
-      WIDTH: "400px",
-      Z_INDEX: "9999",
+      height: "600px",
+      width: "400px",
+      z_index: "9999",
     },
   },
 };
+```
+
+### `es-custom` folder
+
+**Note:** You only need to import from the `es-custom` folder if you are facing component registry issues. This usually happens when using the `@carbon/ai-chat` package alongside `carbon-angular-components` where the component names clash with the underlying subcomponents from `@carbon/web-components`.
+
+If not using alongside `carbon-angular-components`, resume importing from the `es` folder and using the `cds-aichat` prefix.
+
+```ts
+// Before
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+
+...
+
+render() {
+  return html`
+    <cds-aichat-container ....> </cds-aichat-container>
+    <cds-aichat-custom-element ....> </cds-aichat-custom-element>
+  `;
+
+// After
+import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
+
+...
+
+render() {
+  return html`
+    <cds-custom-aichat-container ....> </cds-custom-aichat-container>
+    <cds-custom-aichat-custom-element ....> </cds-custom-aichat-custom-element>
+  `;
 ```
 
 ### React Usage (Interface Flattening)
@@ -174,6 +214,64 @@ return <ChatContainer {...config} />;
 const el = document.querySelector("cds-aichat-container");
 el.launcher = { isOn: false };
 ```
+
+## Testing: Panel-Scoped Test IDs
+
+**Breaking Change**: Test ID structure has been updated to use panel-scoped approach for better testing reliability.
+
+### What Changed
+
+- Removed: `makeTestId()` utility function
+- Removed: `PrefixedId` type
+- Removed: `OverlayPanelName` enum (consolidated into `PageObjectId`)
+- Added: Panel test IDs consolidated into `PageObjectId` for single import convenience
+
+### Migration
+
+**Before (0.5.x):**
+
+```ts
+// Using makeTestId with duplicate test ID issues
+import {
+  makeTestId,
+  PageObjectId,
+  OverlayPanelName,
+} from "@carbon/ai-chat/server";
+
+// Tests had duplicate test ID problems when multiple panels existed
+await expect(page.getByTestId("input_send")).toBeVisible(); // Could find 2+ elements
+await expect(
+  page.getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN)),
+).click();
+```
+
+**After (1.0.0):**
+
+```ts
+// Using panel-scoped approach - cleaner and more reliable
+// PageObjectId now includes all panel identifiers - no need for OverlayPanelName
+import { PageObjectId } from "@carbon/ai-chat/server";
+
+// Each panel has its own scope - no more duplicates
+const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
+await expect(mainPanel.getByTestId(PageObjectId.INPUT)).fill("Hello");
+await expect(mainPanel.getByTestId(PageObjectId.INPUT_SEND)).click();
+await expect(mainPanel.getByTestId(PageObjectId.CLOSE_CHAT)).click();
+```
+
+### Available Panel Test IDs
+
+All panel identifiers are now available through `PageObjectId`:
+
+- `PageObjectId.MAIN_PANEL` (`main_panel`): Main chat interface
+- `PageObjectId.DISCLAIMER_PANEL` (`disclaimer_panel`): Disclaimer screen
+- `PageObjectId.HOME_SCREEN_PANEL` (`home_screen_panel`): Home screen
+- `PageObjectId.HYDRATING_PANEL` (`hydrating_panel`): Loading state
+- `PageObjectId.CATASTROPHIC_PANEL` (`catastrophic_panel`): Error state
+- `PageObjectId.IFRAME_PANEL` (`iframe_panel`): IFrame content panel
+- `PageObjectId.CONVERSATIONAL_SEARCH_CITATION_PANEL` (`conversational_search_citation_panel`): Citation panel
+- `PageObjectId.CUSTOM_PANEL` (`custom_panel`): Custom content panel
+- `PageObjectId.BUTTON_RESPONSE_PANEL` (`button_response_panel`): Panel opened from button responses
 
 ## New Features
 

@@ -40,9 +40,10 @@ const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
 interface AppProps {
   config: PublicConfig;
   settings: Settings;
+  onChatInstanceReady?: (instance: ChatInstance) => void;
 }
 
-function DemoApp({ config, settings }: AppProps) {
+function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [instance, setInstance] = useState<ChatInstance>();
   const [stateText, setStateText] = useState<string>("Initial text");
@@ -54,12 +55,10 @@ function DemoApp({ config, settings }: AppProps) {
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
    * depending on which component should be rendered.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-render#user-defined-responses
    */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
-      const { messageItem } = state;
+      const { messageItem, partialItems } = state;
       // The event here will contain details for each user defined response that needs to be rendered.
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
@@ -77,17 +76,34 @@ function DemoApp({ config, settings }: AppProps) {
         }
       }
 
-      // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
-      // switch statement here that does something more specific depending on the component.
-      return <AISkeletonPlaceholder className="fullSkeleton" />;
+      if (partialItems) {
+        switch (partialItems[0].user_defined?.user_defined_type) {
+          case "green": {
+            // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+            // concatenation as you want.
+            const text = partialItems
+              .map((item) => item.user_defined?.text)
+              .join("");
+            return (
+              <UserDefinedResponseExample
+                text={text}
+                parentStateText={stateText}
+              />
+            );
+          }
+          default: {
+            // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+            // streaming behavior for.
+            return <AISkeletonPlaceholder className="fullSkeleton" />;
+          }
+        }
+      }
     },
     [stateText],
   );
 
   /**
    * You can return a React element for each writeable element.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
    */
   const allWriteableElements = useMemo(
     () => ({
@@ -161,6 +177,9 @@ function DemoApp({ config, settings }: AppProps) {
     // You can set the instance to access it later if you need to.
     setInstance(instance);
 
+    // Notify parent component that instance is ready
+    onChatInstanceReady?.(instance);
+
     // Here we are registering an event listener for if someone clicks on a button that throws
     // a client side event.
     instance.on({
@@ -174,8 +193,6 @@ function DemoApp({ config, settings }: AppProps) {
 
   /**
    * Closes/hides the chat.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#changeView.
    */
   const openSideBar = () => {
     instance?.changeView(ViewType.MAIN_WINDOW);
@@ -183,8 +200,6 @@ function DemoApp({ config, settings }: AppProps) {
 
   /**
    * Listens for view changes on the AI chat.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#view:change
    */
   const onViewChange =
     settings.layout === "sidebar"
@@ -194,7 +209,7 @@ function DemoApp({ config, settings }: AppProps) {
       : undefined;
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
-  let className;
+  let className = "";
   if (
     settings.layout === "fullscreen" ||
     settings.layout === "fullscreen-no-gutter"
@@ -220,7 +235,7 @@ function DemoApp({ config, settings }: AppProps) {
     <>
       <ChatCustomElement
         {...config}
-        className={className}
+        className={className as string}
         onViewChange={onViewChange}
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
@@ -249,8 +264,6 @@ function feedbackHandler(event: any) {
 
 /**
  * Listens for clicks from buttons with custom events attached.
- *
- * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#messageItemCustom
  */
 function customButtonHandler(event: BusEvent) {
   const { messageItem } = event as BusEventMessageItemCustom;

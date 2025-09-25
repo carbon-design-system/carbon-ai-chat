@@ -126,7 +126,36 @@ const reducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
     state: AppState,
     action: { partialState: DeepPartial<AppState> },
-  ): AppState => merge({}, state, action.partialState),
+  ): AppState => {
+    const { partialState } = action;
+    if (!partialState) {
+      return state;
+    }
+
+    if (Object.is(partialState as unknown, state)) {
+      return state;
+    }
+
+    const { config, ...rest } = partialState;
+    const nextState = merge({}, state, rest);
+
+    // Handle config separately because callers sometimes pass a completely rebuilt AppConfig (for example after
+    // recomputing derived fields based on a new PublicConfig). A blind deep merge would blend the new tree with the
+    // previous one, leaving behind stale nested values like the old language pack. By detecting a full config payload
+    // and replacing it wholesale we ensure each update starts from a clean AppConfig while still allowing partial
+    // updates (e.g. `config: { derived: { languagePack: ... } }`) to merge as before.
+    if (config !== undefined) {
+      if (config && Object.prototype.hasOwnProperty.call(config, "public")) {
+        nextState.config = config as AppState["config"];
+      } else if (config) {
+        nextState.config = merge({}, nextState.config, config);
+      } else {
+        nextState.config = config as AppState["config"];
+      }
+    }
+
+    return nextState;
+  },
 
   [HYDRATE_CHAT]: (state: AppState): AppState => ({
     ...state,

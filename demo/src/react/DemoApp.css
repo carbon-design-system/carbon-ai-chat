@@ -38,3 +38,21 @@
 .fullSkeleton {
   inline-size: 100% !important;
 }
+
+/* RTL support */
+[dir="rtl"] .fullScreen {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .sidebar {
+  right: auto;
+  left: 0;
+  transition: left 100ms, visibility 0s 100ms;
+}
+
+[dir="rtl"] .sidebar--closed {
+  right: auto;
+  left: calc(calc(320px + 1rem) * -1);
+  transition: left 100ms, visibility 0s 0s;
+}

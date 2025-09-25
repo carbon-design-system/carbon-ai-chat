@@ -17,14 +17,9 @@ import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { BasePanelComponent } from "../../BasePanelComponent";
 import { IFrameComponent } from "./IFrameComponent";
-import { OverlayPanelName } from "../../OverlayPanel";
 import { BasePanelConfigOptions } from "../../../../types/utilities/BasePanelConfigOptions";
 
 interface IFramePanelComponentProps extends BasePanelConfigOptions {
-  /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme: boolean;
   onClickClose?: () => void;
   onClickRestart?: () => void;
 }
@@ -55,7 +50,8 @@ function IFramePanelComponent(
       labelBackButton={languagePack.iframe_ariaClosePanel}
       eventName="IFrame panel opened"
       eventDescription="A user has opened the IFrame panel"
-      testIdPrefix={OverlayPanelName.IFRAME}
+      showAiLabel={false}
+      showRestartButton={false}
     >
       <div className="cds-aichat--i-frame-panel__content">
         {messageItem?.source && (

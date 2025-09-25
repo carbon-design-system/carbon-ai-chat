@@ -19,6 +19,7 @@ import {
   MessageResponse,
   WidthOptions,
 } from "../../../../types/messaging/Messages";
+import { MessageTypeComponentProps } from "../../../../types/messaging/MessageTypeComponentProps";
 
 interface CardItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem;
@@ -37,7 +38,7 @@ interface CardItemComponentProps extends HasRequestFocus {
   /**
    * Function to render message components
    */
-  renderMessageComponent: (props: any) => React.ReactNode;
+  renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
 }
 
 /**
