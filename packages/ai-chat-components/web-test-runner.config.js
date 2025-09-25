@@ -14,10 +14,6 @@
 import { esbuildPlugin } from "@web/dev-server-esbuild";
 import litcss from "web-dev-server-plugin-lit-css";
 import { playwrightLauncher } from "@web/test-runner-playwright";
-import { fromRollup } from "@web/dev-server-rollup";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
-
-const resolve = fromRollup(nodeResolve);
 
 export default {
   files: ["src/**/*.test.ts"],
@@ -27,9 +23,6 @@ export default {
       cssnano: true,
     }),
     esbuildPlugin({ ts: true }),
-    resolve({
-      extensions: [".js", ".ts"],
-    }),
   ],
   browsers: [
     playwrightLauncher({ product: "chromium" }),
