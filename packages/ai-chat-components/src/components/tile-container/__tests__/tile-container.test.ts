@@ -9,8 +9,8 @@
  */
 
 import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/ai-chat-components/es/components/tile-container/index.js";
 import "@carbon/web-components/es/components/tile/tile.js";
+import "@carbon/ai-chat-components/es/components/tile-container/index.js";
 import CDSAIChatTileContainer from "@carbon/ai-chat-components/es/components/tile-container/src/tile-container.js";
 
 /**
