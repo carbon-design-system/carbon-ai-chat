@@ -233,18 +233,7 @@ export const ClickableWithCustomIcon = {
 
     return html`
       <cds-clickable-tile @click=${args.onClick}>
-        ${html`
-          <h5>AI Chat Tile</h5>
-          <p>
-            Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-            do eiusmod tempor incididunt
-            <br /><br /><a class="truncated-text"
-              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam,
-              commodi.</a
-            >
-          </p>
-        `}
-        ${iconLoader(Link16, { slot: "icon" })}
+        ${args.tileContent} ${iconLoader(Link16, { slot: "icon" })}
         <div class="${footerClass}">${args.footerButtons}</div>
       </cds-clickable-tile>
     `;

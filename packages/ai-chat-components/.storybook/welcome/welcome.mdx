@@ -38,13 +38,14 @@ import '@carbon/ai-chat-components/es/components/tile-container/tile-container.j
 Once you've imported the component modules, you can use our components in the same manner as native HTML tags, for example:
 
 ```html
-<cds-dropdown trigger-content="Select an item">
-  <cds-dropdown-item value="all">Option 1</cds-dropdown-item>
-  <cds-dropdown-item value="cloudFoundry">Option 2</cds-dropdown-item>
-  <cds-dropdown-item value="staging">Option 3</cds-dropdown-item>
-  <cds-dropdown-item value="dea">Option 4</cds-dropdown-item>
-  <cds-dropdown-item value="router">Option 5</cds-dropdown-item>
-</cds-dropdown>
+<cds-aichat-tile-container>
+  <cds-tile> ... </cds-tile>
+  <div class="cds-aichat-tile-container-footer vertical">
+    <cds-button>Action 1</cds-button>
+    <cds-button>Action 2</cds-button>
+    <cds-button>Action 3</cds-button>
+  </div>
+</cds-aichat-tile-container>
 ```
 
 ### JavaScript framework integration
@@ -52,9 +53,4 @@ Once you've imported the component modules, you can use our components in the sa
 This package can also be used within other JavaScript frameworks such as Angular and
 Vue. This is achievable since web components are the modern browser standard, and
 work well with other front-end frameworks that exist in the application. In
-turn, this also comes with the benefits of encapsulation within the Shadow DOM:
-
-### Other usage guides
-
-- [Having components participate in form](/?path=/story/introduction-form-paticipation--page)
-- [Using custom styles in components](/?path=/docs/introduction-custom-styles--page)
+turn, this also comes with the benefits of encapsulation within the Shadow DOM.

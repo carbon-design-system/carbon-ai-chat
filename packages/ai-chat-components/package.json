@@ -41,6 +41,7 @@
     "@carbon/styles": "^1.39.0",
     "@carbon/web-components": "^2.37.0",
     "@ibm/telemetry-js": "^1.10.2",
+    "@lit/react": "^1.0.8",
     "lit": "^3.0.0",
     "tslib": "^2.6.3"
   },
@@ -60,6 +61,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.0.0",
     "@storybook/addon-a11y": "^9.1.8",
+    "@storybook/addon-docs": "^9.1.8",
     "@storybook/addon-links": "^9.1.8",
     "@storybook/web-components-vite": "^9.1.8",
     "@types/jest": "^29.5.14",
@@ -81,7 +83,6 @@
     "storybook": "^9.1.8",
     "typescript": "^5.2.2",
     "vite": "^5.4.20",
-    "web-dev-server-plugin-lit-css": "^4.0.0",
-    "@storybook/addon-docs": "^9.1.8"
+    "web-dev-server-plugin-lit-css": "^4.0.0"
   }
 }
