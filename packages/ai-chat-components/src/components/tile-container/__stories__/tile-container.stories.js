@@ -15,19 +15,26 @@ import "@carbon/web-components/es/components/tile/clickable-tile.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Link16 from "@carbon/icons/es/link/16.js";
 import { html } from "lit";
+import { expect, fn } from "storybook/test";
 import styles from "./story-styles.scss?lit";
 
 const aiContent = html`<div slot="body-text">
-  <p class="secondary">AI Explained</p>
-  <h2 class="ai-label-heading">84%</h2>
-  <p class="secondary bold">Confidence score</p>
-  <p class="secondary">
+  <p>AI Explained</p>
+  <h2>84%</h2>
+  <p>Confidence score</p>
+  <p>
     Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed do
     eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
   </p>
   <hr />
-  <p class="secondary">Model type</p>
-  <p class="bold">Foundation model</p>
+  <p>Model type</p>
+  <a
+    href="#"
+    @click="${(e) => {
+      e.preventDefault();
+    }}"
+    >Foundation model</a
+  >
 </div>`;
 
 export default {
@@ -55,8 +62,8 @@ export default {
       options: ["text", "image", "image and text"],
       mapping: {
         text: html`
-          <h5 class="bold">AI Chat Tile</h5>
-          <p class="secondary">
+          <h5>AI Chat Tile</h5>
+          <p>
             Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
             do eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
           </p>
@@ -72,8 +79,8 @@ export default {
             src="https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg"
             alt="image"
           />
-          <h5 class="bold">AI Chat Tile</h5>
-          <p class="secondary">
+          <h5>AI Chat Tile</h5>
+          <p>
             Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
             do eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
           </p>
@@ -168,10 +175,20 @@ export const Default = {
 };
 
 export const Clickable = {
+  // https://storybook.js.org/docs/writing-tests/interaction-testing
+  play: async ({ canvas, userEvent, args }) => {
+    const tile = canvas.getByTestId("clickable-tile");
+    const tileTrigger = tile.shadowRoot.querySelector(".cds--tile--clickable");
+    await userEvent.click(tileTrigger);
+    expect(args.onClick).toHaveBeenCalled();
+    await userEvent.click(document.body);
+    expect(tile).not.toHaveFocus();
+  },
   args: {
     maxWidth: "sm",
     useWrapper: true,
     tileContent: "text",
+    onClick: fn(),
   },
   argTypes: {
     footerButtons: {
@@ -187,7 +204,7 @@ export const Clickable = {
     let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
 
     return html`
-      <cds-clickable-tile @click=${args.onClick} href="#">
+      <cds-clickable-tile @click=${args.onClick} data-testid="clickable-tile">
         ${args.tileContent}
         <div class="${footerClass}">${args.footerButtons}</div>
       </cds-clickable-tile>
@@ -216,7 +233,18 @@ export const ClickableWithCustomIcon = {
 
     return html`
       <cds-clickable-tile @click=${args.onClick}>
-        ${args.tileContent} ${iconLoader(Link16, { slot: "icon" })}
+        ${html`
+          <h5>AI Chat Tile</h5>
+          <p>
+            Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
+            do eiusmod tempor incididunt
+            <br /><br /><a class="truncated-text"
+              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam,
+              commodi.</a
+            >
+          </p>
+        `}
+        ${iconLoader(Link16, { slot: "icon" })}
         <div class="${footerClass}">${args.footerButtons}</div>
       </cds-clickable-tile>
     `;
@@ -224,6 +252,20 @@ export const ClickableWithCustomIcon = {
 };
 
 export const WithAiLabel = {
+  // https://storybook.js.org/docs/writing-tests/interaction-testing
+  play: async ({ canvas, userEvent, mount }) => {
+    await mount();
+    const tile = canvas.getByTestId("tile");
+    const aiLabel = tile.querySelector("cds-ai-label");
+    const aiLabelTriggerButton =
+      aiLabel.shadowRoot.querySelector(".cds--slug__button");
+
+    expect(aiLabel.open).toBe(false);
+    await userEvent.click(aiLabelTriggerButton);
+    expect(aiLabel.open).toBe(true);
+    await userEvent.click(document.body);
+    expect(aiLabel.open).toBe(false);
+  },
   args: {
     maxWidth: "sm",
     useWrapper: true,
@@ -248,9 +290,14 @@ export const WithAiLabel = {
     let footerClass = `cds-aichat-tile-container-footer ${args.footerOrientation}`;
 
     return html`
-      <cds-tile>
+      <cds-tile data-testid="tile">
         ${args.tileContent}
-        <cds-ai-label autoalign alignment="bottom-left" slot="ai-label">
+        <cds-ai-label
+          data-testid="ai-label"
+          autoalign
+          alignment="bottom-left"
+          slot="ai-label"
+        >
           ${aiContent}
         </cds-ai-label>
         <div class="${footerClass}">${args.footerButtons}</div>

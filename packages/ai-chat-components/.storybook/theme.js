@@ -14,7 +14,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { create } from "@storybook/theming";
+import { create } from "storybook/theming";
 
 export default create({
   base: "light",

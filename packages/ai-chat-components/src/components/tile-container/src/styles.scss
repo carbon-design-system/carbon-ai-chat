@@ -67,7 +67,6 @@ $prefix: "cds-aichat";
   #{$carbon-prefix}-clickable-tile {
     img {
       display: block;
-      // border-radius: calc(layout.$spacing-03 - rem(1px));
       inline-size: 100%;
 
       &.full-width {

@@ -8,9 +8,22 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities/convert" as *;
 
 h5,
 p {
   margin-block-end: layout.$spacing-04;
+}
+
+a {
+  color: theme.$link-primary;
+}
+
+.truncated-text {
+  display: block;
+  overflow: hidden;
+  inline-size: calc(100% - layout.$spacing-06);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

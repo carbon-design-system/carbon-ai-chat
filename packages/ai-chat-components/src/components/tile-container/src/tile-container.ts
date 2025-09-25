@@ -33,8 +33,14 @@ class CDSAIChatTileContainer extends LitElement {
     }
 
     requestAnimationFrame(() => {
+      if (!this.slotEl) {
+        return;
+      }
       const slotted = this.slotEl.assignedElements();
       const tile = slotted[0];
+      if (!tile) {
+        return;
+      }
       if (tile.hasAttribute("ai-label")) {
         this.style.border = "none";
         tile.setAttribute("has-rounded-corners", "true");
