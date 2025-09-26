@@ -33,6 +33,7 @@
     "aiChat:start:all": "npm run build:chat --workspace=@carbon/ai-chat && lerna run start --stream --parallel",
     "aiChat:start:ai-chat": "npm run start --workspace=@carbon/ai-chat",
     "aiChat:start:demo": "npm run start --workspace=@carbon/ai-chat-examples-demo",
+    "aiChat:start:storybook": "npm run storybook --workspace=@carbon/ai-chat-components",
     "aiChat:start:typedoc": "npm run start:typedoc --workspace=@carbon/ai-chat",
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
