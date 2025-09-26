@@ -17,7 +17,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Chat instance controls (focus, scroll, input visibility, restart)
 - Writeable elements, layout frame/content width settings
 
-#### Programmatic-Only Testing (Use `window.setChatConfig()`)
+#### setChatConfig Testing (Use `window.setChatConfig()`)
 
 - [ ] **Error handling:** `onError: (data) => console.log(data)`
 - [ ] **Focus behavior:** `shouldTakeFocusIfOpensAutomatically: true`

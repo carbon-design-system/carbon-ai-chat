@@ -73,3 +73,5 @@ test/cypress/videos
 
 .parcel-cache
 parcel-bundle-reports
+
+test-results

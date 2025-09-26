@@ -2,67 +2,97 @@
 
 ## Programmatic Configuration Mode
 
-Control chat configuration via JavaScript instead of clicking through UI controls.
-
-### Quick Start
+Use `window.setChatConfig` to restart the demo with a supplied config instead of clicking through the sidebar.
 
 ```javascript
-// Basic usage
-window.setChatConfig({
-  aiEnabled: true,
-  header: { title: "Carbon Assistant" },
+await window.setChatConfig({
+  header: { title: "Carbon Assistant", name: "Carbon" },
+  injectCarbonTheme: "g100",
+  launcher: { isOn: false },
+  openChatByDefault: true,
 });
-
-// Change settings too
-window.setChatConfig({ aiEnabled: false }, { layout: "sidebar" });
 ```
 
-### What Happens
+`setChatConfig` returns a Promise—always await it before interacting with the UI.
 
-- **Sidebar hidden** - UI controls disappear
-- **Notification shows** - Blue when active, red when no config provided
-- **Chat updates** - Changes apply immediately
-- **Demo messaging preserved** - No need to implement `customSendMessage`
+## Browser Console Workflow
 
-### Common Examples
+- Navigate to `/?config=setChatConfig`
+- Paste the quick-start snippet above into DevTools
+- Wait for the promise to resolve before interacting; `window.chatInstance` becomes available once the chat restarts
+- Call `setChatConfig` again any time you want to adjust options—the helper tears down and rebuilds for you
+
+Example tweaks:
 
 ```javascript
-// Headers
-window.setChatConfig({
-  header: { title: "Carbon Design System", name: "Carbon" },
+await window.setChatConfig({
+  disclaimer: {
+    isOn: true,
+    disclaimerHTML: "Please accept before continuing.",
+  },
+  messaging: {
+    customSendMessage: async (payload) => console.log(payload),
+  },
 });
-
-// Themes
-window.setChatConfig({ injectCarbonTheme: "cds--g100" }); // Carbon Gray 100 (Dark)
-window.setChatConfig({ injectCarbonTheme: "cds--white" }); // Carbon White (Light)
-
-// Layouts
-window.setChatConfig({}, { layout: "sidebar" });
-window.setChatConfig({}, { layout: "fullscreen" });
-
-// Disable launcher
-window.setChatConfig({ launcher: { isOn: false }, openChatByDefault: true });
 ```
 
-### Playwright Testing
+## Playwright Recipe
 
-```javascript
-test("carbon chat configuration", async ({ page }) => {
-  await page.goto("/");
-  await page.evaluate(() => {
-    window.setChatConfig({ header: { title: "Carbon AI Chat" } });
+```typescript
+import { test, expect } from "@playwright/test";
+import { PageObjectId } from "@carbon/ai-chat/server";
+import {
+  prepareDemoPage,
+  destroyChatSession,
+  openChatWindow,
+  waitForChatReady,
+  waitForSetChatConfigApplied,
+} from "./utils";
+import type {} from "../types/window";
+
+test.beforeEach(async ({ page }) => {
+  // Load demo in setChatConfig mode and block analytics pop-ups
+  await prepareDemoPage(page, { setChatConfig: true });
+});
+
+test.afterEach(async ({ page }) => {
+  // Clean up chat session to prevent state leaks between tests
+  await destroyChatSession(page);
+});
+
+test("updates header", async ({ page }) => {
+  // Configure chat settings programmatically
+  await page.evaluate(async () => {
+    await window.setChatConfig({
+      header: { title: "Carbon AI Chat" },
+      injectCarbonTheme: "g90",
+    });
   });
-  await expect(page.locator("[data-testid='header_title']")).toContainText(
+
+  // Wait for React state updates after setChatConfig
+  await waitForSetChatConfigApplied(page);
+
+  // Open the chat interface and wait for it to be ready
+  await openChatWindow(page);
+  await waitForChatReady(page, { panelTestId: PageObjectId.MAIN_PANEL });
+
+  // Verify the header title was updated
+  await expect(page.getByTestId(PageObjectId.HEADER_TITLE)).toContainText(
     "Carbon AI Chat",
   );
+
+  // Access chat instance state for advanced assertions
+  const chatState = await page.evaluate(() => {
+    return window.chatInstance.getState();
+  });
+  expect(chatState.config.header.title).toBe("Carbon AI Chat");
 });
 ```
 
-### Page Refresh
+## Helpers
 
-- **Refreshing loses config** - Shows error notification until you call `setChatConfig()` again
-- **URL stays the same** - `?settings=programatic&config=programatic`
-
-### Exit Programmatic Mode
-
-Click **"Leave Programmatic Mode"** button in the notification, or navigate to demo URL without query parameters.
+- `prepareDemoPage(page, { setChatConfig: true })` loads `/?config=setChatConfig` and blocks analytics pop-ups
+- `destroyChatSession(page)` clears any existing widget between tests to prevent state leaks
+- `waitForSetChatConfigApplied(page)` waits for React state updates after `setChatConfig` calls (avoids arbitrary timeouts)
+- `openChatWindow(page)` keeps calling `changeView` until the main window opens (handles async view state changes)
+- `waitForChatReady(page, { panelTestId })` waits for hydration spinner to disappear and specified panel to appear; pass `PageObjectId.DISCLAIMER_PANEL` when a disclaimer overlays the chat or `null` when the chat should stay closed

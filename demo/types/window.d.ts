@@ -8,15 +8,11 @@
  */
 
 import type { ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import type { Settings } from "../src/framework/types";
 
 declare global {
   interface Window {
     chatInstance?: ChatInstance;
-    setChatConfig?: (
-      config: Partial<PublicConfig>,
-      settings?: Settings,
-    ) => void;
+    setChatConfig?: (config: Partial<PublicConfig>) => Promise<void>;
   }
 }
 
