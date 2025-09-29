@@ -700,16 +700,16 @@ class MessageComponent extends PureComponent<
           className,
           agentMessageType && "cds-aichat--message--agent-message",
           {
-            "cds-aichat--withAvatarLine": showAvatarLine,
+            "cds-aichat--message--with-avatar-line": showAvatarLine,
             "cds-aichat--with-human-agent": this.isAgent,
-            "cds-aichat--request": messageIsRequest,
-            "cds-aichat--systemMessage": isSystemMessage,
-            "cds-aichat--response": !messageIsRequest,
-            "cds-aichat--no-animation": noAnimation,
-            "cds-aichat--custom": isCustomMessage,
-            "cds-aichat--disabled-inputs": disableUserInputs,
-            "cds-aichat--has-focus": this.state.focusHandleHasFocus,
-            "cds-aichat--option-response-without-title-or-description":
+            "cds-aichat--message--request": messageIsRequest,
+            "cds-aichat--message--system-message": isSystemMessage,
+            "cds-aichat--message--response": !messageIsRequest,
+            "cds-aichat--message--no-animation": noAnimation,
+            "cds-aichat--message--custom": isCustomMessage,
+            "cds-aichat--message--disabled-inputs": disableUserInputs,
+            "cds-aichat--message--has-focus": this.state.focusHandleHasFocus,
+            "cds-aichat--message--option-response-without-title-or-description":
               isOptionResponseWithoutTitleOrDescription,
           },
         )}
