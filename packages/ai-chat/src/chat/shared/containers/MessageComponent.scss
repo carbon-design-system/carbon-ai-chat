@@ -31,7 +31,7 @@ $one-line-message-height: 88px;
   /* We cannot use margin on messages as that affects the position calculations that determine how to auto-scroll the
    panel. Padding on the .WAC__message--padding element must be used instead. */
   margin: 0;
-  animation: WACMessageIn motion.$duration-moderate-02
+  animation: wac-message-in motion.$duration-moderate-02
     motion.motion(entrance, productive) forwards;
 }
 
@@ -257,7 +257,7 @@ $one-line-message-height: 88px;
 }
 
 .WAC__sent-container .WAC__message-status-file-success svg {
-  animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2s
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2
     WACFadeOut forwards;
   fill: var(--cds-chat-ACCENT-color);
 }
@@ -465,7 +465,7 @@ svg.WAC__sent-fileIcon {
   background-color: theme.$chat-avatar-bot;
 }
 
-@keyframes WACMessageIn {
+@keyframes wac-message-in {
   0% {
     opacity: 0;
   }
