@@ -16,16 +16,7 @@
  * To use the web components, directly import them.
  */
 
-export { OverlayPanelName } from "./chat/shared/components/OverlayPanel";
-
 export {
-  CustomMenuOption,
-  CustomPanelConfigOptions,
-  CustomPanelInstance,
-  CustomPanels,
-  FileStatusValue,
-  FileUpload,
-  LauncherType,
   NotificationMessage,
   ViewState,
   ViewType,
@@ -34,25 +25,28 @@ export {
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
+  CustomPanelConfigOptions,
+  CustomPanelInstance,
+  CustomPanels,
+} from "./types/instance/apiTypes";
+
+export {
   ChangeFunction,
   ChatInstance,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
-  CSSVariable,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
-  HasAddRemoveClassName,
   IncreaseOrDecrease,
-  InstanceElements,
-  InstanceInputElement,
-  PublicWebChatServiceDeskState,
-  PublicWebChatState,
+  PublicChatHumanAgentState,
+  PublicChatState,
   SendOptions,
   TypeAndHandler,
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
 
@@ -93,7 +87,6 @@ export {
 } from "./types/events/eventBusTypes";
 
 export {
-  HomeScreenBackgroundType,
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
@@ -106,15 +99,17 @@ export {
 
 export {
   CarbonTheme,
+  CustomMenuOption,
   DisclaimerPublicConfig,
+  enLanguagePack,
   HeaderConfig,
+  LanguagePack,
   LayoutConfig,
   MinimizeButtonIconType,
   OnErrorData,
   OnErrorType,
   PublicConfig,
   PublicConfigMessaging,
-  ThemeConfig,
 } from "./types/config/PublicConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
@@ -127,6 +122,8 @@ export {
   DisconnectedErrorInfo,
   EndChatInfo,
   ErrorType,
+  FileStatusValue,
+  FileUpload,
   ScreenShareState,
   ServiceDesk,
   ServiceDeskCallback,
@@ -233,9 +230,4 @@ export {
   ChatCustomElementProps,
 } from "./react/ChatCustomElement";
 
-export {
-  PageObjectId,
-  makeTestId,
-  TestId,
-  PrefixedId,
-} from "./chat/shared/utils/PageObjectId";
+export { PageObjectId, TestId } from "./chat/utils/PageObjectId";

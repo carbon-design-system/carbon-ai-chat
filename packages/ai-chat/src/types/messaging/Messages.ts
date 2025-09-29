@@ -15,7 +15,8 @@
 import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { FileStatusValue } from "../instance/apiTypes";
+import { FileStatusValue } from "../config/ServiceDeskConfig";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 /**
  * This is the main interface that represents a request from a user sent to a back-end.
@@ -540,7 +541,7 @@ export interface GenericItemMessageFeedbackOptions {
   /**
    * Indicates if a request for feedback should be displayed.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
@@ -793,7 +794,7 @@ interface OptionItem<TUserDefinedType = Record<string, unknown>>
   description?: string;
 
   /**
-   * The preferred type of control to display.
+   * The preferred type of control to display (e.g. button or dropdown).
    */
   preference?: OptionItemPreference;
 }
@@ -1180,6 +1181,11 @@ enum ButtonItemKind {
   DANGER = "danger",
 
   /**
+   * Ghost Carbon button.
+   */
+  GHOST = "ghost",
+
+  /**
    * Button displayed like a link.
    */
   LINK = "link",
@@ -1195,7 +1201,7 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: ButtonItemKind;
+  kind?: BUTTON_KIND | "LINK";
 
   /**
    * The type of button.

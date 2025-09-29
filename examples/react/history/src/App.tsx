@@ -14,7 +14,7 @@ import {
   FeedbackInteractionType,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useState } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { customLoadHistory } from "./customLoadHistory";
@@ -29,12 +29,8 @@ const config: PublicConfig = {
 };
 
 function App() {
-  const [chatInstance, setChatInstance] = useState<ChatInstance>();
-
   function onBeforeRender(instance: ChatInstance) {
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
-    setChatInstance(instance);
-    console.log({ chatInstance });
   }
 
   function feedbackHandler(event: any) {
@@ -48,7 +44,7 @@ function App() {
 
   return (
     <ChatContainer
-      config={config}
+      messaging={config.messaging}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
     />

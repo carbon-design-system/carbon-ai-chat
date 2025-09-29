@@ -1,0 +1,19 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+// Main export file for AI Chat styles
+// Following @carbon/styles patterns for organization and export
+
+// Configuration and utilities
+@forward "chat-config";
+@forward "chat-keyframes";
+
+// CSS custom properties
+@forward "chat-custom-properties";
+
+// SASS variables and theme tokens
+@forward "chat-theme";

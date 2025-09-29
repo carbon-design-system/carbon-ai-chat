@@ -11,7 +11,7 @@ import {
   sanitizeDateFormat,
   toUserDateFormat,
   toAssistantDateFormat,
-} from "../../../src/chat/shared/utils/dateUtils";
+} from "../../../src/chat/utils/dateUtils";
 
 describe("dateUtils", () => {
   describe("sanitizeDateFormat", () => {

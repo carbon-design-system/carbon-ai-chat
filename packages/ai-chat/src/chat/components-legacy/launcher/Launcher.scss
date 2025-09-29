@@ -1,0 +1,1135 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button" as button;
+@use "../../styles/chat-theme";
+@use "../../styles/chat-keyframes";
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container {
+    position: fixed;
+    z-index: chat-theme.$z-index;
+    border-radius: layout.$spacing-01;
+    animation: none;
+    background-color: theme.$background;
+    box-shadow: chat-theme.$box-shadow;
+    inset-block-end: chat-theme.$launcher-position-bottom;
+    inset-inline-end: chat-theme.$launcher-position-right;
+  }
+}
+
+.cds-aichat--launcher__button-container {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  border-radius: layout.$spacing-01;
+  animation: cds-aichat-launcher-in motion.$duration-moderate-01
+    motion.motion(entrance, expressive) both;
+  background-color: theme.$background;
+  box-shadow: chat-theme.$box-shadow;
+  inset-block-end: chat-theme.$launcher-position-bottom;
+  inset-inline-end: chat-theme.$launcher-position-right;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher__button-container {
+  inset-inline: chat-theme.$launcher-position-bottom unset;
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--hidden {
+  /* Using display:none causes the entrance animation to replay */
+  visibility: hidden;
+}
+
+// This is the div that wraps the small launcher button. We need to add the box-shadow here because the box shadow of
+// the actual button is used for the focus state. Because the box-shadow is being added here we have to make sure to set
+// the background to transparent, otherwise there could be some weird white pixels sneaking out from beneath the
+// launcher button depending on how css decides to round the corners.
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round {
+  border-radius: 28px;
+  box-shadow: chat-theme.$box-shadow;
+}
+
+// This is the actual small launcher button itself, it's color and box shadow are already set, we just need to make it
+// round as well.
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
+    .cds-aichat--launcher__button {
+    border-radius: 28px;
+    background-color: chat-theme.$launcher-color-background;
+    transition: none;
+
+    &::part(button) {
+      &:focus {
+        box-shadow: inset 0 0 0 button.$button-border-width
+          chat-theme.$launcher-color-focus-border;
+      }
+    }
+    // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
+    &:focus {
+      border-width: button.$button-border-width;
+      border-color: chat-theme.$launcher-color-background;
+    }
+
+    &:hover {
+      border-color: chat-theme.$launcher-color-background-hover;
+      background-color: chat-theme.$launcher-color-background-hover;
+    }
+
+    &:active {
+      border-width: button.$button-border-width;
+      border-color: chat-theme.$launcher-color-background-active;
+      background-color: chat-theme.$launcher-color-background-active;
+      box-shadow: inset 0 0 0 button.$button-border-width
+        chat-theme.$launcher-color-focus-border;
+    }
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
+    .cds-aichat--launcher__button {
+    border-radius: 28px;
+    background-color: chat-theme.$launcher-color-background;
+    transition: none;
+
+    &::part(button) {
+      &:focus {
+        box-shadow: inset 0 0 0 button.$button-border-width
+          chat-theme.$launcher-color-focus-border;
+      }
+    }
+    // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
+    &:focus {
+      border-width: button.$button-border-width;
+      border-color: chat-theme.$launcher-color-background;
+    }
+
+    &:hover {
+      border-color: chat-theme.$launcher-color-background-hover;
+      background-color: chat-theme.$launcher-color-background-hover;
+    }
+
+    &:active {
+      border-width: button.$button-border-width;
+      border-color: chat-theme.$launcher-color-background-active;
+      background-color: chat-theme.$launcher-color-background-active;
+      box-shadow: inset 0 0 0 button.$button-border-width
+        chat-theme.$launcher-color-focus-border;
+    }
+  }
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
+  .cds-aichat--launcher__button {
+  border-radius: 28px;
+  background-color: chat-theme.$launcher-color-background;
+  transition: unset;
+
+  &::part(button) {
+    &:focus {
+      box-shadow: inset 0 0 0 button.$button-border-width
+        chat-theme.$launcher-color-focus-border;
+    }
+  }
+  // Make the focus and active box-shadow one px wider since the default 1px width looks weird with the rounded launcher.
+  &:focus {
+    border-width: button.$button-border-width;
+    border-color: chat-theme.$launcher-color-background;
+  }
+
+  &:hover {
+    border-color: chat-theme.$launcher-color-background-hover;
+    background-color: chat-theme.$launcher-color-background-hover;
+  }
+
+  &:active {
+    border-width: button.$button-border-width;
+    border-color: chat-theme.$launcher-color-background-active;
+    background-color: chat-theme.$launcher-color-background-active;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      chat-theme.$launcher-color-focus-border;
+  }
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
+  .cds-aichat--launcher__button
+  .cds-aichat--count-indicator {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border-radius: 10px;
+  background-color: chat-theme.$unread-indicator-color-background;
+  color: chat-theme.$unread-indicator-color-text;
+  @include type.type-style("caption-01");
+
+  inset-block-start: calc(-1 * #{layout.$spacing-01});
+  inset-inline-end: calc(-1 * #{layout.$spacing-01});
+  min-block-size: 20px;
+
+  // This is 20px and not a multiple of 4 because of the 12px font-size plus 4px of padding on each side.
+  min-inline-size: 20px;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--round
+  .cds-aichat--launcher__button
+  .cds-aichat--count-indicator {
+  inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
+}
+
+// Used to stop the small launchers original entrance animation if we're transitioning from medium.
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--no-animation {
+  animation: none;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  cds-button.cds-aichat--launcher__button {
+    &::part(button) {
+      svg {
+        block-size: 24px;
+        fill: chat-theme.$launcher-color-avatar;
+        inline-size: 24px;
+      }
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: inherit;
+      border-radius: inherit;
+      block-size: inherit;
+      inline-size: inherit;
+      max-inline-size: inherit;
+    }
+
+    &::part(button):focus {
+      border-width: button.$button-border-width;
+    }
+
+    position: static;
+    padding: 0;
+    border-radius: layout.$spacing-01;
+    background-color: chat-theme.$launcher-color-background;
+    block-size: chat-theme.$launcher-default-size;
+    inline-size: chat-theme.$launcher-default-size;
+    transition: none;
+  }
+}
+
+cds-button.cds-aichat--launcher__button {
+  &::part(button) {
+    svg {
+      block-size: 24px;
+      fill: chat-theme.$launcher-color-avatar;
+      inline-size: 24px;
+    }
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: inherit;
+    border-radius: inherit;
+    block-size: inherit;
+    inline-size: inherit;
+    max-inline-size: inherit;
+  }
+
+  &::part(button):focus {
+    border-width: button.$button-border-width;
+  }
+
+  position: static;
+  padding: 0;
+  border-radius: layout.$spacing-01;
+  background-color: chat-theme.$launcher-color-background;
+  block-size: chat-theme.$launcher-default-size;
+  inline-size: chat-theme.$launcher-default-size;
+  transition:
+    background 250ms ease-in-out,
+    transform 150ms ease;
+}
+
+.cds-aichat--launcher__svg {
+  fill: currentcolor;
+}
+
+.cds-aichat--launcher__avatar {
+  border-radius: 50%;
+  block-size: 32px;
+  inline-size: 32px;
+  user-select: none;
+}
+
+.cds-aichat--launcher__button .cds-aichat__count-indicator {
+  box-shadow: 1px layout.$spacing-01 layout.$spacing-01 rgb(23 23 23 / 30%);
+  inset-block-start: calc(-1 * #{layout.$spacing-02});
+  inset-inline-end: calc(-1 * #{layout.$spacing-02});
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher__button
+  .cds-aichat__count-indicator {
+  inset-inline: calc(-1 * #{layout.$spacing-02}) unset;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--bounce-animation {
+    animation: none;
+  }
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--bounce-animation {
+  animation: cds-aichat-launcher-bounce 500ms
+    motion.motion(entrance, expressive) forwards;
+}
+
+.cds-aichat--launcher-complex__container .cds-aichat--launcher-complex__text {
+  display: -webkit-box;
+  margin: layout.$spacing-05;
+  -webkit-box-orient: vertical;
+  color: chat-theme.$launcher-expanded-message-color-text;
+  font-size: 20px;
+  letter-spacing: 0;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  line-height: 1.4;
+  opacity: 0;
+  overflow-wrap: break-word;
+  text-align: start;
+
+  // Fixes a random bug with multi line line-clamp that caused the line-clamp to be ignored on first render after the
+  // component had its visibility set to hidden or inherited it from it's parent. In our case this bug occurs after the
+  // Carbon AI Chat has been opened and then closed. When its opened we apply visibility: hidden to the Launcher as a part of
+  // the changes made for this class ".cds-aichat--launcher__button-container--hidden" above. So it's necessary that we apply
+  // visibility: visible here as a workaround otherwise the line-clamp is ignored when the launcher renders again after
+  // the Carbon AI Chat is closed. src
+  // https://stackoverflow.com/questions/38989475/css-multi-line-line-clamp-ellipsis-doesnt-work
+  // This class needs to be removed when the element isn't visible otherwise the content will still show.
+  visibility: visible;
+  white-space: normal;
+  word-break: break-word;
+}
+
+// LauncherComplex
+.cds-aichat--launcher-complex__container {
+  border-radius: layout.$spacing-04;
+  animation: none;
+  background-color: chat-theme.$launcher-color-background;
+  box-shadow: none;
+
+  // Start at the bottom of the page, move up 16px for the padding between small launcher and top of medium container,
+  // then up 56px more for small launcher height, and then up 32px for the padding between small launcher and the bottom
+  // of the page. Once all of that has been done move down the height of the launcher container. This way the top of the
+  // container always starts 16px above the small launcher before the animation, irrelevant of how tall the container is.
+  inset-block-end: calc(
+    #{layout.$spacing-05} + chat-theme.$launcher-default-size +
+      chat-theme.$launcher-position-bottom - var(
+        --cds-chat-LAUNCHER-desktop-expanded-height
+      )
+  );
+
+  // 64px of distance between the right side of the medium container and the right side of the page, so that theres a
+  // slight overlap between the container and the small launcher which has an 80px width when it's expanded.
+  inset-inline-end: layout.$spacing-10;
+  max-inline-size: 270px;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container {
+  inset-inline: layout.$spacing-10 unset;
+}
+
+.cds-aichat--launcher-complex__container
+  .cds-aichat--launcher-complex__content-button {
+  padding: 0;
+  border: button.$button-border-width solid transparent;
+  border-radius: layout.$spacing-04;
+  background-color: chat-theme.$launcher-color-background;
+  box-shadow: none;
+  min-inline-size: layout.$spacing-13;
+
+  &:enabled:focus {
+    border-width: button.$button-border-width;
+    border-color: chat-theme.$launcher-expanded-message-color-background;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      chat-theme.$launcher-expanded-message-color-focus-border;
+    outline: none;
+  }
+
+  &:enabled:hover {
+    border-color: chat-theme.$launcher-expanded-message-color-background-hover;
+    background-color: chat-theme.$launcher-expanded-message-color-background-hover;
+    cursor: pointer;
+  }
+
+  &:enabled:active {
+    border-width: button.$button-border-width;
+    border-color: chat-theme.$launcher-expanded-message-color-background-active;
+    background-color: chat-theme.$launcher-expanded-message-color-background-active;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      chat-theme.$launcher-expanded-message-color-focus-border;
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container
+  .cds-aichat--launcher-complex__text {
+  text-align: end;
+}
+
+.cds-aichat--launcher-complex__container .cds-aichat--launcher__close-button {
+  position: absolute;
+
+  // 1px less padding everywhere to fit the border.
+  padding: 3px 7px 3px 3px;
+  border: button.$button-outline-width solid transparent;
+  margin: 0;
+
+  // Slightly less blur than the normal box-shadow since the close button is so small.
+  box-shadow: 1px 0 2px rgb(23 23 23 / 30%);
+  cursor: pointer;
+  @include type.type-style("caption-01");
+
+  // The height of the tag 24px, plus the 8px gap we want.
+  inset-block-start: calc((#{layout.$spacing-06} + #{layout.$spacing-03}) * -1);
+  inset-inline-end: 0;
+  opacity: 0;
+}
+
+.cds-aichat--launcher-complex__container
+  .cds-aichat--launcher__close-button:focus {
+  border-color: theme.$focus;
+  outline: none;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container
+  .cds-aichat--launcher__close-button {
+  padding: 3px 3px 3px 7px;
+  inset-inline: 0 unset;
+}
+
+.cds-aichat--launcher-complex__container
+  .cds-aichat--launcher__close-button
+  .cds-aichat--launcher__close-buttonIcon {
+  margin-inline-end: layout.$spacing-02;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container
+  .cds-aichat--launcher__close-button
+  .cds-aichat--launcher__close-buttonIcon {
+  margin-inline: layout.$spacing-02 unset;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-complex__container--intro-animation {
+    animation: none;
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__avatar {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__avatar {
+      animation: motion.$duration-slow-02 cds-aichat-launcher-avatar-resize
+        forwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher-complex__text {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher-complex__text {
+      animation: motion.$duration-slow-02 cds-aichat-launcher-fade-in-text
+        forwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher-complex__small-launcher-container,
+      .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+        .cds-aichat--launcher__button {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: motion.$duration-slow-02 cds-aichat-launcher-resize-reposition
+        forwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__close-button {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__close-button {
+      animation: motion.$duration-slow-02
+        cds-aichat-launcher-fade-in-close-button forwards;
+    }
+  }
+}
+
+.cds-aichat--launcher-complex__container--intro-animation {
+  animation: motion.$duration-slow-02 cds-aichat-launcher-fade-in-slide-up
+    forwards;
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__avatar {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__avatar {
+    animation: motion.$duration-slow-02 cds-aichat-launcher-avatar-resize
+      forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__text {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__text {
+    animation: motion.$duration-slow-02 cds-aichat-launcher-fade-in-text
+      forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    animation: motion.$duration-slow-02 cds-aichat-launcher-resize-reposition
+      forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__close-button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__close-button {
+    animation: motion.$duration-slow-02 cds-aichat-launcher-fade-in-close-button
+      forwards;
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container--intro-animation {
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    animation: motion.$duration-slow-02
+      cds-aichat-launcher-resize-reposition-rtl forwards;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-complex__container--simple-animation {
+    animation: none;
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__avatar {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__avatar {
+      animation: motion.$duration-moderate-01 cds-aichat-launcher-avatar-resize
+        forwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher-complex__text {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher-complex__text {
+      animation: motion.$duration-moderate-01 cds-aichat-launcher-fade-in-text
+        forwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher-complex__small-launcher-container,
+      .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+        .cds-aichat--launcher__button {
+        padding: 0 60px 60px 0;
+        border-radius: layout.$spacing-11;
+        animation: none;
+        block-size: layout.$spacing-13;
+        inline-size: layout.$spacing-13;
+        inset-inline-end: calc(-1 * #{layout.$spacing-11});
+      }
+    }
+
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: motion.$duration-moderate-01
+        cds-aichat-launcher-fade-in-slide-up-small-expanded forwards;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__close-button {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__close-button {
+      animation: motion.$duration-moderate-01
+        cds-aichat-launcher-fade-in-close-button forwards;
+    }
+  }
+}
+
+.cds-aichat--launcher-complex__container--simple-animation {
+  animation: motion.$duration-moderate-01 cds-aichat-launcher-fade-in-slide-up
+    forwards;
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__avatar {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__avatar {
+    animation: motion.$duration-moderate-01 cds-aichat-launcher-avatar-resize
+      forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__text {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__text {
+    animation: motion.$duration-moderate-01 cds-aichat-launcher-fade-in-text
+      forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: none;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: none;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+  }
+
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    padding: 0 60px 60px 0;
+    border-radius: layout.$spacing-11;
+    animation: motion.$duration-moderate-01
+      cds-aichat-launcher-fade-in-slide-up-small-expanded forwards;
+    block-size: layout.$spacing-13;
+    inline-size: layout.$spacing-13;
+    inset-inline-end: calc(-1 * #{layout.$spacing-11});
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__close-button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__close-button {
+    animation: motion.$duration-moderate-01
+      cds-aichat-launcher-fade-in-close-button forwards;
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container--simple-animation {
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    padding: 0 0 60px 60px;
+    inset-inline: calc(-1 * #{layout.$spacing-11}) unset;
+  }
+}
+
+.cds-aichat--launcher-complex__container--tooling-preview {
+  background-color: chat-theme.$launcher-expanded-message-color-background;
+  box-shadow: chat-theme.$box-shadow;
+  // 64px of distance between the bottom of the medium container and the bottom of the page, so that theres a slight
+  // overlap between the container and the small launcher which has an 80px height when it's expanded.
+  inset-block-end: layout.$spacing-10;
+
+  .cds-aichat--launcher-complex__text {
+    opacity: 1;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: none;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-block-end: calc(-1 * #{layout.$spacing-11});
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      padding: 0 60px 60px 0;
+      border-radius: layout.$spacing-11;
+      animation: none;
+      block-size: layout.$spacing-13;
+      inline-size: layout.$spacing-13;
+      inset-block-end: calc(-1 * #{layout.$spacing-11});
+      inset-inline-end: calc(-1 * #{layout.$spacing-11});
+    }
+  }
+
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    padding: 0 60px 60px 0;
+    border-radius: layout.$spacing-11;
+    animation: unset;
+    block-size: layout.$spacing-13;
+    inline-size: layout.$spacing-13;
+    inset-block-end: calc(-1 * #{layout.$spacing-11});
+    inset-inline-end: calc(-1 * #{layout.$spacing-11});
+  }
+
+  .cds-aichat--launcher__close-button {
+    opacity: 1;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-complex__container--close-animation {
+    animation: none;
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__avatar {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__avatar {
+      animation: motion.$duration-slow-01 cds-aichat-launcher-avatar-resize
+        backwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher-complex__text,
+      .cds-aichat--launcher__close-button {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher-complex__text,
+    .cds-aichat--launcher__close-button {
+      animation: motion.$duration-slow-01 cds-aichat-launcher-fade-out forwards;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher-complex__small-launcher-container,
+      .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+        .cds-aichat--launcher__button {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: motion.$duration-slow-01
+        cds-aichat-launcher-default-size-position forwards;
+    }
+  }
+}
+
+.cds-aichat--launcher-complex__container--close-animation {
+  animation: motion.$duration-slow-01 cds-aichat-launcher-fade-out-slide-down
+    forwards;
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__avatar {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__avatar {
+    animation: motion.$duration-slow-01 cds-aichat-launcher-avatar-resize
+      backwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__text,
+    .cds-aichat--launcher__close-button {
+      animation: none;
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__text,
+    .cds-aichat--launcher__close-button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__text,
+  .cds-aichat--launcher__close-button {
+    animation: motion.$duration-slow-01 cds-aichat-launcher-fade-out forwards;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    animation: motion.$duration-slow-01
+      cds-aichat-launcher-default-size-position forwards;
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-complex__container--close-animation {
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher-complex__small-launcher-container,
+    .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+      .cds-aichat--launcher__button {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher-complex__small-launcher-container,
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-complex__small-launcher-container
+    .cds-aichat--launcher__button {
+    animation: motion.$duration-slow-02
+      cds-aichat-launcher-default-size-position-rtl forwards;
+  }
+}
+
+// Launcher Extended styles
+.cds-aichat--launcher-extended__Container {
+  block-size: chat-theme.$launcher-default-size;
+  inline-size: chat-theme.$launcher-default-size;
+}
+
+// Mobile launcher positioning - use 1rem instead of spacing-07
+.cds-aichat--launcher__button-container.cds-aichat--launcher__button-container--mobile {
+  inset-block-end: chat-theme.$launcher-position-bottom-mobile;
+  inset-inline-end: chat-theme.$launcher-position-bottom-mobile;
+}
+
+button.cds-aichat--launcher-extended__Button {
+  padding: 0;
+  border-width: button.$button-border-width;
+  block-size: 100%;
+  cursor: pointer;
+  inline-size: 100%;
+}
+
+.cds-aichat--launcher-extended__Button--hidden {
+  visibility: hidden;
+}
+
+.cds-aichat--launcher-extended__WrapperContainer {
+  position: relative;
+  overflow: hidden;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--launcher-extended__Wrapper {
+  position: absolute;
+  display: flex;
+  inline-size: calc(var(--cds-chat--LAUNCHER-EXTENDED-width) - 6px);
+  inset-inline-end: 0;
+  max-inline-size: calc(100vw - chat-theme.$launcher-position-bottom - 6px);
+}
+
+.cds-aichat--launcher-extended__TextHolder {
+  position: relative;
+  flex: 1;
+  padding: layout.$spacing-04 0 layout.$spacing-04 layout.$spacing-04;
+  text-align: start;
+}
+
+.cds-aichat--launcher-extended__Greeting {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  block-size: 100%;
+  color: chat-theme.$launcher-mobile-color-text;
+  @include type.type-style("body-01");
+
+  inline-size: calc(100% - 12px);
+  inset-block-end: 0;
+  word-break: break-word;
+}
+
+.cds-aichat-is-phone .cds-aichat--launcher-extended__Greeting {
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--launcher-extended__GreetingText {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  text-overflow: ellipsis;
+}
+
+.cds-aichat--launcher-extended__Button .cds-aichat--launcher__icon-holder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: calc(
+    chat-theme.$launcher-default-size - button.$button-border-width * 2
+  );
+  inline-size: calc(
+    chat-theme.$launcher-default-size - button.$button-border-width * 2
+  );
+  margin-inline-start: auto;
+
+  svg {
+    position: absolute;
+    block-size: 24px;
+    inline-size: 24px;
+  }
+}
+
+.cds-aichat--launcher-extended__Button
+  .cds-aichat--launcher-extended__Element--hidden {
+  display: none;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-extended__Button
+    .cds-aichat--launcher-extended__Element--fade-out {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-extended__Button
+    .cds-aichat--launcher-extended__Element--fade-out {
+    animation: none;
+  }
+}
+
+.cds-aichat--launcher-extended__Button
+  .cds-aichat--launcher-extended__Element--fade-out {
+  animation: cds-aichat-launcher-extended-element-fade-out 500ms ease-out 400ms
+    both;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-extended__Button
+    .cds-aichat--launcher-extended__Element--fade-in {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher-extended__Button
+    .cds-aichat--launcher-extended__Element--fade-in {
+    animation: none;
+  }
+}
+
+.cds-aichat--launcher-extended__Button
+  .cds-aichat--launcher-extended__Element--fade-in {
+  animation: cds-aichat-launcher-extended-element-fade-in 500ms ease-out 400ms
+    both;
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher-extended__Button--extended {
+  border-radius: 14px;
+  inline-size: var(--cds-chat--LAUNCHER-EXTENDED-width);
+
+  button.cds-aichat--launcher-extended__Button {
+    border-radius: 14px;
+  }
+
+  .cds-aichat--launcher__svg {
+    inline-size: 24px;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-extended__Button--extended-animation {
+    animation: none;
+    @media screen and (prefers-reduced-motion: reduce) {
+      button.cds-aichat--launcher-extended__Button {
+        animation: none;
+      }
+    }
+
+    button.cds-aichat--launcher-extended__Button {
+      animation: cds-aichat-launcher-partially-round 300ms ease-in 500ms both;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__svg {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__svg {
+      animation: cds-aichat-launcher-icon-to-24 300ms ease-out 500ms both;
+    }
+  }
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher-extended__Button--extended-animation {
+  animation:
+    cds-aichat-launcher-extend 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 500ms
+      both,
+    cds-aichat-launcher-partially-round 300ms ease-in 500ms both;
+  @media screen and (prefers-reduced-motion: reduce) {
+    button.cds-aichat--launcher-extended__Button {
+      animation: none;
+    }
+  }
+
+  button.cds-aichat--launcher-extended__Button {
+    animation: cds-aichat-launcher-partially-round 300ms ease-in 500ms both;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__svg {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__svg {
+    animation: cds-aichat-launcher-icon-to-24 300ms ease-out 500ms both;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container.cds-aichat--launcher-extended__Button--reduced-animation {
+    animation: none;
+    @media screen and (prefers-reduced-motion: reduce) {
+      button.cds-aichat--launcher-extended__Button {
+        animation: none;
+      }
+    }
+
+    button.cds-aichat--launcher-extended__Button {
+      animation: cds-aichat-launcher-completely-round 300ms ease-out 500ms both;
+    }
+    @media screen and (prefers-reduced-motion: reduce) {
+      .cds-aichat--launcher__svg {
+        animation: none;
+      }
+    }
+
+    .cds-aichat--launcher__svg {
+      animation: cds-aichat-launcher-icon-to-32 300ms ease-out 500ms both;
+    }
+  }
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher-extended__Button--reduced-animation {
+  animation:
+    cds-aichat-launcher-reduce 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 500ms
+      both,
+    cds-aichat-launcher-completely-round 300ms ease-out 500ms both;
+  @media screen and (prefers-reduced-motion: reduce) {
+    button.cds-aichat--launcher-extended__Button {
+      animation: none;
+    }
+  }
+
+  button.cds-aichat--launcher-extended__Button {
+    animation: cds-aichat-launcher-completely-round 300ms ease-out 500ms both;
+  }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .cds-aichat--launcher__svg {
+      animation: none;
+    }
+  }
+
+  .cds-aichat--launcher__svg {
+    animation: cds-aichat-launcher-icon-to-32 300ms ease-out 500ms both;
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-extended__Container {
+  .cds-aichat--launcher-extended__Wrapper {
+    inset-inline: 0 unset;
+  }
+
+  .cds-aichat--launcher-extended__TextHolder {
+    padding: layout.$spacing-04 layout.$spacing-04 layout.$spacing-04 0;
+  }
+}

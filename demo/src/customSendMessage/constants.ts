@@ -130,7 +130,8 @@ const HTML = `
 <style>
     .fun-fact { 
         background-color: #e8f5e8; 
-        border-left: 4px solid #27ae60; 
+        color: #161616;
+        border-inline-start: 4px solid #27ae60; 
         padding: 10px; 
         margin: 10px 0; 
     }

@@ -10,16 +10,20 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import {
-  PublicConfig,
-  MinimizeButtonIconType,
-} from "../../../src/types/config/PublicConfig";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { MinimizeButtonIconType } from "../../../src/types/config/PublicConfig";
+import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
+import { doCreateStore } from "../../../src/chat/store/doCreateStore";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
+import { NamespaceService } from "../../../src/chat/services/NamespaceService";
+import { PublicConfig } from "../../../src/types/config/PublicConfig";
 
 describe("Config Header", () => {
-  const createBaseConfig = (): PublicConfig => ({
-    ...createBaseTestConfig(),
+  const createBaseProps = (): Partial<ChatContainerProps> => ({
+    ...createBaseTestProps(),
   });
 
   beforeEach(() => {
@@ -30,18 +34,17 @@ describe("Config Header", () => {
     document.body.innerHTML = "";
   });
 
-  describe("headerConfig", () => {
-    it("should store complete headerConfig in Redux state", async () => {
-      const headerConfig = {
+  describe("header", () => {
+    it("should store complete header in Redux state", async () => {
+      const header = {
         minimizeButtonIconType: MinimizeButtonIconType.SIDE_PANEL_LEFT,
         hideMinimizeButton: true,
         showRestartButton: false,
-        showCloseAndRestartButton: true,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        headerConfig,
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        header,
       };
 
       let capturedInstance: any = null;
@@ -49,12 +52,7 @@ describe("Config Header", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -65,17 +63,17 @@ describe("Config Header", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.public.headerConfig).toEqual(headerConfig);
+      expect(state.config.public.header).toEqual(header);
     });
 
-    it("should store headerConfig with minimize icon type only", async () => {
-      const headerConfig = {
+    it("should store header with minimize icon type only", async () => {
+      const header = {
         minimizeButtonIconType: MinimizeButtonIconType.CLOSE,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        headerConfig,
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        header,
       };
 
       let capturedInstance: any = null;
@@ -83,12 +81,7 @@ describe("Config Header", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -99,19 +92,18 @@ describe("Config Header", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.public.headerConfig).toEqual(headerConfig);
+      expect(state.config.public.header).toEqual(header);
     });
 
-    it("should store headerConfig with button visibility flags", async () => {
-      const headerConfig = {
+    it("should store header with button visibility flags", async () => {
+      const header = {
         hideMinimizeButton: false,
         showRestartButton: true,
-        showCloseAndRestartButton: false,
       };
 
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        headerConfig,
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        header,
       };
 
       let capturedInstance: any = null;
@@ -119,12 +111,7 @@ describe("Config Header", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -135,13 +122,18 @@ describe("Config Header", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.public.headerConfig).toEqual(headerConfig);
+      expect(state.config.public.header).toEqual(header);
     });
 
-    it("should handle undefined headerConfig in Redux state", async () => {
-      const config: PublicConfig = {
-        ...createBaseConfig(),
-        // headerConfig intentionally omitted
+    it("should store header with showAiLabel flag", async () => {
+      const header = {
+        showAiLabel: false,
+        showRestartButton: true,
+      };
+
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        header,
       };
 
       let capturedInstance: any = null;
@@ -149,12 +141,7 @@ describe("Config Header", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -165,7 +152,91 @@ describe("Config Header", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.public.headerConfig).toBeUndefined();
+      expect(state.config.public.header).toEqual(header);
+    });
+
+    it("should handle undefined header in Redux state", async () => {
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        // header intentionally omitted
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+      const state: AppState = store.getState();
+      expect(state.config.public.header).toBeUndefined();
+    });
+  });
+
+  describe("Dynamic Header Config Updates", () => {
+    let serviceManager: ServiceManager;
+
+    beforeEach(() => {
+      const initialConfig: PublicConfig = {
+        assistantName: "Test Assistant",
+      };
+
+      const store = doCreateStore(initialConfig, {} as ServiceManager);
+      serviceManager = {
+        store,
+        namespace: new NamespaceService("test"),
+        messageService: { timeoutMS: 30000 } as any,
+        humanAgentService: null,
+      } as ServiceManager;
+    });
+
+    it("should handle header config changes dynamically", async () => {
+      const previousConfig: PublicConfig = {
+        header: {
+          title: "Old Header",
+          hideMinimizeButton: false,
+        },
+      };
+
+      const newConfig: PublicConfig = {
+        header: {
+          title: "New Header",
+          hideMinimizeButton: true,
+          showRestartButton: true,
+          showAiLabel: false,
+        },
+      };
+
+      const changes = detectConfigChanges(previousConfig, newConfig);
+      expect(changes.headerChanged).toBe(true);
+
+      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+      const state: AppState = serviceManager.store.getState();
+      expect(state.config.public.header?.title).toBe("New Header");
+      expect(state.config.public.header?.hideMinimizeButton).toBe(true);
+      expect(state.config.public.header?.showRestartButton).toBe(true);
+      expect(state.config.public.header?.showAiLabel).toBe(false);
+    });
+
+    it("should detect no changes when header config is identical", async () => {
+      const config: PublicConfig = {
+        header: {
+          title: "Same Header",
+          hideMinimizeButton: true,
+        },
+      };
+
+      const changes = detectConfigChanges(config, config);
+      expect(changes.headerChanged).toBe(false);
     });
   });
 });

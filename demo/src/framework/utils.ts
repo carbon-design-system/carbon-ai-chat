@@ -11,12 +11,10 @@ import {
   CornersType,
   MinimizeButtonIconType,
   PublicConfig,
-  ServiceDesk,
 } from "@carbon/ai-chat";
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { KeyPairs, Settings } from "./types";
-import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -32,81 +30,134 @@ function updateQueryParams(items: KeyPairs[]) {
   items.forEach(({ key, value }) => {
     urlParams.set(key, value);
   });
-  // Update the URL without refreshing the page
+
+  // Update the URL with a page refresh
   window.location.search = urlParams.toString();
+}
+
+function updateQueryParamsWithoutRefresh(items: KeyPairs[]) {
+  // Get the current URL's search params
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Set or update the query parameter
+  items.forEach(({ key, value }) => {
+    urlParams.set(key, value);
+  });
+
+  // Update the URL without refreshing the page using History API
+  const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+  window.history.replaceState({}, "", newUrl);
+}
+
+function updatePageTheme(theme: string) {
+  // Get the current URL's search params
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Update only the pageTheme parameter
+  urlParams.set("pageTheme", theme);
+
+  // Update the URL without refreshing the page using History API
+  const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+  window.history.replaceState({}, "", newUrl);
 }
 
 function getSettings() {
   const urlParams = new URLSearchParams(window.location.search);
-  const settings: Partial<Settings> = urlParams.has("settings")
-    ? JSON.parse(urlParams.get("settings") as string)
-    : {};
-  const config: Partial<PublicConfig> = urlParams.has("config")
-    ? JSON.parse(urlParams.get("config") as string)
-    : {};
+
+  // Check if we're in setChatConfig mode and ignore query params if so
+  const settingsParam = urlParams.get("settings");
+  const configParam = urlParams.get("config");
+  const isSetChatConfigMode = configParam === "setChatConfig";
+
+  const settings: Partial<Settings> =
+    !isSetChatConfigMode &&
+    urlParams.has("settings") &&
+    JSON.parse(settingsParam as string);
+  const config: any =
+    !isSetChatConfigMode &&
+    urlParams.has("config") &&
+    configParam !== "setChatConfig"
+      ? JSON.parse(configParam as string)
+      : {};
+  const pageTheme = urlParams.get("pageTheme") || "cds--white";
 
   let defaultConfig: PublicConfig = {
     ...config,
+    // Default to AI theme enabled; prefer explicit top-level value, otherwise map legacy theme.theme
+    aiEnabled:
+      typeof config.aiEnabled === "boolean"
+        ? config.aiEnabled
+        : config.theme?.theme !== undefined
+          ? config.theme.theme === "CarbonAI"
+          : true,
+    // Map legacy nested theme to top-level injectCarbonTheme; "inherit" => undefined
+    injectCarbonTheme:
+      config.injectCarbonTheme !== undefined
+        ? config.injectCarbonTheme
+        : config.theme?.injectCarbonTheme === "inherit"
+          ? undefined
+          : config.theme?.injectCarbonTheme,
     messaging: {
       customSendMessage,
       ...config.messaging,
     },
-    serviceDeskFactory: (parameters) =>
-      Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk),
-    debug: true,
   };
 
   const defaultSettings: Settings = {
     framework: "react",
     layout: "float",
-    homescreen: "none",
     writeableElements: "false",
+    direction: "default",
     ...settings,
   };
+
+  // Apply direction setting to HTML element
+  const htmlElement = document.documentElement;
+  if (defaultSettings.direction === "default") {
+    htmlElement.removeAttribute("dir");
+  } else {
+    htmlElement.setAttribute("dir", defaultSettings.direction);
+  }
 
   // eslint-disable-next-line default-case
   switch (defaultSettings.layout) {
     case "float":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
-        themeConfig: { ...defaultConfig.themeConfig, corners: undefined },
         layout: {
           ...defaultConfig.layout,
           showFrame: undefined,
           hasContentMaxWidth: undefined,
+          corners: CornersType.SQUARE,
         },
         openChatByDefault: undefined,
       };
-      delete defaultConfig.showLauncher;
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
-      delete defaultConfig.headerConfig?.hideMinimizeButton;
-      delete defaultConfig.themeConfig?.corners;
+      delete defaultConfig.header?.minimizeButtonIconType;
+      delete defaultConfig.header?.hideMinimizeButton;
+      delete defaultConfig.layout?.corners;
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
     case "sidebar":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: MinimizeButtonIconType.SIDE_PANEL_RIGHT,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
         },
         layout: {
           ...defaultConfig.layout,
           showFrame: undefined,
           hasContentMaxWidth: undefined,
+          corners: CornersType.SQUARE,
         },
-        showLauncher: false,
+        launcher: { isOn: false },
         openChatByDefault: undefined,
       };
       delete defaultConfig.layout?.showFrame;
@@ -115,14 +166,10 @@ function getSettings() {
     case "fullscreen":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: true,
           minimizeButtonIconType: undefined,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
         },
         layout: {
           ...defaultConfig.layout,
@@ -131,34 +178,29 @@ function getSettings() {
         },
         openChatByDefault: true,
       };
-      delete defaultConfig.showLauncher;
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      delete defaultConfig.header?.minimizeButtonIconType;
       break;
     case "fullscreen-no-gutter":
       defaultConfig = {
         ...defaultConfig,
-        headerConfig: {
-          ...defaultConfig.headerConfig,
+        header: {
+          ...defaultConfig.header,
           hideMinimizeButton: true,
           minimizeButtonIconType: undefined,
-        },
-        themeConfig: {
-          ...defaultConfig.themeConfig,
-          corners: CornersType.SQUARE,
         },
         layout: {
           ...defaultConfig.layout,
           showFrame: false,
           hasContentMaxWidth: false,
+          corners: CornersType.SQUARE,
         },
         openChatByDefault: true,
       };
-      delete defaultConfig.showLauncher;
-      delete defaultConfig.headerConfig?.minimizeButtonIconType;
+      delete defaultConfig.header?.minimizeButtonIconType;
       break;
   }
 
-  return { defaultConfig, defaultSettings };
+  return { defaultConfig, defaultSettings, pageTheme };
 }
 
 /**
@@ -183,4 +225,11 @@ async function asyncForEach<T>(
   }
 }
 
-export { updateQueryParams, getSettings, sleep, asyncForEach };
+export {
+  updateQueryParams,
+  updateQueryParamsWithoutRefresh,
+  updatePageTheme,
+  getSettings,
+  sleep,
+  asyncForEach,
+};

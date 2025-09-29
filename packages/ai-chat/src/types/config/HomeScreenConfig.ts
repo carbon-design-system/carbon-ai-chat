@@ -8,18 +8,6 @@
  */
 
 /**
- * The types of home screen backgrounds supported. This only applies when white labeling.
- *
- * @category Config
- *
- * @experimental
- */
-enum HomeScreenBackgroundType {
-  NONE = "none", // The home screen background is the same color as the chat background.
-  SOLID = "solid", // All solid color for home screen.
-}
-
-/**
  * A conversation starter button on the home screen. Currently, only label is provided by tooling.
  *
  * @category Config
@@ -43,7 +31,7 @@ interface HomeScreenStarterButton {
  * @category Config
  */
 interface HomeScreenStarterButtons {
-  is_on?: boolean;
+  isOn?: boolean;
   buttons?: HomeScreenStarterButton[];
 }
 
@@ -56,7 +44,7 @@ interface HomeScreenConfig {
   /**
    * If the home page is turned on via config or remote config.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
    * The greeting to show to the user to prompt them to start a conversation.
@@ -69,27 +57,15 @@ interface HomeScreenConfig {
   starters?: HomeScreenStarterButtons;
 
   /**
-   * An image url that will override the bot avatar displayed in home screen.
-   *
-   * @internal
+   * Do not show the greeting or starters.
    */
-  bot_avatar_url?: string;
+  customContentOnly?: boolean;
 
   /**
-   * Do not show the greeting, starters, or avatar url.
+   * Defaults to false. If enabled, a user can not navigate back to the home screen after they have sent a message to the
+   * assistant. If false, the home screen is navigatable after an initial message is sent.
    */
-  custom_content_only?: boolean;
-
-  /**
-   * Defaults to true. If enabled, a user can navigate back to the home screen after they have sent a message to the
-   * assistant. If false, the home screen disappears forever after a message is sent.
-   */
-  allow_return?: boolean;
-
-  /**
-   * The type of home screen background to render.
-   */
-  background?: HomeScreenBackgroundType;
+  disableReturn?: boolean;
 }
 
 /**
@@ -115,5 +91,4 @@ export {
   HomeScreenStarterButtons,
   HomeScreenState,
   HomeScreenStarterButton,
-  HomeScreenBackgroundType,
 };

@@ -15,6 +15,7 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from "../helpers/chatInstanceTestHelpers";
+import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs";
 
 describe("ChatInstance.notifications", () => {
   beforeEach(setupBeforeEach);
@@ -25,7 +26,7 @@ describe("ChatInstance.notifications", () => {
     const instance = await renderChatAndGetInstance(config);
 
     const notification: NotificationMessage = {
-      kind: "info",
+      kind: NOTIFICATION_KIND.INFO,
       title: "Test notification",
       message: "Test notification message",
     };
@@ -43,7 +44,7 @@ describe("ChatInstance.notifications", () => {
 
     // Add notification first
     const notification: NotificationMessage = {
-      kind: "info",
+      kind: NOTIFICATION_KIND.INFO,
       title: "Test notification",
       message: "Test notification message",
     };
@@ -67,13 +68,13 @@ describe("ChatInstance.notifications", () => {
     const instance = await renderChatAndGetInstance(config);
 
     const notification1: NotificationMessage = {
-      kind: "info",
+      kind: NOTIFICATION_KIND.INFO,
       title: "Test notification 1",
       message: "Test notification message 1",
     };
 
     const notification2: NotificationMessage = {
-      kind: "warning",
+      kind: NOTIFICATION_KIND.WARNING,
       title: "Test notification 2",
       message: "Test notification message 2",
     };

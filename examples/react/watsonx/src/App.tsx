@@ -28,7 +28,7 @@ const config: PublicConfig = {
 };
 
 function App() {
-  return <ChatContainer config={config} />;
+  return <ChatContainer {...config} />;
 }
 
 const root = createRoot(document.querySelector("#root") as Element);

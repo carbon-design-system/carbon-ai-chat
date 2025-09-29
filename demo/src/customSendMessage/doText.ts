@@ -12,6 +12,7 @@ import {
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   ChatInstance,
+  GenericItemMessageFeedbackOptions,
   MessageResponse,
   MessageResponseTypes,
   ResponseUserProfile,
@@ -145,6 +146,7 @@ async function doTextStreaming(
   wordDelay = WORD_DELAY,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
+  feedback?: GenericItemMessageFeedbackOptions,
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
@@ -261,7 +263,16 @@ async function doTextStreaming(
     const finalResponse = {
       id: responseID,
       output: {
-        generic: [completeItem],
+        generic: feedback
+          ? [
+              {
+                ...completeItem,
+                message_item_options: {
+                  feedback,
+                },
+              },
+            ]
+          : [completeItem],
       },
       message_options: {
         response_user_profile: userProfile,
@@ -291,8 +302,7 @@ function doWelcomeText(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.OPTION,
-          title:
-            'Select a response to view it in action. The "text" response includes configuration to send feedback (thumbs up/down). This can be applied to any response.',
+          title: "Select a response to view it in action.",
           options,
         },
       ],
@@ -305,6 +315,7 @@ function doText(
   text: string = MARKDOWN,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
+  feedback?: GenericItemMessageFeedbackOptions,
 ) {
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -323,7 +334,17 @@ function doText(
 
   if (userProfile) {
     message.message_options.response_user_profile = userProfile;
-  } else {
+  }
+
+  if (feedback) {
+    message.output.generic = message.output.generic || [];
+    message.output.generic[0] = {
+      ...genericItem,
+      message_item_options: {
+        feedback,
+      },
+    };
+  } else if (!userProfile) {
     message.output.generic = message.output.generic || [];
     message.output.generic[0] = {
       ...genericItem,
@@ -332,7 +353,7 @@ function doText(
           /**
            * Indicates if a request for feedback should be displayed.
            */
-          is_on: true,
+          isOn: true,
 
           /**
            * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
@@ -433,6 +454,8 @@ function doHTML(
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
 ) {
+  // Make sure simple standalone html works as well.
+  doText(instance, "<b>Carbon is bold!</b>", userProfile);
   doText(instance, text, userProfile, chainOfThought);
 }
 
@@ -454,6 +477,52 @@ async function doHTMLStreaming(
   );
 }
 
+function doTextWithFeedback(instance: ChatInstance) {
+  const feedbackText =
+    "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
+
+  const feedback: GenericItemMessageFeedbackOptions = {
+    isOn: true,
+    id: crypto.randomUUID(),
+    show_positive_details: false,
+    show_negative_details: true,
+    show_prompt: true,
+    categories: {
+      negative: ["Not informative", "Too technical", "Don't like the topic"],
+      positive: ["Very helpful", "Interesting", "Good explanation"],
+    },
+  };
+
+  doText(instance, feedbackText, undefined, undefined, feedback);
+}
+
+async function doTextWithFeedbackStreaming(instance: ChatInstance) {
+  const feedbackText =
+    "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
+
+  const feedback: GenericItemMessageFeedbackOptions = {
+    isOn: true,
+    id: crypto.randomUUID(),
+    show_positive_details: false,
+    show_negative_details: true,
+    show_prompt: true,
+    categories: {
+      negative: ["Not informative", "Too technical", "Don't like the topic"],
+      positive: ["Very helpful", "Interesting", "Good explanation"],
+    },
+  };
+
+  await doTextStreaming(
+    instance,
+    feedbackText,
+    true,
+    WORD_DELAY,
+    undefined,
+    undefined,
+    feedback,
+  );
+}
+
 export {
   doTextChainOfThoughtStreaming,
   doTextChainOfThought,
@@ -466,4 +535,6 @@ export {
   doTextWithWatsonAgentProfile,
   doHTML,
   doHTMLStreaming,
+  doTextWithFeedback,
+  doTextWithFeedbackStreaming,
 };

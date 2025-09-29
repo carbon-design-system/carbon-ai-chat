@@ -9,13 +9,13 @@
 
 import {
   isBrowser,
+  getURLHostName,
+  conditionalSetTimeout,
   IS_IOS,
   IS_MOBILE,
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
-  getURLHostName,
-  conditionalSetTimeout,
-} from "../../../src/chat/shared/utils/browserUtils";
+} from "../../../src/chat/utils/browserUtils";
 
 // Mock browser environment for testing
 const originalWindow = global.window;

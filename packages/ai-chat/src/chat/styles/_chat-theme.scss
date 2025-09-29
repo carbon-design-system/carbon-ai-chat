@@ -1,0 +1,142 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/components/button/tokens" as button;
+@use "@carbon/layout";
+@use "chat-config" as config;
+
+// Web chat widget variables
+$box-shadow: config.get-var("box-shadow", 1px 0 4px hsl(0deg 0% 9% / 30%));
+
+// AI theming variables
+$ai-background-image: config.get-var(
+  "ai-background-image",
+  linear-gradient(
+    to bottom,
+    #{theme.$chat-shell-background} 0,
+    #{theme.$chat-shell-background} 50%,
+    #{theme.$ai-aura-end} 50%,
+    #{theme.$ai-aura-start} 100%
+  )
+);
+$ai-box-shadow-inner: config.get-var(
+  "ai-box-shadow-inner",
+  inset 0 -80px 70px -65px #{theme.$ai-inner-shadow}
+);
+$ai-box-shadow-outer: config.get-var(
+  "ai-box-shadow-outer",
+  0 4px 10px 2px #{theme.$ai-drop-shadow}
+);
+
+// Card variables
+$card-border-radius: config.get-var(
+  "card-border-radius",
+  #{layout.$spacing-03}
+);
+$card-max-width: config.get-var("card-max-width", 424px);
+
+// Application Layout Variables
+$max-height: config.get-var("max-height", 640px);
+$min-height: config.get-var("min-height", 150px);
+$max-width: config.get-var("max-width", 672px);
+$width: config.get-var("width", min(380px, #{$max-width}));
+$height: config.get-var("height", calc(100vh - (2 * #{layout.$spacing-07})));
+
+// Position Variables
+$bottom-position: config.get-var("bottom-position", #{layout.$spacing-09});
+$right-position: config.get-var("right-position", #{layout.$spacing-07});
+$top-position: config.get-var("top-position", auto);
+$left-position: config.get-var("left-position", auto);
+
+// Styling Variables
+$z-index: config.get-var("z-index", 99999);
+$border-radius: config.get-var("border-radius", 0px);
+
+// Viewport Variables (for phone mode)
+$viewport-width: config.get-var("viewport-width", 100vw);
+$viewport-height: config.get-var("viewport-height", 100vh);
+$viewport-offset-left: config.get-var("viewport-offsetLeft", 0);
+$viewport-offset-top: config.get-var("viewport-offsetTop", 0);
+
+// Launcher Variables
+$launcher-default-size: config.get-var("launcher-default-size", 56px);
+$launcher-position-bottom: config.get-var(
+  "launcher-position-bottom",
+  #{layout.$spacing-09}
+);
+$launcher-position-right: config.get-var(
+  "launcher-position-right",
+  #{layout.$spacing-07}
+);
+$launcher-extended-width: config.get-var("launcher-extended-width", 280px);
+$launcher-desktop-expanded-height: config.get-var(
+  "launcher-desktop-expanded-height",
+  320px
+);
+$launcher-expanded-message-color-background: config.get-var(
+  "launcher-expanded-message-color-background",
+  #{button.$button-primary}
+);
+
+// Additional Launcher Variables
+$launcher-position-bottom-mobile: config.get-var(
+  "launcher-position-bottom-mobile",
+  #{layout.$spacing-05}
+);
+
+// Launcher Color Variables
+$launcher-color-background: config.get-var(
+  "launcher-color-background",
+  #{button.$button-primary}
+);
+$launcher-color-avatar: config.get-var(
+  "launcher-color-avatar",
+  #{theme.$text-on-color}
+);
+$launcher-color-background-hover: config.get-var(
+  "launcher-color-background-hover",
+  #{button.$button-primary-hover}
+);
+$launcher-color-background-active: config.get-var(
+  "launcher-color-background-active",
+  #{button.$button-primary-active}
+);
+$launcher-color-focus-border: config.get-var(
+  "launcher-color-focus-border",
+  #{theme.$text-on-color}
+);
+$launcher-mobile-color-text: config.get-var(
+  "launcher-mobile-color-text",
+  #{theme.$text-on-color}
+);
+$launcher-expanded-message-color-text: config.get-var(
+  "launcher-expanded-message-color-text",
+  #{theme.$text-on-color}
+);
+$launcher-expanded-message-color-background-hover: config.get-var(
+  "launcher-expanded-message-color-background-hover",
+  #{button.$button-primary-hover}
+);
+$launcher-expanded-message-color-background-active: config.get-var(
+  "launcher-expanded-message-color-background-active",
+  #{button.$button-primary-active}
+);
+$launcher-expanded-message-color-focus-border: config.get-var(
+  "launcher-expanded-message-color-focus-border",
+  #{theme.$text-on-color}
+);
+
+// Unread Indicator Variables
+$unread-indicator-color-background: config.get-var(
+  "unread-indicator-color-background",
+  #{theme.$support-error}
+);
+$unread-indicator-color-text: config.get-var(
+  "unread-indicator-color-text",
+  #{theme.$text-on-color}
+);

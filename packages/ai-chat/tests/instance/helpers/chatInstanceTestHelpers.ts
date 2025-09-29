@@ -11,14 +11,14 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
 import { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { ChatInstance } from "../../../src/types/instance/ChatInstance";
-import { ServiceManager } from "../../../src/chat/shared/services/ServiceManager";
-import { Store } from "redux";
+import type { AppStore } from "../../../src/chat/store/appStore";
 import { AppState } from "../../../src/types/state/AppState";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 
 export const createBaseConfig = (): PublicConfig => ({
-  ...createBaseTestConfig(),
+  ...createBaseTestProps(),
 });
 
 export const renderChatAndGetInstance = async (
@@ -31,7 +31,7 @@ export const renderChatAndGetInstance = async (
 
   render(
     React.createElement(ChatContainer, {
-      config,
+      ...config,
       onBeforeRender,
     }),
   );
@@ -56,21 +56,21 @@ export const setupAfterEach = () => {
 
 export interface ChatInstanceWithStore {
   instance: ChatInstance;
-  store: Store<AppState>;
+  store: AppStore<AppState>;
   serviceManager: ServiceManager;
 }
 
 export const renderChatAndGetInstanceWithStore = async (
   config: PublicConfig,
 ): Promise<ChatInstanceWithStore> => {
-  let capturedInstance: any = null;
+  let capturedInstance: ChatInstance | null = null;
   const onBeforeRender = jest.fn((instance) => {
     capturedInstance = instance;
   });
 
   render(
     React.createElement(ChatContainer, {
-      config,
+      ...config,
       onBeforeRender,
     }),
   );

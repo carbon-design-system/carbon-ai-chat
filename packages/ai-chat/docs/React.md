@@ -10,7 +10,7 @@ If you want to use the `float` layout, use {@link ChatContainer}. Use the {@link
 
 **Currently, this component does not support SSR, so if you are using Next.js or similar frameworks, make sure you render this component in client only modes.**
 
-For more information, see [the examples page for more examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react).
+For more information, see [the examples page](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react).
 
 ### Installation
 
@@ -36,12 +36,16 @@ Render this component in your application and provide the configuration options 
 import React from "react";
 import { ChatContainer } from "@carbon/ai-chat";
 
-const chatOptions = {
-  // Your configuration object.
-};
-
 function App() {
-  return <ChatContainer config={chatOptions} />;
+  return (
+    <ChatContainer
+      debug={true}
+      aiEnabled={true}
+      header={{ title: "My Assistant" }}
+      launcher={{ isOn: true }}
+      // ... other config properties as individual props
+    />
+  );
 }
 ```
 
@@ -57,9 +61,7 @@ This library provides the {@link ChatCustomElement} component, which can be used
 
 This component requires a `className` prop that defines the size and positioning of the chat when open. The default behavior adds and removes a `cds-aichat--hidden` CSS class to manage visibility. When the Carbon AI Chat closes, the `cds-aichat--hidden` class is added to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
 
-**Note:** In the use case where you are using a custom element but also using the Carbon AI Chat's native launcher, the custom element must remain visible as it also contains the launcher. With that in mind, you should really provide your own launcher.
-
-If you don't want these behaviors, provide your own `onViewChange` prop to {@link ChatCustomElementProps.onViewChange} and provide your logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, this is the mechanism to do that. Refer to the following example.
+If you don't want these behaviors, you can also listen for {@link BusEventType.VIEW_PRE_CHANGE} and {@link BusEventType.VIEW_CHANGE} events directly. These events fire in sequence (PRE_CHANGE -> view state update -> CHANGE), and both are awaited, making async handlers ideal for animations. See the event type documentation for complete details on timing and usage. Just be aware that the {@link ChatCustomElementProps.onViewChange} default behavior will still run if you don't replace that function with your own.
 
 See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
@@ -69,12 +71,17 @@ import { ChatCustomElement } from "@carbon/ai-chat";
 
 import "./App.css";
 
-const chatOptions = {
-  /* Carbon AI Chat options */
-};
-
 function App() {
-  return <ChatCustomElement className="MyCustomElement" config={chatOptions} />;
+  return (
+    <ChatCustomElement
+      className="MyCustomElement"
+      debug={true}
+      aiEnabled={true}
+      header={{ title: "My Assistant" }}
+      launcher={{ isOn: true }}
+      // ... other config properties
+    />
+  );
 }
 ```
 
@@ -97,86 +104,20 @@ function App() {
 }
 ```
 
-### Config object changes
+### Live config updates
 
-The chat is not capable of handling in-place changes to the config object. If any of the properties in the config object are changed, then the existing chat will be discarded and a whole new chat will be created using the new config properties. A deep equal comparison of the config object is done to detect changes. Note that DOM elements and functions are compared using a strict `===` comparison.
+The chat observes prop changes and applies them in place. Most configuration updates do not remount or discard the chat; instead, they are applied live. This simplifies integration with state and reactive frameworks.
 
-Of note, the above means that if you are creating a new callback function for something like {@link PublicConfigMessaging.customSendMessage} on each render of your component, this would cause the chat to be discarded and recreated each time your component is rendered.
+Notes:
 
-Below is an example of bad code where a new {@link PublicConfigMessaging.customSendMessage} function causes the chat to get recreated each time `App` is rendered.
+- Functions and objects are compared by identity. Rapidly creating new functions/objects every render can cause unnecessary updates. Prefer stable references (useCallback, refs, functions defined outside of a React component) where possible.
+- Human‑agent integrations: Updating `serviceDeskFactory` or `serviceDesk` while a human‑agent chat is connecting/active ends that conversation and reinitializes the integration to apply the new settings. See [Custom Service Desks](CustomServiceDesks.md) for guidance.
 
-#### Wrong example
+#### Stable service desk factory
 
-```javascript
-// DO NOT DO THIS!
+Keep `serviceDeskFactory` identity stable to avoid unintended integration resets. When you must change it, be aware that any active or connecting human‑agent session will end and the integration will be reinitialized.
 
-function App() {
-  // This is bad because it creates a new customSendMessage function every time App is rendered which will cause the
-  // ChatContainer to create a new chat every time.
-  const customSendMessage = (message: MessageRequest) => {
-    console.log("Sending message", message);
-  };
-
-  const config: PublicConfig = { messaging: { customSendMessage } };
-
-  return <ChatContainer config={config} />;
-}
-```
-
-The quickest solution to this is to move the config object outside of your render function.
-
-#### Correct example #1
-
-```javascript
-const customSendMessage = (message: MessageRequest) => {
-  console.log("Sending message", message);
-};
-
-const config: PublicConfig = { messaging: { customSendMessage } };
-
-function App() {
-  return <ChatContainer config={config} />;
-}
-```
-
-However this does not work if your {@link PublicConfigMessaging.customSendMessage} function requires access to state or props from your application. If you need that, you can use `useCallback` to ensure only a single instance is created from the dependencies. Note in this example that if the instance of the `messageService` prop changes, the whole chat will get recreated. If you don't expect that to happen, this will work for you. Otherwise, you may need to use a ref.
-
-#### Correct example #2
-
-```javascript
-function App({ messageService }: any) {
-  // Creates a new customSendMessage for each instance of messageService.
-  const customSendMessage = useCallback(
-    (message: MessageRequest) => {
-      messageService(message);
-    },
-    [messageService] // If messageService changes, the chat will be recreated.
-  );
-
-  const config: PublicConfig = { messaging: { customSendMessage } };
-
-  return <ChatContainer config={config} />;
-}
-```
-
-If you have dependencies that shouldn't recreate the chat, you can store them in a ref. In this example, the chat will not be recreated.
-
-#### Correct example #3
-
-```javascript
-function App({ messageService }: any) {
-  const messageServiceRef = useRef(messageService);
-  messageServiceRef.current = messageService;
-
-  const customSendMessage = useCallback((message: MessageRequest) => {
-    messageServiceRef.current(message);
-  }, []);
-
-  const config: PublicConfig = { messaging: { customSendMessage } };
-
-  return <ChatContainer config={config} />;
-}
-```
+Examples and deeper guidance are in [Custom Service Desks](CustomServiceDesks.md), including patterns using `useCallback` in React and stable class fields in web components/Lit.
 
 ### Accessing instance methods
 
@@ -209,7 +150,12 @@ function App() {
           Toggle Carbon AI Chat
         </button>
       )}
-      <ChatContainer config={chatOptions} onBeforeRender={onBeforeRender} />
+      <ChatContainer
+        debug
+        aiEnabled
+        // ...other flattened config props
+        onBeforeRender={onBeforeRender}
+      />
     </>
   );
 }
@@ -234,7 +180,14 @@ const chatOptions = {
 };
 
 function App() {
-  return <ChatContainer renderUserDefinedResponse={renderUserDefinedResponse} config={chatOptions} />;
+  return (
+    <ChatContainer
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
 }
 
 function someFunction() {}
@@ -309,7 +262,90 @@ function App() {
     [stateText], // Only update if stateText changes.
   );
 
-  return <ChatContainer renderUserDefinedResponse={renderUserDefinedResponse} config={chatOptions} />;
+  return (
+    <ChatContainer
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
+}
+```
+
+You may also want your `user_defined` responses to stream. In that case, you will want to make use of {@link RenderUserDefinedState.partialItems}. The partialItems come back as an array of every chunk we have received.
+They are _not_ concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through
+an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case.
+
+```javascript
+import React, { useCallback, useEffect, useState } from 'react';
+import { ChatContainer } from '@carbon/ai-chat';
+
+const chatOptions = {
+  // Your configuration object.
+};
+
+function App() {
+
+  const [stateText, setStateText] = useState<string>('Initial text');
+
+  useEffect(() => {
+    // This just updates the stateText every two seconds with Date.now()
+    setInterval(() => setStateText(Date.now().toString()), 2000);
+  }, []);
+
+  const renderUserDefinedResponse = useCallback(
+    (state: RenderUserDefinedState, instance: ChatInstance) => {
+      const { messageItem } = state;
+      // The event here will contain details for each user defined response that needs to be rendered.
+      if (messageItem) {
+        switch (messageItem.user_defined?.user_defined_type) {
+          case 'green':
+            // Pass in the new state as a prop!
+            return (
+              <UserDefinedResponseExample text={messageItem.user_defined.text as string} parentStateText={stateText} />
+            );
+          default:
+            return null;
+        }
+      }
+
+      if (partialItems) {
+        switch(partialItems[0].user_defined?.user_defined_type) {
+          case "green": {
+            // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+            // concatenation as you want.
+            const text = partialItems.map(item => item.user_defined?.text).join("");
+            return (
+              <UserDefinedResponseExample
+                text={text}
+                parentStateText={stateText}
+              />
+            )
+          }
+          default: {
+            // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+            // streaming behavior for.
+            return <AISkeletonPlaceholder className="fullSkeleton" />;
+          }
+        }
+      }
+
+      // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
+      // switch statement here that does something more specific depending on the component.
+      return <AISkeletonPlaceholder className="fullSkeleton" />;
+    },
+    [stateText], // Only update if stateText changes.
+  );
+
+  return (
+    <ChatContainer
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
 }
 ```
 
@@ -345,12 +381,7 @@ function App() {
     [modelsInUse],
   );
 
-  return (
-    <ChatContainer
-      renderWriteableElements={renderWriteableElements}
-      config={chatOptions}
-    />
-  );
+  return <ChatContainer renderWriteableElements={renderWriteableElements} />;
 }
 ```
 

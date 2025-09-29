@@ -75,8 +75,8 @@ body:
   - type: input
     id: wcag
     attributes:
-      label: WCAG 2.1 violation
-      description: 'Does this violate a specific WCAG 2.1 checkpoint?'
+      label: WCAG 2.2 violation
+      description: 'Does this violate a specific WCAG 2.2 checkpoint?'
       placeholder: e.g Success Criterion 1.4.3 Contrast (Minimum)
   - type: input
     id: example-url

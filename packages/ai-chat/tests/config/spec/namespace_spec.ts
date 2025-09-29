@@ -10,13 +10,19 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { createBaseTestConfig } from "../../utils/testHelpers";
+import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import { createBaseTestProps } from "../../utils/testHelpers";
 import { AppState } from "../../../src/types/state/AppState";
+import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
+import { doCreateStore } from "../../../src/chat/store/doCreateStore";
+import { ServiceManager } from "../../../src/chat/services/ServiceManager";
+import { NamespaceService } from "../../../src/chat/services/NamespaceService";
+import { PublicConfig } from "../../../src/types/config/PublicConfig";
 
 describe("Config Namespace", () => {
-  const createBaseConfig = (): PublicConfig => ({
-    ...createBaseTestConfig(),
+  const createBaseProps = (): Partial<ChatContainerProps> => ({
+    ...createBaseTestProps(),
   });
 
   beforeEach(() => {
@@ -30,8 +36,8 @@ describe("Config Namespace", () => {
   describe("namespace", () => {
     it("should store namespace string in Redux state", async () => {
       const testNamespace = "test-namespace";
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         namespace: testNamespace,
       };
 
@@ -40,12 +46,7 @@ describe("Config Namespace", () => {
         capturedInstance = instance;
       });
 
-      render(
-        React.createElement(ChatContainer, {
-          config,
-          onBeforeRender,
-        }),
-      );
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
 
       await waitFor(
         () => {
@@ -61,8 +62,8 @@ describe("Config Namespace", () => {
 
     it("should store namespace with special characters in Redux state", async () => {
       const testNamespace = "test-namespace_123";
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         namespace: testNamespace,
       };
 
@@ -73,7 +74,7 @@ describe("Config Namespace", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );
@@ -91,8 +92,8 @@ describe("Config Namespace", () => {
     });
 
     it("should store empty string namespace in Redux state", async () => {
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         namespace: "",
       };
 
@@ -103,7 +104,7 @@ describe("Config Namespace", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );
@@ -121,8 +122,8 @@ describe("Config Namespace", () => {
     });
 
     it("should handle undefined namespace in Redux state", async () => {
-      const config: PublicConfig = {
-        ...createBaseConfig(),
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
         // namespace intentionally omitted
       };
 
@@ -133,7 +134,7 @@ describe("Config Namespace", () => {
 
       render(
         React.createElement(ChatContainer, {
-          config,
+          ...props,
           onBeforeRender,
         }),
       );
@@ -148,6 +149,44 @@ describe("Config Namespace", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.public.namespace).toBeUndefined();
+    });
+
+    describe("Dynamic Namespace Config Updates", () => {
+      let serviceManager: ServiceManager;
+
+      beforeEach(() => {
+        const initialConfig: PublicConfig = {
+          assistantName: "Test Assistant",
+        };
+
+        const store = doCreateStore(initialConfig, {} as ServiceManager);
+        serviceManager = {
+          store,
+          namespace: new NamespaceService("test"),
+          messageService: { timeoutMS: 30000 } as any,
+          humanAgentService: null,
+        } as ServiceManager;
+      });
+
+      it("should handle namespace changes dynamically", async () => {
+        const previousConfig: PublicConfig = {
+          namespace: "old-namespace",
+        };
+
+        const newConfig: PublicConfig = {
+          namespace: "new-namespace",
+        };
+
+        serviceManager.namespace = new NamespaceService("new-namespace");
+
+        const changes = detectConfigChanges(previousConfig, newConfig);
+        expect(changes.namespaceChanged).toBe(true);
+
+        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+        const state: AppState = serviceManager.store.getState();
+        expect(state.config.public.namespace).toBe("new-namespace");
+      });
     });
   });
 });

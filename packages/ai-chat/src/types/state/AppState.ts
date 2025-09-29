@@ -8,29 +8,21 @@
  */
 
 import {
-  CustomMenuOption,
   type CustomPanelConfigOptions,
-  EnglishLanguagePack,
-  type FileUpload,
-  LanguagePack,
   NotificationStateObject,
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
-import type { ChatHeaderConfig } from "../config/ChatHeaderConfig";
-import type {
-  ChatHeaderAvatarConfig,
-  FileUploadCapabilities,
-} from "../instance/ChatInstance";
-import type { CornersType } from "../../chat/shared/utils/constants";
+import { LanguagePack } from "../config/PublicConfig";
+import { type FileUpload } from "../config/ServiceDeskConfig";
+
+import type { FileUploadCapabilities } from "../instance/ChatInstance";
+import type { CornersType } from "../../chat/utils/constants";
 import type { AppConfig } from "./AppConfig";
-import type { CarbonTheme } from "../utilities/carbonTypes";
-import type { ThemeType, WhiteLabelTheme } from "../config/PublicConfig";
-import type { LauncherInternalConfig } from "../config/LauncherConfig";
+import type { CarbonTheme } from "../config/PublicConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
-import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
-import { HomeScreenConfig, HomeScreenState } from "../config/HomeScreenConfig";
+import { HomeScreenState } from "../config/HomeScreenConfig";
 import {
   ConversationalSearchItemCitation,
   GenericItem,
@@ -38,28 +30,20 @@ import {
   Message,
   SearchResult,
 } from "../messaging/Messages";
-import { LayoutConfig } from "../config/PublicConfig";
 import { AgentAvailability } from "../config/ServiceDeskConfig";
+import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
 
 /**
- * This contains the definitions for the redux application state.
- */
-
-/**
- * The list of messages used by Carbon AI Chat. These are in their own section for easy ability to restart.
+ * The message-related portion of AppState. Used for message history operations.
  */
 interface AppStateMessages {
   /**
-   * This is the global map/registry of all the local message items by their IDs. This includes messages from
-   * the bot as well as messages with a human agent. The order of the messages is controlled by the array of
-   * local message IDs contained in {@link ChatMessagesState}.
+   * This is the global map/registry of all the local message items by their IDs.
    */
   allMessageItemsByID: ObjectMap<LocalMessageItem>;
 
   /**
-   * This is the global map/registry of all full messages (as opposed to the local message items) in the system by their
-   * message IDs. This includes messages with a human agent. The order of the messages is controlled by the array of
-   * local message IDs contained in {@link ChatMessagesState}.
+   * This is the global map/registry of all full messages by their message IDs.
    */
   allMessagesByID: ObjectMap<Message>;
 
@@ -69,16 +53,14 @@ interface AppStateMessages {
   botMessageState: ChatMessagesState;
 }
 
+/**
+ * This contains the definitions for the redux application state.
+ */
 interface AppState extends AppStateMessages {
   /**
    * The state of the input area when the user is interacting with a bot (not a human agent).
    */
   botInputState: InputState;
-
-  /**
-   * The current state for the human agent system.
-   */
-  humanAgentState: HumanAgentState;
 
   /**
    * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
@@ -87,58 +69,10 @@ interface AppState extends AppStateMessages {
   isHydrated: boolean;
 
   /**
-   * The name visible on the header bar. Also used in logs and other messages. This value is first populated via config.
-   */
-  botName: string;
-
-  /**
-   * An override for specifically just the title in the header bar. Useful if you don't want to always show the name of
-   * the assistant in the title bar, but want to keep it in the message. Also useful if you want the title of your chat
-   * and the name of your assistant to be different values.
-   */
-  headerDisplayName: string;
-
-  /**
-   * The config of the chat header avatar.
-   */
-  headerAvatarConfig: ChatHeaderAvatarConfig;
-
-  /**
-   * The avatar visible on the header bar. This value (image url) is first populated via config.
-   */
-  botAvatarURL: string;
-
-  /**
-   * The current CSS variables added as overrides. We store this because as we live update we merge with the previous
-   * value. If there are no overrides this can be undefined.
-   */
-  cssVariableOverrides: ObjectMap<string>;
-
-  /**
    * The external configuration for the chat widget that includes the public config provided by the host page as well
    * as the remote config provided by the tooling.
    */
   config: AppConfig;
-
-  /**
-   * The config above gets manipulated by some reducers (particularly the updateCSSVariables action). Store the original
-   * config in case we ever need to refer back to the non manipulated version.
-   */
-  originalConfig: AppConfig;
-
-  /**
-   * The language pack currently in use by the widget. This may be different from the language pack provided in the
-   * original public config if it has been updated since. If no pack was provided in the public config, this value
-   * will be set by the locale and is updated if the locale is changed.
-   */
-  languagePack: LanguagePack;
-
-  /**
-   * The locale currently in use by the widget. This may be different from the locale provided in the original
-   * public config if it has been updated since. If this value is updated, the language pack will be updated as well
-   * as long as one was not originally provided in the public config.
-   */
-  locale: string;
 
   /**
    * An ARIA message to be announced to the user. This will be announced whenever the message text changes.
@@ -154,16 +88,10 @@ interface AppState extends AppStateMessages {
   suspendScrollDetection: boolean;
 
   /**
-   * Active config for home screen derived from combining remote and local config.
+   * Any items stored here is also persisted to sessionStorage. This is used for things you want to maintain
+   * across page reloads like "is the launcher open".
    */
-  homeScreenConfig: HomeScreenConfig;
-
-  /**
-   * Any items stored here is also persisted to sessionStorage IF sessionHistory is turned on. We rehydrate the redux
-   * store with this information. Examples of things we store include if the Carbon AI Chat is open and if you have an active
-   * conversation with an agent.
-   */
-  persistedToBrowserStorage: PersistedToBrowserStorageState;
+  persistedToBrowserStorage: PersistedState;
 
   /**
    * The current enum value for the width of the chat. Used to drive responsive design and to swap components out
@@ -187,11 +115,6 @@ interface AppState extends AppStateMessages {
   catastrophicErrorType?: boolean;
 
   /**
-   * The state of the Carbon AI Chat launcher.
-   */
-  launcher: LauncherState;
-
-  /**
    * The state of the iframe panel.
    */
   iFramePanelState: IFramePanelState;
@@ -200,11 +123,6 @@ interface AppState extends AppStateMessages {
    * The state of the conversational search citation panel.
    */
   viewSourcePanelState: ViewSourcePanelState;
-
-  /**
-   * Indicates if the app has been destroyed and should no longer be rendered.
-   */
-  isDestroyed: boolean;
 
   /**
    * The custom panel state.
@@ -240,9 +158,9 @@ interface AppState extends AppStateMessages {
   targetViewState: ViewState;
 
   /**
-   * All the currently configured custom menu options.
+   * Volatile UI state related to the current human agent session. This is not persisted and is reset on reload.
    */
-  customMenuOptions: CustomMenuOption[];
+  humanAgentState: HumanAgentState;
 
   /**
    * Indicates if we should display a transparent background covering the non-header area of the main window.
@@ -260,21 +178,9 @@ interface AppState extends AppStateMessages {
   isBrowserPageVisible: boolean;
 
   /**
-   * Which carbon theme to use and whether the AI theme is enabled.
-   */
-  theme: ThemeState;
-
-  layout: LayoutConfig;
-
-  /**
    * The current state of notifications.
    */
   notifications: NotificationStateObject[];
-
-  /**
-   * The chat header state.
-   */
-  chatHeaderState: ChatHeaderState;
 }
 
 /**
@@ -323,42 +229,9 @@ interface StopStreamingButtonState {
 }
 
 /**
- * Items current chat state.
- */
-interface PersistedChatState {
-  /**
-   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
-   * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
-   */
-  version: string;
-
-  /**
-   * Map of if a disclaimer has been accepted on a given window.hostname value.
-   */
-  disclaimersAccepted: ObjectMap<boolean>;
-
-  /**
-   * State of home screen.
-   */
-  homeScreenState: HomeScreenState;
-
-  /**
-   * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted
-   * with.
-   */
-  hasSentNonWelcomeMessage: boolean;
-
-  /**
-   * The persisted state for agents.
-   */
-  humanAgentState: PersistedHumanAgentState;
-}
-
-/**
  * Items stored in sessionStorage.
  */
-interface PersistedLauncherState {
+interface PersistedState {
   /**
    * Indicates if this state was loaded from browser session storage or if was created as part of a new session.
    */
@@ -424,23 +297,21 @@ interface PersistedLauncherState {
    * acceptable.
    */
   hasSentNonWelcomeMessage: boolean;
-}
-
-/**
- * State shared with the sessionStorage so that as the user navigates the chat stays in the same UI state. This is in
- * addition to the data that the session history store.
- */
-interface PersistedToBrowserStorageState {
-  /**
-   * Things stored that are related to the user profile. These are not accessible until the Carbon AI Chat has been opened!
-   */
-  chatState: PersistedChatState;
 
   /**
-   * Things stored that are not related to the user profile. These should only be things that are not sensitive like
-   * "is the Carbon AI Chat open".
+   * Map of if a disclaimer has been accepted on a given window.hostname value.
    */
-  launcherState: PersistedLauncherState;
+  disclaimersAccepted: ObjectMap<boolean>;
+
+  /**
+   * State of home screen.
+   */
+  homeScreenState: HomeScreenState;
+
+  /**
+   * The persisted subset of the human agent state.
+   */
+  humanAgentState: PersistedHumanAgentState;
 }
 
 /**
@@ -553,7 +424,7 @@ interface HumanAgentDisplayState {
   /**
    * The language pack key to show for the placeholder text in the input field (if the default should be overridden).
    */
-  inputPlaceholderKey: keyof EnglishLanguagePack;
+  inputPlaceholderKey: keyof LanguagePack;
 
   /**
    * Indicates if the agent is typing.
@@ -577,7 +448,7 @@ interface AnnounceMessage {
    * If the text is defined by a message id that corresponds to one of the messages in our language pack, that
    * message id can be specified here. The message text will be formatted using this message id.
    */
-  messageID?: keyof EnglishLanguagePack;
+  messageID?: keyof LanguagePack;
 
   /**
    * If the text is defined by a message id that corresponds to one of the messages in our language pack, any
@@ -596,16 +467,6 @@ enum ChatWidthBreakpoint {
   STANDARD = "standard",
   // > 672 + 16 + 16px
   WIDE = "wide",
-}
-
-/**
- * The launcher config.
- */
-interface LauncherState {
-  /**
-   * The current config state of launcher.
-   */
-  config: LauncherInternalConfig;
 }
 
 interface IFramePanelState {
@@ -678,46 +539,37 @@ interface MessagePanelState<T extends GenericItem = GenericItem> {
  */
 interface ThemeState {
   /**
-   * Specifies which theme configuration to use.
+   * Enables Carbon AI theme styling. Defaults to true.
    */
-  theme?: ThemeType;
+  aiEnabled: boolean;
 
   /**
-   * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
-   * https://carbondesignsystem.com/guidelines/color/tokens.
+   * Which Carbon theme tokens are currently in effect.
+   * Null indicates the chat inherits tokens from the host page.
    */
-  carbonTheme: CarbonTheme;
+  derivedCarbonTheme: CarbonTheme | null;
+
+  /**
+   * The originally selected Carbon theme tokens. Null indicates inheritance from the host page.
+   */
+  originalCarbonTheme: CarbonTheme | null;
 
   /**
    * This flag is used to disable Carbon AI Chat's rounded corners.
    */
   corners: CornersType;
-
-  /**
-   * Variables for white labeling.
-   */
-  whiteLabelTheme?: WhiteLabelTheme;
-}
-interface ChatHeaderState {
-  /**
-   * The chat header config state.
-   */
-  config: ChatHeaderConfig;
 }
 
 export {
   AppStateMessages,
   AppState,
-  PersistedToBrowserStorageState,
   HumanAgentDisplayState,
   HumanAgentState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,
   ViewType,
-  PersistedChatState,
-  PersistedLauncherState,
-  LauncherState,
+  PersistedState,
   IFramePanelState,
   ViewSourcePanelState,
   CustomPanelConfigOptions,

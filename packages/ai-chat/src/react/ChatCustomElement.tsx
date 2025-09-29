@@ -15,18 +15,15 @@ import {
   BusEventViewChange,
 } from "../types/events/eventBusTypes";
 import { ChatContainer, ChatContainerProps } from "./ChatContainer";
-import { isBrowser } from "../chat/shared/utils/browserUtils";
+import { isBrowser } from "../chat/utils/browserUtils";
 
 /**
- * This is the React component for people injecting a Carbon AI Chat with a custom element.
+ * Properties for the ChatContainer React component. This interface extends
+ * {@link ChatContainerProps} and {@link PublicConfig} with additional component-specific props, flattening all
+ * config properties as top-level props for better TypeScript IntelliSense.
  *
- * It provides said element any class or id defined on itself for styling. It then calls ChatContainer with the custom
- * element passed in as a property to be used instead of generating an element with the default properties for a
- * floating chat.
- *
+ * @category React
  */
-
-/** @category React */
 interface ChatCustomElementProps extends ChatContainerProps {
   /**
    * A CSS class name that will be added to the custom element. This class must define the size of the
@@ -54,7 +51,6 @@ interface ChatCustomElementProps extends ChatContainerProps {
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 }
 
-// CSP-friendly style injection for hiding the chat element
 const customElementStylesheet =
   isBrowser && typeof CSSStyleSheet !== "undefined"
     ? new CSSStyleSheet()
@@ -95,8 +91,19 @@ if (isBrowser && !document.getElementById("cds-aichat-custom-element-styles")) {
   }
 }
 
+/**
+ * This is the React component for people injecting a Carbon AI Chat with a custom element.
+ *
+ * It provides said element any class or id defined on itself for styling. It then calls ChatContainer with the custom
+ * element passed in as a property to be used instead of generating an element with the default properties for a
+ * floating chat.
+ *
+ * @category React
+ */
 function ChatCustomElement({
-  config,
+  strings,
+  serviceDeskFactory,
+  serviceDesk,
   onBeforeRender,
   onAfterRender,
   renderUserDefinedResponse,
@@ -104,6 +111,27 @@ function ChatCustomElement({
   className,
   id,
   onViewChange,
+  // Flattened PublicConfig properties
+  onError,
+  openChatByDefault,
+  disclaimer,
+  disableCustomElementMobileEnhancements,
+  debug,
+  exposeServiceManagerForTesting,
+  injectCarbonTheme,
+  aiEnabled,
+  shouldTakeFocusIfOpensAutomatically,
+  namespace,
+  enableFocusTrap,
+  shouldSanitizeHTML,
+  header,
+  layout,
+  messaging,
+  isReadonly,
+  assistantName,
+  locale,
+  homescreen,
+  launcher,
 }: ChatCustomElementProps) {
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
 
@@ -113,7 +141,7 @@ function ChatCustomElement({
        * A default handler for the "view:change" event. This will be used to show or hide the Carbon AI Chat main window
        * by adding/removing a CSS class that sets the element size to 0x0 when hidden.
        */
-      function defaultViewChangeHandler(event: any) {
+      function defaultViewChangeHandler(event: BusEventViewChange) {
         if (customElement) {
           if (event.newViewState.mainWindow) {
             // Show: remove the hidden class, let the provided className handle sizing
@@ -139,7 +167,35 @@ function ChatCustomElement({
     <div className={className} id={id} ref={setCustomElement}>
       {customElement && (
         <ChatContainer
-          config={config}
+          // Flattened PublicConfig properties
+          onError={onError}
+          openChatByDefault={openChatByDefault}
+          disclaimer={disclaimer}
+          disableCustomElementMobileEnhancements={
+            disableCustomElementMobileEnhancements
+          }
+          debug={debug}
+          exposeServiceManagerForTesting={exposeServiceManagerForTesting}
+          injectCarbonTheme={injectCarbonTheme}
+          aiEnabled={aiEnabled}
+          shouldTakeFocusIfOpensAutomatically={
+            shouldTakeFocusIfOpensAutomatically
+          }
+          namespace={namespace}
+          enableFocusTrap={enableFocusTrap}
+          shouldSanitizeHTML={shouldSanitizeHTML}
+          header={header}
+          layout={layout}
+          messaging={messaging}
+          isReadonly={isReadonly}
+          assistantName={assistantName}
+          locale={locale}
+          homescreen={homescreen}
+          launcher={launcher}
+          // Other ChatContainer props
+          strings={strings}
+          serviceDeskFactory={serviceDeskFactory}
+          serviceDesk={serviceDesk}
           onBeforeRender={onBeforeRenderOverride}
           onAfterRender={onAfterRender}
           renderUserDefinedResponse={renderUserDefinedResponse}
@@ -151,9 +207,4 @@ function ChatCustomElement({
   );
 }
 
-/** @category React */
-const ChatCustomElementExport = React.memo(
-  ChatCustomElement,
-) as React.FC<ChatCustomElementProps>;
-
-export { ChatCustomElementExport as ChatCustomElement, ChatCustomElementProps };
+export { ChatCustomElement, ChatCustomElementProps };

@@ -1,0 +1,53 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "sass:meta";
+@use "@carbon/styles/scss/themes";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/reset";
+
+@use "./styles";
+@use "./components-legacy/imports" as components;
+
+.cds--white {
+  @include theme.theme(themes.$white);
+}
+
+.cds--g10 {
+  @include theme.theme(themes.$g10);
+}
+
+.cds--g90 {
+  @include theme.theme(themes.$g90);
+}
+
+.cds--g100 {
+  @include theme.theme(themes.$g100);
+}
+
+cds-tile {
+  border: solid 1px var(--cds-border-subtle);
+  border-radius: 8px;
+}
+
+.cds-aichat--light,
+.cds--white,
+.cds--g10 {
+  cds-tile {
+    background-color: #ffffff;
+  }
+}
+
+.cds-aichat--dark,
+.cds--g90,
+.cds--g100 {
+  scrollbar-color: var(--cds-layer-03) var(--cds-layer-01);
+
+  cds-tile {
+    background-color: #262626;
+  }
+}

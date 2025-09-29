@@ -11,18 +11,41 @@ import { ChatInstance } from "../instance/ChatInstance";
 import { CustomSendMessageOptions } from "./MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
 import { CornersType } from "./CornersType";
+import { HomeScreenConfig } from "./HomeScreenConfig";
+import type { LayoutCustomProperties } from "./LayoutCustomProperties";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
   ServiceDeskPublicConfig,
 } from "./ServiceDeskConfig";
 import { HistoryItem } from "../messaging/History";
+import { LauncherConfig } from "./LauncherConfig";
+import { DeepPartial } from "../utilities/DeepPartial";
+import enLanguagePackData from "../../chat/languages/en.json";
+
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
  * host page.
  */
 
 /**
+ * The raw strings used for {@link PublicConfig.strings}. Presented in ICU format.
+ *
+ * @category Config
+ */
+export const enLanguagePack = enLanguagePackData;
+
+/**
+ * A language pack represents the set of display strings for a particular language.
+ * It defines all the text strings that can be customized for different languages.
+ *
+ * @category Config
+ */
+export type LanguagePack = typeof enLanguagePack;
+
+/**
+ * Configuration interface for Carbon AI Chat.
+ *
  * @category Config
  */
 export interface PublicConfig {
@@ -33,20 +56,14 @@ export interface PublicConfig {
   onError?: (data: OnErrorData) => void;
 
   /**
-   * Render the chat launcher element used to open and close the chat window. If you elect to not show our built in
-   * chat launcher, you will be responsible for firing the launcher:toggle, launcher:open or launcher:close events
-   * from your own chat launcher. Or, you can use options.openChatByDefault to just have the chat interface be open
-   * at initialization.
-   */
-  showLauncher?: boolean;
-
-  /**
    * By default, the chat window will be rendered in a "closed" state.
    */
   openChatByDefault?: boolean;
 
   /**
    * Disclaimer screen configuration.
+   *
+   * If `disclaimerHTML` changes after the disclaimer has been accepted, we request a user to accept again.
    */
   disclaimer?: DisclaimerPublicConfig;
 
@@ -71,13 +88,22 @@ export interface PublicConfig {
   exposeServiceManagerForTesting?: boolean;
 
   /**
-   * Sets theming configuration.
+   * Which Carbon theme tokens to inject. If unset (falsy), the chat inherits tokens from the host page.
+   * Set to a specific theme to force token injection.
    */
-  themeConfig?: ThemeConfig;
+  injectCarbonTheme?: CarbonTheme;
+
+  /**
+   * Enables Carbon AI theme styling. Defaults to true.
+   */
+  aiEnabled?: boolean;
 
   /**
    * This is a factory for producing custom implementations of service desks. If this value is set, then this will
    * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
+   *
+   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
+   * human agent will be restarted.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters,
@@ -85,13 +111,14 @@ export interface PublicConfig {
 
   /**
    * Any public config to apply to service desks.
+   *
+   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
+   * human agent will be restarted.
    */
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the Carbon AI Chat is open on page load. This applies to session history open
-   * states as well as openByChatByDefault. This should be set to false if the Carbon AI Chat is embedded in the tooling, for
-   * instance.
+   * If the Carbon AI Chat should grab focus if the chat is open on page load.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 
@@ -112,11 +139,6 @@ export interface PublicConfig {
   enableFocusTrap?: boolean;
 
   /**
-   * If true, disables functionality in Carbon AI Chat that changes the window title.
-   */
-  disableWindowTitleChanges?: boolean;
-
-  /**
    * Indicates if Carbon AI Chat should sanitize HTML from the bot.
    */
   shouldSanitizeHTML?: boolean;
@@ -124,7 +146,7 @@ export interface PublicConfig {
   /**
    * Extra config for controlling the behavior of the header.
    */
-  headerConfig?: HeaderConfig;
+  header?: HeaderConfig;
 
   /**
    * The config object for changing Carbon AI Chat's layout.
@@ -137,25 +159,57 @@ export interface PublicConfig {
   messaging?: PublicConfigMessaging;
 
   /**
-   * @internal
-   * @experimental
    * Sets the chat into a read only mode for displaying old conversations.
    */
   isReadonly?: boolean;
 
   /**
-   * @internal
-   * @experimental
-   * Sets the avatar image.
+   * Sets the name of the assistant. Defaults to "watsonx". Used in screen reader announcements and error messages.
    */
-  botAvatarURL?: string;
+  assistantName?: string;
 
   /**
-   * @internal
-   * @experimental
-   * Sets the name of the bot.
+   * The locale to use for the widget. This controls the language pack and regional formatting.
+   * Example values include: 'en', 'en-us', 'fr', 'es'.
    */
-  botName?: string;
+  locale?: string;
+
+  /**
+   * Configuration for the homescreen.
+   *
+   * If you change anything but `is_on` after the chat session has started, the chat will handle it gracefully.
+   *
+   * If you turn on the homescreen after the user has already started chatting, it will show up in the header as
+   * an icon, but the user won't be forced to go back to the homescreen (unlike turning on the disclaimer mid-chat).
+   */
+  homescreen?: HomeScreenConfig;
+
+  /**
+   * Configuration for the launcher.
+   */
+  launcher?: LauncherConfig;
+
+  /**
+   * Optional partial language pack overrides. Values merge with defaults.
+   */
+  strings?: DeepPartial<LanguagePack>;
+}
+
+/**
+ * A single menu option.
+ *
+ * @category Config
+ */
+export interface CustomMenuOption {
+  /**
+   * The text to display for the menu option.
+   */
+  text: string;
+
+  /**
+   * The callback handler to call when the option is selected. Provide this of "url".
+   */
+  handler: () => void;
 }
 
 /**
@@ -203,10 +257,27 @@ export interface HeaderConfig {
   showRestartButton?: boolean;
 
   /**
-   * Indicates if the close and restart (X) button should be rendered.
-   *
+   * The chat header title.
    */
-  showCloseAndRestartButton?: boolean;
+  title?: string;
+
+  /**
+   * The name displayed after the title.
+   */
+  name?: string;
+
+  /**
+   * All the currently configured custom menu options.
+   */
+  menuOptions?: CustomMenuOption[];
+
+  /**
+   * Controls whether to show the AI label/slug in the header. Defaults to true.
+   *
+   * There is currently no version of this that does not include the AI theme
+   * blue gradients.
+   */
+  showAiLabel?: boolean;
 }
 
 /**
@@ -225,6 +296,23 @@ export interface LayoutConfig {
    * have pending issues.
    */
   hasContentMaxWidth?: boolean;
+
+  /**
+   * This flag is used to disable Carbon AI Chat's rounded corners.
+   */
+  corners?: CornersType;
+
+  /**
+   * CSS variable overrides for the chat UI.
+   *
+   * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.height`),
+   * which map to the underlying `--cds-aichat-…` custom properties.
+   * Values are raw CSS values such as `"420px"`, `"9999"`, etc.
+   *
+   * Example:
+   * { height: "560px", width: "420px" }
+   */
+  customProperties?: Partial<Record<LayoutCustomProperties, string>>;
 }
 
 /**
@@ -236,6 +324,9 @@ export interface PublicConfigMessaging {
   /**
    * Indicates if Carbon AI Chat should make a request for the welcome message when a new conversation begins. If this is
    * true, then Carbon AI Chat will start with an empty conversation.
+   *
+   * **Manual session management required**: Changes to this property after conversation has started have no effect.
+   * To apply new welcome behavior, call `instance.messaging.restartConversation()`.
    */
   skipWelcome?: boolean;
 
@@ -273,6 +364,8 @@ export interface PublicConfigMessaging {
   /**
    * This is a callback function that is used by Carbon AI Chat to retrieve history data for populating the Carbon AI Chat. If
    * this function is defined, it will be used instead of any other mechanism for fetching history.
+   *
+   * If this function is mutated after it was initially called, the chat does not re-call it.
    */
   customLoadHistory?: (instance: ChatInstance) => Promise<HistoryItem[]>;
 }
@@ -284,7 +377,7 @@ export interface DisclaimerPublicConfig {
   /**
    * If the disclaimer is turned on.
    */
-  is_on: boolean;
+  isOn: boolean;
 
   /**
    * HTML content to show in disclaimer.
@@ -293,33 +386,30 @@ export interface DisclaimerPublicConfig {
 }
 
 /**
- * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
+ * A string identifying what Carbon Theme we should base UI variables off of.
+ * Defaults to "inherit". If you are not hosting the chat on a website that is Carbon styles, you will want to choose
+ * once of the non-inherited values to inject the correct CSS custom property values into the code. See
  * https://carbondesignsystem.com/guidelines/color/tokens.
  *
  * @category Config
  */
 export enum CarbonTheme {
+  /**
+   * Injects Carbon white theme tokens.
+   */
   WHITE = "white",
+  /**
+   * Injects Carbon Gray 10 theme tokens.
+   */
   G10 = "g10",
+  /**
+   * Injects Carbon Gray 90 theme tokens.
+   */
   G90 = "g90",
+  /**
+   * Injects Carbon Gray 100 theme tokens.
+   */
   G100 = "g100",
-}
-
-/**
- * Enum for theme configuration values.
- *
- * @category Config
- */
-export enum ThemeType {
-  /**
-   * Uses the Carbon AI theme styling.
-   */
-  CARBON_AI = "CarbonAI",
-
-  /**
-   * Uses white label theme styling.
-   */
-  WHITE_LABEL = "WhiteLabel",
 }
 
 /**
@@ -377,57 +467,4 @@ export interface OnErrorData {
    * If the error is of the severity that requires a whole restart of Carbon AI Chat.
    */
   catastrophicErrorType?: boolean;
-}
-
-/**
- * @category Config
- */
-export interface ThemeConfig {
-  /**
-   * A string identifying what Carbon Theme we should base UI variables off of. Defaults to 'g10'. See
-   * https://carbondesignsystem.com/guidelines/color/tokens.
-   */
-  carbonTheme?: CarbonTheme;
-
-  /**
-   * @internal
-   * Specifies which theme configuration to use.
-   */
-  theme?: ThemeType;
-
-  /**
-   * @internal
-   * This object contains the style information that is provided by the tooling that changes various bits of
-   * appearance in the widget. These are used to configure multiple CSS variables in an accessible way.
-   * This is only available with using {@link ThemeType} set to `WHITE_LABEL`.
-   */
-
-  whiteLabelTheme?: WhiteLabelTheme;
-
-  /**
-   * This flag is used to disable Carbon AI Chat's rounded corners.
-   */
-  corners?: CornersType;
-}
-
-/**
- * @category Config
- *
- * @experimental
- */
-export interface WhiteLabelTheme {
-  /**
-   * The secondary color which controls the color of the user sent chat bubble.
-   */
-  "BASE-secondary-color"?: string;
-
-  /**
-   * The primary color controls the color of the header.
-   */
-  "BASE-primary-color"?: string;
-
-  /**
-   * The accent color which controls things like focus and button colors throughout the widget.
-   */
-  "BASE-accent-color"?: string;
 }

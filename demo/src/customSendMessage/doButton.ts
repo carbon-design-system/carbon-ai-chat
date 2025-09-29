@@ -8,11 +8,11 @@
  */
 
 import {
-  ButtonItemKind,
   ButtonItemType,
   ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 function doButton(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -25,7 +25,7 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.BUTTON,
           label: "Alert button",
-          kind: ButtonItemKind.DANGER,
+          kind: BUTTON_KIND.DANGER,
           button_type: ButtonItemType.CUSTOM_EVENT,
           custom_event_name: "alert_button",
           // Pass any extra meta data you want here and it will be included in the event payload.
@@ -47,14 +47,22 @@ function doButton(instance: ChatInstance) {
           response_type: MessageResponseTypes.BUTTON,
           button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
-          kind: ButtonItemKind.SECONDARY,
+          kind: BUTTON_KIND.SECONDARY,
           panel: {
             title: "My panel",
             show_animations: true,
             body: [
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "Carbon!",
+                text: "Carbon is great!",
+              },
+            ],
+            footer: [
+              {
+                response_type: MessageResponseTypes.BUTTON,
+                button_type: ButtonItemType.URL,
+                url: "https://ibm.com",
+                label: "Optional Button",
               },
             ],
           },

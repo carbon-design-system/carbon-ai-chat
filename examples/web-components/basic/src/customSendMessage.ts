@@ -164,7 +164,7 @@ async function customSendMessage(
                     /**
                      * Indicates if a request for feedback should be displayed.
                      */
-                    is_on: true,
+                    isOn: true,
 
                     /**
                      * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.

@@ -24,7 +24,7 @@ const config: PublicConfig = {
 };
 
 function App() {
-  return <ChatCustomElement className="chat-custom-element" config={config} />;
+  return <ChatCustomElement className="chat-custom-element" {...config} />;
 }
 
 const root = createRoot(document.querySelector("#root") as Element);

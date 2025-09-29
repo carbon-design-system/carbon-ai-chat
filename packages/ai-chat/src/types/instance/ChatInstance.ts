@@ -7,24 +7,18 @@
  *  @license
  */
 
-import { IntlShape } from "react-intl";
-import { DeepPartial } from "../utilities/DeepPartial";
-
 import {
-  CustomMenuOption,
   CustomPanels,
-  LanguagePack,
   NotificationMessage,
   ViewState,
   ViewType,
 } from "./apiTypes";
-import { CornersType } from "../config/CornersType";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
-import { HomeScreenConfig } from "../config/HomeScreenConfig";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
-import { LauncherConfig } from "../config/LauncherConfig";
+import type { PersistedState } from "../state/AppState";
+import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { MessageRequest } from "../messaging/Messages";
-import { ChatHeaderConfig } from "../config/ChatHeaderConfig";
+import type { ServiceManager } from "../../chat/services/ServiceManager";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -34,23 +28,14 @@ import { ChatHeaderConfig } from "../config/ChatHeaderConfig";
  */
 export interface ChatInstance extends EventHandlers, ChatActions {
   /**
-   * Renders the chat. This function is called by the React and web components.
-   *
-   * @internal
-   */
-  render: () => Promise<ChatInstance>;
-
-  /**
-   * Destroy the chat widget and return initial content to the DOM. This function is called by the React and web components.
-   *
-   * @internal
-   */
-  destroy: () => void;
-
-  /**
    * Returns state information of the Carbon AI Chat that could be useful.
    */
-  getState: () => PublicWebChatState;
+  getState: () => PublicChatState;
+
+  /**
+   * Manager for accessing and controlling custom panels.
+   */
+  customPanels?: CustomPanels;
 
   /**
    * Internal testing property that exposes the serviceManager.
@@ -58,7 +43,7 @@ export interface ChatInstance extends EventHandlers, ChatActions {
    *
    * @internal
    */
-  serviceManager?: any;
+  serviceManager?: ServiceManager;
 }
 
 /**
@@ -66,83 +51,23 @@ export interface ChatInstance extends EventHandlers, ChatActions {
  *
  * @category Instance
  */
-export interface PublicWebChatState {
-  /**
-   * Is the Carbon AI Chat currently in an open state.
-   */
-  isWebChatOpen: boolean;
-
-  /**
-   * Is the Carbon AI Chat currently connected with a human agent.
-   */
-  isConnectedWithHumanAgent: boolean;
-
-  /**
-   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
-   * conversation.
-   */
-  isConnectingWithHumanAgent: boolean;
-
-  /**
-   * Is the home screen open.
-   */
-  isHomeScreenOpen: boolean;
-
-  /**
-   * Indicates if debugging is enabled.
-   */
-  isDebugEnabled: boolean;
-
-  /**
-   * Has the user sent a message that isn't requesting the welcome node.
-   */
-  hasUserSentMessage: boolean;
-
-  /**
-   * The current viewState of the Carbon AI Chat.
-   */
-  viewState: ViewState;
-
-  /**
-   * State regarding service desks.
-   */
-  serviceDesk: PublicWebChatServiceDeskState;
-
-  /**
-   * Returns the current locale in use by the widget. This may not match the locale that was provided in the
-   * original public configuration if that value was invalid or if the locale has been changed since then.
-   *
-   * Example values include: 'en' and 'en-us'.
-   */
-  locale: string;
-
-  /**
-   * Returns an instance of the intl object that is used for generating translated text. Note that the object
-   * returned from this function changes each time the locale or language pack is changed.
-   */
-  intl: IntlShape;
-}
+export type PublicChatState = Readonly<
+  Omit<PersistedState, "humanAgentState"> & {
+    humanAgent: PublicChatHumanAgentState;
+  }
+>;
 
 /**
+ * Current connection state of the human agent experience.
+ *
  * @category Instance
  */
-export interface PublicWebChatServiceDeskState {
-  /**
-   * Is the Carbon AI Chat currently connected with a human agent.
-   */
-  isConnected: boolean;
-
-  /**
-   * Indicates if Carbon AI Chat has requested to be connected to a human agent but an agent has not yet joined the
-   * conversation.
-   */
-  isConnecting: boolean;
-
-  /**
-   * Indicates if a conversation with a human agent has been suspended.
-   */
-  isSuspended: boolean;
-}
+export type PublicChatHumanAgentState = Readonly<
+  PersistedHumanAgentState & {
+    /** Indicates if Carbon AI Chat is attempting to connect to an agent. */
+    isConnecting: boolean;
+  }
+>;
 
 /**
  * This is a subset of the public interface that is managed by the event bus that is used for registering and
@@ -206,57 +131,6 @@ export interface TypeAndHandler {
 }
 
 /**
- * The main chat header customization options.
- *
- * @category Instance
- */
-export interface ChatHeaderAvatarConfig {
-  /**
-   * The url or data uri of the image to display in the main chat header.
-   */
-  url: string;
-
-  /**
-   * Indicates if the image should be given rounded corners. The default value is "square".
-   */
-  corners?: CornersType;
-}
-
-/**
- * Valid public CSS variables that can be controlled when white labeling is disabled.
- *
- * These variables map to CSS custom properties used in styling the AI chat interface.
- * This enum is used for type safety and documentation purposes.
- *
- * @category Instance
- */
-export enum CSSVariable {
-  /**
-   * Controls the minimum height of the chat container when in float view.
-   * Use this to adjust the overall vertical space the chat can occupy.
-   */
-  BASE_HEIGHT = "BASE-height",
-
-  /**
-   * Restricts the maximum height of the chat container when in float view.
-   * This is useful to cap panel height and ensure it doesn't exceed view bounds.
-   */
-  BASE_MAX_HEIGHT = "BASE-max-height",
-
-  /**
-   * Sets the width of the chat panel in float view.
-   * Can be used to widen the float version of the chat.
-   */
-  BASE_WIDTH = "BASE-width",
-
-  /**
-   * Controls the z-index of the chat overlay or container in float view.
-   * Use to adjust stacking context if conflicts arise with other UI elements.
-   */
-  BASE_Z_INDEX = "BASE-z-index",
-}
-
-/**
  * This is a subset of the public interface that provides methods that can be used by the user to control the widget
  * and have it perform certain actions.
  *
@@ -289,25 +163,6 @@ interface ChatActions {
   ) => Promise<void>;
 
   /**
-   * Updates the current locale. This will override the default values of the language pack.
-   */
-  updateLocale: (newLocale: string) => Promise<void>;
-
-  /**
-   * Updates the current language pack using the values from the provided language pack. This language pack does
-   * not need to be complete; only the strings contained in it will be updated. Any strings that are missing will be
-   * ignored and the current values will remain unchanged.
-   */
-  updateLanguagePack: (newPack: DeepPartial<LanguagePack>) => void;
-
-  /**
-   * This updates the map that can be used to override the values for CSS variables in the application.
-   */
-  updateCSSVariables: (
-    publicVars: Partial<Record<CSSVariable, string>>,
-  ) => void;
-
-  /**
    * Fire the view:pre:change and view:change events and change the view of the Carbon AI Chat. If a {@link ViewType} is
    * provided then that view will become visible and the rest will be hidden. If a {@link ViewState} is provided that
    * includes all of the views then all of the views will be changed accordingly. If a partial {@link ViewState} is
@@ -319,12 +174,6 @@ interface ChatActions {
    * Returns the list of writable elements.
    */
   writeableElements: Partial<WriteableElements>;
-
-  /**
-   * The elements of Carbon AI Chat that need to be exposed for customers to manipulate. Unlike writeable elements, these
-   * elements have existing content
-   */
-  elements: InstanceElements;
 
   /**
    * Sets the input field to be invisible. Helpful for when
@@ -346,12 +195,6 @@ interface ChatActions {
   updateBotUnreadIndicatorVisibility: (isVisible: boolean) => void;
 
   /**
-   * Updates the currently active homeScreenConfig. Currently only used in tooling to show live updates when editing web
-   * chat configuration.
-   */
-  updateHomeScreenConfig: (homeScreenConfig: HomeScreenConfig) => void;
-
-  /**
    * Scrolls to the (original) message with the given ID. Since there may be multiple message items in a given
    * message, this will scroll the first message to the top of the message window.
    *
@@ -359,18 +202,6 @@ interface ChatActions {
    * @param animate Whether or not the scroll should be animated. Defaults to true.
    */
   scrollToMessage: (messageID: string, animate?: boolean) => void;
-
-  /**
-   * An instance of the custom panel with methods to manipulate the behavior of the custom panels.
-   */
-  customPanels: CustomPanels;
-
-  /**
-   * Updates the custom menu options.
-   *
-   * @experimental
-   */
-  updateCustomMenuOptions: (options: CustomMenuOption[]) => void;
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
@@ -402,20 +233,6 @@ interface ChatActions {
   updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
-   * Updates the title of the bot panel. This value defaults to blank.
-   *
-   * @internal
-   */
-  updateMainHeaderTitle: (title?: null | string) => void;
-
-  /**
-   * Updates the avatar image of the bot panel.
-   *
-   * @internal
-   */
-  updateMainHeaderAvatar: (config?: ChatHeaderAvatarConfig) => void;
-
-  /**
    * The state of notifications in the chat.
    *
    * @experimental
@@ -428,26 +245,12 @@ interface ChatActions {
   serviceDesk: ChatInstanceServiceDeskActions;
 
   /**
-   * Updates the configuration that handles rendering custom objects in the chat header.
+   * Remove any record of the current session from the browser.
+   *
+   * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
+   * chat is open.
    */
-  updateHeaderConfig: (config: ChatHeaderConfig) => void;
-
-  /**
-   * @internal
-   * A method to update the bot name.
-   */
-  updateBotName: (name: string) => void;
-
-  /**
-   * @internal
-   * A method to update the bot avatar.
-   */
-  updateBotAvatarURL: (url: string) => void;
-
-  /**
-   * Updates the Carbon AI Chat launcher config with new desktop and/or mobile titles.
-   */
-  updateLauncherConfig: (config: LauncherConfig) => void;
+  destroySession: (keepOpenState?: boolean) => Promise<void>;
 }
 
 /**
@@ -538,78 +341,7 @@ export enum WriteableElementName {
 }
 
 /**
- * The interface represents the elements that Carbon AI Chat provides access to.
- *
- * @experimental
- *
- * @category Instance
- */
-export interface InstanceElements {
-  /**
-   * Returns the element that represents the main window.
-   *
-   * @experimental
-   */
-  getMainWindow: () => HasAddRemoveClassName;
-
-  /**
-   * Returns the element that represents the input field (text area) on the main message area.
-   *
-   * This will likely change to a contenteditable div before we move away from experimental.
-   *
-   * @experimental
-   */
-  getMessageInput: () => InstanceInputElement;
-
-  /**
-   * Returns the element that represents the input field (text area) on the home screen.
-   *
-   * This will likely change to a contenteditable div before we move away from experimental.
-   *
-   * @experimental
-   */
-  getHomeScreenInput: () => InstanceInputElement;
-}
-
-/**
- * Represents one of the input elements that Carbon AI Chat provides access to custom code.
- *
- * @category Instance
- */
-export interface InstanceInputElement {
-  /**
-   * The raw HTML element for the element.
-   *
-   * This will likely change to a contenteditable div before we move away from experimental.
-   *
-   * @experimental
-   */
-  getHTMLElement: () => HTMLTextAreaElement;
-
-  /**
-   * Sets the current text value inside the input.
-   */
-  setValue: (value: string) => void;
-
-  /**
-   * Enables or disables the handling of the enter key by the input field.
-   */
-  setEnableEnterKey: (isEnabled: boolean) => void;
-
-  /**
-   * Adds a listener that will fire whenever the value in the input field is changed. This fires immediately like an
-   * "input" event and not only when focus is lost like a "change".
-   */
-  addChangeListener: (listener: ChangeFunction) => void;
-
-  /**
-   * Removes a change listener that was previously added.
-   */
-  removeChangeListener: (listener: ChangeFunction) => void;
-}
-
-/**
- * Add notification messages to the chat.
+ * Add notification messages to the chat. This component has some a11y bugs before we can mark it complete.
  *
  * @category Instance
  *
@@ -636,23 +368,6 @@ export interface ChatInstanceNotifications {
  * @category Instance
  */
 export type ChangeFunction = (text: string) => void;
-
-/**
- * Represents an item that can add or remove class names.
- *
- * @category Instance
- */
-export interface HasAddRemoveClassName {
-  /**
-   * Adds the given class name to the element.
-   */
-  addClassName(name: string): void;
-
-  /**
-   * Removes the given class name from the element.
-   */
-  removeClassName(name: string): void;
-}
 
 /**
  * Upload options. Currently only applies to conversations with a human agent.
