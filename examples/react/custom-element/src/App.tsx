@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
+import { CarbonTheme, ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
@@ -21,6 +21,7 @@ const config: PublicConfig = {
     showFrame: false,
   },
   openChatByDefault: true,
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

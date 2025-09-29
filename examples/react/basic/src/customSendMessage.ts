@@ -159,12 +159,12 @@ async function customSendMessage(
               {
                 response_type: MessageResponseTypes.TEXT,
                 text: TEXT,
-                message_options: {
+                message_item_options: {
                   feedback: {
                     /**
                      * Indicates if a request for feedback should be displayed.
                      */
-                    isOn: true,
+                    is_on: true,
 
                     /**
                      * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.

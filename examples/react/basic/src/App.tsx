@@ -9,6 +9,7 @@
 
 import {
   BusEventType,
+  CarbonTheme,
   ChatContainer,
   ChatInstance,
   FeedbackInteractionType,
@@ -33,6 +34,7 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
