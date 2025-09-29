@@ -449,7 +449,7 @@ export enum ChainOfThoughtStepStatus {
 }
 
 /**
- * This schema is in beta. A chain of thought step is meant to show tool calls and other steps made by your agent
+ * A chain of thought step is meant to show tool calls and other steps made by your agent
  * to reach its final answer.
  *
  * @category Messaging
