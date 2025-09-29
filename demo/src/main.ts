@@ -62,42 +62,41 @@ export class Demo extends LitElement {
   accessor config: PublicConfig = defaultConfig;
 
   @state()
-  accessor isProgrammaticMode: boolean = false;
+  accessor isSetChatConfigMode: boolean = false;
 
   @state()
-  accessor hasReceivedProgrammaticConfig: boolean = false;
+  accessor hasReceivedSetChatConfig: boolean = false;
 
   connectedCallback() {
     super.connectedCallback();
-    // Listen for programmatic mode changes from demo-body
+    // Listen for setChatConfig mode changes from demo-body
     this.addEventListener(
-      "programmatic-mode-changed",
-      this._onProgrammaticModeChanged as EventListener,
+      "set-chat-config-mode-changed",
+      this._onSetChatConfigModeChanged as EventListener,
     );
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener(
-      "programmatic-mode-changed",
-      this._onProgrammaticModeChanged as EventListener,
+      "set-chat-config-mode-changed",
+      this._onSetChatConfigModeChanged as EventListener,
     );
   }
 
-  private _onProgrammaticModeChanged = (event: Event) => {
+  private _onSetChatConfigModeChanged = (event: Event) => {
     const customEvent = event as CustomEvent;
-    this.isProgrammaticMode = customEvent.detail.isProgrammaticMode;
-    this.hasReceivedProgrammaticConfig =
-      customEvent.detail.hasReceivedProgrammaticConfig;
+    this.isSetChatConfigMode = customEvent.detail.isSetChatConfigMode;
+    this.hasReceivedSetChatConfig = customEvent.detail.hasReceivedSetChatConfig;
   };
 
-  private _leaveProgrammaticMode = () => {
-    // Remove programmatic query parameters and reload
+  private _leaveSetChatConfigMode = () => {
+    // Remove setChatConfig query parameters and reload
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.delete("settings");
     urlParams.delete("config");
 
-    // Build new URL without programmatic params
+    // Build new URL without setChatConfig params
     const newUrl = urlParams.toString()
       ? `${window.location.pathname}?${urlParams.toString()}`
       : window.location.pathname;
@@ -109,21 +108,21 @@ export class Demo extends LitElement {
   render() {
     return html` <slot name="demo-header"></slot>
       <slot name="demo-body"></slot>
-      ${this.isProgrammaticMode && !this.hasReceivedProgrammaticConfig
+      ${this.isSetChatConfigMode && !this.hasReceivedSetChatConfig
         ? html` <div class="notification-holder">
             <cds-actionable-notification
               low-contrast
               kind="error"
-              title="Programmatic Mode - No Config Provided"
-              subtitle="You are in programmatic mode but no configuration has been set. Call window.setChatConfig() to provide a configuration."
+              title="setChatConfig Mode - No Config Provided"
+              subtitle="You are in setChatConfig mode but no configuration has been set. Call window.setChatConfig() to provide a configuration."
               inline
               hide-close-button
-              data-testid="programmatic_notification_error"
+              data-testid="set_chat_config_notification_error"
             >
               <cds-actionable-notification-button
                 slot="action"
-                @click=${this._leaveProgrammaticMode}
-                >Leave Programmatic Mode</cds-actionable-notification-button
+                @click=${this._leaveSetChatConfigMode}
+                >Leave setChatConfig Mode</cds-actionable-notification-button
               >
             </cds-actionable-notification>
           </div>`

@@ -454,6 +454,8 @@ function doHTML(
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
 ) {
+  // Make sure simple standalone html works as well.
+  doText(instance, "<b>Carbon is bold!</b>", userProfile);
   doText(instance, text, userProfile, chainOfThought);
 }
 

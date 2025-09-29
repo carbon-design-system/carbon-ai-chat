@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -218,6 +218,10 @@ in. */
 /* MainWindow hides itself consistently in both default floating mode and custom element mode */
 .cds-aichat--widget.cds-aichat--widget--closed {
   display: none;
+}
+
+.cds-aichat--widget.cds-aichat--widget--launched {
+  z-index: chat-theme.$z-index;
 }
 
 /* The following four blocks are duplicates so make sure to keep them all up-to-date. */

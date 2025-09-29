@@ -631,6 +631,224 @@ code.tsd-tag-example {
   font-size: 0.75rem;
 }
 
+/* Accessible code highlighting colors based on highlight.js a11y-light theme */
+/* Force override of TypeDoc's default highlight colors with higher specificity */
+:root,
+html,
+body,
+.cds-theme-zone-white {
+  /* Override TypeDoc's highlight colors with a11y-light theme colors for accessibility */
+  --light-hl-0: #7928a1 !important;  /* Keywords/selectors (purple) - from hljs-keyword */
+  --light-hl-1: #545454 !important;  /* Default text - from hljs base color */
+  --light-hl-2: #007faa !important;  /* Types/Classes (blue) - from hljs-title */
+  --light-hl-3: #008000 !important;  /* Strings (green) - from hljs-string */
+  --light-hl-4: #aa5d00 !important;  /* Numbers (orange) - from hljs-number */
+  --light-hl-5: #007faa !important;  /* Functions (blue) - from hljs-title */
+  --light-hl-6: #696969 !important;  /* Comments - from hljs-comment */
+  --light-hl-7: #aa5d00 !important;  /* Properties/attributes (orange) - from hljs-attribute */
+  --light-hl-8: #d91e18 !important;  /* Errors/deletion (red) - from hljs-deletion */
+  --light-hl-9: #545454 !important;  /* Default text - from hljs base color */
+  --light-hl-10: #008000 !important; /* Constants (green) - from hljs-string */
+  --light-hl-11: #7928a1 !important; /* Operators (purple) - from hljs-keyword */
+  --light-hl-12: #d91e18 !important; /* Regex (red) - from hljs-regexp */
+  --light-hl-13: #d91e18 !important; /* JSX tags (red) - from hljs-tag */
+  --light-hl-14: #aa5d00 !important; /* JSX attributes (orange) - from hljs-attribute */
+  --light-hl-15: #008000 !important; /* Template literals (green) - from hljs-string */
+  --light-hl-16: #007faa !important; /* JSON keys (blue) - from hljs-title */
+  --light-hl-17: #aa5d00 !important; /* Links (orange) - from hljs-link */
+  --light-hl-18: #d91e18 !important; /* Warnings (red) - from hljs-deletion */
+  --light-hl-19: #696969 !important; /* Secondary text - from hljs-comment */
+
+  /* Update code background to match Carbon layer */
+  --light-code-background: var(--cds-layer-01, #f4f4f4) !important;
+
+  /* Force light theme highlighting variables */
+  --hl-0: #7928a1 !important;
+  --hl-1: #545454 !important;
+  --hl-2: #007faa !important;
+  --hl-3: #008000 !important;
+  --hl-4: #aa5d00 !important;
+  --hl-5: #007faa !important;
+  --hl-6: #696969 !important;
+  --hl-7: #aa5d00 !important;
+  --hl-8: #d91e18 !important;
+  --hl-9: #545454 !important;
+  --hl-10: #008000 !important;
+  --hl-11: #7928a1 !important;
+  --hl-12: #d91e18 !important;
+  --hl-13: #d91e18 !important;
+  --hl-14: #aa5d00 !important;
+  --hl-15: #008000 !important;
+  --hl-16: #007faa !important;
+  --hl-17: #aa5d00 !important;
+  --hl-18: #d91e18 !important;
+  --hl-19: #696969 !important;
+  --code-background: var(--cds-layer-01, #f4f4f4) !important;
+
+  /* Dark theme colors for fallback */
+  --dark-hl-0: #C586C0;
+  --dark-hl-1: #D4D4D4;
+  --dark-hl-2: #9CDCFE;
+  --dark-hl-3: #CE9178;
+  --dark-hl-4: #569CD6;
+  --dark-hl-5: #DCDCAA;
+  --dark-hl-6: #808080;
+  --dark-hl-7: #4EC9B0;
+  --dark-hl-8: #9CDCFE;
+  --dark-hl-9: #D4D4D4;
+  --dark-hl-10: #6A9955;
+  --dark-hl-11: #569CD6;
+  --dark-hl-12: #CE9178;
+  --dark-hl-13: #F44747;
+  --dark-hl-14: #D7BA7D;
+  --dark-hl-15: #CE9178;
+  --dark-hl-16: #B5CEA8;
+  --dark-hl-17: #4FC1FF;
+  --dark-hl-18: #D7BA7D;
+  --dark-hl-19: #C8C8C8;
+  --dark-code-background: #1E1E1E;
+}
+
+/* Direct color overrides with high specificity to ensure they apply */
+.hl-0, pre .hl-0, code .hl-0 { color: #7928a1 !important; }  /* Keywords - purple */
+.hl-1, pre .hl-1, code .hl-1 { color: #545454 !important; }  /* Default text - dark gray */
+.hl-2, pre .hl-2, code .hl-2 { color: #007faa !important; }  /* Types - blue */
+.hl-3, pre .hl-3, code .hl-3 { color: #008000 !important; }  /* Strings - green */
+.hl-4, pre .hl-4, code .hl-4 { color: #aa5d00 !important; }  /* Numbers - orange */
+.hl-5, pre .hl-5, code .hl-5 { color: #007faa !important; }  /* Functions - blue */
+.hl-6, pre .hl-6, code .hl-6 { color: #696969 !important; }  /* Comments - light gray */
+.hl-7, pre .hl-7, code .hl-7 { color: #aa5d00 !important; }  /* Attributes - orange */
+.hl-8, pre .hl-8, code .hl-8 { color: #d91e18 !important; }  /* Errors - red */
+.hl-9, pre .hl-9, code .hl-9 { color: #545454 !important; }  /* Default text - dark gray */
+.hl-10, pre .hl-10, code .hl-10 { color: #008000 !important; } /* Constants - green */
+.hl-11, pre .hl-11, code .hl-11 { color: #7928a1 !important; } /* Operators - purple */
+.hl-12, pre .hl-12, code .hl-12 { color: #d91e18 !important; } /* Regex - red */
+.hl-13, pre .hl-13, code .hl-13 { color: #d91e18 !important; } /* JSX tags - red */
+.hl-14, pre .hl-14, code .hl-14 { color: #aa5d00 !important; } /* JSX attributes - orange */
+.hl-15, pre .hl-15, code .hl-15 { color: #008000 !important; } /* Template literals - green */
+.hl-16, pre .hl-16, code .hl-16 { color: #007faa !important; } /* JSON keys - blue */
+.hl-17, pre .hl-17, code .hl-17 { color: #aa5d00 !important; } /* Links - orange */
+.hl-18, pre .hl-18, code .hl-18 { color: #d91e18 !important; } /* Warnings - red */
+.hl-19, pre .hl-19, code .hl-19 { color: #696969 !important; } /* Secondary text - light gray */
+
+/* Ensure code backgrounds use Carbon layer color */
+pre, code, .tsd-signature {
+  background: var(--code-background) !important;
+}
+
+/* Override TypeDoc signature and kind colors with accessible alternatives */
+:root,
+html,
+body,
+.cds-theme-zone-white {
+  /* TypeDoc signature colors - using a11y-light theme colors */
+  --light-color-text-aside: #696969 !important;           /* Comments color from a11y-light */
+  --color-text-aside: #696969 !important;
+
+  /* TypeDoc TypeScript kind colors - mapped to accessible a11y-light colors */
+  --light-color-ts-keyword: #7928a1 !important;           /* Keywords - purple */
+  --light-color-ts-project: #007faa !important;           /* Project - blue */
+  --light-color-ts-module: #007faa !important;            /* Module - blue */
+  --light-color-ts-namespace: #007faa !important;         /* Namespace - blue */
+  --light-color-ts-enum: #aa5d00 !important;              /* Enum - orange */
+  --light-color-ts-enum-member: #aa5d00 !important;       /* Enum member - orange */
+  --light-color-ts-variable: #545454 !important;          /* Variable - dark gray */
+  --light-color-ts-function: #007faa !important;          /* Function - blue */
+  --light-color-ts-class: #007faa !important;             /* Class - blue */
+  --light-color-ts-interface: #008000 !important;         /* Interface - green */
+  --light-color-ts-constructor: #007faa !important;       /* Constructor - blue */
+  --light-color-ts-property: #aa5d00 !important;          /* Property - orange */
+  --light-color-ts-method: #007faa !important;            /* Method - blue */
+  --light-color-ts-reference: #d91e18 !important;         /* Reference - red */
+  --light-color-ts-call-signature: #007faa !important;    /* Call signature - blue */
+  --light-color-ts-index-signature: #aa5d00 !important;   /* Index signature - orange */
+  --light-color-ts-constructor-signature: #007faa !important; /* Constructor signature - blue */
+  --light-color-ts-parameter: #545454 !important;         /* Parameter - dark gray */
+  --light-color-ts-type-parameter: #7928a1 !important;    /* Type parameter - purple */
+  --light-color-ts-accessor: #aa5d00 !important;          /* Accessor - orange */
+  --light-color-ts-get-signature: #aa5d00 !important;     /* Get signature - orange */
+  --light-color-ts-set-signature: #aa5d00 !important;     /* Set signature - orange */
+  --light-color-ts-type-alias: #8000d9 !important;        /* Type alias - purple variant */
+
+  /* Also override the active color variables */
+  --color-ts-keyword: #7928a1 !important;
+  --color-ts-project: #007faa !important;
+  --color-ts-module: #007faa !important;
+  --color-ts-namespace: #007faa !important;
+  --color-ts-enum: #aa5d00 !important;
+  --color-ts-enum-member: #aa5d00 !important;
+  --color-ts-variable: #545454 !important;
+  --color-ts-function: #007faa !important;
+  --color-ts-class: #007faa !important;
+  --color-ts-interface: #008000 !important;
+  --color-ts-constructor: #007faa !important;
+  --color-ts-property: #aa5d00 !important;
+  --color-ts-method: #007faa !important;
+  --color-ts-reference: #d91e18 !important;
+  --color-ts-call-signature: #007faa !important;
+  --color-ts-index-signature: #aa5d00 !important;
+  --color-ts-constructor-signature: #007faa !important;
+  --color-ts-parameter: #545454 !important;
+  --color-ts-type-parameter: #7928a1 !important;
+  --color-ts-accessor: #aa5d00 !important;
+  --color-ts-get-signature: #aa5d00 !important;
+  --color-ts-set-signature: #aa5d00 !important;
+  --color-ts-type-alias: #7928a1 !important;
+}
+
+/* Direct overrides for TypeDoc signature elements with high specificity */
+.tsd-signature-keyword,
+.tsd-signatures .tsd-signature-keyword {
+  color: #7928a1 !important;  /* Keywords - purple */
+}
+
+.tsd-signature-symbol,
+.tsd-signatures .tsd-signature-symbol {
+  color: #696969 !important;  /* Symbols - light gray */
+}
+
+.tsd-signature-type,
+.tsd-signatures .tsd-signature-type {
+  color: #007faa !important;  /* Types - blue */
+}
+
+/* TypeDoc kind colors with high specificity */
+.tsd-kind-keyword { color: #7928a1 !important; }
+.tsd-kind-project { color: #007faa !important; }
+.tsd-kind-module { color: #007faa !important; }
+.tsd-kind-namespace { color: #007faa !important; }
+.tsd-kind-enum { color: #aa5d00 !important; }
+.tsd-kind-enum-member { color: #aa5d00 !important; }
+.tsd-kind-variable { color: #545454 !important; }
+.tsd-kind-function { color: #007faa !important; }
+.tsd-kind-class { color: #007faa !important; }
+.tsd-kind-interface { color: #008000 !important; }
+.tsd-kind-constructor { color: #007faa !important; }
+.tsd-kind-property { color: #aa5d00 !important; }
+.tsd-kind-method { color: #007faa !important; }
+.tsd-kind-reference { color: #d91e18 !important; }
+.tsd-kind-call-signature { color: #007faa !important; }
+.tsd-kind-index-signature { color: #aa5d00 !important; }
+.tsd-kind-constructor-signature { color: #007faa !important; }
+.tsd-kind-parameter { color: #545454 !important; }
+.tsd-kind-type-parameter { color: #7928a1 !important; }
+.tsd-kind-accessor { color: #aa5d00 !important; }
+.tsd-kind-get-signature { color: #aa5d00 !important; }
+.tsd-kind-set-signature { color: #aa5d00 !important; }
+.tsd-kind-type-alias { color: #7928a1 !important; }
+
+/* Enable vertical scrolling for Carbon side navigation */
+cds-side-nav {
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* Ensure side nav content area can scroll */
+cds-side-nav cds-side-nav-items {
+  overflow-y: auto;
+  flex: 1;
+}
+
 @media screen and (max-width: 1055px) {
   .carbon-main-content {
     padding: var(--cds-spacing-09, 4rem);

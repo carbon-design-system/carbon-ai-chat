@@ -59,6 +59,11 @@ export enum PageObjectId {
   DISCLAIMER_PANEL = "disclaimer_panel",
 
   /**
+   * Disclaimer accept button.
+   */
+  DISCLAIMER_ACCEPT_BUTTON = "disclaimer_accept_button",
+
+  /**
    * Homescreen Panel.
    */
   HOME_SCREEN_PANEL = "home_screen_panel",

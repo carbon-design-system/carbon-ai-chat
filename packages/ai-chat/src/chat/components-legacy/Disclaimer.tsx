@@ -17,6 +17,7 @@ import Button from "../components/carbon/Button";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import React, { RefObject, useRef, useState } from "react";
 import { useSelector } from "../hooks/useSelector";
+import { PageObjectId } from "../utils/PageObjectId";
 
 import { useLanguagePack } from "../hooks/useLanguagePack";
 import { useOnMount } from "../hooks/useOnMount";
@@ -93,6 +94,7 @@ function Disclaimer({
           <div className="cds-aichat--disclaimer__buttons-padding">
             <Button
               className="cds-aichat--disclaimer__accept-button"
+              data-testid={PageObjectId.DISCLAIMER_ACCEPT_BUTTON}
               ref={disclaimerAcceptButtonRef}
               onClick={onAcceptDisclaimer}
               size={

@@ -130,7 +130,7 @@ class OptionComponent extends Component<OptionProps> {
         />
         <div className="cds-aichat--button-holder">
           <ul>
-            {options.map((item, index) => {
+            {options.map((item) => {
               const isSelected = optionSelected
                 ? item.value.input.text === optionSelected.input.text
                 : false;
@@ -140,7 +140,6 @@ class OptionComponent extends Component<OptionProps> {
                     kind={CHAT_BUTTON_KIND.TERTIARY}
                     isQuickAction
                     size={CHAT_BUTTON_SIZE.SMALL}
-                    className={`cds-aichat--button-${index}`}
                     disabled={disableUserInputs}
                     isSelected={isSelected}
                     onClick={(event: MouseEvent) => {

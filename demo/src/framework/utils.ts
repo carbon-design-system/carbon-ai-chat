@@ -64,20 +64,19 @@ function updatePageTheme(theme: string) {
 function getSettings() {
   const urlParams = new URLSearchParams(window.location.search);
 
-  // Check if we're in programmatic mode and ignore query params if so
+  // Check if we're in setChatConfig mode and ignore query params if so
   const settingsParam = urlParams.get("settings");
   const configParam = urlParams.get("config");
-  const isProgrammatic =
-    settingsParam === "programatic" || configParam === "programatic";
+  const isSetChatConfigMode = configParam === "setChatConfig";
 
   const settings: Partial<Settings> =
-    !isProgrammatic &&
+    !isSetChatConfigMode &&
     urlParams.has("settings") &&
-    settingsParam !== "programatic"
-      ? JSON.parse(settingsParam as string)
-      : {};
+    JSON.parse(settingsParam as string);
   const config: any =
-    !isProgrammatic && urlParams.has("config") && configParam !== "programatic"
+    !isSetChatConfigMode &&
+    urlParams.has("config") &&
+    configParam !== "setChatConfig"
       ? JSON.parse(configParam as string)
       : {};
   const pageTheme = urlParams.get("pageTheme") || "cds--white";

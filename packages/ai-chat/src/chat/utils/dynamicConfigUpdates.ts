@@ -15,6 +15,7 @@ import actions from "../store/actions";
 import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
 import { consoleError } from "./miscUtils";
 import { createAppConfig } from "../store/doCreateStore";
+import { isBrowser } from "./browserUtils";
 
 /**
  * Applies config changes dynamically without requiring a full reboot.
@@ -103,7 +104,27 @@ export async function applyConfigChangesDynamically(
     }
   }
 
-  // Layout, header, disclaimer, and other lightweight changes are handled
+  // Handle disclaimer changes
+  if (changes.disclaimerChanged) {
+    // Clear the disclaimer accepted state for current hostname when disclaimer content changes
+    const currentState = store.getState();
+    const hostname = isBrowser ? window.location.hostname : "";
+    const updatedDisclaimersAccepted = {
+      ...currentState.persistedToBrowserStorage.disclaimersAccepted,
+    };
+    delete updatedDisclaimersAccepted[hostname];
+
+    store.dispatch(
+      actions.changeState({
+        persistedToBrowserStorage: {
+          ...currentState.persistedToBrowserStorage,
+          disclaimersAccepted: updatedDisclaimersAccepted,
+        },
+      }),
+    );
+  }
+
+  // Layout, header, and other lightweight changes are handled
   // automatically by the Redux store update and React re-rendering
 
   // Handle lightweight UI changes coming from public config

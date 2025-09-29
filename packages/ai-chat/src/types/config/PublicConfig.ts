@@ -44,6 +44,8 @@ export const enLanguagePack = enLanguagePackData;
 export type LanguagePack = typeof enLanguagePack;
 
 /**
+ * Configuration interface for Carbon AI Chat.
+ *
  * @category Config
  */
 export interface PublicConfig {
@@ -60,6 +62,8 @@ export interface PublicConfig {
 
   /**
    * Disclaimer screen configuration.
+   *
+   * If `disclaimerHTML` changes after the disclaimer has been accepted, we request a user to accept again.
    */
   disclaimer?: DisclaimerPublicConfig;
 
@@ -97,6 +101,9 @@ export interface PublicConfig {
   /**
    * This is a factory for producing custom implementations of service desks. If this value is set, then this will
    * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
+   *
+   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
+   * human agent will be restarted.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters,
@@ -104,6 +111,9 @@ export interface PublicConfig {
 
   /**
    * Any public config to apply to service desks.
+   *
+   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
+   * human agent will be restarted.
    */
   serviceDesk?: ServiceDeskPublicConfig;
 
@@ -166,6 +176,11 @@ export interface PublicConfig {
 
   /**
    * Configuration for the homescreen.
+   *
+   * If you change anything but `is_on` after the chat session has started, the chat will handle it gracefully.
+   *
+   * If you turn on the homescreen after the user has already started chatting, it will show up in the header as
+   * an icon, but the user won't be forced to go back to the homescreen (unlike turning on the disclaimer mid-chat).
    */
   homescreen?: HomeScreenConfig;
 
@@ -173,8 +188,6 @@ export interface PublicConfig {
    * Configuration for the launcher.
    */
   launcher?: LauncherConfig;
-
-  // Custom panel is controlled via ChatInstance (not PublicConfig)
 
   /**
    * Optional partial language pack overrides. Values merge with defaults.
@@ -311,6 +324,9 @@ export interface PublicConfigMessaging {
   /**
    * Indicates if Carbon AI Chat should make a request for the welcome message when a new conversation begins. If this is
    * true, then Carbon AI Chat will start with an empty conversation.
+   *
+   * **Manual session management required**: Changes to this property after conversation has started have no effect.
+   * To apply new welcome behavior, call `instance.messaging.restartConversation()`.
    */
   skipWelcome?: boolean;
 
@@ -348,6 +364,8 @@ export interface PublicConfigMessaging {
   /**
    * This is a callback function that is used by Carbon AI Chat to retrieve history data for populating the Carbon AI Chat. If
    * this function is defined, it will be used instead of any other mechanism for fetching history.
+   *
+   * If this function is mutated after it was initially called, the chat does not re-call it.
    */
   customLoadHistory?: (instance: ChatInstance) => Promise<HistoryItem[]>;
 }

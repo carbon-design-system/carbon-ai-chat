@@ -334,6 +334,57 @@ function extractTextContent(node: TokenTree): string {
 }
 
 /**
+ * Fixes broken standalone HTML tags like <b>bold</b>.
+ *
+ * Problem: markdown-it splits '<b>bold</b>' into 3 tokens: [<b>, bold, </b>]
+ * These render as separate Lit template parts: html`${<b>}${bold}${</b>}`
+ * Lit processes each ${} independently, creating: <b></b>bold</b>
+ *
+ * Solution: Combine matching tokens into single template part: html`${<b>bold</b>}`
+ *
+ * Only handles exact pattern: html_inline + text + html_inline with matching tags.
+ */
+function tryToCombineConsecutiveHtmlInline(
+  children: TokenTree[],
+): string | null {
+  // Only handle the exact pattern: html_inline + text + html_inline
+  if (children.length !== 3) {
+    return null;
+  }
+
+  const [first, second, third] = children;
+
+  // Check if we have the exact pattern
+  if (
+    first.token.type === "html_inline" &&
+    second.token.type === "text" &&
+    third.token.type === "html_inline"
+  ) {
+    const openingTag = first.token.content || "";
+    const textContent = second.token.content || "";
+    const closingTag = third.token.content || "";
+
+    // Verify opening tag pattern: <tagname> or <tagname attr="value">
+    const openingMatch = openingTag.match(/^<([a-zA-Z][a-zA-Z0-9]*)[^>]*>$/);
+    if (!openingMatch) {
+      return null;
+    }
+
+    const tagName = openingMatch[1];
+
+    // Verify closing tag matches: </tagname>
+    if (closingTag !== `</${tagName}>`) {
+      return null;
+    }
+
+    // Combine into complete HTML element
+    return openingTag + textContent + closingTag;
+  }
+
+  return null;
+}
+
+/**
  * Converts TokenTree to Lit TemplateResult.
  */
 function renderTokenTree(
@@ -421,30 +472,39 @@ function renderTokenTree(
     // Optimization: single text child doesn't need repeat wrapper
     content = html`${children[0].token.content}`;
   } else {
-    // Multiple or complex children: use repeat for stable keying
-    content = html`${repeat(
-      children,
-      (c, index) => {
-        // Generate stable key that doesn't depend on line positions
-        // This prevents unnecessary re-renders during streaming
-        const stableKey = `${index}:${c.token.type}:${c.token.tag}`;
+    // Check if we have a simple case of consecutive html_inline + text + html_inline
+    // that forms a complete HTML element (e.g., <b>bold</b>)
+    const combinedContent = tryToCombineConsecutiveHtmlInline(children);
 
-        if (c.token.type?.includes("table")) {
-          return `table-${stableKey}`;
-        }
+    if (combinedContent) {
+      // Render the combined HTML content directly
+      content = html`${unsafeHTML(combinedContent)}`;
+    } else {
+      // Multiple or complex children: use repeat for stable keying
+      content = html`${repeat(
+        children,
+        (c, index) => {
+          // Generate stable key that doesn't depend on line positions
+          // This prevents unnecessary re-renders during streaming
+          const stableKey = `${index}:${c.token.type}:${c.token.tag}`;
 
-        return `stable-${stableKey}`;
-      },
-      (c, index) =>
-        renderTokenTree(c, {
-          ...options,
-          context: {
-            ...childContext,
-            parentChildren: children,
-            currentIndex: index,
-          },
-        }),
-    )}`;
+          if (c.token.type?.includes("table")) {
+            return `table-${stableKey}`;
+          }
+
+          return `stable-${stableKey}`;
+        },
+        (c, index) =>
+          renderTokenTree(c, {
+            ...options,
+            context: {
+              ...childContext,
+              parentChildren: children,
+              currentIndex: index,
+            },
+          }),
+      )}`;
+    }
   }
 
   // Handle tokens without HTML tags (just return content)

@@ -10,16 +10,20 @@
 import { PublicConfig, ChatInstance } from "@carbon/ai-chat";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import React from "react";
-import { createRoot, Root } from "react-dom/client";
 
-import { DemoApp } from "../react/DemoApp";
 import { Settings } from "./types";
 import {
   getSettings,
   updateQueryParams,
   updateQueryParamsWithoutRefresh,
 } from "./utils";
+import {
+  SetChatConfigManager,
+  type SetChatConfigModeState,
+} from "./set-chat-config-manager";
+import { AccordionStateManager } from "./accordion-state-manager";
+import { ConfigManager } from "./config-manager";
+import { ReactAppManager } from "./react-app-manager";
 import "./demo-chat-theme-switcher";
 import "./demo-header-switcher";
 import "./demo-layout-config-switcher";
@@ -104,39 +108,39 @@ export class DemoBody extends LitElement {
       margin-block-start: 0;
     }
 
-    .page.programmatic-mode-no-config {
+    .page.set-chat-config-mode-no-config {
       flex-direction: column;
     }
 
-    .page.programmatic-mode-no-config .nav-block {
+    .page.set-chat-config-mode-no-config .nav-block {
       display: none;
     }
 
-    .page.programmatic-mode-no-config .main {
+    .page.set-chat-config-mode-no-config .main {
       flex-basis: auto;
       width: 100%;
       max-width: 100%;
     }
 
-    .programmatic-sidebar {
+    .set-chat-config-sidebar {
       padding: 1rem;
     }
 
-    .programmatic-sidebar .title {
+    .set-chat-config-sidebar .title {
       font-size: 1rem;
       font-weight: 600;
       margin-block-end: 1rem;
       color: var(--cds-text-primary);
     }
 
-    .programmatic-sidebar .description {
+    .set-chat-config-sidebar .description {
       font-size: 0.875rem;
       margin-block-end: 1rem;
       color: var(--cds-text-secondary);
       line-height: 1.5;
     }
 
-    .programmatic-sidebar cds-button {
+    .set-chat-config-sidebar cds-button {
       margin-block-start: 1rem;
     }
   `;
@@ -148,13 +152,38 @@ export class DemoBody extends LitElement {
   accessor config: PublicConfig = defaultConfig;
 
   @state()
-  accessor isProgrammaticMode: boolean = false;
+  accessor isSetChatConfigMode: boolean = false;
 
   @state()
-  accessor hasReceivedProgrammaticConfig: boolean = false;
+  accessor hasReceivedSetChatConfig: boolean = false;
 
+  // Manager instances for different concerns
+  private setChatConfigManager: SetChatConfigManager;
+  private accordionStateManager: AccordionStateManager;
+  private configManager: ConfigManager;
+  private reactAppManager: ReactAppManager;
   private chatInstance: ChatInstance | null = null;
 
+  constructor() {
+    super();
+
+    // Initialize managers with appropriate callbacks
+    this.setChatConfigManager = new SetChatConfigManager(
+      this._onSetChatConfigModeChanged.bind(this),
+    );
+    this.accordionStateManager = new AccordionStateManager();
+    this.configManager = new ConfigManager();
+    this.reactAppManager = new ReactAppManager();
+
+    // Initialize setChatConfig mode state from manager
+    const setChatConfigState = this.setChatConfigManager.getState();
+    this.isSetChatConfigMode = setChatConfigState.isSetChatConfigMode;
+    this.hasReceivedSetChatConfig = setChatConfigState.hasReceivedSetChatConfig;
+  }
+
+  /**
+   * Set the chat instance and expose it globally for tests and debugging
+   */
   private _setChatInstance(instance: ChatInstance | null) {
     this.chatInstance = instance;
 
@@ -167,299 +196,217 @@ export class DemoBody extends LitElement {
     this.requestUpdate();
   }
 
-  private _setChatConfig = (
-    newConfig: Partial<PublicConfig>,
-    newSettings?: Settings,
-  ) => {
-    // Merge the new config with the existing config, preserving the demo's customSendMessage if not provided
-    const config: PublicConfig = {
-      ...this.config,
-      ...newConfig,
-      messaging: {
-        ...this.config.messaging,
-        ...newConfig.messaging,
-        customSendMessage:
-          newConfig.messaging?.customSendMessage ||
-          this.config.messaging?.customSendMessage,
+  /**
+   * Set chat configuration via setChatConfig
+   * Delegates to SetChatConfigManager for proper handling
+   */
+  private _setChatConfig = async (newConfig: Partial<PublicConfig>) => {
+    await this.setChatConfigManager.setChatConfig(
+      newConfig,
+      this.config,
+      async (mergedConfig: PublicConfig) => {
+        const event = new CustomEvent<PublicConfig>("config-changed", {
+          detail: mergedConfig,
+        });
+        await this._processConfigChange(event, {
+          triggerSetChatConfigMode: false,
+        });
       },
-    };
-
-    // Update this.config
-    this.config = config;
-
-    // Update this.settings if provided, otherwise keep current settings
-    if (newSettings !== undefined) {
-      this.settings = newSettings;
-    }
-    // If newSettings is undefined, keep this.settings as is
-
-    // Set programmatic mode to true and mark that we've received config
-    this.isProgrammaticMode = true;
-    this.hasReceivedProgrammaticConfig = true;
-
-    // Set query params to "programatic" to signal the system to ignore them
-    updateQueryParamsWithoutRefresh([
-      { key: "settings", value: "programatic" },
-      { key: "config", value: "programatic" },
-    ]);
-
-    // Notify container about programmatic mode changes
-    this._notifyProgrammaticModeChange();
-
-    // Re-render React app if using React framework
-    if (this.settings?.framework === "react") {
-      this._renderReactApp();
-    }
-  };
-
-  private _notifyProgrammaticModeChange = () => {
-    // Notify the parent container about programmatic mode changes
-    this.dispatchEvent(
-      new CustomEvent("programmatic-mode-changed", {
-        detail: {
-          isProgrammaticMode: this.isProgrammaticMode,
-          hasReceivedProgrammaticConfig: this.hasReceivedProgrammaticConfig,
-        },
-        bubbles: true,
-      }),
     );
   };
 
-  private _leaveProgrammaticMode = () => {
-    // Remove programmatic query parameters and reload
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.delete("settings");
-    urlParams.delete("config");
+  /**
+   * Handle setChatConfig mode changes from the manager
+   */
+  private _onSetChatConfigModeChanged = (data: SetChatConfigModeState) => {
+    this.isSetChatConfigMode = data.isSetChatConfigMode;
+    this.hasReceivedSetChatConfig = data.hasReceivedSetChatConfig;
 
-    // Build new URL without programmatic params
-    const newUrl = urlParams.toString()
-      ? `${window.location.pathname}?${urlParams.toString()}`
-      : window.location.pathname;
+    // Notify parent container about the change
+    this.dispatchEvent(
+      new CustomEvent("set-chat-config-mode-changed", {
+        detail: data,
+        bubbles: true,
+      }),
+    );
 
-    // Navigate to the new URL (full refresh)
-    window.location.href = newUrl;
+    this.requestUpdate();
   };
 
+  /**
+   * Leave setChatConfig mode - delegates to manager
+   */
+  private _leaveSetChatConfigMode = () => {
+    this.setChatConfigManager.leaveSetChatConfigMode();
+  };
+
+  /**
+   * Set up accordion state management - delegates to AccordionStateManager
+   */
   private _setupAccordionStateManagement = () => {
-    // Use a longer delay to ensure accordion is fully rendered
-    setTimeout(() => {
-      this._restoreAccordionStates();
-      this._addAccordionEventListeners();
-    }, 100);
-  };
-
-  private _restoreAccordionStates = () => {
-    const accordion = this.shadowRoot?.querySelector("cds-accordion");
-    if (!accordion) {
-      return;
-    }
-
-    const accordionItems = accordion.querySelectorAll("cds-accordion-item");
-    const storedStates = this._getStoredAccordionStates();
-
-    accordionItems.forEach((item) => {
-      const title = item.getAttribute("title") || "";
-      const isOpen = storedStates[title];
-
-      if (isOpen) {
-        item.setAttribute("open", "");
-        (item as any).expanded = true;
-      }
-    });
-  };
-
-  private _addAccordionEventListeners = () => {
-    const accordion = this.shadowRoot?.querySelector("cds-accordion");
-    if (!accordion) {
-      return;
-    }
-
-    const accordionItems = accordion.querySelectorAll("cds-accordion-item");
-    accordionItems.forEach((item) => {
-      const toggleButton =
-        item.shadowRoot?.querySelector("button") ||
-        item.querySelector("button");
-      if (toggleButton) {
-        toggleButton.addEventListener("click", () => {
-          const title = item.getAttribute("title") || "";
-
-          setTimeout(() => {
-            const isOpen = item.hasAttribute("open");
-            this._saveAccordionState(title, isOpen);
-          }, 100);
-        });
-      }
-    });
-  };
-
-  private _getStoredAccordionStates = (): Record<string, boolean> => {
-    try {
-      const stored = sessionStorage.getItem("accordion-states");
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
+    if (this.shadowRoot) {
+      this.accordionStateManager.setupAccordionStateManagement(this.shadowRoot);
     }
   };
 
-  private _saveAccordionState = (title: string, isOpen: boolean) => {
-    try {
-      const currentStates = this._getStoredAccordionStates();
-      currentStates[title] = isOpen;
-      sessionStorage.setItem("accordion-states", JSON.stringify(currentStates));
-    } catch {
-      // Silently fail if sessionStorage is not available
-    }
-  };
-
+  /**
+   * Component initialization - set up event listeners and initial state
+   */
   protected firstUpdated(_changedProperties: PropertyValues): void {
     // Listen for config and settings changes
     this.addEventListener("config-changed", this._onConfigChanged);
     this.addEventListener("settings-changed", this._onSettingsChanged);
 
-    // Expose the programmatic config function on window
+    // Expose the setChatConfig function globally for external use
     window.setChatConfig = this._setChatConfig;
 
-    // Setup accordion state management
+    // Set up accordion state persistence
     this._setupAccordionStateManagement();
-
-    // Check if we're already in programmatic mode based on URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    const settingsParam = urlParams.get("settings");
-    const configParam = urlParams.get("config");
-    const isProgrammaticFromURL =
-      settingsParam === "programatic" || configParam === "programatic";
-
-    if (isProgrammaticFromURL) {
-      this.isProgrammaticMode = true;
-      // If we're in programmatic mode from URL but haven't received config via setChatConfig,
-      // it means the page was refreshed - hasReceivedProgrammaticConfig stays false
-    }
 
     // Set data attribute for CSS styling
     this.setAttribute(
-      "data-programmatic-mode",
-      this.isProgrammaticMode.toString(),
+      "data-set-chat-config-mode",
+      this.isSetChatConfigMode.toString(),
     );
 
-    // Notify container about initial programmatic mode state
-    this._notifyProgrammaticModeChange();
-
+    // Initial React app render if using React framework
     if (this.settings.framework === "react") {
       this._renderReactApp();
     }
+
+    // Notify parent about initial setChatConfig mode state
+    this.dispatchEvent(
+      new CustomEvent("set-chat-config-mode-changed", {
+        detail: {
+          isSetChatConfigMode: this.isSetChatConfigMode,
+          hasReceivedSetChatConfig: this.hasReceivedSetChatConfig,
+        },
+        bubbles: true,
+      }),
+    );
   }
 
+  /**
+   * Handle component updates - update data attributes for CSS
+   */
   protected updated(_changedProperties: PropertyValues): void {
-    // Update data attribute when programmatic mode changes
-    if (_changedProperties.has("isProgrammaticMode")) {
+    // Update data attribute when setChatConfig mode changes
+    if (_changedProperties.has("isSetChatConfigMode")) {
       this.setAttribute(
-        "data-programmatic-mode",
-        this.isProgrammaticMode.toString(),
+        "data-set-chat-config-mode",
+        this.isSetChatConfigMode.toString(),
       );
     }
   }
 
   /**
-   * Track if a previous React 18 root was already created so we don't create a memory leak on re-renders.
+   * Clean up resources when component is disconnected
    */
-  _root!: Root;
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.reactAppManager.destroy();
+  }
 
-  private _renderReactApp() {
-    const container: HTMLElement = document.querySelector(
-      "#root",
-    ) as HTMLElement;
-    // Create root only once, then just re-render with new props
-    if (!this._root) {
-      this._root = createRoot(container);
-    }
+  /**
+   * Render the React demo app using ReactAppManager
+   */
+  private async _renderReactApp(): Promise<void> {
+    await this._renderReactAppWithConfig(this.config);
+  }
 
-    // Don't render chat if in programmatic mode without config
-    if (this.isProgrammaticMode && !this.hasReceivedProgrammaticConfig) {
-      this._root.render(<div></div>); // Render empty div instead
-      return;
-    }
+  /**
+   * Render the React demo app with a specific configuration
+   */
+  private async _renderReactAppWithConfig(config: PublicConfig): Promise<void> {
+    const setChatConfigState = this.setChatConfigManager.getState();
 
-    this._root.render(
-      <DemoApp
-        config={this.config}
-        settings={this.settings}
-        onChatInstanceReady={(instance: ChatInstance) => {
-          this._setChatInstance(instance);
-        }}
-      />,
+    await this.reactAppManager.renderReactApp(
+      config,
+      this.settings,
+      setChatConfigState,
+      (instance: ChatInstance) => {
+        this._setChatInstance(instance);
+      },
     );
   }
 
-  private _onConfigChanged = (event: Event) => {
-    event.stopPropagation(); // Prevent bubbling to parent demo-container
-    const customEvent = event as CustomEvent;
-    const settings = { ...this.settings };
-    const newConfig: PublicConfig = customEvent.detail;
-    const oldConfig = this.config;
-
-    // Preserve the customSendMessage function from the existing config
-    const config: PublicConfig = {
-      ...newConfig,
-      messaging: {
-        ...newConfig.messaging,
-        customSendMessage: this.config.messaging?.customSendMessage,
-      },
-    };
-
-    // Check if homescreen changed
-    const homescreenChanged = oldConfig.homescreen !== newConfig.homescreen;
-    const shouldRefresh = homescreenChanged;
-
-    // Reset session if homescreen changed to clear disclaimer acceptance
-    if (homescreenChanged && this.chatInstance) {
-      this.chatInstance.destroySession(true); // true keeps the open state
-    }
-
-    this.config = config;
-
-    // Create a copy for serialization without customSendMessage
-    const configForSerialization: PublicConfig = {
-      ...config,
-      messaging: config.messaging
-        ? {
-            ...config.messaging,
-            customSendMessage: undefined,
-          }
-        : undefined,
-    };
-
-    if (shouldRefresh) {
-      updateQueryParams([
-        { key: "settings", value: JSON.stringify(settings) },
-        { key: "config", value: JSON.stringify(configForSerialization) },
-      ]);
-    } else {
-      updateQueryParamsWithoutRefresh([
-        { key: "settings", value: JSON.stringify(settings) },
-        { key: "config", value: JSON.stringify(configForSerialization) },
-      ]);
-    }
-
-    // Re-render React app if using React framework
-    if (this.settings.framework === "react") {
-      this._renderReactApp();
-    }
+  private _onConfigChanged = async (event: Event) => {
+    event.stopPropagation();
+    await this._processConfigChange(event as CustomEvent<PublicConfig>, {
+      triggerSetChatConfigMode: true,
+    });
   };
 
+  /**
+   * Process configuration changes using ConfigManager
+   * Handles all side effects including React re-renders and session restarts
+   */
+  private async _processConfigChange(
+    event: CustomEvent<PublicConfig>,
+    { triggerSetChatConfigMode }: { triggerSetChatConfigMode: boolean },
+  ): Promise<void> {
+    const newConfig = event.detail;
+    const oldConfig = this.config;
+    const settings = { ...this.settings };
+
+    // Use ConfigManager to handle the complex processing logic
+    const processedConfig = await this.configManager.processConfigChange(
+      newConfig,
+      oldConfig,
+      settings,
+      this.chatInstance,
+      {
+        triggerSetChatConfigMode,
+        onReactRender:
+          this.settings.framework === "react"
+            ? (config: PublicConfig) => this._renderReactAppWithConfig(config)
+            : undefined,
+      },
+    );
+
+    // Update the component's config state
+    this.config = processedConfig;
+  }
+
+  /**
+   * Handle settings changes from sidebar controls
+   */
   private _onSettingsChanged = (event: Event) => {
     event.stopPropagation(); // Prevent bubbling to parent demo-container
+
     const customEvent = event as CustomEvent;
     const newSettings = customEvent.detail;
     const oldSettings = this.settings;
 
-    // Check if framework or layout changed
+    // Check if changes require a page refresh
     const frameworkChanged = oldSettings.framework !== newSettings.framework;
     const layoutChanged = oldSettings.layout !== newSettings.layout;
     const shouldRefresh = frameworkChanged || layoutChanged;
 
     this.settings = newSettings;
 
-    // Create a copy for serialization without customSendMessage
+    // Update query parameters with new settings
+    this._updateQueryParamsForSettings(newSettings, shouldRefresh);
+
+    // Re-render React app if using React framework
+    if (this.settings.framework === "react") {
+      this._renderReactApp();
+    }
+  };
+
+  /**
+   * Update query parameters with current settings and config
+   */
+  private _updateQueryParamsForSettings(
+    newSettings: Settings,
+    shouldRefresh: boolean,
+  ): void {
+    // Don't update query params if in setChatConfig mode - let setChatConfigManager handle it
+    if (this.isSetChatConfigMode) {
+      return;
+    }
+
+    // Create config copy for serialization (without customSendMessage function)
     const configForSerialization: PublicConfig = {
       ...this.config,
       messaging: this.config.messaging
@@ -470,53 +417,47 @@ export class DemoBody extends LitElement {
         : undefined,
     };
 
+    const queryUpdates = [
+      { key: "settings", value: JSON.stringify(newSettings) },
+      { key: "config", value: JSON.stringify(configForSerialization) },
+    ];
+
     // Use appropriate update function based on what changed
     if (shouldRefresh) {
-      updateQueryParams([
-        { key: "settings", value: JSON.stringify(newSettings) },
-        { key: "config", value: JSON.stringify(configForSerialization) },
-      ]);
+      updateQueryParams(queryUpdates);
     } else {
-      updateQueryParamsWithoutRefresh([
-        { key: "settings", value: JSON.stringify(newSettings) },
-        { key: "config", value: JSON.stringify(configForSerialization) },
-      ]);
+      updateQueryParamsWithoutRefresh(queryUpdates);
     }
-
-    // Re-render React app if using React framework
-    if (this.settings.framework === "react") {
-      this._renderReactApp();
-    }
-  };
+  }
 
   // Define the element's render template
   render() {
     const pageClass =
-      this.isProgrammaticMode && !this.hasReceivedProgrammaticConfig
-        ? "page programmatic-mode-no-config"
+      this.isSetChatConfigMode && !this.hasReceivedSetChatConfig
+        ? "page set-chat-config-mode-no-config"
         : "page";
 
     return html` <div class="${pageClass}">
-      ${this.isProgrammaticMode && this.hasReceivedProgrammaticConfig
+      ${this.isSetChatConfigMode && this.hasReceivedSetChatConfig
         ? html`<div
-            class="nav-block programmatic-sidebar"
+            class="nav-block set-chat-config-sidebar"
             data-testid="config_sidebar"
           >
-            <div class="title">Programmatic Mode Active</div>
+            <div class="title">setChatConfig Mode Active</div>
             <div class="description">
-              Configuration is being controlled programmatically via
+              Configuration is being controlled via
               <code>window.setChatConfig()</code>.
             </div>
             <cds-button
               kind="secondary"
               size="sm"
-              @click=${this._leaveProgrammaticMode}
-              data-testid="leave_programmatic_mode_button"
+              @click=${this._leaveSetChatConfigMode}
+              data-testid="leave_set_chat_config_mode_button"
             >
-              Leave Programmatic Mode
+              Leave setChatConfig Mode
             </cds-button>
           </div>`
-        : !this.isProgrammaticMode
+        : !this.isSetChatConfigMode
           ? html`<div class="nav-block" data-testid="config_sidebar">
               <cds-accordion>
                 <cds-accordion-item title="Page Settings">
@@ -577,7 +518,7 @@ export class DemoBody extends LitElement {
           : ""}
       <div class="main">
         ${this.settings.framework === "web-component" &&
-        !(this.isProgrammaticMode && !this.hasReceivedProgrammaticConfig)
+        !(this.isSetChatConfigMode && !this.hasReceivedSetChatConfig)
           ? html`<demo-app
               .config=${this.config}
               .settings=${this.settings}

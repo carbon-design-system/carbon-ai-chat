@@ -10,16 +10,16 @@
 
 .cds-aichat--button-holder {
   margin-block-start: layout.$spacing-03;
-}
 
-.cds-aichat--button-holder ul {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
+  ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
 
-.cds-aichat--button-holder ul li {
-  display: inline;
-  padding: 0;
-  margin: 0;
+    li {
+      display: inline-block;
+      padding: 0 layout.$spacing-03 layout.$spacing-03 0;
+      margin: 0;
+    }
+  }
 }
