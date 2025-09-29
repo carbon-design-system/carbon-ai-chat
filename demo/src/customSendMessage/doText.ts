@@ -353,7 +353,7 @@ function doText(
           /**
            * Indicates if a request for feedback should be displayed.
            */
-          isOn: true,
+          is_on: true,
 
           /**
            * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
@@ -482,7 +482,7 @@ function doTextWithFeedback(instance: ChatInstance) {
     "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
 
   const feedback: GenericItemMessageFeedbackOptions = {
-    isOn: true,
+    is_on: true,
     id: crypto.randomUUID(),
     show_positive_details: false,
     show_negative_details: true,
@@ -501,7 +501,7 @@ async function doTextWithFeedbackStreaming(instance: ChatInstance) {
     "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
 
   const feedback: GenericItemMessageFeedbackOptions = {
-    isOn: true,
+    is_on: true,
     id: crypto.randomUUID(),
     show_positive_details: false,
     show_negative_details: true,

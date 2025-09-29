@@ -8,46 +8,53 @@
  */
 
 import {
-  BusEventType,
+  CarbonTheme,
   ChatContainer,
   ChatInstance,
-  FeedbackInteractionType,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
+import { Button } from "@carbon/react";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
     customLoadHistory,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
+  const [chatInstance, setChatInstance] = useState<ChatInstance>();
   function onBeforeRender(instance: ChatInstance) {
-    instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
+    setChatInstance(instance);
   }
 
-  function feedbackHandler(event: any) {
-    if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
-      const { ...reportData } = event;
-      setTimeout(() => {
-        window.alert(JSON.stringify(reportData, null, 2));
-      });
+  async function injectHistory() {
+    if (!chatInstance) {
+      return;
     }
+    const randomCount = Math.floor(Math.random() * 81) + 20; // Random number between 20 and 100
+    const historyData = await customLoadHistory(chatInstance, randomCount);
+
+    chatInstance.messaging.clearConversation();
+    chatInstance.messaging.insertHistory(historyData);
   }
 
   return (
-    <ChatContainer
-      messaging={config.messaging}
-      onBeforeRender={onBeforeRender}
-      renderUserDefinedResponse={renderUserDefinedResponse}
-    />
+    <>
+      {chatInstance && (
+        <Button onClick={injectHistory}>Insert a different conversation</Button>
+      )}
+      <ChatContainer
+        messaging={config.messaging}
+        onBeforeRender={onBeforeRender}
+      />
+    </>
   );
 }
 

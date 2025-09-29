@@ -21,9 +21,6 @@ You can try the following responses:
 
 - stream text
 - text
-- user_defined
-
-The "text" response includes the configuration to include user feedback (thumbs up/down, etc) in this example. You can apply feedback to any response type.
 `;
 
 const TEXT =
@@ -159,7 +156,7 @@ async function customSendMessage(
               {
                 response_type: MessageResponseTypes.TEXT,
                 text: TEXT,
-                message_options: {
+                message_item_options: {
                   feedback: {
                     /**
                      * Indicates if a request for feedback should be displayed.
@@ -186,21 +183,6 @@ async function customSendMessage(
                      */
                     show_prompt: true,
                   },
-                },
-              },
-            ],
-          },
-        });
-        break;
-      case "user_defined":
-        instance.messaging.addMessage({
-          output: {
-            generic: [
-              {
-                response_type: MessageResponseTypes.USER_DEFINED,
-                user_defined: {
-                  user_defined_type: "my_unique_identifier",
-                  text: "Some text from your back-end.",
                 },
               },
             ],

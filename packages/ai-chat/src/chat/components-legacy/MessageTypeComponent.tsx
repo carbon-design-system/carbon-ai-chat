@@ -629,7 +629,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     if (!chainOfThought || props.isNestedMessageItem) {
       return false;
     }
-    console.log("renderChainOfThought", chainOfThought);
     return (
       <ChainOfThought
         steps={chainOfThought}
@@ -656,7 +655,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     const {
       id: feedbackID,
-      isOn,
+      is_on,
       show_positive_details = true,
       show_negative_details = true,
       show_text_area = true,
@@ -672,7 +671,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       props.isNestedMessageItem ||
       hideFeedback ||
       (!allowNewFeedback && !feedbackHistory) ||
-      !isOn
+      !is_on
     ) {
       return false;
     }

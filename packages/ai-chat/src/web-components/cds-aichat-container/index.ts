@@ -108,8 +108,8 @@ class ChatContainer extends LitElement {
   @property({ type: String })
   namespace?: string;
 
-  @property({ type: Boolean, attribute: "enable-focus-trap" })
-  enableFocusTrap?: boolean;
+  @state()
+  private enableFocusTrap?: boolean;
 
   @property({ type: Boolean, attribute: "should-sanitize-html" })
   shouldSanitizeHTML?: boolean;
