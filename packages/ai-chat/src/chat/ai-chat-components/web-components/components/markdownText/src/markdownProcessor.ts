@@ -27,6 +27,30 @@ import "@carbon/web-components/es/components/list/index.js";
 import "../../codeElement/cds-aichat-code";
 import "../../table/cds-aichat-table";
 
+import { nothing } from "lit";
+import { Directive, directive } from "lit/directive.js";
+
+// Generic attribute spread for Lit templates
+class SpreadAttrs extends Directive {
+  render(_attrs: Record<string, unknown>) {
+    return nothing;
+  }
+  update(part: any, [attrs]: [Record<string, unknown>]) {
+    const el = part.element as Element;
+    for (const [k, v] of Object.entries(attrs ?? {})) {
+      if (v === false || v === null || v === undefined) {
+        el.removeAttribute(k);
+      } else if (v === true) {
+        el.setAttribute(k, "");
+      } else {
+        el.setAttribute(k, String(v));
+      }
+    }
+    return nothing;
+  }
+}
+const spread = directive(SpreadAttrs);
+
 /**
  * Represents a node in the token tree structure.
  */
@@ -544,96 +568,96 @@ function renderWithStaticTag(
   switch (tag) {
     // Basic block elements
     case "p":
-      return html`<p ...=${attrs}>${content}</p>`;
+      return html`<p ${spread(attrs)}>${content}</p>`;
 
     case "blockquote":
-      return html`<blockquote ...=${attrs}>${content}</blockquote>`;
+      return html`<blockquote ${spread(attrs)}>${content}</blockquote>`;
 
     case "pre":
-      return html`<pre ...=${attrs}>${content}</pre>`;
+      return html`<pre ${spread(attrs)}>${content}</pre>`;
 
     // Headings
     case "h1":
-      return html`<h1 ...=${attrs}>${content}</h1>`;
+      return html`<h1 ${spread(attrs)}>${content}</h1>`;
     case "h2":
-      return html`<h2 ...=${attrs}>${content}</h2>`;
+      return html`<h2 ${spread(attrs)}>${content}</h2>`;
     case "h3":
-      return html`<h3 ...=${attrs}>${content}</h3>`;
+      return html`<h3 ${spread(attrs)}>${content}</h3>`;
     case "h4":
-      return html`<h4 ...=${attrs}>${content}</h4>`;
+      return html`<h4 ${spread(attrs)}>${content}</h4>`;
     case "h5":
-      return html`<h5 ...=${attrs}>${content}</h5>`;
+      return html`<h5 ${spread(attrs)}>${content}</h5>`;
     case "h6":
-      return html`<h6 ...=${attrs}>${content}</h6>`;
+      return html`<h6 ${spread(attrs)}>${content}</h6>`;
 
     // Lists with Carbon components
     case "ul": {
       const nested = token.level > 1;
-      return html`<cds-unordered-list ?nested=${nested} ...=${attrs}>
+      return html`<cds-unordered-list ?nested=${nested} ${spread(attrs)}>
         ${content}
       </cds-unordered-list>`;
     }
 
     case "ol": {
       const nested = token.level > 1;
-      return html`<cds-ordered-list ?nested=${nested} ...=${attrs}>
+      return html`<cds-ordered-list ?nested=${nested} ${spread(attrs)}>
         ${content}
       </cds-ordered-list>`;
     }
 
     case "li":
-      return html`<cds-list-item ...=${attrs}>${content}</cds-list-item>`;
+      return html`<cds-list-item ${spread(attrs)}>${content}</cds-list-item>`;
 
     // Inline formatting
     case "strong":
-      return html`<strong ...=${attrs}>${content}</strong>`;
+      return html`<strong ${spread(attrs)}>${content}</strong>`;
     case "em":
-      return html`<em ...=${attrs}>${content}</em>`;
+      return html`<em ${spread(attrs)}>${content}</em>`;
     case "code":
-      return html`<code ...=${attrs}>${content}</code>`;
+      return html`<code ${spread(attrs)}>${content}</code>`;
     case "del":
-      return html`<del ...=${attrs}>${content}</del>`;
+      return html`<del ${spread(attrs)}>${content}</del>`;
     case "sub":
-      return html`<sub ...=${attrs}>${content}</sub>`;
+      return html`<sub ${spread(attrs)}>${content}</sub>`;
     case "sup":
-      return html`<sup ...=${attrs}>${content}</sup>`;
+      return html`<sup ${spread(attrs)}>${content}</sup>`;
     case "span":
-      return html`<span ...=${attrs}>${content}</span>`;
+      return html`<span ${spread(attrs)}>${content}</span>`;
     case "i":
-      return html`<i ...=${attrs}>${content}</i>`;
+      return html`<i ${spread(attrs)}>${content}</i>`;
     case "b":
-      return html`<b ...=${attrs}>${content}</b>`;
+      return html`<b ${spread(attrs)}>${content}</b>`;
     case "small":
-      return html`<small ...=${attrs}>${content}</small>`;
+      return html`<small ${spread(attrs)}>${content}</small>`;
     case "mark":
-      return html`<mark ...=${attrs}>${content}</mark>`;
+      return html`<mark ${spread(attrs)}>${content}</mark>`;
     case "ins":
-      return html`<ins ...=${attrs}>${content}</ins>`;
+      return html`<ins ${spread(attrs)}>${content}</ins>`;
     case "s":
-      return html`<s ...=${attrs}>${content}</s>`;
+      return html`<s ${spread(attrs)}>${content}</s>`;
     case "kbd":
-      return html`<kbd ...=${attrs}>${content}</kbd>`;
+      return html`<kbd ${spread(attrs)}>${content}</kbd>`;
     case "var":
-      return html`<var ...=${attrs}>${content}</var>`;
+      return html`<var ${spread(attrs)}>${content}</var>`;
     case "samp":
-      return html`<samp ...=${attrs}>${content}</samp>`;
+      return html`<samp ${spread(attrs)}>${content}</samp>`;
     case "cite":
-      return html`<cite ...=${attrs}>${content}</cite>`;
+      return html`<cite ${spread(attrs)}>${content}</cite>`;
     case "abbr":
-      return html`<abbr ...=${attrs}>${content}</abbr>`;
+      return html`<abbr ${spread(attrs)}>${content}</abbr>`;
     case "dfn":
-      return html`<dfn ...=${attrs}>${content}</dfn>`;
+      return html`<dfn ${spread(attrs)}>${content}</dfn>`;
     case "time":
-      return html`<time ...=${attrs}>${content}</time>`;
+      return html`<time ${spread(attrs)}>${content}</time>`;
     case "q":
-      return html`<q ...=${attrs}>${content}</q>`;
+      return html`<q ${spread(attrs)}>${content}</q>`;
 
     // Links with automatic target="_blank"
     case "a":
       if (!attrs.target) {
         attrs.target = "_blank";
       }
-      return html`<a ...=${attrs}>${content}</a>`;
+      return html`<a ${spread(attrs)}>${content}</a>`;
 
     // Tables with Carbon component and streaming support
     case "table": {
@@ -696,7 +720,7 @@ function renderWithStaticTag(
 
     // Fallback for unknown tags
     default:
-      return html`<div ...=${attrs}>${content}</div>`;
+      return html`<div ${spread(attrs)}>${content}</div>`;
   }
 }
 
