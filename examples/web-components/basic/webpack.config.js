@@ -10,7 +10,6 @@ import Statoscope from "@statoscope/webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-import portfinder from "portfinder";
 
 const { default: StatoscopeWebpackPlugin } = Statoscope;
 
@@ -49,10 +48,8 @@ const createPlugins = (includeAnalysis) => {
   return plugins;
 };
 
-export default async () => {
-  const port = await portfinder.getPortPromise({
-    port: process.env.PORT || 3006,
-  });
+export default () => {
+  const port = process.env.PORT || 3006;
 
   return {
     mode: environment,

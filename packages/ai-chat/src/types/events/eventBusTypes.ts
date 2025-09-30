@@ -25,6 +25,7 @@ import {
 import { ViewState } from "../instance/apiTypes";
 import { FileUpload } from "../config/ServiceDeskConfig";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
+import { PublicChatState } from "../instance/ChatInstance";
 
 /** @category Events */
 export enum BusEventType {
@@ -179,6 +180,12 @@ export enum BusEventType {
    * This event is fired when the "stop streaming" button in the input field is clicked.
    */
   STOP_STREAMING = "stopStreaming",
+
+  /**
+   * This event is fired whenever the public state returned by ChatInstance.getState() changes.
+   * This includes changes to viewState, showUnreadIndicator, and other persisted state.
+   */
+  STATE_CHANGE = "state:change",
 }
 
 /**
@@ -799,6 +806,29 @@ export interface BusEventFeedback extends BusEvent {
    * When submitting feedback details, this is the list of categories the user selected (if visible).
    */
   categories?: string[];
+}
+
+/**
+ * This event is fired whenever the public state returned by ChatInstance.getState() changes.
+ * This includes changes to viewState, showUnreadIndicator, and other persisted state.
+ *
+ * @category Events
+ */
+export interface BusEventStateChange extends BusEvent {
+  /**
+   * The type of the event.
+   */
+  type: BusEventType.STATE_CHANGE;
+
+  /**
+   * The previous state before the change.
+   */
+  previousState: PublicChatState;
+
+  /**
+   * The new state after the change.
+   */
+  newState: PublicChatState;
 }
 
 /**
