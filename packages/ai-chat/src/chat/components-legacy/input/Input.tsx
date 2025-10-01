@@ -69,10 +69,9 @@ const Attachment = carbonIconToReact(Attachment16);
 const STOP_TYPING_PERIOD = 5000;
 
 /**
- * The maximum number of characters to all the user to enter into the input field. The number was chosen to match
- * the limit imposed by the API.
+ * The maximum number of characters to all the user to enter into the input field.
  */
-const INPUT_MAX_CHARS = 2048;
+const INPUT_MAX_CHARS = 10000;
 
 interface InputProps extends HasServiceManager, HasLanguagePack {
   /**
@@ -161,6 +160,11 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
    * the process of cancelling a streamed response is in progress.
    */
   isStopStreamingButtonDisabled?: boolean;
+
+  /**
+   * Maximum number of characters allowed to be typed into the input field.
+   */
+  maxInputChars?: number;
 }
 
 interface InputFunctions {
@@ -194,6 +198,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     languagePack,
     isStopStreamingButtonVisible,
     isStopStreamingButtonDisabled,
+    maxInputChars,
   } = props;
 
   const inputID = `${serviceManager.namespace.suffix}-${useCounter()}`;
@@ -483,7 +488,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 autoSize
                 ariaLabel={input_ariaLabel}
                 disabled={disableInput}
-                maxLength={INPUT_MAX_CHARS}
+                maxLength={maxInputChars ? maxInputChars : INPUT_MAX_CHARS}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
                 placeholder={usePlaceHolder}

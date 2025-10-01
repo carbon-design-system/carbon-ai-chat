@@ -30,6 +30,7 @@ import {
   HomeScreenConfig,
   HomeScreenStarterButton,
 } from "../../../types/config/HomeScreenConfig";
+import { InputConfig } from "../../../types/config/PublicConfig";
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -69,6 +70,11 @@ interface HomeScreenProps {
    * The callback that can be called to toggle between the home screen and the bot view.
    */
   onToggleHomeScreen: () => void;
+
+  /**
+   * Config for the input field located on the homescreen.
+   */
+  inputConfig?: InputConfig;
 }
 
 function HomeScreenComponent({
@@ -80,6 +86,7 @@ function HomeScreenComponent({
   onClose,
   onRestart,
   onToggleHomeScreen,
+  inputConfig,
 }: HomeScreenProps) {
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
@@ -210,6 +217,7 @@ function HomeScreenComponent({
               disableSend={false}
               languagePack={languagePack}
               serviceManager={serviceManager}
+              maxInputChars={inputConfig?.maxInputCharacters}
             />
           </div>
         </div>

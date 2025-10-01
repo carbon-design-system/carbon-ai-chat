@@ -211,6 +211,7 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
       languagePack,
       messageState,
       intl,
+      config,
       allMessageItemsByID,
       isHydrated,
       serviceManager,
@@ -283,6 +284,7 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           placeholder={languagePack[inputPlaceholderKey]}
           isStopStreamingButtonVisible={stopStreamingButtonState.isVisible}
           isStopStreamingButtonDisabled={stopStreamingButtonState.isDisabled}
+          maxInputChars={config.public.input?.maxInputCharacters}
         />
         {this.state.showEndChatConfirmation && (
           <EndHumanAgentChatModal
