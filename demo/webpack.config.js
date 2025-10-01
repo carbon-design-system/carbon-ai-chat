@@ -9,9 +9,27 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import portfinder from "portfinder";
+import { promises as fs } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Simple plugin to copy versions.js from root to dist
+class CopyVersionsPlugin {
+  apply(compiler) {
+    compiler.hooks.afterEmit.tapPromise("CopyVersionsPlugin", async () => {
+      const source = path.resolve(__dirname, "..", "versions.js");
+      const dest = path.resolve(__dirname, "dist", "versions.js");
+
+      try {
+        await fs.copyFile(source, dest);
+        console.log("Copied versions.js to dist/");
+      } catch (error) {
+        console.warn("Failed to copy versions.js:", error.message);
+      }
+    });
+  }
+}
 
 export default async (_env, args) => {
   const port = await portfinder.getPortPromise({
@@ -61,6 +79,7 @@ export default async (_env, args) => {
         template: "./index.html",
         inject: "body",
       }),
+      new CopyVersionsPlugin(),
     ],
     devtool: "source-map",
     devServer:

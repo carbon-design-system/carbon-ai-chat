@@ -30,6 +30,7 @@ import "./demo-layout-config-switcher";
 import "./demo-launcher-switcher";
 import "./demo-chat-instance-switcher";
 import "./demo-direction-switcher";
+import "./demo-chat-version-switcher";
 import "@carbon/web-components/es/components/button/index.js";
 
 const { defaultConfig, defaultSettings } = getSettings();
@@ -79,7 +80,8 @@ export class DemoBody extends LitElement {
     demo-chat-theme-switcher,
     demo-homescreen-switcher,
     demo-writeable-elements-switcher,
-    demo-direction-switcher {
+    demo-direction-switcher,
+    demo-chat-version-switcher {
       display: block;
       margin-block-start: 1rem;
     }
@@ -104,6 +106,7 @@ export class DemoBody extends LitElement {
 
     /* First item in each accordion doesn't need top margin */
     demo-page-theme-switcher,
+    cds-accordion-item demo-chat-version-switcher:first-child,
     cds-accordion-item demo-version-switcher:first-child {
       margin-block-start: 0;
     }
@@ -460,6 +463,15 @@ export class DemoBody extends LitElement {
         : !this.isSetChatConfigMode
           ? html`<div class="nav-block" data-testid="config_sidebar">
               <cds-accordion>
+                <cds-accordion-item title="Choose Chat Component">
+                  <demo-chat-version-switcher></demo-chat-version-switcher>
+                  <demo-version-switcher
+                    .settings=${this.settings}
+                  ></demo-version-switcher>
+                  <demo-layout-switcher
+                    .settings=${this.settings}
+                  ></demo-layout-switcher>
+                </cds-accordion-item>
                 <cds-accordion-item title="Page Settings">
                   <demo-page-theme-switcher></demo-page-theme-switcher>
                   <demo-direction-switcher
@@ -468,14 +480,6 @@ export class DemoBody extends LitElement {
                   <demo-writeable-elements-switcher
                     .settings=${this.settings}
                   ></demo-writeable-elements-switcher>
-                </cds-accordion-item>
-                <cds-accordion-item title="Choose Chat Component">
-                  <demo-version-switcher
-                    .settings=${this.settings}
-                  ></demo-version-switcher>
-                  <demo-layout-switcher
-                    .settings=${this.settings}
-                  ></demo-layout-switcher>
                 </cds-accordion-item>
                 <cds-accordion-item title="Chat Configuration">
                   <demo-theme-switcher
