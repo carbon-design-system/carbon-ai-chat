@@ -16,6 +16,8 @@
  * keys in the map and the values of those properties are all of the same type (TPropertyType). The type of the keys
  * defaults to any string but you can specify a type that is a string enum instead if you want a map that contains
  * only keys for a given enum (or other similar type).
+ *
+ * @category Utilities
  */
 type ObjectMap<
   TPropertyType,

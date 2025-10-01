@@ -22,6 +22,8 @@ export {
   ViewType,
 } from "./types/instance/apiTypes";
 
+export { PersistedState } from "./types/state/AppState";
+
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
@@ -90,6 +92,7 @@ export {
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
+  HomeScreenState,
 } from "./types/config/HomeScreenConfig";
 
 export {
@@ -112,7 +115,10 @@ export {
   PublicConfigMessaging,
 } from "./types/config/PublicConfig";
 
+export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
+
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
+export type { default as ObjectMap } from "./types/utilities/ObjectMap";
 
 export {
   AdditionalDataToAgent,

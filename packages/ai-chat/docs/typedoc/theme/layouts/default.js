@@ -270,6 +270,10 @@ export const defaultLayout = (context, template, props) => {
         src: "https://1.www.s81c.com/common/carbon/web-components/tag/latest/modal.min.js",
       }),
       JSX.createElement("script", {
+        type: "module",
+        src: "https://1.www.s81c.com/common/carbon/web-components/tag/latest/dropdown.min.js",
+      }),
+      JSX.createElement("script", {
         defer: true,
         src: context.relativeURL("assets/carbonSearchModal.js", true),
       }),
@@ -288,6 +292,10 @@ export const defaultLayout = (context, template, props) => {
       JSX.createElement("script", {
         defer: true,
         src: context.relativeURL("assets/experimentalToPreview.js", true),
+      }),
+      JSX.createElement("script", {
+        defer: true,
+        src: context.relativeURL("assets/versionDropdown.js", true),
       }),
       context.hook("head.end", context),
     ),
