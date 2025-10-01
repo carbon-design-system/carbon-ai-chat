@@ -134,6 +134,7 @@ export interface PublicConfig {
   namespace?: string;
 
   /**
+   * @internal
    * Indicates if a focus trap should be enabled when the Carbon AI Chat is open.
    */
   enableFocusTrap?: boolean;

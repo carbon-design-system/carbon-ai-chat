@@ -336,7 +336,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param options The options to control how the scrolling should occur.
    */
   public doAutoScroll = throttle((options: AutoScrollOptions = {}) => {
-    let animate = options.preferAnimate || false;
+    let animate: boolean = options.preferAnimate || true;
 
     try {
       debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
@@ -440,7 +440,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             scrollElement,
             setScrollTop,
           );
-          doScrollElement(scrollElement, setScrollTop, 0);
+          doScrollElement(scrollElement, setScrollTop, 0, animate);
 
           // Update the scroll anchor setting based on this new position.
           this.checkScrollAnchor(true, setScrollTop);

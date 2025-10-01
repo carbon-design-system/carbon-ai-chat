@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-history",
   "private": true,
-  "version": "0.2.1",
+  "version": "1.0.0-rc.0",
   "type": "module",
   "description": "Example showing message history loading with customLoadHistory.",
   "scripts": {
@@ -13,7 +13,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^0.5.1",
+    "@carbon/ai-chat": "^1.0.0-rc.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.25.0",

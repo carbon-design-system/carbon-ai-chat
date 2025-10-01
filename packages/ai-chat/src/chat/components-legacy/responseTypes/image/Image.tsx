@@ -60,7 +60,7 @@ interface ImageProps extends HasNeedsAnnouncement, HasClassName {
   useAITheme?: boolean;
 
   /**
-   * If the image should be displayed inline with no tile. Used in RichTextBeta.
+   * If the image should be displayed inline with no tile.
    */
   inline?: boolean;
 }

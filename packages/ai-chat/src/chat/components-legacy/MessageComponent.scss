@@ -56,7 +56,9 @@ $one-line-message-height: 88px;
   inset-block-start: 0.5rem;
 }
 
-.cds-aichat--message--with-avatar-line.cds-aichat--message--last-message {
+.cds-aichat--message--with-avatar-line.cds-aichat--message--response.cds-aichat--message--last-message:not(
+    .cds-aichat--with-human-agent
+  ) {
   min-block-size: calc(100% - $one-line-message-height);
 }
 

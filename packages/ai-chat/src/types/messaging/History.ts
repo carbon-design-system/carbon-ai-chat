@@ -7,12 +7,7 @@
  *  @license
  */
 
-import {
-  BaseMessageInput,
-  EventInput,
-  MessageRequest,
-  MessageResponse,
-} from "./Messages";
+import { MessageRequest, MessageResponse } from "./Messages";
 
 /**
  * The types here describe the history structure.
@@ -28,10 +23,7 @@ export interface HistoryItem {
   /**
    * The message represented by this history item.
    */
-  message:
-    | MessageRequest<BaseMessageInput>
-    | MessageRequest<EventInput>
-    | MessageResponse;
+  message: MessageRequest | MessageResponse;
 
   /**
    * Time this message occurred. ISO Format (e.g. 2020-03-15T08:59:56.952Z).

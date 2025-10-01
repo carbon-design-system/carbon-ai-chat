@@ -11,12 +11,9 @@ import "./styles.css";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
-  BusEventType,
+  CarbonTheme,
   type ChatInstance,
-  FeedbackInteractionType,
-  type MessageResponse,
   type PublicConfig,
-  type UserDefinedItem,
 } from "@carbon/ai-chat";
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
@@ -24,20 +21,12 @@ import { customElement, state } from "lit/decorators.js";
 import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
 
-interface UserDefinedSlotsMap {
-  [key: string]: UserDefinedSlot;
-}
-
-interface UserDefinedSlot {
-  message: UserDefinedItem;
-  fullMessage: MessageResponse;
-}
-
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
     customLoadHistory,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -45,67 +34,34 @@ export class Demo extends LitElement {
   @state()
   accessor instance!: ChatInstance;
 
-  @state()
-  accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
-
   onBeforeRender = (instance: ChatInstance) => {
     this.instance = instance;
-
-    instance.on({
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
-
-    instance.on({ type: BusEventType.FEEDBACK, handler: this.feedbackHandler });
   };
 
-  feedbackHandler = (event: any) => {
-    if (event.interactionType === FeedbackInteractionType.SUBMITTED) {
-      const { ...reportData } = event;
-      setTimeout(() => {
-        window.alert(JSON.stringify(reportData, null, 2));
-      });
+  async injectHistory() {
+    if (!this.instance) {
+      return;
     }
-  };
 
-  userDefinedHandler = (event: any) => {
-    const { data } = event;
-    this.userDefinedSlotsMap[data.slot] = {
-      message: data.message,
-      fullMessage: data.fullMessage,
-    };
-    this.requestUpdate();
-  };
+    const randomCount = Math.floor(Math.random() * 81) + 20; // Random number between 20 and 100
+    const historyData = await customLoadHistory(this.instance, randomCount);
 
-  renderUserDefinedSlots() {
-    const userDefinedSlotsKeyArray = Object.keys(this.userDefinedSlotsMap);
-    return userDefinedSlotsKeyArray.map((slot) => {
-      return this.renderUserDefinedResponse(slot);
-    });
-  }
-
-  renderUserDefinedResponse(slot: keyof UserDefinedSlotsMap) {
-    const { message } = this.userDefinedSlotsMap[slot];
-
-    const userDefinedMessage = message;
-
-    switch (userDefinedMessage.user_defined?.user_defined_type) {
-      case "my_unique_identifier":
-        return html`<div slot=${slot} style="color: green;">
-          ${userDefinedMessage.user_defined.text as string}
-        </div>`;
-      default:
-        return null;
-    }
+    this.instance.messaging.clearConversation();
+    this.instance.messaging.insertHistory(historyData);
   }
 
   render() {
     return html`
+      ${this.instance
+        ? html`<button @click=${this.injectHistory}>
+            Insert a different conversation
+          </button>`
+        : ""}
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
-        >${this.renderUserDefinedSlots()}</cds-aichat-container
-      >
+        .injectCarbonTheme=${config.injectCarbonTheme}
+      ></cds-aichat-container>
     `;
   }
 }

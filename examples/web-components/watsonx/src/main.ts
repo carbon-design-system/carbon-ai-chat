@@ -9,7 +9,7 @@
 
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
-import { type PublicConfig } from "@carbon/ai-chat";
+import { CarbonTheme, type PublicConfig } from "@carbon/ai-chat";
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
@@ -19,6 +19,7 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -27,6 +28,7 @@ export class Demo extends LitElement {
     return html`
       <cds-aichat-container
         .messaging=${config.messaging}
+        .injectCarbonTheme=${config.injectCarbonTheme}
       ></cds-aichat-container>
     `;
   }
