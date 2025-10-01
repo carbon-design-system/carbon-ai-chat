@@ -250,8 +250,8 @@ interface PersistedState {
   viewState: ViewState;
 
   /**
-   * Indicates if we should show an unread indicator on the launcher. This is a custom flag that is set by
-   * {@link ChatActions.updateBotUnreadIndicatorVisibility} and will display an empty circle on
+   * Indicates if we should show an unread indicator on the launcher. This is set by
+   * {@link ChatInstance.updateBotUnreadIndicatorVisibility} and will display an empty circle on
    * the launcher. This setting is overridden if there are any unread human agent messages in which case a circle
    * with a number is displayed.
    */
@@ -291,15 +291,15 @@ interface PersistedState {
 
   /**
    * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted
-   * with. Note that this is a duplicate of the property on {@link PersistedChatState.hasSentNonWelcomeMessage}. It
-   * is duplicated here so that this information may be available before hydration and before the user is known.
+   * with. This flag is duplicated so the information is available before hydration and before the user is known.
    * Note that this property reflects only the last user and should only be used when an approximate value is
    * acceptable.
    */
   hasSentNonWelcomeMessage: boolean;
 
   /**
-   * Map of if a disclaimer has been accepted on a given window.hostname value.
+   * Map of if a disclaimer has been accepted on a given window.hostname value, keyed by hostname via
+   * {@link ObjectMap}.
    */
   disclaimersAccepted: ObjectMap<boolean>;
 

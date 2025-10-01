@@ -89,10 +89,15 @@ export {
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
 
+export { PersistedState } from "./types/state/AppState";
+
+export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
+
 export {
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
+  HomeScreenState,
 } from "./types/config/HomeScreenConfig";
 
 export {
@@ -116,6 +121,7 @@ export {
 } from "./types/config/PublicConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
+export type { default as ObjectMap } from "./types/utilities/ObjectMap";
 
 export {
   AdditionalDataToAgent,

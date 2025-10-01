@@ -16,6 +16,8 @@ const CARBON_ASSETS = [
   "redirectToOverview.js",
   "carbonTheme.css",
   "cookiePreferences.js",
+  "versionDropdown.js",
+  "experimentalToPreview.js",
 ];
 
 export function load(app) {
@@ -63,6 +65,16 @@ export function load(app) {
       await fs.copyFile(carbonStylesSource, carbonStylesTarget);
     } catch (error) {
       app.logger.warn(`Failed to copy Carbon styles: ${error.message}`);
+    }
+
+    // Copy versions.js from root
+    const versionsSource = join(process.cwd(), "..", "..", "versions.js");
+    const versionsTarget = join(event.outputDirectory, "versions.js");
+
+    try {
+      await fs.copyFile(versionsSource, versionsTarget);
+    } catch (error) {
+      app.logger.warn(`Failed to copy versions.js: ${error.message}`);
     }
   });
 }
