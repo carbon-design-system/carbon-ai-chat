@@ -18,7 +18,10 @@ import prefix from "../../../globals/settings.js";
 @customElement(`${prefix}-tile-container`)
 class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
+
   @query("slot") private slotEl!: HTMLSlotElement;
+
+  private mutationObserver?: MutationObserver;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -41,11 +44,26 @@ class CDSAIChatTileContainer extends LitElement {
       if (!tile) {
         return;
       }
-      if (tile.hasAttribute("ai-label")) {
-        this.style.border = "none";
-        tile.setAttribute("has-rounded-corners", "true");
-      }
+
+      // we do not want additional gradient on tile, as the widget itself brings a gradient
+      tile.removeAttribute("ai-label");
+      this.mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "attributes" && mutation.attributeName) {
+            tile.removeAttribute("ai-label");
+          }
+        });
+      });
+
+      this.mutationObserver.observe(tile, {
+        attributes: true,
+      });
     });
+  }
+
+  disconnectedCallback(): void {
+    this.mutationObserver?.disconnect();
+    super.disconnectedCallback();
   }
 
   render() {

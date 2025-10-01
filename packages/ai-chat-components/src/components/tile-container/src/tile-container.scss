@@ -18,8 +18,6 @@ $css--plex: true !default;
 /* tile container styles */
 :host(#{$prefix}-tile-container) {
   display: block;
-  overflow: hidden;
   border: 1px solid theme.$chat-bubble-border;
   border-radius: layout.$spacing-03;
-  background-color: theme.$layer;
 }

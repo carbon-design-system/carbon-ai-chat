@@ -11,11 +11,4 @@
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities/convert" as *;
 
-h5,
-p {
-  margin-block-end: layout.$spacing-04;
-}
-
-a {
-  color: theme.$link-primary;
-}
+// story specific styles
