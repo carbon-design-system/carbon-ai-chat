@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -288,10 +288,6 @@ in. */
 
 .cds-aichat.cds-aichat--human-agent-app {
   min-inline-size: unset;
-}
-
-.cds-aichat--container--render[dir="rtl"] .cds-aichat {
-  text-align: end;
 }
 
 .cds-aichat--main-window,
