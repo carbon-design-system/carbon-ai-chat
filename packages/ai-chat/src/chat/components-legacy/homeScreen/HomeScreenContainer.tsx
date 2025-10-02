@@ -117,6 +117,10 @@ function HomeScreenContainer({
   const isCustomPanelOpen = useSelector(
     (state: AppState) => state.customPanelState.isOpen,
   );
+  const inputConfig = useSelector(
+    (state: AppState) => state.config.public.input,
+  );
+
   const prevIsHydrationAnimationComplete = usePrevious(
     isHydrationAnimationComplete,
   );
@@ -179,6 +183,7 @@ function HomeScreenContainer({
         onClose={onClose}
         onRestart={onRestart}
         onToggleHomeScreen={onToggleHomeScreen}
+        inputConfig={inputConfig}
       />
     </OverlayPanel>
   );
