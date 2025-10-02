@@ -193,8 +193,8 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     // Remove the agent's profile and typing indicator.
     ({
       ...state,
-      botMessageState: {
-        ...state.botMessageState,
+      assistantMessageState: {
+        ...state.assistantMessageState,
       },
       humanAgentState: {
         ...state.humanAgentState,

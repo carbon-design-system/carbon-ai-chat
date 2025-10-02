@@ -88,7 +88,7 @@ import {
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
 import {
-  applyBotMessageState,
+  applyAssistantMessageState,
   applyFullMessage,
   applyLocalMessageUIState,
   DEFAULT_CITATION_PANEL_STATE,
@@ -165,8 +165,8 @@ const reducers: { [key: string]: ReducerType } = {
   [RESTART_CONVERSATION]: (state: AppState): AppState => {
     let newState: AppState = {
       ...state,
-      botMessageState: {
-        ...state.botMessageState,
+      assistantMessageState: {
+        ...state.assistantMessageState,
         localMessageIDs: [],
         messageIDs: [],
         isScrollAnchored: false,
@@ -224,10 +224,13 @@ const reducers: { [key: string]: ReducerType } = {
       newState = applyFullMessage(newState, message);
     }
 
-    const currentIndex = newState.botMessageState.localMessageIDs.findIndex(
-      (existingID) => existingID === id,
-    );
-    const newLocalMessageIDs = [...newState.botMessageState.localMessageIDs];
+    const currentIndex =
+      newState.assistantMessageState.localMessageIDs.findIndex(
+        (existingID) => existingID === id,
+      );
+    const newLocalMessageIDs = [
+      ...newState.assistantMessageState.localMessageIDs,
+    ];
 
     let insertAtIndex = currentIndex;
 
@@ -259,8 +262,8 @@ const reducers: { [key: string]: ReducerType } = {
           ...newState.allMessageItemsByID,
           [id]: messageItem,
         },
-        botMessageState: {
-          ...newState.botMessageState,
+        assistantMessageState: {
+          ...newState.assistantMessageState,
           localMessageIDs: newLocalMessageIDs,
         },
       };
@@ -270,10 +273,13 @@ const reducers: { [key: string]: ReducerType } = {
         newState = setHomeScreenOpenState(newState, false);
       }
 
-      const isBotMessage = !messageItem.item.agent_message_type;
+      const isAssistantMessage = !messageItem.item.agent_message_type;
       const isMainWindowOpen =
         state.persistedToBrowserStorage.viewState.mainWindow;
-      if (!isBotMessage && (!isMainWindowOpen || !state.isBrowserPageVisible)) {
+      if (
+        !isAssistantMessage &&
+        (!isMainWindowOpen || !state.isBrowserPageVisible)
+      ) {
         // This message is with an agent, and it occurred while the main window was closed or the page is not
         // visible, so it may need to be counted as an unread message.
         const fromHumanAgent = !isRequest(message);
@@ -307,22 +313,21 @@ const reducers: { [key: string]: ReducerType } = {
     const newAllMessageItems = { ...state.allMessageItemsByID };
 
     // Remove all the message IDs from the message list.
-    const newMessageIDs = state.botMessageState.messageIDs.filter(
+    const newMessageIDs = state.assistantMessageState.messageIDs.filter(
       (messageID) => !idsSet.has(messageID),
     );
 
     // Remove all the message items from the items list for items that are part of one of the messages being
     // removed. Also remove the matching items from the map.
-    const newMessageItemsIDs = state.botMessageState.localMessageIDs.filter(
-      (messageItemID) => {
+    const newMessageItemsIDs =
+      state.assistantMessageState.localMessageIDs.filter((messageItemID) => {
         const messageItem = newAllMessageItems[messageItemID];
         const removeItem = idsSet.has(messageItem?.fullMessageID);
         if (removeItem) {
           delete newAllMessageItems[messageItemID];
         }
         return !removeItem;
-      },
-    );
+      });
 
     // Remove the message objects from the map.
     messageIDs.forEach((messageID) => {
@@ -333,8 +338,8 @@ const reducers: { [key: string]: ReducerType } = {
       ...state,
       allMessagesByID: newAllMessages,
       allMessageItemsByID: newAllMessageItems,
-      botMessageState: {
-        ...state.botMessageState,
+      assistantMessageState: {
+        ...state.assistantMessageState,
         messageIDs: newMessageIDs,
         localMessageIDs: newMessageItemsIDs,
       },
@@ -415,8 +420,8 @@ const reducers: { [key: string]: ReducerType } = {
       let firstFoundIndex: number;
 
       // Remove all the existing items for this message. Also keep track of where the first one was found.
-      const newLocalMessageIDs = state.botMessageState.localMessageIDs.filter(
-        (itemID, index) => {
+      const newLocalMessageIDs =
+        state.assistantMessageState.localMessageIDs.filter((itemID, index) => {
           const item = state.allMessageItemsByID[itemID];
           const isItemInMessage = item.fullMessageID === messageID;
 
@@ -435,8 +440,7 @@ const reducers: { [key: string]: ReducerType } = {
 
           // Keep the item if it's not in the new message.
           return !isItemInMessage;
-        },
-      );
+        });
 
       // Now insert the message items back into the list at the right spot, but only the items we already had.
       if (existingItemIDs.length) {
@@ -451,8 +455,8 @@ const reducers: { [key: string]: ReducerType } = {
       newState = {
         ...newState,
         allMessageItemsByID: newAllMessageItemsByID,
-        botMessageState: {
-          ...newState.botMessageState,
+        assistantMessageState: {
+          ...newState.assistantMessageState,
           localMessageIDs: newLocalMessageIDs,
         },
       };
@@ -488,10 +492,11 @@ const reducers: { [key: string]: ReducerType } = {
   ): AppState => {
     return {
       ...state,
-      botMessageState: {
-        ...state.botMessageState,
-        isLoadingCounter: Math.max(
-          state.botMessageState.isLoadingCounter + action.addToIsLoading,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        isMessageLoadingCounter: Math.max(
+          state.assistantMessageState.isMessageLoadingCounter +
+            action.addToIsLoading,
           0,
         ),
       },
@@ -504,10 +509,11 @@ const reducers: { [key: string]: ReducerType } = {
   ): AppState => {
     return {
       ...state,
-      botMessageState: {
-        ...state.botMessageState,
+      assistantMessageState: {
+        ...state.assistantMessageState,
         isHydratingCounter: Math.max(
-          state.botMessageState.isHydratingCounter + action.addToIsHydrating,
+          state.assistantMessageState.isHydratingCounter +
+            action.addToIsHydrating,
           0,
         ),
       },
@@ -728,7 +734,7 @@ const reducers: { [key: string]: ReducerType } = {
       propertyValue: ChatMessagesState[TPropertyName];
     },
   ) => {
-    return applyBotMessageState(state, {
+    return applyAssistantMessageState(state, {
       [action.propertyName]: action.propertyValue,
     });
   },
@@ -900,9 +906,10 @@ const reducers: { [key: string]: ReducerType } = {
     state: AppState,
     { localMessageItemID }: { localMessageItemID: string },
   ) => {
-    const newLocalMessageIDs = state.botMessageState.localMessageIDs.filter(
-      (id) => id !== localMessageItemID,
-    );
+    const newLocalMessageIDs =
+      state.assistantMessageState.localMessageIDs.filter(
+        (id) => id !== localMessageItemID,
+      );
     const allMessageItemsByID = {
       ...state.allMessageItemsByID,
     };
@@ -912,8 +919,8 @@ const reducers: { [key: string]: ReducerType } = {
     return {
       ...state,
       allMessageItemsByID,
-      botMessageState: {
-        ...state.botMessageState,
+      assistantMessageState: {
+        ...state.assistantMessageState,
         localMessageIDs: newLocalMessageIDs,
       },
     };
@@ -1110,7 +1117,7 @@ const reducers: { [key: string]: ReducerType } = {
     // This might be undefined if we haven't seen this item before.
     const localItemID = streamItemID(fullMessageID, chunkItem);
     const existingLocalMessageItem = state.allMessageItemsByID[localItemID];
-    let { localMessageIDs } = state.botMessageState;
+    let { localMessageIDs } = state.assistantMessageState;
     let newItem: LocalMessageItem;
     if (!existingLocalMessageItem) {
       // This is a new item we haven't seen before. We will need the response type to know what to with this item which
@@ -1181,8 +1188,8 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.allMessageItemsByID,
         [localItemID]: newItem,
       },
-      botMessageState: {
-        ...state.botMessageState,
+      assistantMessageState: {
+        ...state.assistantMessageState,
         localMessageIDs,
       },
     };
@@ -1194,10 +1201,10 @@ const reducers: { [key: string]: ReducerType } = {
   ) => {
     return {
       ...state,
-      botInputState: {
-        ...state.botInputState,
+      assistantInputState: {
+        ...state.assistantInputState,
         stopStreamingButtonState: {
-          ...state.botInputState.stopStreamingButtonState,
+          ...state.assistantInputState.stopStreamingButtonState,
           isVisible,
         },
       },
@@ -1210,10 +1217,10 @@ const reducers: { [key: string]: ReducerType } = {
   ) => {
     return {
       ...state,
-      botInputState: {
-        ...state.botInputState,
+      assistantInputState: {
+        ...state.assistantInputState,
         stopStreamingButtonState: {
-          ...state.botInputState.stopStreamingButtonState,
+          ...state.assistantInputState.stopStreamingButtonState,
           isDisabled,
         },
       },
@@ -1226,10 +1233,10 @@ const reducers: { [key: string]: ReducerType } = {
   ) => {
     return {
       ...state,
-      botInputState: {
-        ...state.botInputState,
+      assistantInputState: {
+        ...state.assistantInputState,
         stopStreamingButtonState: {
-          ...state.botInputState.stopStreamingButtonState,
+          ...state.assistantInputState.stopStreamingButtonState,
           currentStreamID,
         },
       },
@@ -1274,7 +1281,7 @@ function applyInputState(
 
   return {
     ...state,
-    botInputState: newInputState,
+    assistantInputState: newInputState,
   };
 }
 /**
@@ -1283,7 +1290,7 @@ function applyInputState(
 function getInputState(state: AppState, isInputToHumanAgent: boolean) {
   return isInputToHumanAgent
     ? state.humanAgentState.inputState
-    : state.botInputState;
+    : state.assistantInputState;
 }
 
 // Merge in the other reducers.

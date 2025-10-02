@@ -166,7 +166,7 @@ async function notesToLoadedHistory(
       messageHistory: {
         allMessageItemsByID: allLocalMessagesByID,
         allMessagesByID,
-        botMessageState: null,
+        assistantMessageState: null,
       },
       latestTransferToHumanAgentResponse: null,
       latestPanelLocalMessageItem: null,
@@ -416,7 +416,7 @@ function createChatStates(loadingState: LoadingState) {
     threadMessagesByThreadID,
     localMessagesByOriginalMessageID,
   } = loadingState;
-  loadedHistory.messageHistory.botMessageState = toChatMessageState(
+  loadedHistory.messageHistory.assistantMessageState = toChatMessageState(
     threadMessagesByThreadID[THREAD_ID_MAIN],
     localMessagesByOriginalMessageID,
   );

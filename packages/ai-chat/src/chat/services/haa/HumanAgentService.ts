@@ -60,13 +60,13 @@ interface HumanAgentService {
    * @param endedByUser Indicates if the chat is being ended as a result of the user or if it was ended
    * programmatically from an instance method.
    * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
-   * @param showBotReturnMessage Indicates if the chat should show the "bot return" message.
+   * @param showAssistantReturnMessage Indicates if the chat should show the "bot return" message.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
   endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage?: boolean,
-    showBotReturnMessage?: boolean,
+    showAssistantReturnMessage?: boolean,
   ): Promise<void>;
 
   /**

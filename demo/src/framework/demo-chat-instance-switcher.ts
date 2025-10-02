@@ -155,7 +155,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
     this._unreadIndicatorVisible = checked;
 
     this._withInstance((instance) => {
-      instance.updateBotUnreadIndicatorVisibility?.(checked);
+      instance.updateAssistantUnreadIndicatorVisibility?.(checked);
     });
   }
 
@@ -188,7 +188,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   private _handleLoadingCounter(direction: "increase" | "decrease") {
     this._withInstance((instance) => {
-      instance.updateIsLoadingCounter?.(direction);
+      instance.updateIsMessageLoadingCounter?.(direction);
     });
   }
 

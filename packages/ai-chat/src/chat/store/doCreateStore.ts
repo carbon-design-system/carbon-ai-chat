@@ -128,7 +128,7 @@ function createInitialState(config: AppConfig): AppState {
     isBrowserPageVisible: true,
 
     // Input state
-    botInputState: DEFAULT_INPUT_STATE,
+    assistantInputState: DEFAULT_INPUT_STATE,
 
     // Layout/responsive state
     chatWidthBreakpoint: null,

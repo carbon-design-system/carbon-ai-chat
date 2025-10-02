@@ -41,7 +41,7 @@ describe("ChatInstance.messaging.insertHistory", () => {
             generic: [
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "Bot response",
+                text: "Assistant response",
               },
             ],
           },
@@ -192,10 +192,10 @@ describe("ChatInstance.messaging.insertHistory", () => {
 
       const stateAfterCurrent = store.getState();
       const currentMessageIDs = [
-        ...stateAfterCurrent.botMessageState.messageIDs,
+        ...stateAfterCurrent.assistantMessageState.messageIDs,
       ];
       const currentLocalIDs = [
-        ...stateAfterCurrent.botMessageState.localMessageIDs,
+        ...stateAfterCurrent.assistantMessageState.localMessageIDs,
       ];
 
       // Then insert history
@@ -221,8 +221,8 @@ describe("ChatInstance.messaging.insertHistory", () => {
       const finalState = store.getState();
 
       // History message IDs should come before current message IDs
-      const finalMessageIDs = finalState.botMessageState.messageIDs;
-      const finalLocalIDs = finalState.botMessageState.localMessageIDs;
+      const finalMessageIDs = finalState.assistantMessageState.messageIDs;
+      const finalLocalIDs = finalState.assistantMessageState.localMessageIDs;
 
       expect(finalMessageIDs.length).toBeGreaterThan(currentMessageIDs.length);
       expect(finalLocalIDs.length).toBeGreaterThan(currentLocalIDs.length);

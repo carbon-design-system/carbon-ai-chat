@@ -139,7 +139,7 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedState = {
   disclaimersAccepted: {},
   homeScreenState: {
     isHomeScreenOpen: false,
-    showBackToBot: false,
+    showBackToAssistant: false,
   },
   humanAgentState: {
     isConnected: false,
@@ -179,7 +179,7 @@ deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
   messageIDs: [],
-  isLoadingCounter: 0,
+  isMessageLoadingCounter: 0,
   isHydratingCounter: 0,
   isScrollAnchored: false,
 };
@@ -188,7 +188,7 @@ deepFreeze(DEFAULT_CHAT_MESSAGES_STATE);
 const DEFAULT_MESSAGE_STATE: AppStateMessages = {
   allMessageItemsByID: {},
   allMessagesByID: {},
-  botMessageState: {
+  assistantMessageState: {
     ...DEFAULT_CHAT_MESSAGES_STATE,
   },
 };
@@ -239,14 +239,14 @@ function calcAnnouncementForWidgetOpen(
  * Returns a new state that has the {@link ChatMessagesState} modified for the given chat type with the new properties.
  * If the chat state is for a thread, then the thread that is currently being viewed will be modified.
  */
-function applyBotMessageState(
+function applyAssistantMessageState(
   state: AppState,
   newState: Partial<ChatMessagesState>,
 ): AppState {
   return {
     ...state,
-    botMessageState: {
-      ...state.botMessageState,
+    assistantMessageState: {
+      ...state.assistantMessageState,
       ...newState,
     },
   };
@@ -284,11 +284,11 @@ function handleViewStateChange(
 function setHomeScreenOpenState(
   state: AppState,
   isOpen: boolean,
-  showBackToBot?: boolean,
+  showBackToAssistant?: boolean,
 ): AppState {
-  if (showBackToBot === undefined) {
-    showBackToBot =
-      state.persistedToBrowserStorage.homeScreenState.showBackToBot;
+  if (showBackToAssistant === undefined) {
+    showBackToAssistant =
+      state.persistedToBrowserStorage.homeScreenState.showBackToAssistant;
   }
   return {
     ...state,
@@ -297,7 +297,7 @@ function setHomeScreenOpenState(
       homeScreenState: {
         ...state.persistedToBrowserStorage.homeScreenState,
         isHomeScreenOpen: isOpen,
-        showBackToBot,
+        showBackToAssistant,
       },
     },
   };
@@ -355,9 +355,9 @@ function applyFullMessage(state: AppState, message: Message): AppState {
 
   // Now add the full message ID to the specific ChatMessagesState but only if it's a new message.
   if (!state.allMessagesByID[message.id]) {
-    const currentMessageIDs = state.botMessageState.messageIDs;
+    const currentMessageIDs = state.assistantMessageState.messageIDs;
     const newMessageIDs = [...currentMessageIDs, message.id];
-    return applyBotMessageState(newState, { messageIDs: newMessageIDs });
+    return applyAssistantMessageState(newState, { messageIDs: newMessageIDs });
   }
 
   return newState;
@@ -382,7 +382,7 @@ export {
   DEFAULT_LAYOUT_STATE,
   DEFAULT_INPUT_STATE,
   setHomeScreenOpenState,
-  applyBotMessageState,
+  applyAssistantMessageState,
   handleViewStateChange,
   applyFullMessage,
   applyLocalMessageUIState,

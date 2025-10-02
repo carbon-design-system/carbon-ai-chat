@@ -532,8 +532,8 @@ function getMediaDimensions(item: MediaItem) {
 /**
  * Returns the last response message from the bot (excludes agent messages) that has a context object on it.
  */
-function getLastBotResponseWithContext(state: AppState) {
-  const messageIDs = state.botMessageState.messageIDs || [];
+function getLastAssistantResponseWithContext(state: AppState) {
+  const messageIDs = state.assistantMessageState.messageIDs || [];
   return findLastWithMap(
     messageIDs,
     state.allMessagesByID,
@@ -580,7 +580,7 @@ export {
   isStreamFinalResponse,
   streamItemID,
   getMediaDimensions,
-  getLastBotResponseWithContext,
+  getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
   isFullWidthUserDefined,
 };
