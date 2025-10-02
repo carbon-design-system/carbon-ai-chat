@@ -36,7 +36,7 @@ interface HomeScreenStarterButtons {
 }
 
 /**
- * Configuration for the optional home screen that appears before the bot chat window.
+ * Configuration for the optional home screen that appears before the assistant chat window.
  *
  * @category Config
  */
@@ -80,10 +80,10 @@ interface HomeScreenState {
   isHomeScreenOpen: boolean;
 
   /**
-   * Indicates if the home screen should display a "return to bot" button. This button is displayed when the user
-   * has clicked the "back to home" button from the bot.
+   * Indicates if the home screen should display a "return to assistant" button. This button is displayed when the user
+   * has clicked the "back to home" button from the assistant.
    */
-  showBackToBot: boolean;
+  showBackToAssistant: boolean;
 }
 
 export {

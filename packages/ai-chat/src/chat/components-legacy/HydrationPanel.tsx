@@ -14,7 +14,7 @@ import React, { useContext } from "react";
 import { HideComponentContext } from "../contexts/HideComponentContext";
 import { HasServiceManager } from "../hocs/withServiceManager";
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
-import { BotHeader } from "./header/BotHeader";
+import { AssistantHeader } from "./header/AssistantHeader";
 import { HomeScreenHeader } from "./homeScreen/HomeScreenHeader";
 import { AnnounceOnMountComponent } from "./util/AnnounceOnMountComponent";
 import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
@@ -62,7 +62,7 @@ function HydrationPanel({
     header = <HomeScreenHeader onClose={onClose} />;
   } else {
     header = (
-      <BotHeader
+      <AssistantHeader
         onClose={onClose}
         headerDisplayName={headerDisplayName}
         onToggleHomeScreen={null}

@@ -91,7 +91,7 @@ function HomeScreenComponent({
   const languagePack = useLanguagePack();
   const serviceManager = useServiceManager();
 
-  const { showBackToBot } = useSelector(
+  const { showBackToAssistant } = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.homeScreenState,
   );
 
@@ -189,7 +189,7 @@ function HomeScreenComponent({
               !hasCustomContent && !customContentOnly,
           })}
         >
-          {showBackToBot && (
+          {showBackToAssistant && (
             <ChatButton
               size={CHAT_BUTTON_SIZE.SMALL}
               kind={CHAT_BUTTON_KIND.SECONDARY}

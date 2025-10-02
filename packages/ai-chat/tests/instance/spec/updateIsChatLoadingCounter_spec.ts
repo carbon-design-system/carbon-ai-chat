@@ -23,12 +23,13 @@ describe("ChatInstance.updateIsChatLoadingCounter", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     const initialState = store.getState();
-    const initialCounter = initialState.botMessageState.isHydratingCounter;
+    const initialCounter =
+      initialState.assistantMessageState.isHydratingCounter;
 
     instance.updateIsChatLoadingCounter("increase");
 
     const updatedState = store.getState();
-    expect(updatedState.botMessageState.isHydratingCounter).toBe(
+    expect(updatedState.assistantMessageState.isHydratingCounter).toBe(
       initialCounter + 1,
     );
   });
@@ -42,12 +43,12 @@ describe("ChatInstance.updateIsChatLoadingCounter", () => {
 
     const stateAfterIncrease = store.getState();
     const counterAfterIncrease =
-      stateAfterIncrease.botMessageState.isHydratingCounter;
+      stateAfterIncrease.assistantMessageState.isHydratingCounter;
 
     instance.updateIsChatLoadingCounter("decrease");
 
     const finalState = store.getState();
-    expect(finalState.botMessageState.isHydratingCounter).toBe(
+    expect(finalState.assistantMessageState.isHydratingCounter).toBe(
       counterAfterIncrease - 1,
     );
   });
@@ -60,7 +61,7 @@ describe("ChatInstance.updateIsChatLoadingCounter", () => {
     instance.updateIsChatLoadingCounter("decrease");
 
     const state = store.getState();
-    expect(state.botMessageState.isHydratingCounter).toBe(0);
+    expect(state.assistantMessageState.isHydratingCounter).toBe(0);
   });
 
   it("should handle multiple chat loading counter operations correctly", async () => {
@@ -69,22 +70,22 @@ describe("ChatInstance.updateIsChatLoadingCounter", () => {
 
     // Get initial counter
     let state = store.getState();
-    const initial = state.botMessageState.isHydratingCounter;
+    const initial = state.assistantMessageState.isHydratingCounter;
 
     // Increase multiple times
     instance.updateIsChatLoadingCounter("increase");
     instance.updateIsChatLoadingCounter("increase");
     state = store.getState();
-    expect(state.botMessageState.isHydratingCounter).toBe(initial + 2);
+    expect(state.assistantMessageState.isHydratingCounter).toBe(initial + 2);
 
     // Decrease once
     instance.updateIsChatLoadingCounter("decrease");
     state = store.getState();
-    expect(state.botMessageState.isHydratingCounter).toBe(initial + 1);
+    expect(state.assistantMessageState.isHydratingCounter).toBe(initial + 1);
 
     // Decrease to original
     instance.updateIsChatLoadingCounter("decrease");
     state = store.getState();
-    expect(state.botMessageState.isHydratingCounter).toBe(initial);
+    expect(state.assistantMessageState.isHydratingCounter).toBe(initial);
   });
 });

@@ -294,7 +294,7 @@ When reconnection is not possible, the Carbon AI Chat provides a clean user expe
 
 1. **Connection state is cleared**: The chat session is properly ended
 2. **User notification**: The user sees the message "You disconnected from the live agent."
-3. **Bot continues**: After a brief delay, the conversation continues with the bot
+3. **Assistant continues**: After a brief delay, the conversation continues with the assistant
 4. **Fresh start**: The user can start a new agent conversation if needed
 
 This ensures that users are never stuck in a broken state and can continue their interaction with the chat system.

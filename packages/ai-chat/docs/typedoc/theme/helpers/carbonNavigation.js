@@ -160,17 +160,44 @@ export function getNavigationGroups(context, props) {
   const promotedTree = promoteTypeReferenceCategories(navigationTree);
   const regularItems = [];
   const typeItems = [];
+  const migrationItems = [];
 
   promotedTree.forEach((item) => {
-    const target = item.text.endsWith(" types") ? typeItems : regularItems;
-    target.push(item);
+    // Check if this is a migration document
+    if (item.text.toLowerCase().startsWith("migration")) {
+      migrationItems.push(item);
+    } else if (item.text.endsWith(" types")) {
+      typeItems.push(item);
+    } else {
+      regularItems.push(item);
+    }
   });
 
-  return { regularItems, typeItems };
+  return { regularItems, typeItems, migrationItems };
+}
+
+function renderVersionsDropdown() {
+  // Create a wrapper div for the dropdown with padding
+  return JSX.createElement(
+    "div",
+    {
+      id: "versions-dropdown-wrapper",
+      style: "padding: 1rem;",
+    },
+    JSX.createElement(
+      "cds-dropdown",
+      {
+        id: "versions-dropdown",
+        "title-text": "Select @carbon/ai-chat version",
+        size: "sm",
+      },
+      // Dropdown items will be populated dynamically by versionDropdown.js
+    ),
+  );
 }
 
 export function carbonNavigation(context, props, groups) {
-  const { regularItems, typeItems } =
+  const { regularItems, typeItems, migrationItems } =
     groups ?? getNavigationGroups(context, props);
 
   const renderedRegular = regularItems
@@ -181,13 +208,34 @@ export function carbonNavigation(context, props, groups) {
     .map((item) => renderCarbonNavItem(context, props, item, 0))
     .filter(Boolean);
 
-  const children = renderedTypes.length
-    ? [
-        ...renderedRegular,
-        JSX.createElement("cds-side-nav-divider", { key: "types-divider" }),
-        ...renderedTypes,
-      ]
-    : renderedRegular;
+  const renderedMigrations = migrationItems
+    .map((item) => renderCarbonNavItem(context, props, item, 0))
+    .filter(Boolean);
+
+  const versionsDropdown = renderVersionsDropdown();
+
+  const children = [versionsDropdown];
+
+  if (renderedRegular.length > 0) {
+    children.push(
+      JSX.createElement("cds-side-nav-divider", { key: "regular-divider" }),
+      ...renderedRegular,
+    );
+  }
+
+  if (renderedMigrations.length > 0) {
+    children.push(
+      JSX.createElement("cds-side-nav-divider", { key: "migrations-divider" }),
+      ...renderedMigrations,
+    );
+  }
+
+  if (renderedTypes.length > 0) {
+    children.push(
+      JSX.createElement("cds-side-nav-divider", { key: "types-divider" }),
+      ...renderedTypes,
+    );
+  }
 
   return JSX.createElement("cds-side-nav-items", null, ...children);
 }

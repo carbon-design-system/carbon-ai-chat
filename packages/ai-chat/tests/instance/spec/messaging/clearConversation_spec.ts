@@ -79,9 +79,10 @@ describe("ChatInstance.messaging.clearConversation", () => {
       const itemCountBeforeClear = Object.keys(
         state.allMessageItemsByID,
       ).length;
-      const botMessageIDsBeforeClear = state.botMessageState.messageIDs.length;
+      const botMessageIDsBeforeClear =
+        state.assistantMessageState.messageIDs.length;
       const botLocalIDsBeforeClear =
-        state.botMessageState.localMessageIDs.length;
+        state.assistantMessageState.localMessageIDs.length;
 
       expect(messageCountBeforeClear).toBeGreaterThan(0);
       expect(itemCountBeforeClear).toBeGreaterThan(0);
@@ -95,9 +96,10 @@ describe("ChatInstance.messaging.clearConversation", () => {
       state = store.getState();
       const messageCountAfterClear = Object.keys(state.allMessagesByID).length;
       const itemCountAfterClear = Object.keys(state.allMessageItemsByID).length;
-      const botMessageIDsAfterClear = state.botMessageState.messageIDs.length;
+      const botMessageIDsAfterClear =
+        state.assistantMessageState.messageIDs.length;
       const botLocalIDsAfterClear =
-        state.botMessageState.localMessageIDs.length;
+        state.assistantMessageState.localMessageIDs.length;
 
       expect(messageCountAfterClear).toBe(0);
       expect(itemCountAfterClear).toBe(0);
@@ -136,15 +138,15 @@ describe("ChatInstance.messaging.clearConversation", () => {
       // Message collections should be empty
       expect(Object.keys(state.allMessagesByID)).toHaveLength(0);
       expect(Object.keys(state.allMessageItemsByID)).toHaveLength(0);
-      expect(state.botMessageState.messageIDs).toHaveLength(0);
-      expect(state.botMessageState.localMessageIDs).toHaveLength(0);
+      expect(state.assistantMessageState.messageIDs).toHaveLength(0);
+      expect(state.assistantMessageState.localMessageIDs).toHaveLength(0);
 
       // Loading states should be reset
-      expect(state.botMessageState.isLoadingCounter).toBe(0);
-      expect(state.botMessageState.isHydratingCounter).toBe(0);
+      expect(state.assistantMessageState.isMessageLoadingCounter).toBe(0);
+      expect(state.assistantMessageState.isHydratingCounter).toBe(0);
 
       // Scroll state should be reset to default
-      expect(state.botMessageState.isScrollAnchored).toBe(false);
+      expect(state.assistantMessageState.isScrollAnchored).toBe(false);
     });
 
     it("should handle multiple calls to clearConversation", async () => {
@@ -246,8 +248,8 @@ describe("ChatInstance.messaging.clearConversation", () => {
 
       expect(finalMessageCount).toBe(initialMessageCount);
       expect(finalItemCount).toBe(initialItemCount);
-      expect(finalState.botMessageState.messageIDs).toHaveLength(0);
-      expect(finalState.botMessageState.localMessageIDs).toHaveLength(0);
+      expect(finalState.assistantMessageState.messageIDs).toHaveLength(0);
+      expect(finalState.assistantMessageState.localMessageIDs).toHaveLength(0);
     });
   });
 

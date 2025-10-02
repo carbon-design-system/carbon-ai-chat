@@ -166,13 +166,13 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       const initialState = store.getState();
       const initialMessageIDCount =
-        initialState.botMessageState.localMessageIDs.length;
+        initialState.assistantMessageState.localMessageIDs.length;
 
       await instance.messaging.addMessage(messageResponse);
 
       const updatedState = store.getState();
       const updatedMessageIDCount =
-        updatedState.botMessageState.localMessageIDs.length;
+        updatedState.assistantMessageState.localMessageIDs.length;
 
       expect(updatedMessageIDCount).toBeGreaterThan(initialMessageIDCount);
 
@@ -183,7 +183,7 @@ describe("ChatInstance.messaging.addMessage", () => {
       );
 
       expect(relatedItem).toBeDefined();
-      expect(updatedState.botMessageState.localMessageIDs).toContain(
+      expect(updatedState.assistantMessageState.localMessageIDs).toContain(
         relatedItem?.ui_state.id,
       );
     });
@@ -292,9 +292,13 @@ describe("ChatInstance.messaging.addMessage", () => {
       const message2ItemID = message2Items[0].ui_state.id;
 
       const message1Index =
-        finalState.botMessageState.localMessageIDs.indexOf(message1ItemID);
+        finalState.assistantMessageState.localMessageIDs.indexOf(
+          message1ItemID,
+        );
       const message2Index =
-        finalState.botMessageState.localMessageIDs.indexOf(message2ItemID);
+        finalState.assistantMessageState.localMessageIDs.indexOf(
+          message2ItemID,
+        );
 
       expect(message1Index).toBeGreaterThanOrEqual(0);
       expect(message2Index).toBeGreaterThanOrEqual(0);

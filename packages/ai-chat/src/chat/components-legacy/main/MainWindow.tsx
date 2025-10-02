@@ -12,7 +12,7 @@ import FocusTrap from "focus-trap-react";
 import React, { Component, MutableRefObject, RefObject } from "react";
 import { useSelector } from "../../hooks/useSelector";
 
-import BotChat, { ChatClass } from "../BotChat";
+import AssistantChat, { ChatClass } from "../AssistantChat";
 import { HydrationPanel } from "../HydrationPanel";
 import { InputFunctions } from "../input/Input";
 import { MessageTypeComponent } from "../MessageTypeComponent";
@@ -334,16 +334,16 @@ class MainWindow
         // eslint-disable-next-line react/no-did-update-set-state
         this.setState({ shouldAutoFocus: true });
       } else if (
-        oldProps.botMessageState.localMessageIDs.length >
-          newProps.botMessageState.localMessageIDs.length &&
+        oldProps.assistantMessageState.localMessageIDs.length >
+          newProps.assistantMessageState.localMessageIDs.length &&
         this.state.shouldAutoFocus
       ) {
         // If there are fewer messages than there were previously, we infer that the Carbon AI Chat has been restarted.
         // In that case, don't do any autofocusing.
         this.setState({ shouldAutoFocus: false });
       } else if (
-        oldProps.botMessageState.localMessageIDs.length <
-          newProps.botMessageState.localMessageIDs.length &&
+        oldProps.assistantMessageState.localMessageIDs.length <
+          newProps.assistantMessageState.localMessageIDs.length &&
         !this.state.shouldAutoFocus
       ) {
         // If a new message comes in, turn autofocusing back on.
@@ -352,10 +352,10 @@ class MainWindow
     }
 
     const newLastItemID = arrayLastValue(
-      newProps.botMessageState.localMessageIDs,
+      newProps.assistantMessageState.localMessageIDs,
     );
     const oldLastItemID = arrayLastValue(
-      oldProps.botMessageState.localMessageIDs,
+      oldProps.assistantMessageState.localMessageIDs,
     );
 
     if (newLastItemID !== oldLastItemID && newState.shouldAutoFocus) {
@@ -718,7 +718,7 @@ class MainWindow
             {this.renderHomeScreenPanel()}
             {this.renderIFramePanel()}
             {this.renderViewSourcePanel()}
-            {this.renderBotChat()}
+            {this.renderAssistantChat()}
           </>
         )}
       </div>
@@ -728,7 +728,7 @@ class MainWindow
   /**
    * Render the chat with the assistant.
    */
-  renderBotChat() {
+  renderAssistantChat() {
     const {
       config: {
         derived: { themeWithDefaults: theme, languagePack },
@@ -736,7 +736,7 @@ class MainWindow
       },
       config,
       serviceManager,
-      botMessageState,
+      assistantMessageState,
       humanAgentState,
       allMessageItemsByID,
       isHydrated,
@@ -762,10 +762,10 @@ class MainWindow
 
     return (
       <HideComponent
-        className="cds-aichat--bot-container"
+        className="cds-aichat--assistant-container"
         hidden={hideBotContainer}
       >
-        <BotChat
+        <AssistantChat
           assistantName={assistantName}
           headerDisplayName={config.derived.header?.name || assistantName}
           ref={this.botChatRef}
@@ -773,7 +773,7 @@ class MainWindow
           config={config}
           serviceManager={serviceManager}
           onClose={this.onClose}
-          messageState={botMessageState}
+          messageState={assistantMessageState}
           onSendInput={(text: string) =>
             this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
           }
@@ -801,7 +801,7 @@ class MainWindow
    */
   renderHydrationPanel() {
     const {
-      botMessageState,
+      assistantMessageState,
       serviceManager,
       catastrophicErrorType,
       persistedToBrowserStorage,
@@ -834,7 +834,7 @@ class MainWindow
         animationOnOpen={AnimationInType.NONE}
         animationOnClose={AnimationOutType.NONE}
         shouldOpen={
-          botMessageState.isHydratingCounter > 0 &&
+          assistantMessageState.isHydratingCounter > 0 &&
           !catastrophicErrorType &&
           viewState.mainWindow
         }
@@ -844,7 +844,7 @@ class MainWindow
       >
         <HydrationPanel
           headerDisplayName={headerDisplayName}
-          isHydrated={botMessageState.isHydratingCounter === 0}
+          isHydrated={assistantMessageState.isHydratingCounter === 0}
           serviceManager={serviceManager}
           onClose={this.onClose}
           languagePack={languagePack}

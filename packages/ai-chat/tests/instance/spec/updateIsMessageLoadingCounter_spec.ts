@@ -14,7 +14,7 @@ import {
   setupAfterEach,
 } from "../helpers/chatInstanceTestHelpers";
 
-describe("ChatInstance.updateIsLoadingCounter", () => {
+describe("ChatInstance.updateIsMessageLoadingCounter", () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -23,12 +23,13 @@ describe("ChatInstance.updateIsLoadingCounter", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     const initialState = store.getState();
-    const initialCounter = initialState.botMessageState.isLoadingCounter;
+    const initialCounter =
+      initialState.assistantMessageState.isMessageLoadingCounter;
 
-    instance.updateIsLoadingCounter("increase");
+    instance.updateIsMessageLoadingCounter("increase");
 
     const updatedState = store.getState();
-    expect(updatedState.botMessageState.isLoadingCounter).toBe(
+    expect(updatedState.assistantMessageState.isMessageLoadingCounter).toBe(
       initialCounter + 1,
     );
   });
@@ -38,16 +39,16 @@ describe("ChatInstance.updateIsLoadingCounter", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     // First increase the counter so we can decrease it
-    instance.updateIsLoadingCounter("increase");
+    instance.updateIsMessageLoadingCounter("increase");
 
     const stateAfterIncrease = store.getState();
     const counterAfterIncrease =
-      stateAfterIncrease.botMessageState.isLoadingCounter;
+      stateAfterIncrease.assistantMessageState.isMessageLoadingCounter;
 
-    instance.updateIsLoadingCounter("decrease");
+    instance.updateIsMessageLoadingCounter("decrease");
 
     const finalState = store.getState();
-    expect(finalState.botMessageState.isLoadingCounter).toBe(
+    expect(finalState.assistantMessageState.isMessageLoadingCounter).toBe(
       counterAfterIncrease - 1,
     );
   });
@@ -57,10 +58,10 @@ describe("ChatInstance.updateIsLoadingCounter", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     // Try to decrease when counter is already at 0
-    instance.updateIsLoadingCounter("decrease");
+    instance.updateIsMessageLoadingCounter("decrease");
 
     const state = store.getState();
-    expect(state.botMessageState.isLoadingCounter).toBe(0);
+    expect(state.assistantMessageState.isMessageLoadingCounter).toBe(0);
   });
 
   it("should handle multiple counter operations correctly", async () => {
@@ -69,22 +70,26 @@ describe("ChatInstance.updateIsLoadingCounter", () => {
 
     // Get initial counter
     let state = store.getState();
-    const initial = state.botMessageState.isLoadingCounter;
+    const initial = state.assistantMessageState.isMessageLoadingCounter;
 
     // Increase multiple times
-    instance.updateIsLoadingCounter("increase");
-    instance.updateIsLoadingCounter("increase");
+    instance.updateIsMessageLoadingCounter("increase");
+    instance.updateIsMessageLoadingCounter("increase");
     state = store.getState();
-    expect(state.botMessageState.isLoadingCounter).toBe(initial + 2);
+    expect(state.assistantMessageState.isMessageLoadingCounter).toBe(
+      initial + 2,
+    );
 
     // Decrease once
-    instance.updateIsLoadingCounter("decrease");
+    instance.updateIsMessageLoadingCounter("decrease");
     state = store.getState();
-    expect(state.botMessageState.isLoadingCounter).toBe(initial + 1);
+    expect(state.assistantMessageState.isMessageLoadingCounter).toBe(
+      initial + 1,
+    );
 
     // Decrease to original
-    instance.updateIsLoadingCounter("decrease");
+    instance.updateIsMessageLoadingCounter("decrease");
     state = store.getState();
-    expect(state.botMessageState.isLoadingCounter).toBe(initial);
+    expect(state.assistantMessageState.isMessageLoadingCounter).toBe(initial);
   });
 });

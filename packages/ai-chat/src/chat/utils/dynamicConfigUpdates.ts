@@ -46,7 +46,7 @@ export async function applyConfigChangesDynamically(
     if (
       newConfig.homescreen?.isOn &&
       !currentState.config.public.homescreen?.isOn &&
-      currentState.botMessageState.messageIDs.length === 0
+      currentState.assistantMessageState.messageIDs.length === 0
     ) {
       store.dispatch(actions.setHomeScreenIsOpen(true));
     }
@@ -55,7 +55,7 @@ export async function applyConfigChangesDynamically(
       (!newConfig.homescreen?.isOn &&
         currentState.config.public.homescreen?.isOn) ||
       (newConfig.homescreen?.disableReturn &&
-        currentState.botMessageState.messageIDs.length > 0)
+        currentState.assistantMessageState.messageIDs.length > 0)
     ) {
       store.dispatch(actions.setHomeScreenIsOpen(false));
     }
@@ -131,12 +131,12 @@ export async function applyConfigChangesDynamically(
   if (changes.lightweightUIChanged) {
     // Readonly input for bot
     if (typeof newConfig.isReadonly === "boolean") {
-      const current = store.getState().botInputState;
+      const current = store.getState().assistantInputState;
       const next = {
         ...current,
         isReadonly: newConfig.isReadonly,
       };
-      store.dispatch(actions.changeState({ botInputState: next }));
+      store.dispatch(actions.changeState({ assistantInputState: next }));
     }
   }
 }

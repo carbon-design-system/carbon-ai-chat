@@ -33,7 +33,7 @@ import {
 import { createUnmappingMemoizer } from "../utils/memoizerUtils";
 import { consoleError, createDidCatchErrorData } from "../utils/miscUtils";
 import { CatastrophicError } from "./CatastrophicError";
-import { BotHeader } from "./header/BotHeader";
+import { AssistantHeader } from "./header/AssistantHeader";
 import { Input, InputFunctions } from "./input/Input";
 import { EndHumanAgentChatModal } from "./modals/EndHumanAgentChatModal";
 import { RequestScreenShareModal } from "./modals/RequestScreenShareModal";
@@ -69,7 +69,7 @@ interface ChatInterfaceState {
   hasCaughtError: boolean;
 }
 
-class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
+class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
   public readonly state: Readonly<ChatInterfaceState> = {
     showEndChatConfirmation: false,
     hasCaughtError: false,
@@ -113,7 +113,7 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData("BotChat", error, errorInfo),
+      createDidCatchErrorData("AssistantChat", error, errorInfo),
     );
     this.setState({ hasCaughtError: true });
   }
@@ -165,7 +165,10 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
         this.requestDefaultFocus();
       }
     } catch (error) {
-      consoleError("An error occurred in BotChat.requestInputFocus", error);
+      consoleError(
+        "An error occurred in AssistantChat.requestInputFocus",
+        error,
+      );
     }
   };
 
@@ -313,7 +316,7 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
 
     return (
       <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
-        <BotHeader
+        <AssistantHeader
           ref={this.headerRef}
           onClose={onClose}
           onRestart={onRestart}
@@ -347,5 +350,5 @@ class BotChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
   }
 }
 
-export default injectIntl(BotChat, { forwardRef: true });
-export { BotChat as ChatClass };
+export default injectIntl(AssistantChat, { forwardRef: true });
+export { AssistantChat as ChatClass };

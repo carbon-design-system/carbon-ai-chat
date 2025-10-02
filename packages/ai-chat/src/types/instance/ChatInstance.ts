@@ -192,7 +192,7 @@ interface ChatActions {
    * small empty circle on the launcher. If there are any unread messages from a human agent, this indicator will be
    * shown with a number regardless of the custom setting of this flag.
    */
-  updateBotUnreadIndicatorVisibility: (isVisible: boolean) => void;
+  updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => void;
 
   /**
    * Scrolls to the (original) message with the given ID. Since there may be multiple message items in a given
@@ -205,7 +205,7 @@ interface ChatActions {
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
-   * This will clear all the current assistant messages from the main bot view and cancel any outstanding
+   * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
    * messages. This will also clear the current assistant session which will force a new session to start on the
    * next message.
    *
@@ -219,11 +219,11 @@ interface ChatActions {
   doAutoScroll: () => void;
 
   /**
-   * Either increases or decreases the internal counter that indicates whether the "bot is loading" indicator is
+   * Either increases or decreases the internal counter that indicates whether the "assistant is loading" indicator is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
    * increase or decrease the value. Any other value will log an error.
    */
-  updateIsLoadingCounter: (direction: IncreaseOrDecrease) => void;
+  updateIsMessageLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
@@ -310,7 +310,7 @@ export enum WriteableElementName {
   WELCOME_NODE_BEFORE_ELEMENT = "welcomeNodeBeforeElement",
 
   /**
-   * An element that appears in the header on a new line. Only visible while talking to the bot.
+   * An element that appears in the header on a new line. Only visible while talking to the assistant.
    */
   HEADER_BOTTOM_ELEMENT = "headerBottomElement",
 

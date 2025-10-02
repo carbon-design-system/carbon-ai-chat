@@ -97,17 +97,17 @@ $one-line-message-height: 88px;
 
 .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding
-  .cds-aichat--bot-message
+  .cds-aichat--assistant-message
   > div.cds-aichat--received,
 .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding
-  .cds-aichat--bot-message
+  .cds-aichat--assistant-message
   > div.cds-aichat--received.cds-aichat--received--carousel:not(
     .cds-aichat--received--carousel-single
   ):first-child,
 .cds-aichat--message__avatar-line
   + .cds-aichat--message--padding
-  .cds-aichat--bot-message
+  .cds-aichat--assistant-message
   > div.cds-aichat--received.cds-aichat--received--full-width:first-child {
   margin-block-start: layout.$spacing-03;
 }
@@ -196,7 +196,7 @@ $one-line-message-height: 88px;
   min-block-size: 100%;
 }
 
-.cds-aichat--bot-message {
+.cds-aichat--assistant-message {
   position: relative;
   display: flex;
   flex-direction: row;
@@ -342,7 +342,7 @@ svg.cds-aichat--sent-file-icon {
   inline-size: 100%;
 }
 
-.cds-aichat--bot-message .cds-aichat--received--agent-status-message {
+.cds-aichat--assistant-message .cds-aichat--received--agent-status-message {
   color: theme.$text-helper;
   @include type.type-style("caption-01");
 
@@ -350,7 +350,7 @@ svg.cds-aichat--sent-file-icon {
   text-align: center;
 }
 
-.cds-aichat--bot-message .cds-aichat--received--chat-status-message {
+.cds-aichat--assistant-message .cds-aichat--received--chat-status-message {
   color: theme.$text-secondary;
   @include type.type-style("caption-01");
 }
@@ -379,7 +379,7 @@ svg.cds-aichat--sent-file-icon {
     inline-size: layout.$spacing-07;
   }
 
-  .cds-aichat--message__avatar--bot {
+  .cds-aichat--message__avatar--assistant {
     svg {
       block-size: 28px;
       inline-size: 28px;
@@ -467,7 +467,7 @@ svg.cds-aichat--sent-file-icon {
   border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
 }
 
-.cds-aichat--message__avatar--bot
+.cds-aichat--message__avatar--assistant
   .cds-aichat--image-with-fallback
   .cds-aichat--icon-holder {
   background-color: theme.$chat-avatar-bot;
@@ -480,7 +480,7 @@ svg.cds-aichat--sent-file-icon {
 .cds-aichat--wide-width {
   .cds-aichat--message__avatar-line
     + .cds-aichat--message--padding
-    .cds-aichat--bot-message
+    .cds-aichat--assistant-message
     > div.cds-aichat--received {
     margin-block-start: 0;
   }

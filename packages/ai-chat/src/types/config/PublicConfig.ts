@@ -140,7 +140,7 @@ export interface PublicConfig {
   enableFocusTrap?: boolean;
 
   /**
-   * Indicates if Carbon AI Chat should sanitize HTML from the bot.
+   * Indicates if Carbon AI Chat should sanitize HTML from the assistant.
    */
   shouldSanitizeHTML?: boolean;
 
@@ -359,8 +359,8 @@ export interface PublicConfigMessaging {
 
   /**
    * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
-   * the loading indicator. This is tied to either {@link ChatInstance.messaging.addMessage} or {@link ChatInstance.messaging.addMessageChunk}
-   * being called after this message was sent.
+   * the loading indicator. This is tied to either {@link ChatInstanceMessaging.addMessage} or
+   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent.
    *
    * If set to 0, the chat will never automatically show a loading indicator.
    */

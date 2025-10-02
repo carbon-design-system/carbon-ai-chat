@@ -48,9 +48,9 @@ interface AppStateMessages {
   allMessagesByID: ObjectMap<Message>;
 
   /**
-   * The state of messages when the user is interacting with the bot/assistant.
+   * The state of messages when the user is interacting with the assistant.
    */
-  botMessageState: ChatMessagesState;
+  assistantMessageState: ChatMessagesState;
 }
 
 /**
@@ -58,9 +58,9 @@ interface AppStateMessages {
  */
 interface AppState extends AppStateMessages {
   /**
-   * The state of the input area when the user is interacting with a bot (not a human agent).
+   * The state of the input area when the user is interacting with an assistant (not a human agent).
    */
-  botInputState: InputState;
+  assistantInputState: InputState;
 
   /**
    * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
@@ -250,8 +250,8 @@ interface PersistedState {
   viewState: ViewState;
 
   /**
-   * Indicates if we should show an unread indicator on the launcher. This is a custom flag that is set by
-   * {@link ChatActions.updateBotUnreadIndicatorVisibility} and will display an empty circle on
+   * Indicates if we should show an unread indicator on the launcher. This is set by
+   * {@link ChatInstance.updateAssistantUnreadIndicatorVisibility} and will display an empty circle on
    * the launcher. This setting is overridden if there are any unread human agent messages in which case a circle
    * with a number is displayed.
    */
@@ -291,15 +291,15 @@ interface PersistedState {
 
   /**
    * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted
-   * with. Note that this is a duplicate of the property on {@link PersistedChatState.hasSentNonWelcomeMessage}. It
-   * is duplicated here so that this information may be available before hydration and before the user is known.
+   * with. This flag is duplicated so the information is available before hydration and before the user is known.
    * Note that this property reflects only the last user and should only be used when an approximate value is
    * acceptable.
    */
   hasSentNonWelcomeMessage: boolean;
 
   /**
-   * Map of if a disclaimer has been accepted on a given window.hostname value.
+   * Map of if a disclaimer has been accepted on a given window.hostname value, keyed by hostname via
+   * {@link ObjectMap}.
    */
   disclaimersAccepted: ObjectMap<boolean>;
 
@@ -332,7 +332,7 @@ interface ChatMessagesState {
    * Counter that indicates if a message is loading and a loading indicator should be displayed.
    * If "0" then we do not show loading indicator.
    */
-  isLoadingCounter: number;
+  isMessageLoadingCounter: number;
 
   /**
    * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
@@ -371,7 +371,7 @@ interface HumanAgentState {
 
   /**
    * Indicates the number of messages from an agent that are unread by a user. This is only indicated if the user is
-   * on the bot view. All agent messages are marked as read if the user switches to the agent view. This count does
+   * on the assistant view. All agent messages are marked as read if the user switches to the agent view. This count does
    * not include "agent joined" messages.
    */
   numUnreadMessages: number;

@@ -289,7 +289,7 @@ describe("Dynamic Config Updates", () => {
       expect(updatedState.config.public.isReadonly).toBe(true);
 
       // Bot input state should reflect readonly change
-      expect(updatedState.botInputState.isReadonly).toBe(true);
+      expect(updatedState.assistantInputState.isReadonly).toBe(true);
     });
 
     it("should preserve derived theme properties correctly", async () => {
@@ -394,7 +394,9 @@ describe("Dynamic Config Updates", () => {
       );
 
       // State changes should be applied
-      expect((updatedState as AppState).botInputState.isReadonly).toBe(true);
+      expect((updatedState as AppState).assistantInputState.isReadonly).toBe(
+        true,
+      );
       expect(
         (updatedState as AppState).persistedToBrowserStorage.homeScreenState
           .isHomeScreenOpen,
