@@ -132,6 +132,7 @@ function ChatCustomElement({
   locale,
   homescreen,
   launcher,
+  input,
 }: ChatCustomElementProps) {
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
 
@@ -201,6 +202,7 @@ function ChatCustomElement({
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderWriteableElements={renderWriteableElements}
           element={customElement}
+          input={input}
         />
       )}
     </div>

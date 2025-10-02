@@ -100,6 +100,7 @@ function ChatContainer({
   locale,
   homescreen,
   launcher,
+  input,
 }: ChatContainerProps) {
   // Reconstruct PublicConfig from flattened props
   const config = useMemo(
@@ -124,6 +125,7 @@ function ChatContainer({
       locale,
       homescreen,
       launcher,
+      input,
     }),
     [
       onError,
@@ -146,6 +148,7 @@ function ChatContainer({
       locale,
       homescreen,
       launcher,
+      input,
     ],
   );
   const wrapperRef = useRef(null); // Ref for the React wrapper component
