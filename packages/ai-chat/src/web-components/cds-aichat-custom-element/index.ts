@@ -27,6 +27,7 @@ import {
   LayoutConfig,
   PublicConfigMessaging,
   LanguagePack,
+  InputConfig,
 } from "../../types/config/PublicConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
@@ -161,6 +162,9 @@ class ChatCustomElement extends LitElement {
 
   @property({ type: Object })
   header?: HeaderConfig;
+
+  @property({ type: Object })
+  input?: InputConfig;
 
   @property({ type: Object })
   layout?: LayoutConfig;
@@ -299,6 +303,9 @@ class ChatCustomElement extends LitElement {
     }
     if (this.header !== undefined) {
       resolvedConfig.header = this.header;
+    }
+    if (this.input !== undefined) {
+      resolvedConfig.input = this.input;
     }
     if (this.layout !== undefined) {
       resolvedConfig.layout = this.layout;
