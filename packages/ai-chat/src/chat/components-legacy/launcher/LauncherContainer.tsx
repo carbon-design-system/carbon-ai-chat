@@ -13,15 +13,15 @@ import { useSelector } from "../../hooks/useSelector";
 import { useEffectDidUpdate } from "../../hooks/useEffectDidUpdate";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState, ViewType } from "../../../types/state/AppState";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { IS_PHONE } from "../../utils/browserUtils";
 import { LauncherDesktopContainer } from "./LauncherDesktopContainer";
 import { LauncherMobileContainer } from "./LauncherMobileContainer";
 import { MainWindowOpenReason } from "../../../types/events/eventBusTypes";
+import type { LauncherHandle } from "./LauncherButton";
 
 function LauncherContainer() {
   const serviceManager = useServiceManager();
-  const launcherRef = useRef<HasRequestFocus>();
+  const launcherRef = useRef<LauncherHandle | null>(null);
   const viewState = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.viewState,
   );
