@@ -87,7 +87,7 @@ jobs:
       # Triggers only if it is a full release
       - name: Check for peer dependency changes
         if: contains(github.event.inputs.tag, '-rc.') == false
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: check-peer-dependencies
           client-payload: '{"branch": "${{ github.ref_name }}", "previous-tag": "${{ github.event.inputs.previous-tag }}", "tag": "${{ github.event.inputs.tag }}"}'
@@ -134,7 +134,7 @@ jobs:
       # After successfully creating tag for release candidate, trigger the staging storybook environment deployment workflow.
       # Pass in the release branch name to the storybook deployment job so it build off the release branch
       - name: Dispatch staging storybook deployment workflow
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: deploy-staging-storybook
           client-payload: '{"branch": "${{ github.ref_name }}"}'
@@ -143,7 +143,7 @@ jobs:
       # Pass in the release branch name to the storybook deployment job so it build off the release branch
       - name: Dispatch production storybook deployment workflow
         if: contains(github.event.inputs.tag, '-rc.') == false
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: deploy-latest-storybook
           client-payload: '{"branch": "${{ github.ref_name }}"}'
@@ -157,7 +157,7 @@ jobs:
       # After successfully creating tag for the release candidate / full release, trigger the workflow to publish the CDN artifacts.
       # Pass in the tag to the CDN publishing workflow.
       - name: Dispatch CDN publishing workflow
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: publish-cdn-artifacts
           client-payload: '{"tag": "${{ github.event.inputs.tag }}", "branch": "${{ github.ref_name }}"}'
