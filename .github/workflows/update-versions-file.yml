@@ -32,18 +32,15 @@ jobs:
 
       - name: Read version from package.json and update versions.js
         run: |
-          VERSION=$(jq -r '.version' packages/ai-chat/package.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
           node - <<'EOF'
           const fs = require('fs');
-          const file = 'versions.js';
-          const version = process.env.VERSION;
+          const pkg = require('./packages/ai-chat/package.json');
+          const version = pkg.version;
 
+          const file = 'versions.js';
           let content = fs.readFileSync(file, 'utf8');
 
-          // Find the array inside AI_CHAT_VERSIONS
-          const regex = /export const AI_CHAT_VERSIONS\s*=\s*(\[[^\]]*\])/;
+          const regex = /export const AI_CHAT_VERSIONS\s*=\s*(\[[^\]]*\]);/;
           const match = content.match(regex);
           if (!match) {
             console.error("Could not find AI_CHAT_VERSIONS array in versions.js");
@@ -51,15 +48,16 @@ jobs:
           }
 
           let arr = eval(match[1]); // parse the JS array
-          if (!arr.includes("v" + version)) {
-            arr.unshift("v" + version); // prepend with "v"
+          const versionWithPrefix = "v" + version;
+          if (!arr.includes(versionWithPrefix)) {
+            arr.unshift(versionWithPrefix); // prepend with "v"
           }
 
           const newArrayStr = JSON.stringify(arr);
           const newContent = content.replace(regex, `export const AI_CHAT_VERSIONS = ${newArrayStr};`);
 
           fs.writeFileSync(file, newContent);
-          console.log("Updated versions.js with v" + version);
+          console.log("Updated versions.js with", versionWithPrefix);
           EOF
 
       - name: Commit updated versions.js file
