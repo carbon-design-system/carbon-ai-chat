@@ -104,7 +104,6 @@ jobs:
   update-versions-file:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    needs: create-release-tag
     steps:
       # Triggers only if it is a full release
       - name: Update versions.js file and upload to COS
