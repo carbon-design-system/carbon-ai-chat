@@ -137,7 +137,7 @@ describe("Config Miscellaneous", () => {
 
   describe("string", () => {
     it("should store assistantName in Redux state", async () => {
-      const assistantName = "Assistant Bot";
+      const assistantName = "My Assistant";
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         assistantName,

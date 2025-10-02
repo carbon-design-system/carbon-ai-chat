@@ -35,11 +35,11 @@ import {
   doTextChainOfThought,
   doTextChainOfThoughtStreaming,
   doTextStreaming,
-  doTextStreamingWithNonWatsonBotProfile,
+  doTextStreamingWithNonWatsonAssistantProfile,
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
   doTextWithHumanProfile,
-  doTextWithNonWatsonBotProfile,
+  doTextWithNonWatsonAssistantProfile,
   doTextWithWatsonAgentProfile,
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
@@ -74,8 +74,9 @@ const RESPONSE_MAP: Record<
   "text with feedback (stream)": doTextWithFeedbackStreaming,
   "text from watsonx agent": doTextWithWatsonAgentProfile,
   "text from third party human": doTextWithHumanProfile,
-  "text from third party bot": doTextWithNonWatsonBotProfile,
-  "text (stream) from third party bot": doTextStreamingWithNonWatsonBotProfile,
+  "text from third party bot": doTextWithNonWatsonAssistantProfile,
+  "text (stream) from third party bot":
+    doTextStreamingWithNonWatsonAssistantProfile,
   "text with chain of thought": doTextChainOfThought,
   "text (stream) with chain of thought": doTextChainOfThoughtStreaming,
   html: doHTML,

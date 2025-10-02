@@ -14,26 +14,26 @@ import {
   setupAfterEach,
 } from "../helpers/chatInstanceTestHelpers";
 
-describe("ChatInstance.updateBotUnreadIndicatorVisibility", () => {
+describe("ChatInstance.updateAssistantUnreadIndicatorVisibility", () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should update bot unread indicator visibility to true in Redux state", async () => {
+  it("should update assistant unread indicator visibility to true in Redux state", async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
-    instance.updateBotUnreadIndicatorVisibility(true);
+    instance.updateAssistantUnreadIndicatorVisibility(true);
 
     // Verify Redux state updated
     const state = store.getState();
     expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
   });
 
-  it("should update bot unread indicator visibility to false in Redux state", async () => {
+  it("should update assistant unread indicator visibility to false in Redux state", async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
-    instance.updateBotUnreadIndicatorVisibility(false);
+    instance.updateAssistantUnreadIndicatorVisibility(false);
 
     // Verify Redux state updated
     const state = store.getState();
@@ -45,15 +45,15 @@ describe("ChatInstance.updateBotUnreadIndicatorVisibility", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     // Test multiple toggles
-    instance.updateBotUnreadIndicatorVisibility(true);
+    instance.updateAssistantUnreadIndicatorVisibility(true);
     let state = store.getState();
     expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
 
-    instance.updateBotUnreadIndicatorVisibility(false);
+    instance.updateAssistantUnreadIndicatorVisibility(false);
     state = store.getState();
     expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(false);
 
-    instance.updateBotUnreadIndicatorVisibility(true);
+    instance.updateAssistantUnreadIndicatorVisibility(true);
     state = store.getState();
     expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
   });

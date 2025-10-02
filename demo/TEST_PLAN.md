@@ -24,7 +24,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **Focus trap:** `enableFocusTrap: true`
 - [ ] **HTML sanitization:** `shouldSanitizeHTML: false`
 - [ ] **Namespace:** `namespace: "test1"` vs `"test2"`
-- [ ] **Assistant name:** `assistantName: "MyBot"`
+- [ ] **Assistant name:** `assistantName: "My Assistant"`
 - [ ] **Locale:** `locale: "es"`
 - [ ] **Custom strings:** `strings: { welcome: "Custom welcome" }`
 - [ ] **Message timeout:** `messaging.messageTimeoutSecs: 5`

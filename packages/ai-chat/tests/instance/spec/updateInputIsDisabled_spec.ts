@@ -26,7 +26,7 @@ describe("ChatInstance.updateInputIsDisabled", () => {
 
     // Verify Redux state updated
     const state = store.getState();
-    expect(state.botInputState.isReadonly).toBe(true);
+    expect(state.assistantInputState.isReadonly).toBe(true);
   });
 
   it("should update input disabled state to false in Redux state", async () => {
@@ -37,7 +37,7 @@ describe("ChatInstance.updateInputIsDisabled", () => {
 
     // Verify Redux state updated
     const state = store.getState();
-    expect(state.botInputState.isReadonly).toBe(false);
+    expect(state.assistantInputState.isReadonly).toBe(false);
   });
 
   it("should toggle input disabled state and maintain correct Redux state", async () => {
@@ -47,14 +47,14 @@ describe("ChatInstance.updateInputIsDisabled", () => {
     // Test multiple toggles
     instance.updateInputIsDisabled(true);
     let state = store.getState();
-    expect(state.botInputState.isReadonly).toBe(true);
+    expect(state.assistantInputState.isReadonly).toBe(true);
 
     instance.updateInputIsDisabled(false);
     state = store.getState();
-    expect(state.botInputState.isReadonly).toBe(false);
+    expect(state.assistantInputState.isReadonly).toBe(false);
 
     instance.updateInputIsDisabled(true);
     state = store.getState();
-    expect(state.botInputState.isReadonly).toBe(true);
+    expect(state.assistantInputState.isReadonly).toBe(true);
   });
 });
