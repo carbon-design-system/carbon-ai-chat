@@ -549,7 +549,7 @@ class ChatActionsImpl {
     const currentAppStateMessages: AppStateMessages = {
       allMessageItemsByID: state.allMessageItemsByID,
       allMessagesByID: state.allMessagesByID,
-      botMessageState: state.botMessageState,
+      assistantMessageState: state.assistantMessageState,
     };
     const newAppStateMessages: AppStateMessages = merge(
       {},
@@ -558,13 +558,13 @@ class ChatActionsImpl {
     );
 
     // Now make sure the message arrays are merged correctly.
-    newAppStateMessages.botMessageState.messageIDs = [
-      ...history.messageHistory.botMessageState.messageIDs,
-      ...currentAppStateMessages.botMessageState.messageIDs,
+    newAppStateMessages.assistantMessageState.messageIDs = [
+      ...history.messageHistory.assistantMessageState.messageIDs,
+      ...currentAppStateMessages.assistantMessageState.messageIDs,
     ];
-    newAppStateMessages.botMessageState.localMessageIDs = [
-      ...history.messageHistory.botMessageState.localMessageIDs,
-      ...currentAppStateMessages.botMessageState.localMessageIDs,
+    newAppStateMessages.assistantMessageState.localMessageIDs = [
+      ...history.messageHistory.assistantMessageState.localMessageIDs,
+      ...currentAppStateMessages.assistantMessageState.localMessageIDs,
     ];
 
     this.serviceManager.store.dispatch(
@@ -602,7 +602,7 @@ class ChatActionsImpl {
       const isCompleteItem = isStreamCompleteItem(chunk);
       const isPartialItem = isStreamPartialItem(chunk);
       const isStopGeneratingVisible =
-        store.getState().botInputState.stopStreamingButtonState.isVisible;
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible;
 
       if (isPartialItem) {
         const streamingData = chunk.partial_item.streaming_metadata;
@@ -665,7 +665,7 @@ class ChatActionsImpl {
       // Reset stop streaming button when a complete/final chunk arrives
       if (
         (isCompleteItem || isStreamFinalResponse(chunk)) &&
-        store.getState().botInputState.stopStreamingButtonState.isVisible
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
       ) {
         store.dispatch(actions.setStopStreamingButtonDisabled(false));
         store.dispatch(actions.setStopStreamingButtonVisible(false));
@@ -1209,7 +1209,7 @@ class ChatActionsImpl {
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
-   * This will clear all the current assistant messages from the main bot view and cancel any outstanding messages.
+   * This will clear all the current assistant messages from the main assistant view and cancel any outstanding messages.
    * Lastly, this will clear the current assistant session which will force a new session to start on the next message.
    */
   async restartConversation(options: RestartConversationOptions = {}) {

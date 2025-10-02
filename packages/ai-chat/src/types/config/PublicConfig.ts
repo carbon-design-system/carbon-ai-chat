@@ -140,7 +140,7 @@ export interface PublicConfig {
   enableFocusTrap?: boolean;
 
   /**
-   * Indicates if Carbon AI Chat should sanitize HTML from the bot.
+   * Indicates if Carbon AI Chat should sanitize HTML from the assistant.
    */
   shouldSanitizeHTML?: boolean;
 

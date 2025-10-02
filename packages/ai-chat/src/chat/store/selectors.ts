@@ -10,7 +10,7 @@
 import { AppState, HumanAgentDisplayState } from "../../types/state/AppState";
 import { LanguagePack } from "../../types/config/PublicConfig";
 
-const getBotInputState = (state: AppState) => state.botInputState;
+const getAssistantInputState = (state: AppState) => state.assistantInputState;
 const getHumanAgentInputState = (state: AppState) =>
   state.humanAgentState.inputState;
 const getHumanAgentState = (state: AppState) => state.humanAgentState;
@@ -66,7 +66,7 @@ function selectIsInputToHumanAgent(state: AppState): boolean {
 function selectInputState(state: AppState) {
   return selectIsInputToHumanAgent(state)
     ? getHumanAgentInputState(state)
-    : getBotInputState(state);
+    : getAssistantInputState(state);
 }
 
 export {

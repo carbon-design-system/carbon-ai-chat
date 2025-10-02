@@ -15,7 +15,7 @@ import actions from "../store/actions";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { MessageLoadingManager } from "../utils/messageServiceUtils";
 import {
-  getLastBotResponseWithContext,
+  getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
 } from "../utils/messageUtils";
 import {
@@ -460,7 +460,7 @@ class MessageService {
 
       // Do all the normal things for our general messageRequests, however for event messages we skip this.
       if (message.input.message_type !== MessageInputType.EVENT) {
-        const lastResponse = getLastBotResponseWithContext(state);
+        const lastResponse = getLastAssistantResponseWithContext(state);
         if (lastResponse) {
           message.thread_id = THREAD_ID_MAIN;
         }

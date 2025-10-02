@@ -37,9 +37,9 @@ const defaultHumanUserProfile: ResponseUserProfile = {
   user_type: UserType.HUMAN,
 };
 
-const defaultAlternativeBotProfile: ResponseUserProfile = {
+const defaultAlternativeAssistantProfile: ResponseUserProfile = {
   id: "1",
-  nickname: "Super bot",
+  nickname: "Super assistant",
   user_type: UserType.BOT,
 };
 
@@ -397,10 +397,10 @@ function doTextWithHumanProfile(
   doText(instance, text, responseUserProfile);
 }
 
-function doTextWithNonWatsonBotProfile(
+function doTextWithNonWatsonAssistantProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultAlternativeBotProfile,
+  responseUserProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
 ) {
   doText(instance, text, responseUserProfile);
 }
@@ -413,11 +413,11 @@ function doTextWithWatsonAgentProfile(
   doText(instance, text, responseUserProfile);
 }
 
-async function doTextStreamingWithNonWatsonBotProfile(
+async function doTextStreamingWithNonWatsonAssistantProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
   cancellable = true,
-  userProfile: ResponseUserProfile = defaultAlternativeBotProfile,
+  userProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
 ) {
   return doTextStreaming(instance, text, cancellable, WORD_DELAY, userProfile);
 }
@@ -530,8 +530,8 @@ export {
   doWelcomeText,
   doText,
   doTextWithHumanProfile,
-  doTextWithNonWatsonBotProfile,
-  doTextStreamingWithNonWatsonBotProfile,
+  doTextWithNonWatsonAssistantProfile,
+  doTextStreamingWithNonWatsonAssistantProfile,
   doTextWithWatsonAgentProfile,
   doHTML,
   doHTMLStreaming,

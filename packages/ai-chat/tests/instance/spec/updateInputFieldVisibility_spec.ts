@@ -26,7 +26,7 @@ describe("ChatInstance.updateInputFieldVisibility", () => {
 
     // Verify Redux state updated
     const state = store.getState();
-    expect(state.botInputState.fieldVisible).toBe(false);
+    expect(state.assistantInputState.fieldVisible).toBe(false);
   });
 
   it("should update input field visibility to true in Redux state", async () => {
@@ -37,7 +37,7 @@ describe("ChatInstance.updateInputFieldVisibility", () => {
 
     // Verify Redux state updated
     const state = store.getState();
-    expect(state.botInputState.fieldVisible).toBe(true);
+    expect(state.assistantInputState.fieldVisible).toBe(true);
   });
 
   it("should toggle input field visibility and maintain correct Redux state", async () => {
@@ -47,14 +47,14 @@ describe("ChatInstance.updateInputFieldVisibility", () => {
     // Test multiple toggles
     instance.updateInputFieldVisibility(false);
     let state = store.getState();
-    expect(state.botInputState.fieldVisible).toBe(false);
+    expect(state.assistantInputState.fieldVisible).toBe(false);
 
     instance.updateInputFieldVisibility(true);
     state = store.getState();
-    expect(state.botInputState.fieldVisible).toBe(true);
+    expect(state.assistantInputState.fieldVisible).toBe(true);
 
     instance.updateInputFieldVisibility(false);
     state = store.getState();
-    expect(state.botInputState.fieldVisible).toBe(false);
+    expect(state.assistantInputState.fieldVisible).toBe(false);
   });
 });

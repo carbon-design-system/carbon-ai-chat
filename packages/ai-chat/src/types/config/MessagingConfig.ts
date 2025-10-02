@@ -48,7 +48,7 @@ export interface ChatInstanceMessaging {
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
-   * This will clear all the current assistant messages from the main bot view and cancel any outstanding
+   * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
    * messages. This will also clear the current assistant session which will force a new session to start on the
    * next message.
    */

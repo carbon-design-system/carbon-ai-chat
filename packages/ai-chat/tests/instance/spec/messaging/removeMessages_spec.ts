@@ -205,8 +205,8 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // Get initial order
       let state = store.getState();
-      const initialMessageIDs = [...state.botMessageState.messageIDs];
-      const initialLocalIDs = [...state.botMessageState.localMessageIDs];
+      const initialMessageIDs = [...state.assistantMessageState.messageIDs];
+      const initialLocalIDs = [...state.assistantMessageState.localMessageIDs];
 
       expect(initialMessageIDs.includes("order-msg-2")).toBe(true);
 
@@ -215,8 +215,8 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // Verify order arrays are updated
       state = store.getState();
-      const finalMessageIDs = state.botMessageState.messageIDs;
-      const finalLocalIDs = state.botMessageState.localMessageIDs;
+      const finalMessageIDs = state.assistantMessageState.messageIDs;
+      const finalLocalIDs = state.assistantMessageState.localMessageIDs;
 
       expect(finalMessageIDs.includes("order-msg-2")).toBe(false);
       expect(finalMessageIDs.includes("order-msg-1")).toBe(true);
@@ -364,7 +364,7 @@ describe("ChatInstance.messaging.removeMessages", () => {
       const initialState = store.getState();
       const initialHumanAgentState = { ...initialState.humanAgentState };
       const initialIsHydrated = initialState.isHydrated;
-      const initialBotName = initialState.config.public.assistantName;
+      const initialAssistantName = initialState.config.public.assistantName;
 
       // Remove the message
       await instance.messaging.removeMessages(["state-preserve-msg"]);
@@ -378,7 +378,7 @@ describe("ChatInstance.messaging.removeMessages", () => {
         initialHumanAgentState.isReconnecting,
       );
       expect(finalState.isHydrated).toBe(initialIsHydrated);
-      expect(finalState.config.public.assistantName).toBe(initialBotName);
+      expect(finalState.config.public.assistantName).toBe(initialAssistantName);
     });
   });
 

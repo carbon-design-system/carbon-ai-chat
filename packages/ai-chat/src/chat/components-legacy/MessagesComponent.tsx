@@ -188,8 +188,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const newHumanAgentDisplayState = selectHumanAgentDisplayState(newProps);
 
     const typingChanged =
-      oldProps.messageState.isLoadingCounter !==
-        newProps.messageState.isLoadingCounter ||
+      oldProps.messageState.isMessageLoadingCounter !==
+        newProps.messageState.isMessageLoadingCounter ||
       oldHumanAgentDisplayState.isHumanAgentTyping !==
         newHumanAgentDisplayState.isHumanAgentTyping;
 
@@ -343,7 +343,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       const { scrollToTop, scrollToBottom } = options;
       const { localMessageItems, messageState, allMessagesByID } = this.props;
-      const { isLoadingCounter } = messageState;
+      const { isMessageLoadingCounter } = messageState;
       const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
       const scrollElement = this.messagesContainerWithScrollingRef.current;
 
@@ -374,10 +374,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
         // decide it remembers the previous scroll position and set it for us.
         setScrollTop = 0;
-      } else if (isLoadingCounter > 0 || isHumanAgentTyping) {
+      } else if (isMessageLoadingCounter > 0 || isHumanAgentTyping) {
         // The typing indicator is visible, so scroll to the bottom.
         setScrollTop = scrollElement.scrollHeight;
-        debugAutoScroll("[doAutoScroll] isLoading visible", isLoadingCounter);
+        debugAutoScroll(
+          "[doAutoScroll] isLoading visible",
+          isMessageLoadingCounter,
+        );
       } else {
         // Iterate backwards until we find the last message to scroll to. By default, response messages should be
         // scrolled to (not request messages). However, if a response has history.silent=true, it should not be scrolled to.
@@ -636,7 +639,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       >
         <div className="cds-aichat--message--padding">
           {isTypingMessage && <AriaLiveMessage message={isTypingMessage} />}
-          <div className="cds-aichat--bot-message">
+          <div className="cds-aichat--assistant-message">
             <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
               <div className="cds-aichat--received--inner">
                 <InlineLoadingComponent
@@ -689,7 +692,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } = this.props;
     const inputState = selectInputState(this.props);
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-    const { isLoadingCounter } = messageState;
+    const { isMessageLoadingCounter } = messageState;
     const { disclaimersAccepted } = persistedToBrowserStorage;
 
     // If there is a disclaimer, messages should only be rendered once it's accepted.
@@ -702,7 +705,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const totalMessagesWithTyping =
       this.props.localMessageItems.length +
-      (isLoadingCounter > 0 || isHumanAgentTyping ? 1 : 0);
+      (isMessageLoadingCounter > 0 || isHumanAgentTyping ? 1 : 0);
 
     const isLastMessage = messagesIndex === totalMessagesWithTyping - 1;
     const className = cx({
@@ -962,7 +965,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         derived: { languagePack },
       },
     } = this.props;
-    const { isLoadingCounter } = messageState;
+    const { isMessageLoadingCounter } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
@@ -973,9 +976,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     let isTypingMessage;
     if (isHumanAgentTyping) {
       isTypingMessage = intl.formatMessage({ id: "messages_agentIsTyping" });
-    } else if (isLoadingCounter) {
+    } else if (isMessageLoadingCounter) {
       isTypingMessage = intl.formatMessage(
-        { id: "messages_botIsLoading" },
+        { id: "messages_assistantIsLoading" },
         { assistantName },
       );
     }
@@ -1004,7 +1007,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           >
             {this.renderScrollHandle(true)}
             {regularMessages}
-            {(Boolean(isLoadingCounter) || isHumanAgentTyping) &&
+            {(Boolean(isMessageLoadingCounter) || isHumanAgentTyping) &&
               this.renderTypingIndicator(
                 isTypingMessage,
                 localMessageItems.length,

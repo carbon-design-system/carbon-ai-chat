@@ -58,7 +58,7 @@ import {
 } from "./HumanAgentService";
 import {
   addHumanAgentEndChatMessage,
-  addBotReturnMessage,
+  addAssistantReturnMessage,
   addMessages,
   createHumanAgentLocalMessage,
   LocalAndOriginalMessagesPair,
@@ -374,13 +374,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * @param endedByUser Indicates if the chat is being ended as a result of the user or if it was ended
    * programmatically from an instance method.
    * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
-   * @param showBotReturnMessage Indicates if the chat should show the "bot return" message.
+   * @param showAssistantReturnMessage Indicates if the chat should show the "bot return" message.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
   public async endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage = true,
-    showBotReturnMessage = true,
+    showAssistantReturnMessage = true,
   ): Promise<void> {
     if (!this.chatStarted || !this.serviceDesk) {
       // Already ended or no service desk.
@@ -401,7 +401,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       false,
       event?.preEndChatPayload,
       showHumanAgentLeftMessage,
-      showBotReturnMessage,
+      showAssistantReturnMessage,
       endMessageType,
     );
   }
@@ -413,7 +413,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     endedByHumanAgent: boolean,
     preEndChatPayload: unknown,
     showHumanAgentLeftMessage: boolean,
-    showBotReturnMessage: boolean,
+    showAssistantReturnMessage: boolean,
     agentEndChatMessageType: HumanAgentMessageType,
   ): Promise<void> {
     const { isConnected } = this.persistedHumanAgentState();
@@ -451,8 +451,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     await this.fireEndChat(endedByHumanAgent, !isConnected);
 
-    if (isConnected && showBotReturnMessage) {
-      await addBotReturnMessage(
+    if (isConnected && showAssistantReturnMessage) {
+      await addAssistantReturnMessage(
         BOT_RETURN_DELAY,
         wasSuspended,
         this.serviceManager,
@@ -834,7 +834,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
             wasSuspended,
             this.serviceManager,
           );
-          await addBotReturnMessage(0, wasSuspended, this.serviceManager);
+          await addAssistantReturnMessage(0, wasSuspended, this.serviceManager);
         }
       } else {
         this.showLeaveWarning = false;
