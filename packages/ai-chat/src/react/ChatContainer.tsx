@@ -70,37 +70,38 @@ const ReactChatContainer = React.memo(
  *
  * @category React
  */
-function ChatContainer({
-  onBeforeRender,
-  onAfterRender,
-  strings,
-  serviceDeskFactory,
-  serviceDesk,
-  renderUserDefinedResponse,
-  renderWriteableElements,
-  element,
-  // Flattened PublicConfig properties
-  onError,
-  openChatByDefault,
-  disclaimer,
-  disableCustomElementMobileEnhancements,
-  debug,
-  exposeServiceManagerForTesting,
-  injectCarbonTheme,
-  aiEnabled,
-  shouldTakeFocusIfOpensAutomatically,
-  namespace,
-  enableFocusTrap,
-  shouldSanitizeHTML,
-  header,
-  layout,
-  messaging,
-  isReadonly,
-  assistantName,
-  locale,
-  homescreen,
-  launcher,
-}: ChatContainerProps) {
+function ChatContainer(props: ChatContainerProps) {
+  const {
+    onBeforeRender,
+    onAfterRender,
+    strings,
+    serviceDeskFactory,
+    serviceDesk,
+    renderUserDefinedResponse,
+    renderWriteableElements,
+    element,
+    // Flattened PublicConfig properties
+    onError,
+    openChatByDefault,
+    disclaimer,
+    disableCustomElementMobileEnhancements,
+    debug,
+    exposeServiceManagerForTesting,
+    injectCarbonTheme,
+    aiEnabled,
+    shouldTakeFocusIfOpensAutomatically,
+    namespace,
+    enableFocusTrap,
+    shouldSanitizeHTML,
+    header,
+    layout,
+    messaging,
+    isReadonly,
+    assistantName,
+    locale,
+    homescreen,
+    launcher,
+  } = props;
   // Reconstruct PublicConfig from flattened props
   const config = useMemo(
     (): PublicConfig => ({
