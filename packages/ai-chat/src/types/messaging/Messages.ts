@@ -193,7 +193,7 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   history?: MessageResponseHistory;
 
   /**
-   * Options for the {@link MessageResponse}. This includes metadata about the user or bot sending this response.
+   * Options for the {@link MessageResponse}. This includes metadata about the user or assistant sending this response.
    */
   message_options?: MessageResponseOptions;
 }
@@ -1438,7 +1438,7 @@ interface MessageUIStateInternal {
  */
 interface MessageResponseOptions {
   /**
-   * This is the profile for the human or bot who sent or triggered this message.
+   * This is the profile for the human or assistant who sent or triggered this message.
    */
   response_user_profile?: ResponseUserProfile;
 
@@ -1654,7 +1654,7 @@ enum UserType {
   HUMAN = "human",
 
   /**
-   * A message from a non-watsonx bot, used for interacting with bots that are not backed by watsonx.
+   * A message from a non-watsonx assistant, used for interacting with assistants that are not backed by watsonx.
    *
    * Official guidance is to not use this for IBM products without explicit exception.
    */
@@ -1668,7 +1668,7 @@ enum UserType {
 
 /**
  * Profile information about a specific agent that can be used to display information to the user. This may
- * represent a human agent or a virtual/bot agent.
+ * represent a human agent or a virtual assistant agent.
  *
  * @category Messaging
  */
@@ -1684,7 +1684,7 @@ interface ResponseUserProfile {
   nickname: string;
 
   /**
-   * The type of user. If its a "human" there is more protection against code injection attacks, where as bot responses
+   * The type of user. If its a "human" there is more protection against code injection attacks, where as assistant responses
    * are trusted by default unless {@link PublicConfig.shouldSanitizeHTML} is set to true.
    */
   user_type: UserType;

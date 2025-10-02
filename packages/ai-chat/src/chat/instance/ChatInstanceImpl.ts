@@ -108,8 +108,11 @@ function createChatInstance({
       );
     },
 
-    updateBotUnreadIndicatorVisibility: (isVisible: boolean) => {
-      debugLog("Called instance.updateBotUnreadIndicatorVisibility", isVisible);
+    updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => {
+      debugLog(
+        "Called instance.updateAssistantUnreadIndicatorVisibility",
+        isVisible,
+      );
       serviceManager.store.dispatch(
         actions.setLauncherProperty("showUnreadIndicator", isVisible),
       );
@@ -197,14 +200,16 @@ function createChatInstance({
       return instance.messaging.restartConversation();
     },
 
-    updateIsLoadingCounter(direction: string): void {
-      debugLog("Called instance.updateIsLoadingCounter", direction);
+    updateIsMessageLoadingCounter(direction: string): void {
+      debugLog("Called instance.updateIsMessageLoadingCounter", direction);
       const { store } = serviceManager;
 
       if (direction === "increase") {
         store.dispatch(actions.addIsLoadingCounter(1));
       } else if (direction === "decrease") {
-        if (store.getState().botMessageState.isLoadingCounter <= 0) {
+        if (
+          store.getState().assistantMessageState.isMessageLoadingCounter <= 0
+        ) {
           consoleError(
             "You cannot decrease the loading counter when it is already <= 0",
           );
@@ -213,7 +218,7 @@ function createChatInstance({
         store.dispatch(actions.addIsLoadingCounter(-1));
       } else {
         consoleError(
-          `[updateIsLoadingCounter] Invalid direction: ${direction}. Valid values are "increase" and "decrease".`,
+          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are "increase" and "decrease".`,
         );
       }
     },
@@ -225,7 +230,7 @@ function createChatInstance({
       if (direction === "increase") {
         store.dispatch(actions.addIsHydratingCounter(1));
       } else if (direction === "decrease") {
-        if (store.getState().botMessageState.isHydratingCounter <= 0) {
+        if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
           consoleError(
             "You cannot decrease the hydrating counter when it is already <= 0",
           );

@@ -100,39 +100,42 @@ if (isBrowser && !document.getElementById("cds-aichat-custom-element-styles")) {
  *
  * @category React
  */
-function ChatCustomElement({
-  strings,
-  serviceDeskFactory,
-  serviceDesk,
-  onBeforeRender,
-  onAfterRender,
-  renderUserDefinedResponse,
-  renderWriteableElements,
-  className,
-  id,
-  onViewChange,
-  // Flattened PublicConfig properties
-  onError,
-  openChatByDefault,
-  disclaimer,
-  disableCustomElementMobileEnhancements,
-  debug,
-  exposeServiceManagerForTesting,
-  injectCarbonTheme,
-  aiEnabled,
-  shouldTakeFocusIfOpensAutomatically,
-  namespace,
-  enableFocusTrap,
-  shouldSanitizeHTML,
-  header,
-  layout,
-  messaging,
-  isReadonly,
-  assistantName,
-  locale,
-  homescreen,
-  launcher,
-}: ChatCustomElementProps) {
+function ChatCustomElement(props: ChatCustomElementProps) {
+  const {
+    strings,
+    serviceDeskFactory,
+    serviceDesk,
+    onBeforeRender,
+    onAfterRender,
+    renderUserDefinedResponse,
+    renderWriteableElements,
+    className,
+    id,
+    onViewChange,
+    // Flattened PublicConfig properties
+    onError,
+    openChatByDefault,
+    disclaimer,
+    disableCustomElementMobileEnhancements,
+    debug,
+    exposeServiceManagerForTesting,
+    injectCarbonTheme,
+    aiEnabled,
+    shouldTakeFocusIfOpensAutomatically,
+    namespace,
+    enableFocusTrap,
+    shouldSanitizeHTML,
+    header,
+    layout,
+    messaging,
+    isReadonly,
+    assistantName,
+    locale,
+    homescreen,
+    launcher,
+    input,
+  } = props;
+
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
 
   const onBeforeRenderOverride = useCallback(
@@ -201,6 +204,7 @@ function ChatCustomElement({
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderWriteableElements={renderWriteableElements}
           element={customElement}
+          input={input}
         />
       )}
     </div>

@@ -140,7 +140,7 @@ export interface PublicConfig {
   enableFocusTrap?: boolean;
 
   /**
-   * Indicates if Carbon AI Chat should sanitize HTML from the bot.
+   * Indicates if Carbon AI Chat should sanitize HTML from the assistant.
    */
   shouldSanitizeHTML?: boolean;
 
@@ -191,6 +191,11 @@ export interface PublicConfig {
   launcher?: LauncherConfig;
 
   /**
+   * Configuration for the main input field on the chat.
+   */
+  input?: InputConfig;
+
+  /**
    * Optional partial language pack overrides. Values merge with defaults.
    */
   strings?: DeepPartial<LanguagePack>;
@@ -239,6 +244,20 @@ export enum MinimizeButtonIconType {
 }
 
 /**
+ * Configuration for the input field in the main chat and homescreen.
+ *
+ * @category Config
+ */
+export interface InputConfig {
+  /**
+   * The maximum number of characters allowed in the input field. Defaults to 10000.
+   */
+  maxInputCharacters?: number;
+}
+
+/**
+ * Configuration for the main header of the chat.
+ *
  * @category Config
  */
 export interface HeaderConfig {

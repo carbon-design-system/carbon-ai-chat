@@ -25,6 +25,7 @@ import {
   HeaderConfig,
   LayoutConfig,
   PublicConfigMessaging,
+  InputConfig,
 } from "../../types/config/PublicConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { LanguagePack } from "../../types/config/PublicConfig";
@@ -116,6 +117,9 @@ class ChatContainer extends LitElement {
 
   @property({ type: Object })
   header?: HeaderConfig;
+
+  @property({ type: Object })
+  input?: InputConfig;
 
   @property({ type: Object })
   layout?: LayoutConfig;
@@ -257,6 +261,9 @@ class ChatContainer extends LitElement {
     }
     if (this.header !== undefined) {
       resolvedConfig.header = this.header;
+    }
+    if (this.input !== undefined) {
+      resolvedConfig.input = this.input;
     }
     if (this.layout !== undefined) {
       resolvedConfig.layout = this.layout;

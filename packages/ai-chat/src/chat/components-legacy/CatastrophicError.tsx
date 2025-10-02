@@ -22,10 +22,9 @@ import { AppState } from "../../types/state/AppState";
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import { ErrorMessageDark } from "./ErrorMessageDark";
 import { ErrorMessageLight } from "./ErrorMessageLight";
-import { BotHeader } from "./header/BotHeader";
+import { AssistantHeader } from "./header/AssistantHeader";
 import RichText from "./responseTypes/util/RichText";
-import { LanguagePack } from "../../types/config/PublicConfig";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { CarbonTheme, LanguagePack } from "../../types/config/PublicConfig";
 
 const Restart = carbonIconToReact(Restart16);
 
@@ -82,7 +81,7 @@ function CatastrophicError({
   return (
     <>
       {showHeader && (
-        <BotHeader
+        <AssistantHeader
           headerDisplayName={headerDisplayName}
           onClose={onClose}
           onToggleHomeScreen={null}

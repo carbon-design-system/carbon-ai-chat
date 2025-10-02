@@ -42,6 +42,11 @@ Instead of pulling from the `es-custom` folder and using the `cds-custom-*` comp
 
 `getState()` now returns a frozen `PublicChatState` that exposes the sessionStorage-backed fields as top-level properties (e.g. `version`, `viewState`, `showUnreadIndicator`, `homeScreenState`, etc.). The `humanAgent` block contains the persisted human-agent data plus a live `isConnecting` flag sourced from in-memory state. Treat the returned object as read-only and call `getState()` again when you need fresh values.
 
+### Renamed Methods:
+
+- `updateBotUnreadIndicatorVisibility()` -> `updateAssistantUnreadIndicatorVisibility()`
+- `updateIsLoadingCounter()` -> `updateIsMessageLoadingCounter()`
+
 ### Removed Methods:
 
 Many `updateX` methods on `ChatInstance` removed. Update config instead.
@@ -93,7 +98,7 @@ const config = {
 const config = {
   header: {
     title: "Welcome",
-    name: "My Bot",
+    name: "My Assistant",
     minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
     showRestartButton: true,
   },
@@ -272,6 +277,19 @@ All panel identifiers are now available through `PageObjectId`:
 - `PageObjectId.CONVERSATIONAL_SEARCH_CITATION_PANEL` (`conversational_search_citation_panel`): Citation panel
 - `PageObjectId.CUSTOM_PANEL` (`custom_panel`): Custom content panel
 - `PageObjectId.BUTTON_RESPONSE_PANEL` (`button_response_panel`): Panel opened from button responses
+
+## Terminology Updates
+
+The following terminology has been updated from "bot" to "assistant" throughout the codebase:
+
+### Language Pack String Keys:
+
+- `messages_botSaid` -> `messages_assistantSaid`
+- `messages_botIsLoading` -> `messages_assistantIsLoading`
+- `message_labelBot` -> `message_labelAssistant`
+- `header_ariaBotAvatar` -> `header_ariaAssistantAvatar`
+- `agent_ariaGenericBotAvatar` -> `agent_ariaGenericAssistantAvatar`
+- `agent_botReturned` -> `agent_assistantReturned`
 
 ## New Features
 
