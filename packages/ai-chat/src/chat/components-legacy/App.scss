@@ -125,7 +125,7 @@
 }
 
 /* Generic bot container before rounded variants */
-.cds-aichat--bot-container {
+.cds-aichat--assistant-container {
   position: absolute;
   block-size: 100%;
   inline-size: 100%;
@@ -146,7 +146,7 @@ rounded corners are enabled. */
   .cds-aichat--home-screen,
   .cds-aichat--confirm-modal,
   .cds-aichat--widget__animation-container,
-  .cds-aichat--bot-container,
+  .cds-aichat--assistant-container,
   .cds-aichat--overlay-panel,
   .cds-aichat--hydrating-container {
     border-end-end-radius: layout.$spacing-03;

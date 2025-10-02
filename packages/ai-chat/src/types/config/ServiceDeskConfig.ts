@@ -409,7 +409,7 @@ export interface ConnectingErrorInfo extends BaseErrorInfo {
   type: ErrorType.CONNECTING;
 
   /**
-   * An optional message that is displayed to the user in the bot view. If this value is not provided, a default
+   * An optional message that is displayed to the user in the assistant view. If this value is not provided, a default
    * message will be shown instead.
    *
    * Note that support for this field was added in Carbon AI Chat 6.7.0. It will be ignored in earlier versions.

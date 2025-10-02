@@ -106,18 +106,18 @@ function createHumanAgentLocalMessageForType(
  * Creates a message for the "bot returns" message that is displayed after a chat is ended. If there is no text in
  * the language pack for this message, the message will be undefined.
  */
-function createBotReturnMessage(languagePack: LanguagePack) {
+function createAssistantReturnMessage(languagePack: LanguagePack) {
   // Create a bot message to let the user know the bot has returned.
-  const { agent_botReturned } = languagePack;
+  const { agent_assistantReturned } = languagePack;
 
-  if (!agent_botReturned) {
+  if (!agent_assistantReturned) {
     // No text, so don't show anything.
     return null;
   }
 
   const { originalMessage, localMessage } =
     createHumanAgentLocalMessageForType(null);
-  localMessage.item.text = agent_botReturned;
+  localMessage.item.text = agent_assistantReturned;
 
   return { originalMessage, localMessage };
 }
@@ -161,12 +161,12 @@ async function addMessages(
  * @param wasSuspended Indicates if the conversation was suspended before it was ended.
  * @param serviceManager The service manager to use.
  */
-async function addBotReturnMessage(
+async function addAssistantReturnMessage(
   botReturnDelay: number,
   wasSuspended: boolean,
   serviceManager: ServiceManager,
 ) {
-  const botReturn = createBotReturnMessage(
+  const botReturn = createAssistantReturnMessage(
     serviceManager.store.getState().config.derived.languagePack,
   );
   if (botReturn) {
@@ -220,5 +220,5 @@ export {
   addMessages,
   toPair,
   addHumanAgentEndChatMessage,
-  addBotReturnMessage,
+  addAssistantReturnMessage,
 };

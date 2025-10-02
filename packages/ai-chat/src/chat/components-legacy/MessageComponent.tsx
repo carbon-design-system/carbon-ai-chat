@@ -242,7 +242,7 @@ class MessageComponent extends PureComponent<
 
   private isAgent: boolean;
   /**
-   * Returns an ARIA message that can be used to indicate that the widget (either bot or agent) was responsible for
+   * Returns an ARIA message that can be used to indicate that the widget (either assistant or agent) was responsible for
    * saying a specific message.
    */
   private getWidgetSaidMessage() {
@@ -256,7 +256,7 @@ class MessageComponent extends PureComponent<
         this.isAgent = true;
       }
     } else {
-      messageId = "messages_botSaid";
+      messageId = "messages_assistantSaid";
       this.isAgent = false;
     }
     return messageId
@@ -325,12 +325,12 @@ class MessageComponent extends PureComponent<
   public requestHandleFocus() {
     const { languagePack, intl, message, assistantName } = this.props;
 
-    // Announce who said it and then the actual message. The "Bot said" text is normally only read once per
+    // Announce who said it and then the actual message. The "Assistant said" text is normally only read once per
     // MessageResponse instead of once per LocalMessage but since we're moving focus between each LocalMessage, go
     // ahead and announce the "who" part for each one.
     const whoAnnouncement = isRequest(message)
       ? languagePack.messages_youSaid
-      : intl.formatMessage({ id: "messages_botSaid" }, { assistantName });
+      : intl.formatMessage({ id: "messages_assistantSaid" }, { assistantName });
 
     const strings: string[] = [whoAnnouncement];
     nodeToText(this.messageRef.current, strings);
@@ -356,7 +356,7 @@ class MessageComponent extends PureComponent<
         ref={this.ref}
       >
         <div className="cds-aichat--message--padding">
-          <div className="cds-aichat--bot-message">
+          <div className="cds-aichat--assistant-message">
             <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
             <div className="cds-aichat--received cds-aichat--message-vertical-padding cds-aichat--received--text">
               <InlineError
@@ -430,7 +430,7 @@ class MessageComponent extends PureComponent<
         avatar = (
           <ImageWithFallback
             url={responseUserProfile?.profile_picture_url}
-            alt={languagePack.agent_ariaGenericBotAvatar}
+            alt={languagePack.agent_ariaGenericAssistantAvatar}
             fallback={icon}
           />
         );
@@ -446,13 +446,13 @@ class MessageComponent extends PureComponent<
           );
         }
 
-        iconClassName = "cds-aichat--message__avatar--bot";
+        iconClassName = "cds-aichat--message__avatar--assistant";
       }
 
       label = (
         <span data-cds-aichat-exclude-node-read>
           <FormattedMessage
-            id="message_labelBot"
+            id="message_labelAssistant"
             values={{ timestamp, actorName }}
           />
         </span>
@@ -719,7 +719,7 @@ class MessageComponent extends PureComponent<
         {showAvatarLine && this.renderAvatarLine(localMessageItem, message)}
         <div className="cds-aichat--message--padding">
           {isResponse(message) && (
-            <div className="cds-aichat--bot-message">
+            <div className="cds-aichat--assistant-message">
               {readWidgetSaid && (
                 <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
               )}

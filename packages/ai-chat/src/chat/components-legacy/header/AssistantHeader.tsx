@@ -33,7 +33,7 @@ import { Header } from "./Header";
  * This component renders the header that appears on the main bot view.
  */
 
-interface BotHeaderProps {
+interface AssistantHeaderProps {
   /**
    * This callback is called when the user clicks the close button.
    */
@@ -67,7 +67,10 @@ interface BotHeaderProps {
   enableChatHeaderConfig?: boolean;
 }
 
-function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
+function AssistantHeader(
+  props: AssistantHeaderProps,
+  ref: RefObject<HasRequestFocus>,
+) {
   const {
     onClose,
     onRestart,
@@ -151,5 +154,5 @@ function BotHeader(props: BotHeaderProps, ref: RefObject<HasRequestFocus>) {
   );
 }
 
-const BotHeaderExport = React.memo(forwardRef(BotHeader));
-export { BotHeaderExport as BotHeader };
+const AssistantHeaderExport = React.memo(forwardRef(AssistantHeader));
+export { AssistantHeaderExport as AssistantHeader };
