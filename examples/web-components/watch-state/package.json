@@ -1,9 +1,9 @@
 {
-  "name": "@carbon/ai-chat-examples-react-history",
+  "name": "@carbon/ai-chat-examples-web-components-watch-state",
+  "version": "0.2.1",
   "private": true,
-  "version": "1.0.0-rc.0",
   "type": "module",
-  "description": "Example showing message history loading with customLoadHistory.",
+  "description": "An example showing how to watch ChatInstance state changes as a web component.",
   "scripts": {
     "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js"
@@ -12,18 +12,20 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.0.0-rc.0",
+    "@carbon/ai-chat": "^0.5.1",
     "@carbon/icons": "^11.53.0",
-    "@carbon/react": "^1.68.0",
-    "@carbon/web-components": "^2.25.0",
-    "lit": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@carbon/web-components": "^2.37.0",
+    "lit": "^3.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-decorators": "^7.25.9",
+    "@babel/plugin-transform-class-properties": "^7.25.9",
+    "@babel/plugin-transform-class-static-block": "^7.27.1",
+    "@babel/plugin-transform-private-methods": "^7.25.9",
+    "@babel/plugin-transform-runtime": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
-    "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
     "babel-loader": "^9.2.1",
     "cross-env": "^7.0.3",

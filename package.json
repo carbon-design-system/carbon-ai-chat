@@ -17,10 +17,12 @@
     "examples/react/basic",
     "examples/react/custom-element",
     "examples/react/history",
+    "examples/react/watch-state",
+    "examples/react/watsonx",
     "examples/web-components/basic",
     "examples/web-components/custom-element",
     "examples/web-components/history",
-    "examples/react/watsonx",
+    "examples/web-components/watch-state",
     "examples/web-components/watsonx",
     "packages/ai-chat",
     "packages/ai-chat-components"
