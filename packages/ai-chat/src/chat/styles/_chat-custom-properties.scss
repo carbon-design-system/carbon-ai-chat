@@ -102,8 +102,7 @@
   --cds-aichat-border-radius: #{layout.$spacing-03};
 }
 
-/* We will have to think on what this looks like if we are going to remove these CSS variables and make them SASS based. */
-.cds-aichat--container--render .cds-aichat---is-phone {
+.cds-aichat--container--render.cds-aichat---is-phone {
   --cds-aichat-width: var(--cds-aichat-viewport-width, 100vw);
   --cds-aichat-height: var(--cds-aichat-viewport-height, 100vh);
   --cds-aichat-left-position: var(--cds-aichat-viewport-offsetLeft, 0);
