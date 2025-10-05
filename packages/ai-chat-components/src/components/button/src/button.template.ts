@@ -23,8 +23,8 @@ import styles from "./button.scss?lit";
 /**
  * Component extending the @carbon/web-components' button
  */
-class extendedButton extends CDSButton {
+class chatButton extends CDSButton {
   static styles = styles;
 }
 
-export default extendedButton;
+export default chatButton;
