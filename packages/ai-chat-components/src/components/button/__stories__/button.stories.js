@@ -100,7 +100,7 @@ const baseButtonControls = {
 const baseButtonTemplate = (args) => html`
   <cds-aichat-button
     @click=${args.onClick}
-    data-testid="test-button"
+    data-testid="storybook-interaction-testid"
     .button-class-name="${args.buttonClassName}"
     .dangerDescription="${args.dangerDescription}"
     ?disabled="${args.disabled}"
@@ -123,7 +123,7 @@ const baseButtonTemplate = (args) => html`
 export default {
   title: "Components/Chat button",
   play: async ({ canvas, userEvent, args }) => {
-    const button = canvas.getByTestId("test-button");
+    const button = canvas.getByTestId("storybook-interaction-testid");
     const buttonTrigger = button.shadowRoot.querySelector(".cds--btn");
     if (args.href) {
       return;
@@ -131,6 +131,7 @@ export default {
     await userEvent.click(buttonTrigger);
     if (!args.disabled) {
       expect(args.onClick).toHaveBeenCalled();
+      expect(button).toHaveFocus();
     } else {
       expect(args.onClick).not.toHaveBeenCalled();
     }
