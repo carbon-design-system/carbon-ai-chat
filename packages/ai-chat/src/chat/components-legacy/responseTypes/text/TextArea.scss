@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/components/button" as button;
 
 .cds-aichat--text-area {
@@ -15,12 +16,12 @@
 
   .cds-aichat--text-area-textarea,
   .cds-aichat--text-area-sizer {
+    @include type.type-style("body-02");
+
     padding: 0;
     border: button.$button-border-width solid transparent;
     margin: 0;
     block-size: 100%;
-    color: inherit;
-    font: inherit;
     inline-size: 100%;
     white-space: pre-wrap;
     word-wrap: break-word;

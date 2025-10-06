@@ -192,7 +192,7 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   .cds-aichat--text-area
   .cds-aichat--text-area-textarea::placeholder {
   color: theme.$text-placeholder;
-  @include type.type-style("body-01");
+  @include type.type-style("body-02");
 
   font-family: inherit;
 }

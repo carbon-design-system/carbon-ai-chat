@@ -88,6 +88,8 @@ export default async (_env, args) => {
             static: path.join(__dirname, "dist"),
             compress: true,
             port,
+            host: "0.0.0.0",
+            allowedHosts: "all",
             hot: true,
             open: true,
           }

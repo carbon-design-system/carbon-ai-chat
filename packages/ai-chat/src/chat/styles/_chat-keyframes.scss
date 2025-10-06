@@ -148,6 +148,16 @@
   }
 }
 
+@keyframes #{$prefix}-widget-in-mobile {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 @keyframes #{$prefix}-widget-out {
   0% {
     opacity: 1;
@@ -155,16 +165,6 @@
 
   100% {
     opacity: 0;
-  }
-}
-
-@keyframes #{$prefix}-anim-background-cover {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0.5;
   }
 }
 

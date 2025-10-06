@@ -57,12 +57,6 @@ $left-position: config.get-var("left-position", auto);
 $z-index: config.get-var("z-index", 99999);
 $border-radius: config.get-var("border-radius", 0px);
 
-// Viewport Variables (for phone mode)
-$viewport-width: config.get-var("viewport-width", 100vw);
-$viewport-height: config.get-var("viewport-height", 100vh);
-$viewport-offset-left: config.get-var("viewport-offsetLeft", 0);
-$viewport-offset-top: config.get-var("viewport-offsetTop", 0);
-
 // Launcher Variables
 $launcher-default-size: config.get-var("launcher-default-size", 56px);
 $launcher-position-bottom: config.get-var(
