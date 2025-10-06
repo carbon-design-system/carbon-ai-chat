@@ -52,8 +52,7 @@ const sharedArgTypes = {
   },
   linkRole: {
     control: "text",
-    description:
-      "Optional prop to specify the role of the Button. This doesn't work yet from Carbon and will be available soon.",
+    description: "Optional prop to specify the role of the Button.",
     if: { arg: "href" },
   },
   size: {
