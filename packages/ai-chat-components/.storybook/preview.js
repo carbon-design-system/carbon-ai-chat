@@ -15,6 +15,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import "./_carbon-theme-storybook-docs.css";
 import { html } from "lit";
 import containerStyles from "./_container.scss?inline";
 import { white, g10, g90, g100 } from "@carbon/themes";
@@ -179,6 +180,9 @@ export const parameters = {
 export const decorators = [
   function decoratorContainer(story, context) {
     const { theme } = context.globals;
+
+    const root = window.parent.document.documentElement;
+    root.setAttribute("storybook-carbon-theme", theme);
 
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
 
