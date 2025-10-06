@@ -45,7 +45,7 @@ import {
 } from "../../../types/state/AppState";
 import { AutoScrollOptions } from "../../../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { IS_IOS, IS_MOBILE, isBrowser } from "../../utils/browserUtils";
+import { IS_MOBILE, isBrowser } from "../../utils/browserUtils";
 import { CornersType } from "../../utils/constants";
 import { doFocusRef, SCROLLBAR_WIDTH } from "../../utils/domUtils";
 import { arrayLastValue } from "../../utils/lang/arrayUtils";
@@ -190,44 +190,18 @@ class MainWindow
   private viewSourcePanelRef: RefObject<HasRequestFocus> = React.createRef();
 
   /**
-   * The previous value of the body "visibility" property before the widget was opened.
-   */
-  private previousBodyVisibility: string = undefined;
-
-  /**
-   * The previous value of the body "position" property before the widget was opened.
-   */
-  private previousBodyPosition: string = undefined;
-
-  /**
    * The observer used to monitor for changes in the main window size.
    */
   private mainWindowObserver: ResizeObserver;
 
   componentDidMount() {
-    const { config, serviceManager, mainWindowRef } = this.props;
-    const { public: publicConfig } = config;
+    const { serviceManager, mainWindowRef } = this.props;
 
     serviceManager.mainWindow = this;
     mainWindowRef.current = this;
 
     this.mainWindowObserver = new ResizeObserver(this.onResize);
     this.mainWindowObserver.observe(this.containerRef.current);
-
-    if (IS_MOBILE && !publicConfig.disableCustomElementMobileEnhancements) {
-      const { visualViewport } = window;
-      if (visualViewport) {
-        visualViewport.addEventListener("resize", this.onVisualViewportResize);
-        visualViewport.addEventListener(
-          "scroll",
-          this.updateFromVisualViewport,
-        );
-      }
-
-      // For devices that don't support the visual viewport we'll set some default values anyway.
-      this.updateFromVisualViewport();
-      this.updateBody(false);
-    }
 
     // Make the scrollbar width available to CSS.
     this.containerRef.current.style.setProperty(
@@ -280,12 +254,6 @@ class MainWindow
     const { viewState } = persistedToBrowserStorage;
     const { open } = newState;
     const prevViewState = oldProps.persistedToBrowserStorage.viewState;
-
-    if (viewState.mainWindow !== prevViewState.mainWindow) {
-      // If viewState.mainWindow has changed then perform the necessary updates.
-      this.updateBody(false);
-      this.updateFromVisualViewport();
-    }
 
     if (oldProps.isHydrated !== newProps.isHydrated && newProps.isHydrated) {
       // If isHydrated has changed and isHydrated is true  we can go ahead and request focus on the active panel.
@@ -374,95 +342,6 @@ class MainWindow
       createDidCatchErrorData("MainWindow", error, errorInfo, true),
     );
   }
-
-  /**
-   * This function will apply the necessary updates to the body element. This is primarily used to deal with
-   * adjustments made to mobile devices.
-   */
-  updateBody(unmounting: boolean) {
-    if (
-      IS_IOS &&
-      !this.props.config.public.disableCustomElementMobileEnhancements
-    ) {
-      if (isBrowser) {
-        if (
-          (window.screen.width <= 500 || window.screen.height <= 500) &&
-          this.props.persistedToBrowserStorage.viewState.mainWindow &&
-          !unmounting
-        ) {
-          this.previousBodyVisibility =
-            document.body.style.getPropertyValue("visibility");
-          this.previousBodyPosition =
-            document.body.style.getPropertyValue("position");
-          // On iOS devices when the keyboard is opened the viewport is immediately resized to the shorter view that is
-          // visible between the navigation bar and the keyboard. However, this occurs before the keyboard has fully slid
-          // into view. When the resize occurs we shrink the widget to the size of the viewport but this means that
-          // during the animation the widget is too short and what is behind the widget becomes momentarily visible. To
-          // deal with that we hide the body while the widget is open. For code searchability adding the words
-          // "visibility: hidden !important" since that is how this styling is rendered on the body.
-          document.body.style.setProperty("visibility", "hidden", "important");
-          // To prevent the widget from being scrollable in a way that gets it into a bad state, we can set the body
-          // to a fixed position. For code searchability adding the words "position: fixed !important" since that is how
-          // this styling is rendered on the body.
-          document.body.style.setProperty("position", "fixed", "important");
-        } else {
-          document.body.style.setProperty(
-            "visibility",
-            this.previousBodyVisibility,
-          );
-          document.body.style.setProperty(
-            "position",
-            this.previousBodyPosition,
-          );
-        }
-      }
-    }
-  }
-
-  /**
-   * This is called when the visual viewport is resized.
-   */
-  onVisualViewportResize = () => {
-    this.updateFromVisualViewport();
-  };
-
-  /**
-   * The visual viewport is a relatively new API that provide this information about the actual visible area of the
-   * browser. This takes into account things like the navigation bars and the keyboard. When the browser supports it
-   * we can get more accurate about adjusting based on those things.
-   */
-  updateFromVisualViewport = () => {
-    const element = this.props.serviceManager.container;
-    const { visualViewport } = window;
-    if (visualViewport) {
-      // The viewport height is the visible area and the offset top is how much the viewport has been scrolled. The
-      // viewport scrolling occurs on iOS devices when the keyboard is open but not on android.
-      element.style.setProperty(
-        "--cds-aichat-viewport-height",
-        `${visualViewport.height}px`,
-      );
-      element.style.setProperty(
-        "--cds-aichat-viewport-width",
-        `${visualViewport.width}px`,
-      );
-      element.style.setProperty(
-        "--cds-aichat-viewport-offsetTop",
-        `${visualViewport.offsetTop}px`,
-      );
-      element.style.setProperty(
-        "--cds-aichat-viewport-offsetLeft",
-        `${visualViewport.offsetLeft}px`,
-      );
-    } else {
-      // For browsers that don't support the visual viewport, for now we'll just settle on these values which only
-      // sort of works.
-      const height = "100vh";
-      element.style.setProperty("--cds-aichat-viewport-height", height);
-      element.style.setProperty("--cds-aichat-viewport-width", "100vw");
-      element.style.setProperty("--cds-aichat-viewport-offsetTop", "0");
-      element.style.setProperty("--cds-aichat-viewport-offsetLeft", "0");
-    }
-  };
 
   onSendInput = async (
     text: string,

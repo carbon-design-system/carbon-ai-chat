@@ -7,8 +7,14 @@
  *  @license
  */
 
+import Close16 from "@carbon/icons/es/close/16.js";
+import AiLaunch24 from "@carbon/icons/es/ai-launch/24.js";
+import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
+import Tag from "../../components/carbon/Tag";
+import cx from "classnames";
 import React, {
-  RefObject,
+  MutableRefObject,
+  ReactNode,
   useCallback,
   useEffect,
   useRef,
@@ -23,10 +29,11 @@ import { usePrevious } from "../../hooks/usePrevious";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import actions from "../../store/actions";
 import { AppState } from "../../../types/state/AppState";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { BOUNCING_ANIMATION_TIMEOUTS } from "../../../types/config/LauncherConfig";
-import { Launcher } from "./Launcher";
-import { LauncherComplex } from "./LauncherComplex";
+import { LauncherButton, LauncherHandle } from "./LauncherButton";
+import { getLauncherContent } from "./launcherUtils";
+import { PageObjectId } from "../../utils/PageObjectId";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 
 // The amount of time it takes the desktop launcher to minimize.
 const TIME_FOR_MINIMIZE_ANIMATION = 400;
@@ -34,13 +41,39 @@ const TIME_FOR_MINIMIZE_ANIMATION = 400;
 // The amount of time it takes the launcher to bounce.
 const TIME_FOR_BOUNCE_ANIMATION = 500;
 
-interface LauncherDesktopContainerProps extends HasRequestFocus {
+const CloseIcon = carbonIconToReact(Close16);
+const AiLaunch = carbonIconToReact(AiLaunch24);
+const ChatLaunch = carbonIconToReact(ChatLaunch24);
+
+function renderDesktopLauncherAvatar(
+  useAITheme: boolean,
+  avatarUrlOverride?: string,
+): ReactNode {
+  if (avatarUrlOverride) {
+    return (
+      <img
+        className="cds-aichat--launcher__avatar"
+        src={avatarUrlOverride}
+        alt=""
+        aria-hidden
+      />
+    );
+  }
+
+  if (useAITheme) {
+    return <AiLaunch className="cds-aichat--launcher-svg" />;
+  }
+
+  return <ChatLaunch className="cds-aichat--launcher__svg" />;
+}
+
+interface LauncherDesktopContainerProps {
   onDoToggle: () => void;
 
   /**
    * Necessary to get access to the ref created within App.tsx.
    */
-  launcherRef: RefObject<HasRequestFocus>;
+  launcherRef: MutableRefObject<LauncherHandle | null>;
 
   /**
    * If the main Carbon AI Chat window is open the launcher should be hidden.
@@ -69,10 +102,28 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const launcherConfig = useSelector(
     (state: AppState) => state.config.derived.launcher,
   );
+  const useAITheme = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
   const { timeToExpand } = launcherConfig.desktop;
   const isExpandedLauncherEnabled = launcherConfig.desktop.isOn;
   const unreadHumanAgentCount = useSelector(
     (state: AppState) => state.humanAgentState.numUnreadMessages,
+  );
+  const launcherAvatar = renderDesktopLauncherAvatar(
+    useAITheme,
+    launcherConfig.desktop.avatarUrlOverride,
+  );
+  const {
+    launcher_desktopGreeting,
+    launcher_closeButton,
+    launcher_ariaIsExpanded,
+    launcher_isClosed,
+    launcher_isOpen,
+  } = languagePack;
+  const launcherContent = getLauncherContent(
+    launcherConfig,
+    launcher_desktopGreeting,
   );
 
   const [smallLauncherClassName, setSmallLauncherClassName] = useState("");
@@ -357,6 +408,16 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
     }, TIME_FOR_MINIMIZE_ANIMATION);
   }, [requestFocus, serviceManager.store]);
 
+  const handleTagKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onMinimize();
+      }
+    },
+    [onMinimize],
+  );
+
   const onOpen = useCallback(() => {
     // Clear timers and update launcher state so that no more greeting messages or bounces occur.
     setDefaultLauncherState();
@@ -367,33 +428,76 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   let launcher;
   if (desktopLauncherIsExpanded) {
     launcher = (
-      <LauncherComplex
-        languagePack={languagePack}
-        intl={intl}
-        launcherComplexRef={launcherComplexRef}
-        launcherRef={launcherRef}
-        launcher={launcherConfig}
-        onOpen={onOpen}
-        onMinimize={onMinimize}
-        unreadHumanAgentCount={unreadHumanAgentCount}
-        showUnreadIndicator={showUnreadIndicator}
-        desktopLauncherIsExpanded={desktopLauncherIsExpanded}
-        launcherHidden={launcherHidden}
-        className={complexLauncherClassName}
-      />
+      <div
+        className={cx(
+          "cds-aichat--launcher__button-container",
+          "cds-aichat--launcher-complex__container",
+          complexLauncherClassName,
+          {
+            "cds-aichat--launcher__button-container--hidden": launcherHidden,
+          },
+        )}
+        ref={launcherComplexRef}
+      >
+        <button
+          className="cds-aichat--launcher-complex__content-button"
+          type="button"
+          onClick={onOpen}
+          disabled={!desktopLauncherIsExpanded}
+        >
+          <div
+            className={cx("cds-aichat--widget__text-ellipsis", {
+              "cds-aichat--launcher-complex__text": !launcherHidden,
+            })}
+          >
+            {launcherContent}
+          </div>
+        </button>
+        <LauncherButton
+          containerClassName="cds-aichat--launcher-complex__small-launcher-container"
+          dataTestId={PageObjectId.LAUNCHER}
+          closedLabel={launcher_isClosed}
+          intl={intl}
+          openLabel={launcher_isOpen}
+          launcherHidden={launcherHidden}
+          onToggleOpen={onOpen}
+          ref={launcherRef}
+          showUnreadIndicator={showUnreadIndicator}
+          unreadHumanAgentCount={unreadHumanAgentCount}
+        >
+          {launcherAvatar}
+        </LauncherButton>
+        <Tag
+          className="cds-aichat--launcher__close-button"
+          aria-label={launcher_ariaIsExpanded}
+          onClick={onMinimize}
+          onKeyDown={handleTagKeyDown}
+          tabIndex={desktopLauncherIsExpanded ? 0 : -1}
+        >
+          <CloseIcon
+            slot="icon"
+            className="cds-aichat--launcher__close-button-icon"
+          />
+          {launcher_closeButton}
+        </Tag>
+      </div>
     );
   } else {
     launcher = (
-      <Launcher
-        languagePack={languagePack}
+      <LauncherButton
+        containerClassName={smallLauncherClassName}
+        dataTestId={PageObjectId.LAUNCHER}
+        closedLabel={launcher_isClosed}
         intl={intl}
-        ref={launcherRef}
-        onToggleOpen={onOpen}
-        unreadHumanAgentCount={unreadHumanAgentCount}
-        showUnreadIndicator={showUnreadIndicator}
-        className={smallLauncherClassName}
+        openLabel={launcher_isOpen}
         launcherHidden={launcherHidden}
-      />
+        onToggleOpen={onOpen}
+        ref={launcherRef}
+        showUnreadIndicator={showUnreadIndicator}
+        unreadHumanAgentCount={unreadHumanAgentCount}
+      >
+        {launcherAvatar}
+      </LauncherButton>
     );
   }
   return launcher;

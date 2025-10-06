@@ -86,7 +86,6 @@ function conditionalSetTimeout(
 
 export {
   isBrowser,
-  IS_IOS,
   IS_MOBILE,
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,

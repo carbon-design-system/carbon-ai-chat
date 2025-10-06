@@ -62,12 +62,6 @@
   /* Box shadow */
   --cds-aichat-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
 
-  /* Viewport Variables (for phone mode) */
-  --cds-aichat-viewport-width: 100vw;
-  --cds-aichat-viewport-height: 100vh;
-  --cds-aichat-viewport-offsetLeft: 0;
-  --cds-aichat-viewport-offsetTop: 0;
-
   /* The smaller of 380px or the available width of the screen. The is to account for zoom levels pushing us to 320px. */
   --cds-aichat-width: min(380px, var(--cds-aichat-max-width));
   --cds-aichat-height: calc(100vh - (2 * #{layout.$spacing-07}));
@@ -102,13 +96,20 @@
   --cds-aichat-border-radius: #{layout.$spacing-03};
 }
 
-/* We will have to think on what this looks like if we are going to remove these CSS variables and make them SASS based. */
-.cds-aichat--container--render .cds-aichat---is-phone {
-  --cds-aichat-width: var(--cds-aichat-viewport-width, 100vw);
-  --cds-aichat-height: var(--cds-aichat-viewport-height, 100vh);
-  --cds-aichat-left-position: var(--cds-aichat-viewport-offsetLeft, 0);
-  --cds-aichat-top-position: var(--cds-aichat-viewport-offsetTop, 0);
+.cds-aichat--container--render.cds-aichat---is-phone {
+  /* Fallbacks for older browsers */
+  --cds-aichat-width: calc(100vw - 4px);
+  --cds-aichat-height: calc(100vh - 4px);
+  --cds-aichat-left-position: 2;
+  --cds-aichat-top-position: 2;
   --cds-aichat-max-height: auto;
   --cds-aichat-min-height: auto;
   --cds-aichat-right-position: auto;
+}
+
+@supports (height: 100dvh) {
+  .cds-aichat--container--render.cds-aichat---is-phone {
+    --cds-aichat-width: calc(100dvw - 4px);
+    --cds-aichat-height: calc(100dvh - 4px);
+  }
 }
