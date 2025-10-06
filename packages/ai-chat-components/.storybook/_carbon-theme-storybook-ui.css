@@ -4282,7 +4282,7 @@ body,
 }
 
 /* todo: change later to add specificity. this removes colors from code. need to handle by changing base: "light" and base: "dark" from theme.js which brings proper contrast colors*/
-.css-uwwqev *,
+.css-uwwqev pre *,
 .css-1oks7sj * {
   color: var(--cds-text-secondary) !important;
 }
