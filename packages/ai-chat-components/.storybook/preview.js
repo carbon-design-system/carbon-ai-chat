@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/** @type { import('@storybook/web-components').Preview } */
+/** @type { import('@storybook/web-components-vite').Preview } */
 /**
  * @license
  *
@@ -20,8 +20,9 @@ import containerStyles from "./_container.scss?inline";
 import { white, g10, g90, g100 } from "@carbon/themes";
 import { breakpoints } from "@carbon/layout";
 import theme from "./theme";
-import { setCustomElementsManifest } from "@storybook/web-components";
+import { setCustomElementsManifest } from "@storybook/web-components-vite";
 import customElements from "../custom-elements.json";
+import prettier from "prettier/standalone";
 
 setCustomElementsManifest(customElements);
 
@@ -99,6 +100,19 @@ export const parameters = {
     current: "light",
   },
   docs: {
+    codePanel: true,
+    source: {
+      excludeDecorators: false, // prevents decorators and story styles from being included in the source code
+      transform: async (source) => {
+        const cleaned = source.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+        return prettier.format(cleaned, {
+          parser: "html",
+          plugins: [await import("prettier/parser-html")],
+          printWidth: 80,
+        });
+      },
+    },
     theme,
   },
   // Small (<672)
