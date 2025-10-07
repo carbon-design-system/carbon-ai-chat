@@ -65,6 +65,7 @@ export class VersionDropdown extends LitElement {
     // Check if we're on localhost (with or without port)
     const hostname = window.location.hostname;
     if (
+      hostname.endsWith(".local") ||
       hostname === "localhost" ||
       hostname === "127.0.0.1" ||
       hostname === "0.0.0.0"

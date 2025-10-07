@@ -168,7 +168,7 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
-          hideMinimizeButton: true,
+          hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
         layout: {
@@ -185,7 +185,7 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
-          hideMinimizeButton: true,
+          hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
         layout: {

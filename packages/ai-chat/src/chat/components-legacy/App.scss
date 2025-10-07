@@ -192,7 +192,9 @@ in. */
   }
 }
 
-.cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element {
+.cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element:not(
+    .cds-aichat---is-phone
+  ) {
   animation: cds-aichat-widget-in motion.$duration-moderate-02
     motion.motion(entrance, expressive) both;
 }
@@ -248,6 +250,13 @@ in. */
     chat-theme.$bottom-position chat-theme.$left-position;
   max-block-size: chat-theme.$max-height;
   min-block-size: chat-theme.$min-height;
+
+  &.cds-aichat--widget--launched.cds-aichat--widget--default-element {
+    animation: cds-aichat-widget-in-mobile motion.$duration-moderate-02
+      motion.motion(entrance, expressive) both;
+    inset-block-end: 1px;
+    inset-inline-start: 1px;
+  }
 }
 
 .cds-aichat---is-phone[dir="rtl"]:not(

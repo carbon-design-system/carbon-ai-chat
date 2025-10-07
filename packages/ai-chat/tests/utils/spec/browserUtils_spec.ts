@@ -11,7 +11,6 @@ import {
   isBrowser,
   getURLHostName,
   conditionalSetTimeout,
-  IS_IOS,
   IS_MOBILE,
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
@@ -104,7 +103,6 @@ describe("browserUtils", () => {
   describe("device detection constants", () => {
     it("should export device detection constants", () => {
       // Test that the constants are boolean values
-      expect(typeof IS_IOS).toBe("boolean");
       expect(typeof IS_MOBILE).toBe("boolean");
       expect(typeof IS_PHONE).toBe("boolean");
       expect(typeof IS_PHONE_IN_PORTRAIT_MODE).toBe("boolean");
