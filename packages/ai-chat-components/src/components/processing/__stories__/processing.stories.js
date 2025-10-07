@@ -23,7 +23,10 @@ const argTypes = {
   },
 };
 export const QuickLoad = {
-  args: { quickLoad: true },
+  args: {
+    quickLoad: true,
+    carbonTheme: "g10",
+  },
   argTypes: argTypes,
   render: (args) =>
     html`<cds-aichat-processing
