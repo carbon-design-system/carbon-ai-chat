@@ -17,10 +17,8 @@
     "@carbon/icons": "^11.53.0",
     "@carbon/web-components": "^2.37.0",
     "lit": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-redux": "^9.0.0",
-    "redux": "^5.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "devDependencies": {

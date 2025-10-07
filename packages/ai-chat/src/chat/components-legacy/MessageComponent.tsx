@@ -127,11 +127,6 @@ interface MessageProps
   disableUserInputs: boolean;
 
   /**
-   * Required due to a bug in injectIntl: https://github.com/formatjs/react-intl/issues/1444.
-   */
-  ref: (component: MessageComponent) => void;
-
-  /**
    * A callback used to move focus.
    */
   requestMoveFocus: (
