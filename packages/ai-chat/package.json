@@ -32,6 +32,7 @@
   },
   "files": [
     "dist/es",
+    "dist/es-custom",
     "dist/types",
     "telemetry.yml"
   ],
