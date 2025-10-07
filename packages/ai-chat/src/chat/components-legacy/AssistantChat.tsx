@@ -75,9 +75,10 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     hasCaughtError: false,
   };
 
-  private inputRef: RefObject<InputFunctions> = React.createRef();
-  private headerRef: RefObject<HasRequestFocus> = React.createRef();
-  private messagesRef: RefObject<MessagesComponentClass> = React.createRef();
+  private inputRef: RefObject<InputFunctions | null> = React.createRef();
+  private headerRef: RefObject<HasRequestFocus | null> = React.createRef();
+  private messagesRef: RefObject<MessagesComponentClass | null> =
+    React.createRef();
   private messagesToArray = createUnmappingMemoizer<LocalMessageItem>();
 
   async scrollOnHydrationComplete() {

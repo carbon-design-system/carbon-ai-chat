@@ -129,23 +129,25 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   const [smallLauncherClassName, setSmallLauncherClassName] = useState("");
   const [complexLauncherClassName, setComplexLauncherClassName] = useState("");
 
-  const launcherComplexRef = useRef<HTMLDivElement>();
+  const launcherComplexRef = useRef<HTMLDivElement>(undefined);
 
-  const launcherHiddenRef = useRef<boolean>();
+  const launcherHiddenRef = useRef<boolean>(undefined);
   launcherHiddenRef.current = launcherHidden;
 
   const animateOnceVisible = useRef<boolean>(false);
 
-  const bounceTurnRef = useRef<number>();
+  const bounceTurnRef = useRef<number>(undefined);
   bounceTurnRef.current = bounceTurn;
 
-  const animationStartTimerRef = useRef<NodeJS.Timeout>();
-  const animationFinishedTimerRef = useRef<NodeJS.Timeout>();
+  const animationStartTimerRef = useRef<NodeJS.Timeout>(undefined);
+  const animationFinishedTimerRef = useRef<NodeJS.Timeout>(undefined);
 
-  const firstBounceAnimationStartTimerRef = useRef<NodeJS.Timeout>();
-  const firstBounceAnimationFinishedTimerRef = useRef<NodeJS.Timeout>();
-  const secondBounceAnimationStartTimerRef = useRef<NodeJS.Timeout>();
-  const secondBounceAnimationFinishedTimerRef = useRef<NodeJS.Timeout>();
+  const firstBounceAnimationStartTimerRef = useRef<NodeJS.Timeout>(undefined);
+  const firstBounceAnimationFinishedTimerRef =
+    useRef<NodeJS.Timeout>(undefined);
+  const secondBounceAnimationStartTimerRef = useRef<NodeJS.Timeout>(undefined);
+  const secondBounceAnimationFinishedTimerRef =
+    useRef<NodeJS.Timeout>(undefined);
 
   /**
    * Measure the height of the complex launcher and set it as a css variable so that the expand animation can move the

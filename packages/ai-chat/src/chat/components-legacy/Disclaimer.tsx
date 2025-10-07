@@ -31,7 +31,7 @@ interface DisclaimerProps {
   onAcceptDisclaimer: () => void;
   disclaimerHTML: string;
   onClose: () => void;
-  disclaimerAcceptButtonRef: RefObject<CDSButton>;
+  disclaimerAcceptButtonRef: RefObject<CDSButton | null>;
 }
 
 function Disclaimer({
@@ -51,7 +51,7 @@ function Disclaimer({
     derivedCarbonTheme === CarbonTheme.G90 ||
     derivedCarbonTheme === CarbonTheme.G100;
   const [hasReadDisclaimer, setHasReadDisclaimer] = useState(false);
-  const disclaimerContent = useRef<HTMLDivElement>();
+  const disclaimerContent = useRef<HTMLDivElement>(undefined);
 
   const onScroll = () => {
     const { scrollTop, scrollHeight, clientHeight } = disclaimerContent.current;

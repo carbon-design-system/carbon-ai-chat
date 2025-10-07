@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { Component } from "react";
+import React, { Component, type JSX } from "react";
 import ReactDOM from "react-dom";
 
 import { ModalPortalRootContext } from "../contexts/ModalPortalRootContext";

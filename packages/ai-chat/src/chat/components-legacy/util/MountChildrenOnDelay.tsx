@@ -11,7 +11,7 @@
  * This component will only mount its children after a certain amount of time has passed.
  */
 
-import { PureComponent } from "react";
+import { PureComponent, type JSX } from "react";
 
 interface MountChildrenOnDelayProps {
   /**

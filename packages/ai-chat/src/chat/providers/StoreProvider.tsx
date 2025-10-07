@@ -18,7 +18,7 @@
  * - react-redux: https://github.com/reduxjs/react-redux (License: https://github.com/reduxjs/react-redux/blob/master/LICENSE.md)
  */
 
-import React, { ReactNode, useMemo } from "react";
+import React, { ReactNode, useMemo, type JSX } from "react";
 import type { AppStore, UnknownAction } from "../store/appStore";
 import { StoreContext } from "../contexts/StoreContext";
 

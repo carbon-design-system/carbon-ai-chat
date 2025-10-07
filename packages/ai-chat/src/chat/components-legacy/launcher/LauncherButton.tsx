@@ -86,8 +86,8 @@ function LauncherButton(
     children,
   } = props;
 
-  const internalButtonRef = useRef<CDSButton>();
-  const internalContainerRef = useRef<HTMLDivElement>();
+  const internalButtonRef = useRef<CDSButton>(undefined);
+  const internalContainerRef = useRef<HTMLDivElement>(undefined);
 
   const setButtonRef = useCallback(
     (element: CDSButton | null) => {
