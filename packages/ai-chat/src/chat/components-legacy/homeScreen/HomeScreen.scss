@@ -1,0 +1,348 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../styles/chat-theme";
+
+.cds-aichat--home-screen {
+  display: flex;
+  flex-direction: column;
+  background-color: theme.$chat-shell-background;
+  block-size: 100%;
+}
+
+.cds-aichat--home-screen--background-ai-theme {
+  background-color: theme.$chat-shell-background;
+  background-image: chat-theme.$ai-background-image;
+  box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
+}
+
+.cds-aichat--home-screen__home-screen-bottom-element {
+  /* Needed by the home screen so the opacity layer from the gradient backgrounds does not overlay the header element in full
+   screen mode. */
+  position: relative;
+  margin: auto;
+  inline-size: 100%;
+  max-inline-size: chat-theme.$max-width;
+}
+
+/* Used to hide some of the AI theme box shadow that tries to overlay the header. The chat window does the same thing. */
+.cds-aichat--home-screen__content {
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* On the first render fade in all of the home screen content. This covers the home screen input field as well. On
+
+ subsequent renders we rely on the overlay panels fade in animation. */
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen--first-render .cds-aichat--home-screen__content {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen--first-render .cds-aichat--home-screen__content {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in 70ms both;
+  }
+}
+
+.cds-aichat--home-screen__body-wrapper {
+  position: relative;
+  display: flex;
+  overflow: auto;
+  flex: 1;
+  flex-direction: column;
+}
+
+.cds-aichat--home-screen__body {
+  display: flex;
+  flex-direction: column;
+  /* In case the content is smaller than the div, center it. */
+  justify-content: center;
+  padding: 0 layout.$spacing-05 layout.$spacing-07;
+}
+
+/* When there's custom content keep the home screen body content from shrinking below 90% of the bodyWrapper. This could
+
+ happen, for example, if the home screen avatar was excluded. */
+
+.cds-aichat--home-screen__body--custom-content {
+  /* In a scenario where the body content combined with the custom content doesn't overflow their wrapper, this
+   flex-grow is used to push deb content to the bottom of the wrapper, allowing the body content to center itself in
+   the remaining space. */
+  flex-grow: 1;
+  /* Because of the min-height setting flex box thinks we have a preference for this div being that height when there are
+   two divs in the container (body content and custom content in this case). So it tries to shrink this div to the min
+   height specified and we need to prevent that by specifying no shrinking. */
+  flex-shrink: 0;
+  min-block-size: 90%;
+
+  > * {
+    /* Prevent the children from shrinking as well. */
+    flex-shrink: 0;
+  }
+}
+
+/* When there's no custom content make sure the body fills the full height and doesn't have bottom padding. Instead of
+
+ padding bottom the starters will add their own margin-bottom to prevent them from touching the bottom of the div.
+
+ This enables the body content to better center itself in the wrapper since the top and bottom elements within the
+
+ wrapper should have the same margin. */
+
+.cds-aichat--home-screen__body--no-custom-content {
+  flex: 1;
+  padding-block-end: 0;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__avatar-holder {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__avatar-holder {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in 70ms both;
+  }
+}
+
+.cds-aichat--home-screen__avatar-holder img {
+  border-radius: 48px;
+}
+
+.cds-aichat--home-screen__greeting {
+  color: theme.$text-primary;
+  @include type.type-style("heading-04");
+
+  margin-block-start: layout.$spacing-07;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__greeting {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__greeting {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in-up 70ms both;
+  }
+}
+
+.cds-aichat--home-screen__starters {
+  margin-block-start: layout.$spacing-07;
+}
+
+/* When there's no custom content set a margin under the starters that matches the greeting. This is done to center
+
+the content within the body and give the starters space at the bottom of the div if the content is overflowing or
+
+close to overflowing. */
+
+.cds-aichat--home-screen__body--no-custom-content
+  .cds-aichat--home-screen__starters {
+  margin-block-end: layout.$spacing-07;
+}
+
+/* If its only custom content (no greeting, no avatar, etc), getting rid of all padding/spacing and let them have at it. */
+.cds-aichat--home-screen__body--custom-content-only {
+  flex-grow: unset;
+  flex-shrink: unset;
+  padding: 0;
+  margin: 0;
+  min-block-size: unset;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    cds-chat-button.cds-aichat--home-screen__starter {
+    display: block;
+    animation: none;
+    margin-block-end: layout.$spacing-04;
+    max-inline-size: 100%;
+    word-break: break-word;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+cds-chat-button.cds-aichat--home-screen__starter:nth-child(1) {
+  --cds-aichat-homescreen-starter-index: 1;
+}
+
+cds-chat-button.cds-aichat--home-screen__starter:nth-child(2) {
+  --cds-aichat-homescreen-starter-index: 2;
+}
+
+cds-chat-button.cds-aichat--home-screen__starter:nth-child(3) {
+  --cds-aichat-homescreen-starter-index: 3;
+}
+
+cds-chat-button.cds-aichat--home-screen__starter:nth-child(4) {
+  --cds-aichat-homescreen-starter-index: 4;
+}
+
+cds-chat-button.cds-aichat--home-screen__starter:nth-child(5) {
+  --cds-aichat-homescreen-starter-index: 5;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    cds-chat-button.cds-aichat--home-screen__starter {
+    display: block;
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in-up
+      calc(var(--cds-aichat-homescreen-starter-index) * 120ms) both;
+    margin-block-end: layout.$spacing-04;
+    max-inline-size: 100%;
+    word-break: break-word;
+
+    &:last-child {
+      margin-block-end: 0;
+    }
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__starters--animate-group
+    cds-chat-button.cds-aichat--home-screen__starter {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__starters--animate-group
+    cds-chat-button.cds-aichat--home-screen__starter {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in-up 120ms both;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__custom-content--animation {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__custom-content--animation {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in-up 330ms both;
+  }
+}
+
+.cds-aichat--home-screen__back-button {
+  position: absolute;
+  inset-inline-start: 50%;
+  /* The above left: 50% makes a gap 50% of the container width wide on the left of the button so it needs to be shifted
+   back 50% of the buttons width to the left in order to center it. We also need to move the button above the input
+   field. That is what the second value is for, to move the button up it's height plus 16px. */
+  transform: translate(-50%, calc(-100% - #{layout.$spacing-05}));
+
+  .cds-aichat--home-screen__back-button-content {
+    display: flex;
+
+    .cds-aichat--home-screen__back-button-content-text {
+      margin-inline-end: layout.$spacing-03;
+      white-space: nowrap;
+    }
+  }
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--home-screen__back-button
+  .cds-aichat--home-screen__back-button-content
+  .cds-aichat--home-screen__back-button-content-text {
+  margin-inline: layout.$spacing-03 unset;
+}
+
+@keyframes cds-aichat-fade-in-up-back-button {
+  0% {
+    opacity: 0;
+    /* Building on the same transform above, except we want the button to start 32px lower. */
+    transform: translate(
+      -50%,
+      calc(-100% - #{layout.$spacing-05} + #{layout.$spacing-07})
+    );
+  }
+
+  15% {
+    opacity: 0;
+  }
+
+  50% {
+    transform: translate(-50%, calc(-100% - #{layout.$spacing-05}));
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__back-button {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
+    .cds-aichat--home-screen__back-button {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in-up-back-button 350ms both;
+  }
+}
+
+.cds-aichat--home-screen__input-container-wrapper,
+.cds-aichat--home-screen__input-container {
+  display: flex;
+  inline-size: 100%;
+  /* Required to cause this context to stack on top of the ::before layer that adds opacity above. */
+  transform: translateY(0);
+}
+
+.cds-aichat--home-screen__input-container-wrapper {
+  flex-direction: column;
+}
+
+/* Only animate the input container in on the first render of home screen. */
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--first-render
+    .cds-aichat--input-container {
+    animation: none;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--home-screen.cds-aichat--home-screen--first-render
+    .cds-aichat--input-container {
+    animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
+      cds-aichat-fade-in-up 370ms both;
+  }
+}

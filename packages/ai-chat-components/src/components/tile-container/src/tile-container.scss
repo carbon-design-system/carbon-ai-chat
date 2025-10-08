@@ -1,0 +1,23 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/theme";
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/web-components/scss/components/tile/tile";
+
+/* tile container styles */
+:host(#{$prefix}-tile-container) {
+  display: block;
+  border: 1px solid theme.$chat-bubble-border;
+  border-radius: layout.$spacing-03;
+}

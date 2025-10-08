@@ -12,6 +12,7 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
   BusEventType,
+  CarbonTheme,
   type ChatInstance,
   FeedbackInteractionType,
   type MessageResponse,
@@ -21,7 +22,6 @@ import {
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
-import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
 
 interface UserDefinedSlotsMap {
@@ -36,8 +36,8 @@ interface UserDefinedSlot {
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
-    customLoadHistory,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -125,7 +125,8 @@ export class Demo extends LitElement {
     return html`
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
-        .config=${config}
+        .messaging=${config.messaging}
+        .injectCarbonTheme=${config.injectCarbonTheme}
         >${this.renderUserDefinedSlots()}</cds-aichat-container
       >
     `;

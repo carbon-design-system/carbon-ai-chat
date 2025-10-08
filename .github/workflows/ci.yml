@@ -15,9 +15,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.0.0
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22.x"
           cache: "npm"
@@ -29,9 +29,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.0.0
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22.x"
           cache: "npm"
@@ -39,17 +39,19 @@ jobs:
         run: |
           npm install
           npx playwright install --with-deps
-      - name: Build chat component
+      - name: Build ai-chat
         run: npm run aiChat:build
+      - name: Build ai-chat-components
+        run: cd packages/ai-chat-components && npm run build
       - name: Run test
         run: npm run test
 
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.0.0
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22.x"
           cache: "npm"
@@ -65,9 +67,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.0.0
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22.x"
           cache: "npm"
@@ -79,9 +81,9 @@ jobs:
   license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.0.0
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22.x"
           cache: "npm"

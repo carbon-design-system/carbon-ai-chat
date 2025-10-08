@@ -9,16 +9,16 @@
 
 import {
   BusEventType,
+  CarbonTheme,
   ChatContainer,
   ChatInstance,
   FeedbackInteractionType,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useState } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
-import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
 // This function returns a React component for user defined responses.
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
@@ -33,21 +33,14 @@ import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
-    customLoadHistory,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
-  const [chatInstance, setChatInstance] = useState<ChatInstance>();
-
   function onBeforeRender(instance: ChatInstance) {
     // Handle feedback event.
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
-
-    // For usage on the instance later.
-    setChatInstance(instance);
-
-    console.log({ chatInstance });
   }
 
   /**
@@ -65,7 +58,7 @@ function App() {
 
   return (
     <ChatContainer
-      config={config}
+      {...config}
       // Set the instance into state for usage.
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}

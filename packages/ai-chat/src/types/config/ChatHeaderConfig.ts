@@ -12,17 +12,12 @@
  */
 export interface ChatHeaderConfig {
   /**
-   * The chat header title with an optional name after the title.
+   * The chat header title.
    */
-  headerTitle: {
-    /**
-     * The chat header title.
-     */
-    title?: string;
+  title?: string;
 
-    /**
-     * The name displayed after the title.
-     */
-    name?: string;
-  };
+  /**
+   * The name displayed after the title.
+   */
+  name?: string;
 }

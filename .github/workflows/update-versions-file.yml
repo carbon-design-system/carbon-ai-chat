@@ -1,0 +1,98 @@
+# Updates the versions array within the `versions.js` file with latest stable version
+name: Update versions.js file
+
+# Gets triggered every time a full/stable release tag has been published from the
+# `create-release-tag-and-pr` workflow or can also be triggered manually
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        # Recently published stable version
+        # This is used to create branch to push the changes to
+        required: true
+        description: "release tag (ie. v1.1.0)"
+        type: string
+        default: "v1.1.0"
+  repository_dispatch:
+    types: [update-versions-file]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-versions-file:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: "0"
+          ref: ${{ github.event.client_payload.branch || github.ref_name }}
+
+      - name: Read version from package.json and update versions.js
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const pkg = require('./packages/ai-chat/package.json');
+          const version = pkg.version;
+
+          const file = 'versions.js';
+          let content = fs.readFileSync(file, 'utf8');
+
+          const regex = /export const AI_CHAT_VERSIONS\s*=\s*(\[[^\]]*\]);/;
+          const match = content.match(regex);
+          if (!match) {
+            console.error("Could not find AI_CHAT_VERSIONS array in versions.js");
+            process.exit(1);
+          }
+
+          let arr = eval(match[1]); // parse the JS array
+          const versionWithPrefix = "v" + version;
+          if (!arr.includes(versionWithPrefix)) {
+            arr.unshift(versionWithPrefix); // prepend with "v"
+          }
+
+          const newArrayStr = JSON.stringify(arr);
+          const newContent = content.replace(regex, `export const AI_CHAT_VERSIONS = ${newArrayStr};`);
+
+          fs.writeFileSync(file, newContent);
+          console.log("Updated versions.js with", versionWithPrefix);
+          EOF
+
+      - name: Commit updated versions.js file
+        run: |
+          git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
+          git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
+
+          BRANCH="chore/${{ github.event.client_payload.tag || github.event.inputs.tag }}-release"
+          git fetch origin $BRANCH || true
+
+          if git rev-parse --verify origin/$BRANCH >/dev/null 2>&1; then
+            echo "Branch $BRANCH exists, checking it out"
+            git checkout -b $BRANCH origin/$BRANCH
+          else
+            echo "Branch $BRANCH does not exist, creating it"
+            git checkout -b $BRANCH
+          fi
+
+          git add versions.js
+          git commit -m "chore: update versions.js file"
+          git push origin $BRANCH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload versions.js file to COS
+      # ie. chat.carbondesignsystem.com/versions.js
+      - name: Upload versions.js file to COS
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "./versions.js"
+          DEST_DIR: "/"

@@ -11,6 +11,8 @@ import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
 
 import {
+  BusEvent,
+  BusEventMessageItemCustom,
   BusEventType,
   BusEventViewChange,
   ChatContainer,
@@ -19,6 +21,8 @@ import {
   FeedbackInteractionType,
   PublicConfig,
   RenderUserDefinedState,
+  ServiceDesk,
+  ServiceDeskFactoryParameters,
   ViewType,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
@@ -28,13 +32,18 @@ import { Settings } from "../framework/types";
 import { SideBar } from "./DemoSideBarNav";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
+import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
+  Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
 
 interface AppProps {
   config: PublicConfig;
   settings: Settings;
+  onChatInstanceReady?: (instance: ChatInstance) => void;
 }
 
-function DemoApp({ config, settings }: AppProps) {
+function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [instance, setInstance] = useState<ChatInstance>();
   const [stateText, setStateText] = useState<string>("Initial text");
@@ -46,12 +55,10 @@ function DemoApp({ config, settings }: AppProps) {
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
    * depending on which component should be rendered.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-render#user-defined-responses
    */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
-      const { messageItem } = state;
+      const { messageItem, partialItems } = state;
       // The event here will contain details for each user defined response that needs to be rendered.
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
@@ -69,19 +76,36 @@ function DemoApp({ config, settings }: AppProps) {
         }
       }
 
-      // We are just going to show a skeleton state here if we are waiting for a stream, but you can instead have another
-      // switch statement here that does something more specific depending on the component.
-      return <AISkeletonPlaceholder className="fullSkeleton" />;
+      if (partialItems) {
+        switch (partialItems[0].user_defined?.user_defined_type) {
+          case "green": {
+            // The partial members are not concatenated, you get a whole array of chunks so you can special handle
+            // concatenation as you want.
+            const text = partialItems
+              .map((item) => item.user_defined?.text)
+              .join("");
+            return (
+              <UserDefinedResponseExample
+                text={text}
+                parentStateText={stateText}
+              />
+            );
+          }
+          default: {
+            // Default to just showing a skeleton state for user_defined responses types we don't want to have special
+            // streaming behavior for.
+            return <AISkeletonPlaceholder className="fullSkeleton" />;
+          }
+        }
+      }
     },
     [stateText],
   );
 
   /**
    * You can return a React element for each writeable element.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#writeableElements
    */
-  const renderWriteableElements = useMemo(
+  const allWriteableElements = useMemo(
     () => ({
       headerBottomElement: (
         <WriteableElementExample
@@ -123,9 +147,38 @@ function DemoApp({ config, settings }: AppProps) {
     [stateText],
   );
 
+  /**
+   * Determines which writeable elements to render based on settings and config.
+   * - If writeableElements is true: show all elements
+   * - If writeableElements is false AND homescreen is custom: show only home screen specific elements
+   * - Otherwise: show no elements
+   */
+  const renderWriteableElements = useMemo(() => {
+    const isCustomHomeScreen = config.homescreen?.customContentOnly === true;
+    const showAllWriteableElements = settings.writeableElements === "true";
+    const showHomeScreenElements =
+      !showAllWriteableElements && isCustomHomeScreen;
+
+    if (showAllWriteableElements) {
+      return allWriteableElements;
+    } else if (showHomeScreenElements) {
+      return {
+        homeScreenHeaderBottomElement:
+          allWriteableElements.homeScreenHeaderBottomElement,
+        homeScreenAfterStartersElement:
+          allWriteableElements.homeScreenAfterStartersElement,
+      };
+    } else {
+      return undefined;
+    }
+  }, [allWriteableElements, settings.writeableElements, config.homescreen]);
+
   const onBeforeRender = (instance: ChatInstance) => {
     // You can set the instance to access it later if you need to.
     setInstance(instance);
+
+    // Notify parent component that instance is ready
+    onChatInstanceReady?.(instance);
 
     // Here we are registering an event listener for if someone clicks on a button that throws
     // a client side event.
@@ -136,74 +189,10 @@ function DemoApp({ config, settings }: AppProps) {
 
     // Handle feedback event.
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
-
-    switch (settings.homescreen) {
-      case "default":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          greeting: "Hello!\n\nThis is some text to introduce your chat.",
-          starters: {
-            is_on: true,
-            buttons: [
-              {
-                label: "text (stream)",
-              },
-              {
-                label: "code (stream)",
-              },
-              {
-                label: "text",
-              },
-              {
-                label: "code",
-              },
-            ],
-          },
-        });
-        break;
-
-      case "splash":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          allow_return: false,
-          greeting:
-            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
-          starters: {
-            is_on: true,
-            buttons: [
-              {
-                label: "text (stream)",
-              },
-              {
-                label: "code (stream)",
-              },
-              {
-                label: "text",
-              },
-              {
-                label: "code",
-              },
-            ],
-          },
-        });
-        break;
-
-      case "custom":
-        instance.updateHomeScreenConfig({
-          is_on: true,
-          custom_content_only: true,
-        });
-        break;
-
-      default:
-        break;
-    }
   };
 
   /**
    * Closes/hides the chat.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-instance-methods#changeView.
    */
   const openSideBar = () => {
     instance?.changeView(ViewType.MAIN_WINDOW);
@@ -211,8 +200,6 @@ function DemoApp({ config, settings }: AppProps) {
 
   /**
    * Listens for view changes on the AI chat.
-   *
-   * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#view:change
    */
   const onViewChange =
     settings.layout === "sidebar"
@@ -222,7 +209,7 @@ function DemoApp({ config, settings }: AppProps) {
       : undefined;
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
-  let className;
+  let className = "";
   if (
     settings.layout === "fullscreen" ||
     settings.layout === "fullscreen-no-gutter"
@@ -238,28 +225,22 @@ function DemoApp({ config, settings }: AppProps) {
 
   return settings.layout === "float" ? (
     <ChatContainer
-      config={config}
+      {...config}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
-      renderWriteableElements={
-        settings.writeableElements === "true"
-          ? renderWriteableElements
-          : undefined
-      }
+      renderWriteableElements={renderWriteableElements}
+      serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
     <>
       <ChatCustomElement
-        config={config}
-        className={className}
+        {...config}
+        className={className as string}
         onViewChange={onViewChange}
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
-        renderWriteableElements={
-          settings.writeableElements === "true"
-            ? renderWriteableElements
-            : undefined
-        }
+        renderWriteableElements={renderWriteableElements}
+        serviceDeskFactory={serviceDeskFactory}
       />
       {settings.layout === "sidebar" && !sideBarOpen && (
         <SideBar openSideBar={openSideBar} />
@@ -283,18 +264,13 @@ function feedbackHandler(event: any) {
 
 /**
  * Listens for clicks from buttons with custom events attached.
- *
- * @see https://web-chat.global.assistant.watson.cloud.ibm.com/carbon-chat.html?to=api-events#messageItemCustom
  */
-function customButtonHandler(event: any) {
-  const { customEventType, messageItem } = event;
+function customButtonHandler(event: BusEvent) {
+  const { messageItem } = event as BusEventMessageItemCustom;
   // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
-  if (
-    customEventType === "buttonItemClicked" &&
-    messageItem.custom_event_name === "alert_button"
-  ) {
+  if (messageItem.custom_event_name === "alert_button") {
     // eslint-disable-next-line no-alert
-    window.alert(messageItem.user_defined.text);
+    window.alert(messageItem.user_defined?.text);
   }
 }
 

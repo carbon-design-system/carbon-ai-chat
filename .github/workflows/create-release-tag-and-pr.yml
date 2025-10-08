@@ -27,6 +27,12 @@ on:
         description: "Create PR?"
         type: boolean
         default: true
+      update-versions-file:
+        # set to true to update versions.js file
+        required: true
+        description: "Update versions.js file?"
+        type: boolean
+        default: true
 
 jobs:
   create-pull-request:
@@ -77,6 +83,36 @@ jobs:
           git tag -a ${{ github.event.inputs.tag }} -m "Release ${{ github.event.inputs.tag }}"
           git push origin ${{ github.event.inputs.tag }}
 
+  # This job dispatches workflow to check if there is a change in peerDependencies and updates
+  # the peer-dependency-changes.md file pushes the changes to the release PR to be merged into main
+  check-change-in-peer-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: create-release-tag
+    steps:
+      # Triggers only if it is a full release
+      - name: Check for peer dependency changes
+        if: contains(github.event.inputs.tag, '-rc.') == false
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          event-type: check-peer-dependencies
+          client-payload: '{"branch": "${{ github.ref_name }}", "previous-tag": "${{ github.event.inputs.previous-tag }}", "tag": "${{ github.event.inputs.tag }}"}'
+
+  # This job dispatches workflow to update the versions.js file with the latest stable version
+  # and pushes the updated versions.js file up to COS.
+  # This versions.js file is used to populate the version dropdown in our demo and documentation websites.
+  update-versions-file:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # Triggers only if it is a full release
+      - name: Update versions.js file and upload to COS
+        if: contains(github.event.inputs.tag, '-rc.') == false && github.event.inputs.update-versions-file == 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: update-versions-file
+          client-payload: '{"branch": "${{ github.ref_name }}", "tag": "${{ github.event.inputs.tag }}"}'
+
   # This job creates the release with the git tag pushed from job above with the corresponding
   # release notes from the previous version to current
   create-release:
@@ -88,7 +124,7 @@ jobs:
         with:
           fetch-depth: "0"
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22.x"
           registry-url: https://registry.npmjs.org
@@ -119,7 +155,7 @@ jobs:
       # After successfully creating tag for release candidate, trigger the staging storybook environment deployment workflow.
       # Pass in the release branch name to the storybook deployment job so it build off the release branch
       - name: Dispatch staging storybook deployment workflow
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: deploy-staging-storybook
           client-payload: '{"branch": "${{ github.ref_name }}"}'
@@ -128,7 +164,7 @@ jobs:
       # Pass in the release branch name to the storybook deployment job so it build off the release branch
       - name: Dispatch production storybook deployment workflow
         if: contains(github.event.inputs.tag, '-rc.') == false
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: deploy-latest-storybook
           client-payload: '{"branch": "${{ github.ref_name }}"}'
@@ -142,7 +178,7 @@ jobs:
       # After successfully creating tag for the release candidate / full release, trigger the workflow to publish the CDN artifacts.
       # Pass in the tag to the CDN publishing workflow.
       - name: Dispatch CDN publishing workflow
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: publish-cdn-artifacts
           client-payload: '{"tag": "${{ github.event.inputs.tag }}", "branch": "${{ github.ref_name }}"}'

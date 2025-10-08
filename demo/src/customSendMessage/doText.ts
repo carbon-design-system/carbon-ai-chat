@@ -12,6 +12,7 @@ import {
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   ChatInstance,
+  GenericItemMessageFeedbackOptions,
   MessageResponse,
   MessageResponseTypes,
   ResponseUserProfile,
@@ -23,6 +24,7 @@ import { sleep } from "../framework/utils";
 import {
   CHAIN_OF_THOUGHT_TEXT,
   CHAIN_OF_THOUGHT_TEXT_STREAM,
+  HTML,
   MARKDOWN,
   WELCOME_TEXT,
   WORD_DELAY,
@@ -35,9 +37,9 @@ const defaultHumanUserProfile: ResponseUserProfile = {
   user_type: UserType.HUMAN,
 };
 
-const defaultAlternativeBotProfile: ResponseUserProfile = {
+const defaultAlternativeAssistantProfile: ResponseUserProfile = {
   id: "1",
-  nickname: "Super bot",
+  nickname: "Super assistant",
   user_type: UserType.BOT,
 };
 
@@ -144,6 +146,7 @@ async function doTextStreaming(
   wordDelay = WORD_DELAY,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
+  feedback?: GenericItemMessageFeedbackOptions,
 ) {
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
@@ -260,7 +263,16 @@ async function doTextStreaming(
     const finalResponse = {
       id: responseID,
       output: {
-        generic: [completeItem],
+        generic: feedback
+          ? [
+              {
+                ...completeItem,
+                message_item_options: {
+                  feedback,
+                },
+              },
+            ]
+          : [completeItem],
       },
       message_options: {
         response_user_profile: userProfile,
@@ -290,8 +302,7 @@ function doWelcomeText(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.OPTION,
-          title:
-            'Select a response to view it in action. The "text" response includes configuration to send feedback (thumbs up/down). This can be applied to any response.',
+          title: "Select a response to view it in action.",
           options,
         },
       ],
@@ -304,6 +315,7 @@ function doText(
   text: string = MARKDOWN,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
+  feedback?: GenericItemMessageFeedbackOptions,
 ) {
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -322,7 +334,17 @@ function doText(
 
   if (userProfile) {
     message.message_options.response_user_profile = userProfile;
-  } else {
+  }
+
+  if (feedback) {
+    message.output.generic = message.output.generic || [];
+    message.output.generic[0] = {
+      ...genericItem,
+      message_item_options: {
+        feedback,
+      },
+    };
+  } else if (!userProfile) {
     message.output.generic = message.output.generic || [];
     message.output.generic[0] = {
       ...genericItem,
@@ -375,10 +397,10 @@ function doTextWithHumanProfile(
   doText(instance, text, responseUserProfile);
 }
 
-function doTextWithNonWatsonBotProfile(
+function doTextWithNonWatsonAssistantProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
-  responseUserProfile: ResponseUserProfile = defaultAlternativeBotProfile,
+  responseUserProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
 ) {
   doText(instance, text, responseUserProfile);
 }
@@ -391,11 +413,11 @@ function doTextWithWatsonAgentProfile(
   doText(instance, text, responseUserProfile);
 }
 
-async function doTextStreamingWithNonWatsonBotProfile(
+async function doTextStreamingWithNonWatsonAssistantProfile(
   instance: ChatInstance,
   text: string = MARKDOWN,
   cancellable = true,
-  userProfile: ResponseUserProfile = defaultAlternativeBotProfile,
+  userProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
 ) {
   return doTextStreaming(instance, text, cancellable, WORD_DELAY, userProfile);
 }
@@ -426,6 +448,81 @@ function doTextChainOfThought(
   doText(instance, text, userProfile, chainOfThought);
 }
 
+function doHTML(
+  instance: ChatInstance,
+  text: string = HTML,
+  userProfile?: ResponseUserProfile,
+  chainOfThought?: ChainOfThoughtStep[],
+) {
+  // Make sure simple standalone html works as well.
+  doText(instance, "<b>Carbon is bold!</b>", userProfile);
+  doText(instance, text, userProfile, chainOfThought);
+}
+
+async function doHTMLStreaming(
+  instance: ChatInstance,
+  text: string = HTML,
+  cancellable = true,
+  wordDelay = WORD_DELAY,
+  userProfile?: ResponseUserProfile,
+  chainOfThought?: ChainOfThoughtStep[],
+) {
+  await doTextStreaming(
+    instance,
+    text,
+    cancellable,
+    wordDelay,
+    userProfile,
+    chainOfThought,
+  );
+}
+
+function doTextWithFeedback(instance: ChatInstance) {
+  const feedbackText =
+    "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
+
+  const feedback: GenericItemMessageFeedbackOptions = {
+    is_on: true,
+    id: crypto.randomUUID(),
+    show_positive_details: false,
+    show_negative_details: true,
+    show_prompt: true,
+    categories: {
+      negative: ["Not informative", "Too technical", "Don't like the topic"],
+      positive: ["Very helpful", "Interesting", "Good explanation"],
+    },
+  };
+
+  doText(instance, feedbackText, undefined, undefined, feedback);
+}
+
+async function doTextWithFeedbackStreaming(instance: ChatInstance) {
+  const feedbackText =
+    "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
+
+  const feedback: GenericItemMessageFeedbackOptions = {
+    is_on: true,
+    id: crypto.randomUUID(),
+    show_positive_details: false,
+    show_negative_details: true,
+    show_prompt: true,
+    categories: {
+      negative: ["Not informative", "Too technical", "Don't like the topic"],
+      positive: ["Very helpful", "Interesting", "Good explanation"],
+    },
+  };
+
+  await doTextStreaming(
+    instance,
+    feedbackText,
+    true,
+    WORD_DELAY,
+    undefined,
+    undefined,
+    feedback,
+  );
+}
+
 export {
   doTextChainOfThoughtStreaming,
   doTextChainOfThought,
@@ -433,7 +530,11 @@ export {
   doWelcomeText,
   doText,
   doTextWithHumanProfile,
-  doTextWithNonWatsonBotProfile,
-  doTextStreamingWithNonWatsonBotProfile,
+  doTextWithNonWatsonAssistantProfile,
+  doTextStreamingWithNonWatsonAssistantProfile,
   doTextWithWatsonAgentProfile,
+  doHTML,
+  doHTMLStreaming,
+  doTextWithFeedback,
+  doTextWithFeedbackStreaming,
 };

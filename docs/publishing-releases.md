@@ -165,7 +165,22 @@ from the release branch for further testing. To publish subsequent prereleases,
           staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
     - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the staging tag and version has been published.
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
-      new version of `@carbon/monorepo-template`.
+      new version of `@carbon/ai-chat`.
+  - For **release candidates**, an example message:
+
+  ```
+  :carbon10: :carbon10: :carbon10:
+
+  Hi all! Release candidate v0.5.0-rc.0 of `@carbon/ai-chat` has been created and is ready for testing!
+
+  What is a release candidate? Before releasing a full version (ie. v0.5.0), we publish prerelease versions / release candidates for testing purposes. This helps to prevent any major bugs making their way to our full versions. If you find any issues with this release candidate, you can report any issues here: https://github.com/carbon-design-system/carbon-ai-chat/issues/new/choose.
+
+  Changelog: https://github.com/carbon-design-system/carbon-ai-chat/releases/tag/v0.5.0-rc.0
+  Demo (Staging): https://chat.carbondesignsystem.com/tag/next/demo/index.html
+  Documentation (Staging): https://chat.carbondesignsystem.com/tag/next/docs/documents/Overview.html
+
+  :carbon10: :carbon10: :carbon10:
+  ```
 
 ### Stable release
 
@@ -217,13 +232,37 @@ validated. During this stage, the release team will do the following:
         ![Screenshot of release label with latest option selected](https://github.com/user-attachments/assets/f3afc692-d691-4c04-b891-73d0406be7b0)
 
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
-      new version of `@carbon/ai-chat`.
+      new version of `@carbon/ai-chat`. This message usually includes a list of features / fixes completed in the release - these can be pulled from the release changelog.
+  - For **stable releases**, an example message:
+
+    ```
+    :carbon10: :carbon10: :carbon10:
+
+    Hi all! :wave: We wanted to share the release notes for [`v0.5.0`](https://github.com/carbon-design-system/carbon-ai-chat/releases/tag/v0.5.0) :rocket:
+
+    This release includes the following updates that you and your team can use today:
+
+    feat: add optional ability to provide different feedback categories (#321)
+    feat: properly stream web components inside streamed markdown (#301)
+    feat: Response avatar and message line control (#260)
+    chore: use adoptedStylesheets to set application styles to comply with CSP (#320)
+    chore: replace inline styles and set them via setProperty (#305)
+    chore: ensure watsonx avatar icon complies with CSP (#303)
+    * ... and a number of additional bugs squashed! :bug:
+
+    If you want to stay up to date with our release schedule, check out our [Release Radar wiki page](https://github.com/carbon-design-system/carbon-ai-chat/wiki/Carbon-AI-Chat-Releases).
+
+    If there are any issues that come up while using this release, please reach out on GitHub or Slack to let us know!
+
+    Thanks :tada:
+    — The Carbon AI Chat team :carbon10:
+    ```
 
 - [ ] Remove the branch protections for `release/v.*` by changing the branch
       name pattern to `released/v*`
 
 - [ ] Update the release in the
-      [Wiki release page](link to release page here)
+      [Wiki release page](https://github.com/carbon-design-system/carbon-ai-chat/wiki/Carbon-AI-Chat-Releases)
 
 ### Post release
 

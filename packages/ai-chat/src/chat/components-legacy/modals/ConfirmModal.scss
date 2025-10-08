@@ -1,0 +1,56 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../styles/chat-theme";
+
+.cds-aichat--confirm-modal {
+  position: absolute;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: theme.$overlay;
+  block-size: 100%;
+  @include type.type-style("body-01");
+
+  inline-size: 100%;
+  inset-block-start: 0;
+}
+
+.cds-aichat--confirm-modal .cds-aichat--confirm-modal__container {
+  margin: auto;
+  background-color: theme.$background;
+  max-inline-size: min(
+    calc(#{chat-theme.$max-width} - calc(#{layout.$spacing-05} * 2)),
+    512px
+  );
+}
+
+.cds-aichat--confirm-modal .cds-aichat--confirm-modal__title {
+  padding: layout.$spacing-05;
+  @include type.type-style("heading-compact-01");
+}
+
+.cds-aichat--confirm-modal .cds-aichat--confirm-modal__message {
+  padding: 0 layout.$spacing-05 layout.$spacing-09 layout.$spacing-05;
+}
+
+.cds-aichat--confirm-modal .cds-aichat--confirm-modal__no-button {
+  margin-inline-end: 1px;
+}
+
+.cds-aichat--confirm-modal .cds-aichat--confirm-modal__button-container {
+  display: flex;
+  border-block-start: solid 1px theme.$layer-03;
+}
+
+.cds-aichat--confirm-modal .cds-aichat--confirm-modal__button-container * {
+  flex: 1;
+}

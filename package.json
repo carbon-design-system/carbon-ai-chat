@@ -15,7 +15,11 @@
   "workspaces": [
     "demo",
     "examples/react/basic",
+    "examples/react/custom-element",
+    "examples/react/history",
     "examples/web-components/basic",
+    "examples/web-components/custom-element",
+    "examples/web-components/history",
     "examples/react/watsonx",
     "examples/web-components/watsonx",
     "packages/ai-chat",
@@ -29,6 +33,7 @@
     "aiChat:start:all": "npm run build:chat --workspace=@carbon/ai-chat && lerna run start --stream --parallel",
     "aiChat:start:ai-chat": "npm run start --workspace=@carbon/ai-chat",
     "aiChat:start:demo": "npm run start --workspace=@carbon/ai-chat-examples-demo",
+    "aiChat:start:storybook": "npm run storybook --workspace=@carbon/ai-chat-components",
     "aiChat:start:typedoc": "npm run start:typedoc --workspace=@carbon/ai-chat",
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
@@ -49,8 +54,11 @@
     "@babel/plugin-transform-runtime": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-react": "^7.27.1",
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/cli": "^20.0.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@types/prop-types": "^15.7.15",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
     "babel-preset-carbon": "^0.8.0",
     "commander": "^14.0.0",
     "concurrently": "^9.2.0",
@@ -60,7 +68,7 @@
     "globby": "^14.0.2",
     "husky": "^9.1.7",
     "lerna": "^8.1.8",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^16.0.0",
     "prettier": "^3.0.0",
     "prettier-config-carbon": "^0.12.0",
     "stylelint": "^16.0.0",
@@ -158,18 +166,22 @@
       "a11y/media-prefers-reduced-motion": [
         true,
         {
-          "severity": "warning"
+          "severity": "warning",
+          "disableFix": true
         }
       ],
       "keyframes-name-pattern": [
         "^[a-z][a-z0-9\\-]+$",
         {
           "message": "Keyframe names should be kebab-case",
-          "severity": "warning"
+          "severity": "error"
         }
       ],
       "declaration-property-unit-allowed-list": [
         {
+          "/^animation/": [
+            "ms"
+          ],
           "font-size": [
             "em",
             "rem",
@@ -180,15 +192,6 @@
             "em",
             "rem"
           ]
-        },
-        {
-          "severity": "warning"
-        }
-      ],
-      "selector-type-no-unknown": [
-        true,
-        {
-          "severity": "warning"
         }
       ],
       "no-descending-specificity": [
@@ -197,11 +200,11 @@
           "severity": "warning"
         }
       ],
-      "selector-pseudo-class-no-unknown": [
+      "selector-type-no-unknown": [
         true,
         {
-          "ignorePseudoClasses": [
-            "global"
+          "ignoreTypes": [
+            "/^cds-/"
           ]
         }
       ]

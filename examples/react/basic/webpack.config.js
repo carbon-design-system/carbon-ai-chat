@@ -49,7 +49,7 @@ const createPlugins = (includeAnalysis) => {
   return plugins;
 };
 
-export default async (env, args) => {
+export default async () => {
   const port = await portfinder.getPortPromise({
     port: process.env.PORT || 3002,
   });

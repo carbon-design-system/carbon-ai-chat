@@ -159,7 +159,7 @@ async function customSendMessage(
               {
                 response_type: MessageResponseTypes.TEXT,
                 text: TEXT,
-                message_options: {
+                message_item_options: {
                   feedback: {
                     /**
                      * Indicates if a request for feedback should be displayed.

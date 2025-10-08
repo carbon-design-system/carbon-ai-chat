@@ -1,0 +1,32 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+.cds-aichat--select-holder {
+  padding: 0 1px;
+  inline-size: 100%;
+  margin-block-start: layout.$spacing-05;
+  max-inline-size: 380px;
+}
+
+/* When the dropdown is opened, we want to add some temporary padding while performing the scroll calculations so that
+
+   it scrolls by a little more than it needs to. This class is only added while the calculation is performed. */
+
+.cds-aichat--custom-select-temporary-padding {
+  padding-block-end: layout.$spacing-11;
+}
+
+cds-dropdown::part(trigger-button) {
+  block-size: 2.5rem;
+}
+
+cds-dropdown::part(menu-body) {
+  position: static;
+}

@@ -1,0 +1,200 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/components/button/tokens" as *;
+
+$carbon-prefix: "cds";
+$prefix: "cds-aichat";
+$class-prefix: "cds--aichat";
+
+#{$prefix}-tile-container {
+  .#{$class-prefix}-tile-container-footer {
+    display: flex;
+    justify-content: end;
+    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+
+    &[flush] {
+      margin-block-end: calc(-1 * layout.$spacing-05);
+      margin-block-start: layout.$spacing-05;
+      margin-inline-end: calc(-1 * layout.$spacing-05);
+      margin-inline-start: calc(-1 * layout.$spacing-05);
+    }
+
+    #{$carbon-prefix}-button {
+      inline-size: 100%;
+      max-inline-size: unset;
+    }
+
+    #{$carbon-prefix}-icon-button:last-child::part(button) {
+      border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+    }
+
+    &:not(:has([kind="ghost"])) {
+      background: $button-separator;
+      gap: rem(1px);
+    }
+
+    &[stacked] {
+      flex-direction: column;
+
+      #{$carbon-prefix}-button {
+        &:last-child::part(button),
+        &:only-child::part(button) {
+          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+        }
+      }
+    }
+
+    &:not([stacked]) {
+      #{$carbon-prefix}-button {
+        &:first-child::part(button) {
+          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+        }
+
+        &:last-child::part(button) {
+          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+        }
+      }
+    }
+  }
+
+  .top-border {
+    border-block-start: rem(1px) solid theme.$border-subtle;
+  }
+
+  #{$carbon-prefix}-tile,
+  #{$carbon-prefix}-clickable-tile {
+    img {
+      display: block;
+      inline-size: 100%;
+    }
+
+    .full-width {
+      inline-size: calc(100% + (2 * layout.$spacing-05));
+      margin-block-start: calc(-1 * layout.$spacing-05);
+      margin-inline-end: calc(-1 * layout.$spacing-05);
+      margin-inline-start: calc(-1 * layout.$spacing-05);
+
+      &:first-child {
+        border-start-end-radius: calc(layout.$spacing-03 - rem(1px));
+        border-start-start-radius: calc(layout.$spacing-03 - rem(1px));
+        margin-block-end: layout.$spacing-05;
+      }
+
+      &:last-child {
+        border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+        border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+      }
+
+      &:only-child {
+        display: flex;
+        margin-block-end: calc(-1 * layout.$spacing-05);
+      }
+    }
+  }
+
+  #{$carbon-prefix}-clickable-tile {
+    &:hover:not([disabled]) img {
+      opacity: 0.8;
+      transition: all 0.2s ease-in-out;
+    }
+
+    &:focus img {
+      border: 1px solid transparent;
+      opacity: 0.8;
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+
+  // Typography
+  .body-compact-02 {
+    @include type.type-style("body-compact-02");
+  }
+
+  .helper-text-01 {
+    @include type.type-style("helper-text-01");
+  }
+
+  .body-01 {
+    @include type.type-style("body-01");
+  }
+
+  .body-02 {
+    @include type.type-style("body-02");
+  }
+
+  .caption-01 {
+    @include type.type-style("caption-01");
+  }
+
+  .heading-01 {
+    @include type.type-style("heading-01");
+  }
+
+  // Colors & Utilities
+  .text-secondary {
+    color: theme.$text-secondary;
+  }
+
+  .link-secondary {
+    color: theme.$link-secondary;
+  }
+
+  .margin-bottom-01 {
+    margin-block-end: layout.$spacing-01;
+  }
+
+  .margin-bottom-04 {
+    margin-block-end: layout.$spacing-04;
+  }
+
+  .bg-transparent {
+    background-color: transparent;
+  }
+
+  .aspect-16-9 {
+    aspect-ratio: 16 / 9;
+  }
+
+  .text-primary {
+    color: theme.$text-primary;
+  }
+
+  #{$carbon-prefix}-clickable-tile:first-child::part(link),
+  #{$carbon-prefix}-tile:first-child {
+    border-start-end-radius: calc(layout.$spacing-03 - rem(1px));
+    border-start-start-radius: calc(layout.$spacing-03 - rem(1px));
+  }
+
+  #{$carbon-prefix}-clickable-tile:last-child::part(link),
+  #{$carbon-prefix}-tile:last-child {
+    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+  }
+
+  #{$carbon-prefix}-clickable-tile:only-child::part(link),
+  #{$carbon-prefix}-tile:only-child {
+    border-radius: calc(layout.$spacing-03 - rem(1px));
+    outline-offset: -1px;
+  }
+
+  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
+    cursor: not-allowed;
+  }
+}

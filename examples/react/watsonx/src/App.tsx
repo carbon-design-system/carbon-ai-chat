@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
+import { CarbonTheme, ChatContainer, PublicConfig } from "@carbon/ai-chat";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
@@ -25,10 +25,11 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
+  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
-  return <ChatContainer config={config} />;
+  return <ChatContainer {...config} />;
 }
 
 const root = createRoot(document.querySelector("#root") as Element);

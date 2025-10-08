@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { PublicConfig } from "../../src/types/config/PublicConfig";
+import { ChatContainerProps } from "../../src/types/component/ChatContainer";
 
 /**
  * Mock function for customSendMessage that can be used in tests
@@ -15,10 +15,10 @@ import { PublicConfig } from "../../src/types/config/PublicConfig";
 export const mockCustomSendMessage = jest.fn();
 
 /**
- * Creates a base configuration object suitable for testing with required properties.
+ * Creates base test props suitable for testing ChatContainer with required properties.
  * Includes exposeServiceManagerForTesting flag to enable access to internal state.
  */
-export function createBaseTestConfig(): PublicConfig {
+export function createBaseTestProps(): Partial<ChatContainerProps> {
   return {
     messaging: {
       customSendMessage: mockCustomSendMessage,

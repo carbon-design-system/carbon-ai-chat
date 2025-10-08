@@ -1,0 +1,33 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+.cds-aichat--response-stopped {
+  @include type.type-style("body-01");
+
+  color: theme.$text-secondary;
+  font-style: italic;
+  margin-block-start: layout.$spacing-05;
+}
+
+.cds-aichat--standard-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--response-stopped,
+.cds-aichat--wide-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--response-stopped {
+  padding-inline-start: 56px;
+}
+
+.cds-aichat--narrow-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--response-stopped {
+  padding-inline-start: 16px;
+}

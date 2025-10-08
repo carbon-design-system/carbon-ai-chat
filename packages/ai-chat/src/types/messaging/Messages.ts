@@ -15,7 +15,8 @@
 import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { FileStatusValue } from "../instance/apiTypes";
+import { FileStatusValue } from "../config/ServiceDeskConfig";
+import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 /**
  * This is the main interface that represents a request from a user sent to a back-end.
@@ -192,7 +193,7 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   history?: MessageResponseHistory;
 
   /**
-   * Options for the {@link MessageResponse}. This includes metadata about the user or bot sending this response.
+   * Options for the {@link MessageResponse}. This includes metadata about the user or assistant sending this response.
    */
   message_options?: MessageResponseOptions;
 }
@@ -448,7 +449,7 @@ export enum ChainOfThoughtStepStatus {
 }
 
 /**
- * This schema is in beta. A chain of thought step is meant to show tool calls and other steps made by your agent
+ * A chain of thought step is meant to show tool calls and other steps made by your agent
  * to reach its final answer.
  *
  * @category Messaging
@@ -793,7 +794,7 @@ interface OptionItem<TUserDefinedType = Record<string, unknown>>
   description?: string;
 
   /**
-   * The preferred type of control to display.
+   * The preferred type of control to display (e.g. button or dropdown).
    */
   preference?: OptionItemPreference;
 }
@@ -1180,6 +1181,11 @@ enum ButtonItemKind {
   DANGER = "danger",
 
   /**
+   * Ghost Carbon button.
+   */
+  GHOST = "ghost",
+
+  /**
    * Button displayed like a link.
    */
   LINK = "link",
@@ -1195,7 +1201,7 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: ButtonItemKind;
+  kind?: BUTTON_KIND | "LINK";
 
   /**
    * The type of button.
@@ -1432,7 +1438,7 @@ interface MessageUIStateInternal {
  */
 interface MessageResponseOptions {
   /**
-   * This is the profile for the human or bot who sent or triggered this message.
+   * This is the profile for the human or assistant who sent or triggered this message.
    */
   response_user_profile?: ResponseUserProfile;
 
@@ -1594,7 +1600,12 @@ interface PartialItemChunk extends Chunk {
  * previously received from partial chunks. This chunk may contain corrections to previous chunks.
  *
  * Use this when you need to finalize a specific item but the overall message response isn't ready yet.
- * For ending the entire streaming response, use {@link FinalResponseChunk} instead.
+ *
+ * If you are only streaming a single item you can skip
+ * this chunk type entirely. CompleteItemChunk is primarily useful when streaming multiple different message
+ * items and you need to finalize one item while others are still streaming.
+ *
+ * For ending the entire streaming response en masse, use {@link FinalResponseChunk}.
  *
  * @category Messaging
  */
@@ -1643,7 +1654,7 @@ enum UserType {
   HUMAN = "human",
 
   /**
-   * A message from a non-watsonx bot, used for interacting with bots that are not backed by watsonx.
+   * A message from a non-watsonx assistant, used for interacting with assistants that are not backed by watsonx.
    *
    * Official guidance is to not use this for IBM products without explicit exception.
    */
@@ -1657,7 +1668,7 @@ enum UserType {
 
 /**
  * Profile information about a specific agent that can be used to display information to the user. This may
- * represent a human agent or a virtual/bot agent.
+ * represent a human agent or a virtual assistant agent.
  *
  * @category Messaging
  */
@@ -1673,7 +1684,7 @@ interface ResponseUserProfile {
   nickname: string;
 
   /**
-   * The type of user. If its a "human" there is more protection against code injection attacks, where as bot responses
+   * The type of user. If its a "human" there is more protection against code injection attacks, where as assistant responses
    * are trusted by default unless {@link PublicConfig.shouldSanitizeHTML} is set to true.
    */
   user_type: UserType;
