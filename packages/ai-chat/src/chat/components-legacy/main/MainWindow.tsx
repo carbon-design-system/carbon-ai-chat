@@ -949,7 +949,6 @@ class MainWindow
 
   renderWidget() {
     const {
-      serviceManager,
       useCustomHostElement,
       catastrophicErrorType,
       config,
@@ -988,7 +987,6 @@ class MainWindow
               <div className="cds-aichat--widget__focus-trap-glass" />
             )}
             <div
-              id={`cds-aichat--widget${serviceManager.namespace.suffix}`}
               className={cx(`cds-aichat--widget ${localeClassName}`, {
                 "cds-aichat--widget--rounded":
                   theme.corners === CornersType.ROUND,

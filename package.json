@@ -17,6 +17,8 @@
     "examples/react/basic",
     "examples/react/custom-element",
     "examples/react/history",
+    "examples/react/jest-jsdom",
+    "examples/react/jest-happydom",
     "examples/web-components/basic",
     "examples/web-components/custom-element",
     "examples/web-components/history",
