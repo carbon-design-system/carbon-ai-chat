@@ -36,7 +36,7 @@ cds-table-toolbar {
 // The title and description have a parent div around them with padding (cds--data-table-header) that causes the title
 // and description to scroll horizontally even when those items have a fixed width (equal to their container size). If
 // this was a React component we could just override the css, however because the container div that is setting this
-// padding is in a shadow root, we can't select the div to override the styles. In order to remove this scroll the
+// padding is in a shadow DOM, we can't select the div to override the styles. In order to remove this scroll the
 // padding needs to be offset from the parent div using this negative margin "hack". Then the padding can be reapplied
 // to the component we control so the title is properly indented but doesn't scroll.
 cds-table-header-title,

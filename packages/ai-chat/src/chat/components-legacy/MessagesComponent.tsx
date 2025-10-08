@@ -981,10 +981,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     return (
-      <div
-        id={`cds-aichat--messages--holder${serviceManager.namespace.suffix}`}
-        className="cds-aichat--messages--holder"
-      >
+      <div className="cds-aichat--messages--holder">
         {this.renderHumanAgentBanner()}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
@@ -994,7 +991,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           })}
         >
           <div
-            id={`cds-aichat--messages${serviceManager.namespace.suffix}`}
             className="cds-aichat--messages"
             ref={this.messagesContainerWithScrollingRef}
             onScroll={() => {
