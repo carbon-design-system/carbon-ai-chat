@@ -9,7 +9,6 @@
 
 import "../src/processing";
 import { html } from "lit";
-// import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Processing",
