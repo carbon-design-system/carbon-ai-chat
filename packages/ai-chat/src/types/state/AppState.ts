@@ -230,6 +230,8 @@ interface StopStreamingButtonState {
 
 /**
  * Items stored in sessionStorage.
+ *
+ * @category Instance
  */
 interface PersistedState {
   /**
