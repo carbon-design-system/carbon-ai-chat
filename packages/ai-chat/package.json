@@ -69,7 +69,6 @@
     "@types/node": "^24.0.12",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
-    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.21",
     "babel-jest": "^29.7.0",
     "identity-obj-proxy": "^3.0.0",
