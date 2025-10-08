@@ -58,12 +58,7 @@ const sharedArgTypes = {
   size: {
     control: "select",
     description: "Specify the size of the Button.",
-    options: [
-      BUTTON_SIZE.EXTRA_SMALL,
-      BUTTON_SIZE.SMALL,
-      BUTTON_SIZE.MEDIUM,
-      BUTTON_SIZE.LARGE,
-    ],
+    options: [BUTTON_SIZE.SMALL, BUTTON_SIZE.MEDIUM, BUTTON_SIZE.LARGE],
   },
   type: {
     control: "radio",
@@ -378,7 +373,12 @@ export const QuickAction = {
     isQuickAction: {
       control: { disable: true },
       description:
-        "Specify whether the Button is a quick action. Overrides `kind` to ghost.",
+        "Specify whether the Button is a quick action. Overrides `kind` to `ghost`. and `size` to `sm`",
+    },
+    size: {
+      control: { disable: true },
+      description:
+        "Size defaults to `sm` in quick action variant, and does not support any other size.",
     },
     isSelected: {
       control: "boolean",
