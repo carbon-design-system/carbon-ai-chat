@@ -69,7 +69,7 @@ interface AssistantHeaderProps {
 
 function AssistantHeader(
   props: AssistantHeaderProps,
-  ref: RefObject<HasRequestFocus>,
+  ref: RefObject<HasRequestFocus | null>,
 ) {
   const {
     onClose,
@@ -97,7 +97,7 @@ function AssistantHeader(
     selectHumanAgentDisplayState,
     shallowEqual,
   );
-  const headerRef = useRef<HasRequestFocus>();
+  const headerRef = useRef<HasRequestFocus>(undefined);
   const Home = carbonIconToReact(Home16);
 
   const showRestartButton = publicConfig.header?.showRestartButton;

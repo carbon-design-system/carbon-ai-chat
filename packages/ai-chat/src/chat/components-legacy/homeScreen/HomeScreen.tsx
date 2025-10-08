@@ -54,7 +54,7 @@ interface HomeScreenProps {
   /**
    * Forwarded ref from App.tsx to use to manage input focus.
    */
-  homeScreenMessageInputRef: RefObject<InputFunctions>;
+  homeScreenMessageInputRef: RefObject<InputFunctions | null>;
 
   /**
    * A callback function called when the close button is clicked.

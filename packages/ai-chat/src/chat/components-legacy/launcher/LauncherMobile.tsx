@@ -15,21 +15,21 @@ import { IntlShape } from "react-intl";
 import { LauncherButton, LauncherHandle } from "./LauncherButton";
 
 interface LauncherMobileProps {
-  buttonRef: RefObject<CDSButton>;
-  containerRef: RefObject<HTMLDivElement>;
-  greetingRef: RefObject<HTMLDivElement>;
+  buttonRef: RefObject<CDSButton | null>;
+  containerRef: RefObject<HTMLDivElement | null>;
+  greetingRef: RefObject<HTMLDivElement | null>;
   icon: ReactNode;
   intl: IntlShape;
   isExtended: boolean;
   launcherClosedLabel: string;
   launcherOpenLabel: string;
   launcherHidden: boolean;
-  nameplateRef: RefObject<HTMLDivElement>;
+  nameplateRef: RefObject<HTMLDivElement | null>;
   onToggleOpen: () => void;
   refHandle: RefObject<LauncherHandle | null>;
   showGreeting: boolean;
   showUnreadIndicator: boolean;
-  textHolderRef: RefObject<HTMLDivElement>;
+  textHolderRef: RefObject<HTMLDivElement | null>;
   unreadHumanAgentCount: number;
   className?: string;
   greetingText: ReactNode;

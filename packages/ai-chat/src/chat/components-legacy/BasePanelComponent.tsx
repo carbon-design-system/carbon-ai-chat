@@ -86,7 +86,7 @@ function BasePanelComponent(
     showRestartButtonProp !== undefined
       ? showRestartButtonProp
       : showRestartButtonFromConfig;
-  const headerRef = useRef<HasRequestFocus>();
+  const headerRef = useRef<HasRequestFocus>(undefined);
 
   // Reuse the imperative handles from the header.
   useImperativeHandle(ref, () => headerRef.current);

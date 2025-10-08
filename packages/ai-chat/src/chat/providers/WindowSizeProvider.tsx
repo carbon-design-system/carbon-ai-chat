@@ -13,7 +13,7 @@
  * Provides the current window size via {@link WindowSizeContext}.
  */
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, type JSX } from "react";
 import { WindowSizeContext } from "../contexts/WindowSizeContext";
 import type { Dimension } from "../../types/utilities/Dimension";
 

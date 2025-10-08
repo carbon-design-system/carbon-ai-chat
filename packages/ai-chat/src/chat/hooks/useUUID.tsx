@@ -15,7 +15,7 @@ import { uuid, UUIDType } from "../utils/lang/uuid";
  * A hook that returns a UUID that lives for the life of the component.
  */
 function useUUID() {
-  const ref = useRef<string>();
+  const ref = useRef<string>(undefined);
   if (ref.current === undefined) {
     ref.current = uuid(UUIDType.COMPONENT);
   }

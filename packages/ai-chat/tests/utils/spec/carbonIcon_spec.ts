@@ -8,6 +8,7 @@
  */
 
 import { render } from "@testing-library/react";
+import { createElement } from "react";
 import { carbonIconToReact } from "../../../src/chat/utils/carbonIcon";
 
 const mockIcon = {
@@ -31,7 +32,7 @@ const mockIcon = {
 describe("carbonIconToReact", () => {
   it("should create a React component from a Carbon icon", () => {
     const IconComponent = carbonIconToReact(mockIcon);
-    const { container } = render(IconComponent({}));
+    const { container } = render(createElement(IconComponent, {}));
 
     const svg = container.querySelector("svg");
     expect(svg).toBeTruthy();
@@ -41,7 +42,10 @@ describe("carbonIconToReact", () => {
   it("should convert kebab-case props to camelCase", () => {
     const IconComponent = carbonIconToReact(mockIcon);
     const { container } = render(
-      IconComponent({ "stroke-width": "2", "stroke-linecap": "round" }),
+      createElement(IconComponent, {
+        "stroke-width": "2",
+        "stroke-linecap": "round",
+      }),
     );
 
     const svg = container.querySelector("svg");
@@ -52,7 +56,10 @@ describe("carbonIconToReact", () => {
   it("should preserve aria-* attributes in kebab-case", () => {
     const IconComponent = carbonIconToReact(mockIcon);
     const { container } = render(
-      IconComponent({ "aria-label": "Test icon", "aria-hidden": "true" }),
+      createElement(IconComponent, {
+        "aria-label": "Test icon",
+        "aria-hidden": "true",
+      }),
     );
 
     const svg = container.querySelector("svg");
@@ -63,7 +70,10 @@ describe("carbonIconToReact", () => {
   it("should preserve data-* attributes in kebab-case", () => {
     const IconComponent = carbonIconToReact(mockIcon);
     const { container } = render(
-      IconComponent({ "data-testid": "icon", "data-custom": "value" }),
+      createElement(IconComponent, {
+        "data-testid": "icon",
+        "data-custom": "value",
+      }),
     );
 
     const svg = container.querySelector("svg");
@@ -73,7 +83,7 @@ describe("carbonIconToReact", () => {
 
   it("should transform child element attributes", () => {
     const IconComponent = carbonIconToReact(mockIcon);
-    const { container } = render(IconComponent({}));
+    const { container } = render(createElement(IconComponent, {}));
 
     const path = container.querySelector("path");
     // React uses camelCase props but renders kebab-case attributes in the DOM for SVG
@@ -88,7 +98,7 @@ describe("carbonIconToReact", () => {
     };
 
     const IconComponent = carbonIconToReact(iconWithoutDefaults);
-    const { container } = render(IconComponent({}));
+    const { container } = render(createElement(IconComponent, {}));
 
     const svg = container.querySelector("svg");
     expect(svg?.getAttribute("width")).toBe("16");
@@ -99,7 +109,7 @@ describe("carbonIconToReact", () => {
   it("should override defaults with provided props", () => {
     const IconComponent = carbonIconToReact(mockIcon);
     const { container } = render(
-      IconComponent({ width: 32, height: 32, fill: "red" }),
+      createElement(IconComponent, { width: 32, height: 32, fill: "red" }),
     );
 
     const svg = container.querySelector("svg");

@@ -162,32 +162,35 @@ class MainWindow
   /**
    * A React ref to the bot {@link Chat} component.
    */
-  private botChatRef: RefObject<ChatClass> = React.createRef();
+  private botChatRef: RefObject<ChatClass | null> = React.createRef();
 
   /**
    * A React ref to the bot {@link Input} component.
    */
-  private homeScreenInputRef: RefObject<InputFunctions> = React.createRef();
+  private homeScreenInputRef: RefObject<InputFunctions | null> =
+    React.createRef();
 
   /**
    * A React ref to the bot {@link Disclaimer} component.
    */
-  private disclaimerRef: RefObject<CDSButton> = React.createRef();
+  private disclaimerRef: RefObject<CDSButton | null> = React.createRef();
 
   /**
    * A React ref to the animation container element.
    */
-  private animationContainerRef: RefObject<HTMLDivElement> = React.createRef();
+  private animationContainerRef: RefObject<HTMLDivElement | null> =
+    React.createRef();
 
   /**
    * A React ref to the {@link IFramePanel} component.
    */
-  private iframePanelRef: RefObject<HasRequestFocus> = React.createRef();
+  private iframePanelRef: RefObject<HasRequestFocus | null> = React.createRef();
 
   /**
    * A React ref to the {@link ViewSourcePanel}.
    */
-  private viewSourcePanelRef: RefObject<HasRequestFocus> = React.createRef();
+  private viewSourcePanelRef: RefObject<HasRequestFocus | null> =
+    React.createRef();
 
   /**
    * The observer used to monitor for changes in the main window size.

@@ -62,7 +62,7 @@ function SelectComponent(props: SelectProps) {
   } = props;
 
   const [isBeingOpened, setIsBeingOpened] = useState(false);
-  const rootRef = useRef<HTMLDivElement>();
+  const rootRef = useRef<HTMLDivElement>(undefined);
 
   // Generate a unique ID that we can use for each instance of our dropdowns.
   const counter = useCounter();

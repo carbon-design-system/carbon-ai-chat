@@ -29,7 +29,7 @@ function AriaAnnouncerProvider(props: HasChildren) {
   const intl = useIntl();
   const { store } = useServiceManager();
 
-  const announcerRef = useRef<AriaAnnouncerComponent>();
+  const announcerRef = useRef<AriaAnnouncerComponent>(undefined);
   const announcerFunction = useCallback<AriaAnnouncerFunctionType>((value) => {
     if (value) {
       if (!announcerRef.current) {
@@ -39,7 +39,7 @@ function AriaAnnouncerProvider(props: HasChildren) {
       }
     }
   }, []);
-  const previousAnnounceMessageRef = useRef<AnnounceMessage>();
+  const previousAnnounceMessageRef = useRef<AnnounceMessage>(undefined);
 
   useEffect(() => {
     const unsubscribe = store.subscribe(() => {

@@ -80,7 +80,7 @@ function Image(props: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const rootRef = useRef();
+  const rootRef = useRef(undefined);
   // This ref is for merely saving the initial value of shouldAnnounce prop.
   const needsAnnouncementRef = useRef(needsAnnouncement);
   const hasText = Boolean(title || description || displayURL);

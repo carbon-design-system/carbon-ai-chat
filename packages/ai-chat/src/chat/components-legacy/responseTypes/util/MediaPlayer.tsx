@@ -138,7 +138,7 @@ function MediaPlayerComponent({
   const [errorLoading, setErrorLoading] = useState(false);
   const { errors_audioSource, errors_videoSource } = useLanguagePack();
   const ariaAnnouncer = useAriaAnnouncer();
-  const rootElementRef = useRef<HTMLDivElement>();
+  const rootElementRef = useRef<HTMLDivElement>(undefined);
   const wrapperElementRef = useRef<HTMLDivElement>(null);
   const skeletonRef = useRef<HTMLDivElement>(null);
 

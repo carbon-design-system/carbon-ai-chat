@@ -50,8 +50,8 @@ function ConversationalSearch({
 }: ConversationalSearchProps) {
   const [selectedCitationIndex, setSelectedCitationIndex] = useState<number>(0);
   const [citationsOpen, setCitationsOpen] = useState(false);
-  const scrollIntoViewArea = useRef<HTMLDivElement>();
-  const swiperRef = useRef<SwiperRef>();
+  const scrollIntoViewArea = useRef<HTMLDivElement>(undefined);
+  const swiperRef = useRef<SwiperRef>(undefined);
   const languagePack = useLanguagePack();
 
   const messageItem = localMessageItem.item;

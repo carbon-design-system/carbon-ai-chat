@@ -82,7 +82,7 @@ interface HomeScreenContainerProps {
   /**
    * A React ref to the bot {@link Disclaimer} component.
    */
-  homeScreenInputRef: RefObject<InputFunctions>;
+  homeScreenInputRef: RefObject<InputFunctions | null>;
 
   /**
    * The callback that can be called when this component wants the Carbon AI Chat to regain focus after a homescreen overflow
