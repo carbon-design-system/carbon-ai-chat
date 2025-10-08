@@ -46,7 +46,7 @@ class ChatContainerReact extends LitElement {
   `;
 
   /**
-   * Dispatch a custom event when the shadow root is ready
+   * Dispatch a custom event when the shadow DOM is ready
    * This ensures React can safely access shadowRoot
    */
   firstUpdated(changedProperties: PropertyValues) {
