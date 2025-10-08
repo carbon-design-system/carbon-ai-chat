@@ -17,7 +17,10 @@ import { ServiceManager } from "./ServiceManager";
 import { ThemeWatcherService } from "./ThemeWatcherService";
 import { UserSessionStorageService } from "./UserSessionStorageService";
 import { doCreateStore } from "../store/doCreateStore";
-import { copyToSessionStorage } from "../store/subscriptions";
+import {
+  copyToSessionStorage,
+  fireStateChangeEvent,
+} from "../store/subscriptions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { WriteableElementName } from "../utils/constants";
 import { assertType, setEnableDebugLog } from "../utils/miscUtils";
@@ -49,6 +52,7 @@ function createServiceManager(appConfig: AppConfig) {
     publicConfig,
   );
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
+  serviceManager.store.subscribe(fireStateChangeEvent(serviceManager));
 
   // Subscribe to theme changes to start/stop the theme watcher as needed
   let currentOriginalTheme =
