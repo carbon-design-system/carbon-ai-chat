@@ -130,13 +130,14 @@ class TextArea extends PureComponent<TextAreaProps> {
   /**
    * A React ref to the TextArea component.
    */
-  private textAreaRef: RefObject<HTMLTextAreaElement> = React.createRef();
+  private textAreaRef: RefObject<HTMLTextAreaElement | null> =
+    React.createRef();
 
   /**
    * A React ref to the sizer component.
    * Used to calculate the required height for the textarea content and determine when scrolling is needed.
    */
-  private sizerRef: RefObject<HTMLDivElement> = React.createRef();
+  private sizerRef: RefObject<HTMLDivElement | null> = React.createRef();
 
   /**
    * Returns the HTML element.

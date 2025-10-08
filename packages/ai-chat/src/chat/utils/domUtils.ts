@@ -124,7 +124,7 @@ function doFocus(element: HTMLElement | SVGElement, preventScroll = false) {
  * @param preventScroll Indicates if scrolling should be prevented as a result of the focus change.
  */
 function doFocusRef(
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
   defer = false,
   preventScroll = false,
 ) {

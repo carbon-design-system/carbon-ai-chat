@@ -47,7 +47,7 @@ interface HumanAgentBannerProps {
  */
 function HumanAgentBanner(
   props: HumanAgentBannerProps,
-  ref: RefObject<HasRequestFocus>,
+  ref: RefObject<HasRequestFocus | null>,
 ) {
   const { onButtonClick } = props;
   const languagePack = useLanguagePack();
@@ -61,7 +61,7 @@ function HumanAgentBanner(
   const { isConnecting, availability, isScreenSharing } = humanAgentState;
   const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
   const { responseUserProfile } = persistedHumanAgentState;
-  const buttonRef = useRef<CDSButton>();
+  const buttonRef = useRef<CDSButton>(undefined);
 
   let line1;
   let line2;

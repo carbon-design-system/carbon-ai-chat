@@ -217,10 +217,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const isTypingTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
   // A React ref to the TextArea component.
-  const textAreaRef = useRef<TextArea>();
+  const textAreaRef = useRef<TextArea>(undefined);
 
   // A React ref to the file Input element.
-  const fileInputRef = useRef<HTMLInputElement>();
+  const fileInputRef = useRef<HTMLInputElement>(undefined);
 
   // An array of functions that will be called when the text value changes.
   const changeListeners = useRef<ListenerList<[string]>>(
@@ -423,8 +423,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   }
 
   return (
-    isInputVisible && (
-      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    isInputVisible && ( // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <div className="cds-aichat--input-and-completions">
         <div
           className={cx("cds-aichat--input-container", {

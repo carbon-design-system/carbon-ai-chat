@@ -87,16 +87,16 @@ function LauncherMobileContainer(props: LauncherMobileContainerProps) {
   // the flow.
   const initialBounceTurn = useRef(bounceTurn).current;
   const previouslyPlayedExtendAnimation = useRef(wasReduced).current;
-  const extendLauncherTimeoutIDRef = useRef<NodeJS.Timeout>();
-  const endBounceAnimationRef = useRef<() => void>();
+  const extendLauncherTimeoutIDRef = useRef<NodeJS.Timeout>(undefined);
+  const endBounceAnimationRef = useRef<() => void>(undefined);
   const shouldBounceRef = useRef(
     previouslyPlayedExtendAnimation && !disableBounce,
   );
 
-  const textHolderRef = useRef<HTMLDivElement>();
-  const greetingMessageRef = useRef<HTMLDivElement>();
-  const extendedContainerRef = useRef<HTMLDivElement>();
-  const buttonRef = useRef<CDSButton>();
+  const textHolderRef = useRef<HTMLDivElement>(undefined);
+  const greetingMessageRef = useRef<HTMLDivElement>(undefined);
+  const extendedContainerRef = useRef<HTMLDivElement>(undefined);
+  const buttonRef = useRef<CDSButton>(undefined);
   const touchStartRef = useRef<LauncherTouchStartCoordinates>({
     touchStartX: null,
     touchStartY: null,

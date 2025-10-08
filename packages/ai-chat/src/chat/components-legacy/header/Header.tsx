@@ -154,10 +154,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     showAiLabel,
   } = props;
 
-  const backButtonRef = useRef<CDSButton>();
-  const restartButtonRef = useRef<CDSButton>();
-  const closeButtonRef = useRef<CDSButton>();
-  const overflowRef = useRef<CDSOverflowMenu>();
+  const backButtonRef = useRef<CDSButton>(undefined);
+  const restartButtonRef = useRef<CDSButton>(undefined);
+  const closeButtonRef = useRef<CDSButton>(undefined);
+  const overflowRef = useRef<CDSOverflowMenu>(undefined);
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);
@@ -411,7 +411,7 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
   /**
    * The ref to use for the actual button element.
    */
-  buttonRef: RefObject<CDSButton>;
+  buttonRef: RefObject<CDSButton | null>;
 
   /**
    * The aria label to use on the button.

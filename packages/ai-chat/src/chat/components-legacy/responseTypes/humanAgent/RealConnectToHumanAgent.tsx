@@ -132,7 +132,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     localMessage.item.agent_available?.message ||
     languagePack.default_agent_availableMessage;
 
-  let ButtonIcon: (props: any) => ReactNode; // CarbonIconType is not exported, currently.
+  let ButtonIcon: (props: any) => ReactNode | Promise<ReactNode>; // CarbonIconType is not exported, currently.
   // let ButtonIcon: React.FC<CarbonIconProps>;
   let buttonText: string;
   let showDisabled: boolean =

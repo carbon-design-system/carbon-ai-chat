@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { ReactElement } from "react";
 import { render, screen, act } from "@testing-library/react";
 import { StoreProvider } from "../../../src/chat/providers/StoreProvider";
 import { useSelector } from "../../../src/chat/hooks/useSelector";
@@ -45,7 +45,7 @@ describe("react-redux polyfill", () => {
       other: 0,
     });
 
-    function Counter(): JSX.Element {
+    function Counter(): ReactElement {
       const count = useSelector<State, number>((s) => s.count);
       return <div data-testid="count">{String(count)}</div>;
     }
@@ -69,7 +69,7 @@ describe("react-redux polyfill", () => {
       other: 0,
     });
 
-    function View(): JSX.Element {
+    function View(): ReactElement {
       const value = useSelector<State, number>((s) => s.count);
       return <div data-testid="value">{String(value)}</div>;
     }
@@ -94,7 +94,7 @@ describe("react-redux polyfill", () => {
     });
 
     let renders = 0;
-    function View(): JSX.Element {
+    function View(): ReactElement {
       // Select a primitive
       const value = useSelector<State, number>((s) => s.count);
       renders += 1;
@@ -123,7 +123,7 @@ describe("react-redux polyfill", () => {
     });
 
     let renders = 0;
-    function View(): JSX.Element {
+    function View(): ReactElement {
       // Return a fresh object each time; shallowEqual should prevent re-renders
       const selected = useSelector<State, { c: number }>(
         (s) => ({ c: s.count }),
@@ -160,7 +160,7 @@ describe("react-redux polyfill", () => {
     });
 
     let renders = 0;
-    function View(): JSX.Element {
+    function View(): ReactElement {
       const count = useSelector<State, number>(
         (s) => s.count,
         (a, b) => Math.floor(a / 2) === Math.floor(b / 2),
@@ -204,7 +204,7 @@ describe("react-redux polyfill", () => {
     const store = createAppStore<S, A>(r, { other: 0 });
 
     let renders = 0;
-    function View(): JSX.Element {
+    function View(): ReactElement {
       const value = useSelector<S, number | undefined>((s) => s.count);
       renders += 1;
       return <div data-testid="maybe-count">{String(value)}</div>;

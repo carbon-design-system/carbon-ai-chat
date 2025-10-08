@@ -37,7 +37,7 @@ interface SimpleHeaderProps {
 
 function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
   const { onClose, showAiLabel, showRestartButton } = props;
-  const headerRef = useRef<HasRequestFocus>();
+  const headerRef = useRef<HasRequestFocus>(undefined);
 
   // Reuse the imperative handles from the header.
   useImperativeHandle(ref, () => headerRef.current);
