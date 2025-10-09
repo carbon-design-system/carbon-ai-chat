@@ -193,6 +193,17 @@ class MainWindow
     React.createRef();
 
   /**
+   * A React ref to the {@link CustomPanel}.
+   */
+  private customPanelRef: RefObject<HasRequestFocus | null> = React.createRef();
+
+  /**
+   * A React ref to the response panel component.
+   */
+  private responsePanelRef: RefObject<HasRequestFocus | null> =
+    React.createRef();
+
+  /**
    * The observer used to monitor for changes in the main window size.
    */
   private mainWindowObserver: ResizeObserver;
@@ -448,6 +459,21 @@ class MainWindow
           if (this.iframePanelRef.current) {
             // Focus the iframe panel close button.
             this.iframePanelRef.current.requestFocus();
+          }
+        } else if (this.props.viewSourcePanelState.isOpen) {
+          if (this.viewSourcePanelRef.current) {
+            // Focus the view source panel close button.
+            this.viewSourcePanelRef.current.requestFocus();
+          }
+        } else if (this.props.customPanelState.isOpen) {
+          if (this.customPanelRef.current) {
+            // Focus the custom panel close button.
+            this.customPanelRef.current.requestFocus();
+          }
+        } else if (this.props.responsePanelState.isOpen) {
+          if (this.responsePanelRef.current) {
+            // Focus the response panel close button.
+            this.responsePanelRef.current.requestFocus();
           }
         } else if (this.botChatRef.current) {
           // Focus the bot input field.
@@ -889,6 +915,7 @@ class MainWindow
   renderCustomPanel() {
     return (
       <CustomPanel
+        ref={this.customPanelRef}
         onClose={this.onClose}
         onClickRestart={this.onRestart}
         onPanelOpenStart={() => this.onPanelOpenStart(true)}
@@ -913,6 +940,7 @@ class MainWindow
 
     return (
       <BodyAndFooterPanelComponent
+        ref={this.responsePanelRef}
         eventName={eventName}
         eventDescription={eventDescription}
         overlayPanelName={overlayPanelName}
