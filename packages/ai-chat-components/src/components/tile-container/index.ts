@@ -7,7 +7,4 @@
  *  @license
  */
 
-// Set this to a suitable prefix for your project to use in TS files
-const prefix = "cds-aichat";
-
-export default prefix;
+import "./src/tile-container";
