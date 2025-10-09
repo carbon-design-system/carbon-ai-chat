@@ -26,7 +26,7 @@ import { PublicConfig } from "../types/config/PublicConfig";
 import { isBrowser } from "../chat/utils/browserUtils";
 
 /**
- * This component creates a custom element protected by a ShadowRoot to render the React application into. It creates
+ * This component creates a custom element protected by a shadow DOM to render the React application into. It creates
  * slotted elements for user_defined responses and for writable elements.
  *
  * The corresponding slots are defined within the React application and are rendered in place.
@@ -65,7 +65,7 @@ const ReactChatContainer = React.memo(
 );
 
 /**
- * The ChatContainer controls rendering the React application into the ShadowRoot of the cds-aichat-react web component.
+ * The ChatContainer controls rendering the React application into the shadow DOM of the cds-aichat-react web component.
  * It also injects the writeable element and user_defined response slots into said web component.
  *
  * @category React
@@ -163,7 +163,7 @@ function ChatContainer(props: ChatContainerProps) {
 
   /**
    * Setup the DOM nodes of both the web component to be able to inject slotted content into it, and the element inside the
-   * ShadowRoot we will inject our React application into.
+   * shadow DOM we will inject our React application into.
    */
   useEffect(() => {
     if (!wrapperRef.current) {
@@ -174,7 +174,7 @@ function ChatContainer(props: ChatContainerProps) {
 
     const wrapperElement = wrapperRef.current as unknown as ChatContainerReact;
 
-    // We need to check if the element in the ShadowRoot we are render the React application to exists.
+    // We need to check if the element in the shadow DOM we are render the React application to exists.
     // If it doesn't, we need to create and append it.
 
     const handleShadowReady = () => {

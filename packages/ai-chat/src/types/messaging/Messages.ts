@@ -19,7 +19,7 @@ import { FileStatusValue } from "../config/ServiceDeskConfig";
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 
 /**
- * This is the main interface that represents a request from a user sent to a back-end.
+ * This is the main interface that represents a request from a user sent to an assistant.
  *
  * @category Messaging
  */
@@ -130,7 +130,7 @@ interface EventInputData<TNameType extends string = string> {
 }
 
 /**
- * The default interface for message input that is sent to a back-end in a message request. This represents basic text
+ * The default interface for message input that is sent to an assistant in a message request. This represents basic text
  * input.
  *
  * @category Messaging
@@ -148,7 +148,7 @@ interface MessageInput extends BaseMessageInput {
 }
 
 /**
- * This interface represents the main response content that is received by a client from a back-end. It is generally
+ * This interface represents the main response content that is received by a client from an assistant. It is generally
  * in response to a previous message request.
  *
  * @category Messaging
@@ -199,7 +199,7 @@ interface MessageResponse<TGenericType = GenericItem[]> {
 }
 
 /**
- * The output context for a message response from a back-end.
+ * The output context for a message response from an assistant.
  *
  * @category Messaging
  */
@@ -645,7 +645,7 @@ interface BaseGenericItem<TUserDefinedType = Record<string, unknown>> {
 }
 
 /**
- * The basic class for items returned from a back-end as part of a message response. These are the items contained
+ * The basic class for items returned from an assistant as part of a message response. These are the items contained
  * in the {@link MessageOutput.generic} array.
  *
  * @category Messaging
@@ -670,7 +670,7 @@ type GenericItem<TUserDefinedType = Record<string, unknown>> =
   | ConversationalSearchItem<TUserDefinedType>;
 
 /**
- * A user defined item returned in a message response from a back-end.
+ * A user defined item returned in a message response from an assistant.
  *
  * @category Messaging
  */
@@ -683,7 +683,73 @@ interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
 }
 
 /**
- * A text item returned in a message response from a back-end.
+ * A text item returned in a message response from an assistant.
+ *
+ * The Carbon AI Chat supports basic styling inside text responses to match the theme of your Carbon AI Chat,
+ * both with Markdown or HTML content returned from your assistant. Using Markdown and `user_defined`
+ * ({@link UserDefinedItem}) responses instead of HTML in your text responses is the recommendation. It allows
+ * adding channels that do not support HTML (such as Facebook, Slack, or WhatsApp) without having to rewrite
+ * your content.
+ *
+ * ## Markdown
+ *
+ * The Carbon AI Chat supports the following Markdown syntax in the text response type:
+ *
+ * **Text formatting:**
+ *
+ * - `**bold text**` or `__bold text__`
+ * - `*italic text*` or `_italic text_`
+ * - `~~strikethrough~~`
+ * - `==highlighted text==`
+ * - `^superscript^`
+ * - `~subscript~`
+ *
+ * **Code:**
+ *
+ * - `` `inline code` `` or fenced code blocks with syntax highlighting.
+ *
+ * **Headers:**
+ *
+ * - `# H1`, `## H2`, `### H3`, `#### H4`, `##### H5`, `###### H6`
+ *
+ * **Lists:**
+ *
+ * - Unordered lists using `*`, `+`, or `-`
+ * - Ordered lists using `1.`, `2.`, etc.
+ * - Nested lists are supported
+ *
+ * **Links and images:**
+ *
+ * - `[link text](URL)` for links (opens in new tab by default)
+ * - `![alt text](image URL)` for images
+ *
+ * **Other elements:**
+ *
+ * - `> blockquote text` for blockquotes
+ * - Tables using pipe syntax with automatic pagination and sorting
+ * - Horizontal rules using `---` or `***`
+ * - Line breaks are preserved (breaks: true)
+ * - Automatic URL detection and conversion to links
+ *
+ * **Attributes:**
+ *
+ * - Custom attributes using `{{class="my-class" id="my-id"}}` syntax
+ * - Supported attributes: `target`, `rel`, `class`, `id`
+ *
+ * **HTML support:**
+ *
+ * - Raw HTML is supported when enabled
+ * - Custom elements and web components are allowed
+ * - Content is sanitized for security when sanitization is enabled
+ *
+ * The Carbon AI Chat follows CommonMark rules with these extensions and enhancements.
+ *
+ * ## HTML content
+ *
+ * If you include HTML (including `style` and `script` tags) in your text response from your assistant, the
+ * Carbon AI Chat renders those elements as provided, unless you set {@link PublicConfig.shouldSanitizeHTML}
+ * to `true`. A better approach is to use a `user_defined` response instead of adding HTML directly to your
+ * responses to make adding support for channels that do not support HTML easier.
  *
  * @category Messaging
  */
@@ -696,7 +762,7 @@ interface TextItem<TUserDefinedType = Record<string, unknown>>
 }
 
 /**
- * A "connect to agent" item returned in a message response from a back-end. This is used when the back-end
+ * A "connect to agent" item returned in a message response from an assistant. This is used when the back-end
  * indicates that a user's conversation should be escalated to a human agent.
  *
  * @category Messaging
@@ -751,7 +817,7 @@ interface ConnectToHumanAgentItemTransferInfo {
 }
 
 /**
- * A pause item returned in a message response from a back-end. This indicates that the client should pause before
+ * A pause item returned in a message response from an assistant. This indicates that the client should pause before
  * displaying additional response items.
  *
  * @category Messaging
@@ -770,7 +836,7 @@ interface PauseItem<TUserDefinedType = Record<string, unknown>>
 }
 
 /**
- * An option item returned in a message response from a back-end. This response type is used when displaying a list
+ * An option item returned in a message response from an assistant. This response type is used when displaying a list
  * of options to the user. How the options are displayed is up to the client but is often displayed in either a
  * drop-down or as a list of buttons.
  *
@@ -1344,7 +1410,7 @@ type DateItem<TUserDefinedType = Record<string, unknown>> =
 type TableItemCell = string | number;
 
 /**
- * A table item returned in a message response from a back-end. This response type is used when displaying a table of data to the user.
+ * A table item returned in a message response from an assistant. This response type is used when displaying a table of data to the user.
  * The content of the table is up to the client and is authored using json.
  *
  * @category Messaging

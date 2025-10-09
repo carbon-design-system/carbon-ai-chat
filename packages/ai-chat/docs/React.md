@@ -59,7 +59,7 @@ See {@link ChatContainerProps} for an explanation of the various accepted props.
 
 This library provides the {@link ChatCustomElement} component, which can be used to render the Carbon AI Chat inside a custom element. Use it if you want to change the location where the Carbon AI Chat renders. This component renders an element in your React app and uses that element as the custom element for rendering the Carbon AI Chat. See {@link ChatCustomElementProps} for an explanation of the various accepted props.
 
-This component requires a `className` prop that defines the size and positioning of the chat when open. The default behavior adds and removes a `cds-aichat--hidden` CSS class to manage visibility. When the Carbon AI Chat closes, the `cds-aichat--hidden` class is added to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
+This component requires a `className` prop that defines the size and positioning of the chat when open. The default behavior is to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
 
 If you don't want these behaviors, you can also listen for {@link BusEventType.VIEW_PRE_CHANGE} and {@link BusEventType.VIEW_CHANGE} events directly. These events fire in sequence (PRE_CHANGE -> view state update -> CHANGE), and both are awaited, making async handlers ideal for animations. See the event type documentation for complete details on timing and usage. Just be aware that the {@link ChatCustomElementProps.onViewChange} default behavior will still run if you don't replace that function with your own.
 
@@ -153,7 +153,7 @@ function App() {
       <ChatContainer
         debug
         aiEnabled
-        // ...other flattened config props
+        // ...other flattened PublicConfig props
         onBeforeRender={onBeforeRender}
       />
     </>
@@ -220,9 +220,9 @@ function renderUserDefinedResponse(state, instance) {
 
 ```
 
-You may also want your `user_defined` responses to inherit props from your application state. In that case, you will want to bring {@link ChatContainerProps.renderUserDefinedResponse} into your component and wrap it in `useCallback`.
+You may also want your `user_defined` responses to inherit props from your application state. In that case, you will want to bring {@link ChatContainerProps.renderUserDefinedResponse} into your component and wrap it in `useCallback` to prevent needless re-renders.
 
-```javascript
+```typescript
 import React, { useCallback, useEffect, useState } from 'react';
 import { ChatContainer } from '@carbon/ai-chat';
 
@@ -277,7 +277,7 @@ You may also want your `user_defined` responses to stream. In that case, you wil
 They are _not_ concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through
 an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case.
 
-```javascript
+```typescript
 import React, { useCallback, useEffect, useState } from 'react';
 import { ChatContainer } from '@carbon/ai-chat';
 

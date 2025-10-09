@@ -1,3 +1,7 @@
+---
+title: Overview
+---
+
 ### Overview
 
 The Carbon AI Chat is a rich and extendable chat component that IBM products use to interact with AI.
@@ -13,8 +17,6 @@ You can install the Carbon AI Chat into your application in multiple ways.
 The React component allows you to use the AI chat in your React application. It offers helpful facades and helpers to use the core Chat API in a more friendly way for a React developer.
 
 **This component does not support SSR, so if you are using Next.js or similar frameworks, make sure you render this component in client only modes.**
-
-###### Basic example
 
 You can render this component anywhere in your application and provide the Carbon AI Chat configuration options object as a prop.
 
@@ -40,8 +42,6 @@ For more information, see the [React component](React.md) documentation.
 #### Using as a web component
 
 The web component allows you to use the AI chat in your application. It offers helpful facades and helpers to use the core Chat API in a more friendly way for a web component developer.
-
-###### Basic example
 
 You can render this component anywhere in your application and provide the Carbon AI Chat configuration options object as a prop.
 
@@ -72,7 +72,7 @@ For more information, see the [web component](WebComponent.md) documentation.
 
 #### Picking your component
 
-This package provides both React and web component versions of Carbon AI Chat. There are two versions for each framework exported. One provides a "float" layout, the classic lower right hand corner with a launch icon chat widget. The other provides the ability for you to render the Carbon AI Chat into a containing element of your choice. The Carbon AI Chat will responsively grow to fill the size of the container you provide.
+This package provides both React and web component versions of Carbon AI Chat. There are two versions for each framework exported. One provides a "float" layout, the classic lower right hand corner with a launch icon chat widget. The other provides the ability for you to render the Carbon AI Chat into a containing element of your choice. The Carbon AI Chat will responsively grow to fill the size of the container you provide by giving the Carbon AI Chat a classname(s) to insert on its element.
 
 See [React](React.md) documentation and [web component](WebComponent.md) documentation.
 
@@ -80,7 +80,7 @@ Each of these components allow you to pass props to can control the appearance a
 
 #### Instance methods
 
-Each instance of the Carbon AI Chat provides a collection of imperative runtime methods that your website can call any time after the instance is available on your website. You can apply these methods before or after the Carbon AI Chat renders on the screen. You can open or close the Carbon AI Chat widget from a custom control, send messages to your assistant from your own functions, dynamically update the Carbon AI Chat text strings, and more.
+Each instance of the Carbon AI Chat provides a collection of imperative runtime methods that your website can call any time after the instance is available on your website. You can apply these methods before or after the Carbon AI Chat renders on the screen. These imperitive methods aren't just attributes or prop settings because they effect internal or shared chat state.
 
 See the type documentation for {@link ChatInstance}.
 
@@ -128,7 +128,7 @@ Example (React):
 <ChatContainer strings={{ input_placeholder: "Ask me anything..." }} />
 ```
 
-Example (web component):
+Example (Lit web component):
 
 ```html
 <cds-aichat-container

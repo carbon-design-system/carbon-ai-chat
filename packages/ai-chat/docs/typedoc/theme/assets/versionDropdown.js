@@ -72,6 +72,11 @@
 
       if (!response.ok) {
         console.warn("Failed to fetch versions.js from", versionsPath);
+        // Hide the dropdown wrapper if we can't fetch versions
+        const wrapper = document.getElementById("versions-dropdown-wrapper");
+        if (wrapper) {
+          wrapper.style.display = "none";
+        }
         return;
       }
 
@@ -81,6 +86,11 @@
       const match = text.match(/export const AI_CHAT_VERSIONS = (\[.*?\]);/s);
       if (!match) {
         console.warn("Failed to parse versions.js");
+        // Hide the dropdown wrapper if we can't parse versions
+        const wrapper = document.getElementById("versions-dropdown-wrapper");
+        if (wrapper) {
+          wrapper.style.display = "none";
+        }
         return;
       }
 
@@ -131,6 +141,15 @@
         });
       }
 
+      // If there are no options, hide the dropdown wrapper and return
+      if (options.length === 0) {
+        const wrapper = document.getElementById("versions-dropdown-wrapper");
+        if (wrapper) {
+          wrapper.style.display = "none";
+        }
+        return;
+      }
+
       // Determine the selected value
       let selectedValue =
         options.find((opt) => opt.selected)?.value ||
@@ -168,6 +187,11 @@
       });
     } catch (error) {
       console.error("Error initializing version dropdown:", error);
+      // Hide the dropdown wrapper on error
+      const wrapper = document.getElementById("versions-dropdown-wrapper");
+      if (wrapper) {
+        wrapper.style.display = "none";
+      }
     }
   }
 
