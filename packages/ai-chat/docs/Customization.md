@@ -4,7 +4,7 @@ title: UI customization
 
 ### Overview
 
-Carbon AI Chat a few ways to customize the UI either by configuration, supplying css custom properties and styles, making use of slots, or rendering responses from the assistant.
+There are a few ways to customize the UI either by configuration, supplying css custom properties and styles, making use of slots, or rendering responses from the assistant.
 
 ### Customizing responses from the assistant
 
