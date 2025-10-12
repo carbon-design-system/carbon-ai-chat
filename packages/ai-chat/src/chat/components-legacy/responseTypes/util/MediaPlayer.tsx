@@ -10,6 +10,7 @@
 import Music32 from "@carbon/icons/es/music/32.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
 import Tile from "../../../components/carbon/Tile";
+import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
 import cx from "classnames";
 import React, {
   Suspense,
@@ -213,19 +214,21 @@ function MediaPlayerComponent({
    */
   function renderMediaPlayerSkeleton() {
     return (
-      <Tile className="cds-aichat--media-player__skeleton">
-        <div
-          className="cds-aichat--media-player__skeleton-container"
-          ref={skeletonRef}
-        >
-          <SkeletonPlaceholder className="cds-aichat--media-player__skeleton-player" />
-        </div>
-        {(title || description) && (
-          <div className="cds-aichat--media-player__skeleton-text-container">
-            <SkeletonText paragraph lineCount={2} />
+      <TileContainer>
+        <Tile className="cds-aichat--media-player__skeleton">
+          <div
+            className="cds-aichat--media-player__skeleton-container"
+            ref={skeletonRef}
+          >
+            <SkeletonPlaceholder className="cds-aichat--media-player__skeleton-player" />
           </div>
-        )}
-      </Tile>
+          {(title || description) && (
+            <div className="cds-aichat--media-player__skeleton-text-container">
+              <SkeletonText paragraph lineCount={2} />
+            </div>
+          )}
+        </Tile>
+      </TileContainer>
     );
   }
 
@@ -261,50 +264,53 @@ function MediaPlayerComponent({
       <div className="cds-aichat--media-player__root" ref={rootElementRef}>
         {errorLoading && <InlineError text={errorMessage} />}
         {!errorLoading && (
-          <Tile
+          <TileContainer
             className={cx("cds-aichat--media-player", {
               "cds-aichat--hidden": !skeletonHidden,
             })}
           >
-            <div
-              className="cds-aichat--media-player__wrapper"
-              ref={wrapperElementRef}
-            >
-              {renderMediaPlayerBackground()}
-              <Suspense fallback={renderSuspenseFallback()}>
-                <ReactPlayerComponent
-                  className="cds-aichat--media-player__player"
-                  url={source}
-                  controls
-                  width="100%"
-                  height="100%"
-                  config={{
-                    file: {
-                      forceVideo: true,
-                      attributes: {
-                        controlsList: "nodownload",
-                        "aria-label": ariaLabel || description || title,
+            <Tile>
+              <div
+                data-flush="all"
+                className="cds-aichat--media-player__wrapper"
+                ref={wrapperElementRef}
+              >
+                {renderMediaPlayerBackground()}
+                <Suspense fallback={renderSuspenseFallback()}>
+                  <ReactPlayerComponent
+                    className="cds-aichat--media-player__player"
+                    url={source}
+                    controls
+                    width="100%"
+                    height="100%"
+                    config={{
+                      file: {
+                        forceVideo: true,
+                        attributes: {
+                          controlsList: "nodownload",
+                          "aria-label": ariaLabel || description || title,
+                        },
                       },
-                    },
-                  }}
-                  playsinline
-                  playing={playing}
-                  onPlay={onPlay}
-                  onPause={onPause}
-                  onReady={handleReady}
-                  onError={handleError}
-                  pip
+                    }}
+                    playsinline
+                    playing={playing}
+                    onPlay={onPlay}
+                    onPause={onPause}
+                    onReady={handleReady}
+                    onError={handleError}
+                    pip
+                  />
+                </Suspense>
+              </div>
+              {(title || description) && (
+                <TextHolderTile
+                  title={title}
+                  description={description}
+                  hideTitle={hideIconAndTitle}
                 />
-              </Suspense>
-            </div>
-            {(title || description) && (
-              <TextHolderTile
-                title={title}
-                description={description}
-                hideTitle={hideIconAndTitle}
-              />
-            )}
-          </Tile>
+              )}
+            </Tile>
+          </TileContainer>
         )}
       </div>
     </>

@@ -14,14 +14,13 @@
   padding: 0;
 }
 
-.cds-aichat--media-player__wrapper {
-  overflow: hidden;
+.cds-aichat--media-player__wrapper,
+.cds-aichat--media-player__skeleton-container {
+  position: relative;
 }
 
-.cds-aichat--media-player__skeleton-container,
-.cds-aichat--media-player__wrapper {
-  position: relative;
-  padding-block-start: 0;
+.cds-aichat--media-player__root {
+  inline-size: 100%;
 }
 
 .cds-aichat--media-player__background {
@@ -34,18 +33,6 @@
   justify-content: center;
 }
 
-.cds-aichat--media-player__player iframe {
-  block-size: 100%;
-  inline-size: 100%;
-  max-block-size: 100%;
-
-  // The react-player library manually calculates and applies width and height to display the iframe when loading the
-  // facebook video player. It seems to do it in real-time since even manually setting the iframe width and height to
-  // 0 will just set the width and height to the correct values to display in the wrapper. Applying a max width and
-  // height fixes this problem.
-  max-inline-size: 100%;
-}
-
 .cds-aichat--media-player__music-icon {
   fill: theme.$icon-on-color;
 }
@@ -56,26 +43,18 @@ cds-ai-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
 cds-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
     placeholder
   ),
-.cds-aichat--media-player__background,
-.cds-aichat--media-player__player {
+.cds-aichat--media-player__background {
   position: absolute;
+  block-size: 100%;
+  inline-size: 100%;
   inset-block-start: 0;
   inset-inline-start: 0;
 }
 
-cds-ai-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
-    skeleton-placeholder
-  ),
-cds-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
-    placeholder
-  ),
-.cds-aichat--media-player__background {
-  block-size: 100%;
-  inline-size: 100%;
-}
-
-.cds-aichat--media-player__root {
-  inline-size: 100%;
+.cds-aichat--media-player__player {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
 }
 
 .cds-aichat--media-player__skeleton-text-container {
