@@ -44,7 +44,7 @@ describe("aichat tile", function () {
       `style#${styleId}`,
     )[0] as HTMLStyleElement;
     expect(style).to.exist;
-    expect(style?.textContent).to.include("cds-tile");
+    expect(style?.textContent).to.include("cds-aichat-tile-container");
 
     // ensure the style is not duplicated
     const styles = document.querySelectorAll(`style#${styleId}`);
