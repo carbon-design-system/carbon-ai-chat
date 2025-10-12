@@ -51,7 +51,7 @@ function CardItemComponent(props: CardItemComponentProps) {
   const item = props.localMessageItem.item as CardItem;
   return (
     <TileContainer
-      className={cx("cds-aichat--card-message-component", {
+      className={cx({
         "cds-aichat--max-width-small":
           !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
         "cds-aichat--max-width-medium":
@@ -60,7 +60,7 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <Tile>
+      <Tile className={cx("cds-aichat--card-message-component")}>
         <BodyWithFooterComponent
           {...props}
           renderMessageComponent={props.renderMessageComponent}

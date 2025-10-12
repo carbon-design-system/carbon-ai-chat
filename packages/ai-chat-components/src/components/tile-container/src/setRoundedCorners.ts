@@ -27,11 +27,10 @@ export default function setRoundedCorners(
   const rootFontSize = parseFloat(
     getComputedStyle(document.documentElement).fontSize,
   );
-  const containerStyle = getComputedStyle(container);
-  const radiusPx = parseFloat(containerStyle.borderTopLeftRadius) || 0;
-  const radiusRem = radiusPx / rootFontSize;
 
   const updateEdges = () => {
+    const containerStyle = getComputedStyle(container);
+    const radiusPx = parseFloat(containerStyle.borderRadius) || 0;
     const elements: HTMLElement[] = [];
 
     const crawl = (node: Element) => {
@@ -77,9 +76,6 @@ export default function setRoundedCorners(
 
     const innerRadiusPx = Math.max(radiusPx - borderMax, 0);
     const innerRadiusRem = innerRadiusPx / rootFontSize;
-
-    // Apply container border radius in rem
-    container.style.borderRadius = `${radiusRem}rem`;
 
     const rects = elements.map((el) => ({
       el,

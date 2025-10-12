@@ -88,6 +88,22 @@
   inset-block-start: 0;
   min-block-size: 100%;
   text-align: start;
+
+  cds-aichat-tile-container {
+    border: none;
+    border-radius: inherit;
+    block-size: 100%;
+
+    cds-tile {
+      padding: 0;
+      background-color: theme.$layer-02;
+      block-size: 100%;
+
+      .cds-aichat--body-and-footer-component {
+        box-sizing: border-box;
+      }
+    }
+  }
 }
 
 .cds-aichat--container--render[dir="rtl"] .cds-aichat--overlay-panel {

@@ -2,7 +2,7 @@
 export const snapshots = {};
 
 snapshots["aichat tile should render cds-aichat-tile-container in DOM"] = 
-`<cds-aichat-tile-container style="border-radius: 0.5rem;">
+`<cds-aichat-tile-container>
   <cds-tile
     color-scheme=""
     style="border-radius: 0.5rem;"

@@ -52,7 +52,7 @@ function TextHolderTile({
   hideTitle,
 }: TextHolderTileProps) {
   return (
-    <div className="cds-aichat--text-holder-tile" data-flush="bottom">
+    <div className="cds-aichat--text-holder-tile">
       <div
         className={cx(
           "cds-aichat--text-holder-tile__wrapper",

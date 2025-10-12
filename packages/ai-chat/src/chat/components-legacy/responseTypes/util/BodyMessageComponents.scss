@@ -17,13 +17,6 @@
   padding: layout.$spacing-05;
 }
 
-// tiles are rendered in panel too, we need to apply -ve margin to message component only when its inside tile container.
-cds-aichat-tile-container {
-  .cds-aichat--body-message-components {
-    margin: -1rem;
-  }
-}
-
 .cds-aichat--body-message-components__message-wrapper.cds-aichat--body-message-components__message-wrapper--short-bottom-padding {
   padding-block-end: layout.$spacing-04;
 }

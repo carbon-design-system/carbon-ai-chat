@@ -27,6 +27,8 @@ import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeC
 import { OverlayPanel } from "../OverlayPanel";
 import { MessageResponse } from "../../../types/messaging/Messages";
 import { PageObjectId } from "../../utils/PageObjectId";
+import Tile from "../../components/carbon/Tile";
+import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
 
 interface BodyAndFooterPanelComponentProps
   extends HasRequestFocus,
@@ -174,30 +176,34 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
       serviceManager={serviceManager}
       overlayPanelName={overlayPanelName}
     >
-      <BasePanelComponent
-        className={cx("cds-aichat--body-and-footer-component", className)}
-        eventName={eventName}
-        eventDescription={eventDescription}
-        isOpen={isOpen}
-        title={title}
-        disableAnimation={disableAnimation}
-        labelBackButton={languagePack.general_returnToAssistant}
-        onClickBack={onClickBack}
-        onClickClose={onClose}
-        onClickRestart={onClickRestart}
-        showAiLabel={showAiLabel}
-        showRestartButton={showRestartButton}
-      >
-        {originalMessage && (
-          <BodyWithFooterComponent
-            localMessageItem={localMessageItem}
-            fullMessage={originalMessage as MessageResponse}
-            isMessageForInput={isMessageForInput}
-            requestFocus={requestFocus}
-            renderMessageComponent={renderMessageComponent}
-          />
-        )}
-      </BasePanelComponent>
+      <TileContainer>
+        <Tile>
+          <BasePanelComponent
+            className={cx("cds-aichat--body-and-footer-component", className)}
+            eventName={eventName}
+            eventDescription={eventDescription}
+            isOpen={isOpen}
+            title={title}
+            disableAnimation={disableAnimation}
+            labelBackButton={languagePack.general_returnToAssistant}
+            onClickBack={onClickBack}
+            onClickClose={onClose}
+            onClickRestart={onClickRestart}
+            showAiLabel={showAiLabel}
+            showRestartButton={showRestartButton}
+          >
+            {originalMessage && (
+              <BodyWithFooterComponent
+                localMessageItem={localMessageItem}
+                fullMessage={originalMessage as MessageResponse}
+                isMessageForInput={isMessageForInput}
+                requestFocus={requestFocus}
+                renderMessageComponent={renderMessageComponent}
+              />
+            )}
+          </BasePanelComponent>
+        </Tile>
+      </TileContainer>
     </OverlayPanel>
   );
 }

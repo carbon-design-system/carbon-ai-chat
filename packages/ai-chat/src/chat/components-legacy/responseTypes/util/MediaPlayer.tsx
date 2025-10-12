@@ -265,13 +265,12 @@ function MediaPlayerComponent({
         {errorLoading && <InlineError text={errorMessage} />}
         {!errorLoading && (
           <TileContainer
-            className={cx("cds-aichat--media-player", {
+            className={cx({
               "cds-aichat--hidden": !skeletonHidden,
             })}
           >
-            <Tile>
+            <Tile className={cx("cds-aichat--media-player")}>
               <div
-                data-flush="all"
                 className="cds-aichat--media-player__wrapper"
                 ref={wrapperElementRef}
               >
