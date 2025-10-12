@@ -48,9 +48,9 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
 
   return totalButtons ? (
     <div
-      className={cx("cds-aichat--footer-button-components", {
-        "cds-aichat--footer-button-components--column": isColumnList,
-      })}
+      data-flush="bottom"
+      data-stacked={isColumnList || undefined}
+      className={cx("cds-aichat--tile-container-footer ")}
     >
       {buttonComponents}
     </div>

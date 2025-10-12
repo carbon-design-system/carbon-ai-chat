@@ -48,9 +48,13 @@ button.cds-aichat--carousel-container__navigation-button > svg {
 }
 
 .swiper .cds-aichat--card-message-component {
-  display: flex;
-  flex-direction: column;
-  block-size: 100%;
+  block-size: calc(100% - 2px);
+
+  cds-tile {
+    display: flex;
+    flex-direction: column;
+    block-size: calc(100% - 32px);
+  }
 }
 
 .swiper .cds-aichat--body-message-components {

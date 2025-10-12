@@ -8,6 +8,7 @@
  */
 
 import Tile from "../../../components/carbon/Tile";
+import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
 import cx from "classnames";
 import React from "react";
 
@@ -49,7 +50,7 @@ function CardItemComponent(props: CardItemComponentProps) {
   const { ignoreMaxWidth } = props;
   const item = props.localMessageItem.item as CardItem;
   return (
-    <Tile
+    <TileContainer
       className={cx("cds-aichat--card-message-component", {
         "cds-aichat--max-width-small":
           !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
@@ -59,11 +60,13 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <BodyWithFooterComponent
-        {...props}
-        renderMessageComponent={props.renderMessageComponent}
-      />
-    </Tile>
+      <Tile>
+        <BodyWithFooterComponent
+          {...props}
+          renderMessageComponent={props.renderMessageComponent}
+        />
+      </Tile>
+    </TileContainer>
   );
 }
 

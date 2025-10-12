@@ -74,11 +74,10 @@ const footerActionVariants = {
   `,
 
   "ghost button with icon": (args) => html`
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost" href="#">
       View carbon docs
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
@@ -90,25 +89,22 @@ const footerActionVariants = {
   `,
 
   "3 ghost buttons vertical": (args) => html`
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost" href="#">
       View Carbon Docs 1
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost" href="#">
       View Carbon Docs 2
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost" href="#">
       View Carbon Docs 3
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
@@ -122,9 +118,7 @@ const footerActionVariants = {
   `,
 
   "ghost button": (args) => html`
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
-      Ghost
-    </cds-button>
+    <cds-button @click=${args.onClick} kind="ghost"> Ghost </cds-button>
   `,
 
   "secondary primary buttons": (args) => html`
@@ -189,9 +183,9 @@ export const WithActions = {
       <cds-tile data-testid="clickable-tile">
         ${tileContent}
         <div
-          ?stacked=${buttonCount > 2}
-          class=${classMap({ "cds--aichat-tile-container-footer": true })}
-          flush
+          ?data-stacked=${buttonCount > 2}
+          class=${classMap({ "cds-aichat--tile-container-footer": true })}
+          data-flush="bottom"
         >
           ${content}
         </div>
@@ -218,11 +212,10 @@ export const WithImage = {
           </cds-button>
         `,
         "ghost button": (args) => html`
-          <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+          <cds-button @click=${args.onClick} kind="ghost">
             Select
             ${iconLoader(ArrowRight16, {
               slot: "icon",
-              style: "fill: var(--cds-link-primary)",
             })}
           </cds-button>
         `,
@@ -237,14 +230,16 @@ export const WithImage = {
 
     return html`
       <cds-tile>
-        <img class="full-width" src=${defaultImage} alt="image" />
+        <div data-flush="top">
+          <img width="300" src=${defaultImage} alt="image" />
+        </div>
         ${tileContent}
         <div
           class=${classMap({
-            "cds--aichat-tile-container-footer": true,
+            "cds-aichat--tile-container-footer": true,
             vertical: buttonCount > 2,
           })}
-          flush
+          data-flush="bottom"
         >
           ${content}
         </div>
@@ -256,9 +251,11 @@ export const WithImage = {
 export const OnlyImage = {
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
   render: () => html`
-    <cds-tile
-      ><img class="full-width" src=${defaultImage} alt="image"
-    /></cds-tile>
+    <cds-tile>
+      <div data-flush="all">
+        <img width="300" src=${defaultImage} alt="image" />
+      </div>
+    </cds-tile>
   `,
 };
 
@@ -272,7 +269,9 @@ export const OnlyImageClickable = {
   },
   render: (args) => html`
     <cds-clickable-tile @click=${args.onClick} ?disabled=${args.disabled}>
-      <img class="full-width" src=${defaultImage} alt="image" />
+      <div data-flush="all">
+        <img width="300" src=${defaultImage} alt="image" />
+      </div>
     </cds-clickable-tile>
   `,
 };
@@ -282,14 +281,16 @@ export const WithAudio = {
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
   render: () => html`
     <cds-tile data-testid="clickable-tile">
-      <iframe
-        class="full-width aspect-16-9"
-        scrolling="no"
-        title="audio example"
-        frameborder="no"
-        allow="autoplay"
-        src="https://w.soundcloud.com/player/?url=https://soundcloud.com/kelab-gklm/baby-shark-do-do-do&visual=true&buying=false&liking=false&download=false&sharing=false&show_comments=false&show_playcount=false&callback=true"
-      ></iframe>
+      <div data-flush="top">
+        <iframe
+          class="full-width aspect-16-9"
+          scrolling="no"
+          title="audio example"
+          frameborder="no"
+          allow="autoplay"
+          src="https://w.soundcloud.com/player/?url=https://soundcloud.com/kelab-gklm/baby-shark-do-do-do&visual=true&buying=false&liking=false&download=false&sharing=false&show_comments=false&show_playcount=false&callback=true"
+        ></iframe>
+      </div>
       <h5 class="body-02">An audio clip from SoundCloud</h5>
       <p class="caption-01 text-secondary">
         This description and the title above are optional.
@@ -302,15 +303,17 @@ export const OnlyVideo = {
   args: { maxWidth: "md", useWrapper: true, onClick: fn() },
   render: () => html`
     <cds-tile data-testid="clickable-tile">
-      <iframe
-        class="full-width aspect-16-9"
-        src="https://www.youtube.com/embed/QuW4_bRHbUk?si=oSsaxYKCvO_gEuzN"
-        title="YouTube video player"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-      ></iframe>
+      <div data-flush="all">
+        <iframe
+          class="full-width aspect-16-9"
+          src="https://www.youtube.com/embed/QuW4_bRHbUk?si=oSsaxYKCvO_gEuzN"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
     </cds-tile>
   `,
 };
@@ -400,10 +403,10 @@ export const AssetCard = {
       ${args.footerActions(args)
         ? html`<div
             class=${classMap({
-              "cds--aichat-tile-container-footer": true,
+              "cds-aichat--tile-container-footer": true,
               "top-border": true,
             })}
-            flush
+            data-flush="bottom"
           >
             ${args.footerActions(args)}
           </div>`
