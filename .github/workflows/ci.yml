@@ -39,10 +39,10 @@ jobs:
         run: |
           npm install
           npx playwright install --with-deps
-      - name: Build ai-chat
-        run: npm run aiChat:build
       - name: Build ai-chat-components
         run: cd packages/ai-chat-components && npm run build
+      - name: Build ai-chat
+        run: npm run aiChat:build
       - name: Run test
         run: npm run test
 
