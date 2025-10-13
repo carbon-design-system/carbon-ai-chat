@@ -111,6 +111,7 @@ export {
   DisclaimerPublicConfig,
   enLanguagePack,
   HeaderConfig,
+  InputConfig,
   LanguagePack,
   LayoutConfig,
   MinimizeButtonIconType,
