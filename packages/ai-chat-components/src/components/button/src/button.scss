@@ -69,7 +69,7 @@ $css--plex: true !default;
 
     &.#{$cds-prefix}--btn--selected {
       border-color: transparent;
-      background: theme.$background-selected;
+      background: theme.$chat-button-selected;
       color: theme.$chat-button-text-selected;
 
       &:focus {
