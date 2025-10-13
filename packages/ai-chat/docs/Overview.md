@@ -110,7 +110,7 @@ Carbon AI Chat allows you to extend the Carbon AI Chat with support for [various
 
 IBM strives to provide products with usable access for everyone, regardless of age or ability.
 
-The Carbon AI Chat integration complies with the [Web Content Accessibility 2.2 Level AA](https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/) standard.
+The Carbon AI Chat is in the process of complying with the [Web Content Accessibility 2.2 Level AA](https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/) standard by end of 2025.
 
 ### Internationalization
 
