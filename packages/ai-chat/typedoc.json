@@ -39,5 +39,8 @@
         "excludeReferences": true
     },
     "categorizeByGroup": false,
-    "hideGenerator": true
+    "hideGenerator": true,
+    "validation": {
+        "invalidLink": true
+    }
 }

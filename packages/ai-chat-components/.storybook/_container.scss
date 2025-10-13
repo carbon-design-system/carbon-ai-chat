@@ -9,6 +9,8 @@
 @use "@carbon/themes/scss/themes";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/grid";
+@use "@carbon/layout";
+@use "@carbon/styles/scss/colors";
 
 @use "@carbon/styles/scss/components/button/tokens" as button-tokens;
 @use "@carbon/styles/scss/components/notification/tokens" as notification-tokens;

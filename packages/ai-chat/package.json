@@ -75,6 +75,7 @@
     "@types/react-dom": "^19.2.1",
     "autoprefixer": "^10.4.21",
     "babel-jest": "^29.7.0",
+    "concurrently": "^9.2.0",
     "fs-extra": "^11.3.2",
     "globby": "^15.0.0",
     "identity-obj-proxy": "^3.0.0",
@@ -90,11 +91,13 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-visualizer": "^6.0.3",
     "sass": "1.93.2",
+    "serve": "^14.2.4",
     "terser": "^5.43.1",
     "ts-jest": "^29.1.5",
     "ts-lit-plugin": "^2.0.2",
     "tsx": "^4.19.3",
-    "typedoc": "^0.28.0"
+    "typedoc": "^0.28.0",
+    "wait-on": "^9.0.1"
   },
   "peerDependencies": {
     "@carbon/icons": ">=11.53.0 <12.0.0",
@@ -104,6 +107,7 @@
     "react-dom": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
+    "@carbon/ai-chat-components": "^0.2.1",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",
     "classnames": "^2.5.0",
@@ -125,13 +129,9 @@
     "use-sync-external-store": "^1.2.0"
   },
   "scripts": {
-    "build": "npm run build:chat && npm run build:typedoc",
-    "build:typedoc": "typedoc",
-    "build:chat": "rollup -c ./tasks/rollup.aichat.js",
-    "build:profile": "profile=true rollup -c ./tasks/rollup.aichat.js",
+    "build": "rollup -c ./tasks/rollup.aichat.js && typedoc",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
-    "start": "rollup -c ./tasks/rollup.aichat.js --watch",
-    "start:typedoc": "typedoc --watch",
+    "start": "concurrently \"rollup -c ./tasks/rollup.aichat.js --watch\" \"typedoc --watch\" \"serve dist/docs/carbon-tsdocs -l 5001 --no-port-switching\" \"wait-on dist/docs/carbon-tsdocs/index.html && open http://localhost:5001\"",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id ef967584-5788-47d4-b9c2-a60da7ad901d --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src --wc",
     "test": "jest"
   },

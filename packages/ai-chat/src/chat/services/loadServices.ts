@@ -67,6 +67,7 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
   serviceManager.themeWatcherService = new ThemeWatcherService(
     serviceManager.store,
+    serviceManager.container,
   );
 
   // Start theme watching if initially inheriting tokens

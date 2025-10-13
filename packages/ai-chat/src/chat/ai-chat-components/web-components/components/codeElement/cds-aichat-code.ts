@@ -11,7 +11,7 @@ import { css, html, LitElement, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 import throttle from "lodash-es/throttle.js";
 
-import { carbonElement } from "../../decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import styles from "./src/codeElement.scss";
 
 @carbonElement(`cds-aichat-code`)

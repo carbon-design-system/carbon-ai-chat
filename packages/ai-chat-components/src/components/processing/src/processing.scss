@@ -21,6 +21,7 @@ $css--plex: true !default;
 .dot {
   fill: none;
   r: 0;
+  stroke: $interactive;
   stroke-width: 0;
   transform: translateY(0);
 }

@@ -9,7 +9,7 @@
 
 import { css, unsafeCSS } from "lit";
 
-import { carbonElement } from "../../decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import MarkdownElement from "./src/MarkdownElement";
 import { markdownTextTemplate } from "./src/markdownElement.template";
 import styles from "./src/markdownText.scss";

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { carbonElement } from "../../../decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { chatHeaderAvatarTemplate } from "./src/chatHeaderAvatar.template";
 import { ChatHeaderAvatarElement } from "./src/chatHeaderAvatarElement";
 

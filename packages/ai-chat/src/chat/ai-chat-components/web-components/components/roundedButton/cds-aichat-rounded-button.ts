@@ -10,7 +10,7 @@
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { css, unsafeCSS } from "lit";
 
-import { carbonElement } from "../../decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 
 const ROUNDED_BUTTON_TAG_NAME = `cds-aichat-rounded-button`;
 
