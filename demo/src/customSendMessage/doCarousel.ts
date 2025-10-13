@@ -37,7 +37,7 @@ function doCarousel(instance: ChatInstance) {
                 },
                 {
                   response_type: "text",
-                  text: '<span style="color: #4e4d4d">I\'m baby beard cornhole gatekeep, lyft hoodie disrupt locavore raw denim meggings.</span>',
+                  text: '<span style="color: var(--cds-text-secondary)">I\'m baby beard cornhole gatekeep, lyft hoodie disrupt locavore raw denim meggings.</span>',
                 },
                 {
                   response_type: "text",
@@ -70,7 +70,7 @@ function doCarousel(instance: ChatInstance) {
                 },
                 {
                   response_type: "text",
-                  text: '<span style="color: #4e4d4d">Street art banjo vaporware, hot chicken marxism art party neutra quinoa sustainable activated charcoal.</span>',
+                  text: '<span style="color: var(--cds-text-secondary)">Street art banjo vaporware, hot chicken marxism art party neutra quinoa sustainable activated charcoal.</span>',
                 },
                 {
                   response_type: "text",
@@ -103,7 +103,7 @@ function doCarousel(instance: ChatInstance) {
                 },
                 {
                   response_type: "text",
-                  text: '<span style="color: #4e4d4d">Succulents skateboard adaptogen solarpunk semiotics, viral locavore palo santo.</span>',
+                  text: '<span style="color: var(--cds-text-secondary)">Succulents skateboard adaptogen solarpunk semiotics, viral locavore palo santo.</span>',
                 },
                 {
                   response_type: "text",

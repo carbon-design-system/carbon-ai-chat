@@ -1,0 +1,61 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction/Welcome" />
+
+# `@carbon/ai-chat-components`
+
+Welcome to the AI Chat Components Storybook
+This Storybook showcases the AI Chat Components built with the Carbon Design System. These components are designed to enhance user interaction in AI chat applications, providing a consistent and accessible user experience.
+
+## Getting started
+
+To install `@carbon/ai-chat-components` in your project, you will need to run the
+following command using [npm](https://www.npmjs.com/):
+
+```bash
+npm install --save @carbon/ai-chat-components
+```
+
+If you prefer [Yarn](https://yarnpkg.com/en/), use the following command
+instead:
+
+```bash
+yarn add @carbon/ai-chat-components
+```
+
+### Basic usage
+
+Our example at [Stackblitz](#tbd) shows the most basic usage:
+
+The first thing you need is **setting up a module bundler** to resolve ECMAScript `import`s. The above example uses [Vite JS](https://vite.dev/), but you can use other bundlers like [Rollup](https://rollupjs.org/) or [Webpack](https://webpack.js.org) too.
+
+Once you set up a module bundler, you can start importing our component modules, for example:
+
+```javascript
+import '@carbon/ai-chat-components/es/components/tile-container/tile-container.js';
+```
+
+Once you've imported the component modules, you can use our components in the same manner as native HTML tags, for example:
+
+```html
+<cds-aichat-tile-container>
+  <cds-tile>
+    <h5 class="heading-01 margin-bottom-04">
+      AI Chat Tile styling wrapper
+    </h5>
+    <p class="body-01">
+      The Carbon Design System provides a comprehensive library of
+      components, tokens, and guidelines. We need to implement the new AI
+      Chat component following Carbon's design principles and accessibility
+      standards.
+    </p>
+  </cds-tile>
+</cds-aichat-tile-container>
+```
+
+### JavaScript framework integration
+
+This package can also be used within other JavaScript frameworks such as Angular and
+Vue. This is achievable since web components are the modern browser standard, and
+work well with other front-end frameworks that exist in the application. In
+turn, this also comes with the benefits of encapsulation within the Shadow DOM.
