@@ -39,7 +39,7 @@ export default function AppRegion({
       state.config.derived.launcher.isOn &&
       state.persistedToBrowserStorage.viewState.launcher,
   );
-  const mainWindowRef = useRef<MainWindowFunctions>();
+  const mainWindowRef = useRef<MainWindowFunctions>(undefined);
   const [modalPortalHostElement, setModalPortalHostElement] =
     useState<Element | null>(null);
 

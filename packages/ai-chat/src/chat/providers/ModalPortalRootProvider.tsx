@@ -13,7 +13,7 @@
  * Provides the modal portal host element to descendants via {@link ModalPortalRootContext}.
  */
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, type JSX } from "react";
 import { ModalPortalRootContext } from "../contexts/ModalPortalRootContext";
 
 interface ModalPortalRootProviderProps {

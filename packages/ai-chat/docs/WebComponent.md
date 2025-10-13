@@ -6,9 +6,7 @@ title: Using as a Web component
 
 Carbon AI chat exports two web components.
 
-To use the `float` layout, refer to [cds-aichat-container](#chat-container). If you want to use a custom size, such as rendering in a sidebar, full-screen mode, or nested within your UI, refer to [cds-aichat-custom-element](#chat-custom-element).
-
-Be sure to review [Using the API](Overview.md#using-the-api) to fully understand the references in this document.
+To use the `float` layout, refer to `cds-aichat-container`. If you want to use a custom size, such as rendering in a sidebar, full-screen mode, or nested within your UI, refer to `cds-aichat-custom-element`.
 
 ### Installation
 
@@ -70,7 +68,7 @@ Accepted falsey strings for `ai-enabled` are `"false"`, `"0"`, `"off"`, and `"no
 
 This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. Use this if you need to change the location where the Carbon AI Chat renders.
 
-The custom element should be sized using external CSS (see example below). The default behavior adds and removes a `cds-aichat--hidden` CSS class to manage visibility. When the Carbon AI Chat closes, the `cds-aichat--hidden` class is added to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
+The custom element should be sized using external CSS (see example below). The default behavior is to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
 
 **Note:** The custom element must remain visible if you want to use the built-in Carbon AI Chat launcher, which is also contained in your custom element.
 
@@ -83,7 +81,7 @@ Just be aware that the `onViewChange` default behavior will still run if you don
 See {@link CdsAiChatCustomElementAttributes} for an explanation of the various accepted properties and attributes.
 
 ```typescript
-import "@carbon/ai-chat/dist/es/cds-aichat-custom-element/index.js";
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
 
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
@@ -112,7 +110,7 @@ export class MyApp extends LitElement {
 
 If you are using `@carbon/ai-chat` in your Angular application along with `carbon-angular-components`, you may run into component registry errors as the underlying `@carbon/web-components` subcomponents utilize the same naming structure as components in `carbon-angular-components`. In order to avoid this, import from the `es-custom` build folder rather than `es`. This build folder creates a separate prefix for all the Web Components.
 
-```
+```javascript
 import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
 
@@ -169,6 +167,7 @@ Then, you dynamically generate these slots to pass into the Carbon AI Chat's web
 
 ```typescript
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import "@carbon/web-components/es/components/ai-skeleton/index.js";
 
 import {
   BusEventType,
@@ -554,22 +553,5 @@ export class MyApp extends LitElement {
       <div slot="customPanelElement">Hello world!</div>
     </cds-aichat-container>`;
   }
-}
-```
-
-### Testing with Jest
-
-Carbon AI Chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
-
-You may need to add configuration similar to the following to your Jest configuration.
-
-```
-"transform": {
-  "\\.[jt]sx?$": "babel-jest",
-},
-{
-  transformIgnorePatterns: [
-    '/node_modules/(?!(@?lit.*|@carbon/.+)/)'
-  ],
 }
 ```

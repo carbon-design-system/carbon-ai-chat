@@ -143,7 +143,17 @@
   }
 
   100% {
-    inset-block-end: var(--#{$prefix}-bottom-position);
+    inset-block-end: chat-theme.$bottom-position;
+    opacity: 1;
+  }
+}
+
+@keyframes #{$prefix}-widget-in-mobile {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
     opacity: 1;
   }
 }
@@ -155,16 +165,6 @@
 
   100% {
     opacity: 0;
-  }
-}
-
-@keyframes #{$prefix}-anim-background-cover {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0.5;
   }
 }
 
@@ -197,13 +197,13 @@
 @keyframes #{$prefix}-launcher-in {
   0% {
     inset-block-end: calc(
-      var(--#{$prefix}-launcher-position-bottom) - #{layout.$spacing-05}
+      chat-theme.$launcher-position-bottom - #{layout.$spacing-05}
     );
     opacity: 0;
   }
 
   100% {
-    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
+    inset-block-end: chat-theme.$launcher-position-bottom;
     opacity: 1;
   }
 }
@@ -235,10 +235,9 @@
     background: transparent;
     box-shadow: none;
     inset-block-end: calc(
-      #{layout.$spacing-05} + var(--#{$prefix}-launcher-default-size) +
-        var(--#{$prefix}-launcher-position-bottom) - var(
-          --#{$prefix}-launcher-desktop-expanded-height
-        )
+      #{layout.$spacing-07} + #{chat-theme.$launcher-default-size} +
+        #{chat-theme.$launcher-position-bottom} -
+        #{chat-theme.$launcher-desktop-expanded-height}
     );
   }
 
@@ -248,7 +247,7 @@
   }
 
   100% {
-    background: var(--#{$prefix}-launcher-expanded-message-color-background);
+    background: chat-theme.$launcher-expanded-message-color-background;
     box-shadow: chat-theme.$box-shadow;
     inset-block-end: layout.$spacing-10;
   }
@@ -272,10 +271,10 @@
   0% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--#{$prefix}-launcher-default-size);
-    inline-size: var(--#{$prefix}-launcher-default-size);
-    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
-    inset-inline-end: var(--#{$prefix}-launcher-position-right);
+    block-size: chat-theme.$launcher-default-size;
+    inline-size: chat-theme.$launcher-default-size;
+    inset-block-end: chat-theme.$launcher-position-bottom;
+    inset-inline-end: chat-theme.$launcher-position-right;
   }
 
   100% {
@@ -292,10 +291,10 @@
   0% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--#{$prefix}-launcher-default-size);
-    inline-size: var(--#{$prefix}-launcher-default-size);
-    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
-    inset-inline-start: var(--#{$prefix}-launcher-position-right);
+    block-size: chat-theme.$launcher-default-size;
+    inline-size: chat-theme.$launcher-default-size;
+    inset-block-end: chat-theme.$launcher-position-bottom;
+    inset-inline-start: chat-theme.$launcher-position-right;
   }
 
   100% {
@@ -352,7 +351,7 @@
 
 @keyframes #{$prefix}-launcher-fade-out-slide-down {
   0% {
-    background: var(--#{$prefix}-launcher-expanded-message-color-background);
+    background: chat-theme.$launcher-expanded-message-color-background;
     box-shadow: chat-theme.$box-shadow;
     inset-block-end: layout.$spacing-10;
   }
@@ -366,10 +365,9 @@
     background: transparent;
     box-shadow: none;
     inset-block-end: calc(
-      #{layout.$spacing-05} + var(--#{$prefix}-launcher-default-size) +
-        var(--#{$prefix}-launcher-position-bottom) - var(
-          --#{$prefix}-launcher-desktop-expanded-height
-        )
+      #{layout.$spacing-07} + #{chat-theme.$launcher-default-size} +
+        #{chat-theme.$launcher-position-bottom} -
+        #{chat-theme.$launcher-desktop-expanded-height}
     );
   }
 }
@@ -401,10 +399,10 @@
   100% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--#{$prefix}-launcher-default-size);
-    inline-size: var(--#{$prefix}-launcher-default-size);
-    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
-    inset-inline-end: var(--#{$prefix}-launcher-position-right);
+    block-size: chat-theme.$launcher-default-size;
+    inline-size: chat-theme.$launcher-default-size;
+    inset-block-end: chat-theme.$launcher-position-bottom;
+    inset-inline-end: chat-theme.$launcher-position-right;
   }
 }
 
@@ -421,10 +419,10 @@
   100% {
     padding: 0;
     border-radius: 28px;
-    block-size: var(--#{$prefix}-launcher-default-size);
-    inline-size: var(--#{$prefix}-launcher-default-size);
-    inset-block-end: var(--#{$prefix}-launcher-position-bottom);
-    inset-inline-start: var(--#{$prefix}-launcher-position-right);
+    block-size: chat-theme.$launcher-default-size;
+    inline-size: chat-theme.$launcher-default-size;
+    inset-block-end: chat-theme.$launcher-position-bottom;
+    inset-inline-start: chat-theme.$launcher-position-right;
   }
 }
 
@@ -470,27 +468,27 @@
 
 @keyframes #{$prefix}-launcher-extend {
   0% {
-    inline-size: var(--#{$prefix}-launcher-default-size);
+    inline-size: chat-theme.$launcher-default-size;
   }
 
   100% {
-    inline-size: var(--#{$prefix}-launcher-extended-width);
+    inline-size: chat-theme.$launcher-extended-width;
   }
 }
 
 @keyframes #{$prefix}-launcher-reduce {
   0% {
-    inline-size: var(--#{$prefix}-launcher-extended-width);
+    inline-size: chat-theme.$launcher-extended-width;
   }
 
   100% {
-    inline-size: var(--#{$prefix}-launcher-default-size);
+    inline-size: chat-theme.$launcher-default-size;
   }
 }
 
 @keyframes #{$prefix}-launcher-extended-element-fade-in {
   0% {
-    inset-block-end: -12px;
+    inset-block-end: -16px;
     opacity: 0;
   }
 
@@ -509,7 +507,7 @@
 
   50%,
   100% {
-    inset-block-start: -12px;
+    inset-block-start: -16px;
     opacity: 0;
   }
 }
@@ -631,14 +629,12 @@
 
 @keyframes #{$prefix}-widget-in {
   0% {
-    inset-block-end: calc(
-      var(--#{$prefix}-bottom-position) - #{layout.$spacing-07}
-    );
+    inset-block-end: calc(chat-theme.$bottom-position - #{layout.$spacing-07});
     opacity: 0;
   }
 
   100% {
-    inset-block-end: var(--#{$prefix}-bottom-position);
+    inset-block-end: chat-theme.$bottom-position;
     opacity: 1;
   }
 }

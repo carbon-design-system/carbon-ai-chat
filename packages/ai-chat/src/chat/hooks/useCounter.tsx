@@ -15,7 +15,7 @@ let nextNumber = 1;
  * A hook that returns a counter that increases by one for each component it is used in.
  */
 function useCounter() {
-  const counterRef = useRef<number>();
+  const counterRef = useRef<number>(undefined);
   if (counterRef.current === undefined) {
     counterRef.current = nextNumber++;
   }

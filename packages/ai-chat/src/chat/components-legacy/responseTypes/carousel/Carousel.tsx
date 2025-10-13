@@ -39,7 +39,7 @@ interface SwiperCarouselProps {
   nextButton?: HTMLElement;
   chatWidthBreakpoint: ChatWidthBreakpoint;
   onSlideChangeInternal: (swiper: SwiperClass) => void;
-  children?: ReactElement[];
+  children?: ReactElement<any>[];
 }
 
 // Create a component that uses lazy-loaded Swiper
@@ -102,7 +102,7 @@ interface CarouselProps {
   /**
    * The actual items in the carousel all provided as an array of child components.
    */
-  children?: ReactElement[];
+  children?: ReactElement<any>[];
 
   /**
    * An optional initial slide to slide to.

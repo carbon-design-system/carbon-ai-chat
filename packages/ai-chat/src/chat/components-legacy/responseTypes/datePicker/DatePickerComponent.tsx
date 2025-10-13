@@ -85,7 +85,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     useState<BaseOptions["locale"]>();
   const [dayjsLocale, setDayjsLocale] = useState<string>();
   const datePickerRef = useRef<any>(null);
-  const valueForAssistantRef = useRef<string>();
+  const valueForAssistantRef = useRef<string>(undefined);
   const inputLabel = intl.formatMessage(
     { id: "datePicker_chooseDate" },
     { format: userDisplayFormat },

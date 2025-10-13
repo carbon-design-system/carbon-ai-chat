@@ -217,10 +217,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const isTypingTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
   // A React ref to the TextArea component.
-  const textAreaRef = useRef<TextArea>();
+  const textAreaRef = useRef<TextArea>(undefined);
 
   // A React ref to the file Input element.
-  const fileInputRef = useRef<HTMLInputElement>();
+  const fileInputRef = useRef<HTMLInputElement>(undefined);
 
   // An array of functions that will be called when the text value changes.
   const changeListeners = useRef<ListenerList<[string]>>(
@@ -389,24 +389,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     return Boolean(inputValue.trim()) || hasUploads;
   }
 
-  /**
-   * Handles clicking on the input container to focus the textarea.
-   * Only focuses if the click target is not an interactive element.
-   */
-  function onInputContainerClick(event: React.MouseEvent) {
-    const target = event.target as HTMLElement;
-
-    // Check if the clicked element or its parents are interactive elements
-    const isInteractiveElement = target.closest(
-      'button, input, label, [role="button"], [tabindex]:not([tabindex="-1"])',
-    );
-
-    // If we didn't click on an interactive element, focus the textarea
-    if (!isInteractiveElement && !disableInput) {
-      textAreaRef.current?.takeFocus();
-    }
-  }
-
   // If the input field becomes disabled, we don't get a blur event so make sure to remove the focus indicator.
   if (textAreaHasFocus && disableInput) {
     setTextAreaHasFocus(false);
@@ -441,12 +423,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   }
 
   return (
-    isInputVisible && (
-      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-      <div
-        className="cds-aichat--input-and-completions"
-        onClick={onInputContainerClick}
-      >
+    isInputVisible && ( // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+      <div className="cds-aichat--input-and-completions">
         <div
           className={cx("cds-aichat--input-container", {
             "cds-aichat--input-container--has-focus": textAreaHasFocus,

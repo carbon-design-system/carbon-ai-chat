@@ -106,7 +106,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   const intl = useIntl();
   const languagePack = useLanguagePack();
-  const feedbackDetailsRef = useRef<HTMLDivElement>();
+  const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const agentDisplayState = useSelector(
     selectHumanAgentDisplayState,
     shallowEqual,

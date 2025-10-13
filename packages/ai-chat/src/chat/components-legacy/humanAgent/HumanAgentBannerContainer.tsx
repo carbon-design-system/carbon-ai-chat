@@ -20,7 +20,7 @@ interface HumanAgentBannerContainerProps {
   /**
    * A ref to the banner.
    */
-  bannerRef: React.RefObject<HasRequestFocus>;
+  bannerRef: React.RefObject<HasRequestFocus | null>;
 
   /**
    * The callback that is called when the user clicks the "end chat" or "cancel" button.

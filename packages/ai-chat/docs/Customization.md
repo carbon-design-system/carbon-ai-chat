@@ -2,69 +2,17 @@
 title: UI customization
 ---
 
+### Overview
+
+There are a few ways to customize the UI either by configuration, supplying css custom properties and styles, making use of slots, or rendering responses from the assistant.
+
 ### Customizing responses from the assistant
+
+The Carbon AI Chat can accept many `response_types` like carousels, buttons, etc. You can navigate to the properties for each `response_type` by visiting the base {@link GenericItem} type.
 
 #### Rich text responses
 
-The Carbon AI Chat also supports basic styling inside `text` responses to match the theme of your Carbon AI Chat, both with Markdown or HTML content returned from your assistant. Using Markdown and `user_defined` {@link UserDefinedItem} responses instead of HTML in your text responses is the recommendation. It allows adding channels that do not support HTML (such as Facebook, Slack, or WhatsApp) without having to rewrite your content.
-
-##### Markdown
-
-The Carbon AI Chat supports the following Markdown syntax in the `text` response type:
-
-**Text formatting:**
-
-- `**bold text**` or `__bold text__` for **bold text**
-- `*italic text*` or `_italic text_` for _italic text_
-- `~~strikethrough~~` for ~~strikethrough text~~
-- `==highlighted text==` for ==highlighted text==
-- `^superscript^` for superscript text
-- `~subscript~` for subscript text
-
-**Code:**
-
-- `` `inline code` `` for `inline code`
-- Fenced code blocks with syntax highlighting:
-
-**Headers:**
-
-- `# H1`, `## H2`, `### H3`, `#### H4`, `##### H5`, `###### H6`
-
-**Lists:**
-
-- Unordered lists using `*`, `+`, or `-`
-- Ordered lists using `1.`, `2.`, etc.
-- Nested lists are supported
-
-**Links and images:**
-
-- `[link text](URL)` for links (opens in new tab by default)
-- `![alt text](image URL)` for images
-
-**Other elements:**
-
-- `> blockquote text` for blockquotes
-- Tables using pipe syntax with automatic pagination and sorting
-- Horizontal rules using `---` or `***`
-- Line breaks are preserved (breaks: true)
-- Automatic URL detection and conversion to links
-
-**Attributes:**
-
-- Custom attributes using `{{class="my-class" id="my-id"}}` syntax
-- Supported attributes: `target`, `rel`, `class`, `id`
-
-**HTML support:**
-
-- Raw HTML is supported when enabled
-- Custom elements and web components are allowed
-- Content is sanitized for security when sanitization is enabled
-
-The Carbon AI Chat follows CommonMark rules with these extensions and enhancements.
-
-##### HTML content
-
-If you include HTML (including `style` and `script` tags) in your text response from your assistant, the Carbon AI Chat renders those elements as provided. A better approach is to use a `user_defined` response instead of adding HTML directly to your responses to make adding support for channels that do not support HTML easier.
+The Carbon AI Chat supports styling inside `text` responses to match the theme of your Carbon AI Chat, both with Markdown or HTML content returned from your assistant. For more information on supported Markdown syntax and HTML content handling, see the documentation for {@link TextItem}.
 
 #### User-defined responses
 
@@ -72,71 +20,77 @@ In addition to rendering HTML content in responses, the Carbon AI Chat can rende
 
 To show custom content, you return the following from your server. Refer to the following example.
 
-```
+```json
 {
-  response_type: 'user_defined',
-  user_defined: {
+  "response_type": "user_defined",
+  "user_defined": {
     // A unique name for each UI component.
-    type: 'my-unique-name',
+    "type": "my-unique-name",
     // Any other custom metadata you need for rendering.
-    foo: 'bar',
-    baz: {
-      boz: true
+    "foo": "bar",
+    "baz": {
+      "boz": true
     }
   }
 }
-
 ```
 
-The `user_defined` response injects into a slot within the Carbon AI Chat's ShadowRoot. This means that it can be styled from global CSS and have a small amount of the CSS inherited from the Carbon AI Chat (font styling, and so on) styles. You can use Carbon components in addition to your own custom components.
+The `user_defined` response injects into a slot within the Carbon AI Chat's shadow DOM. This means that it can be styled from global CSS and have a small amount of the CSS inherited from the Carbon AI Chat (font styling, and so on) styles. You can use Carbon components in addition to your own custom components.
+
+When streaming `user_defined` responses, the API only supports sending chunks of strings, not partially completed JSON. You can stringify JSON and then have your user defined handler that responds to it deal with try/catch based parsing or an optimistic parsing library.
 
 For more information, see the documentation for [React](React.md) and [web components](WebComponent.md).
 
-### Customizing the Carbon AI Chat container
+### Layout
 
-#### Layout
-
-By default, the Carbon AI Chat adds an element just before the `</body>` tag and displays it as a floating widget in the lower right or left corner, based on your page's directional settings. This position is customizable and includes a replaceable launcher button.
-
-Alternatively, you can specify a custom element for the Carbon AI Chat to render into. The Carbon AI Chat adapts to the container's dimensions and adjusts its layout responsively to suit the rendered size:
-
-- For tall and narrow elements, such as sidebars, the Carbon AI Chat renders its layout to fit seamlessly.
-- For large, central elements, the Carbon AI Chat expands to fill the space following the best practices for larger formats.
+Both the web component and React versions of Carbon AI Chat provide a version of the chat with a defined "floating" size (standard launcher in the corner and a window the pops up when you click on it) and a version where you provide the size by passing in a CSS class name(s) and the chat is rendered in place where you put it in your DOM tree. In the latter scenario, the chat will automatically grow to the size of the CSS you have provided for the container and will responsively re-adjust as that size changes.
 
 For more information, see the documentation for [React](React.md) and [web components](WebComponent.md).
 
-#### Theming
+### Theming
 
-You can customize the Carbon theme of the Carbon AI Chat. By default, it will inherit a Carbon theme from the host page. If the rest of your site does not use Carbon, choose one of four Carbon themes by using the {@link PublicConfig.injectCarbonTheme} property:
+You can customize the Carbon theme of the Carbon AI Chat. By default, it will inherit a Carbon theme from the host page. If the rest of your site does not use Carbon, you may choose one of four Carbon themes by using the {@link PublicConfig.injectCarbonTheme} property:
 
 - White
 - Gray 10
 - Gray 90
 - Gray 100
 
-This will inject the correct CSS custom properties into the Carbon AI Chat's ShadowRoot.
+This will inject the correct CSS custom properties into the Carbon AI Chat's shadow DOM.
 
-For more information, see the documentation for {@link PublicConfig}.
+Alternatively, if you want to pick your own colors, you can inject the Carbon theme on your own and then override specific colors.
 
-#### Homescreen
+For more information, see [@carbon/themes](https://github.com/carbon-design-system/carbon/tree/main/packages/themes) and the documentation for {@link PublicConfig}.
+
+### Assistant name
+
+By default, the name of the assistant that the chat uses is "watsonx". You can override this default using {@link PublicConfig.assistantName} or you can do it on a per message basis with {@link MessageResponse.message_options}.
+
+### Homescreen
 
 The Carbon AI Chat displays an optional home screen featuring content presented to users during their initial interaction and accessible later in the conversation. Many use it to provide sample prompts for their assistant, but there is considerable freedom on this page to introduce your particular assistant.
 
 For more information, see the documentation for {@link PublicConfig.homescreen}.
 
-#### Launcher
+### Header
+
+The Carbon AI Chat header can be configured to add an overflow menu, update icons and add title text.
+
+For more information, see the documentation for {@link PublicConfig.header}.
+
+### Launcher
 
 The Carbon AI Chat launcher welcomes and engages customers so they know where to find help if they need it. You can also provide your own launcher.
 
 For more information, see the documentation for {@link PublicConfig.launcher}.
 
-#### Writeable elements
+### Writeable elements (slotted content)
 
-The Carbon AI Chat strategically provides access to various elements around the Carbon AI Chat. You can directly write to them as portals from your application with frameworks like React, Angular, Vue, or a web component. The writeable elements available are defined at {@link WriteableElementName}.
+The Carbon AI Chat strategically provides access to various slots around the Carbon AI Chat. You can directly write to them as portals from your application with frameworks like React, Angular, Vue, or a web component. The writeable elements available are defined at {@link WriteableElementName}.
 
 For more information, see the documentation for [React](React.md) and [web components](WebComponent.md).
 
-#### Custom Panel
+### Custom Panel
 
 The Carbon AI Chat can open an overlay panel with custom content at any time. Panels are effective for use cases that range from pre‑chat content forms, post‑chat feedback forms, or multi‑step processes. You can open the panel at any time, whether from an event, a `user_defined` response, or even an action a user takes on your website.
 

@@ -13,7 +13,7 @@
  * Provides the {@link ServiceManager} instance via {@link ServiceManagerContext}.
  */
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, type JSX } from "react";
 import { ServiceManagerContext } from "../contexts/ServiceManagerContext";
 import { ServiceManager } from "../services/ServiceManager";
 
