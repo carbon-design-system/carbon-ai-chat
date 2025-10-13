@@ -22,7 +22,6 @@ import {
 } from "../../types/state/AppState";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
-import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import ObjectMap from "../../types/utilities/ObjectMap";
 import { WriteableElementName } from "../utils/constants";
@@ -76,7 +75,6 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
   };
 
   private inputRef: RefObject<InputFunctions | null> = React.createRef();
-  private headerRef: RefObject<HasRequestFocus | null> = React.createRef();
   private messagesRef: RefObject<MessagesComponentClass | null> =
     React.createRef();
   private messagesToArray = createUnmappingMemoizer<LocalMessageItem>();
@@ -135,8 +133,15 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     this.props.serviceManager.humanAgentService.endChat(true);
   };
 
-  private requestDefaultFocus = () => {
-    if (!this.headerRef?.current?.requestFocus()) {
+  private requestDefaultFocus = async () => {
+    // Wait a short delay to check if the input becomes available
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Double-check if input is now available (allow focusing even if disabled)
+    if (this.inputRef.current && this.props.inputState.fieldVisible) {
+      this.inputRef.current.takeFocus();
+    } else {
+      // Skip header and fallback directly to messages scroll area
       doFocusRef(this.messagesRef.current?.scrollHandleRef);
     }
   };
@@ -318,7 +323,6 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     return (
       <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
         <AssistantHeader
-          ref={this.headerRef}
           onClose={onClose}
           onRestart={onRestart}
           headerDisplayName={headerDisplayName}
