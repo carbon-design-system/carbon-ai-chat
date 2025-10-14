@@ -15,6 +15,10 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/aiChatEntry.js"
     },
+    "./es-custom": {
+      "types": "./dist/types/aiChatEntry.d.ts",
+      "import": "./dist/es-custom/aiChatEntry.js"
+    },
     "./server": {
       "types": "./dist/types/serverEntry.d.ts",
       "import": "./dist/es/serverEntry.js"
