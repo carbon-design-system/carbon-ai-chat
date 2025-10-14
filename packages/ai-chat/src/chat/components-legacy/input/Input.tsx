@@ -41,6 +41,7 @@ import { uuid, UUIDType } from "../../utils/lang/uuid";
 import { ListenerList } from "../../utils/ListenerList";
 import { isValidForUpload } from "../../utils/miscUtils";
 import TextArea from "../responseTypes/text/TextArea";
+import VisuallyHidden from "../util/VisuallyHidden";
 // Local interface for controlling the raw input element.
 interface InstanceInputElement {
   getHTMLElement: () => HTMLElement;
@@ -466,6 +467,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   </label>
                 </div>
               )}
+              <VisuallyHidden>
+                <label htmlFor={inputID}>{input_ariaLabel}</label>
+              </VisuallyHidden>
               <TextArea
                 autoSize
                 ariaLabel={input_ariaLabel}
@@ -478,6 +482,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 ref={textAreaRef}
                 onFocus={onInputFocus}
                 onBlur={onInputBlur}
+                id={inputID}
                 testId={PageObjectId.INPUT}
               />
             </div>

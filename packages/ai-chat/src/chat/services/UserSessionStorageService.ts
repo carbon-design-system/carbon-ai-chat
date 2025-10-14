@@ -48,8 +48,7 @@ class UserSessionStorageService {
       // having to make sure these sessions are backwards compatible.
       if (session?.version === VERSION) {
         session.wasLoadedFromBrowser = true;
-        session.desktopLauncherIsExpanded = false;
-        session.mobileLauncherIsExtended = false;
+        session.launcherIsExpanded = false;
         return session;
       }
       this.clearSession();

@@ -6,6 +6,11 @@
  */
 
 import { defineConfig, devices } from "@playwright/test";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
   testDir: "./tests",
@@ -16,6 +21,7 @@ export default defineConfig({
     timeout: 120 * 1000, // wait up to 2m for the server
     reuseExistingServer: !process.env.CI,
   },
+  globalSetup: resolve(__dirname, "./tests/setup.ts"),
   use: {
     baseURL: "http://localhost:3001",
     headless: true,
