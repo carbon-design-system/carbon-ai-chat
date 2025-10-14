@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 /*
  *  Copyright IBM Corp. 2025
  *
@@ -11,14 +13,18 @@ import { mergeConfig } from "vite";
 import { litStyleLoader, litTemplateLoader } from "@mordech/vite-lit-loader";
 import remarkGfm from "remark-gfm";
 
+const require = createRequire(import.meta.url);
+
 const config = {
   stories: [
+    "./welcome/welcome.mdx",
     "../src/**/__stories__/*.mdx",
     "../src/**/__stories__/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
+
   addons: [
     {
-      name: "@storybook/addon-docs",
+      name: getAbsolutePath("@storybook/addon-docs"),
       options: {
         mdxPluginOptions: {
           mdxCompileOptions: {
@@ -27,26 +33,25 @@ const config = {
         },
       },
     },
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-a11y",
+    getAbsolutePath("@storybook/addon-links"),
+    getAbsolutePath("@storybook/addon-a11y"),
   ],
+
   framework: {
-    name: "@storybook/web-components-vite",
+    name: getAbsolutePath("@storybook/web-components-vite"),
     options: {},
   },
-  docs: {
-    autodocs: "tag",
-  },
+
   features: {
     storyStoreV7: true,
   },
+
   async viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {
       plugins: [litStyleLoader(), litTemplateLoader()],
       optimizeDeps: {
-        include: ["@storybook/web-components"],
+        include: ["@storybook/web-components-vite"],
         exclude: ["lit", "lit-html"],
       },
       define: {
@@ -57,3 +62,7 @@ const config = {
   },
 };
 export default config;
+
+function getAbsolutePath(value) {
+  return dirname(require.resolve(join(value, "package.json")));
+}

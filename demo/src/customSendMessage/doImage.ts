@@ -90,7 +90,7 @@ function doImage(instance: ChatInstance) {
               },
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: '<span style="color: #4e4d4d">I\'m baby listicle synth migas air plant DSA cardigan helvetica fanny pack fit chillwave forage. Umami tacos subway tile sriracha skateboard activated charcoal roof party pinterest adaptogen ennui brunch bitters. Helvetica dreamcatcher viral fashion axe, coloring book four dollar toast vexillologist bushwick stumptown mumblecore slow-carb. Tote bag vinyl.</span>',
+                text: '<span style="color: var(--cds-text-secondary)">I\'m baby listicle synth migas air plant DSA cardigan helvetica fanny pack fit chillwave forage. Umami tacos subway tile sriracha skateboard activated charcoal roof party pinterest adaptogen ennui brunch bitters. Helvetica dreamcatcher viral fashion axe, coloring book four dollar toast vexillologist bushwick stumptown mumblecore slow-carb. Tote bag vinyl.</span>',
               },
             ],
             title: "Tanya panel",

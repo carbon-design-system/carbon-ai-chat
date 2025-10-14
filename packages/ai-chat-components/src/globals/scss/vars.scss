@@ -5,8 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-// Set this to a suitable prefix for your project to use in style files
-$prefix: "prefix" !default;
-
 // prefix for Carbon Design System components
 $cds-prefix: "cds";
+
+// Set this to a suitable prefix for your project to use in style files
+$prefix: "#{$cds-prefix}-aichat" !default;
