@@ -67,7 +67,7 @@
     "gitignore-to-glob": "^0.3.0",
     "globby": "^15.0.0",
     "husky": "^9.1.7",
-    "lerna": "^8.1.8",
+    "lerna": "^9.0.0",
     "lint-staged": "^16.0.0",
     "prettier": "^3.0.0",
     "prettier-config-carbon": "^0.12.0",
