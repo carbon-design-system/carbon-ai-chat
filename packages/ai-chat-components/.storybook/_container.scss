@@ -55,6 +55,10 @@ body {
   color: theme.$text-primary;
 }
 
+cds-inline-notification {
+  margin-block-end: layout.$spacing-05;
+}
+
 .sb-show-main.sb-main-padded {
   padding: 0;
 }
