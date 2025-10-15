@@ -28,8 +28,8 @@
   "scripts": {
     "aiChat:build": "lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
     "aiChat:build:profile": "cross-env profile=true lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat",
-    "aiChat:start": "lerna run start --stream --parallel --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
-    "aiChat:start:all": "lerna run start --stream --parallel",
+    "aiChat:start": "npm run aiChat:build && lerna run start --stream --parallel --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
+    "aiChat:start:all": "npm run build && lerna run start --stream --parallel",
     "aiChat:start:storybook": "npm run storybook --workspace=@carbon/ai-chat-components",
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
