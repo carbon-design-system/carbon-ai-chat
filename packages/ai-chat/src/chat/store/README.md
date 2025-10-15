@@ -19,6 +19,7 @@ const isLoading = useSelector((s: AppState) => s.botMessageState.isLoading);
 Dispatch actions:
 
 ```tsx
+import React, { forwardRef } from "react";
 import { useDispatch } from "../../hooks/useDispatch";
 import actions from "../store/actions";
 
@@ -29,13 +30,12 @@ dispatch(actions.addIsLoadingCounter(1));
 Class components: wrap with a functional injector and pass props.
 
 ```tsx
-const MainWindowStateInjector = React.forwardRef<
-  MainWindow,
-  MainWindowOwnProps
->((props, ref) => {
-  const state = useSelector<AppState, AppState>((s) => s);
-  return <MainWindow {...props} {...state} ref={ref} />;
-});
+const MainWindowStateInjector = forwardRef<MainWindow, MainWindowOwnProps>(
+  (props, ref) => {
+    const state = useSelector<AppState, AppState>((s) => s);
+    return <MainWindow {...props} {...state} ref={ref} />;
+  },
+);
 ```
 
 ## References (MIT)

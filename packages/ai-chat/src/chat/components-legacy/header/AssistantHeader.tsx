@@ -11,6 +11,7 @@ import Home16 from "@carbon/icons/es/home/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import React, {
   forwardRef,
+  memo,
   RefObject,
   useCallback,
   useImperativeHandle,
@@ -154,5 +155,5 @@ function AssistantHeader(
   );
 }
 
-const AssistantHeaderExport = React.memo(forwardRef(AssistantHeader));
+const AssistantHeaderExport = memo(forwardRef(AssistantHeader));
 export { AssistantHeaderExport as AssistantHeader };

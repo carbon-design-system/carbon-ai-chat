@@ -7,7 +7,13 @@
  *  @license
  */
 
-import React, { forwardRef, Ref, useImperativeHandle, useRef } from "react";
+import React, {
+  forwardRef,
+  memo,
+  Ref,
+  useImperativeHandle,
+  useRef,
+} from "react";
 
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { Header } from "./Header";
@@ -52,5 +58,5 @@ function SimpleHeader(props: SimpleHeaderProps, ref: Ref<HasRequestFocus>) {
   );
 }
 
-const SimpleHeaderExport = React.memo(forwardRef(SimpleHeader));
+const SimpleHeaderExport = memo(forwardRef(SimpleHeader));
 export { SimpleHeaderExport as SimpleHeader };

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { createRef, PureComponent } from "react";
 
 import { AnnounceMessage } from "../../../types/state/AppState";
 import HasIntl from "../../../types/utilities/HasIntl";
@@ -56,16 +56,16 @@ const ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE = "data-cds-aichat-exclude-node-read";
  * the content without some sort of delay before it's cleared (even waiting a tick isn't enough). In addition, a second
  * element will make sure the SR will read a new message even if it has the same content as a previous message.
  */
-class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
+class AriaAnnouncerComponent extends PureComponent<HasIntl> {
   /**
    * The first element into which the messages will be added.
    */
-  private ref1 = React.createRef<HTMLDivElement>();
+  private ref1 = createRef<HTMLDivElement>();
 
   /**
    * The second element into which the messages will be added.
    */
-  private ref2 = React.createRef<HTMLDivElement>();
+  private ref2 = createRef<HTMLDivElement>();
 
   /**
    * Indicates which of the two elements should next to be used to announce a new message.

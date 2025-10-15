@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { RefObject } from "react";
 import { useSelector } from "../../hooks/useSelector";
 import { shallowEqual } from "../../store/appStore";
 
@@ -20,7 +20,7 @@ interface HumanAgentBannerContainerProps {
   /**
    * A ref to the banner.
    */
-  bannerRef: React.RefObject<HasRequestFocus | null>;
+  bannerRef: RefObject<HasRequestFocus | null>;
 
   /**
    * The callback that is called when the user clicks the "end chat" or "cancel" button.

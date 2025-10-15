@@ -9,7 +9,14 @@
 
 import cx from "classnames";
 import FocusTrap from "focus-trap-react";
-import React, { Component, MutableRefObject, RefObject } from "react";
+import React, {
+  Component,
+  createRef,
+  ErrorInfo,
+  forwardRef,
+  MutableRefObject,
+  RefObject,
+} from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import AssistantChat, { ChatClass } from "../AssistantChat";
@@ -152,56 +159,52 @@ class MainWindow
   /**
    * A React ref to the "cds-aichat--main-window" element.
    */
-  private mainWindowRef = React.createRef<HTMLDivElement>();
+  private mainWindowRef = createRef<HTMLDivElement>();
 
   /**
    * A React ref to the "cds-aichat--widget" element.
    */
-  private containerRef = React.createRef<HTMLDivElement>();
+  private containerRef = createRef<HTMLDivElement>();
 
   /**
    * A React ref to the bot {@link Chat} component.
    */
-  private botChatRef: RefObject<ChatClass | null> = React.createRef();
+  private botChatRef: RefObject<ChatClass | null> = createRef();
 
   /**
    * A React ref to the bot {@link Input} component.
    */
-  private homeScreenInputRef: RefObject<InputFunctions | null> =
-    React.createRef();
+  private homeScreenInputRef: RefObject<InputFunctions | null> = createRef();
 
   /**
    * A React ref to the bot {@link Disclaimer} component.
    */
-  private disclaimerRef: RefObject<CDSButton | null> = React.createRef();
+  private disclaimerRef: RefObject<CDSButton | null> = createRef();
 
   /**
    * A React ref to the animation container element.
    */
-  private animationContainerRef: RefObject<HTMLDivElement | null> =
-    React.createRef();
+  private animationContainerRef: RefObject<HTMLDivElement | null> = createRef();
 
   /**
    * A React ref to the {@link IFramePanel} component.
    */
-  private iframePanelRef: RefObject<HasRequestFocus | null> = React.createRef();
+  private iframePanelRef: RefObject<HasRequestFocus | null> = createRef();
 
   /**
    * A React ref to the {@link ViewSourcePanel}.
    */
-  private viewSourcePanelRef: RefObject<HasRequestFocus | null> =
-    React.createRef();
+  private viewSourcePanelRef: RefObject<HasRequestFocus | null> = createRef();
 
   /**
    * A React ref to the {@link CustomPanel}.
    */
-  private customPanelRef: RefObject<HasRequestFocus | null> = React.createRef();
+  private customPanelRef: RefObject<HasRequestFocus | null> = createRef();
 
   /**
    * A React ref to the response panel component.
    */
-  private responsePanelRef: RefObject<HasRequestFocus | null> =
-    React.createRef();
+  private responsePanelRef: RefObject<HasRequestFocus | null> = createRef();
 
   /**
    * The observer used to monitor for changes in the main window size.
@@ -351,7 +354,7 @@ class MainWindow
     }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
       createDidCatchErrorData("MainWindow", error, errorInfo, true),
     );
@@ -1071,12 +1074,15 @@ class MainWindow
 }
 
 // Functional wrapper to supply AppState via hooks
-const MainWindowStateInjector = React.forwardRef<
-  MainWindow,
-  MainWindowOwnProps
->((props, ref) => {
-  const state = useSelector<AppState, AppState>((s) => s);
-  return <MainWindow {...(props as MainWindowOwnProps)} {...state} ref={ref} />;
-});
+const MainWindowStateInjector = forwardRef<MainWindow, MainWindowOwnProps>(
+  (props, ref) => {
+    const state = useSelector<AppState, AppState>((s) => s);
+    return (
+      <MainWindow {...(props as MainWindowOwnProps)} {...state} ref={ref} />
+    );
+  },
+);
+
+MainWindowStateInjector.displayName = "MainWindow";
 
 export default withServiceManager(MainWindowStateInjector);

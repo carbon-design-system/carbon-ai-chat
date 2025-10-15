@@ -25,6 +25,8 @@ import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/
 import cx from "classnames";
 import React, {
   forwardRef,
+  memo,
+  ReactNode,
   Ref,
   RefObject,
   useContext,
@@ -120,7 +122,7 @@ interface HeaderProps {
   /**
    * The contents/icon to display for the "back" button.
    */
-  backContent?: React.ReactNode;
+  backContent?: ReactNode;
 
   /**
    * The list of items to display in the overflow menu.
@@ -185,7 +187,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const useHideCloseButton = header?.hideMinimizeButton || hideCloseButton;
 
   // The icon to use for the close button.
-  let closeIcon: React.ReactNode;
+  let closeIcon: ReactNode;
   let closeReverseIcon = false;
   let closeIsReversible = true;
   const minimizeButtonIconType = header?.minimizeButtonIconType;
@@ -470,5 +472,5 @@ function HeaderButton({
   );
 }
 
-const HeaderExport = React.memo(forwardRef(Header));
+const HeaderExport = memo(forwardRef(Header));
 export { HeaderExport as Header };

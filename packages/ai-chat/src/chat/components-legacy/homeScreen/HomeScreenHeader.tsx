@@ -9,6 +9,7 @@
 
 import React, {
   forwardRef,
+  memo,
   Ref,
   useCallback,
   useImperativeHandle,
@@ -83,5 +84,5 @@ function HomeScreenHeader(
   );
 }
 
-const HomeScreenHeaderExport = React.memo(forwardRef(HomeScreenHeader));
+const HomeScreenHeaderExport = memo(forwardRef(HomeScreenHeader));
 export { HomeScreenHeaderExport as HomeScreenHeader };

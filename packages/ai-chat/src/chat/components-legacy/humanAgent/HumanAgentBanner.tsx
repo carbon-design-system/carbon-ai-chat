@@ -14,6 +14,7 @@ import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import cx from "classnames";
 import React, {
   forwardRef,
+  memo,
   RefObject,
   useImperativeHandle,
   useRef,
@@ -157,5 +158,5 @@ function HumanAgentBanner(
   );
 }
 
-const HumanAgentBannerExport = React.memo(forwardRef(HumanAgentBanner));
+const HumanAgentBannerExport = memo(forwardRef(HumanAgentBanner));
 export { HumanAgentBannerExport as HumanAgentBanner };

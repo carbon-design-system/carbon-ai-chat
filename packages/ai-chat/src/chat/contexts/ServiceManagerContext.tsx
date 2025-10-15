@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import { createContext } from "react";
 
 import { ServiceManager } from "../services/ServiceManager";
 
@@ -16,6 +16,6 @@ import { ServiceManager } from "../services/ServiceManager";
  * {@link ServiceManager}.
  */
 
-const ServiceManagerContext = React.createContext<ServiceManager>(null);
+const ServiceManagerContext = createContext<ServiceManager>(null);
 
 export { ServiceManagerContext };

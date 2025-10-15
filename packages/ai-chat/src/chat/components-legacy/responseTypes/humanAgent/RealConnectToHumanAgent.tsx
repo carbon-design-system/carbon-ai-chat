@@ -133,11 +133,11 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     languagePack.default_agent_availableMessage;
 
   let ButtonIcon: (props: any) => ReactNode | Promise<ReactNode>; // CarbonIconType is not exported, currently.
-  // let ButtonIcon: React.FC<CarbonIconProps>;
+  // let ButtonIcon: FC<CarbonIconProps>;
   let buttonText: string;
   let showDisabled: boolean =
     disableUserInputs || agentDisplayState.isConnectingOrConnected;
-  let messageToUser: React.ReactNode = textFromMessage;
+  let messageToUser: ReactNode = textFromMessage;
 
   if (localMessage.ui_state.id === activeLocalMessageID) {
     // This card is the active card in a chat that has been started.

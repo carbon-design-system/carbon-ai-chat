@@ -13,7 +13,7 @@
  * Light and dark versions of the watsonx logo sourced from https://ibm.ent.box.com/s/ptn44fwqwbfu2i83poh4tk21a1lun3yn/folder/222574830530
  */
 
-import React from "react";
+import React, { memo } from "react";
 
 import { uuid } from "../utils/lang/uuid";
 import { CarbonTheme } from "../../types/config/PublicConfig";
@@ -232,6 +232,6 @@ function Avatar({ theme }: AvatarProps) {
   );
 }
 
-const AvatarExport = React.memo(Avatar);
+const AvatarExport = memo(Avatar);
 
 export { AvatarExport as Avatar };

@@ -7,8 +7,8 @@
  *  @license
  */
 
-import React, { ReactNode } from "react";
-import ReactDOM from "react-dom";
+import React, { memo, ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import {
   ChatInstance,
@@ -75,10 +75,10 @@ function WriteableElementsComponentPortal({
   hostElement: HTMLElement;
   children: ReactNode;
 }) {
-  return ReactDOM.createPortal(children, hostElement);
+  return createPortal(children, hostElement);
 }
 
-const WriteableElementsPortalsContainerExport = React.memo(
+const WriteableElementsPortalsContainerExport = memo(
   WriteableElementsPortalsContainer,
 );
 export { WriteableElementsPortalsContainerExport as WriteableElementsPortalsContainer };

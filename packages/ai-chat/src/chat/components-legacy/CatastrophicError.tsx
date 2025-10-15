@@ -14,7 +14,7 @@ import ChatButton, {
   CHAT_BUTTON_SIZE,
 } from "../components/carbon/ChatButton";
 import cx from "classnames";
-import React from "react";
+import React, { memo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../hooks/useSelector";
 
@@ -124,7 +124,7 @@ function CatastrophicError({
   );
 }
 
-const CatastrophicErrorExport = React.memo(CatastrophicError);
+const CatastrophicErrorExport = memo(CatastrophicError);
 
 export { CatastrophicErrorExport as CatastrophicError };
 

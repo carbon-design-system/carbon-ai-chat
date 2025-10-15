@@ -8,7 +8,14 @@
  */
 
 import cx from "classnames";
-import React, { forwardRef, Ref, useRef } from "react";
+import React, {
+  forwardRef,
+  memo,
+  ReactNode,
+  Ref,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -109,7 +116,7 @@ interface BodyAndFooterPanelComponentProps
   /**
    * Function to render message components
    */
-  renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+  renderMessageComponent: (props: MessageTypeComponentProps) => ReactNode;
 
   /**
    * Controls whether to show the AI label in the header. When undefined, falls back to global config.
@@ -166,7 +173,7 @@ function BodyAndFooterPanelComponent(
   const basePanelRef = useRef<HasRequestFocus>(null);
 
   // Expose the BasePanelComponent's requestFocus method through the forwarded ref
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     requestFocus: () => {
       if (basePanelRef.current) {
         return basePanelRef.current.requestFocus();
@@ -217,7 +224,7 @@ function BodyAndFooterPanelComponent(
   );
 }
 
-const BodyAndFooterPanelComponentExport = React.memo(
+const BodyAndFooterPanelComponentExport = memo(
   forwardRef(BodyAndFooterPanelComponent),
 );
 

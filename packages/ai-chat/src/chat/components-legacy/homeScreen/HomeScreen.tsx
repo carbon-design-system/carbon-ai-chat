@@ -14,7 +14,7 @@ import ChatButton, {
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import cx from "classnames";
-import React, { RefObject } from "react";
+import React, { memo, RefObject } from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -226,6 +226,6 @@ function HomeScreenComponent({
   );
 }
 
-const HomeScreenExport = React.memo(HomeScreenComponent);
+const HomeScreenExport = memo(HomeScreenComponent);
 
 export { HomeScreenExport as HomeScreen };

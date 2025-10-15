@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 
 interface ImageWithFallbackProps {
   /**
@@ -23,7 +23,7 @@ interface ImageWithFallbackProps {
   /**
    * The render prop to call when the image fails to load.
    */
-  fallback: React.ReactNode;
+  fallback: ReactNode;
 }
 
 function ImageWithFallback(props: ImageWithFallbackProps) {

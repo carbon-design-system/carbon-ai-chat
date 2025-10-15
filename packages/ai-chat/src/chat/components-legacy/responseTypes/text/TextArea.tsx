@@ -22,6 +22,8 @@
 import cx from "classnames";
 import React, {
   ChangeEvent,
+  createRef,
+  Fragment,
   KeyboardEventHandler,
   PureComponent,
   ReactEventHandler,
@@ -130,14 +132,13 @@ class TextArea extends PureComponent<TextAreaProps> {
   /**
    * A React ref to the TextArea component.
    */
-  private textAreaRef: RefObject<HTMLTextAreaElement | null> =
-    React.createRef();
+  private textAreaRef: RefObject<HTMLTextAreaElement | null> = createRef();
 
   /**
    * A React ref to the sizer component.
    * Used to calculate the required height for the textarea content and determine when scrolling is needed.
    */
-  private sizerRef: RefObject<HTMLDivElement | null> = React.createRef();
+  private sizerRef: RefObject<HTMLDivElement | null> = createRef();
 
   /**
    * Returns the HTML element.
@@ -272,10 +273,10 @@ class TextArea extends PureComponent<TextAreaProps> {
             {(value || placeholder || " ")
               .split("\n")
               .map((line, index, array) => (
-                <React.Fragment key={index}>
+                <Fragment key={index}>
                   {line || "\u00A0"}
                   {index < array.length - 1 && <br />}
-                </React.Fragment>
+                </Fragment>
               ))}
           </div>
         )}

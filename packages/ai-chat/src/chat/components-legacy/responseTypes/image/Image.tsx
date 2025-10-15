@@ -11,7 +11,16 @@ import Tile from "../../../components/carbon/Tile";
 import cx from "classnames";
 import AISkeletonPlaceholder from "../../../components/carbon/AISkeletonPlaceholder";
 import SkeletonPlaceholder from "../../../components/carbon/SkeletonPlaceholder";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  ElementType,
+  memo,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
@@ -41,7 +50,7 @@ interface ImageProps extends HasNeedsAnnouncement, HasClassName {
   /**
    * The svg icon to render in the button.
    */
-  renderIcon?: React.ElementType;
+  renderIcon?: ElementType;
 
   /**
    * This will prevent the inline error from rendering when the image fails to load. This only works if there is
@@ -155,8 +164,8 @@ function Image(props: ImageProps) {
 interface ImageOnlyProps extends Partial<ImageProps> {
   isLoaded: boolean;
   isError: boolean;
-  setIsLoaded: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsError: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLoaded: Dispatch<SetStateAction<boolean>>;
+  setIsError: Dispatch<SetStateAction<boolean>>;
 }
 
 function ImageOnly({
@@ -233,6 +242,6 @@ function ImageOnly({
   );
 }
 
-const ImageExport = React.memo(Image);
+const ImageExport = memo(Image);
 
 export { ImageProps, ImageExport as Image };

@@ -9,7 +9,7 @@
 
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import React from "react";
+import React, { memo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
@@ -89,6 +89,6 @@ function IFramePreviewCardComponent({
   );
 }
 
-const IFramePreviewCardExport = React.memo(IFramePreviewCardComponent);
+const IFramePreviewCardExport = memo(IFramePreviewCardComponent);
 
 export { IFramePreviewCardExport as IFramePreviewCard };

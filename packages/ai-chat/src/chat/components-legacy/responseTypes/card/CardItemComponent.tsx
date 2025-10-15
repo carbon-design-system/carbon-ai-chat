@@ -9,7 +9,7 @@
 
 import Tile from "../../../components/carbon/Tile";
 import cx from "classnames";
-import React from "react";
+import React, { memo, ReactNode } from "react";
 
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
@@ -38,7 +38,7 @@ interface CardItemComponentProps extends HasRequestFocus {
   /**
    * Function to render message components
    */
-  renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+  renderMessageComponent: (props: MessageTypeComponentProps) => ReactNode;
 }
 
 /**
@@ -67,6 +67,6 @@ function CardItemComponent(props: CardItemComponentProps) {
   );
 }
 
-const CardComponentExport = React.memo(CardItemComponent);
+const CardComponentExport = memo(CardItemComponent);
 
 export { CardComponentExport as CardItemComponent };

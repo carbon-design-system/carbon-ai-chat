@@ -10,7 +10,12 @@
 import Link16 from "@carbon/icons/es/link/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import { carbonIconToReact } from "../../../../utils/carbonIcon";
-import React, { useLayoutEffect, useRef } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useLayoutEffect,
+  useRef,
+} from "react";
 
 import { useLanguagePack } from "../../../../hooks/useLanguagePack";
 import { useWindowSize } from "../../../../hooks/useWindowSize";
@@ -77,7 +82,7 @@ interface CitationCardContentProps
    * If the citation type is EXPAND_IF_NEEDED this is defined and is used to tell the parent component if it should render
    * this content inside a clickable tile or a non-clickable tile after it has measured itself.
    */
-  setIsExpandable?: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsExpandable?: Dispatch<SetStateAction<boolean>>;
 }
 
 function CitationCardContent({

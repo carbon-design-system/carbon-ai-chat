@@ -8,7 +8,13 @@
  */
 
 import isEqual from "lodash-es/isEqual.js";
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { StoreProvider } from "./providers/StoreProvider";
 
 import { ServiceManager } from "./services/ServiceManager";
@@ -60,7 +66,7 @@ interface AppProps {
   renderWriteableElements?: RenderWriteableElementResponse;
   container: HTMLElement;
   element?: HTMLElement;
-  setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
+  setParentInstance?: Dispatch<SetStateAction<ChatInstance>>;
   chatWrapper?: HTMLElement;
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters,

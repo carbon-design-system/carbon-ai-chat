@@ -7,7 +7,15 @@
  *  @license
  */
 
-import React, { forwardRef, Ref, useCallback, useEffect, useRef } from "react";
+import React, {
+  forwardRef,
+  memo,
+  Ref,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import { BusEventType } from "../../../types/events/eventBusTypes";
@@ -106,7 +114,7 @@ function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
   }, [ariaAnnouncer, hidePanelHeader, isOpen, prevIsOpen, title]);
 
   // Expose the BasePanelComponent's requestFocus method through the forwarded ref
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     requestFocus: () => {
       if (basePanelRef.current) {
         return basePanelRef.current.requestFocus();
@@ -212,6 +220,6 @@ function checkAllowClose(viewChanging: boolean) {
   }
 }
 
-const CustomPanelExport = React.memo(forwardRef(CustomPanel));
+const CustomPanelExport = memo(forwardRef(CustomPanel));
 
 export { CustomPanelExport as CustomPanel };

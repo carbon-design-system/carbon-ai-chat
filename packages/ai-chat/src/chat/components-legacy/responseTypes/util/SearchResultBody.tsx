@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { JSX, memo } from "react";
 
 import {
   convertPossibleStringifiedArrayToFirstString,
@@ -33,7 +33,7 @@ function SearchResultBodyWithCitationHighlighted({
   relatedSearchResult,
   citationItem,
 }: SearchResultBodyWithCitationProps) {
-  const elementsArray: React.JSX.Element[] = [];
+  const elementsArray: JSX.Element[] = [];
   let searchString;
   let citationString;
 
@@ -94,7 +94,7 @@ function SearchResultBodyWithCitationHighlighted({
   return [<span key="citation-string">{citationString}</span>];
 }
 
-const SearchResultBodyWithCitationHighlightedExport = React.memo(
+const SearchResultBodyWithCitationHighlightedExport = memo(
   SearchResultBodyWithCitationHighlighted,
 );
 

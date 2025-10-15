@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { Component, RefObject } from "react";
+import React, { Component, createRef, ErrorInfo, RefObject } from "react";
 import { injectIntl } from "react-intl";
 
 import MessagesComponent, { MessagesComponentClass } from "./MessagesComponent";
@@ -74,9 +74,8 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     hasCaughtError: false,
   };
 
-  private inputRef: RefObject<InputFunctions | null> = React.createRef();
-  private messagesRef: RefObject<MessagesComponentClass | null> =
-    React.createRef();
+  private inputRef: RefObject<InputFunctions | null> = createRef();
+  private messagesRef: RefObject<MessagesComponentClass | null> = createRef();
   private messagesToArray = createUnmappingMemoizer<LocalMessageItem>();
 
   async scrollOnHydrationComplete() {
@@ -110,7 +109,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
       createDidCatchErrorData("AssistantChat", error, errorInfo),
     );

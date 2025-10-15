@@ -7,8 +7,8 @@
  *  @license
  */
 
-import React, { Component, type JSX } from "react";
-import ReactDOM from "react-dom";
+import { Component, ContextType, type JSX } from "react";
+import { createPortal } from "react-dom";
 
 import { ModalPortalRootContext } from "../contexts/ModalPortalRootContext";
 
@@ -39,7 +39,7 @@ interface ModalPortalState {
 class ModalPortal extends Component<ModalPortalProps, ModalPortalState> {
   // Specify the context type and redefine the context property so it's got the right type.
   static contextType = ModalPortalRootContext;
-  declare context: React.ContextType<typeof ModalPortalRootContext>;
+  declare context: ContextType<typeof ModalPortalRootContext>;
 
   /**
    * Default state.
@@ -87,7 +87,7 @@ class ModalPortal extends Component<ModalPortalProps, ModalPortalState> {
       return null;
     }
 
-    return ReactDOM.createPortal(this.props.children, this.modalElement);
+    return createPortal(this.props.children, this.modalElement);
   }
 }
 

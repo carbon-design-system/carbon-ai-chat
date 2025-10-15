@@ -14,6 +14,8 @@ import React, {
   useRef,
   useEffect,
   useState,
+  forwardRef,
+  memo,
 } from "react";
 import { useSelector } from "../hooks/useSelector";
 
@@ -160,8 +162,6 @@ function BasePanelComponent(
   );
 }
 
-const BasePanelComponentExport = React.memo(
-  React.forwardRef(BasePanelComponent),
-);
+const BasePanelComponentExport = memo(forwardRef(BasePanelComponent));
 
 export { BasePanelComponentExport as BasePanelComponent };

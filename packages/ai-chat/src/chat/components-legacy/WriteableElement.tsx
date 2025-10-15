@@ -13,7 +13,7 @@
  * own custom elements below it.
  */
 
-import React from "react";
+import React, { memo } from "react";
 
 import { HasClassName } from "../../types/utilities/HasClassName";
 
@@ -39,4 +39,4 @@ function WriteableElement({ slotName, id, className }: WriteableElementProps) {
   );
 }
 
-export default React.memo(WriteableElement);
+export default memo(WriteableElement);

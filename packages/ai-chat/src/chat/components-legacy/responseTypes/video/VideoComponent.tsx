@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { memo } from "react";
 
 import { HasBaseHeight } from "../../../../types/utilities/HasBaseHeight";
 import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer";
@@ -21,6 +21,6 @@ function VideoComponent({ ...props }: VideoComponentProps) {
   return <MediaPlayer type={MessageResponseTypes.VIDEO} {...props} />;
 }
 
-const VideoComponentExport = React.memo(VideoComponent);
+const VideoComponentExport = memo(VideoComponent);
 
 export { VideoComponentConfig, VideoComponentExport as VideoComponent };

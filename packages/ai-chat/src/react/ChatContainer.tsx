@@ -10,6 +10,7 @@
 import { createComponent } from "@lit/react";
 import { css, LitElement, PropertyValues } from "lit";
 import React, {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -56,7 +57,7 @@ class ChatContainerReact extends LitElement {
 }
 
 // Wrap the custom element as a React component
-const ReactChatContainer = React.memo(
+const ReactChatContainer = memo(
   createComponent({
     tagName: "cds-aichat-react",
     elementClass: ChatContainerReact,

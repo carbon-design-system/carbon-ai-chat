@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React from "react";
+import React, { ReactNode } from "react";
 
 interface IconCircleProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 function IconHolder(props: IconCircleProps) {

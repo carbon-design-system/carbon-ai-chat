@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 
 import { useLanguagePack } from "../hooks/useLanguagePack";
@@ -34,7 +34,7 @@ interface BodyWithFooterComponentProps extends HasRequestFocus {
   /**
    * Function to render message components
    */
-  renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+  renderMessageComponent: (props: MessageTypeComponentProps) => ReactNode;
 }
 
 /**

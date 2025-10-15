@@ -8,7 +8,7 @@
  */
 
 import cx from "classnames";
-import React from "react";
+import React, { memo, ReactNode } from "react";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
   GridItem,
@@ -33,7 +33,7 @@ function GridItemComponent({
 }: {
   localMessageItem: LocalMessageItem<GridItem>;
   originalMessage: MessageResponse;
-  renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+  renderMessageComponent: (props: MessageTypeComponentProps) => ReactNode;
 }) {
   const { columns, max_width } = localMessageItem.item;
 
@@ -84,6 +84,6 @@ function GridItemComponent({
   );
 }
 
-const GridItemComponentExport = React.memo(GridItemComponent);
+const GridItemComponentExport = memo(GridItemComponent);
 
 export { GridItemComponentExport as GridItemComponent };

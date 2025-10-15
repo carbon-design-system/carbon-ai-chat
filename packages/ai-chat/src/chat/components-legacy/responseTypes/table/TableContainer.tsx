@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { Suspense, useMemo } from "react";
+import React, { memo, Suspense, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
@@ -104,5 +104,5 @@ function TableContainer(props: TableContainerProps) {
   );
 }
 
-const TableContainerExport = React.memo(TableContainer);
+const TableContainerExport = memo(TableContainer);
 export default TableContainerExport;

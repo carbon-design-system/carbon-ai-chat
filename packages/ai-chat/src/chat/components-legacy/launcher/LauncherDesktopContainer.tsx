@@ -19,6 +19,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  KeyboardEvent,
 } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../hooks/useSelector";
@@ -411,7 +412,7 @@ const LauncherDesktopContainer = (props: LauncherDesktopContainerProps) => {
   }, [requestFocus, serviceManager.store]);
 
   const handleTagKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLElement>) => {
+    (event: KeyboardEvent<HTMLElement>) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         onMinimize();

@@ -9,7 +9,7 @@
 
 import Tile from "../../../../components/carbon/Tile";
 import cx from "classnames";
-import React from "react";
+import React, { memo } from "react";
 import { CitationCardContent, CitationType } from "./CitationCardContent";
 import { ExpandToPanelCard } from "./ExpandToPanelCard";
 import {
@@ -83,6 +83,6 @@ function CitationCard({
   );
 }
 
-const CitationCardExport = React.memo(CitationCard);
+const CitationCardExport = memo(CitationCard);
 
 export { CitationCardExport as CitationCard };

@@ -14,17 +14,10 @@
  * For object/array outputs, pass `shallowEqual` or a custom comparator.
  */
 
-import React, { useCallback, useRef } from "react";
-import { useSyncExternalStore as useSyncExternalStoreShim } from "use-sync-external-store/shim";
+import { useCallback, useRef } from "react";
 import { useStore } from "./useStore";
 
-/** Choose the right `useSyncExternalStore` (React 17 uses the shim). */
-const useSyncExternalStore: typeof React.useSyncExternalStore =
-  (
-    React as unknown as {
-      useSyncExternalStore?: typeof React.useSyncExternalStore;
-    }
-  ).useSyncExternalStore ?? useSyncExternalStoreShim;
+import { useSyncExternalStore } from "use-sync-external-store/shim";
 
 /**
  * Select a slice and subscribe to changes.

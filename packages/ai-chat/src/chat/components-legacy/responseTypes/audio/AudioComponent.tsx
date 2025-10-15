@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React, { memo } from "react";
 
 import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer";
 import { MessageResponseTypes } from "../../../../types/messaging/Messages";
@@ -34,6 +34,6 @@ function AudioComponent({ source, ...props }: AudioComponentProps) {
   );
 }
 
-const AudioComponentExport = React.memo(AudioComponent);
+const AudioComponentExport = memo(AudioComponent);
 
 export { AudioComponentConfig, AudioComponentExport as AudioComponent };

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useLayoutEffect, useRef } from "react";
+import React, { Fragment, ReactNode, useLayoutEffect, useRef } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
@@ -46,7 +46,7 @@ function GridItemCell({
   isPixelValue: boolean | string;
   localMessageItem: LocalMessageItem<GridItem>;
   originalMessage: MessageResponse;
-  renderMessageComponent: (props: MessageTypeComponentProps) => React.ReactNode;
+  renderMessageComponent: (props: MessageTypeComponentProps) => ReactNode;
   rowIndex: number;
 }) {
   const serviceManager = useServiceManager();
@@ -95,7 +95,7 @@ function GridItemCell({
       {cell.map((localMessageItemID, itemIndex) => {
         const message = allMessageItemsByID[localMessageItemID];
         return (
-          <React.Fragment key={`item-${rowIndex}-${columnIndex}-${itemIndex}`}>
+          <Fragment key={`item-${rowIndex}-${columnIndex}-${itemIndex}`}>
             {renderMessageComponent({
               message,
               originalMessage,
@@ -111,7 +111,7 @@ function GridItemCell({
               allowNewFeedback: false,
               showChainOfThought: false,
             })}
-          </React.Fragment>
+          </Fragment>
         );
       })}
     </div>

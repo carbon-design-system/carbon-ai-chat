@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import { createContext } from "react";
 import { LanguagePack } from "../../types/config/PublicConfig";
 
 /**
@@ -15,6 +15,6 @@ import { LanguagePack } from "../../types/config/PublicConfig";
  * {@link LanguagePack}.
  */
 
-const LanguagePackContext = React.createContext<LanguagePack>(null);
+const LanguagePackContext = createContext<LanguagePack>(null);
 
 export { LanguagePackContext };

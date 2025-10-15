@@ -13,7 +13,12 @@ import Headset32 from "@carbon/icons/es/headset/32.js";
 import { carbonIconToReact } from "../utils/carbonIcon";
 import Loading from "../components/carbon/Loading";
 import cx from "classnames";
-import React, { KeyboardEvent, PureComponent } from "react";
+import React, {
+  createRef,
+  ErrorInfo,
+  KeyboardEvent,
+  PureComponent,
+} from "react";
 import { FormattedMessage, injectIntl } from "react-intl";
 
 import { nodeToText } from "./aria/AriaAnnouncerComponent";
@@ -216,17 +221,17 @@ class MessageComponent extends PureComponent<
   /**
    * A reference to the root element in this component.
    */
-  public ref = React.createRef<HTMLDivElement>();
+  public ref = createRef<HTMLDivElement>();
 
   /**
    * A reference to the pure message element in this component.
    */
-  public messageRef = React.createRef<HTMLDivElement>();
+  public messageRef = createRef<HTMLDivElement>();
 
   /**
    * A reference to the focus handle element in this component.
    */
-  public focusHandleRef = React.createRef<HTMLDivElement>();
+  public focusHandleRef = createRef<HTMLDivElement>();
 
   /**
    * Returns the value of the local message for the component.
@@ -259,7 +264,7 @@ class MessageComponent extends PureComponent<
       : null;
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
       createDidCatchErrorData("Message", error, errorInfo),
     );

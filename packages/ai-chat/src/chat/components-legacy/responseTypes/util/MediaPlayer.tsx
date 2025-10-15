@@ -12,6 +12,9 @@ import { carbonIconToReact } from "../../../utils/carbonIcon";
 import Tile from "../../../components/carbon/Tile";
 import cx from "classnames";
 import React, {
+  lazy,
+  LazyExoticComponent,
+  memo,
   Suspense,
   useCallback,
   useEffect,
@@ -37,7 +40,7 @@ import type ReactPlayer from "react-player";
 
 // https://reactjs.org/docs/code-splitting.html#reactlazy
 // Special handling for react-player due to CJS/ESM confusion
-const ReactPlayerComponent = React.lazy(() =>
+const ReactPlayerComponent = lazy(() =>
   import("react-player/lazy/index.js").then((mod: any) => {
     // react-player 2.x is old and is confused in their cjs vs mjs usage.
     // mod might be:
@@ -50,7 +53,7 @@ const ReactPlayerComponent = React.lazy(() =>
     }
     return { default: exported };
   }),
-) as React.LazyExoticComponent<typeof ReactPlayer>;
+) as LazyExoticComponent<typeof ReactPlayer>;
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between
@@ -311,6 +314,6 @@ function MediaPlayerComponent({
   );
 }
 
-const MediaPlayerExport = React.memo(MediaPlayerComponent);
+const MediaPlayerExport = memo(MediaPlayerComponent);
 
 export { MediaPlayerContentConfig, MediaPlayerExport as MediaPlayer };

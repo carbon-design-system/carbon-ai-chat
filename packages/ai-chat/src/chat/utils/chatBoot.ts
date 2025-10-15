@@ -8,7 +8,6 @@
  */
 
 import dayjs from "dayjs";
-import type React from "react";
 import LocalizedFormat from "dayjs/plugin/localizedFormat.js";
 import merge from "lodash-es/merge.js";
 import isEqual from "lodash-es/isEqual.js";
@@ -31,6 +30,7 @@ import {
 import { VIEW_STATE_ALL_CLOSED } from "../store/reducerUtils";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
+import { Dispatch, SetStateAction } from "react";
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -160,8 +160,8 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
  */
 export function attachUserDefinedResponseHandlers(
   webChatInstance: ChatInstance,
-  setBySlot: React.Dispatch<
-    React.SetStateAction<{
+  setBySlot: Dispatch<
+    SetStateAction<{
       [key: string]: {
         fullMessage?: any;
         messageItem?: any;

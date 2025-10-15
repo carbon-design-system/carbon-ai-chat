@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import { ReactNode } from "react";
 
 /**
  * Represents an item that has an optional className.
@@ -17,7 +17,7 @@ interface HasChildren {
   /**
    * The class name to add to the component.
    */
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export { HasChildren };

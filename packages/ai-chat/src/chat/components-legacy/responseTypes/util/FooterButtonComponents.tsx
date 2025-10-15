@@ -8,7 +8,7 @@
  */
 
 import cx from "classnames";
-import React from "react";
+import React, { Fragment, ReactNode } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { AppState } from "../../../../types/state/AppState";
@@ -19,7 +19,7 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
     props: MessageTypeComponentProps & {
       isNestedMessageItem: boolean;
     },
-  ) => React.ReactNode;
+  ) => ReactNode;
 }
 
 /**
@@ -34,13 +34,13 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
       return (
-        <React.Fragment key={nestedMessageID}>
+        <Fragment key={nestedMessageID}>
           {props.renderMessageComponent({
             ...props,
             message: nestedLocalMessage,
             isNestedMessageItem: true,
           })}
-        </React.Fragment>
+        </Fragment>
       );
     });
   const totalButtons = buttonComponents?.length ?? 0;

@@ -10,7 +10,7 @@
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
 
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
@@ -156,7 +156,7 @@ function insertHighlightMarkdown(
   return processedText;
 }
 
-const ConversationalSearchTextExport = React.memo(ConversationalSearchText);
+const ConversationalSearchTextExport = memo(ConversationalSearchText);
 
 export {
   ConversationalSearchTextExport as ConversationalSearchText,

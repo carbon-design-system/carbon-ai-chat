@@ -20,6 +20,7 @@ import React, {
   ChangeEvent,
   forwardRef,
   KeyboardEvent,
+  memo,
   Ref,
   UIEvent,
   useImperativeHandle,
@@ -548,5 +549,5 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   );
 }
 
-const InputExport = React.memo(forwardRef(Input));
+const InputExport = memo(forwardRef(Input));
 export { InputExport as Input, InputFunctions };

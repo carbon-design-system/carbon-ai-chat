@@ -8,7 +8,7 @@
  */
 
 import cx from "classnames";
-import React from "react";
+import React, { memo, ReactNode } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { AppState } from "../../../../types/state/AppState";
@@ -21,7 +21,7 @@ interface BodyMessageComponentsProps extends MessageTypeComponentProps {
       message: any;
       isNestedMessageItem: boolean;
     },
-  ) => React.ReactNode;
+  ) => ReactNode;
 }
 
 /**
@@ -102,6 +102,6 @@ function isFullWidthResponseType(responseType: string) {
   }
 }
 
-const BodyMessageTypeComponentsExport = React.memo(BodyMessageComponents);
+const BodyMessageTypeComponentsExport = memo(BodyMessageComponents);
 
 export { BodyMessageTypeComponentsExport as BodyMessageComponents };

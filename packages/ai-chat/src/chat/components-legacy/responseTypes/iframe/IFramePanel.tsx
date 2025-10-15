@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { forwardRef, Ref } from "react";
+import React, { forwardRef, memo, Ref } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
@@ -68,7 +68,7 @@ function IFramePanelComponent(
   );
 }
 
-const IFramePanelExport = React.memo(forwardRef(IFramePanelComponent));
+const IFramePanelExport = memo(forwardRef(IFramePanelComponent));
 
 export { IFramePanelExport as IFramePanel };
 

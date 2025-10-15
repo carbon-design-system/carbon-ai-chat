@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
@@ -147,7 +147,7 @@ function RichText(props: RichTextProps) {
   );
 }
 
-const RichTextExport = React.memo(RichText, (prevProps, nextProps) => {
+const RichTextExport = memo(RichText, (prevProps, nextProps) => {
   // Custom comparison to prevent re-render when only streaming changes but content is the same
   const textEqual = prevProps.text === nextProps.text;
   const htmlConversionEqual =

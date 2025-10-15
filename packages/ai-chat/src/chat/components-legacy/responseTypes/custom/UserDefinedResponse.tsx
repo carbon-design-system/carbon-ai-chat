@@ -14,7 +14,7 @@
  * service manager. This component attaches that host element in to the React tree.
  */
 
-import React from "react";
+import React, { memo } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { useCallbackOnChange } from "../../../hooks/useCallbackOnChange";
@@ -69,4 +69,4 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
   );
 }
 
-export default React.memo(UserDefinedResponse);
+export default memo(UserDefinedResponse);

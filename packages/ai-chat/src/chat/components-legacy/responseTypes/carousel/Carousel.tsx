@@ -19,6 +19,8 @@ import React, {
   ReactElement,
   useState,
   Suspense,
+  lazy,
+  Children,
 } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
@@ -43,7 +45,7 @@ interface SwiperCarouselProps {
 }
 
 // Create a component that uses lazy-loaded Swiper
-const SwiperCarousel = React.lazy(async () => {
+const SwiperCarousel = lazy(async () => {
   const [{ Swiper: SwiperComponent, SwiperSlide }, { A11y, Navigation }] =
     await Promise.all([import("swiper/react"), import("swiper/modules")]);
 
@@ -78,7 +80,7 @@ const SwiperCarousel = React.lazy(async () => {
         slidesOffsetAfter={16}
         rewind
       >
-        {React.Children.map(children, (child) => (
+        {Children.map(children, (child) => (
           <SwiperSlide
             key={child.key}
             className={`cds-aichat--carousel-container__slide--${chatWidthBreakpoint}`}
@@ -140,7 +142,7 @@ function Carousel({
     onSlideChange?.(activeIndex);
   }
 
-  const totalSlideCount = React.Children.count(children);
+  const totalSlideCount = Children.count(children);
   const currentLabel = intl.formatMessage(
     { id: "components_swiper_currentLabel" },
     { currentSlideNumber, totalSlideCount },

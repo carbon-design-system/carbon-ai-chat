@@ -12,7 +12,7 @@
  * her to do what she likes. The element is stored in the serviceManager and set in Chat.ts.
  */
 
-import React from "react";
+import React, { memo } from "react";
 
 import { WriteableElementName } from "../../types/instance/ChatInstance";
 import { useServiceManager } from "../hooks/useServiceManager";
@@ -40,4 +40,4 @@ function LatestWelcomeNodes({ children }: LatestWelcomeNodesProps) {
   );
 }
 
-export default React.memo(LatestWelcomeNodes);
+export default memo(LatestWelcomeNodes);

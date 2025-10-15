@@ -12,7 +12,7 @@
  */
 
 import cx from "classnames";
-import React, { PureComponent } from "react";
+import React, { AnimationEvent, PureComponent } from "react";
 
 import { HasServiceManager } from "../hocs/withServiceManager";
 import {
@@ -202,9 +202,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
     }
   }
 
-  private handleAnimationStart = (
-    event: React.AnimationEvent<HTMLDivElement>,
-  ) => {
+  private handleAnimationStart = (event: AnimationEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) {
       return;
     }
@@ -213,7 +211,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   };
 
   private handleAnimationLifecycleEnd = (
-    event: React.AnimationEvent<HTMLDivElement>,
+    event: AnimationEvent<HTMLDivElement>,
   ) => {
     if (event.target !== event.currentTarget) {
       return;

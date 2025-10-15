@@ -11,7 +11,13 @@
 
 import cx from "classnames";
 import throttle from "lodash-es/throttle.js";
-import React, { Fragment, PureComponent, ReactNode } from "react";
+import React, {
+  createRef,
+  forwardRef,
+  Fragment,
+  PureComponent,
+  ReactNode,
+} from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
@@ -149,17 +155,17 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * A ref to the scrollable container that contains the messages.
    */
-  public messagesContainerWithScrollingRef = React.createRef<HTMLDivElement>();
+  public messagesContainerWithScrollingRef = createRef<HTMLDivElement>();
 
   /**
    * A ref to the element that acts as a handle for scrolling.
    */
-  public scrollHandleRef = React.createRef<HTMLButtonElement>();
+  public scrollHandleRef = createRef<HTMLButtonElement>();
 
   /**
    * A ref to the element that acts as a handle for scrolling.
    */
-  public agentBannerRef = React.createRef<HasRequestFocus>();
+  public agentBannerRef = createRef<HasRequestFocus>();
 
   /**
    * This is the previous value of the offset height of the scrollable element when the last scroll event was fired.
@@ -1046,15 +1052,20 @@ function debugAutoScroll(message: string, ...args: any[]) {
 }
 
 // Functional wrapper to supply AppState via hooks
-const MessagesStateInjector = React.forwardRef<
-  MessagesComponent,
-  MessagesOwnProps
->((props, ref) => {
-  const state = useSelector<AppState, AppState>((s) => s);
-  return (
-    <MessagesComponent ref={ref} {...(props as MessagesOwnProps)} {...state} />
-  );
-});
+const MessagesStateInjector = forwardRef<MessagesComponent, MessagesOwnProps>(
+  (props, ref) => {
+    const state = useSelector<AppState, AppState>((s) => s);
+    return (
+      <MessagesComponent
+        ref={ref}
+        {...(props as MessagesOwnProps)}
+        {...state}
+      />
+    );
+  },
+);
+
+MessagesStateInjector.displayName = "MessagesComponent";
 
 export default withServiceManager(MessagesStateInjector);
 

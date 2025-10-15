@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { Suspense } from "react";
+import React, { ReactNode, Suspense } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { AppState } from "../../../../types/state/AppState";
@@ -34,7 +34,7 @@ interface CarouselItemComponentProps extends HasRequestFocus {
   /**
    * Function to render message components
    */
-  renderMessageComponent: (props: any) => React.ReactNode;
+  renderMessageComponent: (props: any) => ReactNode;
 }
 
 function CarouselItemComponent(props: CarouselItemComponentProps) {

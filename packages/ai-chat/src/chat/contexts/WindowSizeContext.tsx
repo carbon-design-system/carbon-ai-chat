@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import { createContext } from "react";
 
 import { Dimension } from "../../types/utilities/Dimension";
 
@@ -15,6 +15,6 @@ import { Dimension } from "../../types/utilities/Dimension";
  * This context provides access to the current window size and is updated as the window size changes.
  */
 
-const WindowSizeContext = React.createContext<Dimension>(null);
+const WindowSizeContext = createContext<Dimension>(null);
 
 export { WindowSizeContext };

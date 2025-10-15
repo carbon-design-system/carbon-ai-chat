@@ -17,7 +17,7 @@ import {
 import { DATE_PICKER_INPUT_KIND } from "@carbon/web-components/es/components/date-picker/defs.js";
 import dayjs from "dayjs";
 import { BaseOptions } from "flatpickr/dist/types/options";
-import React, { useCallback, useRef, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
@@ -281,6 +281,6 @@ function getFlatpickrDateFormat(format: string) {
   throw Error(`The provided format ${format} is invalid.`);
 }
 
-const DatePickerComponentExport = React.memo(DatePickerComponent);
+const DatePickerComponentExport = memo(DatePickerComponent);
 
 export { DatePickerComponentExport as DatePickerComponent };

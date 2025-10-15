@@ -7,8 +7,8 @@
  *  @license
  */
 
-import React, { ReactNode, useRef } from "react";
-import ReactDOM from "react-dom";
+import React, { memo, ReactNode, useRef } from "react";
+import { createPortal } from "react-dom";
 
 import { ChatInstance } from "../../../../types/instance/ChatInstance";
 import {
@@ -111,10 +111,10 @@ function UserDefinedResponseComponentPortal({
   hostElement: HTMLElement;
   children: ReactNode;
 }) {
-  return ReactDOM.createPortal(children, hostElement);
+  return createPortal(children, hostElement);
 }
 
-const UserDefinedResponsePortalsContainerExport = React.memo(
+const UserDefinedResponsePortalsContainerExport = memo(
   UserDefinedResponsePortalsContainer,
 );
 export { UserDefinedResponsePortalsContainerExport as UserDefinedResponsePortalsContainer };

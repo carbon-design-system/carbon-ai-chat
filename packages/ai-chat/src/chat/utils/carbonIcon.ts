@@ -11,7 +11,7 @@
  * Creates a React component from a Carbon icon object
  */
 
-import { createElement, FunctionComponent } from "react";
+import { createElement, FunctionComponent, SVGProps } from "react";
 
 type CarbonIcon = {
   elem: "svg";
@@ -28,7 +28,7 @@ type CarbonIcon = {
   }>;
 };
 
-export type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
+export type CarbonIconProps = SVGProps<SVGSVGElement> & {
   slot?: string;
   [key: string]: unknown;
 };

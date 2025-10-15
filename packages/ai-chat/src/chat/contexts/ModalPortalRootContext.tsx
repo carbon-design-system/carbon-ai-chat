@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import { createContext } from "react";
 
 /**
  * This context provides access to the portal root element that acts as the host element for instances of
@@ -15,6 +15,6 @@ import React from "react";
  * functionality.
  */
 
-const ModalPortalRootContext = React.createContext<Element>(null);
+const ModalPortalRootContext = createContext<Element>(null);
 
 export { ModalPortalRootContext };

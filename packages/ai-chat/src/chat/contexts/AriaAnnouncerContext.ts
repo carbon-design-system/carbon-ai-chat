@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import { createContext } from "react";
 
 import { AnnounceMessage } from "../../types/state/AppState";
 
@@ -25,7 +25,6 @@ type AriaAnnouncerFunctionType = (
   value: Node | AnnounceMessage | string,
 ) => void;
 
-const AriaAnnouncerContext =
-  React.createContext<AriaAnnouncerFunctionType>(null);
+const AriaAnnouncerContext = createContext<AriaAnnouncerFunctionType>(null);
 
 export { AriaAnnouncerContext, AriaAnnouncerFunctionType };

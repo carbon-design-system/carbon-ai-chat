@@ -9,7 +9,7 @@
 
 import { Dropdown, DropdownItem } from "../../../components/carbon/Dropdown";
 import cx from "classnames";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, KeyboardEvent } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { useCounter } from "../../../hooks/useCounter";
@@ -79,7 +79,7 @@ function SelectComponent(props: SelectProps) {
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
       e.preventDefault();
     }

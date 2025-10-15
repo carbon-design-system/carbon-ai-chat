@@ -12,13 +12,10 @@
  * that the item is present in the DOM and is visible to screen readers but it is not visible to sighted users.
  */
 
-import React from "react";
+import React, { forwardRef, HTMLAttributes, Ref } from "react";
 
-const VisuallyHidden = React.forwardRef(
-  (
-    props: React.HTMLAttributes<HTMLDivElement>,
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+const VisuallyHidden = forwardRef(
+  (props: HTMLAttributes<HTMLDivElement>, ref: Ref<HTMLDivElement>) => {
     return (
       <div
         ref={ref}

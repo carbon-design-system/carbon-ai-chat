@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useContext, useEffect } from "react";
+import React, { memo, useContext, useEffect } from "react";
 
 import { AriaAnnouncerContext } from "../../contexts/AriaAnnouncerContext";
 
@@ -31,5 +31,5 @@ function AriaLiveMessage(props: AriaLiveMessageProps) {
   return <div />;
 }
 
-const AriaLiveMessageExport = React.memo(AriaLiveMessage);
+const AriaLiveMessageExport = memo(AriaLiveMessage);
 export { AriaLiveMessageExport as AriaLiveMessage };

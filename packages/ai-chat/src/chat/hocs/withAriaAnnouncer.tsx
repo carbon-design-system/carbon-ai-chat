@@ -11,7 +11,7 @@
  * This is a high order component that will inject a {@link AriaAnnouncerFunctionType} in to a component.
  */
 
-import React, { useContext } from "react";
+import React, { ComponentType, forwardRef, useContext } from "react";
 
 import {
   AriaAnnouncerContext,
@@ -29,14 +29,14 @@ interface HasAriaAnnouncer {
 }
 
 function withAriaAnnouncer<P extends HasAriaAnnouncer>(
-  Component: React.ComponentType<P>,
+  Component: ComponentType<P>,
 ) {
   // Drop the injected prop from the outer API
   type OuterProps = Omit<P, "ariaAnnouncer">;
 
   // Tell forwardRef: “I forward a ref of type unknown,
   // and I expect props = OuterProps”
-  const Wrapped = React.forwardRef<unknown, OuterProps>((props, ref) => {
+  const Wrapped = forwardRef<unknown, OuterProps>((props, ref) => {
     const ariaAnnouncer = useContext(AriaAnnouncerContext);
     return (
       <Component
