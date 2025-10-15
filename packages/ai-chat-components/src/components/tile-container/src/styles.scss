@@ -53,7 +53,7 @@ $class-prefix: "cds--aichat";
   [data-rounded=""] {
     border-radius: 7px;
 
-    > {
+    > :first-child {
       border-radius: 7px;
     }
 
@@ -67,7 +67,7 @@ $class-prefix: "cds--aichat";
     border-start-end-radius: 7px;
     border-start-start-radius: 7px;
 
-    > {
+    > :first-child {
       border-start-end-radius: 7px;
       border-start-start-radius: 7px;
     }

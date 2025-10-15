@@ -138,7 +138,6 @@ export const Small = {
         ? html`<div
             class=${classMap({
               "cds--aichat-tile-container-footer": true,
-              "border-top": true,
               "margin-top-04": true,
             })}
             data-flush="bottom"

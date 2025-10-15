@@ -323,7 +323,7 @@ export const WithAudio = {
       data-testid="clickable-tile"
       data-rounded
     >
-      <div data-flush="top" data-rounded="top">
+      <div data-flush="top" data-rounded="top" class="margin-bottom-04">
         <iframe
           class="full-width aspect-16-9"
           scrolling="no"
