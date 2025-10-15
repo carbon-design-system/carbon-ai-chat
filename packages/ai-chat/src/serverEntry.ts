@@ -101,6 +101,7 @@ export {
 } from "./types/config/HomeScreenConfig";
 
 export {
+  CancellationReason,
   ChatInstanceMessaging,
   CustomSendMessageOptions,
 } from "./types/config/MessagingConfig";

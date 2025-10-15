@@ -1288,7 +1288,7 @@ class ChatActionsImpl {
   }
 
   /**
-   * Remove any record of the current session from the browser.
+   * Remove any record of the current session from the browser's SessionStorage.
    *
    * @param keepOpenState We can optionally just keep around if the chat is currently open or not.
    */

@@ -10,6 +10,29 @@
 import { HistoryItem } from "../messaging/History";
 import type { MessageResponse, StreamChunk } from "../messaging/Messages";
 import { BusEventSend } from "../events/eventBusTypes";
+
+/**
+ * Reasons why a message request was cancelled via the abort signal.
+ *
+ * @category Messaging
+ */
+export enum CancellationReason {
+  /**
+   * User clicked the "stop streaming" button during message streaming.
+   */
+  STOP_STREAMING = "Stop streaming",
+
+  /**
+   * User restarted or cleared the conversation.
+   */
+  CONVERSATION_RESTARTED = "Conversation restarted",
+
+  /**
+   * Message request exceeded the configured timeout duration.
+   */
+  TIMEOUT = "Request timeout",
+}
+
 /**
  * Messaging actions for a chat instance.
  *

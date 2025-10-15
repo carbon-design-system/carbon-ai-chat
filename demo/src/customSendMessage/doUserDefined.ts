@@ -8,8 +8,8 @@
  */
 
 import {
-  BusEventType,
   ChatInstance,
+  CustomSendMessageOptions,
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
@@ -42,20 +42,21 @@ function doUserDefined(instance: ChatInstance) {
   });
 }
 
-async function doUserDefinedStreaming(instance: ChatInstance) {
+async function doUserDefinedStreaming(
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions,
+) {
+  const signal = requestOptions?.signal;
   const WORD_DELAY = 50;
   const responseID = crypto.randomUUID();
   const words = FAKE_DATA.split(" ");
   let isCanceled = false;
 
-  const stopGeneratingEvent = {
-    type: BusEventType.STOP_STREAMING,
-    handler: () => {
-      isCanceled = true;
-      instance.off(stopGeneratingEvent);
-    },
+  // Listen to abort signal (handles both stop button and restart/clear)
+  const abortHandler = () => {
+    isCanceled = true;
   };
-  instance.on(stopGeneratingEvent);
+  signal?.addEventListener("abort", abortHandler);
 
   try {
     for (let index = 0; index < words.length && !isCanceled; index++) {
@@ -126,7 +127,7 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
       final_response: finalResponse,
     } as StreamChunk);
   } finally {
-    instance.off(stopGeneratingEvent);
+    signal?.removeEventListener("abort", abortHandler);
   }
 }
 

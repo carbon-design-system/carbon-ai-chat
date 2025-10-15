@@ -507,10 +507,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 label={input_stopResponse}
                 disabled={isStopStreamingButtonDisabled}
                 tooltipAlignment="top"
-                onClick={() => {
+                onClick={async () => {
                   const { store } = serviceManager;
                   store.dispatch(actions.setStopStreamingButtonDisabled(true));
-                  serviceManager.fire({ type: BusEventType.STOP_STREAMING });
+                  await serviceManager.fire({
+                    type: BusEventType.STOP_STREAMING,
+                  });
+                  // Also cancel the current message request to abort the signal
+                  serviceManager.messageService.cancelCurrentMessageRequest();
                 }}
               />
             )}

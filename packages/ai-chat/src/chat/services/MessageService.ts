@@ -42,6 +42,7 @@ import {
 import { OnErrorType, PublicConfig } from "../../types/config/PublicConfig";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
+import { CancellationReason } from "../../types/config/MessagingConfig";
 
 // The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, stop
 // retrying, and move on to the next item in the queue. 120 seconds is the longest Cerberus allows for, so we'll
@@ -393,6 +394,31 @@ class MessageService {
   }
 
   /**
+   * Marks a cancelled message as completed without error.
+   */
+  private resolveCancelledMessage(pendingRequest: PendingMessageRequest) {
+    const { sendMessagePromise } = pendingRequest;
+
+    this.setMessageErrorState(pendingRequest, MessageErrorState.NONE);
+
+    const { message } = pendingRequest;
+
+    if (
+      pendingRequest === this.queue.current &&
+      message.input.message_type !== MessageInputType.EVENT
+    ) {
+      this.messageLoadingManager.end();
+    }
+
+    sendMessagePromise.doResolve();
+    pendingRequest.isProcessed = true;
+
+    if (pendingRequest === this.queue.current) {
+      this.moveToNextQueueItem();
+    }
+  }
+
+  /**
    * Sends the message to the backend. Returns "any" in the error case.
    *
    * @param current The current item in the send queue.
@@ -486,7 +512,11 @@ class MessageService {
               }
             },
             () => {
-              this.cancelMessageRequestByID(message.id, true);
+              this.cancelMessageRequestByID(
+                message.id,
+                true,
+                CancellationReason.TIMEOUT,
+              );
             },
             LOADING_INDICATOR_TIMER,
             this.timeoutMS,
@@ -695,20 +725,49 @@ class MessageService {
   /**
    * Cancels all message requests including any that are running now and any that are waiting in the queue.
    */
-  public cancelAllMessageRequests() {
+  public cancelAllMessageRequests(
+    reason: string = CancellationReason.CONVERSATION_RESTARTED,
+  ) {
     while (this.queue.waiting.length) {
-      this.cancelMessageRequestByID(this.queue.waiting[0].message.id, false);
+      this.cancelMessageRequestByID(
+        this.queue.waiting[0].message.id,
+        false,
+        reason,
+      );
     }
     if (this.queue.current) {
-      this.cancelMessageRequestByID(this.queue.current.message.id, false);
+      this.cancelMessageRequestByID(
+        this.queue.current.message.id,
+        false,
+        reason,
+      );
       this.clearCurrentQueueItem();
+    }
+  }
+
+  /**
+   * Cancels the current message request if one is in progress.
+   */
+  public cancelCurrentMessageRequest(
+    reason: string = CancellationReason.STOP_STREAMING,
+  ) {
+    if (this.queue.current) {
+      this.cancelMessageRequestByID(
+        this.queue.current.message.id,
+        false,
+        reason,
+      );
     }
   }
 
   /**
    * Cancel a message given an ID. Can be a message in process or one that is waiting to be processed.
    */
-  public async cancelMessageRequestByID(messageID: string, logError: boolean) {
+  public async cancelMessageRequestByID(
+    messageID: string,
+    logError: boolean,
+    reason = "Message was cancelled",
+  ) {
     let pendingRequest: PendingMessageRequest;
 
     if (this.queue.current?.message.id === messageID) {
@@ -726,15 +785,19 @@ class MessageService {
     if (pendingRequest) {
       const { lastResponse, sendMessageController } = pendingRequest;
       // If someone is using customMessageSend, we let them know they should abort the request.
-      sendMessageController?.abort("Message was cancelled");
+      sendMessageController?.abort(reason);
 
-      this.rejectFinalErrorOnMessage(pendingRequest, "Message was cancelled");
-      if (logError) {
-        this.serviceManager.actions.errorOccurred({
-          errorType: OnErrorType.MESSAGE_COMMUNICATION,
-          message: "Message was cancelled",
-          otherData: await safeFetchTextWithTimeout(lastResponse),
-        });
+      if (reason === CancellationReason.TIMEOUT) {
+        this.rejectFinalErrorOnMessage(pendingRequest, reason);
+        if (logError) {
+          this.serviceManager.actions.errorOccurred({
+            errorType: OnErrorType.MESSAGE_COMMUNICATION,
+            message: reason,
+            otherData: await safeFetchTextWithTimeout(lastResponse),
+          });
+        }
+      } else {
+        this.resolveCancelledMessage(pendingRequest);
       }
     }
   }

@@ -76,53 +76,92 @@ print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 
 const WORD_DELAY = 40;
 
-async function doFakeTextStreaming(instance: ChatInstance) {
+async function doFakeTextStreaming(
+  instance: ChatInstance,
+  signal?: AbortSignal,
+) {
   const responseID = crypto.randomUUID();
   const words = TEXT.split(" ");
+  let isCanceled = false;
+  const timeouts: number[] = [];
 
-  words.forEach((word, index) => {
-    setTimeout(() => {
-      instance.messaging.addMessageChunk({
-        partial_item: {
-          response_type: MessageResponseTypes.TEXT,
-          text: `${word} `,
-          streaming_metadata: {
-            id: "1",
-          },
+  // Listen to abort signal (handles both stop button and restart/clear)
+  const abortHandler = () => {
+    isCanceled = true;
+    // Clear all pending timeouts
+    timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+  };
+  signal?.addEventListener("abort", abortHandler);
+
+  try {
+    words.forEach((word, index) => {
+      const timeoutId = setTimeout(() => {
+        if (!isCanceled) {
+          instance.messaging.addMessageChunk({
+            partial_item: {
+              response_type: MessageResponseTypes.TEXT,
+              text: `${word} `,
+              streaming_metadata: {
+                id: "1",
+                cancellable: true,
+              },
+            },
+            streaming_metadata: {
+              response_id: responseID,
+            },
+          });
+        }
+      }, index * WORD_DELAY);
+      timeouts.push(timeoutId as unknown as number);
+    });
+
+    await sleep(words.length * WORD_DELAY);
+
+    if (!isCanceled) {
+      const completeItem = {
+        response_type: MessageResponseTypes.TEXT,
+        text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
+        streaming_metadata: {
+          id: "1",
         },
+      };
+      instance.messaging.addMessageChunk({
+        complete_item: completeItem,
         streaming_metadata: {
           response_id: responseID,
         },
-      });
-    }, index * WORD_DELAY);
-  });
+      } as StreamChunk);
 
-  await sleep(words.length * WORD_DELAY);
+      const finalResponse = {
+        id: responseID,
+        output: {
+          generic: [completeItem],
+        },
+      };
 
-  const completeItem = {
-    response_type: MessageResponseTypes.TEXT,
-    text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
-    streaming_metadata: {
-      id: "1",
-    },
-  };
-  instance.messaging.addMessageChunk({
-    complete_item: completeItem,
-    streaming_metadata: {
-      response_id: responseID,
-    },
-  } as StreamChunk);
-
-  const finalResponse = {
-    id: responseID,
-    output: {
-      generic: [completeItem],
-    },
-  };
-
-  instance.messaging.addMessageChunk({
-    final_response: finalResponse,
-  } as StreamChunk);
+      instance.messaging.addMessageChunk({
+        final_response: finalResponse,
+      } as StreamChunk);
+    } else {
+      // Send stream_stopped marker
+      const completeItem = {
+        response_type: MessageResponseTypes.TEXT,
+        text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
+        streaming_metadata: {
+          id: "1",
+          stream_stopped: true,
+        },
+      };
+      instance.messaging.addMessageChunk({
+        complete_item: completeItem,
+        streaming_metadata: {
+          response_id: responseID,
+        },
+      } as StreamChunk);
+    }
+  } finally {
+    signal?.removeEventListener("abort", abortHandler);
+  }
 }
 
 async function sleep(milliseconds: number) {
@@ -177,7 +216,7 @@ async function customSendMessage(
         });
         break;
       case "stream text":
-        doFakeTextStreaming(instance as ChatInstance);
+        doFakeTextStreaming(instance as ChatInstance, requestOptions.signal);
         break;
       default:
         instance.messaging.addMessage({
