@@ -24,31 +24,31 @@
 
 .cds-aichat--footer-button-components--column
   .cds-aichat--button-item:last-child::part(button) {
-  border-end-start-radius: chat-theme.$card-border-radius;
+  border-end-start-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--footer-button-components
   .cds-aichat--button-item:only-child::part(button) {
-  border-end-start-radius: chat-theme.$card-border-radius;
+  border-end-start-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--footer-button-components
   .cds-aichat--button-item:last-child::part(button) {
-  border-end-end-radius: chat-theme.$card-border-radius;
+  border-end-end-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--widget--rounded
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components
   .cds-aichat--button-item:first-child::part(button) {
-  border-end-start-radius: chat-theme.$border-radius;
+  border-end-start-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--widget--rounded
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components
   .cds-aichat--button-item:last-child::part(button) {
-  border-end-end-radius: chat-theme.$border-radius;
+  border-end-end-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--widget__animation-container--with-branding-banner
@@ -77,8 +77,8 @@
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components.cds-aichat--footer-button-components--column
   .cds-aichat--button-item:last-child::part(button) {
-  border-end-end-radius: chat-theme.$border-radius;
-  border-end-start-radius: chat-theme.$border-radius;
+  border-end-end-radius: calc(chat-theme.$border-radius - 1px);
+  border-end-start-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--widget__animation-container--with-branding-banner

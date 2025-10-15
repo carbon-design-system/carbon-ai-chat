@@ -15,12 +15,13 @@
   screen mode. */
   position: relative;
   display: flex;
+  box-sizing: unset;
   justify-content: center;
   block-size: 40px;
-  @include type.type-style("body-01");
 
   border-block-end: 1px solid theme.$border-subtle-00;
   inline-size: 100%;
+  @include type.type-style("body-01");
 }
 
 .cds-aichat--header--content {
@@ -43,8 +44,8 @@
 }
 
 .cds-aichat--widget.cds-aichat--widget--rounded .cds-aichat--header--content {
-  border-start-end-radius: chat-theme.$border-radius;
-  border-start-start-radius: chat-theme.$border-radius;
+  border-start-end-radius: calc(chat-theme.$border-radius - 1px);
+  border-start-start-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 .cds-aichat--header__center-container {
@@ -90,6 +91,19 @@
 .cds-aichat--chat-header-overflow-menu__host-element,
 .cds-aichat--header__title-container {
   max-inline-size: 100%;
+}
+
+.cds-aichat--header__left-items :first-child {
+  overflow: hidden;
+  border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+}
+
+.cds-aichat--header__left-items :first-child::part(button) {
+  border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+}
+
+.cds-aichat--header__right-buttons :last-child::part(button) {
+  border-start-end-radius: calc(chat-theme.$border-radius - 1px);
 }
 
 cds-aichat-chat-header-avatar {
