@@ -18,6 +18,14 @@ $prefix: "cds-aichat";
 $class-prefix: "cds--aichat";
 
 #{$prefix}-tile-container {
+  cds-tile {
+    background-color: theme.$layer-background;
+  }
+
+  cds-clickable-tile::part(link) {
+    background-color: theme.$layer-background;
+  }
+
   .#{$class-prefix}-tile-container-header {
     // coming soon
     background-color: #f4f4f4;
@@ -77,8 +85,12 @@ $class-prefix: "cds--aichat";
     border-end-end-radius: 7px;
     border-end-start-radius: 7px;
 
+    [kind="ghost"] {
+      border-block-start: rem(1px) solid theme.$border-subtle;
+    }
+
     &:not([data-stacked]) {
-      :first-child {
+      > :first-child {
         border-end-start-radius: 7px;
 
         &::part(button) {
@@ -86,7 +98,7 @@ $class-prefix: "cds--aichat";
         }
       }
 
-      :last-child {
+      > :last-child {
         border-end-end-radius: 7px;
 
         &::part(button) {
@@ -98,11 +110,7 @@ $class-prefix: "cds--aichat";
     &[data-stacked] {
       flex-direction: column;
 
-      [kind="ghost"] {
-        border-block-start: rem(1px) solid theme.$border-subtle;
-      }
-
-      :last-child {
+      > :last-child {
         border-end-end-radius: 7px;
         border-end-start-radius: 7px;
 
@@ -228,5 +236,13 @@ $class-prefix: "cds--aichat";
 
   .border-top {
     border-block-start: rem(1px) solid theme.$border-subtle;
+  }
+
+  .bg-layer {
+    background-color: theme.$layer;
+
+    &::part(link) {
+      background-color: theme.$layer;
+    }
   }
 }
