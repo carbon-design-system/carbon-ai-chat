@@ -44,7 +44,7 @@ jobs:
           git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "22.x"
           registry-url: https://registry.npmjs.org
