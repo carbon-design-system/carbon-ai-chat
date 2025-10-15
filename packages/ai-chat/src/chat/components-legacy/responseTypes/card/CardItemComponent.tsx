@@ -14,6 +14,7 @@ import React from "react";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { BodyWithFooterComponent } from "../../BodyWithFooterComponent";
+import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
 import {
   CardItem,
   MessageResponse,
@@ -49,8 +50,8 @@ function CardItemComponent(props: CardItemComponentProps) {
   const { ignoreMaxWidth } = props;
   const item = props.localMessageItem.item as CardItem;
   return (
-    <Tile
-      className={cx("cds-aichat--card-message-component", {
+    <TileContainer
+      className={cx({
         "cds-aichat--max-width-small":
           !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
         "cds-aichat--max-width-medium":
@@ -59,11 +60,13 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <BodyWithFooterComponent
-        {...props}
-        renderMessageComponent={props.renderMessageComponent}
-      />
-    </Tile>
+      <Tile className={cx("cds-aichat--card-message-component")}>
+        <BodyWithFooterComponent
+          {...props}
+          renderMessageComponent={props.renderMessageComponent}
+        />
+      </Tile>
+    </TileContainer>
   );
 }
 

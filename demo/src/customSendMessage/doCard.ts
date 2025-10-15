@@ -241,21 +241,21 @@ function doCard(instance: ChatInstance) {
           footer: [
             {
               url: "https://ibm.com/",
-              kind: BUTTON_KIND.TERTIARY,
+              kind: BUTTON_KIND.GHOST,
               label: "View Carbon Docs 1",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },
             {
               url: "https://ibm.com/",
-              kind: BUTTON_KIND.TERTIARY,
+              kind: BUTTON_KIND.GHOST,
               label: "View Carbon Docs 2",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },
             {
               url: "https://ibm.com/",
-              kind: BUTTON_KIND.TERTIARY,
+              kind: BUTTON_KIND.GHOST,
               label: "View Carbon Docs 3",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,

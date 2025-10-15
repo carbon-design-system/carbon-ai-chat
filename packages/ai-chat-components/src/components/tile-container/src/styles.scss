@@ -18,26 +18,18 @@ $prefix: "cds-aichat";
 $class-prefix: "cds--aichat";
 
 #{$prefix}-tile-container {
+  .#{$class-prefix}-tile-container-header {
+    // coming soon
+    background-color: #f4f4f4;
+  }
+
   .#{$class-prefix}-tile-container-footer {
     display: flex;
     justify-content: end;
-    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-
-    &[flush] {
-      margin-block-end: calc(-1 * layout.$spacing-05);
-      margin-block-start: layout.$spacing-05;
-      margin-inline-end: calc(-1 * layout.$spacing-05);
-      margin-inline-start: calc(-1 * layout.$spacing-05);
-    }
 
     #{$carbon-prefix}-button {
       inline-size: 100%;
       max-inline-size: unset;
-    }
-
-    #{$carbon-prefix}-icon-button:last-child::part(button) {
-      border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
     }
 
     &:not(:has([kind="ghost"])) {
@@ -47,31 +39,101 @@ $class-prefix: "cds--aichat";
 
     &[stacked] {
       flex-direction: column;
+    }
+  }
 
-      #{$carbon-prefix}-button {
-        &:last-child::part(button),
-        &:only-child::part(button) {
-          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
+  [data-rounded=""] {
+    border-radius: 7px;
+
+    > {
+      border-radius: 7px;
+    }
+
+    &::part(link) {
+      border-radius: 7px;
+      outline-offset: -1px;
+    }
+  }
+
+  [data-rounded="top"] {
+    border-start-end-radius: 7px;
+    border-start-start-radius: 7px;
+
+    > {
+      border-start-end-radius: 7px;
+      border-start-start-radius: 7px;
+    }
+  }
+
+  [data-rounded="top-left"] {
+    border-start-start-radius: 7px;
+  }
+
+  [data-rounded="top-right"] {
+    border-start-end-radius: 7px;
+  }
+
+  [data-rounded="bottom"] {
+    border-end-end-radius: 7px;
+    border-end-start-radius: 7px;
+
+    &:not([data-stacked]) {
+      :first-child {
+        border-end-start-radius: 7px;
+
+        &::part(button) {
+          border-end-start-radius: 7px;
+        }
+      }
+
+      :last-child {
+        border-end-end-radius: 7px;
+
+        &::part(button) {
+          border-end-end-radius: 7px;
         }
       }
     }
 
-    &:not([stacked]) {
-      #{$carbon-prefix}-button {
-        &:first-child::part(button) {
-          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-        }
+    &[data-stacked] {
+      flex-direction: column;
 
-        &:last-child::part(button) {
-          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
+      [kind="ghost"] {
+        border-block-start: rem(1px) solid theme.$border-subtle;
+      }
+
+      :last-child {
+        border-end-end-radius: 7px;
+        border-end-start-radius: 7px;
+
+        &::part(button) {
+          border-end-end-radius: 7px;
+          border-end-start-radius: 7px;
         }
       }
     }
   }
 
-  .top-border {
-    border-block-start: rem(1px) solid theme.$border-subtle;
+  [data-rounded="bottom-left"] {
+    border-end-start-radius: 7px;
+  }
+
+  [data-rounded="bottom-right"] {
+    border-end-end-radius: 7px;
+  }
+
+  [data-flush=""] {
+    margin: -1rem;
+  }
+
+  [data-flush="top"] {
+    margin-block-start: -1rem;
+    margin-inline: -1rem;
+  }
+
+  [data-flush="bottom"] {
+    margin-block-end: -1rem;
+    margin-inline: -1rem;
   }
 
   #{$carbon-prefix}-tile,
@@ -79,40 +141,13 @@ $class-prefix: "cds--aichat";
     img {
       display: block;
       inline-size: 100%;
-    }
-
-    .full-width {
-      inline-size: calc(100% + (2 * layout.$spacing-05));
-      margin-block-start: calc(-1 * layout.$spacing-05);
-      margin-inline-end: calc(-1 * layout.$spacing-05);
-      margin-inline-start: calc(-1 * layout.$spacing-05);
-
-      &:first-child {
-        border-start-end-radius: calc(layout.$spacing-03 - rem(1px));
-        border-start-start-radius: calc(layout.$spacing-03 - rem(1px));
-        margin-block-end: layout.$spacing-05;
-      }
-
-      &:last-child {
-        border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-        border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-      }
-
-      &:only-child {
-        display: flex;
-        margin-block-end: calc(-1 * layout.$spacing-05);
-      }
+      transition: opacity 0.2s ease-in-out;
     }
   }
 
   #{$carbon-prefix}-clickable-tile {
-    &:hover:not([disabled]) img {
-      opacity: 0.8;
-      transition: all 0.2s ease-in-out;
-    }
-
+    &:hover:not([disabled]) img,
     &:focus img {
-      border: 1px solid transparent;
       opacity: 0.8;
     }
 
@@ -122,6 +157,17 @@ $class-prefix: "cds--aichat";
     }
   }
 
+  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
+    cursor: not-allowed;
+  }
+
+  iframe {
+    display: block;
+  }
+}
+
+// Helper classes scoped to cds-aichat-tile-container used to style content
+#{$prefix}-tile-container {
   // Typography
   .body-compact-02 {
     @include type.type-style("body-compact-02");
@@ -164,6 +210,10 @@ $class-prefix: "cds--aichat";
     margin-block-end: layout.$spacing-04;
   }
 
+  .margin-top-04 {
+    margin-block-start: layout.$spacing-04;
+  }
+
   .bg-transparent {
     background-color: transparent;
   }
@@ -176,25 +226,7 @@ $class-prefix: "cds--aichat";
     color: theme.$text-primary;
   }
 
-  #{$carbon-prefix}-clickable-tile:first-child::part(link),
-  #{$carbon-prefix}-tile:first-child {
-    border-start-end-radius: calc(layout.$spacing-03 - rem(1px));
-    border-start-start-radius: calc(layout.$spacing-03 - rem(1px));
-  }
-
-  #{$carbon-prefix}-clickable-tile:last-child::part(link),
-  #{$carbon-prefix}-tile:last-child {
-    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-  }
-
-  #{$carbon-prefix}-clickable-tile:only-child::part(link),
-  #{$carbon-prefix}-tile:only-child {
-    border-radius: calc(layout.$spacing-03 - rem(1px));
-    outline-offset: -1px;
-  }
-
-  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
-    cursor: not-allowed;
+  .border-top {
+    border-block-start: rem(1px) solid theme.$border-subtle;
   }
 }
