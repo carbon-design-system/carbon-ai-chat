@@ -127,6 +127,8 @@ ${UNORDERED_LIST}
 `;
 
 const HTML = `
+Here is some <b>Carbon</b> information peppered with HTML!
+
 <style>
     .fun-fact { 
         background-color: #e8f5e8; 
