@@ -12,7 +12,7 @@ import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import debounce from "lodash-es/debounce.js";
 
-import { carbonElement } from "../../decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import styles from "./src/table.scss";
 import { tableTemplate } from "./src/table.template";
 import { tablePaginationTemplate } from "./src/tablePagination.template";
@@ -304,17 +304,13 @@ class TableElement extends LitElement {
   }
 
   /**
-   * Called whenever component properties change after the initial render.
+   * Called before the element updates to prepare state changes.
    * Handles validation and re-initialization of table data when headers or rows change.
-   *
-   * This method performs two key operations:
-   * 1. Validates table structure when headers or rows are updated
-   * 2. Re-initializes internal row arrays and pagination when rows change
    *
    * @param changedProperties - Map of properties that changed during the update
    * @protected
    */
-  protected updated(changedProperties: PropertyValues<this>) {
+  protected willUpdate(changedProperties: PropertyValues<this>) {
     // If the headers or rows has recently updated and both are defined than we should validate the table
     // data. This will likely only happen on the web components first render cycle when the props go from undefined to
     // defined.

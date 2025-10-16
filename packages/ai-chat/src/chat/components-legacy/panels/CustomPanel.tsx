@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useCallback, useEffect } from "react";
+import React, { forwardRef, Ref, useCallback, useEffect, useRef } from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import { BusEventType } from "../../../types/events/eventBusTypes";
@@ -22,6 +22,7 @@ import {
   AnimationOutType,
 } from "../../../types/utilities/Animation";
 import { AppState } from "../../../types/state/AppState";
+import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { consoleError } from "../../utils/miscUtils";
 import { BasePanelComponent } from "../BasePanelComponent";
 import { OverlayPanel } from "../OverlayPanel";
@@ -63,7 +64,7 @@ interface CustomPanelProps {
 /**
  * This component is a custom panel that renders external content similar to custom response types.
  */
-function CustomPanel(props: CustomPanelProps) {
+function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
   const {
     onPanelOpenEnd,
     onPanelCloseEnd,
@@ -93,6 +94,7 @@ function CustomPanel(props: CustomPanelProps) {
   const closeAnimation = disableAnimation
     ? AnimationOutType.NONE
     : AnimationOutType.SLIDE_OUT_TO_BOTTOM;
+  const basePanelRef = useRef<HasRequestFocus>(null);
 
   useEffect(() => {
     if (prevIsOpen !== isOpen && isOpen) {
@@ -102,6 +104,16 @@ function CustomPanel(props: CustomPanelProps) {
       }
     }
   }, [ariaAnnouncer, hidePanelHeader, isOpen, prevIsOpen, title]);
+
+  // Expose the BasePanelComponent's requestFocus method through the forwarded ref
+  React.useImperativeHandle(ref, () => ({
+    requestFocus: () => {
+      if (basePanelRef.current) {
+        return basePanelRef.current.requestFocus();
+      }
+      return false;
+    },
+  }));
 
   const onClickBackLocal = useCallback(() => {
     serviceManager.store.dispatch(actions.setCustomPanelOpen(false));
@@ -160,6 +172,7 @@ function CustomPanel(props: CustomPanelProps) {
       overlayPanelName={PageObjectId.CUSTOM_PANEL}
     >
       <BasePanelComponent
+        ref={basePanelRef}
         className="cds-aichat--custom-panel"
         eventName="Custom panel opened"
         eventDescription="A user opened a custom panel."
@@ -199,6 +212,6 @@ function checkAllowClose(viewChanging: boolean) {
   }
 }
 
-const CustomPanelExport = React.memo(CustomPanel);
+const CustomPanelExport = React.memo(forwardRef(CustomPanel));
 
 export { CustomPanelExport as CustomPanel };

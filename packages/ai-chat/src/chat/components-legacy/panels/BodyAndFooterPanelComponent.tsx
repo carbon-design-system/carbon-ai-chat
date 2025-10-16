@@ -8,7 +8,7 @@
  */
 
 import cx from "classnames";
-import React from "react";
+import React, { forwardRef, Ref, useRef } from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -125,7 +125,10 @@ interface BodyAndFooterPanelComponentProps
 /**
  * This component handles rendering a panel with body/footer content.
  */
-function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
+function BodyAndFooterPanelComponent(
+  props: BodyAndFooterPanelComponentProps,
+  ref: Ref<HasRequestFocus>,
+) {
   const {
     isOpen,
     isMessageForInput,
@@ -160,6 +163,17 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
   const closeAnimation = disableAnimation
     ? AnimationOutType.NONE
     : AnimationOutType.SLIDE_OUT_TO_BOTTOM;
+  const basePanelRef = useRef<HasRequestFocus>(null);
+
+  // Expose the BasePanelComponent's requestFocus method through the forwarded ref
+  React.useImperativeHandle(ref, () => ({
+    requestFocus: () => {
+      if (basePanelRef.current) {
+        return basePanelRef.current.requestFocus();
+      }
+      return false;
+    },
+  }));
 
   return (
     <OverlayPanel
@@ -175,6 +189,7 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
       overlayPanelName={overlayPanelName}
     >
       <BasePanelComponent
+        ref={basePanelRef}
         className={cx("cds-aichat--body-and-footer-component", className)}
         eventName={eventName}
         eventDescription={eventDescription}
@@ -202,6 +217,10 @@ function BodyAndFooterPanelComponent(props: BodyAndFooterPanelComponentProps) {
   );
 }
 
-export { BodyAndFooterPanelComponent };
+const BodyAndFooterPanelComponentExport = React.memo(
+  forwardRef(BodyAndFooterPanelComponent),
+);
 
-export default BodyAndFooterPanelComponent;
+export { BodyAndFooterPanelComponentExport as BodyAndFooterPanelComponent };
+
+export default BodyAndFooterPanelComponentExport;

@@ -108,11 +108,12 @@ export class MyApp extends LitElement {
 
 #### Using alongside `carbon-angular-components`
 
-If you are using `@carbon/ai-chat` in your Angular application along with `carbon-angular-components`, you may run into component registry errors as the underlying `@carbon/web-components` subcomponents utilize the same naming structure as components in `carbon-angular-components`. In order to avoid this, import from the `es-custom` build folder rather than `es`. This build folder creates a separate prefix for all the Web Components.
+If you are using `@carbon/ai-chat` in your Angular application along with `carbon-angular-components`, you may run into component registry errors as the underlying `@carbon/web-components` subcomponents utilize the same naming structure as components in `carbon-angular-components`. In order to avoid this, import from the `es-custom` build folder rather than `es`. This build folder creates a separate prefix for all the Web Components. If you're looking to import items the top-level, use the `@carbon/ai-chat/es-custom` import path.
 
 ```javascript
 import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
+import { PublicConfig } from '@carbon/ai-chat/es-custom';
 
 ...
 

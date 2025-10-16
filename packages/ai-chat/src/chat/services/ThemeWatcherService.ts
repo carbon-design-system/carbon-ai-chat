@@ -26,9 +26,11 @@ class ThemeWatcherService {
   private isWatching = false;
   private originalTheme: CarbonTheme | null = null;
   private lastBgColor: string | null = null;
+  private parentElement: HTMLElement;
 
-  constructor(store: AppStore<AppState>) {
+  constructor(store: AppStore<AppState>, element = document.documentElement) {
     this.store = store;
+    this.parentElement = element;
   }
 
   /**
@@ -121,21 +123,38 @@ class ThemeWatcherService {
   }
 
   /**
+   * If no theme is provided and --cds-background isn't provided, try to climb the dom until you find something.
+   */
+  private getBackgroundColor(node: Element): string {
+    let current: Element | ShadowRoot | null = node;
+
+    while (current) {
+      if (current instanceof ShadowRoot) {
+        current = current.host;
+        continue;
+      }
+
+      // Narrow current to Element before calling getComputedStyle
+      if (current instanceof Element) {
+        const color = getComputedStyle(current).backgroundColor;
+        if (color && color !== "rgba(0, 0, 0, 0)" && color !== "transparent") {
+          return color;
+        }
+        current = current.parentElement;
+      } else {
+        // should never happen, but break to satisfy TS
+        break;
+      }
+    }
+
+    return white.background;
+  }
+
+  /**
    * Checks the current value of --cds-background and updates theme if needed.
    */
   private checkAndUpdateTheme(): void {
     try {
-      const bgColor = getCSSVariableValue("--cds-background");
-      if (!bgColor) {
-        return;
-      }
-
-      // Skip processing if the background color hasn't changed (optimization for polling)
-      if (bgColor === this.lastBgColor) {
-        return;
-      }
-      this.lastBgColor = bgColor;
-
       const currentState = this.store.getState();
       const currentTheme =
         currentState.config.derived.themeWithDefaults.derivedCarbonTheme;
@@ -147,6 +166,16 @@ class ThemeWatcherService {
       ) {
         return;
       }
+
+      const bgColor =
+        getCSSVariableValue("--cds-background", this.parentElement) ||
+        this.getBackgroundColor(this.parentElement);
+
+      // Skip processing if the background color hasn't changed (optimization for polling)
+      if (bgColor === this.lastBgColor) {
+        return;
+      }
+      this.lastBgColor = bgColor;
 
       // First check for exact matches with Carbon theme background values
       let targetTheme: CarbonTheme;

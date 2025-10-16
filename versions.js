@@ -14,4 +14,4 @@
  * Note: Only include full releases (e.g., v1.0.0), not RC or pre-release versions.
  * The array should be ordered with newest versions first, there is no sorting later on.
  */
-export const AI_CHAT_VERSIONS = ["v0.5.1", "v0.5.0", "v0.4.0"];
+export const AI_CHAT_VERSIONS = ["v1.0.0", "v0.5.1", "v0.5.0", "v0.4.0"];

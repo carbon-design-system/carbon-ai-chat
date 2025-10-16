@@ -19,7 +19,7 @@ import React, {
 import { createPortal } from "react-dom";
 
 import App from "../chat/ChatAppEntry";
-import { carbonElement } from "../chat/ai-chat-components/web-components/decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { ChatContainerProps } from "../types/component/ChatContainer";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
