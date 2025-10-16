@@ -11,6 +11,9 @@ import { fn } from "storybook/test";
 
 import Download16 from "@carbon/icons/es/download/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
+import View16 from "@carbon/icons/es/view/16.js";
+import Share16 from "@carbon/icons/es/share/16.js";
+import Version16 from "@carbon/icons/es/version/16.js";
 
 import styles from "./story-styles.scss?lit";
 
@@ -43,7 +46,19 @@ const maxWidthControl = {
 };
 
 const footerActionVariants = {
-  "1 ghost button, 2 ghost icon buttons": (args) => html`
+  "2 ghost icon buttons": (args) => html`
+    <div data-rounded="bottom-right" class="display-flex">
+      <cds-icon-button @click=${args.onClick} kind="ghost">
+        ${iconLoader(Download16, { slot: "icon" })}
+        <span slot="tooltip-content">Icon Description</span>
+      </cds-icon-button>
+      <cds-icon-button @click=${args.onClick} kind="ghost">
+        ${iconLoader(Maximize16, { slot: "icon" })}
+        <span slot="tooltip-content">Icon Description</span>
+      </cds-icon-button>
+    </div>
+  `,
+  "1 ghost button with icon": (args) => html`
     <cds-button
       class="text-primary"
       @click=${args.onClick}
@@ -51,17 +66,112 @@ const footerActionVariants = {
       kind="ghost"
     >
       View details
+      ${iconLoader(Maximize16, {
+        slot: "icon",
+        style: "fill: var(--cds-link-primary)",
+      })}
     </cds-button>
-    <cds-icon-button @click=${args.onClick} kind="ghost">
-      ${iconLoader(Download16, { slot: "icon" })}
-      <span slot="tooltip-content">Icon Description</span>
-    </cds-icon-button>
-    <cds-icon-button @click=${args.onClick} kind="ghost">
-      ${iconLoader(Maximize16, { slot: "icon" })}
-      <span slot="tooltip-content">Icon Description</span>
-    </cds-icon-button>
+  `,
+  "1 ghost button with viewing state": (args) => html`
+    <cds-button
+      class="text-primary"
+      @click=${args.onClick}
+      size="md"
+      kind="ghost"
+      disabled
+      data-viewing
+    >
+      ${iconLoader(View16)} Viewing
+    </cds-button>
   `,
   none: () => "",
+};
+const stepVariation = {
+  "with label": () => html`
+    <div
+      class="display-flex padding-inline gap-05 padding-block-04 border-bottom"
+    >
+      <p class="body-compact-01 text-primary no-wrap">Step 1</p>
+      <div>
+        <p class="body-compact-01 text-secondary margin-bottom-02">
+          Step title
+        </p>
+        <p class="label-01 text-secondary">Tool: Tool name</p>
+      </div>
+    </div>
+    <div
+      class="display-flex padding-inline gap-05 padding-block-04 border-bottom"
+    >
+      <p class="body-compact-01 text-primary no-wrap">Step 2</p>
+      <div>
+        <p class="body-compact-01 text-secondary margin-bottom-02">
+          Step title
+        </p>
+        <p class="label-01 text-secondary">Tool: Tool name</p>
+      </div>
+    </div>
+    <div class="display-flex padding-inline gap-05 padding-block-04">
+      <p class="body-compact-01 text-primary no-wrap">Step 2</p>
+      <div>
+        <p class="body-compact-01 text-secondary margin-bottom-02">
+          Step title
+        </p>
+        <p class="label-01 text-secondary">Tool: Tool name</p>
+      </div>
+    </div>
+  `,
+  "title only": () =>
+    html` <div
+        class="display-flex padding-inline gap-05 padding-block-04 border-bottom"
+      >
+        <p class="body-compact-01 text-primary no-wrap">Step 1</p>
+        <div>
+          <p class="body-compact-01 text-secondary">Step title</p>
+        </div>
+      </div>
+      <div
+        class="display-flex padding-inline gap-05 padding-block-04 border-bottom"
+      >
+        <p class="body-compact-01 text-primary no-wrap">Step 2</p>
+        <div>
+          <p class="body-compact-01 text-secondary">Step title</p>
+        </div>
+      </div>
+      <div class="display-flex padding-inline gap-05 padding-block-04">
+        <p class="body-compact-01 text-primary no-wrap">Step 2</p>
+        <div>
+          <p class="body-compact-01 text-secondary">Step title</p>
+        </div>
+      </div>`,
+  "wrapping content": () =>
+    html` <div
+        class="display-flex padding-inline gap-05 padding-block-04 border-bottom"
+      >
+        <p class="body-compact-01 text-primary no-wrap">Step 1</p>
+        <div>
+          <p class="body-compact-01 text-secondary">Lorem, ipsum.</p>
+        </div>
+      </div>
+      <div
+        class="display-flex padding-inline gap-05 padding-block-04 border-bottom"
+      >
+        <p class="body-compact-01 text-primary no-wrap">Step 2</p>
+        <div>
+          <p class="body-compact-01 text-secondary">
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+          </p>
+        </div>
+      </div>
+      <div class="display-flex padding-inline gap-05 padding-block-04">
+        <p class="body-compact-01 text-primary no-wrap">Step 2</p>
+        <div>
+          <p class="body-compact-01 text-secondary">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod
+            dignissimos distinctio minus placeat dicta dolores, rerum
+            perspiciatis officia laudantium. Quasi!
+          </p>
+        </div>
+      </div>`,
 };
 
 export default {
@@ -106,12 +216,14 @@ export default {
 };
 
 export const Small = {
-  name: "Small",
+  argTypes: {
+    maxWidth: { table: { disable: true } },
+  },
   args: {
     maxWidth: "sm",
     useWrapper: true,
     aiLabel: true,
-    footerActions: "1 ghost button, 2 ghost icon buttons",
+    footerActions: "2 ghost icon buttons",
     onClick: fn(),
   },
   render: (args) => html`
@@ -137,8 +249,210 @@ export const Small = {
       ${args.footerActions(args)
         ? html`<div
             class=${classMap({
-              "cds--aichat-tile-container-footer": true,
-              "margin-top-04": true,
+              "cds-aichat--tile-container-footer": true,
+              "margin-top-05": true,
+            })}
+            data-flush="bottom"
+            data-rounded="bottom"
+          >
+            ${args.footerActions(args)}
+          </div>`
+        : ""}
+    </cds-tile>
+  `,
+};
+
+export const Default = {
+  argTypes: {
+    maxWidth: { table: { disable: true } },
+    footerActions: { table: { disable: true } },
+  },
+  args: {
+    maxWidth: "lg",
+    useWrapper: true,
+    aiLabel: true,
+    footerActions: "1 ghost button with icon",
+    onClick: fn(),
+  },
+  render: (args) => html`
+    <cds-tile
+      data-rounded
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+    >
+      <h5 class="body-compact-02 margin-bottom-01">Document title</h5>
+      <p class="helper-text-01 text-secondary margin-bottom-03">Subtitle</p>
+      <p class="helper-text-01 text-secondary">Subtitle</p>
+      ${args.aiLabel
+        ? html`<cds-ai-label
+            data-testid="ai-label"
+            size="mini"
+            autoalign
+            alignment="bottom-left"
+            slot=""
+          >
+            ${aiContent}
+          </cds-ai-label>`
+        : ""}
+
+      <div
+        data-flush
+        class="border-top margin-bottom-04 margin-top-04 padding-inline"
+      >
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+      </div>
+      ${args.footerActions(args)
+        ? html`<div
+            class=${classMap({
+              "cds-aichat--tile-container-footer": true,
+              "margin-top-05": true,
+            })}
+            data-flush="bottom"
+            data-rounded="bottom"
+          >
+            ${args.footerActions(args)}
+          </div>`
+        : ""}
+    </cds-tile>
+  `,
+};
+
+export const DefaultWithToolbar = {
+  argTypes: {
+    maxWidth: { table: { disable: true } },
+    footerActions: { table: { disable: true } },
+  },
+  args: {
+    maxWidth: "lg",
+    useWrapper: true,
+    aiLabel: true,
+    onClick: fn(),
+  },
+  render: (args) => html`
+    <cds-tile
+      data-rounded
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+    >
+      <div
+        data-rounded="top"
+        data-flush
+        class="cds-aichat--tile-container-toolbar"
+      >
+        <h5 class="flex-1 body-compact-02 padding-inline align-content-center">
+          Resource comsumption
+        </h5>
+        <div data-rounded="top-right" class="display-flex">
+          ${args.aiLabel
+            ? html`<cds-ai-label
+                class="inline-size-08"
+                data-testid="ai-label"
+                size="mini"
+                autoalign
+                alignment="bottom-left"
+                slot=""
+              >
+                ${aiContent}
+              </cds-ai-label>`
+            : ""}
+          <cds-icon-button @click=${args.onClick} kind="ghost">
+            ${iconLoader(Version16, { slot: "icon" })}
+            <span slot="tooltip-content">Icon Description</span>
+          </cds-icon-button>
+          <cds-icon-button @click=${args.onClick} kind="ghost">
+            ${iconLoader(Download16, { slot: "icon" })}
+            <span slot="tooltip-content">Icon Description</span>
+          </cds-icon-button>
+          <cds-icon-button @click=${args.onClick} kind="ghost">
+            ${iconLoader(Share16, { slot: "icon" })}
+            <span slot="tooltip-content">Icon Description</span>
+          </cds-icon-button>
+          <cds-icon-button @click=${args.onClick} kind="ghost">
+            ${iconLoader(Maximize16, { slot: "icon" })}
+            <span slot="tooltip-content">Icon Description</span>
+          </cds-icon-button>
+        </div>
+      </div>
+      <div data-flush class="border-top margin-top-05 padding-inline">
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+      </div>
+    </cds-tile>
+  `,
+};
+
+export const WithSteps = {
+  argTypes: {
+    maxWidth: { table: { disable: true } },
+    footerActions: { table: { disable: true } },
+    stepVariation: {
+      control: "select",
+      options: Object.keys(stepVariation),
+      mapping: stepVariation,
+      description: "step variations",
+    },
+  },
+  args: {
+    maxWidth: "lg",
+    useWrapper: true,
+    stepVariation: "with label",
+    footerActions: "1 ghost button with icon",
+    aiLabel: true,
+    onClick: fn(),
+  },
+  render: (args) => html`
+    <cds-tile
+      data-rounded
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+    >
+      <div
+        data-rounded="top"
+        data-flush
+        class="cds-aichat--tile-container-toolbar"
+      >
+        <h5
+          class="flex-1 body-compact-02 padding-inline align-content-center block-size-08"
+        >
+          Plan Title
+        </h5>
+        <div data-rounded="top-right" class="display-flex">
+          ${args.aiLabel
+            ? html`<cds-ai-label
+                class="inline-size-08"
+                data-testid="ai-label"
+                size="mini"
+                autoalign
+                alignment="bottom-left"
+                slot=""
+              >
+                ${aiContent}
+              </cds-ai-label>`
+            : ""}
+        </div>
+      </div>
+      <div data-flush class="border-top margin-top-05">
+        ${args.stepVariation(args)}
+      </div>
+      ${args.footerActions(args)
+        ? html`<div
+            class=${classMap({
+              "cds-aichat--tile-container-footer": true,
+              "margin-top-05": true,
             })}
             data-flush="bottom"
             data-rounded="bottom"

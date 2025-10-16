@@ -193,8 +193,8 @@ export const WithActions = {
         ${buttonCount !== 0
           ? html`<div
               class=${classMap({
-                "cds--aichat-tile-container-footer": true,
-                "margin-top-04": true,
+                "cds-aichat--tile-container-footer": true,
+                "margin-top-05": true,
               })}
               ?data-stacked=${buttonCount > 2}
               data-flush="bottom"
@@ -254,7 +254,7 @@ export const WithImage = {
         <div data-flush="top">
           <img
             data-rounded="top"
-            class="margin-bottom-04"
+            class="margin-bottom-05"
             src=${defaultImage}
             alt="image"
           />
@@ -263,8 +263,8 @@ export const WithImage = {
         ${buttonCount !== 0
           ? html`<div
               class=${classMap({
-                "cds--aichat-tile-container-footer": true,
-                "margin-top-04": true,
+                "cds-aichat--tile-container-footer": true,
+                "margin-top-05": true,
               })}
               data-stacked=${buttonCount > 2}
               data-flush="bottom"
@@ -282,6 +282,7 @@ export const OnlyImage = {
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
   render: (args) => html`
     <cds-tile
+      data-rounded
       class=${classMap({
         "bg-layer": args.layered,
       })}
@@ -323,7 +324,7 @@ export const WithAudio = {
       data-testid="clickable-tile"
       data-rounded
     >
-      <div data-flush="top" data-rounded="top" class="margin-bottom-04">
+      <div data-flush="top" data-rounded="top" class="margin-bottom-05">
         <iframe
           class="full-width aspect-16-9"
           scrolling="no"
