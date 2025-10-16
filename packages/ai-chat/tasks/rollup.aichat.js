@@ -69,9 +69,23 @@ const parsedDtsTsConfig = parseJsonConfigFileContent(
 );
 
 async function runRollup() {
+  const extraWatch = path.resolve(__dirname, '../../ai-chat-components/es/**/*');
+
   const config = [
     // Main build
     {
+      watch: {
+        include: [path.join(paths.src, '/**/*'), extraWatch],
+        exclude: [],
+        chokidar: {
+          // Delay rebuilds until files settle so the watcher doesn't try to compile half-written artifacts
+          awaitWriteFinish: {
+            stabilityThreshold: 750,
+            pollInterval: 100,
+          },
+        },
+        clearScreen: false,
+      },
       // Allow entry chunks to depend on side-effect imports from
       // other entry chunks (e.g., custom-element importing container)
       preserveEntrySignatures: 'exports-only',
