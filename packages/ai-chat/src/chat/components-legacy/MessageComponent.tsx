@@ -414,7 +414,10 @@ class MessageComponent extends PureComponent<
         iconClassName = "cds-aichat--message__avatar--agent";
         actorName = responseUserProfile?.nickname || "";
       } else {
-        actorName = assistantName || responseUserProfile?.nickname;
+        actorName =
+          responseUserProfile?.nickname === "watsonx" && assistantName
+            ? assistantName
+            : responseUserProfile?.nickname;
 
         let icon = <IconHolder icon={<ChatBot />} />;
 
