@@ -8,7 +8,8 @@
   "module": "./dist/es/aiChatEntry.js",
   "types": "./dist/types/aiChatEntry.d.ts",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "exports": {
     ".": {
