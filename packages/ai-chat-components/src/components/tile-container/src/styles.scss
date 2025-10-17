@@ -12,9 +12,7 @@
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/components/button/tokens" as *;
-
-$carbon-prefix: "cds";
-$prefix: "cds-aichat";
+@use "../../../globals/scss/vars" as *;
 
 // Note: all the inner content must receive 8-1px to account for 1px border. for perfectly rounded corners the inner radius must be 7px.
 
@@ -33,8 +31,8 @@ $prefix: "cds-aichat";
 // Tile Container
 #{$prefix}-tile-container {
   // Tile Elements
-  #{$carbon-prefix}-tile,
-  #{$carbon-prefix}-clickable-tile {
+  #{$cds-prefix}-tile,
+  #{$cds-prefix}-clickable-tile {
     img {
       display: block;
       inline-size: 100%;
@@ -42,7 +40,7 @@ $prefix: "cds-aichat";
     }
   }
 
-  #{$carbon-prefix}-clickable-tile {
+  #{$cds-prefix}-clickable-tile {
     &:hover:not([disabled]) img,
     &:focus img {
       opacity: 0.8;
@@ -54,12 +52,12 @@ $prefix: "cds-aichat";
     }
   }
 
-  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
+  &:has(#{$cds-prefix}-clickable-tile[disabled]) {
     cursor: not-allowed;
   }
 
-  cds-tile,
-  cds-clickable-tile::part(link) {
+  #{cds-prefix}-tile,
+  #{cds-prefix}-clickable-tile::part(link) {
     background-color: theme.$layer-background;
   }
 
@@ -76,7 +74,7 @@ $prefix: "cds-aichat";
     display: flex;
     justify-content: end;
 
-    #{$carbon-prefix}-button {
+    #{$cds-prefix}-button {
       inline-size: 100%;
       max-inline-size: unset;
     }

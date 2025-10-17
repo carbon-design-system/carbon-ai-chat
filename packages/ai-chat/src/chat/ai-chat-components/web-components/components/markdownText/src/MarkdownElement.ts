@@ -35,8 +35,8 @@ class MarkdownElement extends LitElement {
   @property({ type: Object, attribute: false })
   localization?: LocalizationOptions;
 
-  @property({ type: Boolean, attribute: "dark" })
-  dark = false;
+  @property({ type: Boolean })
+  highlight = true;
 
   private needsReparse = false;
   // Tracks the latest asynchronous rendering work so callers waiting on
@@ -53,11 +53,9 @@ class MarkdownElement extends LitElement {
     } else if (
       // Properties that only affect rendering can skip reparsing
       // - sanitizeHTML: applies DOMPurify during render, doesn't change tokens
-      // - dark: changes theme classes in rendered output
       // - localization: changes translated strings in rendered output
       // - streaming: affects loading states in rendered output
       changed.has("sanitizeHTML") ||
-      changed.has("dark") ||
       changed.has("localization") ||
       changed.has("streaming")
     ) {
@@ -119,7 +117,7 @@ class MarkdownElement extends LitElement {
         sanitize: this.sanitizeHTML,
         streaming: this.streaming,
         localization: this.localization,
-        dark: this.dark,
+        highlight: this.highlight,
       });
 
       if (this.debug) {
