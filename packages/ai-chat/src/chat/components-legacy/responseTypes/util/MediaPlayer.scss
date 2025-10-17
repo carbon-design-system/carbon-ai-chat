@@ -59,6 +59,7 @@ cds-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
 .cds-aichat--media-player__background,
 .cds-aichat--media-player__player {
   position: absolute;
+  border-radius: 0;
   inset-block-start: 0;
   inset-inline-start: 0;
 }
