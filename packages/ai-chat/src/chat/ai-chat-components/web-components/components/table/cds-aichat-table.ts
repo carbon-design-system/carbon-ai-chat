@@ -106,6 +106,12 @@ class TableElement extends LitElement {
   itemsPerPageText: string;
 
   /**
+   * The text used for the download button's accessible label.
+   */
+  @property({ type: String, attribute: "download-label-text" })
+  downloadLabelText: string;
+
+  /**
    * The locale. Used by the carbon table component to change the collator for sorting.
    */
   @property({ type: String, attribute: "locale" })
