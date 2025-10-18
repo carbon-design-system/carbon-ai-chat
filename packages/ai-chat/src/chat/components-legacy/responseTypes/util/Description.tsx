@@ -34,6 +34,7 @@ export default function Description({
         shouldRemoveHTMLBeforeMarkdownConversion={
           shouldRemoveHTMLBeforeMarkdownConversion
         }
+        highlight={true}
       />
     </div>
   );

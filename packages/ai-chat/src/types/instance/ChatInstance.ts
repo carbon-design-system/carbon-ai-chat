@@ -245,7 +245,7 @@ interface ChatActions {
   serviceDesk: ChatInstanceServiceDeskActions;
 
   /**
-   * Remove any record of the current session from the browser.
+   * Remove any record of the current session from the browser's SessionStorage.
    *
    * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
    * chat is open.

@@ -1,0 +1,282 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/styles/scss/type";
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/colors";
+
+:host {
+  border-radius: layout.$spacing-03;
+
+  // CodeMirror theme custom properties - Matching
+  --cds-code-snippet-editor-matching-bracket: #{colors.$blue-50};
+  --cds-code-snippet-editor-nonmatching-bracket: #{colors.$red-60};
+
+  // CodeMirror theme custom properties - Syntax tokens
+  // Comments and documentation
+  --cds-code-snippet-editor-comment: #{colors.$yellow-60};
+  --cds-code-snippet-editor-line-comment: var(
+    --cds-code-snippet-editor-comment
+  );
+  --cds-code-snippet-editor-block-comment: var(
+    --cds-code-snippet-editor-comment
+  );
+  --cds-code-snippet-editor-doc-comment: var(--cds-code-snippet-editor-comment);
+  --cds-code-snippet-editor-doc-string: var(--cds-code-snippet-editor-string);
+
+  // Keywords
+  --cds-code-snippet-editor-keyword: #{colors.$purple-60};
+  --cds-code-snippet-editor-operator-keyword: var(
+    --cds-code-snippet-editor-keyword
+  );
+  --cds-code-snippet-editor-control-keyword: var(
+    --cds-code-snippet-editor-keyword
+  );
+  --cds-code-snippet-editor-definition-keyword: var(
+    --cds-code-snippet-editor-keyword
+  );
+  --cds-code-snippet-editor-module-keyword: var(
+    --cds-code-snippet-editor-keyword
+  );
+
+  // Identifiers
+  --cds-code-snippet-editor-variable: #{colors.$teal-70};
+  --cds-code-snippet-editor-name: var(--cds-code-snippet-editor-variable);
+  --cds-code-snippet-editor-variable-name: var(
+    --cds-code-snippet-editor-variable
+  );
+  --cds-code-snippet-editor-label-name: var(--cds-code-snippet-editor-variable);
+  --cds-code-snippet-editor-attribute: #{colors.$magenta-40};
+  --cds-code-snippet-editor-attribute-name: var(
+    --cds-code-snippet-editor-attribute
+  );
+  --cds-code-snippet-editor-property-name: var(
+    --cds-code-snippet-editor-attribute
+  );
+  --cds-code-snippet-editor-tag: #{colors.$blue-80};
+  --cds-code-snippet-editor-tag-name: var(--cds-code-snippet-editor-tag);
+  --cds-code-snippet-editor-type: #{colors.$green-70};
+  --cds-code-snippet-editor-type-name: var(--cds-code-snippet-editor-type);
+  --cds-code-snippet-editor-class-name: var(--cds-code-snippet-editor-type);
+  --cds-code-snippet-editor-namespace: var(--cds-code-snippet-editor-type);
+  --cds-code-snippet-editor-macro-name: var(--cds-code-snippet-editor-keyword);
+
+  // Literals and primitives
+  --cds-code-snippet-editor-atom: #{colors.$magenta-50};
+  --cds-code-snippet-editor-literal: var(--cds-code-snippet-editor-atom);
+  --cds-code-snippet-editor-bool: var(--cds-code-snippet-editor-atom);
+  --cds-code-snippet-editor-null: var(--cds-code-snippet-editor-atom);
+  --cds-code-snippet-editor-self: var(--cds-code-snippet-editor-atom);
+  --cds-code-snippet-editor-number: #{colors.$green-50};
+  --cds-code-snippet-editor-integer: var(--cds-code-snippet-editor-number);
+  --cds-code-snippet-editor-float: var(--cds-code-snippet-editor-number);
+  --cds-code-snippet-editor-unit: var(--cds-code-snippet-editor-number);
+  --cds-code-snippet-editor-string: #{colors.$orange-50};
+  --cds-code-snippet-editor-character: var(--cds-code-snippet-editor-string);
+  --cds-code-snippet-editor-attribute-value: var(
+    --cds-code-snippet-editor-string
+  );
+  --cds-code-snippet-editor-regexp: var(--cds-code-snippet-editor-string);
+  --cds-code-snippet-editor-escape: var(--cds-code-snippet-editor-string);
+  --cds-code-snippet-editor-url: #{colors.$blue-60};
+  --cds-code-snippet-editor-color: #{colors.$purple-40};
+
+  // Operators and punctuation
+  --cds-code-snippet-editor-operator: var(--cds-text-primary);
+  --cds-code-snippet-editor-deref-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-arithmetic-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-logic-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-bitwise-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-compare-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-update-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-definition-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-type-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-control-operator: var(
+    --cds-code-snippet-editor-operator
+  );
+  --cds-code-snippet-editor-modifier: var(--cds-code-snippet-editor-operator);
+  --cds-code-snippet-editor-punctuation: var(--cds-text-primary);
+  --cds-code-snippet-editor-separator: var(
+    --cds-code-snippet-editor-punctuation
+  );
+  --cds-code-snippet-editor-bracket: var(--cds-code-snippet-editor-punctuation);
+  --cds-code-snippet-editor-angle-bracket: var(
+    --cds-code-snippet-editor-bracket
+  );
+  --cds-code-snippet-editor-square-bracket: var(
+    --cds-code-snippet-editor-bracket
+  );
+  --cds-code-snippet-editor-paren: var(--cds-code-snippet-editor-bracket);
+  --cds-code-snippet-editor-brace: var(--cds-code-snippet-editor-bracket);
+
+  // Structural text
+  --cds-code-snippet-editor-content: var(--cds-text-primary);
+  --cds-code-snippet-editor-heading: #{colors.$purple-50};
+  --cds-code-snippet-editor-heading-1: var(--cds-code-snippet-editor-heading);
+  --cds-code-snippet-editor-heading-2: var(--cds-code-snippet-editor-heading);
+  --cds-code-snippet-editor-heading-3: var(--cds-code-snippet-editor-heading);
+  --cds-code-snippet-editor-heading-4: var(--cds-code-snippet-editor-heading);
+  --cds-code-snippet-editor-heading-5: var(--cds-code-snippet-editor-heading);
+  --cds-code-snippet-editor-heading-6: var(--cds-code-snippet-editor-heading);
+  --cds-code-snippet-editor-content-separator: var(
+    --cds-code-snippet-editor-heading
+  );
+  --cds-code-snippet-editor-list: var(--cds-code-snippet-editor-content);
+  --cds-code-snippet-editor-quote: var(--cds-code-snippet-editor-comment);
+  --cds-code-snippet-editor-emphasis: var(--cds-code-snippet-editor-content);
+  --cds-code-snippet-editor-strong: var(--cds-code-snippet-editor-content);
+  --cds-code-snippet-editor-monospace: var(--cds-code-snippet-editor-content);
+  --cds-code-snippet-editor-link: #{colors.$blue-60};
+  --cds-code-snippet-editor-strikethrough: var(
+    --cds-code-snippet-editor-content
+  );
+
+  // Diff and diagnostics
+  --cds-code-snippet-editor-inserted: #{colors.$green-60};
+  --cds-code-snippet-editor-deleted: #{colors.$red-60};
+  --cds-code-snippet-editor-changed: #{colors.$yellow-50};
+  --cds-code-snippet-editor-invalid: #{colors.$magenta-60};
+
+  // Meta and annotations
+  --cds-code-snippet-editor-meta: #{colors.$cyan-50};
+  --cds-code-snippet-editor-document-meta: var(--cds-code-snippet-editor-meta);
+  --cds-code-snippet-editor-annotation: var(--cds-code-snippet-editor-meta);
+  --cds-code-snippet-editor-processing-instruction: var(
+    --cds-code-snippet-editor-meta
+  );
+
+  // Modifiers
+  --cds-code-snippet-editor-definition: #{colors.$purple-50};
+  --cds-code-snippet-editor-constant: #{colors.$teal-60};
+  --cds-code-snippet-editor-function: #{colors.$blue-50};
+  --cds-code-snippet-editor-standard: var(--cds-code-snippet-editor-variable);
+  --cds-code-snippet-editor-local: #{colors.$green-60};
+  --cds-code-snippet-editor-special: #{colors.$orange-40};
+}
+
+.cds-aichat--snippet-container {
+  border-radius: layout.$spacing-03;
+  margin-block-end: layout.$spacing-03;
+}
+
+// CodeMirror integration styles
+.cds-aichat--snippet--codemirror {
+  // Hide the default slot content when using CodeMirror
+  ::slotted(*) {
+    display: none;
+  }
+
+  .cds-aichat--code-editor {
+    block-size: 100%;
+    inline-size: 100%;
+  }
+
+  // CodeMirror editor base styles
+  .cm-editor {
+    @include type.type-style("code-02");
+
+    background: transparent;
+
+    block-size: 100%;
+  }
+
+  .cm-scroller {
+    overflow: auto;
+  }
+
+  .cm-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .cm-line {
+    padding: 0 layout.$spacing-02;
+  }
+
+  .cm-gutters {
+    border: none;
+    background-color: transparent;
+  }
+}
+
+// Hidden slot container
+.cds-aichat--visually-hidden {
+  display: none;
+}
+
+.cds-aichat--snippet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: theme.$layer-02;
+  border-block-end: 1px solid theme.$border-subtle-02;
+  margin-block-end: layout.$spacing-03;
+  padding-inline-start: layout.$spacing-05;
+}
+
+.cds-aichat--snippet__meta {
+  display: flex;
+}
+
+.cds-aichat--snippet__footer {
+  display: flex;
+  justify-content: flex-end;
+  border-block-start: 1px solid theme.$border-subtle-02;
+}
+
+.cds-aichat--snippet-btn--text {
+  color: theme.$text-primary;
+}
+
+// Language label
+.cds-aichat--snippet__language,
+.cds-aichat--snippet__header-seperator,
+.cds-aichat--snippet__linecount {
+  @include type.type-style("label-01");
+}
+// Collapsed state with max-height of 15 rows * 16px = 240px
+.cds-aichat--snippet-container--collapsed {
+  max-block-size: 240px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+// Chevron animation for expand/collapse button
+.cds-aichat--icon-chevron--down {
+  transform: rotate(0deg);
+  transition: all motion.$duration-fast-02 motion(standard, productive);
+}
+
+:host([expanded-code]) .cds-aichat--icon-chevron--down {
+  transform: rotate(-180deg);
+}
+
+.full-width {
+  inline-size: calc(100% + (2 * layout.$spacing-05));
+  margin-block-end: calc(-1 * layout.$spacing-05);
+  margin-block-start: calc(-1 * layout.$spacing-05);
+  margin-inline-end: calc(-1 * layout.$spacing-05);
+  margin-inline-start: calc(-1 * layout.$spacing-05);
+}

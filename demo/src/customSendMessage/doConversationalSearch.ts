@@ -8,8 +8,8 @@
  */
 
 import {
-  BusEventType,
   ChatInstance,
+  CustomSendMessageOptions,
   ConversationalSearchItem,
   MessageResponseTypes,
   StreamChunk,
@@ -74,20 +74,19 @@ function doConversationalSearch(instance: ChatInstance) {
 async function doConversationalSearchStreaming(
   instance: ChatInstance,
   text: string = TEXT,
+  requestOptions?: CustomSendMessageOptions,
 ) {
+  const signal = requestOptions?.signal;
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
   let isCanceled = false;
   let lastWordIndex = 0;
 
-  const stopGeneratingEvent = {
-    type: BusEventType.STOP_STREAMING,
-    handler: () => {
-      isCanceled = false;
-      instance.off(stopGeneratingEvent);
-    },
+  // Listen to abort signal (handles both stop button and restart/clear)
+  const abortHandler = () => {
+    isCanceled = true;
   };
-  instance.on(stopGeneratingEvent);
+  signal?.addEventListener("abort", abortHandler);
 
   try {
     for (let index = 0; index < words.length && !isCanceled; index++) {
@@ -153,12 +152,11 @@ async function doConversationalSearchStreaming(
       },
     };
 
-    instance.off(stopGeneratingEvent);
     await instance.messaging.addMessageChunk({
       final_response: finalResponse,
     } as StreamChunk);
   } finally {
-    instance.off(stopGeneratingEvent);
+    signal?.removeEventListener("abort", abortHandler);
   }
 }
 

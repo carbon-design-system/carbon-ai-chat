@@ -157,7 +157,12 @@ The Carbon AI Chat handles merging partial updates, rendering streaming text, an
 
 #### Cancelling request (stop streaming)
 
-When streaming content, users can request to stop the stream by clicking the "stop streaming" button in the input field. To enable this functionality:
+When streaming content, users can request to stop the stream in two ways:
+
+1. Clicking the "stop streaming" button in the input field
+2. Restarting or clearing the conversation
+
+Both actions trigger request cancellation. To handle this:
 
 ##### 1. Mark your stream as cancellable
 
@@ -179,9 +184,60 @@ const chunk: StreamChunk = {
 };
 ```
 
-##### 2. Listen for the stop streaming event
+##### 2. Listen for cancellation (choose one approach)
 
-Subscribe to the {@link BusEventType.STOP_STREAMING} event to detect when the user clicks the button:
+###### Option A: Using the abort signal (recommended)
+
+The {@link CustomSendMessageOptions.signal} abort signal is triggered when a message request is cancelled. When aborted, the signal's `reason` property contains one of the values from the {@link CancellationReason} enum:
+
+- {@link CancellationReason.STOP_STREAMING} (`"Stop streaming"`) - User clicked the stop streaming button
+- {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - User restarted or cleared the conversation
+- {@link CancellationReason.TIMEOUT} (`"Request timeout"`) - Request exceeded the configured timeout duration
+
+You can check if the request was cancelled using `signal.aborted` or by listening to the "abort" event, and access the specific reason via `signal.reason`.
+
+```typescript
+import { CancellationReason } from "@carbon/ai-chat";
+
+async function customSendMessage(
+  request: MessageRequest,
+  requestOptions: CustomSendMessageOptions,
+  instance: ChatInstance,
+) {
+  let isCanceled = false;
+
+  // Listen to abort signal (handles stop button, restart/clear, and timeout)
+  const abortHandler = () => {
+    isCanceled = true;
+    const reason = requestOptions.signal?.reason;
+
+    // Use enum for type-safe comparisons
+    if (reason === CancellationReason.STOP_STREAMING) {
+      console.log("User clicked stop streaming");
+    } else if (reason === CancellationReason.CONVERSATION_RESTARTED) {
+      console.log("Conversation was restarted/cleared");
+    } else if (reason === CancellationReason.TIMEOUT) {
+      console.log("Request timed out");
+    }
+
+    // Stop your streaming loop and prepare to send the final response
+  };
+  requestOptions.signal?.addEventListener("abort", abortHandler);
+
+  try {
+    // Your streaming logic here, checking isCanceled periodically
+    while (!isCanceled && hasMoreData) {
+      // Stream chunks...
+    }
+  } finally {
+    requestOptions.signal?.removeEventListener("abort", abortHandler);
+  }
+}
+```
+
+###### Option B: Using the STOP_STREAMING event
+
+Subscribe to the {@link BusEventType.STOP_STREAMING} event. Note that this event is only fired for stop button clicks, not for conversation restarts/clears:
 
 ```typescript
 let isCanceled = false;
@@ -197,6 +253,8 @@ const stopGeneratingEvent = {
 
 instance.on(stopGeneratingEvent);
 ```
+
+**Note:** Using the abort signal (Option A) is recommended as it provides unified handling for all cancellation scenarios.
 
 ##### 3. Stop streaming and send the final response
 
@@ -269,10 +327,12 @@ After receiving the final response, the Carbon AI Chat will hide the "stop strea
 ##### Important notes
 
 - The "stop streaming" button appears when any partial item chunk has `cancellable: true`
-- Clicking the button fires the {@link BusEventType.STOP_STREAMING} event but does not automatically stop your streaming
-- You must handle the event, stop your streaming logic, and send completion chunks
+- Clicking the button triggers the abort signal (with reason {@link CancellationReason.STOP_STREAMING}) and fires the {@link BusEventType.STOP_STREAMING} event, but does not automatically stop your streaming
+- You must listen to the abort signal (recommended) or the STOP_STREAMING event, stop your streaming logic, and send completion chunks
+- The abort signal is also triggered for conversation restarts/clears ({@link CancellationReason.CONVERSATION_RESTARTED}) and timeouts ({@link CancellationReason.TIMEOUT})
 - The button remains visible (disabled) until a {@link FinalResponseChunk} is received
 - Always send a final response chunk, even when cancelled, to properly clean up UI state
+- If the message was cancelled because of ({@link CancellationReason.TIMEOUT}) the message will be marked as having errored in the UI.
 
 #### Welcome messages
 
@@ -282,7 +342,7 @@ If you want to send your own "welcome" message (e.g. you send different text dep
 
 #### Message loading indicators
 
-By default, the chat will show a loading indicator if it does not get back a chunk or message before `messaging.messageLoadingIndicatorTimeoutSecs` expires. You can turn off this auto-showing of a loading indicator in this case by setting `messaging.messageLoadingIndicatorTimeoutSecs` to 0. If your message is taking a long time to stream or has many thinking steps or long running API calls, you may want to toggle the loading indicator on on your own.
+By default, the chat will show a loading indicator if it does not get back a chunk or message before `messaging.messageLoadingIndicatorTimeoutSecs` expires. You can turn off this auto-showing of a loading indicator in this case by setting `messaging.messageLoadingIndicatorTimeoutSecs` to 0. If your message is taking a long time to stream or has many thinking steps or long running API calls, you may want to toggle the loading indicator on manually using {@link ChatInstance.updateIsChatLoadingCounter}.
 
 ### Creating your custom history store
 

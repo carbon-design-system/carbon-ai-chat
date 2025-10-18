@@ -21,7 +21,13 @@ import {
   FinalResponseChunk,
   PartialItemChunk,
   CompleteItemChunk,
+  MessageRequest,
 } from "../../../../src/types/messaging/Messages";
+import {
+  CancellationReason,
+  CustomSendMessageOptions,
+} from "../../../../src/types/config/MessagingConfig";
+import { ChatInstance } from "../../../../src/types/instance/ChatInstance";
 
 describe("ChatInstance.messaging.addMessageChunk", () => {
   beforeEach(setupBeforeEach);
@@ -362,5 +368,156 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     // 4. Previous partial chunks are effectively discarded (replaced by final item)
     expect(messageItem.ui_state.streamingState).toBeUndefined();
     expect(messageItem.ui_state.isIntermediateStreaming).toBeUndefined();
+  });
+
+  describe("Abort signal behavior during streaming", () => {
+    it("should trigger abort signal with STOP_STREAMING reason when stop button is used", async () => {
+      const config = createBaseConfig();
+      let capturedAbortReason: string | undefined;
+      let isStreaming = false;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          instance: ChatInstance,
+        ) => {
+          isStreaming = true;
+
+          // Listen for abort
+          options.signal?.addEventListener("abort", () => {
+            capturedAbortReason = options.signal?.reason;
+            isStreaming = false;
+          });
+
+          const responseId = "streaming-test";
+          const itemId = "chunk-1";
+
+          // Send partial chunks
+          for (let i = 0; i < 10; i++) {
+            if (!isStreaming) {
+              break;
+            }
+
+            await instance.messaging.addMessageChunk({
+              streaming_metadata: { response_id: responseId },
+              partial_item: {
+                streaming_metadata: { id: itemId, cancellable: true },
+                response_type: MessageResponseTypes.TEXT,
+                text: `Word ${i} `,
+              },
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+
+          if (isStreaming) {
+            // Send final response if not cancelled
+            await instance.messaging.addMessageChunk({
+              final_response: {
+                id: responseId,
+                output: {
+                  generic: [
+                    {
+                      streaming_metadata: { id: itemId },
+                      response_type: MessageResponseTypes.TEXT,
+                      text: "Complete message",
+                    },
+                  ],
+                },
+              },
+            });
+          }
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      // Start sending message
+      const sendPromise = instance.send("test");
+
+      // Wait for streaming to start
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Simulate stop button click by cancelling current message
+      (
+        instance as any
+      ).serviceManager.messageService.cancelCurrentMessageRequest();
+
+      // Wait for message to complete/cancel
+      await sendPromise.catch(() => {});
+
+      // Verify abort was triggered with correct reason
+      expect(capturedAbortReason).toBe(CancellationReason.STOP_STREAMING);
+    });
+
+    it("should handle stream_stopped flag in CompleteItemChunk when cancelled", async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const responseId = "stopped-stream";
+      const itemId = "chunk-1";
+
+      // Send some partial chunks
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: responseId },
+        partial_item: {
+          streaming_metadata: { id: itemId, cancellable: true },
+          response_type: MessageResponseTypes.TEXT,
+          text: "Partial ",
+        },
+      });
+
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: responseId },
+        partial_item: {
+          streaming_metadata: { id: itemId, cancellable: true },
+          response_type: MessageResponseTypes.TEXT,
+          text: "text ",
+        },
+      });
+
+      // Send complete item with stream_stopped flag
+      await instance.messaging.addMessageChunk({
+        streaming_metadata: { response_id: responseId },
+        complete_item: {
+          streaming_metadata: { id: itemId, stream_stopped: true },
+          response_type: MessageResponseTypes.TEXT,
+          text: "Partial text",
+        },
+      });
+
+      // Verify the item was marked as stopped
+      const state = store.getState();
+      const localItemId = `${responseId}-${itemId}`;
+      const messageItem = state.allMessageItemsByID[localItemId];
+
+      expect(messageItem).toBeDefined();
+      expect(messageItem.ui_state.streamingState.isDone).toBe(true);
+      expect((messageItem.item as TextItem).text).toBe("Partial text");
+    });
+
+    it("should verify abort signal is passed to customSendMessage", async () => {
+      const config = createBaseConfig();
+      let signalReceived = false;
+      let signalIsAbortSignal = false;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          signalReceived = options.signal !== undefined;
+          signalIsAbortSignal = options.signal instanceof AbortSignal;
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+      await instance.send("test");
+
+      expect(signalReceived).toBe(true);
+      expect(signalIsAbortSignal).toBe(true);
+    });
   });
 });

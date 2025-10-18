@@ -12,6 +12,9 @@
  */
 
 import { ServiceManager } from "../services/ServiceManager";
+import { BusEventType } from "../../types/events/eventBusTypes";
+import { PublicChatState } from "../../types/instance/ChatInstance";
+import isEqual from "lodash-es/isEqual.js";
 
 /**
  * Copies persistedToBrowserStorage to the session history.
@@ -34,4 +37,30 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
   };
 }
 
-export { copyToSessionStorage };
+/**
+ * Fires a STATE_CHANGE event whenever the public state changes.
+ */
+function fireStateChangeEvent(serviceManager: ServiceManager) {
+  let previousState: PublicChatState =
+    serviceManager.actions.getPublicChatState();
+
+  return () => {
+    const newState = serviceManager.actions.getPublicChatState();
+
+    // Use deep equality check to detect any changes in the state
+    if (!isEqual(previousState, newState)) {
+      serviceManager.eventBus.fireSync(
+        {
+          type: BusEventType.STATE_CHANGE,
+          previousState,
+          newState,
+        },
+        serviceManager.instance,
+      );
+
+      previousState = newState;
+    }
+  };
+}
+
+export { copyToSessionStorage, fireStateChangeEvent };

@@ -35,22 +35,30 @@ export default async (_env, args) => {
   const port = await portfinder.getPortPromise({
     port: process.env.PORT || 3001,
   });
+
   const { mode = "development" } = args;
+
   return {
     mode,
+    // Speed up incremental builds
+    cache: { type: "filesystem" },
+
     entry: "./src/main.ts",
+
     output: {
       path: path.resolve(__dirname, "dist"),
       filename: "bundle.js",
       clean: true,
     },
+
     resolve: {
       extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
     },
+
     module: {
       rules: [
         {
-          test: /\.(ts|tsx|js|jsx)$/, // Combine TypeScript and JavaScript files in one rule
+          test: /\.(ts|tsx|js|jsx)$/,
           exclude: /node_modules/,
           use: {
             loader: "babel-loader",
@@ -74,6 +82,7 @@ export default async (_env, args) => {
         },
       ],
     },
+
     plugins: [
       new HtmlWebpackPlugin({
         template: "./index.html",
@@ -81,7 +90,15 @@ export default async (_env, args) => {
       }),
       new CopyVersionsPlugin(),
     ],
+
     devtool: "source-map",
+
+    // Debounce rebuilds after the first detected change
+    watchOptions: {
+      aggregateTimeout: 800, // ms
+      ignored: /node_modules/,
+    },
+
     devServer:
       mode === "development"
         ? {
@@ -92,6 +109,27 @@ export default async (_env, args) => {
             allowedHosts: "all",
             hot: true,
             open: true,
+
+            // Watch external build output and wait until writes settle
+            watchFiles: {
+              paths: [
+                path.resolve(
+                  __dirname,
+                  "..",
+                  "packages",
+                  "ai-chat",
+                  "dist",
+                  "**/*",
+                ),
+              ],
+              options: {
+                // chokidar options
+                awaitWriteFinish: {
+                  stabilityThreshold: 600, // ms of quiet before triggering
+                  pollInterval: 100,
+                },
+              },
+            },
           }
         : undefined,
   };

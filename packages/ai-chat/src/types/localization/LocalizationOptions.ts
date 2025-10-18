@@ -36,9 +36,25 @@ export interface TableLocalization {
 }
 
 /**
+ * Code snippet-specific localization options
+ */
+export interface CodeSnippetLocalization {
+  /** Feedback text shown after copying */
+  feedback?: string;
+  /** Text for show less button */
+  showLessText?: string;
+  /** Text for show more button */
+  showMoreText?: string;
+  /** Tooltip text for copy button */
+  tooltipContent?: string;
+}
+
+/**
  * Comprehensive localization options for markdown components
  */
 export interface LocalizationOptions {
   /** Table-specific localization */
   table?: TableLocalization;
+  /** Code snippet-specific localization */
+  codeSnippet?: CodeSnippetLocalization;
 }

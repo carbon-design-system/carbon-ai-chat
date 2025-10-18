@@ -7,7 +7,51 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/components/button/tokens" as *;
 @use "../../../styles/chat-theme";
+
+// Mixin to apply proper radius
+@mixin footer-button-radius($radius) {
+  // Non-column layout
+  &:not(.cds-aichat--footer-button-components--column) {
+    gap: rem(1px);
+
+    &:not(:has([kind="ghost"])) {
+      background-color: $button-separator;
+    }
+
+    &:has([kind="ghost"]) {
+      border-block-start: rem(1px) solid theme.$chat-bubble-border;
+    }
+
+    .cds-aichat--button-item {
+      &:first-child::part(button) {
+        border-end-start-radius: calc(#{$radius} - rem(1px));
+      }
+
+      &:last-child::part(button) {
+        border-end-end-radius: calc(#{$radius} - rem(1px));
+      }
+    }
+  }
+
+  // Column layout
+  &.cds-aichat--footer-button-components--column {
+    flex-direction: column;
+
+    .cds-aichat--button-item {
+      &[kind="ghost"] {
+        border-block-start: rem(1px) solid theme.$chat-bubble-border;
+      }
+
+      &:last-child::part(button) {
+        border-end-end-radius: calc(#{$radius} - rem(1px));
+        border-end-start-radius: calc(#{$radius} - rem(1px));
+      }
+    }
+  }
+}
 
 .cds-aichat--footer-button-components {
   display: flex;
@@ -22,35 +66,24 @@
   }
 }
 
-.cds-aichat--footer-button-components--column
-  .cds-aichat--button-item:last-child::part(button) {
-  border-end-start-radius: chat-theme.$card-border-radius;
+// Corner rounding styles
+// Note: Tiles shouldn't take the border radius when `.cds-aichat--widget--rounded` is set on the widget. as they are always rounded.
+// Important Note: FooterButtonComponents is a common child for `panel` and `tile`. we have to be specific with the selectors, and must scope them accordingly.
+
+// Footer button styles scoped to tile
+cds-tile {
+  .cds-aichat--footer-button-components {
+    @include footer-button-radius(layout.$spacing-03);
+  }
 }
 
-.cds-aichat--footer-button-components
-  .cds-aichat--button-item:only-child::part(button) {
-  border-end-start-radius: chat-theme.$card-border-radius;
-}
-
-.cds-aichat--footer-button-components
-  .cds-aichat--button-item:last-child::part(button) {
-  border-end-end-radius: chat-theme.$card-border-radius;
-}
-
+// Usage inside rounded widget panel
 .cds-aichat--widget--rounded
   .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components
-  .cds-aichat--button-item:first-child::part(button) {
-  border-end-start-radius: chat-theme.$border-radius;
+  .cds-aichat--footer-button-components {
+  @include footer-button-radius(chat-theme.$border-radius);
 }
-
-.cds-aichat--widget--rounded
-  .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components
-  .cds-aichat--button-item:last-child::part(button) {
-  border-end-end-radius: chat-theme.$border-radius;
-}
-
+// Corner rounding styles end
 .cds-aichat--widget__animation-container--with-branding-banner
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components,
@@ -67,18 +100,6 @@
   .cds-aichat--button-item:last-child::part(button) {
     border-end-end-radius: 0;
   }
-}
-
-.cds-aichat--footer-button-components--column {
-  flex-direction: column;
-}
-
-.cds-aichat--widget--rounded
-  .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components.cds-aichat--footer-button-components--column
-  .cds-aichat--button-item:last-child::part(button) {
-  border-end-end-radius: chat-theme.$border-radius;
-  border-end-start-radius: chat-theme.$border-radius;
 }
 
 .cds-aichat--widget__animation-container--with-branding-banner

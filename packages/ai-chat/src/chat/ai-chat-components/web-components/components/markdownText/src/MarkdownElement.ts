@@ -52,7 +52,7 @@ class MarkdownElement extends LitElement {
   localization?: LocalizationOptions;
 
   @property({ type: Boolean })
-  dark = false;
+  highlight = true;
 
   private fullText = "";
 
@@ -64,11 +64,11 @@ class MarkdownElement extends LitElement {
       this.scheduleTokenParse();
     }
 
-    // Re-render if dark mode, localization, or other rendering properties changed
+    // Re-render if localization or other rendering properties changed
     if (
-      changedProperties.has("dark") ||
       changedProperties.has("localization") ||
-      changedProperties.has("streaming")
+      changedProperties.has("streaming") ||
+      changedProperties.has("highlight")
     ) {
       this.scheduleRender();
     }
@@ -124,7 +124,7 @@ class MarkdownElement extends LitElement {
         sanitize: this.sanitizeHTML,
         streaming: this.streaming,
         localization: this.localization,
-        dark: this.dark,
+        highlight: this.highlight,
       });
 
       if (this.debug) {
@@ -145,7 +145,7 @@ class MarkdownElement extends LitElement {
       sanitize: this.sanitizeHTML,
       streaming: this.streaming,
       localization: this.localization,
-      dark: this.dark,
+      highlight: this.highlight,
     });
   }, 50);
 }

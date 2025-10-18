@@ -13,6 +13,12 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from "../../helpers/chatInstanceTestHelpers";
+import { MessageRequest } from "../../../../src/types/messaging/Messages";
+import {
+  CancellationReason,
+  CustomSendMessageOptions,
+} from "../../../../src/types/config/MessagingConfig";
+import { ChatInstance } from "../../../../src/types/instance/ChatInstance";
 
 describe("ChatInstance.messaging.restartConversation", () => {
   beforeEach(setupBeforeEach);
@@ -76,6 +82,122 @@ describe("ChatInstance.messaging.restartConversation", () => {
       ).toBe(true);
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe("Abort signal behavior", () => {
+    it("should trigger abort signal with CONVERSATION_RESTARTED reason when restarting during streaming", async () => {
+      const config = createBaseConfig();
+      let capturedAbortReason: string | undefined;
+
+      // Create custom send message that captures abort signal
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          // Listen for abort
+          options.signal?.addEventListener("abort", () => {
+            capturedAbortReason = options.signal?.reason;
+          });
+
+          // Simulate streaming that takes time
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      // Send a message (starts streaming)
+      const sendPromise = instance.send("test message");
+
+      // Wait a moment to ensure message starts processing
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Restart conversation while streaming
+      await instance.messaging.restartConversation();
+
+      // Wait for send to complete/cancel
+      await sendPromise.catch(() => {
+        /* Expected to be cancelled */
+      });
+
+      // Verify abort was triggered with correct reason
+      expect(capturedAbortReason).toBe(
+        CancellationReason.CONVERSATION_RESTARTED,
+      );
+    });
+
+    it("should cancel multiple pending messages on restart", async () => {
+      const config = createBaseConfig();
+      let abortCount = 0;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          options.signal?.addEventListener("abort", () => {
+            abortCount++;
+          });
+
+          // Simulate long streaming
+          await new Promise((resolve) => setTimeout(resolve, 200));
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      // Send multiple messages
+      const send1 = instance.send("message 1");
+      const send2 = instance.send("message 2");
+
+      // Wait a moment to ensure messages start processing
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Restart conversation
+      await instance.messaging.restartConversation();
+
+      // Wait for all sends to complete/cancel
+      await Promise.allSettled([send1, send2]);
+
+      // At least one message should be aborted
+      expect(abortCount).toBeGreaterThan(0);
+    });
+
+    it("should use enum value for abort reason", async () => {
+      const config = createBaseConfig();
+      let capturedReason: string | undefined;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          options.signal?.addEventListener("abort", () => {
+            capturedReason = options.signal?.reason;
+          });
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      const sendPromise = instance.send("test");
+
+      // Wait a moment to ensure message starts processing
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      await instance.messaging.restartConversation();
+      await sendPromise.catch(() => {});
+
+      // Verify the reason matches the enum value
+      expect(capturedReason).toBe("Conversation restarted");
+      expect(capturedReason).toBe(CancellationReason.CONVERSATION_RESTARTED);
     });
   });
 });

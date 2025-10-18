@@ -1,4 +1,4 @@
-// cspell:words CDSAIChatTileContainer aichat
+// cspell:words CDSAIChatProcessing aichat
 /*
  *  Copyright IBM Corp. 2025
  *
@@ -9,45 +9,52 @@
  */
 
 import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/web-components/es/components/tile/tile.js";
-import "@carbon/ai-chat-components/es/components/tile-container/index.js";
-import CDSAIChatTileContainer from "@carbon/ai-chat-components/es/components/tile-container/src/tile-container.js";
+import "@carbon/ai-chat-components/es/components/processing/index.js";
+import CDSAIChatProcessing from "@carbon/ai-chat-components/es/components/processing/src/processing.js";
 
 /**
  * This repository uses the @web/test-runner library for testing
  * Documentation on writing tests, plugins, and commands
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
-describe("aichat tile", function () {
-  it("should render cds-aichat-tile-container in DOM", async () => {
-    const el = await fixture<CDSAIChatTileContainer>(
-      html`<cds-aichat-tile-container>
-        <cds-tile>tile</cds-tile>
-      </cds-aichat-tile-container>`,
+describe("aichat processing", function () {
+  it("should render cds-aichat-processing in DOM", async () => {
+    const el = await fixture<CDSAIChatProcessing>(
+      html`<cds-aichat-processing></cds-aichat-processing>`,
     );
 
-    await expect(el).dom.to.equalSnapshot();
+    expect(el).to.be.instanceOf(CDSAIChatProcessing);
+    expect(el.tagName.toLowerCase()).to.equal("cds-aichat-processing");
+    expect(el.shadowRoot?.querySelector("div[data-carbon-theme]")).to.exist;
   });
 
-  it("should place the light dom styles into the header", async () => {
-    await fixture<CDSAIChatTileContainer>(
-      html`<cds-aichat-tile-container>
-          <cds-tile>tile</cds-tile>
-        </cds-aichat-tile-container>
-        <cds-aichat-tile-container>
-          <cds-tile>tile</cds-tile>
-        </cds-aichat-tile-container>`,
+  it("should render with loop property", async () => {
+    const el = await fixture<CDSAIChatProcessing>(
+      html`<cds-aichat-processing loop></cds-aichat-processing>`,
     );
 
-    const styleId = "cds-aichat-tile-container-light-dom-styles";
-    const style = document.querySelectorAll(
-      `style#${styleId}`,
-    )[0] as HTMLStyleElement;
-    expect(style).to.exist;
-    expect(style?.textContent).to.include("cds-tile");
+    expect(el.loop).to.be.true;
+    const linearClass = el.shadowRoot?.querySelector(".linear");
+    expect(linearClass).to.exist;
+  });
 
-    // ensure the style is not duplicated
-    const styles = document.querySelectorAll(`style#${styleId}`);
-    expect(styles.length).to.equal(1);
+  it("should render with quickLoad property", async () => {
+    const el = await fixture<CDSAIChatProcessing>(
+      html`<cds-aichat-processing quickLoad></cds-aichat-processing>`,
+    );
+
+    expect(el.quickLoad).to.be.true;
+    const quickLoadClass = el.shadowRoot?.querySelector(".quick-load");
+    expect(quickLoadClass).to.exist;
+  });
+
+  it("should render with custom carbonTheme", async () => {
+    const el = await fixture<CDSAIChatProcessing>(
+      html`<cds-aichat-processing carbonTheme="g100"></cds-aichat-processing>`,
+    );
+
+    expect(el.carbonTheme).to.equal("g100");
+    const div = el.shadowRoot?.querySelector("div[data-carbon-theme]");
+    expect(div?.getAttribute("data-carbon-theme")).to.equal("g100");
   });
 });
