@@ -19,6 +19,8 @@
     "examples/react/history",
     "examples/react/watch-state",
     "examples/react/watsonx",
+    "examples/react/jest-jsdom",
+    "examples/react/jest-happydom",
     "examples/web-components/basic",
     "examples/web-components/custom-element",
     "examples/web-components/history",
