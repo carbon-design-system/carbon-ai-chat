@@ -35,6 +35,15 @@
     "./dist/es/": "./dist/es/",
     "./dist/es-custom/": "./dist/es-custom/"
   },
+  "typesVersions": {
+    "*": {
+      "es": ["dist/types/aiChatEntry.d.ts"],
+      "es-custom": ["dist/types/aiChatEntry.d.ts"],
+      "server": ["dist/types/serverEntry.d.ts"],
+      "web-components/cds-aichat-container": ["dist/types/aiChatEntry.d.ts"],
+      "web-components/cds-aichat-custom-element": ["dist/types/aiChatEntry.d.ts"]
+    }
+  },
   "files": [
     "dist/es",
     "dist/es-custom",
