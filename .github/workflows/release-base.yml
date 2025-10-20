@@ -82,24 +82,24 @@ jobs:
       - name: Publish full minor release (ie. v1.x.0)
         if: github.event.inputs.type == 'full minor release'
         run: |
-          npx lerna publish minor --conventional-graduate --no-git-tag-version ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
         if: github.event.inputs.type == 'first minor rc'
         run: |
-          npx lerna publish preminor --conventional-prerelease --no-git-tag-version --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish full patch release (ie. v1.0.x)
         if: github.event.inputs.type == 'full patch release'
         run: |
-          npx lerna publish patch --conventional-graduate --no-git-tag-version ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first patch RC (ie. v1.0.x-rc.0)
         if: github.event.inputs.type == 'first patch rc'
         run: |
-          npx lerna publish prepatch --conventional-prerelease --no-git-tag-version --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish subsequent RC (ie. v1.0.0-rc.x)
         if: github.event.inputs.type == 'subsequent rc'
         run: |
-          npx lerna publish prerelease --conventional-prerelease --no-git-tag-version --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish prerelease --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
