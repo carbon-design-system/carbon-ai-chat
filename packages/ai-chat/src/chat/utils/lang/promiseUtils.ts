@@ -11,16 +11,8 @@
  * Miscellaneous utils for dealing with promises.
  */
 
-/**
- * This is an async function that will simply wait for the given amount of time.
- *
- * @param milliseconds The amount of time in milliseconds to wait.
- */
-async function sleep(milliseconds: number) {
-  await new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
-  });
-}
+// Re-export shared helpers sourced from @carbon/ai-chat-utils to avoid duplication.
+export { sleep } from "@carbon/ai-chat-utils";
 
 /**
  * This function returns a Promise that will be resolved if the provided Promise has resolved within the duration
@@ -48,4 +40,4 @@ function resolveOrTimeout<T>(
   return Promise.race([promise, timeout]);
 }
 
-export { sleep, resolveOrTimeout };
+export { resolveOrTimeout };

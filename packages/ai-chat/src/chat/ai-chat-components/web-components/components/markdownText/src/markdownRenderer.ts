@@ -7,28 +7,27 @@
  *  @license
  */
 
-/**
- * This file contains the complete pipeline for processing markdown text from input
- * to rendered HTML output. The processing flow is:
- *
- * Raw markdown -> flat list of markdown-it tokens -> flat list to tree -> diffing any previous tree and adding keys for Lit -> processing by Lit.
- */
-
 import DOMPurify from "dompurify";
 import { html, TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import MarkdownIt, { Token } from "markdown-it";
-import markdownItAttrs from "markdown-it-attrs";
-import { markdownItHighlight } from "./plugins/markdownItHighlight";
+import { nothing } from "lit";
+import { Directive, directive } from "lit/directive.js";
+import { Token } from "markdown-it";
 
 import { LocalizationOptions } from "../../../../../../types/localization/LocalizationOptions";
 import "@carbon/web-components/es/components/list/index.js";
 import "../../codeElement/cds-aichat-code";
 import "../../table/cds-aichat-table";
-
-import { nothing } from "lit";
-import { Directive, directive } from "lit/directive.js";
+import {
+  DEFAULT_PAGINATION_STATUS_TEXT,
+  DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
+  EMPTY_HEADERS,
+  EMPTY_TABLE_ROWS,
+  extractTableData,
+} from "./utils/tableTokenHelpers";
+import { combineConsecutiveHtmlInline } from "./utils/htmlInlineHelpers";
+import type { TokenTree } from "./markdownTokenTree";
 
 // Generic attribute spread for Lit templates
 class SpreadAttrs extends Directive {
@@ -52,21 +51,9 @@ class SpreadAttrs extends Directive {
 const spread = directive(SpreadAttrs);
 
 /**
- * Represents a node in the token tree structure.
- */
-interface TokenTree {
-  /** Unique identifier for this node, used for efficient diffing */
-  key: string;
-  /** The original markdown-it token data */
-  token: Partial<Token>;
-  /** Child nodes for nested content */
-  children: TokenTree[];
-}
-
-/**
  * Configuration options for rendering TokenTrees into HTML.
  */
-interface RenderTokenTreeOptions {
+export interface RenderTokenTreeOptions {
   /** Whether to sanitize HTML content using DOMPurify */
   sanitize: boolean;
 
@@ -90,331 +77,12 @@ interface RenderTokenTreeOptions {
   dark?: boolean;
 }
 
-/**
- * Pre-configured markdown-it instance that allows HTML content.
- */
-const htmlMarkdown = new MarkdownIt({
-  html: true,
-  breaks: true,
-  linkify: true,
-})
-  .use(markdownItAttrs, {
-    leftDelimiter: "{{",
-    rightDelimiter: "}}",
-    allowedAttributes: ["target", "rel", "class", "id"],
-  })
-  .use(markdownItHighlight);
-
-/**
- * Pre-configured markdown-it instance that strips HTML content.
- * Same features as htmlMarkdown but with HTML disabled for security.
- */
-const noHtmlMarkdown = new MarkdownIt({
-  html: false,
-  breaks: true,
-  linkify: true,
-})
-  .use(markdownItAttrs, {
-    leftDelimiter: "{{",
-    rightDelimiter: "}}",
-    allowedAttributes: ["target", "rel", "class", "id"],
-  })
-  .use(markdownItHighlight);
-
-/**
- * Parses markdown text into a flat array of markdown-it tokens.
- */
-function markdownToMarkdownItTokens(
-  fullText: string,
-  allowHtml = true,
-): Token[] {
-  return allowHtml
-    ? htmlMarkdown.parse(fullText, {})
-    : noHtmlMarkdown.parse(fullText, {});
-}
-
-/**
- * Converts a flat list of markdown-it tokens into a tree.
- */
-function buildTokenTree(tokens: Token[]): TokenTree {
-  // Create the root node that will contain all top-level content
-  const root: TokenTree = {
-    key: "root",
-    token: {
-      type: "root",
-      tag: "",
-      nesting: 0,
-      level: 0,
-      content: "",
-      attrs: null,
-      children: null,
-      markup: "",
-      block: true,
-      hidden: false,
-      map: null,
-      info: "",
-      meta: null,
-    },
-    children: [],
-  };
-
-  // Stack tracks the current nesting context while building the tree
-  const stack: TokenTree[] = [root];
-
-  tokens.forEach((token) => {
-    // Create a new node for this token
-    const node: TokenTree = {
-      key: generateKey(token),
-      token,
-      children: [],
-    };
-
-    // Handle inline tokens that contain their own child tokens
-    // (e.g., a paragraph containing bold, italic, and text tokens)
-    if (token.type === "inline" && token.children?.length) {
-      node.children = buildTokenTree(token.children).children;
-    }
-
-    const current = stack[stack.length - 1];
-
-    if (token.nesting === 1) {
-      // Opening tag: add node to current container and descend into it
-      current.children.push(node);
-      stack.push(node);
-    } else if (token.nesting === -1) {
-      // Closing tag: exit current container
-      stack.pop();
-    } else {
-      // Self-contained token: add to current container
-      current.children.push(node);
-    }
-  });
-
-  return root;
-}
-
-/**
- * Generates a unique string key for a markdown-it token.
- *
- * The key combines the token type, HTML tag, and source position to create
- * a stable identifier that can be used by Lit's repeat() directive for
- * efficient DOM updates.
- */
-function generateKey(token: Token): string {
-  const map = token.map ? token.map.join("-") : "";
-  return `${token.type}:${token.tag}:${map}`;
-}
-
-/**
- * Compares two TokenTree structures and creates a new tree that reuses
- * unchanged nodes from the old tree.
- *
- * This optimization is crucial for performance when content is being streamed
- * or updated incrementally.
- */
-function diffTokenTree(
-  oldTree: TokenTree | undefined,
-  newTree: TokenTree,
-): TokenTree {
-  // If keys don't match, the entire subtree changed - use new tree
-  if (!oldTree || oldTree.key !== newTree.key) {
-    return newTree;
-  }
-
-  // Keys match so create merged tree reusing unchanged children
-  const merged: TokenTree = {
-    key: newTree.key,
-    token: newTree.token,
-    children: [],
-  };
-
-  // Create lookup map of old children by key for efficient comparison
-  const oldChildrenByKey = new Map(
-    oldTree.children.map((child) => [child.key, child]),
-  );
-
-  // Process each new child, reusing old ones where possible
-  newTree.children.forEach((newChild) => {
-    const oldChild = oldChildrenByKey.get(newChild.key);
-
-    if (oldChild) {
-      // Recursively diff matching children
-      merged.children.push(diffTokenTree(oldChild, newChild));
-    } else {
-      // Use new child as-is
-      merged.children.push(newChild);
-    }
-  });
-
-  return merged;
-}
-
-/**
- * Converts markdown into a tree with keys on it for Lit.
- */
-function markdownToTokenTree(
-  markdown: string,
-  lastTree?: TokenTree,
-  allowHtml = true,
-): TokenTree {
-  // Parse markdown into flat token array
-  const tokens = markdownToMarkdownItTokens(markdown, allowHtml);
-
-  // Build hierarchical tree structure
-  const tree = buildTokenTree(tokens);
-
-  // Optimize by reusing unchanged parts of previous tree
-  return diffTokenTree(lastTree, tree);
-}
-
-// Static constants to provide the table component when we are just showing the skeleton.
-const EMPTY_HEADERS: string[] = [];
-const EMPTY_TABLE_ROWS: { cells: string[] }[] = [];
 const EMPTY_ATTRS = {};
-
-// Default localization functions for table pagination
-const DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT = ({ count }: { count: number }) =>
-  `${count} items`;
-const DEFAULT_PAGINATION_STATUS_TEXT = ({
-  start,
-  end,
-  count,
-}: {
-  start: number;
-  end: number;
-  count: number;
-}) => `${start}–${end} of ${count} items`;
-
-/**
- * Extracts tabular data from a table TokenTree node.
- *
- * Converts the hierarchical markdown table structure into the flat
- * header/rows format expected by the cds-aichat-table component.
- *
- * I think we can probably get rid of all this when we move to using native carbon table web components.
- */
-function extractTableData(tableNode: TokenTree): {
-  headers: string[];
-  rows: string[][];
-} {
-  const headers: string[] = [];
-  const rows: string[][] = [];
-
-  for (const child of tableNode.children) {
-    if (child.token.tag === "thead") {
-      // Extract column headers
-      for (const theadChild of child.children) {
-        if (theadChild.token.tag === "tr") {
-          for (const thChild of theadChild.children) {
-            if (thChild.token.tag === "th") {
-              headers.push(extractTextContent(thChild));
-            }
-          }
-        }
-      }
-    } else if (child.token.tag === "tbody") {
-      // Extract data rows
-      for (const tbodyChild of child.children) {
-        if (tbodyChild.token.tag === "tr") {
-          const row: string[] = [];
-          for (const tdChild of tbodyChild.children) {
-            if (tdChild.token.tag === "td") {
-              row.push(extractTextContent(tdChild));
-            }
-          }
-          rows.push(row);
-        }
-      }
-    }
-  }
-
-  return { headers, rows };
-}
-
-/**
- * Recursively extracts plain text content from a TokenTree node.
- *
- * This is used for table cells and other contexts where we need the
- * text content without HTML formatting.
- */
-function extractTextContent(node: TokenTree): string {
-  // Handle direct text tokens
-  if (node.token.type === "text") {
-    return node.token.content;
-  }
-
-  // Handle inline code
-  if (node.token.type === "code_inline") {
-    return node.token.content;
-  }
-
-  // Recursively extract text from child nodes
-  let text = "";
-  for (const child of node.children) {
-    text += extractTextContent(child);
-  }
-
-  return text;
-}
-
-/**
- * Attempts to merge inline HTML sequences like `<b>bold</b>` that markdown-it splits
- * into three separate tokens (`<b>`, text, `</b>`). Rendering those tokens individually
- * causes the browser to immediately close the opening tag, which moves the text outside
- * the intended element. We detect those sequences and collapse them into a single
- * html_inline token so Lit renders the full element at once.
- */
-function combineConsecutiveHtmlInline(children: TokenTree[]): TokenTree[] {
-  if (children.length < 3) {
-    return children;
-  }
-
-  const combinedChildren: TokenTree[] = [];
-  let didCombine = false;
-
-  for (let index = 0; index < children.length; index++) {
-    const first = children[index];
-    const second = children[index + 1];
-    const third = children[index + 2];
-
-    if (
-      second &&
-      third &&
-      first.token.type === "html_inline" &&
-      second.token.type === "text" &&
-      third.token.type === "html_inline"
-    ) {
-      const openingTag = first.token.content || "";
-      const textContent = second.token.content || "";
-      const closingTag = third.token.content || "";
-
-      // Verify opening tag pattern: <tagname> or <tagname attr="value">
-      const openingMatch = openingTag.match(/^<([a-zA-Z][a-zA-Z0-9]*)[^>]*>$/);
-      if (openingMatch && closingTag === `</${openingMatch[1]}>`) {
-        combinedChildren.push({
-          key: `${first.key}|${second.key}|${third.key}`,
-          token: {
-            ...first.token,
-            content: openingTag + textContent + closingTag,
-          },
-          children: [],
-        });
-        index += 2;
-        didCombine = true;
-        continue;
-      }
-    }
-
-    combinedChildren.push(first);
-  }
-
-  return didCombine ? combinedChildren : children;
-}
 
 /**
  * Converts TokenTree to Lit TemplateResult.
  */
-function renderTokenTree(
+export function renderTokenTree(
   node: TokenTree,
   options: RenderTokenTreeOptions,
 ): TemplateResult {
@@ -719,13 +387,3 @@ function renderWithStaticTag(
       return html`<div ${spread(attrs)}>${content}</div>`;
   }
 }
-
-export {
-  type TokenTree,
-  type RenderTokenTreeOptions,
-  markdownToMarkdownItTokens,
-  markdownToTokenTree,
-  renderTokenTree,
-  buildTokenTree,
-  diffTokenTree,
-};

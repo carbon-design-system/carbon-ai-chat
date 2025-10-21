@@ -83,6 +83,8 @@
     "@types/node": "^24.0.12",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
+    "@carbon/ai-chat-utils": "0.0.0",
+    "@open-wc/testing": "4.0.0",
     "autoprefixer": "^10.4.21",
     "babel-jest": "^29.7.0",
     "concurrently": "^9.2.0",
@@ -107,7 +109,12 @@
     "ts-lit-plugin": "^2.0.2",
     "tsx": "^4.19.3",
     "typedoc": "^0.28.0",
-    "wait-on": "^9.0.1"
+    "wait-on": "^9.0.1",
+    "@web/dev-server-esbuild": "1.0.4",
+    "@web/test-runner": "0.19.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "playwright": "^1.48.1",
+    "web-dev-server-plugin-lit-css": "^4.0.0"
   },
   "peerDependencies": {
     "@carbon/icons": ">=11.53.0 <12.0.0",
@@ -131,7 +138,6 @@
     "intl-messageformat": "^10.7.15",
     "lodash-es": "^4.17.0",
     "markdown-it": "^14.1.0",
-    "markdown-it-attrs": "^4.1.6",
     "react-intl": "^7.1.6",
     "react-player": "2.15.1",
     "swiper": "^11.1.1",
@@ -143,7 +149,9 @@
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently \"rollup -c ./tasks/rollup.aichat.js --watch\" \"typedoc --watch\" \"serve dist/docs/carbon-tsdocs -l 5001 --no-port-switching\" \"wait-on dist/docs/carbon-tsdocs/index.html && open http://localhost:5001\"",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id ef967584-5788-47d4-b9c2-a60da7ad901d --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src --wc",
-    "test": "jest"
+    "test": "npm run test:jest && npm run test:web",
+    "test:jest": "jest",
+    "test:web": "web-test-runner --config ./web-test-runner.config.js"
   },
   "repository": {
     "type": "git",

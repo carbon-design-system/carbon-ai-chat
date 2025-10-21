@@ -1,0 +1,22 @@
+{
+  "name": "@carbon/ai-chat-utils",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared utilities and sample content for Carbon AI Chat demos, tests, and examples.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "default": "./src/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "index.d.ts"
+  ]
+}

@@ -14,6 +14,7 @@ import {
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
+import { sleep } from "@carbon/ai-chat-utils";
 
 const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is mocked entirely on the client side. It does not show all potential functionality.
 
@@ -164,12 +165,6 @@ async function doFakeTextStreaming(
   } finally {
     signal?.removeEventListener("abort", abortHandler);
   }
-}
-
-async function sleep(milliseconds: number) {
-  await new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
-  });
 }
 
 async function customSendMessage(

@@ -15,7 +15,7 @@ import {
   StreamChunk,
 } from "@carbon/ai-chat";
 
-import { sleep } from "../framework/utils";
+import { sleep } from "@carbon/ai-chat-utils";
 import { WORD_DELAY } from "./constants";
 
 const TEXT =
