@@ -30,8 +30,13 @@ import {
 
 import { v4 as uuid } from "uuid";
 
-import { sleep } from "@carbon/ai-chat-utils";
 import { MARKDOWN } from "../customSendMessage/constants";
+
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 /**
  * This is a no-op function that's for the purpose of verifying at build time that a given item matches a given

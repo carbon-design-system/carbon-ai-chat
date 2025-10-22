@@ -14,7 +14,11 @@ import {
   StreamChunk,
 } from "@carbon/ai-chat";
 
-import { sleep } from "@carbon/ai-chat-utils";
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 const FAKE_DATA = `Some text that came from the server inside the user_defined object. Bacon ipsum dolor amet salami capicola chislic, meatball tail beef ham hock brisket cow ground round chuck. Turkey pork loin pastrami, ribeye jerky meatball drumstick kielbasa corned beef shankle picanha. Spare ribs leberkas hamburger strip steak beef ribs sirloin brisket capicola, sausage meatball drumstick ham swine alcatra. Pastrami filet mignon salami, flank short loin t-bone tenderloin ribeye brisket.`;
 

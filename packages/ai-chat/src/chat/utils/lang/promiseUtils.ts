@@ -11,8 +11,11 @@
  * Miscellaneous utils for dealing with promises.
  */
 
-// Re-export shared helpers sourced from @carbon/ai-chat-utils to avoid duplication.
-export { sleep } from "@carbon/ai-chat-utils";
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 /**
  * This function returns a Promise that will be resolved if the provided Promise has resolved within the duration
@@ -40,4 +43,4 @@ function resolveOrTimeout<T>(
   return Promise.race([promise, timeout]);
 }
 
-export { resolveOrTimeout };
+export { resolveOrTimeout, sleep };

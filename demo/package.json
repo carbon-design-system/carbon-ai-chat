@@ -34,7 +34,6 @@
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
-    "@carbon/ai-chat-utils": "0.0.0",
     "@playwright/test": "^1.54.1",
     "@types/node": "^24.0.14",
     "babel-loader": "^10.0.0",
