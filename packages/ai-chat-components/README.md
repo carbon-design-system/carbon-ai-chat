@@ -19,6 +19,10 @@ yarn add @carbon/ai-chat-components
 
 This will install the package that contains both the web component and React versions of the chat components.
 
+## Storybook
+
+The availiable AI Chat components are viewable in our storybook: https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
+
 ## 📝 License
 
 Licensed under the [Apache 2.0 License](/LICENSE).
