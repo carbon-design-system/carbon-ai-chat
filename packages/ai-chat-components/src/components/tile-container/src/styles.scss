@@ -79,6 +79,10 @@ $prefix: "cds-aichat";
     #{$carbon-prefix}-button {
       inline-size: 100%;
       max-inline-size: unset;
+
+      &[kind="ghost"] > svg[slot="icon"] {
+        fill: theme.$link-primary;
+      }
     }
 
     // If the footer has only ghost buttons and is not stacked, we have to add border top to the footer (not the buttons)

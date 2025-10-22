@@ -77,7 +77,6 @@ const footerActionVariants = {
       View details
       ${iconLoader(Maximize16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,

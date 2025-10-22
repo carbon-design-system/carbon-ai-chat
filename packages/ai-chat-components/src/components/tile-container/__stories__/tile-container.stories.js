@@ -61,7 +61,6 @@ const footerActionVariants = {
       View carbon docs
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
@@ -77,21 +76,18 @@ const footerActionVariants = {
       View Carbon Docs 1
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
     <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 2
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
     <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 3
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
@@ -230,7 +226,6 @@ export const WithImage = {
             Select
             ${iconLoader(ArrowRight16, {
               slot: "icon",
-              style: "fill: var(--cds-link-primary)",
             })}
           </cds-button>
         `,
