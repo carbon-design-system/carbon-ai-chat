@@ -15,8 +15,13 @@ import {
   StreamChunk,
 } from "@carbon/ai-chat";
 
-import { sleep } from "@carbon/ai-chat-utils";
 import { WORD_DELAY } from "./constants";
+
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 const TEXT =
   "Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times. Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.";

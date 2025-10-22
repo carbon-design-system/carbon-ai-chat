@@ -25,8 +25,7 @@
     "examples/web-components/watch-state",
     "examples/web-components/watsonx",
     "packages/ai-chat",
-    "packages/ai-chat-components",
-    "utils"
+    "packages/ai-chat-components"
   ],
   "scripts": {
     "aiChat:build": "lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",

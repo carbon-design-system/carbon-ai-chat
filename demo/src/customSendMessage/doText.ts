@@ -11,6 +11,7 @@ import {
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   ChatInstance,
+  CustomSendMessageOptions,
   GenericItemMessageFeedbackOptions,
   MessageResponse,
   MessageResponseTypes,
@@ -19,7 +20,6 @@ import {
   UserType,
 } from "@carbon/ai-chat";
 
-import { sleep } from "@carbon/ai-chat-utils";
 import {
   CHAIN_OF_THOUGHT_TEXT,
   CHAIN_OF_THOUGHT_TEXT_STREAM,
@@ -29,6 +29,12 @@ import {
   WORD_DELAY,
 } from "./constants";
 import { RESPONSE_MAP } from "./responseMap";
+
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 const defaultHumanUserProfile: ResponseUserProfile = {
   id: "1",
