@@ -46,7 +46,7 @@ interface SelectProps extends HasLanguagePack, HasServiceManager {
    * Indicates if HTML should be removed from text before converting Markdown to HTML.
    * This is used to sanitize data coming from a human agent.
    */
-  shouldRemoveHTMLBeforeMarkdownConversion?: boolean;
+  removeHTML?: boolean;
 }
 
 function SelectComponent(props: SelectProps) {
@@ -58,7 +58,7 @@ function SelectComponent(props: SelectProps) {
     languagePack,
     disableUserInputs,
     serviceManager,
-    shouldRemoveHTMLBeforeMarkdownConversion,
+    removeHTML,
   } = props;
 
   const [isBeingOpened, setIsBeingOpened] = useState(false);
@@ -116,9 +116,7 @@ function SelectComponent(props: SelectProps) {
         title={title}
         description={description}
         id={`cds-aichat--select-uuid-${id}-label`}
-        shouldRemoveHTMLBeforeMarkdownConversion={
-          shouldRemoveHTMLBeforeMarkdownConversion
-        }
+        removeHTML={removeHTML}
       />
       <div
         className={cx("cds-aichat--select-holder", {

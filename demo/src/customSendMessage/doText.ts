@@ -19,7 +19,7 @@ import {
   UserType,
 } from "@carbon/ai-chat";
 
-import { sleep } from "../framework/utils";
+import { sleep } from "@carbon/ai-chat-utils";
 import {
   CHAIN_OF_THOUGHT_TEXT,
   CHAIN_OF_THOUGHT_TEXT_STREAM,

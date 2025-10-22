@@ -29,7 +29,7 @@ interface RichTextProps {
    * Indicates if HTML should be removed from text before converting Markdown to HTML.
    * This is used to sanitize data coming from a human agent.
    */
-  shouldRemoveHTMLBeforeMarkdownConversion?: boolean;
+  removeHTML?: boolean;
 
   /**
    * If defined, this value indicates if this component should override the default sanitization setting.
@@ -50,12 +50,7 @@ interface RichTextProps {
  * Warning: This should only be used with trusted text. Do NOT use this with text that was entered by the end-user.
  */
 function RichText(props: RichTextProps) {
-  const {
-    text,
-    shouldRemoveHTMLBeforeMarkdownConversion,
-    overrideSanitize,
-    streaming,
-  } = props;
+  const { text, removeHTML, overrideSanitize, streaming } = props;
 
   let doSanitize = useShouldSanitizeHTML();
   if (overrideSanitize !== undefined) {
@@ -140,9 +135,7 @@ function RichText(props: RichTextProps) {
       streaming={streaming}
       localization={localization}
       dark={isDarkTheme}
-      shouldRemoveHTMLBeforeMarkdownConversion={
-        shouldRemoveHTMLBeforeMarkdownConversion
-      }
+      removeHTML={removeHTML}
     />
   );
 }
@@ -150,9 +143,7 @@ function RichText(props: RichTextProps) {
 const RichTextExport = React.memo(RichText, (prevProps, nextProps) => {
   // Custom comparison to prevent re-render when only streaming changes but content is the same
   const textEqual = prevProps.text === nextProps.text;
-  const htmlConversionEqual =
-    prevProps.shouldRemoveHTMLBeforeMarkdownConversion ===
-    nextProps.shouldRemoveHTMLBeforeMarkdownConversion;
+  const htmlConversionEqual = prevProps.removeHTML === nextProps.removeHTML;
   const sanitizeEqual =
     prevProps.overrideSanitize === nextProps.overrideSanitize;
 

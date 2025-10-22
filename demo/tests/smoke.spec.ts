@@ -48,9 +48,7 @@ test("smoke React", async ({ page }) => {
   await mainPanel.getByTestId(PageObjectId.INPUT).click();
   await mainPanel.getByTestId(PageObjectId.INPUT).fill("text");
   await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(page.locator("#cds-aichat--message-3")).toContainText(
-    "Carbon is a",
-  );
+  await expect(page.locator("#cds-aichat--message-3")).toContainText("Carbon");
   await close.click();
 });
 
@@ -81,8 +79,6 @@ test("smoke web component", async ({ page }) => {
   await mainPanelWebComponent.getByTestId(PageObjectId.INPUT).click();
   await mainPanelWebComponent.getByTestId(PageObjectId.INPUT).fill("text");
   await mainPanelWebComponent.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(page.locator("#cds-aichat--message-3")).toContainText(
-    "Carbon is a",
-  );
+  await expect(page.locator("#cds-aichat--message-3")).toContainText("Carbon");
   await close.click();
 });

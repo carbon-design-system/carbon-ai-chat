@@ -6,6 +6,7 @@
  */
 
 import { PageObjectId, ViewType } from "@carbon/ai-chat/server";
+import { sleep } from "@carbon/ai-chat-utils";
 import type { Page } from "@playwright/test";
 
 // Import types for window globals used in evaluated browser context.
@@ -133,6 +134,8 @@ export const waitForChatReady = async (
       timeout,
     });
   }
+
+  await sleep(200);
 };
 
 /**

@@ -30,7 +30,7 @@ import {
 
 import { v4 as uuid } from "uuid";
 
-import { sleep } from "../framework/utils";
+import { sleep } from "@carbon/ai-chat-utils";
 import { MARKDOWN } from "../customSendMessage/constants";
 
 /**

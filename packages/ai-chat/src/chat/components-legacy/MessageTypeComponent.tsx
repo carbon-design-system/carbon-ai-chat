@@ -209,7 +209,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           <div role="heading" aria-level={2}>
             <RichText
               text={userText}
-              shouldRemoveHTMLBeforeMarkdownConversion
+              removeHTML
               overrideSanitize={true}
             ></RichText>
           </div>
@@ -378,7 +378,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         disableUserInputs={disableUserInputs || !isMessageForInput}
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
-        shouldRemoveHTMLBeforeMarkdownConversion={withHumanAgent}
+        removeHTML={withHumanAgent}
       />
     );
   }
