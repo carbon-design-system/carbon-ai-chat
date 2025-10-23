@@ -464,7 +464,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         ></slot>
       </div>
       <div>
-        <div class="${prefix}--snippet__header">
+        <div class="${prefix}--snippet__header" data-rounded="top">
           <div class="${prefix}--snippet__meta">
             ${this._detectedLanguage && this._languageLabelLockedIn
               ? html`<div class="${prefix}--snippet__language">
@@ -487,7 +487,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
           ${hideCopyButton
             ? ``
             : html`
-                <div class="${prefix}--snippet__copy">
+                <div class="${prefix}--snippet__copy" data-rounded="top-right">
+                  <!-- we need the button part exposed to the top level cds-copy-button  -->
                   <cds-copy-button
                     ?disabled=${disabled}
                     button-class-name=${disabledCopyButtonClasses}
@@ -516,7 +517,10 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
         ${shouldShowMoreLessBtn
           ? html`
-              <div class="${prefix}--snippet__footer">
+              <div
+                class="${prefix}--snippet__footer"
+                data-rounded="bottom-right"
+              >
                 <cds-button
                   kind="ghost"
                   size="sm"

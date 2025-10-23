@@ -14,10 +14,12 @@
 @use "@carbon/styles/scss/spacing";
 @use "@carbon/styles/scss/utilities/focus-outline" as *;
 @use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
 
 :host {
   @extend .#{$cds-prefix}--snippet;
   @extend .#{$cds-prefix}--snippet--multi;
+  @include rounded-modifiers;
 
   display: block;
   padding: 0;
