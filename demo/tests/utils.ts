@@ -11,6 +11,12 @@ import type { Page } from "@playwright/test";
 // Import types for window globals used in evaluated browser context.
 import type {} from "../types/window";
 
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
 /**
  * Demo-specific test IDs that are not part of the core @carbon/ai-chat package.
  * These are used for testing the demo application functionality.
@@ -133,6 +139,8 @@ export const waitForChatReady = async (
       timeout,
     });
   }
+
+  await sleep(200);
 };
 
 /**

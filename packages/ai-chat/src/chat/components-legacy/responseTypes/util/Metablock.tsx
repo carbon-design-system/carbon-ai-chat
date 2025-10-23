@@ -20,14 +20,14 @@ interface MetablockProps {
    * Indicates if HTML should be removed from text before converting Markdown to HTML.
    * This is used to sanitize data coming from a human agent.
    */
-  shouldRemoveHTMLBeforeMarkdownConversion?: boolean;
+  removeHTML?: boolean;
 }
 
 export default function Metablock({
   title = null,
   description = null,
   id = null,
-  shouldRemoveHTMLBeforeMarkdownConversion = false,
+  removeHTML = false,
 }: MetablockProps) {
   return title || description ? (
     <div className="cds-aichat--received--metablock" id={id}>
@@ -35,18 +35,14 @@ export default function Metablock({
         <Description
           className="cds-aichat--received--metablock-content cds-aichat--metablock__title"
           text={title}
-          shouldRemoveHTMLBeforeMarkdownConversion={
-            shouldRemoveHTMLBeforeMarkdownConversion
-          }
+          removeHTML={removeHTML}
         />
       )}
       {description && (
         <Description
           className="cds-aichat--received--metablock-content cds-aichat--metablock__description"
           text={description}
-          shouldRemoveHTMLBeforeMarkdownConversion={
-            shouldRemoveHTMLBeforeMarkdownConversion
-          }
+          removeHTML={removeHTML}
         />
       )}
     </div>

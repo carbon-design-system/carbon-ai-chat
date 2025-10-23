@@ -27,9 +27,8 @@ module.exports = {
     "^.+\\.(css|scss)$": ["<rootDir>/tests/transforms/cssTransform.cjs"],
   },
   moduleNameMapper: {
+    "^(\\.\\.?/.+)\\.js$": "$1",
     "\\.(css|less|scss|sass)$": "<rootDir>/tests/transforms/cssTransform.cjs",
-    "^../../../codeElement/cds-aichat-code$": "<rootDir>/src/chat/web-components/components/codeElement/cds-aichat-code.ts",
-    "^../../../table/cds-aichat-table$": "<rootDir>/src/chat/web-components/components/table/cds-aichat-table.ts",
   },
   transformIgnorePatterns: [
     "node_modules/(?!(@lit|lit|lit-html|lit-element|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|react-player|swiper|dayjs|dompurify|focus-trap-react|highlight.js|intl-messageformat|markdown-it|react-intl)/)",
