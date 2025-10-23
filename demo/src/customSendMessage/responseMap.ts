@@ -27,7 +27,6 @@ import { doImage } from "./doImage";
 import { doList } from "./doList";
 import { doOption } from "./doOption";
 import { doOrderedList } from "./doOrderedList";
-import { doTable, doTableStreaming } from "./doTable";
 import {
   doHTML,
   doHTMLStreaming,
@@ -44,6 +43,7 @@ import {
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
+import { doTable, doTableStreaming } from "./doTable";
 
 const RESPONSE_MAP: Record<
   string,

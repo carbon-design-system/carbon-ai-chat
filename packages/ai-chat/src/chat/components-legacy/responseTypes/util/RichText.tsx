@@ -11,9 +11,9 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
-import { Markdown } from "../../../ai-chat-components/react/components/markdown/Markdown";
+import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown-text.js";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { LocalizationOptions } from "../../../../types/localization/LocalizationOptions";
+import { LocalizationOptions } from "@carbon/ai-chat-components/es/components/markdown-text/index.js";
 import { AppState } from "../../../../types/state/AppState";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { debugLog } from "../../../utils/miscUtils";

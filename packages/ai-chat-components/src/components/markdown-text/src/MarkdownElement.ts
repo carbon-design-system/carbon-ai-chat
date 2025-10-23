@@ -11,10 +11,10 @@ import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import throttle from "lodash-es/throttle.js";
 
-import { LocalizationOptions } from "../../../../../../types/localization/LocalizationOptions";
-import { markdownToTokenTree, TokenTree } from "./markdownTokenTree";
-import { renderTokenTree } from "./markdownRenderer";
-import { consoleError, consoleLog } from "../../../../../utils/miscUtils";
+import { LocalizationOptions } from "./types.js";
+import { markdownToTokenTree, TokenTree } from "./markdownTokenTree.js";
+import { renderTokenTree } from "./markdownRenderer.js";
+import { consoleError, consoleLog } from "./utils.js";
 
 class MarkdownElement extends LitElement {
   @property({ type: Boolean, attribute: "debug" })
