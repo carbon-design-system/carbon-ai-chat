@@ -60,7 +60,6 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @property({ type: Boolean }) highlight = false;
   @property({ type: String, attribute: "default-language" })
   defaultLanguage = "javascript";
-  @property({ attribute: false }) onContentChange?: (content: string) => void;
   @property({ attribute: "copy-text" })
   copyText = "";
 
@@ -305,9 +304,13 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       onDocChanged: ({ content, lineCount }) => {
         this._lineCount = lineCount;
 
-        if (this.onContentChange) {
-          this.onContentChange(content);
-        }
+        this.dispatchEvent(
+          new CustomEvent("content-change", {
+            detail: { content },
+            bubbles: true,
+            composed: true,
+          }),
+        );
 
         if (this.editable) {
           this.languageController.detectLanguageForEditable(content);

@@ -26,7 +26,6 @@ class CDSAIChatCodeSnippetTileContainer extends LitElement {
   @property({ type: String }) language = "";
   @property({ type: Boolean }) editable = false;
   @property({ type: Boolean }) highlight = false;
-  @property({ attribute: false }) onContentChange?: (content: string) => void;
 
   // Internal property - theme will be auto-detected in the future
   @property({ attribute: false }) dark = false;
@@ -64,6 +63,19 @@ class CDSAIChatCodeSnippetTileContainer extends LitElement {
   @property({ attribute: false })
   getLineCountText: LineCountFormatter = defaultLineCountText;
 
+  /**
+   * Handles the content-change event from the inner code snippet and re-dispatches it.
+   */
+  private _handleContentChange(event: CustomEvent) {
+    this.dispatchEvent(
+      new CustomEvent("content-change", {
+        detail: event.detail,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   render() {
     return html`
       <cds-aichat-tile-container>
@@ -74,7 +86,7 @@ class CDSAIChatCodeSnippetTileContainer extends LitElement {
               language=${this.language}
               ?editable=${this.editable}
               ?highlight=${this.highlight}
-              .onContentChange=${this.onContentChange}
+              @content-change=${this._handleContentChange}
               copy-text=${this.copyText}
               ?disabled=${this.disabled}
               feedback=${this.feedback}
