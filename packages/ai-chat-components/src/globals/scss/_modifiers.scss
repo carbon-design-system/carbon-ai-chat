@@ -28,13 +28,13 @@
 
     > :first-child {
       @include full-radius;
+    }
 
-      &::part(link),
-      &::part(button) {
-        @include full-radius;
+    &::part(link),
+    &::part(button) {
+      @include full-radius;
 
-        outline-offset: rem(-1px);
-      }
+      outline-offset: rem(-1px);
     }
   }
 
