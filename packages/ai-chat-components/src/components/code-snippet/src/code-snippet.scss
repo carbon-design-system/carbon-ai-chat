@@ -17,15 +17,7 @@
 @use "../../../globals/scss/modifiers" as *;
 
 :host {
-  @extend .#{$cds-prefix}--snippet;
-  @extend .#{$cds-prefix}--snippet--multi;
   @include rounded-modifiers;
-
-  display: block;
-  padding: 0;
-
-  background: theme.$background;
-  max-inline-size: 100%;
 
   /* Matching / bracket states */
   --cds-syntax-matching-bracket: var(--cds-layer);
@@ -139,6 +131,21 @@
   --cds-syntax-special-string: var(--cds-syntax-string);
 }
 
+.#{$prefix}--snippet {
+  @extend .#{$cds-prefix}--snippet;
+  @extend .#{$cds-prefix}--snippet--multi;
+
+  display: block;
+  padding: 0;
+
+  background: theme.$background;
+  max-inline-size: 100%;
+}
+
+:host([data-rounded]) .#{$prefix}--snippet {
+  border-radius: var(--cds-aichat-tile-border-radius, 0.5rem);
+}
+
 :host-context([data-theme="g90"]),
 :host-context([storybook-carbon-theme="g90"]),
 :host-context([data-theme="g100"]),
@@ -221,7 +228,7 @@
   justify-content: space-between;
   background: theme.$layer-01;
   border-block-end: 1px solid theme.$border-subtle-02;
-  padding-inline-start: layout.$spacing-03;
+  padding-inline-start: layout.$spacing-05;
 }
 
 .#{$prefix}--snippet__meta {

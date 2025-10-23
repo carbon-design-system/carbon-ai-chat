@@ -457,90 +457,84 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       containerClasses += ` ${prefix}--snippet-container--collapsed`;
     }
 
-    return html` <div class="${prefix}--visually-hidden">
+    return html` <div class="${prefix}--snippet">
+      <div class="${prefix}--snippet__header" data-rounded="top">
+        <div class="${prefix}--snippet__meta">
+          ${this._detectedLanguage && this._languageLabelLockedIn
+            ? html`<div class="${prefix}--snippet__language">
+                ${this._detectedLanguage}
+              </div>`
+            : ""}
+          ${this._detectedLanguage &&
+          this._languageLabelLockedIn &&
+          this._lineCount
+            ? html`<div class="${prefix}--snippet__header-seperator">
+                &mdash;
+              </div>`
+            : ""}
+          ${this._lineCount
+            ? html`<div class="${prefix}--snippet__linecount">
+                ${this.getLineCountText({ count: this._lineCount })}
+              </div>`
+            : ""}
+        </div>
+        ${hideCopyButton
+          ? ``
+          : html`
+              <div class="${prefix}--snippet__copy" data-rounded="top-right">
+                <!-- we need the button part exposed to the top level cds-copy-button  -->
+                <cds-copy-button
+                  ?disabled=${disabled}
+                  button-class-name=${disabledCopyButtonClasses}
+                  feedback=${feedback}
+                  feedback-timeout=${feedbackTimeout}
+                  @click="${handleCopyClick}"
+                >
+                  ${tooltipContent}
+                </cds-copy-button>
+              </div>
+            `}
+      </div>
+      <div
+        role="${this.editable ? "textbox" : "region"}"
+        tabindex="${this.editable && !disabled ? 0 : null}"
+        class="${containerClasses}"
+        aria-label="code-snippet"
+        ${this.editable ? 'aria-readonly="false" aria-multiline="true"' : ""}
+        style="${this._getContainerStyles(expandedCode)}"
+      >
+        <div class="${prefix}--code-editor" ${ref(this.editorContainer)}></div>
+      </div>
+
+      ${shouldShowMoreLessBtn
+        ? html`
+            <div class="${prefix}--snippet__footer" data-rounded="bottom-right">
+              <cds-button
+                kind="ghost"
+                size="sm"
+                button-class-name="${prefix}--snippet-btn--expand"
+                ?disabled=${disabled}
+                @click=${() => this._handleClickExpanded()}
+              >
+                <span class="${prefix}--snippet-btn--text">
+                  ${expandCodeBtnText}
+                </span>
+                ${iconLoader(ChevronDown16, {
+                  class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
+                  role: "img",
+                  slot: "icon",
+                })}
+              </cds-button>
+            </div>
+          `
+        : ``}
+      <div class="${prefix}--visually-hidden">
         <slot
           ${ref(this.contentSlot)}
           @slotchange=${this._handleSlotChange}
         ></slot>
       </div>
-      <div>
-        <div class="${prefix}--snippet__header" data-rounded="top">
-          <div class="${prefix}--snippet__meta">
-            ${this._detectedLanguage && this._languageLabelLockedIn
-              ? html`<div class="${prefix}--snippet__language">
-                  ${this._detectedLanguage}
-                </div>`
-              : ""}
-            ${this._detectedLanguage &&
-            this._languageLabelLockedIn &&
-            this._lineCount
-              ? html`<div class="${prefix}--snippet__header-seperator">
-                  &mdash;
-                </div>`
-              : ""}
-            ${this._lineCount
-              ? html`<div class="${prefix}--snippet__linecount">
-                  ${this.getLineCountText({ count: this._lineCount })}
-                </div>`
-              : ""}
-          </div>
-          ${hideCopyButton
-            ? ``
-            : html`
-                <div class="${prefix}--snippet__copy" data-rounded="top-right">
-                  <!-- we need the button part exposed to the top level cds-copy-button  -->
-                  <cds-copy-button
-                    ?disabled=${disabled}
-                    button-class-name=${disabledCopyButtonClasses}
-                    feedback=${feedback}
-                    feedback-timeout=${feedbackTimeout}
-                    @click="${handleCopyClick}"
-                  >
-                    ${tooltipContent}
-                  </cds-copy-button>
-                </div>
-              `}
-        </div>
-        <div
-          role="${this.editable ? "textbox" : "region"}"
-          tabindex="${this.editable && !disabled ? 0 : null}"
-          class="${containerClasses}"
-          aria-label="code-snippet"
-          ${this.editable ? 'aria-readonly="false" aria-multiline="true"' : ""}
-          style="${this._getContainerStyles(expandedCode)}"
-        >
-          <div
-            class="${prefix}--code-editor"
-            ${ref(this.editorContainer)}
-          ></div>
-        </div>
-
-        ${shouldShowMoreLessBtn
-          ? html`
-              <div
-                class="${prefix}--snippet__footer"
-                data-rounded="bottom-right"
-              >
-                <cds-button
-                  kind="ghost"
-                  size="sm"
-                  button-class-name="${prefix}--snippet-btn--expand"
-                  ?disabled=${disabled}
-                  @click=${() => this._handleClickExpanded()}
-                >
-                  <span class="${prefix}--snippet-btn--text">
-                    ${expandCodeBtnText}
-                  </span>
-                  ${iconLoader(ChevronDown16, {
-                    class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
-                    role: "img",
-                    slot: "icon",
-                  })}
-                </cds-button>
-              </div>
-            `
-          : ``}
-      </div>`;
+    </div>`;
   }
 
   static shadowRootOptions = {

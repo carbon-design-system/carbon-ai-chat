@@ -70,6 +70,7 @@ class CDSAIChatCodeSnippetTileContainer extends LitElement {
         <cds-tile data-rounded>
           <div data-flush data-rounded>
             <cds-aichat-code-snippet
+              data-rounded
               language=${this.language}
               ?editable=${this.editable}
               ?highlight=${this.highlight}
