@@ -1,0 +1,77 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/theme";
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/web-components/scss/components/tile/tile";
+
+/* Workspace shell styles */
+:host(#{$prefix}-workspace-shell) {
+  display: block;
+  border: solid rem(1px) theme.$chat-bubble-border;
+  border-radius: rem(8px);
+  color: theme.$text-secondary;
+  font-size: rem(14px);
+  inline-size: rem(904px);
+  // block-size: rem(880px);
+  /* stylelint-disable-next-line declaration-property-unit-allowed-list */
+  line-height: rem(20px);
+}
+:host(#{$prefix}-workspace-shell-toolbar) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: rem(8px) rem(8px) rem(8px) rem(32px);
+  border-block-end: solid rem(1px) theme.$chat-bubble-border;
+
+  .cds-aichat-workspace-shell-toolbar__title {
+    color: theme.$text-secondary;
+  }
+}
+:host(#{$prefix}-workspace-shell-header) {
+  display: flex;
+  align-items: baseline;
+  padding: rem(24px) rem(32px);
+  border-block-end: solid rem(1px) theme.$chat-bubble-border;
+}
+:host(#{$prefix}-workspace-shell-footer) {
+  display: flex;
+  flex-direction: row-reverse;
+  border-block-start: solid rem(1px) theme.$skeleton-element;
+}
+
+.#{$prefix}-workspace-shell {
+  &__header {
+    &-title {
+      color: theme.$text-primary;
+      font-size: rem(28px);
+      font-weight: 400;
+      /* stylelint-disable-next-line declaration-property-unit-allowed-list */
+      line-height: rem(36px);
+    }
+
+    &-sub-title {
+      color: theme.$text-secondary;
+      font-size: rem(12px);
+      /* stylelint-disable-next-line declaration-property-unit-allowed-list */
+      line-height: rem(16px);
+    }
+  }
+
+  &__body {
+    overflow: auto;
+    padding: rem(24px) rem(32px);
+    block-size: rem(504px);
+  }
+}
