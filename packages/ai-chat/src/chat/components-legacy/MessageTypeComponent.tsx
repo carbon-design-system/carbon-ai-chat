@@ -42,7 +42,6 @@ import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
 import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
 import { Image } from "./responseTypes/image/Image";
 import { OptionComponent } from "./responseTypes/options/OptionComponent";
-import TableContainer from "./responseTypes/table/TableContainer";
 import { StreamingRichText } from "./responseTypes/util/StreamingRichText";
 import { VideoComponent } from "./responseTypes/video/VideoComponent";
 import { useLanguagePack } from "../hooks/useLanguagePack";
@@ -85,7 +84,6 @@ import {
   MessageResponseHistory,
   MessageResponseTypes,
   OptionItem,
-  TableItem,
   TextItem,
   UserType,
   VideoItem,
@@ -284,8 +282,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           localMessageItem as LocalMessageItem<ConversationalSearchItem>,
           message as MessageResponse,
         );
-      case MessageResponseTypes.TABLE:
-        return renderTable(localMessageItem as LocalMessageItem<TableItem>);
       case MessageResponseTypes.CARD:
         return renderCard(
           localMessageItem as LocalMessageItem<CardItem>,
@@ -591,10 +587,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         )}
       />
     );
-  }
-
-  function renderTable(message: LocalMessageItem<TableItem>) {
-    return <TableContainer tableItem={message.item} />;
   }
 
   function scrollChainOfThought(open: boolean, element: HTMLElement) {

@@ -419,7 +419,10 @@ export function test(
           }
           break;
         }
-      // fall through for objects !== arrays of functions
+        // For objects !== arrays of functions, throw error
+        throw new Error(
+          `Unknown type of pattern test (key: ${key}). Test should be of type boolean, number, string, function or array of functions.`,
+        );
       default:
         throw new Error(
           `Unknown type of pattern test (key: ${key}). Test should be of type boolean, number, string, function or array of functions.`,

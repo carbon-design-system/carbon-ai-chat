@@ -8,19 +8,17 @@
  */
 
 import { type CDSTableRow } from "@carbon/web-components";
-import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
+import { html, LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import debounce from "lodash-es/debounce.js";
 
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import styles from "./src/table.scss";
-import { tableTemplate } from "./src/table.template";
-import { tablePaginationTemplate } from "./src/tablePagination.template";
-import { tableSkeletonTemplate } from "./src/tableSkeleton.template";
-import {
-  TableItemCell,
-  TableItemRow,
-} from "../../../../../types/messaging/Messages";
+import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+// @ts-ignore
+import styles from "./table.scss?lit";
+import { tableTemplate } from "./table.template.js";
+import { tablePaginationTemplate } from "./tablePagination.template.js";
+import { tableSkeletonTemplate } from "./tableSkeleton.template.js";
+import { TableItemCell, TableItemRow } from "./types.js";
 
 interface PageChangeEvent extends Event {
   detail: {
@@ -67,49 +65,49 @@ class TableElement extends LitElement {
    * The array of cells for the header.
    */
   @property({ type: Array })
-  headers: TableItemCell[];
+  headers: TableItemCell[] = [];
 
   /**
    * The array of rows. Each row includes an array of cells.
    */
   @property({ type: Array })
-  rows: TableItemRow[];
+  rows: TableItemRow[] = [];
 
   /**
    * Whether or not the table content is loading. If it is then a skeleton state should be shown instead.
    */
   @property({ type: Boolean, attribute: "loading" })
-  loading: boolean;
+  loading = false;
 
   /**
    * The text used for the filter placeholder.
    */
   @property({ type: String, attribute: "filter-placeholder-text" })
-  filterPlaceholderText: string;
+  filterPlaceholderText = "";
 
   /**
    * The text used for the pagination's previous button tooltip.
    */
   @property({ type: String, attribute: "previous-page-text" })
-  previousPageText: string;
+  previousPageText = "";
 
   /**
    * The text used for the pagination's next button tooltip.
    */
   @property({ type: String, attribute: "next-page-text" })
-  nextPageText: string;
+  nextPageText = "";
 
   /**
    * The text used for the pagination's item pre page text.
    */
   @property({ type: String, attribute: "items-per-page-text" })
-  itemsPerPageText: string;
+  itemsPerPageText = "";
 
   /**
    * The locale. Used by the carbon table component to change the collator for sorting.
    */
   @property({ type: String, attribute: "locale" })
-  locale: string;
+  locale = "";
 
   /**
    * The calculated default page size based on component width.
@@ -131,13 +129,13 @@ class TableElement extends LitElement {
    * The function used to get the supplemental text for the pagination component.
    */
   @property({ type: Function, attribute: false })
-  getPaginationSupplementalText: ({ count }: { count: number }) => string;
+  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
 
   /**
    * The function used to get the status text for the pagination component.
    */
   @property({ type: Function, attribute: false })
-  getPaginationStatusText: ({
+  getPaginationStatusText?: ({
     start,
     end,
     count,
@@ -179,7 +177,7 @@ class TableElement extends LitElement {
    * The rows that have not been filtered out.
    */
   @state()
-  public _filterVisibleRowIDs: Set<string>;
+  public _filterVisibleRowIDs: Set<string> = new Set();
 
   /**
    * All of the rows for the table with IDs.
@@ -191,11 +189,9 @@ class TableElement extends LitElement {
    * Whether or not the table should be able to be filtered.
    */
   @state()
-  public _allowFiltering: boolean;
+  public _allowFiltering = false;
 
-  static styles = css`
-    ${unsafeCSS(styles)}
-  `;
+  static styles = styles;
 
   private _parentResizeObserver?: ResizeObserver;
 

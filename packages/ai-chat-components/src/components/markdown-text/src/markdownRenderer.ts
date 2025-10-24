@@ -15,10 +15,10 @@ import { nothing } from "lit";
 import { Directive, directive } from "lit/directive.js";
 import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
+import "../../code-snippet/index.js";
+import "../../table/index.js";
 
-import { LocalizationOptions } from "../../../../../../types/localization/LocalizationOptions";
-import "../../table/cds-aichat-table";
+import { LocalizationOptions } from "./types.js";
 import {
   DEFAULT_PAGINATION_STATUS_TEXT,
   DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
@@ -91,10 +91,10 @@ export function renderTokenTree(
 
   // Handle raw HTML blocks and inline HTML
   if (token.type === "html_block" || token.type === "html_inline") {
-    let content = token.content;
+    let content = token.content || "";
 
     // Apply HTML sanitization if requested
-    if (sanitize) {
+    if (sanitize && content) {
       content = DOMPurify.sanitize(content, {
         CUSTOM_ELEMENT_HANDLING: {
           tagNameCheck: () => true, // Allow custom elements

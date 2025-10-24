@@ -9,7 +9,7 @@
 
 import { html } from "lit";
 
-import MarkdownElement from "../cds-aichat-markdown-text";
+import MarkdownElement from "./MarkdownElement.js";
 
 function markdownTextTemplate(customElementClass: MarkdownElement) {
   const { renderedContent } = customElementClass;

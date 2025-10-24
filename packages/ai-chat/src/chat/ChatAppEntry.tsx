@@ -18,8 +18,8 @@ import {
   mergePublicConfig,
   performInitialViewChange,
 } from "./utils/chatBoot";
-import { UserDefinedResponsePortalsContainer } from "./ai-chat-components/react/components/UserDefinedResponsePortalsContainer";
-import { WriteableElementsPortalsContainer } from "./ai-chat-components/react/components/WriteableElementsPortalsContainer";
+import { UserDefinedResponsePortalsContainer } from "./components/UserDefinedResponsePortalsContainer";
+import { WriteableElementsPortalsContainer } from "./components/WriteableElementsPortalsContainer";
 
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../../markdownText/cds-aichat-markdown-text";
+import "@carbon/ai-chat-components/es/components/markdown-text/index.js";
 import "@carbon/web-components/es/components/inline-loading/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
