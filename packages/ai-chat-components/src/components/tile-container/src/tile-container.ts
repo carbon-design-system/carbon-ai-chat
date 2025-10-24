@@ -21,45 +21,54 @@ class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
 
   @query("slot") private slotEl!: HTMLSlotElement;
-
   private mutationObserver?: MutationObserver;
 
   connectedCallback(): void {
     super.connectedCallback();
-    // Add only once per document
+
+    const root = this.getRootNode();
+    if (root instanceof Document || root instanceof ShadowRoot) {
+      this.ensureLightDomStyles(root);
+    } else {
+      console.warn("Unsupported root node type:", root);
+    }
+  }
+
+  private ensureLightDomStyles(root: Document | ShadowRoot): void {
     const styleId = `${prefix}-tile-container-light-dom-styles`;
-    if (!document.getElementById(styleId)) {
-      const style = Object.assign(document.createElement("style"), {
-        innerHTML: lightDomStyles,
-        id: styleId,
-      });
-      document.head.appendChild(style);
+    if (root.querySelector(`#${styleId}`)) {
+      return;
     }
 
-    requestAnimationFrame(() => {
-      if (!this.slotEl) {
-        return;
-      }
-      const slotted = this.slotEl.assignedElements();
-      const tile = slotted[0];
-      if (!tile) {
-        return;
-      }
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = lightDomStyles;
 
-      // we do not want additional gradient on tile, as the widget itself brings a gradient
-      tile.removeAttribute("ai-label");
-      this.mutationObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === "attributes" && mutation.attributeName) {
-            tile.removeAttribute("ai-label");
-          }
-        });
-      });
+    if (root instanceof ShadowRoot) {
+      root.appendChild(style);
+    } else {
+      root.head.appendChild(style);
+    }
+  }
 
-      this.mutationObserver.observe(tile, {
-        attributes: true,
-      });
+  firstUpdated(): void {
+    const slotted = this.slotEl?.assignedElements() ?? [];
+    const tile = slotted[0];
+    if (!tile) {
+      return;
+    }
+
+    tile.removeAttribute("ai-label");
+    this.mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "attributes") {
+          tile.removeAttribute("ai-label");
+          break;
+        }
+      }
     });
+
+    this.mutationObserver.observe(tile, { attributes: true });
   }
 
   disconnectedCallback(): void {
