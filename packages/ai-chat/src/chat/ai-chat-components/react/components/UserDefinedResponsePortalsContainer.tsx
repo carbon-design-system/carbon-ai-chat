@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { ReactNode, useRef } from "react";
+import React, { ReactNode, useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
 
 import { ChatInstance } from "../../../../types/instance/ChatInstance";
@@ -57,19 +57,51 @@ function UserDefinedResponsePortalsContainer({
   userDefinedResponseEventsBySlot,
   chatWrapper,
 }: UserDefinedResponsePortalsContainer) {
-  // Use a ref to store slot elements so they persist across renders
   const slotElementsRef = useRef<Map<string, HTMLElement>>(new Map());
+
+  // Wait for chatWrapper to exist and be defined
+  const waitForChatWrapper = async (
+    wrapper: HTMLElement | null,
+    timeout = 150,
+  ) => {
+    const start = performance.now();
+    while (!wrapper && performance.now() - start < timeout) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return wrapper;
+  };
+
+  useEffect(() => {
+    if (!chatWrapper) {
+      return;
+    }
+
+    // Wait for chatWrapper to be ready and then ensure all slot elements are appended
+    (async () => {
+      const wrapper = await waitForChatWrapper(chatWrapper);
+      if (!wrapper) {
+        console.warn("chatWrapper not found within timeout");
+        return;
+      }
+
+      // Append any slot elements that aren't already in the DOM
+      for (const el of slotElementsRef.current.values()) {
+        if (!wrapper.contains(el)) {
+          wrapper.appendChild(el);
+        }
+      }
+    })();
+  }, [chatWrapper]);
 
   const getOrCreateSlotElement = (slot: string): HTMLElement => {
     let hostElement = slotElementsRef.current.get(slot);
 
     if (!hostElement) {
-      // Create a new slot element
       hostElement = document.createElement("div");
       hostElement.setAttribute("slot", slot);
       slotElementsRef.current.set(slot, hostElement);
 
-      // Add it to the chat wrapper
+      // If chatWrapper is already mounted, append immediately
       if (chatWrapper) {
         chatWrapper.appendChild(hostElement);
       }
