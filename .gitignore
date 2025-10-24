@@ -49,6 +49,7 @@ dist
 es
 lib
 storybook-static
+storybook-react-static
 
 # env file
 .env

@@ -18,8 +18,8 @@ const require = createRequire(import.meta.url);
 const config = {
   stories: [
     "./welcome/welcome.mdx",
-    "../src/**/__stories__/*.mdx",
-    "../src/**/__stories__/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../src/**/__stories__/!(*-react).mdx",
+    "../src/**/__stories__/*.stories.@(js|ts)",
   ],
 
   addons: [

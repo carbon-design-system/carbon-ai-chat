@@ -1,6 +1,8 @@
 import React from "react";
 import containerStyles from "../.storybook/_container.scss?inline";
 import prettier from "prettier/standalone";
+import prettierPluginBabel from "prettier/plugins/babel";
+import prettierPluginEstree from "prettier/plugins/estree";
 
 if (typeof document !== "undefined") {
   const existing = document.head.querySelector(
@@ -47,19 +49,49 @@ export const globalTypes = {
 };
 
 export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" },
-  controls: { expanded: true },
+  controls: {
+    // https://storybook.js.org/docs/react/essentials/controls#show-full-documentation-for-each-property
+    expanded: true,
+
+    // https://storybook.js.org/docs/react/essentials/controls#specify-initial-preset-color-swatches
+    // presetColors: [],
+
+    // https://storybook.js.org/docs/react/essentials/controls#sorting-controls
+    sort: "alpha",
+
+    hideNoControlsWarning: true,
+  },
   docs: {
-    inlineStories: true,
     codePanel: true,
     source: {
-      excludeDecorators: false,
+      transform: async (source) => {
+        return prettier.format(source, {
+          parser: "babel",
+          plugins: [prettierPluginBabel, prettierPluginEstree],
+        });
+      },
+    },
+  },
+
+  options: {
+    storySort: {
+      order: [
+        "Introduction",
+        [
+          "Welcome",
+          "Custom styles",
+          "Carbon CDN style helpers",
+          "Form Participation",
+        ],
+        "Components",
+        "Layout",
+      ],
     },
   },
 };
 
 export const decorators = [
-  (Story, context) => {
+  function decoratorContainer(story, context) {
     const { theme } = context.globals;
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
 
@@ -71,7 +103,7 @@ export const decorators = [
         data-modal-container
         role="main"
       >
-        <Story />
+        {story()}
       </div>
     );
   },
