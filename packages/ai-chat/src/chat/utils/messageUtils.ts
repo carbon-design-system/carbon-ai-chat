@@ -414,7 +414,6 @@ function renderAsUserDefinedMessage(
     case MessageResponseTypes.AUDIO:
     case MessageResponseTypes.DATE:
     case MessageResponseTypes.CONVERSATIONAL_SEARCH:
-    case MessageResponseTypes.TABLE:
     case MessageResponseTypes.INLINE_ERROR:
     case MessageResponseTypes.CARD:
     case MessageResponseTypes.CAROUSEL:

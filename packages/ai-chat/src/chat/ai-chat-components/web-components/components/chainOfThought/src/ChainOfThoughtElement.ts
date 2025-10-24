@@ -19,7 +19,6 @@ import {
 } from "./chainOfThoughtElement.template";
 import { createEnglishFormat } from "../../../../../utils/languages";
 import { ChainOfThoughtStep } from "../../../../../../types/messaging/Messages";
-import { enLanguagePack } from "../../../../../../types/config/PublicConfig";
 
 const stepTitleFormatter = createEnglishFormat("chainOfThought_stepTitle");
 
@@ -60,25 +59,25 @@ class ChainOfThoughtElement extends LitElement {
    * Text string used to label step input.
    */
   @property({ type: String, attribute: "input-label-text", reflect: true })
-  inputLabelText = enLanguagePack.chainOfThought_inputLabel;
+  inputLabelText = "Input";
 
   /**
    * Text string used to label step output.
    */
   @property({ type: String, attribute: "output-label-text", reflect: true })
-  outputLabelText = enLanguagePack.chainOfThought_outputLabel;
+  outputLabelText = "Output";
 
   /**
    * Text string used to label the tool.
    */
   @property({ type: String, attribute: "tool-label-text", reflect: true })
-  toolLabelText = enLanguagePack.chainOfThought_toolLabel;
+  toolLabelText = "Tool";
 
   /**
    * Text string used to label the button to open the chain of thought panel.
    */
   @property({ type: String, attribute: "explainability-text", reflect: true })
-  explainabilityText = enLanguagePack.chainOfThought_explainabilityLabel;
+  explainabilityText = "Show chain of thought";
 
   /**
    * Optional function to call if chain of thought visibility is toggled.
@@ -100,7 +99,7 @@ class ChainOfThoughtElement extends LitElement {
     attribute: "status-succeeded-label-text",
     reflect: true,
   })
-  statusSucceededLabelText = enLanguagePack.chainOfThought_statusSucceededLabel;
+  statusSucceededLabelText = "Succeeded";
 
   /**
    * Text string used to label the failed status icon.
@@ -110,7 +109,7 @@ class ChainOfThoughtElement extends LitElement {
     attribute: "status-failed-label-text",
     reflect: true,
   })
-  statusFailedLabelText = enLanguagePack.chainOfThought_statusFailedLabel;
+  statusFailedLabelText = "Failed";
 
   /**
    * Text string used to label the processing status icon.
@@ -120,8 +119,53 @@ class ChainOfThoughtElement extends LitElement {
     attribute: "status-processing-label-text",
     reflect: true,
   })
-  statusProcessingLabelText =
-    enLanguagePack.chainOfThought_statusProcessingLabel;
+  statusProcessingLabelText = "Processing";
+
+  // Markdown component strings - Table
+  @property({ type: String, attribute: "filter-placeholder-text" })
+  filterPlaceholderText?: string;
+
+  @property({ type: String, attribute: "previous-page-text" })
+  previousPageText?: string;
+
+  @property({ type: String, attribute: "next-page-text" })
+  nextPageText?: string;
+
+  @property({ type: String, attribute: "items-per-page-text" })
+  itemsPerPageText?: string;
+
+  @property({ type: String, attribute: "locale" })
+  locale?: string;
+
+  @property({ type: Object, attribute: false })
+  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
+
+  @property({ type: Object, attribute: false })
+  getPaginationStatusText?: ({
+    start,
+    end,
+    count,
+  }: {
+    start: number;
+    end: number;
+    count: number;
+  }) => string;
+
+  // Markdown component strings - Code snippet
+  @property({ type: String, attribute: "feedback" })
+  feedback?: string;
+
+  @property({ type: String, attribute: "show-less-text" })
+  showLessText?: string;
+
+  @property({ type: String, attribute: "show-more-text" })
+  showMoreText?: string;
+
+  @property({ type: String, attribute: "tooltip-content" })
+  tooltipContent?: string;
+
+  @property({ type: Object, attribute: false })
+  getLineCountText?: ({ count }: { count: number }) => string;
 
   /**
    * Steps, but we add in whether the step is open or not.

@@ -15,10 +15,9 @@ import { nothing } from "lit";
 import { Directive, directive } from "lit/directive.js";
 import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
+import "../../code-snippet/index.js";
+import "../../table/index.js";
 
-import { LocalizationOptions } from "../../../../../../types/localization/LocalizationOptions";
-import "../../table/cds-aichat-table";
 import {
   DEFAULT_PAGINATION_STATUS_TEXT,
   DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
@@ -70,11 +69,44 @@ export interface RenderTokenTreeOptions {
     currentIndex?: number;
   };
 
-  /** Localization settings for interactive components */
-  localization?: LocalizationOptions;
-
   /** Whether to enable syntax highlighting in code blocks */
   highlight?: boolean;
+
+  // Table strings
+  /** Placeholder text for table filter input */
+  filterPlaceholderText?: string;
+  /** Text for previous page button tooltip */
+  previousPageText?: string;
+  /** Text for next page button tooltip */
+  nextPageText?: string;
+  /** Text for items per page label */
+  itemsPerPageText?: string;
+  /** Locale for table sorting and formatting */
+  locale?: string;
+  /** Function to get supplemental pagination text */
+  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
+  /** Function to get pagination status text */
+  getPaginationStatusText?: ({
+    start,
+    end,
+    count,
+  }: {
+    start: number;
+    end: number;
+    count: number;
+  }) => string;
+
+  // Code snippet strings
+  /** Feedback text shown after copying */
+  feedback?: string;
+  /** Text for show less button */
+  showLessText?: string;
+  /** Text for show more button */
+  showMoreText?: string;
+  /** Tooltip text for copy button */
+  tooltipContent?: string;
+  /** Function to get formatted line count text */
+  getLineCountText?: ({ count }: { count: number }) => string;
 }
 
 const EMPTY_ATTRS = {};
@@ -91,10 +123,10 @@ export function renderTokenTree(
 
   // Handle raw HTML blocks and inline HTML
   if (token.type === "html_block" || token.type === "html_inline") {
-    let content = token.content;
+    let content = token.content || "";
 
     // Apply HTML sanitization if requested
-    if (sanitize) {
+    if (sanitize && content) {
       content = DOMPurify.sanitize(content, {
         CUSTOM_ELEMENT_HANDLING: {
           tagNameCheck: () => true, // Allow custom elements
@@ -120,17 +152,23 @@ export function renderTokenTree(
   // Handle fenced code blocks
   if (token.type === "fence") {
     const language = token.info?.trim() ?? "";
-    const { highlight = true, localization } = options;
-    const codeSnippetLocalization = localization?.codeSnippet;
+    const {
+      highlight = true,
+      feedback,
+      showLessText,
+      showMoreText,
+      tooltipContent,
+      getLineCountText,
+    } = options;
 
     return html`<cds-aichat-code-snippet-tile-container
       language=${language}
       ?highlight=${highlight}
-      feedback=${codeSnippetLocalization?.feedback}
-      show-less-text=${codeSnippetLocalization?.showLessText}
-      show-more-text=${codeSnippetLocalization?.showMoreText}
-      tooltip-content=${codeSnippetLocalization?.tooltipContent}
-      .getLineCountText=${codeSnippetLocalization?.getLineCountText}
+      feedback=${feedback}
+      show-less-text=${showLessText}
+      show-more-text=${showMoreText}
+      tooltip-content=${tooltipContent}
+      .getLineCountText=${getLineCountText}
       >${token.content}</cds-aichat-code-snippet-tile-container
     >`;
   }
@@ -337,7 +375,17 @@ function renderWithStaticTag(
         return html`<div>Error: Missing table data</div>`;
       }
 
-      const { streaming, context: parentContext, localization } = options;
+      const {
+        streaming,
+        context: parentContext,
+        filterPlaceholderText,
+        previousPageText,
+        nextPageText,
+        itemsPerPageText,
+        locale,
+        getPaginationSupplementalText,
+        getPaginationStatusText,
+      } = options;
 
       // Determine if we should show loading state during streaming
       let isLoading = false;
@@ -366,24 +414,20 @@ function renderWithStaticTag(
       }
 
       const tableAttrs = isLoading ? EMPTY_ATTRS : attrs;
-      const tableLocalization = localization?.table;
 
       return html`<div class="cds-aichat-table-holder">
         <cds-aichat-table
           .headers=${headers}
           .rows=${tableRows}
           .loading=${isLoading}
-          .filterPlaceholderText=${tableLocalization?.filterPlaceholderText ||
-          "Filter table..."}
-          .previousPageText=${tableLocalization?.previousPageText ||
-          "Previous page"}
-          .nextPageText=${tableLocalization?.nextPageText || "Next page"}
-          .itemsPerPageText=${tableLocalization?.itemsPerPageText ||
-          "Items per page:"}
-          .locale=${tableLocalization?.locale || "en"}
-          .getPaginationSupplementalText=${tableLocalization?.getPaginationSupplementalText ||
+          .filterPlaceholderText=${filterPlaceholderText || "Filter table..."}
+          .previousPageText=${previousPageText || "Previous page"}
+          .nextPageText=${nextPageText || "Next page"}
+          .itemsPerPageText=${itemsPerPageText || "Items per page:"}
+          .locale=${locale || "en"}
+          .getPaginationSupplementalText=${getPaginationSupplementalText ||
           DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT}
-          .getPaginationStatusText=${tableLocalization?.getPaginationStatusText ||
+          .getPaginationStatusText=${getPaginationStatusText ||
           DEFAULT_PAGINATION_STATUS_TEXT}
           ...=${tableAttrs}
         ></cds-aichat-table>

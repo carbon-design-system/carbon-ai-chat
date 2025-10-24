@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../../markdownText/cds-aichat-markdown-text";
+import "@carbon/ai-chat-components/es/components/markdown-text/index.js";
 import "@carbon/web-components/es/components/inline-loading/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -75,11 +75,21 @@ function stepStatus(
 /**
  * Takes the input/output data that is unknown and then renders it in the correct format or returns nothing.
  */
-function renderToolData(data: unknown, label: string, classPostfix: string) {
+function renderToolData(
+  data: unknown,
+  label: string,
+  classPostfix: string,
+  customElementClass: ChainOfThoughtElement,
+) {
   // Once we have a Code component instead of just a markdown component, we will need to loop back here.
   const content = parseUnknownDataToMarkdown(data);
   if (content) {
-    return renderToolDataAsMarkdown(content, label, classPostfix);
+    return renderToolDataAsMarkdown(
+      content,
+      label,
+      classPostfix,
+      customElementClass,
+    );
   }
   return html``;
 }
@@ -88,7 +98,23 @@ function renderToolDataAsMarkdown(
   content: string,
   label: string,
   classPostfix: string,
+  customElementClass: ChainOfThoughtElement,
 ) {
+  const {
+    filterPlaceholderText,
+    previousPageText,
+    nextPageText,
+    itemsPerPageText,
+    locale,
+    getPaginationSupplementalText,
+    getPaginationStatusText,
+    feedback,
+    showLessText,
+    showMoreText,
+    tooltipContent,
+    getLineCountText,
+  } = customElementClass;
+
   return html`<div
     class="${CSS_CLASS_ITEM_PREFIX} ${CSS_CLASS_ITEM_PREFIX}-${classPostfix}"
   >
@@ -96,6 +122,18 @@ function renderToolDataAsMarkdown(
     <cds-aichat-markdown-text
       sanitize-html
       markdown=${content}
+      filter-placeholder-text=${filterPlaceholderText}
+      previous-page-text=${previousPageText}
+      next-page-text=${nextPageText}
+      items-per-page-text=${itemsPerPageText}
+      locale=${locale}
+      .getPaginationSupplementalText=${getPaginationSupplementalText}
+      .getPaginationStatusText=${getPaginationStatusText}
+      feedback=${feedback}
+      show-less-text=${showLessText}
+      show-more-text=${showMoreText}
+      tooltip-content=${tooltipContent}
+      .getLineCountText=${getLineCountText}
     ></cds-aichat-markdown-text>
   </div>`;
 }
@@ -104,7 +142,24 @@ function accordionItemContent(
   customElementClass: ChainOfThoughtElement,
   item: ChainOfThoughtStepWithToggle,
 ) {
-  const { inputLabelText, outputLabelText, toolLabelText } = customElementClass;
+  const {
+    inputLabelText,
+    outputLabelText,
+    toolLabelText,
+    filterPlaceholderText,
+    previousPageText,
+    nextPageText,
+    itemsPerPageText,
+    locale,
+    getPaginationSupplementalText,
+    getPaginationStatusText,
+    feedback,
+    showLessText,
+    showMoreText,
+    tooltipContent,
+    getLineCountText,
+  } = customElementClass;
+
   if (item.open) {
     return html` ${item.description
       ? html`<div
@@ -113,6 +168,18 @@ function accordionItemContent(
           <cds-aichat-markdown-text
             sanitize-html
             markdown=${item.description}
+            filter-placeholder-text=${filterPlaceholderText}
+            previous-page-text=${previousPageText}
+            next-page-text=${nextPageText}
+            items-per-page-text=${itemsPerPageText}
+            locale=${locale}
+            .getPaginationSupplementalText=${getPaginationSupplementalText}
+            .getPaginationStatusText=${getPaginationStatusText}
+            feedback=${feedback}
+            show-less-text=${showLessText}
+            show-more-text=${showMoreText}
+            tooltip-content=${tooltipContent}
+            .getLineCountText=${getLineCountText}
           ></cds-aichat-markdown-text>
         </div>`
       : null}
@@ -124,8 +191,18 @@ function accordionItemContent(
           ${item.tool_name}
         </div>`
       : null}
-    ${renderToolData(item.request?.args, inputLabelText, "input")}
-    ${renderToolData(item.response?.content, outputLabelText, "output")}`;
+    ${renderToolData(
+      item.request?.args,
+      inputLabelText,
+      "input",
+      customElementClass,
+    )}
+    ${renderToolData(
+      item.response?.content,
+      outputLabelText,
+      "output",
+      customElementClass,
+    )}`;
   }
   return html``;
 }
