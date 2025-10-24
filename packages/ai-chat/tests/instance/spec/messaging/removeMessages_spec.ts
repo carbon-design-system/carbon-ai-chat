@@ -13,7 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
+} from "../../../test_helpers";
 import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
 
 describe("ChatInstance.messaging.removeMessages", () => {

@@ -52,6 +52,7 @@ function createInitialAppState(): AppState {
     isHydrated: false,
     suspendScrollDetection: false,
     showNonHeaderBackgroundCover: false,
+    isRestarting: false,
     isBrowserPageVisible: true,
     chatWidthBreakpoint: null,
     chatWidth: null,
@@ -337,6 +338,14 @@ describe("Store Reducers", () => {
   });
 
   describe("Other reducer actions", () => {
+    it("should toggle the isRestarting flag", () => {
+      expect((store.getState() as AppState).isRestarting).toBe(false);
+      store.dispatch(actions.setIsRestarting(true));
+      expect((store.getState() as AppState).isRestarting).toBe(true);
+      store.dispatch(actions.setIsRestarting(false));
+      expect((store.getState() as AppState).isRestarting).toBe(false);
+    });
+
     it("should handle HYDRATE_CHAT action", () => {
       expect((store.getState() as AppState).isHydrated).toBe(false);
 

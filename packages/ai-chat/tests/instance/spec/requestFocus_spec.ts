@@ -12,7 +12,7 @@ import {
   renderChatAndGetInstance,
   setupBeforeEach,
   setupAfterEach,
-} from "../helpers/chatInstanceTestHelpers";
+} from "../../test_helpers";
 
 describe("ChatInstance.requestFocus", () => {
   beforeEach(setupBeforeEach);

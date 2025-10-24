@@ -80,7 +80,10 @@ import {
   PauseItem,
   StreamChunk,
 } from "../../types/messaging/Messages";
-import { AddMessageOptions } from "../../types/config/MessagingConfig";
+import {
+  AddMessageOptions,
+  CancellationReason,
+} from "../../types/config/MessagingConfig";
 import {
   BusEventChunkUserDefinedResponse,
   BusEventPreReceive,
@@ -141,7 +144,11 @@ class ChatActionsImpl {
     messageID?: string;
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
+    restartCount: number;
   }[] = [];
+  private chunkQueueProcessingPromise: Promise<void> | null = null;
+  private streamingMessageRestartCounts: Map<string, number> = new Map();
+  private cancelledStreamResponseIDs: Set<string> = new Set();
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -579,111 +586,309 @@ class ChatActionsImpl {
   }
 
   /**
-   * Receives a chunk from a stream.
+   * Receives an individual streaming chunk from either the internal message service or a custom integration.
+   *
+   * Chunks are queued in arrival order and processed sequentially so that we can safely gate them against
+   * restarts and ensure consistent store updates. The returned promise resolves once this chunk has been
+   * reconciled (which might be immediate if the chunk is discarded).
    */
   async receiveChunk(
     chunk: StreamChunk,
     messageID?: string,
     options: AddMessageOptions = {},
   ) {
+    // If a restart has already been triggered, don't process the chunk at all—just cancel the UI affordances
+    // tied to it so that nothing stale continues to render.
+    if (this.restarting) {
+      const chunkPromise = resolvablePromise();
+      const responseID =
+        messageID ||
+        ("streaming_metadata" in chunk
+          ? chunk.streaming_metadata?.response_id
+          : isStreamFinalResponse(chunk)
+            ? chunk.final_response?.id
+            : undefined);
+      if (responseID) {
+        this.markStreamAsCancelled(responseID);
+      } else {
+        this.resetStopStreamingButtonState();
+      }
+      chunkPromise.doResolve();
+      return chunkPromise;
+    }
+
+    // Capture the restart counter that was active when the chunk arrived so that any later restart can
+    // safely discard it when we finally process the queue.
     const chunkPromise = resolvablePromise();
-    this.chunkQueue.push({ chunk, messageID, options, chunkPromise });
-    if (this.chunkQueue.length === 1) {
-      this.processChunkQueue();
+    const restartCount = this.serviceManager.restartCount;
+    const streamingResponseID =
+      "streaming_metadata" in chunk
+        ? chunk.streaming_metadata?.response_id
+        : isStreamFinalResponse(chunk)
+          ? chunk.final_response?.id
+          : undefined;
+    const resolvedMessageID = messageID ?? streamingResponseID;
+
+    if (
+      resolvedMessageID &&
+      !this.streamingMessageRestartCounts.has(resolvedMessageID)
+    ) {
+      this.streamingMessageRestartCounts.set(resolvedMessageID, restartCount);
+    }
+
+    this.chunkQueue.push({
+      chunk,
+      messageID: resolvedMessageID,
+      options,
+      chunkPromise,
+      restartCount,
+    });
+    if (!this.chunkQueueProcessingPromise) {
+      this.chunkQueueProcessingPromise = this.processChunkQueue();
     }
     return chunkPromise;
   }
 
-  async processChunkQueue() {
-    const { chunk, options, chunkPromise } = this.chunkQueue[0];
-    let { messageID } = this.chunkQueue[0];
+  /**
+   * Processes the queued streaming chunks in order.
+   *
+   * For each chunk we reconcile restart sequencing, update store with streaming mutations, and resolve the
+   * per-chunk promise returned to callers. This loop intentionally runs to completion before yielding so that
+   * the queue never processes chunks in parallel.
+   */
+  private async processChunkQueue() {
     const { store } = this.serviceManager;
-    try {
-      const isCompleteItem = isStreamCompleteItem(chunk);
-      const isPartialItem = isStreamPartialItem(chunk);
-      const isStopGeneratingVisible =
-        store.getState().assistantInputState.stopStreamingButtonState.isVisible;
 
-      if (isPartialItem) {
-        const streamingData = chunk.partial_item.streaming_metadata;
-        if (streamingData?.cancellable && !isStopGeneratingVisible) {
-          store.dispatch(actions.setStopStreamingButtonVisible(true));
+    while (this.chunkQueue.length > 0) {
+      const { chunk, options, chunkPromise, messageID, restartCount } =
+        this.chunkQueue[0];
+
+      let messageRestartCount = restartCount;
+      if (messageID) {
+        if (this.cancelledStreamResponseIDs.has(messageID)) {
+          messageRestartCount = Number.NEGATIVE_INFINITY;
+        } else if (this.streamingMessageRestartCounts.has(messageID)) {
+          messageRestartCount =
+            this.streamingMessageRestartCounts.get(messageID);
+        } else {
+          this.streamingMessageRestartCounts.set(messageID, restartCount);
         }
       }
 
-      if (isCompleteItem || isPartialItem) {
-        if (!messageID) {
-          messageID = chunk.streaming_metadata?.response_id;
+      const shouldSkipChunk =
+        messageRestartCount !== this.serviceManager.restartCount ||
+        (messageID && this.cancelledStreamResponseIDs.has(messageID));
+
+      // If a restart occurred after the chunk was queued (or the stream has already been cancelled),
+      // we simply resolve and move on — this prevents stale content from flashing back in.
+      if (shouldSkipChunk) {
+        if (messageID) {
+          this.markStreamAsCancelled(messageID);
+        } else {
+          this.resetStopStreamingButtonState();
+        }
+        if (!chunkPromise.isComplete) {
+          chunkPromise.doResolve();
+        }
+        this.chunkQueue.shift();
+        continue;
+      }
+
+      try {
+        const isCompleteItem = isStreamCompleteItem(chunk);
+        const isPartialItem = isStreamPartialItem(chunk);
+        const isStopGeneratingVisible =
+          store.getState().assistantInputState.stopStreamingButtonState
+            .isVisible;
+
+        if (isPartialItem) {
+          // Partial chunks are the only ones that can signal cancellability; lazily surface the stop button
+          // when the metadata indicates the stream supports cancellation.
+          const streamingData = chunk.partial_item.streaming_metadata;
+          if (streamingData?.cancellable && !isStopGeneratingVisible) {
+            store.dispatch(actions.setStopStreamingButtonVisible(true));
+          }
         }
 
-        if (messageID && !store.getState().allMessagesByID[messageID]) {
-          store.dispatch(actions.streamingStart(messageID));
-        }
+        let resolvedMessageID = messageID;
 
-        const item =
-          (chunk as PartialItemChunk).partial_item ||
-          (chunk as CompleteItemChunk).complete_item;
+        if (isCompleteItem || isPartialItem) {
+          if (!resolvedMessageID) {
+            resolvedMessageID = chunk.streaming_metadata?.response_id;
+          }
 
-        if (messageID && item) {
-          store.dispatch(
-            actions.streamingAddChunk(
-              messageID,
+          if (
+            resolvedMessageID &&
+            !store.getState().allMessagesByID[resolvedMessageID]
+          ) {
+            store.dispatch(actions.streamingStart(resolvedMessageID));
+          }
+
+          const item =
+            (chunk as PartialItemChunk).partial_item ||
+            (chunk as CompleteItemChunk).complete_item;
+
+          if (resolvedMessageID && item) {
+            store.dispatch(
+              actions.streamingAddChunk(
+                resolvedMessageID,
+                item,
+                isCompleteItem,
+                options.disableFadeAnimation ?? true,
+              ),
+            );
+          }
+
+          // Only merge message_options; ignore any other unexpected fields in partial_response
+          if (chunk.partial_response?.message_options && resolvedMessageID) {
+            store.dispatch(
+              actions.streamingMergeMessageOptions(
+                resolvedMessageID,
+                chunk.partial_response.message_options,
+              ),
+            );
+          }
+
+          // Now make sure to handle any user_defined response items in the chunk.
+          if (resolvedMessageID && item) {
+            await this.handleUserDefinedResponseItemsChunk(
+              resolvedMessageID,
+              chunk,
               item,
-              isCompleteItem,
-              options.disableFadeAnimation ?? true,
-            ),
+            );
+          }
+        } else if (isStreamFinalResponse(chunk)) {
+          // Note that while this function is called from the streaming handler in the MessageService, the final_response
+          // path here is not taken. The MessageService uses the processSuccess path instead after the stream is
+          // complete. This path is only taken by custom code calling the public receiveChunk method.
+          this.receive(
+            chunk.final_response,
+            options.isLatestWelcomeNode,
+            null,
+            {
+              disableFadeAnimation: true,
+            },
           );
+          if (messageID) {
+            this.clearStreamState(messageID);
+          }
         }
 
-        // Only merge message_options; ignore any other unexpected fields in partial_response
-        if (chunk.partial_response?.message_options && messageID) {
-          store.dispatch(
-            actions.streamingMergeMessageOptions(
-              messageID,
-              chunk.partial_response.message_options,
-            ),
-          );
+        // Reset stop streaming button when a complete/final chunk arrives
+        if (
+          (isCompleteItem || isStreamFinalResponse(chunk)) &&
+          store.getState().assistantInputState.stopStreamingButtonState
+            .isVisible
+        ) {
+          store.dispatch(actions.setStopStreamingButtonDisabled(false));
+          store.dispatch(actions.setStopStreamingButtonVisible(false));
         }
 
-        // Now make sure to handle any user_defined response items in the chunk.
-        if (messageID && item) {
-          await this.handleUserDefinedResponseItemsChunk(
-            messageID,
-            chunk,
-            item,
-          );
+        if (!chunkPromise.isComplete) {
+          chunkPromise.doResolve();
         }
-      } else if (isStreamFinalResponse(chunk)) {
-        // Note that while this function is called from the streaming handler in the MessageService, the final_response
-        // path here is not taken. The MessageService uses the processSuccess path instead after the stream is
-        // complete. This path is only taken by custom code calling the public receiveChunk method.
-        this.receive(chunk.final_response, options.isLatestWelcomeNode, null, {
-          disableFadeAnimation: true,
-        });
-      }
+      } catch (error) {
+        if (
+          (error as Error)?.message !==
+          CancellationReason.CONVERSATION_RESTARTED
+        ) {
+          consoleError("Error processing stream chunk", error);
+        }
 
-      // Reset stop streaming button when a complete/final chunk arrives
-      if (
-        (isCompleteItem || isStreamFinalResponse(chunk)) &&
-        store.getState().assistantInputState.stopStreamingButtonState.isVisible
-      ) {
-        store.dispatch(actions.setStopStreamingButtonDisabled(false));
-        store.dispatch(actions.setStopStreamingButtonVisible(false));
-      }
+        if (messageID) {
+          this.markStreamAsCancelled(messageID);
+        } else {
+          this.resetStopStreamingButtonState();
+        }
 
-      this.chunkQueue.shift();
-      chunkPromise.doResolve();
-      if (this.chunkQueue[0]) {
-        this.processChunkQueue();
+        if (!chunkPromise.isComplete) {
+          chunkPromise.doReject(error);
+        }
+      } finally {
+        this.chunkQueue.shift();
       }
-    } catch (error) {
-      consoleError("Error processing stream chunk", error);
-      // Ensure queue continues processing and promise is rejected for callers
-      this.chunkQueue.shift();
-      chunkPromise.doReject(error);
-      if (this.chunkQueue[0]) {
-        this.processChunkQueue();
+    }
+
+    this.chunkQueueProcessingPromise = null;
+  }
+
+  /**
+   * Ensures that any currently queued chunks finish processing before continuing.
+   *
+   * Useful when higher-level flows (for example restart) need to wait for streaming cleanup before mutating
+   * global state.
+   */
+  private async waitForChunkQueueToDrain() {
+    if (this.chunkQueue.length && !this.chunkQueueProcessingPromise) {
+      this.chunkQueueProcessingPromise = this.processChunkQueue();
+    }
+
+    if (this.chunkQueueProcessingPromise) {
+      try {
+        await this.chunkQueueProcessingPromise;
+      } finally {
+        this.chunkQueueProcessingPromise = null;
       }
+    }
+  }
+
+  /**
+   * Marks the provided message ID as cancelled and clears related UI state such as the stop-stream button.
+   */
+  private markStreamAsCancelled(messageID: string) {
+    this.cancelledStreamResponseIDs.add(messageID);
+    this.streamingMessageRestartCounts.delete(messageID);
+    this.resetStopStreamingButtonState();
+  }
+
+  /**
+   * Removes any restart-tracking metadata for the given stream without altering button state.
+   */
+  private clearStreamState(messageID: string) {
+    this.cancelledStreamResponseIDs.delete(messageID);
+    this.streamingMessageRestartCounts.delete(messageID);
+  }
+
+  /**
+   * Cancels every stream currently tracked by restart metadata.
+   *
+   * This is typically invoked during restart/clear flows to guarantee that no pending stream will continue to
+   * render after state has been cleared.
+   */
+  private markActiveStreamsAsCancelled() {
+    this.resetStopStreamingButtonState();
+
+    if (this.streamingMessageRestartCounts.size === 0) {
+      return;
+    }
+
+    for (const messageID of Array.from(
+      this.streamingMessageRestartCounts.keys(),
+    )) {
+      this.markStreamAsCancelled(messageID);
+    }
+  }
+
+  /**
+   * Hides and re-enables the stop-streaming button if it is currently shown.
+   *
+   * The button can be driven by multiple flows (user stop, streaming cancellation, restart); centralising the
+   * reset logic keeps the UI consistent.
+   */
+  private resetStopStreamingButtonState() {
+    const { store } = this.serviceManager;
+    const {
+      assistantInputState: {
+        stopStreamingButtonState: { isVisible, isDisabled },
+      },
+    } = store.getState();
+
+    if (isVisible) {
+      store.dispatch(actions.setStopStreamingButtonVisible(false));
+    }
+
+    if (isDisabled) {
+      store.dispatch(actions.setStopStreamingButtonDisabled(false));
     }
   }
 
@@ -795,7 +1000,7 @@ class ChatActionsImpl {
    *
    * Note, this function does not currently support nested items inside the chunk.
    */
-  async handleUserDefinedResponseItemsChunk(
+  private async handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
     messageItem: DeepPartial<GenericItem>,
@@ -832,7 +1037,7 @@ class ChatActionsImpl {
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
    * @param requestOptions The options that were included when the request was sent.
    */
-  async processMessageResponse(
+  private async processMessageResponse(
     fullMessage: MessageResponse,
     isLatestWelcomeNode: boolean,
     requestMessage: MessageRequest,
@@ -1208,9 +1413,14 @@ class ChatActionsImpl {
   }
 
   /**
-   * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
-   * This will clear all the current assistant messages from the main assistant view and cancel any outstanding messages.
-   * Lastly, this will clear the current assistant session which will force a new session to start on the next message.
+   * Restarts the conversation with the assistant (human-agent conversations are unaffected).
+   *
+   * The restart flow:
+   *   1. Raises `isRestarting` in store so the UI (header button, etc.) can react.
+   *   2. Cancels outbound/inbound streaming, including queued chunks.
+   *   3. Clears store message state and, if needed, re-hydrates the conversation shell.
+   *
+   * The promise resolves when the restart is complete and, if required, hydration has finished.
    */
   async restartConversation(options: RestartConversationOptions = {}) {
     const {
@@ -1221,6 +1431,9 @@ class ChatActionsImpl {
 
     debugLog("Restarting conversation");
 
+    const { serviceManager } = this;
+    const { store } = serviceManager;
+
     if (this.restarting) {
       consoleWarn(
         "You cannot restart a conversation while a previous restart is still pending.",
@@ -1229,11 +1442,9 @@ class ChatActionsImpl {
     }
 
     this.restarting = true;
+    store.dispatch(actions.setIsRestarting(true));
 
     try {
-      const { serviceManager } = this;
-      const { store } = serviceManager;
-
       if (fireEvents) {
         await serviceManager.fire({
           type: BusEventType.PRE_RESTART_CONVERSATION,
@@ -1257,8 +1468,9 @@ class ChatActionsImpl {
       }
 
       this.serviceManager.instance.updateInputFieldVisibility(true);
-      this.serviceManager.messageService.cancelAllMessageRequests();
-
+      await this.serviceManager.messageService.cancelAllMessageRequests();
+      this.markActiveStreamsAsCancelled();
+      await this.waitForChunkQueueToDrain();
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {
         // Clear this promise in case the restart event below triggers another hydration.
@@ -1283,6 +1495,7 @@ class ChatActionsImpl {
         store.dispatch(actions.chatWasHydrated());
       }
     } finally {
+      store.dispatch(actions.setIsRestarting(false));
       this.restarting = false;
     }
   }
@@ -1307,7 +1520,9 @@ class ChatActionsImpl {
       // If we don't want to keep the open state then set the launcher to be open.
       newPersistedToBrowserStorage.viewState = VIEW_STATE_LAUNCHER_OPEN;
     }
-    this.serviceManager.messageService.cancelAllMessageRequests();
+    await this.serviceManager.messageService.cancelAllMessageRequests();
+    this.markActiveStreamsAsCancelled();
+    await this.waitForChunkQueueToDrain();
 
     this.serviceManager.userSessionStorageService.clearSession();
 
@@ -1345,7 +1560,9 @@ class ChatActionsImpl {
    * Creates the custom response elements for all the messages in the given set. This is used in particular when
    * loading a list of messages from history.
    */
-  async createElementsForUserDefinedResponses(messages: AppStateMessages) {
+  private async createElementsForUserDefinedResponses(
+    messages: AppStateMessages,
+  ) {
     await asyncForEach(
       Object.values(messages.allMessageItemsByID),
       (localMessage) => {

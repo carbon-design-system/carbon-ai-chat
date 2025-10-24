@@ -168,6 +168,11 @@ interface AppState extends AppStateMessages {
   showNonHeaderBackgroundCover: boolean;
 
   /**
+   * Indicates if a restart is currently in progress.
+   */
+  isRestarting: boolean;
+
+  /**
    * Indicates if the browser page is visible. This uses the Page Visibility API which needs to be taken with a
    * grain of salt. A visibility change only occurs if the page moves in or out of being 100% visible. This occurs
    * when you switch tabs within the same window or if you minimize/maximize a window. If you switch to a different

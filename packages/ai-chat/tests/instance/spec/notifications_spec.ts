@@ -14,7 +14,7 @@ import {
   renderChatAndGetInstance,
   setupBeforeEach,
   setupAfterEach,
-} from "../helpers/chatInstanceTestHelpers";
+} from "../../test_helpers";
 import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs";
 
 describe("ChatInstance.notifications", () => {

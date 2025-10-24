@@ -13,7 +13,7 @@ import { ChatContainer } from "../../../src/react/ChatContainer";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { CarbonTheme } from "../../../src/types/config/PublicConfig";
 import { CornersType } from "../../../src/types/config/CornersType";
-import { createBaseTestProps } from "../../utils/testHelpers";
+import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
 import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
 

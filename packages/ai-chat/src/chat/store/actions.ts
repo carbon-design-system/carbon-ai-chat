@@ -100,11 +100,8 @@ const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
 const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
 const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
+const SET_IS_RESTARTING = "SET_IS_RESTARTING";
 
-/**
- * We had to downgrade to Redux 4 to beable to support AI chat users on React 17.
- * This type is included in Redux 5, but not 4.
- */
 interface UnknownAction {
   type: string;
   // Optionally, include any unknown payload or meta fields if desired
@@ -578,6 +575,10 @@ const actions = {
     return { type: SET_STREAM_ID, currentStreamID };
   },
 
+  setIsRestarting(isRestarting: boolean) {
+    return { type: SET_IS_RESTARTING, isRestarting };
+  },
+
   updateThemeState(themeState: ThemeState) {
     return { type: UPDATE_THEME_STATE, themeState };
   },
@@ -640,4 +641,5 @@ export {
   SET_STREAM_ID,
   UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
+  SET_IS_RESTARTING,
 };

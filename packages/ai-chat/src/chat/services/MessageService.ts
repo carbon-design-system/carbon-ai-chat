@@ -725,23 +725,33 @@ class MessageService {
   /**
    * Cancels all message requests including any that are running now and any that are waiting in the queue.
    */
-  public cancelAllMessageRequests(
+  public async cancelAllMessageRequests(
     reason: string = CancellationReason.CONVERSATION_RESTARTED,
-  ) {
+  ): Promise<void> {
+    const cancellations: Promise<void>[] = [];
+
     while (this.queue.waiting.length) {
-      this.cancelMessageRequestByID(
-        this.queue.waiting[0].message.id,
-        false,
-        reason,
+      cancellations.push(
+        this.cancelMessageRequestByID(
+          this.queue.waiting[0].message.id,
+          false,
+          reason,
+        ),
       );
     }
     if (this.queue.current) {
-      this.cancelMessageRequestByID(
-        this.queue.current.message.id,
-        false,
-        reason,
+      cancellations.push(
+        this.cancelMessageRequestByID(
+          this.queue.current.message.id,
+          false,
+          reason,
+        ),
       );
       this.clearCurrentQueueItem();
+    }
+
+    if (cancellations.length) {
+      await Promise.all(cancellations);
     }
   }
 

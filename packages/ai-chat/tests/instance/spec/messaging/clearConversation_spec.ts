@@ -13,7 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
+} from "../../../test_helpers";
 import {
   MessageResponseTypes,
   MessageRequest,
@@ -50,8 +50,8 @@ describe("ChatInstance.messaging.clearConversation", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("Redux state management", () => {
-    it("should clear all messages from Redux state", async () => {
+  describe("state management", () => {
+    it("should clear all messages from state", async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);

@@ -10,10 +10,15 @@
 import {
   createBaseConfig,
   renderChatAndGetInstance,
+  renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
-import { MessageRequest } from "../../../../src/types/messaging/Messages";
+} from "../../../test_helpers";
+import {
+  MessageRequest,
+  MessageResponseTypes,
+  StreamChunk,
+} from "../../../../src/types/messaging/Messages";
 import {
   CancellationReason,
   CustomSendMessageOptions,
@@ -198,6 +203,114 @@ describe("ChatInstance.messaging.restartConversation", () => {
       // Verify the reason matches the enum value
       expect(capturedReason).toBe("Conversation restarted");
       expect(capturedReason).toBe(CancellationReason.CONVERSATION_RESTARTED);
+    });
+  });
+
+  describe("Restart state and streaming cleanup", () => {
+    it("should toggle isRestarting flag while restart is in progress", async () => {
+      const config = createBaseConfig();
+
+      config.messaging = {
+        customSendMessage: async (
+          _request: MessageRequest,
+          options: CustomSendMessageOptions,
+        ) =>
+          new Promise<void>((resolve) => {
+            options.signal?.addEventListener("abort", () => resolve());
+          }),
+      };
+
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+
+      const sendPromise = instance.send("streaming message");
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const restartPromise = instance.messaging.restartConversation();
+
+      expect(store.getState().isRestarting).toBe(true);
+
+      await restartPromise;
+      await sendPromise;
+
+      expect(store.getState().isRestarting).toBe(false);
+    });
+
+    it("should reset streaming UI and ignore late chunks during restart", async () => {
+      const config = createBaseConfig();
+
+      config.messaging = {
+        customSendMessage: async (
+          _request: MessageRequest,
+          options: CustomSendMessageOptions,
+        ) =>
+          new Promise<void>((resolve) => {
+            options.signal?.addEventListener("abort", () => resolve());
+          }),
+      };
+
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+
+      const responseID = "response-1";
+      const itemID = "item-1";
+
+      const partialChunk: StreamChunk = {
+        partial_item: {
+          response_type: MessageResponseTypes.TEXT,
+          text: "Hello ",
+          streaming_metadata: {
+            id: itemID,
+            cancellable: true,
+          },
+        },
+        streaming_metadata: {
+          response_id: responseID,
+        },
+      };
+
+      await instance.messaging.addMessageChunk(partialChunk);
+
+      expect(
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible,
+      ).toBe(true);
+
+      const sendPromise = instance.send("pending");
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const restartPromise = instance.messaging.restartConversation();
+
+      const strayChunk: StreamChunk = {
+        partial_item: {
+          response_type: MessageResponseTypes.TEXT,
+          text: "World ",
+          streaming_metadata: {
+            id: itemID,
+            cancellable: true,
+          },
+        },
+        streaming_metadata: {
+          response_id: responseID,
+        },
+      };
+
+      await expect(
+        instance.messaging.addMessageChunk(strayChunk),
+      ).resolves.toBeUndefined();
+
+      await restartPromise;
+      await sendPromise;
+
+      const state = store.getState();
+
+      expect(state.assistantMessageState.messageIDs).toHaveLength(0);
+      expect(Object.keys(state.allMessagesByID)).toHaveLength(0);
+      expect(state.assistantInputState.stopStreamingButtonState.isVisible).toBe(
+        false,
+      );
+      expect(
+        state.assistantInputState.stopStreamingButtonState.isDisabled,
+      ).toBe(false);
     });
   });
 });
