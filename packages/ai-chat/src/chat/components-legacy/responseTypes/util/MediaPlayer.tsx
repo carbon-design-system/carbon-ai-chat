@@ -32,6 +32,7 @@ import { AudioComponentConfig } from "../audio/AudioComponent";
 import InlineError from "../error/InlineError";
 import { VideoComponentConfig } from "../video/VideoComponent";
 import { TextHolderTile } from "./TextHolderTile";
+import { TranscriptComponent } from "./TranscriptComponent";
 import { MessageResponseTypes } from "../../../../types/messaging/Messages";
 import type ReactPlayer from "react-player";
 
@@ -99,6 +100,28 @@ interface MediaPlayerContentConfig
    * Indicates if the icon and title should be hidden.
    */
   hideIconAndTitle?: boolean;
+
+  /**
+   * Optional subtitle/caption tracks for video files.
+   * Only applies to raw video files, not embedded platforms.
+   */
+  subtitle_tracks?: Array<{
+    src: string;
+    language: string;
+    label: string;
+    kind?: "subtitles" | "captions" | "descriptions";
+    default?: boolean;
+  }>;
+
+  /**
+   * Optional text transcript for audio files.
+   * Only applies to raw audio files, not embedded platforms.
+   */
+  transcript?: {
+    text: string;
+    language?: string;
+    label?: string;
+  };
 }
 
 interface MediaPlayerProps
@@ -114,10 +137,6 @@ interface MediaPlayerProps
 /**
  * This component uses the React player library to handle rendering video/audio files, as well as handling third-party
  * embeddable video/audio services. Learn more: https://github.com/cookpete/react-player
- *
- * Note: We force media files to render using a video element for accessibility purposes since the audio element doesn't
- * support WebVTT for captioning/transcripts, but the video element does.
- * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#accessibility_concerns
  */
 function MediaPlayerComponent({
   type,
@@ -133,6 +152,8 @@ function MediaPlayerComponent({
   onPause,
   hideIconAndTitle,
   needsAnnouncement,
+  subtitle_tracks,
+  transcript,
 }: MediaPlayerProps) {
   const [skeletonHidden, setSkeletonHidden] = useState(false);
   const [errorLoading, setErrorLoading] = useState(false);
@@ -280,11 +301,25 @@ function MediaPlayerComponent({
                   height="100%"
                   config={{
                     file: {
-                      forceVideo: true,
+                      forceVideo: type === MessageResponseTypes.VIDEO,
                       attributes: {
                         controlsList: "nodownload",
                         "aria-label": ariaLabel || description || title,
+                        crossOrigin: "anonymous",
                       },
+                      ...(type === MessageResponseTypes.VIDEO &&
+                      subtitle_tracks &&
+                      subtitle_tracks.length > 0
+                        ? {
+                            tracks: subtitle_tracks.map((track) => ({
+                              kind: track.kind || "subtitles",
+                              src: track.src,
+                              srcLang: track.language,
+                              label: track.label,
+                              default: track.default || false,
+                            })),
+                          }
+                        : {}),
                     },
                   }}
                   playsinline
@@ -302,6 +337,13 @@ function MediaPlayerComponent({
                 title={title}
                 description={description}
                 hideTitle={hideIconAndTitle}
+              />
+            )}
+            {type === MessageResponseTypes.AUDIO && transcript && (
+              <TranscriptComponent
+                text={transcript.text}
+                label={transcript.label}
+                language={transcript.language}
               />
             )}
           </Tile>
