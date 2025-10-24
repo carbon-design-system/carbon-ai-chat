@@ -67,34 +67,149 @@ ${TEXT}
 ${TEXT}
 `;
 
-const CODE =
-  "\n```python\n" +
-  `import periodictable
-from rdkit import Chem
+const CODE = `\`\`\`
+/**
+ * Example doc comment with a URL https://carbon.design
+ */
+import type { Config as Configuration } from "./config";
+import { readFile } from "fs/promises";
 
-def analyze_carbon_compounds(smiles_list):
-    # Analyze carbon-containing molecules
-    carbon = periodictable.C
-    results = []
+namespace Demo {
+  export enum Status {
+    New = "NEW",
+    Done = "DONE",
+  }
 
-    for smiles in smiles_list:
-        mol = Chem.MolFromSmiles(smiles)
-        if mol:
-            carbon_count = sum(1 for atom in mol.GetAtoms() if atom.GetSymbol() == 'C')
-            molecular_weight = Chem.rdMolDescriptors.CalcExactMolWt(mol)
-            results.append({
-                'smiles': smiles,
-                'carbon_atoms': carbon_count,
-                'molecular_weight': molecular_weight
-            })
+  @Component()
+  export class Analyzer<T extends number> {
+    static readonly version = "1.0.0";
+    #pattern = /#(?<hex>[0-9A-F]{6})/g;
 
-    return results
+    constructor(private readonly source: string | null = null) {}
 
-# Example usage - analyzing carbon compounds
-compounds = ['CCO', 'C6H6', 'CC(=O)O']  # Ethanol, Benzene, Acetic acid
-print(analyze_carbon_compounds(compounds))
-` +
-  "```";
+    async *run(items: string[]): AsyncGenerator<Result<T>> {
+      parse: for (const id of items) {
+        if (!id) {
+          continue parse;
+        }
+
+        yield {
+          id,
+          status: Status.New,
+          ok: true,
+        } as Result<T>;
+      }
+    }
+  }
+}
+
+declare module "legacy" {
+  export function legacy(flag?: boolean): void;
+}
+
+type Result<T> = {
+  readonly id: string;
+  status: Demo.Status;
+  ok: boolean;
+};
+
+const hexSample = "#ff6600";
+const maybeValue: number | null = 42.5;
+const escaped = "line\\nbreak";
+const invalidHex = 0xZ;
+
+/* multi-line
+   block comment */
+// trailing comment
+\`\`\`
+
+\`\`\`
+from dataclasses import dataclass
+
+class Greeter:
+    """Doc string referencing https://example.com"""
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def greet(self) -> str:
+        for attempt in range(3):
+            if attempt == 1:
+                break
+        return f"Hello {self.name}!"
+
+
+@dataclass
+class Item:
+    quantity: int
+    taxable: bool = True
+
+    def total(self) -> float:
+        return self.quantity * 9.99
+\`\`\`
+
+\`\`\`
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<!-- HTML comment -->
+<section class="hero" data-theme="dark">
+  <h1 data-level="1">Highlights</h1>
+  <meta charset="utf-8" />
+  <img src="https://example.com/logo.svg" alt="Logo" />
+</section>
+\`\`\`
+
+\`\`\`
+:root {
+  --brand-color: #0f62fe;
+}
+
+.hero {
+  color: var(--brand-color);
+  margin: 1rem !important;
+  animation: fade-in 250ms ease-in-out;
+}
+
+@media screen and (min-width: 40rem) {
+  .hero {
+    padding: 2rem;
+  }
+}
+\`\`\`
+
+\`\`\`
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#ifdef DEBUG
+#warning "debug mode"
+#endif
+char initial = 'A';
+enum role { ROLE_USER, ROLE_ADMIN };
+\`\`\`
+
+\`\`\`
+diff --git a/config.json b/config.json
+@@ -1,3 +1,3 @@
+-"status": "old"
++"status": "new"
+!"comment": "changed"
+\`\`\`
+
+\`\`\`
+# Heading One
+## Heading Two
+### Heading Three
+#### Heading Four
+##### Heading Five
+###### Heading Six
+
+> Quote with *emphasis*, **strong text**, \`code\`, and [link](https://example.com).
+
+- Bullet item
+1. Ordered item
+
+---
+
+~~Strikethrough~~ remains supported.
+\`\`\``;
 
 const BLOCKQUOTE = `
 > Carbon is the **fourth most abundant** element in the *observable universe* by mass after hydrogen, helium, and oxygen. \`C₆H₁₂O₆\` represents glucose, a fundamental carbon-based molecule for life. Carbon's unique tetravalent bonding capability enables complex molecular architectures.
