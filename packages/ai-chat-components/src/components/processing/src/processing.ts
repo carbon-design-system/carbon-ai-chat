@@ -8,14 +8,15 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 // @ts-ignore
 import styles from "./processing.scss?lit";
 import prefix from "../../../globals/settings.js";
+import { carbonElement } from "../../../globals/decorators";
 
-@customElement(`${prefix}-processing`)
+@carbonElement(`${prefix}-processing`)
 class CDSAIChatProcessing extends LitElement {
   static styles = styles;
 
