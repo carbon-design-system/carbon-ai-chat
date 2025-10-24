@@ -14,10 +14,10 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { nothing } from "lit";
 import { Directive, directive } from "lit/directive.js";
 import { Token } from "markdown-it";
+import "@carbon/web-components/es/components/list/index.js";
+import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
 
 import { LocalizationOptions } from "../../../../../../types/localization/LocalizationOptions";
-import "@carbon/web-components/es/components/list/index.js";
-import "../../codeElement/cds-aichat-code";
 import "../../table/cds-aichat-table";
 import type {
   TableCellContent,
@@ -76,8 +76,8 @@ export interface RenderTokenTreeOptions {
   /** Localization settings for interactive components */
   localization?: LocalizationOptions;
 
-  /** Whether child components should use dark mode styling */
-  dark?: boolean;
+  /** Whether to enable syntax highlighting in code blocks */
+  highlight?: boolean;
 }
 
 const EMPTY_ATTRS = {};
@@ -92,7 +92,7 @@ export function renderTokenTree(
   options: RenderTokenTreeOptions,
 ): TemplateResult {
   const { token, children } = node;
-  const { context, dark, sanitize } = options;
+  const { context, sanitize } = options;
 
   // Handle raw HTML blocks and inline HTML
   if (token.type === "html_block" || token.type === "html_inline") {
@@ -125,11 +125,19 @@ export function renderTokenTree(
   // Handle fenced code blocks
   if (token.type === "fence") {
     const language = token.info?.trim() ?? "";
-    return html`<cds-aichat-code
-      .language=${language}
-      .content=${token.content}
-      .dark=${dark}
-    ></cds-aichat-code>`;
+    const { highlight = true, localization } = options;
+    const codeSnippetLocalization = localization?.codeSnippet;
+
+    return html`<cds-aichat-code-snippet-tile-container
+      language=${language}
+      ?highlight=${highlight}
+      feedback=${codeSnippetLocalization?.feedback}
+      show-less-text=${codeSnippetLocalization?.showLessText}
+      show-more-text=${codeSnippetLocalization?.showMoreText}
+      tooltip-content=${codeSnippetLocalization?.tooltipContent}
+      .getLineCountText=${codeSnippetLocalization?.getLineCountText}
+      >${token.content}</cds-aichat-code-snippet-tile-container
+    >`;
   }
 
   // Handle structural elements (paragraphs, headings, lists, etc.)

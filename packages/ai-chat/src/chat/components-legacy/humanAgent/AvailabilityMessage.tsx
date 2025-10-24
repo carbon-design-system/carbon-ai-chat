@@ -44,7 +44,9 @@ function AvailabilityMessage({
   }
 
   if (availabilityText) {
-    return <RichText overrideSanitize text={availabilityText} />;
+    return (
+      <RichText overrideSanitize text={availabilityText} highlight={true} />
+    );
   }
   return (
     <FormattedMessage
