@@ -182,6 +182,18 @@ export const parameters = {
           "Form Participation",
         ],
         "Components",
+        [
+          "Code Snippet",
+          [
+            "Default",
+            "Highlight",
+            "Streaming With Language Set",
+            "Streaming With Language Detection",
+            "With No Tile Container",
+            "Editable",
+            "Editable Empty",
+          ],
+        ],
         "Layout",
       ],
     },
