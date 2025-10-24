@@ -1,0 +1,170 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "./vars" as *;
+
+@mixin radius($positions...) {
+  @each $pos in $positions {
+    border-#{$pos}-radius: calc(
+      var(
+          --#{$prefix}-border-radius,
+          var(--#{$prefix}-tile-border-radius)
+        ) - rem(1px)
+    );
+  }
+}
+
+@mixin full-radius {
+  border-radius: calc(
+    var(--#{$prefix}-border-radius, var(--#{$prefix}-tile-border-radius)) - rem(
+        1px
+      )
+  );
+}
+
+@mixin rounded-modifiers {
+  [data-rounded=""] {
+    @include full-radius;
+
+    > :only-child {
+      @include full-radius;
+    }
+
+    &::part(link),
+    &::part(button) {
+      @include full-radius;
+
+      outline-offset: rem(-1px);
+    }
+  }
+
+  [data-rounded="top"] {
+    @include radius(start-start, start-end);
+
+    > :first-child {
+      @include radius(start-start);
+
+      &::part(button) {
+        @include radius(start-start);
+      }
+    }
+
+    > :last-child {
+      @include radius(start-end);
+
+      &::part(button) {
+        @include radius(start-end);
+      }
+    }
+  }
+
+  [data-rounded="top-left"] {
+    @include radius(start-start);
+
+    :first-child {
+      @include radius(start-start);
+
+      &::part(button) {
+        @include radius(start-start);
+      }
+    }
+  }
+
+  [data-rounded="top-right"] {
+    @include radius(start-end);
+
+    :last-child {
+      @include radius(start-end);
+
+      &::part(button) {
+        @include radius(start-end);
+      }
+    }
+  }
+
+  [data-rounded="bottom"] {
+    @include radius(end-start, end-end);
+
+    &:not([data-stacked]) {
+      > :first-child {
+        @include radius(end-start);
+
+        &::part(button) {
+          @include radius(end-start);
+        }
+      }
+
+      > :last-child {
+        @include radius(end-end);
+
+        &::part(button) {
+          @include radius(end-end);
+        }
+      }
+    }
+
+    &[data-stacked] {
+      > :last-child {
+        @include radius(end-start, end-end);
+
+        &::part(button) {
+          @include radius(end-start, end-end);
+        }
+      }
+    }
+  }
+
+  [data-rounded="bottom-left"] {
+    @include radius(end-start);
+
+    :first-child {
+      @include radius(end-start);
+
+      &::part(button) {
+        @include radius(end-start);
+      }
+    }
+  }
+
+  [data-rounded="bottom-right"] {
+    @include radius(end-end);
+
+    :last-child {
+      @include radius(end-end);
+
+      &::part(button) {
+        @include radius(end-end);
+      }
+    }
+  }
+}
+
+@mixin stacked-modifiers {
+  [data-stacked] {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@mixin flush-modifiers {
+  [data-flush=""] {
+    margin: calc(-1 * layout.$spacing-05);
+  }
+
+  [data-flush="top"] {
+    margin-block-start: calc(-1 * layout.$spacing-05);
+    margin-inline: calc(-1 * layout.$spacing-05);
+  }
+
+  [data-flush="bottom"] {
+    margin-block-end: calc(-1 * layout.$spacing-05);
+    margin-inline: calc(-1 * layout.$spacing-05);
+  }
+}

@@ -11,7 +11,7 @@ import { create } from "storybook/theming";
 
 export default create({
   base: "light",
-  brandTitle: "AI Chat Components",
+  brandTitle: "AI Chat Components (React)",
   brandUrl:
     "https://github.com/carbon-design-system/web-components-monorepo-template",
   fontBase: '"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif',
