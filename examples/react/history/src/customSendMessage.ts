@@ -60,18 +60,18 @@ def generate_lorem_ipsum(paragraphs=1):
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
         "mollit anim id est laborum."
     ).split()
-    
+
     # Function to generate a random sentence
     def random_sentence():
         sentence_length = random.randint(4, 12)
         sentence = random.sample(lorem_words, sentence_length)
         return " ".join(sentence).capitalize() + "."
-    
+
     # Function to generate a paragraph
     def random_paragraph():
         sentence_count = random.randint(3, 6)
         return " ".join(random_sentence() for _ in range(sentence_count))
-    
+
     # Generate the requested number of paragraphs
     return "\\n\\n".join(random_paragraph() for _ in range(paragraphs))
 

@@ -18,6 +18,8 @@ import { createRoot } from "react-dom/client";
 
 import { customLoadHistory } from "./customLoadHistory";
 import { customSendMessage } from "./customSendMessage";
+// This function returns a React component for user defined responses.
+import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 import { Button } from "@carbon/react";
 
 const config: PublicConfig = {
@@ -53,6 +55,7 @@ function App() {
       <ChatContainer
         messaging={config.messaging}
         onBeforeRender={onBeforeRender}
+        renderUserDefinedResponse={renderUserDefinedResponse}
       />
     </>
   );
