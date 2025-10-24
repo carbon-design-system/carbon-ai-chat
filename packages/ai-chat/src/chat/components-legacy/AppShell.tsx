@@ -168,6 +168,7 @@ export default function AppShell({
             "cds-aichat--frameless": !layout?.showFrame,
           },
         )}
+        data-theme={theme.derivedCarbonTheme}
         dir={dir}
       >
         <WindowSizeProvider windowSize={windowSize}>
