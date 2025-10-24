@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { isEqual } from "lodash";
+import isEqual from "lodash-es/isEqual.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ServiceManager } from "../services/ServiceManager";
 
