@@ -19,36 +19,6 @@ Here's a quick example to get you started.
 import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import TileContainer from "@carbon/ai-chat-components/es/react/workspace-shell.js";
-```
-
-<Markdown>{`${cdnJs({ components: ["workspace-shell"] })}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
-
-### HTML
-
-Wrap any carbon `tile`, `clickable-tile` with `cds-aichat-workspace-shell` to get the styles.
-The div containing the `cds-aichat-workspace-shell-footer` will have all the footer styles with an additional class `vertical` to change the buttons to stack.
-
-```html
-<cds-aichat-workspace-shell>
-  <cds-tile>
-    <h5 class="heading-01 margin-bottom-04">
-      AI Chat Tile styling wrapper
-    </h5>
-    <p class="body-01">
-      The Carbon Design System provides a comprehensive library of
-      components, tokens, and guidelines. We need to implement the new AI
-      Chat component following Carbon's design principles and accessibility
-      standards.
-    </p>
-  </cds-tile>
-</cds-aichat-workspace-shell>
-```
-
 ## `<cds-aichat-workspace-shell>` attributes, properties and events
 
 Note: This component is purely a styling parent, and does not bring in any attributes
