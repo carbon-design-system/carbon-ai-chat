@@ -127,7 +127,7 @@
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",
     "classnames": "^2.5.0",
-    "color": "^4.2.3",
+    "color": "^5.0.0",
     "compute-scroll-into-view": "^3.1.0",
     "csv-stringify": "^6.5.2",
     "dayjs": "^1.11.10",
