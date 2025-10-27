@@ -86,10 +86,10 @@ function UserDefinedResponsePortalsContainer({
       // Create a new slot element
       hostElement = document.createElement("div");
       hostElement.setAttribute("slot", slot);
-      slotElementsRef.current.set(slot, hostElement);
 
       // Add it to the chat wrapper
       if (chatWrapper) {
+        slotElementsRef.current.set(slot, hostElement);
         chatWrapper.appendChild(hostElement);
       }
     }
