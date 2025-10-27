@@ -57,51 +57,38 @@ function UserDefinedResponsePortalsContainer({
   userDefinedResponseEventsBySlot,
   chatWrapper,
 }: UserDefinedResponsePortalsContainer) {
+  // Use a ref to store slot elements so they persist across renders
   const slotElementsRef = useRef<Map<string, HTMLElement>>(new Map());
 
-  // Wait for chatWrapper to exist and be defined
-  const waitForChatWrapper = async (
-    wrapper: HTMLElement | null,
-    timeout = 150,
-  ) => {
-    const start = performance.now();
-    while (!wrapper && performance.now() - start < timeout) {
-      await new Promise((r) => setTimeout(r, 50));
-    }
-    return wrapper;
-  };
-
+  // In the case that a new history is passed in, we want to ensure
+  // the previous user_defined response slots are removed
   useEffect(() => {
-    if (!chatWrapper) {
-      return;
-    }
-
-    // Wait for chatWrapper to be ready and then ensure all slot elements are appended
-    (async () => {
-      const wrapper = await waitForChatWrapper(chatWrapper);
-      if (!wrapper) {
-        console.warn("chatWrapper not found within timeout");
-        return;
-      }
-
-      // Append any slot elements that aren't already in the DOM
-      for (const el of slotElementsRef.current.values()) {
-        if (!wrapper.contains(el)) {
-          wrapper.appendChild(el);
+    const removeExpiredSlots = () => {
+      for (const [slot, el] of slotElementsRef.current.entries()) {
+        if (!(slot in userDefinedResponseEventsBySlot)) {
+          // Detach from DOM (safe even if not attached)
+          if (el.parentNode) {
+            el.parentNode.removeChild(el);
+          } else {
+            el.remove?.();
+          }
+          slotElementsRef.current.delete(slot);
         }
       }
-    })();
-  }, [chatWrapper]);
+    };
+    removeExpiredSlots();
+  }, [userDefinedResponseEventsBySlot]);
 
   const getOrCreateSlotElement = (slot: string): HTMLElement => {
     let hostElement = slotElementsRef.current.get(slot);
 
     if (!hostElement) {
+      // Create a new slot element
       hostElement = document.createElement("div");
       hostElement.setAttribute("slot", slot);
       slotElementsRef.current.set(slot, hostElement);
 
-      // If chatWrapper is already mounted, append immediately
+      // Add it to the chat wrapper
       if (chatWrapper) {
         chatWrapper.appendChild(hostElement);
       }
