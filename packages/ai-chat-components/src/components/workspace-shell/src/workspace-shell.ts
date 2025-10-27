@@ -19,10 +19,9 @@ class CDSAIChatWorkspaceShell extends LitElement {
   render() {
     return html`
       <slot name="toolbar"></slot>
+      <slot name="notification"></slot>
       <slot name="header"></slot>
-      <div class="cds-aichat-workspace-shell__body">
-        <slot name="body"></slot>
-      </div>
+      <slot name="body"></slot>
       <slot name="footer"></slot>
     `;
   }

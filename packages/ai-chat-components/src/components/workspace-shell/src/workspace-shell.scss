@@ -14,7 +14,6 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/theme";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
-@use "@carbon/web-components/scss/components/tile/tile";
 
 /* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
@@ -23,42 +22,76 @@ $css--plex: true !default;
   border-radius: rem(8px);
   color: theme.$text-secondary;
   font-size: rem(14px);
-  inline-size: rem(904px);
-  // block-size: rem(880px);
+  inline-size: 100%;
   /* stylelint-disable-next-line declaration-property-unit-allowed-list */
   line-height: rem(20px);
+  max-inline-size: rem(904px);
 }
 :host(#{$prefix}-workspace-shell-toolbar) {
-  display: flex;
+  display: grid;
   align-items: center;
   justify-content: space-between;
   padding: rem(8px) rem(8px) rem(8px) rem(32px);
   border-block-end: solid rem(1px) theme.$chat-bubble-border;
+  grid-auto-flow: column;
 
   .cds-aichat-workspace-shell-toolbar__title {
     color: theme.$text-secondary;
   }
 }
 :host(#{$prefix}-workspace-shell-header) {
-  display: flex;
+  display: grid;
   align-items: baseline;
   padding: rem(24px) rem(32px);
   border-block-end: solid rem(1px) theme.$chat-bubble-border;
+  grid-auto-flow: column;
+}
+:host(#{$prefix}-workspace-shell-body) {
+  display: block;
+  overflow: auto;
+  padding: rem(24px) rem(32px);
+  block-size: rem(504px);
 }
 :host(#{$prefix}-workspace-shell-footer) {
-  display: flex;
-  flex-direction: row-reverse;
+  display: grid;
+  align-items: stretch;
   border-block-start: solid rem(1px) theme.$skeleton-element;
+  grid-auto-flow: column;
+  grid-template-columns: 50% 25% 25%;
+
+  ::slotted(cds-button[data-index="1"]) {
+    grid-column: 3;
+  }
+
+  ::slotted(cds-button[data-index="2"]) {
+    grid-column: 2;
+  }
+
+  ::slotted(cds-button[data-index="3"]) {
+    grid-column: 1;
+  }
+}
+
+:host(#{$prefix}-workspace-shell-notification) {
+  cds-inline-notification {
+    max-inline-size: 100%;
+  }
 }
 
 .#{$prefix}-workspace-shell {
   &__header {
+    &-content {
+      display: grid;
+      gap: rem(16px);
+    }
+
     &-title {
       color: theme.$text-primary;
       font-size: rem(28px);
       font-weight: 400;
       /* stylelint-disable-next-line declaration-property-unit-allowed-list */
       line-height: rem(36px);
+      margin-block-end: rem(-14px);
     }
 
     &-sub-title {
@@ -69,9 +102,9 @@ $css--plex: true !default;
     }
   }
 
-  &__body {
-    overflow: auto;
-    padding: rem(24px) rem(32px);
-    block-size: rem(504px);
+  &__toolbar-action {
+    display: grid;
+    grid-auto-columns: rem(40px);
+    grid-auto-flow: column;
   }
 }

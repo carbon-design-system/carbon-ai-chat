@@ -32,8 +32,8 @@ class CDSAIChatWorkspaceShellToolbar extends LitElement {
   render() {
     const { titleText } = this;
     return html`
-      <div class="${prefix}-workspace-shell-toolbar__title">${titleText}</div>
-      <div>
+      <div class="${prefix}-workspace-shell__toolbar-title">${titleText}</div>
+      <div class="${prefix}-workspace-shell__toolbar-action">
         <slot name="toolbar-action"></slot>
       </div>
     `;

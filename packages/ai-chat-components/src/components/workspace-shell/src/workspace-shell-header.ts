@@ -38,7 +38,7 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   render() {
     const { titleText, subTitleText } = this;
     return html`
-      <div>
+      <div class="cds-aichat-workspace-shell__header-content">
         <h1 class="cds-aichat-workspace-shell__header-title">${titleText}</h1>
         <h3 class="cds-aichat-workspace-shell__header-sub-title">
           ${subTitleText}

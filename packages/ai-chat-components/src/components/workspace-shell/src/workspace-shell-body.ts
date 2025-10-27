@@ -9,24 +9,23 @@
 
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/button/button.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
 
-@customElement(`${prefix}-workspace-shell-footer`)
-class CDSAIChatWorkspaceShellFooter extends LitElement {
+@customElement(`${prefix}-workspace-shell-body`)
+class CDSAIChatWorkspaceShellBody extends LitElement {
   static styles = styles;
 
   /**
-   * Sets default slot value to toolbar
+   * Sets default slot value to body
    */
   @property({ type: String, reflect: true })
-  slot = "footer";
+  slot = "body";
 
   render() {
-    return html` <slot name="footer-actions"></slot> `;
+    return html` <slot></slot> `;
   }
 }
 
-export default CDSAIChatWorkspaceShellFooter;
+export default CDSAIChatWorkspaceShellBody;
