@@ -7,8 +7,7 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/slug/index.js";
-import CDSButton from "@carbon/web-components/es/components/button/button.js";
+import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import Button, {
   BUTTON_KIND,
   BUTTON_SIZE,

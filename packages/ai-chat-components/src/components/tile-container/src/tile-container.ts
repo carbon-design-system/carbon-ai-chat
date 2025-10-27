@@ -8,14 +8,15 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, query } from "lit/decorators.js";
+import { query } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./tile-container.scss?lit";
 // @ts-ignore
 import lightDomStyles from "./styles.scss?lit";
 import prefix from "../../../globals/settings.js";
+import { carbonElement } from "../../../globals/decorators";
 
-@customElement(`${prefix}-tile-container`)
+@carbonElement(`${prefix}-tile-container`)
 class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
 

@@ -13,7 +13,13 @@ import { AppState, ThemeState } from "../../types/state/AppState";
 import { getCSSVariableValue, isColorLighterThan } from "../utils/colors";
 import { consoleError } from "../utils/miscUtils";
 import { UPDATE_THEME_STATE } from "../store/actions";
-import { white, g10, g90, g100 } from "@carbon/themes";
+
+enum CARBON_BG_HEX {
+  WHITE = "#ffffff",
+  G10 = "#f4f4f4",
+  G90 = "#282828",
+  G100 = "#171717",
+}
 
 /**
  * Service that watches CSS variables and updates the theme accordingly when no explicit Carbon theme is injected (inherit mode).
@@ -147,7 +153,7 @@ class ThemeWatcherService {
       }
     }
 
-    return white.background;
+    return CARBON_BG_HEX.WHITE;
   }
 
   /**
@@ -180,13 +186,13 @@ class ThemeWatcherService {
       // First check for exact matches with Carbon theme background values
       let targetTheme: CarbonTheme;
 
-      if (bgColor === white.background) {
+      if (bgColor === CARBON_BG_HEX.WHITE) {
         targetTheme = CarbonTheme.WHITE;
-      } else if (bgColor === g10.background) {
+      } else if (bgColor === CARBON_BG_HEX.G10) {
         targetTheme = CarbonTheme.G10;
-      } else if (bgColor === g90.background) {
+      } else if (bgColor === CARBON_BG_HEX.G90) {
         targetTheme = CarbonTheme.G90;
-      } else if (bgColor === g100.background) {
+      } else if (bgColor === CARBON_BG_HEX.G100) {
         targetTheme = CarbonTheme.G100;
       } else {
         // Fall back to existing lightness logic if no exact match
