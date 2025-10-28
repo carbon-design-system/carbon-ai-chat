@@ -13,6 +13,12 @@ import { customElement, property } from "lit/decorators.js";
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
 
+/**
+ * Workspace Shell Body.
+ *
+ * @element cds-aichat-workspace-shell-body
+ *
+ */
 @customElement(`${prefix}-workspace-shell-body`)
 class CDSAIChatWorkspaceShellBody extends LitElement {
   static styles = styles;
@@ -24,7 +30,11 @@ class CDSAIChatWorkspaceShellBody extends LitElement {
   slot = "body";
 
   render() {
-    return html` <slot></slot> `;
+    return html`
+      <div class="${prefix}-workspace-shell__body">
+        <slot></slot>
+      </div>
+    `;
   }
 }
 

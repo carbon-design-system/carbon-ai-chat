@@ -14,6 +14,12 @@ import "@carbon/web-components/es/components/notification/inline-notification.js
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
 
+/**
+ * Workspace Shell Notification.
+ *
+ * @element cds-aichat-workspace-shell-notification
+ *
+ */
 @customElement(`${prefix}-workspace-shell-notification`)
 class CDSAIChatWorkspaceShellNotification extends LitElement {
   static styles = styles;

@@ -13,6 +13,14 @@ import { customElement, property } from "lit/decorators.js";
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
 
+/**
+ * Workspace Shell Toolbar.
+ *
+ * @element cds-aichat-workspace-shell-toolbar
+ *
+ * @slot toolbar-action - Represents the action area in the Toolbar.
+ *
+ */
 @customElement(`${prefix}-workspace-shell-toolbar`)
 class CDSAIChatWorkspaceShellToolbar extends LitElement {
   static styles = styles;

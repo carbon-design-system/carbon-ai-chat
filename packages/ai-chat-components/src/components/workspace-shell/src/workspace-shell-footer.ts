@@ -14,6 +14,14 @@ import "@carbon/web-components/es/components/button/button.js";
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
 
+/**
+ * Workspace Shell Footer.
+ *
+ * @element cds-aichat-workspace-shell-footer
+ *
+ * @slot footer-action - Represents the action area in the Footer.
+ *
+ */
 @customElement(`${prefix}-workspace-shell-footer`)
 class CDSAIChatWorkspaceShellFooter extends LitElement {
   static styles = styles;
@@ -25,7 +33,7 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
   slot = "footer";
 
   render() {
-    return html` <slot name="footer-actions"></slot> `;
+    return html` <slot name="footer-action"></slot> `;
   }
 }
 

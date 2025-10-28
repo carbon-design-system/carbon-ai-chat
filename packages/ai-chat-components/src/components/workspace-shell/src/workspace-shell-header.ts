@@ -13,6 +13,15 @@ import { customElement, property } from "lit/decorators.js";
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
 
+/**
+ * Workspace Shell Header.
+ *
+ * @element cds-aichat-workspace-shell-header
+ *
+ * @slot header-description - Represents the description area in the Header.
+ * @slot header-action - Represents the action area in the workspace.
+ *
+ */
 @customElement(`${prefix}-workspace-shell-header`)
 class CDSAIChatWorkspaceShellHeader extends LitElement {
   static styles = styles;
@@ -39,13 +48,21 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
     const { titleText, subTitleText } = this;
     return html`
       <div class="cds-aichat-workspace-shell__header-content">
-        <h1 class="cds-aichat-workspace-shell__header-title">${titleText}</h1>
-        <h3 class="cds-aichat-workspace-shell__header-sub-title">
-          ${subTitleText}
-        </h3>
+        ${titleText &&
+        html`
+          <h1 class="cds-aichat-workspace-shell__header-title">${titleText}</h1>
+        `}
+        ${subTitleText &&
+        html`
+          <h3 class="cds-aichat-workspace-shell__header-sub-title">
+            ${subTitleText}
+          </h3>
+        `}
         <slot name="header-description"></slot>
       </div>
-      <slot name="header-actions"></slot>
+      <div class="cds-aichat-workspace-shell__header-action">
+        <slot name="header-action"></slot>
+      </div>
     `;
   }
 }

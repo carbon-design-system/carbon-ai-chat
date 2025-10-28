@@ -14,6 +14,7 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/theme";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/breakpoint" as *;
 
 /* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
@@ -45,6 +46,10 @@ $css--plex: true !default;
   padding: rem(24px) rem(32px);
   border-block-end: solid rem(1px) theme.$chat-bubble-border;
   grid-auto-flow: column;
+  @include breakpoint-down("md") {
+    gap: 16px;
+    grid-auto-flow: row;
+  }
 }
 :host(#{$prefix}-workspace-shell-body) {
   display: block;
@@ -69,6 +74,22 @@ $css--plex: true !default;
 
   ::slotted(cds-button[data-index="3"]) {
     grid-column: 1;
+  }
+  @include breakpoint-down("md") {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+
+    ::slotted(cds-button[data-index="1"]) {
+      grid-column: 1;
+    }
+
+    ::slotted(cds-button[data-index="2"]) {
+      grid-column: 1;
+    }
+
+    ::slotted(cds-button[data-index="3"]) {
+      grid-column: 1;
+    }
   }
 }
 
@@ -106,5 +127,9 @@ $css--plex: true !default;
     display: grid;
     grid-auto-columns: rem(40px);
     grid-auto-flow: column;
+
+    ::slotted(cds-ai-label) {
+      block-size: rem(40px);
+    }
   }
 }
