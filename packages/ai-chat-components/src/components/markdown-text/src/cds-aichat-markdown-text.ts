@@ -7,18 +7,15 @@
  *  @license
  */
 
-import { css, unsafeCSS } from "lit";
-
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import MarkdownElement from "./src/MarkdownElement";
-import { markdownTextTemplate } from "./src/markdownElement.template";
-import styles from "./src/markdownText.scss";
+import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import MarkdownElement from "./MarkdownElement.js";
+import { markdownTextTemplate } from "./markdownElement.template.js";
+// @ts-ignore
+import styles from "./markdownText.scss?lit";
 
 @carbonElement("cds-aichat-markdown-text")
 class CDSChatMarkdownElement extends MarkdownElement {
-  static styles = css`
-    ${unsafeCSS(styles)}
-  `;
+  static styles = styles;
 
   render() {
     return markdownTextTemplate(this);

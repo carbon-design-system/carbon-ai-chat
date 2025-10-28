@@ -84,12 +84,12 @@ export function extractTableData(tableNode: TokenTree): {
 export function extractTextContent(node: TokenTree): string {
   // Handle direct text tokens
   if (node.token.type === "text") {
-    return node.token.content;
+    return node.token.content || "";
   }
 
   // Handle inline code
   if (node.token.type === "code_inline") {
-    return node.token.content;
+    return node.token.content || "";
   }
 
   if (node.token.type === "softbreak" || node.token.type === "hardbreak") {

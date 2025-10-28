@@ -115,6 +115,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const persistedHumanAgentState = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
   );
+  const locale = useSelector(
+    (state: AppState) => state.config.public.locale || "en",
+  );
   const feedbackID = message.item.message_item_options?.feedback?.id;
   const feedbackPanelID = useUUID();
 
@@ -610,6 +613,45 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     );
   }
 
+  // Memoize markdown string functions for chain of thought
+  const getPaginationSupplementalText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage(
+          { id: "table_paginationSupplementalText" },
+          { pagesCount: count },
+        );
+      },
+    [intl],
+  );
+
+  const getPaginationStatusText = useMemo(
+    () =>
+      ({
+        start,
+        end,
+        count,
+      }: {
+        start: number;
+        end: number;
+        count: number;
+      }) => {
+        return intl.formatMessage(
+          { id: "table_paginationStatus" },
+          { start, end, count },
+        );
+      },
+    [intl],
+  );
+
+  const getLineCountText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
+      },
+    [intl],
+  );
+
   /**
    * Renders chain of thought component for the given {@link MessageResponse}.
    */
@@ -621,6 +663,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     if (!chainOfThought || props.isNestedMessageItem) {
       return false;
     }
+
     return (
       <ChainOfThought
         steps={chainOfThought}
@@ -631,6 +674,20 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         inputLabelText={languagePack.chainOfThought_inputLabel}
         outputLabelText={languagePack.chainOfThought_outputLabel}
         toolLabelText={languagePack.chainOfThought_toolLabel}
+        // Markdown strings - Table
+        filterPlaceholderText={languagePack.table_filterPlaceholder}
+        previousPageText={languagePack.table_previousPage}
+        nextPageText={languagePack.table_nextPage}
+        itemsPerPageText={languagePack.table_itemsPerPage}
+        locale={locale}
+        getPaginationSupplementalText={getPaginationSupplementalText}
+        getPaginationStatusText={getPaginationStatusText}
+        // Markdown strings - Code snippet
+        feedback={languagePack.codeSnippet_feedback}
+        showLessText={languagePack.codeSnippet_showLessText}
+        showMoreText={languagePack.codeSnippet_showMoreText}
+        tooltipContent={languagePack.codeSnippet_tooltipContent}
+        getLineCountText={getLineCountText}
       />
     );
   }

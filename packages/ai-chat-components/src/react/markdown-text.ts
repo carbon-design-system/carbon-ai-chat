@@ -7,19 +7,16 @@
  *  @license
  */
 
-/**
- * This file creates React bindings for the Markdown web component and registers the web component in the DOM.
- */
-
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import MarkdownElement from "../../../web-components/components/markdownText/cds-aichat-markdown-text";
+// Export the actual class for the component that will *directly* be wrapped with React.
+import CDSAIChatMarkdownText from "../components/markdown-text/src/cds-aichat-markdown-text.js";
 
-const Markdown = createComponent({
+const MarkdownText = createComponent({
   tagName: "cds-aichat-markdown-text",
-  elementClass: MarkdownElement,
+  elementClass: CDSAIChatMarkdownText,
   react: React,
 });
 
-export { Markdown };
+export default MarkdownText;
