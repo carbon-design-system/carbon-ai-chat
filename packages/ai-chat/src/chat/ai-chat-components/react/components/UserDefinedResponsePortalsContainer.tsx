@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { ReactNode, useRef } from "react";
+import React, { ReactNode, useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
 
 import { ChatInstance } from "../../../../types/instance/ChatInstance";
@@ -60,6 +60,25 @@ function UserDefinedResponsePortalsContainer({
   // Use a ref to store slot elements so they persist across renders
   const slotElementsRef = useRef<Map<string, HTMLElement>>(new Map());
 
+  // In the case that a new history is passed in, we want to ensure
+  // the previous user_defined response slots are removed
+  useEffect(() => {
+    const removeExpiredSlots = () => {
+      for (const [slot, el] of slotElementsRef.current.entries()) {
+        if (!(slot in userDefinedResponseEventsBySlot)) {
+          // Detach from DOM (safe even if not attached)
+          if (el.parentNode) {
+            el.parentNode.removeChild(el);
+          } else {
+            el.remove?.();
+          }
+          slotElementsRef.current.delete(slot);
+        }
+      }
+    };
+    removeExpiredSlots();
+  }, [userDefinedResponseEventsBySlot]);
+
   const getOrCreateSlotElement = (slot: string): HTMLElement => {
     let hostElement = slotElementsRef.current.get(slot);
 
@@ -67,10 +86,10 @@ function UserDefinedResponsePortalsContainer({
       // Create a new slot element
       hostElement = document.createElement("div");
       hostElement.setAttribute("slot", slot);
-      slotElementsRef.current.set(slot, hostElement);
 
       // Add it to the chat wrapper
       if (chatWrapper) {
+        slotElementsRef.current.set(slot, hostElement);
         chatWrapper.appendChild(hostElement);
       }
     }

@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.1.0-rc.2",
+  "version": "1.1.0-rc.3",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -37,11 +37,21 @@
   },
   "typesVersions": {
     "*": {
-      "es": ["dist/types/aiChatEntry.d.ts"],
-      "es-custom": ["dist/types/aiChatEntry.d.ts"],
-      "server": ["dist/types/serverEntry.d.ts"],
-      "web-components/cds-aichat-container": ["dist/types/aiChatEntry.d.ts"],
-      "web-components/cds-aichat-custom-element": ["dist/types/aiChatEntry.d.ts"]
+      "es": [
+        "dist/types/aiChatEntry.d.ts"
+      ],
+      "es-custom": [
+        "dist/types/aiChatEntry.d.ts"
+      ],
+      "server": [
+        "dist/types/serverEntry.d.ts"
+      ],
+      "web-components/cds-aichat-container": [
+        "dist/types/aiChatEntry.d.ts"
+      ],
+      "web-components/cds-aichat-custom-element": [
+        "dist/types/aiChatEntry.d.ts"
+      ]
     }
   },
   "files": [

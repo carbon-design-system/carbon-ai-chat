@@ -224,14 +224,6 @@ function ChatContainer(props: ChatContainerProps) {
       const currentNodes: HTMLElement[] = Array.from(
         wrapper.childNodes,
       ) as HTMLElement[];
-      const newNodesSet = new Set(combinedNodes);
-
-      // Remove nodes no longer present
-      currentNodes.forEach((node) => {
-        if (!newNodesSet.has(node)) {
-          wrapper.removeChild(node);
-        }
-      });
 
       // Append new nodes that aren't already in the container
       combinedNodes.forEach((node) => {

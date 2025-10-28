@@ -16,7 +16,10 @@ import {
   MessageResponseTypes,
 } from "@carbon/ai-chat";
 
-function generateHistoryItem(isResponse: boolean): HistoryItem {
+function generateHistoryItem(
+  isResponse: boolean,
+  useUserDefined = false,
+): HistoryItem {
   const requestTexts = [
     "Lorem ipsum dolor sit amet.",
     "Can you help me with something?",
@@ -45,17 +48,30 @@ function generateHistoryItem(isResponse: boolean): HistoryItem {
   const randomText = isResponse
     ? responseTexts[Math.floor(Math.random() * responseTexts.length)]
     : requestTexts[Math.floor(Math.random() * requestTexts.length)];
+
   const randomId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
   if (isResponse) {
+    const responseType = useUserDefined
+      ? MessageResponseTypes.USER_DEFINED
+      : MessageResponseTypes.TEXT;
+
     const messageResponse: MessageResponse = {
       id: randomId,
       output: {
         generic: [
-          {
-            response_type: MessageResponseTypes.TEXT,
-            text: randomText,
-          },
+          useUserDefined
+            ? {
+                response_type: responseType,
+                user_defined: {
+                  user_defined_type: "my_unique_identifier",
+                  text: randomText,
+                },
+              }
+            : {
+                response_type: responseType,
+                text: randomText,
+              },
         ],
       },
     };
@@ -81,14 +97,27 @@ function generateHistoryItem(isResponse: boolean): HistoryItem {
 }
 
 async function customLoadHistory(_instance: ChatInstance, count = 20) {
-  // Ensure count is odd so the last message is always a response (even index)
+  // Ensure count is odd so the last message is always a response
   const adjustedCount = count % 2 === 0 ? count + 1 : count;
-
   const history: HistoryItem[] = [];
+
+  // Randomly pick one response index for the USER_DEFINED response
+  const responseIndices = Array.from(
+    { length: adjustedCount },
+    (_, i) => i,
+  ).filter((i) => i % 2 === 0);
+  const userDefinedIndex =
+    responseIndices[Math.floor(Math.random() * responseIndices.length)];
+
   for (let i = 0; i < adjustedCount; i++) {
     const isResponse = i % 2 === 0;
-    history.push(generateHistoryItem(isResponse));
+
+    // Only the selected response becomes USER_DEFINED
+    const useUserDefined = isResponse && i === userDefinedIndex;
+
+    history.push(generateHistoryItem(isResponse, useUserDefined));
   }
+
   return history;
 }
 
