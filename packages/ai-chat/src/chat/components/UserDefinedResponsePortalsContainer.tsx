@@ -10,11 +10,11 @@
 import React, { ReactNode, useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
 
-import { ChatInstance } from "../../../../types/instance/ChatInstance";
+import { ChatInstance } from "../../types/instance/ChatInstance";
 import {
   RenderUserDefinedResponse,
   RenderUserDefinedState,
-} from "../../../../types/component/ChatContainer";
+} from "../../types/component/ChatContainer";
 
 interface UserDefinedResponsePortalsContainer {
   /**

@@ -24,8 +24,8 @@ interface TablePaginationProps {
   previousPageText: string;
   nextPageText: string;
   itemsPerPageText: string;
-  getPaginationSupplementalText: ({ count }: { count: number }) => string;
-  getPaginationStatusText: ({
+  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
+  getPaginationStatusText?: ({
     start,
     end,
     count,

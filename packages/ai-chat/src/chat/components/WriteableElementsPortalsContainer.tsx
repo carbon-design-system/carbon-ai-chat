@@ -13,8 +13,8 @@ import ReactDOM from "react-dom";
 import {
   ChatInstance,
   WriteableElements,
-} from "../../../../types/instance/ChatInstance";
-import { RenderWriteableElementResponse } from "../../../../types/component/ChatContainer";
+} from "../../types/instance/ChatInstance";
+import { RenderWriteableElementResponse } from "../../types/component/ChatContainer";
 
 interface WriteableElementsPortalsContainer {
   /**

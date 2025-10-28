@@ -18,7 +18,6 @@ import { html, nothing } from "lit";
 
 import { prefix } from "../../../settings";
 import { FeedbackElement } from "./FeedbackElement.js";
-import { enLanguagePack } from "../../../../../../types/config/PublicConfig";
 
 // The maximum number of characters the user is allowed to type into the text area.
 const MAX_TEXT_COUNT = 1000;
@@ -55,12 +54,12 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
   >
     <div class="${prefix}--title-row">
       <div class="${prefix}--title">
-        ${title || enLanguagePack.feedback_defaultTitle}
+        ${title || "Provide additional feedback"}
       </div>
     </div>
     ${showPrompt
       ? html`<div class="${prefix}--prompt">
-          ${prompt || enLanguagePack.feedback_defaultPrompt}
+          ${prompt || "What do you think of this response?"}
         </div>`
       : ""}
     ${categories?.length
@@ -80,8 +79,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
             value="${textInput}"
             class="${prefix}--feedback-text-area"
             ?disabled="${isReadonly}"
-            placeholder="${placeholder ||
-            enLanguagePack.feedback_defaultPlaceholder}"
+            placeholder="${placeholder || "Provide additional feedback..."}"
             rows="3"
             max-count="${MAX_TEXT_COUNT}"
             @input=${handleTextInput}
@@ -103,7 +101,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
         kind="secondary"
         @click=${handleCancel}
       >
-        ${cancelLabel || enLanguagePack.feedback_cancelLabel}
+        ${cancelLabel || "Cancel"}
       </cds-aichat-rounded-button>
       <cds-aichat-rounded-button
         class="${prefix}--submit"
@@ -111,7 +109,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
         size="lg"
         @click=${handleSubmit}
       >
-        ${submitLabel || enLanguagePack.feedback_submitLabel}
+        ${submitLabel || "Submit"}
       </cds-aichat-rounded-button>
     </div>
   </div>`;

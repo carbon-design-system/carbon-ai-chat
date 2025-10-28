@@ -11,10 +11,9 @@ import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import throttle from "lodash-es/throttle.js";
 
-import { LocalizationOptions } from "../../../../../../types/localization/LocalizationOptions";
-import { markdownToTokenTree, TokenTree } from "./markdownTokenTree";
-import { renderTokenTree } from "./markdownRenderer";
-import { consoleError, consoleLog } from "../../../../../utils/miscUtils";
+import { markdownToTokenTree, TokenTree } from "./markdownTokenTree.js";
+import { renderTokenTree } from "./markdownRenderer.js";
+import { consoleError, consoleLog } from "./utils.js";
 
 class MarkdownElement extends LitElement {
   @property({ type: Boolean, attribute: "debug" })
@@ -32,11 +31,54 @@ class MarkdownElement extends LitElement {
   @property({ type: Boolean, attribute: "streaming" })
   streaming = false;
 
-  @property({ type: Object, attribute: false })
-  localization?: LocalizationOptions;
-
   @property({ type: Boolean })
   highlight = true;
+
+  // Table strings
+  @property({ type: String, attribute: "filter-placeholder-text" })
+  filterPlaceholderText = "Filter table...";
+
+  @property({ type: String, attribute: "previous-page-text" })
+  previousPageText = "Previous page";
+
+  @property({ type: String, attribute: "next-page-text" })
+  nextPageText = "Next page";
+
+  @property({ type: String, attribute: "items-per-page-text" })
+  itemsPerPageText = "Items per page:";
+
+  @property({ type: String, attribute: "locale" })
+  locale = "en";
+
+  @property({ type: Object, attribute: false })
+  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
+
+  @property({ type: Object, attribute: false })
+  getPaginationStatusText?: ({
+    start,
+    end,
+    count,
+  }: {
+    start: number;
+    end: number;
+    count: number;
+  }) => string;
+
+  // Code snippet strings
+  @property({ type: String, attribute: "feedback" })
+  feedback = "Copied!";
+
+  @property({ type: String, attribute: "show-less-text" })
+  showLessText = "Show less";
+
+  @property({ type: String, attribute: "show-more-text" })
+  showMoreText = "Show more";
+
+  @property({ type: String, attribute: "tooltip-content" })
+  tooltipContent = "Copy code";
+
+  @property({ type: Object, attribute: false })
+  getLineCountText?: ({ count }: { count: number }) => string;
 
   private needsReparse = false;
   // Tracks the latest asynchronous rendering work so callers waiting on
@@ -53,11 +95,22 @@ class MarkdownElement extends LitElement {
     } else if (
       // Properties that only affect rendering can skip reparsing
       // - sanitizeHTML: applies DOMPurify during render, doesn't change tokens
-      // - localization: changes translated strings in rendered output
+      // - string properties: change translated strings in rendered output
       // - streaming: affects loading states in rendered output
       changed.has("sanitizeHTML") ||
-      changed.has("localization") ||
-      changed.has("streaming")
+      changed.has("streaming") ||
+      changed.has("filterPlaceholderText") ||
+      changed.has("previousPageText") ||
+      changed.has("nextPageText") ||
+      changed.has("itemsPerPageText") ||
+      changed.has("locale") ||
+      changed.has("getPaginationSupplementalText") ||
+      changed.has("getPaginationStatusText") ||
+      changed.has("feedback") ||
+      changed.has("showLessText") ||
+      changed.has("showMoreText") ||
+      changed.has("tooltipContent") ||
+      changed.has("getLineCountText")
     ) {
       this.scheduleRender();
     }
@@ -116,8 +169,21 @@ class MarkdownElement extends LitElement {
       this.renderedContent = renderTokenTree(this.tokenTree, {
         sanitize: this.sanitizeHTML,
         streaming: this.streaming,
-        localization: this.localization,
         highlight: this.highlight,
+        // Table strings
+        filterPlaceholderText: this.filterPlaceholderText,
+        previousPageText: this.previousPageText,
+        nextPageText: this.nextPageText,
+        itemsPerPageText: this.itemsPerPageText,
+        locale: this.locale,
+        getPaginationSupplementalText: this.getPaginationSupplementalText,
+        getPaginationStatusText: this.getPaginationStatusText,
+        // Code snippet strings
+        feedback: this.feedback,
+        showLessText: this.showLessText,
+        showMoreText: this.showMoreText,
+        tooltipContent: this.tooltipContent,
+        getLineCountText: this.getLineCountText,
       });
 
       if (this.debug) {
