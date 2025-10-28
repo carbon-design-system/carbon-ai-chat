@@ -11,9 +11,8 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
-import { Markdown } from "../../../ai-chat-components/react/components/markdown/Markdown";
+import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown-text.js";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { LocalizationOptions } from "../../../../types/localization/LocalizationOptions";
 import { AppState } from "../../../../types/state/AppState";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { debugLog } from "../../../utils/miscUtils";
@@ -74,70 +73,45 @@ function RichText(props: RichTextProps) {
     (state: AppState) => state.config.public.locale || "en",
   );
   const debug = useSelector((state: AppState) => state.config.public.debug);
-  // Memoize localization object to prevent unnecessary re-renders
-  const localization: LocalizationOptions = useMemo(() => {
-    // Create table localization functions
-    const getTablePaginationSupplementalText = ({
-      count,
-    }: {
-      count: number;
-    }) => {
-      return intl.formatMessage(
-        { id: "table_paginationSupplementalText" },
-        { pagesCount: count },
-      );
-    };
 
-    const getTablePaginationStatusText = ({
-      start,
-      end,
-      count,
-    }: {
-      start: number;
-      end: number;
-      count: number;
-    }) => {
-      return intl.formatMessage(
-        { id: "table_paginationStatus" },
-        { start, end, count },
-      );
-    };
-
-    const getCodeSnippetLineCountText = ({ count }: { count: number }) => {
-      return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
-    };
-
-    // Build localization options object
-    return {
-      table: {
-        filterPlaceholderText: languagePack.table_filterPlaceholder,
-        previousPageText: languagePack.table_previousPage,
-        nextPageText: languagePack.table_nextPage,
-        itemsPerPageText: languagePack.table_itemsPerPage,
-        locale,
-        getPaginationSupplementalText: getTablePaginationSupplementalText,
-        getPaginationStatusText: getTablePaginationStatusText,
+  // Memoize string functions to prevent unnecessary re-renders
+  const getPaginationSupplementalText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage(
+          { id: "table_paginationSupplementalText" },
+          { pagesCount: count },
+        );
       },
-      codeSnippet: {
-        feedback: languagePack.codeSnippet_feedback,
-        showLessText: languagePack.codeSnippet_showLessText,
-        showMoreText: languagePack.codeSnippet_showMoreText,
-        tooltipContent: languagePack.codeSnippet_tooltipContent,
-        getLineCountText: getCodeSnippetLineCountText,
+    [intl],
+  );
+
+  const getPaginationStatusText = useMemo(
+    () =>
+      ({
+        start,
+        end,
+        count,
+      }: {
+        start: number;
+        end: number;
+        count: number;
+      }) => {
+        return intl.formatMessage(
+          { id: "table_paginationStatus" },
+          { start, end, count },
+        );
       },
-    };
-  }, [
-    languagePack.table_filterPlaceholder,
-    languagePack.table_previousPage,
-    languagePack.table_nextPage,
-    languagePack.table_itemsPerPage,
-    languagePack.codeSnippet_feedback,
-    languagePack.codeSnippet_showLessText,
-    languagePack.codeSnippet_showMoreText,
-    languagePack.codeSnippet_tooltipContent,
-    locale,
-    intl,
-  ]);
+    [intl],
+  );
+
+  const getLineCountText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
+      },
+    [intl],
+  );
 
   if (debug) {
     debugLog("Receiving markdown text", { text, streaming });
@@ -149,9 +123,22 @@ function RichText(props: RichTextProps) {
       markdown={text}
       sanitizeHTML={doSanitize}
       streaming={streaming}
-      localization={localization}
       highlight={highlight}
       removeHTML={removeHTML}
+      // Table strings
+      filterPlaceholderText={languagePack.table_filterPlaceholder}
+      previousPageText={languagePack.table_previousPage}
+      nextPageText={languagePack.table_nextPage}
+      itemsPerPageText={languagePack.table_itemsPerPage}
+      locale={locale}
+      getPaginationSupplementalText={getPaginationSupplementalText}
+      getPaginationStatusText={getPaginationStatusText}
+      // Code snippet strings
+      feedback={languagePack.codeSnippet_feedback}
+      showLessText={languagePack.codeSnippet_showLessText}
+      showMoreText={languagePack.codeSnippet_showMoreText}
+      tooltipContent={languagePack.codeSnippet_tooltipContent}
+      getLineCountText={getLineCountText}
     />
   );
 }
