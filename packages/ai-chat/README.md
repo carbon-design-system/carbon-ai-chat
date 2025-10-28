@@ -25,6 +25,10 @@ This will install the package that contains both the web component and React ver
 - [React examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react)
 - [Web component examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components)
 
+## Related tools
+
+- [Carbon Charts MCP server, IBM only](https://w3.ibm.com/innersource/portal/projects/1874876)
+
 ## 📝 License
 
 Licensed under the [Apache 2.0 License](/LICENSE).
