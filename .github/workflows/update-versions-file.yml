@@ -53,10 +53,8 @@ jobs:
             arr.unshift(versionWithPrefix);
           }
 
-          // Pretty-print array with indentation
-          let formattedArray = JSON.stringify(arr, null, 2)
-            .replace(/^\[/, "[\n")       // ensure newline after opening bracket
-            .replace(/\]$/, ",\n]");     // add trailing comma before closing bracket
+          // Pretty-print array with correct indentation and trailing comma
+          let formattedArray = JSON.stringify(arr, null, 2).replace(/\n\]/, ",\n]");
 
           const newContent = content.replace(
             regex,
