@@ -139,6 +139,12 @@ button.#{$prefix}--chain-of-thought-button:focus-visible {
   }
 }
 
+.#{$prefix}--chain-of-thought-accordion-item-header-chevron[data-disabled] {
+  svg {
+    visibility: hidden;
+  }
+}
+
 .#{$prefix}--chain-of-thought-accordion-item {
   button.#{$prefix}--chain-of-thought-accordion-item-header {
     @include button.reset(true);
@@ -150,6 +156,10 @@ button.#{$prefix}--chain-of-thought-button:focus-visible {
 
     background: theme.$layer-accent-02;
     block-size: 2rem;
+  }
+
+  button.#{$prefix}--chain-of-thought-accordion-item-header[disabled] {
+    cursor: default;
   }
 
   button.#{$prefix}--chain-of-thought-accordion-item-header:focus,

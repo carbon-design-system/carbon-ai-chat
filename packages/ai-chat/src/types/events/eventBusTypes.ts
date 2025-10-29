@@ -186,6 +186,11 @@ export enum BusEventType {
    * This includes changes to viewState, showUnreadIndicator, and other persisted state.
    */
   STATE_CHANGE = "state:change",
+
+  /**
+   * Fired if the disclaimer is accepted.
+   */
+  DISCLAIMER_ACCEPTED = "disclaimerAccepted",
 }
 
 /**

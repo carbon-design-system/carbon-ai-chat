@@ -81,6 +81,9 @@ const fullChainOfThought: ChainOfThoughtStep[] = [
     },
   },
   {
+    title: "Checking results",
+  },
+  {
     title: "Calculating carbon bond energies and molecular stability metrics",
     tool_name: "bond_analyzer",
     request: {

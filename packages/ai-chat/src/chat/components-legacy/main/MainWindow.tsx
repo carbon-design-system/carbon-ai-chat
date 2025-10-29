@@ -56,6 +56,7 @@ import {
 import { consoleError, createDidCatchErrorData } from "../../utils/miscUtils";
 import { MainWindowFunctions } from "./MainWindowFunctions";
 import {
+  BusEventType,
   MainWindowCloseReason,
   MessageSendSource,
 } from "../../../types/events/eventBusTypes";
@@ -547,6 +548,9 @@ class MainWindow
    */
   onAcceptDisclaimer = () => {
     this.props.serviceManager.store.dispatch(actions.acceptDisclaimer());
+    this.props.serviceManager.fire({
+      type: BusEventType.DISCLAIMER_ACCEPTED,
+    });
   };
 
   /**
