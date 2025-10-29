@@ -12,20 +12,20 @@ $css--plex: true !default;
 @use "@carbon/layout";
 @use "@carbon/styles/scss/reset";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/breakpoint" as *;
 
 /* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
+  @include type.type-style("body-01");
+
   display: block;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
   color: theme.$text-secondary;
-  font-size: rem(14px);
   inline-size: 100%;
-  /* stylelint-disable-next-line declaration-property-unit-allowed-list */
-  line-height: rem(20px);
   max-inline-size: rem(904px);
 }
 :host(#{$prefix}-workspace-shell-toolbar) {
@@ -33,7 +33,7 @@ $css--plex: true !default;
   align-items: center;
   justify-content: space-between;
   padding: rem(8px) rem(8px) rem(8px) rem(32px);
-  border-block-end: solid rem(1px) theme.$chat-bubble-border;
+  border-block-end: solid rem(1px) theme.$border-subtle-01;
   grid-auto-flow: column;
 
   .cds-aichat-workspace-shell-toolbar__title {
@@ -44,7 +44,7 @@ $css--plex: true !default;
   display: grid;
   align-items: baseline;
   padding: rem(24px) rem(32px);
-  border-block-end: solid rem(1px) theme.$chat-bubble-border;
+  border-block-end: solid rem(1px) theme.$border-subtle-01;
   grid-auto-flow: column;
   @include breakpoint-down("md") {
     gap: 16px;
@@ -60,7 +60,7 @@ $css--plex: true !default;
 :host(#{$prefix}-workspace-shell-footer) {
   display: grid;
   align-items: stretch;
-  border-block-start: solid rem(1px) theme.$skeleton-element;
+  border-block-start: solid rem(1px) theme.$border-subtle-00;
   grid-auto-flow: column;
   grid-template-columns: 50% 25% 25%;
 
@@ -107,19 +107,14 @@ $css--plex: true !default;
     }
 
     &-title {
+      @include type.type-style("heading-04");
+
       color: theme.$text-primary;
-      font-size: rem(28px);
-      font-weight: 400;
-      /* stylelint-disable-next-line declaration-property-unit-allowed-list */
-      line-height: rem(36px);
       margin-block-end: rem(-14px);
     }
 
     &-sub-title {
-      color: theme.$text-secondary;
-      font-size: rem(12px);
-      /* stylelint-disable-next-line declaration-property-unit-allowed-list */
-      line-height: rem(16px);
+      @include type.type-style("helper-text-01");
     }
   }
 

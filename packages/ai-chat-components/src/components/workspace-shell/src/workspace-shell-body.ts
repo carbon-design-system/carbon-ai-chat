@@ -30,11 +30,7 @@ class CDSAIChatWorkspaceShellBody extends LitElement {
   slot = "body";
 
   render() {
-    return html`
-      <div class="${prefix}-workspace-shell__body">
-        <slot></slot>
-      </div>
-    `;
+    return html` <slot></slot> `;
   }
 }
 
