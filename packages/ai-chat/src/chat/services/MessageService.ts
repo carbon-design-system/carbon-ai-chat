@@ -44,13 +44,9 @@ import { LanguagePack } from "../../types/config/PublicConfig";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
 import { CancellationReason } from "../../types/config/MessagingConfig";
 
-// The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, stop
-// retrying, and move on to the next item in the queue. 120 seconds is the longest Cerberus allows for, so we'll
-// set this a little higher than that.
+// The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, and
+// move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
-
-// The maximum amount of time we allow to pass before the error indicator becomes visible.
-const MS_MAX_SILENT_ERROR = 6000;
 
 // The maximum amount of time we allow to pass before the loading indicator becomes visible.
 const MS_MAX_SILENT_LOADING = 4000;
@@ -141,13 +137,6 @@ interface PendingMessageRequest extends SendMessageRequest {
    * Indicates if the response has been processed.
    */
   isProcessed: boolean;
-}
-
-// Types of different retry behaviors. SILENT will retry without letting the end user know we are retrying, VISIBLE will
-// show the user that we are retrying.
-enum RetryType {
-  SILENT = 1,
-  VISIBLE,
 }
 
 class MessageService {
@@ -289,32 +278,6 @@ class MessageService {
     store.dispatch(
       actions.addLocalMessageItem(localMessage, originalMessage, true),
     );
-  }
-
-  /**
-   * Send to the assistant API, IF we are inside the window to show an error, also update the error state on the
-   * message.
-   */
-  private sendToAssistantAndUpdateErrorState(current: PendingMessageRequest) {
-    // If this message was already invalidated, don't do anything.
-    if (current.isProcessed) {
-      return;
-    }
-
-    this.sendToAssistant(current);
-
-    const now = Date.now();
-    const msSinceStarted = now - current.timeFirstRequest;
-    const isSilentErrorWindow = MS_MAX_SILENT_ERROR > msSinceStarted;
-    const type = isSilentErrorWindow ? RetryType.SILENT : RetryType.VISIBLE;
-    if (type === RetryType.VISIBLE) {
-      // Once we've hit the visible retry state, we need to mark the message as retrying and we need to mark all
-      // the other messages that are still waiting as waiting.
-      this.setMessageErrorState(current, MessageErrorState.RETRYING);
-      this.queue.waiting.forEach((waitingMessage) => {
-        this.setMessageErrorState(waitingMessage, MessageErrorState.WAITING);
-      });
-    }
   }
 
   /**
