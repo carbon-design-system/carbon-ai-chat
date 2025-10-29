@@ -136,6 +136,7 @@
           "definedTags": [
             "category",
             "experimental",
+            "element",
             "typeParam",
             "template",
             "inheritDoc",
@@ -150,6 +151,7 @@
             "readonly",
             "sealed",
             "showCategories",
+            "slot",
             "virtual"
           ]
         }
