@@ -95,7 +95,7 @@ describe("chatBoot utils", () => {
       const changeView = jest.fn().mockResolvedValue({ mainWindow: true });
 
       const fakeServiceManager: any = {
-        actions: { changeView },
+        viewStateService: { changeView },
         store: {
           getState: () => ({
             persistedToBrowserStorage: {
@@ -117,7 +117,7 @@ describe("chatBoot utils", () => {
       const changeView = jest.fn().mockResolvedValue({ mainWindow: false });
 
       const fakeServiceManager: any = {
-        actions: { changeView },
+        viewStateService: { changeView },
         store: {
           getState: () => ({
             persistedToBrowserStorage: {

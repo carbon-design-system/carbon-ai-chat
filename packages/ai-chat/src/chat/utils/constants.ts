@@ -12,7 +12,7 @@ import { WriteableElementName } from "../../types/instance/ChatInstance";
 import { CornersType } from "../../types/config/CornersType";
 
 // Prefix used to distinguish console logs omitted from our code
-const WA_CONSOLE_PREFIX = "[Chat]";
+const CONSOLE_PREFIX = "[Chat]";
 
 // The right-to-left mark character string which mixes the direction of a string.
 // For more info on right-to-left mark: https://www.w3.org/TR/WCAG20-TECHS/H34.html
@@ -24,7 +24,7 @@ const ENGLISH_US_DATE_FORMAT = "mm/dd/yyyy";
 const RESPONSE_TYPE_TIMEOUT_MS = 20000;
 
 // These are custom panel ids.
-const DEFAULT_CUSTOM_PANEL_ID = "wac-default-panel";
+const DEFAULT_CUSTOM_PANEL_ID = "default-center-panel";
 
 /**
  * This function serves as a placeholder in places where a functional value is required, but not expected to be
@@ -47,7 +47,7 @@ const AUTO_SCROLL_THROTTLE_TIMEOUT = 100;
 
 export {
   AUTO_SCROLL_THROTTLE_TIMEOUT,
-  WA_CONSOLE_PREFIX,
+  CONSOLE_PREFIX,
   RIGHT_TO_LEFT_MARK,
   ENGLISH_US_DATE_FORMAT,
   RESPONSE_TYPE_TIMEOUT_MS,

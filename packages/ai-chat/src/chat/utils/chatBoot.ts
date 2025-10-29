@@ -13,8 +13,10 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat.js";
 import merge from "lodash-es/merge.js";
 import isEqual from "lodash-es/isEqual.js";
 
-import { createServiceManager } from "../services/loadServices";
-import { ServiceManager } from "../services/ServiceManager";
+import {
+  createServiceManager,
+  ServiceManager,
+} from "../services/ServiceManager";
 import { createChatInstance } from "../instance/ChatInstanceImpl";
 import { createAppConfig } from "../store/doCreateStore";
 import { loadLocale } from "./languages";
@@ -128,7 +130,7 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
     if (openChatByDefault && !wasLoadedFromBrowser) {
       mainWindowOpenReason = MainWindowOpenReason.OPEN_BY_DEFAULT;
     }
-    await serviceManager.actions.changeView(targetViewState, {
+    await serviceManager.viewStateService.changeView(targetViewState, {
       mainWindowOpenReason,
     });
   } else {
@@ -136,7 +138,7 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
     const tryHydrating = false;
     const forceViewChange = isEqual(targetViewState, VIEW_STATE_ALL_CLOSED);
 
-    await serviceManager.actions.changeView(
+    await serviceManager.viewStateService.changeView(
       targetViewState,
       { viewChangeReason },
       tryHydrating,

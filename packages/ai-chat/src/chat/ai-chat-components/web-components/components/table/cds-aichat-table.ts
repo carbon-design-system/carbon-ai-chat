@@ -354,7 +354,7 @@ class TableElement extends LitElement {
     // throwing the error.
 
     // throw new Error(
-    //   `${WA_CONSOLE_PREFIX} Number of cells in the table header does not match the number of cells in one or more of the table rows. In order to render a table there needs to be the same number of columns in the table header and all of the table rows.`,
+    //   `${CONSOLE_PREFIX} Number of cells in the table header does not match the number of cells in one or more of the table rows. In order to render a table there needs to be the same number of columns in the table header and all of the table rows.`,
     // );
   }
 

@@ -73,10 +73,10 @@ export async function applyConfigChangesDynamically(
   if (changes.messagingChanged && newConfig.messaging) {
     // Update message service timeout value held internally
     if (
-      serviceManager.messageService &&
+      serviceManager.messageOutboundService &&
       newConfig.messaging.messageTimeoutSecs
     ) {
-      serviceManager.messageService.timeoutMS =
+      serviceManager.messageOutboundService.timeoutMS =
         newConfig.messaging.messageTimeoutSecs * 1000;
     }
   }

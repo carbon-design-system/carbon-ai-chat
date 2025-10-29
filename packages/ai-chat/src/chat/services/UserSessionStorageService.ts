@@ -16,7 +16,7 @@ import { VERSION } from "../utils/environmentVariables";
 import { PersistedState } from "../../types/state/AppState";
 import { IS_SESSION_STORAGE } from "../utils/browserUtils";
 import { consoleError } from "../utils/miscUtils";
-import mockStorage from "./mockStorage";
+import mockStorage from "../utils/mockStorage";
 import { ServiceManager } from "./ServiceManager";
 
 // We use sessionStorage instead of localStorage to not have to have a public cookie policy that must be accepted in EU.
@@ -36,7 +36,16 @@ class UserSessionStorageService {
   }
 
   /**
-   * Get the session object.
+   * Loads and validates the persisted session from browser storage.
+   *
+   * Flow:
+   * 1. Retrieves session data from storage using the namespace-aware key
+   * 2. Parses the JSON and validates version compatibility with current app version
+   * 3. Resets launcher state flags (expanded/extended) for the new session
+   * 4. Clears the session if version mismatch or parse errors occur
+   * 5. Returns the validated session or null if invalid/missing
+   *
+   * @returns The persisted session state if valid and version-compatible, otherwise null
    */
   loadSession(): PersistedState | null {
     try {

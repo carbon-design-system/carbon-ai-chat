@@ -144,7 +144,7 @@ interface PendingMessageRequest extends SendMessageRequest {
   isStreaming?: boolean;
 }
 
-class MessageService {
+class MessageOutboundService {
   /**
    * The service manager to use to access services.
    */
@@ -226,6 +226,12 @@ class MessageService {
   /**
    * Process a response from assistant with 200 response code, send and return the messageResponse.
    *
+   * The processing flow:
+   * 1. Validates the message hasn't been invalidated and clears any error state
+   * 2. Updates message metadata (timestamps, tracking data) and delegates to receive action
+   * 3. Finalizes message processing by resolving promises and tracking the message ID
+   * 4. Advances the queue for non-streaming messages (streaming waits for FinalResponseChunk)
+   *
    * @param current The current item in the send queue.
    * @param received A {@link MessageResponse}.
    */
@@ -239,6 +245,7 @@ class MessageService {
     if (isProcessed) {
       return;
     }
+
     // Clear any error state that may be associated with the message.
     this.setMessageErrorState(current, MessageErrorState.NONE);
 
@@ -249,13 +256,7 @@ class MessageService {
     // Do all the normal things for our general message requests, however for event messages we skip this.
     if (received) {
       if (message.input.message_type !== MessageInputType.EVENT) {
-        received.history = received.history || {};
-        received.history.timestamp = received.history.timestamp || Date.now();
-
-        current.trackData.lastRequestTime =
-          Date.now() - current.timeLastRequest;
-        current.trackData.totalRequestTime =
-          Date.now() - current.timeFirstRequest;
+        this.updateMessageMetadata(current, received);
 
         // Send receive event.
         await this.serviceManager.actions.receive(
@@ -273,18 +274,37 @@ class MessageService {
       return;
     }
 
-    // If the received message is part one of a two-step response then we need to respond a little differently. We
-    // need to disable user input, then send another request to the assistant to get the second part. When that
-    // message is completed, we can "resume" the original message. We will not resolve the promise for the original
-    // message until the entire process is completed.
-    let rejected;
+    this.finalizeMessageProcessing(current);
+  }
 
+  /**
+   * Updates the message metadata including timestamps and tracking data.
+   *
+   * @param current The pending request being processed
+   * @param received The received message response
+   */
+  private updateMessageMetadata(
+    current: PendingMessageRequest,
+    received: MessageResponse,
+  ): void {
+    received.history = received.history || {};
+    received.history.timestamp = received.history.timestamp || Date.now();
+
+    current.trackData.lastRequestTime = Date.now() - current.timeLastRequest;
+    current.trackData.totalRequestTime = Date.now() - current.timeFirstRequest;
+  }
+
+  /**
+   * Finalizes message processing by resolving the send promise, marking as processed,
+   * tracking the message ID, and advancing the queue for non-streaming messages.
+   *
+   * @param current The pending request to finalize
+   */
+  private finalizeMessageProcessing(current: PendingMessageRequest): void {
     // Resolve the promise that lets the original caller who sent the message know that the message has been sent
     // successfully.
-    if (!rejected) {
-      current.sendMessagePromise.doResolve();
-      current.isProcessed = true;
-    }
+    current.sendMessagePromise.doResolve();
+    current.isProcessed = true;
 
     // Track the message ID so we can link it to the response_id when chunks arrive
     this.lastProcessedMessageID = current.message.id;
@@ -449,6 +469,12 @@ class MessageService {
         },
         this.serviceManager.instance,
       );
+      console.log(
+        "[MessageService] customSendMessage completed for message:",
+        message.id,
+        "isStreaming:",
+        current.isStreaming,
+      );
       await this.processSuccess(current, null);
     } catch (error) {
       consoleError("An error occurred while sending a message", error);
@@ -463,103 +489,153 @@ class MessageService {
   /**
    * If there are items in the send queue, will grab the zero index item and send it to the assistant back-end via
    * this.sendToAssistant.
+   *
+   * The processing flow for each message:
+   * 1. Moves the next waiting message to current and sets up initial timing
+   * 2. For non-event messages, sets the thread ID, configures loading indicators/timeouts
+   * 3. Fires the pre-send event to allow message modification by event handlers
+   * 4. Updates the store with any message modifications from pre-send handlers
+   * 5. Fires the send event and delegates to sendToAssistant for actual transmission
    */
   private async runQueueIfReady() {
     if (!this.queue.current && this.queue.waiting.length > 0) {
-      const { eventBus, store } = this.serviceManager;
       this.clearCurrentQueueItem();
       this.queue.current = this.queue.waiting.shift();
       const { current } = this.queue;
-      const { message, source } = current;
-      const state = store.getState();
-      const { config } = store.getState();
-      const { public: publicConfig } = config;
+      const { message } = current;
+
+      console.log(
+        "[MessageService] Starting to process message:",
+        message.id,
+        "has controller:",
+        !!current.sendMessageController,
+      );
+
       current.timeFirstRequest = Date.now();
 
       // Do all the normal things for our general messageRequests, however for event messages we skip this.
       if (message.input.message_type !== MessageInputType.EVENT) {
-        const lastResponse = getLastAssistantResponseWithContext(state);
-        if (lastResponse) {
-          message.thread_id = THREAD_ID_MAIN;
-        }
-
-        const LOADING_INDICATOR_TIMER =
-          !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
-          publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
-            ? MS_MAX_SILENT_LOADING
-            : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
-
-        if (LOADING_INDICATOR_TIMER || this.timeoutMS) {
-          this.messageLoadingManager.start(
-            () => {
-              this.serviceManager.store.dispatch(
-                actions.addIsLoadingCounter(1),
-              );
-            },
-            (didExceedMaxLoading: boolean) => {
-              if (didExceedMaxLoading) {
-                this.serviceManager.store.dispatch(
-                  actions.addIsLoadingCounter(-1),
-                );
-              }
-            },
-            () => {
-              this.cancelMessageRequestByID(
-                message.id,
-                true,
-                CancellationReason.TIMEOUT,
-              );
-            },
-            LOADING_INDICATOR_TIMER,
-            this.timeoutMS,
-          );
-        }
+        this.setupMessageThreading(message);
+        this.setupLoadingIndicator(current);
 
         if (current.isProcessed) {
           // This message was cancelled.
           return;
         }
 
-        // Grab the original text before it can be modified by a pre:send handler.
-        const originalUserText = message.history?.label || message.input.text;
-
-        // Fire the pre:send event. User code is allowed to modify the message at this point. If this takes longer than MS_MAX_SILENT_LOADING
-        // we show a loading state.
-        await eventBus.fire(
-          {
-            type: BusEventType.PRE_SEND,
-            data: message,
-            source,
-          },
-          this.serviceManager.instance,
-        );
+        await this.prepareMessageForSending(current);
 
         if (current.isProcessed) {
           // This message was cancelled.
           return;
         }
-
-        // We now want to update the store with whatever edits have been made to the message.
-        const localMessage = inputItemToLocalItem(
-          message,
-          originalUserText,
-          current.localMessageID,
-        );
-        // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
-        // we don't need to update it here either.
-        if (!message.history.silent) {
-          store.dispatch(actions.updateLocalMessageItem(localMessage));
-          store.dispatch(actions.updateMessage(message));
-        }
-        deepFreeze(message);
-
-        await eventBus.fire(
-          { type: BusEventType.SEND, data: message, source },
-          this.serviceManager.instance,
-        );
       }
+
       this.sendToAssistant(current);
     }
+  }
+
+  /**
+   * Sets up the thread ID for the message based on the last assistant response.
+   * If there is a previous assistant response, assigns the message to the main thread.
+   *
+   * @param message The message request to configure
+   */
+  private setupMessageThreading(message: MessageRequest<any>): void {
+    const state = this.serviceManager.store.getState();
+    const lastResponse = getLastAssistantResponseWithContext(state);
+    if (lastResponse) {
+      message.thread_id = THREAD_ID_MAIN;
+    }
+  }
+
+  /**
+   * Configures loading indicators and timeout handlers for the message.
+   * Sets up the message loading manager with callbacks for showing/hiding loading states
+   * and handling timeout cancellation.
+   *
+   * @param current The pending message request to configure
+   */
+  private setupLoadingIndicator(current: PendingMessageRequest): void {
+    const { store } = this.serviceManager;
+    const { config } = store.getState();
+    const { public: publicConfig } = config;
+    const { message } = current;
+
+    const LOADING_INDICATOR_TIMER =
+      !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
+      publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
+        ? MS_MAX_SILENT_LOADING
+        : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
+
+    if (LOADING_INDICATOR_TIMER || this.timeoutMS) {
+      this.messageLoadingManager.start(
+        () => {
+          this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
+        },
+        (didExceedMaxLoading: boolean) => {
+          if (didExceedMaxLoading) {
+            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(-1));
+          }
+        },
+        () => {
+          this.cancelMessageRequestByID(
+            message.id,
+            true,
+            CancellationReason.TIMEOUT,
+          );
+        },
+        LOADING_INDICATOR_TIMER,
+        this.timeoutMS,
+      );
+    }
+  }
+
+  /**
+   * Prepares a message for sending by firing pre-send events, allowing event handlers to modify
+   * the message, and then updating the store with any changes before freezing the message.
+   * Also fires the send event once preparation is complete.
+   *
+   * @param current The pending message request to prepare
+   */
+  private async prepareMessageForSending(
+    current: PendingMessageRequest,
+  ): Promise<void> {
+    const { eventBus, store } = this.serviceManager;
+    const { message, source } = current;
+
+    // Grab the original text before it can be modified by a pre:send handler.
+    const originalUserText = message.history?.label || message.input.text;
+
+    // Fire the pre:send event. User code is allowed to modify the message at this point. If this takes longer than MS_MAX_SILENT_LOADING
+    // we show a loading state.
+    await eventBus.fire(
+      {
+        type: BusEventType.PRE_SEND,
+        data: message,
+        source,
+      },
+      this.serviceManager.instance,
+    );
+
+    // We now want to update the store with whatever edits have been made to the message.
+    const localMessage = inputItemToLocalItem(
+      message,
+      originalUserText,
+      current.localMessageID,
+    );
+    // If history.silent is set to true, we don't add the message to the  store as we do not want to show it, so
+    // we don't need to update it here either.
+    if (!message.history.silent) {
+      store.dispatch(actions.updateLocalMessageItem(localMessage));
+      store.dispatch(actions.updateMessage(message));
+    }
+    deepFreeze(message);
+
+    await eventBus.fire(
+      { type: BusEventType.SEND, data: message, source },
+      this.serviceManager.instance,
+    );
   }
 
   /**
@@ -671,7 +747,7 @@ class MessageService {
           actions.setMessageErrorState(message.id, errorState),
         );
 
-        // After updating store get the updated message back from store and use it within the messageService. If we
+        // After updating store get the updated message back from store and use it within the messageOutboundService. If we
         // don't get the updated message back within the message service we could try to save an updated version of this
         // message in store in the future but the copy within this service will be out of date.
         const { allMessagesByID } = this.serviceManager.store.getState();
@@ -698,7 +774,7 @@ class MessageService {
   ): Promise<MessageResponse | any> {
     message.history.timestamp = message.history.timestamp || Date.now();
 
-    // The messageService does different things based off the message type so lets make sure one exists.
+    // The messageOutboundService does different things based off the message type so lets make sure one exists.
     message.input = message.input || {};
     message.input.message_type =
       message.input.message_type || MessageInputType.TEXT;
@@ -875,4 +951,4 @@ class MessageService {
   }
 }
 
-export default MessageService;
+export default MessageOutboundService;

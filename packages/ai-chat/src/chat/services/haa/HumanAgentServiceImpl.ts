@@ -239,13 +239,23 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Begins a chat between the current user and the currently configured service desk. This may not be called if
-   * there is already a service desk being used.
+   * Begins a chat between the current user and the currently configured service desk.
+   *
+   * Flow:
+   * 1. Pre-validation: ensures service desk exists and no chat is already running
+   * 2. Handles suspended chat cleanup by calling endChat() if needed
+   * 3. Initializes chat state: sets chatStarted flag, clears typing indicators and file upload queue
+   * 4. Fires PRE_START_CHAT event to allow customization or cancellation
+   * 5. Sets up agent join timeout timer if configured in service desk settings
+   * 6. Dispatches connecting state to Redux store
+   * 7. Calls service desk startChat() with message and pre-start payload
+   * 8. Error handling: sets error status, cleans up state, and cancels timers on failure
    *
    * @param localConnectMessage The specific localMessage caused the connection to an agent. It will
    * contain specific information to send to the service desk as part of the connection. This can include things
    * like a message to display to a human agent.
    * @param originalMessage The full original message that this Connect to Agent item belongs to.
+   * @throws Error if service desk is not configured or chat is already running
    */
   public async startChat(
     localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
@@ -371,6 +381,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Tells the service desk to terminate the chat.
    *
+   * Flow:
+   * 1. Validates that chat is active and service desk exists
+   * 2. Retrieves persisted state via persistedHumanAgentState()
+   * 3. If connected, fires pre-end event via firePreEndChat() with cancellation support
+   * 4. Determines end message type based on who initiated (user vs programmatic)
+   * 5. Delegates full cleanup to doEndChat() with appropriate parameters
+   *
    * @param endedByUser Indicates if the chat is being ended as a result of the user or if it was ended
    * programmatically from an instance method.
    * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
@@ -462,6 +479,18 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
   /**
    * Sends a message to the agent in the service desk.
+   *
+   * Flow:
+   * 1. Validates service desk and chat are active via isSuspended() check
+   * 2. Prepares message and fires PRE_SEND event for message customization
+   * 3. Creates local message items for text and file uploads
+   * 4. Updates upload tracking state in Redux store
+   * 5. Adds messages to store via addMessages()
+   * 6. Sets up timeout-based error state management:
+   *    - Warning state (RETRYING) at 3 seconds via setMessageErrorState()
+   *    - Error state (FAILED) at 20 seconds via setMessageErrorState()
+   * 7. Sends to service desk and fires SEND event on success
+   * 8. Error handling: marks message as failed via setMessageErrorState()
    *
    * @param text The message from the user.
    * @param uploads An optional set of files to upload.
@@ -618,11 +647,18 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Checks if any agents are online and ready to communicate with the user. This function will time out after 5
-   * seconds and will return false when that happens.
+   * Checks if any agents are online and ready to communicate with the user.
+   *
+   * Flow:
+   * 1. Returns UNKNOWN if service desk doesn't support availability checking
+   * 2. Calls service desk availability check with configurable timeout (default 5 seconds)
+   * 3. Maps result to enum status: true→ONLINE, false→OFFLINE, timeout/other→UNKNOWN
+   * 4. Fires HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE event to notify subscribers (if restart count unchanged)
+   * 5. Returns the availability status, defaulting to OFFLINE on errors
    *
    * @param connectMessage The message that contains the transfer_info object that may be used by the service desk,
    * so it can perform a more specific check.
+   * @returns Status enum indicating whether agents are online, offline, or unknown
    */
   public async checkAreAnyHumanAgentsOnline(
     connectMessage: MessageResponse,
@@ -781,7 +817,23 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Called during the hydration process to allow the service to deal with hydration.
+   * Called during the hydration process to handle reconnection or cleanup of previous agent sessions.
+   *
+   * Flow:
+   * 1. Checks if previously connected from persisted state via persistedHumanAgentState()
+   * 2. If reconnection allowed and supported: attempts reconnection
+   *    - Sets reconnecting state in Redux store
+   *    - Calls service desk reconnect() method
+   *    - Handles errors gracefully
+   * 3. On successful reconnection: suppresses leave warning
+   * 4. On failed reconnection:
+   *    - Ends chat via Redux dispatch
+   *    - Shows end chat messages (if allowed) via addHumanAgentEndChatMessage()
+   *    - Shows bot return message via addAssistantReturnMessage()
+   * 5. Handles user disconnection during reconnect attempt via isSuspended() checks
+   *
+   * @param allowReconnect Whether to attempt reconnecting to the previous agent session
+   * @param allowEndChatMessages Whether to show "agent left" and "bot return" messages on failed reconnect
    */
   async handleHydration(
     allowReconnect: boolean,

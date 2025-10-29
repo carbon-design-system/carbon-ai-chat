@@ -40,7 +40,17 @@ class ThemeWatcherService {
   }
 
   /**
-   * Starts watching for CSS variable changes when inheriting from host tokens.
+   * Starts watching for CSS variable changes when inheriting theme from host application tokens.
+   *
+   * Flow:
+   * 1. Validates state: returns early if already watching or explicit theme is set
+   * 2. Performs initial theme check via checkAndUpdateTheme()
+   * 3. Sets up MutationObserver to watch for DOM attribute changes (style, class)
+   * 4. Configures observer to monitor style elements in document head
+   * 5. Starts polling as fallback mechanism via startPolling() to catch missed changes
+   *
+   * This dual-strategy approach (observer + polling) ensures reliable theme detection
+   * across different scenarios where CSS variables might change.
    */
   public startWatching(): void {
     if (this.isWatching) {

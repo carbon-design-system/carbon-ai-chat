@@ -36,10 +36,10 @@ function LauncherContainer() {
 
   const onDoToggle = useCallback(() => {
     // Otherwise try to open the main window on launcher click.
-    return serviceManager.actions.changeView(ViewType.MAIN_WINDOW, {
+    return serviceManager.viewStateService.changeView(ViewType.MAIN_WINDOW, {
       mainWindowOpenReason: MainWindowOpenReason.DEFAULT_LAUNCHER,
     });
-  }, [serviceManager.actions]);
+  }, [serviceManager.viewStateService]);
 
   useEffectDidUpdate(() => {
     // If the main window is closed, and the launcher is visible, then we should request focus on the

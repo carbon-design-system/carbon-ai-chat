@@ -41,14 +41,13 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
  * Fires a STATE_CHANGE event whenever the public state changes.
  */
 function fireStateChangeEvent(serviceManager: ServiceManager) {
-  let previousState: PublicChatState =
-    serviceManager.actions.getPublicChatState();
+  let previousState: PublicChatState = serviceManager.instance?.getState();
 
   return () => {
-    const newState = serviceManager.actions.getPublicChatState();
+    const newState = serviceManager.instance?.getState();
 
     // Use deep equality check to detect any changes in the state
-    if (!isEqual(previousState, newState)) {
+    if (newState && !isEqual(previousState, newState)) {
       serviceManager.eventBus.fireSync(
         {
           type: BusEventType.STATE_CHANGE,

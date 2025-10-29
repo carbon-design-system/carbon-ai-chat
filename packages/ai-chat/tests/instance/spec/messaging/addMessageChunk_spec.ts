@@ -442,7 +442,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       // Simulate stop button click by cancelling current message
       (
         instance as any
-      ).serviceManager.messageService.cancelCurrentMessageRequest();
+      ).serviceManager.messageOutboundService.cancelCurrentMessageRequest();
 
       // Wait for message to complete/cancel
       await sendPromise.catch(() => {});
