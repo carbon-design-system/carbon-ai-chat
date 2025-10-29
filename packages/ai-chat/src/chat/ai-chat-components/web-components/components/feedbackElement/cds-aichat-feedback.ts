@@ -7,9 +7,6 @@
  *  @license
  */
 
-import "../tagListElement/cds-aichat-tag-list";
-import "../roundedButton/cds-aichat-rounded-button";
-
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { FeedbackElement } from "./src/FeedbackElement";
 import { feedbackElementTemplate } from "./src/feedbackElement.template";

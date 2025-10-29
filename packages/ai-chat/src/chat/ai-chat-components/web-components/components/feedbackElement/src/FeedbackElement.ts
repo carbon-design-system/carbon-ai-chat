@@ -124,16 +124,10 @@ class FeedbackElement extends LitElement {
   _textInput: string;
 
   /**
-   * The initial set of categories to display as selected in the category list.
-   */
-  @state()
-  _initialSelectedCategories: string[];
-
-  /**
    * The current set of selected categories.
    */
   @state()
-  _selectedCategories: string[];
+  _selectedCategories: Set<string> = new Set();
 
   /**
    * Called when the properties of the component have changed.
@@ -150,7 +144,9 @@ class FeedbackElement extends LitElement {
   _setInitialValues(values: FeedbackInitialValues) {
     if (values) {
       this._textInput = values.text;
-      this._initialSelectedCategories = values.selectedCategories;
+      this._selectedCategories = new Set(values.selectedCategories ?? []);
+    } else {
+      this._selectedCategories = new Set();
     }
   }
 
@@ -167,7 +163,7 @@ class FeedbackElement extends LitElement {
   _handleSubmit() {
     this.onSubmit?.({
       text: this._textInput,
-      selectedCategories: this._selectedCategories,
+      selectedCategories: Array.from(this._selectedCategories),
     });
   }
 
@@ -179,11 +175,28 @@ class FeedbackElement extends LitElement {
   }
 
   /**
-   * Called when the selected categories changes.
+   * Called when a category button is clicked.
    */
-  _handleCategoryChange = (selectedCategories: string[]) => {
-    this._selectedCategories = selectedCategories;
-  };
+  _handleCategoryClick(event: MouseEvent) {
+    if (this.isReadonly) {
+      return;
+    }
+
+    const button = event.currentTarget as HTMLElement | null;
+    const category = button?.getAttribute("data-content");
+    if (!category) {
+      return;
+    }
+
+    const nextSelection = new Set(this._selectedCategories);
+    if (nextSelection.has(category)) {
+      nextSelection.delete(category);
+    } else {
+      nextSelection.add(category);
+    }
+
+    this._selectedCategories = nextSelection;
+  }
 }
 
 /**
