@@ -9,6 +9,7 @@
 
 import { type CDSTableRow } from "@carbon/web-components";
 import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
+import type { TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import debounce from "lodash-es/debounce.js";
 
@@ -17,10 +18,14 @@ import styles from "./src/table.scss";
 import { tableTemplate } from "./src/table.template";
 import { tablePaginationTemplate } from "./src/tablePagination.template";
 import { tableSkeletonTemplate } from "./src/tableSkeleton.template";
-import {
-  TableItemCell,
-  TableItemRow,
-} from "../../../../../types/messaging/Messages";
+export interface TableCellContent {
+  text: string;
+  template?: TemplateResult | null;
+}
+
+export interface TableRowContent {
+  cells: TableCellContent[];
+}
 
 interface PageChangeEvent extends Event {
   detail: {
@@ -35,7 +40,7 @@ interface FilterEvent extends Event {
   };
 }
 
-interface TableItemRowWithIDs extends TableItemRow {
+interface TableRowWithIDs extends TableRowContent {
   id: string;
 }
 
@@ -66,14 +71,14 @@ class TableElement extends LitElement {
   /**
    * The array of cells for the header.
    */
-  @property({ type: Array })
-  headers: TableItemCell[];
+  @property({ type: Array, attribute: false })
+  headers: TableCellContent[] = [];
 
   /**
    * The array of rows. Each row includes an array of cells.
    */
-  @property({ type: Array })
-  rows: TableItemRow[];
+  @property({ type: Array, attribute: false })
+  rows: TableRowContent[] = [];
 
   /**
    * Whether or not the table content is loading. If it is then a skeleton state should be shown instead.
@@ -185,7 +190,7 @@ class TableElement extends LitElement {
    * All of the rows for the table with IDs.
    */
   @state()
-  public _rowsWithIDs: TableItemRowWithIDs[] = [];
+  public _rowsWithIDs: TableRowWithIDs[] = [];
 
   /**
    * Whether or not the table should be able to be filtered.
@@ -519,9 +524,9 @@ class TableElement extends LitElement {
   public async _handleDownload() {
     // Don't save content from the expandable rows at this time. This could be added in the future but it's unclear how
     // this would look in the download.
-    const tableArray: TableItemCell[][] = [
-      this.headers,
-      ...this.rows.map((row) => row.cells),
+    const tableArray: (string | number)[][] = [
+      this.headers.map((cell) => cell.text),
+      ...this.rows.map((row) => row.cells.map((cell) => cell.text)),
     ];
 
     try {

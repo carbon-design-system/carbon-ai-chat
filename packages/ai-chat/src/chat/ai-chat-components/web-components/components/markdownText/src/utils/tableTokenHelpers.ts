@@ -9,10 +9,6 @@
 
 import type { TokenTree } from "../markdownTokenTree";
 
-// Static constants to provide the table component when we are just showing the skeleton.
-export const EMPTY_HEADERS: string[] = [];
-export const EMPTY_TABLE_ROWS: { cells: string[] }[] = [];
-
 // Default localization functions for table pagination
 export const DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT = ({
   count,
@@ -29,18 +25,24 @@ export const DEFAULT_PAGINATION_STATUS_TEXT = ({
   count: number;
 }) => `${start}–${end} of ${count} items`;
 
+export interface TableCellData {
+  text: string;
+  tokens: TokenTree[] | null;
+}
+
 /**
  * Extracts tabular data from a table TokenTree node.
  *
  * Converts the hierarchical markdown table structure into the flat
- * header/rows format expected by the cds-aichat-table component.
+ * header/rows format expected by the cds-aichat-table component while retaining
+ * the TokenTree children required for rich rendering within cells.
  */
 export function extractTableData(tableNode: TokenTree): {
-  headers: string[];
-  rows: string[][];
+  headers: TableCellData[];
+  rows: TableCellData[][];
 } {
-  const headers: string[] = [];
-  const rows: string[][] = [];
+  const headers: TableCellData[] = [];
+  const rows: TableCellData[][] = [];
 
   for (const child of tableNode.children) {
     if (child.token.tag === "thead") {
@@ -49,7 +51,7 @@ export function extractTableData(tableNode: TokenTree): {
         if (theadChild.token.tag === "tr") {
           for (const thChild of theadChild.children) {
             if (thChild.token.tag === "th") {
-              headers.push(extractTextContent(thChild));
+              headers.push(extractCellData(thChild));
             }
           }
         }
@@ -58,10 +60,10 @@ export function extractTableData(tableNode: TokenTree): {
       // Extract data rows
       for (const tbodyChild of child.children) {
         if (tbodyChild.token.tag === "tr") {
-          const row: string[] = [];
+          const row: TableCellData[] = [];
           for (const tdChild of tbodyChild.children) {
             if (tdChild.token.tag === "td") {
-              row.push(extractTextContent(tdChild));
+              row.push(extractCellData(tdChild));
             }
           }
           rows.push(row);
@@ -90,6 +92,10 @@ export function extractTextContent(node: TokenTree): string {
     return node.token.content;
   }
 
+  if (node.token.type === "softbreak" || node.token.type === "hardbreak") {
+    return "\n";
+  }
+
   // Recursively extract text from child nodes
   let text = "";
   for (const child of node.children) {
@@ -97,4 +103,30 @@ export function extractTextContent(node: TokenTree): string {
   }
 
   return text;
+}
+
+function extractCellData(node: TokenTree): TableCellData {
+  const text = extractTextContent(node);
+  const tokens = extractRenderableChildren(node);
+  const hasRichContent = tokens.some((child) => child.token.type !== "text");
+
+  return {
+    text,
+    tokens: hasRichContent ? tokens : null,
+  };
+}
+
+function extractRenderableChildren(node: TokenTree): TokenTree[] {
+  if (node.children.length === 1) {
+    const onlyChild = node.children[0];
+    if (
+      onlyChild.token.type === "inline" &&
+      onlyChild.children &&
+      onlyChild.children.length
+    ) {
+      return onlyChild.children;
+    }
+  }
+
+  return node.children;
 }
