@@ -24,6 +24,9 @@ $css--plex: true !default;
   display: block;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
+  box-shadow:
+    -10px 0 100px -24px theme.$ai-popover-shadow-outer-01,
+    0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
   color: theme.$text-secondary;
   inline-size: 100%;
   max-inline-size: rem(904px);
@@ -44,8 +47,12 @@ $css--plex: true !default;
   display: grid;
   align-items: baseline;
   padding: rem(24px) rem(32px);
-  border-block-end: solid rem(1px) theme.$border-subtle-01;
+  border-block-end: solid rem(1px) theme.$chat-bubble-border;
+  color: theme.$text-secondary;
   grid-auto-flow: column;
+
+  @include type.type-style("body-01");
+
   @include breakpoint-down("md") {
     gap: 16px;
     grid-auto-flow: row;
@@ -107,14 +114,14 @@ $css--plex: true !default;
     }
 
     &-title {
-      @include type.type-style("heading-04");
-
       color: theme.$text-primary;
       margin-block-end: rem(-14px);
+      @include type.type-style("heading-04");
     }
 
     &-sub-title {
-      @include type.type-style("helper-text-01");
+      color: theme.$text-secondary;
+      @include type.type-style("label-01");
     }
   }
 
