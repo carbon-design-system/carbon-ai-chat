@@ -514,7 +514,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                     type: BusEventType.STOP_STREAMING,
                   });
                   // Also cancel the current message request to abort the signal
-                  serviceManager.messageService.cancelCurrentMessageRequest();
+                  await serviceManager.messageService.cancelCurrentMessageRequest();
                 }}
               />
             )}
