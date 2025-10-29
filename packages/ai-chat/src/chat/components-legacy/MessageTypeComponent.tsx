@@ -21,13 +21,12 @@ import {
   BusEventType,
   FeedbackInteractionType,
 } from "../../types/events/eventBusTypes";
-import { FeedbackButtonsComponent } from "../ai-chat-components/react/components/feedback/FeedbackButtonsComponent";
-import {
-  FeedbackComponent,
-  FeedbackSubmitDetails,
-} from "../ai-chat-components/react/components/feedback/FeedbackComponent";
-import { FeedbackInitialValues } from "../ai-chat-components/web-components/components/feedbackElement/src/FeedbackElement";
-import { prefix } from "../ai-chat-components/web-components/settings";
+import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+import Feedback, {
+  type FeedbackInitialValues,
+  type FeedbackSubmitDetails,
+} from "@carbon/ai-chat-components/es/react/feedback.js";
+import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { ResponseStopped } from "./ResponseStopped";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "./responseTypes/audio/AudioComponent";
@@ -61,7 +60,7 @@ import {
   isTextItem,
   renderAsUserDefinedMessage,
 } from "../utils/messageUtils";
-import { ChainOfThought } from "../ai-chat-components/react/components/chainOfThought/ChainOfThought";
+import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
 import {
   AudioItem,
   ButtonItem,
@@ -835,7 +834,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       }
 
       return (
-        <FeedbackComponent
+        <Feedback
           class={`${prefix}--feedback-details-${
             isPositive ? "positive" : "negative"
           }`}
@@ -866,7 +865,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     return (
       <div className="cds-aichat--received--feedback">
-        <FeedbackButtonsComponent
+        <FeedbackButtons
           isPositiveOpen={isFeedbackOpen && isPositiveFeedbackSelected}
           isNegativeOpen={isFeedbackOpen && isNegativeFeedbackSelected}
           isPositiveSelected={isPositiveFeedbackSelected}

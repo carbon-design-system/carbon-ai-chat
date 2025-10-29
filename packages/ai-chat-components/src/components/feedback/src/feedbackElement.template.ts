@@ -7,16 +7,16 @@
  *  @license
  */
 
+import "../../markdown-text/index.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/chat-button/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 import "@carbon/web-components/es/components/textarea/index.js";
 
-import cx from "classnames";
-import { html, nothing } from "lit";
+import { html } from "lit";
 
-import { prefix } from "../../../settings";
+import prefix from "../../../globals/settings.js";
 import { FeedbackElement } from "./FeedbackElement.js";
 
 // The maximum number of characters the user is allowed to type into the text area.
@@ -25,7 +25,7 @@ const MAX_TEXT_COUNT = 1000;
 /**
  * Lit template for feedback.
  */
-export function feedbackElementTemplate(customElementClass: FeedbackElement) {
+function feedbackElementTemplate(customElementClass: FeedbackElement) {
   const {
     _handleCancel: handleCancel,
     _handleSubmit: handleSubmit,
@@ -47,11 +47,12 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
     cancelLabel,
   } = customElementClass;
 
-  return html`<div
-    class="${cx(`${prefix}--container`, {
-      [`${prefix}--is-closed`]: !isOpen,
-    })}"
-  >
+  const containerClasses = [`${prefix}--container`];
+  if (!isOpen) {
+    containerClasses.push(`${prefix}--is-closed`);
+  }
+
+  return html`<div class="${containerClasses.join(" ")}">
     <div class="${prefix}--title-row">
       <div class="${prefix}--title">
         ${title || "Provide additional feedback"}
@@ -76,7 +77,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
                     is-quick-action
                     role="option"
                     aria-pressed="${selectedCategories.has(value)}"
-                    ?is-selected="${selectedCategories.has(value)}"
+                    ?is-selected=${selectedCategories.has(value)}
                     data-content="${value}"
                     ?disabled=${isReadonly}
                     @click=${handleCategoryClick}
@@ -94,7 +95,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
             id="${id}-text-area"
             value="${textInput}"
             class="${prefix}--feedback-text-area"
-            ?disabled="${isReadonly}"
+            ?disabled=${isReadonly}
             placeholder="${placeholder || "Provide additional feedback..."}"
             rows="3"
             max-count="${MAX_TEXT_COUNT}"
@@ -112,7 +113,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
     <div class="${prefix}--buttons">
       <div class="${prefix}--cancel">
         <cds-button
-          disabled=${isReadonly || nothing}
+          ?disabled=${isReadonly}
           size="lg"
           kind="secondary"
           @click=${handleCancel}
@@ -122,7 +123,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
       </div>
       <div class="${prefix}--submit">
         <cds-button
-          disabled=${isReadonly || nothing}
+          ?disabled=${isReadonly}
           size="lg"
           kind="primary"
           @click=${handleSubmit}
@@ -133,3 +134,5 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
     </div>
   </div>`;
 }
+
+export { feedbackElementTemplate };
