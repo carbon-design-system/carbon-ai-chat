@@ -12,6 +12,7 @@ import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/tag/tag.js";
 import "@carbon/web-components/es/components/icon-button/icon-button.js";
 import "@carbon/web-components/es/components/ai-label/ai-label.js";
+import "@carbon/web-components/es/components/notification/inline-notification.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { html } from "lit";
 import styles from "./story-styles.scss?lit";
@@ -448,11 +449,15 @@ export const Default = {
       <cds-aichat-workspace-shell-toolbar title-text="${args.toolbarTitle}">
         ${getToolbarAction(args.toolbarAction)}
       </cds-aichat-workspace-shell-toolbar>
-      <cds-aichat-workspace-shell-notification
-        title-text="${args.notificationTitle}"
-        subtitle="${args.notificationSubTitle}"
+      <cds-inline-notification
+        slot="notification"
+        .title="${args.notificationTitle}"
+        .subtitle="${args.notificationSubTitle}"
+        kind="warning"
+        low-contrast=""
+        hide-close-button
       >
-      </cds-aichat-workspace-shell-notification>
+      </cds-inline-notification>
       <cds-aichat-workspace-shell-header
         title-text="${args.headerTitle}"
         subtitle-text="${args.headerSubTitle}"

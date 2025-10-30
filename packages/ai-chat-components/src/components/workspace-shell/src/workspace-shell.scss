@@ -30,6 +30,10 @@ $css--plex: true !default;
   color: theme.$text-secondary;
   inline-size: 100%;
   max-inline-size: rem(904px);
+
+  ::slotted([slot="notification"]) {
+    max-inline-size: 100%;
+  }
 }
 :host(#{$prefix}-workspace-shell-toolbar) {
   display: grid;
@@ -97,12 +101,6 @@ $css--plex: true !default;
     ::slotted(cds-button[data-index="3"]) {
       grid-column: 1;
     }
-  }
-}
-
-:host(#{$prefix}-workspace-shell-notification) {
-  cds-inline-notification {
-    max-inline-size: 100%;
   }
 }
 
