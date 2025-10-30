@@ -14,7 +14,7 @@ import Button, {
   BUTTON_TOOLTIP_POSITION,
 } from "../../components/carbon/Button";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
-import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
+import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
@@ -47,12 +47,12 @@ import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
 import { doFocusRef } from "../../utils/domUtils";
 import WriteableElement from "../WriteableElement";
-import { AISlug } from "./AISlug";
+import { AISlug } from "../../components/carbon/AISlug";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
 import { PageObjectId, TestId } from "../../utils/PageObjectId";
 
 const CloseLarge = carbonIconToReact(CloseLarge16);
-const DownToBottom = carbonIconToReact(DownToBottom16);
+const ChevronDown = carbonIconToReact(ChevronDown16);
 const OverflowMenuVertical = carbonIconToReact(OverflowMenuVertical16);
 const Restart = carbonIconToReact(Restart16);
 const SidePanelClose = carbonIconToReact(SidePanelClose16);
@@ -306,7 +306,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         }
       >
         {backContent || (
-          <DownToBottom aria-label={labelBackButton} slot="icon" />
+          <ChevronDown aria-label={labelBackButton} slot="icon" />
         )}
       </HeaderButton>
     );

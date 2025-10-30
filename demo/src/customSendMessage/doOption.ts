@@ -7,7 +7,11 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
+import {
+  ChatInstance,
+  MessageResponseTypes,
+  OptionItemPreference,
+} from "@carbon/ai-chat";
 
 import { RESPONSE_MAP } from "./responseMap";
 
@@ -30,7 +34,7 @@ function doOption(instance: ChatInstance) {
           description:
             "If under 5 items, default is buttons. If over, moves to dropdown.",
           options,
-          preference: "button",
+          preference: OptionItemPreference.DROPDOWN,
         },
       ],
     },

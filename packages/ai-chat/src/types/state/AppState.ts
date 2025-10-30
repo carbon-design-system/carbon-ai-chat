@@ -9,7 +9,6 @@
 
 import {
   type CustomPanelConfigOptions,
-  NotificationStateObject,
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
@@ -176,11 +175,6 @@ interface AppState extends AppStateMessages {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
    */
   isBrowserPageVisible: boolean;
-
-  /**
-   * The current state of notifications.
-   */
-  notifications: NotificationStateObject[];
 }
 
 /**
@@ -260,36 +254,19 @@ interface PersistedState {
   showUnreadIndicator: boolean;
 
   /**
-   * Indicates if the mobile launcher should be in the extended state.
+   * Indicates if the launcher should be in the extended/expanded state.
    */
-  mobileLauncherIsExtended: boolean;
+  launcherIsExpanded: boolean;
 
   /**
-   * Determines if the mobile launcher already played the extended animation and was reduced.
+   * Determines if the launcher already played the extended animation and was reduced.
    */
-  mobileLauncherWasReduced: boolean;
+  launcherWasReduced: boolean;
 
   /**
-   * Determines if the mobile launcher previously played the bounce animation and should no longer be able to.
+   * Indicates the launcher has been minimized after being expanded.
    */
-  mobileLauncherDisableBounce: boolean;
-
-  /**
-   * Indicates the desktop launcher is in its expanded state.
-   */
-  desktopLauncherIsExpanded: boolean;
-
-  /**
-   * Indicates the desktop launcher has been minimized.
-   */
-  desktopLauncherWasMinimized: boolean;
-
-  /**
-   * The bounce turn the user is currently on in the sequence of bounces so that user doesn't start over in the
-   * sequence. A turn is a full set of animations that are displayed when a bounce occurs and each turn of a bounce is
-   * when a different bounce occurs at a different point in time. This is used for both the desktop and mobile launcher.
-   */
-  bounceTurn: number;
+  launcherWasMinimized: boolean;
 
   /**
    * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted

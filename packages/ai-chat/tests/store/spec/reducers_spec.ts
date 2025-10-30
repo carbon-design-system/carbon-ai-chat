@@ -67,7 +67,6 @@ function createInitialAppState(): AppState {
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
     announceMessage: undefined,
-    notifications: [],
     initialViewChangeComplete: false,
   };
 }

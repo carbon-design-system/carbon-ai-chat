@@ -951,6 +951,92 @@ interface MediaItemDimensions {
 }
 
 /**
+ * Represents a single subtitle/caption track for video content.
+ * Uses WebVTT format for accessibility. Rendered as native HTML5 track elements.
+ *
+ * @category Messaging
+ */
+interface MediaSubtitleTrack {
+  /**
+   * URL pointing to the WebVTT subtitle file.
+   */
+  src: string;
+
+  /**
+   * The language code (e.g., "en", "es", "fr").
+   * Used for the track's srclang attribute.
+   */
+  language: string;
+
+  /**
+   * Human-readable label for the track (e.g., "English", "Spanish").
+   * Displayed in the browser's subtitle menu.
+   */
+  label: string;
+
+  /**
+   * The kind of text track.
+   * - "subtitles": Translation of dialogue (default)
+   * - "captions": Transcription including sound effects
+   * - "descriptions": Audio descriptions for visually impaired
+   */
+  kind?: "subtitles" | "captions" | "descriptions";
+
+  /**
+   * Whether this track should be enabled by default.
+   * Only one track should be default.
+   */
+  default?: boolean;
+}
+
+/**
+ * Represents a text transcript for audio content.
+ * Displayed as readable text below the audio player for accessibility.
+ *
+ * @category Messaging
+ */
+interface MediaTranscript {
+  /**
+   * Full text transcript of the audio content.
+   * Supports markdown for formatting.
+   */
+  text: string;
+
+  /**
+   * Language of the transcript (e.g., "en", "es", "fr").
+   */
+  language?: string;
+
+  /**
+   * Optional label for the transcript (e.g., "English Transcript").
+   */
+  label?: string;
+}
+
+/**
+ * Accessibility features for raw media files (not embedded platforms).
+ * These features only apply when using direct file URLs (e.g., .mp4, .mp3).
+ *
+ * For embedded platforms (YouTube, Vimeo, SoundCloud, Mixcloud, etc.),
+ * rely on the platform's built-in accessibility features instead.
+ *
+ * @category Messaging
+ */
+interface MediaFileAccessibility {
+  /**
+   * Subtitle/caption tracks for video files.
+   * Supports WebVTT format rendered as native HTML5 track elements.
+   */
+  subtitle_tracks?: MediaSubtitleTrack[];
+
+  /**
+   * Text transcript for audio files.
+   * Displayed as expandable text below the audio player.
+   */
+  transcript?: MediaTranscript;
+}
+
+/**
  * The different ways an iframe item may be displayed.
  *
  * @category Messaging
@@ -1004,6 +1090,12 @@ interface MediaItem<TUserDefinedType = Record<string, unknown>>
    * Settings that control the dimensions for the media item.
    */
   dimensions?: MediaItemDimensions;
+
+  /**
+   * Accessibility features for raw media files.
+   * Only applies to direct file URLs (e.g., .mp4, .mp3), not embedded platforms.
+   */
+  file_accessibility?: MediaFileAccessibility;
 }
 
 /**
@@ -1802,6 +1894,9 @@ export {
   InlineErrorItem,
   MediaItem,
   MediaItemDimensions,
+  MediaSubtitleTrack,
+  MediaTranscript,
+  MediaFileAccessibility,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,

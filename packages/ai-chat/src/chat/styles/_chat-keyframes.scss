@@ -208,28 +208,6 @@
   }
 }
 
-@keyframes #{$prefix}-launcher-bounce {
-  0% {
-    transform: translateY(0);
-  }
-
-  30% {
-    transform: translateY(-10px);
-  }
-
-  50% {
-    transform: translateY(0);
-  }
-
-  70% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0);
-  }
-}
-
 @keyframes #{$prefix}-launcher-fade-in-slide-up {
   0% {
     background: transparent;

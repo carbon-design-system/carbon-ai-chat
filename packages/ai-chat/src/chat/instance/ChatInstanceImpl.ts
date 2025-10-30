@@ -37,7 +37,6 @@ import {
   MessageSendSource,
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 import {
   MessageRequest,
   MessageResponse,
@@ -162,23 +161,6 @@ function createChatInstance({
           viewChangeReason: ViewChangeReason.CALLED_CHANGE_VIEW,
         });
       }
-    },
-
-    notifications: {
-      addNotification: (notification: NotificationMessage): void => {
-        debugLog("Called instance.addNotification", notification);
-        serviceManager.actions.addNotification(notification);
-      },
-
-      removeNotifications: (groupID: string) => {
-        debugLog("Called instance.removeNotifications", groupID);
-        serviceManager.actions.removeNotification(groupID);
-      },
-
-      removeAllNotifications: () => {
-        debugLog("Called instance.removeAllNotifications");
-        serviceManager.actions.removeAllNotifications();
-      },
     },
 
     getState: () => serviceManager.actions.getPublicChatState(),

@@ -88,6 +88,7 @@ function TableContainer(props: TableContainerProps) {
             previousPageText={languagePack.table_previousPage}
             nextPageText={languagePack.table_nextPage}
             itemsPerPageText={languagePack.table_itemsPerPage}
+            downloadLabelText={languagePack.table_downloadButton}
             getPaginationSupplementalText={getTablePaginationSupplementalText}
             getPaginationStatusText={getTablePaginationStatusText}
             locale={locale}

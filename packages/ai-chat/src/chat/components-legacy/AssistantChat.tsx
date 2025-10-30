@@ -61,6 +61,7 @@ interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   locale: string;
   useAITheme: boolean;
   carbonTheme: CarbonTheme;
+  shouldHideChatContentForPanel?: boolean;
 }
 
 interface ChatInterfaceState {
@@ -78,6 +79,8 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
   private messagesRef: RefObject<MessagesComponentClass | null> =
     React.createRef();
   private messagesToArray = createUnmappingMemoizer<LocalMessageItem>();
+  private headerRef: RefObject<HTMLDivElement | null> = React.createRef();
+  private headerResizeObserver: ResizeObserver | null = null;
 
   async scrollOnHydrationComplete() {
     this.doAutoScroll();
@@ -88,6 +91,33 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
       setTimeout(() => {
         this.scrollOnHydrationComplete();
       });
+    }
+
+    // Set up ResizeObserver to track header height
+    if (this.headerRef.current) {
+      this.headerResizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const height = entry.contentRect.height;
+          // Set CSS variable on the widget content container (parent of panels and chat)
+          const container = entry.target.closest(
+            ".cds-aichat--widget--content",
+          );
+          if (container) {
+            (container as HTMLElement).style.setProperty(
+              "--cds-aichat--header-height",
+              `${height}px`,
+            );
+          }
+        }
+      });
+      this.headerResizeObserver.observe(this.headerRef.current);
+    }
+  }
+
+  componentWillUnmount(): void {
+    if (this.headerResizeObserver) {
+      this.headerResizeObserver.disconnect();
+      this.headerResizeObserver = null;
     }
   }
 
@@ -316,21 +346,32 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
       onToggleHomeScreen,
       assistantName,
       headerDisplayName,
+      shouldHideChatContentForPanel,
     } = this.props;
 
     const { hasCaughtError } = this.state;
 
     return (
       <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
-        <AssistantHeader
-          onClose={onClose}
-          onRestart={onRestart}
-          headerDisplayName={headerDisplayName}
-          onToggleHomeScreen={onToggleHomeScreen}
-          enableChatHeaderConfig
-          includeWriteableElement
-        />
-        <div className="cds-aichat--non-header-container">
+        <div
+          ref={this.headerRef}
+          className={
+            shouldHideChatContentForPanel ? "cds-aichat--header-with-panel" : ""
+          }
+        >
+          <AssistantHeader
+            onClose={onClose}
+            onRestart={onRestart}
+            headerDisplayName={headerDisplayName}
+            onToggleHomeScreen={onToggleHomeScreen}
+            enableChatHeaderConfig
+            includeWriteableElement
+          />
+        </div>
+        <div
+          className="cds-aichat--non-header-container"
+          {...(shouldHideChatContentForPanel ? { inert: true } : {})}
+        >
           <div className="cds-aichat--panel-content cds-aichat--non-header-container">
             {hasCaughtError && (
               <div className="cds-aichat--messages-error-handler">

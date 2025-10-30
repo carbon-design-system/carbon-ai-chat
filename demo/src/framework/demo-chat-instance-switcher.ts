@@ -12,7 +12,6 @@ import "@carbon/web-components/es/components/checkbox/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 
 import { ChatInstance, ViewType } from "@carbon/ai-chat";
-import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
@@ -58,16 +57,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
   @state() accessor _inputVisible: boolean = true;
   @state() accessor _inputsDisabled: boolean = false;
   @state() accessor _unreadIndicatorVisible: boolean = false;
-  @state() accessor _notificationCount: number = 0;
   @state() accessor _isRestarting: boolean = false;
-
-  private readonly _notificationGroupId = "demo-notification-group";
-  private readonly _notificationKinds = [
-    NOTIFICATION_KIND.INFO,
-    NOTIFICATION_KIND.SUCCESS,
-    NOTIFICATION_KIND.WARNING,
-    NOTIFICATION_KIND.ERROR,
-  ];
 
   protected updated(changed: PropertyValues) {
     if (changed.has("chatInstance")) {
@@ -76,7 +66,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
         this._inputVisible = true;
         this._inputsDisabled = false;
         this._unreadIndicatorVisible = false;
-        this._notificationCount = 0;
         this._isRestarting = false;
         return;
       }
@@ -159,33 +148,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
     });
   }
 
-  private _handleAddNotification = () => {
-    const nextCount = this._notificationCount + 1;
-    this._notificationCount = nextCount;
-
-    const kind =
-      this._notificationKinds[
-        Math.floor(Math.random() * this._notificationKinds.length)
-      ];
-
-    this._withInstance((instance) => {
-      instance.notifications?.addNotification?.({
-        kind,
-        title: `Demo notification #${nextCount}`,
-        message: "This notification was added from the Chat Instance panel.",
-        groupID: this._notificationGroupId,
-      });
-    });
-  };
-
-  private _handleClearNotifications = () => {
-    this._notificationCount = 0;
-
-    this._withInstance((instance) => {
-      instance.notifications?.removeNotifications?.(this._notificationGroupId);
-    });
-  };
-
   private _handleLoadingCounter(direction: "increase" | "decrease") {
     this._withInstance((instance) => {
       instance.updateIsMessageLoadingCounter?.(direction);
@@ -251,20 +213,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
             @click=${this._handleRestartConversation}
           >
             ${this._isRestarting ? "Restarting..." : "Restart conversation"}
-          </cds-button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">
-          Notifications <cds-tag type="purple">Preview</cds-tag>
-        </div>
-        <div class="actions">
-          <cds-button kind="secondary" @click=${this._handleAddNotification}>
-            Add demo notification
-          </cds-button>
-          <cds-button kind="ghost" @click=${this._handleClearNotifications}>
-            Clear demo notifications
           </cds-button>
         </div>
       </div>

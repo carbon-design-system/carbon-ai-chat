@@ -122,7 +122,6 @@ function createInitialState(config: AppConfig): AppState {
     ...DEFAULT_MESSAGE_STATE,
 
     // UI state
-    notifications: [],
     suspendScrollDetection: false,
     showNonHeaderBackgroundCover: false,
     isBrowserPageVisible: true,

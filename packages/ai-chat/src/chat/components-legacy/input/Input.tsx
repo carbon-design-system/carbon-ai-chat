@@ -41,6 +41,7 @@ import { uuid, UUIDType } from "../../utils/lang/uuid";
 import { ListenerList } from "../../utils/ListenerList";
 import { isValidForUpload } from "../../utils/miscUtils";
 import TextArea from "../responseTypes/text/TextArea";
+import VisuallyHidden from "../util/VisuallyHidden";
 // Local interface for controlling the raw input element.
 interface InstanceInputElement {
   getHTMLElement: () => HTMLElement;
@@ -462,6 +463,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   </label>
                 </div>
               )}
+              <VisuallyHidden>
+                <label htmlFor={inputID}>{input_ariaLabel}</label>
+              </VisuallyHidden>
               <TextArea
                 autoSize
                 ariaLabel={input_ariaLabel}
@@ -474,6 +478,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 ref={textAreaRef}
                 onFocus={onInputFocus}
                 onBlur={onInputBlur}
+                id={inputID}
                 testId={PageObjectId.INPUT}
               />
             </div>
@@ -524,15 +529,15 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               size={BUTTON_SIZE.SMALL}
               type={BUTTON_TYPE.BUTTON}
               onClick={send}
-              aria-label={input_buttonLabel}
               disabled={showDisabledSend}
-              tooltip-text={input_buttonLabel}
+              tooltipText={input_buttonLabel}
               tooltipAlignment={
                 isRTL
                   ? BUTTON_TOOLTIP_ALIGNMENT.START
                   : BUTTON_TOOLTIP_ALIGNMENT.END
               }
               tooltipPosition={BUTTON_TOOLTIP_POSITION.TOP}
+              aria-label={input_buttonLabel}
               data-testid={PageObjectId.INPUT_SEND}
             >
               {hasValidInput ? (
