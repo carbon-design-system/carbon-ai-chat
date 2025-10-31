@@ -9,10 +9,14 @@ concurrency:
 on:
   workflow_call:
     inputs:
+      semver-type:
+        type: string
+        default: minor
+        required: true
       type:
         required: true
         type: string
-        default: first minor rc
+        default: first rc
       dry-run:
         required: true
         description: "Run dry run?"
@@ -23,13 +27,14 @@ on:
         type: boolean
         default: false
 
+# Required for OIDC publishing https://docs.npmjs.com/trusted-publishers
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Recommended by npm for publishing with provenance https://docs.npmjs.com/generating-provenance-statements
-    permissions:
-      id-token: write
-      contents: write
     timeout-minutes: 60
     env:
       GH_TOKEN: ${{ secrets.PAT }}
@@ -81,22 +86,30 @@ jobs:
           fi
 
       - name: Publish full minor release (ie. v1.x.0)
-        if: github.event.inputs.type == 'full minor release'
+        if: |
+          github.event.inputs.type == 'full release' &&
+          github.event.inputs.semver-type == 'minor'
         run: |
           npx lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
-        if: github.event.inputs.type == 'first minor rc'
+        if: |
+          github.event.inputs.type == 'first rc' &&
+          github.event.inputs.semver-type == 'minor'
         run: |
           npx lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish full patch release (ie. v1.0.x)
-        if: github.event.inputs.type == 'full patch release'
+        if: |
+          github.event.inputs.type == 'full release' &&
+          github.event.inputs.semver-type == 'patch'
         run: |
           npx lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first patch RC (ie. v1.0.x-rc.0)
-        if: github.event.inputs.type == 'first patch rc'
+        if: |
+          github.event.inputs.type == 'first rc' &&
+          github.event.inputs.semver-type == 'patch'
         run: |
           npx lerna publish prepatch --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 

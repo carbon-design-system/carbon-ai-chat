@@ -56,7 +56,9 @@ function tableTemplate(tableElement: TableElement) {
       <cds-table-header-row>
         ${headers.map(
           (header) =>
-            html`<cds-table-header-cell>${header}</cds-table-header-cell>`,
+            html`<cds-table-header-cell
+              >${header.template ?? header.text}</cds-table-header-cell
+            >`,
         )}
       </cds-table-header-row>
     </cds-table-head>`;
@@ -69,9 +71,11 @@ function tableTemplate(tableElement: TableElement) {
         (row) => row.id,
         (row) =>
           html`<cds-table-row id=${row.id}
-            >${row.cells.map(
-              (cell) => html`<cds-table-cell>${cell}</cds-table-cell>`,
-            )}</cds-table-row
+            >${row.cells.map((cell) => {
+              return html`<cds-table-cell
+                >${cell.template ?? cell.text}</cds-table-cell
+              >`;
+            })}</cds-table-row
           >`,
       )}
     </cds-table-body>`;

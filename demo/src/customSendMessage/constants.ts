@@ -10,7 +10,7 @@
 const TABLE = `
 | Element      | Symbol | Atomic Number | Group | Period | Atomic Mass (u) | Electron Config | Bonding | Melting Point (°C) | Boiling Point (°C) |
 |--------------|--------|---------------|-------|--------|-----------------|-----------------|---------|--------------------|--------------------|
-| Carbon       | C      | 6             | 14    | 2      | 12.011          | [He] 2s² 2p²    | Covalent| 3550               | 4027               |
+| [Carbon](https://www.ibm.com)      | C      | 6             | 14    | 2      | 12.011          | [He] 2s² 2p²    | Covalent| 3550               | 4027               |
 | Silicon      | Si     | 14            | 14    | 3      | 28.085          | [Ne] 3s² 3p²    | Covalent| 1414               | 3265               |
 | Germanium    | Ge     | 32            | 14    | 4      | 72.630          | [Ar] 3d¹⁰ 4s² 4p²| Covalent| 938                | 2833               |
 | Tin          | Sn     | 50            | 14    | 5      | 118.710         | [Kr] 4d¹⁰ 5s² 5p²| Metallic| 232                | 2602               |

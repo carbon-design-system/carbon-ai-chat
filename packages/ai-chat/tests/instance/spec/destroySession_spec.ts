@@ -15,7 +15,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../helpers/chatInstanceTestHelpers";
+} from "../../test_helpers";
 
 describe("ChatInstance.destroySession", () => {
   beforeEach(setupBeforeEach);

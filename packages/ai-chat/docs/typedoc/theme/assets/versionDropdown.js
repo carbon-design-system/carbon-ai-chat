@@ -83,7 +83,9 @@
       const text = await response.text();
 
       // Extract the AI_CHAT_VERSIONS array from the file
-      const match = text.match(/export const AI_CHAT_VERSIONS = (\[.*?\]);/s);
+      const match = text.match(
+        /export\s+const\s+AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);?/,
+      );
       if (!match) {
         console.warn("Failed to parse versions.js");
         // Hide the dropdown wrapper if we can't parse versions
@@ -94,8 +96,12 @@
         return;
       }
 
-      // Replace single quotes with double quotes for valid JSON
-      const arrayString = match[1].replace(/'/g, '"');
+      // Clean up array string for valid JSON
+      const arrayString = match[1]
+        .replace(/'/g, '"') // Replace single quotes with double quotes
+        .replace(/,\s*\]/g, "]") // remove trailing comma
+        .replace(/\s+/g, " ") // collapse whitespace/newlines
+        .trim();
       const versions = JSON.parse(arrayString);
 
       // Get current version info to determine which option should be selected

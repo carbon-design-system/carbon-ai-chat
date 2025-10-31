@@ -19,13 +19,16 @@ import { LocalizationOptions } from "../../../../../../types/localization/Locali
 import "@carbon/web-components/es/components/list/index.js";
 import "../../codeElement/cds-aichat-code";
 import "../../table/cds-aichat-table";
+import type {
+  TableCellContent,
+  TableRowContent,
+} from "../../table/cds-aichat-table";
 import {
   DEFAULT_PAGINATION_STATUS_TEXT,
   DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
-  EMPTY_HEADERS,
-  EMPTY_TABLE_ROWS,
   extractTableData,
 } from "./utils/tableTokenHelpers";
+import type { TableCellData } from "./utils/tableTokenHelpers";
 import { combineConsecutiveHtmlInline } from "./utils/htmlInlineHelpers";
 import type { TokenTree } from "./markdownTokenTree";
 
@@ -78,6 +81,8 @@ export interface RenderTokenTreeOptions {
 }
 
 const EMPTY_ATTRS = {};
+const EMPTY_TABLE_HEADERS: TableCellContent[] = [];
+const EMPTY_TABLE_ROWS: TableRowContent[] = [];
 
 /**
  * Converts TokenTree to Lit TemplateResult.
@@ -343,17 +348,50 @@ function renderWithStaticTag(
         isLoading = !hasNodesAfterTable;
       }
 
+      const renderCellTokens = (tokens: TokenTree[], contextOverrides = {}) =>
+        html`${repeat(
+          tokens,
+          (child, index) =>
+            `cell-${index}:${child.token.type}:${child.token.tag}`,
+          (child, index) =>
+            renderTokenTree(child, {
+              ...options,
+              context: {
+                ...options.context,
+                ...contextOverrides,
+                parentChildren: tokens,
+                currentIndex: index,
+              },
+            }),
+        )}`;
+
+      const createCellContent = (
+        cell: TableCellData,
+        contextOverrides?: Record<string, unknown>,
+      ): TableCellContent => ({
+        text: cell.text,
+        template: cell.tokens
+          ? renderCellTokens(cell.tokens, contextOverrides)
+          : null,
+      });
+
       // Extract table data or use empty placeholders for loading state
-      let headers: string[];
-      let tableRows: { cells: string[] }[];
+      let headers: TableCellContent[];
+      let tableRows: TableRowContent[];
 
       if (!isLoading) {
         const extractedData = extractTableData(node);
-        headers = extractedData.headers;
-        tableRows = extractedData.rows.map((row) => ({ cells: row }));
+
+        headers = extractedData.headers.map((cell) =>
+          createCellContent(cell, { isInThead: true }),
+        );
+
+        tableRows = extractedData.rows.map((row) => ({
+          cells: row.map((cell) => createCellContent(cell)),
+        }));
       } else {
         // Use static empty arrays to prevent re-renders during streaming
-        headers = EMPTY_HEADERS;
+        headers = EMPTY_TABLE_HEADERS;
         tableRows = EMPTY_TABLE_ROWS;
       }
 

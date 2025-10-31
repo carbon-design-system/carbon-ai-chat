@@ -176,6 +176,10 @@ function generateLog() {
    *
    */
   log += getChangelog("@carbon/ai-chat", "./packages/ai-chat");
+  log += getChangelog(
+    "@carbon/ai-chat-components",
+    "./packages/ai-chat-components",
+  );
 
   console.log(log);
 

@@ -12,7 +12,7 @@ import {
   renderChatAndGetInstance,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
+} from "../../../test_helpers";
 import { MessageRequest } from "../../../../src/types/messaging/Messages";
 import {
   CancellationReason,
@@ -198,6 +198,132 @@ describe("ChatInstance.messaging.restartConversation", () => {
       // Verify the reason matches the enum value
       expect(capturedReason).toBe("Conversation restarted");
       expect(capturedReason).toBe(CancellationReason.CONVERSATION_RESTARTED);
+    });
+  });
+
+  describe("Chunk queue filtering during restart", () => {
+    it("should handle restart during message processing gracefully", async () => {
+      const config = createBaseConfig();
+      const processedMessages: string[] = [];
+      let restartOccurred = false;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          const requestText = request.input.text;
+
+          // Listen for abort
+          options.signal?.addEventListener("abort", () => {
+            restartOccurred = true;
+          });
+
+          // Simulate streaming that takes time
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Only process if not aborted
+          if (!options.signal?.aborted) {
+            processedMessages.push(requestText);
+          }
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      // Send first message (will start streaming)
+      const send1 = instance.send("message 1");
+
+      // Wait a bit for first message to start processing
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Restart conversation while streaming is in progress
+      await instance.messaging.restartConversation();
+
+      // Wait for first send to be cancelled
+      await send1.catch(() => {});
+
+      // Send a new message after restart
+      const send2 = instance.send("message 2");
+      await send2;
+
+      // Restart should have occurred
+      expect(restartOccurred).toBe(true);
+
+      // Only message 2 should have been fully processed since message 1 was aborted
+      expect(processedMessages).toContain("message 2");
+      expect(processedMessages.length).toBeLessThanOrEqual(2);
+    });
+
+    it("should process messages correctly after restart", async () => {
+      const config = createBaseConfig();
+      let messagesProcessed = 0;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          // Simulate some processing
+          await new Promise((resolve) => setTimeout(resolve, 10));
+
+          if (!options.signal?.aborted) {
+            messagesProcessed++;
+          }
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      // Restart conversation
+      await instance.messaging.restartConversation();
+
+      // Send a message after restart
+      await instance.send("test message");
+
+      // Message should be processed
+      expect(messagesProcessed).toBe(1);
+    });
+
+    it("should handle rapid successive restarts without errors", async () => {
+      const config = createBaseConfig();
+      let messagesProcessed = 0;
+
+      config.messaging = {
+        customSendMessage: async (
+          request: MessageRequest,
+          options: CustomSendMessageOptions,
+          _instance: ChatInstance,
+        ) => {
+          // Simulate brief processing
+          await new Promise((resolve) => setTimeout(resolve, 5));
+
+          if (!options.signal?.aborted) {
+            messagesProcessed++;
+          }
+        },
+      };
+
+      const instance = await renderChatAndGetInstance(config);
+
+      // Send initial message
+      const send1 = instance.send("message 1");
+
+      // Restart multiple times quickly
+      await instance.messaging.restartConversation();
+      await instance.messaging.restartConversation();
+      await instance.messaging.restartConversation();
+
+      // Wait for first message to be cancelled
+      await send1.catch(() => {});
+
+      // Send final message
+      await instance.send("message 2");
+
+      // Should handle all restarts gracefully - at least final message should process
+      expect(messagesProcessed).toBeGreaterThanOrEqual(1);
     });
   });
 });

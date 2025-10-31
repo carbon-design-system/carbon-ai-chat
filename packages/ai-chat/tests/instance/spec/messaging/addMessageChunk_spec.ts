@@ -13,7 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
+} from "../../../test_helpers";
 import {
   MessageResponseTypes,
   TextItem,
@@ -83,7 +83,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  it("should handle multiple addMessageChunk calls and concatenate text properly in Redux", async () => {
+  it("should handle multiple addMessageChunk calls and concatenate text properly in store", async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
     const responseId = "msg-test-concat";
@@ -297,7 +297,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect((messageItem.item as TextItem).text).toBe("Complete text");
   });
 
-  it("should finalize message with FinalResponseChunk and update Redux store", async () => {
+  it("should finalize message with FinalResponseChunk and update store", async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
     const responseId = "msg-final-test";
