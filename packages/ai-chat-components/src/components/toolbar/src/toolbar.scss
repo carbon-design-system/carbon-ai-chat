@@ -1,0 +1,49 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/breakpoint" as *;
+
+/* Toolbar styles */
+
+:host(#{$prefix}-toolbar) {
+  display: grid;
+  align-items: center;
+  justify-content: space-between;
+  padding: rem(8px) rem(8px) rem(8px) rem(32px);
+  border: solid rem(1px) theme.$border-subtle-01;
+  grid-auto-flow: column;
+
+  .#{$prefix}-toolbar__title {
+    color: theme.$text-secondary;
+  }
+}
+
+:host(#{$prefix}-notification) {
+  cds-inline-notification {
+    max-inline-size: 100%;
+  }
+}
+
+.#{$prefix}-toolbar__action {
+  display: grid;
+  grid-auto-columns: rem(40px);
+  grid-auto-flow: column;
+
+  ::slotted(cds-ai-label) {
+    block-size: rem(40px);
+  }
+}

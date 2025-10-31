@@ -56,6 +56,7 @@
     "@babel/preset-react": "^7.27.1",
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
+    "@storybook/addons": "^7.6.17",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
@@ -138,6 +139,7 @@
           "definedTags": [
             "category",
             "experimental",
+            "element",
             "typeParam",
             "template",
             "inheritDoc",
@@ -152,6 +154,7 @@
             "readonly",
             "sealed",
             "showCategories",
+            "slot",
             "virtual"
           ]
         }
