@@ -13,7 +13,7 @@ import cx from "classnames";
 import { html } from "lit";
 
 import { ChatHeaderAvatarElement } from "./chatHeaderAvatarElement";
-import { prefix } from "../../../../settings";
+import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { CornersType } from "../../../../../../../types/config/CornersType";
 
 export function chatHeaderAvatarTemplate(

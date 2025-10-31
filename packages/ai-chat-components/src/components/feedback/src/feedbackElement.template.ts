@@ -7,16 +7,16 @@
  *  @license
  */
 
+import "../../markdown-text/index.js";
 import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/chat-button/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 import "@carbon/web-components/es/components/textarea/index.js";
-import "../../tagListElement/cds-aichat-tag-list";
 
-import cx from "classnames";
-import { html, nothing } from "lit";
+import { html } from "lit";
 
-import { prefix } from "../../../settings";
+import prefix from "../../../globals/settings.js";
 import { FeedbackElement } from "./FeedbackElement.js";
 
 // The maximum number of characters the user is allowed to type into the text area.
@@ -25,14 +25,14 @@ const MAX_TEXT_COUNT = 1000;
 /**
  * Lit template for feedback.
  */
-export function feedbackElementTemplate(customElementClass: FeedbackElement) {
+function feedbackElementTemplate(customElementClass: FeedbackElement) {
   const {
     _handleCancel: handleCancel,
     _handleSubmit: handleSubmit,
     _handleTextInput: handleTextInput,
-    _initialSelectedCategories: initialSelectedCategories,
     _textInput: textInput,
-    _handleCategoryChange: handleCategoryChange,
+    _selectedCategories: selectedCategories,
+    _handleCategoryClick: handleCategoryClick,
     id,
     isReadonly,
     isOpen,
@@ -47,11 +47,12 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
     cancelLabel,
   } = customElementClass;
 
-  return html`<div
-    class="${cx(`${prefix}--container`, {
-      [`${prefix}--is-closed`]: !isOpen,
-    })}"
-  >
+  const containerClasses = [`${prefix}--container`];
+  if (!isOpen) {
+    containerClasses.push(`${prefix}--is-closed`);
+  }
+
+  return html`<div class="${containerClasses.join(" ")}">
     <div class="${prefix}--title-row">
       <div class="${prefix}--title">
         ${title || "Provide additional feedback"}
@@ -64,12 +65,28 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
       : ""}
     ${categories?.length
       ? html`<div class="${prefix}--categories">
-          <cds-aichat-tag-list
-            .tags=${categories}
-            .initialSelectedTags=${initialSelectedCategories}
-            .onTagsChanged=${handleCategoryChange}
-          >
-          </cds-aichat-tag-list>
+          <ul class="${prefix}--tag-list-container" role="listbox">
+            ${categories.map(
+              (value) =>
+                html`<li class="${prefix}--tag-list-item">
+                  <cds-chat-button
+                    class="${prefix}--tag-list-button"
+                    kind="primary"
+                    size="sm"
+                    type="button"
+                    is-quick-action
+                    role="option"
+                    aria-pressed="${selectedCategories.has(value)}"
+                    ?is-selected=${selectedCategories.has(value)}
+                    data-content="${value}"
+                    ?disabled=${isReadonly}
+                    @click=${handleCategoryClick}
+                  >
+                    ${value}
+                  </cds-chat-button>
+                </li>`,
+            )}
+          </ul>
         </div>`
       : ""}
     ${showTextArea
@@ -78,7 +95,7 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
             id="${id}-text-area"
             value="${textInput}"
             class="${prefix}--feedback-text-area"
-            ?disabled="${isReadonly}"
+            ?disabled=${isReadonly}
             placeholder="${placeholder || "Provide additional feedback..."}"
             rows="3"
             max-count="${MAX_TEXT_COUNT}"
@@ -94,23 +111,28 @@ export function feedbackElementTemplate(customElementClass: FeedbackElement) {
         </div>`
       : ""}
     <div class="${prefix}--buttons">
-      <cds-aichat-rounded-button
-        class="${prefix}--cancel"
-        disabled=${isReadonly || nothing}
-        size="lg"
-        kind="secondary"
-        @click=${handleCancel}
-      >
-        ${cancelLabel || "Cancel"}
-      </cds-aichat-rounded-button>
-      <cds-aichat-rounded-button
-        class="${prefix}--submit"
-        disabled=${isReadonly || nothing}
-        size="lg"
-        @click=${handleSubmit}
-      >
-        ${submitLabel || "Submit"}
-      </cds-aichat-rounded-button>
+      <div class="${prefix}--cancel">
+        <cds-button
+          ?disabled=${isReadonly}
+          size="lg"
+          kind="secondary"
+          @click=${handleCancel}
+        >
+          ${cancelLabel || "Cancel"}
+        </cds-button>
+      </div>
+      <div class="${prefix}--submit">
+        <cds-button
+          ?disabled=${isReadonly}
+          size="lg"
+          kind="primary"
+          @click=${handleSubmit}
+        >
+          ${submitLabel || "Submit"}
+        </cds-button>
+      </div>
     </div>
   </div>`;
 }
+
+export { feedbackElementTemplate };

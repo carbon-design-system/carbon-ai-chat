@@ -9,10 +9,8 @@
 
 import dayjs from "dayjs";
 import enLocaleData from "dayjs/locale/en.js";
-import { IntlMessageFormat } from "intl-messageformat";
 import React from "react";
 import { consoleError } from "./miscUtils";
-import { enLanguagePack, LanguagePack } from "../../types/config/PublicConfig";
 
 const locales = {
   ar: () => import("dayjs/locale/ar.js" as any),
@@ -197,8 +195,4 @@ async function loadDayjsLocale(locale: string): Promise<string> {
   return locale;
 }
 
-function createEnglishFormat(key: keyof LanguagePack) {
-  return new IntlMessageFormat(enLanguagePack[key], "en-US");
-}
-
-export { loadLocale, addHTMLSupport, loadDayjsLocale, createEnglishFormat };
+export { loadLocale, addHTMLSupport, loadDayjsLocale };

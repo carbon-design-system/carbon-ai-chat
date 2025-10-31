@@ -10,14 +10,12 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatFeedbackButtonsElement, {
-  FEEDBACK_BUTTONS_COMPONENT_TAG_NAME,
-} from "../../../web-components/components/feedbackButtonsElement/cds-aichat-feedback-buttons";
+import CDSChatFeedbackButtonsElement from "../components/feedback-buttons/src/cds-aichat-feedback-buttons.js";
 
-const FeedbackButtonsComponent = createComponent({
-  tagName: FEEDBACK_BUTTONS_COMPONENT_TAG_NAME,
+const FeedbackButtons = createComponent({
+  tagName: "cds-aichat-feedback-buttons",
   elementClass: CDSChatFeedbackButtonsElement,
   react: React,
 });
 
-export { FeedbackButtonsComponent };
+export default FeedbackButtons;

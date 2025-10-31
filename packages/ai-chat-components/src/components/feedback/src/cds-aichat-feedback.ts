@@ -7,23 +7,17 @@
  *  @license
  */
 
-import "../tagListElement/cds-aichat-tag-list";
-import "../roundedButton/cds-aichat-rounded-button";
+import { carbonElement } from "../../../globals/decorators/index.js";
+import { FeedbackElement } from "./FeedbackElement.js";
+import { feedbackElementTemplate } from "./feedbackElement.template.js";
 
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { FeedbackElement } from "./src/FeedbackElement";
-import { feedbackElementTemplate } from "./src/feedbackElement.template";
-
-const FEEDBACK_COMPONENT_TAG_NAME = `cds-aichat-feedback`;
+const FEEDBACK_COMPONENT_TAG_NAME = "cds-aichat-feedback";
 
 /**
- * Constructed class functionality for the test input custom element
+ * Custom element for rendering the feedback surface.
  */
 @carbonElement(FEEDBACK_COMPONENT_TAG_NAME)
 class CDSChatFeedbackElement extends FeedbackElement {
-  /**
-   * Renders the template while passing in class functionality.
-   */
   render() {
     return feedbackElementTemplate(this);
   }
