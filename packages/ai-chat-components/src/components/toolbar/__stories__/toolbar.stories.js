@@ -10,6 +10,9 @@
 import "../index";
 import "@carbon/web-components/es/components/icon-button/icon-button.js";
 import "@carbon/web-components/es/components/ai-label/ai-label.js";
+import "@carbon/web-components/es/components/overflow-menu/overflow-menu.js";
+import "@carbon/web-components/es/components/overflow-menu/overflow-menu-body.js";
+import { createOverflowHandler } from "@carbon/utilities";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { html } from "lit";
@@ -19,6 +22,9 @@ import Share16 from "@carbon/icons/es/share/16.js";
 import Launch16 from "@carbon/icons/es/launch/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import Close16 from "@carbon/icons/es/close/16.js";
+import overflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import { useState } from "@storybook/preview-api";
+import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Toolbar",
@@ -42,6 +48,14 @@ export default {
       description: "Defines the type of action slot for the Toolbar Component",
     },
   },
+  decorators: [
+    (story) => html`
+      <style>
+        ${styles}
+      </style>
+      ${story()}
+    `,
+  ],
 };
 
 function getToolbarAction(type) {
@@ -77,7 +91,13 @@ function getToolbarAction(type) {
           ${iconLoader(Maximize16, { slot: "icon" })}
           <span slot="tooltip-content">Maximize</span>
         </cds-icon-button>
-        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+        <cds-icon-button
+          kind="ghost"
+          size="md"
+          align="bottom"
+          slot="action"
+          data-fixed
+        >
           ${iconLoader(Close16, { slot: "icon" })}
           <span slot="tooltip-content">Close</span>
         </cds-icon-button>
@@ -101,7 +121,13 @@ function getToolbarAction(type) {
           ${iconLoader(Maximize16, { slot: "icon" })}
           <span slot="tooltip-content">Maximize</span>
         </cds-icon-button>
-        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+        <cds-icon-button
+          kind="ghost"
+          size="md"
+          align="bottom"
+          slot="action"
+          data-fixed
+        >
           ${iconLoader(Close16, { slot: "icon" })}
           <span slot="tooltip-content">Close</span>
         </cds-icon-button>
@@ -117,7 +143,13 @@ function getToolbarAction(type) {
             </p>
           </div>
         </cds-ai-label>
-        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+        <cds-icon-button
+          kind="ghost"
+          size="md"
+          align="bottom"
+          slot="action"
+          data-fixed
+        >
           ${iconLoader(Close16, { slot: "icon" })}
           <span slot="tooltip-content">Close</span>
         </cds-icon-button>
@@ -149,11 +181,75 @@ export const Default = {
     toolbarTitle: "Title <span>text</span>",
     toolbarAction: "advanced",
   },
+
   render: (args) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [hiddenItems, setHiddenItems] = useState([]);
+    let target;
+
+    requestAnimationFrame(() => {
+      target = document.querySelector("cds-aichat-toolbar");
+      setupOverflowHandler();
+    });
+    const onResize = () => {
+      cancelAnimationFrame(onResize._raf);
+      onResize._raf = requestAnimationFrame(() => {
+        setupOverflowHandler();
+      });
+    };
+    window.addEventListener("resize", onResize);
+
+    function setupOverflowHandler() {
+      createOverflowHandler({
+        container: target,
+        onChange: (_, hidden) => {
+          const clones = hidden.map((node) => {
+            const clone = node.cloneNode(true);
+            clone.removeAttribute("data-hidden");
+            clone.removeAttribute("slot");
+            return clone;
+          });
+          setHiddenItems(clones);
+        },
+        dimension: "width",
+      });
+    }
+
     return html`
       <cds-aichat-toolbar title-text="${args.toolbarTitle}">
-        <div slot="title">${unsafeHTML(args.toolbarTitle)}</div>
+        <div slot="title" data-fixed class="story-toolbar-title">
+          ${unsafeHTML(args.toolbarTitle)}
+        </div>
         ${getToolbarAction(args.toolbarAction)}
+        ${hiddenItems.length > 0 &&
+        html`
+          <div
+            class="story-menu-container"
+            data-offset
+            data-floating-menu-container
+            slot="action"
+          >
+            <cds-overflow-menu
+              close-on-activation
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              autoalign=""
+            >
+              ${iconLoader(overflowMenuVertical16, {
+                class: "action-svg",
+                slot: "icon",
+              })}
+              <span slot="tooltip-content">Options</span>
+              <cds-overflow-menu-body flipped="${true}">
+                ${hiddenItems.map((item) => {
+                  item.removeAttribute("data-hidden");
+                  item.removeAttribute("slot");
+                  return html`${item}`;
+                })}
+              </cds-overflow-menu-body>
+            </cds-overflow-menu>
+          </div>
+        `}
       </cds-aichat-toolbar>
     `;
   },
