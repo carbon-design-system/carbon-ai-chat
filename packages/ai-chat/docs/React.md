@@ -389,15 +389,6 @@ function App() {
 
 Carbon AI Chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
 
-You may need to add configuration similar to the following to your Jest configuration.
+See [jsdom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/jest-jsdom) and [happydom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/jest-happydom).
 
-```
-"transform": {
-  "\\.[jt]sx?$": "babel-jest",
-},
-{
-  transformIgnorePatterns: [
-    '/node_modules/(?!(@?lit.*|@carbon/.+)/)'
-  ],
-}
-```
+Despite being widely used, [jsdom](https://github.com/jsdom/jsdom) does NOT support rendering in the shadow DOM, which Carbon AI Chat makes use of. This mostly limits what you can test beyond simple "did it render anything" snapshots. [happy-dom](https://github.com/capricorn86/happy-dom) DOES support the shadow DOM and opens up a lot more ability to run more complicated test scenarios.

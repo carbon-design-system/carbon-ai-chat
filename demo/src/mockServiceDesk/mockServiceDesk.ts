@@ -167,12 +167,14 @@ interface MockState {
 const HELLO_TEXT = (userName: string) =>
   `Hi${
     userName ? ` ${userName}` : ""
-  }, I'm Shepard! I'm a **mock** service desk agent. Type *"help"* to see a list of messages you can mock me with. <script>alert("If you see this, it is a serious bug!");</script>`;
+  }, I'm Shepard! I'm a **mock** service desk agent. Type *"help"* to see a list of messages you can mock me with. <script>alert("If you see this in a popup, it is a serious bug!");</script>`;
 
 const MOCK_AGENT_PROFILE_SHEPARD: ResponseUserProfile = {
   id: "CommanderShepard-id",
   nickname: "Shepard",
   user_type: UserType.HUMAN,
+  profile_picture_url:
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGe0lEQVR4nMWXbXBU5RXHf8992c2yAZIgSWgCSAIkAUUS3iTRAjLVaYoUitiOwYAzthQTpCMtNDLOdFRqFQs1VdC20AD94LQdkBIpTOl0nCJvTqaQhheTIkICJJss5G337t6993n6IZIpdZMQa4c7cz/c5859zu/8zznPOVfYtq24g5d2J40DGF/kIyklUsreZyEEQgg0bfD+DArAdV10Xcfr9cZ9H41GAQYFclsASimUUiQkJBBzHI6dOMnZs2cJBoMITWNUejr5+VOZnJcHQCQSQdf1LwdAqZ4c9Xq9VO3azdbKN2i5dAGPcjA1DQXEpEKaCdwzczabN29mfHY2lmVhGAP7J/qrgpueezwevrtyJe/t2kFhXhZpI5Jv3VwpYo7D6YaLBEhgz779TMufim3bCCH6Beg3WFJKvF4v6yueZ1/Vr3l87ixGpiQTsR26wxG6w1bPbUVxXMncgnuZnOLjG/PnsPrZNeia3qvgoBWQUuLxeDhx8iOK5z3I0qJ8NE1DKYUmBKBQCAQglaIrHKHmQiNj0kaQM+ouqg4epfK3VTy1YjkRK4JuxM+JPoMkpUQIwVtvvUlOWhJKCP56uh5HSnweozf+jiuxYg6Gx2Te/fdx+MQ/SRs+lMJJY9n33l6eWrEc+olCfAAFpmkSjdqcPX2KnPRUDtc2sOyRIvKyMrnQ1EIoEsXQNFKG+cn+Sir3ZWUyNnccm97+A+/sPcy0Mak0Xw8C/ZdlXACFQhMa0ZgN0uVKsJO7M1J58blS0DQQAuwYRO3PdtFBSrAilC2ax86DRwh2dmMmpvXkgKJPFeKiCSGIxWIMS0wkNy+P81cCPFQwifr6T3niudd4rHwjx46fJhqyiIYsjp6s4/GKNyj9yTaaO7p5YMpEzjcFyMvNQQiBK91BKqAUuq7T2trKxasBAmGb7FEj6e4KUzxrCqNTU0gZ6kcXAgQkJfooXzyfS81tdIQs8saO4p1QlNrzDQQCrSQnJ6GUiluScRVQSqEbBmXPrGJWqo4vwUvEtikoyqczZLHjwN/JycrEtmPYUZtJ48ew8+AROkMW+UVTEYBpGuQPl5StWomu912OnwNQCjymSXtHJ4HGi2yp+B5LvjqNaMxBui4f1jVw6KM6cCVDEn0MSRwCrqT6eC1H6hqQjosmBI/NmcEvNqyktekSNzo68Zgm8Rg+FwIhwHFdEv1DcDQPoUCQSXdnYGgaWneYytVPoGkazcF26j5pAmDyuAzO79yIdF207jCGoXNPVibdLW3ENJOhiX4c1yXeoRg3BK7j4jFNlpaUUvLiVmobLvYcQq7EYxgIAa7rsPvwMXb+5ViPYSHwmibKlRi6zpl/XeLJl7axtORJPKaJ68ZPxLgAuqFj2zZrylbxrdUbqO/WudZ2HeHz0tB4jZzlL7B2ezUC0AX8qOoAOSte4OPL1xA+Ly3BG5zrgkVlFfygvAzbtvvsjn2ehEIIIpEIpctKmF1YROnCh6lYHmJC9hgmZqQyZuZ8Fj9aDMDe/e8zvqmJieNHo7pCVJ+o4919h5iYnTVga+63GwLYto3f7+fp7z/DXW3n+NnLa7l8+hzlv3wXz8jRSCmx2xrZtqaE0VNyWb/hddpG5LL9V28TCoXweDz9bT8wwM3yicViLFj4TWYkK155thR9mJ/m+k8ASJ8wDqcrzLotVdS0Cw5U78c0zV4l/ycAAMdxSEhIQAhBSekKaj44xNyCyUzISEUpRcOVAH+rOcP9X1vArh2/QSpFNBK5rYFkwOFNKYXP5+N6W4DK11/lbF0tSx6cxqNzptMVsgiFIyycO4Olc6ZzpvYUlT9/lfZgKz6fb8BZYEAFbh6fe/fsYdPW7cjR0xmSPg5x8Kf8edNa/JkZgMK6eo0F67YQnf9Dws2fojfVsK78aRYtXoJSst8w9Alw07jrSmZOz6c15V6Wvfw7EpNMPvz9bhrff5OJST0CNrRLMovLKPp2KV03ouz+8XdI6/qYkzX/QP9siOkLYkAFNE3Dsixe2fgSfzz4AcbYArJmF2P4h9Pe1gJA0ohUnFAHF45WIxtPsfTrD7H++Q34fL7ewWbQCvwnhGEYaJrG1abLHNj/J44eP86Vtg5iGD29A4eMkcN5oLCQ4gULSc/IxHVdXNf9cqpAKYXruvh8vlvWY1ELANN767plWei6PqDx2wb4bxAATdd7Ry0lZa+3mqbdluEvBPD/uO743/G/AQRL/NSFvHN/AAAAAElFTkSuQmCC",
 };
 
 const MOCK_AGENT_PROFILE_GARRUS: ResponseUserProfile = {

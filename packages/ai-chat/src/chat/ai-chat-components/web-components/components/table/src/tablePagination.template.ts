@@ -68,7 +68,7 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     (pageSize) => pageSize < totalRows,
   );
 
-  // TODO TABLE: This component is quite wide. Because of the shadow dom we can't select it's contents to hide items
+  // TODO TABLE: This component is quite wide. Because of the shadow DOM we can't select it's contents to hide items
   // with css, nor can we extend this class to manipulate it's styles because of Carbon's use of :host(cds-pagination)
   // within their styles. There is however a smaller variation of this component
   // (https://carbondesignsystem.com/components/pagination/usage/#responsive-behavior) but it's only used at a specific
