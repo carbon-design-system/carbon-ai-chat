@@ -7,18 +7,12 @@
  * @license
  */
 
-import {
-  lineNumbers,
-  highlightSpecialChars,
-  drawSelection,
-  keymap,
-} from "@codemirror/view";
+import { lineNumbers, drawSelection, keymap } from "@codemirror/view";
 import {
   foldGutter,
   indentOnInput,
   syntaxHighlighting,
   defaultHighlightStyle,
-  bracketMatching,
   foldKeymap,
 } from "@codemirror/language";
 import { defaultKeymap } from "@codemirror/commands";
@@ -29,6 +23,7 @@ import {
   createCarbonFoldMarker,
   carbonFoldMarkerKeyHandler,
 } from "../../../../globals/codemirror/marker-utils.js";
+import { createCarbonHighlightStyle } from "../../../../globals/codemirror/theme.js";
 
 export interface BaseCodeMirrorSetupOptions {
   foldCollapseLabel?: string;
@@ -52,8 +47,6 @@ export function baseCodeMirrorSetup(
   return [
     // Line number column for navigation and copy context
     lineNumbers(),
-    // Visualize invisible characters (tabs, trailing spaces, etc.)
-    highlightSpecialChars(),
     // Event handler for keyboard accessibility on fold markers
     carbonFoldMarkerKeyHandler(),
     // Folding gutter affordances with Carbon chevron icon
@@ -69,8 +62,8 @@ export function baseCodeMirrorSetup(
     indentOnInput(),
     // Fallback syntax highlight style when no language-specific theme exists
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-    // Highlight matching brackets and braces
-    bracketMatching(),
+    // Add in Carbon theme
+    createCarbonHighlightStyle(),
     // Auto-insert closing brackets and quotes
     closeBrackets(),
     // Bundle the keymaps we still rely on

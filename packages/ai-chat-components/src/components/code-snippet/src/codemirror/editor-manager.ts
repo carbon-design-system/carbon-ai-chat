@@ -10,10 +10,7 @@
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView } from "codemirror";
 import { LanguageSupport } from "@codemirror/language";
-import {
-  createCarbonTheme,
-  createCarbonHighlightStyle,
-} from "../../../../globals/codemirror/theme.js";
+import { createCarbonTheme } from "../../../../globals/codemirror/theme.js";
 import {
   baseCodeMirrorSetup,
   type BaseCodeMirrorSetupOptions,
@@ -67,7 +64,6 @@ export function createEditorView({
     doc,
     extensions: [
       baseCodeMirrorSetup(setupOptions),
-      createCarbonHighlightStyle(),
       languageCompartment.of(languageExtensions),
       readOnlyCompartment.of(readOnlyExtensions),
       wrapCompartment.of(wrapTheme),

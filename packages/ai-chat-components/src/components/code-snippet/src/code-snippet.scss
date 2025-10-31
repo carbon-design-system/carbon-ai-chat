@@ -19,10 +19,6 @@
 :host {
   @include rounded-modifiers;
 
-  /* Matching / bracket states */
-  --cds-syntax-matching-bracket: var(--cds-layer);
-  --cds-syntax-nonmatching-bracket: #{colors.$red-50};
-
   /* Comments and documentation */
   --cds-syntax-comment: #{colors.$green-60};
   --cds-syntax-line-comment: var(--cds-syntax-comment);
@@ -33,43 +29,44 @@
   /* Keywords */
   --cds-syntax-keyword: #{colors.$blue-60};
   --cds-syntax-operator-keyword: var(--cds-syntax-keyword);
-  --cds-syntax-control-keyword: var(--cds-syntax-keyword);
-  --cds-syntax-definition-keyword: #{colors.$cyan-60};
-  --cds-syntax-module-keyword: #{colors.$purple-50};
+  --cds-syntax-control-keyword: #{colors.$purple-70};
+  --cds-syntax-definition-keyword: #{colors.$cyan-70};
+  --cds-syntax-module-keyword: #{colors.$purple-70};
 
   /* Identifiers */
-  --cds-syntax-variable: #{colors.$cyan-60};
+  --cds-syntax-variable: #{colors.$blue-60};
   --cds-syntax-name: var(--cds-syntax-variable);
   --cds-syntax-variable-name: var(--cds-syntax-variable);
   --cds-syntax-label-name: var(--cds-syntax-variable);
-  --cds-syntax-attribute: var(--cds-syntax-variable);
+  --cds-syntax-attribute: #{colors.$cyan-70};
   --cds-syntax-attribute-name: var(--cds-syntax-attribute);
   --cds-syntax-property-name: var(--cds-syntax-attribute);
-  --cds-syntax-tag: #{colors.$teal-50};
+  --cds-syntax-tag: #{colors.$teal-60};
   --cds-syntax-tag-name: var(--cds-syntax-tag);
-  --cds-syntax-type: #{colors.$teal-50};
+  --cds-syntax-type: #{colors.$teal-60};
   --cds-syntax-type-name: var(--cds-syntax-type);
   --cds-syntax-class-name: var(--cds-syntax-type);
   --cds-syntax-namespace: var(--cds-syntax-type);
   --cds-syntax-macro-name: var(--cds-syntax-variable);
 
   /* Literals and primitives */
-  --cds-syntax-atom: var(--cds-syntax-keyword);
+  --cds-syntax-atom: var(--cds-text-primary);
   --cds-syntax-literal: var(--cds-syntax-atom);
   --cds-syntax-bool: var(--cds-syntax-atom);
   --cds-syntax-null: var(--cds-syntax-atom);
   --cds-syntax-self: var(--cds-syntax-tag);
-  --cds-syntax-number: #{colors.$teal-60};
+  --cds-syntax-number: #{colors.$green-60};
   --cds-syntax-integer: var(--cds-syntax-number);
   --cds-syntax-float: var(--cds-syntax-number);
   --cds-syntax-unit: var(--cds-syntax-number);
-  --cds-syntax-string: #{colors.$red-70};
+  --cds-syntax-string: #{colors.$magenta-60};
+  --cds-syntax-special-string: #{colors.$purple-60};
   --cds-syntax-character: var(--cds-syntax-string);
   --cds-syntax-attribute-value: var(--cds-syntax-string);
-  --cds-syntax-regexp: #{colors.$purple-50};
+  --cds-syntax-regexp: #{colors.$purple-70};
   --cds-syntax-escape: #{colors.$cool-gray-80};
-  --cds-syntax-url: #{colors.$cool-gray-80};
-  --cds-syntax-color: var(--cds-syntax-keyword);
+  --cds-syntax-url: var(--cds-syntax-escape);
+  --cds-syntax-color: var(--cds-text-primary);
 
   /* Operators and punctuation */
   --cds-syntax-operator: #{colors.$cool-gray-80};
@@ -86,14 +83,14 @@
   --cds-syntax-punctuation: #{colors.$cool-gray-80};
   --cds-syntax-separator: var(--cds-syntax-punctuation);
   --cds-syntax-bracket: var(--cds-syntax-punctuation);
-  --cds-syntax-angle-bracket: #{colors.$cool-gray-80};
+  --cds-syntax-angle-bracket: #{colors.$cool-gray-60};
   --cds-syntax-square-bracket: var(--cds-syntax-bracket);
   --cds-syntax-paren: var(--cds-syntax-bracket);
   --cds-syntax-brace: var(--cds-syntax-bracket);
 
   /* Structural text */
   --cds-syntax-content: var(--cds-text-primary);
-  --cds-syntax-heading: #{colors.$cyan-60};
+  --cds-syntax-heading: #{colors.$cyan-70};
   --cds-syntax-heading-1: var(--cds-syntax-heading);
   --cds-syntax-heading-2: var(--cds-syntax-heading);
   --cds-syntax-heading-3: var(--cds-syntax-heading);
@@ -106,29 +103,25 @@
   --cds-syntax-emphasis: var(--cds-syntax-content);
   --cds-syntax-strong: var(--cds-syntax-content);
   --cds-syntax-monospace: var(--cds-syntax-content);
-  --cds-syntax-link: #{colors.$blue-50};
+  --cds-syntax-link: #{colors.$blue-60};
   --cds-syntax-strikethrough: var(--cds-syntax-content);
 
-  /* Diff and diagnostics */
-  --cds-syntax-inserted: #{colors.$red-70};
-  --cds-syntax-deleted: #{colors.$cyan-60};
-  --cds-syntax-changed: #{colors.$teal-50};
-  --cds-syntax-invalid: #{colors.$red-50};
+  /* Diagnostics (core only) */
+  --cds-syntax-invalid: #{colors.$red-60};
 
   /* Meta and annotations */
   --cds-syntax-meta: #{colors.$green-60};
   --cds-syntax-document-meta: var(--cds-syntax-meta);
-  --cds-syntax-annotation: #{colors.$teal-50};
+  --cds-syntax-annotation: #{colors.$teal-60};
   --cds-syntax-processing-instruction: var(--cds-syntax-string);
 
   /* Modifiers */
-  --cds-syntax-definition: #{colors.$cyan-60};
-  --cds-syntax-constant: var(--cds-syntax-keyword);
-  --cds-syntax-function: #{colors.$yellow-70};
-  --cds-syntax-standard: var(--cds-syntax-keyword);
-  --cds-syntax-local: var(--cds-syntax-variable);
-  --cds-syntax-special: var(--cds-syntax-keyword);
-  --cds-syntax-special-string: var(--cds-syntax-string);
+  --cds-syntax-definition: #{colors.$cyan-70};
+  --cds-syntax-constant: #{colors.$blue-60};
+  --cds-syntax-function: #{colors.$yellow-60};
+  --cds-syntax-standard: #{colors.$blue-60};
+  --cds-syntax-local: #{colors.$blue-60};
+  --cds-syntax-special: #{colors.$blue-60};
 }
 
 .#{$prefix}--snippet {
@@ -150,28 +143,50 @@
 :host-context([storybook-carbon-theme="g90"]),
 :host-context([data-theme="g100"]),
 :host-context([storybook-carbon-theme="g100"]) {
-  --cds-syntax-nonmatching-bracket: #{colors.$red-60};
+  /* Comments and documentation */
   --cds-syntax-comment: #{colors.$green-40};
+
+  /* Keywords */
   --cds-syntax-keyword: #{colors.$blue-50};
   --cds-syntax-control-keyword: #{colors.$purple-40};
-  --cds-syntax-definition-keyword: #{colors.$blue-30};
+  --cds-syntax-definition-keyword: #{colors.$cyan-40};
   --cds-syntax-module-keyword: #{colors.$purple-40};
+
+  /* Identifiers */
   --cds-syntax-variable: #{colors.$blue-30};
+  --cds-syntax-attribute: #{colors.$cyan-40};
   --cds-syntax-tag: #{colors.$teal-30};
   --cds-syntax-type: #{colors.$teal-30};
-  --cds-syntax-number: #{colors.$green-20};
-  --cds-syntax-string: #{colors.$orange-30};
-  --cds-syntax-regexp: #{colors.$red-50};
+
+  /* Literals and primitives */
+  --cds-syntax-number: #{colors.$green-30};
+  --cds-syntax-string: #{colors.$magenta-40};
+  --cds-syntax-special-string: #{colors.$purple-40};
+  --cds-syntax-regexp: #{colors.$purple-40};
   --cds-syntax-escape: #{colors.$gray-20};
-  --cds-syntax-url: #{colors.$gray-20};
+  --cds-syntax-url: var(--cds-syntax-escape);
   --cds-syntax-operator: #{colors.$gray-20};
   --cds-syntax-punctuation: #{colors.$gray-20};
   --cds-syntax-angle-bracket: #{colors.$gray-50};
-  --cds-syntax-link: #{colors.$green-40};
-  --cds-syntax-inserted: #{colors.$orange-30};
-  --cds-syntax-invalid: #{colors.$red-60};
+
+  /* Structural text */
+  --cds-syntax-heading: #{colors.$cyan-40};
+  --cds-syntax-link: #{colors.$blue-50};
+
+  /* Diagnostics (core only) */
+  --cds-syntax-invalid: #{colors.$red-50};
+
+  /* Meta and annotations */
   --cds-syntax-meta: #{colors.$green-40};
-  --cds-syntax-function: #{colors.$yellow-10};
+  --cds-syntax-annotation: #{colors.$teal-40};
+
+  /* Modifiers */
+  --cds-syntax-definition: #{colors.$cyan-40};
+  --cds-syntax-constant: #{colors.$blue-50};
+  --cds-syntax-function: #{colors.$yellow-30};
+  --cds-syntax-standard: #{colors.$blue-50};
+  --cds-syntax-local: #{colors.$blue-30};
+  --cds-syntax-special: #{colors.$blue-50};
 }
 
 :host([disabled]) {
@@ -211,7 +226,6 @@
   ::slotted(*) {
     display: none;
   }
-
   .#{$prefix}--code-editor {
     block-size: 100%;
     inline-size: 100%;
