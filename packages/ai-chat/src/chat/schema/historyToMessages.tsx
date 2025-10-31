@@ -45,7 +45,6 @@ import {
   GenericItem,
   Message,
   MessageResponse,
-  PanelItem,
 } from "../../types/messaging/Messages";
 import {
   BusEventHistoryBegin,
@@ -62,12 +61,6 @@ interface LoadedHistory {
    * The latest channel transfer to an agent response in the conversation history.
    */
   latestTransferToHumanAgentResponse: MessageResponse;
-
-  /**
-   * The local message item of the panel response type that should automatically open on page refresh if it's the
-   * latest message.
-   */
-  latestPanelLocalMessageItem: LocalMessageItem<PanelItem>;
 }
 
 /**
@@ -169,7 +162,6 @@ async function notesToLoadedHistory(
         assistantMessageState: null,
       },
       latestTransferToHumanAgentResponse: null,
-      latestPanelLocalMessageItem: null,
     },
     latestMessageResponsePanelID: null,
   };

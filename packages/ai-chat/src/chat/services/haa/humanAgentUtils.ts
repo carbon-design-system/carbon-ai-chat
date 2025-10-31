@@ -136,7 +136,7 @@ async function addMessages(
       messagePairs,
       async ({ localMessages, originalMessage }) => {
         await asyncForEach(localMessages, async (localMessage, index) => {
-          await serviceManager.actions.handleUserDefinedResponseItems(
+          await serviceManager.userDefinedResponseService.handleUserDefinedResponseItems(
             localMessage,
             originalMessage,
           );

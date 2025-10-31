@@ -14,13 +14,21 @@
  * has been called.
  */
 
+import cloneDeep from "lodash-es/cloneDeep.js";
+import merge from "lodash-es/merge.js";
+
 import { ServiceManager } from "../services/ServiceManager";
 import actions from "../store/actions";
+import { agentUpdateIsSuspended } from "../store/humanAgentActions";
 import { selectInputState } from "../store/selectors";
-import { ViewState, ViewType } from "../../types/state/AppState";
+import {
+  AppStateMessages,
+  ViewState,
+  ViewType,
+} from "../../types/state/AppState";
 
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
-import { HistoryItem } from "../../types/messaging/History";
+import { HistoryItem, HistoryNote } from "../../types/messaging/History";
 import {
   consoleDebug,
   consoleError,
@@ -29,6 +37,7 @@ import {
 } from "../utils/miscUtils";
 import {
   ChatInstance,
+  PublicChatState,
   SendOptions,
   TypeAndHandler,
 } from "../../types/instance/ChatInstance";
@@ -43,12 +52,169 @@ import {
   MessageResponse,
   StreamChunk,
 } from "../../types/messaging/Messages";
+import { deepFreeze } from "../utils/lang/objectUtils";
 
 interface CreateChatInstance {
   /**
    * The service manager to use.
    */
   serviceManager: ServiceManager;
+}
+
+/**
+ * Helper: Gets the public chat state with frozen immutable values.
+ */
+function getPublicChatState(serviceManager: ServiceManager): PublicChatState {
+  const state = serviceManager.store.getState();
+  const { persistedToBrowserStorage } = state;
+
+  const persistedSnapshot = deepFreeze(cloneDeep(persistedToBrowserStorage));
+
+  const { humanAgentState, ...rest } = persistedSnapshot;
+
+  const humanAgent = deepFreeze({
+    ...humanAgentState,
+    isConnecting: state.humanAgentState.isConnecting,
+  });
+
+  return deepFreeze({
+    ...rest,
+    humanAgent,
+  }) as PublicChatState;
+}
+
+/**
+ * Helper: Removes the messages with the given IDs from the chat view.
+ */
+async function removeMessages(
+  serviceManager: ServiceManager,
+  messageIDs: string[],
+) {
+  serviceManager.store.dispatch(actions.removeMessages(messageIDs));
+}
+
+/**
+ * Helper: Receives a chunk from a stream and delegates to MessageInboundService.
+ */
+async function receiveChunk(
+  serviceManager: ServiceManager,
+  chunk: StreamChunk,
+  messageID?: string,
+  options: AddMessageOptions = {},
+) {
+  return serviceManager.messageInboundService.receiveChunk(
+    chunk,
+    messageID,
+    options,
+  );
+}
+
+/**
+ * Helper: Creates the custom response elements for all the messages in the given set. This is used in particular when
+ * loading a list of messages from history. Delegates to UserDefinedResponseService.
+ */
+async function createElementsForUserDefinedResponses(
+  serviceManager: ServiceManager,
+  messages: AppStateMessages,
+) {
+  return serviceManager.userDefinedResponseService.createElementsForUserDefinedResponses(
+    messages,
+  );
+}
+
+/**
+ * Helper: Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
+ * and history:end events.
+ */
+async function insertHistory(
+  serviceManager: ServiceManager,
+  messages: HistoryItem[],
+) {
+  // Note: there is currently a gap here. If this is called with a partial list of messages that include
+  // "update_history" event messages to add updates to messages not also in this list, then they will not update
+  // correctly. I'm going to wait to see how this functionality shakes out and see if this is really going to end
+  // up being necessary.
+
+  // If we're inserting more history into a chat that already has messages, we want to preserve the relative
+  // scroll position of the existing messages from the bottom.
+  const scrollBottom = serviceManager.mainWindow?.getMessagesScrollBottom();
+
+  const state = serviceManager.store.getState();
+
+  // TODO: This doesn't work right if this is called more than once.
+  const notes: { notes: HistoryNote[] } = {
+    notes: [{ body: messages }],
+  };
+  const history = await serviceManager.historyService.loadHistory(notes);
+
+  // If no history was loaded, there's nothing to do
+  if (!history) {
+    return;
+  }
+
+  // Merge the existing state on top of the new state (with the current state taking precedence over anything
+  // that that's in the inserted state).
+  const currentAppStateMessages: AppStateMessages = {
+    allMessageItemsByID: state.allMessageItemsByID,
+    allMessagesByID: state.allMessagesByID,
+    assistantMessageState: state.assistantMessageState,
+  };
+  const newAppStateMessages: AppStateMessages = merge(
+    {},
+    history.messageHistory,
+    currentAppStateMessages,
+  );
+
+  // Now make sure the message arrays are merged correctly.
+  newAppStateMessages.assistantMessageState.messageIDs = [
+    ...history.messageHistory.assistantMessageState.messageIDs,
+    ...currentAppStateMessages.assistantMessageState.messageIDs,
+  ];
+  newAppStateMessages.assistantMessageState.localMessageIDs = [
+    ...history.messageHistory.assistantMessageState.localMessageIDs,
+    ...currentAppStateMessages.assistantMessageState.localMessageIDs,
+  ];
+
+  serviceManager.store.dispatch(
+    actions.hydrateMessageHistory(newAppStateMessages),
+  );
+  await createElementsForUserDefinedResponses(
+    serviceManager,
+    history.messageHistory,
+  );
+
+  // Restore the scroll position.
+  serviceManager.mainWindow?.doAutoScroll({
+    scrollToBottom: scrollBottom,
+  });
+}
+
+/**
+ * Helper: Ends the conversation with a human agent. This does not request confirmation from the user first. If the user
+ * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
+ * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
+ * returns a Promise that only resolves when the conversation has ended. This includes after the
+ * {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} and {@link BusEventType.HUMAN_AGENT_END_CHAT} events have been fired and
+ * resolved.
+ */
+function agentEndConversation(
+  serviceManager: ServiceManager,
+  endedByUser: boolean,
+) {
+  return serviceManager.humanAgentService.endChat(endedByUser);
+}
+
+/**
+ * Helper: Sets the suspended state for an agent conversation. A conversation can be suspended or un-suspended only if the
+ * user is currently connecting or connected to an agent. If a conversation is suspended, then messages from the user
+ * will no longer be routed to the service desk and incoming messages from the service desk will not be displayed. In
+ * addition, the current connection status with an agent will not be shown.
+ */
+function agentUpdateIsSuspendedHelper(
+  serviceManager: ServiceManager,
+  isSuspended: boolean,
+) {
+  serviceManager.store.dispatch(agentUpdateIsSuspended(isSuspended));
 }
 
 /**
@@ -158,7 +324,7 @@ function createChatInstance({
 
       if (!issueWithNewView) {
         // If there are no major issues then try to change the view to the newView.
-        await serviceManager.actions.changeView(newView, {
+        await serviceManager.viewStateService.changeView(newView, {
           viewChangeReason: ViewChangeReason.CALLED_CHANGE_VIEW,
         });
       }
@@ -181,7 +347,7 @@ function createChatInstance({
       },
     },
 
-    getState: () => serviceManager.actions.getPublicChatState(),
+    getState: () => getPublicChatState(serviceManager),
 
     writeableElements: serviceManager.writeableElements,
 
@@ -250,7 +416,7 @@ function createChatInstance({
         options: AddMessageOptions = {},
       ) => {
         debugLog("Called instance.messaging.addMessage", message, options);
-        serviceManager.messageService.messageLoadingManager.end();
+        serviceManager.messageOutboundService.messageLoadingManager.end();
         return serviceManager.actions.receive(
           message,
           options?.isLatestWelcomeNode ?? false,
@@ -266,9 +432,9 @@ function createChatInstance({
         options: AddMessageOptions = {},
       ) => {
         debugLog("Called instance.messaging.addMessageChunk", chunk, options);
-        serviceManager.messageService.messageLoadingManager.end();
+        serviceManager.messageOutboundService.messageLoadingManager.end();
         try {
-          await serviceManager.actions.receiveChunk(chunk, null, options);
+          await receiveChunk(serviceManager, chunk, null, options);
         } catch (error) {
           consoleError("Error in addMessageChunk", error);
           throw error;
@@ -277,7 +443,7 @@ function createChatInstance({
 
       removeMessages: async (messageIDs: string[]) => {
         debugLog("Called instance.messaging.removeMessages", messageIDs);
-        return serviceManager.actions.removeMessages(messageIDs);
+        return removeMessages(serviceManager, messageIDs);
       },
 
       clearConversation: () => {
@@ -291,7 +457,7 @@ function createChatInstance({
 
       insertHistory: (messages: HistoryItem[]) => {
         debugLog("Called instance.messaging.insertHistory", messages);
-        return serviceManager.actions.insertHistory(messages);
+        return insertHistory(serviceManager, messages);
       },
 
       restartConversation: async () => {
@@ -308,12 +474,12 @@ function createChatInstance({
     serviceDesk: {
       endConversation: () => {
         debugLog("Called instance.serviceDesk.endConversation");
-        return serviceManager.actions.agentEndConversation(false);
+        return agentEndConversation(serviceManager, false);
       },
 
       updateIsSuspended: async (isSuspended: boolean) => {
         debugLog("Called instance.serviceDesk.updateIsSuspended", isSuspended);
-        return serviceManager.actions.agentUpdateIsSuspended(isSuspended);
+        return agentUpdateIsSuspendedHelper(serviceManager, isSuspended);
       },
     },
 

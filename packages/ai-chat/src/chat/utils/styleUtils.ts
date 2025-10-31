@@ -15,7 +15,7 @@
 import { ThemeState } from "../../types/state/AppState";
 import ObjectMap from "../../types/utilities/ObjectMap";
 import { adjustLightness } from "./colors";
-import { WA_CONSOLE_PREFIX } from "./constants";
+import { CONSOLE_PREFIX } from "./constants";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { WhiteLabelTheme } from "../../types/config/WhiteLabelTheme";
 
@@ -211,7 +211,7 @@ function mergeCSSVariables(
     // Variables starting with "$" are carbon theme tokens and should all be colors
     if (key.startsWith("$") && !value.match(HEXADECIMAL_REGEX)) {
       console.warn(
-        `${WA_CONSOLE_PREFIX} You tried to call "updateCSSVariables" with an invalid value for "${key}": "${publicVars[key]}". You must use hexadecimal values for colors.`,
+        `${CONSOLE_PREFIX} You tried to call "updateCSSVariables" with an invalid value for "${key}": "${publicVars[key]}". You must use hexadecimal values for colors.`,
       );
       // Delete color values that are not in hexadecimal format to ensure we can use them in methods in ./colors.
       delete result[key];

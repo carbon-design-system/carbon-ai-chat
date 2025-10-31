@@ -12,13 +12,20 @@ import type { AppStore } from "../store/appStore";
 
 import { AppWindowFunctions } from "../components-legacy/AppWindowFunctions";
 import { MainWindowFunctions } from "../components-legacy/main/MainWindowFunctions";
-import { ChatActionsImpl } from "../events/ChatActionsImpl";
+import { MessageLifecycleService } from "./MessageLifecycleService";
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
 import { HumanAgentService } from "./haa/HumanAgentService";
-import { CustomPanelManager } from "./CustomPanelManager";
+import {
+  createCustomPanelManager,
+  CustomPanelManager,
+} from "./createCustomPanelManager";
 import { HistoryService } from "./HistoryService";
-import MessageService from "./MessageService";
+import { HydrationService } from "./HydrationService";
+import MessageOutboundService from "./MessageOutboundService";
+import { MessageInboundService } from "./MessageInboundService";
+import { UserDefinedResponseService } from "./UserDefinedResponseService";
+import { ViewStateService } from "./ViewStateService";
 import { NamespaceService } from "./NamespaceService";
 import { ThemeWatcherService } from "./ThemeWatcherService";
 import { UserSessionStorageService } from "./UserSessionStorageService";
@@ -27,6 +34,16 @@ import {
   WriteableElements,
 } from "../../types/instance/ChatInstance";
 import { BusEvent } from "../../types/events/eventBusTypes";
+import { doCreateStore } from "../store/doCreateStore";
+import {
+  copyToSessionStorage,
+  fireStateChangeEvent,
+} from "../store/subscriptions";
+import { AppConfig } from "../../types/state/AppConfig";
+import { WriteableElementName } from "../utils/constants";
+import { assertType, setEnableDebugLog } from "../utils/miscUtils";
+import { setIntl } from "../utils/intlUtils";
+import { isBrowser } from "../utils/browserUtils";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -55,9 +72,9 @@ class ServiceManager {
   appWindow: AppWindowFunctions;
 
   /**
-   * The class used by the client to execute various chat actions.
+   * Coordinates the complete message lifecycle including sending, receiving, and session management.
    */
-  actions: ChatActionsImpl;
+  actions: MessageLifecycleService;
 
   /**
    * The optional custom element for rendering provided in the publicConfig.
@@ -81,9 +98,14 @@ class ServiceManager {
   store: AppStore<AppState>;
 
   /**
-   * The message service used to send and receive messages.
+   * The outbound message service used to send messages to the backend.
    */
-  messageService: MessageService;
+  messageOutboundService: MessageOutboundService;
+
+  /**
+   * The service responsible for receiving and processing streaming chunks.
+   */
+  messageInboundService: MessageInboundService;
 
   /**
    * The service to use to connect to a human agent. Note that this value will not be defined if no service desk is
@@ -95,6 +117,21 @@ class ServiceManager {
    * The service to use to handle conversation history.
    */
   historyService: HistoryService;
+
+  /**
+   * The service responsible for hydrating the chat application on initialization.
+   */
+  hydrationService: HydrationService;
+
+  /**
+   * The service responsible for handling user-defined custom responses.
+   */
+  userDefinedResponseService: UserDefinedResponseService;
+
+  /**
+   * The service responsible for managing view state transitions.
+   */
+  viewStateService: ViewStateService;
 
   /**
    * This is a registry of the elements that act as the hosts for custom responses. The key of the map is the ID of
@@ -161,4 +198,101 @@ class ServiceManager {
   }
 }
 
-export { ServiceManager };
+type CreateServiceManagerFunction = (appConfig: AppConfig) => ServiceManager;
+
+/**
+ * Creates and initializes a ServiceManager instance with all required services.
+ * This function bootstraps all the shared services in Carbon AI Chat. Services are used to hold
+ * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
+ */
+function createServiceManager(appConfig: AppConfig) {
+  const publicConfig = appConfig.public;
+
+  const serviceManager = new ServiceManager();
+
+  // Create all the services we will be using.
+  serviceManager.namespace = new NamespaceService(publicConfig.namespace);
+  serviceManager.userSessionStorageService = new UserSessionStorageService(
+    serviceManager,
+  );
+  serviceManager.actions = new MessageLifecycleService(serviceManager);
+  serviceManager.eventBus = new EventBus();
+  serviceManager.store = doCreateStore(publicConfig, serviceManager);
+  serviceManager.historyService = new HistoryService(serviceManager);
+  serviceManager.hydrationService = new HydrationService(serviceManager);
+  serviceManager.messageOutboundService = new MessageOutboundService(
+    serviceManager,
+    publicConfig,
+  );
+  serviceManager.messageInboundService = new MessageInboundService(
+    serviceManager,
+  );
+  serviceManager.userDefinedResponseService = new UserDefinedResponseService(
+    serviceManager,
+  );
+  serviceManager.viewStateService = new ViewStateService(serviceManager);
+  serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
+  serviceManager.store.subscribe(fireStateChangeEvent(serviceManager));
+
+  // Subscribe to theme changes to start/stop the theme watcher as needed
+  let currentOriginalTheme =
+    serviceManager.store.getState().config.derived.themeWithDefaults
+      .originalCarbonTheme;
+
+  serviceManager.store.subscribe(() => {
+    const newOriginalTheme =
+      serviceManager.store.getState().config.derived.themeWithDefaults
+        .originalCarbonTheme;
+    if (newOriginalTheme !== currentOriginalTheme) {
+      serviceManager.themeWatcherService.onThemeChange(newOriginalTheme);
+      currentOriginalTheme = newOriginalTheme;
+    }
+  });
+  serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
+  serviceManager.themeWatcherService = new ThemeWatcherService(
+    serviceManager.store,
+    serviceManager.container,
+  );
+
+  // Start theme watching if initially inheriting tokens
+  // If later we make the theme mutable, we will have to consider that here.
+  serviceManager.themeWatcherService.onThemeChange(currentOriginalTheme);
+
+  setIntl(
+    serviceManager,
+    serviceManager.store.getState().config.public.locale || "en",
+    serviceManager.store.getState().config.derived.languagePack,
+  );
+
+  // Create all custom elements for Deb.
+  serviceManager.writeableElements = {};
+  if (isBrowser) {
+    serviceManager.writeableElements = {
+      [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HEADER_BOTTOM_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.BEFORE_INPUT_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.CUSTOM_PANEL_ELEMENT]:
+        document.createElement("div"),
+    };
+  }
+
+  if (publicConfig.debug) {
+    setEnableDebugLog(true);
+  }
+
+  return serviceManager;
+}
+assertType<CreateServiceManagerFunction>(createServiceManager);
+
+export { ServiceManager, createServiceManager };
