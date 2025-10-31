@@ -41,60 +41,102 @@ import { tags as t } from "@lezer/highlight";
 export function createCarbonTheme() {
   return EditorView.theme({
     ".cm-editor": {
-      fontFamily: "var(--cds-code-01-font-family)",
-      fontSize: "var(--cds-code-01-font-size)",
-      fontWeight: "var(--cds-code-01-font-weight)",
-      letterSpacing: "var(--cds-code-01-letter-spacing)",
-      lineHeight: "var(--cds-code-01-line-height)",
-      background: "transparent",
+      fontFamily: "var(--cds-code-01-font-family, 'IBM Plex Mono', monospace)",
+      fontSize: "var(--cds-code-01-font-size, 0.875rem)",
+      fontWeight: "var(--cds-code-01-font-weight, 400)",
+      letterSpacing: "var(--cds-code-01-letter-spacing, 0.16px)",
+      lineHeight: "var(--cds-code-01-line-height, 1.5)",
+      background: "var(--cds-layer, #ffffff)",
+      color: "var(--cds-text-primary, #161616)",
     },
-    // Make sure the gutters have a background color so horizontal scrolling goes underneath it invisibly.
+
+    // Cursor / caret
+    ".cm-cursor, .cm-dropCursor": {
+      borderLeftColor: "var(--cds-text-primary, #161616)",
+    },
+
+    // Gutters
     ".cm-gutters": {
-      backgroundColor: "var(--cds-background)",
-      color: "var(--cds-text-helper)",
+      backgroundColor: "var(--cds-background, #ffffff)",
+      color: "var(--cds-text-helper, #6f6f6f)",
       border: "none",
     },
-    // Right align the line numbers
+
     ".cm-gutterElement .cm-lineNumbers": {
       textAlign: "end",
     },
-    // Give a little space between the line numbers/carets and the content
+
     ".cm-foldGutter": {
       paddingInlineEnd: "0.25rem",
     },
-    // Override CodeMirror's flex-basis to allow gutters to grow dynamically with line numbers
+
+    // Editor content
     ".cm-content": {
       flexBasis: "0 !important",
+      caretColor: "var(--cds-text-primary, #161616)",
     },
+
     ".cm-scroller": {
-      maxBlockSize: "var(--cds-snippet-max-height)",
-      minBlockSize: "var(--cds-snippet-min-height)",
+      maxBlockSize: "var(--cds-snippet-max-height, 16rem)",
+      minBlockSize: "var(--cds-snippet-min-height, 3rem)",
     },
-    // Make sure there is enough room for the caret focus states in the gutter.
+
+    // Fold gutter / caret icons
     ".cm-foldGutter .cm-gutterElement": {
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       width: "16px",
     },
-    // Set the size on the caret icon so it fits.
+
     ".cm-foldGutter svg": {
       width: "12px",
       height: "12px",
       cursor: "pointer",
       transition: "transform 0.11s cubic-bezier(0.2, 0, 0.38, 0.9)",
+      fill: "var(--cds-icon-primary, #161616)",
     },
-    // Rotate the caret on expanded
+
     ".cm-foldGutter svg[aria-expanded='true']": {
       transform: "rotate(0deg)",
     },
-    // Rotate the caret on closed
+
     ".cm-foldGutter svg[aria-expanded='false']": {
       transform: "rotate(-90deg)",
     },
-    // Give the caret a focus state
+
     ".cm-foldGutter svg:focus": {
       outline: "2px solid var(--cds-focus, #0f62fe)",
+    },
+
+    // Search / selection highlights
+    ".cm-searchMatch": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff)",
+    },
+    ".cm-searchMatch-selected": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff)",
+    },
+    ".cm-selectionBackground": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff)",
+    },
+    ".cm-selectionMatch": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff)",
+    },
+
+    "&.cm-focused .cm-selectionBackground": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff) !important",
+    },
+
+    "&.cm-focused .cm-selectionMatch": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff) !important",
+    },
+
+    // Native selection fallback
+    ".cm-content ::selection": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff) !important",
+    },
+    "&.cm-focused .cm-content ::selection": {
+      backgroundColor: "var(--cds-highlight, #d0e2ff) !important",
     },
   });
 }
@@ -198,7 +240,6 @@ const BASE_TAG_NAMES = [
   "squareBracket",
   "paren",
   "brace",
-  "Content",
   "content",
   "heading",
   "heading1",
@@ -215,9 +256,6 @@ const BASE_TAG_NAMES = [
   "link",
   "monospace",
   "strikethrough",
-  "inserted",
-  "deleted",
-  "changed",
   "invalid",
   "meta",
   "documentMeta",
