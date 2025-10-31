@@ -13,7 +13,7 @@
 
 import UserAvatar32 from "@carbon/icons/es/user--avatar/32.js";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import { ResponseUserProfile } from "../../types/messaging/Messages";
@@ -45,20 +45,20 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
   const [hasError, setHasError] = useState(false);
   let component;
 
-  const avatarRef = useRef<HTMLDivElement>(null);
+  const setAvatarRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node && width && height) {
+        node.style.inlineSize = width;
+        node.style.blockSize = height;
+      }
+    },
+    [width, height],
+  );
 
   // If the avatar Url changes, then hasError should reset to allow an attempt at loading the new avatar url.
   useEffect(() => {
     setHasError(false);
   }, [avatarUrl]);
-
-  // set the width and height of avatar if agentName only contains ASCII characters
-  useLayoutEffect(() => {
-    if (avatarRef && width && height) {
-      avatarRef.current.style.setProperty("inline-size", width);
-      avatarRef.current.style.setProperty("block-size", height);
-    }
-  }, [width, height]);
 
   if (!hasError && avatarUrl) {
     component = (
@@ -78,7 +78,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
       <div
         aria-label={languagePack.agent_ariaResponseUserAvatar}
         className="cds-aichat--response-user-avatar__circle"
-        ref={avatarRef}
+        ref={setAvatarRef}
       >
         <div className="cds-aichat--response-user-avatar__letter">
           {agentName.charAt(0)}
