@@ -25,71 +25,79 @@ import "@carbon/ai-chat-components/es/components/toolbar/index.js";
 
 
 ```html
-<cds-aichat-toolbar>
-  <cds-ai-label autoalign="" slot="toolbar-action" size="2xs">
-    <div slot="body-text">
-      <p class="secondary">
-        Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-        do eiusmod tempor incididunt ut fsil labore et dolore magna
-        aliqua.
-      </p>
-    </div>
-  </cds-ai-label>
-  <cds-icon-button
-    kind="ghost"
-    size="md"
-    align="bottom"
-    slot="toolbar-action"
-  >
-    ${iconLoader(Copy16, { slot: "icon" })}
-    <span slot="tooltip-content">Copy</span>
-  </cds-icon-button>
-  <cds-icon-button
-    kind="ghost"
-    size="md"
-    align="bottom"
-    slot="toolbar-action"
-  >
-    ${iconLoader(Download16, { slot: "icon" })}
-    <span slot="tooltip-content">Download</span>
-  </cds-icon-button>
-  <cds-icon-button
-    kind="ghost"
-    size="md"
-    align="bottom"
-    slot="toolbar-action"
-  >
-    ${iconLoader(Share16, { slot: "icon" })}
-    <span slot="tooltip-content">Share</span>
-  </cds-icon-button>
-  <cds-icon-button
-    kind="ghost"
-    size="md"
-    align="bottom"
-    slot="toolbar-action"
-  >
-    ${iconLoader(Launch16, { slot: "icon" })}
-    <span slot="tooltip-content">Launch</span>
-  </cds-icon-button>
-  <cds-icon-button
-    kind="ghost"
-    size="md"
-    align="bottom"
-    slot="toolbar-action"
-  >
-    ${iconLoader(Maximize16, { slot: "icon" })}
-    <span slot="tooltip-content">Maximize</span>
-  </cds-icon-button>
-  <cds-icon-button
-    kind="ghost"
-    size="md"
-    align="bottom"
-    slot="toolbar-action"
-  >
-    ${iconLoader(Close16, { slot: "icon" })}
-    <span slot="tooltip-content">Close</span>
-  </cds-icon-button>
-</cds-aichat-toolbar>
+<cds-aichat-toolbar title-text="${args.toolbarTitle}">
+        <div slot="title" data-fixed class="story-toolbar-title">
+          Title
+        </div>
+        <cds-ai-label autoalign="" slot="action" size="2xs">
+          <div slot="body-text">
+            <p class="secondary">
+              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
+              do eiusmod tempor incididunt ut fsil labore et dolore magna
+              aliqua.
+            </p>
+          </div>
+        </cds-ai-label>
+        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+          ${iconLoader(Copy16, { slot: "icon" })}
+          <span slot="tooltip-content">Copy</span>
+        </cds-icon-button>
+        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+          ${iconLoader(Download16, { slot: "icon" })}
+          <span slot="tooltip-content">Download</span>
+        </cds-icon-button>
+        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+          ${iconLoader(Share16, { slot: "icon" })}
+          <span slot="tooltip-content">Share</span>
+        </cds-icon-button>
+        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+          ${iconLoader(Launch16, { slot: "icon" })}
+          <span slot="tooltip-content">Launch</span>
+        </cds-icon-button>
+        <cds-icon-button kind="ghost" size="md" align="bottom" slot="action">
+          ${iconLoader(Maximize16, { slot: "icon" })}
+          <span slot="tooltip-content">Maximize</span>
+        </cds-icon-button>
+        <cds-icon-button
+          kind="ghost"
+          size="md"
+          align="bottom"
+          slot="action"
+          data-fixed
+        >
+          ${iconLoader(Close16, { slot: "icon" })}
+          <span slot="tooltip-content">Close</span>
+        </cds-icon-button>
+        ${hiddenItems.length > 0 &&
+        html`
+          <div
+            class="story-menu-container"
+            data-offset
+            data-floating-menu-container
+            slot="action"
+          >
+            <cds-overflow-menu
+              close-on-activation
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              autoalign=""
+            >
+              ${iconLoader(overflowMenuVertical16, {
+                class: "action-svg",
+                slot: "icon",
+              })}
+              <span slot="tooltip-content">Options</span>
+              <cds-overflow-menu-body flipped="${true}">
+                ${hiddenItems.map((item) => {
+                  item.removeAttribute("data-hidden");
+                  item.removeAttribute("slot");
+                  return html`${item}`;
+                })}
+              </cds-overflow-menu-body>
+            </cds-overflow-menu>
+          </div>
+        `}
+      </cds-aichat-toolbar>
 ```
 
 ## `<cds-aichat-toolbar>` attributes, properties and events
