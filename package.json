@@ -137,6 +137,7 @@
         {
           "definedTags": [
             "category",
+            "element",
             "experimental",
             "typeParam",
             "template",
@@ -152,6 +153,7 @@
             "readonly",
             "sealed",
             "showCategories",
+            "slot",
             "virtual"
           ]
         }
