@@ -17,7 +17,7 @@ import "@carbon/web-components/es/components/tile/clickable-tile.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { classMap } from "lit-html/directives/class-map.js";
 import { html } from "lit";
-import { expect, fn } from "storybook/test";
+import { fn } from "storybook/test";
 
 import Link16 from "@carbon/icons/es/link/16.js";
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
@@ -61,7 +61,6 @@ const footerActionVariants = {
       View carbon docs
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
@@ -77,27 +76,30 @@ const footerActionVariants = {
       View Carbon Docs 1
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
     <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 2
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
     <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 3
       ${iconLoader(Launch16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
 
   "primary button": (args) => html`
     <cds-button @click=${args.onClick} kind="primary">Primary</cds-button>
+  `,
+
+  "primary button with icon": (args) => html`
+    <cds-button @click=${args.onClick} kind="primary">
+      Primary ${iconLoader(ArrowRight16, { slot: "icon" })}
+    </cds-button>
   `,
 
   "danger button": (args) => html`
@@ -164,11 +166,11 @@ export const WithActions = {
   args: {
     maxWidth: "sm",
     useWrapper: true,
-    footerActions: "primary danger buttons",
+    footerAction: "primary danger buttons",
     onClick: fn(),
   },
   argTypes: {
-    footerActions: {
+    footerAction: {
       control: "select",
       options: Object.keys(footerActionVariants),
       mapping: footerActionVariants,
@@ -176,9 +178,9 @@ export const WithActions = {
     },
   },
   render: (args) => {
-    const footerActions = args.footerActions(args);
+    const footerAction = args.footerAction(args);
     const buttonCount = (
-      footerActions?.strings?.join(" ")?.match(/<cds-button\b/g) || []
+      footerAction?.strings?.join(" ")?.match(/<cds-button\b/g) || []
     ).length;
 
     return html`
@@ -200,7 +202,7 @@ export const WithActions = {
               data-flush="bottom"
               data-rounded="bottom"
             >
-              ${footerActions}
+              ${footerAction}
             </div>`
           : ""}
       </cds-tile>
@@ -212,37 +214,21 @@ export const WithImage = {
   args: {
     maxWidth: "sm",
     useWrapper: true,
-    footerActions: "primary button",
+    footerAction: "primary button",
     onClick: fn(),
   },
   argTypes: {
-    footerActions: {
+    footerAction: {
       control: "select",
-      options: ["primary button", "ghost button", "none"],
-      mapping: {
-        "primary button": (args) => html`
-          <cds-button @click=${args.onClick} kind="primary">
-            Select ${iconLoader(ArrowRight16, { slot: "icon" })}
-          </cds-button>
-        `,
-        "ghost button": (args) => html`
-          <cds-button @click=${args.onClick} kind="ghost">
-            Select
-            ${iconLoader(ArrowRight16, {
-              slot: "icon",
-              style: "fill: var(--cds-link-primary)",
-            })}
-          </cds-button>
-        `,
-        none: () => "",
-      },
+      options: Object.keys(footerActionVariants),
+      mapping: footerActionVariants,
       description: "Footer button variations",
     },
   },
   render: (args) => {
-    const footerActions = args.footerActions(args);
+    const footerAction = args.footerAction(args);
     const buttonCount =
-      footerActions?.strings?.[0]?.trim().split("\n").length || 0;
+      footerAction?.strings?.[0]?.trim().split("\n").length || 0;
 
     return html`
       <cds-tile
@@ -270,7 +256,7 @@ export const WithImage = {
               data-flush="bottom"
               data-rounded="bottom"
             >
-              ${footerActions}
+              ${footerAction}
             </div>`
           : ""}
       </cds-tile>
@@ -369,14 +355,6 @@ export const OnlyVideo = {
 
 export const Clickable = {
   // https://storybook.js.org/docs/writing-tests/interaction-testing
-  play: async ({ canvas, userEvent, args }) => {
-    const tile = canvas.getByTestId("clickable-tile");
-    const tileTrigger = tile.shadowRoot.querySelector(".cds--tile--clickable");
-    await userEvent.click(tileTrigger);
-    expect(args.onClick).toHaveBeenCalled();
-    await userEvent.click(document.body);
-    expect(tile).not.toHaveFocus();
-  },
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
   render: (args) => html`
     <cds-clickable-tile

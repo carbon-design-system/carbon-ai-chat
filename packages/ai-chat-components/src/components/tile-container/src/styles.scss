@@ -12,29 +12,19 @@
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/components/button/tokens" as *;
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
 
-$carbon-prefix: "cds";
-$prefix: "cds-aichat";
-
-// Note: all the inner content must receive 8-1px to account for 1px border. for perfectly rounded corners the inner radius must be 7px.
-
-// Mixins
-@mixin radius($positions...) {
-  @each $pos in $positions {
-    border-#{$pos}-radius: calc(
-      var(--#{$prefix}-tile-border-radius) - rem(1px)
-    );
-  }
-}
-@mixin full-radius {
-  border-radius: calc(var(--#{$prefix}-tile-border-radius) - rem(1px));
-}
+// Note: all the inner content must receive 8-1px to account for 1px border. for perfectly rounded corners the inner radius must be 7px. is part of the mixin inside modifier styles.
 
 // Tile Container
 #{$prefix}-tile-container {
+  @include rounded-modifiers;
+  @include flush-modifiers;
+  @include stacked-modifiers;
   // Tile Elements
-  #{$carbon-prefix}-tile,
-  #{$carbon-prefix}-clickable-tile {
+  #{$cds-prefix}-tile,
+  #{$cds-prefix}-clickable-tile {
     img {
       display: block;
       inline-size: 100%;
@@ -42,7 +32,7 @@ $prefix: "cds-aichat";
     }
   }
 
-  #{$carbon-prefix}-clickable-tile {
+  #{$cds-prefix}-clickable-tile {
     &:hover:not([disabled]) img,
     &:focus img {
       opacity: 0.8;
@@ -54,12 +44,12 @@ $prefix: "cds-aichat";
     }
   }
 
-  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
+  &:has(#{$cds-prefix}-clickable-tile[disabled]) {
     cursor: not-allowed;
   }
 
-  cds-tile,
-  cds-clickable-tile::part(link) {
+  #{$cds-prefix}-tile,
+  #{$cds-prefix}-clickable-tile::part(link) {
     background-color: theme.$layer-background;
   }
 
@@ -76,9 +66,13 @@ $prefix: "cds-aichat";
     display: flex;
     justify-content: end;
 
-    #{$carbon-prefix}-button {
+    #{$cds-prefix}-button {
       inline-size: 100%;
       max-inline-size: unset;
+
+      &[kind="ghost"] > svg[slot="icon"] {
+        fill: theme.$link-primary;
+      }
     }
 
     // If the footer has only ghost buttons and is not stacked, we have to add border top to the footer (not the buttons)
@@ -91,153 +85,12 @@ $prefix: "cds-aichat";
       background: $button-separator;
       gap: rem(1px);
     }
-
-    &[stacked] {
-      flex-direction: column;
-    }
-  }
-
-  // Rounded corners
-  [data-rounded=""] {
-    @include full-radius;
-
-    > :first-child {
-      @include full-radius;
-    }
-
-    &::part(link) {
-      @include full-radius;
-
-      outline-offset: rem(-1px);
-    }
-  }
-
-  [data-rounded="top"] {
-    @include radius(start-start, start-end);
-
-    > :first-child {
-      @include radius(start-start);
-
-      &::part(button) {
-        @include radius(start-start);
-      }
-    }
-
-    > :last-child {
-      @include radius(start-end);
-
-      &::part(button) {
-        @include radius(start-end);
-      }
-    }
-  }
-
-  [data-rounded="top-left"] {
-    @include radius(start-start);
-
-    :first-child {
-      @include radius(start-start);
-
-      &::part(button) {
-        @include radius(start-start);
-      }
-    }
-  }
-
-  [data-rounded="top-right"] {
-    @include radius(start-end);
-
-    :last-child {
-      @include radius(start-end);
-
-      &::part(button) {
-        @include radius(start-end);
-      }
-    }
-  }
-
-  [data-rounded="bottom"] {
-    @include radius(end-start, end-end);
-
-    [kind="ghost"][data-viewing]::part(button) {
-      align-items: center;
-      justify-content: flex-start;
-      gap: layout.$spacing-03;
-    }
-
-    &:not([data-stacked]) {
-      > :first-child {
-        @include radius(end-start);
-
-        &::part(button) {
-          @include radius(end-start);
-        }
-      }
-
-      > :last-child {
-        @include radius(end-end);
-
-        &::part(button) {
-          @include radius(end-end);
-        }
-      }
-    }
-
+    // If the footer is stacked, add border-top to ghost buttons
     &[data-stacked] {
-      flex-direction: column;
-
-      // In stacked, is kind is ghost add border top to buttons.
-      [kind="ghost"] {
+      #{$cds-prefix}-button[kind="ghost"] {
         border-block-start: rem(1px) solid theme.$chat-bubble-border;
       }
-
-      > :last-child {
-        @include radius(end-start, end-end);
-
-        &::part(button) {
-          @include radius(end-start, end-end);
-        }
-      }
     }
-  }
-
-  [data-rounded="bottom-left"] {
-    @include radius(end-start);
-
-    :first-child {
-      @include radius(end-start);
-
-      &::part(button) {
-        @include radius(end-start);
-      }
-    }
-  }
-
-  [data-rounded="bottom-right"] {
-    @include radius(end-end);
-
-    :last-child {
-      @include radius(end-end);
-
-      &::part(button) {
-        @include radius(end-end);
-      }
-    }
-  }
-
-  // Flush Modifiers
-  [data-flush=""] {
-    margin: calc(-1 * layout.$spacing-05);
-  }
-
-  [data-flush="top"] {
-    margin-block-start: calc(-1 * layout.$spacing-05);
-    margin-inline: calc(-1 * layout.$spacing-05);
-  }
-
-  [data-flush="bottom"] {
-    margin-block-end: calc(-1 * layout.$spacing-05);
-    margin-inline: calc(-1 * layout.$spacing-05);
   }
 
   // Utility Classes (Typography, Colors, Layout)

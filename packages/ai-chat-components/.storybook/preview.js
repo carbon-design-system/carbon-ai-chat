@@ -114,7 +114,6 @@ export const parameters = {
   docs: {
     codePanel: true,
     source: {
-      excludeDecorators: false, // prevents decorators and story styles from being included in the source code
       transform: async (source) => {
         const cleaned = source.replace(/<style[\s\S]*?<\/style>/gi, "");
 
@@ -125,7 +124,6 @@ export const parameters = {
         });
       },
     },
-    theme,
   },
   // Small (<672)
   // Medium (672 - 1056px)
