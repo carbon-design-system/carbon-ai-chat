@@ -16,12 +16,6 @@ import {
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { KeyPairs, Settings } from "./types";
 
-async function sleep(milliseconds: number) {
-  await new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
-  });
-}
-
 function updateQueryParams(items: KeyPairs[]) {
   // Get the current URL's search params
   const urlParams = new URLSearchParams(window.location.search);
@@ -230,6 +224,5 @@ export {
   updateQueryParamsWithoutRefresh,
   updatePageTheme,
   getSettings,
-  sleep,
   asyncForEach,
 };

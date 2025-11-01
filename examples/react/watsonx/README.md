@@ -68,29 +68,19 @@ You can find the complete list of available models in your watsonx.ai project da
 
 ### Step 5: Install Dependencies
 
+From the repository root, install all workspace dependencies (run once after cloning):
+
 ```bash
 npm install
 ```
 
-### Step 6: Run the Application
+### Step 6: Run from the Monorepo Root
 
-Start both the proxy server and React development server:
-
-```bash
-npm run start
-```
-
-This command runs:
-
-- **Proxy server** on `http://localhost:3010` (handles IBM Cloud authentication)
-- **React app** on `http://localhost:3003` (the chat interface)
-
-Alternatively, you can run them separately:
+Install dependencies once and start this workspace directly from the repository root:
 
 ```bash
-# Terminal 1: Start the proxy server
-npm run start:server
-
-# Terminal 2: Start the React app
-npm start:client
+npm install
+npm run start --workspace=@carbon/ai-chat-examples-react-watsonx
 ```
+
+> The `start` script launches both the local proxy server and React development server for this example.

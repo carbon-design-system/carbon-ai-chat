@@ -11,11 +11,6 @@
  * Miscellaneous utils for dealing with promises.
  */
 
-/**
- * This is an async function that will simply wait for the given amount of time.
- *
- * @param milliseconds The amount of time in milliseconds to wait.
- */
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
@@ -48,4 +43,4 @@ function resolveOrTimeout<T>(
   return Promise.race([promise, timeout]);
 }
 
-export { sleep, resolveOrTimeout };
+export { resolveOrTimeout, sleep };

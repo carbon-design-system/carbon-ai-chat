@@ -1,0 +1,123 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`ChatContainer should have a shadow DOM with rendered content 1`] = `
+<cds-aichat-react>
+  <div
+    slot="aiTooltipAfterDescriptionElement"
+  />
+  <div
+    slot="welcomeNodeBeforeElement"
+  />
+  <div
+    slot="headerBottomElement"
+  />
+  <div
+    slot="beforeInputElement"
+  />
+  <div
+    slot="homeScreenHeaderBottomElement"
+  />
+  <div
+    slot="homeScreenAfterStartersElement"
+  />
+  <div
+    slot="homeScreenBeforeInputElement"
+  />
+  <div
+    slot="customPanelElement"
+  />
+</cds-aichat-react>
+`;
+
+exports[`ChatContainer should open chat when launcher is clicked 1`] = `
+<cds-aichat-react>
+  <div
+    slot="aiTooltipAfterDescriptionElement"
+  />
+  <div
+    slot="welcomeNodeBeforeElement"
+  />
+  <div
+    slot="headerBottomElement"
+  />
+  <div
+    slot="beforeInputElement"
+  />
+  <div
+    slot="homeScreenHeaderBottomElement"
+  />
+  <div
+    slot="homeScreenAfterStartersElement"
+  />
+  <div
+    slot="homeScreenBeforeInputElement"
+  />
+  <div
+    slot="customPanelElement"
+  />
+</cds-aichat-react>
+`;
+
+exports[`ChatContainer should render PageObjectId elements in shadow DOM 1`] = `
+<cds-aichat-react>
+  <div
+    slot="aiTooltipAfterDescriptionElement"
+  />
+  <div
+    slot="welcomeNodeBeforeElement"
+  />
+  <div
+    slot="headerBottomElement"
+  />
+  <div
+    slot="beforeInputElement"
+  />
+  <div
+    slot="homeScreenHeaderBottomElement"
+  />
+  <div
+    slot="homeScreenAfterStartersElement"
+  />
+  <div
+    slot="homeScreenBeforeInputElement"
+  />
+  <div
+    slot="customPanelElement"
+  />
+</cds-aichat-react>
+`;
+
+exports[`ChatContainer should render slotted content 1`] = `
+<cds-aichat-react>
+  <div
+    slot="aiTooltipAfterDescriptionElement"
+  />
+  <div
+    slot="welcomeNodeBeforeElement"
+  />
+  <div
+    slot="headerBottomElement"
+  >
+    <div
+      data-testid="custom-header"
+    >
+      Custom Header Content
+    </div>
+  </div>
+  <div
+    slot="beforeInputElement"
+  />
+  <div
+    slot="homeScreenHeaderBottomElement"
+  />
+  <div
+    slot="homeScreenAfterStartersElement"
+  />
+  <div
+    slot="homeScreenBeforeInputElement"
+  />
+  <div
+    slot="customPanelElement"
+  />
+</cds-aichat-react>
+`;

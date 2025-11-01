@@ -46,7 +46,7 @@ class ChatContainerReact extends LitElement {
   `;
 
   /**
-   * Dispatch a custom event when the shadow root is ready
+   * Dispatch a custom event when the shadow DOM is ready
    * This ensures React can safely access shadowRoot
    */
   firstUpdated(changedProperties: PropertyValues) {
@@ -224,14 +224,6 @@ function ChatContainer(props: ChatContainerProps) {
       const currentNodes: HTMLElement[] = Array.from(
         wrapper.childNodes,
       ) as HTMLElement[];
-      const newNodesSet = new Set(combinedNodes);
-
-      // Remove nodes no longer present
-      currentNodes.forEach((node) => {
-        if (!newNodesSet.has(node)) {
-          wrapper.removeChild(node);
-        }
-      });
 
       // Append new nodes that aren't already in the container
       combinedNodes.forEach((node) => {

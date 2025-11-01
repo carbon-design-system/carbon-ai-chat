@@ -1,0 +1,35 @@
+{
+  "name": "@carbon/ai-chat-examples-react-jest-happydom",
+  "private": true,
+  "version": "1.0.0-rc.1",
+  "description": "Jest testing example for @carbon/ai-chat React components using happy-dom.",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@carbon/ai-chat": "^1.0.0-rc.1",
+    "@carbon/icons": "^11.53.0",
+    "@carbon/web-components": "^2.39.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-react": "^7.25.9",
+    "@babel/preset-typescript": "^7.26.0",
+    "@happy-dom/jest-environment": "^20.0.2",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/jest": "^29.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "babel-jest": "^30.0.0",
+    "happy-dom": "^20.0.2",
+    "jest": "^30.0.0",
+    "typescript": "^5.6.3"
+  }
+}

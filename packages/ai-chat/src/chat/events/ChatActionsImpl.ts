@@ -134,6 +134,18 @@ class ChatActionsImpl {
   private alreadyHydrated = false;
 
   /**
+   * Tracks the current restart generation. This is incremented each time restartConversation() is called
+   * and is used to filter out stale chunks from previous conversation generations.
+   */
+  private restartGeneration = 0;
+
+  /**
+   * Maps message IDs to the generation they were created in. This is used to filter out chunks from
+   * messages that were started before a restart.
+   */
+  private messageGenerations = new Map<string, number>();
+
+  /**
    * Queue of received chunks.
    */
   private chunkQueue: {
@@ -586,6 +598,19 @@ class ChatActionsImpl {
     messageID?: string,
     options: AddMessageOptions = {},
   ) {
+    // Mark message as streaming IMMEDIATELY when first chunk arrives (before queuing)
+    // This prevents MessageService from clearing the queue before chunks are processed
+    if (isStreamPartialItem(chunk)) {
+      // Extract messageID from chunk if not provided
+      const extractedMessageID =
+        messageID ||
+        ("streaming_metadata" in chunk &&
+          chunk.streaming_metadata?.response_id);
+      this.serviceManager.messageService.markCurrentMessageAsStreaming(
+        extractedMessageID,
+      );
+    }
+
     const chunkPromise = resolvablePromise();
     this.chunkQueue.push({ chunk, messageID, options, chunkPromise });
     if (this.chunkQueue.length === 1) {
@@ -598,9 +623,57 @@ class ChatActionsImpl {
     const { chunk, options, chunkPromise } = this.chunkQueue[0];
     let { messageID } = this.chunkQueue[0];
     const { store } = this.serviceManager;
+
     try {
       const isCompleteItem = isStreamCompleteItem(chunk);
       const isPartialItem = isStreamPartialItem(chunk);
+      const isFinalResponse = isStreamFinalResponse(chunk);
+
+      // Extract message ID from various chunk types
+      if (!messageID) {
+        if ("streaming_metadata" in chunk && chunk.streaming_metadata) {
+          messageID = chunk.streaming_metadata.response_id;
+        } else if (isFinalResponse && chunk.final_response?.id) {
+          messageID = chunk.final_response.id;
+        }
+      }
+
+      // Check if this chunk belongs to a message from a previous generation
+      if (messageID) {
+        const messageGeneration = this.messageGenerations.get(messageID);
+        if (
+          messageGeneration !== undefined &&
+          messageGeneration !== this.restartGeneration
+        ) {
+          debugLog(
+            `[ChunkQueue] Skipping stale chunk (${isCompleteItem ? "complete" : isPartialItem ? "partial" : "final"}) for message ${messageID} from generation ${messageGeneration} (current: ${this.restartGeneration})`,
+            chunk,
+          );
+
+          // If this is a complete or final chunk from an old message, hide the stop streaming button
+          if (
+            (isCompleteItem || isFinalResponse) &&
+            store.getState().assistantInputState.stopStreamingButtonState
+              .isVisible
+          ) {
+            store.dispatch(actions.setStopStreamingButtonDisabled(false));
+            store.dispatch(actions.setStopStreamingButtonVisible(false));
+          }
+
+          this.chunkQueue.shift();
+          chunkPromise.doResolve();
+          if (this.chunkQueue[0]) {
+            this.processChunkQueue();
+          }
+          return;
+        }
+
+        // If this is the first chunk for this message, record its generation
+        if (messageGeneration === undefined) {
+          this.messageGenerations.set(messageID, this.restartGeneration);
+        }
+      }
+
       const isStopGeneratingVisible =
         store.getState().assistantInputState.stopStreamingButtonState.isVisible;
 
@@ -612,10 +685,6 @@ class ChatActionsImpl {
       }
 
       if (isCompleteItem || isPartialItem) {
-        if (!messageID) {
-          messageID = chunk.streaming_metadata?.response_id;
-        }
-
         if (messageID && !store.getState().allMessagesByID[messageID]) {
           store.dispatch(actions.streamingStart(messageID));
         }
@@ -654,12 +723,16 @@ class ChatActionsImpl {
           );
         }
       } else if (isStreamFinalResponse(chunk)) {
-        // Note that while this function is called from the streaming handler in the MessageService, the final_response
-        // path here is not taken. The MessageService uses the processSuccess path instead after the stream is
-        // complete. This path is only taken by custom code calling the public receiveChunk method.
         this.receive(chunk.final_response, options.isLatestWelcomeNode, null, {
           disableFadeAnimation: true,
         });
+
+        // Notify MessageService that streaming is complete so it can clear the queue
+        if (messageID) {
+          this.serviceManager.messageService.finalizeStreamingMessage(
+            messageID,
+          );
+        }
       }
 
       // Reset stop streaming button when a complete/final chunk arrives
@@ -1234,6 +1307,15 @@ class ChatActionsImpl {
       const { serviceManager } = this;
       const { store } = serviceManager;
 
+      // Increment the restart generation to filter out any chunks from the previous conversation
+      this.restartGeneration++;
+
+      // Mark all existing messages as belonging to the OLD generation by keeping them in the map
+      // (don't clear - this way we can detect stale chunks from old messages)
+
+      // Set isRestarting to true to signal that we're in the middle of a restart
+      store.dispatch(actions.setIsRestarting(true));
+
       if (fireEvents) {
         await serviceManager.fire({
           type: BusEventType.PRE_RESTART_CONVERSATION,
@@ -1257,7 +1339,15 @@ class ChatActionsImpl {
       }
 
       this.serviceManager.instance.updateInputFieldVisibility(true);
-      this.serviceManager.messageService.cancelAllMessageRequests();
+      await this.serviceManager.messageService.cancelAllMessageRequests();
+
+      // Hide the stop streaming button since we've cancelled all streams
+      if (
+        store.getState().assistantInputState.stopStreamingButtonState.isVisible
+      ) {
+        store.dispatch(actions.setStopStreamingButtonDisabled(false));
+        store.dispatch(actions.setStopStreamingButtonVisible(false));
+      }
 
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {
@@ -1284,6 +1374,8 @@ class ChatActionsImpl {
       }
     } finally {
       this.restarting = false;
+      // Clear isRestarting flag to allow new messages and chunks to be processed
+      this.serviceManager.store.dispatch(actions.setIsRestarting(false));
     }
   }
 

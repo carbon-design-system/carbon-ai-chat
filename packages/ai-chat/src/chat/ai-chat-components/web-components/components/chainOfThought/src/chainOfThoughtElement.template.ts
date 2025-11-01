@@ -146,6 +146,7 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
     return html`${_steps.map((item, index) => {
       const stepNumber = index + 1;
       const content_id = `${_chainOfThoughtPanelID}-step-${stepNumber}-content`;
+      const disabled = !item.description && !item.request && !item.response;
       return html`<div class="${prefix}--chain-of-thought-accordion-item">
         <button
           class="${prefix}--chain-of-thought-accordion-item-header"
@@ -162,9 +163,11 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
           }}
           aria-expanded=${item.open}
           aria-controls=${content_id}
+          ?disabled=${disabled}
         >
           <span
             class="${prefix}--chain-of-thought-accordion-item-header-chevron"
+            ?data-disabled=${disabled}
             ?data-open=${item.open}
             >${iconLoader(ChevronRight16)}</span
           >

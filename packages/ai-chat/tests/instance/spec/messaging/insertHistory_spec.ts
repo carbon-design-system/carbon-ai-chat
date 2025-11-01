@@ -13,7 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
+} from "../../../test_helpers";
 import { BusEventType } from "../../../../src/types/events/eventBusTypes";
 import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
 import { HistoryItem } from "../../../../src/types/messaging/History";

@@ -14,7 +14,7 @@ import {
   attachUserDefinedResponseHandlers,
 } from "../../../src/chat/utils/chatBoot";
 
-import { createBaseTestProps } from "../../utils/testHelpers";
+import { createBaseTestProps } from "../../test_helpers";
 import type { ChatInstance } from "../../../src/types/instance/ChatInstance";
 import {
   BusEventType,

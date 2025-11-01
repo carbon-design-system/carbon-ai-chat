@@ -11,6 +11,7 @@ import "@carbon/web-components/es/components/pagination/index.js";
 import "@carbon/web-components/es/components/select/index.js";
 
 import { html } from "lit";
+import type { TableRowContent } from "../cds-aichat-table";
 
 // Import only the constants, not the class
 const POSSIBLE_PAGE_SIZES = [5, 10, 15, 20, 50];
@@ -19,7 +20,7 @@ interface TablePaginationProps {
   _currentPageSize: number;
   _currentPageNumber: number;
   _filterVisibleRowIDs: Set<string>;
-  rows: any[];
+  rows: TableRowContent[];
   previousPageText: string;
   nextPageText: string;
   itemsPerPageText: string;
@@ -67,7 +68,7 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     (pageSize) => pageSize < totalRows,
   );
 
-  // TODO TABLE: This component is quite wide. Because of the shadow dom we can't select it's contents to hide items
+  // TODO TABLE: This component is quite wide. Because of the shadow DOM we can't select it's contents to hide items
   // with css, nor can we extend this class to manipulate it's styles because of Carbon's use of :host(cds-pagination)
   // within their styles. There is however a smaller variation of this component
   // (https://carbondesignsystem.com/components/pagination/usage/#responsive-behavior) but it's only used at a specific

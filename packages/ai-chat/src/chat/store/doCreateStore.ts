@@ -125,6 +125,7 @@ function createInitialState(config: AppConfig): AppState {
     notifications: [],
     suspendScrollDetection: false,
     showNonHeaderBackgroundCover: false,
+    isRestarting: false,
     isBrowserPageVisible: true,
 
     // Input state

@@ -59,7 +59,7 @@ interface OptionProps extends HasServiceManager, HasLanguagePack {
    * Indicates if HTML should be removed from text before converting Markdown to HTML.
    * This is used to sanitize data coming from a human agent.
    */
-  shouldRemoveHTMLBeforeMarkdownConversion?: boolean;
+  removeHTML?: boolean;
 }
 
 class OptionComponent extends Component<OptionProps> {
@@ -113,7 +113,7 @@ class OptionComponent extends Component<OptionProps> {
       languagePack,
       disableUserInputs,
       serviceManager,
-      shouldRemoveHTMLBeforeMarkdownConversion,
+      removeHTML,
     } = this.props;
     const { options, title, description, preference } = localMessage.item;
     const { optionSelected } = localMessage.ui_state;
@@ -124,9 +124,7 @@ class OptionComponent extends Component<OptionProps> {
         <Metablock
           title={title}
           description={description}
-          shouldRemoveHTMLBeforeMarkdownConversion={
-            shouldRemoveHTMLBeforeMarkdownConversion
-          }
+          removeHTML={removeHTML}
         />
         <div className="cds-aichat--button-holder">
           <ul>
@@ -164,9 +162,7 @@ class OptionComponent extends Component<OptionProps> {
         disableUserInputs={disableUserInputs}
         onChange={this.onSelectChange}
         value={optionSelected}
-        shouldRemoveHTMLBeforeMarkdownConversion={
-          shouldRemoveHTMLBeforeMarkdownConversion
-        }
+        removeHTML={removeHTML}
       />
     );
   }
