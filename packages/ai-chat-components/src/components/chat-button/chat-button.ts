@@ -1,15 +1,15 @@
-/*
- *  Copyright IBM Corp. 2025
+/**
+ * @license
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
+ * Copyright IBM Corp. 2025
  *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 import { customElement } from "lit/decorators.js";
 import { property } from "lit/decorators.js";
-import chatButton from "./src/button.template.js";
+import chatButton from "./src/chat-button.template.js";
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
@@ -19,7 +19,6 @@ import prefix from "../../globals/settings.js";
 /**
  * Component extending the @carbon/web-components' button
  */
-//@ts-ignore
 @customElement(`${prefix}-button`)
 class ChatButton extends chatButton {
   /**

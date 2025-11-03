@@ -1,14 +1,7 @@
-/*
- *  Copyright IBM Corp. 2025
- *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- */
-
 /**
  * @license
  *
- * Copyright IBM Corp. 2023
+ * Copyright IBM Corp. 2025
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -16,7 +9,7 @@
 
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import "../button";
+import "../chat-button";
 import { html } from "lit";
 import {
   BUTTON_KIND,
