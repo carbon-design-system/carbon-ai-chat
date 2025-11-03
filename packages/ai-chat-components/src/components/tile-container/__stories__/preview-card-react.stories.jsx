@@ -1,10 +1,10 @@
 /* eslint-disable */
 import React from "react";
-import TileContainer from "../../../../es/react/tile-container";
-import { Tile } from "../../../../es/react/tile";
-import AILabel from "../../../../es/react/ai-label";
-import Button from "../../../../es/react/button";
-import IconButton from "../../../../es/react/icon-button";
+import TileContainer from "../../../react/tile-container";
+import { Tile } from "../../../react/tile";
+import AILabel from "../../../react/ai-label";
+import Button from "../../../react/button";
+import IconButton from "../../../react/icon-button";
 import { Download, Maximize, View, Share, Version } from "@carbon/icons-react";
 import cx from "classnames";
 import { action } from "storybook/actions";
