@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { mergeConfig } from "vite";
 import remarkGfm from "remark-gfm";
+import { litStyleLoader, litTemplateLoader } from "@mordech/vite-lit-loader";
 
 const require = createRequire(import.meta.url);
 
@@ -35,10 +36,9 @@ export default {
   },
   async viteFinal(config) {
     return mergeConfig(config, {
-      resolve: {
-        alias: {
-          "@components": path.resolve(__dirname, "../src/components"),
-        },
+      plugins: [litStyleLoader(), litTemplateLoader()],
+      optimizeDeps: {
+        exclude: ["lit", "lit-html"],
       },
     });
   },
