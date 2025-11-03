@@ -1,8 +1,8 @@
 /* eslint-disable */
 import React from "react";
-import TileContainer from "../../../../es/react/tile-container";
-import { Tile, ClickableTile } from "../../../../es/react/tile";
-import Button from "../../../../es/react/button";
+import TileContainer from "../../../react/tile-container";
+import { Tile, ClickableTile } from "../../../react/tile";
+import Button from "../../../react/button";
 import cx from "classnames";
 import { Launch, ArrowRight, Link } from "@carbon/icons-react";
 import { action } from "storybook/actions";
