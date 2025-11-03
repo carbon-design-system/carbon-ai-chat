@@ -28,16 +28,11 @@ import styles from "./story-styles.scss?lit";
 
 const aiContent = html`
   <div slot="body-text">
-    <p>AI Explained</p>
-    <h2>84%</h2>
-    <p>Confidence score</p>
-    <p>
-      Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed do
-      eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
-    </p>
-    <hr />
-    <p>Model type</p>
-    <a href="#">Foundation model</a>
+    <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+    <div>
+      IBM watsonx is powered by the latest AI models to intelligently process
+      conversations and provide help whenever and wherever you may need it.
+    </div>
   </div>
 `;
 
@@ -77,7 +72,6 @@ const footerActionVariants = {
       View details
       ${iconLoader(Maximize16, {
         slot: "icon",
-        style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
   `,
@@ -192,7 +186,7 @@ export default {
       description: "Toggle rendering inside <cds-aichat-tile-container>",
     },
     aiLabel: { control: "boolean" },
-    footerActions: {
+    footerAction: {
       control: "select",
       options: Object.keys(footerActionVariants),
       mapping: footerActionVariants,
@@ -232,7 +226,7 @@ export const Small = {
     maxWidth: "sm",
     useWrapper: true,
     aiLabel: true,
-    footerActions: "2 ghost icon buttons",
+    footerAction: "2 ghost icon buttons",
     onClick: fn(),
   },
   render: (args) => html`
@@ -255,7 +249,7 @@ export const Small = {
             ${aiContent}
           </cds-ai-label>`
         : ""}
-      ${args.footerActions(args)
+      ${args.footerAction(args)
         ? html`<div
             class=${classMap({
               "cds-aichat--tile-container-footer": true,
@@ -264,7 +258,7 @@ export const Small = {
             data-flush="bottom"
             data-rounded="bottom"
           >
-            ${args.footerActions(args)}
+            ${args.footerAction(args)}
           </div>`
         : ""}
     </cds-tile>
@@ -274,13 +268,13 @@ export const Small = {
 export const Default = {
   argTypes: {
     maxWidth: { table: { disable: true } },
-    footerActions: { table: { disable: true } },
+    footerAction: { table: { disable: true } },
   },
   args: {
     maxWidth: "lg",
     useWrapper: true,
     aiLabel: true,
-    footerActions: "1 ghost button with icon",
+    footerAction: "1 ghost button with icon",
     onClick: fn(),
   },
   render: (args) => html`
@@ -317,7 +311,7 @@ export const Default = {
         <br />
         <br />
       </div>
-      ${args.footerActions(args)
+      ${args.footerAction(args)
         ? html`<div
             class=${classMap({
               "cds-aichat--tile-container-footer": true,
@@ -326,7 +320,7 @@ export const Default = {
             data-flush="bottom"
             data-rounded="bottom"
           >
-            ${args.footerActions(args)}
+            ${args.footerAction(args)}
           </div>`
         : ""}
     </cds-tile>
@@ -336,7 +330,7 @@ export const Default = {
 export const DefaultWithToolbar = {
   argTypes: {
     maxWidth: { table: { disable: true } },
-    footerActions: { table: { disable: true } },
+    footerAction: { table: { disable: true } },
   },
   args: {
     maxWidth: "lg",
@@ -406,7 +400,7 @@ export const DefaultWithToolbar = {
 export const WithSteps = {
   argTypes: {
     maxWidth: { table: { disable: true } },
-    footerActions: { table: { disable: true } },
+    footerAction: { table: { disable: true } },
     stepVariation: {
       control: "select",
       options: Object.keys(stepVariation),
@@ -418,7 +412,7 @@ export const WithSteps = {
     maxWidth: "lg",
     useWrapper: true,
     stepVariation: "with label",
-    footerActions: "1 ghost button with icon",
+    footerAction: "1 ghost button with icon",
     aiLabel: true,
     onClick: fn(),
   },
@@ -457,7 +451,7 @@ export const WithSteps = {
       <div data-flush class="border-top margin-top-05">
         ${args.stepVariation(args)}
       </div>
-      ${args.footerActions(args)
+      ${args.footerAction(args)
         ? html`<div
             class=${classMap({
               "cds-aichat--tile-container-footer": true,
@@ -466,7 +460,7 @@ export const WithSteps = {
             data-flush="bottom"
             data-rounded="bottom"
           >
-            ${args.footerActions(args)}
+            ${args.footerAction(args)}
           </div>`
         : ""}
     </cds-tile>
