@@ -343,9 +343,16 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               }
             >
               <div slot="body-text">
-                <h4 className="cds-aichat--header__slug-title">
-                  {languagePack.ai_slug_title}
-                </h4>
+                {languagePack.ai_slug_label && (
+                  <p className="cds-aichat--header__slug-label">
+                    {languagePack.ai_slug_label}
+                  </p>
+                )}
+                {languagePack.ai_slug_title && (
+                  <h4 className="cds-aichat--header__slug-title">
+                    {languagePack.ai_slug_title}
+                  </h4>
+                )}
                 <div className="cds-aichat--header__slug-description">
                   <div>{languagePack.ai_slug_description}</div>
                   {!isHidden && (
