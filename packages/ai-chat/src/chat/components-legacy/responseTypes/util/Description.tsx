@@ -19,22 +19,17 @@ interface DescriptionProps extends HasClassName {
    * Indicates if HTML should be removed from text before converting Markdown to HTML.
    * This is used to sanitize data coming from a human agent.
    */
-  shouldRemoveHTMLBeforeMarkdownConversion?: boolean;
+  removeHTML?: boolean;
 }
 
 export default function Description({
   className,
   text,
-  shouldRemoveHTMLBeforeMarkdownConversion = false,
+  removeHTML = false,
 }: DescriptionProps) {
   return (
     <div className={`cds-aichat--description ${className}`}>
-      <RichText
-        text={text}
-        shouldRemoveHTMLBeforeMarkdownConversion={
-          shouldRemoveHTMLBeforeMarkdownConversion
-        }
-      />
+      <RichText text={text} removeHTML={removeHTML} />
     </div>
   );
 }

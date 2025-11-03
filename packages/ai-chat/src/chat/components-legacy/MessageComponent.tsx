@@ -414,7 +414,10 @@ class MessageComponent extends PureComponent<
         iconClassName = "cds-aichat--message__avatar--agent";
         actorName = responseUserProfile?.nickname || "";
       } else {
-        actorName = responseUserProfile?.nickname || assistantName;
+        actorName =
+          responseUserProfile?.nickname === "watsonx" && assistantName
+            ? assistantName
+            : responseUserProfile?.nickname;
 
         let icon = <IconHolder icon={<ChatBot />} />;
 
@@ -689,7 +692,7 @@ class MessageComponent extends PureComponent<
 
     return (
       <div
-        id={`cds-aichat--message-${messagesIndex}${serviceManager.namespace.suffix}`}
+        data-testid={`message-by-index-${messagesIndex}${serviceManager.namespace.suffix}`}
         className={cx(
           `cds-aichat--message cds-aichat--message-${messagesIndex}`,
           className,

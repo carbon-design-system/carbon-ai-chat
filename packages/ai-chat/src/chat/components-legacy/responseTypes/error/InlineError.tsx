@@ -22,7 +22,7 @@ export function InlineError({ text }: { text?: string }) {
       </div>
       <div className="cds-aichat--inline-error--text">
         <RichText
-          shouldRemoveHTMLBeforeMarkdownConversion
+          removeHTML
           text={text || languagePack.errors_generalContent}
         />
       </div>

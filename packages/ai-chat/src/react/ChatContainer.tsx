@@ -19,7 +19,7 @@ import React, {
 import { createPortal } from "react-dom";
 
 import App from "../chat/ChatAppEntry";
-import { carbonElement } from "../chat/ai-chat-components/web-components/decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { ChatContainerProps } from "../types/component/ChatContainer";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
@@ -46,7 +46,7 @@ class ChatContainerReact extends LitElement {
   `;
 
   /**
-   * Dispatch a custom event when the shadow root is ready
+   * Dispatch a custom event when the shadow DOM is ready
    * This ensures React can safely access shadowRoot
    */
   firstUpdated(changedProperties: PropertyValues) {
@@ -224,14 +224,6 @@ function ChatContainer(props: ChatContainerProps) {
       const currentNodes: HTMLElement[] = Array.from(
         wrapper.childNodes,
       ) as HTMLElement[];
-      const newNodesSet = new Set(combinedNodes);
-
-      // Remove nodes no longer present
-      currentNodes.forEach((node) => {
-        if (!newNodesSet.has(node)) {
-          wrapper.removeChild(node);
-        }
-      });
 
       // Append new nodes that aren't already in the container
       combinedNodes.forEach((node) => {

@@ -56,6 +56,7 @@ import {
 import { consoleError, createDidCatchErrorData } from "../../utils/miscUtils";
 import { MainWindowFunctions } from "./MainWindowFunctions";
 import {
+  BusEventType,
   MainWindowCloseReason,
   MessageSendSource,
 } from "../../../types/events/eventBusTypes";
@@ -547,6 +548,9 @@ class MainWindow
    */
   onAcceptDisclaimer = () => {
     this.props.serviceManager.store.dispatch(actions.acceptDisclaimer());
+    this.props.serviceManager.fire({
+      type: BusEventType.DISCLAIMER_ACCEPTED,
+    });
   };
 
   /**
@@ -977,7 +981,6 @@ class MainWindow
 
   renderWidget() {
     const {
-      serviceManager,
       useCustomHostElement,
       catastrophicErrorType,
       config,
@@ -1016,7 +1019,6 @@ class MainWindow
               <div className="cds-aichat--widget__focus-trap-glass" />
             )}
             <div
-              id={`cds-aichat--widget${serviceManager.namespace.suffix}`}
               className={cx(`cds-aichat--widget ${localeClassName}`, {
                 "cds-aichat--widget--rounded":
                   theme.corners === CornersType.ROUND,

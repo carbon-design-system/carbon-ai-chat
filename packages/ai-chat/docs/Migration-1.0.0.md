@@ -149,7 +149,7 @@ const config = {
 
 ### `es-custom` folder
 
-**Note:** You only need to import from the `es-custom` folder if you are facing component registry issues. This usually happens when using the `@carbon/ai-chat` package alongside `carbon-angular-components` where the component names clash with the underlying subcomponents from `@carbon/web-components`.
+**Note:** You only need to import from the `es-custom` folder if you are facing component registry issues. This usually happens when using the `@carbon/ai-chat` package alongside `carbon-angular-components` where the component names clash with the underlying subcomponents from `@carbon/web-components`. If importing from the top-level, change the import to `@carbon/ai-chat/es-custom`.
 
 If not using alongside `carbon-angular-components`, resume importing from the `es` folder and using the `cds-aichat` prefix.
 
@@ -157,6 +157,7 @@ If not using alongside `carbon-angular-components`, resume importing from the `e
 // Before
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import { PublicConfig } from '@carbon/ai-chat';
 
 ...
 
@@ -169,6 +170,7 @@ render() {
 // After
 import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
+import { PublicConfig } from '@carbon/ai-chat/es-custom';
 
 ...
 

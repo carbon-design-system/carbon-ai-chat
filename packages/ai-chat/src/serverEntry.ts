@@ -101,6 +101,7 @@ export {
 } from "./types/config/HomeScreenConfig";
 
 export {
+  CancellationReason,
   ChatInstanceMessaging,
   CustomSendMessageOptions,
 } from "./types/config/MessagingConfig";
@@ -191,9 +192,6 @@ export {
   PartialItemChunk,
   PauseItem,
   StreamChunk,
-  TableItem,
-  TableItemCell,
-  TableItemRow,
   TextItem,
   UserDefinedItem,
   VerticalCellAlignment,

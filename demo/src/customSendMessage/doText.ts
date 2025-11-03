@@ -8,10 +8,10 @@
  */
 
 import {
-  BusEventType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   ChatInstance,
+  CustomSendMessageOptions,
   GenericItemMessageFeedbackOptions,
   MessageResponse,
   MessageResponseTypes,
@@ -20,7 +20,6 @@ import {
   UserType,
 } from "@carbon/ai-chat";
 
-import { sleep } from "../framework/utils";
 import {
   CHAIN_OF_THOUGHT_TEXT,
   CHAIN_OF_THOUGHT_TEXT_STREAM,
@@ -30,6 +29,12 @@ import {
   WORD_DELAY,
 } from "./constants";
 import { RESPONSE_MAP } from "./responseMap";
+
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 const defaultHumanUserProfile: ResponseUserProfile = {
   id: "1",
@@ -74,6 +79,9 @@ const fullChainOfThought: ChainOfThoughtStep[] = [
     response: {
       content: `{ "allotropes_found": 4, "primary_structures": ["diamond", "graphite", "fullerenes", "nanotubes"] }`,
     },
+  },
+  {
+    title: "Checking results",
   },
   {
     title: "Calculating carbon bond energies and molecular stability metrics",
@@ -147,7 +155,9 @@ async function doTextStreaming(
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
   feedback?: GenericItemMessageFeedbackOptions,
+  requestOptions?: CustomSendMessageOptions,
 ) {
+  const signal = requestOptions?.signal;
   const responseID = crypto.randomUUID();
   const words = text.split(" ");
   const totalWords = words.length;
@@ -177,14 +187,11 @@ async function doTextStreaming(
   let isCanceled = false;
   let lastWordIndex = 0;
 
-  const stopGeneratingEvent = {
-    type: BusEventType.STOP_STREAMING,
-    handler: () => {
-      isCanceled = true;
-      instance.off(stopGeneratingEvent);
-    },
+  // Listen to abort signal (handles both stop button and restart/clear)
+  const abortHandler = () => {
+    isCanceled = true;
   };
-  instance.on(stopGeneratingEvent);
+  signal?.addEventListener("abort", abortHandler);
 
   try {
     for (let index = 0; index < words.length && !isCanceled; index++) {
@@ -284,7 +291,7 @@ async function doTextStreaming(
       final_response: finalResponse,
     } as StreamChunk);
   } finally {
-    instance.off(stopGeneratingEvent);
+    signal?.removeEventListener("abort", abortHandler);
   }
 }
 
@@ -418,8 +425,18 @@ async function doTextStreamingWithNonWatsonAssistantProfile(
   text: string = MARKDOWN,
   cancellable = true,
   userProfile: ResponseUserProfile = defaultAlternativeAssistantProfile,
+  requestOptions?: CustomSendMessageOptions,
 ) {
-  return doTextStreaming(instance, text, cancellable, WORD_DELAY, userProfile);
+  return doTextStreaming(
+    instance,
+    text,
+    cancellable,
+    WORD_DELAY,
+    userProfile,
+    undefined,
+    undefined,
+    requestOptions,
+  );
 }
 
 async function doTextChainOfThoughtStreaming(
@@ -428,6 +445,7 @@ async function doTextChainOfThoughtStreaming(
   cancellable = true,
   userProfile?: ResponseUserProfile,
   chainOfThought: ChainOfThoughtStep[] = fullChainOfThought,
+  requestOptions?: CustomSendMessageOptions,
 ) {
   doTextStreaming(
     instance,
@@ -436,6 +454,8 @@ async function doTextChainOfThoughtStreaming(
     300,
     userProfile,
     chainOfThought,
+    undefined,
+    requestOptions,
   );
 }
 
@@ -466,6 +486,7 @@ async function doHTMLStreaming(
   wordDelay = WORD_DELAY,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
+  requestOptions?: CustomSendMessageOptions,
 ) {
   await doTextStreaming(
     instance,
@@ -474,6 +495,8 @@ async function doHTMLStreaming(
     wordDelay,
     userProfile,
     chainOfThought,
+    undefined,
+    requestOptions,
   );
 }
 
@@ -496,7 +519,10 @@ function doTextWithFeedback(instance: ChatInstance) {
   doText(instance, feedbackText, undefined, undefined, feedback);
 }
 
-async function doTextWithFeedbackStreaming(instance: ChatInstance) {
+async function doTextWithFeedbackStreaming(
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions,
+) {
   const feedbackText =
     "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
 
@@ -520,6 +546,7 @@ async function doTextWithFeedbackStreaming(instance: ChatInstance) {
     undefined,
     undefined,
     feedback,
+    requestOptions,
   );
 }
 

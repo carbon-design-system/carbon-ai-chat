@@ -1,5 +1,5 @@
 <h1 align="center">
-  @carbon/ai-chat
+  Carbon AI Chat
 </h1>
 
 > Carbon AI Chat is an opinionated but extensible chat application that's available as both React and web components.
@@ -20,9 +20,14 @@ This will install the package that contains both the web component and React ver
 
 ## 📖 Documentation
 
-- [Documentation site](https://1.www.s81c.com/common/carbon/ai-chat/tag/latest/docs/documents/Overview.html)
+- [Documentation site](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html)
+- [Demo site](https://chat.carbondesignsystem.com/tag/latest/demo/index.html)
 - [React examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react)
 - [Web component examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components)
+
+## Related tools
+
+- [Carbon Charts MCP server, IBM only](https://w3.ibm.com/innersource/portal/projects/1874876)
 
 ## 📝 License
 

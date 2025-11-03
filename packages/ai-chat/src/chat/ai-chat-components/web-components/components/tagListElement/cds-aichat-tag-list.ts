@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { carbonElement } from "../../decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { prefix } from "../../settings";
 import TagListElement from "./src/TagListElement";
 import { tagListElementTemplate } from "./src/tagListElement.template";

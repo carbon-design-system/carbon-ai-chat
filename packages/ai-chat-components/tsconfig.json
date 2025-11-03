@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "es2015",
+    "target": "es2021",
+    "module": "es2020",
     "moduleResolution": "node",
-    "lib": ["es2017", "esnext.array", "dom", "dom.iterable"],
+    "lib": ["es2021", "dom", "dom.iterable"],
     "typeRoots": [
       "src/typings",
       "tests/typings",

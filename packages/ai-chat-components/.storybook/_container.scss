@@ -9,6 +9,8 @@
 @use "@carbon/themes/scss/themes";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/grid";
+@use "@carbon/layout";
+@use "@carbon/styles/scss/colors";
 
 @use "@carbon/styles/scss/components/button/tokens" as button-tokens;
 @use "@carbon/styles/scss/components/notification/tokens" as notification-tokens;
@@ -51,6 +53,10 @@
 body {
   background-color: theme.$background;
   color: theme.$text-primary;
+}
+
+cds-inline-notification {
+  margin-block-end: layout.$spacing-05;
 }
 
 .sb-show-main.sb-main-padded {

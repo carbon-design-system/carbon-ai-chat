@@ -73,6 +73,7 @@ import {
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STREAM_ID,
+  SET_IS_RESTARTING,
   SET_VIEW_CHANGING,
   SET_VIEW_STATE,
   STREAMING_ADD_CHUNK,
@@ -557,6 +558,14 @@ const reducers: { [key: string]: ReducerType } = {
       },
     };
   },
+
+  [SET_IS_RESTARTING]: (
+    state: AppState,
+    action: { isRestarting: boolean },
+  ): AppState => ({
+    ...state,
+    isRestarting: action.isRestarting,
+  }),
 
   [SET_VIEW_STATE]: (
     state: AppState,

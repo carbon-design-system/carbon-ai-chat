@@ -54,8 +54,8 @@ import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import { InlineLoadingComponent } from "../ai-chat-components/react/components/inlineLoading/InlineLoadingComponent";
 import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
+import Processing from "@carbon/ai-chat-components/es/react/processing.js";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -642,10 +642,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           <div className="cds-aichat--assistant-message">
             <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
               <div className="cds-aichat--received--inner">
-                <InlineLoadingComponent
-                  loop
-                  carbonTheme={this.props.carbonTheme}
-                />
+                <Processing loop carbonTheme={this.props.carbonTheme} />
               </div>
             </div>
           </div>
@@ -984,10 +981,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     return (
-      <div
-        id={`cds-aichat--messages--holder${serviceManager.namespace.suffix}`}
-        className="cds-aichat--messages--holder"
-      >
+      <div className="cds-aichat--messages--holder">
         {this.renderHumanAgentBanner()}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
@@ -997,7 +991,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           })}
         >
           <div
-            id={`cds-aichat--messages${serviceManager.namespace.suffix}`}
             className="cds-aichat--messages"
             ref={this.messagesContainerWithScrollingRef}
             onScroll={() => {

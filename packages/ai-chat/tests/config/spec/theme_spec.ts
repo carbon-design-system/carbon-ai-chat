@@ -13,7 +13,7 @@ import { ChatContainer } from "../../../src/react/ChatContainer";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { CarbonTheme } from "../../../src/types/config/PublicConfig";
 import { CornersType } from "../../../src/types/config/CornersType";
-import { createBaseTestProps } from "../../utils/testHelpers";
+import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
 import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
 
@@ -121,7 +121,7 @@ describe("Config Theme", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults).toEqual({
-        derivedCarbonTheme: null,
+        derivedCarbonTheme: "white",
         originalCarbonTheme: null,
         corners: "round",
         aiEnabled: true,
@@ -153,7 +153,7 @@ describe("Config Theme", () => {
       const state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
       expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        null,
+        "white",
       );
       expect(
         state.config.derived.themeWithDefaults.originalCarbonTheme,

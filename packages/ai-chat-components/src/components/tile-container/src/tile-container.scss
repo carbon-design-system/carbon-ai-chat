@@ -17,7 +17,10 @@ $css--plex: true !default;
 
 /* tile container styles */
 :host(#{$prefix}-tile-container) {
+  // we could prioritize `--cds-aichat-border-radius` for border radius, so the tile responds to this variable coming from ai-chat. if we don't want to. we can remove the variable. and set it to 0.5rem/8px.
+  --#{$prefix}-tile-border-radius: var(--#{$prefix}-border-radius, 0.5rem);
+
   display: block;
   border: 1px solid theme.$chat-bubble-border;
-  border-radius: layout.$spacing-03;
+  border-radius: var(--#{$prefix}-tile-border-radius);
 }

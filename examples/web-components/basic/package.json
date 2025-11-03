@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-basic",
-  "version": "1.0.0-rc.4",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "A basic example using @carbon/ai-chat as a web component.",
@@ -13,7 +13,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.0.0-rc.4",
+    "@carbon/ai-chat": "^1.1.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/web-components": "^2.40.1",
     "lit": "^3.1.0",
@@ -36,7 +36,6 @@
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",
-    "portfinder": "^1.0.37",
     "style-loader": "^4.0.0",
     "ts-lit-plugin": "^2.0.2",
     "ts-loader": "^9.5.1",

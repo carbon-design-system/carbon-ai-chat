@@ -203,9 +203,12 @@ function isColorLighterThan(color: string, thresholdPercent = 50): boolean {
 /**
  * Gets the computed value of a CSS custom property (CSS variable).
  */
-function getCSSVariableValue(variableName: string): string | null {
+function getCSSVariableValue(
+  variableName: string,
+  element = document.documentElement,
+): string | null {
   try {
-    const computedStyle = getComputedStyle(document.documentElement);
+    const computedStyle = getComputedStyle(element);
     const value = computedStyle.getPropertyValue(variableName).trim();
     return value || null;
   } catch (error) {

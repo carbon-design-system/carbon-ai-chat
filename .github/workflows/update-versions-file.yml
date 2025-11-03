@@ -40,7 +40,7 @@ jobs:
           const file = 'versions.js';
           let content = fs.readFileSync(file, 'utf8');
 
-          const regex = /export const AI_CHAT_VERSIONS\s*=\s*(\[[^\]]*\]);/;
+          const regex = /export const AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);/;
           const match = content.match(regex);
           if (!match) {
             console.error("Could not find AI_CHAT_VERSIONS array in versions.js");
@@ -50,11 +50,16 @@ jobs:
           let arr = eval(match[1]); // parse the JS array
           const versionWithPrefix = "v" + version;
           if (!arr.includes(versionWithPrefix)) {
-            arr.unshift(versionWithPrefix); // prepend with "v"
+            arr.unshift(versionWithPrefix);
           }
 
-          const newArrayStr = JSON.stringify(arr);
-          const newContent = content.replace(regex, `export const AI_CHAT_VERSIONS = ${newArrayStr};`);
+          // Pretty-print array with correct indentation and trailing comma
+          let formattedArray = JSON.stringify(arr, null, 2).replace(/\n\]/, ",\n]");
+
+          const newContent = content.replace(
+            regex,
+            `export const AI_CHAT_VERSIONS = ${formattedArray};`
+          );
 
           fs.writeFileSync(file, newContent);
           console.log("Updated versions.js with", versionWithPrefix);
@@ -82,6 +87,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Put versions.js file in temp directory
+        run: mkdir temp && cp versions.js temp/
+
       # Upload versions.js file to COS
       # ie. chat.carbondesignsystem.com/versions.js
       - name: Upload versions.js file to COS
@@ -94,5 +102,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "./versions.js"
+          SOURCE_DIR: "temp"
           DEST_DIR: "/"

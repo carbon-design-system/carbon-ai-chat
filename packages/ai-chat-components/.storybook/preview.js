@@ -24,6 +24,18 @@ import { setCustomElementsManifest } from "@storybook/web-components-vite";
 import customElements from "../custom-elements.json";
 import prettier from "prettier/standalone";
 
+if (typeof document !== "undefined") {
+  const existing = document.head.querySelector(
+    'style[data-storybook-container="true"]',
+  );
+  if (!existing) {
+    const style = document.createElement("style");
+    style.setAttribute("data-storybook-container", "true");
+    style.textContent = containerStyles;
+    document.head.appendChild(style);
+  }
+}
+
 setCustomElementsManifest(customElements);
 
 export const globalTypes = {
@@ -182,17 +194,14 @@ export const decorators = [
 
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
 
-    return html` <style>
-        ${containerStyles}
-      </style>
-      <div
-        id="main-content"
-        name="main-content"
-        data-floating-menu-container
-        data-modal-container
-        role="main"
-      >
-        ${story()}
-      </div>`;
+    return html` <div
+      id="main-content"
+      name="main-content"
+      data-floating-menu-container
+      data-modal-container
+      role="main"
+    >
+      ${story()}
+    </div>`;
   },
 ];

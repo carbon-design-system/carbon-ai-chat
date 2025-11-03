@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatInstance } from "@carbon/ai-chat";
+import { ChatInstance, CustomSendMessageOptions } from "@carbon/ai-chat";
 
 import { doAudio } from "./doAudio";
 import { doButton } from "./doButton";
@@ -47,43 +47,86 @@ import { doVideo } from "./doVideo";
 
 const RESPONSE_MAP: Record<
   string,
-  (instance: ChatInstance) => Promise<void> | void
+  (
+    instance: ChatInstance,
+    requestOptions?: CustomSendMessageOptions,
+  ) => Promise<void> | void
 > = {
-  audio: doAudio,
-  button: doButton,
-  card: doCard,
-  carousel: doCarousel,
-  code: doCode,
-  "code (stream)": doCodeStreaming,
-  "conversational search": doConversationalSearch,
-  "conversational search (stream)": doConversationalSearchStreaming,
-  date: doDate,
-  grid: doGrid,
-  "human agent": doHumanAgent,
-  iframe: doIFrame,
-  "inline error": doError,
-  image: doImage,
-  "unordered list": doList,
-  "option list": doOption,
-  "ordered list": doOrderedList,
-  table: doTable,
-  "table (stream)": doTableStreaming,
-  text: doText,
-  "text (stream)": doTextStreaming,
-  "text with feedback": doTextWithFeedback,
-  "text with feedback (stream)": doTextWithFeedbackStreaming,
-  "text from watsonx agent": doTextWithWatsonAgentProfile,
-  "text from third party human": doTextWithHumanProfile,
-  "text from third party bot": doTextWithNonWatsonAssistantProfile,
-  "text (stream) from third party bot":
-    doTextStreamingWithNonWatsonAssistantProfile,
-  "text with chain of thought": doTextChainOfThought,
-  "text (stream) with chain of thought": doTextChainOfThoughtStreaming,
-  html: doHTML,
-  "html (stream)": doHTMLStreaming,
-  user_defined: doUserDefined,
-  "user_defined (stream)": doUserDefinedStreaming,
-  video: doVideo,
+  audio: (instance) => doAudio(instance),
+  button: (instance) => doButton(instance),
+  card: (instance) => doCard(instance),
+  carousel: (instance) => doCarousel(instance),
+  code: (instance) => doCode(instance),
+  "code (stream)": (instance, requestOptions) =>
+    doCodeStreaming(instance, requestOptions),
+  "conversational search": (instance) => doConversationalSearch(instance),
+  "conversational search (stream)": (instance, requestOptions) =>
+    doConversationalSearchStreaming(instance, undefined, requestOptions),
+  date: (instance) => doDate(instance),
+  grid: (instance) => doGrid(instance),
+  "human agent": (instance) => doHumanAgent(instance),
+  iframe: (instance) => doIFrame(instance),
+  "inline error": (instance) => doError(instance),
+  image: (instance) => doImage(instance),
+  "unordered list": (instance) => doList(instance),
+  "option list": (instance) => doOption(instance),
+  "ordered list": (instance) => doOrderedList(instance),
+  table: (instance) => doTable(instance),
+  "table (stream)": (instance, requestOptions) =>
+    doTableStreaming(instance, requestOptions),
+  text: (instance) => doText(instance),
+  "text (stream)": (instance, requestOptions) =>
+    doTextStreaming(
+      instance,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      requestOptions,
+    ),
+  "text with feedback": (instance) => doTextWithFeedback(instance),
+  "text with feedback (stream)": (instance, requestOptions) =>
+    doTextWithFeedbackStreaming(instance, requestOptions),
+  "text from watsonx agent": (instance) =>
+    doTextWithWatsonAgentProfile(instance),
+  "text from third party human": (instance) => doTextWithHumanProfile(instance),
+  "text from third party bot": (instance) =>
+    doTextWithNonWatsonAssistantProfile(instance),
+  "text (stream) from third party bot": (instance, requestOptions) =>
+    doTextStreamingWithNonWatsonAssistantProfile(
+      instance,
+      undefined,
+      undefined,
+      undefined,
+      requestOptions,
+    ),
+  "text with chain of thought": (instance) => doTextChainOfThought(instance),
+  "text (stream) with chain of thought": (instance, requestOptions) =>
+    doTextChainOfThoughtStreaming(
+      instance,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      requestOptions,
+    ),
+  html: (instance) => doHTML(instance),
+  "html (stream)": (instance, requestOptions) =>
+    doHTMLStreaming(
+      instance,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      requestOptions,
+    ),
+  user_defined: (instance) => doUserDefined(instance),
+  "user_defined (stream)": (instance, requestOptions) =>
+    doUserDefinedStreaming(instance, requestOptions),
+  video: (instance) => doVideo(instance),
 };
 
 export { RESPONSE_MAP };

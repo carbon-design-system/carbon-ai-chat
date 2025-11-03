@@ -8,13 +8,17 @@
  */
 
 import {
-  BusEventType,
   ChatInstance,
+  CustomSendMessageOptions,
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
 
-import { sleep } from "../framework/utils";
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 const FAKE_DATA = `Some text that came from the server inside the user_defined object. Bacon ipsum dolor amet salami capicola chislic, meatball tail beef ham hock brisket cow ground round chuck. Turkey pork loin pastrami, ribeye jerky meatball drumstick kielbasa corned beef shankle picanha. Spare ribs leberkas hamburger strip steak beef ribs sirloin brisket capicola, sausage meatball drumstick ham swine alcatra. Pastrami filet mignon salami, flank short loin t-bone tenderloin ribeye brisket.`;
 
@@ -42,20 +46,21 @@ function doUserDefined(instance: ChatInstance) {
   });
 }
 
-async function doUserDefinedStreaming(instance: ChatInstance) {
+async function doUserDefinedStreaming(
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions,
+) {
+  const signal = requestOptions?.signal;
   const WORD_DELAY = 50;
   const responseID = crypto.randomUUID();
   const words = FAKE_DATA.split(" ");
   let isCanceled = false;
 
-  const stopGeneratingEvent = {
-    type: BusEventType.STOP_STREAMING,
-    handler: () => {
-      isCanceled = true;
-      instance.off(stopGeneratingEvent);
-    },
+  // Listen to abort signal (handles both stop button and restart/clear)
+  const abortHandler = () => {
+    isCanceled = true;
   };
-  instance.on(stopGeneratingEvent);
+  signal?.addEventListener("abort", abortHandler);
 
   try {
     for (let index = 0; index < words.length && !isCanceled; index++) {
@@ -126,7 +131,7 @@ async function doUserDefinedStreaming(instance: ChatInstance) {
       final_response: finalResponse,
     } as StreamChunk);
   } finally {
-    instance.off(stopGeneratingEvent);
+    signal?.removeEventListener("abort", abortHandler);
   }
 }
 

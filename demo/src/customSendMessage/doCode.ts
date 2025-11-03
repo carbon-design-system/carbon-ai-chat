@@ -7,7 +7,11 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
+import {
+  ChatInstance,
+  CustomSendMessageOptions,
+  MessageResponseTypes,
+} from "@carbon/ai-chat";
 
 import { CODE } from "./constants";
 import { doTextStreaming } from "./doText";
@@ -25,8 +29,20 @@ function doCode(instance: ChatInstance) {
   });
 }
 
-function doCodeStreaming(instance: ChatInstance) {
-  doTextStreaming(instance, CODE, true);
+function doCodeStreaming(
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions,
+) {
+  doTextStreaming(
+    instance,
+    CODE,
+    true,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    requestOptions,
+  );
 }
 
 export { doCode, doCodeStreaming };

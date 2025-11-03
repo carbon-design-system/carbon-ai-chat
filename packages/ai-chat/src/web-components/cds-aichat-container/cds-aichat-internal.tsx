@@ -18,7 +18,7 @@ import React from "react";
 import { createRoot, Root } from "react-dom/client";
 
 import App from "../../chat/ChatAppEntry";
-import { carbonElement } from "../../chat/ai-chat-components/web-components/decorators/customElement";
+import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import { DeepPartial } from "../../types/utilities/DeepPartial";

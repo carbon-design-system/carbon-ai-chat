@@ -21,26 +21,9 @@ import { expect, fn } from "storybook/test";
 
 import Link16 from "@carbon/icons/es/link/16.js";
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
 import Launch16 from "@carbon/icons/es/launch/16.js";
 
 import styles from "./story-styles.scss?lit";
-
-const aiContent = html`
-  <div slot="body-text">
-    <p>AI Explained</p>
-    <h2>84%</h2>
-    <p>Confidence score</p>
-    <p>
-      Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed do
-      eiusmod tempor incididunt ut fsil labore et dolore magna aliqua.
-    </p>
-    <hr />
-    <p>Model type</p>
-    <a href="#">Foundation model</a>
-  </div>
-`;
 
 const tileContent = html`
   <h5 class="heading-01 margin-bottom-04">AI Chat Tile styling wrapper</h5>
@@ -74,7 +57,7 @@ const footerActionVariants = {
   `,
 
   "ghost button with icon": (args) => html`
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost">
       View carbon docs
       ${iconLoader(Launch16, {
         slot: "icon",
@@ -90,21 +73,21 @@ const footerActionVariants = {
   `,
 
   "3 ghost buttons vertical": (args) => html`
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 1
       ${iconLoader(Launch16, {
         slot: "icon",
         style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 2
       ${iconLoader(Launch16, {
         slot: "icon",
         style: "fill: var(--cds-link-primary)",
       })}
     </cds-button>
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+    <cds-button @click=${args.onClick} kind="ghost">
       View Carbon Docs 3
       ${iconLoader(Launch16, {
         slot: "icon",
@@ -122,9 +105,7 @@ const footerActionVariants = {
   `,
 
   "ghost button": (args) => html`
-    <cds-button @click=${args.onClick} class="top-border" kind="ghost">
-      Ghost
-    </cds-button>
+    <cds-button @click=${args.onClick} kind="ghost"> Ghost </cds-button>
   `,
 
   "secondary primary buttons": (args) => html`
@@ -142,6 +123,14 @@ export default {
       description: "Toggle rendering inside <cds-aichat-tile-container>",
     },
     onClick: { action: "onClick" },
+    layered: {
+      control: "boolean",
+      description:
+        "this is a story only control, add `bg-layer` class on tile to make it layered <a target='_blank' href='https://w3.ibm.com/w3publisher/design-for-ai/carbon-for-ai/ai-chat-patterns/patterns#message-anatomy'>more info on layering</a>",
+    },
+  },
+  args: {
+    layered: false,
   },
   decorators: [
     (story, { args }) => html`
@@ -161,7 +150,14 @@ export default {
 
 export const Default = {
   args: { maxWidth: "sm", useWrapper: true },
-  render: () => html`<cds-tile>${tileContent}</cds-tile>`,
+  render: (args) =>
+    html`<cds-tile
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+      data-rounded
+      >${tileContent}</cds-tile
+    >`,
 };
 
 export const WithActions = {
@@ -180,21 +176,33 @@ export const WithActions = {
     },
   },
   render: (args) => {
-    const content = args.footerActions(args);
+    const footerActions = args.footerActions(args);
     const buttonCount = (
-      content?.strings?.join(" ")?.match(/<cds-button\b/g) || []
+      footerActions?.strings?.join(" ")?.match(/<cds-button\b/g) || []
     ).length;
 
     return html`
-      <cds-tile data-testid="clickable-tile">
+      <cds-tile
+        data-rounded
+        data-testid="clickable-tile"
+        class=${classMap({
+          "bg-layer": args.layered,
+        })}
+      >
         ${tileContent}
-        <div
-          ?stacked=${buttonCount > 2}
-          class=${classMap({ "cds--aichat-tile-container-footer": true })}
-          flush
-        >
-          ${content}
-        </div>
+        ${buttonCount !== 0
+          ? html`<div
+              class=${classMap({
+                "cds-aichat--tile-container-footer": true,
+                "margin-top-05": true,
+              })}
+              ?data-stacked=${buttonCount > 2}
+              data-flush="bottom"
+              data-rounded="bottom"
+            >
+              ${footerActions}
+            </div>`
+          : ""}
       </cds-tile>
     `;
   },
@@ -218,7 +226,7 @@ export const WithImage = {
           </cds-button>
         `,
         "ghost button": (args) => html`
-          <cds-button @click=${args.onClick} class="top-border" kind="ghost">
+          <cds-button @click=${args.onClick} kind="ghost">
             Select
             ${iconLoader(ArrowRight16, {
               slot: "icon",
@@ -232,22 +240,39 @@ export const WithImage = {
     },
   },
   render: (args) => {
-    const content = args.footerActions(args);
-    const buttonCount = content?.strings?.[0]?.trim().split("\n").length || 0;
+    const footerActions = args.footerActions(args);
+    const buttonCount =
+      footerActions?.strings?.[0]?.trim().split("\n").length || 0;
 
     return html`
-      <cds-tile>
-        <img class="full-width" src=${defaultImage} alt="image" />
-        ${tileContent}
-        <div
-          class=${classMap({
-            "cds--aichat-tile-container-footer": true,
-            vertical: buttonCount > 2,
-          })}
-          flush
-        >
-          ${content}
+      <cds-tile
+        data-rounded
+        class=${classMap({
+          "bg-layer": args.layered,
+        })}
+      >
+        <div data-flush="top">
+          <img
+            data-rounded="top"
+            class="margin-bottom-05"
+            src=${defaultImage}
+            alt="image"
+          />
         </div>
+        ${tileContent}
+        ${buttonCount !== 0
+          ? html`<div
+              class=${classMap({
+                "cds-aichat--tile-container-footer": true,
+                "margin-top-05": true,
+              })}
+              data-stacked=${buttonCount > 2}
+              data-flush="bottom"
+              data-rounded="bottom"
+            >
+              ${footerActions}
+            </div>`
+          : ""}
       </cds-tile>
     `;
   },
@@ -255,10 +280,14 @@ export const WithImage = {
 
 export const OnlyImage = {
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
-  render: () => html`
+  render: (args) => html`
     <cds-tile
-      ><img class="full-width" src=${defaultImage} alt="image"
-    /></cds-tile>
+      data-rounded
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+      ><div data-flush><img data-rounded src=${defaultImage} alt="image" /></div
+    ></cds-tile>
   `,
 };
 
@@ -271,8 +300,15 @@ export const OnlyImageClickable = {
     },
   },
   render: (args) => html`
-    <cds-clickable-tile @click=${args.onClick} ?disabled=${args.disabled}>
-      <img class="full-width" src=${defaultImage} alt="image" />
+    <cds-clickable-tile
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+      data-rounded
+      @click=${args.onClick}
+      ?disabled=${args.disabled}
+    >
+      <div data-flush><img data-rounded src=${defaultImage} alt="image" /></div>
     </cds-clickable-tile>
   `,
 };
@@ -280,16 +316,24 @@ export const OnlyImageClickable = {
 export const WithAudio = {
   name: "With Audio (iframe)",
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
-  render: () => html`
-    <cds-tile data-testid="clickable-tile">
-      <iframe
-        class="full-width aspect-16-9"
-        scrolling="no"
-        title="audio example"
-        frameborder="no"
-        allow="autoplay"
-        src="https://w.soundcloud.com/player/?url=https://soundcloud.com/kelab-gklm/baby-shark-do-do-do&visual=true&buying=false&liking=false&download=false&sharing=false&show_comments=false&show_playcount=false&callback=true"
-      ></iframe>
+  render: (args) => html`
+    <cds-tile
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+      data-testid="clickable-tile"
+      data-rounded
+    >
+      <div data-flush="top" data-rounded="top" class="margin-bottom-05">
+        <iframe
+          class="full-width aspect-16-9"
+          scrolling="no"
+          title="audio example"
+          frameborder="no"
+          allow="autoplay"
+          src="https://w.soundcloud.com/player/?url=https://soundcloud.com/kelab-gklm/baby-shark-do-do-do&visual=true&buying=false&liking=false&download=false&sharing=false&show_comments=false&show_playcount=false&callback=true"
+        ></iframe>
+      </div>
       <h5 class="body-02">An audio clip from SoundCloud</h5>
       <p class="caption-01 text-secondary">
         This description and the title above are optional.
@@ -300,17 +344,25 @@ export const WithAudio = {
 
 export const OnlyVideo = {
   args: { maxWidth: "md", useWrapper: true, onClick: fn() },
-  render: () => html`
-    <cds-tile data-testid="clickable-tile">
-      <iframe
-        class="full-width aspect-16-9"
-        src="https://www.youtube.com/embed/QuW4_bRHbUk?si=oSsaxYKCvO_gEuzN"
-        title="YouTube video player"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-      ></iframe>
+  render: (args) => html`
+    <cds-tile
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+      data-rounded
+      data-testid="clickable-tile"
+    >
+      <div data-rounded data-flush>
+        <iframe
+          class="full-width aspect-16-9"
+          src="https://www.youtube.com/embed/QuW4_bRHbUk?si=oSsaxYKCvO_gEuzN"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
     </cds-tile>
   `,
 };
@@ -327,7 +379,14 @@ export const Clickable = {
   },
   args: { maxWidth: "sm", useWrapper: true, onClick: fn() },
   render: (args) => html`
-    <cds-clickable-tile @click=${args.onClick} data-testid="clickable-tile">
+    <cds-clickable-tile
+      class=${classMap({
+        "bg-layer": args.layered,
+      })}
+      data-rounded
+      @click=${args.onClick}
+      data-testid="clickable-tile"
+    >
       ${tileContent}
       <br />
       <div
@@ -342,72 +401,5 @@ export const Clickable = {
         ${iconLoader(Link16, { style: "flex: none;" })}
       </div>
     </cds-clickable-tile>
-  `,
-};
-
-export const AssetCard = {
-  args: {
-    maxWidth: "sm",
-    useWrapper: true,
-    aiLabel: true,
-    footerActions: "1 ghost button, 2 ghost icon buttons",
-  },
-  argTypes: {
-    aiLabel: { control: "boolean" },
-    footerActions: {
-      control: "select",
-      options: ["1 ghost button, 2 ghost icon buttons", "none"],
-      mapping: {
-        "1 ghost button, 2 ghost icon buttons": (args) => html`
-          <cds-button
-            class="text-primary"
-            @click=${args.onClick}
-            size="md"
-            kind="ghost"
-            disabled
-          >
-            Viewing
-          </cds-button>
-          <cds-icon-button @click=${args.onClick} kind="ghost">
-            ${iconLoader(Download16, { slot: "icon" })}
-            <span slot="tooltip-content">Icon Description</span>
-          </cds-icon-button>
-          <cds-icon-button @click=${args.onClick} kind="ghost">
-            ${iconLoader(Maximize16, { slot: "icon" })}
-            <span slot="tooltip-content">Icon Description</span>
-          </cds-icon-button>
-        `,
-        none: () => "",
-      },
-      description: "Footer button variations",
-    },
-  },
-  render: (args) => html`
-    <!-- this bg-transparent class may not go well when placed in widget which has background gradient. in such case remove this class and use the same layer token manually -->
-    <cds-tile class="bg-transparent">
-      <h5 class="body-compact-02 margin-bottom-01">Document title</h5>
-      <p class="helper-text-01 text-secondary">Subtitle</p>
-      ${args.aiLabel
-        ? html`<cds-ai-label
-            data-testid="ai-label"
-            autoalign
-            alignment="bottom-left"
-            slot="ai-label"
-          >
-            ${aiContent}
-          </cds-ai-label>`
-        : ""}
-      ${args.footerActions(args)
-        ? html`<div
-            class=${classMap({
-              "cds--aichat-tile-container-footer": true,
-              "top-border": true,
-            })}
-            flush
-          >
-            ${args.footerActions(args)}
-          </div>`
-        : ""}
-    </cds-tile>
   `,
 };

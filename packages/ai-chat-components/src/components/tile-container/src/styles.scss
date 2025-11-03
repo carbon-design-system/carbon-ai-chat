@@ -15,104 +15,36 @@
 
 $carbon-prefix: "cds";
 $prefix: "cds-aichat";
-$class-prefix: "cds--aichat";
 
+// Note: all the inner content must receive 8-1px to account for 1px border. for perfectly rounded corners the inner radius must be 7px.
+
+// Mixins
+@mixin radius($positions...) {
+  @each $pos in $positions {
+    border-#{$pos}-radius: calc(
+      var(--#{$prefix}-tile-border-radius) - rem(1px)
+    );
+  }
+}
+@mixin full-radius {
+  border-radius: calc(var(--#{$prefix}-tile-border-radius) - rem(1px));
+}
+
+// Tile Container
 #{$prefix}-tile-container {
-  .#{$class-prefix}-tile-container-footer {
-    display: flex;
-    justify-content: end;
-    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-
-    &[flush] {
-      margin-block-end: calc(-1 * layout.$spacing-05);
-      margin-block-start: layout.$spacing-05;
-      margin-inline-end: calc(-1 * layout.$spacing-05);
-      margin-inline-start: calc(-1 * layout.$spacing-05);
-    }
-
-    #{$carbon-prefix}-button {
-      inline-size: 100%;
-      max-inline-size: unset;
-    }
-
-    #{$carbon-prefix}-icon-button:last-child::part(button) {
-      border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-    }
-
-    &:not(:has([kind="ghost"])) {
-      background: $button-separator;
-      gap: rem(1px);
-    }
-
-    &[stacked] {
-      flex-direction: column;
-
-      #{$carbon-prefix}-button {
-        &:last-child::part(button),
-        &:only-child::part(button) {
-          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-        }
-      }
-    }
-
-    &:not([stacked]) {
-      #{$carbon-prefix}-button {
-        &:first-child::part(button) {
-          border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-        }
-
-        &:last-child::part(button) {
-          border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-        }
-      }
-    }
-  }
-
-  .top-border {
-    border-block-start: rem(1px) solid theme.$border-subtle;
-  }
-
+  // Tile Elements
   #{$carbon-prefix}-tile,
   #{$carbon-prefix}-clickable-tile {
     img {
       display: block;
       inline-size: 100%;
-    }
-
-    .full-width {
-      inline-size: calc(100% + (2 * layout.$spacing-05));
-      margin-block-start: calc(-1 * layout.$spacing-05);
-      margin-inline-end: calc(-1 * layout.$spacing-05);
-      margin-inline-start: calc(-1 * layout.$spacing-05);
-
-      &:first-child {
-        border-start-end-radius: calc(layout.$spacing-03 - rem(1px));
-        border-start-start-radius: calc(layout.$spacing-03 - rem(1px));
-        margin-block-end: layout.$spacing-05;
-      }
-
-      &:last-child {
-        border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-        border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-      }
-
-      &:only-child {
-        display: flex;
-        margin-block-end: calc(-1 * layout.$spacing-05);
-      }
+      transition: opacity 0.2s ease-in-out;
     }
   }
 
   #{$carbon-prefix}-clickable-tile {
-    &:hover:not([disabled]) img {
-      opacity: 0.8;
-      transition: all 0.2s ease-in-out;
-    }
-
+    &:hover:not([disabled]) img,
     &:focus img {
-      border: 1px solid transparent;
       opacity: 0.8;
     }
 
@@ -122,13 +54,208 @@ $class-prefix: "cds--aichat";
     }
   }
 
+  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
+    cursor: not-allowed;
+  }
+
+  cds-tile,
+  cds-clickable-tile::part(link) {
+    background-color: theme.$layer-background;
+  }
+
+  iframe {
+    display: block;
+  }
+
+  // Toolbar & Footer
+  .#{$prefix}--tile-container-toolbar {
+    display: flex;
+  }
+
+  .#{$prefix}--tile-container-footer {
+    display: flex;
+    justify-content: end;
+
+    #{$carbon-prefix}-button {
+      inline-size: 100%;
+      max-inline-size: unset;
+    }
+
+    // If the footer has only ghost buttons and is not stacked, we have to add border top to the footer (not the buttons)
+    &:not([data-stacked], :not(:has([kind="ghost"]))) {
+      border-block-start: rem(1px) solid theme.$chat-bubble-border;
+    }
+
+    // Not ghost buttons with separator background
+    &:not(:has([kind="ghost"])) {
+      background: $button-separator;
+      gap: rem(1px);
+    }
+
+    &[stacked] {
+      flex-direction: column;
+    }
+  }
+
+  // Rounded corners
+  [data-rounded=""] {
+    @include full-radius;
+
+    > :first-child {
+      @include full-radius;
+    }
+
+    &::part(link) {
+      @include full-radius;
+
+      outline-offset: rem(-1px);
+    }
+  }
+
+  [data-rounded="top"] {
+    @include radius(start-start, start-end);
+
+    > :first-child {
+      @include radius(start-start);
+
+      &::part(button) {
+        @include radius(start-start);
+      }
+    }
+
+    > :last-child {
+      @include radius(start-end);
+
+      &::part(button) {
+        @include radius(start-end);
+      }
+    }
+  }
+
+  [data-rounded="top-left"] {
+    @include radius(start-start);
+
+    :first-child {
+      @include radius(start-start);
+
+      &::part(button) {
+        @include radius(start-start);
+      }
+    }
+  }
+
+  [data-rounded="top-right"] {
+    @include radius(start-end);
+
+    :last-child {
+      @include radius(start-end);
+
+      &::part(button) {
+        @include radius(start-end);
+      }
+    }
+  }
+
+  [data-rounded="bottom"] {
+    @include radius(end-start, end-end);
+
+    [kind="ghost"][data-viewing]::part(button) {
+      align-items: center;
+      justify-content: flex-start;
+      gap: layout.$spacing-03;
+    }
+
+    &:not([data-stacked]) {
+      > :first-child {
+        @include radius(end-start);
+
+        &::part(button) {
+          @include radius(end-start);
+        }
+      }
+
+      > :last-child {
+        @include radius(end-end);
+
+        &::part(button) {
+          @include radius(end-end);
+        }
+      }
+    }
+
+    &[data-stacked] {
+      flex-direction: column;
+
+      // In stacked, is kind is ghost add border top to buttons.
+      [kind="ghost"] {
+        border-block-start: rem(1px) solid theme.$chat-bubble-border;
+      }
+
+      > :last-child {
+        @include radius(end-start, end-end);
+
+        &::part(button) {
+          @include radius(end-start, end-end);
+        }
+      }
+    }
+  }
+
+  [data-rounded="bottom-left"] {
+    @include radius(end-start);
+
+    :first-child {
+      @include radius(end-start);
+
+      &::part(button) {
+        @include radius(end-start);
+      }
+    }
+  }
+
+  [data-rounded="bottom-right"] {
+    @include radius(end-end);
+
+    :last-child {
+      @include radius(end-end);
+
+      &::part(button) {
+        @include radius(end-end);
+      }
+    }
+  }
+
+  // Flush Modifiers
+  [data-flush=""] {
+    margin: calc(-1 * layout.$spacing-05);
+  }
+
+  [data-flush="top"] {
+    margin-block-start: calc(-1 * layout.$spacing-05);
+    margin-inline: calc(-1 * layout.$spacing-05);
+  }
+
+  [data-flush="bottom"] {
+    margin-block-end: calc(-1 * layout.$spacing-05);
+    margin-inline: calc(-1 * layout.$spacing-05);
+  }
+
+  // Utility Classes (Typography, Colors, Layout)
   // Typography
+  .body-compact-01 {
+    @include type.type-style("body-compact-01");
+  }
+
   .body-compact-02 {
     @include type.type-style("body-compact-02");
   }
 
   .helper-text-01 {
     @include type.type-style("helper-text-01");
+  }
+
+  .label-01 {
+    @include type.type-style("label-01");
   }
 
   .body-01 {
@@ -148,6 +275,10 @@ $class-prefix: "cds--aichat";
   }
 
   // Colors & Utilities
+  .text-primary {
+    color: theme.$text-primary;
+  }
+
   .text-secondary {
     color: theme.$text-secondary;
   }
@@ -156,45 +287,114 @@ $class-prefix: "cds--aichat";
     color: theme.$link-secondary;
   }
 
+  // Spacing Utilities
   .margin-bottom-01 {
     margin-block-end: layout.$spacing-01;
+  }
+
+  .margin-bottom-02 {
+    margin-block-end: layout.$spacing-02;
+  }
+
+  .margin-bottom-03 {
+    margin-block-end: layout.$spacing-03;
   }
 
   .margin-bottom-04 {
     margin-block-end: layout.$spacing-04;
   }
 
+  .margin-bottom-05 {
+    margin-block-end: layout.$spacing-05;
+  }
+
+  .margin-top-01 {
+    margin-block-start: layout.$spacing-01;
+  }
+
+  .margin-top-02 {
+    margin-block-start: layout.$spacing-02;
+  }
+
+  .margin-top-03 {
+    margin-block-start: layout.$spacing-03;
+  }
+
+  .margin-top-04 {
+    margin-block-start: layout.$spacing-04;
+  }
+
+  .margin-top-05 {
+    margin-block-start: layout.$spacing-05;
+  }
+
+  .margin-block-04 {
+    margin-block: layout.$spacing-04;
+  }
+
+  .padding-block-04 {
+    padding-block: layout.$spacing-04;
+  }
+
+  .padding-inline {
+    padding-inline: layout.$spacing-05;
+  }
+
+  // Layout
+  .flex-1 {
+    flex: 1;
+  }
+
+  .align-content-center {
+    align-content: center;
+  }
+
+  .display-flex {
+    display: flex;
+  }
+
+  .no-wrap {
+    white-space: nowrap;
+  }
+
+  // Sizing
+  .inline-size-08 {
+    inline-size: layout.$spacing-08;
+  }
+
+  .block-size-08 {
+    block-size: layout.$spacing-08;
+  }
+
+  // Gaps
+  .gap-05 {
+    gap: layout.$spacing-05;
+  }
+
+  // Borders
+  .border-top {
+    border-block-start: rem(1px) solid theme.$chat-bubble-border;
+  }
+
+  .border-bottom {
+    border-block-end: rem(1px) solid theme.$chat-bubble-border;
+  }
+
+  // Backgrounds
   .bg-transparent {
     background-color: transparent;
   }
 
+  .bg-layer {
+    background-color: theme.$layer;
+
+    &::part(link) {
+      background-color: theme.$layer;
+    }
+  }
+
+  // Aspect Ratio
   .aspect-16-9 {
     aspect-ratio: 16 / 9;
-  }
-
-  .text-primary {
-    color: theme.$text-primary;
-  }
-
-  #{$carbon-prefix}-clickable-tile:first-child::part(link),
-  #{$carbon-prefix}-tile:first-child {
-    border-start-end-radius: calc(layout.$spacing-03 - rem(1px));
-    border-start-start-radius: calc(layout.$spacing-03 - rem(1px));
-  }
-
-  #{$carbon-prefix}-clickable-tile:last-child::part(link),
-  #{$carbon-prefix}-tile:last-child {
-    border-end-end-radius: calc(layout.$spacing-03 - rem(1px));
-    border-end-start-radius: calc(layout.$spacing-03 - rem(1px));
-  }
-
-  #{$carbon-prefix}-clickable-tile:only-child::part(link),
-  #{$carbon-prefix}-tile:only-child {
-    border-radius: calc(layout.$spacing-03 - rem(1px));
-    outline-offset: -1px;
-  }
-
-  &:has(#{$carbon-prefix}-clickable-tile[disabled]) {
-    cursor: not-allowed;
   }
 }

@@ -16,7 +16,7 @@
 
 import { fileURLToPath } from "url";
 import { globby } from "globby";
-import { rollup } from "rollup";
+import { rollup, watch } from "rollup";
 import alias from "@rollup/plugin-alias";
 import autoprefixer from "autoprefixer";
 import commonjs from "@rollup/plugin-commonjs";
@@ -30,6 +30,7 @@ import typescript from "@rollup/plugin-typescript";
 
 const packageJson = JSON.parse(readFileSync("./package.json"));
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const watchMode = process.argv.includes("--watch");
 
 async function build() {
   const esInputs = await globby([
@@ -64,17 +65,42 @@ async function build() {
       outputDirectory,
     );
 
-    const cwcBundle = await rollup(cwcInputConfig);
+    if (watchMode) {
+      const watcher = watch({
+        ...cwcInputConfig,
+        output: {
+          dir: outputDirectory,
+          format: format.type,
+          preserveModules: true,
+          preserveModulesRoot: "src",
+          banner,
+          exports: "named",
+          sourcemap: true,
+        },
+      });
 
-    await cwcBundle.write({
-      dir: outputDirectory,
-      format: format.type,
-      preserveModules: true,
-      preserveModulesRoot: "src",
-      banner,
-      exports: "named",
-      sourcemap: true,
-    });
+      watcher.on("event", (event) => {
+        if (event.code === "START") {
+          console.log("Building ai-chat-components...");
+        } else if (event.code === "END") {
+          console.log("Build complete");
+        } else if (event.code === "ERROR") {
+          console.error("Build error:", event.error);
+        }
+      });
+    } else {
+      const cwcBundle = await rollup(cwcInputConfig);
+
+      await cwcBundle.write({
+        dir: outputDirectory,
+        format: format.type,
+        preserveModules: true,
+        preserveModulesRoot: "src",
+        banner,
+        exports: "named",
+        sourcemap: true,
+      });
+    }
   }
 }
 

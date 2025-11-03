@@ -1,7 +1,6 @@
 {
   "name": "@carbon/ai-chat-components",
-  "version": "0.2.1",
-  "private": true,
+  "version": "0.3.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -27,10 +26,11 @@
     "telemetry.yml"
   ],
   "scripts": {
-    "build": "npm run clean && npm run custom-elements && node tasks/build.js && node tasks/build-dist.js",
+    "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
     "clean": "rimraf es dist storybook-static",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
+    "start": "concurrently \"npm run storybook\" \"node tasks/build.js --watch\"",
     "storybook": "npm run custom-elements && storybook dev -p 6006",
     "storybook:build": "npm run custom-elements && storybook build",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
@@ -43,6 +43,7 @@
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.8",
     "lit": "^3.0.0",
+    "lodash-es": "^4.17.0",
     "tslib": "^2.6.3"
   },
   "devDependencies": {
@@ -70,6 +71,7 @@
     "@web/test-runner": "0.19.0",
     "@web/test-runner-playwright": "^0.11.0",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.2.0",
     "globby": "^15.0.0",
     "playwright": "^1.48.1",
     "react": "^19.0.0",

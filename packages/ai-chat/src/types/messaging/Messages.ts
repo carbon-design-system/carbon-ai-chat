@@ -269,13 +269,6 @@ enum MessageResponseTypes {
   DATE = "date",
 
   /**
-   * Displays a table of data to the user.
-   *
-   * @experimental
-   */
-  TABLE = "table",
-
-  /**
    * Displays a general error message to the user and include developer info to be logged and to debug.
    */
   INLINE_ERROR = "inline_error",
@@ -661,7 +654,6 @@ type GenericItem<TUserDefinedType = Record<string, unknown>> =
   | VideoItem<TUserDefinedType>
   | AudioItem<TUserDefinedType>
   | DateItem<TUserDefinedType>
-  | TableItem<TUserDefinedType>
   | InlineErrorItem<TUserDefinedType>
   | CardItem<TUserDefinedType>
   | CarouselItem<TUserDefinedType>
@@ -1407,54 +1399,6 @@ type DateItem<TUserDefinedType = Record<string, unknown>> =
 /**
  * @category Messaging
  */
-type TableItemCell = string | number;
-
-/**
- * A table item returned in a message response from an assistant. This response type is used when displaying a table of data to the user.
- * The content of the table is up to the client and is authored using json.
- *
- * @category Messaging
- *
- * @experimental
- */
-interface TableItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
-  /**
-   * Optional title for the table.
-   */
-  title?: string;
-
-  /**
-   * Optional description of the table.
-   */
-  description?: string;
-
-  /**
-   * The array of headers for the table.
-   */
-  headers: TableItemCell[];
-
-  /**
-   * The array of row objects for the table.
-   */
-  rows: TableItemRow[];
-}
-
-/**
- * @category Messaging
- *
- * @experimental
- */
-interface TableItemRow {
-  /**
-   * Data for a specific cell.
-   */
-  cells: TableItemCell[];
-}
-
-/**
- * @category Messaging
- */
 interface Chunk {
   /**
    * Additional metadata associated with the stream.
@@ -1815,9 +1759,6 @@ export {
   PartialItemChunk,
   PauseItem,
   StreamChunk,
-  TableItem,
-  TableItemCell,
-  TableItemRow,
   TextItem,
   UserDefinedItem,
   VerticalCellAlignment,
