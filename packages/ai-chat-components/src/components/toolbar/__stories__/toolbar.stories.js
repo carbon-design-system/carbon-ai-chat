@@ -52,7 +52,7 @@ export default {
     control: "boolean",
     type: { name: "boolean" },
     description:
-      "When set to true, removes the default internal padding or margin of the component, allowing its content to sit 'flush' against the component's edge.",
+      "When set to true, removes the default internal padding of the component, allowing its content to sit 'flush' against the component's edge.",
   },
   decorators: [
     (story) => html`
