@@ -26,10 +26,13 @@ $css--plex: true !default;
   padding: rem(8px) rem(8px) rem(8px) rem(32px);
   border: solid rem(1px) theme.$border-subtle-01;
   grid-auto-flow: column;
-
   .#{$prefix}-toolbar__title {
     color: theme.$text-secondary;
   }
+}
+
+:host(.#{$prefix}-toolbar--flushed) {
+  padding: 0;
 }
 
 :host(#{$prefix}-notification) {
