@@ -37,12 +37,12 @@ export class DemoLayoutSwitcher extends LitElement {
       title-text="Layout"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
-      <cds-dropdown-item value="float">Float</cds-dropdown-item>
-      <cds-dropdown-item value="sidebar">Sidebar</cds-dropdown-item>
       <cds-dropdown-item value="fullscreen">Fullscreen</cds-dropdown-item>
       <cds-dropdown-item value="fullscreen-no-gutter"
         >Full w/hasContentMaxWidth: false</cds-dropdown-item
       >
+      <cds-dropdown-item value="sidebar">Sidebar</cds-dropdown-item>
+      <cds-dropdown-item value="float">Float</cds-dropdown-item>
     </cds-dropdown>`;
   }
 }
