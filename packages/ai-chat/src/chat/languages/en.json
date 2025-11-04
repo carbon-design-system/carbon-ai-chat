@@ -1,4 +1,5 @@
 {
+  "ai_slug_label": "AI explained",
   "ai_slug_title": "Powered by IBM watsonx",
   "ai_slug_description": "IBM watsonx is powered by the latest AI models to intelligently process conversations and provide help whenever and wherever you may need it.",
   "components_overflow_ariaLabel": "Open and close list of options",
