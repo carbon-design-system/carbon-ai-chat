@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-components",
-  "version": "0.3.0",
+  "version": "0.4.0-rc.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -57,8 +57,8 @@
     "@isaacs/brace-expansion": "^5.0.0",
     "@mordech/vite-lit-loader": "^0.37.0",
     "@open-wc/testing": "4.0.0",
-    "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.1",
     "@rollup/plugin-terser": "^0.4.4",
