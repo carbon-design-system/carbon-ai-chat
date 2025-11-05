@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { customElement } from "lit/decorators.js";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
+import { PropertyValues } from "lit";
 import chatButton from "./src/chat-button.template.js";
 import {
   BUTTON_KIND,
@@ -24,26 +24,34 @@ class ChatButton extends chatButton {
   /**
    * Specify whether the `ChatButton` should be rendered as a quick action button
    */
-  @property({ attribute: "is-quick-action", type: Boolean })
+  @property({ type: Boolean, attribute: "is-quick-action" })
   isQuickAction = false;
 
-  connectedCallback(): void {
-    super.connectedCallback();
+  private readonly allowedSizes: BUTTON_SIZE[] = [
+    BUTTON_SIZE.SMALL,
+    BUTTON_SIZE.MEDIUM,
+    BUTTON_SIZE.LARGE,
+  ];
 
-    const allowedSizes = [
-      BUTTON_SIZE.SMALL,
-      BUTTON_SIZE.MEDIUM,
-      BUTTON_SIZE.LARGE,
-    ];
+  protected willUpdate(changedProps: PropertyValues<this>): void {
+    if (changedProps.has("isQuickAction") || changedProps.has("size")) {
+      this._normalizeButtonState();
+    }
+  }
 
+  private _normalizeButtonState(): void {
     if (this.isQuickAction) {
       this.kind = BUTTON_KIND.GHOST;
       this.size = BUTTON_SIZE.SMALL;
-    } else {
-      // Do not allow size larger than `lg`
-      this.size = allowedSizes.includes(this.size as BUTTON_SIZE)
-        ? this.size
-        : BUTTON_SIZE.LARGE;
+      return;
+    }
+    // Do not allow size larger than `lg`
+    if (!this.allowedSizes.includes(this.size as BUTTON_SIZE)) {
+      this.size = BUTTON_SIZE.LARGE;
+    }
+
+    if (!Object.values(BUTTON_KIND).includes(this.kind as BUTTON_KIND)) {
+      this.kind = BUTTON_KIND.PRIMARY;
     }
   }
 }

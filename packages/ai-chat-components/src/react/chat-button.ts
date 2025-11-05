@@ -9,14 +9,28 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
+import {
+  BUTTON_KIND,
+  BUTTON_TYPE,
+  BUTTON_SIZE,
+  BUTTON_TOOLTIP_ALIGNMENT,
+  BUTTON_TOOLTIP_POSITION,
+} from "@carbon/web-components/es/components/button/defs.js";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import ChatButton from "../components/chat-button/chat-button.js";
+import AIChatButton from "../components/chat-button/chat-button.js";
 
-const Button = createComponent({
+const ChatButton = createComponent({
   tagName: "cds-aichat-button",
-  elementClass: ChatButton,
+  elementClass: AIChatButton,
   react: React,
 });
 
-export default Button;
+export default ChatButton;
+export {
+  BUTTON_KIND,
+  BUTTON_TYPE,
+  BUTTON_SIZE,
+  BUTTON_TOOLTIP_ALIGNMENT,
+  BUTTON_TOOLTIP_POSITION,
+};

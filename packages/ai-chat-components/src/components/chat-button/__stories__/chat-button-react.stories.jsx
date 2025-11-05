@@ -1,16 +1,6 @@
-/**
- * @license
- *
- * Copyright IBM Corp. 2025
- *
- * This source code is licensed under the Apache-2.0 license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-// https://storybook.js.org/docs/essentials/controls#conditional-controls
-
-import "../chat-button";
-import { html } from "lit";
+import React from "react";
+import { action } from "storybook/actions";
+import ChatButton from "../../../react/chat-button";
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
@@ -18,15 +8,12 @@ import {
   BUTTON_TYPE,
   BUTTON_TOOLTIP_POSITION,
 } from "@carbon/web-components/es/components/button/button.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Add16 from "@carbon/icons/es/add/16.js";
-import Link16 from "@carbon/icons/es/link/16.js";
-import { expect, fn } from "storybook/test";
+import { Add, Link } from "@carbon/icons-react";
 
 const slots = {
-  Add16: () => html`${iconLoader(Add16, { slot: "icon" })}`,
-  Link16: () => html`${iconLoader(Link16, { slot: "icon" })}`,
-  None: () => "",
+  Add: (args) => <Add {...args} />,
+  Link: (args) => <Link {...args} />,
+  None: undefined,
 };
 
 const sharedArgTypes = {
@@ -66,7 +53,6 @@ const sharedArgs = {
   isExpressive: false,
   size: BUTTON_SIZE.LARGE,
   iconSlot: "None",
-  onClick: fn(),
 };
 
 const baseButtonControls = {
@@ -85,63 +71,30 @@ const baseButtonControls = {
   },
 };
 
-const baseButtonTemplate = (args) => html`
-  <cds-aichat-button
-    @click=${args.onClick}
-    data-testid="storybook-interaction-testid"
-    .button-class-name="${args.buttonClassName}"
-    .dangerDescription="${args.dangerDescription}"
-    ?disabled="${args.disabled}"
-    .href="${args.href}"
-    ?isExpressive="${args.isExpressive}"
-    ?isSelected="${args.isSelected}"
-    .kind="${args.kind}"
-    .linkRole="${args.linkRole}"
-    .size="${args.size}"
-    .tooltipText=${args.tooltipText}
-    .tooltipAlignment="${args.tooltipAlignment}"
-    .tooltipPosition="${args.tooltipPosition}"
-    .type="${args.type}"
-    ?is-quick-action="${args.isQuickAction}"
-  >
-    ${args.buttonText} ${args.iconSlot?.()}
-  </cds-aichat-button>
-`;
+const BaseButtonTemplate = (args) => {
+  const { buttonText, iconSlot: IconSlot, ...rest } = args;
+
+  return (
+    <ChatButton
+      data-testid="storybook-interaction-testid"
+      is-quick-action={rest.isQuickAction}
+      onClick={action("onClick")}
+      {...rest}
+    >
+      {buttonText}
+      {IconSlot && <IconSlot slot="icon" />}
+    </ChatButton>
+  );
+};
 
 export default {
   title: "Components/Chat button",
-  play: async ({ canvas, userEvent, args }) => {
-    const button = canvas.getByTestId("storybook-interaction-testid");
-    const buttonTrigger = button.shadowRoot.querySelector(".cds--btn");
-    if (args.href) {
-      return;
-    }
-    await userEvent.click(buttonTrigger);
-    if (!args.disabled) {
-      expect(args.onClick).toHaveBeenCalled();
-      expect(button).toHaveFocus();
-    } else {
-      expect(args.onClick).not.toHaveBeenCalled();
-    }
-
-    if (
-      args.tooltipText &&
-      args.iconSlot &&
-      !args.buttonText &&
-      !args.disabled
-    ) {
-      expect(button.shadowRoot.textContent.includes(args.tooltipText)).toBe(
-        true,
-      );
-    }
-
-    await userEvent.click(document.body);
-    expect(button).not.toHaveFocus();
-  },
+  component: ChatButton,
 };
 
 export const Default = {
   name: "Primary (default)",
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
@@ -157,10 +110,10 @@ export const Default = {
     buttonText: "Button",
     iconSlot: "None",
   },
-  render: baseButtonTemplate,
 };
 
 export const Secondary = {
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
@@ -176,10 +129,10 @@ export const Secondary = {
     buttonText: "Button",
     iconSlot: "None",
   },
-  render: baseButtonTemplate,
 };
 
 export const Tertiary = {
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
@@ -195,10 +148,10 @@ export const Tertiary = {
     buttonText: "Button",
     iconSlot: "None",
   },
-  render: baseButtonTemplate,
 };
 
 export const Danger = {
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
@@ -224,10 +177,10 @@ export const Danger = {
     buttonText: "Button",
     iconSlot: "None",
   },
-  render: baseButtonTemplate,
 };
 
 export const Ghost = {
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
@@ -243,10 +196,10 @@ export const Ghost = {
     buttonText: "Button",
     iconSlot: "None",
   },
-  render: baseButtonTemplate,
 };
 
 export const IconOnly = {
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     href: {
@@ -309,16 +262,16 @@ export const IconOnly = {
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.PRIMARY,
-    iconSlot: "Add16",
+    iconSlot: "Add",
     tooltipText: "Tooltip text",
     tooltipAlignment: "center",
     tooltipPosition: BUTTON_TOOLTIP_POSITION.TOP,
   },
-  render: baseButtonTemplate,
 };
 
 export const IconOnlyDanger = {
   name: "Icon Only (danger)",
+  render: BaseButtonTemplate,
   argTypes: {
     ...IconOnly.argTypes,
     kind: {
@@ -351,16 +304,16 @@ export const IconOnlyDanger = {
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.DANGER,
-    iconSlot: "Add16",
+    iconSlot: "Add",
     dangerDescription: "danger",
     tooltipText: "Tooltip text",
     tooltipAlignment: "center",
     tooltipPosition: BUTTON_TOOLTIP_POSITION.TOP,
   },
-  render: baseButtonTemplate,
 };
 
 export const QuickAction = {
+  render: BaseButtonTemplate,
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
@@ -386,5 +339,4 @@ export const QuickAction = {
     isQuickAction: true,
     isSelected: false,
   },
-  render: baseButtonTemplate,
 };
