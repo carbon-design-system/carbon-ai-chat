@@ -85,7 +85,7 @@ function SelectComponent(props: SelectProps) {
     }
   };
 
-  const handleBeingSelected = (e: SelectionEvent) => {
+  const handleSelected = (e: SelectionEvent) => {
     const label = e.detail.item.textContent;
     const text = e.detail.item.value;
 
@@ -135,7 +135,7 @@ function SelectComponent(props: SelectProps) {
           disabled={disableUserInputs}
           onToggled={handleToggle}
           onKeyDown={handleKeyDown}
-          onBeingSelected={handleBeingSelected}
+          onSelected={handleSelected}
         >
           {options.map((option) => (
             <DropdownItem
