@@ -10,7 +10,7 @@
 import "./src/cds-aichat-chain-of-thought.js";
 
 export { default } from "./src/cds-aichat-chain-of-thought.js";
-export { ChainOfThoughtElement } from "./src/ChainOfThoughtElement.js";
+export { ChainOfThoughtElement } from "./src/chain-of-thought.js";
 export {
   type ChainOfThoughtOnToggle,
   type ChainOfThoughtStep,

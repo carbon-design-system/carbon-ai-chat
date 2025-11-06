@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { TokenTree } from "../markdownTokenTree";
+import type { TokenTree } from "../markdown-token-tree";
 
 // Default localization functions for table pagination
 export const DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT = ({

@@ -10,4 +10,4 @@
 import "./src/cds-aichat-feedback-buttons.js";
 
 export { default } from "./src/cds-aichat-feedback-buttons.js";
-export { FeedbackButtonsElement } from "./src/FeedbackButtonsElement.js";
+export { FeedbackButtonsElement } from "./src/feedback-buttons.js";

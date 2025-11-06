@@ -14,4 +14,4 @@ export {
   FeedbackElement,
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
-} from "./src/FeedbackElement.js";
+} from "./src/feedback.js";

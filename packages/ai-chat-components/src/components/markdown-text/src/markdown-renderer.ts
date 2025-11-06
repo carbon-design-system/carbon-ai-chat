@@ -26,10 +26,10 @@ import {
   DEFAULT_PAGINATION_STATUS_TEXT,
   DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
   extractTableData,
-} from "./utils/tableTokenHelpers";
-import type { TableCellData } from "./utils/tableTokenHelpers";
-import { combineConsecutiveHtmlInline } from "./utils/htmlInlineHelpers";
-import type { TokenTree } from "./markdownTokenTree";
+} from "./utils/tableTokenHelpers.js";
+import type { TableCellData } from "./utils/tableTokenHelpers.js";
+import { combineConsecutiveHtmlInline } from "./utils/htmlInlineHelpers.js";
+import type { TokenTree } from "./markdown-token-tree.js";
 
 // Generic attribute spread for Lit templates
 class SpreadAttrs extends Directive {
