@@ -13,8 +13,8 @@ import { property, state } from "lit/decorators.js";
 import { debounce } from "lodash-es";
 import { carbonElement } from "../../../globals/decorators";
 import { tableTemplate } from "./table.template";
-import { tablePaginationTemplate } from "./tablePagination.template";
-import { tableSkeletonTemplate } from "./tableSkeleton.template";
+import { tablePaginationTemplate } from "./table-pagination.template";
+import { tableSkeletonTemplate } from "./table-skeleton.template";
 // @ts-ignore
 import styles from "./table.scss?lit";
 

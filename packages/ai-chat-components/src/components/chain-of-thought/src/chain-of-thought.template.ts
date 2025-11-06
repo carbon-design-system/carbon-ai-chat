@@ -22,7 +22,7 @@ import {
   ChainOfThoughtStepStatus,
   type ChainOfThoughtStepWithToggle,
 } from "./types.js";
-import { parseUnknownDataToMarkdown } from "./parseUnknownDataToMarkdown.js";
+import { parseUnknownDataToMarkdown } from "./parse-unknown-data-to-markdown.js";
 
 const CSS_CLASS_ITEM_PREFIX = `${prefix}--chain-of-thought-item`;
 const CSS_CLASS_STATUS_PREFIX = `${prefix}--chain-of-thought-accordion-item-header-status`;
