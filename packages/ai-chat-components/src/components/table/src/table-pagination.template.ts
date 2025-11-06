@@ -68,15 +68,6 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     (pageSize) => pageSize < totalRows,
   );
 
-  // TODO TABLE: This component is quite wide. Because of the shadow DOM we can't select it's contents to hide items
-  // with css, nor can we extend this class to manipulate it's styles because of Carbon's use of :host(cds-pagination)
-  // within their styles. There is however a smaller variation of this component
-  // (https://carbondesignsystem.com/components/pagination/usage/#responsive-behavior) but it's only used at a specific
-  // breakpoint, when the viewport is narrow (i.e. a mobile device). A Carbon enhancement request has been made to
-  // expose a prop that can be used to enable this smaller variation
-  // (https://github.com/carbon-design-system/carbon/issues/17564). When that enhancement is done, and we can
-  // dynamically enable a narrow form factor of this pagination component, then we could use the same css trick we used
-  // for the header to make the pagination component sticky (if the carbon component doesn't already do it for us).
   return html`<cds-pagination
     page-size=${currentPageSize}
     page=${currentPageNumber}
