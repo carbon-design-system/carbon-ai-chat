@@ -14,7 +14,7 @@ import CDSChatFeedbackElement from "../components/feedback/src/cds-aichat-feedba
 import {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
-} from "../components/feedback/src/FeedbackElement.js";
+} from "../components/feedback/src/feedback.js";
 
 const Feedback = createComponent({
   tagName: "cds-aichat-feedback",

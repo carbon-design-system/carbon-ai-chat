@@ -8,8 +8,8 @@
  */
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import MarkdownElement from "./MarkdownElement.js";
-import { markdownTextTemplate } from "./markdownElement.template.js";
+import MarkdownElement from "./markdown.js";
+import { markdownTextTemplate } from "./markdown.template.js";
 // @ts-ignore
 import styles from "./markdownText.scss?lit";
 
