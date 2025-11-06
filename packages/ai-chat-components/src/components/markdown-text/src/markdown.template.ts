@@ -9,7 +9,7 @@
 
 import { html } from "lit";
 
-import MarkdownElement from "./MarkdownElement.js";
+import MarkdownElement from "./markdown.js";
 
 function markdownTextTemplate(customElementClass: MarkdownElement) {
   const { renderedContent } = customElementClass;

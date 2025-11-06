@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { TokenTree } from "../markdownTokenTree";
+import type { TokenTree } from "../markdown-token-tree";
 
 // HTML elements that never ship closing tags; treat them as self-closing so the stack logic does not wait for </tag>.
 const SELF_CLOSING_HTML_TAGS = new Set<string>([

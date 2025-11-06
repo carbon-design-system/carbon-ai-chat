@@ -8,8 +8,8 @@
  */
 
 import { carbonElement } from "../../../globals/decorators/index.js";
-import { ChainOfThoughtElement } from "./ChainOfThoughtElement.js";
-import { chainOfThoughtElementTemplate } from "./chainOfThoughtElement.template.js";
+import { ChainOfThoughtElement } from "./chain-of-thought.js";
+import { chainOfThoughtElementTemplate } from "./chain-of-thought.template.js";
 
 const CHAIN_OF_THOUGHT_COMPONENT_TAG_NAME = "cds-aichat-chain-of-thought";
 

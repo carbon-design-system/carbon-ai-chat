@@ -17,7 +17,7 @@ import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
 import { html } from "lit";
 
 import prefix from "../../../globals/settings.js";
-import { ChainOfThoughtElement } from "./ChainOfThoughtElement.js";
+import { ChainOfThoughtElement } from "./chain-of-thought.js";
 import {
   ChainOfThoughtStepStatus,
   type ChainOfThoughtStepWithToggle,

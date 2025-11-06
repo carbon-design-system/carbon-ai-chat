@@ -17,7 +17,7 @@ import "@carbon/web-components/es/components/textarea/index.js";
 import { html } from "lit";
 
 import prefix from "../../../globals/settings.js";
-import { FeedbackElement } from "./FeedbackElement.js";
+import { FeedbackElement } from "./feedback.js";
 
 // The maximum number of characters the user is allowed to type into the text area.
 const MAX_TEXT_COUNT = 1000;

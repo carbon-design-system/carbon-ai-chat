@@ -8,7 +8,7 @@
  */
 
 import { carbonElement } from "../../../globals/decorators/index.js";
-import { FeedbackElement } from "./FeedbackElement.js";
+import { FeedbackElement } from "./feedback.js";
 import { feedbackElementTemplate } from "./feedbackElement.template.js";
 
 const FEEDBACK_COMPONENT_TAG_NAME = "cds-aichat-feedback";
