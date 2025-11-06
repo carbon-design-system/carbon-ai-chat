@@ -10,7 +10,7 @@
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView } from "codemirror";
 import { LanguageSupport } from "@codemirror/language";
-import { createCarbonTheme } from "../../../../globals/codemirror/theme.js";
+import { createCarbonTheme } from "./theme.js";
 import {
   baseCodeMirrorSetup,
   type BaseCodeMirrorSetupOptions,

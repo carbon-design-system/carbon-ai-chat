@@ -22,8 +22,8 @@ import { Extension } from "@codemirror/state";
 import {
   createCarbonFoldMarker,
   carbonFoldMarkerKeyHandler,
-} from "../../../../globals/codemirror/marker-utils.js";
-import { createCarbonHighlightStyle } from "../../../../globals/codemirror/theme.js";
+} from "./marker-utils.js";
+import { createCarbonHighlightStyle } from "./theme.js";
 
 export interface BaseCodeMirrorSetupOptions {
   foldCollapseLabel?: string;
