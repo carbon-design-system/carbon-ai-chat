@@ -13,7 +13,7 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import StopFilled16 from "@carbon/icons/es/stop--filled/16.js";
 import { html } from "lit";
 
-import { prefix } from "../../../settings";
+import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { StopStreamingButtonElement } from "./StopStreamingButtonElement";
 import {
   BUTTON_KIND,

@@ -7,20 +7,17 @@
  *  @license
  */
 
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { FeedbackButtonsElement } from "./src/FeedbackButtonsElement";
-import { feedbackButtonsElementTemplate } from "./src/feedbackButtonsElement.template";
+import { carbonElement } from "../../../globals/decorators/index.js";
+import { FeedbackButtonsElement } from "./FeedbackButtonsElement.js";
+import { feedbackButtonsElementTemplate } from "./feedbackButtonsElement.template.js";
 
-const FEEDBACK_BUTTONS_COMPONENT_TAG_NAME = `cds-aichat-feedback-buttons`;
+const FEEDBACK_BUTTONS_COMPONENT_TAG_NAME = "cds-aichat-feedback-buttons";
 
 /**
  * This class is used to display two feedback buttons (thumbs up and thumbs down).
  */
 @carbonElement(FEEDBACK_BUTTONS_COMPONENT_TAG_NAME)
 class CDSChatFeedbackButtonsElement extends FeedbackButtonsElement {
-  /**
-   * Renders the template while passing in class functionality.
-   */
   render() {
     return feedbackButtonsElementTemplate(this);
   }
