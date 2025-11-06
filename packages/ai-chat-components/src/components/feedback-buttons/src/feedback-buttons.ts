@@ -10,7 +10,7 @@
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
 // @ts-ignore
-import styles from "./feedbackButtonsElement.scss?lit";
+import styles from "./feedback-buttons.scss?lit";
 
 class FeedbackButtonsElement extends LitElement {
   static styles = styles;

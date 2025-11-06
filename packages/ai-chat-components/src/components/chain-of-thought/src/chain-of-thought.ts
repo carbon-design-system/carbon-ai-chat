@@ -10,7 +10,7 @@
 import { LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 // @ts-ignore
-import styles from "./chainOfThoughtElement.scss?lit";
+import styles from "./chain-of-thought.scss?lit";
 import {
   type ChainOfThoughtOnToggle,
   type ChainOfThoughtStep,
