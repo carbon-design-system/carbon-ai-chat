@@ -10,7 +10,7 @@
 import { LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 // @ts-ignore
-import styles from "./feedbackElement.scss?lit";
+import styles from "./feedback.scss?lit";
 
 /**
  * The component for displaying a panel requesting feedback from a user.

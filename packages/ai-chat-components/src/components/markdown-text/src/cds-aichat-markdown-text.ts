@@ -11,7 +11,7 @@ import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import MarkdownElement from "./markdown.js";
 import { markdownTextTemplate } from "./markdown.template.js";
 // @ts-ignore
-import styles from "./markdownText.scss?lit";
+import styles from "./markdown.scss?lit";
 
 @carbonElement("cds-aichat-markdown-text")
 class CDSChatMarkdownElement extends MarkdownElement {
