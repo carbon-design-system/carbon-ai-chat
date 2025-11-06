@@ -11,7 +11,7 @@ import "@carbon/web-components/es/components/pagination/index.js";
 import "@carbon/web-components/es/components/select/index.js";
 
 import { html } from "lit";
-import type { TableRowContent } from "../cds-aichat-table";
+import { TableRowContent } from "./cds-aichat-table.js";
 
 // Import only the constants, not the class
 const POSSIBLE_PAGE_SIZES = [5, 10, 15, 20, 50];

@@ -9,7 +9,7 @@
 
 import { type CDSTableRow } from "@carbon/web-components";
 import { TemplateResult, LitElement, PropertyValues, html } from "lit";
-import { property, state } from "lit/decorators";
+import { property, state } from "lit/decorators.js";
 import { debounce } from "lodash-es";
 import { carbonElement } from "../../../globals/decorators";
 import { tableTemplate } from "./table.template";
@@ -17,7 +17,6 @@ import { tablePaginationTemplate } from "./tablePagination.template";
 import { tableSkeletonTemplate } from "./tableSkeleton.template";
 // @ts-ignore
 import styles from "./table.scss?lit";
-
 
 export interface TableCellContent {
   text: string;
