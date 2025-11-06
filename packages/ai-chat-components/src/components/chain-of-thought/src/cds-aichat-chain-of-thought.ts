@@ -7,20 +7,17 @@
  *  @license
  */
 
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { ChainOfThoughtElement } from "./src/ChainOfThoughtElement";
-import { chainOfThoughtElementTemplate } from "./src/chainOfThoughtElement.template";
+import { carbonElement } from "../../../globals/decorators/index.js";
+import { ChainOfThoughtElement } from "./ChainOfThoughtElement.js";
+import { chainOfThoughtElementTemplate } from "./chainOfThoughtElement.template.js";
 
-const CHAIN_OF_THOUGHT_COMPONENT_TAG_NAME = `cds-aichat-chain-of-thought`;
+const CHAIN_OF_THOUGHT_COMPONENT_TAG_NAME = "cds-aichat-chain-of-thought";
 
 /**
- * This class is used to display two feedback buttons (thumbs up and thumbs down).
+ * Custom element wrapper that wires the template to the base element implementation.
  */
 @carbonElement(CHAIN_OF_THOUGHT_COMPONENT_TAG_NAME)
 class CDSChatChainOfThoughtElement extends ChainOfThoughtElement {
-  /**
-   * Renders the template while passing in class functionality.
-   */
   render() {
     return chainOfThoughtElementTemplate(this);
   }

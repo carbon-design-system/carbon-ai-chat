@@ -7,25 +7,34 @@
  *  @license
  */
 
-import { css, LitElement, PropertyValues, unsafeCSS } from "lit";
+import { LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
-
-import { uuid } from "../../../../../utils/lang/uuid";
-import { prefix } from "../../../settings";
-import styles from "./chainOfThoughtElement.scss";
+// @ts-ignore
+import styles from "./chainOfThoughtElement.scss?lit";
 import {
-  ChainOfThoughtOnToggle,
-  ChainOfThoughtStepWithToggle,
-} from "./chainOfThoughtElement.template";
-import { createEnglishFormat } from "../../../../../utils/languages";
-import { ChainOfThoughtStep } from "../../../../../../types/messaging/Messages";
+  type ChainOfThoughtOnToggle,
+  type ChainOfThoughtStep,
+  type ChainOfThoughtStepWithToggle,
+} from "./types.js";
+import prefix from "../../../globals/settings.js";
+import { uuid } from "../../../globals/utils/uuid.js";
 
-const stepTitleFormatter = createEnglishFormat("chainOfThought_stepTitle");
+const numberFormatter = new Intl.NumberFormat("en-US");
+
+const formatStepLabelTextDefault = ({
+  stepNumber,
+  stepTitle,
+}: {
+  stepNumber: number;
+  stepTitle: string;
+}) => {
+  const formattedNumber = numberFormatter.format(stepNumber);
+  const formattedTitle = stepTitle || "";
+  return `${formattedNumber}: ${formattedTitle}`;
+};
 
 class ChainOfThoughtElement extends LitElement {
-  static styles = css`
-    ${unsafeCSS(styles)}
-  `;
+  static styles = styles;
 
   /**
    * Indicates if the details panel for the chain of thought is open.
@@ -37,7 +46,7 @@ class ChainOfThoughtElement extends LitElement {
    * Array of steps in the chain of thought.
    */
   @property({ type: Array, attribute: "steps", reflect: true })
-  steps: ChainOfThoughtStep[];
+  steps: ChainOfThoughtStep[] = [];
 
   /**
    * Formatting for label of each step item.
@@ -49,11 +58,7 @@ class ChainOfThoughtElement extends LitElement {
   }: {
     stepNumber: number;
     stepTitle: string;
-  }) => string = ({ stepNumber, stepTitle }) =>
-    stepTitleFormatter.format({
-      stepNumber,
-      stepTitle: stepTitle || "",
-    }) as string;
+  }) => string = formatStepLabelTextDefault;
 
   /**
    * Text string used to label step input.
@@ -83,13 +88,13 @@ class ChainOfThoughtElement extends LitElement {
    * Optional function to call if chain of thought visibility is toggled.
    */
   @property({ type: Function, attribute: false })
-  onToggle: ChainOfThoughtOnToggle;
+  onToggle?: ChainOfThoughtOnToggle;
 
   /**
    * Optional function to call if a chain of thought step visibility is toggled.
    */
   @property({ type: Function, attribute: false })
-  onStepToggle: ChainOfThoughtOnToggle;
+  onStepToggle?: ChainOfThoughtOnToggle;
 
   /**
    * Text string used to label the succeeded status icon.
@@ -171,7 +176,7 @@ class ChainOfThoughtElement extends LitElement {
    * Steps, but we add in whether the step is open or not.
    */
   @state()
-  _steps: ChainOfThoughtStepWithToggle[];
+  _steps: ChainOfThoughtStepWithToggle[] = [];
 
   /**
    * ID we use for a11y.
@@ -180,16 +185,17 @@ class ChainOfThoughtElement extends LitElement {
   _chainOfThoughtPanelID = `${prefix}-chain-of-thought-panel-id-${uuid()}`;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
-    // Update the steps saying they are all closed.
-    this._steps = this.steps.map((item) => ({ ...item, open: false }));
+    const steps = this.steps ?? [];
+    this._steps = steps.map((item) => ({ ...item, open: false }));
   }
 
-  protected updated(_changedProperties: PropertyValues): void {
-    if (_changedProperties.has("steps")) {
-      // Update the steps with current open status.
-      this._steps = this.steps.map((item, index) => ({
+  protected updated(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has("steps")) {
+      const incomingSteps = this.steps ?? [];
+      const currentSteps = this._steps ?? [];
+      this._steps = incomingSteps.map((item, index) => ({
         ...item,
-        open: this._steps[index]?.open,
+        open: currentSteps[index]?.open ?? false,
       }));
     }
   }

@@ -62,11 +62,6 @@ collect:
         - label
         - onClick
         - tooltip-alignment
-        # cds-aichat-tag-list
-        - initial-selected-tags
-        - multi-select
-        - on-tags-changed
-        - tags
       allowedAttributeStringValues:
         # General - boolean attributes
         - "true"
