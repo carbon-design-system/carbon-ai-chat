@@ -11,7 +11,6 @@ import {
   isEmptyString,
   convertToEmptyStringIfStringifiedNull,
   convertPossibleStringifiedArrayToFirstString,
-  parseUnknownDataToMarkdown,
 } from "../../../src/chat/utils/lang/stringUtils";
 
 describe("stringUtils", () => {
@@ -76,44 +75,6 @@ describe("stringUtils", () => {
       expect(
         convertPossibleStringifiedArrayToFirstString('{"key": "value"}'),
       ).toBe('{"key": "value"}');
-    });
-  });
-
-  describe("parseUnknownDataToMarkdown", () => {
-    it("should format object data as markdown code block", () => {
-      const data = { key: "value", number: 42 };
-      const result = parseUnknownDataToMarkdown(data);
-      expect(result).toBe(
-        '```\n{\n  "key": "value",\n  "number": 42\n}\n```\n',
-      );
-    });
-
-    it("should format JSON string as markdown code block", () => {
-      const data = '{"key": "value"}';
-      const result = parseUnknownDataToMarkdown(data);
-      expect(result).toBe('```\n{\n  "key": "value"\n}\n```\n');
-    });
-
-    it("should return string as-is for non-JSON string", () => {
-      const data = "hello world";
-      const result = parseUnknownDataToMarkdown(data);
-      expect(result).toBe("hello world");
-    });
-
-    it("should convert non-object, non-string to string", () => {
-      const result = parseUnknownDataToMarkdown(42);
-      expect(result).toBe("42");
-    });
-
-    it("should return undefined for null/undefined data", () => {
-      expect(parseUnknownDataToMarkdown(null)).toBeUndefined();
-      expect(parseUnknownDataToMarkdown(undefined)).toBeUndefined();
-    });
-
-    it("should return undefined for falsy data", () => {
-      expect(parseUnknownDataToMarkdown(false)).toBeUndefined();
-      expect(parseUnknownDataToMarkdown(0)).toBeUndefined();
-      expect(parseUnknownDataToMarkdown("")).toBeUndefined();
     });
   });
 });

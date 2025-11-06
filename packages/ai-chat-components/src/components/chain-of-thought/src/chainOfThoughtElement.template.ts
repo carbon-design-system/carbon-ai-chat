@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/ai-chat-components/es/components/markdown-text/index.js";
+import "../../markdown-text/index.js";
 import "@carbon/web-components/es/components/inline-loading/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -16,31 +16,16 @@ import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
 import { html } from "lit";
 
-import { parseUnknownDataToMarkdown } from "../../../../../utils/lang/stringUtils";
-import { prefix } from "../../../settings";
-import { ChainOfThoughtElement } from "./ChainOfThoughtElement";
+import prefix from "../../../globals/settings.js";
+import { ChainOfThoughtElement } from "./ChainOfThoughtElement.js";
 import {
-  ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
-} from "../../../../../../types/messaging/Messages";
+  type ChainOfThoughtStepWithToggle,
+} from "./types.js";
+import { parseUnknownDataToMarkdown } from "./parseUnknownDataToMarkdown.js";
 
 const CSS_CLASS_ITEM_PREFIX = `${prefix}--chain-of-thought-item`;
 const CSS_CLASS_STATUS_PREFIX = `${prefix}--chain-of-thought-accordion-item-header-status`;
-
-/**
- * A function to allow the chat component to properly scroll to the element on toggle.
- */
-type ChainOfThoughtOnToggle = (
-  isOpen: boolean,
-  scrollToElement: HTMLElement,
-) => void;
-
-interface ChainOfThoughtStepWithToggle extends ChainOfThoughtStep {
-  /**
-   * If the step is opened.
-   */
-  open: boolean;
-}
 
 /**
  * Returns the correct icon given the status of the step. If there is no status, we assume it is successful.
@@ -70,28 +55,6 @@ function stepStatus(
         >${iconLoader(CheckmarkFilled16)}</span
       >`;
   }
-}
-
-/**
- * Takes the input/output data that is unknown and then renders it in the correct format or returns nothing.
- */
-function renderToolData(
-  data: unknown,
-  label: string,
-  classPostfix: string,
-  customElementClass: ChainOfThoughtElement,
-) {
-  // Once we have a Code component instead of just a markdown component, we will need to loop back here.
-  const content = parseUnknownDataToMarkdown(data);
-  if (content) {
-    return renderToolDataAsMarkdown(
-      content,
-      label,
-      classPostfix,
-      customElementClass,
-    );
-  }
-  return html``;
 }
 
 function renderToolDataAsMarkdown(
@@ -136,6 +99,27 @@ function renderToolDataAsMarkdown(
       .getLineCountText=${getLineCountText}
     ></cds-aichat-markdown-text>
   </div>`;
+}
+
+/**
+ * Takes the input/output data that is unknown and then renders it in the correct format or returns nothing.
+ */
+function renderToolData(
+  data: unknown,
+  label: string,
+  classPostfix: string,
+  customElementClass: ChainOfThoughtElement,
+) {
+  const content = parseUnknownDataToMarkdown(data);
+  if (content) {
+    return renderToolDataAsMarkdown(
+      content,
+      label,
+      classPostfix,
+      customElementClass,
+    );
+  }
+  return html``;
 }
 
 function accordionItemContent(
@@ -230,13 +214,12 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
           @click=${() => {
             item.open = !item.open;
             customElementClass.requestUpdate();
-            // This was an unfortunate discovery after refactoring.
-            // I need to move the accordionItemContent back out into its own component for two reasons:
-            // 1. The next line and not being able to create a ref here.
-            // 2. We really should allow someone to pass in a custom template for this.
-            const element: HTMLElement =
-              customElementClass.shadowRoot.querySelector(`#${content_id}`);
-            onStepToggle?.(item.open, element);
+            const element = customElementClass.shadowRoot?.querySelector(
+              `#${content_id}`,
+            ) as HTMLElement | null;
+            if (element) {
+              onStepToggle?.(item.open, element);
+            }
           }}
           aria-expanded=${item.open}
           aria-controls=${content_id}
@@ -249,11 +232,14 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
             >${iconLoader(ChevronRight16)}</span
           >
           <span class="${prefix}--chain-of-thought-accordion-item-header-title"
-            >${formatStepLabelText({ stepNumber, stepTitle: item.title })}</span
+            >${formatStepLabelText({
+              stepNumber,
+              stepTitle: item.title || item.tool_name || "",
+            })}</span
           >
           <span class="${CSS_CLASS_STATUS_PREFIX}"
             >${stepStatus(
-              item.status,
+              item.status || ChainOfThoughtStepStatus.SUCCESS,
               statusSucceededLabelText,
               statusFailedLabelText,
               statusProcessingLabelText,
@@ -277,15 +263,12 @@ function accordionContent(customElementClass: ChainOfThoughtElement) {
 function chainOfThoughtElementTemplate(
   customElementClass: ChainOfThoughtElement,
 ) {
-  const { _chainOfThoughtPanelID, explainabilityText, open } =
+  const { _chainOfThoughtPanelID, explainabilityText, open, onToggle } =
     customElementClass;
 
-  /**
-   * Function called when someone clicks on the button to toggle if chain of thought is open or closed.
-   */
   function toggle() {
     customElementClass.open = !customElementClass.open;
-    customElementClass.onToggle?.(customElementClass.open, customElementClass);
+    onToggle?.(customElementClass.open, customElementClass);
   }
 
   return html`<div class="${prefix}--chain-of-thought">
@@ -312,8 +295,4 @@ function chainOfThoughtElementTemplate(
   </div>`;
 }
 
-export {
-  chainOfThoughtElementTemplate,
-  ChainOfThoughtOnToggle,
-  ChainOfThoughtStepWithToggle,
-};
+export { chainOfThoughtElementTemplate };

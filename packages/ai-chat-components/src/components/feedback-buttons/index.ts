@@ -7,6 +7,7 @@
  *  @license
  */
 
-const prefix = "cds-aichat";
+import "./src/cds-aichat-feedback-buttons.js";
 
-export { prefix };
+export { default } from "./src/cds-aichat-feedback-buttons.js";
+export { FeedbackButtonsElement } from "./src/FeedbackButtonsElement.js";

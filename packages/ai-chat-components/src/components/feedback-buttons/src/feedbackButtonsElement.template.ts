@@ -7,7 +7,6 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/textarea/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -17,9 +16,11 @@ import ThumbsUp16 from "@carbon/icons/es/thumbs-up/16.js";
 import ThumbsUpFilled16 from "@carbon/icons/es/thumbs-up--filled/16.js";
 import { html, nothing } from "lit";
 
-import { prefix } from "../../../settings";
+import prefix from "../../../globals/settings.js";
 import { FeedbackButtonsElement } from "./FeedbackButtonsElement.js";
-import { enLanguagePack } from "../../../../../../types/config/PublicConfig";
+
+const DEFAULT_POSITIVE_LABEL = "Good response";
+const DEFAULT_NEGATIVE_LABEL = "Bad response";
 
 function feedbackButtonsElementTemplate(
   customElementClass: FeedbackButtonsElement,
@@ -46,19 +47,19 @@ function feedbackButtonsElementTemplate(
       align="top-left"
       kind="ghost"
       role="button"
-      disabled="${isPositiveDisabled || nothing}"
+      ?disabled=${isPositiveDisabled}
       aria-expanded="${isPositiveDisabled || !hasPositiveDetails
         ? nothing
         : isPositiveOpen}"
       aria-pressed="${isPositiveSelected || nothing}"
       aria-controls="${panelID}-feedback-positive"
-      @click="${() => onClick(true)}"
+      @click="${() => onClick?.(true)}"
     >
       <span slot="icon"
         >${iconLoader(isPositiveSelected ? ThumbsUpFilled16 : ThumbsUp16)}</span
       >
       <span slot="tooltip-content"
-        >${positiveLabel || enLanguagePack.feedback_positiveLabel}</span
+        >${positiveLabel || DEFAULT_POSITIVE_LABEL}</span
       >
     </cds-icon-button>
     <cds-icon-button
@@ -67,13 +68,13 @@ function feedbackButtonsElementTemplate(
       align="top-left"
       kind="ghost"
       role="button"
-      disabled="${isNegativeDisabled || nothing}"
+      ?disabled=${isNegativeDisabled}
       aria-expanded="${isNegativeDisabled || !hasNegativeDetails
         ? nothing
         : isNegativeOpen}"
       aria-pressed="${isNegativeSelected || nothing}"
       aria-controls="${panelID}-feedback-positive"
-      @click="${() => onClick(false)}"
+      @click="${() => onClick?.(false)}"
     >
       <span slot="icon"
         >${iconLoader(
@@ -81,7 +82,7 @@ function feedbackButtonsElementTemplate(
         )}</span
       >
       <span slot="tooltip-content"
-        >${negativeLabel || enLanguagePack.feedback_negativeLabel}</span
+        >${negativeLabel || DEFAULT_NEGATIVE_LABEL}</span
       >
     </cds-icon-button>
   </div>`;

@@ -7,53 +7,12 @@
  *  @license
  */
 
-import { consoleError } from "../miscUtils";
-
 /**
  * Determines if the given string is a "empty" string. That is a string that has no value or is the literal string
  * "null".
  */
 function isEmptyString(value: string) {
   return !value || value === "null";
-}
-
-/**
- * Attempts to parse the given value into a JSON object. Returns a boolean indicating success.
- */
-function isJsonString(data: any) {
-  try {
-    JSON.parse(data);
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
-
-function parseUnknownDataToMarkdown(data: unknown) {
-  let content: string;
-  if (data) {
-    try {
-      if (typeof data === "object") {
-        content = `\`\`\`\n${JSON.stringify(data, null, 2)}\n\`\`\`\n`;
-      } else if (typeof data === "string") {
-        if (isJsonString(data)) {
-          content = `\`\`\`\n${JSON.stringify(
-            JSON.parse(data),
-            null,
-            2,
-          )}\n\`\`\`\n`;
-        } else {
-          content = data;
-        }
-      } else {
-        content = String(data);
-      }
-      return content;
-    } catch (e) {
-      consoleError("Cannot parse step content", e);
-    }
-  }
-  return undefined;
 }
 
 /**
@@ -87,5 +46,4 @@ export {
   isEmptyString,
   convertToEmptyStringIfStringifiedNull,
   convertPossibleStringifiedArrayToFirstString,
-  parseUnknownDataToMarkdown,
 };
