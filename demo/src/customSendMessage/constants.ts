@@ -44,8 +44,8 @@ const UNORDERED_LIST = `
 
 const ORDERED_LIST = `
 1. Carbon bonding types
-  1. Single bonds (sp³)
-  2. Double bonds (sp²)
+  a. Single bonds (sp³)
+  b. Double bonds (sp²)
 2. Triple bonds (sp)
 3. Aromatic bonding
 4. Metallic carbides
@@ -76,7 +76,7 @@ def analyze_carbon_compounds(smiles_list):
     # Analyze carbon-containing molecules
     carbon = periodictable.C
     results = []
-    
+
     for smiles in smiles_list:
         mol = Chem.MolFromSmiles(smiles)
         if mol:
@@ -87,7 +87,7 @@ def analyze_carbon_compounds(smiles_list):
                 'carbon_atoms': carbon_count,
                 'molecular_weight': molecular_weight
             })
-    
+
     return results
 
 # Example usage - analyzing carbon compounds
@@ -121,12 +121,12 @@ const HTML = `
 Here is some Carbon <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" onclick="window.open('https://carbondesignsystem.com', '_blank')"><defs><style>.cls-1{fill:none;}</style></defs><title>If you click on this icon, it will go to https://carbondesignsystem.com. This is here to test "shouldSanitizeHTML". If true, the click shouldn't work!</title><path d="M13.5,30.8149a1.0011,1.0011,0,0,1-.4927-.13l-8.5-4.815A1,1,0,0,1,4,25V15a1,1,0,0,1,.5073-.87l8.5-4.815a1.0013,1.0013,0,0,1,.9854,0l8.5,4.815A1,1,0,0,1,23,15V25a1,1,0,0,1-.5073.87l-8.5,4.815A1.0011,1.0011,0,0,1,13.5,30.8149ZM6,24.417l7.5,4.2485L21,24.417V15.583l-7.5-4.2485L6,15.583Z"/><path d="M28,17H26V7.583L18.5,3.3345,10.4927,7.87,9.5073,6.13l8.5-4.815a1.0013,1.0013,0,0,1,.9854,0l8.5,4.815A1,1,0,0,1,28,7Z"/><rect class="cls-1" width="32" height="32" transform="translate(32 32) rotate(180)"/></svg> information peppered with HTML!
 
 <style>
-    .fun-fact { 
-        background-color: #e8f5e8; 
+    .fun-fact {
+        background-color: #e8f5e8;
         color: #161616;
-        border-inline-start: 4px solid #27ae60; 
-        padding: 10px; 
-        margin: 10px 0; 
+        border-inline-start: 4px solid #27ae60;
+        padding: 10px;
+        margin: 10px 0;
     }
 </style>
 <h2>Carbon <b>(C)</b> - The Element of Life</h2>
@@ -138,7 +138,7 @@ Here is some Carbon <svg xmlns="http://www.w3.org/2000/svg" width="16" height="1
     <p>Carbon can form more compounds than any other element except hydrogen. There are over <em>10 million</em> known carbon compounds!</p>
 </div>
 
-<p>Inline visualization: 
+<p>Inline visualization:
     <span class="inline-carbon-diagram" role="img" aria-label="Carbon atom with bonds">
         <svg width="96" height="32" viewBox="0 0 96 32" xmlns="http://www.w3.org/2000/svg">
             <g fill="none" stroke="#0f62fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -99,7 +99,7 @@ function getSettings() {
 
   const defaultSettings: Settings = {
     framework: "react",
-    layout: "float",
+    layout: "fullscreen",
     writeableElements: "false",
     direction: "default",
     ...settings,
@@ -129,6 +129,7 @@ function getSettings() {
           hasContentMaxWidth: undefined,
           corners: CornersType.SQUARE,
         },
+        launcher: { isOn: true },
         openChatByDefault: undefined,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
@@ -170,6 +171,7 @@ function getSettings() {
           showFrame: false,
           hasContentMaxWidth: undefined,
         },
+        launcher: { isOn: true },
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
@@ -188,6 +190,7 @@ function getSettings() {
           hasContentMaxWidth: false,
           corners: CornersType.SQUARE,
         },
+        launcher: { isOn: true },
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
