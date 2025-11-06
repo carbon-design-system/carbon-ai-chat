@@ -11,10 +11,7 @@ import { Compartment } from "@codemirror/state";
 import { LanguageDescription, LanguageSupport } from "@codemirror/language";
 import { languages } from "@codemirror/language-data";
 import { EditorView } from "codemirror";
-import {
-  detectLanguage,
-  mapLanguageName,
-} from "../../../../globals/codemirror/language-utils.js";
+import { detectLanguage, mapLanguageName } from "./language-utils.js";
 
 interface LanguageStateUpdate {
   detectedLanguage?: string | null;
