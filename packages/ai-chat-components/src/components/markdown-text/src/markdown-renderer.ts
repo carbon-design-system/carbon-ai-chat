@@ -26,9 +26,9 @@ import {
   DEFAULT_PAGINATION_STATUS_TEXT,
   DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
   extractTableData,
-} from "./utils/tableTokenHelpers.js";
-import type { TableCellData } from "./utils/tableTokenHelpers.js";
-import { combineConsecutiveHtmlInline } from "./utils/htmlInlineHelpers.js";
+} from "./utils/table-helpers.js";
+import type { TableCellData } from "./utils/table-helpers.js";
+import { combineConsecutiveHtmlInline } from "./utils/html-helpers.js";
 import type { TokenTree } from "./markdown-token-tree.js";
 
 // Generic attribute spread for Lit templates

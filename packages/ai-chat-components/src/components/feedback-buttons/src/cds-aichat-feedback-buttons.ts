@@ -9,7 +9,7 @@
 
 import { carbonElement } from "../../../globals/decorators/index.js";
 import { FeedbackButtonsElement } from "./feedback-buttons.js";
-import { feedbackButtonsElementTemplate } from "./feedbackButtonsElement.template.js";
+import { feedbackButtonsElementTemplate } from "./feedback-buttons.template.js";
 
 const FEEDBACK_BUTTONS_COMPONENT_TAG_NAME = "cds-aichat-feedback-buttons";
 

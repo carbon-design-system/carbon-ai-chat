@@ -9,8 +9,8 @@
 
 import MarkdownIt, { Token } from "markdown-it";
 
-import { markdownItAttrs } from "./plugins/markdownItAttrs";
-import { markdownItHighlight } from "./plugins/markdownItHighlight";
+import { markdownItAttrs } from "./plugins/markdown-it-attrs";
+import { markdownItHighlight } from "./plugins/markdown-it-highlight";
 
 /**
  * Represents a node in the token tree structure.
