@@ -26,8 +26,13 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
 } from "../store/reducerUtils";
 import {
+  selectInputState,
+  selectIsInputToHumanAgent,
+} from "../store/selectors";
+import {
   AppState,
   AppStateMessages,
+  InputState,
   ViewState,
   ViewType,
 } from "../../types/state/AppState";
@@ -301,13 +306,68 @@ class ChatActionsImpl {
       isConnecting: state.humanAgentState.isConnecting,
     });
 
+    const inputState = selectInputState(state);
+    const input = deepFreeze({
+      rawValue: inputState.rawValue ?? "",
+    });
+
     return deepFreeze({
       ...rest,
       humanAgent,
       isMessageLoadingCounter: assistantMessageState.isMessageLoadingCounter,
       isMessageLoadingText: assistantMessageState.isMessageLoadingText,
       isHydratingCounter: assistantMessageState.isHydratingCounter,
+      input,
     });
+  }
+
+  updateRawInputValue(updater: (previous: string) => string) {
+    this.updateInputValue("rawValue", updater);
+  }
+
+  private updateInputValue(
+    field: "rawValue" | "displayValue",
+    updater: (previous: string) => string,
+  ) {
+    if (typeof updater !== "function") {
+      consoleError("Input updater must be a function");
+      return;
+    }
+
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const inputState = selectInputState(state);
+    const previousValue = (inputState[field] ?? "") as string;
+
+    let nextValue: string;
+    try {
+      nextValue = updater(previousValue);
+    } catch (error) {
+      consoleError("An error occurred while updating the input value", error);
+      return;
+    }
+
+    if (typeof nextValue !== "string") {
+      nextValue =
+        nextValue === undefined || nextValue === null ? "" : String(nextValue);
+    }
+
+    if (nextValue === previousValue) {
+      return;
+    }
+
+    const payload: Partial<InputState> = { [field]: nextValue };
+
+    if (
+      field === "rawValue" &&
+      (inputState.displayValue ?? "") === previousValue
+    ) {
+      payload.displayValue = nextValue;
+    }
+
+    store.dispatch(
+      actions.updateInputState(payload, selectIsInputToHumanAgent(state)),
+    );
   }
 
   /**

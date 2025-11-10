@@ -121,6 +121,8 @@ const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
+  rawValue: "",
+  displayValue: "",
   fieldVisible: true,
   isReadonly: false,
   files: [],

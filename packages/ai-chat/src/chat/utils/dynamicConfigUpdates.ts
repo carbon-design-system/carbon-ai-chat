@@ -129,14 +129,47 @@ export async function applyConfigChangesDynamically(
 
   // Handle lightweight UI changes coming from public config
   if (changes.lightweightUIChanged) {
-    // Readonly input for bot
-    if (typeof newConfig.isReadonly === "boolean") {
-      const current = store.getState().assistantInputState;
-      const next = {
-        ...current,
-        isReadonly: newConfig.isReadonly,
+    const current = store.getState().assistantInputState;
+    let nextState = current;
+
+    if (typeof newConfig.input?.isVisible === "boolean") {
+      if (current.fieldVisible !== newConfig.input.isVisible) {
+        nextState = {
+          ...nextState,
+          fieldVisible: newConfig.input.isVisible,
+        };
+      }
+    }
+
+    let disableValue: boolean | undefined;
+    if (typeof newConfig.input?.isDisabled === "boolean") {
+      disableValue = newConfig.input.isDisabled;
+    } else if (typeof newConfig.isReadonly === "boolean") {
+      disableValue = newConfig.isReadonly;
+    }
+
+    if (disableValue !== undefined && current.isReadonly !== disableValue) {
+      nextState = {
+        ...nextState,
+        isReadonly: disableValue,
       };
-      store.dispatch(actions.changeState({ assistantInputState: next }));
+    }
+
+    if (nextState !== current) {
+      store.dispatch(actions.changeState({ assistantInputState: nextState }));
+    }
+
+    if (typeof newConfig.launcher?.showUnreadIndicator === "boolean") {
+      const currentValue =
+        store.getState().persistedToBrowserStorage.showUnreadIndicator;
+      if (currentValue !== newConfig.launcher.showUnreadIndicator) {
+        store.dispatch(
+          actions.setLauncherProperty(
+            "showUnreadIndicator",
+            newConfig.launcher.showUnreadIndicator,
+          ),
+        );
+      }
     }
   }
 }

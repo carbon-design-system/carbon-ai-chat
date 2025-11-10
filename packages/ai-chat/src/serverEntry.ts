@@ -36,12 +36,14 @@ export {
 
 export {
   ChatInstance,
+  ChatInstanceInput,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
+  PublicInputState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,

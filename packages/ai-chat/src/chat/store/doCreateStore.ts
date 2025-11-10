@@ -7,6 +7,7 @@
  *  @license
  */
 
+import cloneDeep from "lodash-es/cloneDeep.js";
 import mergeWith from "lodash-es/mergeWith.js";
 import { ServiceManager } from "../services/ServiceManager";
 import { AppConfig } from "../../types/state/AppConfig";
@@ -114,7 +115,24 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
 }
 
 function createInitialState(config: AppConfig): AppState {
-  return {
+  const inputConfig = config.public.input;
+  const assistantInputState = {
+    ...DEFAULT_INPUT_STATE,
+  };
+
+  const persistedToBrowserStorage = cloneDeep(DEFAULT_PERSISTED_TO_BROWSER);
+
+  if (typeof inputConfig?.isVisible === "boolean") {
+    assistantInputState.fieldVisible = inputConfig.isVisible;
+  }
+
+  if (typeof inputConfig?.isDisabled === "boolean") {
+    assistantInputState.isReadonly = inputConfig.isDisabled;
+  } else if (typeof config.public.isReadonly === "boolean") {
+    assistantInputState.isReadonly = config.public.isReadonly;
+  }
+
+  const initialState: AppState = {
     // Config with derived values
     config,
 
@@ -129,7 +147,7 @@ function createInitialState(config: AppConfig): AppState {
     isBrowserPageVisible: true,
 
     // Input state
-    assistantInputState: DEFAULT_INPUT_STATE,
+    assistantInputState,
 
     // Layout/responsive state
     chatWidthBreakpoint: null,
@@ -148,7 +166,7 @@ function createInitialState(config: AppConfig): AppState {
         : VIEW_STATE_LAUNCHER_OPEN,
 
     // Session state
-    persistedToBrowserStorage: DEFAULT_PERSISTED_TO_BROWSER,
+    persistedToBrowserStorage,
 
     // Agent UI State
     humanAgentState: DEFAULT_HUMAN_AGENT_STATE,
@@ -159,6 +177,8 @@ function createInitialState(config: AppConfig): AppState {
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
   };
+
+  return initialState;
 }
 
 function doCreateStore(
@@ -206,6 +226,11 @@ function doCreateStore(
         },
       },
     };
+  }
+
+  if (typeof config.public.launcher?.showUnreadIndicator === "boolean") {
+    initialState.persistedToBrowserStorage.showUnreadIndicator =
+      config.public.launcher.showUnreadIndicator;
   }
 
   return createAppStore(reducerFunction, initialState);

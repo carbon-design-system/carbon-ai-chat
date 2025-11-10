@@ -253,6 +253,18 @@ export interface InputConfig {
    * The maximum number of characters allowed in the input field. Defaults to 10000.
    */
   maxInputCharacters?: number;
+
+  /**
+   * Controls whether the main input surface is visible when the chat loads.
+   * Defaults to true.
+   */
+  isVisible?: boolean;
+
+  /**
+   * If true, the main input surface starts in a disabled (read-only) state.
+   * Equivalent to {@link PublicConfig.isReadonly}, but scoped just to the assistant input.
+   */
+  isDisabled?: boolean;
 }
 
 /**

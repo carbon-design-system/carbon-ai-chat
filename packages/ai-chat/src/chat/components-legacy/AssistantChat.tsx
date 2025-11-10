@@ -324,6 +324,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           isStopStreamingButtonVisible={stopStreamingButtonState.isVisible}
           isStopStreamingButtonDisabled={stopStreamingButtonState.isDisabled}
           maxInputChars={config.public.input?.maxInputCharacters}
+          trackInputState
         />
         {this.state.showEndChatConfirmation && (
           <EndHumanAgentChatModal
