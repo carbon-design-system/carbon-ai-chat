@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./toolbar.scss?lit";
 import prefix from "../../../globals/settings.js";
@@ -26,19 +26,11 @@ import prefix from "../../../globals/settings.js";
 class CDSAIChatToolbar extends LitElement {
   static styles = styles;
 
-  @property({ type: Boolean, reflect: true })
-  flush;
-
-  updated(changedProperties) {
-    if (changedProperties.has("flush")) {
-      this.classList.toggle(`${prefix}-toolbar--flushed`, this.flush);
-    }
-  }
-
   render() {
-    console.log(this.flush, "flush");
-
     return html`
+      <div class="${prefix}-toolbar__navigation">
+        <slot name="navigation"></slot>
+      </div>
       <div class="${prefix}-toolbar__title">
         <slot name="title"></slot>
       </div>

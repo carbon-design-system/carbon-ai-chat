@@ -23,16 +23,15 @@ $css--plex: true !default;
   display: grid;
   align-items: center;
   justify-content: space-between;
-  padding: rem(8px) rem(8px) rem(8px) rem(32px);
+  padding: 0;
   border: solid rem(1px) theme.$border-subtle-01;
-  grid-auto-flow: column;
+  grid-template-areas:
+    "top top top"
+    "left center right";
+  grid-template-columns: auto 1fr auto;
   .#{$prefix}-toolbar__title {
     color: theme.$text-secondary;
   }
-}
-
-:host(.#{$prefix}-toolbar--flushed) {
-  padding: 0;
 }
 
 :host(#{$prefix}-notification) {
@@ -41,8 +40,17 @@ $css--plex: true !default;
   }
 }
 
+.#{$prefix}-toolbar__navigation {
+  align-self: start;
+  color: theme.$text-secondary;
+  grid-area: top;
+}
+.#{$prefix}-toolbar__title {
+  grid-area: left;
+}
 .#{$prefix}-toolbar__action {
   display: grid;
+  grid-area: right;
   grid-auto-columns: rem(40px);
   grid-auto-flow: column;
 

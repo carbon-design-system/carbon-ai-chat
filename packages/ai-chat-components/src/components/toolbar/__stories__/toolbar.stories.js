@@ -47,12 +47,6 @@ export default {
       },
       description: "Defines the type of action slot for the Toolbar Component",
     },
-    flush: {
-      control: "boolean",
-      type: { name: "boolean" },
-      description:
-        "When set to true, removes the default internal padding of the component, allowing its content to sit 'flush' against the component's edge.",
-    },
   },
   decorators: [
     (story) => html`
@@ -186,7 +180,6 @@ export const Default = {
   args: {
     toolbarTitle: "Title <span>text</span>",
     toolbarAction: "advanced",
-    flush: false,
   },
 
   render: (args) => {
@@ -223,10 +216,7 @@ export const Default = {
     }
 
     return html`
-      <cds-aichat-toolbar
-        title-text="${args.toolbarTitle}"
-        ?flush="${args.flush}"
-      >
+      <cds-aichat-toolbar>
         <div slot="title" data-fixed class="story-toolbar-title">
           ${unsafeHTML(args.toolbarTitle)}
         </div>
