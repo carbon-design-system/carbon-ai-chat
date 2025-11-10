@@ -216,11 +216,6 @@ export enum ViewChangeReason {
   MAIN_WINDOW_MINIMIZED = "mainWindowMinimized",
 
   /**
-   * Indicates the user clicked the close and restart button that minimized to the launcher.
-   */
-  MAIN_WINDOW_CLOSED_AND_RESTARTED = "mainWindowClosedAndRestarted",
-
-  /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.
    */
   CALLED_CHANGE_VIEW = "calledChangeView",
