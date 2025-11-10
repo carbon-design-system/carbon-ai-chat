@@ -17,7 +17,6 @@ import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
 import { AriaLiveMessage } from "./aria/AriaLiveMessage";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
-import { Notifications } from "./notifications/Notifications";
 import {
   HasServiceManager,
   withServiceManager,
@@ -956,8 +955,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       messageState,
       intl,
       assistantName,
-      serviceManager,
-      notifications,
       config: {
         derived: { languagePack },
       },
@@ -1003,16 +1000,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 isTypingMessage,
                 localMessageItems.length,
               )}
-            <Notifications
-              serviceManager={serviceManager}
-              notifications={notifications}
-            />
             {this.renderScrollHandle(false)}
             {scrollDown && (
               <MountChildrenOnDelay delay={200}>
                 <button
                   type="button"
-                  aria-hidden
                   aria-label={languagePack.messages_scrollMoreButton}
                   className="cds-aichat-scrollDownIndicatorIcon"
                   onClick={() =>

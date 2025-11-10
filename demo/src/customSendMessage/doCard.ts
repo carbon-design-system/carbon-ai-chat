@@ -70,6 +70,11 @@ function doCard(instance: ChatInstance) {
               label: "OK",
               button_type: ButtonItemType.CUSTOM_EVENT,
               response_type: MessageResponseTypes.BUTTON,
+              custom_event_name: "alert_button",
+              // Pass any extra meta data you want here and it will be included in the event payload.
+              user_defined: {
+                text: "OK!",
+              },
             },
             {
               url: "https://ibm.com/",
@@ -77,6 +82,11 @@ function doCard(instance: ChatInstance) {
               label: "Cancel",
               button_type: ButtonItemType.CUSTOM_EVENT,
               response_type: MessageResponseTypes.BUTTON,
+              custom_event_name: "alert_button",
+              // Pass any extra meta data you want here and it will be included in the event payload.
+              user_defined: {
+                text: "Cancel!",
+              },
             },
           ],
           response_type: MessageResponseTypes.CARD,
@@ -185,7 +195,7 @@ function doCard(instance: ChatInstance) {
           footer: [
             {
               url: "https://ibm.com/",
-              kind: BUTTON_KIND.SECONDARY,
+              kind: BUTTON_KIND.GHOST,
               label: "View Carbon Docs",
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,

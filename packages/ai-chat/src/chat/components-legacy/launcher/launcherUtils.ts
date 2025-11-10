@@ -7,9 +7,8 @@
  *  @license
  */
 
-import { LauncherConfig } from "../../../types/config/LauncherConfig";
 import { animateWithClass } from "../../utils/animationUtils";
-import { IS_MOBILE, isBrowser } from "../../utils/browserUtils";
+import { isBrowser } from "../../utils/browserUtils";
 
 const MAX_EXTENDED_LAUNCHER_WIDTH = 400;
 
@@ -32,7 +31,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   textHolderEl: HTMLDivElement,
   greetingMessageEl: HTMLDivElement,
   extendedContainerEl: HTMLDivElement,
-) {
+): number | undefined {
   const nonTextSpace = 68;
   const maxLauncherExtendedWidth = getMaxLauncherExtendedWidth();
   const maxTextHolderWidth = maxLauncherExtendedWidth - nonTextSpace + 12;
@@ -46,7 +45,7 @@ function calculateAndSetMaxExtendedLauncherWidth(
   ) as HTMLElement;
 
   if (!greetingTextElement) {
-    return;
+    return undefined;
   }
 
   let launcherExtendedWidth =
@@ -63,6 +62,8 @@ function calculateAndSetMaxExtendedLauncherWidth(
     "--cds-aichat--launcher-extended-width",
     `${launcherExtendedWidth}px`,
   );
+
+  return launcherExtendedWidth;
 }
 
 function doFadeAnimationForElements(
@@ -141,7 +142,7 @@ function checkIfUserSwipedRight(
 }
 
 function getMaxLauncherExtendedWidth() {
-  const launcherPosition = IS_MOBILE ? 32 : 64;
+  const launcherPosition = 64;
 
   if (!isBrowser) {
     return MAX_EXTENDED_LAUNCHER_WIDTH;
@@ -154,22 +155,10 @@ function getMaxLauncherExtendedWidth() {
   return Math.min(extendedWidth, MAX_EXTENDED_LAUNCHER_WIDTH);
 }
 
-function getLauncherContent(
-  launcherConfig: LauncherConfig,
-  defaultGreeting: string,
-) {
-  if (launcherConfig.desktop.title) {
-    return launcherConfig.desktop.title;
-  }
-
-  return defaultGreeting;
-}
-
 export {
   calculateAndSetMaxExtendedLauncherWidth,
   checkIfUserSwipedRight,
   doFadeAnimationForElements,
-  getLauncherContent,
   getMaxLauncherExtendedWidth,
   MAX_EXTENDED_LAUNCHER_WIDTH,
 };

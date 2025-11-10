@@ -72,7 +72,7 @@ function feedbackButtonsElementTemplate(
         ? nothing
         : isNegativeOpen}"
       aria-pressed="${isNegativeSelected || nothing}"
-      aria-controls="${panelID}-feedback-positive"
+      aria-controls="${panelID}-feedback-negative"
       @click="${() => onClick(false)}"
     >
       <span slot="icon"

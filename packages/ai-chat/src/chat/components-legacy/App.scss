@@ -150,22 +150,27 @@ rounded corners are enabled. */
   .cds-aichat--overlay-panel,
   .cds-aichat--overlay-panel-container,
   .cds-aichat--hydrating-container {
-    border-end-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-end-start-radius: calc(chat-theme.$border-radius - 1px);
-    border-start-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
   }
 
   /* For the top right and left corners when the widget is rounded. */
   .cds-aichat--header {
-    border-start-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+    border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
   }
 
   /* For the bottom right and left corners when the widget is rounded. */
   .cds-aichat--input-container {
-    border-end-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-end-start-radius: calc(chat-theme.$border-radius - 1px);
+    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+  }
+
+  /* Overlay panels with a back button get shown UNDER the header and so don't need top rounded corners. */
+  .cds-aichat--overlay-panel.cds-aichat--overlay-panel--with-back-button {
+    --cds-aichat-border-radius: 0;
   }
 }
 
@@ -284,7 +289,7 @@ in. */
 }
 
 .cds-aichat--widget--rounded .cds-aichat {
-  border-radius: calc(chat-theme.$border-radius - 1px);
+  border-radius: max(0px, calc(chat-theme.$border-radius - 1px));
 }
 
 .cds-aichat--ai-theme .cds-aichat {
@@ -378,15 +383,18 @@ svg.cds-aichat--icon__logout--reverse {
 
 /* These selectors apply a border radius to panel content. */
 .cds-aichat--widget--rounded {
-  .cds-aichat--body-and-footer-component {
-    border-end-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-end-start-radius: calc(chat-theme.$border-radius - 1px);
-    border-start-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+  .cds-aichat--body-and-footer-component,
+  .cds-aichat--i-frame-panel,
+  .cds-aichat--view-source-panel,
+  .cds-aichat--custom-panel {
+    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
   }
 
   .cds-aichat--panel-content {
-    border-end-end-radius: calc(chat-theme.$border-radius - 1px);
-    border-end-start-radius: calc(chat-theme.$border-radius - 1px);
+    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
   }
 }
