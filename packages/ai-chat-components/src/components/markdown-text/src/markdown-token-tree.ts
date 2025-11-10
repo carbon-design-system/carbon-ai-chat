@@ -11,6 +11,7 @@ import MarkdownIt, { Token } from "markdown-it";
 
 import { markdownItAttrs } from "./plugins/markdown-it-attrs";
 import { markdownItHighlight } from "./plugins/markdown-it-highlight";
+import { markdownItTaskLists } from "./plugins/markdown-it-task-lists";
 
 /**
  * Represents a node in the token tree structure.
@@ -26,34 +27,41 @@ export interface TokenTree {
 
 /**
  * Pre-configured markdown-it instance that allows HTML content.
+ * Uses CommonMark preset for GitHub Flavored Markdown compatibility.
  */
-const htmlMarkdown = new MarkdownIt({
+const htmlMarkdown = new MarkdownIt("commonmark", {
   html: true,
   breaks: true,
   linkify: true,
 })
+  .enable("table")
+  .enable("strikethrough")
   .use(markdownItAttrs, {
     leftDelimiter: "{{",
     rightDelimiter: "}}",
     allowedAttributes: ["target", "rel", "class", "id"],
   })
-  .use(markdownItHighlight);
+  .use(markdownItHighlight)
+  .use(markdownItTaskLists);
 
 /**
  * Pre-configured markdown-it instance that strips HTML content.
  * Same features as htmlMarkdown but with HTML disabled for security.
  */
-const noHtmlMarkdown = new MarkdownIt({
+const noHtmlMarkdown = new MarkdownIt("commonmark", {
   html: false,
   breaks: true,
   linkify: true,
 })
+  .enable("table")
+  .enable("strikethrough")
   .use(markdownItAttrs, {
     leftDelimiter: "{{",
     rightDelimiter: "}}",
     allowedAttributes: ["target", "rel", "class", "id"],
   })
-  .use(markdownItHighlight);
+  .use(markdownItHighlight)
+  .use(markdownItTaskLists);
 
 /**
  * Parses markdown text into a flat array of markdown-it tokens.

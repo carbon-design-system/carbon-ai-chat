@@ -32,7 +32,7 @@
     "clean": "rimraf es dist storybook-static",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
-    "start": "concurrently \"npm run storybook\" \"node tasks/build.js --watch\"",
+    "start": "concurrently \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
     "storybook": "npm run custom-elements && storybook dev -p 6006",
     "storybook:build": "npm run custom-elements && storybook build",
     "storybook:react": "storybook dev -p 7007 -c .storybook-react",

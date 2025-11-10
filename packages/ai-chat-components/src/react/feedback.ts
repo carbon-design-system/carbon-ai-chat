@@ -20,6 +20,10 @@ const Feedback = createComponent({
   tagName: "cds-aichat-feedback",
   elementClass: CDSChatFeedbackElement,
   react: React,
+  events: {
+    onClose: "feedback-close",
+    onSubmit: "feedback-submit",
+  },
 });
 
 export type { FeedbackInitialValues, FeedbackSubmitDetails };

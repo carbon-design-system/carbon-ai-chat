@@ -82,10 +82,24 @@ class FeedbackButtonsElement extends LitElement {
   panelID?: string;
 
   /**
-   * The callback that is called when one of the buttons is clicked.
+   * Dispatches an event notifying listeners that a button has been clicked.
    */
-  @property({ type: Object, attribute: "on-click" })
-  onClick?: (isPositive: boolean) => void;
+  handleButtonClick(isPositive: boolean) {
+    this.dispatchEvent(
+      new CustomEvent<FeedbackButtonsClickEventDetail>(
+        "feedback-buttons-click",
+        {
+          detail: { isPositive },
+          bubbles: true,
+          composed: true,
+        },
+      ),
+    );
+  }
 }
 
-export { FeedbackButtonsElement };
+interface FeedbackButtonsClickEventDetail {
+  isPositive: boolean;
+}
+
+export { FeedbackButtonsElement, type FeedbackButtonsClickEventDetail };

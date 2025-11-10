@@ -15,6 +15,7 @@ import { nothing } from "lit";
 import { Directive, directive } from "lit/directive.js";
 import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
+import "@carbon/web-components/es/components/checkbox/index.js";
 import "../../code-snippet/index.js";
 import "../../table/index.js";
 
@@ -167,13 +168,13 @@ export function renderTokenTree(
     } = options;
 
     return html`<cds-aichat-code-snippet-tile-container
-      language=${language}
+      ?language=${language}
       ?highlight=${highlight}
-      feedback=${feedback}
-      show-less-text=${showLessText}
-      show-more-text=${showMoreText}
-      tooltip-content=${tooltipContent}
-      .getLineCountText=${getLineCountText}
+      ?feedback=${feedback}
+      ?show-less-text=${showLessText}
+      ?show-more-text=${showMoreText}
+      ?tooltip-content=${tooltipContent}
+      ?getLineCountText=${getLineCountText}
       >${token.content}</cds-aichat-code-snippet-tile-container
     >`;
   }
@@ -192,7 +193,8 @@ export function renderTokenTree(
 
   // Apply attribute sanitization if requested
   let attrs = rawAttrs;
-  if (sanitize) {
+  const isCustomElement = !!token.tag && token.tag.includes("-");
+  if (sanitize && !isCustomElement) {
     attrs = Object.fromEntries(
       Object.entries(rawAttrs).filter(([key, value]) => {
         // Use DOMPurify to check if attribute is safe
@@ -280,6 +282,16 @@ function renderWithStaticTag(
     return content;
   }
 
+  const hasTaskListItems = (listNode?: TokenTree) =>
+    !!listNode?.children?.some((child) => {
+      if (child.token.type !== "list_item_open") {
+        return false;
+      }
+
+      const classAttr = child.token.attrs?.find(([key]) => key === "class");
+      return classAttr?.[1]?.split(/\s+/).includes("task-list-item");
+    });
+
   switch (tag) {
     // Basic block elements
     case "p":
@@ -308,6 +320,11 @@ function renderWithStaticTag(
     // Lists with Carbon components
     case "ul": {
       const nested = token.level > 1;
+      if (hasTaskListItems(node)) {
+        return html`<ul ${spread(attrs)}>
+          ${content}
+        </ul>`;
+      }
       return html`<cds-unordered-list ?nested=${nested} ${spread(attrs)}>
         ${content}
       </cds-unordered-list>`;
@@ -315,13 +332,37 @@ function renderWithStaticTag(
 
     case "ol": {
       const nested = token.level > 1;
+      if (hasTaskListItems(node)) {
+        return html`<ol ${spread(attrs)}>
+          ${content}
+        </ol>`;
+      }
       return html`<cds-ordered-list native ?nested=${nested} ${spread(attrs)}>
         ${content}
       </cds-ordered-list>`;
     }
 
-    case "li":
+    case "li": {
+      const classList = attrs.class?.split(/\s+/) ?? [];
+      if (classList.includes("task-list-item")) {
+        return html`<li ${spread(attrs)}>${content}</li>`;
+      }
       return html`<cds-list-item ${spread(attrs)}>${content}</cds-list-item>`;
+    }
+
+    case "cds-checkbox": {
+      const { checked, disabled, ...otherAttrs } = attrs;
+      const isChecked = checked === "true";
+      const isDisabled =
+        disabled === undefined ? true : disabled === "" || disabled === "true";
+
+      return html`<cds-checkbox
+        ?checked=${isChecked}
+        ?disabled=${isDisabled}
+        ${spread(otherAttrs)}
+        >${content}</cds-checkbox
+      >`;
+    }
 
     // Inline formatting
     case "strong":

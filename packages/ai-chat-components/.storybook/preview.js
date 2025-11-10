@@ -13,7 +13,6 @@ import { html } from "lit";
 import containerStyles from "./_container.scss?inline";
 import { white, g10, g90, g100 } from "@carbon/themes";
 import { breakpoints } from "@carbon/layout";
-import theme from "./theme";
 import { setCustomElementsManifest } from "@storybook/web-components-vite";
 import customElements from "../custom-elements.json";
 import prettier from "prettier/standalone";
