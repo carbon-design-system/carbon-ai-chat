@@ -54,7 +54,7 @@
     "@carbon/icons": "^11.28.0",
     "@carbon/layout": "^11.19.0",
     "@carbon/themes": "^11.25.0",
-    "@custom-elements-manifest/analyzer": "^0.10.0",
+    "@custom-elements-manifest/analyzer": "^0.11.0",
     "@isaacs/brace-expansion": "^5.0.0",
     "@mordech/vite-lit-loader": "^0.37.0",
     "@open-wc/testing": "4.0.0",
