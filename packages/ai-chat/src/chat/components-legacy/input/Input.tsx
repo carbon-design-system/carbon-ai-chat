@@ -250,7 +250,11 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function onKeyDown(event: KeyboardEvent) {
     if (isEnterKey(event)) {
-      if (disableSend || !enterKeyEnabled.current) {
+      if (
+        disableSend ||
+        !enterKeyEnabled.current ||
+        isStopStreamingButtonVisible
+      ) {
         // If sending is disabled, stop the field from inserting a newline into the field.
         event.preventDefault();
       } else {
@@ -502,11 +506,11 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           </div>
 
           <div className="cds-aichat--input-container__send-button-container">
-            {isStopStreamingButtonVisible && (
+            {isStopStreamingButtonVisible ? (
               <StopStreamingButton
                 label={input_stopResponse}
                 disabled={isStopStreamingButtonDisabled}
-                tooltipAlignment="top"
+                tooltipAlignment={isRTL ? "top-left" : "top-right"}
                 onClick={async () => {
                   const { store } = serviceManager;
                   store.dispatch(actions.setStopStreamingButtonDisabled(true));
@@ -515,32 +519,34 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   });
                   // Also cancel the current message request to abort the signal
                   await serviceManager.messageService.cancelCurrentMessageRequest();
+                  textAreaRef.current.takeFocus();
                 }}
               />
+            ) : (
+              <Button
+                className="cds-aichat--input-container__send-button"
+                kind={BUTTON_KIND.GHOST}
+                size={BUTTON_SIZE.SMALL}
+                type={BUTTON_TYPE.BUTTON}
+                onClick={send}
+                aria-label={input_buttonLabel}
+                disabled={showDisabledSend}
+                tooltip-text={input_buttonLabel}
+                tooltipAlignment={
+                  isRTL
+                    ? BUTTON_TOOLTIP_ALIGNMENT.START
+                    : BUTTON_TOOLTIP_ALIGNMENT.END
+                }
+                tooltipPosition={BUTTON_TOOLTIP_POSITION.TOP}
+                data-testid={PageObjectId.INPUT_SEND}
+              >
+                {hasValidInput ? (
+                  <SendFilled slot="icon" />
+                ) : (
+                  <Send slot="icon" />
+                )}
+              </Button>
             )}
-            <Button
-              className="cds-aichat--input-container__send-button"
-              kind={BUTTON_KIND.GHOST}
-              size={BUTTON_SIZE.SMALL}
-              type={BUTTON_TYPE.BUTTON}
-              onClick={send}
-              aria-label={input_buttonLabel}
-              disabled={showDisabledSend}
-              tooltip-text={input_buttonLabel}
-              tooltipAlignment={
-                isRTL
-                  ? BUTTON_TOOLTIP_ALIGNMENT.START
-                  : BUTTON_TOOLTIP_ALIGNMENT.END
-              }
-              tooltipPosition={BUTTON_TOOLTIP_POSITION.TOP}
-              data-testid={PageObjectId.INPUT_SEND}
-            >
-              {hasValidInput ? (
-                <SendFilled slot="icon" />
-              ) : (
-                <Send slot="icon" />
-              )}
-            </Button>
           </div>
         </div>
       </div>

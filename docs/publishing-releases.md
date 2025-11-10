@@ -21,10 +21,10 @@
 The team follows a time-based release model where we deliver a stable `minor`
 update every two weeks. We use a release branching strategy to help maintain code quality and avoid unintended or unfinished features from slipping into releases.
 
-The full schedule for releases is available [here](link-to-wiki-page-with-release-schedule).
+The full schedule for releases is available [here](https://github.com/carbon-design-system/carbon-ai-chat/wiki/Carbon-AI-Chat-Releases).
 
 We publish prereleases before every `minor` release. This prerelease
-happens several days before the stable release. This offers an integration
+happens a week before the stable release. This offers an integration
 window where the prerelease can be tested on products before the stable release.
 
 We ship security and bug fixes in `patch` releases. This will be shipped
@@ -79,14 +79,14 @@ release team will need to do the following:
       ![Screenshot of branch settings page](https://github.com/user-attachments/assets/b333d25f-6b1b-4f5f-b8db-bcd7b1e2b8a3)
 
 - [ ] Run the
-      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
+      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
       to generate the prerelease versions for the packages
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
-        `first minor rc` (rc stands for release candidate)
+        `first rc` (rc stands for release candidate)
   - [ ] Ensure the dry run is checked
 
-  ![Screenshot of minor release workflow](https://github.com/user-attachments/assets/ca511efa-47a4-41a7-95b5-c00b7688eee1)
+  ![Screenshot of minor release workflow](https://github.com/user-attachments/assets/8f6c67cd-9284-45e4-ace9-95cab1bc4145)
 
 - [ ] Once the job has completed, which it should have failed, check the
       action's log. Lerna should have logged what versions it is bumping the
@@ -99,8 +99,7 @@ release team will need to do the following:
   - [ ] `@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
 - [ ] Run the
       [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml).
-      This workflow creates the release tag, generates the release with notes,
-      and opens a PR to merge the changelog and version bumps from the release
+      This workflow creates the release tag, generates the release with notes, checks if there's a change in peer dependencies and updates the `peer-dependency-changes.md` file if so, updates the `versions.js` file which is used for our documentation and demo app version selector dropdown, and opens a PR to merge the changelog and version bumps from the release
       branch to `main`.
   - [ ] Make sure to specify to release branch and the correct release versions.
         ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/05ca42f4-8ec8-449e-8c42-5453e1341574)
@@ -113,10 +112,10 @@ release team will need to do the following:
         [release](https://github.com/carbon-design-system/carbon-ai-chat/releases)
         to ensure the release notes are correct.
   - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml).
+    - [ ] The [publish chat components cdn workflow ](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml).
           Once this workflow has completed, check the
           staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
-    - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the staging tag and version has been published.
+    - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml). Once this workflow has completed, check that the docs and demo app sites for the staging tag and version has been published.
 - [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
       new version of `@carbon/ai-chat`.
 
@@ -128,9 +127,9 @@ can be pushed to the release branch. We can then publish subsequent prereleases
 from the release branch for further testing. To publish subsequent prereleases,
 
 - [ ] Run the
-      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
+      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
       to generate the prerelease versions for the packages
-      ![Screenshot of minor release workflow with subsequent release selected](https://github.com/user-attachments/assets/83feed4e-bd44-45e6-881e-e200d11c2cb0)
+      ![Screenshot of minor release workflow with subsequent release selected](https://github.com/user-attachments/assets/a09a0edc-62dc-4122-9eec-95918e4021ad)
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `subsequent rc`
@@ -189,10 +188,10 @@ in the day. This should occur after the prerelease has been tested and
 validated. During this stage, the release team will do the following:
 
 - [ ] Run the
-      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml)
+      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
       to generate the full minor versions for the packages
 
-  ![Screenshot of minor release workflow with full minor release selected](https://github.com/user-attachments/assets/9ab859fc-f25d-4c52-8f0c-71ee7adacf48)
+  ![Screenshot of minor release workflow with full minor release selected](https://github.com/user-attachments/assets/759070f3-d59e-47f2-9ac5-f538ffc61de9)
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select
         `full minor release`
@@ -303,10 +302,8 @@ patch release:
       branch creation steps as we have already created the patch release branch
       from the steps above here),
       [subsequent prerelease](#subsequent-prerelease), and
-      [stable release](#stable-release) publishes, except instead of using the
-      [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-minor.yml),
-      use the
-      [patch release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-patch.yml)
+      [stable release](#stable-release) publishes, except instead of selecting `minor` in the type of semver release, select `patch`
+      ![Screenshot of release workflow with patch](https://github.com/user-attachments/assets/1fa292ba-8b7b-4609-9ec1-dac278b98388)
 
 ## Troubleshooting
 

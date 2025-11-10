@@ -8,12 +8,14 @@
  */
 
 import { create } from "storybook/theming";
+import packageInfo from "../package.json";
+
+const { description, version } = packageInfo;
 
 export default create({
   base: "light",
-  brandTitle: "AI Chat Components (React)",
-  brandUrl:
-    "https://github.com/carbon-design-system/web-components-monorepo-template",
+  brandTitle: `${description} (React) v${version}`,
+  brandUrl: packageInfo.repository.url,
   fontBase: '"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif',
   fontCode:
     '"IBM Plex Mono", Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono", Courier, monospace',
