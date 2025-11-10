@@ -45,7 +45,7 @@
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.39.0",
-    "@carbon/web-components": "^2.40.1",
+    "@carbon/web-components": "^2.42.0",
     "@codemirror/language": "^6.11.3",
     "@codemirror/language-data": "^6.5.1",
     "@codemirror/state": "^6.5.2",
