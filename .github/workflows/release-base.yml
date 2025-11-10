@@ -89,7 +89,10 @@ jobs:
         if: |
           github.event.inputs.type == 'full release' &&
           github.event.inputs.semver-type == 'minor'
+        # pass in an empty commit so lerna will graduate the version to stable
+        # even though there are no new changes from last rc
         run: |
+          git commit --allow-empty -m "chore(release): graduate prerelease to stable"
           npx lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
@@ -103,7 +106,10 @@ jobs:
         if: |
           github.event.inputs.type == 'full release' &&
           github.event.inputs.semver-type == 'patch'
+        # pass in an empty commit so lerna will graduate the version to stable
+        # even though there are no new changes from last rc
         run: |
+          git commit --allow-empty -m "chore(release): graduate prerelease to stable"
           npx lerna publish patch --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first patch RC (ie. v1.0.x-rc.0)
