@@ -562,11 +562,14 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public checkMessagesOutOfView() {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
-    const remainingPixelsToScroll =
-      scrollElement.scrollHeight -
-      scrollElement.scrollTop -
-      scrollElement.clientHeight;
-    return remainingPixelsToScroll > 60;
+    if (scrollElement) {
+      const remainingPixelsToScroll =
+        scrollElement.scrollHeight -
+        scrollElement.scrollTop -
+        scrollElement.clientHeight;
+      return remainingPixelsToScroll > 60;
+    }
+    return false;
   }
 
   /**
