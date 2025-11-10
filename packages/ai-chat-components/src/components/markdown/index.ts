@@ -7,5 +7,8 @@
  *  @license
  */
 
-import "./src/cds-aichat-markdown-text.js";
-export { default } from "./src/cds-aichat-markdown-text.js";
+import "./src/cds-aichat-markdown.js";
+export {
+  default,
+  MARKDOWN_COMPONENT_TAG_NAME,
+} from "./src/cds-aichat-markdown.js";

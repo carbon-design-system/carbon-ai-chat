@@ -9,7 +9,7 @@
 
 import { expect } from "@open-wc/testing";
 
-import { parseUnknownDataToMarkdown } from "../src/parseUnknownDataToMarkdown.js";
+import { parseUnknownDataToMarkdown } from "../src/parse-unknown-data-to-markdown.js";
 
 describe("parseUnknownDataToMarkdown", () => {
   it("formats object data as a markdown code block", () => {

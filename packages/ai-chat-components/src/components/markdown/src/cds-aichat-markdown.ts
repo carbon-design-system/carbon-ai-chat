@@ -9,17 +9,26 @@
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import MarkdownElement from "./markdown.js";
-import { markdownTextTemplate } from "./markdown.template.js";
+import { markdownTemplate } from "./markdown.template.js";
 // @ts-ignore
 import styles from "./markdown.scss?lit";
 
-@carbonElement("cds-aichat-markdown-text")
+const MARKDOWN_COMPONENT_TAG_NAME = "cds-aichat-markdown";
+
+@carbonElement(MARKDOWN_COMPONENT_TAG_NAME)
 class CDSChatMarkdownElement extends MarkdownElement {
   static styles = styles;
 
   render() {
-    return markdownTextTemplate(this);
+    return markdownTemplate(this);
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    [MARKDOWN_COMPONENT_TAG_NAME]: CDSChatMarkdownElement;
+  }
+}
+
+export { MARKDOWN_COMPONENT_TAG_NAME };
 export default CDSChatMarkdownElement;
