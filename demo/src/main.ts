@@ -19,12 +19,11 @@ import "./framework/demo-layout-switcher";
 import "./framework/demo-homescreen-switcher";
 import "./framework/demo-theme-switcher";
 import "./framework/demo-page-theme-switcher";
-import "./framework/demo-side-bar-nav";
 import "./framework/demo-writeable-elements-switcher";
 import "./web-components/demo-app";
 
-import { PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement, css } from "lit";
+import { ChatInstance, PublicConfig } from "@carbon/ai-chat";
+import { html, LitElement, PropertyValues, css } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { Settings } from "./framework/types";
@@ -67,12 +66,24 @@ export class Demo extends LitElement {
   @state()
   accessor hasReceivedSetChatConfig: boolean = false;
 
+  private headerSettings?: Settings;
+  private headerChatInstance: ChatInstance | null = null;
+  private headerSlot: HTMLSlotElement | null = null;
+
   connectedCallback() {
     super.connectedCallback();
     // Listen for setChatConfig mode changes from demo-body
     this.addEventListener(
       "set-chat-config-mode-changed",
       this._onSetChatConfigModeChanged as EventListener,
+    );
+    this.addEventListener(
+      "demo-settings-changed",
+      this._onDemoSettingsChanged as EventListener,
+    );
+    this.addEventListener(
+      "demo-chat-instance-changed",
+      this._onDemoChatInstanceChanged as EventListener,
     );
   }
 
@@ -82,6 +93,19 @@ export class Demo extends LitElement {
       "set-chat-config-mode-changed",
       this._onSetChatConfigModeChanged as EventListener,
     );
+    this.removeEventListener(
+      "demo-settings-changed",
+      this._onDemoSettingsChanged as EventListener,
+    );
+    this.removeEventListener(
+      "demo-chat-instance-changed",
+      this._onDemoChatInstanceChanged as EventListener,
+    );
+    this.headerSlot?.removeEventListener(
+      "slotchange",
+      this._onHeaderSlotChange,
+    );
+    this.headerSlot = null;
   }
 
   private _onSetChatConfigModeChanged = (event: Event) => {
@@ -89,6 +113,72 @@ export class Demo extends LitElement {
     this.isSetChatConfigMode = customEvent.detail.isSetChatConfigMode;
     this.hasReceivedSetChatConfig = customEvent.detail.hasReceivedSetChatConfig;
   };
+
+  private _onDemoSettingsChanged = (event: Event) => {
+    const customEvent = event as CustomEvent<{ settings: Settings }>;
+    this.headerSettings = customEvent.detail.settings;
+    this._applyHeaderStateToComponent();
+  };
+
+  private _onDemoChatInstanceChanged = (event: Event) => {
+    const customEvent = event as CustomEvent<{
+      chatInstance: ChatInstance | null;
+    }>;
+    this.headerChatInstance = customEvent.detail.chatInstance ?? null;
+    this._applyHeaderStateToComponent();
+  };
+
+  private _onHeaderSlotChange = () => {
+    this._applyHeaderStateToComponent();
+  };
+
+  protected firstUpdated(_changedProperties: PropertyValues): void {
+    super.firstUpdated(_changedProperties);
+    this.headerSlot = this.shadowRoot?.querySelector(
+      'slot[name="demo-header"]',
+    ) as HTMLSlotElement | null;
+    this.headerSlot?.addEventListener("slotchange", this._onHeaderSlotChange);
+    this._applyHeaderStateToComponent();
+  }
+
+  private _getDemoHeaderElement(): HTMLElement | null {
+    const slot =
+      this.headerSlot ??
+      (this.shadowRoot?.querySelector(
+        'slot[name="demo-header"]',
+      ) as HTMLSlotElement | null);
+    if (!slot) {
+      return null;
+    }
+
+    const assignedElements = slot.assignedElements({ flatten: true });
+    for (const element of assignedElements) {
+      if (!(element instanceof HTMLElement)) {
+        continue;
+      }
+
+      if (element.tagName.toLowerCase() === "demo-header") {
+        return element;
+      }
+
+      const nestedHeader = element.querySelector("demo-header");
+      if (nestedHeader) {
+        return nestedHeader as HTMLElement;
+      }
+    }
+
+    return null;
+  }
+
+  private _applyHeaderStateToComponent() {
+    const headerElement = this._getDemoHeaderElement();
+    if (!headerElement) {
+      return;
+    }
+
+    (headerElement as any).settings = this.headerSettings;
+    (headerElement as any).chatInstance = this.headerChatInstance;
+  }
 
   private _leaveSetChatConfigMode = () => {
     // Remove setChatConfig query parameters and reload
