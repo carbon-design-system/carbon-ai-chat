@@ -21,6 +21,7 @@ export {
   ViewState,
   ViewType,
 } from "./types/instance/apiTypes";
+export { loadAllLazyDeps, PageObjectId, TestId } from "./testing/helpers";
 
 export { PersistedState } from "./types/state/AppState";
 
@@ -234,5 +235,3 @@ export {
   ChatCustomElement,
   ChatCustomElementProps,
 } from "./react/ChatCustomElement";
-
-export { PageObjectId, TestId } from "./chat/utils/PageObjectId";

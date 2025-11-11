@@ -18,7 +18,7 @@ import { InputFunctions } from "../input/Input";
 import { MessageTypeComponent } from "../MessageTypeComponent";
 
 import { OverlayPanel } from "../OverlayPanel";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 import { CustomPanel } from "../panels/CustomPanel";
 import { HideComponent } from "../util/HideComponent";
 import VisuallyHidden from "../util/VisuallyHidden";

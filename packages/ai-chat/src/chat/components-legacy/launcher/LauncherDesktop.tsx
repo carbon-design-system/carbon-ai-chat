@@ -13,7 +13,7 @@ import cx from "classnames";
 
 import { LauncherButton, LauncherHandle } from "./LauncherButton";
 import HasIntl from "../../../types/utilities/HasIntl";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 
 interface LauncherDesktopProps extends HasIntl {
   launcherAvatar: ReactNode;
