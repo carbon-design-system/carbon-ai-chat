@@ -12,6 +12,7 @@ import { customElement } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
 import prefix from "../../../globals/settings.js";
+import lightDomStyles from "./styles.scss?lit";
 
 /**
  * Workspace Shell.
@@ -27,6 +28,35 @@ import prefix from "../../../globals/settings.js";
 @customElement(`${prefix}-workspace-shell`)
 class CDSAIChatWorkspaceShell extends LitElement {
   static styles = styles;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    const root = this.getRootNode();
+    if (root instanceof Document || root instanceof ShadowRoot) {
+      this.ensureLightDomStyles(root);
+    } else {
+      console.warn("Unsupported root node type:", root);
+    }
+  }
+
+  private ensureLightDomStyles(root: Document | ShadowRoot): void {
+    const styleId = `${prefix}-tile-container-light-dom-styles`;
+    if (root.querySelector(`#${styleId}`)) {
+      return;
+    }
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = lightDomStyles;
+
+    if (root instanceof ShadowRoot) {
+      root.appendChild(style);
+    } else {
+      root.head.appendChild(style);
+    }
+  }
+
   render() {
     return html`
       <slot name="toolbar"></slot>

@@ -15,7 +15,6 @@ import "@carbon/web-components/es/components/ai-label/ai-label.js";
 import "@carbon/web-components/es/components/notification/inline-notification.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { html } from "lit";
-import styles from "./story-styles.scss?lit";
 import Copy16 from "@carbon/icons/es/copy/16.js";
 import Download16 from "@carbon/icons/es/download/16.js";
 import Share16 from "@carbon/icons/es/share/16.js";
@@ -115,9 +114,6 @@ export default {
   },
   decorators: [
     (story) => html`
-      <style>
-        ${styles}
-      </style>
       <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
     `,
   ],

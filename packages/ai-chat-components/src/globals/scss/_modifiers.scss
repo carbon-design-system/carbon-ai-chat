@@ -68,24 +68,24 @@
   [data-rounded="top-left"] {
     @include radius(start-start);
 
+    &::part(button) {
+      @include radius(start-start);
+    }
+
     :first-child {
       @include radius(start-start);
-
-      &::part(button) {
-        @include radius(start-start);
-      }
     }
   }
 
   [data-rounded="top-right"] {
     @include radius(start-end);
 
+    &::part(button) {
+      @include radius(start-end);
+    }
+
     :last-child {
       @include radius(start-end);
-
-      &::part(button) {
-        @include radius(start-end);
-      }
     }
   }
 
@@ -124,12 +124,12 @@
   [data-rounded="bottom-left"] {
     @include radius(end-start);
 
+    &::part(button) {
+      @include radius(end-start);
+    }
+
     :first-child {
       @include radius(end-start);
-
-      &::part(button) {
-        @include radius(end-start);
-      }
     }
   }
 
