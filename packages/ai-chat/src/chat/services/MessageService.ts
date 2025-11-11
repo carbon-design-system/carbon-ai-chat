@@ -44,13 +44,9 @@ import { LanguagePack } from "../../types/config/PublicConfig";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
 import { CancellationReason } from "../../types/config/MessagingConfig";
 
-// The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, stop
-// retrying, and move on to the next item in the queue. 120 seconds is the longest Cerberus allows for, so we'll
-// set this a little higher than that.
+// The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, and
+// move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
-
-// The maximum amount of time we allow to pass before the error indicator becomes visible.
-const MS_MAX_SILENT_ERROR = 6000;
 
 // The maximum amount of time we allow to pass before the loading indicator becomes visible.
 const MS_MAX_SILENT_LOADING = 4000;
@@ -141,13 +137,11 @@ interface PendingMessageRequest extends SendMessageRequest {
    * Indicates if the response has been processed.
    */
   isProcessed: boolean;
-}
 
-// Types of different retry behaviors. SILENT will retry without letting the end user know we are retrying, VISIBLE will
-// show the user that we are retrying.
-enum RetryType {
-  SILENT = 1,
-  VISIBLE,
+  /**
+   * Indicates if this message is streaming and we should wait for FinalResponseChunk before clearing from queue.
+   */
+  isStreaming?: boolean;
 }
 
 class MessageService {
@@ -178,6 +172,24 @@ class MessageService {
      */
     current: PendingMessageRequest;
   };
+
+  /**
+   * Tracks the ID of the message that is currently streaming. This is set when the first chunk arrives
+   * and cleared when the FinalResponseChunk is processed. Used to handle cancellation even after queue is cleared.
+   */
+  private streamingMessageID: string | null = null;
+
+  /**
+   * Tracks the original message.id when processSuccess completes, so we can look up the controller
+   * when chunks arrive with a different response_id.
+   */
+  private lastProcessedMessageID: string | null = null;
+
+  /**
+   * Maps message IDs to their AbortControllers. This persists even after messages are cleared from the queue,
+   * allowing cancellation of streaming messages that have already "completed" from MessageService's perspective.
+   */
+  private messageAbortControllers = new Map<string, AbortController>();
 
   /**
    * The value indicates that there is a pending locale change that needs to be sent to the assistant on the next
@@ -274,7 +286,14 @@ class MessageService {
       current.isProcessed = true;
     }
 
-    this.moveToNextQueueItem();
+    // Track the message ID so we can link it to the response_id when chunks arrive
+    this.lastProcessedMessageID = current.message.id;
+
+    // For streaming messages, don't clear the queue yet - wait for FinalResponseChunk to arrive
+    // For non-streaming messages (addMessage), clear immediately
+    if (!current.isStreaming) {
+      this.moveToNextQueueItem();
+    }
   }
 
   /**
@@ -289,32 +308,6 @@ class MessageService {
     store.dispatch(
       actions.addLocalMessageItem(localMessage, originalMessage, true),
     );
-  }
-
-  /**
-   * Send to the assistant API, IF we are inside the window to show an error, also update the error state on the
-   * message.
-   */
-  private sendToAssistantAndUpdateErrorState(current: PendingMessageRequest) {
-    // If this message was already invalidated, don't do anything.
-    if (current.isProcessed) {
-      return;
-    }
-
-    this.sendToAssistant(current);
-
-    const now = Date.now();
-    const msSinceStarted = now - current.timeFirstRequest;
-    const isSilentErrorWindow = MS_MAX_SILENT_ERROR > msSinceStarted;
-    const type = isSilentErrorWindow ? RetryType.SILENT : RetryType.VISIBLE;
-    if (type === RetryType.VISIBLE) {
-      // Once we've hit the visible retry state, we need to mark the message as retrying and we need to mark all
-      // the other messages that are still waiting as waiting.
-      this.setMessageErrorState(current, MessageErrorState.RETRYING);
-      this.queue.waiting.forEach((waitingMessage) => {
-        this.setMessageErrorState(waitingMessage, MessageErrorState.WAITING);
-      });
-    }
   }
 
   /**
@@ -440,8 +433,7 @@ class MessageService {
       const message = cloneDeep(current.message);
       current.message = message;
       store.dispatch(actions.updateMessage(message));
-      const controller = new AbortController();
-      current.sendMessageController = controller;
+      // AbortController was already created when message was added to queue
       debugLog("Called customSendMessage", message);
       const busEventSend: BusEventSend = {
         type: BusEventType.SEND,
@@ -451,7 +443,7 @@ class MessageService {
       await customSendMessage(
         message,
         {
-          signal: controller.signal,
+          signal: current.sendMessageController.signal,
           silent: current.requestOptions.silent,
           busEventSend: busEventSend,
         },
@@ -586,6 +578,12 @@ class MessageService {
     sendMessagePromise: ResolvablePromise<void>,
     requestOptions: SendOptions = {},
   ) {
+    // Create AbortController immediately so it can be aborted even if message is still waiting
+    const controller = new AbortController();
+
+    // Store controller in map so it persists even after message is cleared from queue
+    this.messageAbortControllers.set(message.id, controller);
+
     const newPendingMessage: PendingMessageRequest = {
       localMessageID,
       message,
@@ -601,6 +599,7 @@ class MessageService {
       tryCount: 0,
       isProcessed: false,
       source,
+      sendMessageController: controller,
     };
 
     this.queue.waiting.push(newPendingMessage);
@@ -725,18 +724,18 @@ class MessageService {
   /**
    * Cancels all message requests including any that are running now and any that are waiting in the queue.
    */
-  public cancelAllMessageRequests(
+  public async cancelAllMessageRequests(
     reason: string = CancellationReason.CONVERSATION_RESTARTED,
   ) {
     while (this.queue.waiting.length) {
-      this.cancelMessageRequestByID(
+      await this.cancelMessageRequestByID(
         this.queue.waiting[0].message.id,
         false,
         reason,
       );
     }
     if (this.queue.current) {
-      this.cancelMessageRequestByID(
+      await this.cancelMessageRequestByID(
         this.queue.current.message.id,
         false,
         reason,
@@ -746,17 +745,78 @@ class MessageService {
   }
 
   /**
-   * Cancels the current message request if one is in progress.
+   * Marks the current message as streaming so we don't clear it from the queue until FinalResponseChunk arrives.
+   * Also tracks the streaming message ID in case the queue gets cleared before finalization.
    */
-  public cancelCurrentMessageRequest(
+  public markCurrentMessageAsStreaming(messageID?: string) {
+    if (this.queue.current) {
+      this.queue.current.isStreaming = true;
+      this.streamingMessageID = this.queue.current.message.id;
+
+      // If messageID is provided (from chunk response_id), also store the controller under that ID
+      // because the chunk's response_id may differ from message.id
+      if (messageID && messageID !== this.queue.current.message.id) {
+        const controller = this.queue.current.sendMessageController;
+        if (controller) {
+          this.messageAbortControllers.set(messageID, controller);
+        }
+      }
+    } else if (messageID) {
+      // Queue already cleared but we know the response_id from the chunk
+      // Try to find the controller using the last processed message ID
+      this.streamingMessageID = messageID;
+
+      // If we have the last processed message ID, copy its controller to the response_id
+      if (this.lastProcessedMessageID) {
+        const controller = this.messageAbortControllers.get(
+          this.lastProcessedMessageID,
+        );
+        if (controller) {
+          this.messageAbortControllers.set(messageID, controller);
+        }
+      }
+    }
+  }
+
+  /**
+   * Called when a FinalResponseChunk is processed to clear the streaming message from the queue.
+   */
+  public finalizeStreamingMessage(messageID: string) {
+    this.streamingMessageID = null;
+
+    // Clean up the abort controller for this message
+    this.messageAbortControllers.delete(messageID);
+
+    if (this.queue.current && this.queue.current.message.id === messageID) {
+      this.moveToNextQueueItem();
+    }
+  }
+
+  /**
+   * Cancels the current message request if one is in progress.
+   * Also handles streaming messages that may have been cleared from the queue.
+   */
+  public async cancelCurrentMessageRequest(
     reason: string = CancellationReason.STOP_STREAMING,
   ) {
+    // If there's a streaming message, cancel it even if not in queue
+    if (this.streamingMessageID) {
+      await this.cancelMessageRequestByID(
+        this.streamingMessageID,
+        false,
+        reason,
+      );
+      this.streamingMessageID = null;
+      return;
+    }
+
     if (this.queue.current) {
-      this.cancelMessageRequestByID(
+      await this.cancelMessageRequestByID(
         this.queue.current.message.id,
         false,
         reason,
       );
+      this.clearCurrentQueueItem();
     }
   }
 
@@ -782,22 +842,34 @@ class MessageService {
       }
     }
 
-    if (pendingRequest) {
-      const { lastResponse, sendMessageController } = pendingRequest;
+    // Check if we have an abort controller in the map (persists even if message cleared from queue)
+    const controller = this.messageAbortControllers.get(messageID);
+
+    if (pendingRequest || controller) {
+      const { lastResponse } = pendingRequest || {};
+      const sendMessageController =
+        controller || pendingRequest?.sendMessageController;
+
       // If someone is using customMessageSend, we let them know they should abort the request.
       sendMessageController?.abort(reason);
 
-      if (reason === CancellationReason.TIMEOUT) {
-        this.rejectFinalErrorOnMessage(pendingRequest, reason);
-        if (logError) {
-          this.serviceManager.actions.errorOccurred({
-            errorType: OnErrorType.MESSAGE_COMMUNICATION,
-            message: reason,
-            otherData: await safeFetchTextWithTimeout(lastResponse),
-          });
+      // Clean up the controller from the map
+      this.messageAbortControllers.delete(messageID);
+
+      // Only process the pending request if it exists (it may have already been cleared from queue)
+      if (pendingRequest) {
+        if (reason === CancellationReason.TIMEOUT) {
+          this.rejectFinalErrorOnMessage(pendingRequest, reason);
+          if (logError) {
+            this.serviceManager.actions.errorOccurred({
+              errorType: OnErrorType.MESSAGE_COMMUNICATION,
+              message: reason,
+              otherData: await safeFetchTextWithTimeout(lastResponse),
+            });
+          }
+        } else {
+          this.resolveCancelledMessage(pendingRequest);
         }
-      } else {
-        this.resolveCancelledMessage(pendingRequest);
       }
     }
   }

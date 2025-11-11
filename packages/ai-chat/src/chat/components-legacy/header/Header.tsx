@@ -160,6 +160,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const publicConfig = useSelector((state: AppState) => state.config.public);
+  const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const isRTL = document.dir === "rtl";
   const chatHeaderConfig = publicConfig.header;
 
@@ -251,7 +252,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         doFocusRef(backButtonRef, false, true);
         return true;
       }
-      if (restartButtonRef.current) {
+      if (restartButtonRef.current && !isRestarting) {
         doFocusRef(restartButtonRef, false, true);
         return true;
       }
@@ -342,9 +343,16 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               }
             >
               <div slot="body-text">
-                <h4 className="cds-aichat--header__slug-title">
-                  {languagePack.ai_slug_title}
-                </h4>
+                {languagePack.ai_slug_label && (
+                  <p className="cds-aichat--header__slug-label">
+                    {languagePack.ai_slug_label}
+                  </p>
+                )}
+                {languagePack.ai_slug_title && (
+                  <h4 className="cds-aichat--header__slug-title">
+                    {languagePack.ai_slug_title}
+                  </h4>
+                )}
                 <div className="cds-aichat--header__slug-description">
                   <div>{languagePack.ai_slug_description}</div>
                   {!isHidden && (
@@ -365,6 +373,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               label={languagePack.buttons_restart}
               onClick={onClickRestart}
               buttonRef={restartButtonRef}
+              disabled={isRestarting}
               tooltipPosition={
                 isRTL
                   ? BUTTON_TOOLTIP_POSITION.RIGHT
@@ -436,6 +445,10 @@ interface HeaderButtonProps extends HasClassName, HasChildren {
    * Testing id used for e2e tests.
    */
   testId?: TestId;
+  /**
+   * Indicates if the button should be disabled.
+   */
+  disabled?: boolean;
 }
 
 /**
@@ -450,6 +463,7 @@ function HeaderButton({
   isReversible = true,
   tooltipPosition,
   testId,
+  disabled = false,
 }: HeaderButtonProps) {
   const buttonKindVal = buttonKind || BUTTON_KIND.GHOST;
   return (
@@ -463,6 +477,7 @@ function HeaderButton({
       kind={buttonKindVal as BUTTON_KIND}
       tooltipPosition={tooltipPosition}
       data-testid={testId}
+      disabled={disabled}
     >
       {children}
     </Button>

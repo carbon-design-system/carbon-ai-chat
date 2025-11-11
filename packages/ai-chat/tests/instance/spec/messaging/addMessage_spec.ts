@@ -13,7 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../helpers/chatInstanceTestHelpers";
+} from "../../../test_helpers";
 import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
 import { BusEventType } from "../../../../src/types/events/eventBusTypes";
 
@@ -67,8 +67,8 @@ describe("ChatInstance.messaging.addMessage", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("Redux state updates", () => {
-    it("should add message to allMessagesByID in Redux store", async () => {
+  describe("state updates", () => {
+    it("should add message to allMessagesByID in store", async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -79,7 +79,7 @@ describe("ChatInstance.messaging.addMessage", () => {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message for Redux",
+              text: "Test message",
             },
           ],
         },
@@ -104,7 +104,7 @@ describe("ChatInstance.messaging.addMessage", () => {
       );
     });
 
-    it("should add local message item to allMessageItemsByID in Redux store", async () => {
+    it("should add local message item to allMessageItemsByID in store", async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);

@@ -26,7 +26,7 @@ interface OnChangeData<ItemType> {
 }
 
 type SelectionEvent = CustomEvent<{
-  item: { value: string };
+  item: { textContent: string; value: string };
 }>;
 
 interface SelectProps extends HasLanguagePack, HasServiceManager {
@@ -85,12 +85,13 @@ function SelectComponent(props: SelectProps) {
     }
   };
 
-  const handleBeingSelected = (e: SelectionEvent) => {
+  const handleSelected = (e: SelectionEvent) => {
+    const label = e.detail.item.textContent;
     const text = e.detail.item.value;
 
     onChange({
       selectedItem: {
-        label: text,
+        label,
         value: { input: { text } },
       },
     });
@@ -134,11 +135,14 @@ function SelectComponent(props: SelectProps) {
           disabled={disableUserInputs}
           onToggled={handleToggle}
           onKeyDown={handleKeyDown}
-          onBeingSelected={handleBeingSelected}
+          onSelected={handleSelected}
         >
           {options.map((option) => (
-            <DropdownItem value={option.label} key={option.label}>
-              {option.value.input.text}
+            <DropdownItem
+              value={option.value.input.text}
+              key={option.value.input.text}
+            >
+              {option.label}
             </DropdownItem>
           ))}
         </Dropdown>

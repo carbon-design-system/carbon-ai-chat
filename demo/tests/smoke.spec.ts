@@ -5,8 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId } from "@carbon/ai-chat/server";
+import { PageObjectId, ViewType } from "@carbon/ai-chat/server";
 import { test, expect } from "@playwright/test";
+
+// Import types for window.setChatConfig without emitting runtime code
+import type {} from "../types/window";
 
 // Setup common to all tests
 test.beforeEach(async ({ page }) => {
@@ -15,6 +18,20 @@ test.beforeEach(async ({ page }) => {
 
   // Navigate to demo page first to get chatInstance
   await page.goto("/");
+
+  // Wait for page to fully load and web component to initialize
+  await page.waitForLoadState("domcontentloaded");
+
+  // Wait for the chatInstance to be available on window
+  await page.waitForFunction(() => Boolean(window.chatInstance), {
+    timeout: 10000,
+  });
+
+  await page.evaluate(() => {
+    if (window.chatInstance) {
+      window.chatInstance.changeView("launcher" as ViewType);
+    }
+  });
 });
 
 // Clear session between all tests to ensure clean state
@@ -48,7 +65,9 @@ test("smoke React", async ({ page }) => {
   await mainPanel.getByTestId(PageObjectId.INPUT).click();
   await mainPanel.getByTestId(PageObjectId.INPUT).fill("text");
   await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(page.locator("#cds-aichat--message-3")).toContainText("Carbon");
+  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
+    "Carbon",
+  );
   await close.click();
 });
 
@@ -73,12 +92,14 @@ test("smoke web component", async ({ page }) => {
 
   // Open the Web component chat widget, enter a message, confirm receipt of answer, close the chat.
   await page.getByTestId(PageObjectId.LAUNCHER).click();
-  const mainPanelWebComponent = page.getByTestId(PageObjectId.MAIN_PANEL);
-  const close = mainPanelWebComponent.getByTestId(PageObjectId.CLOSE_CHAT);
+  const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
+  const close = mainPanel.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible();
-  await mainPanelWebComponent.getByTestId(PageObjectId.INPUT).click();
-  await mainPanelWebComponent.getByTestId(PageObjectId.INPUT).fill("text");
-  await mainPanelWebComponent.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(page.locator("#cds-aichat--message-3")).toContainText("Carbon");
+  await mainPanel.getByTestId(PageObjectId.INPUT).click();
+  await mainPanel.getByTestId(PageObjectId.INPUT).fill("text");
+  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
+    "Carbon",
+  );
   await close.click();
 });

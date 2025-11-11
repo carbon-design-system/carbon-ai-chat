@@ -17,18 +17,21 @@
 .sidebar {
   position: fixed;
   right: 0;
-  top: 0;
-  height: 100vh;
+  top: 48px;
+  height: calc(100vh - 48px);
   width: calc(320px + 1rem);
   z-index: 9999;
-  transition: right 100ms, visibility 0s 100ms; /* Delay visibility change */
-  visibility: visible; /* Visible by default */
+  transition: right 200ms;
+  visibility: visible;
+}
+
+.sidebar--closing {
+  right: calc(calc(320px + 1rem) * -1);
 }
 
 .sidebar--closed {
   right: calc(calc(320px + 1rem) * -1);
-  transition: right 100ms, visibility 0s 0s; /* Immediately hide after transition */
-  visibility: hidden; /* Hidden after right transition */
+  visibility: hidden;
 }
 
 .padding {

@@ -1,21 +1,29 @@
-# Publish patch releases, both rc (release candidates) and full releases
-name: Release - patch
+# Publish minor or patch releases, both rc (release candidates) and full releases
+name: Release start - minor / patch
 run-name: ${{ inputs.type }} - dry-run:${{ inputs.dry-run }}
 
 on:
   workflow_dispatch:
     inputs:
+      semver-type:
+        description: 'Specify the type of semver release'
+        required: true
+        type: choice
+        default: minor
+        options:
+          - minor
+          - patch
       type:
         required: true
-        description: "Specify the type of release"
+        description: "Specify the type of release (stable, candidate, etc)"
         type: choice
-        default: first minor rc
-        # Full patch release (ie. v1.0.0 -> v1.0.1)
-        # First patch RC (ie. v1.0.0 -> v1.0.1-rc.0)
-        # Subsequent RC (ie v1.0.1-rc.0 -> v1.0.1-rc.1)
+        default: first rc
+        # Full release (ie. v1.0.0 -> v1.1.0)
+        # First RC (ie. v1.0.0 -> v1.1.0-rc.0)
+        # Subsequent RC (ie v1.1.0-rc.0 -> v1.1.0-rc.1)
         options:
-          - full patch release
-          - first patch rc
+          - full release
+          - first rc
           - subsequent rc
       dry-run:
         # Check dry run to test run lerna and confirm package version bumps
@@ -34,6 +42,7 @@ jobs:
     # trigger the input data to the `release-base` workflow and trigger it
     uses: ./.github/workflows/release-base.yml
     with:
+      semver-type: ${{ inputs.semver-type }}
       type: ${{ inputs.type }}
       dry-run: ${{ inputs.dry-run }}
       force-publish: ${{ inputs.force-publish}}

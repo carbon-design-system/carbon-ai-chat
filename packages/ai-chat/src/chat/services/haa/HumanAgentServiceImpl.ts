@@ -799,7 +799,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         // If the user was previously connected to an agent, we need to see if we can reconnect the user to the agent.
         try {
           store.dispatch(setIsReconnecting(true));
-          setTimeout(this.serviceManager.appWindow.requestFocus);
+          setTimeout(this.serviceManager?.appWindow?.requestFocus);
 
           // Let the service desk do whatever it needs to do to reconnect.
           didReconnect = await this.serviceDesk.reconnect();
@@ -816,7 +816,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
         return;
       }
 
-      setTimeout(this.serviceManager.appWindow.requestFocus);
+      setTimeout(this.serviceManager?.appWindow?.requestFocus);
 
       if (!didReconnect) {
         // If we didn't reconnected, then just end the chat.

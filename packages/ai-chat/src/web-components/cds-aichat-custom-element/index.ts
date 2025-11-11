@@ -43,6 +43,7 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,
+  BusEventViewPreChange,
 } from "../../types/events/eventBusTypes";
 
 /**
@@ -215,16 +216,39 @@ class ChatCustomElement extends LitElement {
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * An optional listener for "view:change" events. Such a listener is required when using a custom element in order
-   * to control the visibility of the Carbon AI Chat main window. If no callback is provided here, a default one will be
-   * used that injects styling into the app that will show and hide the Carbon AI Chat main window and also change the
-   * size of the custom element so it doesn't take up space when the main window is closed.
+   * Called before a view change (chat opening/closing). The chat will hide the chat shell inside your custom element
+   * to prevent invisible keyboard stops when the view change is complete.
    *
-   * You can provide a different callback here if you want custom behavior such as an animation when the main window
-   * is opened or closed.
+   * Use this callback to update your CSS class name values on this element before the view change happens if you want to add any open/close
+   * animations to your custom element before the chat shell inner contents are hidden. It is async and so you can
+   * tie it to native the AnimationEvent and only return when your animations have completed.
    *
-   * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the event
-   * handler will not be updated.
+   * A common pattern is to use this for when the chat is closing and to use onViewChange for when the chat opens.
+   *
+   * Note that this function can only be provided before Carbon AI Chat is loaded as it is registered before the
+   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated.
+   */
+  @property()
+  onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
+
+  /**
+   * Called when the chat view change is complete. If no callback is provided here, the default behavior will be to set
+   * the chat shell to 0x0 size and set all inner contents aside from the launcher, if you are using it, to display: none.
+   * The inner contents of the chat shell (aside from the launcher if you are using it) are always set to display: none
+   * regardless of what is configured with this callback to prevent invisible tab stops and screen reader issues.
+   *
+   * Use this callback to update your className value when the chat has finished being opened or closed.
+   *
+   * You can provide a different callback here if you want custom animation behavior when the chat is opened or closed.
+   * The animation behavior defined here will run in concert with the chat inside your custom container being hidden.
+   *
+   * If you want to run animations before the inner contents of the chat shell is shrunk and the inner contents are hidden,
+   * make use of onViewPreChange.
+   *
+   * A common pattern is to use this for when the chat is opening and to use onViewPreChange for when the chat closes.
+   *
+   * Note that this function can only be provided before Carbon AI Chat is loaded as it is registered before the
+   * chat renders. After Carbon AI Chat is loaded, the callback will not be updated.
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
@@ -343,6 +367,12 @@ class ChatCustomElement extends LitElement {
 
   private onBeforeRenderOverride = async (instance: ChatInstance) => {
     this._instance = instance;
+    if (this.onViewPreChange) {
+      this._instance.on({
+        type: BusEventType.VIEW_PRE_CHANGE,
+        handler: this.onViewPreChange,
+      });
+    }
     this._instance.on({
       type: BusEventType.VIEW_CHANGE,
       handler: this.onViewChange || this.defaultViewChangeHandler,

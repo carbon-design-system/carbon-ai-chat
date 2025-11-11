@@ -1,0 +1,38 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as ChatButtonReactStories from "./chat-button-react.stories";
+
+<Meta of={ChatButtonReactStories} />
+
+# Chat Button
+
+The `<ChatButton>` component is an extension of the Carbon Design System’s `<cds-button>` component, designed specifically for AI Chat applications.
+The key differences include:
+- Rounded corners
+- New `is-quick-action` property to render the button as a quick action button.
+- Enforced size and kind defaults for quick action buttons.
+
+It supports all the properties of the Carbon Design System’s `<cds-button>` component, with additional AI Chat–specific styles and behaviors.
+
+## Getting started
+
+Here’s a quick example to help you get started.
+
+### JS (via import)
+
+```javascript
+import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
+```
+
+<Markdown>{`${cdnJs({ components: ["chat-button"] })}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+```jsx
+<ChatButton
+  kind="primary"
+  onClick={() => {}}
+  size="lg"
+>
+  Button
+</ChatButton>;
+```

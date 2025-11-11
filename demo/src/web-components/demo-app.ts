@@ -18,6 +18,7 @@ import {
   BusEventMessageItemCustom,
   BusEventType,
   BusEventViewChange,
+  BusEventViewPreChange,
   ChatInstance,
   GenericItem,
   MessageResponse,
@@ -33,6 +34,12 @@ import { DeepPartial } from "../types/DeepPartial";
 
 import { Settings } from "../framework/types";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+async function sleep(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
 
 const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
   Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
@@ -71,22 +78,21 @@ export class DemoApp extends LitElement {
     .sidebar {
       position: fixed;
       right: 0;
-      top: 0;
-      height: 100vh;
+      top: 48px;
+      height: calc(100vh - 48px);
       width: calc(320px + 1rem);
       z-index: 9999;
-      transition:
-        right 100ms,
-        visibility 0s 100ms; /* Delay visibility change */
-      visibility: visible; /* Visible by default */
+      transition: right 200ms;
+      visibility: visible;
+    }
+
+    .sidebar--closing {
+      right: calc(calc(320px + 1rem) * -1);
     }
 
     .sidebar--closed {
       right: calc(calc(320px + 1rem) * -1);
-      transition:
-        right 100ms,
-        visibility 0s 0s; /* Immediately hide after transition */
-      visibility: hidden; /* Hidden after right transition */
+      visibility: hidden;
     }
   `;
 
@@ -102,6 +108,9 @@ export class DemoApp extends LitElement {
 
   @state()
   accessor sideBarOpen: boolean = false;
+
+  @state()
+  accessor sideBarClosing: boolean = false;
 
   @state()
   accessor instance!: ChatInstance;
@@ -130,11 +139,26 @@ export class DemoApp extends LitElement {
   /**
    * Listens for view changes on the AI chat.
    */
+  onViewPreChange = async (
+    event: BusEventViewPreChange,
+    _instance: ChatInstance,
+  ) => {
+    if (!event.newViewState.mainWindow) {
+      this.sideBarClosing = true;
+      // In production, should really be using AnimationEvent event here instead of a hard coded timeout.
+      await sleep(250);
+    }
+  };
+
+  /**
+   * Listens for view changes on the AI chat.
+   */
   onViewChange = (event: BusEventViewChange, _instance: ChatInstance) => {
     if (event.newViewState.mainWindow) {
       this.sideBarOpen = true;
     } else {
       this.sideBarOpen = false;
+      this.sideBarClosing = false;
     }
   };
 
@@ -342,6 +366,16 @@ export class DemoApp extends LitElement {
     return null;
   }
 
+  getSideBarClassName() {
+    let className = "sidebar";
+    if (this.sideBarClosing) {
+      className += " sidebar--closing";
+    } else if (!this.sideBarOpen) {
+      className += " sidebar--closed";
+    }
+    return className;
+  }
+
   // Depending on which layout is setting in settings, render the right version of AI chat.
   render() {
     return html`
@@ -359,7 +393,6 @@ export class DemoApp extends LitElement {
             .shouldTakeFocusIfOpensAutomatically=${this.config
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
-            .enableFocusTrap=${this.config.enableFocusTrap ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
             .header=${this.config.header}
             .layout=${this.config.layout}
@@ -376,7 +409,7 @@ export class DemoApp extends LitElement {
         : html``}
       ${this.settings.layout === "sidebar"
         ? html`<cds-aichat-custom-element
-            class="sidebar${this.sideBarOpen ? "" : " sidebar--closed"}"
+            class=${this.getSideBarClassName()}
             .config=${this.config}
             .onError=${this.config.onError}
             .openChatByDefault=${this.config.openChatByDefault ?? undefined}
@@ -389,7 +422,6 @@ export class DemoApp extends LitElement {
             .shouldTakeFocusIfOpensAutomatically=${this.config
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
-            .enableFocusTrap=${this.config.enableFocusTrap ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
             .header=${this.config.header}
             .layout=${this.config.layout}
@@ -400,6 +432,7 @@ export class DemoApp extends LitElement {
             .homescreen=${this.config.homescreen}
             .launcher=${this.config.launcher}
             .onBeforeRender=${this.onBeforeRender}
+            .onViewPreChange=${this.onViewPreChange}
             .onViewChange=${this.onViewChange}
             .serviceDeskFactory=${serviceDeskFactory}
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
@@ -421,7 +454,6 @@ export class DemoApp extends LitElement {
             .shouldTakeFocusIfOpensAutomatically=${this.config
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
-            .enableFocusTrap=${this.config.enableFocusTrap ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
             .header=${this.config.header}
             .layout=${this.config.layout}
@@ -436,11 +468,6 @@ export class DemoApp extends LitElement {
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
           >`
         : html``}
-      ${this.settings.layout === "sidebar" && !this.sideBarOpen
-        ? html`<demo-side-bar-nav
-            .openSideBar=${this.openSideBar}
-          ></demo-side-bar-nav>`
-        : ""}
     `;
   }
 }

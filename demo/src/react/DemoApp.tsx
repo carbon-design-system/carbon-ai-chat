@@ -15,6 +15,7 @@ import {
   BusEventMessageItemCustom,
   BusEventType,
   BusEventViewChange,
+  BusEventViewPreChange,
   ChatContainer,
   ChatCustomElement,
   ChatInstance,
@@ -23,16 +24,17 @@ import {
   RenderUserDefinedState,
   ServiceDesk,
   ServiceDeskFactoryParameters,
-  ViewType,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Settings } from "../framework/types";
-import { SideBar } from "./DemoSideBarNav";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+
+const sleep = (milliseconds: number) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
   Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
@@ -45,8 +47,9 @@ interface AppProps {
 
 function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
-  const [instance, setInstance] = useState<ChatInstance>();
+  const [sideBarClosing, setSideBarClosing] = useState(false);
   const [stateText, setStateText] = useState<string>("Initial text");
+  const isSidebarLayout = settings.layout === "sidebar";
 
   useEffect(() => {
     setInterval(() => setStateText(Date.now().toString()), 2000);
@@ -174,9 +177,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
 
   const onBeforeRender = (instance: ChatInstance) => {
-    // You can set the instance to access it later if you need to.
-    setInstance(instance);
-
     // Notify parent component that instance is ready
     onChatInstanceReady?.(instance);
 
@@ -192,21 +192,30 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   };
 
   /**
-   * Closes/hides the chat.
-   */
-  const openSideBar = () => {
-    instance?.changeView(ViewType.MAIN_WINDOW);
-  };
-
-  /**
    * Listens for view changes on the AI chat.
    */
-  const onViewChange =
-    settings.layout === "sidebar"
-      ? (event: BusEventViewChange, _instance: ChatInstance) => {
-          setSideBarOpen(event.newViewState.mainWindow);
+  const onViewChange = isSidebarLayout
+    ? (event: BusEventViewChange, _instance: ChatInstance) => {
+        if (event.newViewState.mainWindow) {
+          setSideBarOpen(true);
+        } else {
+          setSideBarOpen(false);
+          setSideBarClosing(false);
         }
-      : undefined;
+      }
+    : undefined;
+
+  /**
+   * Handles pre-view-change lifecycle for sidebar transitions.
+   */
+  const onViewPreChange = isSidebarLayout
+    ? async (event: BusEventViewPreChange, _instance: ChatInstance) => {
+        if (!event.newViewState.mainWindow) {
+          setSideBarClosing(true);
+          await sleep(250);
+        }
+      }
+    : undefined;
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
   let className = "";
@@ -215,11 +224,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     settings.layout === "fullscreen-no-gutter"
   ) {
     className = "fullScreen";
-  } else if (settings.layout === "sidebar") {
-    if (sideBarOpen) {
-      className = "sidebar";
-    } else {
-      className = "sidebar sidebar--closed";
+  } else if (isSidebarLayout) {
+    className = "sidebar";
+    if (sideBarClosing) {
+      className += " sidebar--closing";
+    } else if (!sideBarOpen) {
+      className += " sidebar--closed";
     }
   }
 
@@ -232,20 +242,16 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
-    <>
-      <ChatCustomElement
-        {...config}
-        className={className as string}
-        onViewChange={onViewChange}
-        onBeforeRender={onBeforeRender}
-        renderUserDefinedResponse={renderUserDefinedResponse}
-        renderWriteableElements={renderWriteableElements}
-        serviceDeskFactory={serviceDeskFactory}
-      />
-      {settings.layout === "sidebar" && !sideBarOpen && (
-        <SideBar openSideBar={openSideBar} />
-      )}
-    </>
+    <ChatCustomElement
+      {...config}
+      className={className as string}
+      onViewPreChange={onViewPreChange}
+      onViewChange={onViewChange}
+      onBeforeRender={onBeforeRender}
+      renderUserDefinedResponse={renderUserDefinedResponse}
+      renderWriteableElements={renderWriteableElements}
+      serviceDeskFactory={serviceDeskFactory}
+    />
   );
 }
 
