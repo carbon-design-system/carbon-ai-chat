@@ -136,12 +136,12 @@
   [data-rounded="bottom-right"] {
     @include radius(end-end);
 
+    &::part(button) {
+      @include radius(end-end);
+    }
+
     :last-child {
       @include radius(end-end);
-
-      &::part(button) {
-        @include radius(end-end);
-      }
     }
   }
 }

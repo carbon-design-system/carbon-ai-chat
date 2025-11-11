@@ -10,5 +10,9 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities/convert" as *;
+@use "../../../globals/scss/modifiers" as *;
 
-// story specific styles
+html {
+  --cds-aichat-border-radius: 0.5rem;
+  @include rounded-modifiers;
+}

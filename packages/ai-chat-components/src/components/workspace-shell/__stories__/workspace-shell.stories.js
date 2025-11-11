@@ -388,6 +388,7 @@ function getFooterAction(type) {
           data-index="1"
           kind="primary"
           slot="footer-action"
+          data-rounded="bottom-right"
           >Button</cds-button
         >
       `;
@@ -398,6 +399,7 @@ function getFooterAction(type) {
           data-index="1"
           kind="primary"
           slot="footer-action"
+          data-rounded="bottom-right"
           >Button</cds-button
         >
         <cds-button
@@ -415,6 +417,7 @@ function getFooterAction(type) {
           data-index="1"
           kind="primary"
           slot="footer-action"
+          data-rounded="bottom-right"
           >Button</cds-button
         >
         <cds-button
