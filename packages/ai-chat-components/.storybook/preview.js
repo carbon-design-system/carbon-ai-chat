@@ -62,6 +62,32 @@ export const globalTypes = {
       items: ["white", "g10", "g90", "g100"],
     },
   },
+  dir: {
+    name: "Text direction",
+    description: "Set the text direction for the story",
+    defaultValue: "ltr",
+    toolbar: {
+      icon: "transfer",
+      title: "Text direction",
+      items: [
+        {
+          right: "🔄",
+          title: "auto",
+          value: "auto",
+        },
+        {
+          right: "➡️",
+          title: "left-to-right (ltr)",
+          value: "ltr",
+        },
+        {
+          right: "⬅️",
+          title: "right-to-left (rtl)",
+          value: "rtl",
+        },
+      ],
+    },
+  },
 };
 
 export const parameters = {
@@ -182,10 +208,11 @@ export const parameters = {
 
 export const decorators = [
   function decoratorContainer(story, context) {
-    const { theme } = context.globals;
+    const { locale, theme, dir } = context.globals;
 
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
-
+    document.documentElement.lang = locale;
+    document.documentElement.dir = dir;
     return html` <div
       id="main-content"
       name="main-content"
