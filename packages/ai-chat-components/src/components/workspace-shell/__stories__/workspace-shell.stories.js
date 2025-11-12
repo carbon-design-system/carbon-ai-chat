@@ -8,6 +8,7 @@
  */
 
 import "../index";
+import "../../toolbar/index";
 import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/tag/tag.js";
 import "@carbon/web-components/es/components/icon-button/icon-button.js";
@@ -15,13 +16,88 @@ import "@carbon/web-components/es/components/ai-label/ai-label.js";
 import "@carbon/web-components/es/components/notification/inline-notification.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { html } from "lit";
-import Copy16 from "@carbon/icons/es/copy/16.js";
+import { action } from "storybook/actions";
+
+import Version16 from "@carbon/icons/es/version/16.js";
 import Download16 from "@carbon/icons/es/download/16.js";
 import Share16 from "@carbon/icons/es/share/16.js";
 import Launch16 from "@carbon/icons/es/launch/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import Close16 from "@carbon/icons/es/close/16.js";
 import Edit16 from "@carbon/icons/es/edit/16.js";
+
+const actionLists = {
+  "Advanced list": [
+    {
+      text: "Version",
+      icon: iconLoader(Version16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Download",
+      icon: iconLoader(Download16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Share",
+      icon: iconLoader(Share16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Launch",
+      icon: iconLoader(Launch16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Maximize",
+      icon: iconLoader(Maximize16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Close",
+      fixed: true,
+      icon: iconLoader(Close16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+  ],
+  "Basic list": [
+    {
+      text: "Launch",
+      icon: iconLoader(Launch16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Maximize",
+      icon: iconLoader(Maximize16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+    {
+      text: "Close",
+      fixed: true,
+      icon: iconLoader(Close16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+  ],
+  "Close only": [
+    {
+      text: "Close",
+      fixed: true,
+      icon: iconLoader(Close16, { slot: "icon" }),
+      size: "md",
+      onClick: action("onClick"),
+    },
+  ],
+  None: [],
+};
 
 export default {
   title: "Components/Workspace shell",
@@ -34,14 +110,15 @@ export default {
       control: {
         type: "select",
       },
-      options: {
-        "Advanced list": "advanced",
-        "Basic List": "basic",
-        "AI Label and Close only": "ailabelClose",
-        "AI Label only": "ailabel",
-        "Close only": "close",
-      },
-      description: "Defines the type of action slot for the Toolbar Component",
+      options: Object.keys(actionLists),
+      mapping: actionLists,
+      description:
+        "Select which predefined set of actions to render in the Toolbar component.",
+    },
+    toolbarOverflow: {
+      control: "boolean",
+      description:
+        "Provides an option to overflow actions into an overflow menu when the cds-aichat-toolbar component is used in the toolbar slot.",
     },
     notificationTitle: {
       control: "text",
@@ -101,6 +178,7 @@ export default {
       sort: [
         "toolbarTitle",
         "toolbarAction",
+        "toolbarOverflow",
         "notificationTitle",
         "notificationSubTitle",
         "headerTitle",
@@ -119,160 +197,6 @@ export default {
   ],
 };
 
-function getToolbarAction(type) {
-  switch (type) {
-    case "advanced":
-      return html`
-        <cds-ai-label autoalign="" slot="toolbar-action" size="2xs">
-          <div slot="body-text">
-            <p class="secondary">
-              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-              do eiusmod tempor incididunt ut fsil labore et dolore magna
-              aliqua.
-            </p>
-          </div>
-        </cds-ai-label>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Copy16, { slot: "icon" })}
-          <span slot="tooltip-content">Copy</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Download16, { slot: "icon" })}
-          <span slot="tooltip-content">Download</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Share16, { slot: "icon" })}
-          <span slot="tooltip-content">Share</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Launch16, { slot: "icon" })}
-          <span slot="tooltip-content">Launch</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Maximize16, { slot: "icon" })}
-          <span slot="tooltip-content">Maximize</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Close16, { slot: "icon" })}
-          <span slot="tooltip-content">Close</span>
-        </cds-icon-button>
-      `;
-    case "basic":
-      return html`
-        <cds-ai-label autoalign="" slot="toolbar-action" size="2xs">
-          <div slot="body-text">
-            <p class="secondary">
-              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-              do eiusmod tempor incididunt ut fsil labore et dolore magna
-              aliqua.
-            </p>
-          </div>
-        </cds-ai-label>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Launch16, { slot: "icon" })}
-          <span slot="tooltip-content">Launch</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Maximize16, { slot: "icon" })}
-          <span slot="tooltip-content">Maximize</span>
-        </cds-icon-button>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Close16, { slot: "icon" })}
-          <span slot="tooltip-content">Close</span>
-        </cds-icon-button>
-      `;
-    case "ailabelClose":
-      return html`
-        <cds-ai-label autoalign="" slot="toolbar-action" size="2xs">
-          <div slot="body-text">
-            <p class="secondary">
-              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-              do eiusmod tempor incididunt ut fsil labore et dolore magna
-              aliqua.
-            </p>
-          </div>
-        </cds-ai-label>
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Close16, { slot: "icon" })}
-          <span slot="tooltip-content">Close</span>
-        </cds-icon-button>
-      `;
-    case "ailabel":
-      return html`
-        <cds-ai-label autoalign="" slot="toolbar-action" size="2xs">
-          <div slot="body-text">
-            <p class="secondary">
-              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-              do eiusmod tempor incididunt ut fsil labore et dolore magna
-              aliqua.
-            </p>
-          </div>
-        </cds-ai-label>
-      `;
-    case "close":
-      return html`
-        <cds-icon-button
-          kind="ghost"
-          size="md"
-          align="bottom"
-          slot="toolbar-action"
-        >
-          ${iconLoader(Close16, { slot: "icon" })}
-          <span slot="tooltip-content">Close</span>
-        </cds-icon-button>
-      `;
-  }
-}
 function headerDescription(type) {
   switch (type) {
     case "basic":
@@ -433,7 +357,8 @@ function getFooterAction(type) {
 export const Default = {
   args: {
     toolbarTitle: "Title",
-    toolbarAction: "advanced",
+    toolbarAction: "Advanced list",
+    toolbarOverflow: true,
     notificationTitle: "Title",
     notificationSubTitle: "Message",
     headerTitle: "Title",
@@ -445,9 +370,22 @@ export const Default = {
   },
   render: (args) => {
     return html`
-      <cds-aichat-workspace-shell-toolbar title-text="${args.toolbarTitle}">
-        ${getToolbarAction(args.toolbarAction)}
-      </cds-aichat-workspace-shell-toolbar>
+      <cds-aichat-toolbar
+        slot="toolbar"
+        ?overflow=${args.toolbarOverflow}
+        .actions=${args.toolbarAction}
+      >
+        <div slot="title" data-fixed>${args.toolbarTitle}</div>
+        <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
+          <div slot="body-text">
+            <p class="secondary">
+              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
+              do eiusmod tempor incididunt ut fsil labore et dolore magna
+              aliqua.
+            </p>
+          </div>
+        </cds-ai-label>
+      </cds-aichat-toolbar>
       <cds-inline-notification
         slot="notification"
         .title="${args.notificationTitle}"

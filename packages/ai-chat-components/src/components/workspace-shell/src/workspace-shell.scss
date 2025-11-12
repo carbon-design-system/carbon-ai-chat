@@ -35,18 +35,11 @@ $css--plex: true !default;
     max-inline-size: 100%;
   }
 }
-:host(#{$prefix}-workspace-shell-toolbar) {
+::slotted(#{$prefix}-toolbar) {
   display: grid;
-  align-items: center;
-  justify-content: space-between;
-  padding: rem(8px) rem(8px) rem(8px) rem(32px);
-  border-block-end: solid rem(1px) theme.$border-subtle-01;
-  grid-auto-flow: column;
-
-  .cds-aichat-workspace-shell-toolbar__title {
-    color: theme.$text-secondary;
-  }
+  padding: rem(8px);
 }
+
 :host(#{$prefix}-workspace-shell-header) {
   display: grid;
   align-items: baseline;
