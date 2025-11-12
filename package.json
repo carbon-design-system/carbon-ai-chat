@@ -17,6 +17,7 @@
     "examples/react/basic",
     "examples/react/custom-element",
     "examples/react/history",
+    "examples/react/next",
     "examples/react/watch-state",
     "examples/react/watsonx",
     "examples/react/vite",
