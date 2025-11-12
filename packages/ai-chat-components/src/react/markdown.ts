@@ -12,11 +12,14 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatMarkdown from "../components/markdown/src/cds-aichat-markdown.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const Markdown = createComponent({
-  tagName: "cds-aichat-markdown",
-  elementClass: CDSAIChatMarkdown,
-  react: React,
-});
+const Markdown = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-markdown",
+    elementClass: CDSAIChatMarkdown,
+    react: React,
+  }),
+);
 
 export default Markdown;

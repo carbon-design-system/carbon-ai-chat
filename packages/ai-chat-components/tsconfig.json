@@ -20,6 +20,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
+    "jsx": "react-jsx",
     "strict": true,
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,

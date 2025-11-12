@@ -15,12 +15,15 @@ import {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
 } from "../components/feedback/src/feedback.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const Feedback = createComponent({
-  tagName: "cds-aichat-feedback",
-  elementClass: CDSChatFeedbackElement,
-  react: React,
-});
+const Feedback = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-feedback",
+    elementClass: CDSChatFeedbackElement,
+    react: React,
+  }),
+);
 
 export type { FeedbackInitialValues, FeedbackSubmitDetails };
 export default Feedback;

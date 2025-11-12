@@ -844,7 +844,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           isOpen={isOpen}
           isReadonly={isFeedbackSubmitted}
           onClose={() => onFeedbackClicked(isPositive)}
-          onSubmit={(details) => onSubmit(isPositive, details)}
+          onSubmit={(details: FeedbackSubmitDetails) =>
+            onSubmit(isPositive, details)
+          }
           initialValues={
             feedbackHistory && feedbackHistory?.is_positive === isPositive
               ? feedbackInitialValues

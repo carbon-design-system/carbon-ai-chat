@@ -21,7 +21,7 @@ export {
   ViewState,
   ViewType,
 } from "./types/instance/apiTypes";
-export { loadAllLazyDeps, PageObjectId, TestId } from "./testing/helpers";
+export { PageObjectId, TestId } from "./testing/PageObjectId.js";
 
 export { PersistedState } from "./types/state/AppState";
 
@@ -52,6 +52,7 @@ export {
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
+export type { loadAllLazyDeps } from "./testing/helpers.js";
 
 export {
   BusEvent,

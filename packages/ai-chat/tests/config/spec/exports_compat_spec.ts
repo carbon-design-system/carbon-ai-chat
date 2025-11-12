@@ -23,8 +23,15 @@ type ClientValues = typeof import("../../../src/aiChatEntry");
 type ServerValues = typeof import("../../../src/serverEntry");
 
 // 1) Server exports must be a subset of client exports (additive changes allowed on client)
+type ServerOnlyAllowedKeys = "loadAllLazyDeps";
 type _NoExtraServerExports = AssertTrue<
-  Equals<Exclude<keyof ServerValues, keyof ClientValues>, never>
+  Equals<
+    Exclude<
+      Exclude<keyof ServerValues, keyof ClientValues>,
+      ServerOnlyAllowedKeys
+    >,
+    never
+  >
 >;
 
 // 2) All shared exports must have identical types on both sides (no breaking changes)

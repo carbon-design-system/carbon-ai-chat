@@ -11,11 +11,14 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 import CDSChatFeedbackButtonsElement from "../components/feedback-buttons/src/cds-aichat-feedback-buttons.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const FeedbackButtons = createComponent({
-  tagName: "cds-aichat-feedback-buttons",
-  elementClass: CDSChatFeedbackButtonsElement,
-  react: React,
-});
+const FeedbackButtons = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-feedback-buttons",
+    elementClass: CDSChatFeedbackButtonsElement,
+    react: React,
+  }),
+);
 
 export default FeedbackButtons;

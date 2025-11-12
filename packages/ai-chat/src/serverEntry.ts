@@ -17,7 +17,8 @@
  */
 
 // Export types and utilities without importing web components
-export { PageObjectId, TestId, loadAllLazyDeps } from "./testing/helpers";
+export { PageObjectId, TestId } from "./testing/PageObjectId.js";
+export { loadAllLazyDeps } from "./testing/helpers.js";
 
 // Export all types without the web component implementations
 export {

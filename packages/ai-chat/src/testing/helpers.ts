@@ -6,28 +6,43 @@
  *
  *  @license
  */
-
-import {
-  loadAllLazyDeps as loadComponentLazyDeps,
+// Reuse the component-level preload helper so CodeMirror/DataTable deps stay in sync.
+import { loadAllLazyDeps as loadComponentLazyDeps } from "@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js";
+export {
   loadCodeSnippetDeps,
   loadTableDeps,
 } from "@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js";
-import { normalizeModuleInterop } from "../chat/utils/moduleInterop";
-import { localeLoaders } from "../chat/utils/languages";
-export { PageObjectId, TestId } from "./PageObjectId";
+import { normalizeModuleInterop } from "../chat/utils/moduleInterop.js";
+import { localeLoaders } from "../chat/utils/languages.js";
+
+// Prefer native dynamic `import()` so the same code path works for ESM-only bundles
+// (Swiper, react-player) and CommonJS-friendly modules (color). Node's dynamic
+// import returns a namespace object for CommonJS modules, which we normalize below.
+async function requireOrImport<TModule>(
+  specifier: string,
+  dynamicImport: () => Promise<TModule>,
+): Promise<TModule> {
+  return dynamicImport();
+}
 
 async function preloadSwiper() {
-  await Promise.all([import("swiper/react"), import("swiper/modules")]);
+  await Promise.all([
+    requireOrImport("swiper/react", () => import("swiper/react")),
+    requireOrImport("swiper/modules", () => import("swiper/modules")),
+  ]);
 }
 
 async function preloadReactPlayer() {
-  const mod = await import("react-player/lazy/index.js");
-  normalizeModuleInterop(mod);
+  const reactPlayerModule = await requireOrImport(
+    "react-player/lazy/index.js",
+    () => import("react-player/lazy/index.js"),
+  );
+  normalizeModuleInterop(reactPlayerModule);
 }
 
 async function preloadColor() {
-  const mod = await import("color");
-  normalizeModuleInterop(mod);
+  const colorModule = await requireOrImport("color", () => import("color"));
+  normalizeModuleInterop(colorModule);
 }
 
 async function preloadDayjsLocales() {
@@ -37,7 +52,8 @@ async function preloadDayjsLocales() {
 /**
  * Eagerly loads every lazily imported dependency across both
  * `@carbon/ai-chat-components` and `@carbon/ai-chat` so tests can preload
- * everything they need (Jest, Vitest, server rendering, etc.).
+ * everything they need (Jest, Vitest, server rendering, etc.). Only available
+ * from `@carbon/ai-chat/server`.
  *
  * @category Testing
  */
@@ -50,13 +66,3 @@ export async function loadAllLazyDeps(): Promise<void> {
     preloadDayjsLocales(),
   ]);
 }
-
-export {
-  loadComponentLazyDeps,
-  loadCodeSnippetDeps,
-  loadTableDeps,
-  preloadSwiper,
-  preloadReactPlayer,
-  preloadColor,
-  preloadDayjsLocales,
-};
