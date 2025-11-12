@@ -1,24 +1,20 @@
-/*
- *  Copyright IBM Corp. 2025
- *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
- */
-
-import "../index";
-import "@carbon/web-components/es/components/icon-button/icon-button.js";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
-import "@carbon/web-components/es/components/copy-button/copy-button.js";
-import "@carbon/web-components/es/components/overflow-menu/index.js";
-import "@carbon/web-components/es/components/content-switcher/index.js";
-
-import { html } from "lit";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
+/* eslint-disable */
+import React from "react";
+import Toolbar from "../../../react/toolbar";
+import Button from "../../../react/button";
+import {
+  OverflowMenu,
+  OverflowMenuBody,
+  OverflowMenuItem,
+} from "../../../react/overflow-menu";
+import {
+  ContentSwitcher,
+  ContentSwitcherItem,
+} from "../../../react/content-switcher";
+import Icon from "../../../react/icon";
+import IconButton from "../../../react/icon-button";
+import AILabel from "../../../react/ai-label";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import { action } from "storybook/actions";
-
 import Version16 from "@carbon/icons/es/version/16.js";
 import Download16 from "@carbon/icons/es/download/16.js";
 import Share16 from "@carbon/icons/es/share/16.js";
@@ -28,8 +24,9 @@ import Close16 from "@carbon/icons/es/close/16.js";
 import Home16 from "@carbon/icons/es/home/16.js";
 import ArrowLeft16 from "@carbon/icons/es/arrow--left/16.js";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import "./story-styles.scss";
 
-import styles from "./story-styles.scss?lit";
+import { action } from "storybook/actions";
 
 const actionLists = {
   "Advanced list": [
@@ -106,9 +103,10 @@ const actionLists = {
 
 export default {
   title: "Components/Toolbar",
+  component: Toolbar,
   argTypes: {
     title: {
-      control: "text",
+      control: "object",
       table: { category: "slot" },
       description:
         "Title text for the Toolbar component. This Storybook-only control populates the title slot. `slot='title'`",
@@ -117,71 +115,74 @@ export default {
       control: "select",
       options: ["home", "back", "custom 1", "custom 2", "none"],
       mapping: {
-        home: html` <div slot="navigation" data-fixed data-rounded="top-left">
-          <cds-icon-button
-            kind="ghost"
-            @click=${action("onClick")}
-            align="bottom-start"
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-          >
-            ${iconLoader(Home16, { slot: "icon" })}
-            <span slot="tooltip-content">Home</span>
-          </cds-icon-button>
-        </div>`,
-        back: html` <div slot="navigation" data-fixed data-rounded="top-left">
-          <cds-icon-button
-            kind="ghost"
-            align="bottom-start"
-            @click=${action("onClick")}
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-          >
-            ${iconLoader(ArrowLeft16, { slot: "icon" })}
-            <span slot="tooltip-content">Back</span>
-          </cds-icon-button>
-        </div>`,
-        "custom 1": html` <div
-          slot="navigation"
-          data-fixed
-          data-rounded="top-left"
-        >
-          <cds-overflow-menu
-            size="md"
-            index="1"
-            kind="ghost"
-            align="bottom-start"
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-          >
-            ${iconLoader(OverflowMenuVertical16, {
-              class: "overflow-menu-svg",
-              slot: "icon",
-            })}
-            <span slot="tooltip-content"> Menu </span>
-            <cds-overflow-menu-body>
-              <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-              <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-              <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-              <cds-overflow-menu-item disabled=""
-                >Clone and move app</cds-overflow-menu-item
-              >
-              <cds-overflow-menu-item
-                >Edit routes and access</cds-overflow-menu-item
-              >
-              <cds-overflow-menu-item divider="" danger=""
-                >Delete app</cds-overflow-menu-item
-              >
-            </cds-overflow-menu-body>
-          </cds-overflow-menu>
-        </div>`,
-        "custom 2": html` <div
-          slot="navigation"
-          data-fixed
-          data-rounded="top-left"
-        >
-          <cds-button @click=${action("onClick")} size="md">test</cds-button>
-        </div>`,
+        home: (
+          <div slot="navigation" data-fixed data-rounded="top-left">
+            <IconButton
+              size="md"
+              kind="ghost"
+              align="bottom-start"
+              enterDelayMs={0}
+              leaveDelayMs={0}
+              onclick={action("onClick")}
+            >
+              <Icon icon={Home16} slot="icon" />
+              <span slot="tooltip-content">Home</span>
+            </IconButton>
+          </div>
+        ),
+        back: (
+          <div slot="navigation" data-fixed data-rounded="top-left">
+            <IconButton
+              size="md"
+              kind="ghost"
+              align="bottom-start"
+              enterDelayMs={0}
+              leaveDelayMs={0}
+              onclick={action("onClick")}
+            >
+              <Icon icon={ArrowLeft16} slot="icon" />
+              <span slot="tooltip-content">Back</span>
+            </IconButton>
+          </div>
+        ),
+        "custom 1": (
+          <div slot="navigation" data-fixed data-rounded="top-left">
+            <OverflowMenu
+              size="md"
+              index="1"
+              kind="ghost"
+              align="bottom-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+            >
+              <Icon
+                icon={OverflowMenuVertical16}
+                slot="icon"
+                style={{
+                  color: "var(--cds-icon-primary)",
+                }}
+              />
+              <span slot="tooltip-content"> Menu </span>
+              <OverflowMenuBody>
+                <OverflowMenuItem>Stop app</OverflowMenuItem>
+                <OverflowMenuItem>Restart app</OverflowMenuItem>
+                <OverflowMenuItem>Rename app</OverflowMenuItem>
+                <OverflowMenuItem disabled>Clone and move app</OverflowMenuItem>
+                <OverflowMenuItem>Edit routes and access</OverflowMenuItem>
+                <OverflowMenuItem divider danger>
+                  Delete app
+                </OverflowMenuItem>
+              </OverflowMenuBody>
+            </OverflowMenu>
+          </div>
+        ),
+        "custom 2": (
+          <div slot="navigation" data-fixed data-rounded="top-left">
+            <Button onclick={action("onClick")} size="md">
+              test
+            </Button>
+          </div>
+        ),
         none: undefined,
       },
       table: { category: "slot" },
@@ -192,24 +193,30 @@ export default {
       control: "select",
       options: ["content switcher", "custom 1", "none"],
       mapping: {
-        "content switcher": html` <div slot="fixed-actions" data-fixed>
-          <cds-content-switcher
-            @cds-content-switcher-selected=${(e) => console.log(e)}
-            selection-mode="automatic"
-            selected-index="0"
-            size="sm"
-          >
-            <cds-content-switcher-item value="code" name="one">
-              Code
-            </cds-content-switcher-item>
-            <cds-content-switcher-item value="preview" name="two">
-              Preview
-            </cds-content-switcher-item>
-          </cds-content-switcher>
-        </div>`,
-        "custom 1": html` <div slot="fixed-actions" data-fixed>
-          <cds-button @click=${action("onClick")} size="md">test</cds-button>
-        </div>`,
+        "content switcher": (
+          <div slot="fixed-actions" data-fixed>
+            <ContentSwitcher
+              onSelected={(e) => console.log(e)}
+              selectionMode="automatic"
+              selectedIndex="0"
+              size="sm"
+            >
+              <ContentSwitcherItem value="code" name="one">
+                code
+              </ContentSwitcherItem>
+              <ContentSwitcherItem value="preview" name="two">
+                preview
+              </ContentSwitcherItem>
+            </ContentSwitcher>
+          </div>
+        ),
+        "custom 1": (
+          <div slot="fixed-actions" data-fixed>
+            <Button onclick={action("onClick")} size="md">
+              test
+            </Button>
+          </div>
+        ),
         none: undefined,
       },
       table: { category: "slot" },
@@ -240,19 +247,15 @@ export default {
         "This is a story only control, which defines css custom property on the toolbar. this gets inherited automatically when placed inside ai-chat. override this to 0px in any particular scope to opt out of rounded border-radius",
     },
   },
-  decorators: [
-    (story) => html`
-      <style>
-        ${styles}
-      </style>
-      ${story()}
-    `,
-  ],
 };
 
 export const Default = {
   args: {
-    title: "Title <span class='bold'>text</span>",
+    title: (
+      <>
+        Title <span className="bold">text</span>
+      </>
+    ),
     overflow: true,
     actions: "Advanced list",
     navigation: "home",
@@ -260,48 +263,53 @@ export const Default = {
     aiLabel: true,
     "--cds-aichat-border-radius": false,
   },
-
   render: ({
     title,
     overflow,
     actions,
     aiLabel,
     navigation,
-    fixedActions,
     "--cds-aichat-border-radius": borderRadius,
-  }) => html`
-    <cds-aichat-toolbar
-      .actions=${actions}
-      ?overflow=${overflow}
-      style=${borderRadius ? "--cds-aichat-border-radius: 8px;" : ""}
-    >
-      <!-- Navigation slot -->
-      ${navigation}
+    fixedActions,
+  }) => {
+    return (
+      <Toolbar
+        actions={actions}
+        overflow={overflow}
+        style={
+          borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined
+        }
+      >
+        {/* Navigation slot */}
+        {navigation}
 
-      <!-- Title slot -->
-      <div slot="title" data-fixed>${unsafeHTML(title)}</div>
+        {/* Title slot */}
+        <div slot="title" data-fixed>
+          {title}
+        </div>
 
-      <!-- Fixed actions slot -->
-      ${fixedActions}
+        {/* Fixed actions slot */}
+        {fixedActions}
 
-      <!-- AI Label slot -->
-      ${aiLabel
-        ? html` <cds-ai-label
+        {/* AI Label slot */}
+        {aiLabel && (
+          <AILabel
             size="2xs"
             autoalign
             alignment="bottom"
             slot="toolbar-ai-label"
           >
             <div slot="body-text">
-              <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+              <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
               <div>
                 IBM watsonx is powered by the latest AI models to intelligently
                 process conversations and provide help whenever and wherever you
                 may need it.
               </div>
             </div>
-          </cds-ai-label>`
-        : ""}
-    </cds-aichat-toolbar>
-  `,
+          </AILabel>
+        )}
+      </Toolbar>
+    );
+  },
 };
