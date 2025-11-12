@@ -269,7 +269,7 @@ function renderWithStaticTag(
 
     case "ol": {
       const nested = token.level > 1;
-      return html`<cds-ordered-list ?nested=${nested} ${spread(attrs)}>
+      return html`<cds-ordered-list native ?nested=${nested} ${spread(attrs)}>
         ${content}
       </cds-ordered-list>`;
     }

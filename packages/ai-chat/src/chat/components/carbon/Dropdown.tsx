@@ -18,7 +18,7 @@ const Dropdown = createComponent({
   tagName: "cds-dropdown",
   elementClass: CarbonDropdownElement,
   events: {
-    onBeingSelected: "cds-dropdown-beingselected",
+    onSelected: "cds-dropdown-selected",
     onToggled: "cds-dropdown-toggled",
   },
   react: React,

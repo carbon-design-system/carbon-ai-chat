@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId } from "@carbon/ai-chat/server";
+import { PageObjectId, ViewType } from "@carbon/ai-chat/server";
 import { test, expect } from "@playwright/test";
 
 // Import types for window.setChatConfig without emitting runtime code
@@ -18,6 +18,20 @@ test.beforeEach(async ({ page }) => {
 
   // Navigate to demo page first to get chatInstance
   await page.goto("/");
+
+  // Wait for page to fully load and web component to initialize
+  await page.waitForLoadState("domcontentloaded");
+
+  // Wait for the chatInstance to be available on window
+  await page.waitForFunction(() => Boolean(window.chatInstance), {
+    timeout: 10000,
+  });
+
+  await page.evaluate(() => {
+    if (window.chatInstance) {
+      window.chatInstance.changeView("launcher" as ViewType);
+    }
+  });
 });
 
 // Clear session between all tests to ensure clean state

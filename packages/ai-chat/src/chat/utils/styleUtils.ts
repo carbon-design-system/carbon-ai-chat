@@ -28,7 +28,7 @@ enum CarbonThemeClassNames {
 
 // The prefix that is added to each CSS variable in the application.
 const CSS_VAR_PREFIX = "--cds-";
-const CSS_CHAT_PREFIX = "chat-";
+const CSS_CHAT_PREFIX = "aichat-";
 
 // Regex to determine a 3 or 6 digit hexadecimal color
 const HEXADECIMAL_REGEX = /#([a-f0-9]{3}){1,2}\b/i;
@@ -63,7 +63,7 @@ function convertCSSVariablesToString(
   if (allValues.length > 0) {
     // Including a namespace in the styles allows us to support multiple widgets on the same page without their styles
     // conflicting.
-    const rule = `${prefix}.cds-aichat--container .cds--white, ${prefix}.cds-aichat--container .cds--g10, ${prefix}.cds-aichat--container .cds--g90, ${prefix}.cds-aichat--container .cds--g100`;
+    const rule = `${prefix} .cds-aichat--container--render.cds-aichat--container--render, ${prefix} .cds-aichat--container--render.cds--white, ${prefix} .cds-aichat--container--render.cds--g10, ${prefix} .cds-aichat--container--render.cds--g90, ${prefix} .cds-aichat--container--render.cds--g100`;
     customPropertiesString = `${rule}${`, :host`}{${allValues}}`;
   }
 

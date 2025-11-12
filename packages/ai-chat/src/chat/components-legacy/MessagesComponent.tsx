@@ -989,15 +989,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             "cds-aichat--messages__wrapper--scroll-handle-has-focus":
               scrollHandleHasFocus,
           })}
+          ref={this.messagesContainerWithScrollingRef}
+          onScroll={() => {
+            this.checkScrollAnchor();
+            this.renderScrollDownNotification();
+          }}
         >
-          <div
-            className="cds-aichat--messages"
-            ref={this.messagesContainerWithScrollingRef}
-            onScroll={() => {
-              this.checkScrollAnchor();
-              this.renderScrollDownNotification();
-            }}
-          >
+          <div className="cds-aichat--messages">
             {this.renderScrollHandle(true)}
             {regularMessages}
             {(Boolean(isMessageLoadingCounter) || isHumanAgentTyping) &&

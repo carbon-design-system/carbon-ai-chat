@@ -185,6 +185,32 @@ export class DemoBody extends LitElement {
   }
 
   /**
+   * Notify any listener in parent components that settings have changed.
+   */
+  private _dispatchSettingsChangeEvent() {
+    this.dispatchEvent(
+      new CustomEvent("demo-settings-changed", {
+        detail: { settings: this.settings },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  /**
+   * Notify any listener in parent components that the chat instance reference changed.
+   */
+  private _dispatchChatInstanceChangeEvent() {
+    this.dispatchEvent(
+      new CustomEvent("demo-chat-instance-changed", {
+        detail: { chatInstance: this.chatInstance },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  /**
    * Set the chat instance and expose it globally for tests and debugging
    */
   private _setChatInstance(instance: ChatInstance | null) {
@@ -196,6 +222,7 @@ export class DemoBody extends LitElement {
       delete window.chatInstance;
     }
 
+    this._dispatchChatInstanceChangeEvent();
     this.requestUpdate();
   }
 
@@ -265,6 +292,10 @@ export class DemoBody extends LitElement {
 
     // Set up accordion state persistence
     this._setupAccordionStateManagement();
+
+    // Inform parent components of initial state so they can hydrate their UI
+    this._dispatchSettingsChangeEvent();
+    this._dispatchChatInstanceChangeEvent();
 
     // Set data attribute for CSS styling
     this.setAttribute(
@@ -387,6 +418,8 @@ export class DemoBody extends LitElement {
     const shouldRefresh = frameworkChanged || layoutChanged;
 
     this.settings = newSettings;
+
+    this._dispatchSettingsChangeEvent();
 
     // Update query parameters with new settings
     this._updateQueryParamsForSettings(newSettings, shouldRefresh);

@@ -1,0 +1,86 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+$css--plex: true !default;
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/web-components/scss/components/button/button";
+@use "@carbon/styles/scss/utilities/layout";
+@use "@carbon/styles/scss/utilities/convert";
+
+:host(#{$prefix}-button) {
+  @extend :host(#{$cds-prefix}-button);
+
+  .#{$cds-prefix}--btn--ghost:not([disabled]):not(
+      .#{$cds-prefix}--btn--icon-only
+    )
+    ::slotted([slot="icon"]) {
+    fill: currentColor;
+  }
+
+  .#{$cds-prefix}--btn {
+    border-radius: 9999px;
+  }
+
+  .#{$cds-prefix}--btn:not(.#{$cds-prefix}-ce--btn--has-icon) {
+    padding-inline-end: calc(
+      layout.density("padding-inline") - convert.to-rem(1px)
+    );
+  }
+}
+
+:host(#{$prefix}-button[is-quick-action]) {
+  .#{$cds-prefix}--btn {
+    border: convert.to-rem(1px) solid theme.$chat-button;
+    background: transparent;
+    color: theme.$chat-button;
+
+    &[disabled] {
+      &:not(.#{$cds-prefix}--btn--selected) {
+        border: convert.to-rem(1px) solid theme.$border-disabled;
+        background: transparent;
+        color: theme.$text-disabled;
+      }
+    }
+
+    &:hover:not([disabled]) {
+      border-color: transparent;
+      background: theme.$chat-button-hover;
+      color: theme.$chat-button-text-hover;
+
+      &.#{$cds-prefix}--btn--selected {
+        color: theme.$chat-button-text-selected;
+      }
+
+      &:focus {
+        border-color: theme.$focus;
+        box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus-inset;
+      }
+    }
+
+    &:active:not([disabled]) {
+      background: theme.$chat-button-active;
+    }
+
+    &.#{$cds-prefix}--btn--selected {
+      border-color: transparent;
+      background: theme.$chat-button-selected;
+      color: theme.$chat-button-text-selected;
+
+      &:focus {
+        border-color: theme.$focus;
+        box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
+      }
+    }
+
+    &:focus {
+      border-color: theme.$focus;
+      box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
+    }
+  }
+}
