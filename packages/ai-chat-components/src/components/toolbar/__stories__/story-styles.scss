@@ -10,36 +10,32 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities/convert" as *;
+@use "../../../globals/scss/modifiers" as *;
 
-// story specific styles
-[data-hidden]:not([data-fixed]) {
-  // scope if needed
-  display: none;
-}
+@include rounded-modifiers;
 
-.action-svg {
+.overflow-menu-svg {
   /* web components ghost icon only button bug override */
   align-self: unset;
-  color: var(--cds-icon-primary, #161616);
+  color: theme.$icon-primary;
 }
 
-/* Suppress custom element until styles are loaded */
-cds-button:not(:defined) {
-  display: none;
-}
-/* Suppress custom element until styles are loaded */
-cds-overflow-menu:not(:defined) {
-  display: none;
+[slot="fixed-actions"] {
+  display: flex;
+
+  cds-content-switcher {
+    margin-inline: layout.$spacing-03;
+  }
 }
 
-cds-overflow-menu-body {
-  inline-size: 100%;
+[slot="title"] {
+  white-space: nowrap;
 }
 
-.story-menu-container {
-  position: relative;
+[slot="icon"] {
+  display: flex;
 }
 
-.story-toolbar-title {
-  min-inline-size: rem(100px);
+.bold {
+  font-weight: 600;
 }

@@ -8,45 +8,53 @@
  */
 
 $css--plex: true !default;
-
-@use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/utilities/convert" as *;
-@use "@carbon/styles/scss/breakpoint" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/styles/scss/theme";
+
+$block-class: #{$prefix}-toolbar;
 
 /* Toolbar styles */
+:host {
+  // --cds-aichat-border-radius: 8px;
+  @include rounded-modifiers;
 
-:host(#{$prefix}-toolbar) {
-  display: grid;
-  align-items: center;
-  justify-content: space-between;
-  padding: rem(8px) rem(8px) rem(8px) rem(32px);
-  border: solid rem(1px) theme.$border-subtle-01;
-  grid-auto-flow: column;
-  .#{$prefix}-toolbar__title {
+  .#{$block-class} {
+    display: flex;
+    align-items: center;
+    background-color: theme.$layer-background;
+    block-size: 100%;
+    min-block-size: 40px;
+
+    // Suppress custom elements until styles are loaded
+    #{$cds-prefix}-button:not(:defined),
+    #{$cds-prefix}-overflow-menu:not(:defined) {
+      display: none;
+    }
+
+    &-overflow-icon {
+      // Web components ghost icon only button bug override
+      align-self: unset;
+      color: theme.$icon-primary;
+    }
+
+    [data-floating-menu-container] {
+      position: relative;
+    }
+
+    [data-hidden]:not([data-fixed]) {
+      display: none;
+    }
+  }
+
+  .#{$block-class}__title {
     color: theme.$text-secondary;
+    margin-inline-end: auto;
+    padding-inline: 1rem;
   }
-}
 
-:host(.#{$prefix}-toolbar--flushed) {
-  padding: 0;
-}
-
-:host(#{$prefix}-notification) {
-  cds-inline-notification {
-    max-inline-size: 100%;
-  }
-}
-
-.#{$prefix}-toolbar__action {
-  display: grid;
-  grid-auto-columns: rem(40px);
-  grid-auto-flow: column;
-
-  ::slotted(cds-ai-label) {
-    block-size: rem(40px);
+  ::slotted([slot="toolbar-ai-label"]) {
+    min-block-size: 40px;
+    min-inline-size: 40px;
   }
 }
