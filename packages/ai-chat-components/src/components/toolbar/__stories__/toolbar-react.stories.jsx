@@ -123,7 +123,7 @@ export default {
               align="bottom-start"
               enterDelayMs={0}
               leaveDelayMs={0}
-              onClick={action("onClick")}
+              onclick={action("onClick")}
             >
               <Icon icon={Home16} slot="icon" />
               <span slot="tooltip-content">Home</span>
@@ -138,7 +138,7 @@ export default {
               align="bottom-start"
               enterDelayMs={0}
               leaveDelayMs={0}
-              onClick={action("onClick")}
+              onclick={action("onClick")}
             >
               <Icon icon={ArrowLeft16} slot="icon" />
               <span slot="tooltip-content">Back</span>
@@ -178,7 +178,7 @@ export default {
         ),
         "custom 2": (
           <div slot="navigation" data-fixed data-rounded="top-left">
-            <Button onClick={action("onClick")} size="md">
+            <Button onclick={action("onClick")} size="md">
               test
             </Button>
           </div>
@@ -212,7 +212,7 @@ export default {
         ),
         "custom 1": (
           <div slot="fixed-actions" data-fixed>
-            <Button onClick={action("onClick")} size="md">
+            <Button onclick={action("onClick")} size="md">
               test
             </Button>
           </div>
