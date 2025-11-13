@@ -19,6 +19,11 @@ interface LauncherConfig {
   isOn?: boolean;
 
   /**
+   * Controls whether the unread indicator dot shows even when no human-agent unread count exists.
+   */
+  showUnreadIndicator?: boolean;
+
+  /**
    * Properties specific to the mobile launcher.
    */
   mobile?: LauncherCallToActionConfig;

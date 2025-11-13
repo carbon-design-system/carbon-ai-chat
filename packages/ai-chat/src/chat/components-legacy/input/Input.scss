@@ -179,12 +179,15 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
 
 .cds-aichat--input-container
   .cds-aichat--text-area
-  textarea.cds-aichat--text-area-textarea {
+  .cds-aichat--text-area-textarea {
+  position: relative;
   display: block;
+
+  // The focus border is simulated by adding it to the container.
+  border: none;
   margin: 0;
   background: transparent;
   color: theme.$text-primary;
-  resize: none;
 }
 
 .cds-aichat--input-container
@@ -198,11 +201,16 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
 
 .cds-aichat--input-container
   .cds-aichat--text-area
-  .cds-aichat--text-area-textarea::placeholder {
+  .cds-aichat--text-area-textarea[data-has-content="false"]::before {
+  position: absolute;
   color: theme.$text-placeholder;
-  @include type.type-style("body-02");
 
-  font-family: inherit;
+  content: attr(data-placeholder);
+  inset: 0;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  @include type.type-style("body-02");
 }
 
 .cds-aichat--input-container__send-button-container,

@@ -64,6 +64,10 @@ export enum BusEventType {
    */
   VIEW_CHANGE = "view:change",
 
+  /**
+   * Fired when a button response item with button_type "custom_event" is clicked.
+   * Provides the originating button item and the full message payload to handlers.
+   */
   MESSAGE_ITEM_CUSTOM = "messageItemCustom",
 
   /**

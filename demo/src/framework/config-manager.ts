@@ -53,6 +53,21 @@ export class ConfigManager {
       },
     };
 
+    // Explicitly remove top-level sections that were set back to default (undefined)
+    if (
+      Object.prototype.hasOwnProperty.call(newConfig, "input") &&
+      !newConfig.input
+    ) {
+      delete config.input;
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(newConfig, "launcher") &&
+      !newConfig.launcher
+    ) {
+      delete config.launcher;
+    }
+
     // Check for changes that require session restart
     const homescreenChanged = !isEqual(
       oldConfig.homescreen,
