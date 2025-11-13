@@ -16,7 +16,7 @@ import { useServiceManager } from "../../../hooks/useServiceManager";
 import { selectInputState } from "../../../store/selectors";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { WA_CONSOLE_PREFIX } from "../../../utils/constants";
+import { CONSOLE_PREFIX } from "../../../utils/constants";
 import { createMessageRequestForButtonItemOption } from "../../../utils/messageUtils";
 import { consoleError } from "../../../utils/miscUtils";
 import actions from "../../../store/actions";
@@ -72,7 +72,7 @@ function ButtonItemPostBackComponent({
       );
     } else {
       consoleError(
-        `${WA_CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`,
+        `${CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`,
       );
     }
   }, [

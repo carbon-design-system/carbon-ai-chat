@@ -336,7 +336,7 @@ describe("Dynamic Config Updates", () => {
       const mockMessageService = {
         timeoutMS: 30000,
       };
-      serviceManager.messageService = mockMessageService as any;
+      serviceManager.messageOutboundService = mockMessageService as any;
 
       const newConfig: PublicConfig = {
         messaging: {

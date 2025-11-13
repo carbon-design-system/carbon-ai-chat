@@ -425,7 +425,7 @@ class MainWindow
     const { serviceManager } = this.props;
 
     // Fire the view:change and window:close events. If the view change is canceled then the main window will stay open.
-    await serviceManager.actions.changeView(ViewType.LAUNCHER, {
+    await serviceManager.viewStateService.changeView(ViewType.LAUNCHER, {
       mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
     });
   }

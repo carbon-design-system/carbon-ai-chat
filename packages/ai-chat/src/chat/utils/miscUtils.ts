@@ -15,7 +15,7 @@ import { ErrorInfo } from "react";
 
 import { AppConfig } from "../../types/state/AppConfig";
 import { FileUpload } from "../../types/config/ServiceDeskConfig";
-import { FileStatusValue, WA_CONSOLE_PREFIX } from "./constants";
+import { FileStatusValue, CONSOLE_PREFIX } from "./constants";
 import { resolveOrTimeout } from "./lang/promiseUtils";
 import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
 
@@ -39,7 +39,7 @@ function assertType<TItemType>(item: TItemType): TItemType {
  */
 function debugLog(message: string, ...args: any[]) {
   if (enableDebugLog) {
-    console.log(`${WA_CONSOLE_PREFIX} ${message}`, ...args);
+    console.log(`${CONSOLE_PREFIX} ${message}`, ...args);
   }
 }
 
@@ -47,28 +47,28 @@ function debugLog(message: string, ...args: any[]) {
  * A simple utility to send an error message to the console log.
  */
 function consoleError(message: string, ...args: any[]) {
-  console.error(`${WA_CONSOLE_PREFIX} ${message}`, ...args);
+  console.error(`${CONSOLE_PREFIX} ${message}`, ...args);
 }
 
 /**
  * A simple utility to send an error message to the console log.
  */
 function consoleLog(message: string, ...args: any[]) {
-  console.log(`${WA_CONSOLE_PREFIX} ${message}`, ...args);
+  console.log(`${CONSOLE_PREFIX} ${message}`, ...args);
 }
 
 /**
  * A simple utility to send a message to the console log.
  */
 function consoleDebug(message: string, ...args: any[]) {
-  console.debug(`${WA_CONSOLE_PREFIX} ${message}`, ...args);
+  console.debug(`${CONSOLE_PREFIX} ${message}`, ...args);
 }
 
 /**
  * A simple utility to send an warning message to the console log.
  */
 function consoleWarn(message: string, ...args: any[]) {
-  console.warn(`${WA_CONSOLE_PREFIX} ${message}`, ...args);
+  console.warn(`${CONSOLE_PREFIX} ${message}`, ...args);
 }
 
 /**

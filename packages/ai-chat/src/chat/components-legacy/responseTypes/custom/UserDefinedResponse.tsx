@@ -50,7 +50,9 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
   // The element that was previously created that we'll attach to this React component. The custom code should
   // already have attached its own element to this element that contains the custom rendering for the message.
   const userDefinedRegistryItem =
-    serviceManager.actions.getOrCreateUserDefinedElement(props.localMessageID);
+    serviceManager.userDefinedResponseService.getOrCreateUserDefinedElement(
+      props.localMessageID,
+    );
 
   useCallbackOnChange(streamingState?.chunks, doAutoScroll);
 

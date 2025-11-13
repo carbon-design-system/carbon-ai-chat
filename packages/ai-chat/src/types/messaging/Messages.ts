@@ -595,12 +595,6 @@ export interface GenericItemMessageFeedbackOptions {
 /**
  * @category Messaging
  */
-export type PanelItem<TUserDefinedType = Record<string, unknown>> =
-  BaseGenericItem<TUserDefinedType> & MessageItemPanelInfo;
-
-/**
- * @category Messaging
- */
 export type PartialOrCompleteItemChunk = PartialItemChunk | CompleteItemChunk;
 
 /**

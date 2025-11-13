@@ -182,7 +182,7 @@ describe("Config Messaging", () => {
         serviceManager = {
           store,
           namespace: new NamespaceService("test"),
-          messageService: { timeoutMS: 30000 } as any,
+          messageOutboundService: { timeoutMS: 30000 } as any,
           humanAgentService: null,
         } as ServiceManager;
       });
@@ -207,7 +207,7 @@ describe("Config Messaging", () => {
 
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.messaging?.messageTimeoutSecs).toBe(60);
-        expect(serviceManager.messageService?.timeoutMS).toBe(60000);
+        expect(serviceManager.messageOutboundService?.timeoutMS).toBe(60000);
       });
     });
   });
