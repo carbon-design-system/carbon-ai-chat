@@ -153,12 +153,8 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedState = {
   version: VERSION,
   viewState: VIEW_STATE_ALL_CLOSED,
   showUnreadIndicator: false,
-  mobileLauncherIsExtended: false,
-  mobileLauncherWasReduced: false,
-  mobileLauncherDisableBounce: false,
-  desktopLauncherIsExpanded: false,
-  desktopLauncherWasMinimized: false,
-  bounceTurn: 1,
+  launcherIsExpanded: false,
+  launcherShouldStartCallToActionCounterIfEnabled: true,
 };
 deepFreeze(DEFAULT_PERSISTED_TO_BROWSER);
 

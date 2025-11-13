@@ -34,7 +34,7 @@ interface LauncherConfig {
  */
 interface LauncherCallToActionConfig {
   /**
-   * If the launcher will expand with a call to action.
+   *  Defaults to false.
    */
   isOn?: boolean;
 
@@ -56,15 +56,11 @@ interface LauncherCallToActionConfig {
   avatarUrlOverride?: string;
 }
 
-// The array of timeouts that will dictate the amount of intervals the bounce animation should play for the launcher.
-const BOUNCING_ANIMATION_TIMEOUTS = [15000, 60000];
-
 // The amount of time until the entrance animation is automatically triggered for either launcher.
 const TIME_TO_ENTRANCE_ANIMATION_START = 15000;
 
 export {
   LauncherConfig,
   LauncherCallToActionConfig,
-  BOUNCING_ANIMATION_TIMEOUTS,
   TIME_TO_ENTRANCE_ANIMATION_START,
 };
