@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@carbon/styles": "^1.39.0",
-    "@carbon/web-components": "^2.40.1",
+    "@carbon/web-components": "^2.42.0",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.8",
     "lit": "^3.0.0",
