@@ -7,8 +7,6 @@
  *  @license
  */
 
-import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
-
 /**
  * Whether a particular Carbon AI Chat view is visible or not.
  *
@@ -24,62 +22,6 @@ export interface ViewState {
    * Whether the main window is visible or not.
    */
   mainWindow: boolean;
-}
-
-/**
- * A record of a notification to be shown in the UI.
- *
- * @experimental
- * @category Instance
- */
-export interface NotificationMessage {
-  kind: NOTIFICATION_KIND;
-
-  /**
-   * The title to show in the message.
-   */
-  title: string;
-
-  /**
-   * The message to show.
-   */
-  message: string;
-
-  /**
-   * An optional action button that a user can click. If there is an action button, we will not auto dismiss.
-   */
-  actionButtonLabel?: string;
-
-  /**
-   * The group id that associates notifications together. This can be used to remove the notification later.
-   */
-  groupID?: string;
-
-  /**
-   * The callback called when someone clicks on the action button.
-   */
-  onActionButtonClick?: () => void;
-
-  /**
-   * The callback called when someone clicks on the close button.
-   */
-  onCloseButtonClick?: () => void;
-}
-
-/**
- * @category Instance
- * @experimental
- */
-export interface NotificationStateObject {
-  /**
-   * The id of the notification object in state to help identify notifications to manipulate.
-   */
-  id: string;
-
-  /**
-   * The provided notification message to render in chat.
-   */
-  notification: NotificationMessage;
 }
 
 /**
