@@ -867,9 +867,8 @@ class MessageComponent extends PureComponent<
    * is not desirable.
    */
   private renderFocusHandle() {
+    const { languagePack } = this.props;
     return (
-      // The aria-label is dynamically added when focused.
-      // eslint-disable-next-line jsx-a11y/control-has-associated-label
       <div
         className="cds-aichat--message--focus-handle"
         ref={this.focusHandleRef}
@@ -879,6 +878,7 @@ class MessageComponent extends PureComponent<
         onKeyDown={(event) => this.onHandleKeyDown(event)}
         onClick={() => this.reAnnounceFocusHandle()}
         role="button"
+        aria-label={languagePack.messages_focusHandle}
       />
     );
   }

@@ -7,7 +7,7 @@
   "scripts": {
     "start": "webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js --mode production",
-    "test": "playwright test"
+    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js --experimental-loader=./tests/alias-loader.js' playwright test"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -34,6 +34,7 @@
     "@babel/preset-typescript": "^7.26.0",
     "@playwright/test": "^1.54.1",
     "@types/node": "^24.0.14",
+    "accessibility-checker": "^4.0.9",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",

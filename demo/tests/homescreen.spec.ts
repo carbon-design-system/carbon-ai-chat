@@ -13,10 +13,17 @@ import {
   waitForChatReady,
   prepareDemoPage,
   waitForSetChatConfigApplied,
+  setupAccessibilityChecker,
+  checkAccessibility,
 } from "./utils";
 
 // Import types for window.setChatConfig without emitting runtime code
 import type {} from "../types/window";
+
+// Setup accessibility checker before all tests
+test.beforeAll(() => {
+  setupAccessibilityChecker();
+});
 
 // Setup common to all tests
 test.beforeEach(async ({ page }) => {
@@ -29,7 +36,7 @@ test.afterEach(async ({ page }) => {
 });
 
 test("homescreen from disabled to enabled", async ({ page }) => {
-  // Phase 1: Enable homescreen - this was the problematic scenario we fixed
+  // Phase 1: Enable homescreen
   await page.evaluate(async () => {
     if (window.setChatConfig) {
       await window.setChatConfig({
@@ -54,6 +61,10 @@ test("homescreen from disabled to enabled", async ({ page }) => {
     timeout: 10000,
   });
   await expect(page.getByText("Homescreen Now Enabled!")).toBeVisible();
+
+  // Run accessibility check on the chat widget
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "Homescreen - Enabled State");
 });
 
 test("homescreen greeting updates", async ({ page }) => {
@@ -98,4 +109,8 @@ test("homescreen greeting updates", async ({ page }) => {
     timeout: 10000,
   });
   await expect(page.getByText("Updated Greeting Message")).toBeVisible();
+
+  // Run accessibility check on the chat widget
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "Homescreen - Updated Greeting");
 });
