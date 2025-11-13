@@ -35,6 +35,7 @@
   "launcher_mobileGreeting": "Hi! How can I help you today?",
   "launcher_ariaIsExpanded": "Close the chat launcher",
   "launcher_closeButton": "Close",
+  "media_transcript_label": "Transcript",
   "messages_youSaid": "You said",
   "messages_assistantSaid": "{assistantName} said",
   "messages_agentSaid": "The live agent said",
