@@ -262,6 +262,12 @@ export interface InputConfig {
  */
 export interface HeaderConfig {
   /**
+   * If the chat should supply its own header. Can be false if you have a fullscreen chat or one embedded into a page and
+   * you want to only make use of the main application header. Defaults to true.
+   */
+  isOn?: boolean;
+
+  /**
    * Indicates the icon to use for the close button in the header.
    */
   minimizeButtonIconType?: MinimizeButtonIconType;

@@ -27,11 +27,11 @@
 
     .cds-aichat--button-item {
       &:first-child::part(button) {
-        border-end-start-radius: calc(#{$radius} - rem(1px));
+        border-end-start-radius: max(0px, calc(#{$radius} - rem(1px)));
       }
 
       &:last-child::part(button) {
-        border-end-end-radius: calc(#{$radius} - rem(1px));
+        border-end-end-radius: max(0px, calc(#{$radius} - rem(1px)));
       }
     }
   }
@@ -46,8 +46,8 @@
       }
 
       &:last-child::part(button) {
-        border-end-end-radius: calc(#{$radius} - rem(1px));
-        border-end-start-radius: calc(#{$radius} - rem(1px));
+        border-end-end-radius: max(0px, calc(#{$radius} - rem(1px)));
+        border-end-start-radius: max(0px, calc(#{$radius} - rem(1px)));
       }
     }
   }

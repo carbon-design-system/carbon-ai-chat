@@ -120,6 +120,7 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
+          isOn: undefined,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
@@ -132,6 +133,7 @@ function getSettings() {
         launcher: { isOn: true },
         openChatByDefault: undefined,
       };
+      delete defaultConfig.header?.isOn;
       delete defaultConfig.header?.minimizeButtonIconType;
       delete defaultConfig.header?.hideMinimizeButton;
       delete defaultConfig.layout?.corners;
@@ -143,6 +145,7 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
+          isOn: undefined,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: MinimizeButtonIconType.SIDE_PANEL_RIGHT,
         },
@@ -155,6 +158,7 @@ function getSettings() {
         launcher: { isOn: false },
         openChatByDefault: undefined,
       };
+      delete defaultConfig.header?.isOn;
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
@@ -163,6 +167,7 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
+          isOn: false,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
@@ -181,6 +186,7 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
+          isOn: false,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },

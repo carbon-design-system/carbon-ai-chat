@@ -45,6 +45,7 @@ import { Message } from "../../types/messaging/Messages";
  */
 
 const DEFAULT_HEADER: HeaderConfig = {
+  isOn: true,
   minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
   showAiLabel: true,
 };
