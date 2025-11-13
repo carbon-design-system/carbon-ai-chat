@@ -16,11 +16,7 @@
  * To use the web components, directly import them.
  */
 
-export {
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./types/instance/apiTypes";
+export { ViewState, ViewType } from "./types/instance/apiTypes";
 
 export { PersistedState } from "./types/state/AppState";
 
@@ -35,7 +31,6 @@ export {
 export {
   ChangeFunction,
   ChatInstance,
-  ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,

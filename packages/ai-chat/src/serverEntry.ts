@@ -20,11 +20,7 @@
 export { PageObjectId, TestId } from "./chat/utils/PageObjectId";
 
 // Export all types without the web component implementations
-export {
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./types/instance/apiTypes";
+export { ViewState, ViewType } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
@@ -36,7 +32,6 @@ export {
 
 export {
   ChatInstance,
-  ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
