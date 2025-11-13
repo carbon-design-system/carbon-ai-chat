@@ -180,7 +180,7 @@ const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
   messageIDs: [],
   isMessageLoadingCounter: 0,
-  isMessageLoadingMessage: undefined,
+  isMessageLoadingText: undefined,
   isHydratingCounter: 0,
   isScrollAnchored: false,
 };

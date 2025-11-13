@@ -48,7 +48,7 @@ describe("ChatInstance.updateIsMessageLoadingCounter", () => {
     expect(updatedState.assistantMessageState.isMessageLoadingCounter).toBe(
       initialCounter + 1,
     );
-    expect(updatedState.assistantMessageState.isMessageLoadingMessage).toBe(
+    expect(updatedState.assistantMessageState.isMessageLoadingText).toBe(
       "Thinking...",
     );
 
@@ -56,7 +56,7 @@ describe("ChatInstance.updateIsMessageLoadingCounter", () => {
 
     const finalState = store.getState();
     expect(finalState.assistantMessageState.isMessageLoadingCounter).toBe(0);
-    expect(finalState.assistantMessageState.isMessageLoadingMessage).toBe(
+    expect(finalState.assistantMessageState.isMessageLoadingText).toBe(
       undefined,
     );
   });

@@ -305,7 +305,7 @@ class ChatActionsImpl {
       ...rest,
       humanAgent,
       isMessageLoadingCounter: assistantMessageState.isMessageLoadingCounter,
-      isMessageLoadingMessage: assistantMessageState.isMessageLoadingMessage,
+      isMessageLoadingText: assistantMessageState.isMessageLoadingText,
       isHydratingCounter: assistantMessageState.isHydratingCounter,
     });
   }

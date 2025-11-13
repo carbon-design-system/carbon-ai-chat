@@ -495,7 +495,7 @@ const reducers: { [key: string]: ReducerType } = {
       assistantMessageState: {
         ...state.assistantMessageState,
         isMessageLoadingCounter: 0,
-        isMessageLoadingMessage: undefined,
+        isMessageLoadingText: undefined,
       },
     };
   },
@@ -514,7 +514,7 @@ const reducers: { [key: string]: ReducerType } = {
       assistantMessageState: {
         ...state.assistantMessageState,
         isMessageLoadingCounter,
-        isMessageLoadingMessage:
+        isMessageLoadingText:
           isMessageLoadingCounter > 0 && action.message
             ? action.message
             : undefined,

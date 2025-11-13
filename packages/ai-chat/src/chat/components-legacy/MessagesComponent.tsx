@@ -976,7 +976,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         derived: { languagePack },
       },
     } = this.props;
-    const { isMessageLoadingCounter, isMessageLoadingMessage } = messageState;
+    const { isMessageLoadingCounter, isMessageLoadingText } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
@@ -1016,7 +1016,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               this.renderTypingIndicator(
                 isTypingMessage,
                 localMessageItems.length,
-                isMessageLoadingCounter ? isMessageLoadingMessage : undefined,
+                isMessageLoadingCounter ? isMessageLoadingText : undefined,
               )}
             <Notifications
               serviceManager={serviceManager}
