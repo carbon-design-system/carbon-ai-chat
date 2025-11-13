@@ -11,12 +11,12 @@ $css--plex: true !default;
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
 @use "@carbon/styles/scss/theme";
+@use "@carbon/layout";
 
 $block-class: #{$prefix}-toolbar;
 
 /* Toolbar styles */
 :host {
-  // --cds-aichat-border-radius: 8px;
   @include rounded-modifiers;
 
   .#{$block-class} {
@@ -24,7 +24,7 @@ $block-class: #{$prefix}-toolbar;
     align-items: center;
     background-color: theme.$layer-background;
     block-size: 100%;
-    min-block-size: 40px;
+    min-block-size: layout.$spacing-08;
 
     // Suppress custom elements until styles are loaded
     #{$cds-prefix}-button:not(:defined),
@@ -50,11 +50,11 @@ $block-class: #{$prefix}-toolbar;
   .#{$block-class}__title {
     color: theme.$text-secondary;
     margin-inline-end: auto;
-    padding-inline: 1rem;
+    padding-inline: layout.$spacing-04;
   }
 
   ::slotted([slot="toolbar-ai-label"]) {
-    min-block-size: 40px;
-    min-inline-size: 40px;
+    min-block-size: layout.$spacing-08;
+    min-inline-size: layout.$spacing-08;
   }
 }
