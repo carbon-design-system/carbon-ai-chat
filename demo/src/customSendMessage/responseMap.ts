@@ -12,6 +12,7 @@ import { ChatInstance, CustomSendMessageOptions } from "@carbon/ai-chat";
 import { doAudio } from "./doAudio";
 import { doButton } from "./doButton";
 import { doCard } from "./doCard";
+import { doPreviewCard } from "./doPreviewCard";
 import { doCarousel } from "./doCarousel";
 import { doCode, doCodeStreaming } from "./doCode";
 import {
@@ -57,6 +58,7 @@ const RESPONSE_MAP: Record<
   audio: (instance) => doAudio(instance),
   button: (instance) => doButton(instance),
   card: (instance) => doCard(instance),
+  "preview card": (instance) => doPreviewCard(instance),
   carousel: (instance) => doCarousel(instance),
   code: (instance) => doCode(instance),
   "code (stream)": (instance, requestOptions) =>

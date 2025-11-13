@@ -86,6 +86,7 @@ import {
   TextItem,
   UserType,
   VideoItem,
+  PreviewCardItem,
 } from "../../types/messaging/Messages";
 import RichText from "./responseTypes/util/RichText";
 
@@ -302,6 +303,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       case MessageResponseTypes.GRID:
         return renderGrid(
           localMessageItem as LocalMessageItem<GridItem>,
+          message as MessageResponse,
+        );
+      case MessageResponseTypes.PREVIEW_CARD:
+        return renderPreviewCard(
+          localMessageItem as LocalMessageItem<PreviewCardItem>,
           message as MessageResponse,
         );
       default:
@@ -526,6 +532,14 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         )}
       />
     );
+  }
+
+  function renderPreviewCard(
+    message: LocalMessageItem<PreviewCardItem>,
+    originalMessage: MessageResponse,
+  ) {
+    alert("hello");
+    return <pre>{JSON.stringify({ message, originalMessage }, null, 2)}</pre>;
   }
 
   function renderConversationalSearchMessage(
