@@ -48,9 +48,10 @@ const ADD_LOCAL_MESSAGE_ITEM = "ADD_LOCAL_MESSAGE_ITEM";
 const REMOVE_MESSAGES = "REMOVE_MESSAGES";
 const UPDATE_LOCAL_MESSAGE_ITEM = "UPDATE_LOCAL_MESSAGE_ITEM";
 const SET_APP_STATE_VALUE = "SET_APP_STATE_VALUE";
-const ADD_IS_TYPING_COUNTER = "ADD_IS_TYPING_COUNTER";
 const ADD_IS_LOADING_COUNTER = "ADD_IS_LOADING_COUNTER";
+const RESET_IS_LOADING_COUNTER = "RESET_IS_LOADING_COUNTER";
 const ADD_IS_HYDRATING_COUNTER = "ADD_IS_HYDRATING_COUNTER";
+const RESET_IS_HYDRATING_COUNTER = "RESET_IS_HYDRATING_COUNTER";
 const SET_VIEW_STATE = "SET_VIEW_STATE";
 const SET_VIEW_CHANGING = "SET_VIEW_CHANGING";
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = "SET_INITIAL_VIEW_CHANGE_COMPLETE";
@@ -209,17 +210,17 @@ const actions = {
     };
   },
 
-  addIsTypingCounter(addToIsTyping: number) {
-    return {
-      type: ADD_IS_TYPING_COUNTER,
-      addToIsTyping,
-    };
-  },
-
-  addIsLoadingCounter(addToIsLoading: number) {
+  addIsLoadingCounter(addToIsLoading: number, message?: string) {
     return {
       type: ADD_IS_LOADING_COUNTER,
       addToIsLoading,
+      message,
+    };
+  },
+
+  resetIsLoadingCounter() {
+    return {
+      type: RESET_IS_LOADING_COUNTER,
     };
   },
 
@@ -227,6 +228,12 @@ const actions = {
     return {
       type: ADD_IS_HYDRATING_COUNTER,
       addToIsHydrating,
+    };
+  },
+
+  resetIsHydratingCounter() {
+    return {
+      type: RESET_IS_LOADING_COUNTER,
     };
   },
 
@@ -589,7 +596,9 @@ export default actions;
 export {
   CHANGE_STATE,
   ADD_IS_LOADING_COUNTER,
+  RESET_IS_LOADING_COUNTER,
   ADD_IS_HYDRATING_COUNTER,
+  RESET_IS_HYDRATING_COUNTER,
   SET_APP_STATE_VALUE,
   ADD_LOCAL_MESSAGE_ITEM,
   UPDATE_LOCAL_MESSAGE_ITEM,
