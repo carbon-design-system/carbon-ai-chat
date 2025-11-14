@@ -21,6 +21,7 @@ function doPreviewCard(instance: ChatInstance) {
           title: "Small preview card",
           subtitle: "subtitle",
           response_type: MessageResponseTypes.PREVIEW_CARD,
+          // ailabel
         },
         // {
         //   title: "Large preview card",
