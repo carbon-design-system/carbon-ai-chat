@@ -33,6 +33,7 @@ import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAg
 import { AudioComponent } from "./responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
 import { CardItemComponent } from "./responseTypes/card/CardItemComponent";
+import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
 import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
@@ -533,8 +534,12 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message: LocalMessageItem<PreviewCardItem>,
     originalMessage: MessageResponse,
   ) {
-    alert("hello");
-    return <pre>{JSON.stringify({ message, originalMessage }, null, 2)}</pre>;
+    return (
+      <PreviewCardComponent
+        localMessageItem={message}
+        fullMessage={originalMessage}
+      />
+    );
   }
 
   function renderConversationalSearchMessage(
