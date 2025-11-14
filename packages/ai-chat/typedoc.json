@@ -4,31 +4,36 @@
         "./docs/typedoc/carbonThemePlugin.js"
     ],
     "theme": "carbon",
-    "entryPoints": ["./src/aiChatEntry.tsx"],
+    "entryPoints": [
+        "./src/aiChatEntry.tsx"
+    ],
     "out": "./dist/docs/carbon-tsdocs",
     "name": "Carbon AI Chat",
     "readme": "none",
     "projectDocuments": [
-      "./docs/Overview.md",
-      "./docs/React.md",
-      "./docs/WebComponent.md",
-      "./docs/Customization.md",
-      "./docs/CustomServiceDesks.md",
-      "./docs/CustomServer.md",
-      "./docs/DemoAndExamples.md",
-      "./docs/migration-0.5.1.md",
-      "./docs/Migration-1.0.0.md"
+        "./docs/Overview.md",
+        "./docs/React.md",
+        "./docs/WebComponent.md",
+        "./docs/Customization.md",
+        "./docs/CustomServiceDesks.md",
+        "./docs/CustomServer.md",
+        "./docs/DemoAndExamples.md",
+        "./docs/migration-0.5.1.md",
+        "./docs/Migration-1.0.0.md"
+    ],
+    "sort": [
+        "alphabetical"
     ],
     "categoryOrder": [
-      "React",
-      "Web component",
-      "Config",
-      "Instance",
-      "Events",
-      "Service desk",
-      "Messaging",
-      "Testing",
-      "*"
+        "React",
+        "Web component",
+        "Config",
+        "Instance",
+        "Events",
+        "Service desk",
+        "Messaging",
+        "Testing",
+        "*"
     ],
     "disableSources": true,
     "navigation": {
