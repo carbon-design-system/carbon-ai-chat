@@ -12,11 +12,14 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CarbonAILabelElement from "@carbon/web-components/es/components/ai-label/ai-label.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const AILabel = createComponent({
-  tagName: "cds-ai-label",
-  elementClass: CarbonAILabelElement,
-  react: React,
-});
+const AILabel = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-ai-label",
+    elementClass: CarbonAILabelElement,
+    react: React,
+  }),
+);
 
 export default AILabel;

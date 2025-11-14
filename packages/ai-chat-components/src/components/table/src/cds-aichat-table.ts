@@ -11,11 +11,12 @@ import { type CDSTableRow } from "@carbon/web-components";
 import { TemplateResult, LitElement, PropertyValues, html } from "lit";
 import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators";
-import { tableTemplate } from "./table.template";
-import { tablePaginationTemplate } from "./table-pagination.template";
 import { tableSkeletonTemplate } from "./table-skeleton.template";
+import { loadTableRuntime } from "./table-loader.js";
 // @ts-ignore
 import styles from "./table.scss?lit";
+
+type TableRuntimeModule = Awaited<ReturnType<typeof loadTableRuntime>>;
 
 export interface TableCellContent {
   text: string;
@@ -199,6 +200,14 @@ class TableElement extends LitElement {
 
   static styles = styles;
 
+  private tableRuntime: TableRuntimeModule | null = null;
+  private tableRuntimePromise: Promise<TableRuntimeModule> | null = null;
+
+  connectedCallback() {
+    super.connectedCallback();
+    void this.ensureTableRuntime();
+  }
+
   /**
    * Called after the element's DOM has been updated for the first time.
    * Initializes the table page size.
@@ -330,6 +339,31 @@ class TableElement extends LitElement {
     // Update the visible rows in case the page size has changed or this is the first time this web component has
     // rendered.
     this._updateVisibleRows();
+  }
+
+  private async ensureTableRuntime(): Promise<TableRuntimeModule | null> {
+    if (this.tableRuntime) {
+      return this.tableRuntime;
+    }
+
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    if (!this.tableRuntimePromise) {
+      this.tableRuntimePromise = loadTableRuntime();
+    }
+
+    try {
+      const runtime = await this.tableRuntimePromise;
+      this.tableRuntime = runtime;
+      this.requestUpdate();
+      return runtime;
+    } catch (error) {
+      console.error("Failed to load table runtime", error);
+      this.tableRuntimePromise = null;
+      return null;
+    }
   }
 
   /**
@@ -508,9 +542,15 @@ class TableElement extends LitElement {
     // !this._isValid.
 
     // This could be used while we wait for a md stream containing a table to complete.
-    if (this.loading) {
+    const runtime = this.tableRuntime;
+    if (this.loading || !runtime) {
+      if (!runtime) {
+        void this.ensureTableRuntime();
+      }
       return tableSkeletonTemplate(this._currentPageSize);
     }
+
+    const { tableTemplate, tablePaginationTemplate } = runtime;
 
     // If there are more rows than the page size then we need to add the pagination component. If the rows per page has
     // been changed by the pagination component then we need to keep the pagination component around so the user can

@@ -32,7 +32,7 @@ import { AppState } from "../../../types/state/AppState";
 import { BOUNCING_ANIMATION_TIMEOUTS } from "../../../types/config/LauncherConfig";
 import { LauncherButton, LauncherHandle } from "./LauncherButton";
 import { getLauncherContent } from "./launcherUtils";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 
 // The amount of time it takes the desktop launcher to minimize.

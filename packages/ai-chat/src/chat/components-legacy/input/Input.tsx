@@ -50,7 +50,7 @@ interface InstanceInputElement {
   removeChangeListener: (listener: (value: string) => void) => void;
 }
 import { BusEventType } from "../../../types/events/eventBusTypes";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 import {
   BUTTON_KIND,
   BUTTON_SIZE,

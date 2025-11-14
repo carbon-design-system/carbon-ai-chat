@@ -49,7 +49,7 @@ import { doFocusRef } from "../../utils/domUtils";
 import WriteableElement from "../WriteableElement";
 import { AISlug } from "./AISlug";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
-import { PageObjectId, TestId } from "../../utils/PageObjectId";
+import { PageObjectId, TestId } from "../../../testing/PageObjectId";
 
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const DownToBottom = carbonIconToReact(DownToBottom16);

@@ -50,6 +50,11 @@ The test setup file ([src/jest.setup.ts](src/jest.setup.ts)) provides:
 
 - `@testing-library/jest-dom` matchers
 - Mocked `ResizeObserver` for browser API compatibility
+- A call to `loadAllLazyDeps()` from `@carbon/ai-chat/server` so every lazily
+  imported dependency (CodeMirror, Carbon DataTable, Swiper, react-player,
+  Day.js locales, etc.) is eagerly loaded once before the Jest suite runs.
+  This avoids waiting on dynamic `import()` during assertions, which is
+  especially important when running in a lightweight DOM environment.
 
 ## Testing Lit Components with happy-dom
 
@@ -80,3 +85,22 @@ const mainPanel = shadowRoot.querySelector('[data-testid="main_panel"]');
 - Lit batches DOM updates for performance
 - Without waiting, your test might query for elements before they're rendered
 - The `updateComplete` promise ensures the shadow DOM is fully updated
+
+## Covering Lazy Components and Media
+
+The main test suite (`src/__tests__/ChatContainer.test.tsx`) demonstrates how
+to exercise the heaviest response types so you can validate their integrations:
+
+- **Markdown tables + code snippets** – ensures the markdown renderer upgrades
+  tables to `<cds-aichat-table>` (Carbon DataTable runtime) and code blocks to
+  `<cds-aichat-code-snippet>` (CodeMirror runtime).
+- **Conversational search citations** – opens the citations toggle, waits for
+  the Swiper carousel to render, and verifies citation cards/search results.
+- **Video responses** – renders multiple `MessageResponseTypes.VIDEO` items and
+  waits for `.cds-aichat--media-player` instances backed by `react-player`.
+
+Pairing these tests with the custom `transformIgnorePatterns` + `loadAllLazyDeps`
+setup is the recommended way to catch regressions whenever downstream packages
+change their module formats or add new lazy imports. If you add your own lazy
+components, simply extend the setup file (to preload them) and the tests (to
+assert they render correctly).
