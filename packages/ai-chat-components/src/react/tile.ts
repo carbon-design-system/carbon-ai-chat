@@ -13,18 +13,23 @@ import React from "react";
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CarbonTileElement from "@carbon/web-components/es/components/tile/tile.js";
 import CarbonClickableTileElement from "@carbon/web-components/es/components/tile/clickable-tile.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const Tile = createComponent({
-  tagName: "cds-tile",
-  elementClass: CarbonTileElement,
-  react: React,
-});
+const Tile = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-tile",
+    elementClass: CarbonTileElement,
+    react: React,
+  }),
+);
 
-const ClickableTile = createComponent({
-  tagName: "cds-clickable-tile",
-  elementClass: CarbonClickableTileElement,
-  react: React,
-});
+const ClickableTile = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-clickable-tile",
+    elementClass: CarbonClickableTileElement,
+    react: React,
+  }),
+);
 
 export default Tile;
 export { Tile, ClickableTile };

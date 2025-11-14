@@ -39,7 +39,7 @@ import { RequestScreenShareModal } from "./modals/RequestScreenShareModal";
 import WriteableElement from "./WriteableElement";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
-import { PageObjectId } from "../utils/PageObjectId";
+import { PageObjectId } from "../../testing/PageObjectId";
 
 interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   languagePack: LanguagePack;
