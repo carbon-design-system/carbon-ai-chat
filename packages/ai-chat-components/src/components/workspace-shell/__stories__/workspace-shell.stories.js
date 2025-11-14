@@ -308,7 +308,7 @@ function getFooterAction(type) {
           data-index="1"
           kind="primary"
           slot="footer-action"
-          data-rounded="bottom-right"
+          data-rounded="bottom-right-md-none"
           >Button</cds-button
         >
       `;
@@ -319,7 +319,7 @@ function getFooterAction(type) {
           data-index="1"
           kind="primary"
           slot="footer-action"
-          data-rounded="bottom-right"
+          data-rounded="bottom-right-md-none"
           >Button</cds-button
         >
         <cds-button
@@ -337,7 +337,7 @@ function getFooterAction(type) {
           data-index="1"
           kind="primary"
           slot="footer-action"
-          data-rounded="bottom-right"
+          data-rounded="bottom-right-md-none"
           >Button</cds-button
         >
         <cds-button
