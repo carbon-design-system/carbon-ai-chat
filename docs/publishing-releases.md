@@ -126,6 +126,7 @@ available for testing. If there are any issues during the testing period, fixes
 can be pushed to the release branch. We can then publish subsequent prereleases
 from the release branch for further testing. To publish subsequent prereleases,
 
+- [ ] Ensure the new fixes that have been pushed to the release branch have also been cherry-picked into the `main` branch.
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
       to generate the prerelease versions for the packages
@@ -155,6 +156,7 @@ from the release branch for further testing. To publish subsequent prereleases,
       candidate (ie. v0.10.0-rc.0)
   - [ ] Merge in the generated PR (the title of the PR should start with
         `chore(release):` followed by the version).
+    - If you encounter merge conflicts in this PR, resolve them by merging the main branch into the PR branch (typically named something like `chore/v1.2.0-release`), then push the updated branch to re-run the checks and complete the merge.
   - [ ] Check the generated
         [release](https://github.com/carbon-design-system/carbon-ai-chat/releases)
         to ensure the release notes are correct.
