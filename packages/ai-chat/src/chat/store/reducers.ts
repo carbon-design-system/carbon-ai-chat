@@ -86,6 +86,8 @@ import {
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_STATE,
   UPDATE_THEME_STATE,
+  RESET_IS_HYDRATING_COUNTER,
+  RESET_IS_LOADING_COUNTER,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
 import {
@@ -487,19 +489,45 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [ADD_IS_LOADING_COUNTER]: (
-    state: AppState,
-    action: { addToIsLoading: number },
-  ): AppState => {
+  [RESET_IS_LOADING_COUNTER]: (state: AppState): AppState => {
     return {
       ...state,
       assistantMessageState: {
         ...state.assistantMessageState,
-        isMessageLoadingCounter: Math.max(
-          state.assistantMessageState.isMessageLoadingCounter +
-            action.addToIsLoading,
-          0,
-        ),
+        isMessageLoadingCounter: 0,
+        isMessageLoadingText: undefined,
+      },
+    };
+  },
+
+  [ADD_IS_LOADING_COUNTER]: (
+    state: AppState,
+    action: { addToIsLoading: number; message?: string },
+  ): AppState => {
+    const isMessageLoadingCounter = Math.max(
+      state.assistantMessageState.isMessageLoadingCounter +
+        action.addToIsLoading,
+      0,
+    );
+    return {
+      ...state,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        isMessageLoadingCounter,
+        isMessageLoadingText:
+          isMessageLoadingCounter > 0 && action.message
+            ? action.message
+            : undefined,
+      },
+    };
+  },
+
+  [RESET_IS_HYDRATING_COUNTER]: (state: AppState): AppState => {
+    return {
+      ...state,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        isHydratingCounter: 0,
       },
     };
   },

@@ -11,7 +11,7 @@ import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 
-import { ChatInstance, ViewType } from "@carbon/ai-chat";
+import { ChatInstance, IncreaseOrDecrease, ViewType } from "@carbon/ai-chat";
 import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -186,13 +186,23 @@ export class DemoChatInstanceSwitcher extends LitElement {
     });
   };
 
-  private _handleLoadingCounter(direction: "increase" | "decrease") {
-    this._withInstance((instance) => {
-      instance.updateIsMessageLoadingCounter?.(direction);
+  private _handleLoadingCounter(
+    direction: IncreaseOrDecrease,
+    withText?: boolean,
+  ) {
+    this._withInstance(async (instance) => {
+      if (direction === "increase") {
+        instance.updateIsMessageLoadingCounter?.(
+          direction,
+          withText ? "Thinking..." : undefined,
+        );
+      } else {
+        instance.updateIsMessageLoadingCounter?.(direction);
+      }
     });
   }
 
-  private _handleChatLoadingCounter(direction: "increase" | "decrease") {
+  private _handleChatLoadingCounter(direction: IncreaseOrDecrease) {
     this._withInstance((instance) => {
       instance.updateIsChatLoadingCounter?.(direction);
     });
@@ -277,6 +287,12 @@ export class DemoChatInstanceSwitcher extends LitElement {
             @click=${() => this._handleLoadingCounter("increase")}
           >
             Increment message loading
+          </cds-button>
+          <cds-button
+            kind="secondary"
+            @click=${() => this._handleLoadingCounter("increase", true)}
+          >
+            Increment message loading<br />(with optional helper text)
           </cds-button>
           <cds-button
             kind="secondary"

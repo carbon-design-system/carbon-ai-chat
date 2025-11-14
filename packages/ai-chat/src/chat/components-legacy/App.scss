@@ -219,7 +219,7 @@ in. */
 }
 
 /* MainWindow hides itself consistently in both default floating mode and custom element mode */
-.cds-aichat--widget.cds-aichat--widget--closed {
+.cds-aichat--widget.cds-aichat--widget--default-element.cds-aichat--widget--closed {
   display: none;
 }
 
