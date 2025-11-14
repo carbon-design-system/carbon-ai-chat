@@ -238,17 +238,6 @@ export const Small = {
     >
       <h5 class="body-compact-02 margin-bottom-01">Document title</h5>
       <p class="helper-text-01 text-secondary">Subtitle</p>
-      ${args.aiLabel
-        ? html`<cds-ai-label
-            data-testid="ai-label"
-            size="mini"
-            autoalign
-            alignment="bottom-left"
-            slot=""
-          >
-            ${aiContent}
-          </cds-ai-label>`
-        : ""}
       ${args.footerAction(args)
         ? html`<div
             class=${classMap({
@@ -262,6 +251,17 @@ export const Small = {
           </div>`
         : ""}
     </cds-tile>
+    ${args.aiLabel
+      ? html`<cds-ai-label
+          data-testid="ai-label"
+          size="mini"
+          autoalign
+          alignment="bottom-left"
+          slot="aichat-tile-decorator"
+        >
+          ${aiContent}
+        </cds-ai-label>`
+      : ""}
   `,
 };
 
@@ -287,17 +287,6 @@ export const Default = {
       <h5 class="body-compact-02 margin-bottom-01">Document title</h5>
       <p class="helper-text-01 text-secondary margin-bottom-03">Subtitle</p>
       <p class="helper-text-01 text-secondary">Subtitle</p>
-      ${args.aiLabel
-        ? html`<cds-ai-label
-            data-testid="ai-label"
-            size="mini"
-            autoalign
-            alignment="bottom-left"
-            slot=""
-          >
-            ${aiContent}
-          </cds-ai-label>`
-        : ""}
 
       <div
         data-flush
@@ -324,6 +313,17 @@ export const Default = {
           </div>`
         : ""}
     </cds-tile>
+    ${args.aiLabel
+      ? html`<cds-ai-label
+          data-testid="ai-label"
+          size="mini"
+          autoalign
+          alignment="bottom-left"
+          slot="aichat-tile-decorator"
+        >
+          ${aiContent}
+        </cds-ai-label>`
+      : ""}
   `,
 };
 
@@ -361,7 +361,7 @@ export const DefaultWithToolbar = {
                 size="mini"
                 autoalign
                 alignment="bottom-left"
-                slot=""
+                slot="tile-container-decorator"
               >
                 ${aiContent}
               </cds-ai-label>`
@@ -441,7 +441,7 @@ export const WithSteps = {
                 size="mini"
                 autoalign
                 alignment="bottom-left"
-                slot=""
+                slot="tile-container-decorator"
               >
                 ${aiContent}
               </cds-ai-label>`

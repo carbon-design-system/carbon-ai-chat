@@ -185,16 +185,24 @@ const renderWithWrapper = (content, args) => (
 export const Small = {
   render: (args) =>
     renderWithWrapper(
-      <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
-        <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
-        <p className="helper-text-01 text-secondary">Subtitle</p>
+      <>
+        <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
+          <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
+          <p className="helper-text-01 text-secondary">Subtitle</p>
+          {footerAction(args)}
+        </Tile>
         {args.aiLabel && (
-          <AILabel size="mini" autoalign alignment="bottom-left" slot="">
+          <AILabel
+            size="mini"
+            autoalign
+            alignment="bottom-left"
+            slot="aichat-tile-decorator"
+          >
             {aiContent}
           </AILabel>
         )}
-        {footerAction(args)}
-      </Tile>,
+      </>,
+
       args,
     ),
   args: { maxWidth: "sm" },
@@ -203,32 +211,39 @@ export const Small = {
 export const Default = {
   render: (args) =>
     renderWithWrapper(
-      <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
-        <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
-        <p className="helper-text-01 text-secondary margin-bottom-03">
-          Subtitle
-        </p>
-        <p className="helper-text-01 text-secondary">Subtitle</p>
-        {args.aiLabel && aiContent}
-        <div
-          data-flush=""
-          className="border-top margin-bottom-04 margin-top-04 padding-inline"
-        >
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-        </div>
+      <>
+        <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
+          <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
+          <p className="helper-text-01 text-secondary margin-bottom-03">
+            Subtitle
+          </p>
+          <p className="helper-text-01 text-secondary">Subtitle</p>
+          {args.aiLabel && aiContent}
+          <div
+            data-flush=""
+            className="border-top margin-bottom-04 margin-top-04 padding-inline"
+          >
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+          </div>
+          {footerAction(args)}
+        </Tile>
         {args.aiLabel && (
-          <AILabel size="mini" autoalign alignment="bottom-left" slot="">
+          <AILabel
+            size="mini"
+            autoalign
+            alignment="bottom-left"
+            slot="aichat-tile-decorator"
+          >
             {aiContent}
           </AILabel>
         )}
-        {footerAction(args)}
-      </Tile>,
+      </>,
       args,
     ),
   args: {
