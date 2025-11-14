@@ -11,12 +11,12 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatMarkdownText from "../components/markdown-text/src/cds-aichat-markdown-text.js";
+import CDSAIChatMarkdown from "../components/markdown/src/cds-aichat-markdown.js";
 
-const MarkdownText = createComponent({
-  tagName: "cds-aichat-markdown-text",
-  elementClass: CDSAIChatMarkdownText,
+const Markdown = createComponent({
+  tagName: "cds-aichat-markdown",
+  elementClass: CDSAIChatMarkdown,
   react: React,
 });
 
-export default MarkdownText;
+export default Markdown;

@@ -1,12 +1,12 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as MarkdownTextStories from "./markdown-text.stories";
+import * as MarkdownStories from "./markdown.stories";
 
-<Meta of={MarkdownTextStories} />
+<Meta of={MarkdownStories} />
 
-# AI Chat Markdown Text
+# AI Chat Markdown
 
-The `cds-aichat-markdown-text` component renders markdown content with syntax highlighting, tables, code snippets, and streaming support. It's optimized for displaying AI-generated responses with rich formatting.
+The `cds-aichat-markdown` component renders markdown content with syntax highlighting, tables, code snippets, and streaming support. It's optimized for displaying AI-generated responses with rich formatting.
 
 ## Key Features
 
@@ -23,16 +23,16 @@ Here's a quick example to get you started.
 ### JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/markdown-text/index.js";
+import "@carbon/ai-chat-components/es/components/markdown/index.js";
 ```
 
 We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
 
 ```javascript
-import MarkdownText from "@carbon/ai-chat-components/es/react/markdown-text.js";
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 ```
 
-<Markdown>{`${cdnJs(["markdown-text"])}`}</Markdown>
+<Markdown>{`${cdnJs(["markdown"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ### HTML
@@ -43,19 +43,19 @@ The default story demonstrates comprehensive markdown rendering including text f
 
 **Note**: By default, all links open in a new window (`target="_blank"`).
 
-<Canvas of={MarkdownTextStories.Default} />
+<Canvas of={MarkdownStories.Default} />
 
 #### Streaming content
 
-<Canvas of={MarkdownTextStories.Streaming} />
+<Canvas of={MarkdownStories.Streaming} />
 
 #### HTML sanitization
 
-<Canvas of={MarkdownTextStories.WithHTMLSanitization} />
+<Canvas of={MarkdownStories.WithHTMLSanitization} />
 
-## `<cds-aichat-markdown-text>` attributes, properties and events
+## `<cds-aichat-markdown>` attributes, properties and events
 
-<ArgTypes of={MarkdownTextStories.Default} />
+<ArgTypes of={MarkdownStories.Default} />
 
 ## Markdown Support
 
@@ -149,7 +149,7 @@ When `remove-html` is enabled, all HTML tags are stripped from the content, leav
 Set `streaming="true"` to enable real-time rendering as content arrives. The component efficiently updates only changed portions of the content:
 
 ```javascript
-const markdown = document.querySelector('cds-aichat-markdown-text');
+const markdown = document.querySelector('cds-aichat-markdown');
 markdown.streaming = true;
 markdown.markdown = "# Hello"; // Renders immediately
 

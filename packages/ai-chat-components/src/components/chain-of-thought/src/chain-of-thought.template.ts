@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../../markdown-text/index.js";
+import "../../markdown/index.js";
 import "@carbon/web-components/es/components/inline-loading/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -82,7 +82,7 @@ function renderToolDataAsMarkdown(
     class="${CSS_CLASS_ITEM_PREFIX} ${CSS_CLASS_ITEM_PREFIX}-${classPostfix}"
   >
     <div class="${CSS_CLASS_ITEM_PREFIX}-label">${label}</div>
-    <cds-aichat-markdown-text
+    <cds-aichat-markdown
       sanitize-html
       markdown=${content}
       filter-placeholder-text=${filterPlaceholderText}
@@ -97,7 +97,7 @@ function renderToolDataAsMarkdown(
       show-more-text=${showMoreText}
       tooltip-content=${tooltipContent}
       .getLineCountText=${getLineCountText}
-    ></cds-aichat-markdown-text>
+    ></cds-aichat-markdown>
   </div>`;
 }
 
@@ -149,7 +149,7 @@ function accordionItemContent(
       ? html`<div
           class="${CSS_CLASS_ITEM_PREFIX} ${CSS_CLASS_ITEM_PREFIX}-description"
         >
-          <cds-aichat-markdown-text
+          <cds-aichat-markdown
             sanitize-html
             markdown=${item.description}
             filter-placeholder-text=${filterPlaceholderText}
@@ -164,7 +164,7 @@ function accordionItemContent(
             show-more-text=${showMoreText}
             tooltip-content=${tooltipContent}
             .getLineCountText=${getLineCountText}
-          ></cds-aichat-markdown-text>
+          ></cds-aichat-markdown>
         </div>`
       : null}
     ${item.tool_name

@@ -11,7 +11,7 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
-import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown-text.js";
+import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown.js";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
 import { AppState } from "../../../../types/state/AppState";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";

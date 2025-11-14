@@ -65,7 +65,7 @@
   padding-block-end: 0.75rem;
 }
 
-.#{$prefix}--chain-of-thought-item cds-aichat-markdown-text:not(:first-child) {
+.#{$prefix}--chain-of-thought-item cds-aichat-markdown:not(:first-child) {
   padding-block-start: 0.5rem;
 }
 

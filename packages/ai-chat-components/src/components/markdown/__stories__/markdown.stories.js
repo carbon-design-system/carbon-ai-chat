@@ -1,13 +1,14 @@
-/* eslint-disable */
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
 
-import MarkdownText from "../../../react/markdown-text";
+import "../src/cds-aichat-markdown";
+import { html, LitElement } from "lit";
 
 const comprehensiveMarkdown = `# Markdown Rendering Demo
 
@@ -126,94 +127,105 @@ Regular markdown works fine:
 
 > Markdown blockquote`;
 
-const chunkMarkdownBySpaces = (markdown) => {
-  const chunks = [];
-  let currentChunk = "";
-  let spaceCount = 0;
+class StreamingDemo extends LitElement {
+  static properties = {
+    streamedContent: { type: String },
+    streaming: { type: Boolean },
+    isComplete: { type: Boolean },
+  };
 
-  for (let i = 0; i < markdown.length; i += 1) {
-    const char = markdown[i];
-    currentChunk += char;
+  constructor() {
+    super();
+    this.streamedContent = "";
+    this.streaming = true;
+    this.isComplete = false;
+    this.streamInterval = null;
+  }
 
-    if (char === " ") {
-      spaceCount += 1;
-      if (spaceCount === 3) {
-        chunks.push(currentChunk);
-        currentChunk = "";
-        spaceCount = 0;
+  connectedCallback() {
+    super.connectedCallback();
+    this.startStreaming();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this.streamInterval) {
+      clearInterval(this.streamInterval);
+    }
+  }
+
+  startStreaming() {
+    if (this.streamInterval) {
+      clearInterval(this.streamInterval);
+    }
+
+    // Split content into chunks based on every 3 spaces
+    const chunks = [];
+    let currentChunk = "";
+    let spaceCount = 0;
+
+    for (let i = 0; i < comprehensiveMarkdown.length; i++) {
+      const char = comprehensiveMarkdown[i];
+      currentChunk += char;
+
+      if (char === " ") {
+        spaceCount++;
+        if (spaceCount === 3) {
+          chunks.push(currentChunk);
+          currentChunk = "";
+          spaceCount = 0;
+        }
       }
     }
-  }
 
-  if (currentChunk) {
-    chunks.push(currentChunk);
-  }
-
-  return chunks;
-};
-
-const StreamingMarkdownDemo = () => {
-  const [streamedContent, setStreamedContent] = useState("");
-  const [streaming, setStreaming] = useState(true);
-  const intervalRef = useRef(null);
-
-  const chunks = useMemo(
-    () => chunkMarkdownBySpaces(comprehensiveMarkdown),
-    [],
-  );
-
-  const clearExistingInterval = useCallback(() => {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    // Add any remaining content as the last chunk
+    if (currentChunk) {
+      chunks.push(currentChunk);
     }
-  }, []);
-
-  const startStreaming = useCallback(() => {
-    clearExistingInterval();
-    setStreamedContent("");
-    setStreaming(true);
 
     let chunkIndex = 0;
+    this.streamedContent = "";
+    this.isComplete = false;
 
-    intervalRef.current = setInterval(() => {
+    this.streamInterval = window.setInterval(() => {
       if (chunkIndex < chunks.length) {
-        setStreamedContent((prev) => prev + chunks[chunkIndex]);
-        chunkIndex += 1;
+        this.streamedContent += chunks[chunkIndex];
+        chunkIndex++;
+        this.requestUpdate();
       } else {
-        clearExistingInterval();
-        setStreaming(false);
+        if (this.streamInterval) {
+          clearInterval(this.streamInterval);
+          this.isComplete = true;
+        }
       }
     }, 50);
-  }, [chunks, clearExistingInterval]);
+  }
 
-  useEffect(() => {
-    startStreaming();
-    return () => clearExistingInterval();
-  }, [startStreaming, clearExistingInterval]);
-
-  return (
-    <div>
-      <div style={{ marginBottom: "1rem" }}>
-        <button
-          type="button"
-          onClick={startStreaming}
-          style={{
-            padding: "0.5rem 1rem",
-            cursor: "pointer",
-            marginRight: "0.5rem",
-          }}
+  render() {
+    return html`
+      <div>
+        <div style="margin-bottom: 1rem;">
+          <button
+            @click=${() => this.startStreaming()}
+            style="padding: 0.5rem 1rem; cursor: pointer; margin-right: 0.5rem;"
+          >
+            Restart Streaming
+          </button>
+        </div>
+        <cds-aichat-markdown
+          ?streaming=${this.streaming}
+          markdown=${this.streamedContent}
         >
-          Restart Streaming
-        </button>
+        </cds-aichat-markdown>
       </div>
-      <MarkdownText streaming={streaming} markdown={streamedContent} />
-    </div>
-  );
-};
+    `;
+  }
+}
+
+customElements.define("streaming-markdown-demo", StreamingDemo);
 
 export default {
-  title: "Components/Markdown Text",
+  title: "Components/Markdown",
   argTypes: {
     markdown: {
       control: "text",
@@ -276,6 +288,9 @@ export default {
       description: "Locale for number formatting",
     },
   },
+};
+
+export const Default = {
   args: {
     markdown: comprehensiveMarkdown,
     streaming: false,
@@ -293,15 +308,31 @@ export default {
     itemsPerPageText: "Items per page:",
     locale: "en",
   },
-};
-
-export const Default = {
-  render: (args) => <MarkdownText {...args} />,
+  render: (args) => html`
+    <cds-aichat-markdown
+      markdown=${args.markdown}
+      ?streaming=${args.streaming}
+      ?sanitize-html=${args.sanitizeHTML}
+      ?remove-html=${args.removeHTML}
+      ?highlight=${args.highlight}
+      ?debug=${args.debug}
+      feedback=${args.feedback}
+      tooltip-content=${args.tooltipContent}
+      show-more-text=${args.showMoreText}
+      show-less-text=${args.showLessText}
+      filter-placeholder-text=${args.filterPlaceholderText}
+      previous-page-text=${args.previousPageText}
+      next-page-text=${args.nextPageText}
+      items-per-page-text=${args.itemsPerPageText}
+      locale=${args.locale}
+    >
+    </cds-aichat-markdown>
+  `,
 };
 
 export const Streaming = {
   args: {},
-  render: () => <StreamingMarkdownDemo />,
+  render: () => html` <streaming-markdown-demo></streaming-markdown-demo> `,
 };
 
 export const WithHTMLSanitization = {
@@ -313,23 +344,24 @@ export const WithHTMLSanitization = {
     highlight: true,
     debug: false,
   },
-  render: (args) => (
+  render: (args) => html`
     <div>
-      <p
-        style={{
-          marginBottom: "1rem",
-          padding: "0.5rem",
-          background: "#f4f4f4",
-        }}
-      >
-        <strong>Note:</strong> With <code>sanitize-html</code> enabled,
-        dangerous HTML like <code>&lt;script&gt;</code> tags and{" "}
-        <code>onclick</code> attributes are removed while safe HTML is
-        preserved.
+      <p style="margin-bottom: 1rem; padding: 0.5rem; background: #f4f4f4;">
+        <strong>Note:</strong> With \`sanitize-html\` enabled, dangerous HTML
+        like \`&lt;script&gt;\` tags and \`onclick\` attributes are removed
+        while safe HTML is preserved.
       </p>
-      <MarkdownText {...args} />
+      <cds-aichat-markdown
+        markdown=${args.markdown}
+        ?streaming=${args.streaming}
+        ?sanitize-html=${args.sanitizeHTML}
+        ?remove-html=${args.removeHTML}
+        .highlight=${args.highlight}
+        ?debug=${args.debug}
+      >
+      </cds-aichat-markdown>
     </div>
-  ),
+  `,
 };
 
 export const WithHTMLRemoval = {
@@ -341,21 +373,23 @@ export const WithHTMLRemoval = {
     highlight: true,
     debug: false,
   },
-  render: (args) => (
+  render: (args) => html`
     <div>
-      <p
-        style={{
-          marginBottom: "1rem",
-          padding: "0.5rem",
-          background: "#f4f4f4",
-        }}
-      >
-        <strong>Note:</strong> With <code>remove-html</code> enabled, all HTML
-        tags are stripped, leaving only plain text and markdown.
+      <p style="margin-bottom: 1rem; padding: 0.5rem; background: #f4f4f4;">
+        <strong>Note:</strong> With \`remove-html\` enabled, all HTML tags are
+        stripped, leaving only plain text and markdown.
       </p>
-      <MarkdownText {...args} />
+      <cds-aichat-markdown
+        markdown=${args.markdown}
+        ?streaming=${args.streaming}
+        ?sanitize-html=${args.sanitizeHTML}
+        ?remove-html=${args.removeHTML}
+        .highlight=${args.highlight}
+        ?debug=${args.debug}
+      >
+      </cds-aichat-markdown>
     </div>
-  ),
+  `,
 };
 
 export const WithoutHighlighting = {
@@ -367,5 +401,17 @@ export const WithoutHighlighting = {
     highlight: false,
     debug: true,
   },
-  render: (args) => <MarkdownText {...args} />,
+  render: (args) => html`
+    <div>
+      <cds-aichat-markdown
+        markdown=${args.markdown}
+        ?streaming=${args.streaming}
+        ?sanitize-html=${args.sanitizeHTML}
+        ?remove-html=${args.removeHTML}
+        .highlight=${args.highlight}
+        ?debug=${args.debug}
+      >
+      </cds-aichat-markdown>
+    </div>
+  `,
 };

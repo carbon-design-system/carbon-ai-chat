@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../../markdown-text/index.js";
+import "../../markdown/index.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/chat-button/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
@@ -105,9 +105,7 @@ function feedbackElementTemplate(customElementClass: FeedbackElement) {
       : ""}
     ${disclaimer
       ? html`<div class="${prefix}--disclaimer">
-          <cds-aichat-markdown-text
-            markdown="${disclaimer}"
-          ></cds-aichat-markdown-text>
+          <cds-aichat-markdown markdown="${disclaimer}"></cds-aichat-markdown>
         </div>`
       : ""}
     <div class="${prefix}--buttons">
