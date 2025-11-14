@@ -844,7 +844,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           isOpen={isOpen}
           isReadonly={isFeedbackSubmitted}
           onClose={() => onFeedbackClicked(isPositive)}
-          onSubmit={(details) => onSubmit(isPositive, details)}
+          onSubmit={(event: CustomEvent<FeedbackSubmitDetails>) =>
+            onSubmit(isPositive, event.detail)
+          }
           initialValues={
             feedbackHistory && feedbackHistory?.is_positive === isPositive
               ? feedbackInitialValues
@@ -877,7 +879,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           positiveLabel={languagePack.feedback_positiveLabel}
           negativeLabel={languagePack.feedback_negativeLabel}
           panelID={feedbackPanelID}
-          onClick={onFeedbackClicked}
+          onClick={(event: CustomEvent<{ isPositive: boolean }>) =>
+            onFeedbackClicked(event.detail.isPositive)
+          }
         />
         <div ref={feedbackDetailsRef}>
           {renderFeedbackPopup(true)}

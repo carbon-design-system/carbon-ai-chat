@@ -1,0 +1,85 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as ChainOfThoughtReactStories from "./chain-of-thought-react.stories";
+
+<Meta of={ChainOfThoughtReactStories} />
+
+# AI Chat Chain of Thought (React)
+
+The `<ChainOfThought>` component wraps the `cds-aichat-chain-of-thought` web component and exposes a React API for displaying the reasoning steps, tool calls, and intermediate outputs used to generate an AI response.
+
+## Key Features
+
+- **Step-by-Step Display**: Shows each reasoning step with status indicators (processing, success, failure)
+- **Tool Call Visualization**: Displays tool names, arguments, and responses with automatic JSON formatting
+- **Collapsible Interface**: Each step can be expanded/collapsed individually for detailed inspection
+- **Status Icons**: Visual indicators for step status (succeeded, failed, processing)
+- **Markdown Support**: Step descriptions and tool responses support markdown formatting
+- **Customizable Labels**: All text strings can be customized for internationalization
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
+
+function ChainOfThoughtExample({ steps }) {
+  return (
+    <ChainOfThought
+      explainabilityText="Show chain of thought"
+      inputLabelText="Input"
+      outputLabelText="Output"
+      toolLabelText="Tool"
+      statusSucceededLabelText="Succeeded"
+      statusFailedLabelText="Failed"
+      statusProcessingLabelText="Processing"
+      steps={steps}
+    />
+  );
+}
+```
+
+### Stories
+
+#### Basic usage
+
+<Canvas of={ChainOfThoughtReactStories.Default} />
+
+#### With steps open
+
+<Canvas of={ChainOfThoughtReactStories.WithStepsOpen} />
+
+#### With different statuses
+
+<Canvas of={ChainOfThoughtReactStories.WithDifferentStatuses} />
+
+#### With complex tool responses
+
+<Canvas of={ChainOfThoughtReactStories.WithComplexResponses} />
+
+## `<ChainOfThought>` props and events
+
+<ArgTypes of={ChainOfThoughtReactStories.Default} />
+
+## Step Structure
+
+Each step in the `steps` array can include:
+
+- **title**: Plain text name of the step
+- **description**: Optional markdown-formatted description of what the tool does
+- **tool_name**: Name of the tool that was called
+- **request.args**: Arguments sent to the tool (automatically formatted as JSON if applicable)
+- **response.content**: Content returned by the tool (supports JSON and markdown)
+- **status**: One of `"processing"`, `"success"`, or `"failure"`
+
+## Custom Labels
+
+All text strings used in the component can be customized through properties:
+
+- `explainabilityText`: Button text to open the panel
+- `inputLabelText`: Label for step inputs
+- `outputLabelText`: Label for step outputs
+- `toolLabelText`: Label for tool name
+- `statusSucceededLabelText`: Label for success icon
+- `statusFailedLabelText`: Label for failure icon
+- `statusProcessingLabelText`: Label for processing icon

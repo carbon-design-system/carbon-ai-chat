@@ -41,8 +41,14 @@ function markdownItHighlight(md: MarkdownIt) {
           const token = state.push("highlight_open", "mark", 1);
           token.markup = marker;
 
-          const textToken = state.push("text", "", 0);
-          textToken.content = content;
+          // Recursively tokenize the content to support nested formatting
+          const oldPos = state.pos;
+          const oldPosMax = state.posMax;
+          state.pos = start + markerLength;
+          state.posMax = pos;
+          state.md.inline.tokenize(state);
+          state.pos = oldPos;
+          state.posMax = oldPosMax;
 
           const closeToken = state.push("highlight_close", "mark", -1);
           closeToken.markup = marker;

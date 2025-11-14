@@ -43,18 +43,6 @@ class FeedbackElement extends LitElement {
   isReadonly = false;
 
   /**
-   * The callback that is called when the user clicks the close button.
-   */
-  @property({ type: Object, attribute: "on-close" })
-  onClose?: () => void;
-
-  /**
-   * The callback that is called when the user clicks the submit button.
-   */
-  @property({ type: Object, attribute: "on-submit" })
-  onSubmit?: (details: FeedbackSubmitDetails) => void;
-
-  /**
    * The initial values to display in the feedback.
    */
   @property({ type: Object, attribute: "initial-values", reflect: true })
@@ -160,17 +148,28 @@ class FeedbackElement extends LitElement {
    * Called when the user clicks the submit button.
    */
   _handleSubmit() {
-    this.onSubmit?.({
-      text: this._textInput,
-      selectedCategories: Array.from(this._selectedCategories),
-    });
+    this.dispatchEvent(
+      new CustomEvent<FeedbackSubmitDetails>("feedback-submit", {
+        detail: {
+          text: this._textInput,
+          selectedCategories: Array.from(this._selectedCategories),
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   /**
    * Called then the user clicks the close button.
    */
   _handleCancel() {
-    this.onClose?.();
+    this.dispatchEvent(
+      new CustomEvent("feedback-close", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   /**
