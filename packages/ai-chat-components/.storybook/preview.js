@@ -33,26 +33,6 @@ if (typeof document !== "undefined") {
 setCustomElementsManifest(customElements);
 
 export const globalTypes = {
-  locale: {
-    name: "Locale",
-    description: "Set the localization for the storybook",
-    defaultValue: "en",
-    toolbar: {
-      icon: "globe",
-      items: [
-        {
-          right: "🇺🇸",
-          title: "English",
-          value: "en",
-        },
-        {
-          right: "🇵🇸",
-          title: "Arabic",
-          value: "ar",
-        },
-      ],
-    },
-  },
   theme: {
     name: "Theme",
     description: "Set the global theme for displaying components",
@@ -60,6 +40,32 @@ export const globalTypes = {
     toolbar: {
       icon: "paintbrush",
       items: ["white", "g10", "g90", "g100"],
+    },
+  },
+  dir: {
+    name: "Text direction",
+    description: "Set the text direction for the story",
+    defaultValue: "ltr",
+    toolbar: {
+      icon: "transfer",
+      title: "Text direction",
+      items: [
+        {
+          right: "🔄",
+          title: "auto",
+          value: "auto",
+        },
+        {
+          right: "➡️",
+          title: "left-to-right (ltr)",
+          value: "ltr",
+        },
+        {
+          right: "⬅️",
+          title: "right-to-left (rtl)",
+          value: "rtl",
+        },
+      ],
     },
   },
 };
@@ -182,10 +188,10 @@ export const parameters = {
 
 export const decorators = [
   function decoratorContainer(story, context) {
-    const { theme } = context.globals;
+    const { theme, dir } = context.globals;
 
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
-
+    document.documentElement.dir = dir;
     return html` <div
       id="main-content"
       name="main-content"
