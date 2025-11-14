@@ -47,13 +47,32 @@ export interface ChatInstance extends EventHandlers, ChatActions {
 }
 
 /**
- * This is the state made available by calling getState. This is a public method that returns immutable values.
+ * This is the state made available by calling {@link ChatInstance.getState}. This is a public method that returns immutable values.
  *
  * @category Instance
  */
 export type PublicChatState = Readonly<
   Omit<PersistedState, "humanAgentState"> & {
+    /**
+     * Current human agent state.
+     */
     humanAgent: PublicChatHumanAgentState;
+
+    /**
+     * Counter that indicates if a message is loading and a loading indicator should be displayed.
+     * If "0" then we do not show loading indicator.
+     */
+    isMessageLoadingCounter: number;
+
+    /**
+     * Optional string to display next to the loading indicator.
+     */
+    isMessageLoadingText?: string;
+
+    /**
+     * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
+     */
+    isHydratingCounter: number;
   }
 >;
 
@@ -219,16 +238,29 @@ interface ChatActions {
   doAutoScroll: () => void;
 
   /**
-   * Either increases or decreases the internal counter that indicates whether the "assistant is loading" indicator is
-   * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value will log an error.
+   * @param direction Either increases or decreases the internal counter that indicates whether the "message is loading"
+   * indicator is shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
+   * increase or decrease the value. "reset" will set the value back to 0. You may pass undefined as the first value
+   * if you just wish to update the message.
+   *
+   * You can access the current value via {@link ChatInstance.getState}.
+   *
+   * @param message You can also, optionally, pass a plain text string as the second argument. It will display next to the loading indicator for
+   * you to give meaningful feedback while the message is loading (or simple strings like "Thinking...", etc). The most
+   * recent value will be used. So if you call it with a string value and then again with no value, the value will be
+   * replaced with undefined and stop showing in the UI.
    */
-  updateIsMessageLoadingCounter: (direction: IncreaseOrDecrease) => void;
+  updateIsMessageLoadingCounter: (
+    direction: IncreaseOrDecrease,
+    message?: string,
+  ) => void;
 
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value will log an error.
+   * increase or decrease the value. "reset" will set the value back to 0.
+   *
+   * You can access the current value via {@link ChatInstance.getState}.
    */
   updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
@@ -256,7 +288,7 @@ interface ChatActions {
 /**
  * @category Instance
  */
-export type IncreaseOrDecrease = "increase" | "decrease";
+export type IncreaseOrDecrease = "increase" | "decrease" | "reset" | undefined;
 
 /**
  * This interface represents the options for when a MessageRequest is sent to the server with the send method.

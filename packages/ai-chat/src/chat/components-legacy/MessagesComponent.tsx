@@ -631,8 +631,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    *
    * @param isTypingMessage The aria label for the typing indicator.
    * @param index The index of this message.
+   * @param statusMessage The optional visible message with the typing indicator
    */
-  private renderTypingIndicator(isTypingMessage: string, index: number) {
+  private renderTypingIndicator(
+    isTypingMessage: string,
+    index: number,
+    statusMessage?: string,
+  ) {
     return (
       <div
         className={`cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`}
@@ -642,7 +647,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           <div className="cds-aichat--assistant-message">
             <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
               <div className="cds-aichat--received--inner">
-                <Processing loop carbonTheme={this.props.carbonTheme} />
+                <div className="cds-aichat--processing">
+                  <Processing
+                    className="cds-aichat--processing-component"
+                    loop
+                    carbonTheme={this.props.carbonTheme}
+                  />{" "}
+                  <div className="cds-aichat--processing-label">
+                    {statusMessage}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -962,7 +976,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         derived: { languagePack },
       },
     } = this.props;
-    const { isMessageLoadingCounter } = messageState;
+    const { isMessageLoadingCounter, isMessageLoadingText } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
@@ -1002,6 +1016,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               this.renderTypingIndicator(
                 isTypingMessage,
                 localMessageItems.length,
+                isMessageLoadingCounter ? isMessageLoadingText : undefined,
               )}
             <Notifications
               serviceManager={serviceManager}
