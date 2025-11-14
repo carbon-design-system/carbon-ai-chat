@@ -1,0 +1,101 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as WorkspaceShellStories from "./workspace-shell.stories";
+
+<Meta of={WorkspaceShellStories} />
+
+# AI Chat Workspace shell
+
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
+```
+
+<Markdown>{`${cdnJs({ components: ["workspace-shell"] })}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+### Slots and Composition
+
+The **`<cds-aichat-workspace-shell>`** component defines five dedicated slots that structure the overall workspace layout:
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Slot Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>toolbar</code></td>
+      <td>Represents the toolbar area of the workspace.</td>
+    </tr>
+    <tr>
+      <td><code>header</code></td>
+      <td>Represents the header section, containing title, subtitle and actions.</td>
+    </tr>
+    <tr>
+      <td><code>notification</code></td>
+      <td>Area for displaying workspace notifications.</td>
+    </tr>
+    <tr>
+      <td><code>body</code></td>
+      <td>The main content area of the workspace.</td>
+    </tr>
+    <tr>
+      <td><code>footer</code></td>
+      <td>Represents the footer section, usually containing action buttons.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+Each of these slots can accept **any element or component**, allowing users to freely construct and customize the workspace layout as needed.  
+Alternatively, adopters can use the **provided subcomponents**, which are designed specifically for each section. These subcomponents offer consistent styling and default behaviors that align with the AI Chat Workspace design patterns.
+
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Section</th>
+      <th>Subcomponent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Header</td>
+      <td><code>&lt;cds-aichat-workspace-shell-header&gt;</code></td>
+    </tr>
+    <tr>
+      <td>Body</td>
+      <td><code>&lt;cds-aichat-workspace-shell-body&gt;</code></td>
+    </tr>
+    <tr>
+      <td>Footer</td>
+      <td><code>&lt;cds-aichat-workspace-shell-footer&gt;</code></td>
+    </tr>
+  </tbody>
+</table>
+
+
+Using these subcomponents ensures visual consistency and predictable structure while still giving you the flexibility to build a fully customized workspace experience.
+
+
+
+## `<cds-aichat-workspace-shell>` attributes, properties and events
+<ArgTypes of="cds-aichat-workspace-shell" />
+
+## `<cds-aichat-workspace-shell-header>` attributes, properties and events
+<ArgTypes of="cds-aichat-workspace-shell-header" />
+
+## `<cds-aichat-workspace-shell-body>` attributes, properties and events
+<ArgTypes of="cds-aichat-workspace-shell-body" />
+
+## `<cds-aichat-workspace-shell-footer>` attributes, properties and events
+<ArgTypes of="cds-aichat-workspace-shell-footer" />
