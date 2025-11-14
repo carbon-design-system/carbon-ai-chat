@@ -7,6 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/type";
 
 .cds-aichat--media-player,
 .cds-aichat--media-player__skeleton {
@@ -81,4 +82,52 @@ cds-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
 
 .cds-aichat--media-player__skeleton-text-container {
   padding: layout.$spacing-05;
+}
+
+.cds-aichat--media-transcript {
+  padding: 0 layout.$spacing-05 layout.$spacing-05 layout.$spacing-05;
+}
+
+.cds-aichat--media-transcript__toggle {
+  @include type.type-style("label-01");
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background-color: transparent;
+  color: theme.$text-secondary;
+  cursor: pointer;
+  text-align: start;
+
+  &:hover {
+    background-color: theme.$layer-hover-01;
+  }
+
+  &:focus {
+    outline: 2px solid theme.$focus;
+    outline-offset: -2px;
+  }
+}
+
+.cds-aichat--media-transcript__toggle-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.cds-aichat--media-transcript__language {
+  color: theme.$text-secondary;
+  font-weight: 400;
+}
+
+.cds-aichat--media-transcript__toggle-icon {
+  flex-shrink: 0;
+  margin-inline-start: layout.$spacing-03;
+}
+
+.cds-aichat--media-transcript__content--visible {
+  padding-block-start: layout.$spacing-03;
 }
