@@ -82,7 +82,6 @@ const footerActionVariants = {
       size="md"
       kind="ghost"
       disabled
-      data-viewing
     >
       ${iconLoader(View16)} Viewing
     </cds-button>

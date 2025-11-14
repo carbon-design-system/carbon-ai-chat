@@ -89,7 +89,6 @@ const footerAction = (args) => {
         kind="ghost"
         size="md"
         disabled
-        data-viewing
         onClick={action("onClick")}
         className="text-primary"
       >

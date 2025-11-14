@@ -70,8 +70,16 @@
       inline-size: 100%;
       max-inline-size: unset;
 
-      &[kind="ghost"] > svg[slot="icon"] {
-        fill: theme.$link-primary;
+      &[kind="ghost"] {
+        > svg[slot="icon"] {
+          fill: theme.$link-primary;
+        }
+
+        &[disabled]::part(button) {
+          align-items: center;
+          justify-content: flex-start;
+          gap: layout.$spacing-03;
+        }
       }
     }
 
