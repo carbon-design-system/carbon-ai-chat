@@ -26,26 +26,6 @@ if (typeof document !== "undefined") {
 }
 
 export const globalTypes = {
-  locale: {
-    name: "Locale",
-    description: "Set the localization for the storybook",
-    defaultValue: "en",
-    toolbar: {
-      icon: "globe",
-      items: [
-        {
-          right: "🇺🇸",
-          title: "English",
-          value: "en",
-        },
-        {
-          right: "🇵🇸",
-          title: "Arabic",
-          value: "ar",
-        },
-      ],
-    },
-  },
   theme: {
     name: "Theme",
     description: "Set the global theme for displaying components",
@@ -127,9 +107,8 @@ export const parameters = {
 
 export const decorators = [
   function decoratorContainer(story, context) {
-    const { locale, theme, dir } = context.globals;
+    const { theme, dir } = context.globals;
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
-    document.documentElement.lang = locale;
     document.documentElement.dir = dir;
 
     return (
