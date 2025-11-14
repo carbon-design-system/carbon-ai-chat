@@ -1,0 +1,342 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button" as button;
+@use "../../styles/chat-theme";
+@use "../../styles/chat-keyframes";
+@use "../../styles/chat-config" as chat-config;
+
+.cds-aichat--launcher__button-container {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  border-radius: 28px;
+  animation: #{chat-config.$prefix}-launcher-in motion.$duration-moderate-01
+    motion.motion(entrance, expressive) both;
+  background-color: theme.$background;
+  box-shadow: chat-theme.$box-shadow;
+  inset-block-end: var(
+    --cds-aichat-launcher-position-bottom,
+    #{chat-theme.$launcher-position-bottom}
+  );
+  inset-inline-end: var(
+    --cds-aichat-launcher-position-right,
+    #{chat-theme.$launcher-position-right}
+  );
+}
+
+.cds-aichat--launcher__button-container--hidden {
+  /* Using display:none causes the entrance animation to replay */
+  visibility: hidden;
+}
+
+.cds-aichat--launcher__button-container--round {
+  border-radius: 28px;
+  box-shadow: chat-theme.$box-shadow;
+}
+
+.cds-aichat--launcher__button-container--round .cds-aichat--launcher__button {
+  border-radius: 28px;
+  background-color: chat-theme.$launcher-color-background;
+  transition: unset;
+
+  &::part(button) {
+    &:focus {
+      box-shadow: inset 0 0 0 button.$button-border-width
+        chat-theme.$launcher-color-focus-border;
+    }
+  }
+
+  &:focus {
+    border-width: button.$button-border-width;
+    border-color: chat-theme.$launcher-color-background;
+  }
+
+  &:hover {
+    border-color: chat-theme.$launcher-color-background-hover;
+    background-color: chat-theme.$launcher-color-background-hover;
+  }
+
+  &:active {
+    border-width: button.$button-border-width;
+    border-color: chat-theme.$launcher-color-background-active;
+    background-color: chat-theme.$launcher-color-background-active;
+    box-shadow: inset 0 0 0 button.$button-border-width
+      chat-theme.$launcher-color-focus-border;
+  }
+}
+
+.cds-aichat--launcher__button-container--round .cds-aichat--count-indicator {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border-radius: 10px;
+  background-color: chat-theme.$unread-indicator-color-background;
+  color: chat-theme.$unread-indicator-color-text;
+  @include type.type-style("caption-01");
+
+  inset-block-start: calc(-1 * #{layout.$spacing-02});
+  inset-inline-end: calc(-1 * #{layout.$spacing-02});
+  min-block-size: 20px;
+  min-inline-size: 20px;
+}
+
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--count-indicator {
+  inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
+}
+
+cds-button.cds-aichat--launcher__button {
+  &::part(button) {
+    svg {
+      block-size: 24px;
+      fill: chat-theme.$launcher-color-avatar;
+      inline-size: 24px;
+    }
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: inherit;
+    border-radius: inherit;
+    block-size: inherit;
+    inline-size: inherit;
+    max-inline-size: inherit;
+  }
+
+  &::part(button):focus {
+    border-width: button.$button-border-width;
+  }
+
+  position: static;
+  padding: 0;
+  border-radius: 28px;
+  background-color: chat-theme.$launcher-color-background;
+  block-size: chat-theme.$launcher-default-size;
+  inline-size: chat-theme.$launcher-default-size;
+  transition:
+    background 250ms ease-in-out,
+    transform 150ms ease;
+}
+
+.cds-aichat--launcher__svg {
+  fill: currentcolor;
+}
+
+.cds-aichat--launcher__avatar {
+  border-radius: 50%;
+  block-size: 32px;
+  inline-size: 32px;
+  user-select: none;
+}
+
+.cds-aichat--launcher__button .cds-aichat__count-indicator {
+  box-shadow: 1px layout.$spacing-01 layout.$spacing-01 rgb(23 23 23 / 30%);
+  inset-block-start: calc(-1 * #{layout.$spacing-02});
+  inset-inline-end: calc(-1 * #{layout.$spacing-02});
+}
+
+.cds-aichat--launcher-extended__container {
+  block-size: chat-theme.$launcher-default-size;
+  inline-size: chat-theme.$launcher-default-size;
+}
+
+cds-button.cds-aichat--launcher-extended__button::part(button) {
+  padding: 0;
+  border-width: button.$button-border-width;
+  block-size: 100%;
+  cursor: pointer;
+  inline-size: 100%;
+}
+
+.cds-aichat--launcher-extended__button--hidden {
+  visibility: hidden;
+}
+
+.cds-aichat--launcher-extended__wrapper-container {
+  position: relative;
+  overflow: hidden;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--launcher-extended__wrapper {
+  position: absolute;
+  display: flex;
+  inline-size: calc(#{chat-theme.$launcher-extended-width} - 6px);
+  inset-inline-end: 0;
+  max-inline-size: calc(100vw - chat-theme.$launcher-position-bottom - 6px);
+}
+
+.cds-aichat--launcher-extended__text-holder {
+  position: relative;
+  flex: 1;
+  padding: layout.$spacing-04 0 layout.$spacing-04 layout.$spacing-04;
+  text-align: start;
+}
+
+.cds-aichat--launcher-extended__greeting {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  block-size: 100%;
+  color: chat-theme.$launcher-mobile-color-text;
+  @include type.type-style("body-01");
+
+  inline-size: calc(100% - 12px);
+  inset-block-end: 0;
+  word-break: break-word;
+}
+
+.cds-aichat-is-phone .cds-aichat--launcher-extended__greeting {
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--launcher-extended__greeting-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  text-overflow: ellipsis;
+}
+
+.cds-aichat--launcher-extended__button .cds-aichat--launcher__icon-holder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: calc(
+    chat-theme.$launcher-default-size - button.$button-border-width * 2
+  );
+  inline-size: calc(
+    chat-theme.$launcher-default-size - button.$button-border-width * 2
+  );
+  margin-inline-start: auto;
+
+  svg {
+    position: absolute;
+    block-size: 24px;
+    inline-size: 24px;
+  }
+}
+
+.cds-aichat--launcher-extended__button
+  .cds-aichat--launcher-extended__element--hidden {
+  display: none;
+}
+
+.cds-aichat--launcher-extended__button
+  .cds-aichat--launcher-extended__element--fade-out {
+  animation: #{chat-config.$prefix}-launcher-extended-element-fade-out 500ms
+    ease-out 400ms both;
+}
+
+.cds-aichat--launcher-extended__button
+  .cds-aichat--launcher-extended__element--fade-in {
+  animation: #{chat-config.$prefix}-launcher-extended-element-fade-in 500ms
+    ease-out 400ms both;
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher-extended__button--extended {
+  border-radius: 28px;
+  inline-size: chat-theme.$launcher-extended-width;
+
+  cds-button.cds-aichat--launcher__button {
+    inline-size: chat-theme.$launcher-extended-width;
+  }
+
+  cds-button.cds-aichat--launcher__button.cds-aichat--launcher-extended__button::part(
+      button
+    ) {
+    border-radius: 28px;
+  }
+
+  .cds-aichat--launcher__svg {
+    inline-size: 24px;
+  }
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher-extended__button--extended-animation {
+  animation: #{chat-config.$prefix}-launcher-extend 300ms
+    cubic-bezier(0.25, 0.46, 0.45, 0.94) 500ms both;
+}
+
+.cds-aichat--launcher__button-container.cds-aichat--launcher-extended__button--reduced-animation {
+  animation: #{chat-config.$prefix}-launcher-reduce 300ms
+    cubic-bezier(0.25, 0.46, 0.45, 0.94) 500ms both;
+}
+
+.cds-aichat--launcher-extended__outer-container {
+  position: relative;
+}
+
+$launcher-position-bottom-var: var(
+  --cds-aichat-launcher-position-bottom,
+  #{chat-theme.$launcher-position-bottom}
+);
+$launcher-position-right-var: var(
+  --cds-aichat-launcher-position-right,
+  #{chat-theme.$launcher-position-right}
+);
+$launcher-default-size-var: var(
+  --cds-aichat-launcher-default-size,
+  #{chat-theme.$launcher-default-size}
+);
+$launcher-extended-width-var: var(
+  --cds-aichat--launcher-extended-width,
+  var(
+    --cds-aichat-launcher-extended-width,
+    #{chat-theme.$launcher-extended-width}
+  )
+);
+$launcher-close-inline-offset-var: var(
+  --cds-aichat--launcher-close-offset-inline,
+  #{$launcher-extended-width-var}
+);
+
+cds-button.cds-aichat--launcher-extended__close-button {
+  position: fixed;
+  z-index: calc(var(--cds-aichat-z-index) + 1);
+  inset-block-end: calc(
+    #{$launcher-position-bottom-var} + #{$launcher-default-size-var} +
+      #{layout.$spacing-02} - 4px
+  );
+  inset-inline-end: #{$launcher-position-right-var};
+  transform: translate(50%, 50%);
+}
+
+cds-button.cds-aichat--launcher-extended__close-button::part(button) {
+  padding: 0;
+  border-radius: 50%;
+  block-size: 24px;
+  inline-size: 24px;
+}
+
+cds-button.cds-aichat--launcher-extended__close-button--hidden {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  cds-button.cds-aichat--launcher-extended__close-button {
+  transform: translate(-50%, 50%);
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--launcher-extended__container {
+  .cds-aichat--launcher-extended__wrapper {
+    inset-inline: 0 unset;
+  }
+
+  .cds-aichat--launcher-extended__text-holder {
+    padding: layout.$spacing-04 layout.$spacing-04 layout.$spacing-04 0;
+  }
+}
