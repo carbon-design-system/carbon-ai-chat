@@ -6,42 +6,31 @@
  *
  *  @license
  */
+
+/**
+ * Testing entry-point used by `@carbon/ai-chat/server` consumers to preload
+ * every lazy dependency (components + chat package) before running Jest/Vitest
+ * or server-rendered scenarios. Having a single central helper keeps component
+ * loaders in sync and prevents duplicate preload logic from drifting.
+ */
+
 // Reuse the component-level preload helper so CodeMirror/DataTable deps stay in sync.
 import { loadAllLazyDeps as loadComponentLazyDeps } from "@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js";
-export {
-  loadCodeSnippetDeps,
-  loadTableDeps,
-} from "@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js";
 import { normalizeModuleInterop } from "../chat/utils/moduleInterop.js";
 import { localeLoaders } from "../chat/utils/languages.js";
 
-// Prefer native dynamic `import()` so the same code path works for ESM-only bundles
-// (Swiper, react-player) and CommonJS-friendly modules (color). Node's dynamic
-// import returns a namespace object for CommonJS modules, which we normalize below.
-async function requireOrImport<TModule>(
-  specifier: string,
-  dynamicImport: () => Promise<TModule>,
-): Promise<TModule> {
-  return dynamicImport();
-}
-
 async function preloadSwiper() {
-  await Promise.all([
-    requireOrImport("swiper/react", () => import("swiper/react")),
-    requireOrImport("swiper/modules", () => import("swiper/modules")),
-  ]);
+  await Promise.all([import("swiper/react"), import("swiper/modules")]);
 }
 
 async function preloadReactPlayer() {
-  const reactPlayerModule = await requireOrImport(
-    "react-player/lazy/index.js",
-    () => import("react-player/lazy/index.js"),
-  );
+  // Node's dynamic import returns a namespace object for CommonJS modules; normalize it.
+  const reactPlayerModule = await import("react-player/lazy/index.js");
   normalizeModuleInterop(reactPlayerModule);
 }
 
 async function preloadColor() {
-  const colorModule = await requireOrImport("color", () => import("color"));
+  const colorModule = await import("color");
   normalizeModuleInterop(colorModule);
 }
 
