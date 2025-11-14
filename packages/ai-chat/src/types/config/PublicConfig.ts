@@ -353,16 +353,17 @@ export interface PublicConfigMessaging {
   /**
    * Changes the timeout used by the message service when making message calls. The timeout is in seconds. The
    * default is 150 seconds. After this time, an error will be shown in the client and an Abort signal will be sent
-   * to customSendMessage. If set to 0, the chat will never timeout.
+   * to customSendMessage. If set to 0, the chat will never timeout.  This is tied to either {@link ChatInstanceMessaging.addMessage} or
+   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
+   * are called with in the window defined here, the chat will timeout (unless the value is set to 0).
    */
   messageTimeoutSecs?: number;
 
   /**
    * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
-   * the loading indicator. This is tied to either {@link ChatInstanceMessaging.addMessage} or
-   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent.
-   *
-   * If set to 0, the chat will never automatically show a loading indicator.
+   * the loading indicator on its own. This is tied to either {@link ChatInstanceMessaging.addMessage} or
+   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
+   * are called with in the window defined here, the loading indicator will be shown.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 

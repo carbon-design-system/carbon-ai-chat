@@ -342,6 +342,11 @@ interface ChatMessagesState {
   isMessageLoadingCounter: number;
 
   /**
+   * Optional string to display next to the loading indicator.
+   */
+  isMessageLoadingText?: string;
+
+  /**
    * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
    */
   isHydratingCounter: number;
