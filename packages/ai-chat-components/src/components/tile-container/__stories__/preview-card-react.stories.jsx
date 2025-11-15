@@ -8,6 +8,7 @@ import IconButton from "../../../react/icon-button";
 import { Download, Maximize, View, Share, Version } from "@carbon/icons-react";
 import cx from "classnames";
 import { action } from "storybook/actions";
+import styles from "./story-styles.scss?inline";
 
 export default {
   title: "Components/Tile Container/Preview Card",
@@ -48,6 +49,14 @@ export default {
     aiLabel: true,
     maxWidth: "sm",
   },
+  decorators: [
+    (Story) => (
+      <>
+        <style>{styles}</style>
+        <Story />
+      </>
+    ),
+  ],
 };
 
 const aiContent = (
@@ -219,7 +228,7 @@ export const Default = {
           <p className="helper-text-01 text-secondary">Subtitle</p>
           {args.aiLabel && aiContent}
           <div
-            data-flush=""
+            data-flush="bottom"
             className="border-top margin-bottom-04 margin-top-04 padding-inline"
           >
             <br />
@@ -284,7 +293,10 @@ export const DefaultWithToolbar = {
             ))}
           </div>
         </div>
-        <div data-flush="" className="border-top margin-top-05 padding-inline">
+        <div
+          data-flush="bottom"
+          className="border-top margin-top-05 padding-inline"
+        >
           <br />
           <br />
           <br />
@@ -326,7 +338,7 @@ export const WithSteps = {
             )}
           </div>
         </div>
-        <div data-flush="" className="border-top margin-top-05">
+        <div data-flush="bottom" className="border-top margin-top-05">
           {StepVariations[args.stepVariation]()}
         </div>
         {footerAction(args)}

@@ -45,45 +45,57 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     console.log("preview card open button clicked");
 
     if (!isWorkspaceOpen) {
-      serviceManager.fire({
-        type: BusEventType.WORKSPACE_PRE_OPEN,
-      });
+      serviceManager.eventBus.fire(
+        { type: BusEventType.WORKSPACE_PRE_OPEN },
+        serviceManager.instance,
+      );
       setIsWorkspaceOpen(true);
-      serviceManager.fire({
-        type: BusEventType.WORKSPACE_OPEN,
-      });
+      serviceManager.eventBus.fire(
+        { type: BusEventType.WORKSPACE_OPEN },
+        serviceManager.instance,
+      );
     }
   };
 
   return (
-    <TileContainer className={cx("cds-aichat-tile-container")}>
+    <TileContainer
+      className={cx("cds-aichat-tile-container", {
+        "cds-aichat-preview-card-sm": true,
+      })}
+    >
       <Tile data-rounded>
         <h5 className="body-compact-02 margin-bottom-01">{item.title}</h5>
         <p className="helper-text-01 text-secondary">{item.subtitle}</p>
 
-        {!isExpired && (
-          <Button
-            kind={BUTTON_KIND.GHOST}
-            size="md"
-            disabled={isWorkspaceOpen}
-            onClick={handleClick}
-            className="text-primary"
-          >
-            {isWorkspaceOpen ? (
-              <>
-                <View /> Viewing
-              </>
-            ) : (
-              <>
-                View details{" "}
-                <Maximize
-                  // @ts-ignore
-                  slot="icon"
-                />
-              </>
-            )}
-          </Button>
-        )}
+        <div
+          className="cds-aichat--tile-container-footer margin-top-05"
+          data-flush="bottom"
+          data-rounded="bottom"
+        >
+          {!isExpired && (
+            <Button
+              kind={BUTTON_KIND.GHOST}
+              size="md"
+              disabled={isWorkspaceOpen}
+              onClick={handleClick}
+              className="text-primary"
+            >
+              {isWorkspaceOpen ? (
+                <>
+                  <View /> Viewing
+                </>
+              ) : (
+                <>
+                  View details{" "}
+                  <Maximize
+                    // @ts-ignore
+                    slot="icon"
+                  />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </Tile>
     </TileContainer>
   );

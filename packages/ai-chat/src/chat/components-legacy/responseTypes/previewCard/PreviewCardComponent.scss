@@ -1,10 +1,8 @@
-/*
+/* 
  *  Copyright IBM Corp. 2025
- *
+ *  
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
- *
- *  @license
  */
 
 @use "@carbon/layout";
@@ -12,12 +10,14 @@
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/components/button/tokens" as *;
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/ai-chat-components/src/globals/scss/modifiers" as *;
+@use "@carbon/ai-chat-components/src/globals/scss/vars" as *;
 
-// Note: all the inner content must receive 8-1px to account for 1px border. for perfectly rounded corners the inner radius must be 7px. is part of the mixin inside modifier styles.
+.cds-aichat-preview-card-sm {
+  max-inline-size: rem(291px);
+}
 
-// Tile Container
+// could make below styles into an exportable scss usage from @carbon/ai-chat-components
 #{$prefix}-tile-container {
   @include rounded-modifiers;
   @include flush-modifiers;

@@ -288,7 +288,7 @@ export const Default = {
       <p class="helper-text-01 text-secondary">Subtitle</p>
 
       <div
-        data-flush
+        data-flush="bottom"
         class="border-top margin-bottom-04 margin-top-04 padding-inline"
       >
         <br />
@@ -383,7 +383,7 @@ export const DefaultWithToolbar = {
           </cds-icon-button>
         </div>
       </div>
-      <div data-flush class="border-top margin-top-05 padding-inline">
+      <div data-flush="bottom" class="border-top margin-top-05 padding-inline">
         <br />
         <br />
         <br />
@@ -447,7 +447,7 @@ export const WithSteps = {
             : ""}
         </div>
       </div>
-      <div data-flush class="border-top margin-top-05">
+      <div data-flush="bottom" class="border-top margin-top-05">
         ${args.stepVariation(args)}
       </div>
       ${args.footerAction(args)
