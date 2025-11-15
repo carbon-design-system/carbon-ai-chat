@@ -8,10 +8,13 @@
  */
 
 import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import Button, {
   BUTTON_KIND,
   BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
-import Button from "@carbon/ai-chat-components/es/react/button.js";
+} from "@carbon/ai-chat-components/es/react/button.js";
 import cx from "classnames";
 import React from "react";
 import { useSelector } from "../../../hooks/useSelector";
@@ -40,12 +43,12 @@ interface BaseButtonComponentProps extends HasClassName {
   /**
    * The button style.
    */
-  kind?: BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
 
   /**
    * The button size.
    */
-  size?: BUTTON_SIZE;
+  size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
 
   /**
    * The url to visit when the button is clicked.
@@ -120,8 +123,8 @@ function BaseButtonItemComponent({
   return isChatButton ? (
     <ChatButton
       className={cx("cds-aichat--button-item", className)}
-      kind={buttonKind as BUTTON_KIND}
-      size={size}
+      kind={buttonKind as CHAT_BUTTON_KIND}
+      size={size as CHAT_BUTTON_SIZE}
       href={url}
       target={linkTarget}
       rel={url ? "noopener noreferrer" : undefined}
@@ -136,7 +139,7 @@ function BaseButtonItemComponent({
     <Button
       className={cx("cds-aichat--button-item", className)}
       kind={buttonKind as BUTTON_KIND}
-      size={size}
+      size={size as BUTTON_SIZE}
       href={url}
       target={linkTarget}
       rel={url ? "noopener noreferrer" : undefined}

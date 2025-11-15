@@ -9,7 +9,7 @@
 
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import "../chat-button";
+import "../src/chat-button";
 import { html } from "lit";
 import {
   BUTTON_KIND,
