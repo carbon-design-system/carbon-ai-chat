@@ -7,7 +7,11 @@
  *  @license
  */
 
-import Button, { BUTTON_KIND } from "../../../components/carbon/Button";
+import ChatButton, {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import Button from "@carbon/ai-chat-components/es/react/button.js";
 import cx from "classnames";
 import React from "react";
 import { useSelector } from "../../../hooks/useSelector";
@@ -36,8 +40,12 @@ interface BaseButtonComponentProps extends HasClassName {
   /**
    * The button style.
    */
-  // eslint-disable-next-line react/no-unused-prop-types
   kind?: BUTTON_KIND | "LINK";
+
+  /**
+   * The button size.
+   */
+  size?: BUTTON_SIZE;
 
   /**
    * The url to visit when the button is clicked.
@@ -72,6 +80,7 @@ function BaseButtonItemComponent({
   className,
   label,
   kind,
+  size,
   url,
   target = "_blank",
   disabled,
@@ -104,12 +113,30 @@ function BaseButtonItemComponent({
       />
     );
   }
-  const RenderIcon = renderIcon;
+  const RenderIcon = renderIcon; // todo: enable passing custom icon
   const buttonKind = getButtonKind(kind) || "primary";
-  return (
+  const isChatButton = true; // todo: add condition, check if is nested maybe ??
+
+  return isChatButton ? (
+    <ChatButton
+      className={cx("cds-aichat--button-item", className)}
+      kind={buttonKind as BUTTON_KIND}
+      size={size}
+      href={url}
+      target={linkTarget}
+      rel={url ? "noopener noreferrer" : undefined}
+      disabled={disabled}
+      onClick={onClick}
+      tab-index="0"
+    >
+      {renderIcon && <RenderIcon slot="icon" />}
+      {text}
+    </ChatButton>
+  ) : (
     <Button
       className={cx("cds-aichat--button-item", className)}
       kind={buttonKind as BUTTON_KIND}
+      size={size}
       href={url}
       target={linkTarget}
       rel={url ? "noopener noreferrer" : undefined}

@@ -12,7 +12,10 @@ import {
   ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/web-components/es/components/button/defs.js";
 
 function doButton(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -25,7 +28,20 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.BUTTON,
           label: "Alert button",
-          kind: BUTTON_KIND.DANGER,
+          kind: BUTTON_KIND.DANGER_TERTIARY,
+          size: BUTTON_SIZE.SMALL,
+          button_type: ButtonItemType.CUSTOM_EVENT,
+          custom_event_name: "alert_button",
+          // Pass any extra meta data you want here and it will be included in the event payload.
+          user_defined: {
+            text: "Carbon!",
+          },
+        },
+        {
+          response_type: MessageResponseTypes.BUTTON,
+          label: "Alert button",
+          kind: BUTTON_KIND.DANGER_GHOST,
+          size: BUTTON_SIZE.SMALL,
           button_type: ButtonItemType.CUSTOM_EVENT,
           custom_event_name: "alert_button",
           // Pass any extra meta data you want here and it will be included in the event payload.
@@ -36,6 +52,8 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.BUTTON,
           label: "Send a message",
+          kind: BUTTON_KIND.TERTIARY,
+          size: BUTTON_SIZE.SMALL,
           button_type: ButtonItemType.POST_BACK,
           value: {
             input: {
@@ -47,7 +65,8 @@ function doButton(instance: ChatInstance) {
           response_type: MessageResponseTypes.BUTTON,
           button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
-          kind: BUTTON_KIND.SECONDARY,
+          size: BUTTON_SIZE.SMALL,
+          kind: BUTTON_KIND.TERTIARY,
           panel: {
             title: "My panel",
             show_animations: true,
@@ -70,6 +89,7 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.BUTTON,
           button_type: ButtonItemType.URL,
+          size: BUTTON_SIZE.SMALL,
           label: "Visit ibm.com",
           url: "https://www.ibm.com",
         },
