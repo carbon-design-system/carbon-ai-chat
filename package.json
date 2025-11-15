@@ -35,6 +35,7 @@
     "aiChat:start": "lerna run build --scope @carbon/ai-chat-components --scope @carbon/ai-chat && lerna run start --stream --parallel --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
     "aiChat:start:all": "npm run build && lerna run start --stream --parallel",
     "aiChat:start:storybook": "npm run storybook --workspace=@carbon/ai-chat-components",
+    "aiChat:start:storybook:react": "npm run storybook:react --workspace=@carbon/ai-chat-components",
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
@@ -56,6 +57,7 @@
     "@babel/preset-react": "^7.27.1",
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
+    "@storybook/addons": "^7.6.17",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
@@ -138,6 +140,7 @@
           "definedTags": [
             "category",
             "experimental",
+            "element",
             "typeParam",
             "template",
             "inheritDoc",
@@ -152,6 +155,7 @@
             "readonly",
             "sealed",
             "showCategories",
+            "slot",
             "virtual"
           ]
         }

@@ -1,0 +1,187 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { LitElement, html } from "lit";
+import { customElement, property, state, query } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
+import { repeat } from "lit/directives/repeat.js";
+import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/overflow-menu/index.js";
+import { OVERFLOW_MENU_SIZE } from "@carbon/web-components/es/components/overflow-menu/defs.js";
+import { createOverflowHandler } from "@carbon/utilities";
+import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import prefix from "../../../globals/settings.js";
+// @ts-ignore
+import styles from "./toolbar.scss?lit";
+
+export interface Action {
+  text: string;
+  icon: () => void;
+  size?: string;
+  fixed?: boolean;
+  onClick: () => void;
+}
+
+/**
+ * Toolbar.
+ *
+ * @element cds-aichat-toolbar
+ * @slot navigation - Defines the navigation area of the toolbar.
+ * @slot title - Defines the title section of the toolbar.
+ * @slot fixed-actions - Defines the area for displaying actions that are always visible (not overflowed) in the toolbar.
+ * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
+ *
+ */
+@customElement(`${prefix}-toolbar`)
+class CDSAIChatToolbar extends LitElement {
+  /** Hidden actions rendered in the overflow menu. */
+  @state() private hiddenItems: Action[] = [];
+
+  /** The list of actions. */
+  @property({ type: Array, reflect: false })
+  actions: Action[] = [];
+
+  /** Should actions be overflowing. */
+  @property({ type: Boolean, reflect: true }) overflow = false;
+
+  /** Container holding all action buttons and the overflow menu. */
+  @query(`.${prefix}-toolbar`) private container!: HTMLElement;
+
+  private overflowHandler?: { disconnect: () => void };
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.style.visibility = this.overflow ? "hidden" : "visible";
+  }
+
+  firstUpdated() {
+    if (!this.overflow) {
+      return;
+    }
+    this.updateComplete.then(() => {
+      this.setupOverflowHandler();
+      this.style.visibility = "visible";
+    });
+  }
+
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has("actions")) {
+      this.updateComplete
+        .then(() => {
+          this.hiddenItems = [];
+        })
+        .then(() => this.setupOverflowHandler());
+    }
+  }
+
+  private setupOverflowHandler() {
+    if (!this.container || !this.overflow) {
+      return;
+    }
+
+    this.overflowHandler?.disconnect();
+
+    this.overflowHandler = createOverflowHandler({
+      container: this.container,
+      dimension: "width",
+      onChange: (visibleItems: HTMLElement[]) => {
+        this.hiddenItems = this.actions.filter(
+          (_, i) => i >= visibleItems.length && !_.fixed,
+        );
+      },
+    });
+  }
+
+  disconnectedCallback() {
+    this.overflowHandler?.disconnect();
+    super.disconnectedCallback();
+  }
+
+  render() {
+    const fixedActions = this.actions.filter((d) => d.fixed);
+    const nonFixedActions = this.actions.filter((d) => !d.fixed);
+
+    const renderIconButton = (action: Action) => {
+      return html`
+        <cds-icon-button
+          ?data-fixed=${action.fixed}
+          @click=${action.onClick}
+          size=${action.size || "md"}
+          align="bottom-end"
+          kind="ghost"
+          enter-delay-ms="0"
+          leave-delay-ms="0"
+        >
+          ${action.icon}
+          <span slot="tooltip-content">${action.text}</span>
+        </cds-icon-button>
+      `;
+    };
+
+    return html`
+      <div
+        data-rounded="top"
+        class=${classMap({ [`${prefix}-toolbar`]: true })}
+      >
+        <div data-fixed class="cds-aichat-toolbar__navigation">
+          <slot name="navigation"></slot>
+        </div>
+
+        <div data-fixed class="cds-aichat-toolbar__title">
+          <slot name="title"></slot>
+        </div>
+
+        <div data-fixed><slot name="fixed-actions"></slot></div>
+
+        <div data-fixed><slot name="toolbar-ai-label"></slot></div>
+
+        ${repeat(nonFixedActions, (_, i) => i, renderIconButton)}
+
+        <div
+          data-offset
+          ?data-hidden=${!this.hiddenItems.length}
+          data-floating-menu-container
+        >
+          <cds-overflow-menu
+            size=${(this.actions?.[0]?.size as OVERFLOW_MENU_SIZE) || "md"}
+            align="bottom-end"
+            close-on-activation
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+          >
+            ${iconLoader(OverflowMenuVertical16, {
+              class: `${prefix}-toolbar-overflow-icon`,
+              slot: "icon",
+            })}
+            <span slot="tooltip-content">Options</span>
+
+            <cds-overflow-menu-body flipped>
+              ${repeat(
+                this.hiddenItems,
+                (item) => item.text,
+                (item) => html`
+                  <cds-overflow-menu-item @click=${item.onClick}>
+                    ${item.text}
+                  </cds-overflow-menu-item>
+                `,
+              )}
+            </cds-overflow-menu-body>
+          </cds-overflow-menu>
+        </div>
+
+        ${repeat(fixedActions, (_, i) => i, renderIconButton)}
+      </div>
+    `;
+  }
+
+  static styles = styles;
+}
+
+export default CDSAIChatToolbar;
