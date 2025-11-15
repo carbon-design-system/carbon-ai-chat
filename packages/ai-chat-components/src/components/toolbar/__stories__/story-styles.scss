@@ -28,8 +28,13 @@
   }
 }
 
-[slot="title"] {
-  white-space: nowrap;
+.truncated-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-height: normal;
+  overflow-x: hidden;
+  word-break: break-all;
 }
 
 [slot="icon"] {

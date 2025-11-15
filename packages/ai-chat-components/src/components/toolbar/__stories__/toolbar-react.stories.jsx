@@ -106,8 +106,24 @@ export default {
   component: Toolbar,
   argTypes: {
     title: {
-      control: "object",
+      control: "select",
       table: { category: "slot" },
+      options: ["default", "with truncation", "none"],
+      mapping: {
+        default: (
+          <div slot="title" data-fixed>
+            Title <span class="bold">text</span>
+          </div>
+        ),
+        "with truncation": (
+          <div slot="title" data-fixed>
+            <span class="truncated-text">
+              Lorem ipsum dolor sit amet <span class="bold">consectetur</span>
+            </span>
+          </div>
+        ),
+        none: undefined,
+      },
       description:
         "Title text for the Toolbar component. This Storybook-only control populates the title slot. `slot='title'`",
     },
@@ -251,11 +267,7 @@ export default {
 
 export const Default = {
   args: {
-    title: (
-      <>
-        Title <span className="bold">text</span>
-      </>
-    ),
+    title: "default",
     overflow: true,
     actions: "Advanced list",
     navigation: "home",

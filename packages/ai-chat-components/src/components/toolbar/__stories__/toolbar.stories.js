@@ -15,7 +15,6 @@ import "@carbon/web-components/es/components/overflow-menu/index.js";
 import "@carbon/web-components/es/components/content-switcher/index.js";
 
 import { html } from "lit";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { action } from "storybook/actions";
 
@@ -108,8 +107,20 @@ export default {
   title: "Components/Toolbar",
   argTypes: {
     title: {
-      control: "text",
+      control: "select",
       table: { category: "slot" },
+      options: ["default", "with truncation", "none"],
+      mapping: {
+        default: html`<div slot="title" data-fixed>
+          Title <span class="bold">text</span>
+        </div>`,
+        "with truncation": html`<div slot="title" data-fixed>
+          <span class="truncated-text">
+            Lorem ipsum dolor sit amet <span class="bold">consectetur</span>
+          </span>
+        </div>`,
+        none: undefined,
+      },
       description:
         "Title text for the Toolbar component. This Storybook-only control populates the title slot. `slot='title'`",
     },
@@ -252,7 +263,7 @@ export default {
 
 export const Default = {
   args: {
-    title: "Title <span class='bold'>text</span>",
+    title: "default",
     overflow: true,
     actions: "Advanced list",
     navigation: "home",
@@ -279,7 +290,7 @@ export const Default = {
       ${navigation}
 
       <!-- Title slot -->
-      <div slot="title" data-fixed>${unsafeHTML(title)}</div>
+      ${title}
 
       <!-- Fixed actions slot -->
       ${fixedActions}
