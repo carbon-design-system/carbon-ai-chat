@@ -93,33 +93,12 @@
   padding-inline-start: layout.$spacing-01;
 }
 
-.cds-aichat-scrollDownIndicatorIcon {
+.cds-aichat--scroll-to-bottom-container {
   position: sticky;
-  z-index: 1;
   display: grid;
-  border-radius: 50%;
-  margin: 0 auto;
-  background-color: tokens.$button-secondary;
-  block-size: 2rem;
-  color: theme.$text-on-color;
-  cursor: pointer;
-  inline-size: 2rem;
-  inset-block-end: 1rem;
-  inset-inline-start: calc(50% - 1rem);
-  place-items: center;
-
-  &:active {
-    background-color: tokens.$button-secondary-active;
-  }
-
-  &:hover {
-    background-color: tokens.$button-secondary-hover;
-  }
-
-  &:focus {
-    border-color: theme.$focus;
-    box-shadow:
-      inset 0 0 0 1px theme.$focus,
-      inset 0 0 0 2px theme.$chat-shell-background;
-  }
+  justify-content: center;
+  block-size: 0;
+  inset-block-end: layout.$spacing-09;
+  inset-inline-start: calc(50% - layout.$spacing-03);
+  margin-block-start: calc(-1 * layout.$spacing-07);
 }
