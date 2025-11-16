@@ -54,7 +54,6 @@ import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
 import ChatButton, {
   CHAT_BUTTON_KIND,
@@ -1027,26 +1026,23 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
-            <div className="cds-aichat--scroll-to-bottom-container">
-              {scrollDown && (
-                <MountChildrenOnDelay delay={200}>
-                  <ChatButton
-                    aria-hidden
-                    size={CHAT_BUTTON_SIZE.SMALL}
-                    kind={CHAT_BUTTON_KIND.SECONDARY}
-                    aria-label={languagePack.messages_scrollMoreButton}
-                    onClick={() =>
-                      this.doAutoScroll({
-                        scrollToBottom: 0,
-                        preferAnimate: true,
-                      })
-                    }
-                  >
-                    <DownToBottom slot="icon" />
-                  </ChatButton>
-                </MountChildrenOnDelay>
-              )}
-            </div>
+            <ChatButton
+              className={cx("cds-aichat__scroll-to-bottom-button", {
+                "cds-aichat__scroll-to-bottom-button--hidden": !scrollDown,
+              })}
+              aria-hidden
+              size={CHAT_BUTTON_SIZE.SMALL}
+              kind={CHAT_BUTTON_KIND.SECONDARY}
+              aria-label={languagePack.messages_scrollMoreButton}
+              onClick={() =>
+                this.doAutoScroll({
+                  scrollToBottom: 0,
+                  preferAnimate: true,
+                })
+              }
+            >
+              <DownToBottom slot="icon" />
+            </ChatButton>
           </div>
         </div>
       </div>

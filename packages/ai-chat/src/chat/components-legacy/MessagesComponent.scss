@@ -93,12 +93,20 @@
   padding-inline-start: layout.$spacing-01;
 }
 
-.cds-aichat--scroll-to-bottom-container {
+.cds-aichat__scroll-to-bottom-button {
   position: sticky;
   display: grid;
   justify-content: center;
-  block-size: 0;
-  inset-block-end: layout.$spacing-09;
-  inset-inline-start: calc(50% - layout.$spacing-03);
+  inset-block-end: layout.$spacing-05;
   margin-block-start: calc(-1 * layout.$spacing-07);
+  transition: all motion.$duration-fast-02 motion.motion(standard, productive);
+
+  &--hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
