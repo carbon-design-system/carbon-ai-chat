@@ -95,6 +95,7 @@
 
 .cds-aichat__scroll-to-bottom-button {
   position: sticky;
+  z-index: 1;
   display: grid;
   justify-content: center;
   inset-block-end: layout.$spacing-05;
