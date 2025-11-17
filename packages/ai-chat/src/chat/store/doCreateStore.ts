@@ -208,6 +208,9 @@ function doCreateStore(
     initialState.persistedToBrowserStorage = {
       ...initialState.persistedToBrowserStorage,
       ...sessionStorageState,
+      // We only bother to show this on initial page load, so if we are getting something from session storage,
+      // we set it to false.
+      launcherShouldStartCallToActionCounterIfEnabled: false,
       disclaimersAccepted: {
         ...initialState.persistedToBrowserStorage.disclaimersAccepted,
         ...sessionStorageState?.disclaimersAccepted,

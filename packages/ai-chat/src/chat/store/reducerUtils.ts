@@ -55,12 +55,12 @@ deepFreeze(DEFAULT_HEADER);
 const DEFAULT_LAUNCHER: LauncherConfig = {
   isOn: true,
   mobile: {
-    isOn: true,
+    isOn: false,
     title: "",
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
   desktop: {
-    isOn: true,
+    isOn: false,
     title: "",
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
@@ -155,12 +155,8 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedState = {
   version: VERSION,
   viewState: VIEW_STATE_ALL_CLOSED,
   showUnreadIndicator: false,
-  mobileLauncherIsExtended: false,
-  mobileLauncherWasReduced: false,
-  mobileLauncherDisableBounce: false,
-  desktopLauncherIsExpanded: false,
-  desktopLauncherWasMinimized: false,
-  bounceTurn: 1,
+  launcherIsExpanded: false,
+  launcherShouldStartCallToActionCounterIfEnabled: true,
 };
 deepFreeze(DEFAULT_PERSISTED_TO_BROWSER);
 

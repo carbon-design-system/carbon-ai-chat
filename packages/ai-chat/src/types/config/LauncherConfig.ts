@@ -39,19 +39,26 @@ interface LauncherConfig {
  */
 interface LauncherCallToActionConfig {
   /**
-   * If the launcher will expand with a call to action.
+   * If the launcher will have a call to action expanded state. Defaults to false. This feature will be removed in
+   * the next major release of the AI Chat.
+   *
+   * @deprecated
    */
   isOn?: boolean;
 
   /**
    * The title that will be used by the expanded state of the launcher. If nothing is set in the config then a default
    * translated string will be used.
+   *
+   * @deprecated
    */
   title?: string;
 
   /**
    * The amount of time to wait before extending the launcher. If nothing is set then the default time of
    * 15s will be used.
+   *
+   * @deprecated
    */
   timeToExpand?: number;
 
@@ -61,15 +68,11 @@ interface LauncherCallToActionConfig {
   avatarUrlOverride?: string;
 }
 
-// The array of timeouts that will dictate the amount of intervals the bounce animation should play for the launcher.
-const BOUNCING_ANIMATION_TIMEOUTS = [15000, 60000];
-
 // The amount of time until the entrance animation is automatically triggered for either launcher.
 const TIME_TO_ENTRANCE_ANIMATION_START = 15000;
 
 export {
   LauncherConfig,
   LauncherCallToActionConfig,
-  BOUNCING_ANIMATION_TIMEOUTS,
   TIME_TO_ENTRANCE_ANIMATION_START,
 };
