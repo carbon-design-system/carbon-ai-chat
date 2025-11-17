@@ -16,7 +16,7 @@
     "@carbon/ai-chat": "^1.2.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/react": "^1.68.0",
-    "@carbon/web-components": "^2.40.1",
+    "@carbon/web-components": "^2.42.0",
     "lit": "^3.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
