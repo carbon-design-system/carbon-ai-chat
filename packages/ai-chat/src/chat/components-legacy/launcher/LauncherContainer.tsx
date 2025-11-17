@@ -62,7 +62,6 @@ function LauncherContainer() {
       : languagePack.launcher_desktopGreeting);
   const aiEnabled = themeWithDefaults.aiEnabled;
   const launcherAvatarUrl = launcherConfig?.avatarUrlOverride;
-  const showCloseButton = !IS_PHONE;
 
   const clearAutoExtendTimeout = useCallback(() => {
     const timeoutId = autoExtendTimeoutRef.current;
@@ -181,7 +180,6 @@ function LauncherContainer() {
       mainWindowOpen={isMainWindowOpen}
       launcherGreetingMessage={launcherGreetingMessage}
       launcherAvatarUrl={launcherAvatarUrl}
-      showCloseButton={showCloseButton}
       closeButtonLabel={languagePack.launcher_ariaIsExpanded}
       closedLabel={languagePack.launcher_isClosed}
       openLabel={languagePack.launcher_isOpen}

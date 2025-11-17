@@ -130,7 +130,10 @@ function getSettings() {
           hasContentMaxWidth: undefined,
           corners: CornersType.SQUARE,
         },
-        launcher: { isOn: true },
+        launcher: {
+          ...defaultConfig.launcher,
+          isOn: true,
+        },
         openChatByDefault: undefined,
       };
       delete defaultConfig.header?.isOn;
@@ -155,7 +158,10 @@ function getSettings() {
           hasContentMaxWidth: undefined,
           corners: CornersType.SQUARE,
         },
-        launcher: { isOn: false },
+        launcher: {
+          ...defaultConfig.launcher,
+          isOn: false,
+        },
         openChatByDefault: undefined,
       };
       delete defaultConfig.header?.isOn;
@@ -176,7 +182,10 @@ function getSettings() {
           showFrame: false,
           hasContentMaxWidth: undefined,
         },
-        launcher: { isOn: true },
+        launcher: {
+          ...defaultConfig.launcher,
+          isOn: true,
+        },
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;
@@ -196,7 +205,10 @@ function getSettings() {
           hasContentMaxWidth: false,
           corners: CornersType.SQUARE,
         },
-        launcher: { isOn: true },
+        launcher: {
+          ...defaultConfig.launcher,
+          isOn: true,
+        },
         openChatByDefault: true,
       };
       delete defaultConfig.header?.minimizeButtonIconType;

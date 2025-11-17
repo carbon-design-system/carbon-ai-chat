@@ -55,12 +55,12 @@ deepFreeze(DEFAULT_HEADER);
 const DEFAULT_LAUNCHER: LauncherConfig = {
   isOn: true,
   mobile: {
-    isOn: true,
+    isOn: false,
     title: "",
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
   desktop: {
-    isOn: true,
+    isOn: false,
     title: "",
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },

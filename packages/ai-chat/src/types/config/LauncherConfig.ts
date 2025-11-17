@@ -34,19 +34,26 @@ interface LauncherConfig {
  */
 interface LauncherCallToActionConfig {
   /**
-   *  Defaults to false.
+   * If the launcher will have a call to action expanded state. Defaults to false. This feature will be removed in
+   * the next major release of the AI Chat.
+   *
+   * @deprecated
    */
   isOn?: boolean;
 
   /**
    * The title that will be used by the expanded state of the launcher. If nothing is set in the config then a default
    * translated string will be used.
+   *
+   * @deprecated
    */
   title?: string;
 
   /**
    * The amount of time to wait before extending the launcher. If nothing is set then the default time of
    * 15s will be used.
+   *
+   * @deprecated
    */
   timeToExpand?: number;
 

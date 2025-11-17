@@ -105,12 +105,12 @@ export class DemoLauncherSwitcher extends LitElement {
 
     const cleaned: LauncherCallToActionConfig = { ...cta };
 
-    if (cleaned.title !== undefined && cleaned.title.trim() === "") {
+    if (cleaned.title === undefined || cleaned.title.trim() === "") {
       delete cleaned.title;
     }
 
     if (
-      cleaned.avatarUrlOverride !== undefined &&
+      cleaned.avatarUrlOverride === undefined ||
       cleaned.avatarUrlOverride.trim() === ""
     ) {
       delete cleaned.avatarUrlOverride;
