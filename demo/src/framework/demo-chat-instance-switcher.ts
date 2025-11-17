@@ -8,12 +8,11 @@
  */
 
 import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 
-import { ChatInstance, ViewType } from "@carbon/ai-chat";
+import { ChatInstance, IncreaseOrDecrease, ViewType } from "@carbon/ai-chat";
 import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
-import { css, html, LitElement, PropertyValues } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 @customElement("demo-chat-instance-switcher")
@@ -32,9 +31,9 @@ export class DemoChatInstanceSwitcher extends LitElement {
     }
 
     .section-title {
-      font-size: 0.875rem;
+      font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .actions {
@@ -46,18 +45,11 @@ export class DemoChatInstanceSwitcher extends LitElement {
     .actions cds-button {
       width: fit-content;
     }
-
-    cds-checkbox {
-      display: block;
-    }
   `;
 
   @property({ type: Object })
   accessor chatInstance: ChatInstance | null = null;
 
-  @state() accessor _inputVisible: boolean = true;
-  @state() accessor _inputsDisabled: boolean = false;
-  @state() accessor _unreadIndicatorVisible: boolean = false;
   @state() accessor _notificationCount: number = 0;
   @state() accessor _isRestarting: boolean = false;
 
@@ -68,26 +60,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
     NOTIFICATION_KIND.WARNING,
     NOTIFICATION_KIND.ERROR,
   ];
-
-  protected updated(changed: PropertyValues) {
-    if (changed.has("chatInstance")) {
-      const nextInstance = this.chatInstance;
-      if (!nextInstance) {
-        this._inputVisible = true;
-        this._inputsDisabled = false;
-        this._unreadIndicatorVisible = false;
-        this._notificationCount = 0;
-        this._isRestarting = false;
-        return;
-      }
-
-      const publicState = nextInstance.getState?.();
-
-      if (publicState) {
-        this._unreadIndicatorVisible = Boolean(publicState.showUnreadIndicator);
-      }
-    }
-  }
 
   private _withInstance<T>(
     callback: (instance: ChatInstance) => T,
@@ -132,33 +104,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
     }
   };
 
-  private _handleInputVisibilityChange(event: CustomEvent) {
-    const checked = event.detail.checked as boolean;
-    this._inputVisible = checked;
-
-    this._withInstance((instance) => {
-      instance.updateInputFieldVisibility?.(checked);
-    });
-  }
-
-  private _handleInputsDisabledChange(event: CustomEvent) {
-    const checked = event.detail.checked as boolean;
-    this._inputsDisabled = checked;
-
-    this._withInstance((instance) => {
-      instance.updateInputIsDisabled?.(checked);
-    });
-  }
-
-  private _handleUnreadIndicatorChange(event: CustomEvent) {
-    const checked = event.detail.checked as boolean;
-    this._unreadIndicatorVisible = checked;
-
-    this._withInstance((instance) => {
-      instance.updateAssistantUnreadIndicatorVisibility?.(checked);
-    });
-  }
-
   private _handleAddNotification = () => {
     const nextCount = this._notificationCount + 1;
     this._notificationCount = nextCount;
@@ -186,13 +131,23 @@ export class DemoChatInstanceSwitcher extends LitElement {
     });
   };
 
-  private _handleLoadingCounter(direction: "increase" | "decrease") {
-    this._withInstance((instance) => {
-      instance.updateIsMessageLoadingCounter?.(direction);
+  private _handleLoadingCounter(
+    direction: IncreaseOrDecrease,
+    withText?: boolean,
+  ) {
+    this._withInstance(async (instance) => {
+      if (direction === "increase") {
+        instance.updateIsMessageLoadingCounter?.(
+          direction,
+          withText ? "Thinking..." : undefined,
+        );
+      } else {
+        instance.updateIsMessageLoadingCounter?.(direction);
+      }
     });
   }
 
-  private _handleChatLoadingCounter(direction: "increase" | "decrease") {
+  private _handleChatLoadingCounter(direction: IncreaseOrDecrease) {
     this._withInstance((instance) => {
       instance.updateIsChatLoadingCounter?.(direction);
     });
@@ -221,24 +176,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
           <cds-button kind="secondary" @click=${this._handleAutoScroll}>
             Trigger auto scroll
           </cds-button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">Input controls</div>
-        <div class="actions">
-          <cds-checkbox
-            ?checked=${this._inputVisible}
-            @cds-checkbox-changed=${this._handleInputVisibilityChange}
-          >
-            Show input field
-          </cds-checkbox>
-          <cds-checkbox
-            ?checked=${this._inputsDisabled}
-            @cds-checkbox-changed=${this._handleInputsDisabledChange}
-          >
-            Disable inputs
-          </cds-checkbox>
         </div>
       </div>
 
@@ -280,6 +217,12 @@ export class DemoChatInstanceSwitcher extends LitElement {
           </cds-button>
           <cds-button
             kind="secondary"
+            @click=${() => this._handleLoadingCounter("increase", true)}
+          >
+            Increment message loading<br />(with optional helper text)
+          </cds-button>
+          <cds-button
+            kind="secondary"
             @click=${() => this._handleLoadingCounter("decrease")}
           >
             Decrement message loading
@@ -302,12 +245,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
       <div class="section">
         <div class="section-title">View controls</div>
         <div class="actions">
-          <cds-checkbox
-            ?checked=${this._unreadIndicatorVisible}
-            @cds-checkbox-changed=${this._handleUnreadIndicatorChange}
-          >
-            Show custom unread indicator
-          </cds-checkbox>
           <cds-button
             kind="secondary"
             @click=${this._handleChangeViewMainWindow}

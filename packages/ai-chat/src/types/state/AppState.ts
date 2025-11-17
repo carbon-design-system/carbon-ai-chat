@@ -193,6 +193,16 @@ interface AppState extends AppStateMessages {
  */
 interface InputState extends FileUploadCapabilities {
   /**
+   * The canonical raw text value currently inside the input field.
+   */
+  rawValue: string;
+
+  /**
+   * The formatted/markup value currently rendered inside the input field.
+   */
+  displayValue: string;
+
+  /**
    * Indicates if the input field is configured to be visible. This is only interpreted as the custom setting defined
    * by the host page if it turns off the field. The value of this may be overridden if the user is connected to an
    * agent where the field will automatically become visible and then hidden again when the agent chat has ended.
@@ -265,36 +275,14 @@ interface PersistedState {
   showUnreadIndicator: boolean;
 
   /**
-   * Indicates if the mobile launcher should be in the extended state.
+   * Indicates if the launcher should be in the expanded state.
    */
-  mobileLauncherIsExtended: boolean;
+  launcherIsExpanded: boolean;
 
   /**
-   * Determines if the mobile launcher already played the extended animation and was reduced.
+   * Determines if the launcher should start a timer to show its expanded state.
    */
-  mobileLauncherWasReduced: boolean;
-
-  /**
-   * Determines if the mobile launcher previously played the bounce animation and should no longer be able to.
-   */
-  mobileLauncherDisableBounce: boolean;
-
-  /**
-   * Indicates the desktop launcher is in its expanded state.
-   */
-  desktopLauncherIsExpanded: boolean;
-
-  /**
-   * Indicates the desktop launcher has been minimized.
-   */
-  desktopLauncherWasMinimized: boolean;
-
-  /**
-   * The bounce turn the user is currently on in the sequence of bounces so that user doesn't start over in the
-   * sequence. A turn is a full set of animations that are displayed when a bounce occurs and each turn of a bounce is
-   * when a different bounce occurs at a different point in time. This is used for both the desktop and mobile launcher.
-   */
-  bounceTurn: number;
+  launcherShouldStartCallToActionCounterIfEnabled: boolean;
 
   /**
    * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted
@@ -340,6 +328,11 @@ interface ChatMessagesState {
    * If "0" then we do not show loading indicator.
    */
   isMessageLoadingCounter: number;
+
+  /**
+   * Optional string to display next to the loading indicator.
+   */
+  isMessageLoadingText?: string;
 
   /**
    * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.

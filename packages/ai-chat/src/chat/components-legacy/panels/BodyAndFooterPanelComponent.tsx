@@ -187,6 +187,7 @@ function BodyAndFooterPanelComponent(
       shouldOpen={isOpen}
       serviceManager={serviceManager}
       overlayPanelName={overlayPanelName}
+      hasBackButton={true}
     >
       <BasePanelComponent
         ref={basePanelRef}

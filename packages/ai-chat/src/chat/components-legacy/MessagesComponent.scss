@@ -7,8 +7,11 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities";
 @use "@carbon/styles/scss/components/button/tokens";
+@use "../styles/chat-theme";
 
 .cds-aichat--messages--holder {
   display: flex;
@@ -19,8 +22,9 @@
 
 .cds-aichat--messages__wrapper {
   position: relative;
-  overflow: hidden;
+  overflow: hidden auto;
   flex: 1;
+  block-size: 100%;
   inline-size: 100%;
 }
 
@@ -53,13 +57,44 @@
 }
 
 .cds-aichat--messages {
-  overflow: hidden auto;
+  // overflow: hidden auto;
   block-size: 100%;
   inline-size: 100%;
 }
 
+.cds-aichat--widget--max-width {
+  .cds-aichat--messages {
+    margin: 0 auto;
+    max-inline-size: chat-theme.$max-width;
+  }
+}
+
+.cds-aichat--processing {
+  display: flex;
+  align-items: center;
+}
+
+.cds-aichat--processing-component {
+  block-size: 32px;
+}
+
+.cds-aichat--processing-label {
+  @include type.type-style("label-02");
+
+  display: flex;
+  align-items: center;
+
+  animation: cds-aichat-fade-in 600ms forwards;
+  animation-delay: 1200ms;
+  block-size: 32px;
+  color: theme.$text-secondary;
+  font-style: italic;
+  opacity: 0;
+  padding-inline-start: layout.$spacing-01;
+}
+
 .cds-aichat-scrollDownIndicatorIcon {
-  position: absolute;
+  position: sticky;
   z-index: 1;
   display: grid;
   border-radius: 50%;

@@ -11,7 +11,6 @@ import { type CDSTableRow } from "@carbon/web-components";
 import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
 import type { TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
-import debounce from "lodash-es/debounce.js";
 
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import styles from "./src/table.scss";
@@ -202,76 +201,15 @@ class TableElement extends LitElement {
     ${unsafeCSS(styles)}
   `;
 
-  private _parentResizeObserver?: ResizeObserver;
-
-  /**
-   * Called when the element is added to the DOM.
-   * Sets up the ResizeObserver to monitor parent element width changes.
-   */
-  connectedCallback() {
-    super.connectedCallback();
-    this._setupParentResizeObserver();
-  }
-
-  /**
-   * Called when the element is removed from the DOM.
-   * Cleans up the ResizeObserver to prevent memory leaks.
-   */
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this._cleanupParentResizeObserver();
-  }
-
   /**
    * Called after the element's DOM has been updated for the first time.
-   * Initializes the table page size and sets up width-based calculations.
+   * Initializes the table page size.
    *
    * @param _changedProperties - Map of properties that changed during the update
    */
   protected firstUpdated(_changedProperties: PropertyValues): void {
     this._setPageSize();
-    this._updateParentWidthCSSProperty(); // Initial width setting
-  }
-
-  /**
-   * Sets up a ResizeObserver to monitor the parent element's width changes.
-   * Updates the CSS custom property `--cds-chat-table-width` when the parent resizes.
-   * Uses debouncing to limit the frequency of updates to improve performance.
-   *
-   * @private
-   */
-  private _setupParentResizeObserver() {
-    if (typeof ResizeObserver !== "undefined" && this.parentElement) {
-      this._parentResizeObserver = new ResizeObserver(
-        debounce((entries) => {
-          for (const entry of entries) {
-            // Use the element's offsetWidth instead of contentRect.width for custom elements
-            const elementWidth = (entry.target as HTMLElement).offsetWidth;
-
-            if (elementWidth > 0) {
-              this.style.setProperty(
-                "--cds-aichat-table-width",
-                `${elementWidth}px`,
-              );
-            }
-          }
-        }, 100), // 100ms debounce for parent resize events
-      );
-      this._parentResizeObserver.observe(this.parentElement);
-    }
-  }
-
-  /**
-   * Cleans up the ResizeObserver to prevent memory leaks.
-   * Should be called when the component is disconnected from the DOM.
-   *
-   * @private
-   */
-  private _cleanupParentResizeObserver() {
-    if (this._parentResizeObserver) {
-      this._parentResizeObserver.disconnect();
-      this._parentResizeObserver = undefined;
-    }
+    this._updateDefaultPageSize();
   }
 
   /**
@@ -281,7 +219,7 @@ class TableElement extends LitElement {
    *
    * @private
    */
-  private _updateParentWidthCSSProperty() {
+  private _updateDefaultPageSize() {
     if (this.parentElement) {
       let parentWidth = this.parentElement.offsetWidth;
 
@@ -290,19 +228,15 @@ class TableElement extends LitElement {
         parentWidth = PAGE_SIZE_WIDTH_THRESHOLD - 1;
       }
 
-      if (parentWidth > 0) {
-        this.style.setProperty("--cds-aichat-table-width", `${parentWidth}px`);
+      // Calculate default page size based on the width we just measured
+      // Only set it once, don't recalculate on resize
+      if (parentWidth > 0 && this._defaultPageSize === 5) {
+        this._defaultPageSize =
+          parentWidth > PAGE_SIZE_WIDTH_THRESHOLD ? 10 : 5;
 
-        // Calculate default page size based on the width we just measured
-        // Only set it once, don't recalculate on resize
-        if (this._defaultPageSize === 5) {
-          this._defaultPageSize =
-            parentWidth > PAGE_SIZE_WIDTH_THRESHOLD ? 10 : 5;
-
-          // Update _currentPageSize if it's still at the initial value
-          if (this._currentPageSize === 5) {
-            this._currentPageSize = this._defaultPageSize;
-          }
+        // Update _currentPageSize if it's still at the initial value
+        if (this._currentPageSize === 5) {
+          this._currentPageSize = this._defaultPageSize;
         }
       }
     }
