@@ -365,7 +365,6 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
             onRestart={onRestart}
             headerDisplayName={headerDisplayName}
             onToggleHomeScreen={onToggleHomeScreen}
-            enableChatHeaderConfig
             includeWriteableElement
           />
         </div>

@@ -30,8 +30,11 @@ export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   CustomPanelConfigOptions,
+  DefaultCustomPanelConfigOptions,
   CustomPanelInstance,
+  PanelType,
   CustomPanels,
+  CustomPanelOpenOptions,
 } from "./types/instance/apiTypes";
 
 export {
@@ -44,6 +47,8 @@ export {
   FileUploadCapabilities,
   IncreaseOrDecrease,
   PublicInputState,
+  PublicCustomPanelsState,
+  PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,

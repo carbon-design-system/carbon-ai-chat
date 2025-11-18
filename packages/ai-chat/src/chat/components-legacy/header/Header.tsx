@@ -26,27 +26,19 @@ import React, {
   forwardRef,
   Ref,
   RefObject,
-  useContext,
   useImperativeHandle,
   useRef,
 } from "react";
-import { useSelector } from "../../hooks/useSelector";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import OverflowMenu from "../../components/carbon/OverflowMenu";
 import OverflowMenuBody from "../../components/carbon/OverflowMenuBody";
 import OverflowMenuItem from "../../components/carbon/OverflowMenuItem";
 import CDSOverflowMenu from "@carbon/web-components/es/components/overflow-menu/overflow-menu";
 import { ChatHeaderTitle } from "../../ai-chat-components/react/components/chatHeader/ChatHeaderTitle";
-import { HideComponentContext } from "../../contexts/HideComponentContext";
-import { useLanguagePack } from "../../hooks/useLanguagePack";
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { AppState } from "../../../types/state/AppState";
 import { HasChildren } from "../../../types/utilities/HasChildren";
 import { HasClassName } from "../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { WriteableElementName } from "../../utils/constants";
 import { doFocusRef } from "../../utils/domUtils";
-import WriteableElement from "../WriteableElement";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
 import { PageObjectId, TestId } from "../../utils/PageObjectId";
 import { AISlug } from "../../components/carbon/AISlug";
@@ -65,8 +57,12 @@ interface HeaderProps {
   displayName?: string;
 
   /**
-   * Indicates if the close button should be hidden. This value is overridden if the top-level public config
-   * hideCloseButton option is set to true.
+   * The title text to display above the name.
+   */
+  title?: string;
+
+  /**
+   * Indicates if the minimize button should be hidden.
    */
   hideCloseButton?: boolean;
 
@@ -91,13 +87,7 @@ interface HeaderProps {
   backButtonType?: BUTTON_KIND;
 
   /**
-   * Determines if the chat header items should be visible.
-   */
-  enableChatHeaderConfig?: boolean;
-
-  /**
    * Controls whether to show the AI label in this specific header instance.
-   * When undefined, falls back to the global config setting.
    */
   showAiLabel?: boolean;
 
@@ -130,6 +120,61 @@ interface HeaderProps {
    * The callback to call when an overflow item is chosen. This will return the index of the item that was clicked.
    */
   overflowClicked?: (index: number) => void;
+
+  /**
+   * Aria label for the close button.
+   */
+  closeButtonLabel: string;
+
+  /**
+   * Tooltip text for the overflow menu trigger.
+   */
+  overflowMenuTooltip?: string;
+
+  /**
+   * Aria label for the overflow menu trigger.
+   */
+  overflowMenuAriaLabel?: string;
+
+  /**
+   * Label for the restart button.
+   */
+  restartButtonLabel?: string;
+
+  /**
+   * Label text displayed within the AI slug tooltip.
+   */
+  aiSlugLabel?: string;
+
+  /**
+   * Title text displayed within the AI slug tooltip.
+   */
+  aiSlugTitle?: string;
+
+  /**
+   * Description text displayed within the AI slug tooltip.
+   */
+  aiSlugDescription?: string;
+
+  /**
+   * Additional content to render beneath the AI slug description.
+   */
+  aiSlugAfterDescriptionElement?: React.ReactNode;
+
+  /**
+   * Indicates if the AI slug content should be hidden.
+   */
+  isAiSlugHidden?: boolean;
+
+  /**
+   * Icon style to use for the minimize button.
+   */
+  minimizeButtonIconType?: MinimizeButtonIconType;
+
+  /**
+   * Indicates if the restart action is currently processing.
+   */
+  isRestarting?: boolean;
 }
 
 /**
@@ -149,54 +194,50 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     overflowClicked,
     backButtonType,
     hideCloseButton,
-    enableChatHeaderConfig,
     showAiLabel,
+    title,
+    closeButtonLabel,
+    overflowMenuTooltip,
+    overflowMenuAriaLabel,
+    restartButtonLabel,
+    aiSlugLabel,
+    aiSlugTitle,
+    aiSlugDescription,
+    aiSlugAfterDescriptionElement,
+    isAiSlugHidden,
+    minimizeButtonIconType = MinimizeButtonIconType.MINIMIZE,
+    isRestarting = false,
   } = props;
 
   const backButtonRef = useRef<CDSButton>(undefined);
   const restartButtonRef = useRef<CDSButton>(undefined);
   const closeButtonRef = useRef<CDSButton>(undefined);
   const overflowRef = useRef<CDSOverflowMenu>(undefined);
-  const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
-  const derivedPublicConfig = useSelector(
-    (state: AppState) => state.config.derived,
-  );
-  const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const isRTL = document.dir === "rtl";
-  const chatHeaderConfig = derivedPublicConfig.header;
-
-  const isHidden = useContext(HideComponentContext);
 
   // Determine whether to show AI label - use prop if provided, otherwise use config value with default true
-  const shouldShowAiLabel =
-    showAiLabel !== undefined
-      ? showAiLabel
-      : chatHeaderConfig?.showAiLabel !== false;
+  const shouldShowAiLabel = showAiLabel !== undefined ? showAiLabel : true;
+  const showAiSlugContent =
+    shouldShowAiLabel &&
+    !isAiSlugHidden &&
+    !!(
+      aiSlugLabel ||
+      aiSlugTitle ||
+      aiSlugDescription ||
+      aiSlugAfterDescriptionElement
+    );
 
-  // The title and name to display in the header from the chat header config.
-  const chatHeaderTitle = enableChatHeaderConfig
-    ? chatHeaderConfig?.title
-    : undefined;
-  const chatHeaderName = enableChatHeaderConfig
-    ? chatHeaderConfig?.name
-    : undefined;
-  // The chat name to display in the chat header, the configured chat header name should take priority.
-  const chatHeaderDisplayName = chatHeaderName || displayName;
-
-  const useHideCloseButton =
-    chatHeaderConfig?.hideMinimizeButton || hideCloseButton;
+  const useHideCloseButton = hideCloseButton ?? false;
 
   // The icon to use for the close button.
   let closeIcon: React.ReactNode;
   let closeReverseIcon = false;
   let closeIsReversible = true;
-  const minimizeButtonIconType = chatHeaderConfig?.minimizeButtonIconType;
   switch (minimizeButtonIconType) {
     case MinimizeButtonIconType.CLOSE:
       closeIcon = (
         <CloseLarge
-          aria-label={languagePack.launcher_isOpen}
+          aria-label={closeButtonLabel}
           slot="icon"
           className="cds-aichat--icon__close"
         />
@@ -205,7 +246,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     case MinimizeButtonIconType.MINIMIZE:
       closeIcon = (
         <SubtractLarge
-          aria-label={languagePack.launcher_isOpen}
+          aria-label={closeButtonLabel}
           slot="icon"
           className="cds-aichat--icon__subtract"
         />
@@ -215,7 +256,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       closeIsReversible = false;
       closeIcon = (
         <SidePanelClose
-          aria-label={languagePack.launcher_isOpen}
+          aria-label={closeButtonLabel}
           slot="icon"
           className="cds-aichat--icon__side-panel-close"
         />
@@ -226,7 +267,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       closeReverseIcon = true;
       closeIcon = (
         <SidePanelClose
-          aria-label={languagePack.launcher_isOpen}
+          aria-label={closeButtonLabel}
           slot="icon"
           className="cds-aichat--icon__side-panel-close"
         />
@@ -235,7 +276,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     default: {
       closeIcon = (
         <SubtractLarge
-          aria-label={languagePack.launcher_isOpen}
+          aria-label={closeButtonLabel}
           slot="icon"
           className="cds-aichat--icon__subtract"
         />
@@ -265,6 +306,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
 
   let leftContent;
 
+  const handleOverflowClick = overflowClicked ?? (() => {});
+
   if (overflowItems) {
     // If there are overflow items, we need to show the overflow menu. This overrides any back button that may be
     // present.
@@ -272,11 +315,11 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       <OverflowMenu
         className="cds-aichat--header__overflow-menu"
         ref={overflowRef}
-        tooltip-text={languagePack.header_overflowMenu_options}
-        aria-label={languagePack.components_overflow_ariaLabel}
+        tooltip-text={overflowMenuTooltip}
+        aria-label={overflowMenuAriaLabel}
       >
         <OverflowMenuVertical
-          aria-label={languagePack.components_overflow_ariaLabel}
+          aria-label={overflowMenuAriaLabel}
           className="cds--overflow-menu__icon"
           slot="icon"
         />
@@ -287,7 +330,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               onClick={() => {
                 // Move focus back to the overflow menu button.
                 doFocusRef(overflowRef);
-                overflowClicked(index);
+                handleOverflowClick(index);
               }}
             >
               {item}
@@ -325,17 +368,14 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           </div>
         )}
         <div className="cds-aichat--header__center-container">
-          {(chatHeaderTitle || chatHeaderDisplayName) && (
+          {(title || displayName) && (
             <div className="cds-aichat--header__title-container">
-              <ChatHeaderTitle
-                title={chatHeaderTitle}
-                name={chatHeaderDisplayName}
-              />
+              <ChatHeaderTitle title={title} name={displayName} />
             </div>
           )}
         </div>
         <div className="cds-aichat--header__buttons cds-aichat--header__right-buttons">
-          {shouldShowAiLabel && (
+          {showAiSlugContent && (
             <AISlug
               className="cds-aichat--header__slug"
               size={AI_LABEL_SIZE.EXTRA_SMALL}
@@ -346,26 +386,19 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               }
             >
               <div slot="body-text">
-                {languagePack.ai_slug_label && (
+                {aiSlugLabel && (
                   <p className="cds-aichat--header__slug-label">
-                    {languagePack.ai_slug_label}
+                    {aiSlugLabel}
                   </p>
                 )}
-                {languagePack.ai_slug_title && (
+                {aiSlugTitle && (
                   <h4 className="cds-aichat--header__slug-title">
-                    {languagePack.ai_slug_title}
+                    {aiSlugTitle}
                   </h4>
                 )}
                 <div className="cds-aichat--header__slug-description">
-                  <div>{languagePack.ai_slug_description}</div>
-                  {!isHidden && (
-                    <WriteableElement
-                      slotName={
-                        WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT
-                      }
-                      id={`aiTooltipAfterDescription${serviceManager.namespace.suffix}`}
-                    />
-                  )}
+                  <div>{aiSlugDescription}</div>
+                  {aiSlugAfterDescriptionElement}
                 </div>
               </div>
             </AISlug>
@@ -373,7 +406,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           {showRestartButton && (
             <HeaderButton
               className="cds-aichat--header__restart-button"
-              label={languagePack.buttons_restart}
+              label={restartButtonLabel ?? ""}
               onClick={onClickRestart}
               buttonRef={restartButtonRef}
               disabled={isRestarting}
@@ -383,7 +416,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                   : BUTTON_TOOLTIP_POSITION.LEFT
               }
             >
-              <Restart aria-label={languagePack.buttons_restart} slot="icon" />
+              <Restart aria-label={restartButtonLabel ?? ""} slot="icon" />
             </HeaderButton>
           )}
           {!useHideCloseButton && (
@@ -392,7 +425,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 "cds-aichat--reverse-icon": closeReverseIcon,
               })}
               isReversible={closeIsReversible}
-              label={languagePack.launcher_isOpen}
+              label={closeButtonLabel}
               onClick={async () => {
                 onClickClose();
               }}
