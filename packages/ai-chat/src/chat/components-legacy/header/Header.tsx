@@ -14,7 +14,7 @@ import Button, {
   BUTTON_TOOLTIP_POSITION,
 } from "../../components/carbon/Button";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
-import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
+import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
@@ -47,12 +47,12 @@ import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
 import { doFocusRef } from "../../utils/domUtils";
 import WriteableElement from "../WriteableElement";
-import { AISlug } from "./AISlug";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
 import { PageObjectId, TestId } from "../../utils/PageObjectId";
+import { AISlug } from "../../components/carbon/AISlug";
 
 const CloseLarge = carbonIconToReact(CloseLarge16);
-const DownToBottom = carbonIconToReact(DownToBottom16);
+const ChevronDown = carbonIconToReact(ChevronDown16);
 const OverflowMenuVertical = carbonIconToReact(OverflowMenuVertical16);
 const Restart = carbonIconToReact(Restart16);
 const SidePanelClose = carbonIconToReact(SidePanelClose16);
@@ -159,18 +159,20 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const overflowRef = useRef<CDSOverflowMenu>(undefined);
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
-  const publicConfig = useSelector((state: AppState) => state.config.public);
+  const derivedPublicConfig = useSelector(
+    (state: AppState) => state.config.derived,
+  );
   const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const isRTL = document.dir === "rtl";
-  const chatHeaderConfig = publicConfig.header;
+  const chatHeaderConfig = derivedPublicConfig.header;
 
   const isHidden = useContext(HideComponentContext);
 
-  const { header } = publicConfig;
-
   // Determine whether to show AI label - use prop if provided, otherwise use config value with default true
   const shouldShowAiLabel =
-    showAiLabel !== undefined ? showAiLabel : header?.showAiLabel !== false;
+    showAiLabel !== undefined
+      ? showAiLabel
+      : chatHeaderConfig?.showAiLabel !== false;
 
   // The title and name to display in the header from the chat header config.
   const chatHeaderTitle = enableChatHeaderConfig
@@ -182,13 +184,14 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   // The chat name to display in the chat header, the configured chat header name should take priority.
   const chatHeaderDisplayName = chatHeaderName || displayName;
 
-  const useHideCloseButton = header?.hideMinimizeButton || hideCloseButton;
+  const useHideCloseButton =
+    chatHeaderConfig?.hideMinimizeButton || hideCloseButton;
 
   // The icon to use for the close button.
   let closeIcon: React.ReactNode;
   let closeReverseIcon = false;
   let closeIsReversible = true;
-  const minimizeButtonIconType = header?.minimizeButtonIconType;
+  const minimizeButtonIconType = chatHeaderConfig?.minimizeButtonIconType;
   switch (minimizeButtonIconType) {
     case MinimizeButtonIconType.CLOSE:
       closeIcon = (
@@ -307,7 +310,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         }
       >
         {backContent || (
-          <DownToBottom aria-label={labelBackButton} slot="icon" />
+          <ChevronDown aria-label={labelBackButton} slot="icon" />
         )}
       </HeaderButton>
     );

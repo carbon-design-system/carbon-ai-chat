@@ -23,6 +23,7 @@ import { HasClassName } from "../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { IS_MOBILE } from "../utils/browserUtils";
 import { Header } from "./header/Header";
+import { selectHasOpenPanelWithBackButton } from "../store/selectors";
 
 interface BasePanelComponentProps
   extends HasClassName,
@@ -86,6 +87,12 @@ function BasePanelComponent(
     showRestartButtonProp !== undefined
       ? showRestartButtonProp
       : showRestartButtonFromConfig;
+
+  // Check if AssistantHeader is showing through (panel with back button is open)
+  const hasPanelWithBackButton = useSelector(selectHasOpenPanelWithBackButton);
+  const isShowingAssistantHeaderThrough =
+    hasPanelWithBackButton && !hideBackButton;
+
   const headerRef = useRef<HasRequestFocus>(undefined);
 
   // Reuse the imperative handles from the header.
@@ -146,12 +153,19 @@ function BasePanelComponent(
           <Header
             {...headerProps}
             ref={headerRef}
-            showRestartButton={showRestartButton}
+            showRestartButton={
+              isShowingAssistantHeaderThrough ? false : showRestartButton
+            }
             onClickRestart={onClickRestart}
             showBackButton={!hideBackButton}
             labelBackButton={labelBackButton}
             displayName={title}
-            showAiLabel={showAiLabel}
+            showAiLabel={isShowingAssistantHeaderThrough ? false : showAiLabel}
+            hideCloseButton={
+              isShowingAssistantHeaderThrough
+                ? true
+                : headerProps.hideCloseButton
+            }
           />
         )}
         <div className="cds-aichat--panel-content">{children}</div>

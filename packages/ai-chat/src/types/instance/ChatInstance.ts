@@ -51,6 +51,13 @@ export interface ChatInstance extends EventHandlers, ChatActions {
  *
  * @category Instance
  */
+export interface PublicInputState {
+  /**
+   * @experimental Raw text currently queued in the input before being sent to customSendMessage.
+   */
+  rawValue: string;
+}
+
 export type PublicChatState = Readonly<
   Omit<PersistedState, "humanAgentState"> & {
     /**
@@ -73,8 +80,27 @@ export type PublicChatState = Readonly<
      * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
      */
     isHydratingCounter: number;
+
+    /**
+     * @experimental State representing the main input surface.
+     */
+    input: PublicInputState;
   }
 >;
+
+export interface ChatInstanceInput {
+  /**
+   * @experimental Updates the raw text queued in the input before it is sent to customSendMessage.
+   * Use this when you want to manipulate the canonical value while leaving
+   * presentation up to the default renderer or, in the future, a custom slot implementation.
+   *
+   * @example
+   * ```ts
+   * instance.input.updateRawValue((prev) => `${prev} @celeste`);
+   * ```
+   */
+  updateRawValue: (updater: (previous: string) => string) => void;
+}
 
 /**
  * Current connection state of the human agent experience.
@@ -195,21 +221,18 @@ interface ChatActions {
   writeableElements: Partial<WriteableElements>;
 
   /**
-   * Sets the input field to be invisible. Helpful for when
-   * you want to force input into a button, etc.
+   * @deprecated Configure via {@link InputConfig.isVisible}.
    */
   updateInputFieldVisibility: (isVisible: boolean) => void;
 
   /**
-   * Changes the state of Carbon AI Chat to allow or disallow input. This includes the input field as well as inputs like
-   * buttons and dropdowns.
+   * @deprecated Configure via {@link InputConfig.isDisabled}
+   * or {@link PublicConfig.isReadonly}.
    */
   updateInputIsDisabled: (isDisabled: boolean) => void;
 
   /**
-   * Updates the visibility of the custom unread indicator that appears on the launcher. This indicator appears as a
-   * small empty circle on the launcher. If there are any unread messages from a human agent, this indicator will be
-   * shown with a number regardless of the custom setting of this flag.
+   * @deprecated Configure via {@link LauncherConfig.showUnreadIndicator}.
    */
   updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => void;
 
@@ -270,6 +293,11 @@ interface ChatActions {
    * @experimental
    */
   notifications: ChatInstanceNotifications;
+
+  /**
+   * Actions for mutating the chat input contents.
+   */
+  input: ChatInstanceInput;
 
   /**
    * Actions that are related to a service desk integration.

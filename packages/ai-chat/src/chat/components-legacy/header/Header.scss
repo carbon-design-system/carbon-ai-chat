@@ -11,9 +11,6 @@
 @use "../../styles/chat-theme";
 
 .cds-aichat--header {
-  /* Needed by the home screen so the opacity layer from the gradient backgrounds does not overlay the header in full
-  screen mode. */
-  position: relative;
   display: flex;
   box-sizing: unset;
   justify-content: center;
@@ -44,8 +41,8 @@
 }
 
 .cds-aichat--widget.cds-aichat--widget--rounded .cds-aichat--header--content {
-  border-start-end-radius: calc(chat-theme.$border-radius - 1px);
-  border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+  border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+  border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
 }
 
 .cds-aichat--header__center-container {
@@ -101,15 +98,15 @@
 
 .cds-aichat--header__left-items :first-child {
   overflow: hidden;
-  border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+  border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
 }
 
 .cds-aichat--header__left-items :first-child::part(button) {
-  border-start-start-radius: calc(chat-theme.$border-radius - 1px);
+  border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
 }
 
 .cds-aichat--header__right-buttons :last-child::part(button) {
-  border-start-end-radius: calc(chat-theme.$border-radius - 1px);
+  border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
 }
 
 cds-aichat-chat-header-avatar {
