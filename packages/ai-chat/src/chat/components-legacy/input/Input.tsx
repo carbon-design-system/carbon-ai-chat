@@ -6,6 +6,7 @@
  *
  *  @license
  */
+
 import Button from "../../components/carbon/Button";
 import Send16 from "@carbon/icons/es/send/16.js";
 import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
@@ -22,6 +23,7 @@ import React, {
   KeyboardEvent,
   Ref,
   UIEvent,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -31,24 +33,22 @@ import { StopStreamingButton } from "../../ai-chat-components/react/components/s
 import { HasServiceManager } from "../../hocs/withServiceManager";
 import { useCounter } from "../../hooks/useCounter";
 import actions from "../../store/actions";
-import { selectIsInputToHumanAgent } from "../../store/selectors";
+import {
+  selectInputState,
+  selectIsInputToHumanAgent,
+} from "../../store/selectors";
 import { FileUpload } from "../../../types/config/ServiceDeskConfig";
 import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
 import { IS_MOBILE } from "../../utils/browserUtils";
 import { FileStatusValue } from "../../utils/constants";
 import { isEnterKey } from "../../utils/domUtils";
 import { uuid, UUIDType } from "../../utils/lang/uuid";
-import { ListenerList } from "../../utils/ListenerList";
 import { isValidForUpload } from "../../utils/miscUtils";
-import TextArea from "../responseTypes/text/TextArea";
-// Local interface for controlling the raw input element.
-interface InstanceInputElement {
-  getHTMLElement: () => HTMLElement;
-  setValue: (value: string) => void;
-  setEnableEnterKey: (isEnabled: boolean) => void;
-  addChangeListener: (listener: (value: string) => void) => void;
-  removeChangeListener: (listener: (value: string) => void) => void;
-}
+import {
+  ContentEditableInput,
+  ContentEditableInputHandle,
+  ContentEditableChange,
+} from "./ContentEditableInput";
 import { BusEventType } from "../../../types/events/eventBusTypes";
 import { PageObjectId } from "../../utils/PageObjectId";
 import {
@@ -96,7 +96,6 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
    * user presses the enter key or clicks the send button.
    *
    * @param text The text that was entered into the input field that should be sent.
-   * {@link InstanceInputElement.setOnBeforeSend} callback.
    */
   onSendInput: (text: string) => void;
 
@@ -165,14 +164,15 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
    * Maximum number of characters allowed to be typed into the input field.
    */
   maxInputChars?: number;
+
+  /**
+   * Indicates if this input should stay in sync with the global input state used for ChatInstance APIs.
+   * When enabled, the component will publish raw/display values to the store and respond to external updates.
+   */
+  trackInputState?: boolean;
 }
 
 interface InputFunctions {
-  /**
-   * Returns the {@link InstanceInputElement} object that controls access to the raw input.
-   */
-  getMessageInput: () => InstanceInputElement;
-
   /**
    * Instructs the text area to take focus.
    */
@@ -199,39 +199,73 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isStopStreamingButtonVisible,
     isStopStreamingButtonDisabled,
     maxInputChars,
+    trackInputState = false,
   } = props;
 
+  const store = serviceManager.store;
   const inputID = `${serviceManager.namespace.suffix}-${useCounter()}`;
 
   // Indicates if the text area currently has focus.
   const [textAreaHasFocus, setTextAreaHasFocus] = useState(false);
 
-  // The current controlled value of the text area.
-  const [inputValue, setInputValue] = useState("");
+  const trackedInputState = trackInputState
+    ? selectInputState(store.getState())
+    : null;
 
-  // Indicates if handling of the enter key is enabled or not. If it's enabled, this component will call the
-  // onSendInput prop when a press of the enter key is detected.
-  const enterKeyEnabled = useRef(true);
+  // The canonical raw value that will be sent to customSendMessage.
+  const [rawInputValue, setRawInputValue] = useState(
+    trackedInputState?.rawValue ?? "",
+  );
+
+  // The formatted value that renders inside the content editable surface.
+  const [displayInputValue, setDisplayInputValue] = useState(
+    trackedInputState?.displayValue ?? "",
+  );
+
+  const rawInputValueRef = useRef(rawInputValue);
+  const displayInputValueRef = useRef(displayInputValue);
+  rawInputValueRef.current = rawInputValue;
+  displayInputValueRef.current = displayInputValue;
 
   // Indicates the user is currently typing.
   const isTypingTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // A React ref to the TextArea component.
-  const textAreaRef = useRef<TextArea>(undefined);
+  // A React ref to the content editable component.
+  const textAreaRef = useRef<ContentEditableInputHandle | null>(null);
 
   // A React ref to the file Input element.
-  const fileInputRef = useRef<HTMLInputElement>(undefined);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // An array of functions that will be called when the text value changes.
-  const changeListeners = useRef<ListenerList<[string]>>(
-    new ListenerList<[string]>(),
-  );
+  useEffect(() => {
+    if (!trackInputState) {
+      return undefined;
+    }
 
-  // The last text value that was sent to the change listeners.
-  const lastValue = useRef("");
+    const unsubscribe = store.subscribe(() => {
+      const nextInputState = selectInputState(store.getState());
+      const nextRawValue = nextInputState.rawValue ?? "";
+      const nextDisplayValue = nextInputState.displayValue ?? "";
 
-  // The reusable {@link InstanceInputElement} object that allows access and control over the input.
-  const instanceInputElement = useRef(createInstanceInputElement());
+      if (nextRawValue !== rawInputValueRef.current) {
+        setRawInputValue(nextRawValue);
+      }
+
+      if (nextDisplayValue !== displayInputValueRef.current) {
+        setDisplayInputValue(nextDisplayValue);
+      }
+    });
+
+    return unsubscribe;
+  }, [store, trackInputState]);
+
+  useEffect(() => {
+    if (!trackInputState) {
+      return;
+    }
+    const nextInputState = selectInputState(store.getState());
+    setRawInputValue(nextInputState.rawValue ?? "");
+    setDisplayInputValue(nextInputState.displayValue ?? "");
+  }, [store, trackInputState]);
 
   /**
    * This is called when we have detected that the user has stopped typing.
@@ -250,11 +284,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function onKeyDown(event: KeyboardEvent) {
     if (isEnterKey(event)) {
-      if (
-        disableSend ||
-        !enterKeyEnabled.current ||
-        isStopStreamingButtonVisible
-      ) {
+      if (disableSend || isStopStreamingButtonVisible) {
         // If sending is disabled, stop the field from inserting a newline into the field.
         event.preventDefault();
       } else {
@@ -264,11 +294,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   }
 
   /**
-   * This is a callback which is called when a change event occurs on the textarea inside this input.
+   * Called whenever the content editable surface reports a value change.
    */
-  function onChange(event: ChangeEvent<HTMLTextAreaElement>) {
-    const inputText = event.target.value;
-
+  function onEditorChange({ rawValue, displayValue }: ContentEditableChange) {
     if (onUserTyping) {
       if (!isTypingTimeout.current) {
         onUserTyping(true);
@@ -278,7 +306,18 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       isTypingTimeout.current = setTimeout(doTypingStopped, STOP_TYPING_PERIOD);
     }
 
-    setInputValue(inputText);
+    setRawInputValue(rawValue);
+    setDisplayInputValue(displayValue);
+
+    if (trackInputState) {
+      const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
+      store.dispatch(
+        actions.updateInputState(
+          { rawValue, displayValue },
+          isInputToHumanAgent,
+        ),
+      );
+    }
   }
 
   function send(event: UIEvent) {
@@ -287,14 +326,24 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
       doTypingStopped();
 
-      const text = inputValue.trim();
+      const text = rawInputValue.trim();
       onSendInput(text);
       // Reset the value of the field.
-      setInputValue("");
+      setRawInputValue("");
+      setDisplayInputValue("");
+      if (trackInputState) {
+        const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
+        store.dispatch(
+          actions.updateInputState(
+            { rawValue: "", displayValue: "" },
+            isInputToHumanAgent,
+          ),
+        );
+      }
       if (blurOnSend) {
-        textAreaRef.current.doBlur();
+        textAreaRef.current?.doBlur();
       } else {
-        textAreaRef.current.takeFocus();
+        textAreaRef.current?.takeFocus();
       }
     }
   }
@@ -318,25 +367,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function takeFocus() {
     if (!IS_MOBILE && isInputVisible) {
-      textAreaRef.current.takeFocus();
+      textAreaRef.current?.takeFocus();
     }
-  }
-
-  /**
-   * Creates an instance of {@link InstanceInputElement}.
-   */
-  function createInstanceInputElement(): InstanceInputElement {
-    return {
-      getHTMLElement: () => textAreaRef?.current?.getHTMLElement(),
-      setValue: (value: string) => setInputValue(value),
-      setEnableEnterKey: (isEnabled: boolean) => {
-        enterKeyEnabled.current = isEnabled;
-      },
-      addChangeListener: (listener: (value: string) => void) =>
-        changeListeners.current.addListener(listener),
-      removeChangeListener: (listener: (value: string) => void) =>
-        changeListeners.current.removeListener(listener),
-    };
   }
 
   /**
@@ -350,7 +382,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       actions.removeFileUpload(fileID, isInputToHumanAgent),
     );
     // After we remove the file, we need to move focus back to the input field.
-    textAreaRef.current.takeFocus();
+    textAreaRef.current?.takeFocus();
   }
 
   /**
@@ -375,7 +407,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onFilesSelectedForUpload?.(newFiles);
 
     // Clear the file input. We're controlling the file list.
-    fileInputRef.current.value = null;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   }
 
   /**
@@ -390,7 +424,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       }
     }
 
-    return Boolean(inputValue.trim()) || hasUploads;
+    return Boolean(rawInputValue.trim()) || hasUploads;
   }
 
   // If the input field becomes disabled, we don't get a blur event so make sure to remove the focus indicator.
@@ -400,7 +434,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   useImperativeHandle(ref, () => ({
     takeFocus,
-    getMessageInput: () => instanceInputElement.current,
   }));
 
   const {
@@ -410,7 +443,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     input_uploadButtonLabel,
     input_stopResponse,
   } = languagePack;
-  const useInputValue = disableInput ? "" : inputValue;
+  const visibleRawValue = disableInput ? "" : rawInputValue;
+  const visibleDisplayValue = disableInput ? "" : displayInputValue;
   const hasValidInput = doHasValidInput();
   const showDisabledSend = !hasValidInput || disableInput || disableSend;
   const showUploadButtonDisabled = disableUploadButton || disableInput;
@@ -420,11 +454,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   // If the input field is disabled, don't show a placeholder (unless one is provided).
   const usePlaceHolder =
     placeholder || (disableInput ? undefined : input_placeholder);
-
-  if (lastValue.current !== inputValue) {
-    lastValue.current = inputValue;
-    changeListeners.current.fireListeners(inputValue);
-  }
 
   return (
     isInputVisible && ( // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -466,15 +495,16 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   </label>
                 </div>
               )}
-              <TextArea
+              <ContentEditableInput
                 autoSize
                 ariaLabel={input_ariaLabel}
                 disabled={disableInput}
                 maxLength={maxInputChars ? maxInputChars : INPUT_MAX_CHARS}
-                onChange={onChange}
+                onChange={onEditorChange}
                 onKeyDown={onKeyDown}
                 placeholder={usePlaceHolder}
-                value={useInputValue}
+                displayValue={visibleDisplayValue}
+                rawValue={visibleRawValue}
                 ref={textAreaRef}
                 onFocus={onInputFocus}
                 onBlur={onInputBlur}
@@ -519,7 +549,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   });
                   // Also cancel the current message request to abort the signal
                   await serviceManager.messageService.cancelCurrentMessageRequest();
-                  textAreaRef.current.takeFocus();
+                  textAreaRef.current?.takeFocus();
                 }}
               />
             ) : (

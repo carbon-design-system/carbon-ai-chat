@@ -419,7 +419,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   function renderVideoMessage(message: LocalMessageItem<VideoItem>) {
     const { doAutoScroll } = props;
     const { item } = message;
-    const { source, title, description, alt_text } = item;
+    const { source, title, description, alt_text, file_accessibility } = item;
     return (
       <VideoComponent
         source={source}
@@ -427,6 +427,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         description={description}
         baseHeight={getMediaDimensions(item)?.base_height}
         ariaLabel={alt_text}
+        subtitle_tracks={file_accessibility?.subtitle_tracks}
         doAutoScroll={doAutoScroll}
         needsAnnouncement={message.ui_state.needsAnnouncement}
       />
@@ -435,13 +436,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderAudioMessage(message: LocalMessageItem<AudioItem>) {
     const { doAutoScroll } = props;
-    const { source, title, description, alt_text } = message.item;
+    const { source, title, description, alt_text, file_accessibility } =
+      message.item;
     return (
       <AudioComponent
         source={source}
         title={title}
         description={description}
         ariaLabel={alt_text}
+        transcript={file_accessibility?.transcript}
         doAutoScroll={doAutoScroll}
         needsAnnouncement={message.ui_state.needsAnnouncement}
       />

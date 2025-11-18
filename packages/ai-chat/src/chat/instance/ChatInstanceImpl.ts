@@ -96,20 +96,27 @@ function createChatInstance({
     },
 
     updateInputFieldVisibility: (isVisible: boolean) => {
-      debugLog("Called instance.updateInputFieldVisibility", isVisible);
+      consoleWarn(
+        "instance.updateInputFieldVisibility is deprecated. Use The input.isVisible property to configure this behavior.",
+      );
       serviceManager.store.dispatch(
         actions.updateInputState({ fieldVisible: isVisible }, false),
       );
     },
 
     updateInputIsDisabled: (isDisabled: boolean) => {
-      debugLog("Called instance.updateInputIsDisabled", isDisabled);
+      consoleWarn(
+        "instance.updateInputIsDisabled is deprecated. Use the input.isDisabled property to configure this behavior.",
+      );
       serviceManager.store.dispatch(
         actions.updateInputState({ isReadonly: isDisabled }, false),
       );
     },
 
     updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => {
+      consoleWarn(
+        "instance.updateAssistantUnreadIndicatorVisibility is deprecated. Use public.launcher.showUnreadIndicator to configure this behavior.",
+      );
       debugLog(
         "Called instance.updateAssistantUnreadIndicatorVisibility",
         isVisible,
@@ -179,6 +186,13 @@ function createChatInstance({
       removeAllNotifications: () => {
         debugLog("Called instance.removeAllNotifications");
         serviceManager.actions.removeAllNotifications();
+      },
+    },
+
+    input: {
+      updateRawValue: (updater: (previous: string) => string) => {
+        debugLog("Called instance.input.updateRawValue");
+        serviceManager.actions.updateRawInputValue(updater);
       },
     },
 

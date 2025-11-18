@@ -257,3 +257,50 @@
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
     cds-aichat-slide-out-to-bottom both;
 }
+
+// Panel with back button positioning - shows below AssistantHeader
+// Apply top offset to the container
+.cds-aichat--overlay-panel-container:has(
+  .cds-aichat--overlay-panel--with-back-button
+) {
+  block-size: calc(100% - var(--cds-aichat--header-height, 0px) + 1px);
+  border-start-end-radius: 0;
+  border-start-start-radius: 0;
+  inset-block-start: calc(var(--cds-aichat--header-height, 0) - 1px);
+}
+
+// Reset the panel's positioning within the adjusted container
+.cds-aichat--overlay-panel--with-back-button {
+  overflow: hidden;
+  border: 1px solid var(--cds-border-subtle-00, #e0e0e0);
+  block-size: 100%;
+  border-start-end-radius: 0;
+  border-start-start-radius: 0;
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  max-inline-size: var(--cds-aichat-max-width, 100%);
+  transform: translateX(-50%);
+}
+
+// Animation for panel with back button sliding from bottom
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--overlay-panel--with-back-button.cds-aichat--overlay-panel--opening--slide-in-from-bottom {
+    animation: none;
+  }
+}
+
+.cds-aichat--overlay-panel--with-back-button.cds-aichat--overlay-panel--opening--slide-in-from-bottom {
+  animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
+    cds-aichat-slide-in-from-bottom-below-header both;
+}
+
+@keyframes cds-aichat-slide-in-from-bottom-below-header {
+  from {
+    inset-block-start: 100%;
+  }
+
+  to {
+    inset-block-start: 0;
+  }
+}

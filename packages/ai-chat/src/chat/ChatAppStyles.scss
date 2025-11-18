@@ -33,22 +33,11 @@
 cds-tile {
   border: 1px solid theme.$chat-bubble-border;
   border-radius: layout.$spacing-03;
-}
-
-.cds-aichat--light,
-.cds--white,
-.cds--g10 {
-  cds-tile {
-    background-color: #ffffff;
-  }
+  background-color: theme.$chat-shell-background;
 }
 
 .cds-aichat--dark,
 .cds--g90,
 .cds--g100 {
-  scrollbar-color: var(--cds-layer-03) var(--cds-layer-01);
-
-  cds-tile {
-    background-color: #262626;
-  }
+  scrollbar-color: theme.$layer-03 theme.$layer-01;
 }
