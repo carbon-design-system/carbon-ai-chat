@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, property, query } from "lit/decorators.js";
+import { customElement, property, state, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { repeat } from "lit/directives/repeat.js";
 import "@carbon/web-components/es/components/button/index.js";
@@ -29,10 +29,20 @@ export interface Action {
   onClick: () => void;
 }
 
+/**
+ * Toolbar.
+ *
+ * @element cds-aichat-toolbar
+ * @slot navigation - Defines the navigation area of the toolbar.
+ * @slot title - Defines the title section of the toolbar.
+ * @slot fixed-actions - Defines the area for displaying actions that are always visible (not overflowed) in the toolbar.
+ * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
+ *
+ */
 @customElement(`${prefix}-toolbar`)
 class CDSAIChatToolbar extends LitElement {
   /** Hidden actions rendered in the overflow menu. */
-  @property({ type: Array }) hiddenItems: Action[] = [];
+  @state() private hiddenItems: Action[] = [];
 
   /** The list of actions. */
   @property({ type: Array, reflect: false })
