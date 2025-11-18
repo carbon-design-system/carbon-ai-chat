@@ -46,7 +46,7 @@ function ButtonItemPostBackComponent({
   const Send = carbonIconToReact(Send16);
   const messageItem = localMessageItem.item;
   const { ui_state, fullMessageID } = localMessageItem;
-  const { image_url, alt_text, label, kind, size } = messageItem;
+  const { image_url, alt_text, label, kind, size, is } = messageItem;
   const inputState = useSelector(selectInputState);
   const isDisabled =
     !isMessageForInput ||
@@ -92,6 +92,7 @@ function ButtonItemPostBackComponent({
       label={label}
       kind={kind}
       size={size}
+      is={is}
       onClick={onClickHandler}
       renderIcon={(image_url && Send) || undefined}
       disabled={isDisabled}

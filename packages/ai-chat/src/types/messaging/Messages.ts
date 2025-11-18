@@ -20,6 +20,10 @@ import {
   BUTTON_KIND,
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -1262,12 +1266,18 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
 
   /**
    * The button size.
    */
-  size?: BUTTON_SIZE;
+  size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
+
+  /**
+   * Whether the button should be rendered as a chat button.
+   * If omitted, the default Carbon button will be rendered.
+   */
+  is?: "chat-button";
 
   /**
    * The type of button.

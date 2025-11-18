@@ -51,6 +51,12 @@ interface BaseButtonComponentProps extends HasClassName {
   size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
 
   /**
+   * Whether the button should be rendered as a chat button.
+   * If omitted, the default Carbon button will be rendered.
+   */
+  is?: "chat-button";
+
+  /**
    * The url to visit when the button is clicked.
    */
   url?: string;
@@ -87,6 +93,7 @@ function BaseButtonItemComponent({
   url,
   target = "_blank",
   disabled,
+  is,
   renderIcon,
   imageURL,
   altText,
@@ -118,9 +125,8 @@ function BaseButtonItemComponent({
   }
   const RenderIcon = renderIcon; // todo: enable passing custom icon
   const buttonKind = getButtonKind(kind) || "primary";
-  const isChatButton = true; // todo: add condition, check if is nested maybe ??
 
-  return isChatButton ? (
+  return is === "chat-button" ? (
     <ChatButton
       className={cx("cds-aichat--button-item", className)}
       kind={buttonKind as CHAT_BUTTON_KIND}
