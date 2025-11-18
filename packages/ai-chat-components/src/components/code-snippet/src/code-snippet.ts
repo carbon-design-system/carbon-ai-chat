@@ -471,7 +471,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
           ${this._detectedLanguage &&
           this._languageLabelLockedIn &&
           this._lineCount
-            ? html`<div class="${prefix}--snippet__header-seperator">
+            ? html`<div class="${prefix}--snippet__header-separator">
                 &mdash;
               </div>`
             : ""}

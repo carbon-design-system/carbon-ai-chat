@@ -59,7 +59,7 @@
   --cds-syntax-integer: var(--cds-syntax-number);
   --cds-syntax-float: var(--cds-syntax-number);
   --cds-syntax-unit: var(--cds-syntax-number);
-  --cds-syntax-string: #{colors.$magenta-60};
+  --cds-syntax-string: theme.$text-primary;
   --cds-syntax-special-string: #{colors.$purple-60};
   --cds-syntax-character: var(--cds-syntax-string);
   --cds-syntax-attribute-value: var(--cds-syntax-string);
@@ -160,7 +160,6 @@
 
   /* Literals and primitives */
   --cds-syntax-number: #{colors.$green-30};
-  --cds-syntax-string: #{colors.$magenta-40};
   --cds-syntax-special-string: #{colors.$purple-40};
   --cds-syntax-regexp: #{colors.$purple-40};
   --cds-syntax-escape: #{colors.$gray-20};
@@ -260,12 +259,12 @@
 }
 
 .#{$prefix}--snippet__language,
-.#{$prefix}--snippet__header-seperator,
+.#{$prefix}--snippet__header-separator,
 .#{$prefix}--snippet__linecount {
   @include type.type-style("label-01");
 }
 
-.#{$prefix}--snippet__header-seperator {
+.#{$prefix}--snippet__header-separator {
   padding-inline-end: layout.$spacing-02;
   padding-inline-start: layout.$spacing-02;
 }
