@@ -21,27 +21,11 @@ function doPreviewCard(instance: ChatInstance) {
           title: "Small preview card",
           subtitle: "subtitle",
           response_type: MessageResponseTypes.PREVIEW_CARD,
-          // ailabel
+          additional_data: {
+            id: "some unique ID for the workspace",
+            data: "some additional data for the workspace",
+          },
         },
-        // {
-        //   title: "Large preview card",
-        //   subtitle: "subtitle",
-        //   max_width: WidthOptions.LARGE,
-        //   response_type: MessageResponseTypes.PREVIEW_CARD,
-        //   // ai label
-        //   toolbar_actions: {
-        //     // version
-        //     // download
-        //     // share
-        //     // open
-        //   },
-        // },
-        // {
-        //   title: "Large preview card with steps",
-        //   max_width: WidthOptions.LARGE,
-        //   response_type: MessageResponseTypes.PREVIEW_CARD,
-        //   // ai label
-        // },
       ],
     },
   });

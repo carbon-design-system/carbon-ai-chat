@@ -42,16 +42,20 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const [isExpired, setIsExpired] = useState(false);
 
   const handleClick = () => {
-    console.log("preview card open button clicked");
-
     if (!isWorkspaceOpen) {
       serviceManager.eventBus.fire(
-        { type: BusEventType.WORKSPACE_PRE_OPEN },
+        {
+          type: BusEventType.WORKSPACE_PRE_OPEN,
+          additional_data: item.additional_data,
+        },
         serviceManager.instance,
       );
       setIsWorkspaceOpen(true);
       serviceManager.eventBus.fire(
-        { type: BusEventType.WORKSPACE_OPEN },
+        {
+          type: BusEventType.WORKSPACE_OPEN,
+          additional_data: item.additional_data,
+        },
         serviceManager.instance,
       );
     }
@@ -66,7 +70,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       <Tile data-rounded>
         <h5 className="body-compact-02 margin-bottom-01">{item.title}</h5>
         <p className="helper-text-01 text-secondary">{item.subtitle}</p>
-
+        <pre>{JSON.stringify(item.additional_data, null, 2)}</pre>
         <div
           className="cds-aichat--tile-container-footer margin-top-05"
           data-flush="bottom"
