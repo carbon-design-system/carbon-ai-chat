@@ -207,9 +207,12 @@ class TableElement extends LitElement {
    *
    * @param _changedProperties - Map of properties that changed during the update
    */
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-    this._setPageSize();
+  protected async firstUpdated(
+    _changedProperties: PropertyValues,
+  ): Promise<void> {
+    await this.updateComplete;
     this._updateDefaultPageSize();
+    this._setPageSize();
   }
 
   /**
