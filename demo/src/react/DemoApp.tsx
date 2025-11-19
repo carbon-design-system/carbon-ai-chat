@@ -187,6 +187,17 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       handler: customButtonHandler,
     });
 
+    // here we add a handler to the workspace pre open and open events
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: (e) => console.log("pre open", e),
+    });
+
+    instance.on({
+      type: BusEventType.WORKSPACE_OPEN,
+      handler: (e) => console.log("open", e),
+    });
+
     // Handle feedback event.
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
   };

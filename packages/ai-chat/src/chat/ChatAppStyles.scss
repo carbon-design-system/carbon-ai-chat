@@ -30,7 +30,7 @@
   @include theme.theme(themes.$g100);
 }
 
-cds-tile {
+:not(cds-aichat-tile-container) > cds-tile {
   border: 1px solid theme.$chat-bubble-border;
   border-radius: layout.$spacing-03;
 }

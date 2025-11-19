@@ -117,6 +117,26 @@ export enum BusEventType {
   CUSTOM_PANEL_CLOSE = "customPanel:close",
 
   /**
+   * Fired before a workspace opens.
+   */
+  WORKSPACE_PRE_OPEN = "workspace:pre:open",
+
+  /**
+   * Fired after a workspace opens.
+   */
+  WORKSPACE_OPEN = "workspace:open",
+
+  /**
+   * Fired before a workspace closes.
+   */
+  WORKSPACE_PRE_CLOSE = "workspace:pre:close",
+
+  /**
+   * Fired after a workspace closes.
+   */
+  WORKSPACE_CLOSE = "workspace:close",
+
+  /**
    * This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
@@ -642,6 +662,54 @@ export interface BusEventCustomPanelPreClose extends BusEvent {
  */
 export interface BusEventCustomPanelClose extends BusEvent {
   type: BusEventType.CUSTOM_PANEL_CLOSE;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventWorkspacePreOpen extends BusEvent {
+  type: BusEventType.WORKSPACE_PRE_OPEN;
+  data: MessageRequest;
+  /**
+   * The source of the message being sent.
+   */
+  source: MessageSendSource;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventWorkspaceOpen extends BusEvent {
+  type: BusEventType.WORKSPACE_OPEN;
+  data: MessageRequest;
+  /**
+   * The source of the message being sent.
+   */
+  source: MessageSendSource;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventWorkspacePreClose extends BusEvent {
+  type: BusEventType.WORKSPACE_PRE_CLOSE;
+  data: MessageRequest;
+  /**
+   * The source of the message being sent.
+   */
+  source: MessageSendSource;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventWorkspaceClose extends BusEvent {
+  type: BusEventType.WORKSPACE_CLOSE;
+  data: MessageRequest;
+  /**
+   * The source of the message being sent.
+   */
+  source: MessageSendSource;
 }
 
 /**
