@@ -55,7 +55,6 @@
   "messages_scrollMoreButton": "Scroll to bottom",
   "message_labelAssistant": "{actorName} {timestamp}",
   "message_labelYou": "You {timestamp}",
-  "notifications_toastClose": "Close notification",
   "buttons_restart": "Restart conversation",
   "buttons_cancel": "Cancel",
   "buttons_retry": "Retry",

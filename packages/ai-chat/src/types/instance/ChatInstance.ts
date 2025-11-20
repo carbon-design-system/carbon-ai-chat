@@ -7,12 +7,7 @@
  *  @license
  */
 
-import {
-  CustomPanels,
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./apiTypes";
+import { CustomPanels, ViewState, ViewType } from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import type { PersistedState } from "../state/AppState";
@@ -306,13 +301,6 @@ interface ChatActions {
   updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
-   * The state of notifications in the chat.
-   *
-   * @experimental
-   */
-  notifications: ChatInstanceNotifications;
-
-  /**
    * Actions for mutating the chat input contents.
    */
   input: ChatInstanceInput;
@@ -416,30 +404,6 @@ export enum WriteableElementName {
    * An element to be housed in the custom panel.
    */
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
-}
-
-/**
- * Add notification messages to the chat. This component has some a11y bugs before we can mark it complete.
- *
- * @category Instance
- *
- * @experimental
- */
-export interface ChatInstanceNotifications {
-  /**
-   * Add a system level notification to the list of system notifications.
-   */
-  addNotification: (notification: NotificationMessage) => void;
-
-  /**
-   * Remove a system level notification from the list of system notifications.
-   */
-  removeNotifications: (groupID: string) => void;
-
-  /**
-   * Remove all system level notifications from the list of system notifications.
-   */
-  removeAllNotifications: () => void;
 }
 
 /**

@@ -103,7 +103,6 @@ import {
   SendOptions,
 } from "../../types/instance/ChatInstance";
 import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 
 /**
@@ -1169,29 +1168,6 @@ class ChatActionsImpl {
   }
 
   // updateLanguagePack removed; use top-level `strings` prop on components.
-
-  /**
-   * Adds a new notification to be shown in the UI.
-   */
-  addNotification(notification: NotificationMessage) {
-    this.serviceManager.store.dispatch(actions.addNotification(notification));
-  }
-
-  /**
-   * Removes a notification with the provided groupId.
-   */
-  removeNotification(groupID: string) {
-    this.serviceManager.store.dispatch(
-      actions.removeNotifications({ groupID }),
-    );
-  }
-
-  /**
-   * Removes all notifications.
-   */
-  removeAllNotifications() {
-    this.serviceManager.store.dispatch(actions.removeAllNotifications());
-  }
 
   /**
    * Construct the newViewState from the newView provided. Fire the view:pre:change and view:change events, as well as

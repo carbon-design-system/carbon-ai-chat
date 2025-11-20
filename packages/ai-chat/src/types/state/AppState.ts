@@ -9,7 +9,6 @@
 
 import {
   type CustomPanelConfigOptions,
-  NotificationStateObject,
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
@@ -181,11 +180,6 @@ interface AppState extends AppStateMessages {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
    */
   isBrowserPageVisible: boolean;
-
-  /**
-   * The current state of notifications.
-   */
-  notifications: NotificationStateObject[];
 }
 
 /**
