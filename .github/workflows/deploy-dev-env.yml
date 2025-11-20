@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: "24.x"
           cache: "npm"
-      - name: Install dependencies and build
+      - name: Install dependencies and build chat packages
         run: |
           npm install
-          npm run build
+          npm run aiChat:build
 
       # Deploy demo to Github Pages using `gh-pages` package
       - name: Deploy demo
