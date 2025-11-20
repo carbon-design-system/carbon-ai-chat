@@ -311,6 +311,12 @@ class ChatActionsImpl {
       rawValue: inputState.rawValue ?? "",
     });
 
+    const customPanels = deepFreeze({
+      default: {
+        isOpen: Boolean(state.customPanelState.isOpen),
+      },
+    });
+
     return deepFreeze({
       ...rest,
       humanAgent,
@@ -318,6 +324,7 @@ class ChatActionsImpl {
       isMessageLoadingText: assistantMessageState.isMessageLoadingText,
       isHydratingCounter: assistantMessageState.isHydratingCounter,
       input,
+      customPanels,
     });
   }
 

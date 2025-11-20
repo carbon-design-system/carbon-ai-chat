@@ -13,7 +13,7 @@ import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React, { useState } from "react";
 import cx from "classnames";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { Markdown } from "../../../ai-chat-components/react/components/markdown/Markdown";
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 
 interface TranscriptComponentProps {
   /**

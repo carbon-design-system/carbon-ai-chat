@@ -35,23 +35,16 @@ import { TextHolderTile } from "./TextHolderTile";
 import { TranscriptComponent } from "./TranscriptComponent";
 import { MessageResponseTypes } from "../../../../types/messaging/Messages";
 import type ReactPlayer from "react-player";
+import { normalizeModuleInterop } from "../../../utils/moduleInterop";
 
 // https://reactjs.org/docs/code-splitting.html#reactlazy
 // Special handling for react-player due to CJS/ESM confusion
-const ReactPlayerComponent = React.lazy(() =>
-  import("react-player/lazy/index.js").then((mod: any) => {
-    // react-player 2.x is old and is confused in their cjs vs mjs usage.
-    // mod might be:
-    // { default: Component }
-    // { default: { default: Component } }
-    // plain Component
-    let exported = mod.default ?? mod;
-    if (exported && typeof exported === "object" && "default" in exported) {
-      exported = exported.default;
-    }
-    return { default: exported };
-  }),
-) as React.LazyExoticComponent<typeof ReactPlayer>;
+// react-player mixes CJS/ESM, so normalize the module before handing it to React.lazy.
+const ReactPlayerComponent = React.lazy(async () => {
+  const mod = await import("react-player/lazy/index.js");
+  const exported = normalizeModuleInterop(mod);
+  return { default: exported };
+}) as React.LazyExoticComponent<typeof ReactPlayer>;
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between
