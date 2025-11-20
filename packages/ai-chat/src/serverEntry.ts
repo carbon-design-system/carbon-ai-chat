@@ -17,8 +17,8 @@
  */
 
 // Export types and utilities without importing web components
-export { PageObjectId, TestId } from "./testing/PageObjectId.js";
-export { loadAllLazyDeps } from "./testing/helpers.js";
+export { PageObjectId, TestId } from "./testing/PageObjectId";
+export { loadAllLazyDeps } from "./testing/helpers";
 
 // Export all types without the web component implementations
 export {
@@ -37,12 +37,14 @@ export {
 
 export {
   ChatInstance,
+  ChatInstanceInput,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
+  PublicInputState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,
@@ -181,6 +183,9 @@ export {
   ItemStreamingMetadata,
   MediaItem,
   MediaItemDimensions,
+  MediaSubtitleTrack,
+  MediaTranscript,
+  MediaFileAccessibility,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,

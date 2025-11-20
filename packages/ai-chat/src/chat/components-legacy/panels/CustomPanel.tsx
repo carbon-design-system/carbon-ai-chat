@@ -170,6 +170,7 @@ function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
       shouldOpen={isOpen}
       serviceManager={serviceManager}
       overlayPanelName={PageObjectId.CUSTOM_PANEL}
+      hasBackButton={!options.hideBackButton}
     >
       <BasePanelComponent
         ref={basePanelRef}

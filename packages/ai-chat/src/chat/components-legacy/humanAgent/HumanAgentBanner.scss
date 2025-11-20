@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
+@use "../../styles/chat-theme";
 
 .cds-aichat--human-agent-banner__body {
   display: flex;
@@ -18,6 +19,13 @@
   @include type.type-style("body-01");
 
   inline-size: 100%;
+}
+
+.cds-aichat--widget--max-width {
+  .cds-aichat--human-agent-banner__body {
+    margin: 0 auto;
+    max-inline-size: chat-theme.$max-width;
+  }
 }
 
 .cds-aichat--human-agent-banner .cds-aichat--response-user-avatar {

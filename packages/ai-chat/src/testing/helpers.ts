@@ -46,7 +46,7 @@ async function preloadDayjsLocales() {
  *
  * @category Testing
  */
-export async function loadAllLazyDeps(): Promise<void> {
+async function loadAllLazyDeps(): Promise<void> {
   await Promise.all([
     loadComponentLazyDeps(),
     preloadSwiper(),
@@ -55,3 +55,5 @@ export async function loadAllLazyDeps(): Promise<void> {
     preloadDayjsLocales(),
   ]);
 }
+
+export { loadAllLazyDeps };

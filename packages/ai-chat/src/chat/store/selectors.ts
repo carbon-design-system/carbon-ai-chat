@@ -61,7 +61,7 @@ function selectIsInputToHumanAgent(state: AppState): boolean {
 }
 
 /**
- * Pick either the agent’s input slice or the bot’s.
+ * Pick either the agent's input slice or the bot's.
  */
 function selectInputState(state: AppState) {
   return selectIsInputToHumanAgent(state)
@@ -69,8 +69,44 @@ function selectInputState(state: AppState) {
     : getAssistantInputState(state);
 }
 
+/**
+ * Determines if the currently open panel has a back button visible.
+ * Returns true if any panel with a back button is open.
+ */
+function selectHasOpenPanelWithBackButton(state: AppState): boolean {
+  const {
+    iFramePanelState,
+    viewSourcePanelState,
+    responsePanelState,
+    customPanelState,
+  } = state;
+
+  // IFramePanel always has back button
+  if (iFramePanelState.isOpen) {
+    return true;
+  }
+
+  // ViewSourcePanel always has back button
+  if (viewSourcePanelState.isOpen) {
+    return true;
+  }
+
+  // ResponsePanel always has back button
+  if (responsePanelState.isOpen) {
+    return true;
+  }
+
+  // CustomPanel has back button unless explicitly hidden
+  if (customPanelState.isOpen && !customPanelState.options.hideBackButton) {
+    return true;
+  }
+
+  return false;
+}
+
 export {
   selectHumanAgentDisplayState,
   selectIsInputToHumanAgent,
   selectInputState,
+  selectHasOpenPanelWithBackButton,
 };

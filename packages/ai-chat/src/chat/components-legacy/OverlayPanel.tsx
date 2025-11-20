@@ -88,6 +88,11 @@ interface OverlayPanelProps
    * Optional override used to indicate the close animation duration; set to 0 to skip waiting for animation events.
    */
   animationDurationClose?: number;
+
+  /**
+   * Indicates if this panel has a back button and should show below the AssistantHeader.
+   */
+  hasBackButton?: boolean;
 }
 
 interface OverlayPanelState {
@@ -339,6 +344,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
       animationOnClose,
       animationOnOpen,
       overlayPanelName,
+      hasBackButton,
     } = this.props;
     const { isClosing, isOpening } = this.state;
 
@@ -364,6 +370,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
               [`cds-aichat--overlay-panel--opening--${animationOnOpen}`]:
                 isOpening,
               "cds-aichat--overlay-panel--open": !isOpening && shouldOpen,
+              "cds-aichat--overlay-panel--with-back-button": hasBackButton,
             },
           )}
         >

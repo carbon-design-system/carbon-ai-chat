@@ -30,6 +30,7 @@ import {
 import actions from "../../store/actions";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import {
+  selectHasOpenPanelWithBackButton,
   selectHumanAgentDisplayState,
   selectInputState,
   selectIsInputToHumanAgent,
@@ -658,6 +659,7 @@ class MainWindow
 
     const inputState = selectInputState(this.props);
     const agentDisplayState = selectHumanAgentDisplayState(this.props);
+    const hasPanelWithBackButton = selectHasOpenPanelWithBackButton(this.props);
 
     const showDisclaimer = this.getShowDisclaimer();
     let hideBotContainer: boolean;
@@ -667,8 +669,9 @@ class MainWindow
     } else if (numPanelsAnimating > 0) {
       // If any panel is animating then show the bot container for the duration of the animation.
       hideBotContainer = false;
-    } else if (numPanelsOpen > 0) {
-      // Otherwise if any panel is open than hide the bot container.
+    } else if (numPanelsOpen > 0 && !hasPanelWithBackButton) {
+      // If any panel without a back button is open, hide the bot container.
+      // Panels with back buttons show the AssistantHeader through.
       hideBotContainer = true;
     }
 
@@ -703,6 +706,7 @@ class MainWindow
           locale={config.public.locale || "en"}
           useAITheme={theme.aiEnabled}
           carbonTheme={theme.derivedCarbonTheme}
+          shouldHideChatContentForPanel={hasPanelWithBackButton}
         />
       </HideComponent>
     );
@@ -878,6 +882,7 @@ class MainWindow
         shouldOpen={iFramePanelState.isOpen}
         serviceManager={serviceManager}
         overlayPanelName={PageObjectId.IFRAME_PANEL}
+        hasBackButton={true}
       >
         <IFramePanel
           ref={this.iframePanelRef}
@@ -903,6 +908,7 @@ class MainWindow
         shouldOpen={viewSourcePanelState.isOpen}
         serviceManager={serviceManager}
         overlayPanelName={PageObjectId.CONVERSATIONAL_SEARCH_CITATION_PANEL}
+        hasBackButton={true}
       >
         <ViewSourcePanel
           ref={this.viewSourcePanelRef}

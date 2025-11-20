@@ -85,10 +85,10 @@ function AssistantHeader(
     const homescreen = state.config.public.homescreen;
     return homescreen?.isOn && !homescreen?.disableReturn;
   });
-  const publicConfig = useSelector((state: AppState) => state.config.public);
-  const customMenuOptions = useSelector(
-    (state: AppState) => state.config.derived.header?.menuOptions,
+  const derivedPublicConfig = useSelector(
+    (state: AppState) => state.config.derived,
   );
+  const customMenuOptions = derivedPublicConfig.header.menuOptions;
   const memoizedCustomMenuOptions = useMemo(
     () => customMenuOptions || undefined,
     [customMenuOptions],
@@ -100,7 +100,7 @@ function AssistantHeader(
   const headerRef = useRef<HasRequestFocus>(undefined);
   const Home = carbonIconToReact(Home16);
 
-  const showRestartButton = publicConfig.header?.showRestartButton;
+  const showRestartButton = derivedPublicConfig.header?.showRestartButton;
 
   // We can't allow the user to return to the home screen if the user is connecting or connected to an agent.
   const allowHomeScreen = homeScreenIsOn && !isConnectingOrConnected;
@@ -129,20 +129,22 @@ function AssistantHeader(
 
   return (
     <div className="cds-aichat--header__container">
-      <Header
-        ref={headerRef}
-        displayName={headerDisplayName}
-        showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
-        showRestartButton={showRestartButton}
-        backContent={<Home slot="icon" />}
-        labelBackButton={languagePack.homeScreen_returnToHome}
-        onClickRestart={onRestart}
-        onClickClose={onClose}
-        onClickBack={onToggleHomeScreen}
-        overflowItems={overflowItems}
-        overflowClicked={overflowClicked}
-        enableChatHeaderConfig={enableChatHeaderConfig}
-      />
+      {derivedPublicConfig.header?.isOn && (
+        <Header
+          ref={headerRef}
+          displayName={headerDisplayName}
+          showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
+          showRestartButton={showRestartButton}
+          backContent={<Home slot="icon" />}
+          labelBackButton={languagePack.homeScreen_returnToHome}
+          onClickRestart={onRestart}
+          onClickClose={onClose}
+          onClickBack={onToggleHomeScreen}
+          overflowItems={overflowItems}
+          overflowClicked={overflowClicked}
+          enableChatHeaderConfig={enableChatHeaderConfig}
+        />
+      )}
       {includeWriteableElement && (
         <WriteableElement
           slotName={WriteableElementName.HEADER_BOTTOM_ELEMENT}

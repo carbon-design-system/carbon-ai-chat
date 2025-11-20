@@ -97,6 +97,20 @@ export class DemoHeaderSwitcher extends LitElement {
     this._updateConfig({ header });
   };
 
+  private _onIsOnChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const checked = customEvent.detail.checked;
+    const header = { ...this.config.header };
+
+    if (checked) {
+      header.isOn = false;
+    } else {
+      delete header.isOn;
+    }
+
+    this._updateConfig({ header });
+  };
+
   private _onShowRestartButtonChanged = (event: Event) => {
     const customEvent = event as CustomEvent;
     const checked = customEvent.detail.checked;
@@ -158,8 +172,18 @@ export class DemoHeaderSwitcher extends LitElement {
   render() {
     const header = this.config?.header;
 
+    console.log({ header });
+
     return html`
       <div class="header-section">
+        <div class="header-section">
+          <cds-checkbox
+            ?checked=${header?.isOn === false}
+            @cds-checkbox-changed=${this._onIsOnChanged}
+          >
+            Hide chat header
+          </cds-checkbox>
+        </div>
         <cds-dropdown
           value="${this._getCurrentMinimizeButtonType()}"
           title-text="Minimize button icon"

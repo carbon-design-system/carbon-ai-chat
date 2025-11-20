@@ -26,8 +26,13 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
 } from "../store/reducerUtils";
 import {
+  selectInputState,
+  selectIsInputToHumanAgent,
+} from "../store/selectors";
+import {
   AppState,
   AppStateMessages,
+  InputState,
   ViewState,
   ViewType,
 } from "../../types/state/AppState";
@@ -290,7 +295,7 @@ class ChatActionsImpl {
 
   getPublicChatState(): PublicChatState {
     const state = this.serviceManager.store.getState();
-    const { persistedToBrowserStorage } = state;
+    const { persistedToBrowserStorage, assistantMessageState } = state;
 
     const persistedSnapshot = deepFreeze(cloneDeep(persistedToBrowserStorage));
 
@@ -301,10 +306,68 @@ class ChatActionsImpl {
       isConnecting: state.humanAgentState.isConnecting,
     });
 
+    const inputState = selectInputState(state);
+    const input = deepFreeze({
+      rawValue: inputState.rawValue ?? "",
+    });
+
     return deepFreeze({
       ...rest,
       humanAgent,
-    }) as PublicChatState;
+      isMessageLoadingCounter: assistantMessageState.isMessageLoadingCounter,
+      isMessageLoadingText: assistantMessageState.isMessageLoadingText,
+      isHydratingCounter: assistantMessageState.isHydratingCounter,
+      input,
+    });
+  }
+
+  updateRawInputValue(updater: (previous: string) => string) {
+    this.updateInputValue("rawValue", updater);
+  }
+
+  private updateInputValue(
+    field: "rawValue" | "displayValue",
+    updater: (previous: string) => string,
+  ) {
+    if (typeof updater !== "function") {
+      consoleError("Input updater must be a function");
+      return;
+    }
+
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const inputState = selectInputState(state);
+    const previousValue = (inputState[field] ?? "") as string;
+
+    let nextValue: string;
+    try {
+      nextValue = updater(previousValue);
+    } catch (error) {
+      consoleError("An error occurred while updating the input value", error);
+      return;
+    }
+
+    if (typeof nextValue !== "string") {
+      nextValue =
+        nextValue === undefined || nextValue === null ? "" : String(nextValue);
+    }
+
+    if (nextValue === previousValue) {
+      return;
+    }
+
+    const payload: Partial<InputState> = { [field]: nextValue };
+
+    if (
+      field === "rawValue" &&
+      (inputState.displayValue ?? "") === previousValue
+    ) {
+      payload.displayValue = nextValue;
+    }
+
+    store.dispatch(
+      actions.updateInputState(payload, selectIsInputToHumanAgent(state)),
+    );
   }
 
   /**
@@ -960,7 +1023,7 @@ class ChatActionsImpl {
           // For the "connect_to_agent" response, we need to determine the agents' availability before we can
           // continue to process the message items. Let's increment the typing counter while we're waiting for a
           // result from areAnyAgentsOnline.
-          store.dispatch(actions.addIsTypingCounter(1));
+          store.dispatch(actions.addIsLoadingCounter(1));
 
           // Create a partial message to record the current state of agent availability and any service desk errors.
           const partialMessage: DeepPartial<MessageResponse> = { history: {} };
@@ -1018,7 +1081,7 @@ class ChatActionsImpl {
             }
 
             // Decrement the typing counter to get rid of the pause.
-            store.dispatch(actions.addIsTypingCounter(-1));
+            store.dispatch(actions.addIsLoadingCounter(-1));
 
             if (
               shouldAutoRequestHumanAgent &&
@@ -1035,7 +1098,7 @@ class ChatActionsImpl {
         if (pause) {
           const showIsTyping = isTyping(messageItem);
           if (showIsTyping) {
-            store.dispatch(actions.addIsTypingCounter(1));
+            store.dispatch(actions.addIsLoadingCounter(1));
           }
 
           // If this message is a pause, then just sleep for the pause duration before continuing. We don't actually
@@ -1048,7 +1111,7 @@ class ChatActionsImpl {
             showIsTyping &&
             initialRestartCount === this.serviceManager.restartCount
           ) {
-            store.dispatch(actions.addIsTypingCounter(-1));
+            store.dispatch(actions.addIsLoadingCounter(-1));
           }
         } else {
           // In order to ensure that the addMessages get called in correct order, we need to add an `await` here to
@@ -1301,11 +1364,18 @@ class ChatActionsImpl {
       return;
     }
 
-    this.restarting = true;
-
     try {
       const { serviceManager } = this;
       const { store } = serviceManager;
+      const state = store.getState();
+
+      if (fireEvents) {
+        await serviceManager.fire({
+          type: BusEventType.PRE_RESTART_CONVERSATION,
+        });
+      }
+
+      this.restarting = true;
 
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.restartGeneration++;
@@ -1316,12 +1386,13 @@ class ChatActionsImpl {
       // Set isRestarting to true to signal that we're in the middle of a restart
       store.dispatch(actions.setIsRestarting(true));
 
-      if (fireEvents) {
-        await serviceManager.fire({
-          type: BusEventType.PRE_RESTART_CONVERSATION,
-        });
-      }
       serviceManager.restartCount++;
+
+      if (
+        state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0
+      ) {
+        store.dispatch(actions.resetIsLoadingCounter());
+      }
 
       if (this.hydrating) {
         await this.hydrationPromise;

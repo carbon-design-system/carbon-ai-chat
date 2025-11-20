@@ -15,11 +15,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           cache: "npm"
       - name: Install dependencies
         run: npm install
@@ -29,11 +29,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           cache: "npm"
       - name: Install dependencies
         run: |
@@ -49,11 +49,11 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           cache: "npm"
       - name: Install dependencies
         run: npm install
@@ -67,11 +67,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           cache: "npm"
       - name: Install dependencies
         run: npm install
@@ -81,11 +81,11 @@ jobs:
   license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5.0.1
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           cache: "npm"
       - name: Install dependencies
         run: npm install
