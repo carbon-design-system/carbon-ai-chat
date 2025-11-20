@@ -12,10 +12,20 @@ import React from "react";
 import { loadAllLazyDeps } from "@carbon/ai-chat/server";
 import { vi } from "vitest";
 
+// Preload every lazily imported dependency (CodeMirror, DataTable, Swiper,
+// react-player, Day.js locales, etc.) once before the suite runs. That keeps
+// the component code from issuing dynamic import() calls halfway through a
+// test, which would otherwise stall happy-dom while the modules resolve.
 beforeAll(async () => {
   await loadAllLazyDeps();
 });
 
+/**
+ * react-player attempts to load remote SDK scripts (YouTube/Vimeo) as soon as
+ * the component mounts. That fails under happy-dom because script loading is
+ * disabled. We stub the player once here so tests can still exercise the media
+ * response types without hitting the network or throwing DOMException errors.
+ */
 vi.mock("react-player/lazy/index.js", () => {
   const MockPlayer = (props: Record<string, unknown>) =>
     React.createElement(
@@ -30,6 +40,13 @@ vi.mock("react-player/lazy/index.js", () => {
   };
 });
 
+/**
+ * CodeMirror deeply depends on browser layout/focus APIs that happy-dom
+ * doesn't implement (ShadowRoot.activeElement, layout measurements, etc.).
+ * Rather than polyfilling everything, we stub EditorView so tests can still
+ * verify the markup around the snippet without CodeMirror blowing up. Skip
+ * this mock as well if your tests avoid rendering code responses.
+ */
 vi.mock("@codemirror/view", async () => {
   const actual =
     await vi.importActual<typeof import("@codemirror/view")>(
@@ -45,6 +62,9 @@ vi.mock("@codemirror/view", async () => {
     }
     destroy() {}
     dispatch() {}
+    static domEventHandlers() {
+      return [];
+    }
   }
 
   return {
@@ -53,6 +73,11 @@ vi.mock("@codemirror/view", async () => {
   };
 });
 
+/**
+ * Mock the CodeMirror runtime loader so components never touch the real editor stack
+ * (which depends on complex browser APIs that aren't available under happy-dom). Skip
+ * this mock as well if your tests avoid rendering code responses.
+ */
 vi.mock(
   "@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js",
   () => {
@@ -97,6 +122,7 @@ vi.mock(
 );
 
 beforeEach(() => {
+  // Mock ResizeObserver which is used by Carbon components
   (window as any).ResizeObserver = vi.fn().mockImplementation(() => ({
     observe: vi.fn(),
     unobserve: vi.fn(),

@@ -11,7 +11,7 @@ module.exports = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   moduleNameMapper: {
     // Point imports at the workspace build output so tests exercise the real bundle.
-    // You likely won't need to do this.
+    // You likely won't need to do this since you won't be running in our workspace setup.
     "^@carbon/ai-chat$":
       "<rootDir>/../../../packages/ai-chat/dist/es/aiChatEntry.js",
     "^@carbon/ai-chat/server$":

@@ -34,7 +34,8 @@ jest.mock("react-player/lazy/index.js", () => {
  * CodeMirror deeply depends on browser layout/focus APIs that happy-dom
  * doesn't implement (ShadowRoot.activeElement, layout measurements, etc.).
  * Rather than polyfilling everything, we stub EditorView so tests can still
- * verify the markup around the snippet without CodeMirror blowing up.
+ * verify the markup around the snippet without CodeMirror blowing up. Skip
+ * this mock as well if your tests avoid rendering code responses.
  */
 jest.mock("@codemirror/view", () => {
   const actual = jest.requireActual("@codemirror/view");

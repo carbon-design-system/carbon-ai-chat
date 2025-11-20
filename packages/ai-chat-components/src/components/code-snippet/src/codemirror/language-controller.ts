@@ -9,7 +9,7 @@
 
 import { Compartment } from "@codemirror/state";
 import { LanguageDescription, LanguageSupport } from "@codemirror/language";
-import { languages } from "@codemirror/language-data";
+import { languages } from "./language-data.js";
 import { EditorView } from "codemirror";
 import { detectLanguage, mapLanguageName } from "./language-utils.js";
 
