@@ -9,6 +9,8 @@
 
 /**
  * Status of the chain of thought step.
+ *
+ * @category Messaging
  */
 enum ChainOfThoughtStepStatus {
   PROCESSING = "processing",
@@ -19,6 +21,8 @@ enum ChainOfThoughtStepStatus {
 /**
  * A chain of thought step is meant to show tool calls and other steps made by your agent
  * to reach its final answer.
+ *
+ * @category Messaging
  */
 interface ChainOfThoughtStep {
   /**
@@ -69,12 +73,17 @@ interface ChainOfThoughtStep {
 
 /**
  * A function to allow the chat component to properly scroll to the element on toggle.
+ *
+ * @category Messaging
  */
 type ChainOfThoughtOnToggle = (
   isOpen: boolean,
   scrollToElement: HTMLElement,
 ) => void;
 
+/**
+ * @category Messaging
+ */
 interface ChainOfThoughtStepWithToggle extends ChainOfThoughtStep {
   /**
    * If the step is opened.

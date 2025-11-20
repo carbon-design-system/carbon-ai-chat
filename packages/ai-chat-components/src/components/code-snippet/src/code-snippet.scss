@@ -213,6 +213,8 @@
 
 .#{$prefix}--snippet-container {
   @extend .#{$cds-prefix}--snippet-container;
+
+  position: relative;
 }
 
 :host([expanded-code]) .#{$prefix}--snippet-container {
@@ -227,6 +229,21 @@
   }
   .#{$prefix}--code-editor {
     block-size: 100%;
+    inline-size: 100%;
+  }
+}
+
+.#{$prefix}--snippet__editor-skeleton {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: spacing.$spacing-05;
+  background: theme.$layer-01;
+  inset: 0;
+  pointer-events: none;
+
+  cds-skeleton-text {
     inline-size: 100%;
   }
 }

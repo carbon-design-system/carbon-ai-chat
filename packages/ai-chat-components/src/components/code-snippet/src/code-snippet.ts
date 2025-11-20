@@ -16,29 +16,23 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 import { observeResize } from "./dom-utils.js";
-import {
+import type {
   LanguageController,
-  type LanguageStateUpdate,
+  LanguageStateUpdate,
 } from "./codemirror/language-controller.js";
-import {
-  createContentSync,
-  type ContentSyncHandle,
-} from "./codemirror/content-sync.js";
-import {
-  createEditorView,
-  applyLanguageSupport,
-  updateReadOnlyConfiguration,
-} from "./codemirror/editor-manager.js";
+import type { ContentSyncHandle } from "./codemirror/content-sync.js";
 import {
   buildContainerStyles,
   evaluateShowMoreButton,
 } from "./layout-utils.js";
 import { StreamingManager } from "./streaming-manager.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
+import type { EditorView } from "codemirror";
+import type { Compartment } from "@codemirror/state";
+import { loadCodeMirrorRuntime } from "./codemirror/codemirror-loader.js";
+import "@carbon/web-components/es/components/skeleton-text/index.js";
 
-// CodeMirror imports
-import { EditorView } from "codemirror";
-import { Compartment } from "@codemirror/state";
+type CodeMirrorRuntime = Awaited<ReturnType<typeof loadCodeMirrorRuntime>>;
 // @ts-ignore
 import styles from "./code-snippet.scss?lit";
 import "@carbon/web-components/es/components/copy-button/index.js";
@@ -129,6 +123,9 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @state()
   private editorView?: EditorView;
 
+  @state()
+  private _isEditorLoading = true;
+
   // Private non-functional fields
   @state()
   private _expandedCode = false;
@@ -140,12 +137,14 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   private _isCreatingEditor = false;
   private contentSlot = createRef<HTMLSlotElement>();
   private editorContainer = createRef<HTMLDivElement>();
-  private languageCompartment = new Compartment();
-  private readOnlyCompartment = new Compartment();
-  private wrapCompartment = new Compartment();
+  private languageCompartment: Compartment | null = null;
+  private readOnlyCompartment: Compartment | null = null;
+  private wrapCompartment: Compartment | null = null;
   private contentSync?: ContentSyncHandle;
-  private languageController: LanguageController;
+  private languageController: LanguageController | null = null;
   private streamingManager: StreamingManager;
+  private codemirrorRuntime: CodeMirrorRuntime | null = null;
+  private codemirrorRuntimePromise: Promise<CodeMirrorRuntime> | null = null;
   private _resizeObserver = new ResizeObserver(() => {
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     requestAnimationFrame(() => {
@@ -155,16 +154,6 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   constructor() {
     super();
-    this.languageController = new LanguageController({
-      getLanguageAttribute: () => this.language,
-      getContent: () => this._slottedContent,
-      isHighlightEnabled: () => this.highlight,
-      getEditorView: () => this.editorView,
-      getLanguageCompartment: () => this.languageCompartment,
-      isLanguageLabelLocked: () => this._languageLabelLockedIn,
-      getDefaultLanguage: () => this.defaultLanguage,
-      updateState: (update) => this._applyLanguageState(update),
-    });
     this.streamingManager = new StreamingManager({
       getSlot: () => this.contentSlot.value ?? null,
       getHost: () => this,
@@ -210,6 +199,48 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   // CodeMirror methods
 
+  private async ensureCodeMirrorRuntime(): Promise<boolean> {
+    if (this.codemirrorRuntime && this.languageController) {
+      return true;
+    }
+
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    if (!this.codemirrorRuntimePromise) {
+      this._isEditorLoading = true;
+      this.codemirrorRuntimePromise = loadCodeMirrorRuntime();
+    }
+
+    try {
+      const runtime = await this.codemirrorRuntimePromise;
+      if (!this.codemirrorRuntime) {
+        this.codemirrorRuntime = runtime;
+        this.languageCompartment = new runtime.Compartment();
+        this.readOnlyCompartment = new runtime.Compartment();
+        this.wrapCompartment = new runtime.Compartment();
+        this.languageController = new runtime.LanguageController({
+          getLanguageAttribute: () => this.language,
+          getContent: () => this._slottedContent,
+          isHighlightEnabled: () => this.highlight,
+          getEditorView: () => this.editorView,
+          getLanguageCompartment: () => this.languageCompartment!,
+          isLanguageLabelLocked: () => this._languageLabelLockedIn,
+          getDefaultLanguage: () => this.defaultLanguage,
+          updateState: (update) => this._applyLanguageState(update),
+        });
+        this.requestUpdate();
+      }
+      return true;
+    } catch (error) {
+      console.error("Failed to load CodeMirror runtime", error);
+      this._isEditorLoading = false;
+      this.codemirrorRuntimePromise = null;
+      return false;
+    }
+  }
+
   /**
    * Tears down the CodeMirror view when the component is destroyed to avoid leaking editors between chat messages.
    */
@@ -218,7 +249,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       this.editorView.destroy();
       this.editorView = undefined;
     }
-    this.languageController.reset();
+    this.languageController?.reset();
   }
 
   /**
@@ -228,6 +259,26 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     if (!this.editorContainer.value) {
       return;
     }
+
+    const isReady = await this.ensureCodeMirrorRuntime();
+    if (
+      !isReady ||
+      !this.codemirrorRuntime ||
+      !this.languageController ||
+      !this.languageCompartment ||
+      !this.readOnlyCompartment
+    ) {
+      return;
+    }
+
+    const {
+      createContentSync,
+      applyLanguageSupport,
+      updateReadOnlyConfiguration,
+    } = this.codemirrorRuntime;
+    const languageController = this.languageController;
+    const languageCompartment = this.languageCompartment;
+    const readOnlyCompartment = this.readOnlyCompartment;
 
     const needsRecreate = !this.editorView || changedProperties.has("editable");
 
@@ -255,7 +306,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         }
 
         this.contentSync.update(this._slottedContent);
-        await this.languageController.handleStreamingLanguageDetection();
+        await languageController.handleStreamingLanguageDetection();
       }
 
       if (
@@ -263,16 +314,16 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         changedProperties.has("highlight")
       ) {
         const languageSupport =
-          await this.languageController.resolveLanguageSupport();
+          await languageController.resolveLanguageSupport();
         applyLanguageSupport(
           this.editorView,
-          this.languageCompartment,
+          languageCompartment,
           languageSupport,
         );
       }
 
       if (changedProperties.has("disabled")) {
-        updateReadOnlyConfiguration(this.editorView, this.readOnlyCompartment, {
+        updateReadOnlyConfiguration(this.editorView, readOnlyCompartment, {
           editable: this.editable,
           disabled: this.disabled,
         });
@@ -284,43 +335,63 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * Builds the CodeMirror instance that powers the formatted snippet surface inside the chat response tile.
    */
   private async createEditor() {
-    if (!this.editorContainer.value) {
+    const container = this.editorContainer.value;
+    const runtime = this.codemirrorRuntime;
+    const languageController = this.languageController;
+    const languageCompartment = this.languageCompartment;
+    const readOnlyCompartment = this.readOnlyCompartment;
+    const wrapCompartment = this.wrapCompartment;
+
+    if (
+      !container ||
+      !runtime ||
+      !languageController ||
+      !languageCompartment ||
+      !readOnlyCompartment ||
+      !wrapCompartment
+    ) {
       return;
     }
 
-    const languageSupport =
-      await this.languageController.resolveLanguageSupport();
+    this._isEditorLoading = true;
 
-    this.editorView = createEditorView({
-      container: this.editorContainer.value,
-      doc: this._slottedContent,
-      languageSupport,
-      languageCompartment: this.languageCompartment,
-      readOnlyCompartment: this.readOnlyCompartment,
-      wrapCompartment: this.wrapCompartment,
-      editable: this.editable,
-      disabled: this.disabled,
-      wrapText: this.wrapText,
-      onDocChanged: ({ content, lineCount }) => {
-        this._lineCount = lineCount;
+    const languageSupport = await languageController.resolveLanguageSupport();
 
-        this.dispatchEvent(
-          new CustomEvent("content-change", {
-            detail: { content },
-            bubbles: true,
-            composed: true,
-          }),
-        );
+    try {
+      container.replaceChildren();
+      this.editorView = runtime.createEditorView({
+        container,
+        doc: this._slottedContent,
+        languageSupport,
+        languageCompartment,
+        readOnlyCompartment,
+        wrapCompartment,
+        editable: this.editable,
+        disabled: this.disabled,
+        wrapText: this.wrapText,
+        onDocChanged: ({ content, lineCount }) => {
+          this._lineCount = lineCount;
 
-        if (this.editable) {
-          this.languageController.detectLanguageForEditable(content);
-        }
-      },
-      setupOptions: {
-        foldCollapseLabel: this.foldCollapseLabel,
-        foldExpandLabel: this.foldExpandLabel,
-      },
-    });
+          this.dispatchEvent(
+            new CustomEvent("content-change", {
+              detail: { content },
+              bubbles: true,
+              composed: true,
+            }),
+          );
+
+          if (this.editable) {
+            languageController.detectLanguageForEditable(content);
+          }
+        },
+        setupOptions: {
+          foldCollapseLabel: this.foldCollapseLabel,
+          foldExpandLabel: this.foldExpandLabel,
+        },
+      });
+    } finally {
+      this._isEditorLoading = false;
+    }
 
     this._lineCount = this.editorView.state.doc.lines;
 
@@ -329,7 +400,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       this._checkShowMoreButton();
     });
 
-    this.languageController.handleStreamingLanguageDetection();
+    languageController.handleStreamingLanguageDetection();
   }
 
   /**
@@ -368,6 +439,19 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     }
   }
 
+  private renderEditorFallback() {
+    if (!this._isEditorLoading) {
+      return null;
+    }
+
+    return html`<div
+      class="${prefix}--snippet__editor-skeleton"
+      aria-hidden="true"
+    >
+      <cds-skeleton-text lines="4"></cds-skeleton-text>
+    </div>`;
+  }
+
   // Lifecycle methods
   /**
    * Wires up resize and content observers so the snippet reacts to streaming updates and layout changes as soon as it attaches.
@@ -381,6 +465,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
     this.streamingManager.reset(this._slottedContent);
     this.streamingManager.connect();
+    void this.ensureCodeMirrorRuntime();
   }
 
   /**
@@ -422,7 +507,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     // Cancel any pending throttled updates
     this.contentSync?.cancel();
     this.streamingManager.dispose();
-    this.languageController.dispose();
+    this.languageController?.dispose();
     this.destroyEditor();
   }
 
@@ -507,6 +592,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         style="${this._getContainerStyles(expandedCode)}"
       >
         <div class="${prefix}--code-editor" ${ref(this.editorContainer)}></div>
+        ${this.renderEditorFallback()}
       </div>
 
       ${shouldShowMoreLessBtn
