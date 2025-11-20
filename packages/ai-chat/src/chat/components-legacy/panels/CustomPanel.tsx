@@ -8,6 +8,7 @@
  */
 
 import React, { forwardRef, Ref, useCallback, useEffect, useRef } from "react";
+import cx from "classnames";
 import { useSelector } from "../../hooks/useSelector";
 
 import { BusEventType } from "../../../types/events/eventBusTypes";
@@ -84,6 +85,7 @@ function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
     disableAnimation,
     onClickBack,
     onClickClose,
+    hideCloseButton,
   } = options;
   const serviceManager = useServiceManager();
   const ariaAnnouncer = useAriaAnnouncer();
@@ -95,6 +97,13 @@ function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
     ? AnimationOutType.NONE
     : AnimationOutType.SLIDE_OUT_TO_BOTTOM;
   const basePanelRef = useRef<HasRequestFocus>(null);
+  const hideCloseOverride = hideCloseButton;
+  const hasCustomTitle = title !== undefined && title !== null;
+  const enableChatHeaderConfig = !hasCustomTitle;
+  const shouldShowBackButton = !options.hideBackButton;
+  const panelClassName = cx("cds-aichat--custom-panel", {
+    "cds-aichat--custom-panel--no-back-button": !shouldShowBackButton,
+  });
 
   useEffect(() => {
     if (prevIsOpen !== isOpen && isOpen) {
@@ -170,11 +179,11 @@ function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
       shouldOpen={isOpen}
       serviceManager={serviceManager}
       overlayPanelName={PageObjectId.CUSTOM_PANEL}
-      hasBackButton={!options.hideBackButton}
+      hasBackButton={shouldShowBackButton}
     >
       <BasePanelComponent
         ref={basePanelRef}
-        className="cds-aichat--custom-panel"
+        className={panelClassName}
         eventName="Custom panel opened"
         eventDescription="A user opened a custom panel."
         labelBackButton={languagePack.general_returnToAssistant}
@@ -185,9 +194,8 @@ function CustomPanel(props: CustomPanelProps, ref: Ref<HasRequestFocus>) {
         onClickRestart={onClickRestart}
         hidePanelHeader={hidePanelHeader}
         hideBackButton={options.hideBackButton}
-        hideCloseButton={options.hideCloseButton}
-        showAiLabel={false}
-        showRestartButton={false}
+        hideCloseButton={hideCloseOverride}
+        enableChatHeaderConfig={enableChatHeaderConfig}
       >
         <WriteableElement
           slotName="customPanelElement"

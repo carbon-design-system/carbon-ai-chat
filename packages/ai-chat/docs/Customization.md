@@ -94,18 +94,34 @@ For more information, see the documentation for [React](React.md) and [web compo
 
 The Carbon AI Chat can open an overlay panel with custom content at any time. Panels are effective for use cases that range from pre‑chat content forms, post‑chat feedback forms, or multi‑step processes. You can open the panel at any time, whether from an event, a `user_defined` response, or even an action a user takes on your website.
 
-Custom panels are controlled via {@link ChatInstance.customPanels}. Use `instance.customPanels.getPanel()` to obtain the panel, then call `open(options)` and `close()` as needed. Supported options are described by {@link CustomPanelConfigOptions}.
+Determine whether the panel should function as a secondary view that users can dismiss quickly, or as a primary interface that temporarily takes over the chat. When `hideBackButton` is left `false` (the default), the main chat header stays visible and a secondary panel header with its own back button and title is shown; this mode is best for flows when a user is drilling in to deeper detail in a conversation or for interactions that can dismiss.
+
+When you set `hideBackButton` to `true`, your panel does not get a secondary header. This this mode is useful if you have an action the user must complete to continue.
+
+Custom panels are controlled via {@link ChatInstance.customPanels}. Use `instance.customPanels.getPanel(PanelType.DEFAULT)` to obtain the default panel, then call `open(options)` and `close()` as needed. The default panel overlays the chat content window. Supported options are described by {@link DefaultCustomPanelConfigOptions}.
 
 Example:
 
 ```ts
-const panel = instance.customPanels.getPanel();
+import { PanelType } from "@carbon/ai-chat";
+
+const panel = instance.customPanels.getPanel(PanelType.DEFAULT);
 panel.open({
-  title: "My Custom Panel",
-  hideCloseButton: true,
-  disableAnimation: true,
+  title: "Interesting extra data",
+  // Keep the assistant header/back button visible
+  hideBackButton: false,
 });
-// ... later
+```
+
+```ts
+panel.open({
+  // Full-screen takeover
+  hideBackButton: true,
+  title: "Required form",
+});
+
+// ...later
+// While the back button will automatically close the panel, if you hide the back button, it is up to you to know when to close the panel!
 panel.close();
 ```
 

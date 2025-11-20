@@ -9,6 +9,13 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 
+.cds-aichat--header-with-panel {
+  position: absolute;
+  z-index: 100;
+  inline-size: 100%;
+  inset-block-start: 0;
+}
+
 .cds-aichat--overlay-panel--disclaimer_panel {
   z-index: 99;
 }
@@ -273,6 +280,7 @@
 .cds-aichat--overlay-panel--with-back-button {
   overflow: hidden;
   border: 1px solid var(--cds-border-subtle-00, #e0e0e0);
+  background-color: theme.$chat-shell-background;
   block-size: 100%;
   border-start-end-radius: 0;
   border-start-start-radius: 0;
