@@ -16,6 +16,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  useContext,
 } from "react";
 import { useSelector } from "../../hooks/useSelector";
 import { shallowEqual } from "../../store/appStore";
@@ -28,6 +29,8 @@ import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { WriteableElementName } from "../../utils/constants";
 import WriteableElement from "../WriteableElement";
 import { Header } from "./Header";
+import { HideComponentContext } from "../../contexts/HideComponentContext";
+import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -58,13 +61,6 @@ interface AssistantHeaderProps {
    * Indicates if the writeable element should be rendered.
    */
   includeWriteableElement: boolean;
-
-  /**
-   * Determines if the chat header items should be visible. If not enabled, the updateChatHeaderConfig method will
-   * have no effect on the header. Meaning the config object will not be used to render chat header items or display
-   * name.
-   */
-  enableChatHeaderConfig?: boolean;
 }
 
 function AssistantHeader(
@@ -77,10 +73,10 @@ function AssistantHeader(
     onToggleHomeScreen,
     headerDisplayName,
     includeWriteableElement,
-    enableChatHeaderConfig,
   } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
+  const isHidden = useContext(HideComponentContext);
   const homeScreenIsOn = useSelector((state: AppState) => {
     const homescreen = state.config.public.homescreen;
     return homescreen?.isOn && !homescreen?.disableReturn;
@@ -93,14 +89,23 @@ function AssistantHeader(
     () => customMenuOptions || undefined,
     [customMenuOptions],
   );
+  const headerConfig = derivedPublicConfig.header;
   const { isConnectingOrConnected } = useSelector(
     selectHumanAgentDisplayState,
     shallowEqual,
   );
+  const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const headerRef = useRef<HasRequestFocus>(undefined);
   const Home = carbonIconToReact(Home16);
 
-  const showRestartButton = derivedPublicConfig.header?.showRestartButton;
+  const showRestartButton = headerConfig?.showRestartButton;
+  const showAiLabel = headerConfig?.showAiLabel !== false;
+  const minimizeButtonIconType =
+    headerConfig?.minimizeButtonIconType ?? MinimizeButtonIconType.MINIMIZE;
+  const hideCloseButton = headerConfig?.hideMinimizeButton ?? false;
+  const headerTitle = headerConfig?.title ?? undefined;
+  const chatHeaderDisplayName =
+    headerConfig?.name || headerDisplayName || undefined;
 
   // We can't allow the user to return to the home screen if the user is connecting or connected to an agent.
   const allowHomeScreen = homeScreenIsOn && !isConnectingOrConnected;
@@ -110,9 +115,10 @@ function AssistantHeader(
       if (index === 0 && allowHomeScreen) {
         onToggleHomeScreen?.();
       } else {
-        const { handler } =
-          memoizedCustomMenuOptions[allowHomeScreen ? index - 1 : index];
-        handler();
+        const handler =
+          memoizedCustomMenuOptions?.[allowHomeScreen ? index - 1 : index]
+            ?.handler;
+        handler?.();
       }
     },
     [memoizedCustomMenuOptions, onToggleHomeScreen, allowHomeScreen],
@@ -127,12 +133,20 @@ function AssistantHeader(
   // Reuse the imperative handles from the header.
   useImperativeHandle(ref, () => headerRef.current);
 
+  const aiSlugAfterDescriptionElement = !isHidden ? (
+    <WriteableElement
+      slotName={WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
+      id={`aiTooltipAfterDescription${serviceManager.namespace.suffix}`}
+    />
+  ) : null;
+
   return (
     <div className="cds-aichat--header__container">
-      {derivedPublicConfig.header?.isOn && (
+      {headerConfig?.isOn && (
         <Header
           ref={headerRef}
-          displayName={headerDisplayName}
+          title={headerTitle}
+          displayName={chatHeaderDisplayName}
           showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
           showRestartButton={showRestartButton}
           backContent={<Home slot="icon" />}
@@ -142,7 +156,18 @@ function AssistantHeader(
           onClickBack={onToggleHomeScreen}
           overflowItems={overflowItems}
           overflowClicked={overflowClicked}
-          enableChatHeaderConfig={enableChatHeaderConfig}
+          showAiLabel={showAiLabel}
+          hideCloseButton={hideCloseButton}
+          closeButtonLabel={languagePack.launcher_isOpen}
+          overflowMenuTooltip={languagePack.header_overflowMenu_options}
+          overflowMenuAriaLabel={languagePack.components_overflow_ariaLabel}
+          restartButtonLabel={languagePack.buttons_restart}
+          aiSlugLabel={languagePack.ai_slug_label}
+          aiSlugTitle={languagePack.ai_slug_title}
+          aiSlugDescription={languagePack.ai_slug_description}
+          aiSlugAfterDescriptionElement={aiSlugAfterDescriptionElement}
+          minimizeButtonIconType={minimizeButtonIconType}
+          isRestarting={isRestarting}
         />
       )}
       {includeWriteableElement && (

@@ -8,11 +8,7 @@
  */
 
 /**
- * Describes general config options for a Carbon AI Chat panel. These options are also part of the
- * {@link BasePanelComponentProps}, except the options here are also shared with {@link CustomPanelConfigOptions}.
- *
- * Any options specific to either the BasePanelComponent or CustomPanelConfigOptions should be added to the respective
- * interface.
+ * Describes general config options for Carbon AI Chat's internal panel components.
  *
  * @category Config
  */
@@ -20,20 +16,23 @@ export interface BasePanelConfigOptions {
   /**
    * The panel title which is left blank by default.
    */
-  title?: string;
+  title?: string | null;
 
   /**
-   * Indicates if the close button in the custom panel should be hidden.
+   * Indicates if the close button in the custom panel should be hidden. When {@link hidePanelHeader} is true, the close
+   * button is hidden automatically.
    */
   hideCloseButton?: boolean;
 
   /**
-   * Indicates if the panel header should be hidden.
+   * Indicates if the panel header should be hidden. Hiding the header removes the default title, close button, and back
+   * button from the chrome.
    */
   hidePanelHeader?: boolean;
 
   /**
-   * Indicates if the back button in the custom panel should be hidden.
+   * Indicates if the back button in the custom panel should be hidden. When {@link hidePanelHeader} is true, the back
+   * button is hidden automatically.
    */
   hideBackButton?: boolean;
 

@@ -10,10 +10,24 @@
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 
-import { ChatInstance, IncreaseOrDecrease, ViewType } from "@carbon/ai-chat";
+import {
+  ChatInstance,
+  CustomPanelOpenOptions,
+  IncreaseOrDecrease,
+  ViewType,
+  WriteableElementName,
+} from "@carbon/ai-chat";
 import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+
+interface PanelControlExample {
+  id: string;
+  buttonLabel: string;
+  description: string;
+  options: CustomPanelOpenOptions;
+  panelBody: string;
+}
 
 @customElement("demo-chat-instance-switcher")
 export class DemoChatInstanceSwitcher extends LitElement {
@@ -45,6 +59,18 @@ export class DemoChatInstanceSwitcher extends LitElement {
     .actions cds-button {
       width: fit-content;
     }
+
+    .panel-control {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .panel-control__description {
+      margin: 0;
+      color: var(--cds-text-secondary, #525252);
+      font-size: 0.875rem;
+    }
   `;
 
   @property({ type: Object })
@@ -60,6 +86,67 @@ export class DemoChatInstanceSwitcher extends LitElement {
     NOTIFICATION_KIND.WARNING,
     NOTIFICATION_KIND.ERROR,
   ];
+  private readonly _panelExamples: PanelControlExample[] = [
+    {
+      id: "panel-with-back-button",
+      buttonLabel: "Open panel (with back button)",
+      description:
+        "Animates in and keeps the default header so you can use the back button.",
+      options: {
+        title: "Panel with navigation",
+      },
+      panelBody: `
+        <div style="padding: 1rem;">
+          <h3>Panel with default navigation</h3>
+          <p>The back button stays visible so visitors can return to their conversation without dismissing the panel.</p>
+          <ul>
+            <li><code>hideBackButton</code>: <strong>false</strong></li>
+            <li><code>disableAnimation</code>: <strong>false</strong></li>
+          </ul>
+        </div>
+      `,
+    },
+    {
+      id: "panel-without-back-button",
+      buttonLabel: "Open panel (without back button)",
+      description: "Animates in and hides the back button for focused flows.",
+      options: {
+        title: "Panel without back button",
+        hideBackButton: true,
+      },
+      panelBody: `
+        <div style="padding: 1rem;">
+          <h3>Panel without back navigation</h3>
+          <p>This layout is useful when the panel handles its own progression.</p>
+          <ul>
+            <li><code>hideBackButton</code>: <strong>true</strong></li>
+          </ul>
+        </div>
+      `,
+    },
+    {
+      id: "panel-without-animations",
+      buttonLabel: "Open panel (without animations)",
+      description:
+        "Skips the animation and hides the back button for focused flows.",
+      options: {
+        title: "Panel without back button",
+        hideBackButton: true,
+        disableAnimation: true,
+      },
+      panelBody: `
+        <div style="padding: 1rem;">
+          <h3>Panel without back navigation</h3>
+          <p>This layout is useful when the panel handles its own progression.</p>
+          <ul>
+            <li><code>hideBackButton</code>: <strong>true</strong></li>
+            <li><code>disableAnimation</code>: <strong>true</strong></li>
+          </ul>
+          <p>The panel opened instantly because animations were disabled.</p>
+        </div>
+      `,
+    },
+  ];
 
   private _withInstance<T>(
     callback: (instance: ChatInstance) => T,
@@ -71,6 +158,37 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
     return callback(instance);
   }
+
+  private _writeCustomPanelContent(content: string) {
+    const element =
+      this.chatInstance?.writeableElements?.[
+        WriteableElementName.CUSTOM_PANEL_ELEMENT
+      ];
+    if (!element) {
+      return;
+    }
+
+    element.innerHTML = content.trim();
+  }
+
+  private _handleOpenCustomPanelExample(example: PanelControlExample) {
+    this._withInstance((instance) => {
+      const panel = instance.customPanels?.getPanel();
+      if (!panel) {
+        return;
+      }
+
+      this._writeCustomPanelContent(example.panelBody);
+      panel.open(example.options);
+    });
+  }
+
+  private _handleCloseCustomPanel = () => {
+    this._withInstance((instance) => {
+      const panel = instance.customPanels?.getPanel();
+      panel?.close();
+    });
+  };
 
   private _handleRequestFocus = () => {
     this._withInstance((instance) => {
@@ -253,6 +371,28 @@ export class DemoChatInstanceSwitcher extends LitElement {
           </cds-button>
           <cds-button kind="secondary" @click=${this._handleChangeViewLauncher}>
             Close chat window
+          </cds-button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Panel controls</div>
+        <div class="actions">
+          ${this._panelExamples.map(
+            (example) => html`
+              <div class="panel-control">
+                <cds-button
+                  kind="secondary"
+                  @click=${() => this._handleOpenCustomPanelExample(example)}
+                >
+                  ${example.buttonLabel}
+                </cds-button>
+                <p class="panel-control__description">${example.description}</p>
+              </div>
+            `,
+          )}
+          <cds-button kind="ghost" @click=${this._handleCloseCustomPanel}>
+            Close custom panel
           </cds-button>
         </div>
       </div>
