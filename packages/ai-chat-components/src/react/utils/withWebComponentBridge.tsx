@@ -8,18 +8,19 @@
  */
 
 /**
- * React 19 + @lit/react fail to mirror props onto custom-element instances
- * when running under happy-dom (or any DOM shim without native property
- * reflection). Production browsers still work, which is why the demo site
- * renders markdown just fine, but our Jest environment never sees the text.
+ * React 19 + @lit/react stop reliably flushing props to custom elements in DOM shims (happy-dom/jsdom)
+ * because they lack property reflection and upgrade timing. Browsers are fine, but tests only pass string
+ * attributes so Lit never sees updated properties. This bridge mirrors every non-reserved prop onto the
+ * custom element instance so Lit receives the real values and behaves the same in shims and browsers until
+ * upstream fixes land.
  *
- * This helper wraps the generated React component and explicitly assigns
- * every non-reserved prop to the underlying DOM node. That ensures Lit
- * receives updated properties even when the platform doesn’t wire them.
+ * Set `AICHAT_DISABLE_WEB_COMPONENT_BRIDGE=true` to make this a no-op (handy for verifying whether the
+ * workaround is still required).
  */
 
 import React from "react";
 
+// React-managed props that should never be forwarded to the host element.
 const REACT_RESERVED_PROPS = new Set([
   "children",
   "className",
@@ -32,14 +33,17 @@ const REACT_RESERVED_PROPS = new Set([
   "dangerouslySetInnerHTML",
 ]);
 
+// Merge forwardedRef with our internal host ref so both the wrapper and callers observe the same element.
 function mergeRefs<T>(
   ...refs: Array<React.Ref<T> | undefined | null>
 ): React.RefCallback<T> {
   return (value: T | null) => {
+    // Propagate the element to every provided ref.
     for (const ref of refs) {
       if (!ref) {
         continue;
       }
+      // Support both callback refs and mutable ref objects.
       if (typeof ref === "function") {
         ref(value);
       } else {
@@ -49,10 +53,11 @@ function mergeRefs<T>(
   };
 }
 
+// Set shouldEnableBridge to false to check if we actually need this.
+const shouldEnableBridge = true;
+
 /**
- * Wrap a Lit `createComponent` result so that every prop is mirrored onto
- * the underlying custom element as a property. This is required for happy-dom
- * (and React 19) where the upstream @lit/react bridge fails to flush props.
+ * Wrap a Lit `createComponent` result so that every prop is mirrored onto the underlying custom element as a property.
  */
 export function withWebComponentBridge<
   P extends Record<string, unknown>,
@@ -62,6 +67,11 @@ export function withWebComponentBridge<
     React.PropsWithoutRef<P> & React.RefAttributes<E>
   >,
 ) {
+  // Set shouldEnableBridge to false to check if we actually need this.
+  if (!shouldEnableBridge) {
+    return Component;
+  }
+
   const Bridged = React.forwardRef<E, P>((props, forwardedRef) => {
     const hostRef = React.useRef<E | null>(null);
     const mergedRef = React.useMemo(
@@ -92,10 +102,12 @@ export function withWebComponentBridge<
         }
 
         try {
+          // Prefer property assignment so Lit receives non-string values.
           if ((element as any)[key] !== value) {
             (element as any)[key] = value;
           }
         } catch {
+          // Fallback to attribute updates when property writes fail (readonly or unsupported props).
           if (value === null || value === undefined || value === false) {
             element.removeAttribute(key);
           } else if (value === true) {

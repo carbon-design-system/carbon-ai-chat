@@ -12,11 +12,14 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatToolbar from "../components/toolbar/src/toolbar.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const Toolbar = createComponent({
-  tagName: "cds-aichat-toolbar",
-  elementClass: CDSAIChatToolbar,
-  react: React,
-});
+const Toolbar = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-toolbar",
+    elementClass: CDSAIChatToolbar,
+    react: React,
+  }),
+);
 
 export default Toolbar;

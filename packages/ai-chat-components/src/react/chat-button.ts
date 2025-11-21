@@ -19,12 +19,15 @@ import {
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import AIChatButton from "../components/chat-button/chat-button.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const ChatButton = createComponent({
-  tagName: "cds-aichat-button",
-  elementClass: AIChatButton,
-  react: React,
-});
+const ChatButton = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-button",
+    elementClass: AIChatButton,
+    react: React,
+  }),
+);
 
 export default ChatButton;
 export {
