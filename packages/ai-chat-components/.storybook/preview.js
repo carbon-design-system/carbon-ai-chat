@@ -113,10 +113,9 @@ export const parameters = {
   docs: {
     codePanel: true,
     source: {
+      excludeDecorators: true,
       transform: async (source) => {
-        const cleaned = source.replace(/<style[\s\S]*?<\/style>/gi, "");
-
-        return prettier.format(cleaned, {
+        return prettier.format(source, {
           parser: "html",
           plugins: [await import("prettier/parser-html")],
           printWidth: 80,

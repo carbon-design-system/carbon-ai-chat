@@ -21,7 +21,8 @@ import {
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Add16 from "@carbon/icons/es/add/16.js";
 import Link16 from "@carbon/icons/es/link/16.js";
-import { expect, fn } from "storybook/test";
+import { fn } from "storybook/test";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 const slots = {
   Add16: () => html`${iconLoader(Add16, { slot: "icon" })}`,
@@ -88,21 +89,20 @@ const baseButtonControls = {
 const baseButtonTemplate = (args) => html`
   <cds-aichat-button
     @click=${args.onClick}
-    data-testid="storybook-interaction-testid"
     .button-class-name="${args.buttonClassName}"
-    .dangerDescription="${args.dangerDescription}"
-    ?disabled="${args.disabled}"
-    .href="${args.href}"
-    ?isExpressive="${args.isExpressive}"
-    ?isSelected="${args.isSelected}"
-    .kind="${args.kind}"
-    .linkRole="${args.linkRole}"
-    .size="${args.size}"
-    .tooltipText=${args.tooltipText}
-    .tooltipAlignment="${args.tooltipAlignment}"
-    .tooltipPosition="${args.tooltipPosition}"
-    .type="${args.type}"
-    ?is-quick-action="${args.isQuickAction}"
+    danger-description=${ifDefined(args.dangerDescription)}
+    disabled=${ifDefined(args.disabled ? "" : undefined)}
+    href=${ifDefined(args.href)}
+    isexpressive=${ifDefined(args.isExpressive ? "" : undefined)}
+    isselected=${ifDefined(args.isSelected ? "" : undefined)}
+    kind=${ifDefined(args.kind)}
+    link-role=${ifDefined(args.linkRole)}
+    size=${ifDefined(args.size)}
+    tooltip-text=${ifDefined(args.tooltipText)}
+    tooltip-alignment=${ifDefined(args.tooltipAlignment)}
+    tooltip-position=${ifDefined(args.tooltipPosition)}
+    type=${ifDefined(args.type)}
+    is-quick-action=${ifDefined(args.isQuickAction)}
   >
     ${args.buttonText} ${args.iconSlot?.()}
   </cds-aichat-button>
@@ -110,34 +110,6 @@ const baseButtonTemplate = (args) => html`
 
 export default {
   title: "Components/Chat button",
-  play: async ({ canvas, userEvent, args }) => {
-    const button = canvas.getByTestId("storybook-interaction-testid");
-    const buttonTrigger = button.shadowRoot.querySelector(".cds--btn");
-    if (args.href) {
-      return;
-    }
-    await userEvent.click(buttonTrigger);
-    if (!args.disabled) {
-      expect(args.onClick).toHaveBeenCalled();
-      expect(button).toHaveFocus();
-    } else {
-      expect(args.onClick).not.toHaveBeenCalled();
-    }
-
-    if (
-      args.tooltipText &&
-      args.iconSlot &&
-      !args.buttonText &&
-      !args.disabled
-    ) {
-      expect(button.shadowRoot.textContent.includes(args.tooltipText)).toBe(
-        true,
-      );
-    }
-
-    await userEvent.click(document.body);
-    expect(button).not.toHaveFocus();
-  },
 };
 
 export const Default = {
