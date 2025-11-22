@@ -171,9 +171,6 @@ export class DemoHeaderSwitcher extends LitElement {
 
   render() {
     const header = this.config?.header;
-
-    console.log({ header });
-
     return html`
       <div class="header-section">
         <div class="header-section">

@@ -173,7 +173,7 @@ close to overflowing. */
 
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
-    cds-chat-button.cds-aichat--home-screen__starter {
+    cds-aichat-button.cds-aichat--home-screen__starter {
     display: block;
     animation: none;
     margin-block-end: layout.$spacing-04;
@@ -186,29 +186,29 @@ close to overflowing. */
   }
 }
 
-cds-chat-button.cds-aichat--home-screen__starter:nth-child(1) {
+cds-aichat-button.cds-aichat--home-screen__starter:nth-child(1) {
   --cds-aichat-homescreen-starter-index: 1;
 }
 
-cds-chat-button.cds-aichat--home-screen__starter:nth-child(2) {
+cds-aichat-button.cds-aichat--home-screen__starter:nth-child(2) {
   --cds-aichat-homescreen-starter-index: 2;
 }
 
-cds-chat-button.cds-aichat--home-screen__starter:nth-child(3) {
+cds-aichat-button.cds-aichat--home-screen__starter:nth-child(3) {
   --cds-aichat-homescreen-starter-index: 3;
 }
 
-cds-chat-button.cds-aichat--home-screen__starter:nth-child(4) {
+cds-aichat-button.cds-aichat--home-screen__starter:nth-child(4) {
   --cds-aichat-homescreen-starter-index: 4;
 }
 
-cds-chat-button.cds-aichat--home-screen__starter:nth-child(5) {
+cds-aichat-button.cds-aichat--home-screen__starter:nth-child(5) {
   --cds-aichat-homescreen-starter-index: 5;
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
   .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
-    cds-chat-button.cds-aichat--home-screen__starter {
+    cds-aichat-button.cds-aichat--home-screen__starter {
     display: block;
     animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
       cds-aichat-fade-in-up
@@ -226,7 +226,7 @@ cds-chat-button.cds-aichat--home-screen__starter:nth-child(5) {
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
     .cds-aichat--home-screen__starters--animate-group
-    cds-chat-button.cds-aichat--home-screen__starter {
+    cds-aichat-button.cds-aichat--home-screen__starter {
     animation: none;
   }
 }
@@ -234,7 +234,7 @@ cds-chat-button.cds-aichat--home-screen__starter:nth-child(5) {
 @media screen and (prefers-reduced-motion: no-preference) {
   .cds-aichat--home-screen.cds-aichat--home-screen--hydration-complete
     .cds-aichat--home-screen__starters--animate-group
-    cds-chat-button.cds-aichat--home-screen__starter {
+    cds-aichat-button.cds-aichat--home-screen__starter {
     animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
       cds-aichat-fade-in-up 120ms both;
   }

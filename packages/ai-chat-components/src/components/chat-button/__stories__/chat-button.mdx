@@ -1,18 +1,19 @@
-import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ChatButtonStories from "./chat-button.stories";
 
 <Meta of={ChatButtonStories} />
 
-# Chat Button
+# AI Chat Button
 
-`<cds-aichat-button>` is an extension of the Carbon Design System’s `<cds-button>` component, designed specifically for AI Chat applications.
-the key differences include:
-- Rounded corners
-- New `is-quick-action` property to render the button as a quick action button.
-- Enforced size and kind defaults for quick action buttons.
+The `cds-aichat-button` extends the Carbon Design System's [Button](https://web-components.carbondesignsystem.com/?path=/docs/components-button--overview) component with AI Chat-specific features including a quick action mode, and rounded corners designed for chat interfaces.
 
-It supports all the properties of the Carbon Design System’s `<cds-button>` component, with additional AI Chat–specific styles and behaviors.
+## Key Features
+
+- **Quick Action Mode**: The `is-quick-action` prop renders the button in a compact quick-action style suitable for chat interfaces.
+- **Rounded Corners**: Applied by default to match AI chat visual patterns.
+- **Preset Defaults**: Quick action buttons automatically enforce recommended `size` and `kind` values.
+- **Full Carbon Compatibility**: Supports most of standard `<cds-button>` attributes and events.
 
 ## Getting started
 
@@ -30,7 +31,7 @@ We provide a lit-react wrapper for this web component to consume in a react appl
 import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
 ```
 
-<Markdown>{`${cdnJs({ components: ["chat-button"] })}`}</Markdown>
+<Markdown>{`${cdnJs(["chat-button"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ### HTML

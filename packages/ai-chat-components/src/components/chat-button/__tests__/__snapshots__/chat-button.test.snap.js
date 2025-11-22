@@ -1,7 +1,7 @@
 /* @web/test-runner snapshot v1 */
 export const snapshots = {};
 
-snapshots["chat-button should render with cds-button minimum attributes"] = 
+snapshots["chat-button should render with cds-aichat-button minimum attributes"] = 
 `<cds-aichat-button
   has-main-content=""
   kind="primary"
@@ -14,7 +14,7 @@ snapshots["chat-button should render with cds-button minimum attributes"] =
   button
 </cds-aichat-button>
 `;
-/* end snapshot chat-button should render with cds-button minimum attributes */
+/* end snapshot chat-button should render with cds-aichat-button minimum attributes */
 
 snapshots["chat-button should render with cds-aichat-button minimum attributes"] = 
 `<cds-aichat-button

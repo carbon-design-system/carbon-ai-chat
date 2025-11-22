@@ -27,7 +27,7 @@ function ButtonItemURLComponent({
 }: {
   localMessageItem: LocalMessageItem<ButtonItem>;
 }) {
-  const { image_url, alt_text, url, target, label, kind } =
+  const { image_url, alt_text, url, target, label, kind, size, is } =
     localMessageItem.item;
 
   // If no image url is provided and should is a normal link, then render a carbon link.
@@ -53,6 +53,8 @@ function ButtonItemURLComponent({
       altText={alt_text}
       label={label}
       kind={kind}
+      size={size}
+      is={is}
       url={url}
       target={target}
       renderIcon={LaunchIcon}

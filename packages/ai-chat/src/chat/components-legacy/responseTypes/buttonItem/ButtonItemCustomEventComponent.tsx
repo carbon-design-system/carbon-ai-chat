@@ -36,7 +36,7 @@ function ButtonItemCustomEventComponent({
   const serviceManager = useServiceManager();
   const messageItem = localMessageItem.item;
   const { ui_state } = localMessageItem;
-  const { image_url, alt_text, label, kind, value } = messageItem;
+  const { image_url, alt_text, label, kind, value, size, is } = messageItem;
   const inputState = useSelector(selectInputState);
   const isDisabled =
     Boolean(value && ui_state.optionSelected) || inputState.isReadonly;
@@ -56,6 +56,8 @@ function ButtonItemCustomEventComponent({
       altText={alt_text}
       label={label}
       kind={kind}
+      size={size}
+      is={is}
       disabled={isDisabled}
       renderIcon={(image_url && TouchInteraction) || undefined}
       onClick={onClickHandler}
