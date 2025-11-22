@@ -27,7 +27,6 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          is: "chat-button",
           label: "Alert button",
           kind: CHAT_BUTTON_KIND.DANGER_TERTIARY,
           size: CHAT_BUTTON_SIZE.SMALL,
@@ -40,7 +39,6 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          is: "chat-button",
           label: "Alert button",
           kind: CHAT_BUTTON_KIND.DANGER_GHOST,
           size: CHAT_BUTTON_SIZE.SMALL,
@@ -53,7 +51,6 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          is: "chat-button",
           label: "Send a message",
           kind: CHAT_BUTTON_KIND.TERTIARY,
           size: CHAT_BUTTON_SIZE.SMALL,
@@ -66,7 +63,6 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          is: "chat-button",
           button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
           size: CHAT_BUTTON_SIZE.SMALL,
@@ -92,7 +88,6 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          is: "chat-button",
           button_type: ButtonItemType.URL,
           size: CHAT_BUTTON_SIZE.SMALL,
           label: "Visit ibm.com",

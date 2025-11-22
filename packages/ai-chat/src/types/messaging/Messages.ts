@@ -1366,10 +1366,11 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
 
   /**
-   * Whether the button should be rendered as a chat button.
-   * If omitted, the default Carbon button will be rendered.
+   * Whether the button should be rendered as a standard carbon button.
+   *
+   * @internal
    */
-  is?: "chat-button";
+  is?: "standard-button";
 
   /**
    * The type of button.

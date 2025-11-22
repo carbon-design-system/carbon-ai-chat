@@ -51,10 +51,11 @@ interface BaseButtonComponentProps extends HasClassName {
   size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
 
   /**
-   * Whether the button should be rendered as a chat button.
-   * If omitted, the default Carbon button will be rendered.
+   * Whether the button should be rendered as a standard carbon button.
+   *
+   * @internal
    */
-  is?: "chat-button";
+  is?: "standard-button";
 
   /**
    * The url to visit when the button is clicked.
@@ -126,7 +127,25 @@ function BaseButtonItemComponent({
   const RenderIcon = renderIcon; // todo: enable passing custom icon
   const buttonKind = getButtonKind(kind) || "primary";
 
-  return is === "chat-button" ? (
+  if (is === "standard-button") {
+    return (
+      <Button
+        className={cx("cds-aichat--button-item", className)}
+        kind={buttonKind as BUTTON_KIND}
+        size={size as BUTTON_SIZE}
+        href={url}
+        target={linkTarget}
+        rel={url ? "noopener noreferrer" : undefined}
+        disabled={disabled}
+        onClick={onClick}
+      >
+        {renderIcon && <RenderIcon slot="icon" />}
+        {text}
+      </Button>
+    );
+  }
+
+  return (
     <ChatButton
       className={cx("cds-aichat--button-item", className)}
       kind={buttonKind as CHAT_BUTTON_KIND}
@@ -136,26 +155,10 @@ function BaseButtonItemComponent({
       rel={url ? "noopener noreferrer" : undefined}
       disabled={disabled}
       onClick={onClick}
-      tab-index="0"
     >
       {renderIcon && <RenderIcon slot="icon" />}
       {text}
     </ChatButton>
-  ) : (
-    <Button
-      className={cx("cds-aichat--button-item", className)}
-      kind={buttonKind as BUTTON_KIND}
-      size={size as BUTTON_SIZE}
-      href={url}
-      target={linkTarget}
-      rel={url ? "noopener noreferrer" : undefined}
-      disabled={disabled}
-      onClick={onClick}
-      tab-index="0"
-    >
-      {renderIcon && <RenderIcon slot="icon" />}
-      {text}
-    </Button>
   );
 }
 
