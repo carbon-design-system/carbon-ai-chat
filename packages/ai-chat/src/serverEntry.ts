@@ -17,7 +17,8 @@
  */
 
 // Export types and utilities without importing web components
-export { PageObjectId, TestId } from "./chat/utils/PageObjectId";
+export { PageObjectId, TestId } from "./testing/PageObjectId";
+export { loadAllLazyDeps } from "./testing/helpers";
 
 // Export all types without the web component implementations
 export {
@@ -30,8 +31,11 @@ export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   CustomPanelConfigOptions,
+  DefaultCustomPanelConfigOptions,
   CustomPanelInstance,
+  PanelType,
   CustomPanels,
+  CustomPanelOpenOptions,
 } from "./types/instance/apiTypes";
 
 export {
@@ -44,6 +48,8 @@ export {
   FileUploadCapabilities,
   IncreaseOrDecrease,
   PublicInputState,
+  PublicCustomPanelsState,
+  PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,

@@ -24,6 +24,7 @@ export function InlineError({ text }: { text?: string }) {
         <RichText
           removeHTML
           text={text || languagePack.errors_generalContent}
+          highlight={true}
         />
       </div>
     </div>

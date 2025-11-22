@@ -1,0 +1,35 @@
+# Deploy dev environment from `main` branch to Github Pages
+name: Deploy development site
+
+# Gets triggered every time merge goes into `main`
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+          cache: "npm"
+      - name: Install dependencies and build chat packages
+        run: |
+          npm install
+          npm run aiChat:build
+
+      # Deploy demo to Github Pages using `gh-pages` package
+      - name: Deploy demo
+        run: |
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          npx gh-pages -d demo/dist -u "github-actions-bot <support+actions@github.com>" --dest demo --message "chore(deploy): deploy demo to gh-pages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

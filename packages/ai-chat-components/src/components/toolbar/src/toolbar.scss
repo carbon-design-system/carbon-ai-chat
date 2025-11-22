@@ -1,0 +1,60 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/layout";
+
+$block-class: #{$prefix}-toolbar;
+
+/* Toolbar styles */
+:host {
+  @include rounded-modifiers;
+
+  .#{$block-class} {
+    display: flex;
+    align-items: center;
+    background-color: theme.$layer-background;
+    block-size: 100%;
+    min-block-size: layout.$spacing-08;
+
+    // Suppress custom elements until styles are loaded
+    #{$cds-prefix}-button:not(:defined),
+    #{$cds-prefix}-overflow-menu:not(:defined) {
+      display: none;
+    }
+
+    &-overflow-icon {
+      // Web components ghost icon only button bug override
+      align-self: unset;
+      color: theme.$icon-primary;
+    }
+
+    [data-floating-menu-container] {
+      position: relative;
+    }
+
+    [data-hidden]:not([data-fixed]) {
+      display: none;
+    }
+  }
+
+  .#{$block-class}__title {
+    color: theme.$text-secondary;
+    margin-inline-end: auto;
+    padding-inline: layout.$spacing-04;
+  }
+
+  ::slotted([slot="toolbar-ai-label"]) {
+    min-block-size: layout.$spacing-08;
+    min-inline-size: layout.$spacing-08;
+  }
+}

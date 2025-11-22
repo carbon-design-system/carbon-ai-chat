@@ -25,7 +25,10 @@ import {
   ViewState,
   PersistedState,
 } from "../../types/state/AppState";
-import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
+import {
+  DefaultCustomPanelConfigOptions,
+  PanelType,
+} from "../../types/instance/apiTypes";
 import {
   LauncherConfig,
   TIME_TO_ENTRANCE_ANIMATION_START,
@@ -67,13 +70,19 @@ const DEFAULT_LAUNCHER: LauncherConfig = {
 };
 deepFreeze(DEFAULT_LAUNCHER);
 
-const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: CustomPanelConfigOptions = {
-  title: null,
+const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   hideBackButton: false,
-  hidePanelHeader: false,
   disableAnimation: false,
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
+
+const DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE: Record<
+  PanelType,
+  DefaultCustomPanelConfigOptions
+> = {
+  [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+};
+deepFreeze(DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE);
 
 const DEFAULT_CUSTOM_PANEL_STATE: CustomPanelState = {
   isOpen: false,
@@ -376,6 +385,7 @@ export {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE,
   DEFAULT_LAUNCHER,
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,

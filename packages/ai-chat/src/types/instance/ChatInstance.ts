@@ -58,6 +58,19 @@ export interface PublicInputState {
   rawValue: string;
 }
 
+/**
+ * Represents public state for each supported custom panel variant.
+ */
+export interface PublicDefaultCustomPanelState {
+  /** Indicates if the default custom panel overlay is currently open. */
+  isOpen: boolean;
+}
+
+export interface PublicCustomPanelsState {
+  /** State for the default overlay-style custom panel. */
+  default: PublicDefaultCustomPanelState;
+}
+
 export type PublicChatState = Readonly<
   Omit<PersistedState, "humanAgentState"> & {
     /**
@@ -85,6 +98,11 @@ export type PublicChatState = Readonly<
      * @experimental State representing the main input surface.
      */
     input: PublicInputState;
+
+    /**
+     * @experimental State for any surfaced custom panels.
+     */
+    customPanels: PublicCustomPanelsState;
   }
 >;
 

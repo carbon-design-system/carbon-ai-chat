@@ -20,7 +20,7 @@ import { AppState, ViewType } from "../../../types/state/AppState";
 import { Launcher } from "./Launcher";
 import type { LauncherHandle } from "./Launcher";
 import { MainWindowOpenReason } from "../../../types/events/eventBusTypes";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 
 function LauncherContainer() {
   const serviceManager = useServiceManager();

@@ -27,33 +27,17 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          label: "Alert button",
-          kind: CHAT_BUTTON_KIND.DANGER_TERTIARY,
-          size: CHAT_BUTTON_SIZE.SMALL,
+          label: "Fire a client side event",
           button_type: ButtonItemType.CUSTOM_EVENT,
           custom_event_name: "alert_button",
           // Pass any extra meta data you want here and it will be included in the event payload.
           user_defined: {
-            text: "Carbon!",
+            text: "You can have your buttons hook into your application code with events with custom payloads",
           },
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          label: "Alert button",
-          kind: CHAT_BUTTON_KIND.DANGER_GHOST,
-          size: CHAT_BUTTON_SIZE.SMALL,
-          button_type: ButtonItemType.CUSTOM_EVENT,
-          custom_event_name: "alert_button",
-          // Pass any extra meta data you want here and it will be included in the event payload.
-          user_defined: {
-            text: "Carbon!",
-          },
-        },
-        {
-          response_type: MessageResponseTypes.BUTTON,
-          label: "Send a message",
-          kind: CHAT_BUTTON_KIND.TERTIARY,
-          size: CHAT_BUTTON_SIZE.SMALL,
+          label: "Send a message to your server",
           button_type: ButtonItemType.POST_BACK,
           value: {
             input: {
@@ -65,8 +49,6 @@ function doButton(instance: ChatInstance) {
           response_type: MessageResponseTypes.BUTTON,
           button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
-          size: CHAT_BUTTON_SIZE.SMALL,
-          kind: CHAT_BUTTON_KIND.TERTIARY,
           panel: {
             title: "My panel",
             show_animations: true,
@@ -89,8 +71,7 @@ function doButton(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.BUTTON,
           button_type: ButtonItemType.URL,
-          size: CHAT_BUTTON_SIZE.SMALL,
-          label: "Visit ibm.com",
+          label: "Add a button that is a link",
           url: "https://www.ibm.com",
         },
       ],

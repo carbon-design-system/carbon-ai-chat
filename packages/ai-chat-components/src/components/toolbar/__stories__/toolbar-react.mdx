@@ -1,0 +1,67 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as ToolbarStories from "./toolbar-react.stories";
+
+<Meta of={ToolbarStories} />
+
+# AI Chat Toolbar
+
+`<Toolbar>`
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/react/toolbar.js";
+```
+
+<Markdown>{`${cdnJs({ components: ["toolbar"] })}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+### HTML
+
+
+```html
+<Toolbar
+  actions={actions}
+  overflow={overflow}
+  style={
+    borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined
+  }
+>
+
+  {/* Navigation slot */}
+  {navigation}
+  
+  {/* Title slot */}
+  <div slot="title" data-fixed>
+    {title}
+  </div>
+  
+  {/* Fixed actions slot */}
+  {fixedActions}
+
+  {/* AI Label slot */}
+  {aiLabel && (
+    <AILabel
+      size="2xs"
+      autoalign
+      alignment="bottom"
+      slot="toolbar-ai-label"
+    >
+      <div slot="body-text">
+        <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
+        <div>
+          IBM watsonx is powered by the latest AI models to intelligently
+          process conversations and provide help whenever and wherever you
+          may need it.
+        </div>
+      </div>
+    </AILabel>
+  )}
+  
+</Toolbar>
+```
