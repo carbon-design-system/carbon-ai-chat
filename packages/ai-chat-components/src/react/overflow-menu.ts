@@ -14,24 +14,31 @@ import React from "react";
 import CarbonOverflowMenuElement from "@carbon/web-components/es/components/overflow-menu/overflow-menu.js";
 import CarbonOverflowMenuBodyElement from "@carbon/web-components/es/components/overflow-menu/overflow-menu-body.js";
 import CarbonOverflowMenuItemElement from "@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const OverflowMenu = createComponent({
-  tagName: "cds-overflow-menu",
-  elementClass: CarbonOverflowMenuElement,
-  react: React,
-});
+const OverflowMenu = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-overflow-menu",
+    elementClass: CarbonOverflowMenuElement,
+    react: React,
+  }),
+);
 
-const OverflowMenuBody = createComponent({
-  tagName: "cds-overflow-menu-body",
-  elementClass: CarbonOverflowMenuBodyElement,
-  react: React,
-});
+const OverflowMenuBody = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-overflow-menu-body",
+    elementClass: CarbonOverflowMenuBodyElement,
+    react: React,
+  }),
+);
 
-const OverflowMenuItem = createComponent({
-  tagName: "cds-overflow-menu-item",
-  elementClass: CarbonOverflowMenuItemElement,
-  react: React,
-});
+const OverflowMenuItem = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-overflow-menu-item",
+    elementClass: CarbonOverflowMenuItemElement,
+    react: React,
+  }),
+);
 
 export default OverflowMenu;
 export { OverflowMenu, OverflowMenuBody, OverflowMenuItem };

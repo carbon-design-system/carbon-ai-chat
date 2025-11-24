@@ -21,11 +21,7 @@ export { PageObjectId, TestId } from "./testing/PageObjectId";
 export { loadAllLazyDeps } from "./testing/helpers";
 
 // Export all types without the web component implementations
-export {
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./types/instance/apiTypes";
+export { ViewState, ViewType } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
@@ -39,9 +35,9 @@ export {
 } from "./types/instance/apiTypes";
 
 export {
+  ChangeFunction,
   ChatInstance,
   ChatInstanceInput,
-  ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,

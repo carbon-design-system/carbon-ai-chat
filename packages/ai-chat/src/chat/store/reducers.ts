@@ -38,7 +38,6 @@ import {
   ADD_LOCAL_MESSAGE_ITEM,
   ADD_MESSAGE,
   ADD_NESTED_MESSAGES,
-  ADD_NOTIFICATION,
   ANNOUNCE_MESSAGE,
   CHANGE_STATE,
   CLEAR_INPUT_FILES,
@@ -49,11 +48,9 @@ import {
   MERGE_HISTORY,
   MESSAGE_SET_OPTION_SELECTED,
   OPEN_IFRAME_CONTENT,
-  REMOVE_ALL_NOTIFICATIONS,
   REMOVE_INPUT_FILE,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
-  REMOVE_NOTIFICATIONS,
   RESTART_CONVERSATION,
   SET_APP_STATE_VALUE,
   SET_CHAT_MESSAGES_PROPERTY,
@@ -114,7 +111,6 @@ import {
   MessageResponseHistory,
   MessageRequestHistory,
 } from "../../types/messaging/Messages";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 
 type ReducerType = (state: AppState, action?: any) => AppState;
 
@@ -959,44 +955,6 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.assistantMessageState,
         localMessageIDs: newLocalMessageIDs,
       },
-    };
-  },
-
-  [ADD_NOTIFICATION]: (
-    state: AppState,
-    {
-      notification,
-      notificationID,
-    }: { notificationID: string; notification: NotificationMessage },
-  ) => {
-    return {
-      ...state,
-      notifications: state.notifications.concat({
-        id: notificationID,
-        notification,
-      }),
-    };
-  },
-
-  [REMOVE_NOTIFICATIONS]: (
-    state: AppState,
-    { groupID, notificationID }: { groupID?: string; notificationID?: string },
-  ) => {
-    return {
-      ...state,
-      notifications: state.notifications.filter((notification) => {
-        if (notificationID) {
-          return notification.id !== notificationID;
-        }
-        return notification.notification.groupID !== groupID;
-      }),
-    };
-  },
-
-  [REMOVE_ALL_NOTIFICATIONS]: (state: AppState) => {
-    return {
-      ...state,
-      notifications: [],
     };
   },
 

@@ -72,12 +72,11 @@ const baseButtonControls = {
 };
 
 const BaseButtonTemplate = (args) => {
-  const { buttonText, iconSlot: IconSlot, ...rest } = args;
+  const { buttonText, iconSlot: IconSlot, isQuickAction, ...rest } = args;
 
   return (
     <ChatButton
-      data-testid="storybook-interaction-testid"
-      is-quick-action={rest.isQuickAction}
+      is-quick-action={isQuickAction}
       onClick={action("onClick")}
       {...rest}
     >

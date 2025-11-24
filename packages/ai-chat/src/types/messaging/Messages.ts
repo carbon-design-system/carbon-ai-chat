@@ -16,7 +16,14 @@ import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../config/ServiceDeskConfig";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/web-components/es/components/button/defs.js";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 import type { ChainOfThoughtStep } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 
@@ -1304,7 +1311,19 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+
+  /**
+   * The button size.
+   */
+  size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
+
+  /**
+   * Whether the button should be rendered as a standard carbon button.
+   *
+   * @internal
+   */
+  is?: "standard-button";
 
   /**
    * The type of button.

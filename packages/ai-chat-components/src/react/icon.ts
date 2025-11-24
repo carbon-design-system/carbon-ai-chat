@@ -12,11 +12,14 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSIcon from "@carbon/web-components/es/components/icon/icon.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const Icon = createComponent({
-  tagName: "cds-icon",
-  elementClass: CDSIcon,
-  react: React,
-});
+const Icon = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-icon",
+    elementClass: CDSIcon,
+    react: React,
+  }),
+);
 
 export default Icon;
