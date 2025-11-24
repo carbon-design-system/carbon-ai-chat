@@ -9,49 +9,156 @@
 
 import dayjs from "dayjs";
 import enLocaleData from "dayjs/locale/en.js";
-import { IntlMessageFormat } from "intl-messageformat";
 import React from "react";
 import { consoleError } from "./miscUtils";
-import { enLanguagePack, LanguagePack } from "../../types/config/PublicConfig";
+import { normalizeModuleInterop } from "./moduleInterop";
 
-const locales = {
-  ar: () => import("dayjs/locale/ar.js" as any),
-  "ar-dz": () => import("dayjs/locale/ar-dz.js" as any),
-  "ar-kw": () => import("dayjs/locale/ar-kw.js" as any),
-  "ar-ly": () => import("dayjs/locale/ar-ly.js" as any),
-  "ar-ma": () => import("dayjs/locale/ar-ma.js" as any),
-  "ar-sa": () => import("dayjs/locale/ar-sa.js" as any),
-  "ar-tn": () => import("dayjs/locale/ar-tn.js" as any),
-  cs: () => import("dayjs/locale/cs.js" as any),
-  de: () => import("dayjs/locale/de.js" as any),
-  "de-at": () => import("dayjs/locale/de-at.js" as any),
-  "de-ch": () => import("dayjs/locale/de-ch.js" as any),
-  en: () => import("dayjs/locale/en.js" as any),
-  "en-au": () => import("dayjs/locale/en-au.js" as any),
-  "en-ca": () => import("dayjs/locale/en-ca.js" as any),
-  "en-gb": () => import("dayjs/locale/en-gb.js" as any),
-  "en-ie": () => import("dayjs/locale/en-ie.js" as any),
-  "en-il": () => import("dayjs/locale/en-il.js" as any),
-  "en-nz": () => import("dayjs/locale/en-nz.js" as any),
-  es: () => import("dayjs/locale/es.js" as any),
-  "es-do": () => import("dayjs/locale/es-do.js" as any),
-  "es-us": () => import("dayjs/locale/es-us.js" as any),
-  nl: () => import("dayjs/locale/nl.js" as any),
-  fr: () => import("dayjs/locale/fr.js" as any),
-  "fr-ca": () => import("dayjs/locale/fr-ca.js" as any),
-  "fr-ch": () => import("dayjs/locale/fr-ch.js" as any),
-  it: () => import("dayjs/locale/it.js" as any),
-  "it-ch": () => import("dayjs/locale/it-ch.js" as any),
-  ja: () => import("dayjs/locale/ja.js" as any),
-  ko: () => import("dayjs/locale/ko.js" as any),
-  pt: () => import("dayjs/locale/pt.js" as any),
-  "pt-br": () => import("dayjs/locale/pt-br.js" as any),
-  zh: () => import("dayjs/locale/zh-cn.js" as any),
-  "zh-cn": () => import("dayjs/locale/zh-cn.js" as any),
-  "zh-tw": () => import("dayjs/locale/zh-tw.js" as any),
+const localeLoaders = {
+  ar: () =>
+    import("dayjs/locale/ar.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "ar-dz": () =>
+    import("dayjs/locale/ar-dz.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "ar-kw": () =>
+    import("dayjs/locale/ar-kw.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "ar-ly": () =>
+    import("dayjs/locale/ar-ly.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "ar-ma": () =>
+    import("dayjs/locale/ar-ma.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "ar-sa": () =>
+    import("dayjs/locale/ar-sa.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "ar-tn": () =>
+    import("dayjs/locale/ar-tn.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  cs: () =>
+    import("dayjs/locale/cs.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  de: () =>
+    import("dayjs/locale/de.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "de-at": () =>
+    import("dayjs/locale/de-at.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "de-ch": () =>
+    import("dayjs/locale/de-ch.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  en: () =>
+    import("dayjs/locale/en.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "en-au": () =>
+    import("dayjs/locale/en-au.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "en-ca": () =>
+    import("dayjs/locale/en-ca.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "en-gb": () =>
+    import("dayjs/locale/en-gb.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "en-ie": () =>
+    import("dayjs/locale/en-ie.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "en-il": () =>
+    import("dayjs/locale/en-il.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "en-nz": () =>
+    import("dayjs/locale/en-nz.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  es: () =>
+    import("dayjs/locale/es.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "es-do": () =>
+    import("dayjs/locale/es-do.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "es-us": () =>
+    import("dayjs/locale/es-us.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  nl: () =>
+    import("dayjs/locale/nl.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  fr: () =>
+    import("dayjs/locale/fr.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "fr-ca": () =>
+    import("dayjs/locale/fr-ca.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "fr-ch": () =>
+    import("dayjs/locale/fr-ch.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  it: () =>
+    import("dayjs/locale/it.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "it-ch": () =>
+    import("dayjs/locale/it-ch.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  ja: () =>
+    import("dayjs/locale/ja.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  ko: () =>
+    import("dayjs/locale/ko.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  pt: () =>
+    import("dayjs/locale/pt.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "pt-br": () =>
+    import("dayjs/locale/pt-br.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  zh: () =>
+    import("dayjs/locale/zh-cn.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "zh-cn": () =>
+    import("dayjs/locale/zh-cn.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "zh-tw": () =>
+    import("dayjs/locale/zh-tw.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
   // The zh-mo and zh-hk locales fallback to zh-tw.
-  "zh-mo": () => import("dayjs/locale/zh-tw.js" as any),
-  "zh-hk": () => import("dayjs/locale/zh-tw.js" as any),
+  "zh-mo": () =>
+    import("dayjs/locale/zh-tw.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
+  "zh-hk": () =>
+    import("dayjs/locale/zh-tw.js" as any).then((mod) =>
+      normalizeModuleInterop(mod),
+    ),
 };
 
 /**
@@ -126,10 +233,14 @@ function findSupportedKey<T>(
  */
 async function loadLocale(requestedLocale: string): Promise<ILocale> {
   try {
-    const localeKey = findSupportedKey(requestedLocale, locales, "locale");
-    const localeModule = await locales[localeKey]();
+    const localeKey = findSupportedKey(
+      requestedLocale,
+      localeLoaders,
+      "locale",
+    );
+    const localeModule = await localeLoaders[localeKey]();
     if (localeModule) {
-      return localeModule.default;
+      return localeModule;
     }
     consoleError(
       `The locale data for "${localeKey}" did not load. The application will default to "en".`,
@@ -197,8 +308,4 @@ async function loadDayjsLocale(locale: string): Promise<string> {
   return locale;
 }
 
-function createEnglishFormat(key: keyof LanguagePack) {
-  return new IntlMessageFormat(enLanguagePack[key], "en-US");
-}
-
-export { loadLocale, addHTMLSupport, loadDayjsLocale, createEnglishFormat };
+export { loadLocale, addHTMLSupport, loadDayjsLocale, localeLoaders };

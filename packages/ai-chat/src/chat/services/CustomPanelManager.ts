@@ -7,8 +7,9 @@
  *  @license
  */
 
-import { CustomPanels } from "../../types/instance/apiTypes";
+import { CustomPanels, PanelType } from "../../types/instance/apiTypes";
 import { DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
+import { DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE } from "../store/reducerUtils";
 import {
   createCustomPanelInstance,
   CustomPanelInstance,
@@ -24,12 +25,21 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
   // A panels object holding all created panels. In the future if we ever support multiple panels, Deb would be able to
   // populate this object.
   const panels: Record<string, CustomPanelInstance> = {
-    [DEFAULT_CUSTOM_PANEL_ID]: createCustomPanelInstance(serviceManger),
+    [DEFAULT_CUSTOM_PANEL_ID]: createCustomPanelInstance(
+      serviceManger,
+      DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.DEFAULT],
+    ),
+  };
+
+  const panelByLocation: Record<PanelType, string> = {
+    [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_ID,
   };
 
   return Object.freeze({
-    getPanel() {
-      return panels[DEFAULT_CUSTOM_PANEL_ID];
+    getPanel(panelLocation: PanelType = PanelType.DEFAULT) {
+      const targetPanelId =
+        panelByLocation[panelLocation] ?? DEFAULT_CUSTOM_PANEL_ID;
+      return panels[targetPanelId];
     },
   });
 }

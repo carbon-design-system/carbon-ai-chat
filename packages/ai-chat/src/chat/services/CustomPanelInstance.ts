@@ -7,10 +7,13 @@
  *  @license
  */
 
-import { CustomPanelInstance } from "../../types/instance/apiTypes";
+import {
+  CustomPanelConfigOptions,
+  CustomPanelInstance,
+  CustomPanelOpenOptions,
+} from "../../types/instance/apiTypes";
 import actions from "../store/actions";
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "../store/reducerUtils";
-import { CustomPanelConfigOptions } from "../../types/state/AppState";
 import { ServiceManager } from "./ServiceManager";
 
 /**
@@ -20,15 +23,16 @@ import { ServiceManager } from "./ServiceManager";
  */
 function createCustomPanelInstance(
   serviceManager: ServiceManager,
+  defaultPanelOptions: CustomPanelOpenOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
 ): CustomPanelInstance {
   let hostElement;
 
   const customPanelInstance: CustomPanelInstance = {
-    open(
-      options: CustomPanelConfigOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-    ) {
+    open(options?: CustomPanelOpenOptions) {
+      const resolvedOptions = (options ??
+        defaultPanelOptions) as CustomPanelConfigOptions;
       const { store } = serviceManager;
-      store.dispatch(actions.setCustomPanelConfigOptions(options));
+      store.dispatch(actions.setCustomPanelConfigOptions(resolvedOptions));
       store.dispatch(actions.setCustomPanelOpen(true));
     },
     close() {

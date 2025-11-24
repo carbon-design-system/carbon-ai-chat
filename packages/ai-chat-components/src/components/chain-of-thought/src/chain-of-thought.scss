@@ -1,0 +1,222 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/utilities/button-reset" as button;
+
+:host {
+  display: block;
+  margin-block-start: 1rem;
+}
+
+:host([open]) {
+  .#{$prefix}--chain-of-thought-content {
+    display: block;
+    overflow: visible;
+    max-block-size: fit-content;
+    opacity: 1;
+  }
+  .#{$prefix}--chain-of-thought-button-chevron {
+    svg {
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+.#{$prefix}--chain-of-thought-button-chevron {
+  display: flex;
+  flex-basis: 1.5rem;
+  @media screen and (prefers-reduced-motion: reduce) {
+    svg {
+      transform: rotate(-270deg);
+      transition: none;
+    }
+  }
+
+  svg {
+    transform: rotate(-270deg);
+    transition: all motion.$duration-fast-02 motion.motion(standard, productive);
+  }
+}
+
+.#{$prefix}--chain-of-thought-content {
+  display: none;
+  overflow: hidden;
+  max-block-size: 0;
+  opacity: 0;
+  transition: all motion.$duration-fast-02 motion.motion(entrance, productive)
+    allow-discrete;
+}
+
+.#{$prefix}--chain-of-thought-inner-content {
+  border: 1px solid theme.$border-subtle-01;
+  background-color: theme.$layer-01;
+  margin-block-start: 0.5rem;
+}
+
+.#{$prefix}--chain-of-thought-item:not(:last-child) {
+  padding-block-end: 0.75rem;
+}
+
+.#{$prefix}--chain-of-thought-item cds-aichat-markdown:not(:first-child) {
+  padding-block-start: 0.5rem;
+}
+
+.#{$prefix}--chain-of-thought-item-label {
+  @include type.type-style("heading-01");
+}
+
+button.#{$prefix}--chain-of-thought-button {
+  @include button.reset(true);
+  @include type.type-style("heading-01");
+
+  display: flex;
+  align-items: center;
+
+  color: theme.$text-primary;
+}
+
+button.#{$prefix}--chain-of-thought-button:focus,
+button.#{$prefix}--chain-of-thought-button:focus-visible {
+  outline: 2px solid theme.$focus;
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-content {
+  display: block;
+  overflow: visible;
+  background: theme.$layer-01;
+  color: theme.$text-primary;
+  max-block-size: fit-content;
+  opacity: 1;
+  transition: all motion.$duration-fast-02 motion.motion(entrance, productive)
+    allow-discrete;
+}
+
+.#{$prefix}--chain-of-thought-item {
+  padding-block: 1rem;
+  padding-inline: 2rem 1rem;
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-content[hidden] {
+  display: none;
+  overflow: hidden;
+  max-block-size: 0;
+  opacity: 0;
+  padding-block: 0;
+  padding-inline: 0;
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-chevron {
+  display: flex;
+  flex: 0 1 2rem;
+  justify-content: center;
+  color: theme.$text-primary;
+  @media screen and (prefers-reduced-motion: reduce) {
+    svg {
+      fill: theme.$text-primary;
+      transform: rotate(-270deg);
+      transition: none;
+    }
+  }
+
+  svg {
+    fill: theme.$text-primary;
+    transform: rotate(-270deg);
+    transition: all motion.$duration-fast-02 motion.motion(standard, productive);
+  }
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-chevron[data-open] {
+  svg {
+    transform: rotate(-90deg);
+  }
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-chevron[data-disabled] {
+  svg {
+    visibility: hidden;
+  }
+}
+
+.#{$prefix}--chain-of-thought-accordion-item {
+  button.#{$prefix}--chain-of-thought-accordion-item-header {
+    @include button.reset(true);
+    @include type.type-style("body-01");
+
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+
+    background: theme.$layer-accent-02;
+    block-size: 2rem;
+  }
+
+  button.#{$prefix}--chain-of-thought-accordion-item-header[disabled] {
+    cursor: default;
+  }
+
+  button.#{$prefix}--chain-of-thought-accordion-item-header:focus,
+  button.#{$prefix}--chain-of-thought-accordion-item-header:focus-visible {
+    position: relative;
+    z-index: 2;
+    box-shadow:
+      0 -1px 0 0 theme.$focus,
+      inset 0 1px 0 0 theme.$focus,
+      inset 2px 0 0 0 theme.$focus,
+      0 1px 0 0 theme.$focus,
+      inset 0 -1px 0 0 theme.$focus,
+      inset -2px 0 0 0 theme.$focus;
+    outline: none;
+  }
+}
+
+.#{$prefix}--chain-of-thought-accordion-item:nth-child(odd) {
+  button.#{$prefix}--chain-of-thought-accordion-item-header {
+    background: theme.$layer-02;
+  }
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-title {
+  overflow: hidden;
+  flex: 1 1;
+  color: theme.$text-primary;
+  margin-inline-end: 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-status {
+  display: flex;
+  flex: 0 0 1.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-status--failure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: 0.5rem;
+
+  svg {
+    fill: theme.$support-error;
+  }
+}
+
+.#{$prefix}--chain-of-thought-accordion-item-header-status--success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: 0.5rem;
+
+  svg {
+    fill: theme.$support-success;
+  }
+}

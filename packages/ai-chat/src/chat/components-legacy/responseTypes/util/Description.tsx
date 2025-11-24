@@ -29,7 +29,7 @@ export default function Description({
 }: DescriptionProps) {
   return (
     <div className={`cds-aichat--description ${className}`}>
-      <RichText text={text} removeHTML={removeHTML} />
+      <RichText text={text} removeHTML={removeHTML} highlight={true} />
     </div>
   );
 }

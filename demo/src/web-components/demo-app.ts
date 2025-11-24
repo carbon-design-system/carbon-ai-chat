@@ -68,9 +68,9 @@ export class DemoApp extends LitElement {
 
     .fullScreen {
       position: fixed;
-      top: 0;
+      bottom: 0;
       right: 0;
-      height: 100vh;
+      height: calc(100vh - 48px);
       width: calc(100vw - 320px - 2rem);
       z-index: 9999;
     }

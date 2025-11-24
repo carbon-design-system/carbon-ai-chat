@@ -12,11 +12,14 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatTileContainer from "../components/tile-container/src/tile-container.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const TileContainer = createComponent({
-  tagName: "cds-aichat-tile-container",
-  elementClass: CDSAIChatTileContainer,
-  react: React,
-});
+const TileContainer = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-tile-container",
+    elementClass: CDSAIChatTileContainer,
+    react: React,
+  }),
+);
 
 export default TileContainer;

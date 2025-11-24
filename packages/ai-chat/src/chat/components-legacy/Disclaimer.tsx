@@ -17,14 +17,15 @@ import Button from "../components/carbon/Button";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import React, { RefObject, useRef, useState } from "react";
 import { useSelector } from "../hooks/useSelector";
-import { PageObjectId } from "../utils/PageObjectId";
+import { PageObjectId } from "../../testing/PageObjectId";
 
 import { useLanguagePack } from "../hooks/useLanguagePack";
 import { useOnMount } from "../hooks/useOnMount";
 import { AppState, ChatWidthBreakpoint } from "../../types/state/AppState";
 import { ChatBubbleDark } from "./ChatBubbleDark";
 import { ChatBubbleLight } from "./ChatBubbleLight";
-import { SimpleHeader } from "./header/SimpleHeader";
+import { Header } from "./header/Header";
+import { MinimizeButtonIconType } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 
 interface DisclaimerProps {
@@ -73,7 +74,20 @@ function Disclaimer({
   return (
     <div className="cds-aichat--disclaimer-container">
       <div className="cds-aichat--disclaimer">
-        <SimpleHeader onClose={onClose} showRestartButton={false} />
+        <Header
+          onClickClose={onClose}
+          showRestartButton={false}
+          showAiLabel={false}
+          closeButtonLabel={languagePack.launcher_isOpen}
+          restartButtonLabel={languagePack.buttons_restart}
+          overflowMenuTooltip={languagePack.header_overflowMenu_options}
+          overflowMenuAriaLabel={languagePack.components_overflow_ariaLabel}
+          aiSlugLabel={languagePack.ai_slug_label}
+          aiSlugTitle={languagePack.ai_slug_title}
+          aiSlugDescription={languagePack.ai_slug_description}
+          minimizeButtonIconType={MinimizeButtonIconType.MINIMIZE}
+          isRestarting={false}
+        />
         <div
           className="cds-aichat--panel-content cds-aichat--disclaimer__content"
           onScroll={onScroll}

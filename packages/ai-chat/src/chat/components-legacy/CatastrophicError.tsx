@@ -104,7 +104,7 @@ function CatastrophicError({
             {languagePack.errors_somethingWrong}
           </div>
           <div className="cds-aichat--catastrophic-error__error-body">
-            <RichText text={errorBodyText} />
+            <RichText text={errorBodyText} highlight={true} />
           </div>
           {onRestart && (
             <ChatButton
