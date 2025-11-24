@@ -47,6 +47,12 @@ The test setup file ([src/jest.setup.ts](src/jest.setup.ts)) provides:
 
 - `@testing-library/jest-dom` matchers
 - Mocked `ResizeObserver` for browser API compatibility
+- A call to `loadAllLazyDeps()` from `@carbon/ai-chat/server`, which eagerly
+  loads the Swiper modules, CodeMirror runtime, Carbon table dependencies,
+  Day.js locales, and media helpers before any tests execute. Even though
+  jsdom cannot render the shadow DOM, preloading the lazy imports prevents
+  Jest from tripping over queued dynamic `import()` calls during setup or
+  when you snapshot the custom element wrapper.
 
 #### jsdom vs happy-dom: Understanding shadow DOM Support
 
@@ -77,3 +83,11 @@ For better shadow DOM support, see:
 
 - [happy-dom GitHub](https://github.com/capricorn86/happy-dom) - Modern DOM implementation with shadow DOM support
 - [jest-happydom example](../jest-happydom) - This project's happy-dom example with `PageObjectId` usage
+
+## Keeping Transform Settings in Sync
+
+Both Jest examples rely on the same `transformIgnorePatterns` allowlist so Babel
+transpiles select ESM packages inside `node_modules` (Lit, Swiper, CodeMirror,
+react-player, etc.). If you add new lazy dependencies to Carbon AI Chat, update
+that allowlist and the preload helper once—then copy the changes to both the
+jsdom and happy-dom workspaces to keep their configurations aligned.

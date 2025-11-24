@@ -187,6 +187,8 @@ async function runRollup() {
           exclude: /^(.+\/)?node_modules\/.+$/,
         }),
         terser({
+          ecma: 2020,
+          module: true,
           compress: false,
           mangle: false,
           format: {

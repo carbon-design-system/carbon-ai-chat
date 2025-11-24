@@ -96,6 +96,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
         text={html}
         overrideSanitize={false}
         streaming={streamingState && !streamingState.isDone}
+        highlight={true}
       />
       {showCitationsToggle && (
         <div className="cds-aichat--conversational-search-text__CitationsToggleContainer">
