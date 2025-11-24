@@ -500,7 +500,7 @@ class MainWindow
   }
 
   private getShowDisclaimer() {
-    const hostname = isBrowser ? window.location.hostname : "localhost";
+    const hostname = isBrowser() ? window.location.hostname : "localhost";
     return (
       this.props.config.public.disclaimer?.isOn &&
       !this.props.persistedToBrowserStorage.disclaimersAccepted[hostname]
