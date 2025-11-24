@@ -65,7 +65,6 @@ const sharedArgTypes = {
 const sharedArgs = {
   disabled: false,
   isExpressive: false,
-  size: BUTTON_SIZE.LARGE,
   iconSlot: "None",
   onClick: fn(),
 };
@@ -91,10 +90,10 @@ const baseButtonTemplate = (args) => html`
     @click=${args.onClick}
     .button-class-name="${args.buttonClassName}"
     danger-description=${ifDefined(args.dangerDescription)}
-    disabled=${ifDefined(args.disabled ? "" : undefined)}
+    ?disabled="${args.disabled}"
     href=${ifDefined(args.href)}
-    isexpressive=${ifDefined(args.isExpressive ? "" : undefined)}
-    isselected=${ifDefined(args.isSelected ? "" : undefined)}
+    ?isExpressive="${args.isExpressive}"
+    ?isSelected="${args.isSelected}"
     kind=${ifDefined(args.kind)}
     link-role=${ifDefined(args.linkRole)}
     size=${ifDefined(args.size)}
@@ -102,7 +101,7 @@ const baseButtonTemplate = (args) => html`
     tooltip-alignment=${ifDefined(args.tooltipAlignment)}
     tooltip-position=${ifDefined(args.tooltipPosition)}
     type=${ifDefined(args.type)}
-    is-quick-action=${ifDefined(args.isQuickAction)}
+    ?is-quick-action="${args.isQuickAction}"
   >
     ${args.buttonText} ${args.iconSlot?.()}
   </cds-aichat-button>
