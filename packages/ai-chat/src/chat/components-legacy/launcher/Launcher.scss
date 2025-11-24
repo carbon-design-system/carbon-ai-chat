@@ -1,0 +1,398 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button";
+@use "../../styles/chat-theme";
+@use "../../styles/chat-config";
+
+// Local motion aliases
+$launcher-expand-duration: motion.$duration-moderate-02;
+$launcher-fade-duration: motion.$duration-fast-01;
+$launcher-easing: motion.motion(standard, productive);
+
+.cds-aichat--launcher__button-container {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  border-radius: 28px;
+  animation: #{chat-config.$prefix}-launcher-in motion.$duration-moderate-01
+    motion.motion(entrance, expressive) both;
+  background-color: theme.$background;
+  block-size: chat-theme.$launcher-default-size;
+  box-shadow: chat-theme.$box-shadow;
+  inline-size: chat-theme.$launcher-default-size;
+  inset-block-end: chat-theme.$launcher-position-bottom;
+  inset-inline-end: chat-theme.$launcher-position-right;
+
+  // Animate container width so the CTA grows inward from the edge
+  transition: inline-size $launcher-expand-duration $launcher-easing;
+}
+
+.cds-aichat--launcher__button-container--hidden {
+  /* Using display:none causes the entrance animation to replay */
+  visibility: hidden;
+}
+
+.cds-aichat--count-indicator {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border-radius: 10px;
+  background-color: chat-theme.$unread-indicator-color-background;
+
+  box-shadow: 1px layout.$spacing-01 layout.$spacing-01 rgb(23 23 23 / 30%);
+  color: chat-theme.$unread-indicator-color-text;
+
+  inset-block-start: calc(-1 * #{layout.$spacing-02});
+  inset-inline-end: calc(-1 * #{layout.$spacing-02});
+  min-block-size: 20px;
+  min-inline-size: 20px;
+  @include type.type-style("caption-01");
+}
+
+cds-button.cds-aichat--launcher__button {
+  &::part(button) {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 28px;
+    background-color: chat-theme.$launcher-color-background;
+    block-size: chat-theme.$launcher-default-size;
+    inline-size: chat-theme.$launcher-default-size;
+    transition:
+      inline-size $launcher-expand-duration $launcher-easing,
+      background 250ms ease-in-out,
+      transform 150ms ease;
+
+    svg {
+      block-size: 24px;
+      fill: chat-theme.$launcher-color-avatar;
+      inline-size: 24px;
+    }
+
+    &:focus {
+      border-width: button.$button-border-width;
+      box-shadow: inset 0 0 0 button.$button-border-width
+        chat-theme.$launcher-color-focus-border;
+    }
+  }
+}
+
+.cds-aichat--launcher__svg {
+  fill: currentcolor;
+}
+
+.cds-aichat--launcher__avatar {
+  border-radius: 50%;
+  block-size: 32px;
+  inline-size: 32px;
+  user-select: none;
+}
+
+.cds-aichat--launcher__wrapper {
+  display: flex;
+}
+
+.cds-aichat--launcher__icon-holder {
+  display: flex;
+  align-items: center;
+}
+
+.cds-aichat--launcher-extended__text-holder {
+  overflow: hidden;
+  flex: 1;
+  padding: layout.$spacing-04 0 layout.$spacing-04 layout.$spacing-04;
+  inline-size: 0;
+  text-align: start;
+}
+
+.cds-aichat--launcher-extended__greeting {
+  display: flex;
+  align-items: center;
+  block-size: 100%;
+  color: chat-theme.$launcher-mobile-color-text;
+
+  inline-size: calc(100% - 12px);
+  inset-block-end: 0;
+
+  opacity: 0;
+  word-break: break-word;
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--launcher-extended__greeting-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  text-overflow: ellipsis;
+}
+
+// Hidden link for screen readers when announcement is made.
+.cds-aichat--launcher__skip-link {
+  position: absolute;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  block-size: 1px;
+  clip: rect(0 0 0 0);
+  inline-size: 1px;
+  white-space: nowrap;
+
+  &:focus {
+    position: static;
+    padding: layout.$spacing-01 layout.$spacing-02;
+    border-radius: 999px;
+    margin: 0 0 layout.$spacing-02 0;
+    background: theme.$background-inverse;
+    block-size: auto;
+    clip: auto;
+    color: theme.$text-on-color;
+    inline-size: auto;
+    white-space: normal;
+  }
+}
+
+cds-button.cds-aichat--launcher-extended__close-button {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: -24px;
+  inset-inline-end: 0;
+  transform: translate(50%, 50%);
+
+  &::part(button) {
+    padding: 0;
+    border-radius: 50%;
+    block-size: 24px;
+    inline-size: 24px;
+  }
+}
+
+/* ---------- KEYFRAMES FOR CTA ANIMATIONS ---------- */
+
+@keyframes #{chat-config.$prefix}-launcher-opening-text-holder {
+  from {
+    inline-size: 0;
+  }
+
+  to {
+    inline-size: chat-theme.$launcher-extended-width;
+  }
+}
+
+@keyframes #{chat-config.$prefix}-launcher-closing-text-holder {
+  from {
+    inline-size: chat-theme.$launcher-extended-width;
+  }
+
+  to {
+    inline-size: 0;
+  }
+}
+
+@keyframes #{chat-config.$prefix}-launcher-opening-greeting {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes #{chat-config.$prefix}-launcher-closing-greeting {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---------- STATE CLASSES: OPENING / OPEN / CLOSING / CLOSED ---------- */
+
+/**
+ * OPENING
+ * - text-holder expands (keyframe)
+ * - greeting fades in after expand completes (delayed keyframe)
+ * - React listens to greeting's animationend to set state to "open"
+ */
+
+.cds-aichat--launcher__button-container--opening {
+  .cds-aichat--launcher-extended__text-holder {
+    animation: #{chat-config.$prefix}-launcher-opening-text-holder
+      $launcher-expand-duration $launcher-easing forwards;
+  }
+
+  .cds-aichat--launcher-extended__greeting {
+    animation: #{chat-config.$prefix}-launcher-opening-greeting
+      $launcher-fade-duration $launcher-easing forwards;
+    animation-delay: $launcher-expand-duration;
+  }
+}
+
+/**
+ * OPEN
+ * - final layout with expanded text-holder and visible greeting
+ * - no animations needed; React has already switched state to "open"
+ */
+
+.cds-aichat--launcher__button-container--open {
+  .cds-aichat--launcher-extended__text-holder {
+    inline-size: chat-theme.$launcher-extended-width;
+  }
+
+  .cds-aichat--launcher-extended__greeting {
+    opacity: 1;
+  }
+}
+
+/**
+ * CLOSING
+ * - greeting fades out first
+ * - text-holder collapses after fade completes
+ * - React listens to text-holder's animationend to set state to "closed"
+ */
+
+.cds-aichat--launcher__button-container--closing {
+  .cds-aichat--launcher-extended__greeting {
+    animation: #{chat-config.$prefix}-launcher-closing-greeting
+      $launcher-fade-duration $launcher-easing forwards;
+  }
+
+  .cds-aichat--launcher-extended__text-holder {
+    animation: #{chat-config.$prefix}-launcher-closing-text-holder
+      $launcher-expand-duration $launcher-easing forwards;
+    animation-delay: $launcher-fade-duration;
+  }
+}
+
+/**
+ * CLOSED
+ * - text-holder collapsed/hidden
+ * - greeting hidden
+ */
+
+.cds-aichat--launcher__button-container--closed {
+  .cds-aichat--launcher-extended__text-holder {
+    display: none;
+    inline-size: 0;
+  }
+
+  .cds-aichat--launcher-extended__greeting {
+    opacity: 0;
+  }
+
+  .cds-aichat--launcher-extended__close-button {
+    display: none;
+  }
+}
+
+/* ---------- BUTTON & CONTAINER WIDTH ANIMATION (PILL RESIZE) ---------- */
+
+/* Opening + Open: pill and container fully extended */
+.cds-aichat--launcher__button-container--opening,
+.cds-aichat--launcher__button-container--open {
+  inline-size: calc(
+    #{chat-theme.$launcher-extended-width} +
+      #{chat-theme.$launcher-default-size}
+  );
+
+  cds-button.cds-aichat--launcher__button::part(button) {
+    inline-size: calc(
+      #{chat-theme.$launcher-extended-width} +
+        #{chat-theme.$launcher-default-size}
+    );
+  }
+}
+
+/* Closing + Closed: pill and container back to default circle size */
+.cds-aichat--launcher__button-container--closing,
+.cds-aichat--launcher__button-container--closed {
+  inline-size: chat-theme.$launcher-default-size;
+
+  cds-button.cds-aichat--launcher__button::part(button) {
+    inline-size: chat-theme.$launcher-default-size;
+  }
+}
+
+[dir="rtl"] .cds-aichat--count-indicator {
+  inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
+}
+
+[dir="rtl"] cds-button.cds-aichat--launcher-extended__close-button {
+  transform: translate(-50%, 50%);
+}
+
+[dir="rtl"] .cds-aichat--launcher__button-container {
+  .cds-aichat--launcher-extended__wrapper {
+    inset-inline: 0 unset;
+  }
+
+  .cds-aichat--launcher-extended__text-holder {
+    padding: layout.$spacing-04 layout.$spacing-04 layout.$spacing-04 0;
+  }
+}
+
+@keyframes #{chat-config.$prefix}-launcher-in {
+  0% {
+    inset-block-end: calc(
+      chat-theme.$launcher-position-bottom - #{layout.$spacing-05}
+    );
+    opacity: 0;
+  }
+
+  100% {
+    inset-block-end: chat-theme.$launcher-position-bottom;
+    opacity: 1;
+  }
+}
+
+/* ---------- PREFERS REDUCED MOTION ---------- */
+/* Keep animation events but soften / simplify motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .cds-aichat--launcher__button-container {
+    animation-duration: motion.$duration-fast-01;
+    // No width tween in reduced motion
+    transition: none;
+  }
+
+  /* Opening / closing sequences: no staggered delays, shorter */
+  .cds-aichat--launcher__button-container--opening {
+    .cds-aichat--launcher-extended__text-holder,
+    .cds-aichat--launcher-extended__greeting {
+      animation-delay: 0ms;
+      animation-duration: motion.$duration-fast-01;
+    }
+  }
+
+  .cds-aichat--launcher__button-container--closing {
+    .cds-aichat--launcher-extended__text-holder,
+    .cds-aichat--launcher-extended__greeting {
+      animation-delay: 0ms;
+      animation-duration: motion.$duration-fast-01;
+    }
+  }
+
+  /* Button width: snap instead of animate */
+  cds-button.cds-aichat--launcher__button::part(button) {
+    transition:
+      background 250ms ease-in-out,
+      transform 150ms ease;
+  }
+}

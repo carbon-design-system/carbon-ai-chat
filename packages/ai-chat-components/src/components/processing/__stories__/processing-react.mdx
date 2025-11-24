@@ -1,0 +1,30 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import * as ProcessingReactStories from "./processing-react.stories";
+
+<Meta of={ProcessingReactStories} />
+
+# AI Chat Processing (React)
+
+The `<Processing>` component wraps `cds-aichat-processing` and provides a React helper for rendering the AI Chat loading indicator while background work completes.
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import Processing from "@carbon/ai-chat-components/es/react/processing.js";
+
+function LoadingState() {
+  return <Processing quickLoad carbonTheme="g10" />;
+}
+```
+
+## `<Processing>` props
+
+<ArgTypes of={ProcessingReactStories.QuickLoad} />
+
+### Props
+
+- `quickLoad`: Enables the quick load animation.
+- `loop`: Enables the continuous linear animation.
+- `carbonTheme`: Sets the Carbon theme (`"g100"`, `"g90"`, `"g10"`, or `"white"`).

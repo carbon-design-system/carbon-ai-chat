@@ -1,0 +1,304 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/styles/scss/components/code-snippet/index";
+@use "@carbon/styles/scss/type";
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/colors";
+@use "@carbon/styles/scss/spacing";
+@use "@carbon/styles/scss/utilities/focus-outline" as *;
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+
+:host {
+  @include rounded-modifiers;
+
+  /* Comments and documentation */
+  --cds-syntax-comment: #{colors.$green-60};
+  --cds-syntax-line-comment: var(--cds-syntax-comment);
+  --cds-syntax-block-comment: var(--cds-syntax-comment);
+  --cds-syntax-doc-comment: var(--cds-syntax-comment);
+  --cds-syntax-doc-string: var(--cds-syntax-string);
+
+  /* Keywords */
+  --cds-syntax-keyword: #{colors.$blue-60};
+  --cds-syntax-operator-keyword: var(--cds-syntax-keyword);
+  --cds-syntax-control-keyword: #{colors.$purple-70};
+  --cds-syntax-definition-keyword: #{colors.$cyan-70};
+  --cds-syntax-module-keyword: #{colors.$purple-70};
+
+  /* Identifiers */
+  --cds-syntax-variable: #{colors.$blue-60};
+  --cds-syntax-name: var(--cds-syntax-variable);
+  --cds-syntax-variable-name: var(--cds-syntax-variable);
+  --cds-syntax-label-name: var(--cds-syntax-variable);
+  --cds-syntax-attribute: #{colors.$cyan-70};
+  --cds-syntax-attribute-name: var(--cds-syntax-attribute);
+  --cds-syntax-property-name: var(--cds-syntax-attribute);
+  --cds-syntax-tag: #{colors.$teal-60};
+  --cds-syntax-tag-name: var(--cds-syntax-tag);
+  --cds-syntax-type: #{colors.$teal-60};
+  --cds-syntax-type-name: var(--cds-syntax-type);
+  --cds-syntax-class-name: var(--cds-syntax-type);
+  --cds-syntax-namespace: var(--cds-syntax-type);
+  --cds-syntax-macro-name: var(--cds-syntax-variable);
+
+  /* Literals and primitives */
+  --cds-syntax-atom: var(--cds-text-primary);
+  --cds-syntax-literal: var(--cds-syntax-atom);
+  --cds-syntax-bool: var(--cds-syntax-atom);
+  --cds-syntax-null: var(--cds-syntax-atom);
+  --cds-syntax-self: var(--cds-syntax-tag);
+  --cds-syntax-number: #{colors.$green-60};
+  --cds-syntax-integer: var(--cds-syntax-number);
+  --cds-syntax-float: var(--cds-syntax-number);
+  --cds-syntax-unit: var(--cds-syntax-number);
+  --cds-syntax-string: theme.$text-primary;
+  --cds-syntax-special-string: #{colors.$purple-60};
+  --cds-syntax-character: var(--cds-syntax-string);
+  --cds-syntax-attribute-value: var(--cds-syntax-string);
+  --cds-syntax-regexp: #{colors.$purple-70};
+  --cds-syntax-escape: #{colors.$cool-gray-80};
+  --cds-syntax-url: var(--cds-syntax-escape);
+  --cds-syntax-color: var(--cds-text-primary);
+
+  /* Operators and punctuation */
+  --cds-syntax-operator: #{colors.$cool-gray-80};
+  --cds-syntax-deref-operator: var(--cds-syntax-operator);
+  --cds-syntax-arithmetic-operator: var(--cds-syntax-operator);
+  --cds-syntax-logic-operator: var(--cds-syntax-operator);
+  --cds-syntax-bitwise-operator: var(--cds-syntax-operator);
+  --cds-syntax-compare-operator: var(--cds-syntax-operator);
+  --cds-syntax-update-operator: var(--cds-syntax-operator);
+  --cds-syntax-definition-operator: var(--cds-syntax-definition-keyword);
+  --cds-syntax-type-operator: var(--cds-syntax-tag);
+  --cds-syntax-control-operator: var(--cds-syntax-module-keyword);
+  --cds-syntax-modifier: var(--cds-syntax-keyword);
+  --cds-syntax-punctuation: #{colors.$cool-gray-80};
+  --cds-syntax-separator: var(--cds-syntax-punctuation);
+  --cds-syntax-bracket: var(--cds-syntax-punctuation);
+  --cds-syntax-angle-bracket: #{colors.$cool-gray-60};
+  --cds-syntax-square-bracket: var(--cds-syntax-bracket);
+  --cds-syntax-paren: var(--cds-syntax-bracket);
+  --cds-syntax-brace: var(--cds-syntax-bracket);
+
+  /* Structural text */
+  --cds-syntax-content: var(--cds-text-primary);
+  --cds-syntax-heading: #{colors.$cyan-70};
+  --cds-syntax-heading-1: var(--cds-syntax-heading);
+  --cds-syntax-heading-2: var(--cds-syntax-heading);
+  --cds-syntax-heading-3: var(--cds-syntax-heading);
+  --cds-syntax-heading-4: var(--cds-syntax-heading);
+  --cds-syntax-heading-5: var(--cds-syntax-heading);
+  --cds-syntax-heading-6: var(--cds-syntax-heading);
+  --cds-syntax-content-separator: var(--cds-syntax-punctuation);
+  --cds-syntax-list: var(--cds-syntax-content);
+  --cds-syntax-quote: var(--cds-syntax-comment);
+  --cds-syntax-emphasis: var(--cds-syntax-content);
+  --cds-syntax-strong: var(--cds-syntax-content);
+  --cds-syntax-monospace: var(--cds-syntax-content);
+  --cds-syntax-link: #{colors.$blue-60};
+  --cds-syntax-strikethrough: var(--cds-syntax-content);
+
+  /* Diagnostics (core only) */
+  --cds-syntax-invalid: #{colors.$red-60};
+
+  /* Meta and annotations */
+  --cds-syntax-meta: #{colors.$green-60};
+  --cds-syntax-document-meta: var(--cds-syntax-meta);
+  --cds-syntax-annotation: #{colors.$teal-60};
+  --cds-syntax-processing-instruction: var(--cds-syntax-string);
+
+  /* Modifiers */
+  --cds-syntax-definition: #{colors.$cyan-70};
+  --cds-syntax-constant: #{colors.$blue-60};
+  --cds-syntax-function: #{colors.$yellow-60};
+  --cds-syntax-standard: #{colors.$blue-60};
+  --cds-syntax-local: #{colors.$blue-60};
+  --cds-syntax-special: #{colors.$blue-60};
+}
+
+.#{$prefix}--snippet {
+  @extend .#{$cds-prefix}--snippet;
+  @extend .#{$cds-prefix}--snippet--multi;
+
+  display: block;
+  padding: 0;
+
+  background: theme.$background;
+  max-inline-size: 100%;
+}
+
+:host([data-rounded]) .#{$prefix}--snippet {
+  border-radius: var(--cds-aichat-tile-border-radius, 0.5rem);
+}
+
+:host-context([data-theme="g90"]),
+:host-context([storybook-carbon-theme="g90"]),
+:host-context([data-theme="g100"]),
+:host-context([storybook-carbon-theme="g100"]) {
+  /* Comments and documentation */
+  --cds-syntax-comment: #{colors.$green-40};
+
+  /* Keywords */
+  --cds-syntax-keyword: #{colors.$blue-50};
+  --cds-syntax-control-keyword: #{colors.$purple-40};
+  --cds-syntax-definition-keyword: #{colors.$cyan-40};
+  --cds-syntax-module-keyword: #{colors.$purple-40};
+
+  /* Identifiers */
+  --cds-syntax-variable: #{colors.$blue-30};
+  --cds-syntax-attribute: #{colors.$cyan-40};
+  --cds-syntax-tag: #{colors.$teal-30};
+  --cds-syntax-type: #{colors.$teal-30};
+
+  /* Literals and primitives */
+  --cds-syntax-number: #{colors.$green-30};
+  --cds-syntax-special-string: #{colors.$purple-40};
+  --cds-syntax-regexp: #{colors.$purple-40};
+  --cds-syntax-escape: #{colors.$gray-20};
+  --cds-syntax-url: var(--cds-syntax-escape);
+  --cds-syntax-operator: #{colors.$gray-20};
+  --cds-syntax-punctuation: #{colors.$gray-20};
+  --cds-syntax-angle-bracket: #{colors.$gray-50};
+
+  /* Structural text */
+  --cds-syntax-heading: #{colors.$cyan-40};
+  --cds-syntax-link: #{colors.$blue-50};
+
+  /* Diagnostics (core only) */
+  --cds-syntax-invalid: #{colors.$red-50};
+
+  /* Meta and annotations */
+  --cds-syntax-meta: #{colors.$green-40};
+  --cds-syntax-annotation: #{colors.$teal-40};
+
+  /* Modifiers */
+  --cds-syntax-definition: #{colors.$cyan-40};
+  --cds-syntax-constant: #{colors.$blue-50};
+  --cds-syntax-function: #{colors.$yellow-30};
+  --cds-syntax-standard: #{colors.$blue-50};
+  --cds-syntax-local: #{colors.$blue-30};
+  --cds-syntax-special: #{colors.$blue-50};
+}
+
+:host([disabled]) {
+  @extend .#{$cds-prefix}--snippet--disabled;
+
+  .#{$prefix}--snippet-container {
+    cursor: not-allowed;
+  }
+
+  .cm-editor {
+    pointer-events: none;
+  }
+}
+
+:host([hide-copy-button]) {
+  @extend .#{$cds-prefix}--snippet--no-copy;
+}
+
+:host([wrap-text]) {
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+}
+
+.#{$prefix}--snippet-container {
+  @extend .#{$cds-prefix}--snippet-container;
+
+  position: relative;
+}
+
+:host([expanded-code]) .#{$prefix}--snippet-container {
+  padding-block-end: spacing.$spacing-05;
+  transition: max-height motion.$duration-moderate-01
+    motion(standard, productive);
+}
+
+.#{$prefix}--snippet--codemirror {
+  ::slotted(*) {
+    display: none;
+  }
+  .#{$prefix}--code-editor {
+    block-size: 100%;
+    inline-size: 100%;
+  }
+}
+
+.#{$prefix}--snippet__editor-skeleton {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: spacing.$spacing-05;
+  background: theme.$layer-01;
+  inset: 0;
+  pointer-events: none;
+
+  cds-skeleton-text {
+    inline-size: 100%;
+  }
+}
+
+.#{$prefix}--visually-hidden {
+  display: none;
+}
+
+.#{$prefix}--snippet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: theme.$layer-01;
+  border-block-end: 1px solid theme.$border-subtle-02;
+  padding-inline-start: layout.$spacing-05;
+}
+
+.#{$prefix}--snippet__meta {
+  display: flex;
+}
+
+.#{$prefix}--snippet__footer {
+  display: flex;
+  justify-content: flex-end;
+  border-block-start: 1px solid theme.$border-subtle-02;
+}
+
+.#{$prefix}--snippet-btn--text {
+  color: theme.$text-primary;
+}
+
+.#{$prefix}--snippet__language,
+.#{$prefix}--snippet__header-separator,
+.#{$prefix}--snippet__linecount {
+  @include type.type-style("label-01");
+}
+
+.#{$prefix}--snippet__header-separator {
+  padding-inline-end: layout.$spacing-02;
+  padding-inline-start: layout.$spacing-02;
+}
+
+.#{$prefix}--snippet-container--collapsed {
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition: max-height motion.$duration-moderate-01
+    motion(standard, productive);
+}
+
+.#{$prefix}--icon-chevron--down {
+  transform: rotate(0deg);
+  transition: transform motion.$transition-expansion;
+}
+
+:host([expanded-code]) .#{$prefix}--icon-chevron--down {
+  transform: rotate(180deg);
+  transition: transform motion.$transition-expansion;
+}

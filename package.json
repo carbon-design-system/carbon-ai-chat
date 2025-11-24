@@ -17,8 +17,10 @@
     "examples/react/basic",
     "examples/react/custom-element",
     "examples/react/history",
+    "examples/react/next",
     "examples/react/watch-state",
     "examples/react/watsonx",
+    "examples/react/vite",
     "examples/react/jest-jsdom",
     "examples/react/jest-happydom",
     "examples/web-components/basic",
@@ -35,6 +37,7 @@
     "aiChat:start": "lerna run build --scope @carbon/ai-chat-components --scope @carbon/ai-chat && lerna run start --stream --parallel --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
     "aiChat:start:all": "npm run build && lerna run start --stream --parallel",
     "aiChat:start:storybook": "npm run storybook --workspace=@carbon/ai-chat-components",
+    "aiChat:start:storybook:react": "npm run storybook:react --workspace=@carbon/ai-chat-components",
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
@@ -56,6 +59,7 @@
     "@babel/preset-react": "^7.27.1",
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
+    "@storybook/addons": "^7.6.17",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
@@ -70,6 +74,7 @@
     "husky": "^9.1.7",
     "lerna": "^9.0.0",
     "lint-staged": "^16.0.0",
+    "patch-package": "^8.0.1",
     "prettier": "^3.0.0",
     "prettier-config-carbon": "^0.12.0",
     "stylelint": "^16.0.0",
@@ -138,6 +143,7 @@
           "definedTags": [
             "category",
             "experimental",
+            "element",
             "typeParam",
             "template",
             "inheritDoc",
@@ -152,6 +158,7 @@
             "readonly",
             "sealed",
             "showCategories",
+            "slot",
             "virtual"
           ]
         }

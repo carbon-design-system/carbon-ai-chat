@@ -25,7 +25,10 @@ import {
   ViewState,
   PersistedState,
 } from "../../types/state/AppState";
-import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
+import {
+  DefaultCustomPanelConfigOptions,
+  PanelType,
+} from "../../types/instance/apiTypes";
 import {
   LauncherConfig,
   TIME_TO_ENTRANCE_ANIMATION_START,
@@ -45,6 +48,7 @@ import { Message } from "../../types/messaging/Messages";
  */
 
 const DEFAULT_HEADER: HeaderConfig = {
+  isOn: true,
   minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
   showAiLabel: true,
 };
@@ -54,25 +58,31 @@ deepFreeze(DEFAULT_HEADER);
 const DEFAULT_LAUNCHER: LauncherConfig = {
   isOn: true,
   mobile: {
-    isOn: true,
+    isOn: false,
     title: "",
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
   desktop: {
-    isOn: true,
+    isOn: false,
     title: "",
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
 };
 deepFreeze(DEFAULT_LAUNCHER);
 
-const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: CustomPanelConfigOptions = {
-  title: null,
+const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   hideBackButton: false,
-  hidePanelHeader: false,
   disableAnimation: false,
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
+
+const DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE: Record<
+  PanelType,
+  DefaultCustomPanelConfigOptions
+> = {
+  [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+};
+deepFreeze(DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE);
 
 const DEFAULT_CUSTOM_PANEL_STATE: CustomPanelState = {
   isOpen: false,
@@ -120,6 +130,8 @@ const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
+  rawValue: "",
+  displayValue: "",
   fieldVisible: true,
   isReadonly: false,
   files: [],
@@ -152,12 +164,8 @@ const DEFAULT_PERSISTED_TO_BROWSER: PersistedState = {
   version: VERSION,
   viewState: VIEW_STATE_ALL_CLOSED,
   showUnreadIndicator: false,
-  mobileLauncherIsExtended: false,
-  mobileLauncherWasReduced: false,
-  mobileLauncherDisableBounce: false,
-  desktopLauncherIsExpanded: false,
-  desktopLauncherWasMinimized: false,
-  bounceTurn: 1,
+  launcherIsExpanded: false,
+  launcherShouldStartCallToActionCounterIfEnabled: true,
 };
 deepFreeze(DEFAULT_PERSISTED_TO_BROWSER);
 
@@ -377,6 +385,7 @@ export {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE,
   DEFAULT_LAUNCHER,
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,

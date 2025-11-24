@@ -749,31 +749,33 @@ class MessageService {
    * Also tracks the streaming message ID in case the queue gets cleared before finalization.
    */
   public markCurrentMessageAsStreaming(messageID?: string) {
-    if (this.queue.current) {
-      this.queue.current.isStreaming = true;
-      this.streamingMessageID = this.queue.current.message.id;
+    const current = this.queue.current;
 
-      // If messageID is provided (from chunk response_id), also store the controller under that ID
-      // because the chunk's response_id may differ from message.id
-      if (messageID && messageID !== this.queue.current.message.id) {
-        const controller = this.queue.current.sendMessageController;
-        if (controller) {
-          this.messageAbortControllers.set(messageID, controller);
-        }
+    // Set the messageID (from the chunk); otherwise fall back to the current queued message id.
+    this.streamingMessageID = messageID ?? current?.message.id;
+
+    // If we have the last processed message ID, copy its controller to the response_id
+    if (messageID && this.lastProcessedMessageID) {
+      const controller = this.messageAbortControllers.get(
+        this.lastProcessedMessageID,
+      );
+      if (controller) {
+        this.messageAbortControllers.set(messageID, controller);
       }
-    } else if (messageID) {
-      // Queue already cleared but we know the response_id from the chunk
-      // Try to find the controller using the last processed message ID
-      this.streamingMessageID = messageID;
+    }
 
-      // If we have the last processed message ID, copy its controller to the response_id
-      if (this.lastProcessedMessageID) {
-        const controller = this.messageAbortControllers.get(
-          this.lastProcessedMessageID,
-        );
-        if (controller) {
-          this.messageAbortControllers.set(messageID, controller);
-        }
+    if (!current) {
+      return;
+    }
+
+    current.isStreaming = true;
+
+    // If messageID is provided (from chunk response_id), also store the controller under that ID
+    // because the chunk's response_id may differ from message.id
+    if (messageID && messageID !== current.message.id) {
+      const controller = current.sendMessageController;
+      if (controller) {
+        this.messageAbortControllers.set(messageID, controller);
       }
     }
   }
@@ -782,14 +784,13 @@ class MessageService {
    * Called when a FinalResponseChunk is processed to clear the streaming message from the queue.
    */
   public finalizeStreamingMessage(messageID: string) {
-    this.streamingMessageID = null;
+    if (this.streamingMessageID === messageID) {
+      this.moveToNextQueueItem();
+    }
 
     // Clean up the abort controller for this message
     this.messageAbortControllers.delete(messageID);
-
-    if (this.queue.current && this.queue.current.message.id === messageID) {
-      this.moveToNextQueueItem();
-    }
+    this.streamingMessageID = null;
   }
 
   /**

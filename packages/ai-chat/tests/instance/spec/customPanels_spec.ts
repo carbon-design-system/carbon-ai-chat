@@ -15,6 +15,7 @@ import {
   setupAfterEach,
 } from "../../test_helpers";
 import { BusEventType } from "../../../src/types/events/eventBusTypes";
+import { PanelType } from "../../../src/types/instance/apiTypes";
 import { waitFor } from "@testing-library/react";
 
 describe("ChatInstance.customPanels", () => {
@@ -84,6 +85,18 @@ describe("ChatInstance.customPanels", () => {
 
       expect(panel1).toBe(panel2);
     });
+
+    it("should return the same default panel when requesting by PanelType", async () => {
+      const config = createBaseConfig();
+      const instance = await renderChatAndGetInstance(config);
+
+      const defaultPanel = instance.customPanels.getPanel();
+      const explicitDefaultPanel = instance.customPanels.getPanel(
+        PanelType.DEFAULT,
+      );
+
+      expect(explicitDefaultPanel).toBe(defaultPanel);
+    });
   });
 
   describe("open", () => {
@@ -103,9 +116,40 @@ describe("ChatInstance.customPanels", () => {
       // Verify Redux state updated
       state = store.getState();
       expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.customPanelState.options.title).toBeUndefined();
+      expect(state.customPanelState.options.hideBackButton).toBe(false);
+      expect(state.customPanelState.options.disableAnimation).toBe(false);
+      expect(state.customPanelState.options.hidePanelHeader).toBeUndefined();
+      expect(state.customPanelState.options.onClickBack).toBeUndefined();
     });
 
-    it("should open panel with custom options and update Redux state", async () => {
+    it("should open panel with DefaultCustomPanelConfigOptions", async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const panel = instance.customPanels.getPanel();
+
+      const defaultPanelOptions = {
+        title: "Default Panel",
+        disableAnimation: true,
+        hideBackButton: true,
+        onClickBack: jest.fn(),
+      };
+
+      panel.open(defaultPanelOptions);
+
+      const state = store.getState();
+      expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.customPanelState.options.title).toBe("Default Panel");
+      expect(state.customPanelState.options.hideBackButton).toBe(true);
+      expect(state.customPanelState.options.disableAnimation).toBe(true);
+      expect(state.customPanelState.options.onClickBack).toBe(
+        defaultPanelOptions.onClickBack,
+      );
+      expect(state.customPanelState.options.hidePanelHeader).toBeUndefined();
+    });
+
+    it("should open panel with legacy CustomPanelConfigOptions and update Redux state", async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -115,6 +159,8 @@ describe("ChatInstance.customPanels", () => {
         title: "Test Panel",
         hideCloseButton: true,
         disableAnimation: true,
+        hidePanelHeader: false,
+        hideBackButton: false,
       };
 
       // Verify initial state
@@ -130,6 +176,60 @@ describe("ChatInstance.customPanels", () => {
       expect(state.customPanelState.options.title).toBe("Test Panel");
       expect(state.customPanelState.options.hideCloseButton).toBe(true);
       expect(state.customPanelState.options.disableAnimation).toBe(true);
+      expect(state.customPanelState.options.hidePanelHeader).toBe(false);
+      expect(state.customPanelState.options.hideBackButton).toBe(false);
+    });
+
+    it("should honor deprecated hideCloseButton option as override", async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const panel = instance.customPanels.getPanel();
+
+      panel.open({ hideCloseButton: true });
+
+      const state = store.getState();
+      expect(state.customPanelState.options.hideCloseButton).toBe(true);
+    });
+
+    it("should disable default close action when disableDefaultCloseAction is true", async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const panel = instance.customPanels.getPanel();
+      const onClickClose = jest.fn();
+
+      panel.open({
+        disableDefaultCloseAction: true,
+        onClickClose,
+      });
+
+      const state = store.getState();
+      expect(state.customPanelState.options.disableDefaultCloseAction).toBe(
+        true,
+      );
+      expect(state.customPanelState.options.onClickClose).toBe(onClickClose);
+    });
+
+    it("should wire onClickBack and onClickRestart callbacks into options", async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const panel = instance.customPanels.getPanel();
+      const callbacks = {
+        onClickBack: jest.fn(),
+        onClickRestart: jest.fn(),
+      };
+
+      panel.open(callbacks);
+
+      const state = store.getState();
+      expect(state.customPanelState.options.onClickBack).toBe(
+        callbacks.onClickBack,
+      );
+      expect(state.customPanelState.options.onClickRestart).toBe(
+        callbacks.onClickRestart,
+      );
     });
   });
 

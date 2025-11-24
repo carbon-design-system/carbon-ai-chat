@@ -68,19 +68,10 @@ $launcher-position-right: config.get-var(
   #{layout.$spacing-07}
 );
 $launcher-extended-width: config.get-var("launcher-extended-width", 280px);
-$launcher-desktop-expanded-height: config.get-var(
-  "launcher-desktop-expanded-height",
-  320px
-);
+
 $launcher-expanded-message-color-background: config.get-var(
   "launcher-expanded-message-color-background",
   #{button.$button-primary}
-);
-
-// Additional Launcher Variables
-$launcher-position-bottom-mobile: config.get-var(
-  "launcher-position-bottom-mobile",
-  #{layout.$spacing-05}
 );
 
 // Launcher Color Variables

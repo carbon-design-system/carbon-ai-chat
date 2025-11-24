@@ -13,7 +13,6 @@ import { html } from "lit";
 import containerStyles from "./_container.scss?inline";
 import { white, g10, g90, g100 } from "@carbon/themes";
 import { breakpoints } from "@carbon/layout";
-import theme from "./theme";
 import { setCustomElementsManifest } from "@storybook/web-components-vite";
 import customElements from "../custom-elements.json";
 import prettier from "prettier/standalone";
@@ -33,26 +32,6 @@ if (typeof document !== "undefined") {
 setCustomElementsManifest(customElements);
 
 export const globalTypes = {
-  locale: {
-    name: "Locale",
-    description: "Set the localization for the storybook",
-    defaultValue: "en",
-    toolbar: {
-      icon: "globe",
-      items: [
-        {
-          right: "🇺🇸",
-          title: "English",
-          value: "en",
-        },
-        {
-          right: "🇵🇸",
-          title: "Arabic",
-          value: "ar",
-        },
-      ],
-    },
-  },
   theme: {
     name: "Theme",
     description: "Set the global theme for displaying components",
@@ -60,6 +39,32 @@ export const globalTypes = {
     toolbar: {
       icon: "paintbrush",
       items: ["white", "g10", "g90", "g100"],
+    },
+  },
+  dir: {
+    name: "Text direction",
+    description: "Set the text direction for the story",
+    defaultValue: "ltr",
+    toolbar: {
+      icon: "transfer",
+      title: "Text direction",
+      items: [
+        {
+          right: "🔄",
+          title: "auto",
+          value: "auto",
+        },
+        {
+          right: "➡️",
+          title: "left-to-right (ltr)",
+          value: "ltr",
+        },
+        {
+          right: "⬅️",
+          title: "right-to-left (rtl)",
+          value: "rtl",
+        },
+      ],
     },
   },
 };
@@ -174,6 +179,18 @@ export const parameters = {
           "Form Participation",
         ],
         "Components",
+        [
+          "Code Snippet",
+          [
+            "Default",
+            "Highlight",
+            "Streaming With Language Set",
+            "Streaming With Language Detection",
+            "With No Tile Container",
+            "Editable",
+            "Editable Empty",
+          ],
+        ],
         "Layout",
       ],
     },
@@ -182,10 +199,10 @@ export const parameters = {
 
 export const decorators = [
   function decoratorContainer(story, context) {
-    const { theme } = context.globals;
+    const { theme, dir } = context.globals;
 
     document.documentElement.setAttribute("storybook-carbon-theme", theme);
-
+    document.documentElement.dir = dir;
     return html` <div
       id="main-content"
       name="main-content"

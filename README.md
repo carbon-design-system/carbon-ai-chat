@@ -25,6 +25,14 @@ This will install the package that contains both the web component and React ver
 - [React examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react)
 - [Web component examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components)
 
+## Carbon AI Chat components
+
+You may make use of individual React and web components from `@carbon/ai-chat` with `@carbon/ai-chat-components`.
+
+This is helpful if you are creating your our Carbon compliant chat widget, or if you want to use existing components when extending Carbon AI chat.
+
+[See the @carbon/ai-chat-components README.md](./packages/ai-chat-components/README.md).
+
 ## Related tools
 
 - [Carbon Charts MCP server, IBM only](https://w3.ibm.com/innersource/portal/projects/1874876)

@@ -12,8 +12,22 @@
 .cds-aichat--custom-panel {
   display: flex;
   flex-direction: column;
+  background-color: theme.$chat-shell-background;
+  background-image: unset;
   block-size: 100%;
   inline-size: 100%;
+}
+
+.cds-aichat--ai-theme .cds-aichat--custom-panel {
+  background-color: theme.$chat-shell-background;
+  background-image: chat-theme.$ai-background-image;
+}
+
+.cds-aichat--ai-theme .cds-aichat--overlay-panel--with-back-button,
+.cds-aichat--custom-panel,
+.cds-aichat--overlay-panel--with-back-button .cds-aichat--custom-panel {
+  background-color: theme.$chat-shell-background;
+  background-image: unset;
 }
 
 .cds-aichat--widget--max-width {
@@ -26,7 +40,6 @@
 
 .cds-aichat--custom-panel__content-container {
   overflow: auto;
-  background-color: theme.$chat-shell-background;
   block-size: 100%;
 }
 

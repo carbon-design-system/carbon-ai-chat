@@ -28,6 +28,7 @@ import "./demo-chat-theme-switcher";
 import "./demo-header-switcher";
 import "./demo-layout-config-switcher";
 import "./demo-launcher-switcher";
+import "./demo-input-config-switcher";
 import "./demo-chat-instance-switcher";
 import "./demo-direction-switcher";
 import "./demo-chat-version-switcher";
@@ -88,7 +89,7 @@ export class DemoBody extends LitElement {
 
     .config-section {
       display: block;
-      margin-block-start: 1rem;
+      margin-block-start: 1.8rem;
     }
 
     .config-section__title {
@@ -99,7 +100,9 @@ export class DemoBody extends LitElement {
 
     .config-section > demo-header-switcher,
     .config-section > demo-layout-config-switcher,
-    .config-section > demo-launcher-switcher {
+    .config-section > demo-launcher-switcher,
+    .config-section > demo-input-config-switcher,
+    .config-section > demo-homescreen-switcher {
       display: block;
       margin-block-start: 0;
     }
@@ -521,9 +524,20 @@ export class DemoBody extends LitElement {
                   <demo-chat-theme-switcher
                     .config=${this.config}
                   ></demo-chat-theme-switcher>
-                  <demo-homescreen-switcher
-                    .config=${this.config}
-                  ></demo-homescreen-switcher>
+                  <div class="config-section">
+                    <div class="config-section__title">
+                      Homescreen & disclaimer
+                    </div>
+                    <demo-homescreen-switcher
+                      .config=${this.config}
+                    ></demo-homescreen-switcher>
+                  </div>
+                  <div class="config-section">
+                    <div class="config-section__title">Layout</div>
+                    <demo-layout-config-switcher
+                      .config=${this.config}
+                    ></demo-layout-config-switcher>
+                  </div>
                   <div class="config-section">
                     <div class="config-section__title">Header</div>
                     <demo-header-switcher
@@ -531,10 +545,10 @@ export class DemoBody extends LitElement {
                     ></demo-header-switcher>
                   </div>
                   <div class="config-section">
-                    <div class="config-section__title">Layout</div>
-                    <demo-layout-config-switcher
+                    <div class="config-section__title">Input</div>
+                    <demo-input-config-switcher
                       .config=${this.config}
-                    ></demo-layout-config-switcher>
+                    ></demo-input-config-switcher>
                   </div>
                   <div class="config-section">
                     <div class="config-section__title">Launcher</div>

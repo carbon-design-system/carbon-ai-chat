@@ -122,7 +122,11 @@ export function detectConfigChanges(
     previousConfig.isReadonly !== newConfig.isReadonly ||
     previousConfig.locale !== newConfig.locale ||
     previousConfig.disableCustomElementMobileEnhancements !==
-      newConfig.disableCustomElementMobileEnhancements;
+      newConfig.disableCustomElementMobileEnhancements ||
+    previousConfig.input?.isVisible !== newConfig.input?.isVisible ||
+    previousConfig.input?.isDisabled !== newConfig.input?.isDisabled ||
+    previousConfig.launcher?.showUnreadIndicator !==
+      newConfig.launcher?.showUnreadIndicator;
 
   return {
     humanAgentConfigChanged,

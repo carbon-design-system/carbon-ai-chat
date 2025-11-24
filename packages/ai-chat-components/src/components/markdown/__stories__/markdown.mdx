@@ -1,0 +1,185 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as MarkdownStories from "./markdown.stories";
+
+<Meta of={MarkdownStories} />
+
+# AI Chat Markdown
+
+The `cds-aichat-markdown` component renders markdown content with syntax highlighting, tables, code snippets, and streaming support. It's optimized for displaying AI-generated responses with rich formatting.
+
+## Key Features
+
+- **Full GitHub Flavored Markdown Support**: Headers, lists, links, emphasis, blockquotes, and more
+- **Syntax Highlighting**: Code blocks with automatic language detection
+- **Interactive Tables**: Sortable, filterable tables with pagination
+- **Streaming Content**: Real-time rendering as content arrives with no re-rendering of unchanged content
+- **HTML Handling**: Options to sanitize or remove HTML content
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/markdown/index.js";
+```
+
+We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
+
+```javascript
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+```
+
+<Markdown>{`${cdnJs(["markdown"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+### HTML
+
+#### Default
+
+The default story demonstrates comprehensive markdown rendering including text formatting, lists, code blocks with syntax highlighting, data tables, and extended features (text highlighting and custom attributes).
+
+**Note**: By default, all links open in a new window (`target="_blank"`).
+
+<Canvas of={MarkdownStories.Default} />
+
+#### Streaming content
+
+<Canvas of={MarkdownStories.Streaming} />
+
+#### HTML sanitization
+
+<Canvas of={MarkdownStories.WithHTMLSanitization} />
+
+## `<cds-aichat-markdown>` attributes, properties and events
+
+<ArgTypes of={MarkdownStories.Default} />
+
+## Markdown Support
+
+The component implements [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/) with additional custom extensions. It uses [markdown-it](https://github.com/markdown-it/markdown-it) with the CommonMark preset and includes:
+
+**GFM Features:**
+- Tables with column alignment
+- Strikethrough text (`~~text~~`)
+- Automatic URL linking
+- Line breaks
+- etc...
+
+**Custom Extensions:**
+- Highlight syntax (`==text==`) with nested formatting support
+- Attribute syntax (`{{attribute=value}}`) for HTML attributes
+
+### Text Formatting
+
+- **Bold** text with `**bold**` or `__bold__`
+- *Italic* text with `*italic*` or `_italic_`
+- `Inline code` with backticks
+- ~~Strikethrough~~ with `~~text~~`
+- ==Highlighted text== with `==text==` (renders as `<mark>` element)
+- Supports nesting: `==**bold highlight**==` renders as bold text with highlighting
+
+### Headers
+
+All six levels of headers are supported (`#` through `######`).
+
+### Lists
+
+Both ordered and unordered lists with nested items.
+
+### Links and Images
+
+Standard markdown links `[text](url)` and images `![alt](src)`.
+
+### Blockquotes
+
+> Blockquotes with `>` prefix
+
+### Code Blocks
+
+Fenced code blocks with language specification:
+
+\`\`\`javascript
+console.log('Hello, world!');
+\`\`\`
+
+### Tables
+
+Markdown tables with alignment support:
+
+```markdown
+| Column 1 | Column 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+```
+
+### Attribute Syntax
+
+Add HTML attributes to markdown elements using `{{attribute=value}}` syntax:
+
+- **Delimiters**: `{{` and `}}`
+- **Allowed attributes**: `target`, `rel`, `class`, `id`
+
+Examples:
+
+```markdown
+[External link](https://example.com){{target=_blank rel=noopener}}
+
+# Heading with ID {{id=custom-heading}}
+
+Paragraph with custom class {{class=custom-style}}
+```
+
+**Security Note**: Only the specified attributes (`target`, `rel`, `class`, `id`) are allowed. This prevents arbitrary attribute injection while supporting common use cases.
+
+## HTML Content
+
+### Sanitization
+
+When `sanitize-html` is enabled, HTML content is cleaned using DOMPurify to remove potentially dangerous elements and attributes while preserving safe HTML formatting.
+
+### Removal
+
+When `remove-html` is enabled, all HTML tags are stripped from the content, leaving only plain text and markdown.
+
+## Streaming Mode
+
+Set `streaming="true"` to enable real-time rendering as content arrives. The component efficiently updates only changed portions of the content:
+
+```javascript
+const markdown = document.querySelector('cds-aichat-markdown');
+markdown.streaming = true;
+markdown.markdown = "# Hello"; // Renders immediately
+
+// Later...
+markdown.markdown = "# Hello\n\nThis is streaming content..."; // Updates efficiently
+```
+
+## Customizing UI Text
+
+All text strings used in embedded components can be customized:
+
+### Code Snippet Strings
+
+- `feedback`: Text shown after copying code (default: "Copied!")
+- `tooltip-content`: Tooltip for copy button (default: "Copy code")
+- `show-more-text`: Text for expand button (default: "Show more")
+- `show-less-text`: Text for collapse button (default: "Show less")
+
+### Table Strings
+
+- `filter-placeholder-text`: Placeholder for table filter (default: "Filter table...")
+- `previous-page-text`: Previous page button text (default: "Previous page")
+- `next-page-text`: Next page button text (default: "Next page")
+- `items-per-page-text`: Items per page label (default: "Items per page:")
+- `locale`: Locale for number formatting (default: "en")
+
+## Debug Mode
+
+Enable `debug` mode to log parsing and rendering information to the console:
+
+```javascript
+markdown.debug = true;
+```

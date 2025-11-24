@@ -6,7 +6,7 @@
  */
 
 // prefix for Carbon Design System components
-$cds-prefix: "cds";
+$cds-prefix: "cds" !default;
 
 // Set this to a suitable prefix for your project to use in style files
 $prefix: "#{$cds-prefix}-aichat" !default;

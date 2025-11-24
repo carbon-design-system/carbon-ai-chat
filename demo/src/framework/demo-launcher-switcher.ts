@@ -105,12 +105,12 @@ export class DemoLauncherSwitcher extends LitElement {
 
     const cleaned: LauncherCallToActionConfig = { ...cta };
 
-    if (cleaned.title !== undefined && cleaned.title.trim() === "") {
+    if (cleaned.title === undefined || cleaned.title.trim() === "") {
       delete cleaned.title;
     }
 
     if (
-      cleaned.avatarUrlOverride !== undefined &&
+      cleaned.avatarUrlOverride === undefined ||
       cleaned.avatarUrlOverride.trim() === ""
     ) {
       delete cleaned.avatarUrlOverride;
@@ -148,6 +148,25 @@ export class DemoLauncherSwitcher extends LitElement {
         next.isOn = true;
       } else if (value === DROPDOWN_FALSE) {
         next.isOn = false;
+      }
+
+      return this._normalizeLauncher(next);
+    });
+  }
+
+  private _handleUnreadIndicator(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateLauncher((launcher) => {
+      const next = { ...(launcher ?? {}) };
+
+      if (value === DROPDOWN_DEFAULT) {
+        delete next.showUnreadIndicator;
+      } else if (value === DROPDOWN_TRUE) {
+        next.showUnreadIndicator = true;
+      } else if (value === DROPDOWN_FALSE) {
+        next.showUnreadIndicator = false;
       }
 
       return this._normalizeLauncher(next);
@@ -269,6 +288,20 @@ export class DemoLauncherSwitcher extends LitElement {
           >
           <cds-dropdown-item value="${DROPDOWN_TRUE}">On</cds-dropdown-item>
           <cds-dropdown-item value="${DROPDOWN_FALSE}">Off</cds-dropdown-item>
+        </cds-dropdown>
+      </div>
+
+      <div class="launcher-section">
+        <cds-dropdown
+          value="${this._booleanDropdownValue(launcher?.showUnreadIndicator)}"
+          title-text="Show custom unread indicator"
+          @cds-dropdown-selected=${this._handleUnreadIndicator}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
+            >Default</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
         </cds-dropdown>
       </div>
 

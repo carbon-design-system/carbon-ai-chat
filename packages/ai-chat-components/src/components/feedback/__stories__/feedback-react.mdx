@@ -1,0 +1,161 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as FeedbackReactStories from "./feedback-react.stories";
+
+<Meta of={FeedbackReactStories} />
+
+# AI Chat Feedback (React)
+
+The `<Feedback>` component wraps the `cds-aichat-feedback` web component and provides a panel for collecting user feedback on AI responses with a React-first API.
+
+## Key Features
+
+- **Category Selection**: Multiple predefined categories that users can select
+- **Text Input**: Optional text area for detailed feedback
+- **Flexible Configuration**: Show/hide prompt and text area as needed
+- **Initial Values**: Pre-populate with existing feedback for editing
+- **Read-only Mode**: Display submitted feedback without allowing edits
+- **Custom Labels**: All text strings can be customized for internationalization
+- **Markdown Support**: Disclaimer text supports markdown formatting
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import Feedback from "@carbon/ai-chat-components/es/react/feedback.js";
+
+function FeedbackExample() {
+  return (
+    <Feedback
+      isOpen
+      title="Provide feedback"
+      prompt="Help us improve by sharing your thoughts"
+      cancelLabel="Cancel"
+      submitLabel="Submit"
+      onSubmit={(event) =>
+        console.log("Feedback submitted:", event.detail)
+      }
+      onClose={() => console.log("Feedback closed")}
+    />
+  );
+}
+```
+
+### Stories
+
+#### Basic usage
+
+<Canvas of={FeedbackReactStories.Default} />
+
+#### With categories
+
+<Canvas of={FeedbackReactStories.WithCategories} />
+
+#### With disclaimer
+
+<Canvas of={FeedbackReactStories.WithDisclaimer} />
+
+#### Read-only mode
+
+<Canvas of={FeedbackReactStories.ReadOnly} />
+
+#### Without text area
+
+<Canvas of={FeedbackReactStories.WithoutTextArea} />
+
+## `<Feedback>` props and events
+
+<ArgTypes of={FeedbackReactStories.Default} />
+
+## Usage Patterns
+
+### Collecting Negative Feedback
+
+```jsx
+function NegativeFeedbackPanel() {
+  return (
+    <Feedback
+      isOpen
+      title="What went wrong?"
+      categories={[
+        "Inaccurate",
+        "Unhelpful",
+        "Inappropriate",
+      ]}
+      onSubmit={(event) => {
+        const details = event.detail;
+        console.log("Feedback:", details);
+        // { text: "...", selectedCategories: ["Inaccurate"] }
+      }}
+    />
+  );
+}
+```
+
+### Collecting Positive Feedback
+
+```jsx
+function PositiveFeedbackPanel() {
+  return (
+    <Feedback
+      isOpen
+      title="What did you like?"
+      categories={[
+        "Accurate",
+        "Helpful",
+        "Well-formatted",
+      ]}
+      onSubmit={(event) => {
+        console.log("Feedback:", event.detail);
+      }}
+    />
+  );
+}
+```
+
+### Displaying Submitted Feedback
+
+```jsx
+function ReadOnlyFeedbackPanel() {
+  return (
+<Feedback
+  isOpen
+  isReadonly
+  title="Submitted feedback"
+  initialValues={{
+        text: "The response was very helpful!",
+        selectedCategories: ["Accurate", "Helpful"],
+      }}
+    />
+  );
+}
+```
+
+## Customization
+
+### Labels
+
+All button labels and text can be customized:
+
+- `title`: Panel title
+- `prompt`: Instructions for the user
+- `placeholder`: Text area placeholder
+- `cancelLabel`: Cancel button text
+- `submitLabel`: Submit button text
+
+### Optional Elements
+
+Control visibility of UI elements:
+
+- `showPrompt`: Show/hide the instruction text
+- `showTextArea`: Show/hide the detailed feedback text area
+
+### Legal Disclaimer
+
+Add a legal notice at the bottom of the panel using markdown:
+
+```jsx
+<Feedback
+  disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy)."
+/>
+```

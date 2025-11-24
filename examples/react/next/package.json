@@ -1,0 +1,31 @@
+{
+  "name": "@carbon/ai-chat-examples-react-next",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "description": "Next.js example embedding @carbon/ai-chat as a React component.",
+  "scripts": {
+    "dev": "cross-env PORT=3018 next dev",
+    "build": "next build",
+    "start": "cross-env PORT=3018 next start",
+    "lint": "next lint"
+  },
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@carbon/ai-chat": "^1.2.0",
+    "@carbon/web-components": "^2.42.0",
+    "lit": "^3.1.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "cross-env": "^10.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.0",
+    "typescript": "^5.6.3"
+  }
+}

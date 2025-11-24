@@ -66,6 +66,7 @@ function StreamingRichText(props: StreamingRichTextProps) {
         text={textToUse}
         removeHTML={removeHTML}
         streaming={streamingState && !streamingState.isDone}
+        highlight={true}
       />
       {isStreamingError && (
         <InlineError

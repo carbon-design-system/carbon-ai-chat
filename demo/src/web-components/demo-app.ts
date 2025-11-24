@@ -68,9 +68,9 @@ export class DemoApp extends LitElement {
 
     .fullScreen {
       position: fixed;
-      top: 0;
+      bottom: 0;
       right: 0;
-      height: 100vh;
+      height: calc(100vh - 48px);
       width: calc(100vw - 320px - 2rem);
       z-index: 9999;
     }
@@ -202,6 +202,14 @@ export class DemoApp extends LitElement {
     this.instance.on({
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
+    });
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: (e) => console.log("pre open", e),
+    });
+    instance.on({
+      type: BusEventType.WORKSPACE_OPEN,
+      handler: (e) => console.log("open", e),
     });
   };
 

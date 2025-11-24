@@ -20,7 +20,9 @@ export {
   NotificationMessage,
   ViewState,
   ViewType,
+  PanelType,
 } from "./types/instance/apiTypes";
+export { PageObjectId, TestId } from "./testing/PageObjectId";
 
 export { PersistedState } from "./types/state/AppState";
 
@@ -28,19 +30,25 @@ export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   CustomPanelConfigOptions,
+  DefaultCustomPanelConfigOptions,
   CustomPanelInstance,
   CustomPanels,
+  CustomPanelOpenOptions,
 } from "./types/instance/apiTypes";
 
 export {
   ChangeFunction,
   ChatInstance,
+  ChatInstanceInput,
   ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
+  PublicInputState,
+  PublicCustomPanelsState,
+  PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,
@@ -51,6 +59,7 @@ export {
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
+export type { loadAllLazyDeps } from "./testing/helpers";
 
 export {
   BusEvent,
@@ -177,6 +186,9 @@ export {
   ItemStreamingMetadata,
   MediaItem,
   MediaItemDimensions,
+  MediaSubtitleTrack,
+  MediaTranscript,
+  MediaFileAccessibility,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,
@@ -234,5 +246,3 @@ export {
   ChatCustomElement,
   ChatCustomElementProps,
 } from "./react/ChatCustomElement";
-
-export { PageObjectId, TestId } from "./chat/utils/PageObjectId";

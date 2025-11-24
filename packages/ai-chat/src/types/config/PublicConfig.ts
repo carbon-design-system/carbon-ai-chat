@@ -253,6 +253,18 @@ export interface InputConfig {
    * The maximum number of characters allowed in the input field. Defaults to 10000.
    */
   maxInputCharacters?: number;
+
+  /**
+   * Controls whether the main input surface is visible when the chat loads.
+   * Defaults to true.
+   */
+  isVisible?: boolean;
+
+  /**
+   * If true, the main input surface starts in a disabled (read-only) state.
+   * Equivalent to {@link PublicConfig.isReadonly}, but scoped just to the assistant input.
+   */
+  isDisabled?: boolean;
 }
 
 /**
@@ -261,6 +273,12 @@ export interface InputConfig {
  * @category Config
  */
 export interface HeaderConfig {
+  /**
+   * If the chat should supply its own header. Can be false if you have a fullscreen chat or one embedded into a page and
+   * you want to only make use of the main application header. Defaults to true.
+   */
+  isOn?: boolean;
+
   /**
    * Indicates the icon to use for the close button in the header.
    */

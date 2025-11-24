@@ -44,10 +44,6 @@ const config = {
     options: {},
   },
 
-  features: {
-    storyStoreV7: true,
-  },
-
   async viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {

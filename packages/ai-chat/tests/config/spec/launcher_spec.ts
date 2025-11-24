@@ -108,6 +108,32 @@ describe("Config Launcher", () => {
       const state: AppState = store.getState();
       expect(state.config.derived.launcher.isOn).toBe(true); // default value
     });
+
+    it("should set launcher.showUnreadIndicator in persisted state", async () => {
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        launcher: { showUnreadIndicator: true },
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+      const state: AppState = store.getState();
+      expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
+      expect(state.config.public.launcher?.showUnreadIndicator).toBe(true);
+    });
   });
 
   describe("openChatByDefault", () => {
@@ -244,6 +270,29 @@ describe("Config Launcher", () => {
       expect(state.config.public.launcher?.mobile?.title).toBe(
         "New Mobile Title",
       );
+    });
+
+    it("should handle showUnreadIndicator changes dynamically", async () => {
+      const previousConfig: PublicConfig = {
+        launcher: {
+          showUnreadIndicator: false,
+        },
+      };
+
+      const newConfig: PublicConfig = {
+        launcher: {
+          showUnreadIndicator: true,
+        },
+      };
+
+      const changes = detectConfigChanges(previousConfig, newConfig);
+      expect(changes.lightweightUIChanged).toBe(true);
+
+      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+      const state: AppState = serviceManager.store.getState();
+      expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
+      expect(state.config.public.launcher?.showUnreadIndicator).toBe(true);
     });
   });
 });

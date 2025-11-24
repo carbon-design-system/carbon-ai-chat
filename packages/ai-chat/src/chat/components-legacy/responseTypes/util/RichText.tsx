@@ -11,10 +11,8 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../../../hooks/useSelector";
 
-import { Markdown } from "../../../ai-chat-components/react/components/markdown/Markdown";
+import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown.js";
 import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { CarbonTheme } from "../../../../types/config/PublicConfig";
-import { LocalizationOptions } from "../../../../types/localization/LocalizationOptions";
 import { AppState } from "../../../../types/state/AppState";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { debugLog } from "../../../utils/miscUtils";
@@ -40,6 +38,11 @@ interface RichTextProps {
    * If we are actively streaming to this RichText component.
    */
   streaming?: boolean;
+
+  /**
+   * Whether to enable syntax highlighting in code blocks.
+   */
+  highlight?: boolean;
 }
 
 /**
@@ -50,7 +53,13 @@ interface RichTextProps {
  * Warning: This should only be used with trusted text. Do NOT use this with text that was entered by the end-user.
  */
 function RichText(props: RichTextProps) {
-  const { text, removeHTML, overrideSanitize, streaming } = props;
+  const {
+    text,
+    removeHTML,
+    overrideSanitize,
+    streaming,
+    highlight = true,
+  } = props;
 
   let doSanitize = useShouldSanitizeHTML();
   if (overrideSanitize !== undefined) {
@@ -64,64 +73,45 @@ function RichText(props: RichTextProps) {
     (state: AppState) => state.config.public.locale || "en",
   );
   const debug = useSelector((state: AppState) => state.config.public.debug);
-  const themeState = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults,
+
+  // Memoize string functions to prevent unnecessary re-renders
+  const getPaginationSupplementalText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage(
+          { id: "table_paginationSupplementalText" },
+          { pagesCount: count },
+        );
+      },
+    [intl],
   );
 
-  // Determine if dark theme should be used based on derivedCarbonTheme
-  const isDarkTheme =
-    themeState.derivedCarbonTheme === CarbonTheme.G90 ||
-    themeState.derivedCarbonTheme === CarbonTheme.G100;
-
-  // Memoize localization object to prevent unnecessary re-renders
-  const localization: LocalizationOptions = useMemo(() => {
-    // Create table localization functions
-    const getTablePaginationSupplementalText = ({
-      count,
-    }: {
-      count: number;
-    }) => {
-      return intl.formatMessage(
-        { id: "table_paginationSupplementalText" },
-        { pagesCount: count },
-      );
-    };
-
-    const getTablePaginationStatusText = ({
-      start,
-      end,
-      count,
-    }: {
-      start: number;
-      end: number;
-      count: number;
-    }) => {
-      return intl.formatMessage(
-        { id: "table_paginationStatus" },
-        { start, end, count },
-      );
-    };
-
-    // Build localization options object
-    return {
-      table: {
-        filterPlaceholderText: languagePack.table_filterPlaceholder,
-        previousPageText: languagePack.table_previousPage,
-        nextPageText: languagePack.table_nextPage,
-        itemsPerPageText: languagePack.table_itemsPerPage,
-        locale,
-        getPaginationSupplementalText: getTablePaginationSupplementalText,
-        getPaginationStatusText: getTablePaginationStatusText,
+  const getPaginationStatusText = useMemo(
+    () =>
+      ({
+        start,
+        end,
+        count,
+      }: {
+        start: number;
+        end: number;
+        count: number;
+      }) => {
+        return intl.formatMessage(
+          { id: "table_paginationStatus" },
+          { start, end, count },
+        );
       },
-    };
-  }, [
-    languagePack.table_filterPlaceholder,
-    languagePack.table_previousPage,
-    languagePack.table_nextPage,
-    languagePack.table_itemsPerPage,
-    locale,
-    intl,
-  ]);
+    [intl],
+  );
+
+  const getLineCountText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
+      },
+    [intl],
+  );
 
   if (debug) {
     debugLog("Receiving markdown text", { text, streaming });
@@ -133,9 +123,22 @@ function RichText(props: RichTextProps) {
       markdown={text}
       sanitizeHTML={doSanitize}
       streaming={streaming}
-      localization={localization}
-      dark={isDarkTheme}
+      highlight={highlight}
       removeHTML={removeHTML}
+      // Table strings
+      filterPlaceholderText={languagePack.table_filterPlaceholder}
+      previousPageText={languagePack.table_previousPage}
+      nextPageText={languagePack.table_nextPage}
+      itemsPerPageText={languagePack.table_itemsPerPage}
+      locale={locale}
+      getPaginationSupplementalText={getPaginationSupplementalText}
+      getPaginationStatusText={getPaginationStatusText}
+      // Code snippet strings
+      feedback={languagePack.codeSnippet_feedback}
+      showLessText={languagePack.codeSnippet_showLessText}
+      showMoreText={languagePack.codeSnippet_showMoreText}
+      tooltipContent={languagePack.codeSnippet_tooltipContent}
+      getLineCountText={getLineCountText}
     />
   );
 }
@@ -146,16 +149,23 @@ const RichTextExport = React.memo(RichText, (prevProps, nextProps) => {
   const htmlConversionEqual = prevProps.removeHTML === nextProps.removeHTML;
   const sanitizeEqual =
     prevProps.overrideSanitize === nextProps.overrideSanitize;
+  const highlightEqual = prevProps.highlight === nextProps.highlight;
 
   // If text content is identical, we don't need to re-render regardless of streaming state
-  if (textEqual && htmlConversionEqual && sanitizeEqual) {
+  if (textEqual && htmlConversionEqual && sanitizeEqual && highlightEqual) {
     return true; // Skip re-render
   }
 
   // If text content changed, check if streaming state is relevant
   const streamingEqual = prevProps.streaming === nextProps.streaming;
 
-  return textEqual && htmlConversionEqual && sanitizeEqual && streamingEqual;
+  return (
+    textEqual &&
+    htmlConversionEqual &&
+    sanitizeEqual &&
+    highlightEqual &&
+    streamingEqual
+  );
 });
 
 export { RichTextExport as RichText };

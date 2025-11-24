@@ -1,0 +1,46 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "../../../globals/scss/modifiers" as *;
+
+@include rounded-modifiers;
+
+.overflow-menu-svg {
+  /* web components ghost icon only button bug override */
+  align-self: unset;
+  color: theme.$icon-primary;
+}
+
+[slot="fixed-actions"] {
+  display: flex;
+
+  cds-content-switcher {
+    margin-inline: layout.$spacing-03;
+  }
+}
+
+.truncated-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-height: normal;
+  overflow-x: hidden;
+  word-break: break-all;
+}
+
+[slot="icon"] {
+  display: flex;
+}
+
+.bold {
+  font-weight: 600;
+}

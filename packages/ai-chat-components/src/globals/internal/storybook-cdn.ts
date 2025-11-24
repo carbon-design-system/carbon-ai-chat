@@ -15,7 +15,7 @@ import packageJson from "../../../package.json";
  * @param {Array} components array of component names
  * @param {string} tag tag folder
  */
-function _renderScript(components, tag) {
+function _renderScript(components: Array<any>, tag: string) {
   let scripts = "";
   components.forEach((component) => {
     scripts += `<script type="module" src="https://1.www.s81c.com/common/carbon/ai-chat/${tag}/${component}.min.js"></script>\n`;
@@ -27,16 +27,14 @@ function _renderScript(components, tag) {
  * This is the markdown block for JS via CDN
  *
  * @param {Array} components array of components to render
- * @param components.components components to render
  */
-export const cdnJs = ({ components }) => {
+export const cdnJs = (components: Array<any>) => {
   return `
 ### JS (via CDN)
 
  > NOTE: Only one version of artifacts should be used. Mixing versions will cause rendering issues.
 
  \`\`\`html
- // SPECIFIC VERSION (available starting v2.0.0)
  ${_renderScript(components, `version/v${packageJson.version}`)}
  \`\`\`
    `;

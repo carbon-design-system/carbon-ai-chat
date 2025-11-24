@@ -1,0 +1,179 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as FeedbackButtonsReactStories from "./feedback-buttons-react.stories";
+
+<Meta of={FeedbackButtonsReactStories} />
+
+# AI Chat Feedback Buttons (React)
+
+The `<FeedbackButtons>` component wraps the `cds-aichat-feedback-buttons` web component and exposes a React-friendly API for collecting quick thumbs up/down sentiment on AI responses.
+
+## Key Features
+
+- **Thumbs Up/Down**: Simple positive/negative feedback buttons
+- **Selected State**: Visual indication when feedback has been provided
+- **Disabled State**: Prevent interaction when feedback is already submitted
+- **Details Panel Integration**: Optional connection to feedback detail panels
+- **Custom Labels**: Accessibility labels can be customized
+- **Click Handlers**: Callback invoked with sentiment boolean
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+
+function FeedbackButtonsExample() {
+  return (
+    <FeedbackButtons
+      positiveLabel="Thumbs up"
+      negativeLabel="Thumbs down"
+      onClick={(event) => {
+        const { isPositive } = event.detail;
+        console.log(isPositive ? "Positive feedback" : "Negative feedback");
+      }}
+    />
+  );
+}
+```
+
+### Stories
+
+#### Basic usage
+
+<Canvas of={FeedbackButtonsReactStories.Default} />
+
+#### With positive selected
+
+<Canvas of={FeedbackButtonsReactStories.PositiveSelected} />
+
+#### With negative selected
+
+<Canvas of={FeedbackButtonsReactStories.NegativeSelected} />
+
+#### With details panels
+
+<Canvas of={FeedbackButtonsReactStories.WithDetailsPanel} />
+
+#### Disabled state
+
+<Canvas of={FeedbackButtonsReactStories.Disabled} />
+
+## `<FeedbackButtons>` props and events
+
+<ArgTypes of={FeedbackButtonsReactStories.Default} />
+
+## Usage Patterns
+
+### Simple Feedback Recording
+
+```jsx
+function SimpleFeedback() {
+  const [state, setState] = React.useState({
+    positiveSelected: false,
+    negativeSelected: false,
+    disabled: false,
+  });
+
+  return (
+    <FeedbackButtons
+      isPositiveSelected={state.positiveSelected}
+      isNegativeSelected={state.negativeSelected}
+      isPositiveDisabled={state.disabled}
+      isNegativeDisabled={state.disabled}
+      positiveLabel="Thumbs up"
+      negativeLabel="Thumbs down"
+      onClick={(event) => {
+        const { isPositive } = event.detail;
+        const updates =
+          isPositive
+            ? { positiveSelected: true, negativeSelected: false }
+            : { positiveSelected: false, negativeSelected: true };
+        setState({ ...state, ...updates, disabled: true });
+        recordFeedback({
+          messageId: "123",
+          sentiment: isPositive ? "positive" : "negative",
+        });
+      }}
+    />
+  );
+}
+```
+
+### With Feedback Details Panel
+
+```jsx
+import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+import Feedback from "@carbon/ai-chat-components/es/react/feedback.js";
+
+function DetailedFeedback() {
+  const [isNegativeOpen, setNegativeOpen] = React.useState(false);
+
+  return (
+    <>
+      <FeedbackButtons
+        hasNegativeDetails
+        panelID="feedback-panel-123"
+        negativeLabel="Thumbs down"
+        positiveLabel="Thumbs up"
+        isNegativeOpen={isNegativeOpen}
+        onClick={(event) => {
+          const { isPositive } = event.detail;
+          if (isPositive) {
+            recordFeedback({ messageId: "123", sentiment: "positive" });
+          } else {
+            setNegativeOpen(true);
+          }
+        }}
+      />
+      <Feedback
+        isOpen={isNegativeOpen}
+        title="What went wrong?"
+        categories={["Inaccurate", "Unhelpful", "Inappropriate"]}
+        onClose={() => setNegativeOpen(false)}
+      />
+    </>
+  );
+}
+```
+
+### Toggle Behavior
+
+```jsx
+function ToggleableFeedback() {
+  const [selection, setSelection] = React.useState({
+    positive: false,
+    negative: false,
+  });
+
+  return (
+    <FeedbackButtons
+      isPositiveSelected={selection.positive}
+      isNegativeSelected={selection.negative}
+      positiveLabel="Helpful"
+      negativeLabel="Not helpful"
+      onClick={(event) => {
+        const { isPositive } = event.detail;
+        const nextSelection = {
+          positive: isPositive ? !selection.positive : false,
+          negative: isPositive ? false : !selection.negative,
+        };
+        setSelection(nextSelection);
+        const sentiment = nextSelection.positive
+          ? "positive"
+          : nextSelection.negative
+            ? "negative"
+            : null;
+        recordFeedback({ messageId: "123", sentiment });
+      }}
+    />
+  );
+}
+```
+
+## Accessibility
+
+- Buttons include customizable labels for screen readers
+- Uses `aria-pressed` to indicate selected state
+- Uses `aria-controls` to link to detail panels when applicable
+- Keyboard navigable with standard tab/enter interactions

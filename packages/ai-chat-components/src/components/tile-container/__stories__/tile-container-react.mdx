@@ -1,5 +1,4 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as TileContainerReactStories from "./tile-container-react.stories";
 
 <Meta of={TileContainerReactStories} />
@@ -16,18 +15,8 @@ If you are using a footer inside the container, add the class name `cds-aichat-t
 
 Here’s a quick example to help you get started.
 
-### JS (via import)
-
-```javascript
+```jsx
 import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
-```
-
-<Markdown>{`${cdnJs({ components: ["tile-container"] })}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
-
-The AI Chat components library provides React wrappers for several Carbon components such as `ai-label`, `button`, `icon-button`, `tile`, and `clickable-tile`, which are used in the examples below.
-
-```javascript
 import AiLabel from "@carbon/ai-chat-components/es/react/ai-label.js";
 import { Tile, ClickableTile } from "@carbon/ai-chat-components/es/react/tile.js";
 import IconButton from "@carbon/ai-chat-components/es/react/icon-button.js";
