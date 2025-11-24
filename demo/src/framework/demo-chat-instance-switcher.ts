@@ -15,10 +15,8 @@ import {
   CustomPanelOpenOptions,
   IncreaseOrDecrease,
   ViewType,
-  WriteableElementName,
 } from "@carbon/ai-chat";
-import { NOTIFICATION_KIND } from "@carbon/web-components/es/components/notification/defs.js";
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 interface PanelControlExample {
@@ -76,16 +74,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
   @property({ type: Object })
   accessor chatInstance: ChatInstance | null = null;
 
-  @state() accessor _notificationCount: number = 0;
   @state() accessor _isRestarting: boolean = false;
 
-  private readonly _notificationGroupId = "demo-notification-group";
-  private readonly _notificationKinds = [
-    NOTIFICATION_KIND.INFO,
-    NOTIFICATION_KIND.SUCCESS,
-    NOTIFICATION_KIND.WARNING,
-    NOTIFICATION_KIND.ERROR,
-  ];
   private readonly _panelExamples: PanelControlExample[] = [
     {
       id: "panel-with-back-button",
@@ -147,6 +137,28 @@ export class DemoChatInstanceSwitcher extends LitElement {
       `,
     },
   ];
+  @state() accessor _inputVisible: boolean = true;
+  @state() accessor _inputsDisabled: boolean = false;
+  @state() accessor _unreadIndicatorVisible: boolean = false;
+
+  protected updated(changed: PropertyValues) {
+    if (changed.has("chatInstance")) {
+      const nextInstance = this.chatInstance;
+      if (!nextInstance) {
+        this._inputVisible = true;
+        this._inputsDisabled = false;
+        this._unreadIndicatorVisible = false;
+        this._isRestarting = false;
+        return;
+      }
+
+      const publicState = nextInstance.getState?.();
+
+      if (publicState) {
+        this._unreadIndicatorVisible = Boolean(publicState.showUnreadIndicator);
+      }
+    }
+  }
 
   private _withInstance<T>(
     callback: (instance: ChatInstance) => T,
@@ -222,33 +234,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
     }
   };
 
-  private _handleAddNotification = () => {
-    const nextCount = this._notificationCount + 1;
-    this._notificationCount = nextCount;
-
-    const kind =
-      this._notificationKinds[
-        Math.floor(Math.random() * this._notificationKinds.length)
-      ];
-
-    this._withInstance((instance) => {
-      instance.notifications?.addNotification?.({
-        kind,
-        title: `Demo notification #${nextCount}`,
-        message: "This notification was added from the Chat Instance panel.",
-        groupID: this._notificationGroupId,
-      });
-    });
-  };
-
-  private _handleClearNotifications = () => {
-    this._notificationCount = 0;
-
-    this._withInstance((instance) => {
-      instance.notifications?.removeNotifications?.(this._notificationGroupId);
-    });
-  };
-
   private _handleLoadingCounter(
     direction: IncreaseOrDecrease,
     withText?: boolean,
@@ -262,6 +247,33 @@ export class DemoChatInstanceSwitcher extends LitElement {
       } else {
         instance.updateIsMessageLoadingCounter?.(direction);
       }
+    });
+  }
+
+  private _handleInputVisibilityChange(event: CustomEvent) {
+    const checked = event.detail.checked as boolean;
+    this._inputVisible = checked;
+
+    this._withInstance((instance) => {
+      instance.updateInputFieldVisibility?.(checked);
+    });
+  }
+
+  private _handleInputsDisabledChange(event: CustomEvent) {
+    const checked = event.detail.checked as boolean;
+    this._inputsDisabled = checked;
+
+    this._withInstance((instance) => {
+      instance.updateInputIsDisabled?.(checked);
+    });
+  }
+
+  private _handleUnreadIndicatorChange(event: CustomEvent) {
+    const checked = event.detail.checked as boolean;
+    this._unreadIndicatorVisible = checked;
+
+    this._withInstance((instance) => {
+      instance.updateAssistantUnreadIndicatorVisibility?.(checked);
     });
   }
 
@@ -306,20 +318,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
             @click=${this._handleRestartConversation}
           >
             ${this._isRestarting ? "Restarting..." : "Restart conversation"}
-          </cds-button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">
-          Notifications <cds-tag type="purple">Preview</cds-tag>
-        </div>
-        <div class="actions">
-          <cds-button kind="secondary" @click=${this._handleAddNotification}>
-            Add demo notification
-          </cds-button>
-          <cds-button kind="ghost" @click=${this._handleClearNotifications}>
-            Clear demo notifications
           </cds-button>
         </div>
       </div>
