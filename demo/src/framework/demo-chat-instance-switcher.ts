@@ -15,6 +15,7 @@ import {
   CustomPanelOpenOptions,
   IncreaseOrDecrease,
   ViewType,
+  WriteableElementName,
 } from "@carbon/ai-chat";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
