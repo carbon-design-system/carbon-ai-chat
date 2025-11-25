@@ -31,6 +31,10 @@ export function buildContainerStyles({
       const maxHeight = `${maxExpanded * rowHeight}px`;
       styles.push(`max-height: ${maxHeight}`);
       styles.push(`--cds-snippet-max-height: ${maxHeight}`);
+    } else {
+      // Remove the default CodeMirror max height so expanded snippets can grow to fit content
+      styles.push(`max-height: none`);
+      styles.push(`--cds-snippet-max-height: none`);
     }
     if (minExpanded > 0) {
       const minHeight = `${minExpanded * rowHeight}px`;

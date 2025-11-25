@@ -214,6 +214,8 @@ export interface CustomPanelConfigOptions {
  *
  * When {@link hideBackButton} is set to true, any {@link title} value defined here will override the title/name in
  * the main chat header.
+ *
+ * @category Instance
  */
 export interface DefaultCustomPanelConfigOptions {
   /**
@@ -238,6 +240,8 @@ export interface DefaultCustomPanelConfigOptions {
 /**
  * Options accepted by {@link CustomPanelInstance.open}. Legacy consumers may continue to pass
  * {@link CustomPanelConfigOptions} until the next major release.
+ *
+ * @category Instance
  */
 export type CustomPanelOpenOptions =
   | CustomPanelConfigOptions

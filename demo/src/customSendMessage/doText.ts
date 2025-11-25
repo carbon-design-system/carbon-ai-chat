@@ -15,6 +15,9 @@ import {
   GenericItemMessageFeedbackOptions,
   MessageResponse,
   MessageResponseTypes,
+  ReasoningStep,
+  ReasoningSteps,
+  ReasoningStepOpenState,
   ResponseUserProfile,
   StreamChunk,
   UserType,
@@ -112,6 +115,104 @@ const fullChainOfThought: ChainOfThoughtStep[] = [
   },
 ];
 
+const defaultReasoningSteps: ReasoningStep[] = [
+  {
+    title: "Interpret the request",
+    content:
+      "Identified the user's main objective and clarified any constraints so downstream steps share the same intent. Parsed the tone, looked for safety-sensitive terms, and expanded acronyms to avoid ambiguity before moving on.",
+  },
+  {
+    title: "Considering",
+  },
+  {
+    title: "Check supporting documents",
+    content: `Gathered references from the mock knowledge base, prioritizing the latest entries. Verified citations match the requested scope and collected multiple excerpts to weave into the reply rather than relying on a single source.
+
+Called **search_docs** tool:
+\`\`\`json
+{
+  "tool": "search_docs",
+  "args": {
+    "query": "latest release notes",
+    "filters": {
+      "product": "carbon-ai-chat",
+      "type": ["how-to", "reference"],
+      "date_range": "last_90_days"
+    },
+    "limit": 3
+  },
+  "response": {
+    "results": [
+      {
+        "id": "doc-1024",
+        "title": "Configuring custom reasoning steps",
+        "published": "2025-02-02"
+      },
+      {
+        "id": "doc-2048",
+        "title": "Streaming responses with chain of thought",
+        "published": "2025-01-18"
+      },
+      {
+        "id": "doc-4096",
+        "title": "Accessibility updates for reasoning UI",
+        "published": "2024-12-10"
+      }
+    ]
+  }
+}
+\`\`\``,
+  },
+  {
+    title: "Reading data",
+  },
+  {
+    title: "Evaluate possible solutions",
+    content:
+      "Compared internal guidance with the latest public documentation to find an approach that balances accuracy and safety. Considered two alternate paths, noted tradeoffs, and picked the one with the fewest edge cases for a quick, stable response.",
+  },
+  {
+    title: "Compose the response",
+    content:
+      "Structured the final answer with plain-language explanations and cited the most trustworthy sources. Included a short summary up front, followed by detailed steps and inline notes on where the information originated. Added a brief safety check to ensure no speculative claims slipped in.",
+  },
+];
+
+const defaultReasoningTraceContent = defaultReasoningSteps
+  .map((step) => step.content)
+  .filter((content): content is string => Boolean(content))
+  .join("\n\n");
+
+function buildReasoningPayload(
+  steps: ReasoningStep[] | undefined,
+  visibleCount: number,
+  finalState = false,
+  openState?: ReasoningStepOpenState,
+  content?: string,
+): ReasoningSteps {
+  const totalCount = steps ? (finalState ? steps.length : visibleCount) : 0;
+  const limited = steps
+    ? steps.slice(0, totalCount).map((step, _index) => {
+        const clone: ReasoningStep = { ...step };
+        return clone;
+      })
+    : [];
+
+  const payload: ReasoningSteps = {
+    steps: limited,
+  };
+
+  if (typeof openState !== "undefined") {
+    payload.open_state = openState;
+  }
+
+  if (typeof content === "string") {
+    payload.content = content;
+  }
+
+  return payload;
+}
+
 /**
  * A function that just mocks the chain of thought steps coming in live.
  */
@@ -154,6 +255,7 @@ async function doTextStreaming(
   wordDelay = WORD_DELAY,
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
+  reasoning?: ReasoningSteps,
   feedback?: GenericItemMessageFeedbackOptions,
   requestOptions?: CustomSendMessageOptions,
 ) {
@@ -163,6 +265,19 @@ async function doTextStreaming(
   const totalWords = words.length;
 
   const chainOfThoughtStreamingSteps: any = {};
+  const reasoningSteps = reasoning?.steps;
+  const reasoningContent = reasoning?.content;
+  const reasoningOpenState = reasoning?.open_state;
+  const reasoningFinalState =
+    reasoningSteps?.length || typeof reasoningContent !== "undefined"
+      ? buildReasoningPayload(
+          reasoningSteps,
+          reasoningSteps?.length ?? 0,
+          true,
+          reasoningOpenState,
+          reasoningContent,
+        )
+      : undefined;
 
   // Setup mocking chain of thought steps coming in as the text renders.
   if (typeof chainOfThought !== "undefined") {
@@ -187,6 +302,10 @@ async function doTextStreaming(
   let isCanceled = false;
   let lastWordIndex = 0;
 
+  if (signal?.aborted) {
+    isCanceled = true;
+  }
+
   // Listen to abort signal (handles both stop button and restart/clear)
   const abortHandler = () => {
     isCanceled = true;
@@ -194,6 +313,125 @@ async function doTextStreaming(
   signal?.addEventListener("abort", abortHandler);
 
   try {
+    if (reasoningSteps?.length || typeof reasoningContent === "string") {
+      const reasoningDisplaySteps = reasoningSteps?.map((step) => ({
+        ...step,
+        content: step.content ? "" : step.content,
+      }));
+
+      let reasoningContentProgress =
+        typeof reasoningContent === "string" ? "" : undefined;
+
+      const emitReasoningChunk = (payload: ReasoningSteps) => {
+        const chunk: StreamChunk = {
+          partial_item: {
+            response_type: MessageResponseTypes.TEXT,
+            text: "",
+            streaming_metadata: {
+              id: "1",
+              cancellable,
+            },
+          },
+          streaming_metadata: {
+            response_id: responseID,
+          },
+          partial_response: {
+            message_options: {
+              response_user_profile: userProfile,
+              reasoning: payload,
+            },
+          },
+        };
+
+        instance.messaging.addMessageChunk(chunk);
+      };
+
+      if (reasoningDisplaySteps?.length) {
+        for (
+          let stepIndex = 0;
+          stepIndex < reasoningDisplaySteps.length && !isCanceled;
+          stepIndex++
+        ) {
+          await sleep(wordDelay);
+          if (isCanceled) {
+            break;
+          }
+
+          emitReasoningChunk(
+            buildReasoningPayload(
+              reasoningDisplaySteps,
+              stepIndex + 1,
+              false,
+              reasoningOpenState,
+              reasoningContentProgress,
+            ),
+          );
+
+          const originalContent = reasoningSteps
+            ? reasoningSteps[stepIndex].content
+            : undefined;
+          if (!originalContent) {
+            continue;
+          }
+
+          const contentTokens = originalContent.match(/\S+\s*/g) ?? [
+            originalContent,
+          ];
+          let partialContent = "";
+
+          for (const token of contentTokens) {
+            if (isCanceled) {
+              break;
+            }
+            partialContent += token;
+            reasoningDisplaySteps[stepIndex].content = partialContent;
+            await sleep(wordDelay);
+            if (isCanceled) {
+              break;
+            }
+            emitReasoningChunk(
+              buildReasoningPayload(
+                reasoningDisplaySteps,
+                stepIndex + 1,
+                false,
+                reasoningOpenState,
+                reasoningContentProgress,
+              ),
+            );
+          }
+
+          reasoningDisplaySteps[stepIndex].content = originalContent;
+        }
+      }
+
+      if (typeof reasoningContent === "string" && !isCanceled) {
+        const contentTokens = reasoningContent.match(/\S+\s*/g) ?? [
+          reasoningContent,
+        ];
+        reasoningContentProgress = "";
+
+        for (const token of contentTokens) {
+          if (isCanceled) {
+            break;
+          }
+          reasoningContentProgress += token;
+          await sleep(wordDelay);
+          if (isCanceled) {
+            break;
+          }
+          emitReasoningChunk(
+            buildReasoningPayload(
+              reasoningDisplaySteps,
+              reasoningDisplaySteps?.length ?? 0,
+              false,
+              reasoningOpenState,
+              reasoningContentProgress,
+            ),
+          );
+        }
+      }
+    }
+
     for (let index = 0; index < words.length && !isCanceled; index++) {
       const word = words[index];
       lastWordIndex = index;
@@ -262,12 +500,18 @@ async function doTextStreaming(
       },
     };
 
+    if (reasoningFinalState) {
+      chunk.partial_response.message_options =
+        chunk.partial_response.message_options || {};
+      chunk.partial_response.message_options.reasoning = reasoningFinalState;
+    }
+
     instance.messaging.addMessageChunk(chunk);
 
     // When all and any chunks are complete, you send a final response.
     // You can rearrange or re-write everything here, but what you send here is what the chat will display when streaming
     // has been completed.
-    const finalResponse = {
+    const finalResponse: MessageResponse = {
       id: responseID,
       output: {
         generic: feedback
@@ -284,8 +528,14 @@ async function doTextStreaming(
       message_options: {
         response_user_profile: userProfile,
         chain_of_thought: chainOfThought,
+        reasoning: undefined,
       },
     };
+
+    if (reasoningFinalState) {
+      finalResponse.message_options = finalResponse.message_options || {};
+      finalResponse.message_options.reasoning = reasoningFinalState;
+    }
 
     await instance.messaging.addMessageChunk({
       final_response: finalResponse,
@@ -323,6 +573,7 @@ function doText(
   userProfile?: ResponseUserProfile,
   chainOfThought?: ChainOfThoughtStep[],
   feedback?: GenericItemMessageFeedbackOptions,
+  reasoning?: ReasoningSteps,
 ) {
   const genericItem = {
     response_type: MessageResponseTypes.TEXT,
@@ -337,6 +588,7 @@ function doText(
 
   message.message_options = {
     chain_of_thought: chainOfThought,
+    reasoning,
   };
 
   if (userProfile) {
@@ -435,6 +687,7 @@ async function doTextStreamingWithNonWatsonAssistantProfile(
     userProfile,
     undefined,
     undefined,
+    undefined,
     requestOptions,
   );
 }
@@ -455,6 +708,7 @@ async function doTextChainOfThoughtStreaming(
     userProfile,
     chainOfThought,
     undefined,
+    undefined,
     requestOptions,
   );
 }
@@ -466,6 +720,44 @@ function doTextChainOfThought(
   chainOfThought: ChainOfThoughtStep[] = fullChainOfThought,
 ) {
   doText(instance, text, userProfile, chainOfThought);
+}
+
+async function doTextWithReasoningStepsStreaming(
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions,
+) {
+  await doTextStreaming(
+    instance,
+    MARKDOWN,
+    true,
+    WORD_DELAY,
+    undefined,
+    undefined,
+    {
+      steps: defaultReasoningSteps,
+    },
+    undefined,
+    requestOptions,
+  );
+}
+
+async function doTextWithReasoningTraceStreaming(
+  instance: ChatInstance,
+  requestOptions?: CustomSendMessageOptions,
+) {
+  await doTextStreaming(
+    instance,
+    MARKDOWN,
+    true,
+    WORD_DELAY,
+    undefined,
+    undefined,
+    {
+      content: defaultReasoningTraceContent,
+    },
+    undefined,
+    requestOptions,
+  );
 }
 
 function doHTML(
@@ -495,6 +787,7 @@ async function doHTMLStreaming(
     wordDelay,
     userProfile,
     chainOfThought,
+    undefined,
     undefined,
     requestOptions,
   );
@@ -545,6 +838,7 @@ async function doTextWithFeedbackStreaming(
     WORD_DELAY,
     undefined,
     undefined,
+    undefined,
     feedback,
     requestOptions,
   );
@@ -554,6 +848,8 @@ export {
   doTextChainOfThoughtStreaming,
   doTextChainOfThought,
   doTextStreaming,
+  doTextWithReasoningStepsStreaming,
+  doTextWithReasoningTraceStreaming,
   doWelcomeText,
   doText,
   doTextWithHumanProfile,

@@ -905,9 +905,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
  * This class implements the callback that is passed to the service desk that it can use to send us information that
  * it produced by the service desk.
  */
-class ServiceDeskCallbackImpl<TPersistedStateType>
-  implements ServiceDeskCallback<TPersistedStateType>
-{
+class ServiceDeskCallbackImpl<
+  TPersistedStateType,
+> implements ServiceDeskCallback<TPersistedStateType> {
   /**
    * The service manager to use to access services.
    */

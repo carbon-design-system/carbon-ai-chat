@@ -54,18 +54,30 @@ export interface PublicInputState {
 }
 
 /**
- * Represents public state for each supported custom panel variant.
+ * Represents public state for default custom panel.
+ *
+ * @category Instance
  */
 export interface PublicDefaultCustomPanelState {
   /** Indicates if the default custom panel overlay is currently open. */
   isOpen: boolean;
 }
 
+/**
+ * Represents public state for each supported custom panel variant.
+ *
+ * @category Instance
+ */
 export interface PublicCustomPanelsState {
   /** State for the default overlay-style custom panel. */
   default: PublicDefaultCustomPanelState;
 }
 
+/**
+ * Type returned by {@link ChatInstance.getState}.
+ *
+ * @category Instance
+ */
 export type PublicChatState = Readonly<
   Omit<PersistedState, "humanAgentState"> & {
     /**
@@ -101,11 +113,16 @@ export type PublicChatState = Readonly<
   }
 >;
 
+/**
+ * Methods for controlling the input field.
+ *
+ * @category Instance
+ */
 export interface ChatInstanceInput {
   /**
    * @experimental Updates the raw text queued in the input before it is sent to customSendMessage.
-   * Use this when you want to manipulate the canonical value while leaving
-   * presentation up to the default renderer or, in the future, a custom slot implementation.
+   * Use this when you want to manipulate the canonical value while leaving presentation up to the default renderer or,
+   * in the future, a custom slot implementation.
    *
    * @example
    * ```ts

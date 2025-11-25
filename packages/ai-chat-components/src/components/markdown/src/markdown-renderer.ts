@@ -168,13 +168,13 @@ export function renderTokenTree(
     } = options;
 
     return html`<cds-aichat-code-snippet-tile-container
-      ?language=${language}
-      ?highlight=${highlight}
-      ?feedback=${feedback}
-      ?show-less-text=${showLessText}
-      ?show-more-text=${showMoreText}
-      ?tooltip-content=${tooltipContent}
-      ?getLineCountText=${getLineCountText}
+      .language=${language}
+      .highlight=${highlight}
+      .feedback=${feedback}
+      .showLessText=${showLessText}
+      .showMoreText=${showMoreText}
+      .tooltipContent=${tooltipContent}
+      .getLineCountText=${getLineCountText}
       >${token.content}</cds-aichat-code-snippet-tile-container
     >`;
   }

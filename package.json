@@ -23,11 +23,13 @@
     "examples/react/vite",
     "examples/react/jest-jsdom",
     "examples/react/jest-happydom",
+    "examples/react/reasoning-and-chain-of-thought",
     "examples/web-components/basic",
     "examples/web-components/custom-element",
     "examples/web-components/history",
     "examples/web-components/watch-state",
     "examples/web-components/watsonx",
+    "examples/web-components/reasoning-and-chain-of-thought",
     "packages/ai-chat",
     "packages/ai-chat-components"
   ],
