@@ -16,7 +16,16 @@ import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../config/ServiceDeskConfig";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/web-components/es/components/button/defs.js";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import type { ChainOfThoughtStep } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
+import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -435,11 +444,7 @@ export interface ItemStreamingMetadata {
  *
  * @category Messaging
  */
-export enum ChainOfThoughtStepStatus {
-  PROCESSING = "processing",
-  FAILURE = "failure",
-  SUCCESS = "success",
-}
+export { ChainOfThoughtStepStatus };
 
 /**
  * A chain of thought step is meant to show tool calls and other steps made by your agent
@@ -447,52 +452,7 @@ export enum ChainOfThoughtStepStatus {
  *
  * @category Messaging
  */
-export interface ChainOfThoughtStep {
-  /**
-   * The plain text name of the step.
-   */
-  title?: string;
-
-  /**
-   * An optional human readable description of what the tool does.
-   *
-   * Accepts markdown formatted text.
-   */
-  description?: string;
-
-  /**
-   * The plain text name of the tool called.
-   */
-  tool_name?: string;
-
-  /**
-   * Optional request metadata sent to a tool.
-   */
-  request?: {
-    /**
-     * Arguments sent to the tool. If this is properly formed JSON, it will be shown as a code block.
-     */
-    args?: unknown;
-  };
-
-  /**
-   * Optional response from a tool.
-   */
-  response?: {
-    /**
-     * Content returned by the tool. If this is properly formed JSON, it will be shown as a code block.
-     *
-     * You can also return markdown compatible text here.
-     */
-    content: unknown;
-  };
-
-  /**
-   * Optionally, share the status of this step. An icon will appear in the view showing the status. If no status is
-   * shared, the UI will assume success.
-   */
-  status?: ChainOfThoughtStepStatus;
-}
+export type { ChainOfThoughtStep };
 
 /**
  * Options that control additional features available for a message item.
@@ -1351,7 +1311,19 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+
+  /**
+   * The button size.
+   */
+  size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
+
+  /**
+   * Whether the button should be rendered as a standard carbon button.
+   *
+   * @internal
+   */
+  is?: "standard-button";
 
   /**
    * The type of button.

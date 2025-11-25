@@ -76,3 +76,6 @@ test/cypress/videos
 parcel-bundle-reports
 
 test-results
+
+# NextJS cache filees
+.next

@@ -23,7 +23,7 @@ import { HasChildren } from "../../types/utilities/HasChildren";
 import { HasClassName } from "../../types/utilities/HasClassName";
 import { isBrowser } from "../utils/browserUtils";
 import { HideComponent } from "./util/HideComponent";
-import { PageObjectId } from "../utils/PageObjectId";
+import { PageObjectId } from "../../testing/PageObjectId";
 
 const ANIMATION_START_DETECTION_DELAY_MS = 120;
 

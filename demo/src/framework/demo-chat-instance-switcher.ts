@@ -109,7 +109,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
     {
       id: "panel-without-back-button",
       buttonLabel: "Open panel (without back button)",
-      description: "Animates in and hides the back button for focused flows.",
+      description:
+        "Skips the animation and hides the back button for focused flows.",
       options: {
         title: "Panel without back button",
         hideBackButton: true,

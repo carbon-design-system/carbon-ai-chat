@@ -27,7 +27,7 @@ import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { consoleError } from "../../utils/miscUtils";
 import { BasePanelComponent } from "../BasePanelComponent";
 import { OverlayPanel } from "../OverlayPanel";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 import WriteableElement from "../WriteableElement";
 
 interface CustomPanelProps {

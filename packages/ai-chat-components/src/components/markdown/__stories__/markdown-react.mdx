@@ -1,0 +1,187 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as MarkdownReactStories from "./markdown-react.stories";
+
+<Meta of={MarkdownReactStories} />
+
+# AI Chat Markdown (React)
+
+The `<Markdown>` component wraps `cds-aichat-markdown` to render rich markdown content in React applications, including syntax highlighting, interactive tables, and streaming updates.
+
+## Key Features
+
+- **Full GitHub Flavored Markdown Support**: Headers, lists, links, emphasis, blockquotes, and more
+- **Syntax Highlighting**: Code blocks with automatic language detection
+- **Interactive Tables**: Sortable, filterable tables with pagination
+- **Streaming Content**: Real-time rendering as content arrives with no re-rendering of unchanged content
+- **HTML Handling**: Options to sanitize or remove HTML content
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+
+function MarkdownExample({ content }) {
+  return <Markdown markdown={content} highlight />;
+}
+```
+
+### Stories
+
+#### Default
+
+<Canvas of={MarkdownReactStories.Default} />
+
+#### Streaming content
+
+<Canvas of={MarkdownReactStories.Streaming} />
+
+#### HTML sanitization
+
+<Canvas of={MarkdownReactStories.WithHTMLSanitization} />
+
+## `<Markdown>` props and events
+
+<ArgTypes of={MarkdownReactStories.Default} />
+
+## Markdown Support
+
+The component implements [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/) with additional custom extensions. It uses [markdown-it](https://github.com/markdown-it/markdown-it) with the CommonMark preset and includes:
+
+**GFM Features:**
+- Tables with column alignment
+- Strikethrough text (`~~text~~`)
+- Automatic URL linking
+- Line breaks
+- etc...
+
+**Custom Extensions:**
+- Highlight syntax (`==text==`) with nested formatting support
+- Attribute syntax (`{{attribute=value}}`) for HTML attributes
+
+### Text Formatting
+
+- **Bold** text with `**bold**` or `__bold__`
+- *Italic* text with `*italic*` or `_italic_`
+- `Inline code` with backticks
+- ~~Strikethrough~~ with `~~text~~`
+- ==Highlighted text== with `==text==` (renders as `<mark>` element)
+- Supports nesting: `==**bold highlight**==` renders as bold text with highlighting
+
+### Headers
+
+All six levels of headers are supported (`#` through `######`).
+
+### Lists
+
+Both ordered and unordered lists with nested items.
+
+### Links and Images
+
+Standard markdown links `[text](url)` and images `![alt](src)`.
+
+### Blockquotes
+
+> Blockquotes with `>` prefix
+
+### Code Blocks
+
+Fenced code blocks with language specification:
+
+\`\`\`javascript
+console.log("Hello, world!");
+\`\`\`
+
+### Tables
+
+Markdown tables with alignment support:
+
+```markdown
+| Column 1 | Column 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+```
+
+### Attribute Syntax
+
+Add HTML attributes to markdown elements using `{{attribute=value}}` syntax:
+
+- **Delimiters**: `{{` and `}}`
+- **Allowed attributes**: `target`, `rel`, `class`, `id`
+
+Examples:
+
+```markdown
+[External link](https://example.com){{target=_blank rel=noopener}}
+
+# Heading with ID {{id=custom-heading}}
+
+Paragraph with custom class {{class=custom-style}}
+```
+
+**Security Note**: Only the specified attributes (`target`, `rel`, `class`, `id`) are allowed.
+
+## HTML Content
+
+### Sanitization
+
+Set `sanitizeHTML` to remove potentially dangerous elements and attributes while preserving safe HTML formatting.
+
+### Removal
+
+Set `removeHTML` to strip all HTML tags from the content, leaving only plain text and markdown.
+
+## Streaming Mode
+
+Use streaming mode to gradually reveal markdown content:
+
+```jsx
+function StreamingMarkdown({ generator }) {
+  const [content, setContent] = React.useState("");
+  const [streaming, setStreaming] = React.useState(true);
+
+  React.useEffect(() => {
+    let active = true;
+    (async () => {
+      for await (const chunk of generator) {
+        if (!active) break;
+        setContent((prev) => prev + chunk);
+      }
+      setStreaming(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [generator]);
+
+  return <Markdown markdown={content} streaming={streaming} />;
+}
+```
+
+## Customizing UI Text
+
+All text strings used in embedded components can be customized:
+
+### Code Snippet Strings
+
+- `feedback`: Text shown after copying code (default: "Copied!")
+- `tooltipContent`: Tooltip for copy button (default: "Copy code")
+- `showMoreText`: Text for expand button (default: "Show more")
+- `showLessText`: Text for collapse button (default: "Show less")
+
+### Table Strings
+
+- `filterPlaceholderText`: Placeholder for table filter (default: "Filter table...")
+- `previousPageText`: Previous page button text (default: "Previous page")
+- `nextPageText`: Next page button text (default: "Next page")
+- `itemsPerPageText`: Items per page label (default: "Items per page:")
+- `locale`: Locale for number formatting (default: "en")
+
+## Debug Mode
+
+Enable debug mode to log parsing and rendering information to the console:
+
+```jsx
+<Markdown markdown={content} debug />
+```

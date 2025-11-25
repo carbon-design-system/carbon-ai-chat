@@ -21,13 +21,12 @@ import {
   BusEventType,
   FeedbackInteractionType,
 } from "../../types/events/eventBusTypes";
-import { FeedbackButtonsComponent } from "../ai-chat-components/react/components/feedback/FeedbackButtonsComponent";
-import {
-  FeedbackComponent,
-  FeedbackSubmitDetails,
-} from "../ai-chat-components/react/components/feedback/FeedbackComponent";
-import { FeedbackInitialValues } from "../ai-chat-components/web-components/components/feedbackElement/src/FeedbackElement";
-import { prefix } from "../ai-chat-components/web-components/settings";
+import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+import Feedback, {
+  type FeedbackInitialValues,
+  type FeedbackSubmitDetails,
+} from "@carbon/ai-chat-components/es/react/feedback.js";
+import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { ResponseStopped } from "./ResponseStopped";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "./responseTypes/audio/AudioComponent";
@@ -61,7 +60,7 @@ import {
   isTextItem,
   renderAsUserDefinedMessage,
 } from "../utils/messageUtils";
-import { ChainOfThought } from "../ai-chat-components/react/components/chainOfThought/ChainOfThought";
+import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
 import {
   AudioItem,
   ButtonItem,
@@ -114,6 +113,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   );
   const persistedHumanAgentState = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
+  );
+  const locale = useSelector(
+    (state: AppState) => state.config.public.locale || "en",
   );
   const feedbackID = message.item.message_item_options?.feedback?.id;
   const feedbackPanelID = useUUID();
@@ -613,6 +615,45 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     );
   }
 
+  // Memoize markdown string functions for chain of thought
+  const getPaginationSupplementalText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage(
+          { id: "table_paginationSupplementalText" },
+          { pagesCount: count },
+        );
+      },
+    [intl],
+  );
+
+  const getPaginationStatusText = useMemo(
+    () =>
+      ({
+        start,
+        end,
+        count,
+      }: {
+        start: number;
+        end: number;
+        count: number;
+      }) => {
+        return intl.formatMessage(
+          { id: "table_paginationStatus" },
+          { start, end, count },
+        );
+      },
+    [intl],
+  );
+
+  const getLineCountText = useMemo(
+    () =>
+      ({ count }: { count: number }) => {
+        return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
+      },
+    [intl],
+  );
+
   /**
    * Renders chain of thought component for the given {@link MessageResponse}.
    */
@@ -624,6 +665,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     if (!chainOfThought || props.isNestedMessageItem) {
       return false;
     }
+
     return (
       <ChainOfThought
         steps={chainOfThought}
@@ -634,6 +676,20 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         inputLabelText={languagePack.chainOfThought_inputLabel}
         outputLabelText={languagePack.chainOfThought_outputLabel}
         toolLabelText={languagePack.chainOfThought_toolLabel}
+        // Markdown strings - Table
+        filterPlaceholderText={languagePack.table_filterPlaceholder}
+        previousPageText={languagePack.table_previousPage}
+        nextPageText={languagePack.table_nextPage}
+        itemsPerPageText={languagePack.table_itemsPerPage}
+        locale={locale}
+        getPaginationSupplementalText={getPaginationSupplementalText}
+        getPaginationStatusText={getPaginationStatusText}
+        // Markdown strings - Code snippet
+        feedback={languagePack.codeSnippet_feedback}
+        showLessText={languagePack.codeSnippet_showLessText}
+        showMoreText={languagePack.codeSnippet_showMoreText}
+        tooltipContent={languagePack.codeSnippet_tooltipContent}
+        getLineCountText={getLineCountText}
       />
     );
   }
@@ -781,7 +837,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       }
 
       return (
-        <FeedbackComponent
+        <Feedback
           class={`${prefix}--feedback-details-${
             isPositive ? "positive" : "negative"
           }`}
@@ -791,7 +847,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           isOpen={isOpen}
           isReadonly={isFeedbackSubmitted}
           onClose={() => onFeedbackClicked(isPositive)}
-          onSubmit={(details) => onSubmit(isPositive, details)}
+          onSubmit={(event: CustomEvent<FeedbackSubmitDetails>) =>
+            onSubmit(isPositive, event.detail)
+          }
           initialValues={
             feedbackHistory && feedbackHistory?.is_positive === isPositive
               ? feedbackInitialValues
@@ -812,7 +870,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     return (
       <div className="cds-aichat--received--feedback">
-        <FeedbackButtonsComponent
+        <FeedbackButtons
           isPositiveOpen={isFeedbackOpen && isPositiveFeedbackSelected}
           isNegativeOpen={isFeedbackOpen && isNegativeFeedbackSelected}
           isPositiveSelected={isPositiveFeedbackSelected}
@@ -824,7 +882,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           positiveLabel={languagePack.feedback_positiveLabel}
           negativeLabel={languagePack.feedback_negativeLabel}
           panelID={feedbackPanelID}
-          onClick={onFeedbackClicked}
+          onClick={(event: CustomEvent<{ isPositive: boolean }>) =>
+            onFeedbackClicked(event.detail.isPositive)
+          }
         />
         <div ref={feedbackDetailsRef}>
           {renderFeedbackPopup(true)}

@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/ai-chat-components/es/components/chat-button/chat-button.js";
-import ChatButton from "@carbon/ai-chat-components/es/components/chat-button/chat-button.js";
+import "@carbon/ai-chat-components/es/components/chat-button/index.js";
+import ChatButton from "@carbon/ai-chat-components/es/components/chat-button/src/chat-button.js";
 
 /**
  * This repository uses the @web/test-runner library for testing

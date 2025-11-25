@@ -13,7 +13,6 @@ import packageInfo from "../package.json";
 const { description, version } = packageInfo;
 
 export default create({
-  base: "light",
   brandTitle: `${description} v${version}`,
   brandUrl: packageInfo.repository.url,
   fontBase: '"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif',

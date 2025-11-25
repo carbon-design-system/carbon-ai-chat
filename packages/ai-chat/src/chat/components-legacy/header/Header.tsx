@@ -40,8 +40,8 @@ import { HasClassName } from "../../../types/utilities/HasClassName";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { doFocusRef } from "../../utils/domUtils";
 import { MinimizeButtonIconType } from "../../../types/config/PublicConfig";
-import { PageObjectId, TestId } from "../../utils/PageObjectId";
 import { AISlug } from "../../components/carbon/AISlug";
+import { PageObjectId, TestId } from "../../../testing/PageObjectId";
 
 const CloseLarge = carbonIconToReact(CloseLarge16);
 const ChevronDown = carbonIconToReact(ChevronDown16);

@@ -26,7 +26,7 @@ import { BodyWithFooterComponent } from "../BodyWithFooterComponent";
 import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps";
 import { OverlayPanel } from "../OverlayPanel";
 import { MessageResponse } from "../../../types/messaging/Messages";
-import { PageObjectId } from "../../utils/PageObjectId";
+import { PageObjectId } from "../../../testing/PageObjectId";
 
 interface BodyAndFooterPanelComponentProps
   extends HasRequestFocus,
