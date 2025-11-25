@@ -81,16 +81,9 @@ export class DemoHeader extends LitElement {
 
   render() {
     const chatInstanceReady = this.chatInstance ? true : false;
-    const isFullscreen = Boolean(
-      this.settings?.layout === "fullscreen" ||
-        this.settings?.layout === "fullscreen-no-gutter",
-    );
 
     return html`
-      <cds-header
-        aria-label="Carbon AI Chat"
-        style="${isFullscreen ? `height: 40px; box-sizing: content-box;` : ""}"
-      >
+      <cds-header aria-label="Carbon AI Chat">
         <cds-header-name
           href="https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html"
           prefix="Carbon"

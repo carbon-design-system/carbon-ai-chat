@@ -26,7 +26,6 @@ import {
   LocalMessageUIState,
   MessageErrorState,
 } from "../../types/messaging/LocalMessageItem";
-import { uuid } from "../utils/lang/uuid";
 import {
   ConversationalSearchItemCitation,
   GenericItem,
@@ -39,7 +38,6 @@ import {
   MessageUIStateInternal,
   SearchResult,
 } from "../../types/messaging/Messages";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 
 const CHANGE_STATE = "CHANGE_STATE";
 const HYDRATE_CHAT = "HYDRATE_CHAT";
@@ -48,9 +46,10 @@ const ADD_LOCAL_MESSAGE_ITEM = "ADD_LOCAL_MESSAGE_ITEM";
 const REMOVE_MESSAGES = "REMOVE_MESSAGES";
 const UPDATE_LOCAL_MESSAGE_ITEM = "UPDATE_LOCAL_MESSAGE_ITEM";
 const SET_APP_STATE_VALUE = "SET_APP_STATE_VALUE";
-const ADD_IS_TYPING_COUNTER = "ADD_IS_TYPING_COUNTER";
 const ADD_IS_LOADING_COUNTER = "ADD_IS_LOADING_COUNTER";
+const RESET_IS_LOADING_COUNTER = "RESET_IS_LOADING_COUNTER";
 const ADD_IS_HYDRATING_COUNTER = "ADD_IS_HYDRATING_COUNTER";
+const RESET_IS_HYDRATING_COUNTER = "RESET_IS_HYDRATING_COUNTER";
 const SET_VIEW_STATE = "SET_VIEW_STATE";
 const SET_VIEW_CHANGING = "SET_VIEW_CHANGING";
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = "SET_INITIAL_VIEW_CHANGE_COMPLETE";
@@ -93,9 +92,6 @@ const SET_RESPONSE_PANEL_CONTENT = "SET_PANEL_RESPONSE_CONTENT";
 const STREAMING_ADD_CHUNK = "STREAMING_ADD_CHUNK";
 const STREAMING_START = "STREAMING_START";
 const STREAMING_MERGE_MESSAGE_OPTIONS = "STREAMING_MERGE_MESSAGE_OPTIONS";
-const ADD_NOTIFICATION = "ADD_NOTIFICATION";
-const REMOVE_ALL_NOTIFICATIONS = "REMOVE_ALL_NOTIFICATIONS";
-const REMOVE_NOTIFICATIONS = "REMOVE_NOTIFICATIONS";
 const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
 const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
@@ -209,17 +205,17 @@ const actions = {
     };
   },
 
-  addIsTypingCounter(addToIsTyping: number) {
-    return {
-      type: ADD_IS_TYPING_COUNTER,
-      addToIsTyping,
-    };
-  },
-
-  addIsLoadingCounter(addToIsLoading: number) {
+  addIsLoadingCounter(addToIsLoading: number, message?: string) {
     return {
       type: ADD_IS_LOADING_COUNTER,
       addToIsLoading,
+      message,
+    };
+  },
+
+  resetIsLoadingCounter() {
+    return {
+      type: RESET_IS_LOADING_COUNTER,
     };
   },
 
@@ -227,6 +223,12 @@ const actions = {
     return {
       type: ADD_IS_HYDRATING_COUNTER,
       addToIsHydrating,
+    };
+  },
+
+  resetIsHydratingCounter() {
+    return {
+      type: RESET_IS_LOADING_COUNTER,
     };
   },
 
@@ -360,34 +362,6 @@ const actions = {
     propertyValue: ChatMessagesState[TPropertyName],
   ) {
     return { type: SET_CHAT_MESSAGES_PROPERTY, propertyName, propertyValue };
-  },
-
-  /**
-   * Add a notification to the state.
-   */
-  addNotification(notification: NotificationMessage) {
-    const notificationID = uuid();
-    return { type: ADD_NOTIFICATION, notificationID, notification };
-  },
-
-  /**
-   * Remove notifications using the given ids.
-   */
-  removeNotifications({
-    groupID,
-    notificationID,
-  }: {
-    groupID?: string;
-    notificationID?: string;
-  }) {
-    return { type: REMOVE_NOTIFICATIONS, groupID, notificationID };
-  },
-
-  /**
-   * Remove all notifications from the state.
-   */
-  removeAllNotifications() {
-    return { type: REMOVE_ALL_NOTIFICATIONS };
   },
 
   /**
@@ -589,7 +563,9 @@ export default actions;
 export {
   CHANGE_STATE,
   ADD_IS_LOADING_COUNTER,
+  RESET_IS_LOADING_COUNTER,
   ADD_IS_HYDRATING_COUNTER,
+  RESET_IS_HYDRATING_COUNTER,
   SET_APP_STATE_VALUE,
   ADD_LOCAL_MESSAGE_ITEM,
   UPDATE_LOCAL_MESSAGE_ITEM,
@@ -631,10 +607,7 @@ export {
   STREAMING_START,
   STREAMING_MERGE_MESSAGE_OPTIONS,
   REMOVE_LOCAL_MESSAGE_ITEM,
-  ADD_NOTIFICATION,
   REMOVE_MESSAGES,
-  REMOVE_ALL_NOTIFICATIONS,
-  REMOVE_NOTIFICATIONS,
   MERGE_HISTORY,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
   SET_STOP_STREAMING_BUTTON_DISABLED,

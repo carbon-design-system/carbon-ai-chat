@@ -17,31 +17,35 @@
  */
 
 // Export types and utilities without importing web components
-export { PageObjectId, TestId } from "./chat/utils/PageObjectId";
+export { PageObjectId, TestId } from "./testing/PageObjectId";
+export { loadAllLazyDeps } from "./testing/helpers";
 
 // Export all types without the web component implementations
-export {
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./types/instance/apiTypes";
+export { ViewState, ViewType } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   CustomPanelConfigOptions,
+  DefaultCustomPanelConfigOptions,
   CustomPanelInstance,
+  PanelType,
   CustomPanels,
+  CustomPanelOpenOptions,
 } from "./types/instance/apiTypes";
 
 export {
+  ChangeFunction,
   ChatInstance,
-  ChatInstanceNotifications,
+  ChatInstanceInput,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
+  PublicInputState,
+  PublicCustomPanelsState,
+  PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,
@@ -180,6 +184,9 @@ export {
   ItemStreamingMetadata,
   MediaItem,
   MediaItemDimensions,
+  MediaSubtitleTrack,
+  MediaTranscript,
+  MediaFileAccessibility,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,

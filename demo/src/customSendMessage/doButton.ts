@@ -12,7 +12,10 @@ import {
   ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 
 function doButton(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -24,18 +27,21 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          label: "Alert button",
-          kind: BUTTON_KIND.DANGER,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.DANGER,
+          label: "Fire a client side event",
           button_type: ButtonItemType.CUSTOM_EVENT,
           custom_event_name: "alert_button",
           // Pass any extra meta data you want here and it will be included in the event payload.
           user_defined: {
-            text: "Carbon!",
+            text: "You can have your buttons hook into your application code with events with custom payloads",
           },
         },
         {
           response_type: MessageResponseTypes.BUTTON,
-          label: "Send a message",
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.SECONDARY,
+          label: "Send a message to your server",
           button_type: ButtonItemType.POST_BACK,
           value: {
             input: {
@@ -45,9 +51,10 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.TERTIARY,
           button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
-          kind: BUTTON_KIND.SECONDARY,
           panel: {
             title: "My panel",
             show_animations: true,
@@ -69,9 +76,11 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.PRIMARY,
           button_type: ButtonItemType.URL,
-          label: "Visit ibm.com",
-          url: "https://www.ibm.com",
+          label: "Add a button that is a link",
+          url: "https://carbon-ai-chat-components.netlify.app/?path=/docs/components-chat-button--docs",
         },
       ],
     },

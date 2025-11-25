@@ -16,7 +16,16 @@ import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../config/ServiceDeskConfig";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/web-components/es/components/button/defs.js";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import type { ChainOfThoughtStep } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
+import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -435,11 +444,7 @@ export interface ItemStreamingMetadata {
  *
  * @category Messaging
  */
-export enum ChainOfThoughtStepStatus {
-  PROCESSING = "processing",
-  FAILURE = "failure",
-  SUCCESS = "success",
-}
+export { ChainOfThoughtStepStatus };
 
 /**
  * A chain of thought step is meant to show tool calls and other steps made by your agent
@@ -447,52 +452,7 @@ export enum ChainOfThoughtStepStatus {
  *
  * @category Messaging
  */
-export interface ChainOfThoughtStep {
-  /**
-   * The plain text name of the step.
-   */
-  title?: string;
-
-  /**
-   * An optional human readable description of what the tool does.
-   *
-   * Accepts markdown formatted text.
-   */
-  description?: string;
-
-  /**
-   * The plain text name of the tool called.
-   */
-  tool_name?: string;
-
-  /**
-   * Optional request metadata sent to a tool.
-   */
-  request?: {
-    /**
-     * Arguments sent to the tool. If this is properly formed JSON, it will be shown as a code block.
-     */
-    args?: unknown;
-  };
-
-  /**
-   * Optional response from a tool.
-   */
-  response?: {
-    /**
-     * Content returned by the tool. If this is properly formed JSON, it will be shown as a code block.
-     *
-     * You can also return markdown compatible text here.
-     */
-    content: unknown;
-  };
-
-  /**
-   * Optionally, share the status of this step. An icon will appear in the view showing the status. If no status is
-   * shared, the UI will assume success.
-   */
-  status?: ChainOfThoughtStepStatus;
-}
+export type { ChainOfThoughtStep };
 
 /**
  * Options that control additional features available for a message item.
@@ -943,6 +903,92 @@ interface MediaItemDimensions {
 }
 
 /**
+ * Represents a single subtitle/caption track for video content.
+ * Uses WebVTT format for accessibility. Rendered as native HTML5 track elements.
+ *
+ * @category Messaging
+ */
+interface MediaSubtitleTrack {
+  /**
+   * URL pointing to the WebVTT subtitle file.
+   */
+  src: string;
+
+  /**
+   * The language code (e.g., "en", "es", "fr").
+   * Used for the track's srclang attribute.
+   */
+  language: string;
+
+  /**
+   * Human-readable label for the track (e.g., "English", "Spanish").
+   * Displayed in the browser's subtitle menu.
+   */
+  label: string;
+
+  /**
+   * The kind of text track.
+   * - "subtitles": Translation of dialogue (default)
+   * - "captions": Transcription including sound effects
+   * - "descriptions": Audio descriptions for visually impaired
+   */
+  kind?: "subtitles" | "captions" | "descriptions";
+
+  /**
+   * Whether this track should be enabled by default.
+   * Only one track should be default.
+   */
+  default?: boolean;
+}
+
+/**
+ * Represents a text transcript for audio content.
+ * Displayed as readable text below the audio player for accessibility.
+ *
+ * @category Messaging
+ */
+interface MediaTranscript {
+  /**
+   * Full text transcript of the audio content.
+   * Supports markdown for formatting.
+   */
+  text: string;
+
+  /**
+   * Language of the transcript (e.g., "en", "es", "fr").
+   */
+  language?: string;
+
+  /**
+   * Optional label for the transcript (e.g., "English Transcript").
+   */
+  label?: string;
+}
+
+/**
+ * Accessibility features for raw media files (not embedded platforms).
+ * These features only apply when using direct file URLs (e.g., .mp4, .mp3).
+ *
+ * For embedded platforms (YouTube, Vimeo, SoundCloud, Mixcloud, etc.),
+ * rely on the platform's built-in accessibility features instead.
+ *
+ * @category Messaging
+ */
+interface MediaFileAccessibility {
+  /**
+   * Subtitle/caption tracks for video files.
+   * Supports WebVTT format rendered as native HTML5 track elements.
+   */
+  subtitle_tracks?: MediaSubtitleTrack[];
+
+  /**
+   * Text transcript for audio files.
+   * Displayed as expandable text below the audio player.
+   */
+  transcript?: MediaTranscript;
+}
+
+/**
  * The different ways an iframe item may be displayed.
  *
  * @category Messaging
@@ -996,6 +1042,12 @@ interface MediaItem<TUserDefinedType = Record<string, unknown>>
    * Settings that control the dimensions for the media item.
    */
   dimensions?: MediaItemDimensions;
+
+  /**
+   * Accessibility features for raw media files.
+   * Only applies to direct file URLs (e.g., .mp4, .mp3), not embedded platforms.
+   */
+  file_accessibility?: MediaFileAccessibility;
 }
 
 /**
@@ -1259,7 +1311,19 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+
+  /**
+   * The button size.
+   */
+  size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
+
+  /**
+   * Whether the button should be rendered as a standard carbon button.
+   *
+   * @internal
+   */
+  is?: "standard-button";
 
   /**
    * The type of button.
@@ -1746,6 +1810,9 @@ export {
   InlineErrorItem,
   MediaItem,
   MediaItemDimensions,
+  MediaSubtitleTrack,
+  MediaTranscript,
+  MediaFileAccessibility,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,

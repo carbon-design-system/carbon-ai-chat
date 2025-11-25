@@ -7,6 +7,8 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities";
 @use "@carbon/styles/scss/components/button/tokens";
 @use "../styles/chat-theme";
@@ -67,33 +69,45 @@
   }
 }
 
-.cds-aichat-scrollDownIndicatorIcon {
+.cds-aichat--processing {
+  display: flex;
+  align-items: center;
+}
+
+.cds-aichat--processing-component {
+  block-size: 32px;
+}
+
+.cds-aichat--processing-label {
+  @include type.type-style("label-02");
+
+  display: flex;
+  align-items: center;
+
+  animation: cds-aichat-fade-in 600ms forwards;
+  animation-delay: 1200ms;
+  block-size: 32px;
+  color: theme.$text-secondary;
+  font-style: italic;
+  opacity: 0;
+  padding-inline-start: layout.$spacing-01;
+}
+
+.cds-aichat__scroll-to-bottom-button {
   position: sticky;
   z-index: 1;
   display: grid;
-  border-radius: 50%;
-  margin: 0 auto;
-  background-color: tokens.$button-secondary;
-  block-size: 2rem;
-  color: theme.$text-on-color;
-  cursor: pointer;
-  inline-size: 2rem;
-  inset-block-end: 1rem;
-  inset-inline-start: calc(50% - 1rem);
-  place-items: center;
+  justify-content: center;
+  inset-block-end: layout.$spacing-05;
+  margin-block-start: calc(-1 * layout.$spacing-07);
+  transition: all motion.$duration-fast-02 motion.motion(standard, productive);
 
-  &:active {
-    background-color: tokens.$button-secondary-active;
+  &--hidden {
+    opacity: 0;
+    visibility: hidden;
   }
 
-  &:hover {
-    background-color: tokens.$button-secondary-hover;
-  }
-
-  &:focus {
-    border-color: theme.$focus;
-    box-shadow:
-      inset 0 0 0 1px theme.$focus,
-      inset 0 0 0 2px theme.$chat-shell-background;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 }

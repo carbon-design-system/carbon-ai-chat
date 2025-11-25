@@ -12,6 +12,7 @@
  */
 
 import { consoleError } from "./miscUtils";
+import { normalizeModuleInterop } from "./moduleInterop";
 
 /**
  * Converts the given color string into an array with the red, green and blue components
@@ -149,7 +150,7 @@ function calculateRelativeLuminance([r8, g8, b8]: [
  */
 async function adjustLightness(token: string, shift: number) {
   const colorModule = await import("color");
-  const Color = "default" in colorModule ? colorModule.default : colorModule;
+  const Color = normalizeModuleInterop(colorModule);
   const original = Color(token).hsl().object();
 
   return Color({ ...original, l: original.l + shift })

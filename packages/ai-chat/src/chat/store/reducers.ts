@@ -38,7 +38,6 @@ import {
   ADD_LOCAL_MESSAGE_ITEM,
   ADD_MESSAGE,
   ADD_NESTED_MESSAGES,
-  ADD_NOTIFICATION,
   ANNOUNCE_MESSAGE,
   CHANGE_STATE,
   CLEAR_INPUT_FILES,
@@ -49,11 +48,9 @@ import {
   MERGE_HISTORY,
   MESSAGE_SET_OPTION_SELECTED,
   OPEN_IFRAME_CONTENT,
-  REMOVE_ALL_NOTIFICATIONS,
   REMOVE_INPUT_FILE,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
-  REMOVE_NOTIFICATIONS,
   RESTART_CONVERSATION,
   SET_APP_STATE_VALUE,
   SET_CHAT_MESSAGES_PROPERTY,
@@ -86,6 +83,8 @@ import {
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_STATE,
   UPDATE_THEME_STATE,
+  RESET_IS_HYDRATING_COUNTER,
+  RESET_IS_LOADING_COUNTER,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
 import {
@@ -112,7 +111,6 @@ import {
   MessageResponseHistory,
   MessageRequestHistory,
 } from "../../types/messaging/Messages";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 
 type ReducerType = (state: AppState, action?: any) => AppState;
 
@@ -487,19 +485,45 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
-  [ADD_IS_LOADING_COUNTER]: (
-    state: AppState,
-    action: { addToIsLoading: number },
-  ): AppState => {
+  [RESET_IS_LOADING_COUNTER]: (state: AppState): AppState => {
     return {
       ...state,
       assistantMessageState: {
         ...state.assistantMessageState,
-        isMessageLoadingCounter: Math.max(
-          state.assistantMessageState.isMessageLoadingCounter +
-            action.addToIsLoading,
-          0,
-        ),
+        isMessageLoadingCounter: 0,
+        isMessageLoadingText: undefined,
+      },
+    };
+  },
+
+  [ADD_IS_LOADING_COUNTER]: (
+    state: AppState,
+    action: { addToIsLoading: number; message?: string },
+  ): AppState => {
+    const isMessageLoadingCounter = Math.max(
+      state.assistantMessageState.isMessageLoadingCounter +
+        action.addToIsLoading,
+      0,
+    );
+    return {
+      ...state,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        isMessageLoadingCounter,
+        isMessageLoadingText:
+          isMessageLoadingCounter > 0 && action.message
+            ? action.message
+            : undefined,
+      },
+    };
+  },
+
+  [RESET_IS_HYDRATING_COUNTER]: (state: AppState): AppState => {
+    return {
+      ...state,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        isHydratingCounter: 0,
       },
     };
   },
@@ -753,8 +777,7 @@ const reducers: { [key: string]: ReducerType } = {
       ...state,
       persistedToBrowserStorage: {
         ...state.persistedToBrowserStorage,
-        desktopLauncherIsExpanded: false,
-        desktopLauncherWasMinimized: true,
+        launcherIsExpanded: false,
       },
     };
   },
@@ -932,44 +955,6 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.assistantMessageState,
         localMessageIDs: newLocalMessageIDs,
       },
-    };
-  },
-
-  [ADD_NOTIFICATION]: (
-    state: AppState,
-    {
-      notification,
-      notificationID,
-    }: { notificationID: string; notification: NotificationMessage },
-  ) => {
-    return {
-      ...state,
-      notifications: state.notifications.concat({
-        id: notificationID,
-        notification,
-      }),
-    };
-  },
-
-  [REMOVE_NOTIFICATIONS]: (
-    state: AppState,
-    { groupID, notificationID }: { groupID?: string; notificationID?: string },
-  ) => {
-    return {
-      ...state,
-      notifications: state.notifications.filter((notification) => {
-        if (notificationID) {
-          return notification.id !== notificationID;
-        }
-        return notification.notification.groupID !== groupID;
-      }),
-    };
-  },
-
-  [REMOVE_ALL_NOTIFICATIONS]: (state: AppState) => {
-    return {
-      ...state,
-      notifications: [],
     };
   },
 

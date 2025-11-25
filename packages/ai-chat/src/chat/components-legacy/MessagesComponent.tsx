@@ -17,7 +17,6 @@ import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
 import { AriaLiveMessage } from "./aria/AriaLiveMessage";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
-import { Notifications } from "./notifications/Notifications";
 import {
   HasServiceManager,
   withServiceManager,
@@ -54,8 +53,11 @@ import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -631,8 +633,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    *
    * @param isTypingMessage The aria label for the typing indicator.
    * @param index The index of this message.
+   * @param statusMessage The optional visible message with the typing indicator
    */
-  private renderTypingIndicator(isTypingMessage: string, index: number) {
+  private renderTypingIndicator(
+    isTypingMessage: string,
+    index: number,
+    statusMessage?: string,
+  ) {
     return (
       <div
         className={`cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`}
@@ -642,7 +649,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           <div className="cds-aichat--assistant-message">
             <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
               <div className="cds-aichat--received--inner">
-                <Processing loop carbonTheme={this.props.carbonTheme} />
+                <div className="cds-aichat--processing">
+                  <Processing
+                    className="cds-aichat--processing-component"
+                    loop
+                    carbonTheme={this.props.carbonTheme}
+                  />{" "}
+                  <div className="cds-aichat--processing-label">
+                    {statusMessage}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -956,13 +972,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       messageState,
       intl,
       assistantName,
-      serviceManager,
-      notifications,
       config: {
         derived: { languagePack },
       },
     } = this.props;
-    const { isMessageLoadingCounter } = messageState;
+    const { isMessageLoadingCounter, isMessageLoadingText } = messageState;
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
@@ -1002,30 +1016,26 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               this.renderTypingIndicator(
                 isTypingMessage,
                 localMessageItems.length,
+                isMessageLoadingCounter ? isMessageLoadingText : undefined,
               )}
-            <Notifications
-              serviceManager={serviceManager}
-              notifications={notifications}
-            />
             {this.renderScrollHandle(false)}
-            {scrollDown && (
-              <MountChildrenOnDelay delay={200}>
-                <button
-                  type="button"
-                  aria-hidden
-                  aria-label={languagePack.messages_scrollMoreButton}
-                  className="cds-aichat-scrollDownIndicatorIcon"
-                  onClick={() =>
-                    this.doAutoScroll({
-                      scrollToBottom: 0,
-                      preferAnimate: true,
-                    })
-                  }
-                >
-                  <DownToBottom />
-                </button>
-              </MountChildrenOnDelay>
-            )}
+            <ChatButton
+              className={cx("cds-aichat__scroll-to-bottom-button", {
+                "cds-aichat__scroll-to-bottom-button--hidden": !scrollDown,
+              })}
+              aria-hidden
+              size={CHAT_BUTTON_SIZE.SMALL}
+              kind={CHAT_BUTTON_KIND.SECONDARY}
+              aria-label={languagePack.messages_scrollMoreButton}
+              onClick={() =>
+                this.doAutoScroll({
+                  scrollToBottom: 0,
+                  preferAnimate: true,
+                })
+              }
+            >
+              <DownToBottom slot="icon" />
+            </ChatButton>
           </div>
         </div>
       </div>

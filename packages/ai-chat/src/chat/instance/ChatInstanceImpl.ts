@@ -29,6 +29,7 @@ import {
 } from "../utils/miscUtils";
 import {
   ChatInstance,
+  IncreaseOrDecrease,
   SendOptions,
   TypeAndHandler,
 } from "../../types/instance/ChatInstance";
@@ -37,7 +38,6 @@ import {
   MessageSendSource,
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 import {
   MessageRequest,
   MessageResponse,
@@ -95,20 +95,27 @@ function createChatInstance({
     },
 
     updateInputFieldVisibility: (isVisible: boolean) => {
-      debugLog("Called instance.updateInputFieldVisibility", isVisible);
+      consoleWarn(
+        "instance.updateInputFieldVisibility is deprecated. Use The input.isVisible property to configure this behavior.",
+      );
       serviceManager.store.dispatch(
         actions.updateInputState({ fieldVisible: isVisible }, false),
       );
     },
 
     updateInputIsDisabled: (isDisabled: boolean) => {
-      debugLog("Called instance.updateInputIsDisabled", isDisabled);
+      consoleWarn(
+        "instance.updateInputIsDisabled is deprecated. Use the input.isDisabled property to configure this behavior.",
+      );
       serviceManager.store.dispatch(
         actions.updateInputState({ isReadonly: isDisabled }, false),
       );
     },
 
     updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => {
+      consoleWarn(
+        "instance.updateAssistantUnreadIndicatorVisibility is deprecated. Use public.launcher.showUnreadIndicator to configure this behavior.",
+      );
       debugLog(
         "Called instance.updateAssistantUnreadIndicatorVisibility",
         isVisible,
@@ -164,20 +171,10 @@ function createChatInstance({
       }
     },
 
-    notifications: {
-      addNotification: (notification: NotificationMessage): void => {
-        debugLog("Called instance.addNotification", notification);
-        serviceManager.actions.addNotification(notification);
-      },
-
-      removeNotifications: (groupID: string) => {
-        debugLog("Called instance.removeNotifications", groupID);
-        serviceManager.actions.removeNotification(groupID);
-      },
-
-      removeAllNotifications: () => {
-        debugLog("Called instance.removeAllNotifications");
-        serviceManager.actions.removeAllNotifications();
+    input: {
+      updateRawValue: (updater: (previous: string) => string) => {
+        debugLog("Called instance.input.updateRawValue");
+        serviceManager.actions.updateRawInputValue(updater);
       },
     },
 
@@ -200,25 +197,30 @@ function createChatInstance({
       return instance.messaging.restartConversation();
     },
 
-    updateIsMessageLoadingCounter(direction: string): void {
+    updateIsMessageLoadingCounter(
+      direction: IncreaseOrDecrease,
+      message?: string,
+    ): void {
       debugLog("Called instance.updateIsMessageLoadingCounter", direction);
       const { store } = serviceManager;
 
-      if (direction === "increase") {
-        store.dispatch(actions.addIsLoadingCounter(1));
+      if (direction === "reset") {
+        store.dispatch(actions.resetIsLoadingCounter());
+      } else if (direction === "increase") {
+        store.dispatch(actions.addIsLoadingCounter(1, message));
       } else if (direction === "decrease") {
         if (
           store.getState().assistantMessageState.isMessageLoadingCounter <= 0
         ) {
-          consoleError(
-            "You cannot decrease the loading counter when it is already <= 0",
-          );
           return;
         }
-        store.dispatch(actions.addIsLoadingCounter(-1));
-      } else {
+        store.dispatch(actions.addIsLoadingCounter(-1, message));
+      } else if (!direction && message) {
+        store.dispatch(actions.addIsLoadingCounter(0, message));
+      }
+      if (direction) {
         consoleError(
-          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are "increase" and "decrease".`,
+          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined, "reset", "increase" and "decrease".`,
         );
       }
     },
@@ -227,19 +229,18 @@ function createChatInstance({
       debugLog("Called instance.updateIsChatLoadingCounter", direction);
       const { store } = serviceManager;
 
-      if (direction === "increase") {
+      if (direction === "reset") {
+        store.dispatch(actions.resetIsHydratingCounter());
+      } else if (direction === "increase") {
         store.dispatch(actions.addIsHydratingCounter(1));
       } else if (direction === "decrease") {
         if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
-          consoleError(
-            "You cannot decrease the hydrating counter when it is already <= 0",
-          );
           return;
         }
         store.dispatch(actions.addIsHydratingCounter(-1));
       } else {
         consoleError(
-          `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "increase" and "decrease".`,
+          `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`,
         );
       }
     },

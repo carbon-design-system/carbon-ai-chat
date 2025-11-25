@@ -7,12 +7,7 @@
  *  @license
  */
 
-import {
-  CustomPanels,
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./apiTypes";
+import { CustomPanels, ViewState, ViewType } from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import type { PersistedState } from "../state/AppState";
@@ -47,15 +42,78 @@ export interface ChatInstance extends EventHandlers, ChatActions {
 }
 
 /**
- * This is the state made available by calling getState. This is a public method that returns immutable values.
+ * This is the state made available by calling {@link ChatInstance.getState}. This is a public method that returns immutable values.
  *
  * @category Instance
  */
+export interface PublicInputState {
+  /**
+   * @experimental Raw text currently queued in the input before being sent to customSendMessage.
+   */
+  rawValue: string;
+}
+
+/**
+ * Represents public state for each supported custom panel variant.
+ */
+export interface PublicDefaultCustomPanelState {
+  /** Indicates if the default custom panel overlay is currently open. */
+  isOpen: boolean;
+}
+
+export interface PublicCustomPanelsState {
+  /** State for the default overlay-style custom panel. */
+  default: PublicDefaultCustomPanelState;
+}
+
 export type PublicChatState = Readonly<
   Omit<PersistedState, "humanAgentState"> & {
+    /**
+     * Current human agent state.
+     */
     humanAgent: PublicChatHumanAgentState;
+
+    /**
+     * Counter that indicates if a message is loading and a loading indicator should be displayed.
+     * If "0" then we do not show loading indicator.
+     */
+    isMessageLoadingCounter: number;
+
+    /**
+     * Optional string to display next to the loading indicator.
+     */
+    isMessageLoadingText?: string;
+
+    /**
+     * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
+     */
+    isHydratingCounter: number;
+
+    /**
+     * @experimental State representing the main input surface.
+     */
+    input: PublicInputState;
+
+    /**
+     * @experimental State for any surfaced custom panels.
+     */
+    customPanels: PublicCustomPanelsState;
   }
 >;
+
+export interface ChatInstanceInput {
+  /**
+   * @experimental Updates the raw text queued in the input before it is sent to customSendMessage.
+   * Use this when you want to manipulate the canonical value while leaving
+   * presentation up to the default renderer or, in the future, a custom slot implementation.
+   *
+   * @example
+   * ```ts
+   * instance.input.updateRawValue((prev) => `${prev} @celeste`);
+   * ```
+   */
+  updateRawValue: (updater: (previous: string) => string) => void;
+}
 
 /**
  * Current connection state of the human agent experience.
@@ -176,21 +234,18 @@ interface ChatActions {
   writeableElements: Partial<WriteableElements>;
 
   /**
-   * Sets the input field to be invisible. Helpful for when
-   * you want to force input into a button, etc.
+   * @deprecated Configure via {@link InputConfig.isVisible}.
    */
   updateInputFieldVisibility: (isVisible: boolean) => void;
 
   /**
-   * Changes the state of Carbon AI Chat to allow or disallow input. This includes the input field as well as inputs like
-   * buttons and dropdowns.
+   * @deprecated Configure via {@link InputConfig.isDisabled}
+   * or {@link PublicConfig.isReadonly}.
    */
   updateInputIsDisabled: (isDisabled: boolean) => void;
 
   /**
-   * Updates the visibility of the custom unread indicator that appears on the launcher. This indicator appears as a
-   * small empty circle on the launcher. If there are any unread messages from a human agent, this indicator will be
-   * shown with a number regardless of the custom setting of this flag.
+   * @deprecated Configure via {@link LauncherConfig.showUnreadIndicator}.
    */
   updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => void;
 
@@ -219,25 +274,36 @@ interface ChatActions {
   doAutoScroll: () => void;
 
   /**
-   * Either increases or decreases the internal counter that indicates whether the "assistant is loading" indicator is
-   * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value will log an error.
+   * @param direction Either increases or decreases the internal counter that indicates whether the "message is loading"
+   * indicator is shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
+   * increase or decrease the value. "reset" will set the value back to 0. You may pass undefined as the first value
+   * if you just wish to update the message.
+   *
+   * You can access the current value via {@link ChatInstance.getState}.
+   *
+   * @param message You can also, optionally, pass a plain text string as the second argument. It will display next to the loading indicator for
+   * you to give meaningful feedback while the message is loading (or simple strings like "Thinking...", etc). The most
+   * recent value will be used. So if you call it with a string value and then again with no value, the value will be
+   * replaced with undefined and stop showing in the UI.
    */
-  updateIsMessageLoadingCounter: (direction: IncreaseOrDecrease) => void;
+  updateIsMessageLoadingCounter: (
+    direction: IncreaseOrDecrease,
+    message?: string,
+  ) => void;
 
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. Any other value will log an error.
+   * increase or decrease the value. "reset" will set the value back to 0.
+   *
+   * You can access the current value via {@link ChatInstance.getState}.
    */
   updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
-   * The state of notifications in the chat.
-   *
-   * @experimental
+   * Actions for mutating the chat input contents.
    */
-  notifications: ChatInstanceNotifications;
+  input: ChatInstanceInput;
 
   /**
    * Actions that are related to a service desk integration.
@@ -256,7 +322,7 @@ interface ChatActions {
 /**
  * @category Instance
  */
-export type IncreaseOrDecrease = "increase" | "decrease";
+export type IncreaseOrDecrease = "increase" | "decrease" | "reset" | undefined;
 
 /**
  * This interface represents the options for when a MessageRequest is sent to the server with the send method.
@@ -338,30 +404,6 @@ export enum WriteableElementName {
    * An element to be housed in the custom panel.
    */
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
-}
-
-/**
- * Add notification messages to the chat. This component has some a11y bugs before we can mark it complete.
- *
- * @category Instance
- *
- * @experimental
- */
-export interface ChatInstanceNotifications {
-  /**
-   * Add a system level notification to the list of system notifications.
-   */
-  addNotification: (notification: NotificationMessage) => void;
-
-  /**
-   * Remove a system level notification from the list of system notifications.
-   */
-  removeNotifications: (groupID: string) => void;
-
-  /**
-   * Remove all system level notifications from the list of system notifications.
-   */
-  removeAllNotifications: () => void;
 }
 
 /**

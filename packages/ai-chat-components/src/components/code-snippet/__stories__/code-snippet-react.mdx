@@ -1,0 +1,104 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as CodeSnippetReactStories from "./code-snippet-react.stories";
+
+<Meta of={CodeSnippetReactStories} />
+
+# AI Chat Code Snippet (React)
+
+The `<CodeSnippet>` and `<CodeSnippetTileContainer>` components wrap the `cds-aichat-code-snippet` web component to provide syntax highlighting, streaming updates, and editable code blocks inside React applications.
+
+## Key Features
+
+- **Syntax Highlighting**: Powered by CodeMirror with support for 100+ languages
+- **Editable**: Enable in-place code editing with CodeMirror
+- **Streaming Support**: Real-time content updates for AI-generated code
+- **Auto-detect Language**: Automatically detect programming languages when not specified and highlighting is enabled
+- **Tile Container**: Optional wrapper for consistent AI Chat tile styling
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
+import CodeSnippetTileContainer from "@carbon/ai-chat-components/es/react/code-snippet-tile-container.js";
+
+function ReadOnlySnippet({ code }) {
+  return <CodeSnippet highlight wrapText>{code}</CodeSnippet>;
+}
+```
+
+### Stories
+
+#### Basic usage
+
+<Canvas of={CodeSnippetReactStories.Default} />
+
+#### With highlight
+
+<Canvas of={CodeSnippetReactStories.Highlight} />
+
+#### Editable code
+
+<Canvas of={CodeSnippetReactStories.Editable} />
+<Canvas of={CodeSnippetReactStories.EditableEmpty} />
+
+## `<CodeSnippet>` props and events
+
+<ArgTypes of={CodeSnippetReactStories.Default} />
+
+## `<CodeSnippetTileContainer>` props
+
+Note: The tile container forwards all props to the inner `<CodeSnippet>` and applies AI Chat tile styling.
+
+<ArgTypes of={CodeSnippetReactStories.Default} />
+
+## Streaming Content
+
+Use the streaming stories to see how the component responds to real-time content updates.
+
+<Canvas of={CodeSnippetReactStories.StreamingWithLanguageSet} />
+<Canvas of={CodeSnippetReactStories.StreamingWithLanguageDetection} />
+
+## Usage Patterns
+
+### Streaming With AI Responses
+
+```jsx
+function StreamingSnippet({ stream }) {
+  const [content, setContent] = React.useState("");
+
+  React.useEffect(() => {
+    const subscription = stream.subscribe((chunk) =>
+      setContent((previous) => previous + chunk),
+    );
+    return () => subscription.unsubscribe();
+  }, [stream]);
+
+  return (
+    <CodeSnippetTileContainer highlight wrapText>
+      {content}
+    </CodeSnippetTileContainer>
+  );
+}
+```
+
+### Editable Playground
+
+```jsx
+function EditableSnippet() {
+  const [content, setContent] = React.useState("// Start typing...");
+
+  return (
+    <CodeSnippet
+      editable
+      highlight
+      onChange={(event) => {
+        setContent(event.detail.value);
+      }}
+    >
+      {content}
+    </CodeSnippet>
+  );
+}
+```

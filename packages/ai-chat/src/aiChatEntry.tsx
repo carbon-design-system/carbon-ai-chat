@@ -16,31 +16,34 @@
  * To use the web components, directly import them.
  */
 
-export {
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./types/instance/apiTypes";
+// Export types and utilities without importing web components
+export { PageObjectId, TestId } from "./testing/PageObjectId";
 
-export { PersistedState } from "./types/state/AppState";
+export { ViewState, ViewType } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
 export {
   CustomPanelConfigOptions,
+  DefaultCustomPanelConfigOptions,
   CustomPanelInstance,
+  PanelType,
   CustomPanels,
+  CustomPanelOpenOptions,
 } from "./types/instance/apiTypes";
 
 export {
   ChangeFunction,
   ChatInstance,
-  ChatInstanceNotifications,
+  ChatInstanceInput,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
   FileUploadCapabilities,
   IncreaseOrDecrease,
+  PublicInputState,
+  PublicCustomPanelsState,
+  PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
   SendOptions,
@@ -51,6 +54,7 @@ export {
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
+export type { loadAllLazyDeps } from "./testing/helpers";
 
 export {
   BusEvent,
@@ -88,6 +92,10 @@ export {
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
 
+export { PersistedState } from "./types/state/AppState";
+
+export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
+
 export {
   HomeScreenConfig,
   HomeScreenStarterButton,
@@ -116,8 +124,6 @@ export {
   PublicConfig,
   PublicConfigMessaging,
 } from "./types/config/PublicConfig";
-
-export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -177,6 +183,9 @@ export {
   ItemStreamingMetadata,
   MediaItem,
   MediaItemDimensions,
+  MediaSubtitleTrack,
+  MediaTranscript,
+  MediaFileAccessibility,
   MessageInput,
   MessageInputType,
   MessageItemPanelInfo,
@@ -228,11 +237,10 @@ export {
   RenderUserDefinedState,
   RenderWriteableElementResponse,
 } from "./types/component/ChatContainer";
+
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
 
 export {
   ChatCustomElement,
   ChatCustomElementProps,
 } from "./react/ChatCustomElement";
-
-export { PageObjectId, TestId } from "./chat/utils/PageObjectId";
