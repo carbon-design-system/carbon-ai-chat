@@ -17,7 +17,7 @@
 // Reuse the component-level preload helper so CodeMirror/DataTable deps stay in sync.
 import { loadAllLazyDeps as loadComponentLazyDeps } from "@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js";
 import { normalizeModuleInterop } from "../chat/utils/moduleInterop.js";
-import { localeLoaders } from "../chat/utils/languages.js";
+import { localeLoaders } from "../chat/utils/languageUtils.js";
 
 async function preloadSwiper() {
   await Promise.all([import("swiper/react"), import("swiper/modules")]);
