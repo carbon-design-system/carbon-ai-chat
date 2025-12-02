@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatActionsImpl } from "../events/ChatActionsImpl";
+import { ChatActionsImpl } from "./ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
 import { HistoryService } from "./HistoryService";
 import { createCustomPanelManager } from "./CustomPanelManager";
