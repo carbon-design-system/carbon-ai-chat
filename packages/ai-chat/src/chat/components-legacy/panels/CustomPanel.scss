@@ -33,7 +33,7 @@
 .cds-aichat--widget--max-width {
   .cds-aichat--overlay-panel-container {
     .cds-aichat--panel-content {
-      max-inline-size: chat-theme.$max-width;
+      max-inline-size: chat-theme.$messages-max-width;
     }
   }
 }

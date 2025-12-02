@@ -30,9 +30,7 @@ import { useLanguagePack } from "../hooks/useLanguagePack";
 import { MinimizeButtonIconType } from "../../types/config/PublicConfig";
 
 interface BasePanelComponentProps
-  extends HasClassName,
-    HasChildren,
-    CustomPanelConfigOptions {
+  extends HasClassName, HasChildren, CustomPanelConfigOptions {
   /**
    * Determines if the base panel should is open and allow us to track the panel opening. This will also make focus
    * trap active.
