@@ -29,7 +29,7 @@
     150px,
     calc(min(256px, 100vh) - var(--cds-aichat-bottom-position))
   );
-  --cds-aichat-max-width: 672px;
+  --cds-aichat-messages-max-width: 672px;
   --cds-aichat-bottom-position: #{layout.$spacing-09};
   --cds-aichat-right-position: #{layout.$spacing-07};
   --cds-aichat-top-position: auto;

@@ -17,9 +17,7 @@ import { LocalMessageItem } from "./LocalMessageItem";
 import { Message } from "./Messages";
 
 interface MessageContextValues
-  extends HasServiceManager,
-    HasDoAutoScroll,
-    HasDisplayOverride {
+  extends HasServiceManager, HasDoAutoScroll, HasDisplayOverride {
   originalMessage: Message;
   languagePack: LanguagePack;
 

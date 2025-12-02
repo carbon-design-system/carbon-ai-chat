@@ -67,6 +67,8 @@ function convertCSSVariablesToString(
     customPropertiesString = `${rule}${`, :host`}{${allValues}}`;
   }
 
+  console.log({ customPropertiesString });
+
   return customPropertiesString;
 }
 

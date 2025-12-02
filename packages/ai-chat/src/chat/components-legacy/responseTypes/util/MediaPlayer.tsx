@@ -51,8 +51,7 @@ const ReactPlayerComponent = React.lazy(async () => {
  * them.
  */
 interface MediaPlayerContentConfig
-  extends HasDoAutoScroll,
-    HasNeedsAnnouncement {
+  extends HasDoAutoScroll, HasNeedsAnnouncement {
   /**
    * A url pointing to a video/audio file or a third-party video/audio service
    */
@@ -118,7 +117,8 @@ interface MediaPlayerContentConfig
 }
 
 interface MediaPlayerProps
-  extends MediaPlayerContentConfig,
+  extends
+    MediaPlayerContentConfig,
     Partial<VideoComponentConfig>,
     Partial<AudioComponentConfig> {
   /**

@@ -29,7 +29,7 @@
   position: relative;
   margin: auto;
   inline-size: 100%;
-  max-inline-size: chat-theme.$max-width;
+  max-inline-size: chat-theme.$messages-max-width;
 }
 
 /* Used to hide some of the AI theme box shadow that tries to overlay the header. The chat window does the same thing. */

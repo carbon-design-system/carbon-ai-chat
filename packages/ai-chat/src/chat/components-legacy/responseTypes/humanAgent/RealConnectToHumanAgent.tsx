@@ -38,9 +38,7 @@ const Headset = carbonIconToReact(Headset16);
 const HelpDesk = carbonIconToReact(HelpDesk16);
 const Logout = carbonIconToReact(Logout16);
 interface RealConnectToHumanAgentProps
-  extends HasLanguagePack,
-    HasServiceManager,
-    HasRequestFocus {
+  extends HasLanguagePack, HasServiceManager, HasRequestFocus {
   /**
    * Indicates if the "start chat" button should be disabled.
    */

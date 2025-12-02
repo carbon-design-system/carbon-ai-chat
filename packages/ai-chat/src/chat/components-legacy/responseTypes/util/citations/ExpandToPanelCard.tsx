@@ -25,8 +25,7 @@ import { CitationClickableCard } from "./CitationClickableCard";
  */
 
 interface ExpandToPanelCardProps
-  extends HasClassName,
-    Omit<CitationCardProps, "type"> {}
+  extends HasClassName, Omit<CitationCardProps, "type"> {}
 
 function ExpandToPanelCard({
   className,

@@ -15,9 +15,7 @@ import { HasChildren } from "../../../types/utilities/HasChildren";
 import { HasClassName } from "../../../types/utilities/HasClassName";
 
 interface HideComponentProps
-  extends HasClassName,
-    HasChildren,
-    HTMLAttributes<HTMLDivElement> {
+  extends HasClassName, HasChildren, HTMLAttributes<HTMLDivElement> {
   /**
    * Indicates if the top level element in this component should be hidden. This will use the "cds-aichat--hidden"
    * classname to hide the component. The result of this hiding can be accessed through the {@link HideComponentContext}

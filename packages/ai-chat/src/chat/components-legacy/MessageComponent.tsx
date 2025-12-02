@@ -93,7 +93,8 @@ enum MoveFocusType {
 }
 
 interface MessageProps
-  extends HasServiceManager,
+  extends
+    HasServiceManager,
     HasLanguagePack,
     HasClassName,
     HasAriaAnnouncer,

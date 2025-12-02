@@ -76,7 +76,7 @@ export function detectConfigChanges(
       ),
       themingChanged: Boolean(
         newConfig.aiEnabled !== undefined ||
-          newConfig.injectCarbonTheme !== undefined,
+        newConfig.injectCarbonTheme !== undefined,
       ),
       messagingChanged: Boolean(newConfig.messaging),
       namespaceChanged: Boolean(newConfig.namespace),

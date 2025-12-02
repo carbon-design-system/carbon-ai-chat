@@ -28,7 +28,7 @@
   margin: auto;
   background-color: theme.$background;
   max-inline-size: min(
-    calc(#{chat-theme.$max-width} - calc(#{layout.$spacing-05} * 2)),
+    calc(#{chat-theme.$messages-max-width} - calc(#{layout.$spacing-05} * 2)),
     512px
   );
 }

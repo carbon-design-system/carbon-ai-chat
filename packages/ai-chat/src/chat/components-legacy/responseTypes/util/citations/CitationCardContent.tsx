@@ -62,8 +62,10 @@ interface CitationCardProps {
  * if the card contents can fit inside the card without an elipsis and report back to the parent.
  */
 
-interface CitationCardContentProps
-  extends Omit<CitationCardProps, "isSelected"> {
+interface CitationCardContentProps extends Omit<
+  CitationCardProps,
+  "isSelected"
+> {
   type: CitationType;
 
   /**
