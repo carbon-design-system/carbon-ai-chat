@@ -1,9 +1,9 @@
 {
-  "name": "@carbon/ai-chat-examples-web-components-reasoning-and-chain-of-thought",
+  "name": "@carbon/ai-chat-examples-web-components-human-agent",
   "version": "1.3.0",
   "private": true,
   "type": "module",
-  "description": "Mocked reasoning steps and chain-of-thought flows using @carbon/ai-chat as a web component.",
+  "description": "A web components example using @carbon/ai-chat with a human agent service desk.",
   "scripts": {
     "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js"
