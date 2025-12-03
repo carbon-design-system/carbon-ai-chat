@@ -28,9 +28,7 @@ import { PageObjectId } from "../../testing/PageObjectId";
 const ANIMATION_START_DETECTION_DELAY_MS = 120;
 
 interface OverlayPanelProps
-  extends HasServiceManager,
-    HasChildren,
-    HasClassName {
+  extends HasServiceManager, HasChildren, HasClassName {
   /**
    * Callback that is called after the overlay panel has opened.
    * There may be a delay before this is called to allow the panel to animate.

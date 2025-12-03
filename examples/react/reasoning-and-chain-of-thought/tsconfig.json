@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "react",
+    "strict": true,
+    "esModuleInterop": true,
+    "declaration": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": true,
+    "moduleResolution": "node",
+    "types": ["react", "react-dom", "node"],
+  },
+  "include": ["src/**/*"]
+}

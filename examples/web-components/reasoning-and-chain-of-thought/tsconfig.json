@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": true,
+    "moduleResolution": "node",
+    "lib": ["ESNext", "DOM"],
+    "types": ["node"],
+    "plugins": [
+      {
+        "name": "ts-lit-plugin"
+      }
+    ]
+  },
+  "include": ["src/**/*"]
+}

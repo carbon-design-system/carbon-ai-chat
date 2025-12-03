@@ -829,9 +829,16 @@ class MessageService {
     logError: boolean,
     reason = "Message was cancelled",
   ) {
-    let pendingRequest: PendingMessageRequest;
+    let pendingRequest: PendingMessageRequest | undefined;
 
     if (this.queue.current?.message.id === messageID) {
+      pendingRequest = this.queue.current;
+    } else if (
+      this.queue.current?.isStreaming &&
+      this.streamingMessageID === messageID
+    ) {
+      // The streaming response_id can differ from the original message.id
+      // so treat the current streaming request as a match for cancellation.
       pendingRequest = this.queue.current;
     } else {
       const index = this.queue.waiting.findIndex(
@@ -844,7 +851,11 @@ class MessageService {
     }
 
     // Check if we have an abort controller in the map (persists even if message cleared from queue)
-    const controller = this.messageAbortControllers.get(messageID);
+    const controller =
+      this.messageAbortControllers.get(messageID) ||
+      (pendingRequest
+        ? this.messageAbortControllers.get(pendingRequest.message.id)
+        : undefined);
 
     if (pendingRequest || controller) {
       const { lastResponse } = pendingRequest || {};
@@ -856,6 +867,9 @@ class MessageService {
 
       // Clean up the controller from the map
       this.messageAbortControllers.delete(messageID);
+      if (pendingRequest && messageID !== pendingRequest.message.id) {
+        this.messageAbortControllers.delete(pendingRequest.message.id);
+      }
 
       // Only process the pending request if it exists (it may have already been cleared from queue)
       if (pendingRequest) {

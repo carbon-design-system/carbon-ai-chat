@@ -9,6 +9,7 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/button-reset" as button;
 
 $message-bar-width: 3px;
 $one-line-message-height: 88px;
@@ -198,9 +199,7 @@ $one-line-message-height: 88px;
 
 .cds-aichat--assistant-message {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  max-inline-size: 100%;
+  inline-size: 100%;
 }
 
 .cds-aichat--received--inline-error,
@@ -371,6 +370,16 @@ svg.cds-aichat--sent-file-icon {
     @include type.type-style("caption-01");
   }
 
+  .cds-aichat--message__reasoning {
+    display: flex;
+    align-items: center;
+  }
+
+  .cds-aichat--message__reasoning-separator {
+    color: theme.$text-secondary;
+    margin-inline-end: layout.$spacing-03;
+  }
+
   .cds-aichat--message__avatar {
     display: flex;
     align-items: center;
@@ -455,11 +464,46 @@ svg.cds-aichat--sent-file-icon {
   background-color: theme.$chat-avatar-agent;
 }
 
+button.cds-aichat--message__reasoning-toggle {
+  @include button.reset(true);
+  @include type.type-style("caption-01");
+
+  display: inline-flex;
+  align-items: center;
+  color: theme.$text-secondary;
+  cursor: pointer;
+  gap: layout.$spacing-01;
+
+  &:focus,
+  &:focus-visible {
+    outline: 2px solid theme.$focus;
+    outline-offset: 2px;
+  }
+}
+
+.cds-aichat--message__reasoning-caret {
+  display: inline-flex;
+
+  svg {
+    transform: rotate(-90deg);
+    transition: transform motion.$duration-fast-02
+      motion.motion(standard, productive);
+  }
+
+  &[data-open="true"] svg {
+    transform: rotate(0deg);
+  }
+}
+
 .cds-aichat--received--from-human.cds-aichat--received--text {
   padding: layout.$spacing-03 layout.$spacing-04;
   border: solid 1px theme.$chat-bubble-border;
   border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
   background-color: theme.$chat-bubble-agent;
+}
+
+.cds-aichat--message__reasoning-steps {
+  padding-block-end: layout.$spacing-04;
 }
 
 .cds-aichat--container--render[dir="rtl"]

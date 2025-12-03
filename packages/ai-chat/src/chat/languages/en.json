@@ -196,5 +196,8 @@
   "chainOfThought_statusSucceededLabel": "Succeeded",
   "chainOfThought_statusFailedLabel": "Failed",
   "chainOfThought_statusProcessingLabel": "Processing",
-  "chainOfThought_explainabilityLabel": "How did I get this answer?"
+  "chainOfThought_explainabilityLabel": "How did I get this answer?",
+  "reasoningSteps_mainLabelOpen": "Hide reasoning",
+  "reasoningSteps_mainLabelClosed": "Show reasoning"
+
 }

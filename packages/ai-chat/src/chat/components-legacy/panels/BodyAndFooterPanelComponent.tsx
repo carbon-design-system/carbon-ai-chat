@@ -29,8 +29,7 @@ import { MessageResponse } from "../../../types/messaging/Messages";
 import { PageObjectId } from "../../../testing/PageObjectId";
 
 interface BodyAndFooterPanelComponentProps
-  extends HasRequestFocus,
-    HasClassName {
+  extends HasRequestFocus, HasClassName {
   /**
    * Determines if the panel is open.
    */
