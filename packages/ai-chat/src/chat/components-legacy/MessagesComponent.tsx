@@ -54,8 +54,12 @@ import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
+import ChatButton, {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -1023,24 +1027,24 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               notifications={notifications}
             />
             {this.renderScrollHandle(false)}
-            {scrollDown && (
-              <MountChildrenOnDelay delay={200}>
-                <button
-                  type="button"
-                  aria-hidden
-                  aria-label={languagePack.messages_scrollMoreButton}
-                  className="cds-aichat-scrollDownIndicatorIcon"
-                  onClick={() =>
-                    this.doAutoScroll({
-                      scrollToBottom: 0,
-                      preferAnimate: true,
-                    })
-                  }
-                >
-                  <DownToBottom />
-                </button>
-              </MountChildrenOnDelay>
-            )}
+            <MountChildrenOnDelay>
+              <ChatButton
+                className={cx("cds-aichat__scroll-to-bottom-button", {
+                  "cds-aichat__scroll-to-bottom-button--hidden": !scrollDown,
+                })}
+                size={CHAT_BUTTON_SIZE.SMALL}
+                kind={CHAT_BUTTON_KIND.SECONDARY}
+                aria-label={languagePack.messages_scrollMoreButton}
+                onClick={() =>
+                  this.doAutoScroll({
+                    scrollToBottom: 0,
+                    preferAnimate: true,
+                  })
+                }
+              >
+                <DownToBottom slot="icon" />
+              </ChatButton>
+            </MountChildrenOnDelay>
           </div>
         </div>
       </div>

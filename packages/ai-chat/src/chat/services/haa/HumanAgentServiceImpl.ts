@@ -151,6 +151,11 @@ class HumanAgentServiceImpl implements HumanAgentService {
   private serviceDeskCallback: ServiceDeskCallbackImpl<any>;
 
   /**
+   * Indicates if the human agent service has been initialized. This does not mean a chat has started, just that the service is ready.
+   */
+  hasInitialized = false;
+
+  /**
    * Indicates if a chat has started (the startChat function has been called). It does not necessarily mean that an
    * agent has joined and a full chat is in progress.
    */
@@ -209,6 +214,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     if (this.serviceDesk) {
       throw new Error("A service desk has already been created!");
     }
+
+    this.hasInitialized = true;
 
     const { store, instance } = this.serviceManager;
     const state = store.getState();
