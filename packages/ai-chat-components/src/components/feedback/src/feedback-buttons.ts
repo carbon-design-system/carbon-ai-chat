@@ -9,10 +9,13 @@
 
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
+import { feedbackButtonsElementTemplate } from "./feedback-buttons.template.js";
 // @ts-ignore
 import styles from "./feedback-buttons.scss?lit";
 
-class FeedbackButtonsElement extends LitElement {
+@carbonElement("cds-aichat-feedback-buttons")
+class CDSAIChatFeedbackButtons extends LitElement {
   static styles = styles;
 
   /**
@@ -96,10 +99,21 @@ class FeedbackButtonsElement extends LitElement {
       ),
     );
   }
+
+  render() {
+    return feedbackButtonsElementTemplate(this);
+  }
 }
 
 interface FeedbackButtonsClickEventDetail {
   isPositive: boolean;
 }
 
-export { FeedbackButtonsElement, type FeedbackButtonsClickEventDetail };
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-feedback-buttons": CDSAIChatFeedbackButtons;
+  }
+}
+
+export { CDSAIChatFeedbackButtons, type FeedbackButtonsClickEventDetail };
+export default CDSAIChatFeedbackButtons;

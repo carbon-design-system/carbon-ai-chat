@@ -7,24 +7,15 @@
  *  @license
  */
 
-import "./src/cds-aichat-feedback.js";
-import "./src/cds-aichat-feedback-buttons.js";
+import "./src/feedback.js";
+import "./src/feedback-buttons.js";
 
-export { default } from "./src/cds-aichat-feedback.js";
 export {
-  FEEDBACK_COMPONENT_TAG_NAME,
-  default as CDSChatFeedbackElement,
-} from "./src/cds-aichat-feedback.js";
-export {
-  default as CDSChatFeedbackButtonsElement,
-  FEEDBACK_BUTTONS_COMPONENT_TAG_NAME,
-} from "./src/cds-aichat-feedback-buttons.js";
-export {
-  FeedbackElement,
+  CDSAIChatFeedback,
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
 } from "./src/feedback.js";
 export {
-  FeedbackButtonsElement,
+  CDSAIChatFeedbackButtons,
   type FeedbackButtonsClickEventDetail,
 } from "./src/feedback-buttons.js";

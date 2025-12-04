@@ -155,7 +155,7 @@ The upward trend suggests continued strong performance in Q2.`,
 ];
 
 export default {
-  title: "Components/Chain of Thought",
+  title: "Components/Chain of thought",
   argTypes: {
     open: {
       control: "boolean",

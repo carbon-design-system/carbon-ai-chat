@@ -1,0 +1,63 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as TableStories from "./table.stories";
+
+<Meta of={TableStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+
+# Table
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/table) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+`cds-aichat-table` provides a simple, responsive table with filtering, pagination, and skeleton loading states—handy for displaying structured AI output or audit logs alongside chat responses.
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```html
+<script type="module">
+  const table = document.querySelector("cds-aichat-table");
+  table.headers = [
+    { text: "Name" },
+    { text: "Role" },
+    { text: "Status" },
+  ];
+  table.rows = [
+    { cells: [{ text: "Jordan Smith" }, { text: "Designer" }, { text: "Active" }] },
+    { cells: [{ text: "Priya Patel" }, { text: "Engineer" }, { text: "Paused" }] },
+    { cells: [{ text: "Lee Chen" }, { text: "PM" }, { text: "Active" }] },
+  ];
+</script>
+
+<cds-aichat-table table-title="Agent roster"></cds-aichat-table>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-table" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/table/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["table"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

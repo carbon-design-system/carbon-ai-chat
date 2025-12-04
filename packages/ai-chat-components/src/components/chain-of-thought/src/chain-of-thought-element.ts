@@ -15,8 +15,10 @@ const CHAIN_OF_THOUGHT_COMPONENT_TAG_NAME = "cds-aichat-chain-of-thought";
 
 /**
  * Custom element wrapper that wires the template to the base element implementation.
+ *
+ * @element cds-aichat-chain-of-thought
  */
-@carbonElement(CHAIN_OF_THOUGHT_COMPONENT_TAG_NAME)
+@carbonElement("cds-aichat-chain-of-thought")
 class CDSChatChainOfThoughtElement extends ChainOfThoughtElement {
   render() {
     return chainOfThoughtElementTemplate(this);

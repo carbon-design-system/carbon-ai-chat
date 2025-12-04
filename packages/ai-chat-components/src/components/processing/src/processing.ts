@@ -13,21 +13,19 @@ import { classMap } from "lit/directives/class-map.js";
 
 // @ts-ignore
 import styles from "./processing.scss?lit";
-import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
 
-@carbonElement(`${prefix}-processing`)
+@carbonElement("cds-aichat-processing")
 class CDSAIChatProcessing extends LitElement {
   static styles = styles;
 
-  @property({ type: Boolean })
+  /** Enables the linear looping animation variant. */
+  @property({ type: Boolean, attribute: "loop" })
   loop = false;
 
-  @property({ type: Boolean })
+  /** Enables the quick-load animation variant. */
+  @property({ type: Boolean, attribute: "quick-load" })
   quickLoad = false;
-
-  @property({ type: String })
-  carbonTheme = "g10";
 
   render() {
     const classes = classMap({
@@ -36,7 +34,7 @@ class CDSAIChatProcessing extends LitElement {
       [`linear--no-loop`]: this.loop === false,
     });
 
-    return html`<div data-carbon-theme=${this.carbonTheme} class=${classes}>
+    return html`<div class=${classes}>
       <svg class="dots" viewBox="0 0 32 32">
         <circle class="dot dot--left" cx="8" cy="16" />
         <circle class="dot dot--center" cx="16" cy="16" r="2" />
@@ -46,4 +44,11 @@ class CDSAIChatProcessing extends LitElement {
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-processing": CDSAIChatProcessing;
+  }
+}
+
+export { CDSAIChatProcessing };
 export default CDSAIChatProcessing;

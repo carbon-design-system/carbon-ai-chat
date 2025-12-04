@@ -40,19 +40,24 @@ export interface Action {
  * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
  *
  */
-@customElement(`${prefix}-toolbar`)
+@customElement("cds-aichat-toolbar")
 class CDSAIChatToolbar extends LitElement {
-  /** Hidden actions rendered in the overflow menu. */
+  /** Hidden actions rendered in the overflow menu.
+   *  @internal
+   */
   @state() private hiddenItems: Action[] = [];
 
   /** The list of actions. */
-  @property({ type: Array, reflect: false })
+  @property({ type: Array, attribute: false, reflect: false })
   actions: Action[] = [];
 
   /** Should actions be overflowing. */
-  @property({ type: Boolean, reflect: true }) overflow = false;
+  @property({ type: Boolean, attribute: "overflow", reflect: true })
+  overflow = false;
 
-  /** Container holding all action buttons and the overflow menu. */
+  /** Container holding all action buttons and the overflow menu.
+   *  @internal
+   */
   @query(`.${prefix}-toolbar`) private container!: HTMLElement;
 
   @state() private measuring = true;
@@ -192,4 +197,5 @@ class CDSAIChatToolbar extends LitElement {
   static styles = styles;
 }
 
+export { CDSAIChatToolbar };
 export default CDSAIChatToolbar;

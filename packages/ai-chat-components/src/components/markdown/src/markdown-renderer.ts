@@ -23,7 +23,7 @@ import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
 import type {
   TableCellContent,
   TableRowContent,
-} from "../../table/src/cds-aichat-table.js";
+} from "../../table/src/table.js";
 import {
   DEFAULT_PAGINATION_STATUS_TEXT,
   DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,

@@ -9,53 +9,76 @@
 
 import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
+import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+// @ts-ignore
+import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
+import { createRef } from "lit/directives/ref.js";
 
 import { markdownToTokenTree, TokenTree } from "./markdown-token-tree.js";
 import { renderTokenTree } from "./markdown-renderer.js";
-import { consoleError, consoleLog } from "./utils.js";
+import { consoleError } from "./utils.js";
+import { markdownTemplate } from "./markdown.template.js";
 
-class MarkdownElement extends LitElement {
-  @property({ type: Boolean, attribute: "debug" })
-  debug = false;
+@carbonElement("cds-aichat-markdown")
+class CDSAIChatMarkdown extends LitElement {
+  static styles = styles;
 
-  @property({ type: String, attribute: "markdown" })
-  markdown = "";
-
+  /**
+   * Sanitize any HTML included in the markdown. e.g. remove script tags, onclick handlers, etc.
+   */
   @property({ type: Boolean, attribute: "sanitize-html" })
   sanitizeHTML = false;
 
+  /**
+   * Remove all HTML from included markdown.
+   */
   @property({ type: Boolean, attribute: "remove-html" })
   removeHTML = false;
 
+  /**
+   * If you are actively streaming, setting this to true can help prevent needless UI thrashing when writing
+   * complex components (like a sortable and filterable table).
+   */
   @property({ type: Boolean, attribute: "streaming" })
   streaming = false;
 
-  @property({ type: Boolean })
+  /**
+   * Enable syntax highlighting for any code fence blocks.
+   */
+  @property({ type: Boolean, attribute: "highlight" })
   highlight = true;
 
   // Table strings
+  /** Placeholder text for table filters. */
   @property({ type: String, attribute: "filter-placeholder-text" })
   filterPlaceholderText = "Filter table...";
 
+  /** Label for the previous page control in tables. */
   @property({ type: String, attribute: "previous-page-text" })
   previousPageText = "Previous page";
 
+  /** Label for the next page control in tables. */
   @property({ type: String, attribute: "next-page-text" })
   nextPageText = "Next page";
 
+  /** Label for the items-per-page control in tables. */
   @property({ type: String, attribute: "items-per-page-text" })
   itemsPerPageText = "Items per page:";
 
+  /** Label for download of CSV of table data. */
   @property({ type: String, attribute: "download-label-text" })
   downloadLabelText = "Download table data";
 
+  /** Locale used for table pagination and formatting. */
   @property({ type: String, attribute: "locale" })
   locale = "en";
 
+  /** Optional formatter for supplemental pagination text. */
   @property({ type: Object, attribute: false })
   getPaginationSupplementalText?: ({ count }: { count: number }) => string;
 
+  /** Optional formatter for pagination status text. */
   @property({ type: Object, attribute: false })
   getPaginationStatusText?: ({
     start,
@@ -68,30 +91,79 @@ class MarkdownElement extends LitElement {
   }) => string;
 
   // Code snippet strings
+  /** Feedback text shown after copying code blocks. */
   @property({ type: String, attribute: "feedback" })
   feedback = "Copied!";
 
+  /** Label for collapsing long code blocks. */
   @property({ type: String, attribute: "show-less-text" })
   showLessText = "Show less";
 
+  /** Label for expanding long code blocks. */
   @property({ type: String, attribute: "show-more-text" })
   showMoreText = "Show more";
 
+  /** Tooltip content for the copy action on code blocks. */
   @property({ type: String, attribute: "tooltip-content" })
   tooltipContent = "Copy code";
 
+  /** Formatter for the code block line count. */
   @property({ type: Object, attribute: false })
   getLineCountText?: ({ count }: { count: number }) => string;
 
+  /**
+   * Watches light DOM text updates so streaming markdown triggers re-render without changing slot assignment.
+   *
+   * @internal
+   */
+  private mutationObserver?: MutationObserver;
+
+  /**
+   * @internal
+   */
   private needsReparse = false;
-  // Tracks the latest asynchronous rendering work so callers waiting on
-  // `updateComplete` know when throttled updates are done.
+
+  /**
+   * @internal
+   */
+  private contentSlot = createRef<HTMLSlotElement>();
+
+  /**
+   * @internal
+   */
+  private _slottedMarkdown = "";
+
+  /**
+   * Tracks the latest asynchronous rendering work so callers waiting on `updateComplete` know when throttled updates are done.
+   *
+   * @internal
+   */
   private renderTask: Promise<void> | null = null;
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.needsReparse = true;
+    this.scheduleRender();
+    this._syncMarkdownFromLightDom();
+    this.mutationObserver = new MutationObserver(() => {
+      this._syncMarkdownFromLightDom();
+    });
+    this.mutationObserver.observe(this, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback() {
+    this.mutationObserver?.disconnect();
+    this.mutationObserver = undefined;
+    super.disconnectedCallback();
+  }
+
   protected willUpdate(changed: PropertyValues<this>) {
-    if (changed.has("markdown") || changed.has("removeHTML")) {
+    if (changed.has("removeHTML")) {
       // Properties that affect token tree structure require full reparse
-      // - markdown: the source content changed
       // - removeHTML: changes which parser is used (html: true vs false)
       this.needsReparse = true;
       this.scheduleRender();
@@ -120,6 +192,9 @@ class MarkdownElement extends LitElement {
     }
   }
 
+  /**
+   * @internal
+   */
   @state()
   tokenTree: TokenTree = {
     key: "root",
@@ -141,6 +216,9 @@ class MarkdownElement extends LitElement {
     children: [],
   };
 
+  /**
+   * @internal
+   */
   @state()
   renderedContent: TemplateResult | null = null;
 
@@ -148,20 +226,19 @@ class MarkdownElement extends LitElement {
    * Throttled function that updates the rendered content.
    * If needsReparse is true, parses markdown into a token tree first.
    * Otherwise, just re-renders the existing token tree with current settings.
+   *
+   * @internal
    */
   private renderMarkdown = async () => {
     try {
       if (this.needsReparse) {
-        if (this.debug) {
-          consoleLog("Parsing markdown", this.markdown);
-        }
         // First, we take the markdown we were given and use the markdown-it parser to turn is into a tree we can
         // transform into Lit components and compare smartly to avoid re-renders of components that were already
         // rendered when the markdown is updated (likely by streaming, but possibly by an edit somewhere in the
         // middle). It takes the current tokenTree as an argument for quick diffing to avoid re-creating parts
         // of the tree.
         this.tokenTree = markdownToTokenTree(
-          this.markdown,
+          this._slottedMarkdown,
           this.tokenTree,
           !this.removeHTML,
         );
@@ -190,15 +267,46 @@ class MarkdownElement extends LitElement {
         tooltipContent: this.tooltipContent,
         getLineCountText: this.getLineCountText,
       });
-
-      if (this.debug) {
-        consoleLog("Markdown component renderedContent", this.renderedContent);
-      }
     } catch (error) {
       consoleError("Failed to parse markdown", error);
     }
   };
 
+  /**
+   * Reads slotted text content and uses it as the markdown source when provided.
+   */
+  private _syncMarkdownFromLightDom() {
+    const slotEl = this.contentSlot.value;
+    let content = "";
+
+    if (slotEl) {
+      content = slotEl
+        .assignedNodes({ flatten: true })
+        .map((node) => ("textContent" in node ? node.textContent || "" : ""))
+        .join("")
+        .trim();
+    } else if (this.childNodes.length) {
+      // Fallback before the slot is stamped
+      content = Array.from(this.childNodes)
+        .map((node) => ("textContent" in node ? node.textContent || "" : ""))
+        .join("")
+        .trim();
+    }
+
+    if (content && content !== this._slottedMarkdown) {
+      this._slottedMarkdown = content;
+      this.needsReparse = true;
+      this.scheduleRender();
+    }
+  }
+
+  protected firstUpdated() {
+    this._syncMarkdownFromLightDom();
+  }
+
+  /**
+   * @internal
+   */
   private scheduleRender = throttle(() => {
     // Lit's getter/setter pipeline can schedule multiple renders quickly.
     // We capture the active render promise so we can report completion later.
@@ -237,6 +345,22 @@ class MarkdownElement extends LitElement {
 
     return result;
   }
+
+  protected render() {
+    const { renderedContent } = this;
+    return markdownTemplate({
+      slotRef: this.contentSlot,
+      onSlotChange: () => this._syncMarkdownFromLightDom(),
+      renderedContent,
+    });
+  }
 }
 
-export default MarkdownElement;
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-markdown": CDSAIChatMarkdown;
+  }
+}
+
+export { CDSAIChatMarkdown };
+export default CDSAIChatMarkdown;

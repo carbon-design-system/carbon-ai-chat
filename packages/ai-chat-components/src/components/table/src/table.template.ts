@@ -17,12 +17,12 @@ import Download16 from "@carbon/icons/es/download/16.js";
 import { html } from "lit";
 import { repeat } from "lit-html/directives/repeat.js";
 
-import type { TableElement } from "./cds-aichat-table.js";
+import type { CDSAIChatTable } from "./table.js";
 
 /**
  * Table view logic.
  */
-function tableTemplate(tableElement: TableElement) {
+function tableTemplate(tableElement: CDSAIChatTable) {
   const {
     tableTitle,
     tableDescription,

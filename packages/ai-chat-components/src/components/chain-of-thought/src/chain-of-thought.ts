@@ -21,19 +21,8 @@ import { uuid } from "../../../globals/utils/uuid.js";
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
-const formatStepLabelTextDefault = ({
-  stepNumber,
-  stepTitle,
-}: {
-  stepNumber: number;
-  stepTitle: string;
-}) => {
-  const formattedNumber = numberFormatter.format(stepNumber);
-  const formattedTitle = stepTitle || "";
-  return `${formattedNumber}: ${formattedTitle}`;
-};
-
-class ChainOfThoughtElement extends LitElement {
+@carbonElement("cds-aichat-chain-of-thought")
+class CDSAIChatChainOfThought extends LitElement {
   static styles = styles;
 
   /**
@@ -127,24 +116,31 @@ class ChainOfThoughtElement extends LitElement {
   statusProcessingLabelText = "Processing";
 
   // Markdown component strings - Table
+  /** Placeholder text for table filters inside markdown content. */
   @property({ type: String, attribute: "filter-placeholder-text" })
-  filterPlaceholderText?: string;
+  filterPlaceholderText = "Filter table...";
 
+  /** Label for the previous page control inside markdown tables. */
   @property({ type: String, attribute: "previous-page-text" })
-  previousPageText?: string;
+  previousPageText = "Previous page";
 
+  /** Label for the next page control inside markdown tables. */
   @property({ type: String, attribute: "next-page-text" })
-  nextPageText?: string;
+  nextPageText = "Next page";
 
+  /** Label for the items-per-page control inside markdown tables. */
   @property({ type: String, attribute: "items-per-page-text" })
-  itemsPerPageText?: string;
+  itemsPerPageText = "Items per page:";
 
+  /** Locale forwarded to markdown rendering (tables, formatting). */
   @property({ type: String, attribute: "locale" })
-  locale?: string;
+  locale = "en";
 
+  /** Optional formatter for supplemental pagination text in markdown tables. */
   @property({ type: Object, attribute: false })
   getPaginationSupplementalText?: ({ count }: { count: number }) => string;
 
+  /** Optional formatter for pagination status text in markdown tables. */
   @property({ type: Object, attribute: false })
   getPaginationStatusText?: ({
     start,
@@ -157,29 +153,37 @@ class ChainOfThoughtElement extends LitElement {
   }) => string;
 
   // Markdown component strings - Code snippet
+  /** Feedback text displayed after copying from markdown code blocks. */
   @property({ type: String, attribute: "feedback" })
-  feedback?: string;
+  feedback = "Copied!";
 
+  /** Label for collapsing long markdown code blocks. */
   @property({ type: String, attribute: "show-less-text" })
-  showLessText?: string;
+  showLessText = "Show less";
 
+  /** Label for expanding long markdown code blocks. */
   @property({ type: String, attribute: "show-more-text" })
-  showMoreText?: string;
+  showMoreText = "Show more";
 
+  /** Tooltip content for the copy button in markdown code blocks. */
   @property({ type: String, attribute: "tooltip-content" })
-  tooltipContent?: string;
+  tooltipContent = "Copy code";
 
+  /** Formatter for line count text in markdown code blocks. */
   @property({ type: Object, attribute: false })
   getLineCountText?: ({ count }: { count: number }) => string;
 
   /**
    * Steps, but we add in whether the step is open or not.
+   *
+   * @internal
    */
   @state()
   _steps: ChainOfThoughtStepWithToggle[] = [];
 
   /**
    * ID we use for a11y.
+   * @internal
    */
   @state()
   _chainOfThoughtPanelID = `${prefix}-chain-of-thought-panel-id-${uuid()}`;
@@ -198,7 +202,108 @@ class ChainOfThoughtElement extends LitElement {
         open: currentSteps[index]?.open ?? false,
       }));
     }
+    this.addEventListener(
+      CDSAIChatChainOfThought.stepToggleEventName,
+      this.handleStepToggle as EventListener,
+    );
+    super.connectedCallback();
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener(
+      CDSAIChatChainOfThought.stepToggleEventName,
+      this.handleStepToggle as EventListener,
+    );
+    super.disconnectedCallback();
+  }
+
+  get steps(): NodeListOf<CDSAIChatChainOfThoughtStep> {
+    return this.querySelectorAll<CDSAIChatChainOfThoughtStep>(stepSelector);
+  }
+
+  protected updated(changedProperties: Map<PropertyKey, unknown>) {
+    if (changedProperties.has("controlled")) {
+      this.propagateControlled();
+    }
+
+    if (
+      changedProperties.has("open") &&
+      changedProperties.get("open") !== undefined
+    ) {
+      this.dispatchToggleEvent();
+    }
+  }
+
+  private handleStepToggle(
+    event: CustomEvent<ChainOfThoughtStepToggleEventDetail>,
+  ) {
+    const { detail, target } = event;
+    this.onStepToggle?.(Boolean(detail?.open), target as HTMLElement);
+  }
+
+  private propagateControlled() {
+    this.steps.forEach((step) => {
+      if (this.controlled) {
+        step.setAttribute("data-parent-controlled", "");
+        step.setAttribute("controlled", "");
+      } else if (step.hasAttribute("data-parent-controlled")) {
+        step.removeAttribute("data-parent-controlled");
+        step.removeAttribute("controlled");
+      }
+    });
+  }
+
+  private dispatchToggleEvent() {
+    const detail: ChainOfThoughtToggleEventDetail = {
+      open: this.open,
+      panelId: this.panelId,
+    };
+    this.dispatchEvent(
+      new CustomEvent<ChainOfThoughtToggleEventDetail>(
+        CDSAIChatChainOfThought.eventToggle,
+        {
+          detail,
+          bubbles: true,
+          composed: true,
+        },
+      ),
+    );
+
+    const panel = this.shadowRoot?.getElementById(this.panelId) ?? this;
+    this.onToggle?.(this.open, panel as HTMLElement);
+  }
+
+  render() {
+    return html`
+      <div class="${prefix}--chain-of-thought">
+        <div
+          id=${this.panelId}
+          class="${prefix}--chain-of-thought-content"
+          aria-hidden=${this.open ? "false" : "true"}
+          ?hidden=${!this.open}
+        >
+          <div class="${prefix}--chain-of-thought-inner-content">
+            <slot></slot>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  static get eventToggle() {
+    return `${prefix}-chain-of-thought-toggled`;
+  }
+
+  static get stepToggleEventName() {
+    return `${prefix}-chain-of-thought-step-toggled`;
   }
 }
 
-export { ChainOfThoughtElement };
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-chain-of-thought": CDSAIChatChainOfThought;
+  }
+}
+
+export { CDSAIChatChainOfThought };
+export default CDSAIChatChainOfThought;

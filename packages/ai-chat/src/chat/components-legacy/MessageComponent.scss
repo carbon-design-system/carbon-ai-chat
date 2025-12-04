@@ -453,37 +453,6 @@ svg.cds-aichat--sent-file-icon {
   background-color: theme.$chat-avatar-agent;
 }
 
-button.cds-aichat--message__reasoning-toggle {
-  @include button.reset(true);
-  @include type.type-style("caption-01");
-
-  display: inline-flex;
-  align-items: center;
-  color: theme.$text-secondary;
-  cursor: pointer;
-  gap: layout.$spacing-01;
-
-  &:focus,
-  &:focus-visible {
-    outline: 2px solid theme.$focus;
-    outline-offset: 2px;
-  }
-}
-
-.cds-aichat--message__reasoning-caret {
-  display: inline-flex;
-
-  svg {
-    transform: rotate(-90deg);
-    transition: transform motion.$duration-fast-02
-      motion.motion(standard, productive);
-  }
-
-  &[data-open="true"] svg {
-    transform: rotate(0deg);
-  }
-}
-
 .cds-aichat--received--from-human.cds-aichat--received--text {
   padding: layout.$spacing-03 layout.$spacing-04;
   border: solid 1px theme.$chat-bubble-border;

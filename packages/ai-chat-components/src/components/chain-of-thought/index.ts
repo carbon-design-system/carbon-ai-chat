@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "./src/cds-aichat-chain-of-thought.js";
+import "./src/chain-of-thought-element.js";
 
-export { default } from "./src/cds-aichat-chain-of-thought.js";
-export { ChainOfThoughtElement } from "./src/chain-of-thought.js";
+export { default } from "./src/chain-of-thought-element.js";
+export { CDSAIChatChainOfThought } from "./src/chain-of-thought.js";
 export {
   type ChainOfThoughtOnToggle,
   type ChainOfThoughtStep,

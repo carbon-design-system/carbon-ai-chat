@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import ReasoningSteps from "../../../react/reasoning-steps";
 import ReasoningStep from "../../../react/reasoning-step";
+import Markdown from "../../../react/markdown";
 
 const defaultSteps = [
   {
@@ -10,40 +11,40 @@ const defaultSteps = [
     title: "Understand the request",
     open: true,
     body: (
-      <p>
+      <Markdown>
         Parsed the prompt, highlighted constraints, and summarized the desired
         outcome before searching for context.
-      </p>
+      </Markdown>
     ),
   },
   {
     id: "gather-context",
     title: "Gather supporting context",
     body: (
-      <p>
+      <Markdown>
         Retrieved related CRM notes, the current entitlement, and the latest
         knowledge base article covering the requested workflow.
-      </p>
+      </Markdown>
     ),
   },
   {
     id: "draft-response",
     title: "Draft response",
     body: (
-      <p>
+      <Markdown>
         Generated an outline covering prerequisites, recommended actions, and a
         confidence score for each suggestion.
-      </p>
+      </Markdown>
     ),
   },
   {
     id: "quality-check",
     title: "Quality check",
     body: (
-      <p>
+      <Markdown>
         Double-checked that every claim is cited, confirmed there are no
         conflicting instructions, and ensured tone guidelines are satisfied.
-      </p>
+      </Markdown>
     ),
   },
 ];
@@ -53,10 +54,10 @@ const staticSteps = [
     id: "flag-gap",
     title: "Flagged missing information",
     body: (
-      <p>
+      <Markdown>
         The prompt references a contract number that is not present in the data
         set. Marked this as a gap for the reviewer.
-      </p>
+      </Markdown>
     ),
   },
   {
@@ -67,10 +68,10 @@ const staticSteps = [
     id: "human-review",
     title: "Queued for human review",
     body: (
-      <p>
+      <Markdown>
         Provided a condensed summary plus key questions to unblock the next
         stage once artifacts arrive.
-      </p>
+      </Markdown>
     ),
   },
 ];
@@ -116,30 +117,30 @@ const ControlledExample = () => {
         id: "collect-signals",
         title: "Collect signals",
         body: (
-          <p>
+          <Markdown>
             Pulled telemetry from the past 24 hours plus the latest error budget
             numbers referenced in the prompt.
-          </p>
+          </Markdown>
         ),
       },
       {
         id: "evaluate-options",
         title: "Evaluate options",
         body: (
-          <p>
+          <Markdown>
             Compared two viable remediation paths and scored them based on
             impact, risk, and implementation effort.
-          </p>
+          </Markdown>
         ),
       },
       {
         id: "compose-reply",
         title: "Compose reply",
         body: (
-          <p>
+          <Markdown>
             Crafted the recommended response with inline citations for every
             factual statement.
-          </p>
+          </Markdown>
         ),
       },
       {
@@ -220,7 +221,7 @@ const ControlledExample = () => {
 };
 
 export default {
-  title: "Components/Reasoning Steps",
+  title: "Components/Reasoning steps",
   parameters: {
     docs: {
       description: {

@@ -10,11 +10,11 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatStopStreamingButtonElement from "../../../web-components/components/stopStreamingButton/cds-aichat-stop-streaming-button";
+import CDSAIChatStopStreamingButtonElement from "../../../web-components/components/stopStreamingButton/cds-aichat-stop-streaming-button";
 
 const StopStreamingButton = createComponent({
   tagName: "cds-aichat-stop-streaming-button",
-  elementClass: CDSChatStopStreamingButtonElement,
+  elementClass: CDSAIChatStopStreamingButtonElement,
   react: React,
 });
 

@@ -12,14 +12,15 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatCodeSnippetCard from "../components/code-snippet/src/code-snippet-card.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const CodeSnippetCard = createComponent({
+const CodeSnippetCard = withWebComponentBridge(createComponent({
   tagName: "cds-aichat-code-snippet-card",
   elementClass: CDSAIChatCodeSnippetCard,
   react: React,
   events: {
     onChange: "content-change",
   },
-});
+}));
 
 export default CodeSnippetCard;

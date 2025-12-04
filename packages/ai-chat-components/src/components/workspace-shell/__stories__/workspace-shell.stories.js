@@ -24,6 +24,7 @@ import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Workspace shell",
+  component: "cds-aichat-workspace-shell",
   argTypes: {
     toolbarTitle: {
       control: "text",

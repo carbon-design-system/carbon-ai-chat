@@ -1,166 +1,89 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as FeedbackButtonsStories from "./feedback-buttons.stories";
 
-<Meta of={FeedbackButtonsStories} />
+<Meta of={FeedbackButtonsStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Feedback Buttons
+# Feedback buttons
 
-The `cds-aichat-feedback-buttons` component displays thumbs up and thumbs down buttons for quick user feedback on AI responses. These buttons can trigger feedback panels or directly record user sentiment.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Thumbs Up/Down**: Simple positive/negative feedback buttons
-- **Selected State**: Visual indication when feedback has been provided
-- **Disabled State**: Prevent interaction when feedback is already submitted
-- **Details Panel Integration**: Optional connection to feedback detail panels
-- **Custom Labels**: Accessibility labels can be customized
-- **Click Handlers**: Flexible callback system for handling user interactions
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
 
-## Getting started
+## Overview
+
+Use `cds-aichat-feedback-buttons` when you need quick thumbs up/down capture with optional detail panels. Pair it with `cds-aichat-feedback` to collect richer follow-up when users choose a sentiment.
+
+### Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+```html
+<script type="module">
+  const buttons = document.querySelector("cds-aichat-feedback-buttons");
+  const panel = document.querySelector("cds-aichat-feedback");
+
+  panel.categories = ["Inaccurate", "Unhelpful", "Inappropriate"];
+
+  buttons.addEventListener("feedback-buttons-click", (event) => {
+    const { isPositive } = event.detail;
+    if (isPositive) {
+      console.log("Positive feedback recorded");
+    } else {
+      panel.isOpen = true;
+    }
+  });
+
+  panel.addEventListener("feedback-submit", (event) => {
+    console.log("Detailed feedback:", event.detail);
+    panel.isOpen = false;
+  });
+  panel.addEventListener("feedback-close", () => {
+    panel.isOpen = false;
+  });
+</script>
+
+<cds-aichat-feedback-buttons
+  panel-id="feedback-panel-example"
+  negative-label="Thumbs down"
+  positive-label="Thumbs up"
+  has-negative-details
+></cds-aichat-feedback-buttons>
+
+<cds-aichat-feedback
+  id="feedback-panel-example"
+  title="What could be better?"
+  prompt="Share details so we can improve this response"
+  text-area-placeholder="What missed the mark?"
+  cancel-label="Close"
+  submit-label="Submit"
+  show-text-area
+  show-prompt
+></cds-aichat-feedback>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-feedback-buttons" />
+
+## JS (via import)
 
 ```javascript
 import "@carbon/ai-chat-components/es/components/feedback/index.js";
 ```
 
-Both the feedback panel and the quick buttons are registered from this single entrypoint, mirroring the way Carbon's data table groups its subcomponents.
-
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
-```
 
 <Markdown>{`${cdnJs(["feedback"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
+## Feedback
 
-#### Basic usage
-
-<Canvas of={FeedbackButtonsStories.Default} />
-
-#### With positive selected
-
-<Canvas of={FeedbackButtonsStories.PositiveSelected} />
-
-#### With negative selected
-
-<Canvas of={FeedbackButtonsStories.NegativeSelected} />
-
-#### With details panels
-
-<Canvas of={FeedbackButtonsStories.WithDetailsPanel} />
-
-#### Disabled state
-
-<Canvas of={FeedbackButtonsStories.Disabled} />
-
-## `<cds-aichat-feedback-buttons>` attributes, properties and events
-
-<ArgTypes of={FeedbackButtonsStories.Default} />
-
-## Usage Patterns
-
-### Simple Feedback Recording
-
-Record feedback immediately when a button is clicked:
-
-```javascript
-const buttons = document.querySelector('cds-aichat-feedback-buttons');
-buttons.addEventListener('feedback-buttons-click', (event) => {
-  const { isPositive } = event.detail;
-  console.log(isPositive ? 'Positive feedback' : 'Negative feedback');
-  // Record feedback to your backend
-  recordFeedback({ messageId: '123', sentiment: isPositive ? 'positive' : 'negative' });
-  // Update UI to show selection
-  if (isPositive) {
-    buttons.isPositiveSelected = true;
-  } else {
-    buttons.isNegativeSelected = true;
-  }
-  // Disable further feedback
-  buttons.isPositiveDisabled = true;
-  buttons.isNegativeDisabled = true;
-});
-```
-
-### With Feedback Details Panel
-
-Open a details panel for additional feedback:
-
-```javascript
-const buttons = document.querySelector('cds-aichat-feedback-buttons');
-buttons.hasNegativeDetails = true;
-buttons.panelID = 'feedback-panel-123';
-
-buttons.addEventListener('feedback-buttons-click', (event) => {
-  const { isPositive } = event.detail;
-  if (isPositive) {
-    // Record positive feedback immediately
-    recordFeedback({ messageId: '123', sentiment: 'positive' });
-    buttons.isPositiveSelected = true;
-  } else {
-    // Open details panel for negative feedback
-    buttons.isNegativeOpen = true;
-  }
-});
-```
-
-### Toggle Behavior
-
-Allow users to change their feedback:
-
-```javascript
-const buttons = document.querySelector('cds-aichat-feedback-buttons');
-
-buttons.addEventListener('feedback-buttons-click', (event) => {
-  const { isPositive } = event.detail;
-  if (isPositive) {
-    // Toggle positive selection
-    buttons.isPositiveSelected = !buttons.isPositiveSelected;
-    buttons.isNegativeSelected = false;
-  } else {
-    // Toggle negative selection
-    buttons.isNegativeSelected = !buttons.isNegativeSelected;
-    buttons.isPositiveSelected = false;
-  }
-
-  // Record the current state
-  const sentiment = buttons.isPositiveSelected ? 'positive'
-    : buttons.isNegativeSelected ? 'negative'
-    : null;
-  recordFeedback({ messageId: '123', sentiment });
-});
-```
-
-## Integration with Feedback Component
-
-Combine with `cds-aichat-feedback` for detailed feedback collection:
-
-```html
-<cds-aichat-feedback-buttons
-  id="feedback-buttons"
-  has-negative-details
-  panel-id="feedback-panel"
->
-</cds-aichat-feedback-buttons>
-
-<cds-aichat-feedback
-  id="feedback-panel"
-  title="What went wrong?"
-  .categories=${["Inaccurate", "Unhelpful", "Inappropriate"]}
->
-</cds-aichat-feedback>
-```
-
-## Accessibility
-
-- Both buttons include customizable labels for screen readers
-- Uses `aria-pressed` to indicate selected state
-- Uses `aria-controls` to link to detail panels when applicable
-- Keyboard navigable with standard tab/enter interactions
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

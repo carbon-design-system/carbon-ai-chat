@@ -23,9 +23,11 @@ describe("aichat processing", function () {
       html`<cds-aichat-processing></cds-aichat-processing>`,
     );
 
+    await el.updateComplete;
+
     expect(el).to.be.instanceOf(CDSAIChatProcessing);
     expect(el.tagName.toLowerCase()).to.equal("cds-aichat-processing");
-    expect(el.shadowRoot?.querySelector("div[data-carbon-theme]")).to.exist;
+    expect(el.shadowRoot?.querySelector(".dots")).to.exist;
   });
 
   it("should render with loop property", async () => {
@@ -40,21 +42,11 @@ describe("aichat processing", function () {
 
   it("should render with quickLoad property", async () => {
     const el = await fixture<CDSAIChatProcessing>(
-      html`<cds-aichat-processing quickLoad></cds-aichat-processing>`,
+      html`<cds-aichat-processing quick-load></cds-aichat-processing>`,
     );
 
     expect(el.quickLoad).to.be.true;
     const quickLoadClass = el.shadowRoot?.querySelector(".quick-load");
     expect(quickLoadClass).to.exist;
-  });
-
-  it("should render with custom carbonTheme", async () => {
-    const el = await fixture<CDSAIChatProcessing>(
-      html`<cds-aichat-processing carbonTheme="g100"></cds-aichat-processing>`,
-    );
-
-    expect(el.carbonTheme).to.equal("g100");
-    const div = el.shadowRoot?.querySelector("div[data-carbon-theme]");
-    expect(div?.getAttribute("data-carbon-theme")).to.equal("g100");
   });
 });

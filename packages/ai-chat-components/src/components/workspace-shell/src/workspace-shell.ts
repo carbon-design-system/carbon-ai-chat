@@ -25,7 +25,7 @@ import prefix from "../../../globals/settings.js";
  * @slot footer - Represents the footer section, usually containing action buttons.
  *
  */
-@customElement(`${prefix}-workspace-shell`)
+@customElement("cds-aichat-workspace-shell")
 class CDSAIChatWorkspaceShell extends LitElement {
   static styles = styles;
 
@@ -44,4 +44,5 @@ class CDSAIChatWorkspaceShell extends LitElement {
   };
 }
 
+export { CDSAIChatWorkspaceShell };
 export default CDSAIChatWorkspaceShell;

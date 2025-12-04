@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../src/cds-aichat-markdown";
+import "../src/markdown";
 import { html, LitElement } from "lit";
 
 const comprehensiveMarkdown = `# Markdown Rendering Demo
@@ -212,10 +212,8 @@ class StreamingDemo extends LitElement {
             Restart Streaming
           </button>
         </div>
-        <cds-aichat-markdown
-          ?streaming=${this.streaming}
-          markdown=${this.streamedContent}
-        >
+        <cds-aichat-markdown ?streaming=${this.streaming}>
+          ${this.streamedContent}
         </cds-aichat-markdown>
       </div>
     `;
@@ -226,6 +224,7 @@ customElements.define("streaming-markdown-demo", StreamingDemo);
 
 export default {
   title: "Components/Markdown",
+  component: "cds-aichat-markdown",
   argTypes: {
     markdown: {
       control: "text",
@@ -310,7 +309,6 @@ export const Default = {
   },
   render: (args) => html`
     <cds-aichat-markdown
-      markdown=${args.markdown}
       ?streaming=${args.streaming}
       ?sanitize-html=${args.sanitizeHTML}
       ?remove-html=${args.removeHTML}
@@ -326,6 +324,7 @@ export const Default = {
       items-per-page-text=${args.itemsPerPageText}
       locale=${args.locale}
     >
+      ${args.markdown}
     </cds-aichat-markdown>
   `,
 };
@@ -352,13 +351,13 @@ export const WithHTMLSanitization = {
         while safe HTML is preserved.
       </p>
       <cds-aichat-markdown
-        markdown=${args.markdown}
         ?streaming=${args.streaming}
         ?sanitize-html=${args.sanitizeHTML}
         ?remove-html=${args.removeHTML}
         .highlight=${args.highlight}
         ?debug=${args.debug}
       >
+        ${args.markdown}
       </cds-aichat-markdown>
     </div>
   `,
@@ -380,13 +379,13 @@ export const WithHTMLRemoval = {
         stripped, leaving only plain text and markdown.
       </p>
       <cds-aichat-markdown
-        markdown=${args.markdown}
         ?streaming=${args.streaming}
         ?sanitize-html=${args.sanitizeHTML}
         ?remove-html=${args.removeHTML}
         .highlight=${args.highlight}
         ?debug=${args.debug}
       >
+        ${args.markdown}
       </cds-aichat-markdown>
     </div>
   `,
@@ -404,13 +403,13 @@ export const WithoutHighlighting = {
   render: (args) => html`
     <div>
       <cds-aichat-markdown
-        markdown=${args.markdown}
         ?streaming=${args.streaming}
         ?sanitize-html=${args.sanitizeHTML}
         ?remove-html=${args.removeHTML}
         .highlight=${args.highlight}
         ?debug=${args.debug}
       >
+        ${args.markdown}
       </cds-aichat-markdown>
     </div>
   `,

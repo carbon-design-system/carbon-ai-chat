@@ -1,132 +1,70 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as FeedbackStories from "./feedback.stories";
 
-<Meta of={FeedbackStories} />
+<Meta of={FeedbackStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Feedback
+# Feedback
 
-The `cds-aichat-feedback` component provides a panel for collecting user feedback on AI responses. It includes category selection, a text input area, and customizable labels for gathering structured feedback.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Category Selection**: Multiple predefined categories that users can select
-- **Text Input**: Optional text area for detailed feedback
-- **Flexible Configuration**: Show/hide prompt and text area as needed
-- **Initial Values**: Pre-populate with existing feedback for editing
-- **Read-only Mode**: Display submitted feedback without allowing edits
-- **Custom Labels**: All text strings can be customized for internationalization
-- **Markdown Support**: Disclaimer text supports markdown formatting
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
 
-## Getting started
+## Overview
+
+Use `cds-aichat-feedback` to collect structured feedback on AI responses. It supports category chips, optional freeform text, prompt copy, and read-only display for previously submitted feedback.
+
+### Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+```html
+<script type="module">
+  const panel = document.querySelector("cds-aichat-feedback");
+  panel.categories = ["Accurate", "Helpful", "Too verbose", "Inappropriate"];
+  panel.addEventListener("feedback-submit", (event) => {
+    console.log("Submitted feedback:", event.detail);
+  });
+  panel.addEventListener("feedback-close", () => {
+    console.log("Closed without submitting");
+  });
+</script>
+
+<cds-aichat-feedback
+  id="feedback-panel"
+  is-open
+  title="Tell us what you think"
+  prompt="Help us improve this response"
+  text-area-placeholder="What worked well? What missed the mark?"
+  cancel-label="Cancel"
+  submit-label="Submit"
+  show-text-area
+  show-prompt
+></cds-aichat-feedback>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-feedback" />
+
+## JS (via import)
 
 ```javascript
 import "@carbon/ai-chat-components/es/components/feedback/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import Feedback from "@carbon/ai-chat-components/es/react/feedback.js";
-```
 
 <Markdown>{`${cdnJs(["feedback"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
+## Feedback
 
-#### Basic usage
-
-<Canvas of={FeedbackStories.Default} />
-
-#### With categories
-
-<Canvas of={FeedbackStories.WithCategories} />
-
-#### With disclaimer
-
-<Canvas of={FeedbackStories.WithDisclaimer} />
-
-#### Read-only mode
-
-<Canvas of={FeedbackStories.ReadOnly} />
-
-#### Without text area
-
-<Canvas of={FeedbackStories.WithoutTextArea} />
-
-## `<cds-aichat-feedback>` attributes, properties and events
-
-<ArgTypes of={FeedbackStories.Default} />
-
-## Usage Patterns
-
-### Collecting Negative Feedback
-
-```javascript
-const feedback = document.querySelector('cds-aichat-feedback');
-feedback.isOpen = true;
-feedback.title = "What went wrong?";
-feedback.categories = ["Inaccurate", "Unhelpful", "Inappropriate"];
-feedback.addEventListener('feedback-submit', (event) => {
-  const details = event.detail;
-  console.log('Feedback:', details);
-  // { text: "...", selectedCategories: ["Inaccurate"] }
-});
-```
-
-### Collecting Positive Feedback
-
-```javascript
-const feedback = document.querySelector('cds-aichat-feedback');
-feedback.isOpen = true;
-feedback.title = "What did you like?";
-feedback.categories = ["Accurate", "Helpful", "Well-formatted"];
-feedback.addEventListener('feedback-submit', (event) => {
-  const details = event.detail;
-  console.log('Feedback:', details);
-});
-```
-
-### Displaying Submitted Feedback
-
-```javascript
-const feedback = document.querySelector('cds-aichat-feedback');
-feedback.isOpen = true;
-feedback.isReadonly = true;
-feedback.initialValues = {
-  text: "The response was very helpful!",
-  selectedCategories: ["Accurate", "Helpful"]
-};
-```
-
-## Customization
-
-### Labels
-
-All button labels and text can be customized:
-
-- `title`: Panel title
-- `prompt`: Instructions for the user
-- `placeholder`: Text area placeholder
-- `cancelLabel`: Cancel button text
-- `submitLabel`: Submit button text
-
-### Optional Elements
-
-Control visibility of UI elements:
-
-- `showPrompt`: Show/hide the instruction text
-- `showTextArea`: Show/hide the detailed feedback text area
-
-### Legal Disclaimer
-
-Add a legal notice at the bottom of the panel using markdown:
-
-```javascript
-feedback.disclaimer = "By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy).";
-```
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

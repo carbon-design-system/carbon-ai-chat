@@ -44,6 +44,10 @@ const config = {
     options: {},
   },
 
+  docs: {
+    defaultName: "Overview",
+  },
+
   async viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {

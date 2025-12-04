@@ -11,21 +11,21 @@ import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 
 // @ts-ignore
-import styles from "./cds-aichat-reasoning-steps.scss?lit";
+import styles from "./reasoning-steps.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
 
 const baseClass = `${prefix}--reasoning-steps`;
 const stepSelector = `${prefix}-reasoning-step`;
 
-@carbonElement(`${prefix}-reasoning-steps`)
+@carbonElement("cds-aichat-reasoning-steps")
 class CDSAIChatReasoningSteps extends LitElement {
   static styles = styles;
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: "open", reflect: true })
   open = false;
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: "controlled", reflect: true })
   controlled = false;
 
   connectedCallback() {
@@ -48,6 +48,9 @@ class CDSAIChatReasoningSteps extends LitElement {
     this.markLastVisibleStep();
   }
 
+  /**
+   * @internal
+   */
   get steps(): NodeListOf<HTMLElement> {
     return this.querySelectorAll(stepSelector);
   }
@@ -104,4 +107,11 @@ class CDSAIChatReasoningSteps extends LitElement {
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-reasoning-steps": CDSAIChatReasoningSteps;
+  }
+}
+
+export { CDSAIChatReasoningSteps };
 export default CDSAIChatReasoningSteps;

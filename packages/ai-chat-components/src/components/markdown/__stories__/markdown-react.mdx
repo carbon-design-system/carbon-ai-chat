@@ -1,21 +1,27 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as MarkdownReactStories from "./markdown-react.stories";
+import * as MarkdownReactStories from "./markdown-react.stories.jsx";
 
-<Meta of={MarkdownReactStories} />
+<Meta of={MarkdownReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Markdown (React)
+# Markdown
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/markdown) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
 
 The `<Markdown>` component wraps `cds-aichat-markdown` to render rich markdown content in React applications, including syntax highlighting, interactive tables, and streaming updates.
 
-## Key Features
-
-- **Full GitHub Flavored Markdown Support**: Headers, lists, links, emphasis, blockquotes, and more
-- **Syntax Highlighting**: Code blocks with automatic language detection
-- **Interactive Tables**: Sortable, filterable tables with pagination
-- **Streaming Content**: Real-time rendering as content arrives with no re-rendering of unchanged content
-- **HTML Handling**: Options to sanitize or remove HTML content
-
-## Getting started
+### Getting started
 
 Here's a quick example to get you started.
 
@@ -23,29 +29,15 @@ Here's a quick example to get you started.
 import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 
 function MarkdownExample({ content }) {
-  return <Markdown markdown={content} highlight />;
+  return <Markdown highlight>{content}</Markdown>;
 }
 ```
 
-### Stories
-
-#### Default
-
-<Canvas of={MarkdownReactStories.Default} />
-
-#### Streaming content
-
-<Canvas of={MarkdownReactStories.Streaming} />
-
-#### HTML sanitization
-
-<Canvas of={MarkdownReactStories.WithHTMLSanitization} />
-
-## `<Markdown>` props and events
+## Component API
 
 <ArgTypes of={MarkdownReactStories.Default} />
 
-## Markdown Support
+### Markdown Support
 
 The component implements [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/) with additional custom extensions. It uses [markdown-it](https://github.com/markdown-it/markdown-it) with the CommonMark preset and includes:
 
@@ -60,7 +52,7 @@ The component implements [GitHub Flavored Markdown (GFM)](https://github.github.
 - Highlight syntax (`==text==`) with nested formatting support
 - Attribute syntax (`{{attribute=value}}`) for HTML attributes
 
-### Text Formatting
+#### Text Formatting
 
 - **Bold** text with `**bold**` or `__bold__`
 - *Italic* text with `*italic*` or `_italic_`
@@ -69,23 +61,23 @@ The component implements [GitHub Flavored Markdown (GFM)](https://github.github.
 - ==Highlighted text== with `==text==` (renders as `<mark>` element)
 - Supports nesting: `==**bold highlight**==` renders as bold text with highlighting
 
-### Headers
+#### Headers
 
 All six levels of headers are supported (`#` through `######`).
 
-### Lists
+#### Lists
 
 Both ordered and unordered lists with nested items.
 
-### Links and Images
+#### Links and Images
 
 Standard markdown links `[text](url)` and images `![alt](src)`.
 
-### Blockquotes
+#### Blockquotes
 
 > Blockquotes with `>` prefix
 
-### Code Blocks
+#### Code Blocks
 
 Fenced code blocks with language specification:
 
@@ -93,7 +85,7 @@ Fenced code blocks with language specification:
 console.log("Hello, world!");
 \`\`\`
 
-### Tables
+#### Tables
 
 Markdown tables with alignment support:
 
@@ -103,7 +95,7 @@ Markdown tables with alignment support:
 | Value 1  | Value 2  |
 ```
 
-### Attribute Syntax
+#### Attribute Syntax
 
 Add HTML attributes to markdown elements using `{{attribute=value}}` syntax:
 
@@ -122,17 +114,17 @@ Paragraph with custom class {{class=custom-style}}
 
 **Security Note**: Only the specified attributes (`target`, `rel`, `class`, `id`) are allowed.
 
-## HTML Content
+### HTML Content
 
-### Sanitization
+#### Sanitization
 
 Set `sanitizeHTML` to remove potentially dangerous elements and attributes while preserving safe HTML formatting.
 
-### Removal
+#### Removal
 
 Set `removeHTML` to strip all HTML tags from the content, leaving only plain text and markdown.
 
-## Streaming Mode
+### Streaming Mode
 
 Use streaming mode to gradually reveal markdown content:
 
@@ -155,22 +147,22 @@ function StreamingMarkdown({ generator }) {
     };
   }, [generator]);
 
-  return <Markdown markdown={content} streaming={streaming} />;
+  return <Markdown streaming={streaming}>{content}</Markdown>;
 }
 ```
 
-## Customizing UI Text
+### Customizing UI Text
 
 All text strings used in embedded components can be customized:
 
-### Code Snippet Strings
+#### Code Snippet Strings
 
 - `feedback`: Text shown after copying code (default: "Copied!")
 - `tooltipContent`: Tooltip for copy button (default: "Copy code")
 - `showMoreText`: Text for expand button (default: "Show more")
 - `showLessText`: Text for collapse button (default: "Show less")
 
-### Table Strings
+#### Table Strings
 
 - `filterPlaceholderText`: Placeholder for table filter (default: "Filter table...")
 - `previousPageText`: Previous page button text (default: "Previous page")
@@ -178,10 +170,14 @@ All text strings used in embedded components can be customized:
 - `itemsPerPageText`: Items per page label (default: "Items per page:")
 - `locale`: Locale for number formatting (default: "en")
 
-## Debug Mode
+### Debug Mode
 
 Enable debug mode to log parsing and rendering information to the console:
 
 ```jsx
-<Markdown markdown={content} debug />
+<Markdown debug>{content}</Markdown>
 ```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

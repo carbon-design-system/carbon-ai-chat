@@ -47,15 +47,11 @@ interface TableRowWithIDs extends TableRowContent {
 // Width threshold for determining default page size. Tables wider than this get 10 rows, narrower get 5 rows.
 const PAGE_SIZE_WIDTH_THRESHOLD = 400;
 
-// We will have to give this component a unique ID on the name when we register it to avoid conflicts in a world where
-// multiple versions of the Carbon AI Chat can be on the same page.
-const TABLE_COMPONENT_TAG_NAME = "cds-aichat-table";
-
 /**
  * Class functionality for the Table custom element.
  */
-@carbonElement(TABLE_COMPONENT_TAG_NAME)
-class TableElement extends LitElement {
+@carbonElement("cds-aichat-table")
+class CDSAIChatTable extends LitElement {
   /**
    * The optional table title.
    */
@@ -160,18 +156,22 @@ class TableElement extends LitElement {
 
   /**
    * If the table is valid or not.
+   *
+   * @internal
    */
   @state()
   protected _isValid = true;
 
   /**
    * The current page of the table we're on.
+   * @internal
    */
   @state()
   public _currentPageNumber = 1;
 
   /**
    * How many rows are on each page of the table.
+   * @internal
    */
   @state()
   public _currentPageSize: number = this.defaultPageSize;
@@ -182,24 +182,32 @@ class TableElement extends LitElement {
    * no longer greater than the page size. However the pagination component needs to persist in this case, since the
    * user may want to change the page size again. This is used to keep track of whether the pagination controls were
    * used to change page size, and if they have, it forces pagination component to persist.
+   *
+   * @internal
    */
   @state()
   public _rowsPerPageChanged = false;
 
   /**
    * The rows that have not been filtered out.
+   *
+   * @internal
    */
   @state()
   public _filterVisibleRowIDs: Set<string> = new Set();
 
   /**
    * All of the rows for the table with IDs.
+   *
+   * @internal
    */
   @state()
   public _rowsWithIDs: TableRowWithIDs[] = [];
 
   /**
    * Whether or not the table should be able to be filtered.
+   *
+   * @internal
    */
   @state()
   public _allowFiltering = false;
@@ -590,6 +598,11 @@ class TableElement extends LitElement {
   }
 }
 
-export { TableElement, TABLE_COMPONENT_TAG_NAME };
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-table": CDSAIChatTable;
+  }
+}
 
-export default TableElement;
+export { CDSAIChatTable };
+export default CDSAIChatTable;

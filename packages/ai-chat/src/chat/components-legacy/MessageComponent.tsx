@@ -10,10 +10,11 @@
 import ChatBot32 from "@carbon/icons/es/chat-bot/32.js";
 import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
 import Headset32 from "@carbon/icons/es/headset/32.js";
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import ReasoningStepsComponent from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
 import ReasoningStepComponent from "@carbon/ai-chat-components/es/react/reasoning-step.js";
-import type CDSAIChatReasoningSteps from "@carbon/ai-chat-components/es/components/reasoning-steps/src/cds-aichat-reasoning-steps.js";
+import ReasoningStepsToggle from "@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js";
+import type CDSAIChatReasoningSteps from "@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps.js";
+import { type ReasoningStepsToggleEventDetail } from "@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps-toggle.js";
 import { carbonIconToReact } from "../utils/carbonIcon";
 import Loading from "../components/carbon/Loading";
 import cx from "classnames";
@@ -73,7 +74,6 @@ import RichText from "./responseTypes/util/RichText";
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
 const Headset = carbonIconToReact(Headset32);
-const ChevronDown = carbonIconToReact(ChevronDown16);
 
 enum MoveFocusType {
   /**
@@ -497,28 +497,16 @@ class MessageComponent extends PureComponent<
       const reasoningData = message.message_options?.reasoning;
       if (reasoningData?.steps?.length || reasoningData?.content) {
         const isOpen = this.getReasoningContainerOpen(reasoningData);
-        const buttonLabel = isOpen
-          ? languagePack.reasoningSteps_mainLabelOpen
-          : languagePack.reasoningSteps_mainLabelClosed;
         reasoning = (
           <>
             <span className="cds-aichat--message__reasoning-separator">|</span>
-            <button
-              type="button"
-              className="cds-aichat--message__reasoning-toggle"
-              aria-expanded={isOpen}
-              aria-controls={this.getReasoningContainerId()}
-              onClick={this.handleReasoningToggleClick}
-            >
-              <span>{buttonLabel}</span>
-              <span
-                className="cds-aichat--message__reasoning-caret"
-                aria-hidden="true"
-                data-open={isOpen}
-              >
-                <ChevronDown />
-              </span>
-            </button>
+            <ReasoningStepsToggle
+              open={isOpen}
+              panelID={this.getReasoningContainerId()}
+              openLabelText={languagePack.reasoningSteps_mainLabelOpen}
+              closedLabelText={languagePack.reasoningSteps_mainLabelClosed}
+              onToggle={this.handleReasoningToggleClick}
+            />
           </>
         );
       }
@@ -730,12 +718,17 @@ class MessageComponent extends PureComponent<
     return `cds-aichat-reasoning-${this.props.message.id}`;
   }
 
-  private handleReasoningToggleClick = () => {
+  private handleReasoningToggleClick = (
+    event?: CustomEvent<ReasoningStepsToggleEventDetail>,
+  ) => {
     if (!isResponse(this.props.message)) {
       return;
     }
     const reasoning = this.props.message.message_options?.reasoning;
-    const nextOpen = !this.getReasoningContainerOpen(reasoning);
+    const nextOpen =
+      typeof event?.detail?.open === "boolean"
+        ? event.detail.open
+        : !this.getReasoningContainerOpen(reasoning);
 
     if (this.isAutoReasoning(this.props.message)) {
       this.setState({ autoReasoningContainerOpen: nextOpen });

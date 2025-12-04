@@ -10,16 +10,19 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSAIChatReasoningStep from "../components/reasoning-steps/src/cds-aichat-reasoning-step.js";
+import CDSAIChatReasoningStep from "../components/reasoning-steps/src/reasoning-step.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const ReasoningStep = createComponent({
-  tagName: "cds-aichat-reasoning-step",
-  elementClass: CDSAIChatReasoningStep,
-  react: React,
-  events: {
-    onBeforeToggle: "cds-aichat-reasoning-step-beingtoggled",
-    onToggle: "cds-aichat-reasoning-step-toggled",
-  },
-});
+const ReasoningStep = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-reasoning-step",
+    elementClass: CDSAIChatReasoningStep,
+    react: React,
+    events: {
+      onBeforeToggle: "reasoning-step-beingtoggled",
+      onToggle: "reasoning-step-toggled",
+    },
+  }),
+);
 
 export default ReasoningStep;
