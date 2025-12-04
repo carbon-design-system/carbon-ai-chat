@@ -16,8 +16,14 @@ import packageJson from "../../../package.json";
  * @param {string} tag tag folder
  */
 function _renderScript(components: Array<any>, tag: string) {
+  const list = Array.isArray(components)
+    ? components
+    : components
+      ? [components] // wrap string/object into array
+      : [];
+
   let scripts = "";
-  components.forEach((component) => {
+  list.forEach((component) => {
     scripts += `<script type="module" src="https://1.www.s81c.com/common/carbon/ai-chat/${tag}/${component}.min.js"></script>\n`;
   });
   return scripts;

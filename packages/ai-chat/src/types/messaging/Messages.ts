@@ -110,8 +110,9 @@ interface BaseMessageInput {
  *
  * @category Messaging
  */
-interface EventInput<TEventInputType = EventInputData>
-  extends BaseMessageInput {
+interface EventInput<
+  TEventInputType = EventInputData,
+> extends BaseMessageInput {
   /**
    * Event messages have this as their input type.
    */
@@ -626,8 +627,9 @@ type GenericItem<TUserDefinedType = Record<string, unknown>> =
  *
  * @category Messaging
  */
-interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface UserDefinedItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * If the user_defined response type should be rendered as full width and ignore margin on the "start".
    */
@@ -705,8 +707,9 @@ interface UserDefinedItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-interface TextItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface TextItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * The text of the response.
    */
@@ -719,8 +722,9 @@ interface TextItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-interface ConnectToHumanAgentItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface ConnectToHumanAgentItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * A message to be sent to the human agent who will be taking over the conversation.
    */
@@ -774,8 +778,9 @@ interface ConnectToHumanAgentItemTransferInfo {
  *
  * @category Messaging
  */
-interface PauseItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface PauseItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * How long to pause, in milliseconds.
    */
@@ -794,8 +799,9 @@ interface PauseItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-interface OptionItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface OptionItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * An array of objects describing the options from which the user can choose.
    */
@@ -857,8 +863,9 @@ interface SingleOption {
 /**
  * @category Messaging
  */
-interface IFrameItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface IFrameItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * The source URL to an embeddable page
    */
@@ -1011,8 +1018,9 @@ enum IFrameItemDisplayOption {
  *
  * @category Messaging
  */
-interface MediaItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface MediaItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * The url pointing to a media source, whether audio, video, or image.
    *
@@ -1093,8 +1101,9 @@ interface ConversationalSearchItemCitation {
  *
  * @category Messaging
  */
-interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface ConversationalSearchItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * The returned conversational text. Any HTML/Markdown will be ignored.
    */
@@ -1119,8 +1128,9 @@ interface ConversationalSearchItem<TUserDefinedType = Record<string, unknown>>
  *
  * @category Messaging
  */
-interface InlineErrorItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface InlineErrorItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * Some end user friendly text describing the error and what they should do next.
    *
@@ -1306,8 +1316,9 @@ enum ButtonItemKind {
  *
  * @category Messaging
  */
-interface ButtonItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface ButtonItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   /**
    * The style of button to display.
    */
@@ -1383,8 +1394,9 @@ type CardItem<TUserDefinedType = Record<string, unknown>> =
 /**
  * @category Messaging
  */
-interface CarouselItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType> {
+interface CarouselItem<
+  TUserDefinedType = Record<string, unknown>,
+> extends BaseGenericItem<TUserDefinedType> {
   items: GenericItem[];
 }
 
@@ -1406,8 +1418,7 @@ type VerticalCellAlignment = "top" | "center" | "bottom";
  * @category Messaging
  */
 interface GridItem<TUserDefinedType = Record<string, unknown>>
-  extends BaseGenericItem<TUserDefinedType>,
-    WithWidthOptions {
+  extends BaseGenericItem<TUserDefinedType>, WithWidthOptions {
   /**
    * Determines the horizontal alignment of all items in the grid.
    */
@@ -1506,6 +1517,73 @@ interface MessageUIStateInternal {
 }
 
 /**
+ * If the reasoning step is open, closed, or is controlled by Carbon AI Chat.
+ *
+ * If a user elects to open/close the user action will override what is provided here.
+ *
+ * @category Messaging
+ */
+enum ReasoningStepOpenState {
+  OPEN = "open",
+  CLOSE = "close",
+  DEFAULT = "default",
+}
+
+/**
+ * An individual reasoning step.
+ *
+ * @category Messaging
+ */
+interface ReasoningStep {
+  /**
+   * The title of the reasoning step.
+   */
+  title: string;
+
+  /**
+   * Marks if this individual step is open. Only use this if you don't want the default behavior.
+   *
+   * If the step has content, by default the reasoning step will automatically open and will close when the
+   * next step(s) have content or the first {@link GenericItem} is returned with something to display.
+   *
+   * No matter what you choose, if the user manually marks something open/closed they retain control.
+   */
+  open_state?: ReasoningStepOpenState;
+
+  /**
+   * Optional markdown content to explain what the step is doing.
+   */
+  content?: string;
+}
+
+/**
+ * The interface describing how to pass reasoning steps to the UI.
+ *
+ * @category Messaging
+ */
+interface ReasoningSteps {
+  /**
+   * Marks if the reasoning step interface is open. Only use this if you don't want the default behavior.
+   *
+   * By default the reasoning step interface will automatically open and will then close when the first
+   * {@link GenericItem} is returned with something to display.
+   *
+   * No matter what you choose, if the user manually marks something open/closed they retain control.
+   */
+  open_state?: ReasoningStepOpenState;
+
+  /**
+   * The array of reasoning steps for this message.
+   */
+  steps?: ReasoningStep[];
+
+  /**
+   * Optional markdown content to explain what the step is doing.
+   */
+  content?: string;
+}
+
+/**
  * This interface contains options for a {@link MessageResponse}.
  *
  * @category Messaging
@@ -1517,7 +1595,26 @@ interface MessageResponseOptions {
   response_user_profile?: ResponseUserProfile;
 
   /**
+   * Controls the display of the reasoning steps component.
+   *
+   * Most people should use reasoning steps instead of chain of thought.
+   *
+   * Chain of thought it meant more for technical "called X API and got Y result back".
+   *
+   * Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
+   * content than debugging technical internal content.
+   */
+  reasoning?: ReasoningSteps;
+
+  /**
    * Controls the display of the chain of thought component.
+   *
+   * Most people should use reasoning steps instead of chain of thought.
+   *
+   * Chain of thought it meant more for technical "called X API and got Y result back".
+   *
+   * Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
+   * content than debugging technical internal content.
    */
   chain_of_thought?: ChainOfThoughtStep[];
 }
@@ -1842,4 +1939,7 @@ export {
   MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,
+  ReasoningSteps,
+  ReasoningStep,
+  ReasoningStepOpenState,
 };

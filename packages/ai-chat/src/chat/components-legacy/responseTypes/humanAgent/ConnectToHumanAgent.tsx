@@ -27,9 +27,7 @@ import {
 } from "../../../../types/messaging/Messages";
 
 interface ConnectToHumanAgentProps
-  extends HasLanguagePack,
-    HasServiceManager,
-    HasRequestFocus {
+  extends HasLanguagePack, HasServiceManager, HasRequestFocus {
   /**
    * The message that triggered this connect-to-agent action.
    */
