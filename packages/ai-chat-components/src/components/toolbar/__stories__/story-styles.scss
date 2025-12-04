@@ -41,6 +41,10 @@
   display: flex;
 }
 
+[slot="title"]:not(:has(.truncated-text)) {
+  white-space: nowrap;
+}
+
 .bold {
   font-weight: 600;
 }

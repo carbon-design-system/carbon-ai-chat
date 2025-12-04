@@ -545,7 +545,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       containerClasses += ` ${prefix}--snippet-container--collapsed`;
     }
 
-    return html` <div class="${prefix}--snippet">
+    return html` <div class="${prefix}--snippet" data-rounded>
       <div class="${prefix}--snippet__header" data-rounded="top">
         <div class="${prefix}--snippet__meta">
           ${this._detectedLanguage && this._languageLabelLockedIn
