@@ -15,7 +15,7 @@ import { action } from "storybook/actions";
 import { cardFooterPresets } from "./story-data";
 
 const cardContent = (
-  <div slot="card-body" class="standard-card">
+  <div slot="card-body" className="standard-card">
     <h4>AI Chat Card</h4>
     <p>
       The Carbon Design System provides a comprehensive library of components,
@@ -101,10 +101,10 @@ export const WithImage = {
 
 export const OnlyImage = {
   argTypes: {
-    ...WithImageWC.argTypes,
+    ...OnlyImageWC.argTypes,
   },
   args: {
-    ...WithImageWC.args,
+    ...OnlyImageWC.args,
   },
   render: (args) => (
     <Wrapper width={args.maxWidth}>
@@ -136,7 +136,7 @@ export const WithAudio = {
             src={args.audio}
           />
         </div>
-        <div slot="card-body" class="iframe-body">
+        <div slot="card-body" className="iframe-body">
           <h4>An audio clip from SoundCloud</h4>
           <p>This description and the title above are optional.</p>
         </div>

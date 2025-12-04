@@ -6,27 +6,33 @@ import * as CardReactStories from "./card-react.stories";
 
 # AI Chat Card (React)
 
-The `<ChatButton>` component is an extension of the Carbon Design System’s `<cds-button>` component, designed specifically for AI Chat applications.
-The key differences include:
+The `<Card>` component wraps the `cds-aichat-card` web component and exposes a React API for use in React applications.
 
-- Rounded corners
-- New `is-quick-action` property to render the button as a quick action button.
-- Enforced size and kind defaults for quick action buttons.
+## Key Features
 
-It supports all the properties of the Carbon Design System’s `<cds-button>` component, with additional AI Chat–specific styles and behaviors.
+- **Rounded corners**: Makes use of rounded modifier scss utility. and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
+- **OOTB sub-components**: OOTB components `<cds-aichat-card-footer>` and `<cds-aichat-card-steps>` provide consistent styling and can be placed in the provided slots. You can also plug in your own components into these slots.
 
 ## Getting started
 
-Here’s a quick example to help you get started.
-
-### JS (via import)
-
-```javascript
-import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
-```
+Here's a quick example to get you started.
 
 ```jsx
-<ChatButton kind="primary" onClick={() => {}} size="lg">
-  Button
-</ChatButton>
+import Card from "@carbon/ai-chat-components/es/react/card.js";
+
+function CardExample() {
+  return (
+    <Card>
+      <div class="standard-card" slot="card-body">
+        <h4>AI Chat Card</h4>
+        <p>
+          The Carbon Design System provides a comprehensive library of
+          components, tokens, and guidelines. We need to implement the new AI
+          Chat component following Carbon's design principles and accessibility
+          standards.
+        </p>
+      </div>
+    </Card>
+  );
+}
 ```
