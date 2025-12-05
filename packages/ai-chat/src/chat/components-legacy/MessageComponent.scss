@@ -199,7 +199,9 @@ $one-line-message-height: 88px;
 
 .cds-aichat--assistant-message {
   position: relative;
-  inline-size: 100%;
+  display: flex;
+  flex-direction: row;
+  max-inline-size: 100%;
 }
 
 .cds-aichat--received--inline-error,
