@@ -28,6 +28,7 @@ function tableTemplate(tableElement: TableElement) {
     tableDescription,
     headers,
     filterPlaceholderText,
+    downloadLabelText,
     locale,
     _handleDownload: handleDownload,
     _rowsWithIDs: tableRowsWithIDs,
@@ -44,7 +45,7 @@ function tableTemplate(tableElement: TableElement) {
               placeholder=${filterPlaceholderText}
             ></cds-table-toolbar-search>`
           : ""}
-        <cds-button @click=${handleDownload}
+        <cds-button @click=${handleDownload} aria-label=${downloadLabelText}
           >${iconLoader(Download16)}</cds-button
         >
       </cds-table-toolbar-content>

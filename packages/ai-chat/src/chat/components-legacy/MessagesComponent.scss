@@ -34,15 +34,18 @@
 
 .cds-aichat--message--focus-handle,
 .cds-aichat--messages--scroll-handle {
-  position: relative;
+  position: absolute;
   display: block;
   overflow: hidden;
   padding: 0;
   border: none;
   margin: 0;
-  block-size: 0;
-  inline-size: 0;
+  block-size: 1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  inline-size: 1px;
   outline: none;
+  white-space: nowrap;
 }
 
 .cds-aichat--messages__wrapper--scroll-handle-has-focus::after {
