@@ -6,15 +6,24 @@
  */
 
 @use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/colors";
 @use "@carbon/styles/scss/type";
 @use "@carbon/layout";
 
+:host(#{$prefix}-feedback) {
+  @include rounded-modifiers;
+  --cds-aichat-rounded-modifier-radius: var(
+    --cds-aichat-card-border-radius,
+    0.5rem
+  );
+}
+
 .#{$prefix}--container {
   box-sizing: border-box;
   border: 1px solid theme.$chat-bubble-border;
-  border-radius: layout.$spacing-03;
+  border-radius: var(--cds-aichat-rounded-modifier-radius);
   animation: cds-aichat-fade-in 600ms forwards;
   background-color: theme.$chat-shell-background;
   container-type: inline-size;

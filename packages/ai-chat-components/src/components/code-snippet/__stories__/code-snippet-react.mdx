@@ -1,11 +1,11 @@
-import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
 import * as CodeSnippetReactStories from "./code-snippet-react.stories";
 
 <Meta of={CodeSnippetReactStories} />
 
 # AI Chat Code Snippet (React)
 
-The `<CodeSnippet>` and `<CodeSnippetTileContainer>` components wrap the `cds-aichat-code-snippet` web component to provide syntax highlighting, streaming updates, and editable code blocks inside React applications.
+The `<CodeSnippet>` and `<CodeSnippetCard>` components wrap the `cds-aichat-code-snippet` web component to provide syntax highlighting, streaming updates, and editable code blocks inside React applications.
 
 ## Key Features
 
@@ -13,7 +13,7 @@ The `<CodeSnippet>` and `<CodeSnippetTileContainer>` components wrap the `cds-ai
 - **Editable**: Enable in-place code editing with CodeMirror
 - **Streaming Support**: Real-time content updates for AI-generated code
 - **Auto-detect Language**: Automatically detect programming languages when not specified and highlighting is enabled
-- **Tile Container**: Optional wrapper for consistent AI Chat tile styling
+- **Card**: Optional wrapper for consistent AI Chat card styling
 
 ## Getting started
 
@@ -21,10 +21,14 @@ Here's a quick example to get you started.
 
 ```jsx
 import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
-import CodeSnippetTileContainer from "@carbon/ai-chat-components/es/react/code-snippet-tile-container.js";
+import CodeSnippetCard from "@carbon/ai-chat-components/es/react/code-snippet-card.js";
 
 function ReadOnlySnippet({ code }) {
-  return <CodeSnippet highlight wrapText>{code}</CodeSnippet>;
+  return (
+    <CodeSnippet highlight wrapText>
+      {code}
+    </CodeSnippet>
+  );
 }
 ```
 
@@ -47,7 +51,7 @@ function ReadOnlySnippet({ code }) {
 
 <ArgTypes of={CodeSnippetReactStories.Default} />
 
-## `<CodeSnippetTileContainer>` props
+## `<CodeSnippetCard>` props
 
 Note: The tile container forwards all props to the inner `<CodeSnippet>` and applies AI Chat tile styling.
 
@@ -76,9 +80,9 @@ function StreamingSnippet({ stream }) {
   }, [stream]);
 
   return (
-    <CodeSnippetTileContainer highlight wrapText>
+    <CodeSnippetCard highlight wrapText>
       {content}
-    </CodeSnippetTileContainer>
+    </CodeSnippetCard>
   );
 }
 ```

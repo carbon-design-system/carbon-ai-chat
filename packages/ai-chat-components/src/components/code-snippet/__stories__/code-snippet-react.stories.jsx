@@ -8,7 +8,7 @@ import React, {
 } from "react";
 
 import CodeSnippet from "../../../react/code-snippet";
-import CodeSnippetTileContainer from "../../../react/code-snippet-tile-container";
+import CodeSnippetCard from "../../../react/code-snippet-card";
 
 const multilineCode = `/**
  * Carbon highlight showcase: control keywords, types, literals, doc comments, and more.
@@ -136,7 +136,7 @@ export class TokenShowcase<T extends TokenSwatch> {
 
 const renderSnippet = (args, code) => {
   const {
-    useTileContainer,
+    useCard,
     highlight,
     editable,
     disabled,
@@ -193,8 +193,8 @@ const renderSnippet = (args, code) => {
     commonProps.defaultLanguage = defaultLanguage;
   }
 
-  return useTileContainer ? (
-    <CodeSnippetTileContainer {...commonProps}>{code}</CodeSnippetTileContainer>
+  return useCard ? (
+    <CodeSnippetCard {...commonProps}>{code}</CodeSnippetCard>
   ) : (
     <CodeSnippet {...commonProps}>{code}</CodeSnippet>
   );
@@ -204,7 +204,7 @@ const chunkContent = (text) => Array.from(text);
 
 const StreamingDemo = (args) => {
   const {
-    useTileContainer,
+    useCard,
     highlight,
     editable,
     disabled,
@@ -305,10 +305,8 @@ const StreamingDemo = (args) => {
       >
         Restart Streaming
       </button>
-      {useTileContainer ? (
-        <CodeSnippetTileContainer {...commonProps}>
-          {streamedContent}
-        </CodeSnippetTileContainer>
+      {useCard ? (
+        <CodeSnippetCard {...commonProps}>{streamedContent}</CodeSnippetCard>
       ) : (
         <CodeSnippet {...commonProps}>{streamedContent}</CodeSnippet>
       )}
@@ -319,9 +317,9 @@ const StreamingDemo = (args) => {
 export default {
   title: "Components/Code Snippet",
   argTypes: {
-    useTileContainer: {
+    useCard: {
       control: "boolean",
-      description: "Wrap in tile container",
+      description: "Wrap in Card",
       table: {
         category: "Wrapper",
       },
@@ -391,7 +389,7 @@ export default {
 
 export const Default = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     highlight: false,
     editable: false,
     disabled: false,
@@ -406,7 +404,7 @@ export const Default = {
 
 export const Highlight = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     highlight: true,
     editable: false,
     disabled: false,
@@ -421,7 +419,7 @@ export const Highlight = {
 
 export const StreamingWithLanguageDetection = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     highlight: true,
     editable: false,
     disabled: false,
@@ -433,7 +431,7 @@ export const StreamingWithLanguageDetection = {
 
 export const StreamingWithLanguageSet = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     language: "typescript",
     highlight: true,
     editable: false,
@@ -444,9 +442,9 @@ export const StreamingWithLanguageSet = {
   render: (args) => <StreamingDemo {...args} />,
 };
 
-export const WithNoTileContainer = {
+export const WithNoCard = {
   args: {
-    useTileContainer: false,
+    useCard: false,
     highlight: true,
     editable: false,
     disabled: false,
@@ -461,7 +459,7 @@ export const WithNoTileContainer = {
 
 export const Editable = {
   args: {
-    useTileContainer: false,
+    useCard: false,
     highlight: true,
     editable: true,
     disabled: false,
@@ -473,7 +471,7 @@ export const Editable = {
 
 export const EditableEmpty = {
   args: {
-    useTileContainer: false,
+    useCard: false,
     highlight: true,
     editable: true,
     disabled: false,

@@ -1,67 +1,63 @@
-import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ToolbarStories from "./toolbar-react.stories";
 
 <Meta of={ToolbarStories} />
 
-# AI Chat Toolbar
+# AI Chat Toolbar (React)
 
-`<Toolbar>`
+The `<Toolbar>` component wraps the `cds-aichat-toolbar` web component and exposes a React API for use in React applications.
+
+## Key Features
+
+- **Overflow**: A property/attribute to opt in to collapse actions that don't fit in the toolbar into an overflow menu.
+- **Slots**: Supports slots for navigation, title, fixed actions, and AI label.
+- **Rounded corners**: Makes use of rounded modifier scss utility. and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
 
 ## Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+```jsx
+import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
 
-```javascript
-import "@carbon/ai-chat-components/es/react/toolbar.js";
-```
-
-<Markdown>{`${cdnJs({ components: ["toolbar"] })}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
-
-### HTML
-
-
-```html
-<Toolbar
-  actions={actions}
-  overflow={overflow}
-  style={
-    borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined
-  }
->
-
-  {/* Navigation slot */}
-  {navigation}
-  
-  {/* Title slot */}
-  <div slot="title" data-fixed>
-    {title}
-  </div>
-  
-  {/* Fixed actions slot */}
-  {fixedActions}
-
-  {/* AI Label slot */}
-  {aiLabel && (
-    <AILabel
-      size="2xs"
-      autoalign
-      alignment="bottom"
-      slot="toolbar-ai-label"
+function ToolbarExample() {
+  return (
+    <Toolbar
+      actions={actions}
+      overflow={overflow}
+      style={borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined}
     >
-      <div slot="body-text">
-        <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
-        <div>
-          IBM watsonx is powered by the latest AI models to intelligently
-          process conversations and provide help whenever and wherever you
-          may need it.
-        </div>
+      {/* Navigation slot */}
+      {navigation}
+
+      {/* Title slot */}
+      <div slot="title" data-fixed>
+        {title}
       </div>
-    </AILabel>
-  )}
-  
-</Toolbar>
+
+      {/* Fixed actions slot */}
+      {fixedActions}
+
+      {/* AI Label slot */}
+      {aiLabel && (
+        <AILabel
+          size="2xs"
+          autoalign
+          alignment="bottom"
+          slot="toolbar-ai-label"
+        >
+          <div slot="body-text">
+            <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
+            <div>
+              IBM watsonx is powered by the latest AI models to intelligently
+              process conversations and provide help whenever and wherever you
+              may need it.
+            </div>
+          </div>
+        </AILabel>
+      )}
+    </Toolbar>
+  );
+}
 ```

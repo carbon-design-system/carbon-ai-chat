@@ -1,0 +1,42 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+$css--plex: true !default;
+
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/web-components/scss/components/tile/tile";
+@use "@carbon/styles/scss/utilities/convert";
+
+:host(#{$prefix}-card) {
+  @extend :host(#{$cds-prefix}-tile);
+  @include rounded-modifiers;
+  @include flush-modifiers;
+  // --cds-aichat-card-border-radius is a variable available in the AI Chat app and is 8px. We set --cds-aichat-rounded-modifier-radius to --cds-aichat-card-border-radius in this scope, and it will be passed down the node tree thus making it available throughout data-modifiers usage.
+  --#{$prefix}-rounded-modifier-radius: var(
+    --#{$prefix}-card-border-radius,
+    0.5rem
+  );
+
+  border: 1px solid theme.$chat-bubble-border;
+  border-radius: var(--#{$prefix}-rounded-modifier-radius);
+  background-color: theme.$chat-shell-background;
+
+  ::slotted([slot="card-media"]) {
+    display: flex;
+
+    * {
+      inline-size: 100%;
+    }
+  }
+}
+
+:host(#{$prefix}-card[is-layered]) {
+  background-color: theme.$layer;
+}

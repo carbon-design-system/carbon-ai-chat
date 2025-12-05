@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { repeat } from "lit/directives/repeat.js";
@@ -20,10 +20,11 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./toolbar.scss?lit";
+import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 
 export interface Action {
   text: string;
-  icon: () => void;
+  icon: CarbonIcon;
   size?: string;
   fixed?: boolean;
   onClick: () => void;
@@ -53,6 +54,8 @@ class CDSAIChatToolbar extends LitElement {
 
   /** Container holding all action buttons and the overflow menu. */
   @query(`.${prefix}-toolbar`) private container!: HTMLElement;
+
+  @state() private measuring = true;
 
   private overflowHandler?: { disconnect: () => void };
 
@@ -95,6 +98,8 @@ class CDSAIChatToolbar extends LitElement {
         this.hiddenItems = this.actions.filter(
           (_, i) => i >= visibleItems.length && !_.fixed,
         );
+
+        this.measuring = false;
       },
     });
   }
@@ -119,7 +124,9 @@ class CDSAIChatToolbar extends LitElement {
           enter-delay-ms="0"
           leave-delay-ms="0"
         >
-          ${action.icon}
+          ${iconLoader(action.icon, {
+            slot: "icon",
+          })}
           <span slot="tooltip-content">${action.text}</span>
         </cds-icon-button>
       `;
@@ -143,39 +150,38 @@ class CDSAIChatToolbar extends LitElement {
         <div data-fixed><slot name="toolbar-ai-label"></slot></div>
 
         ${repeat(nonFixedActions, (_, i) => i, renderIconButton)}
+        ${this.measuring || this.hiddenItems.length > 0
+          ? html`
+              <cds-overflow-menu
+                size=${(this.actions?.[0]?.size as OVERFLOW_MENU_SIZE) || "md"}
+                align="bottom-end"
+                data-offset
+                ?data-hidden=${this.hiddenItems.length === 0}
+                kind="ghost"
+                close-on-activation
+                enter-delay-ms="0"
+                leave-delay-ms="0"
+              >
+                ${iconLoader(OverflowMenuVertical16, {
+                  class: `${prefix}-toolbar-overflow-icon`,
+                  slot: "icon",
+                })}
+                <span slot="tooltip-content">Options</span>
 
-        <div
-          data-offset
-          ?data-hidden=${!this.hiddenItems.length}
-          data-floating-menu-container
-        >
-          <cds-overflow-menu
-            size=${(this.actions?.[0]?.size as OVERFLOW_MENU_SIZE) || "md"}
-            align="bottom-end"
-            close-on-activation
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-          >
-            ${iconLoader(OverflowMenuVertical16, {
-              class: `${prefix}-toolbar-overflow-icon`,
-              slot: "icon",
-            })}
-            <span slot="tooltip-content">Options</span>
-
-            <cds-overflow-menu-body flipped>
-              ${repeat(
-                this.hiddenItems,
-                (item) => item.text,
-                (item) => html`
-                  <cds-overflow-menu-item @click=${item.onClick}>
-                    ${item.text}
-                  </cds-overflow-menu-item>
-                `,
-              )}
-            </cds-overflow-menu-body>
-          </cds-overflow-menu>
-        </div>
-
+                <cds-overflow-menu-body flipped>
+                  ${repeat(
+                    this.hiddenItems,
+                    (item) => item.text,
+                    (item) => html`
+                      <cds-overflow-menu-item @click=${item.onClick}>
+                        ${item.text}
+                      </cds-overflow-menu-item>
+                    `,
+                  )}
+                </cds-overflow-menu-body>
+              </cds-overflow-menu>
+            `
+          : nothing}
         ${repeat(fixedActions, (_, i) => i, renderIconButton)}
       </div>
     `;

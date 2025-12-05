@@ -7,6 +7,6 @@
  *  @license
  */
 
-import "./src/code-snippet-tile-container.js";
-export { default } from "./src/code-snippet-tile-container.js";
+import "./src/code-snippet-card.js";
+export { default } from "./src/code-snippet-card.js";
 export { CODE_SNIPPET_TYPE } from "@carbon/web-components/es/components/code-snippet/defs.js";

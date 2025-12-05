@@ -135,10 +135,6 @@
   max-inline-size: 100%;
 }
 
-:host([data-rounded]) .#{$prefix}--snippet {
-  border-radius: var(--cds-aichat-tile-border-radius, 0.5rem);
-}
-
 :host-context([data-theme="g90"]),
 :host-context([storybook-carbon-theme="g90"]),
 :host-context([data-theme="g100"]),

@@ -21,8 +21,7 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class} {
     display: flex;
-    align-items: center;
-    background-color: theme.$layer-background;
+    align-items: flex-start;
     block-size: 100%;
     min-block-size: layout.$spacing-08;
 
@@ -49,6 +48,7 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class}__title {
     color: theme.$text-secondary;
+    margin-block: auto;
     margin-inline-end: auto;
     padding-inline: layout.$spacing-04;
   }

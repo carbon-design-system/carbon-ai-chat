@@ -11,15 +11,15 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatCodeSnippetTileContainer from "../components/code-snippet/src/code-snippet-tile-container.js";
+import CDSAIChatCodeSnippetCard from "../components/code-snippet/src/code-snippet-card.js";
 
-const CodeSnippetTileContainer = createComponent({
-  tagName: "cds-aichat-code-snippet-tile-container",
-  elementClass: CDSAIChatCodeSnippetTileContainer,
+const CodeSnippetCard = createComponent({
+  tagName: "cds-aichat-code-snippet-card",
+  elementClass: CDSAIChatCodeSnippetCard,
   react: React,
   events: {
     onChange: "content-change",
   },
 });
 
-export default CodeSnippetTileContainer;
+export default CodeSnippetCard;

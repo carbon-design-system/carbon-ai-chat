@@ -8,7 +8,7 @@
  */
 
 import "../src/code-snippet";
-import "../src/code-snippet-tile-container";
+import "../src/code-snippet-card";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 
@@ -136,11 +136,11 @@ export class TokenShowcase<T extends TokenSwatch> {
 // trailing comment with TODO inside to exercise single-line states
 `;
 
-// Helper function to render with or without tile container
+// Helper function to render with or without card wrapper
 const renderSnippet = (args, code) => {
-  if (args.useTileContainer) {
+  if (args.useCard) {
     return html`
-      <cds-aichat-code-snippet-tile-container
+      <cds-aichat-code-snippet-card
         ?editable=${args.editable}
         ?highlight=${args.highlight}
         ?disabled=${args.disabled}
@@ -156,7 +156,7 @@ const renderSnippet = (args, code) => {
         feedback=${ifDefined(args.feedback)}
       >
         ${code}
-      </cds-aichat-code-snippet-tile-container>
+      </cds-aichat-code-snippet-card>
     `;
   }
 
@@ -184,9 +184,9 @@ const renderSnippet = (args, code) => {
 export default {
   title: "Components/Code Snippet",
   argTypes: {
-    useTileContainer: {
+    useCard: {
       control: "boolean",
-      description: "Wrap in tile container",
+      description: "Wrap in card wrapper",
       table: {
         category: "Wrapper",
       },
@@ -248,7 +248,7 @@ export default {
 
 export const Default = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     highlight: false,
     editable: false,
     disabled: false,
@@ -263,7 +263,7 @@ export const Default = {
 
 export const Highlight = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     highlight: true,
     editable: false,
     disabled: false,
@@ -278,7 +278,7 @@ export const Highlight = {
 
 class StreamingDemo extends LitElement {
   static properties = {
-    useTileContainer: { type: Boolean },
+    useCard: { type: Boolean },
     language: { type: String },
     editable: { type: Boolean },
     highlight: { type: Boolean },
@@ -290,7 +290,7 @@ class StreamingDemo extends LitElement {
 
   constructor() {
     super();
-    this.useTileContainer = true;
+    this.useCard = true;
     this.editable = false;
     this.highlight = true;
     this.disabled = false;
@@ -335,9 +335,9 @@ class StreamingDemo extends LitElement {
   }
 
   render() {
-    const snippetContent = this.useTileContainer
+    const snippetContent = this.useCard
       ? html`
-          <cds-aichat-code-snippet-tile-container
+          <cds-aichat-code-snippet-card
             language=${this.language}
             ?editable=${this.editable}
             ?highlight=${this.highlight}
@@ -346,7 +346,7 @@ class StreamingDemo extends LitElement {
             ?wrap-text=${this.wrapText}
           >
             ${this.streamedContent}
-          </cds-aichat-code-snippet-tile-container>
+          </cds-aichat-code-snippet-card>
         `
       : html`
           <cds-aichat-code-snippet
@@ -379,7 +379,7 @@ customElements.define("streaming-demo", StreamingDemo);
 
 export const StreamingWithLanguageDetection = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     highlight: true,
     editable: false,
     disabled: false,
@@ -388,7 +388,7 @@ export const StreamingWithLanguageDetection = {
   },
   render: (args) => html`
     <streaming-demo
-      ?use-tile-container=${args.useTileContainer}
+      ?use-card=${args.useCard}
       language=${args.language}
       ?editable=${args.editable}
       ?highlight=${args.highlight}
@@ -401,7 +401,7 @@ export const StreamingWithLanguageDetection = {
 
 export const StreamingWithLanguageSet = {
   args: {
-    useTileContainer: true,
+    useCard: true,
     language: "typescript",
     highlight: true,
     editable: false,
@@ -411,7 +411,7 @@ export const StreamingWithLanguageSet = {
   },
   render: (args) => html`
     <streaming-demo
-      ?use-tile-container=${args.useTileContainer}
+      ?use-card=${args.useCard}
       language=${args.language}
       ?editable=${args.editable}
       ?highlight=${args.highlight}
@@ -422,9 +422,9 @@ export const StreamingWithLanguageSet = {
   `,
 };
 
-export const WithNoTileContainer = {
+export const WithNoCard = {
   args: {
-    useTileContainer: false,
+    useCard: false,
     highlight: true,
     editable: false,
     disabled: false,
@@ -439,7 +439,7 @@ export const WithNoTileContainer = {
 
 export const Editable = {
   args: {
-    useTileContainer: false,
+    useCard: false,
     highlight: true,
     editable: true,
     disabled: false,
@@ -451,7 +451,7 @@ export const Editable = {
 
 export const EditableEmpty = {
   args: {
-    useTileContainer: false,
+    useCard: false,
     highlight: true,
     editable: true,
     disabled: false,
