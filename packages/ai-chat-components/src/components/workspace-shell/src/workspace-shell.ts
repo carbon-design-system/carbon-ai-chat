@@ -26,7 +26,7 @@ import lightDomStyles from "./styles.scss?lit";
  * @slot footer - Represents the footer section, usually containing action buttons.
  *
  */
-@customElement(`${prefix}-workspace-shell`)
+@customElement("cds-aichat-workspace-shell")
 class CDSAIChatWorkspaceShell extends LitElement {
   static styles = styles;
 

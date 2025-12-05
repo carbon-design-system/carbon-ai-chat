@@ -10,7 +10,7 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatFeedbackButtonsElement from "../components/feedback/src/cds-aichat-feedback-buttons.js";
+import CDSChatFeedbackButtonsElement from "../components/feedback/src/feedback-buttons-element.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
 const FeedbackButtons = withWebComponentBridge(

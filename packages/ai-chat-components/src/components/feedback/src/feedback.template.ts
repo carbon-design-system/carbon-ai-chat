@@ -105,7 +105,7 @@ function feedbackElementTemplate(customElementClass: FeedbackElement) {
       : ""}
     ${disclaimer
       ? html`<div class="${prefix}--disclaimer">
-          <cds-aichat-markdown markdown="${disclaimer}"></cds-aichat-markdown>
+          <cds-aichat-markdown>${disclaimer}</cds-aichat-markdown>
         </div>`
       : ""}
     <div class="${prefix}--buttons">

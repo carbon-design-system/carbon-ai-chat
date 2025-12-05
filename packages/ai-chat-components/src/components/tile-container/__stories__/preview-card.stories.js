@@ -178,7 +178,8 @@ const stepVariation = {
 };
 
 export default {
-  title: "Components/Tile Container/Preview Card",
+  title: "Components/Tile container/preview card",
+  component: "cds-aichat-tile-container",
   argTypes: {
     maxWidth: maxWidthControl,
     useWrapper: {

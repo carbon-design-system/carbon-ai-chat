@@ -11,10 +11,9 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 import { ChatHeaderTitleElement } from "../../../web-components/components/chatHeader/chatHeaderTitle/cds-aichat-chat-header-title";
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 
 const ChatHeaderTitle = createComponent({
-  tagName: `${prefix}-chat-header-title`,
+  tagName: `cds-aichat-chat-header-title`,
   elementClass: ChatHeaderTitleElement,
   react: React,
 });

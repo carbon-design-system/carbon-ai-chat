@@ -16,7 +16,7 @@ const FEEDBACK_BUTTONS_COMPONENT_TAG_NAME = "cds-aichat-feedback-buttons";
 /**
  * This class is used to display two feedback buttons (thumbs up and thumbs down).
  */
-@carbonElement(FEEDBACK_BUTTONS_COMPONENT_TAG_NAME)
+@carbonElement("cds-aichat-feedback-buttons")
 class CDSChatFeedbackButtonsElement extends FeedbackButtonsElement {
   render() {
     return feedbackButtonsElementTemplate(this);

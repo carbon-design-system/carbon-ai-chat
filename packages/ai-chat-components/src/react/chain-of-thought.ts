@@ -10,7 +10,7 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatChainOfThoughtElement from "../components/chain-of-thought/src/cds-aichat-chain-of-thought.js";
+import CDSChatChainOfThoughtElement from "../components/chain-of-thought/src/chain-of-thought-element.js";
 import {
   type ChainOfThoughtOnToggle,
   type ChainOfThoughtStep,

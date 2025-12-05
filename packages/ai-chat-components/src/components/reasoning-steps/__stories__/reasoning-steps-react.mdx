@@ -1,20 +1,27 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
 import * as ReasoningStepsReactStories from "./reasoning-steps-react.stories.jsx";
 
-<Meta of={ReasoningStepsReactStories} />
+<Meta of={ReasoningStepsReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Reasoning Steps (React)
+# Reasoning steps
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
 
 The `<ReasoningSteps>` and `<ReasoningStep>` components wrap the underlying web components so you can showcase chain-of-thought style reasoning in React applications without managing event wiring manually.
 
-## Key Features
-
-- **Declarative composition**: Nest `<ReasoningStep>` children inside `<ReasoningSteps>` just like regular React components.
-- **Events as props**: Use `onBeforeToggle` and `onToggle` to observe user interactions.
-- **Controlled workflows**: Combine `controlled` with React state to decide which steps stay open.
-- **Static summaries**: Render a title without children to show a non-interactive entry.
-
-## Getting started
+### Getting started
 
 ```jsx
 import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
@@ -33,25 +40,11 @@ export function ReasoningExample({ steps }) {
 }
 ```
 
-## Stories
-
-### Default
-
-<Canvas of={ReasoningStepsReactStories.Default} />
-
-### Including static steps
-
-<Canvas of={ReasoningStepsReactStories.WithStaticSteps} />
-
-### Controlled mode
-
-<Canvas of={ReasoningStepsReactStories.Controlled} />
-
-## `<ReasoningSteps>` / `<ReasoningStep>` props and events
+## Component API
 
 <ArgTypes of={ReasoningStepsReactStories.Default} />
 
-### Handling toggle events
+#### Handling toggle events
 
 ```jsx
 function AuditTrail({ steps }) {
@@ -87,3 +80,7 @@ function AuditTrail({ steps }) {
 ```
 
 `event.detail.open` indicates whether the user requested the step to be open or closed, enabling full control over UI state when compliance or audit requirements demand deterministic presentation.
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

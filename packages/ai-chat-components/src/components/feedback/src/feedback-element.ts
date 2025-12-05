@@ -16,7 +16,7 @@ const FEEDBACK_COMPONENT_TAG_NAME = "cds-aichat-feedback";
 /**
  * Custom element for rendering the feedback surface.
  */
-@carbonElement(FEEDBACK_COMPONENT_TAG_NAME)
+@carbonElement("cds-aichat-feedback")
 class CDSChatFeedbackElement extends FeedbackElement {
   render() {
     return feedbackElementTemplate(this);

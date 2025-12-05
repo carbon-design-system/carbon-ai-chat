@@ -9,19 +9,14 @@
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import MarkdownElement from "./markdown.js";
-import { markdownTemplate } from "./markdown.template.js";
 // @ts-ignore
 import styles from "./markdown.scss?lit";
 
 const MARKDOWN_COMPONENT_TAG_NAME = "cds-aichat-markdown";
 
-@carbonElement(MARKDOWN_COMPONENT_TAG_NAME)
+@carbonElement("cds-aichat-markdown")
 class CDSChatMarkdownElement extends MarkdownElement {
   static styles = styles;
-
-  render() {
-    return markdownTemplate(this);
-  }
 }
 
 declare global {

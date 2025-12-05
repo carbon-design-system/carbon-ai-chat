@@ -10,7 +10,7 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatFeedbackElement from "../components/feedback/src/cds-aichat-feedback.js";
+import CDSChatFeedbackElement from "../components/feedback/src/feedback-element.js";
 import {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,

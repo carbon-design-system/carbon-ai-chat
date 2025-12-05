@@ -84,7 +84,6 @@ function renderToolDataAsMarkdown(
     <div class="${CSS_CLASS_ITEM_PREFIX}-label">${label}</div>
     <cds-aichat-markdown
       sanitize-html
-      markdown=${content}
       filter-placeholder-text=${filterPlaceholderText}
       previous-page-text=${previousPageText}
       next-page-text=${nextPageText}
@@ -97,7 +96,9 @@ function renderToolDataAsMarkdown(
       show-more-text=${showMoreText}
       tooltip-content=${tooltipContent}
       .getLineCountText=${getLineCountText}
-    ></cds-aichat-markdown>
+    >
+      ${content}
+    </cds-aichat-markdown>
   </div>`;
 }
 
@@ -151,7 +152,6 @@ function accordionItemContent(
         >
           <cds-aichat-markdown
             sanitize-html
-            markdown=${item.description}
             filter-placeholder-text=${filterPlaceholderText}
             previous-page-text=${previousPageText}
             next-page-text=${nextPageText}
@@ -164,7 +164,9 @@ function accordionItemContent(
             show-more-text=${showMoreText}
             tooltip-content=${tooltipContent}
             .getLineCountText=${getLineCountText}
-          ></cds-aichat-markdown>
+          >
+            ${item.description}
+          </cds-aichat-markdown>
         </div>`
       : null}
     ${item.tool_name

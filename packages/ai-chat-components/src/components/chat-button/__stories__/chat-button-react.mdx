@@ -1,21 +1,28 @@
 import { ArgTypes, Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ChatButtonReactStories from "./chat-button-react.stories";
+import * as ChatButtonReactStories from "./chat-button-react.stories.jsx";
 
-<Meta of={ChatButtonReactStories} />
+<Meta of={ChatButtonReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Button (React)
+# Button
 
-The `<ChatButton>` component wraps the `cds-aichat-button` web component and exposes a React API for use in React applications.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-button) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Quick Action Mode**: The `is-quick-action` prop renders the button in a compact quick-action style suitable for chat interfaces.
-- **Rounded Corners**: Applied by default to match AI chat visual patterns.
-- **Preset Defaults**: Quick action buttons automatically enforce recommended `size` and `kind` values.
-- **Full Carbon Compatibility**: Supports most of standard `<cds-button>` attributes and events.
+## Table of Contents
 
-## Getting started
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+The `<ChatButton>` component wraps the `cds-aichat-button` web component and exposes a React API for AI chat surfaces, including quick-action and icon-only variants.
+
+### Getting started
 
 Here's a quick example to get you started.
 
@@ -30,3 +37,11 @@ function ChatButtonExample() {
   );
 }
 ```
+
+## Component API
+
+<ArgTypes of={ChatButtonReactStories.Default} />
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

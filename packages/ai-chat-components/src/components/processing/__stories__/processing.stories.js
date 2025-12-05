@@ -12,6 +12,7 @@ import { html } from "lit";
 
 export default {
   title: "Components/Processing",
+  component: "cds-aichat-processing",
 };
 const argTypes = {
   loop: Boolean,

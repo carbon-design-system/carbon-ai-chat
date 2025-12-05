@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../src/cds-aichat-chain-of-thought";
+import "../src/chain-of-thought-element";
 import { html } from "lit";
 
 const sampleSteps = [
@@ -163,11 +163,17 @@ The upward trend suggests continued strong performance in Q2.`,
 ];
 
 export default {
-  title: "Components/Chain of Thought",
+  title: "Components/Chain of thought",
+  component: "cds-aichat-chain-of-thought",
   argTypes: {
     open: {
       control: "boolean",
       description: "Whether the chain of thought panel is open",
+    },
+    steps: {
+      control: "object",
+      description:
+        "Array of chain of thought steps (title, description, tool_name, request/response, status)",
     },
     explainabilityText: {
       control: "text",

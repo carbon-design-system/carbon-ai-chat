@@ -109,6 +109,7 @@ const baseButtonTemplate = (args) => html`
 
 export default {
   title: "Components/Chat button",
+  component: "cds-aichat-button",
 };
 
 export const Default = {

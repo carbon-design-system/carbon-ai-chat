@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "../src/cds-aichat-feedback-buttons";
-import "../src/cds-aichat-feedback";
+import "../src/feedback-buttons-element";
+import "../src/feedback-element";
 import { LitElement, css, html, nothing } from "lit";
 
 const positiveCategories = [
@@ -252,7 +252,8 @@ if (
 }
 
 export default {
-  title: "Components/Feedback/Buttons",
+  title: "Components/Feedback/buttons",
+  component: "cds-aichat-feedback-buttons",
   argTypes: {
     isPositiveSelected: {
       control: "boolean",

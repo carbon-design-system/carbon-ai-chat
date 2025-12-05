@@ -8,12 +8,23 @@
  */
 
 import { html } from "lit";
+import { ref } from "lit/directives/ref.js";
 
-import MarkdownElement from "./markdown.js";
-
-function markdownTemplate(customElementClass: MarkdownElement) {
-  const { renderedContent } = customElementClass;
-  return html`<div class="cds-aichat-markdown-stack">${renderedContent}</div>`;
+function markdownTemplate({
+  slotRef,
+  onSlotChange,
+  renderedContent,
+}: {
+  slotRef: any;
+  onSlotChange: () => void;
+  renderedContent: unknown;
+}) {
+  return html`
+    <div class="cds-aichat-markdown-stack">${renderedContent}</div>
+    <div hidden>
+      <slot ${ref(slotRef)} @slotchange=${onSlotChange}></slot>
+    </div>
+  `;
 }
 
 export { markdownTemplate };

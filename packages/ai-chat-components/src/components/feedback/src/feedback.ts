@@ -27,7 +27,7 @@ class FeedbackElement extends LitElement {
   /**
    * The ID of this panel.
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String, attribute: "id", reflect: true })
   id!: string;
 
   /**
@@ -63,7 +63,7 @@ class FeedbackElement extends LitElement {
   /**
    * The list of categories to show.
    */
-  @property({ type: Object, attribute: "categories", reflect: true })
+  @property({ type: Array, attribute: "categories", reflect: true })
   categories?: string[];
 
   /**
@@ -105,12 +105,16 @@ class FeedbackElement extends LitElement {
 
   /**
    * Internal saved text values for feedback.
+   *
+   * @internal
    */
   @state()
   _textInput = "";
 
   /**
    * The current set of selected categories.
+   *
+   * @internal
    */
   @state()
   _selectedCategories: Set<string> = new Set();

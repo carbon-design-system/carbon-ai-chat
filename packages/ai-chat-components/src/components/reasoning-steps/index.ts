@@ -7,5 +7,15 @@
  *  @license
  */
 
-import "./src/cds-aichat-reasoning-steps.js";
-import "./src/cds-aichat-reasoning-step.js";
+import "./src/reasoning-steps.js";
+import "./src/reasoning-step.js";
+import "./src/reasoning-steps-toggle-element.js";
+
+export {
+  default as CDSAIChatReasoningStepsToggle,
+  REASONING_STEPS_TOGGLE_COMPONENT_TAG_NAME,
+} from "./src/reasoning-steps-toggle-element.js";
+export {
+  ReasoningStepsToggleElement,
+  type ReasoningStepsToggleEventDetail,
+} from "./src/reasoning-steps-toggle.js";

@@ -21,7 +21,7 @@ import prefix from "../../../globals/settings.js";
  * @slot toolbar-action - Represents the action area in the Toolbar.
  *
  */
-@customElement(`${prefix}-workspace-shell-toolbar`)
+@customElement("cds-aichat-workspace-shell-toolbar")
 class CDSAIChatWorkspaceShellToolbar extends LitElement {
   static styles = styles;
 

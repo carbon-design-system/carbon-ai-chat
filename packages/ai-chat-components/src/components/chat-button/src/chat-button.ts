@@ -16,7 +16,6 @@ import {
   BUTTON_TYPE as CHAT_BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TYPE as CHAT_BUTTON_TOOLTIP_POSITION,
 } from "@carbon/web-components/es/components/button/button.js";
-import prefix from "../../../globals/settings.js";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 // @ts-ignore
 import styles from "./chat-button.scss?lit";
@@ -36,8 +35,10 @@ type ChatButtonSize =
 
 /**
  * Component extending the @carbon/web-components' button
+ *
+ * @element cds-aichat-button
  */
-@customElement(`${prefix}-button`)
+@customElement("cds-aichat-button")
 class ChatButton extends CDSButton {
   static styles = styles;
 
@@ -49,10 +50,14 @@ class ChatButton extends CDSButton {
 
   /**
    * Button size.
+   * Options: "sm", "md", "lg".
    */
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: "size" })
   declare size: ChatButtonSize;
 
+  /**
+   * @internal
+   */
   private readonly allowedSizes: CHAT_BUTTON_SIZE[] = [
     CHAT_BUTTON_SIZE.SMALL,
     CHAT_BUTTON_SIZE.MEDIUM,

@@ -16,11 +16,18 @@ import lightDomStyles from "./styles.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
 
-@carbonElement(`${prefix}-tile-container`)
+@carbonElement("cds-aichat-tile-container")
 class CDSAIChatTileContainer extends LitElement {
   static styles = styles;
 
+  /**
+   *  @internal
+   */
   @query("slot") private slotEl!: HTMLSlotElement;
+
+  /**
+   *  @internal
+   */
   private mutationObserver?: MutationObserver;
 
   connectedCallback(): void {

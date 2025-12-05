@@ -15,7 +15,7 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 
 // @ts-ignore
-import styles from "./cds-aichat-reasoning-step.scss?lit";
+import styles from "./reasoning-step.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
 
@@ -25,7 +25,7 @@ let idCounter = 0;
 const generateId = (segment: string) =>
   `${baseClass}-${segment}-${idCounter++}`;
 
-@carbonElement(`${prefix}-reasoning-step`)
+@carbonElement("cds-aichat-reasoning-step")
 class CDSAIChatReasoningStep extends LitElement {
   static styles = styles;
 

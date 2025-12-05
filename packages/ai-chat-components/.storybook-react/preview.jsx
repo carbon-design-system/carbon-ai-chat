@@ -9,6 +9,8 @@
 
 import React from "react";
 import containerStyles from "../.storybook/_container.scss?inline";
+import { setCustomElementsManifest } from "@storybook/web-components-vite";
+import customElements from "../custom-elements.json";
 import prettier from "prettier/standalone";
 import prettierPluginBabel from "prettier/plugins/babel";
 import prettierPluginEstree from "prettier/plugins/estree";
@@ -24,6 +26,8 @@ if (typeof document !== "undefined") {
     document.head.appendChild(style);
   }
 }
+
+setCustomElementsManifest(customElements);
 
 export const globalTypes = {
   theme: {
@@ -78,6 +82,7 @@ export const parameters = {
   },
   docs: {
     codePanel: true,
+    defaultName: "Overview",
     source: {
       transform: async (source) => {
         return prettier.format(source, {
@@ -90,6 +95,7 @@ export const parameters = {
 
   options: {
     storySort: {
+      method: "alphabetical",
       order: [
         "Introduction",
         [

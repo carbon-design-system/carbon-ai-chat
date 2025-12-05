@@ -1,0 +1,61 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/utilities/button-reset" as button;
+@use "@carbon/layout";
+
+:host {
+  display: inline-flex;
+}
+
+button.#{$prefix}--reasoning-steps-toggle {
+  @include button.reset(true);
+  @include type.type-style("caption-01");
+
+  display: inline-flex;
+  align-items: center;
+  color: theme.$text-secondary;
+  cursor: pointer;
+  gap: layout.$spacing-01;
+}
+
+:host([disabled]) button.#{$prefix}--reasoning-steps-toggle,
+button.#{$prefix}--reasoning-steps-toggle:disabled {
+  color: theme.$text-disabled;
+  cursor: not-allowed;
+}
+
+button.#{$prefix}--reasoning-steps-toggle:focus,
+button.#{$prefix}--reasoning-steps-toggle:focus-visible {
+  outline: 2px solid theme.$focus;
+  outline-offset: 2px;
+}
+
+.#{$prefix}--reasoning-steps-toggle-caret {
+  display: inline-flex;
+
+  @media screen and (prefers-reduced-motion: reduce) {
+    svg {
+      transform: rotate(-90deg);
+      transition: none;
+    }
+  }
+
+  svg {
+    transform: rotate(-90deg);
+    transition: transform motion.$duration-fast-02
+      motion.motion(standard, productive);
+  }
+}
+
+:host([open]) .#{$prefix}--reasoning-steps-toggle-caret svg {
+  transform: rotate(0deg);
+}
