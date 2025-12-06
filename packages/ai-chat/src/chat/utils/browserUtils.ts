@@ -13,19 +13,20 @@
 
 import { memoizeFunction } from "./memoizerUtils";
 
-const isBrowser =
-  typeof window !== "undefined" && typeof navigator !== "undefined";
+function isBrowser(): boolean {
+  return typeof window !== "undefined" && typeof navigator !== "undefined";
+}
 
 let screenWidth = 0;
 let screenHeight = 0;
 
-if (isBrowser) {
+if (isBrowser()) {
   screenWidth = window.screen.width;
   screenHeight = window.screen.height;
 }
 
-const IS_IOS = isBrowser && /iPad|iPhone|iPod/.test(navigator.userAgent);
-const IS_ANDROID = isBrowser && /Android/.test(navigator.userAgent);
+const IS_IOS = isBrowser() && /iPad|iPhone|iPod/.test(navigator.userAgent);
+const IS_ANDROID = isBrowser() && /Android/.test(navigator.userAgent);
 const IS_MOBILE = IS_IOS || IS_ANDROID;
 // The width and height checks here are how we differentiate between mobile android devices and tablets. Eventually new
 // phones may get wide enough that the width check needs to be increased.
@@ -41,7 +42,7 @@ const IS_PHONE_IN_PORTRAIT_MODE = IS_PHONE && screenWidth < 500;
  * @returns If window.sessionStorage is read and writeable.
  */
 function isSessionStorageAvailable(): boolean {
-  if (!isBrowser || !window.sessionStorage) {
+  if (!isBrowser() || !window.sessionStorage) {
     return false;
   }
   try {

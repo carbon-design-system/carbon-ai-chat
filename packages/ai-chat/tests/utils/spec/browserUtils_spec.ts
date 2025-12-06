@@ -29,7 +29,8 @@ describe("browserUtils", () => {
 
   describe("isBrowser", () => {
     it("should detect browser environment", () => {
-      expect(typeof isBrowser).toBe("boolean");
+      const browser = isBrowser();
+      expect(typeof browser).toBe("boolean");
     });
   });
 

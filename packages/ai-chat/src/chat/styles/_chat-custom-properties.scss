@@ -94,19 +94,20 @@
   --cds-aichat-border-radius: #{layout.$spacing-03};
 }
 
-.cds-aichat--container--render.cds-aichat---is-phone {
+.cds-aichat--container--render.cds-aichat--is-phone {
   /* Fallbacks for older browsers */
   --cds-aichat-width: calc(100vw - 4px);
   --cds-aichat-height: calc(100vh - 4px);
   --cds-aichat-left-position: 2;
   --cds-aichat-top-position: 2;
+  --cds-aichat-max-width: auto;
   --cds-aichat-max-height: auto;
   --cds-aichat-min-height: auto;
   --cds-aichat-right-position: auto;
 }
 
 @supports (height: 100dvh) {
-  .cds-aichat--container--render.cds-aichat---is-phone {
+  .cds-aichat--container--render.cds-aichat--is-phone {
     --cds-aichat-width: calc(100dvw - 4px);
     --cds-aichat-height: calc(100dvh - 4px);
   }

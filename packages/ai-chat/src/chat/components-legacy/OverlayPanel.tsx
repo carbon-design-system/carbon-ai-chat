@@ -245,7 +245,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
     }
 
     if (
-      isBrowser &&
+      isBrowser() &&
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -256,7 +256,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   }
 
   private scheduleAnimationFallback() {
-    if (!isBrowser) {
+    if (!isBrowser()) {
       return;
     }
 
@@ -279,7 +279,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   }
 
   private clearAnimationFallback() {
-    if (this.animationFallbackId !== null && isBrowser) {
+    if (this.animationFallbackId !== null && isBrowser()) {
       window.clearTimeout(this.animationFallbackId);
     }
 

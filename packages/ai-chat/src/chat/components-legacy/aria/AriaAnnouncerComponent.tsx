@@ -162,7 +162,7 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
 function nodeToText(node: Node, strings: string[]) {
   if (isElement(node)) {
     if (
-      (!isBrowser || window.getComputedStyle(node).display !== "none") &&
+      (!isBrowser() || window.getComputedStyle(node).display !== "none") &&
       node.getAttribute("aria-hidden") !== "true" &&
       !node.hasAttribute(ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE)
     ) {
