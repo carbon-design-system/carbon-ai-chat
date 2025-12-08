@@ -60,6 +60,7 @@ import {
   BusEventType,
   MainWindowCloseReason,
   MessageSendSource,
+  ViewChangeReason,
 } from "../../../types/events/eventBusTypes";
 import { SendOptions } from "../../../types/instance/ChatInstance";
 import { ButtonItem, SingleOption } from "../../../types/messaging/Messages";
@@ -427,6 +428,7 @@ class MainWindow
 
     // Fire the view:change and window:close events. If the view change is canceled then the main window will stay open.
     await serviceManager.actions.changeView(ViewType.LAUNCHER, {
+      viewChangeReason: ViewChangeReason.MAIN_WINDOW_MINIMIZED,
       mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
     });
   }
