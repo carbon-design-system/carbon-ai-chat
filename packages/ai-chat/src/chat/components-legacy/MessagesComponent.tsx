@@ -334,7 +334,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public doAutoScroll = throttle((options: AutoScrollOptions = {}) => {
     let animate: boolean = options.preferAnimate ?? true;
 
-    console.log("in here!");
     try {
       requestAnimationFrame(() => {
         debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
