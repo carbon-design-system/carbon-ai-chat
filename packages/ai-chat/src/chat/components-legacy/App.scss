@@ -235,7 +235,7 @@ in. */
   inset: chat-theme.$top-position chat-theme.$right-position
     chat-theme.$bottom-position chat-theme.$left-position;
   max-block-size: chat-theme.$max-height;
-  max-inline-size: chat-theme.$max-width;
+  max-inline-size: chat-theme.$messages-max-width;
   min-block-size: chat-theme.$min-height;
 }
 
