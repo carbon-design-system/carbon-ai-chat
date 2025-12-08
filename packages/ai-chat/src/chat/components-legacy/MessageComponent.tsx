@@ -10,6 +10,10 @@
 import ChatBot32 from "@carbon/icons/es/chat-bot/32.js";
 import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
 import Headset32 from "@carbon/icons/es/headset/32.js";
+import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import ReasoningStepsComponent from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
+import ReasoningStepComponent from "@carbon/ai-chat-components/es/react/reasoning-step.js";
+import type CDSAIChatReasoningSteps from "@carbon/ai-chat-components/es/components/reasoning-steps/src/cds-aichat-reasoning-steps.js";
 import { carbonIconToReact } from "../utils/carbonIcon";
 import Loading from "../components/carbon/Loading";
 import cx from "classnames";
@@ -54,16 +58,22 @@ import {
   Message,
   MessageRequest,
   MessageResponseTypes,
+  ReasoningStep as ReasoningStepData,
+  ReasoningStepOpenState,
+  ReasoningSteps as ReasoningStepsData,
   ResponseUserProfile,
+  TextItem,
   UserType,
 } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { ResponseUserAvatar } from "./ResponseUserAvatar";
 import { CarbonTheme } from "../../types/config/PublicConfig";
+import RichText from "./responseTypes/util/RichText";
 
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
 const Headset = carbonIconToReact(Headset32);
+const ChevronDown = carbonIconToReact(ChevronDown16);
 
 enum MoveFocusType {
   /**
@@ -93,7 +103,8 @@ enum MoveFocusType {
 }
 
 interface MessageProps
-  extends HasServiceManager,
+  extends
+    HasServiceManager,
     HasLanguagePack,
     HasClassName,
     HasAriaAnnouncer,
@@ -199,6 +210,26 @@ interface MessageState {
    * Indicates if the focus handle has focus. This will be used to display the focus indicator on the message.
    */
   focusHandleHasFocus: boolean;
+
+  /**
+   * Tracks whether auto-controlled reasoning steps should be open.
+   */
+  autoReasoningContainerOpen?: boolean;
+
+  /**
+   * Tracks whether each auto-controlled reasoning step should be open.
+   */
+  autoReasoningStepOpenStates: boolean[];
+
+  /**
+   * Tracks if auto-controlled reasoning has already collapsed due to response content.
+   */
+  autoReasoningHasAutoCollapsed: boolean;
+
+  /**
+   * Tracks manual open/close state for reasoning steps when they are not auto-controlled.
+   */
+  manualReasoningOpen?: boolean;
 }
 
 class MessageComponent extends PureComponent<
@@ -211,6 +242,9 @@ class MessageComponent extends PureComponent<
   public readonly state: Readonly<MessageState> = {
     didRenderErrorOccur: false,
     focusHandleHasFocus: false,
+    autoReasoningContainerOpen: true,
+    autoReasoningStepOpenStates: [],
+    autoReasoningHasAutoCollapsed: false,
   };
 
   /**
@@ -274,6 +308,7 @@ class MessageComponent extends PureComponent<
         actions.setMessageWasAnnounced(uiState.id),
       );
     }
+    this.syncAutoReasoningState();
   }
 
   componentDidUpdate() {
@@ -284,6 +319,7 @@ class MessageComponent extends PureComponent<
         actions.setMessageWasAnnounced(uiState.id),
       );
     }
+    this.syncAutoReasoningState();
   }
 
   /**
@@ -379,6 +415,8 @@ class MessageComponent extends PureComponent<
     let label;
     let actorName;
     let iconClassName = "";
+    let reasoning;
+
     if (isResponse(message)) {
       // We'll use the first message item for deciding if we should show the agent's avatar.
       const agentMessageType = localMessageItem.item.agent_message_type;
@@ -455,6 +493,35 @@ class MessageComponent extends PureComponent<
           />
         </span>
       );
+
+      const reasoningData = message.message_options?.reasoning;
+      if (reasoningData?.steps?.length || reasoningData?.content) {
+        const isOpen = this.getReasoningContainerOpen(reasoningData);
+        const buttonLabel = isOpen
+          ? languagePack.reasoningSteps_mainLabelOpen
+          : languagePack.reasoningSteps_mainLabelClosed;
+        reasoning = (
+          <>
+            <span className="cds-aichat--message__reasoning-separator">|</span>
+            <button
+              type="button"
+              className="cds-aichat--message__reasoning-toggle"
+              aria-expanded={isOpen}
+              aria-controls={this.getReasoningContainerId()}
+              onClick={this.handleReasoningToggleClick}
+            >
+              <span>{buttonLabel}</span>
+              <span
+                className="cds-aichat--message__reasoning-caret"
+                aria-hidden="true"
+                data-open={isOpen}
+              >
+                <ChevronDown />
+              </span>
+            </button>
+          </>
+        );
+      }
     } else {
       label = <FormattedMessage id="message_labelYou" values={{ timestamp }} />;
     }
@@ -470,6 +537,7 @@ class MessageComponent extends PureComponent<
           </div>
         )}
         <div className="cds-aichat--message__label">{label}</div>
+        <div className="cds-aichat--message__reasoning">{reasoning}</div>
       </div>
     );
   }
@@ -525,6 +593,270 @@ class MessageComponent extends PureComponent<
       }
     );
   }
+
+  private renderReasoningSteps(
+    reasoning?: ReasoningStepsData,
+    streaming?: boolean,
+  ) {
+    const steps = reasoning?.steps;
+
+    const hasSteps = Boolean(steps && steps.length);
+    const hasContent = Boolean(reasoning?.content);
+
+    if (!hasSteps && !hasContent) {
+      return null;
+    }
+
+    const isAutoControlled = this.isAutoReasoning(this.props.message);
+    const containerOpen = this.getReasoningContainerOpen(reasoning);
+
+    return (
+      <div className="cds-aichat--message__reasoning-steps">
+        <ReasoningStepsComponent
+          controlled
+          id={this.getReasoningContainerId()}
+          open={containerOpen}
+          onToggle={
+            isAutoControlled ? this.handleAutoReasoningToggle : undefined
+          }
+        >
+          {hasContent && reasoning?.content && (
+            <RichText
+              text={reasoning.content}
+              highlight={true}
+              streaming={streaming}
+            />
+          )}
+          {(steps ?? []).map((step: ReasoningStepData, index: number) => {
+            const stepOpenState = step.open_state;
+            const hasExplicitStepState =
+              typeof stepOpenState !== "undefined" &&
+              stepOpenState !== ReasoningStepOpenState.DEFAULT;
+            const autoState = this.state.autoReasoningStepOpenStates[index];
+            const stepOpen = hasExplicitStepState
+              ? stepOpenState === ReasoningStepOpenState.OPEN
+              : isAutoControlled
+                ? typeof autoState === "boolean"
+                  ? autoState
+                  : index === steps.length - 1
+                    ? containerOpen
+                    : false
+                : containerOpen && index === steps.length - 1;
+            const stepToggleHandler =
+              isAutoControlled && !hasExplicitStepState
+                ? (event: CustomEvent<{ open: boolean }>) =>
+                    this.handleAutoReasoningStepToggle(index, event)
+                : undefined;
+
+            const stepContent = step.content ? (
+              <RichText
+                text={step.content}
+                highlight={true}
+                streaming={streaming}
+              />
+            ) : null;
+
+            return (
+              <ReasoningStepComponent
+                key={`${this.props.message.id}-reasoning-${index}`}
+                title={step.title}
+                open={stepOpen}
+                controlled
+                onToggle={stepToggleHandler}
+              >
+                {stepContent}
+              </ReasoningStepComponent>
+            );
+          })}
+        </ReasoningStepsComponent>
+      </div>
+    );
+  }
+
+  private isAutoReasoning(message: Message) {
+    if (!isResponse(message)) {
+      return false;
+    }
+    const reasoning = message.message_options?.reasoning;
+    const hasSteps = Boolean(reasoning?.steps && reasoning.steps.length);
+    const hasContent = Boolean(reasoning?.content);
+    if (!hasSteps && !hasContent) {
+      return false;
+    }
+    const containerState = reasoning.open_state;
+    return (
+      typeof containerState === "undefined" ||
+      containerState === ReasoningStepOpenState.DEFAULT
+    );
+  }
+
+  private shouldCloseReasoning(localMessageItem?: LocalMessageItem) {
+    if (!localMessageItem || !localMessageItem.item?.response_type) {
+      return false;
+    }
+    const { item, ui_state: uiState } = localMessageItem;
+    if (item.response_type === MessageResponseTypes.TEXT) {
+      const textFromStreaming = uiState.streamingState
+        ? uiState.streamingState.chunks
+            .map((chunk) => (chunk as Partial<TextItem>).text ?? "")
+            .join("")
+        : undefined;
+      const text = (item as TextItem).text.length
+        ? (item as TextItem).text
+        : textFromStreaming;
+      return Boolean(text && text.trim());
+    }
+    return true;
+  }
+
+  private getReasoningContainerOpen(reasoning?: ReasoningStepsData) {
+    const containerOpenState = reasoning?.open_state;
+    const hasExplicitContainerState =
+      typeof containerOpenState !== "undefined" &&
+      containerOpenState !== ReasoningStepOpenState.DEFAULT;
+
+    if (typeof this.state.manualReasoningOpen === "boolean") {
+      return this.state.manualReasoningOpen;
+    }
+
+    if (hasExplicitContainerState) {
+      return containerOpenState === ReasoningStepOpenState.OPEN;
+    }
+
+    return this.state.autoReasoningContainerOpen ?? true;
+  }
+
+  private getReasoningContainerId() {
+    return `cds-aichat-reasoning-${this.props.message.id}`;
+  }
+
+  private handleReasoningToggleClick = () => {
+    if (!isResponse(this.props.message)) {
+      return;
+    }
+    const reasoning = this.props.message.message_options?.reasoning;
+    const nextOpen = !this.getReasoningContainerOpen(reasoning);
+
+    if (this.isAutoReasoning(this.props.message)) {
+      this.setState({ autoReasoningContainerOpen: nextOpen });
+    } else {
+      this.setState({ manualReasoningOpen: nextOpen });
+    }
+  };
+
+  private syncAutoReasoningState() {
+    if (
+      !this.isAutoReasoning(this.props.message) ||
+      !isResponse(this.props.message)
+    ) {
+      return;
+    }
+
+    const reasoningSteps =
+      this.props.message?.message_options?.reasoning?.steps ?? [];
+    const shouldClose = this.shouldCloseReasoning(this.props.localMessageItem);
+
+    this.setState((prevState) => {
+      let containerOpen =
+        typeof prevState.autoReasoningContainerOpen === "boolean"
+          ? prevState.autoReasoningContainerOpen
+          : true;
+
+      const prevStepStates = prevState.autoReasoningStepOpenStates.slice(
+        0,
+        reasoningSteps.length,
+      );
+
+      const hasMatchingLength = prevStepStates.length === reasoningSteps.length;
+
+      const lastIndex = Math.max(0, reasoningSteps.length - 1);
+      const nextStepStates =
+        hasMatchingLength && prevStepStates.length
+          ? prevStepStates
+          : reasoningSteps.map((_, index) =>
+              index === lastIndex ? containerOpen : false,
+            );
+
+      let containerChanged = false;
+      let stepsChanged =
+        nextStepStates.length !==
+          prevState.autoReasoningStepOpenStates.length ||
+        nextStepStates.some(
+          (value, index) =>
+            value !== prevState.autoReasoningStepOpenStates[index],
+        );
+
+      let hasAutoCollapsed = prevState.autoReasoningHasAutoCollapsed;
+
+      if (shouldClose && !hasAutoCollapsed && containerOpen) {
+        containerOpen = false;
+        containerChanged = true;
+        stepsChanged = true;
+        hasAutoCollapsed = true;
+      }
+
+      const stepStates = shouldClose
+        ? nextStepStates.map(() => false)
+        : nextStepStates;
+
+      if (
+        containerChanged ||
+        stepsChanged ||
+        hasAutoCollapsed !== prevState.autoReasoningHasAutoCollapsed
+      ) {
+        return {
+          autoReasoningContainerOpen: containerOpen,
+          autoReasoningStepOpenStates: stepStates,
+          autoReasoningHasAutoCollapsed: hasAutoCollapsed,
+        };
+      }
+
+      return null;
+    });
+  }
+
+  private handleAutoReasoningToggle = (
+    event: React.ToggleEvent<CDSAIChatReasoningSteps>,
+  ) => {
+    if (!this.isAutoReasoning(this.props.message)) {
+      return;
+    }
+    const open =
+      typeof event?.newState !== "undefined"
+        ? event.newState === "open"
+        : Boolean(
+            (event as unknown as CustomEvent<{ open: boolean }>).detail?.open ??
+            event.currentTarget?.open,
+          );
+    this.setState((prevState) => {
+      if (prevState.autoReasoningContainerOpen === open) {
+        return null;
+      }
+      return {
+        autoReasoningContainerOpen: open,
+      };
+    });
+  };
+
+  private handleAutoReasoningStepToggle = (
+    index: number,
+    event: CustomEvent<{ open: boolean }>,
+  ) => {
+    if (!this.isAutoReasoning(this.props.message)) {
+      return;
+    }
+    const open = Boolean(event?.detail?.open);
+    this.setState((prevState) => {
+      if (prevState.autoReasoningStepOpenStates[index] === open) {
+        return null;
+      }
+      const nextStates = prevState.autoReasoningStepOpenStates.slice();
+      nextStates[index] = open;
+      return {
+        autoReasoningStepOpenStates: nextStates,
+      };
+    });
+  };
 
   /**
    * Renders a focus "handle" for this message. When this message gets focus, we actually move focus to an element
@@ -769,6 +1101,14 @@ class MessageComponent extends PureComponent<
                 ref={this.messageRef}
               >
                 <div className="cds-aichat--received--inner">
+                  {isFirstMessageItem &&
+                    this.renderReasoningSteps(
+                      message.message_options?.reasoning,
+                      Boolean(
+                        localMessageItem.ui_state.streamingState &&
+                        !localMessageItem.ui_state.streamingState.isDone,
+                      ),
+                    )}
                   {messageComponent}
                 </div>
               </div>

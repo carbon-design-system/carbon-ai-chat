@@ -18,12 +18,15 @@ import {
 } from "@carbon/web-components/es/components/button/defs.js";
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CarbonButtonElement from "@carbon/web-components/es/components/button/button.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const Button = createComponent({
-  tagName: "cds-button",
-  elementClass: CarbonButtonElement,
-  react: React,
-});
+const Button = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-button",
+    elementClass: CarbonButtonElement,
+    react: React,
+  }),
+);
 
 export default Button;
 export {

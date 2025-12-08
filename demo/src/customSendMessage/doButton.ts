@@ -12,6 +12,10 @@ import {
   ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 
 function doButton(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -23,6 +27,8 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.DANGER,
           label: "Fire a client side event",
           button_type: ButtonItemType.CUSTOM_EVENT,
           custom_event_name: "alert_button",
@@ -33,6 +39,8 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.SECONDARY,
           label: "Send a message to your server",
           button_type: ButtonItemType.POST_BACK,
           value: {
@@ -43,6 +51,8 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.TERTIARY,
           button_type: ButtonItemType.SHOW_PANEL,
           label: "Open a panel",
           panel: {
@@ -66,9 +76,11 @@ function doButton(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.BUTTON,
+          size: CHAT_BUTTON_SIZE.SMALL,
+          kind: CHAT_BUTTON_KIND.PRIMARY,
           button_type: ButtonItemType.URL,
           label: "Add a button that is a link",
-          url: "https://www.ibm.com",
+          url: "https://carbon-ai-chat-components.netlify.app/?path=/docs/components-chat-button--docs",
         },
       ],
     },

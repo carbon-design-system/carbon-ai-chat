@@ -57,6 +57,7 @@
 .cds-aichat--modal-host {
   position: fixed;
   z-index: calc(#{chat-theme.$z-index} + 1);
+  display: none;
   block-size: 100vh;
   inline-size: 100vw;
   inset-block-start: 0;
@@ -67,6 +68,7 @@
 
 /* When there are modal children, enable pointer events on them and block interaction with background */
 .cds-aichat--modal-host:has(> *) {
+  display: block;
   pointer-events: auto;
 }
 

@@ -103,7 +103,6 @@ import {
   SendOptions,
 } from "../../types/instance/ChatInstance";
 import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
-import { NotificationMessage } from "../../types/instance/apiTypes";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 
 /**
@@ -231,7 +230,10 @@ class ChatActionsImpl {
     if (!this.alreadyHydrated) {
       history = await this.serviceManager.historyService.loadHistory();
 
-      if (serviceManager.humanAgentService) {
+      if (
+        serviceManager.humanAgentService &&
+        !serviceManager.humanAgentService.hasInitialized
+      ) {
         // Once we've got the main config which contains the details for connecting to a service desk, we can
         // initialize the human agent service.
         debugLog("Initializing the human agent service");
@@ -1169,29 +1171,6 @@ class ChatActionsImpl {
   }
 
   // updateLanguagePack removed; use top-level `strings` prop on components.
-
-  /**
-   * Adds a new notification to be shown in the UI.
-   */
-  addNotification(notification: NotificationMessage) {
-    this.serviceManager.store.dispatch(actions.addNotification(notification));
-  }
-
-  /**
-   * Removes a notification with the provided groupId.
-   */
-  removeNotification(groupID: string) {
-    this.serviceManager.store.dispatch(
-      actions.removeNotifications({ groupID }),
-    );
-  }
-
-  /**
-   * Removes all notifications.
-   */
-  removeAllNotifications() {
-    this.serviceManager.store.dispatch(actions.removeAllNotifications());
-  }
 
   /**
    * Construct the newViewState from the newView provided. Fire the view:pre:change and view:change events, as well as

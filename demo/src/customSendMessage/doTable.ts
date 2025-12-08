@@ -28,6 +28,7 @@ async function doTableStreaming(
     undefined,
     undefined,
     undefined,
+    undefined,
     requestOptions,
   );
 }

@@ -13,7 +13,7 @@ import { NamespaceService } from "../services/NamespaceService";
 import { ConfigChanges, isHumanAgentChatActive } from "./configChangeDetection";
 import actions from "../store/actions";
 import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
-import { consoleError } from "./miscUtils";
+import { consoleDebug, consoleError } from "./miscUtils";
 import { createAppConfig } from "../store/doCreateStore";
 import { isBrowser } from "./browserUtils";
 
@@ -82,21 +82,32 @@ export async function applyConfigChangesDynamically(
   }
 
   // Handle human agent config changes
-  if (changes.humanAgentConfigChanged) {
+  if (changes.humanAgentFactoryChanged) {
     try {
       // If an existing service is present and a chat is in progress/connecting, end it quietly.
       if (
         serviceManager.humanAgentService &&
         isHumanAgentChatActive(serviceManager)
       ) {
+        consoleDebug("Tearing down existing service desk");
         // Align with restart behavior: end as if user ended.
         await serviceManager.humanAgentService.endChat(true, true, false);
       }
 
+      const wasInitialized = Boolean(
+        serviceManager.humanAgentService?.hasInitialized,
+      );
+
+      consoleDebug("Recreating human agent service");
       // Recreate and initialize the human agent service using the new config.
       serviceManager.humanAgentService =
         createHumanAgentService(serviceManager);
-      await serviceManager.humanAgentService.initialize();
+
+      // If the human agent service was already started, start it up again.
+      if (wasInitialized) {
+        consoleDebug("Human agent service restarting");
+        await serviceManager.humanAgentService.initialize();
+      }
     } catch (error) {
       // If human agent service update fails, allow caller to decide on fallback.
       consoleError("Failed to update human agent service dynamically:", error);

@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -13,6 +13,10 @@
 .cds-aichat--wide-width .cds-aichat--conversational-search-text,
 .cds-aichat--standard-width .cds-aichat--conversational-search-text {
   margin-inline: 56px 16px;
+}
+
+.cds-aichat--conversational-search-text__CitationsToggleContainer {
+  padding-block-start: layout.$spacing-04;
 }
 
 .cds-aichat--narrow-width
