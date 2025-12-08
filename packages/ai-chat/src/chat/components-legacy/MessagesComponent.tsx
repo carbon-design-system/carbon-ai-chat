@@ -38,7 +38,6 @@ import { IS_MOBILE } from "../utils/browserUtils";
 import {
   AUTO_SCROLL_EXTRA,
   AUTO_SCROLL_THROTTLE_TIMEOUT,
-  ONE_LINE_MESSAGE_HEIGHT,
   WriteableElementName,
 } from "../utils/constants";
 import { doScrollElement, getScrollBottom } from "../utils/domUtils";
@@ -49,7 +48,7 @@ import MessageComponent, {
   MessageClass,
   MoveFocusType,
 } from "./MessageComponent";
-import { Message } from "../../types/messaging/Messages";
+import { Message, MessageRequest } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
@@ -169,6 +168,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private previousScrollOffsetHeight: number;
 
+  private bottomSpacerRef = React.createRef<HTMLDivElement>();
+
   componentDidMount(): void {
     this.scrollPanelObserver = new ResizeObserver(this.onResize);
     this.scrollPanelObserver.observe(
@@ -226,30 +227,22 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     localItem: LocalMessageItem,
     message: Message,
   ) => {
-    // Special case: If message is from history, we should scroll to it regardless of type
-    if (message?.ui_state_internal?.from_history) {
-      return true;
-    }
-
-    if (isRequest(message)) {
-      if (message?.history?.silent) {
-        return false;
-      }
-      return true;
-    }
-
     if (isResponse(message)) {
+      const { allMessagesByID } = this.props;
+      const messageRequest = allMessagesByID[
+        message?.request_id
+      ] as MessageRequest;
+
       this.renderScrollDownNotification();
-      // If this is a silent response (e.g., user_defined response type that isn't meant to be visible)
-      // then we should return false
-      if (message?.history?.silent) {
-        return false;
-      }
-      // For regular response messages, return true
-      return true;
+      // If the request for this response was silent, then scroll to it instead of scrolling to where the
+      // silent user message would be. But don't do this if it's an empty message (which happens with a
+      // skip_use_input message from an extension).
+      return (
+        messageRequest?.history?.silent && messageRequest.input?.text !== ""
+      );
     }
 
-    return false;
+    return isRequest(message);
   };
 
   /**
@@ -339,105 +332,114 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param options The options to control how the scrolling should occur.
    */
   public doAutoScroll = throttle((options: AutoScrollOptions = {}) => {
-    let animate: boolean = options.preferAnimate || true;
+    let animate: boolean = options.preferAnimate ?? true;
 
+    console.log("in here!");
     try {
-      debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
+      requestAnimationFrame(() => {
+        debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
 
-      const { scrollToTop, scrollToBottom } = options;
-      const { localMessageItems, messageState, allMessagesByID } = this.props;
-      const { isMessageLoadingCounter } = messageState;
-      const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
-      const scrollElement = this.messagesContainerWithScrollingRef.current;
+        const { scrollToTop, scrollToBottom } = options;
+        const { localMessageItems, allMessagesByID } = this.props;
+        const scrollElement = this.messagesContainerWithScrollingRef.current;
 
-      if (scrollToTop !== undefined) {
-        doScrollElement(scrollElement, scrollToTop, 0);
-        return;
-      }
-
-      if (scrollToBottom !== undefined) {
-        const scrollTop =
-          scrollElement.scrollHeight -
-          scrollElement.offsetHeight -
-          scrollToBottom;
-        doScrollElement(scrollElement, scrollTop, 0, animate);
-        return;
-      }
-
-      let setScrollTop: number;
-
-      const lastLocalItemIndex = localMessageItems.length - 1;
-      const lastLocalItem = localMessageItems.length
-        ? localMessageItems[lastLocalItemIndex]
-        : null;
-      const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
-
-      if (!lastLocalItem) {
-        debugAutoScroll("[doAutoScroll] No last time");
-        // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
-        // decide it remembers the previous scroll position and set it for us.
-        setScrollTop = 0;
-      } else if (isMessageLoadingCounter > 0 || isHumanAgentTyping) {
-        // The typing indicator is visible, so scroll to the bottom.
-        setScrollTop = scrollElement.scrollHeight;
-        debugAutoScroll(
-          "[doAutoScroll] isLoading visible",
-          isMessageLoadingCounter,
-        );
-      } else {
-        // Iterate backwards until we find the last message to scroll to. By default, response messages should be
-        // scrolled to (not request messages). However, if a response has history.silent=true, it should not be scrolled to.
-        // If all messages are not scrollable, we'll default to the bottom of the conversation.
-        let messageIndex = localMessageItems.length - 1;
-        let localItem = localMessageItems[messageIndex];
-        let lastScrollableMessageComponent: MessageClass = this.messageRefs.get(
-          localItem.ui_state.id,
-        );
-
-        while (messageIndex >= 1) {
-          localItem = localMessageItems[messageIndex];
-          const message = allMessagesByID[localItem?.fullMessageID];
-
-          // Go to the first message in the related block of messages.
-          const nextItemInSameMessage =
-            localItem?.fullMessageID ===
-            localMessageItems[messageIndex - 1]?.fullMessageID;
-
-          if (
-            !nextItemInSameMessage &&
-            this.shouldScrollToMessage(localItem, message)
-          ) {
-            lastScrollableMessageComponent = this.messageRefs.get(
-              localItem.ui_state.id,
-            );
-            debugAutoScroll(
-              `[doAutoScroll] lastScrollableMessageComponent=${messageIndex}`,
-              localMessageItems[messageIndex],
-              message,
-            );
-            break;
-          }
-          messageIndex--;
+        if (scrollToTop !== undefined) {
+          doScrollElement(scrollElement, scrollToTop, 0);
+          return;
         }
 
-        if (lastScrollableMessageComponent) {
-          // Scroll to the top of the message.
-          const offsetTop =
-            lastScrollableMessageComponent.ref.current?.offsetTop;
-          setScrollTop =
-            offsetTop + AUTO_SCROLL_EXTRA - ONE_LINE_MESSAGE_HEIGHT;
-          debugAutoScroll(
-            `[doAutoScroll] Scrolling to message offsetTop=${offsetTop}`,
-          );
+        if (scrollToBottom !== undefined) {
+          const scrollTop =
+            scrollElement.scrollHeight -
+            scrollElement.offsetHeight -
+            scrollToBottom;
+          doScrollElement(scrollElement, scrollTop, 0, animate);
+          return;
+        }
+
+        let setScrollTop: number;
+
+        const lastLocalItemIndex = localMessageItems.length - 1;
+        const lastLocalItem = localMessageItems.length
+          ? localMessageItems[lastLocalItemIndex]
+          : null;
+        const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
+
+        if (!lastLocalItem) {
+          debugAutoScroll("[doAutoScroll] No last time");
+          // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
+          // decide it remembers the previous scroll position and set it for us.
+          setScrollTop = 0;
         } else {
-          // No message found.
-          setScrollTop = -1;
-          debugAutoScroll("[doAutoScroll] No message found");
-        }
-      }
+          // Iterate backwards until we find the last message to scroll to. By default, resquest messages should be
+          // scrolled to (not response messages). However, if a response has history.silent=true, it should not be scrolled to.
+          // If all messages are not scrollable, we'll default to the bottom of the conversation.
+          let messageIndex = localMessageItems.length - 1;
+          let localItem = localMessageItems[messageIndex];
+          let lastScrollableMessageComponent: MessageClass = undefined;
 
-      if (setScrollTop !== -1) {
-        if (setScrollTop >= scrollElement.scrollTop) {
+          while (messageIndex >= 1) {
+            localItem = localMessageItems[messageIndex];
+            const message = allMessagesByID[localItem?.fullMessageID];
+
+            if (this.shouldScrollToMessage(localItem, message)) {
+              lastScrollableMessageComponent = this.messageRefs.get(
+                localItem.ui_state.id,
+              );
+              debugAutoScroll(
+                `[doAutoScroll] lastScrollableMessageComponent=${messageIndex}`,
+                localMessageItems[messageIndex],
+                message,
+              );
+              break;
+            }
+            messageIndex--;
+          }
+
+          if (lastScrollableMessageComponent) {
+            const spacerEl = this.bottomSpacerRef.current;
+
+            if (spacerEl) {
+              spacerEl.style.setProperty("min-block-size", "0px"); // reset first
+            }
+
+            const targetEl = lastScrollableMessageComponent?.ref?.current;
+
+            const targetRect = targetEl.getBoundingClientRect();
+            const scrollerRect = scrollElement.getBoundingClientRect();
+
+            // Offset of target's top within the scroller's scroll coordinate space
+            const targetOffsetTopWithinScroller =
+              targetRect.top - scrollerRect.top + scrollElement.scrollTop;
+
+            const desiredScrollTop = Math.max(
+              0,
+              Math.floor(targetOffsetTopWithinScroller + AUTO_SCROLL_EXTRA),
+            );
+
+            const maxScrollTop =
+              scrollElement.scrollHeight - scrollElement.clientHeight;
+
+            const deficit = Math.max(
+              0,
+              Math.ceil(desiredScrollTop - maxScrollTop),
+            );
+
+            setScrollTop = desiredScrollTop;
+
+            spacerEl.style.setProperty("min-block-size", `${deficit}px`);
+
+            debugAutoScroll(
+              `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
+            );
+          } else {
+            // No message found.
+            setScrollTop = -1;
+            debugAutoScroll("[doAutoScroll] No message found");
+          }
+        }
+
+        if (setScrollTop !== -1) {
           if (lastMessage?.ui_state_internal?.from_history) {
             animate = false;
           }
@@ -451,7 +453,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Update the scroll anchor setting based on this new position.
           this.checkScrollAnchor(true, setScrollTop);
         }
-      }
+      });
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
@@ -1020,6 +1022,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 isMessageLoadingCounter ? isMessageLoadingText : undefined,
               )}
             {this.renderScrollHandle(false)}
+            <div id="chat-bottom-spacer" ref={this.bottomSpacerRef} />
             <MountChildrenOnDelay>
               <ChatButton
                 className={cx("cds-aichat__scroll-to-bottom-button", {
