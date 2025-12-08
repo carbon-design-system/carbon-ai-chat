@@ -34,6 +34,7 @@ function CustomResponseExample({
     }, 1000);
     return () => clearInterval(intervalId);
   }, []);
+
   return (
     <div className="external">
       This is a user_defined response type with external styles. The following

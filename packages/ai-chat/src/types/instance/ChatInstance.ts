@@ -102,6 +102,14 @@ export type PublicChatState = Readonly<
     isHydratingCounter: number;
 
     /**
+     * The message id of the currently active response. The "active response" is the latest response that has been
+     * received or is expected. For instance, if you send another message the current activeResponseId will be set to
+     * null until you get a new response back. This is meant to be used to disable any user inputs in a user_defined
+     * response that you don't want active if its not a message you should be receiving inputs from.
+     */
+    activeResponseId: string | null;
+
+    /**
      * @experimental State representing the main input surface.
      */
     input: PublicInputState;
