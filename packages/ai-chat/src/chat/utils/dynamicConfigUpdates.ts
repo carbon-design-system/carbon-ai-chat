@@ -119,7 +119,7 @@ export async function applyConfigChangesDynamically(
   if (changes.disclaimerChanged) {
     // Clear the disclaimer accepted state for current hostname when disclaimer content changes
     const currentState = store.getState();
-    const hostname = isBrowser ? window.location.hostname : "";
+    const hostname = isBrowser() ? window.location.hostname : "";
     const updatedDisclaimersAccepted = {
       ...currentState.persistedToBrowserStorage.disclaimersAccepted,
     };

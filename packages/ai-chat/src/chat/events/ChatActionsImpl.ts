@@ -1181,7 +1181,7 @@ class ChatActionsImpl {
   async changeView(
     newView: ViewType | Partial<ViewState>,
     reason: {
-      viewChangeReason?: ViewChangeReason;
+      viewChangeReason: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
     },
@@ -1233,7 +1233,7 @@ class ChatActionsImpl {
   private async fireViewChangeEventsAndChangeView(
     newViewState: ViewState,
     reason: {
-      viewChangeReason?: ViewChangeReason;
+      viewChangeReason: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
     },
