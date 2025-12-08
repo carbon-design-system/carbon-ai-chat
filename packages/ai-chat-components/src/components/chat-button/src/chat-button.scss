@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -24,7 +24,16 @@ $css--plex: true !default;
   }
 
   .#{$cds-prefix}--btn {
-    border-radius: 9999px;
+    border-radius: convert.to-rem(24px);
+    max-inline-size: 19rem;
+  }
+
+  .#{$cds-prefix}--btn.#{$cds-prefix}--btn--md {
+    border-radius: convert.to-rem(20px);
+  }
+
+  .#{$cds-prefix}--btn.#{$cds-prefix}--btn--sm {
+    border-radius: convert.to-rem(16px);
   }
 
   .#{$cds-prefix}--btn:not(.#{$cds-prefix}-ce--btn--has-icon) {

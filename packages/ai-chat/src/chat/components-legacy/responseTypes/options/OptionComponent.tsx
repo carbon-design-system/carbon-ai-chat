@@ -11,7 +11,7 @@ import React, { Component, MouseEvent } from "react";
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "../../../components/carbon/ChatButton";
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
@@ -136,10 +136,10 @@ class OptionComponent extends Component<OptionProps> {
                 <li key={item.label}>
                   <ChatButton
                     kind={CHAT_BUTTON_KIND.TERTIARY}
-                    isQuickAction
+                    is-quick-action
                     size={CHAT_BUTTON_SIZE.SMALL}
                     disabled={disableUserInputs}
-                    isSelected={isSelected}
+                    isselected={isSelected}
                     onClick={(event: MouseEvent) => {
                       this.onButtonClick(event, item);
                     }}

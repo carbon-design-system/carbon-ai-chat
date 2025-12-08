@@ -1517,6 +1517,73 @@ interface MessageUIStateInternal {
 }
 
 /**
+ * If the reasoning step is open, closed, or is controlled by Carbon AI Chat.
+ *
+ * If a user elects to open/close the user action will override what is provided here.
+ *
+ * @category Messaging
+ */
+enum ReasoningStepOpenState {
+  OPEN = "open",
+  CLOSE = "close",
+  DEFAULT = "default",
+}
+
+/**
+ * An individual reasoning step.
+ *
+ * @category Messaging
+ */
+interface ReasoningStep {
+  /**
+   * The title of the reasoning step.
+   */
+  title: string;
+
+  /**
+   * Marks if this individual step is open. Only use this if you don't want the default behavior.
+   *
+   * If the step has content, by default the reasoning step will automatically open and will close when the
+   * next step(s) have content or the first {@link GenericItem} is returned with something to display.
+   *
+   * No matter what you choose, if the user manually marks something open/closed they retain control.
+   */
+  open_state?: ReasoningStepOpenState;
+
+  /**
+   * Optional markdown content to explain what the step is doing.
+   */
+  content?: string;
+}
+
+/**
+ * The interface describing how to pass reasoning steps to the UI.
+ *
+ * @category Messaging
+ */
+interface ReasoningSteps {
+  /**
+   * Marks if the reasoning step interface is open. Only use this if you don't want the default behavior.
+   *
+   * By default the reasoning step interface will automatically open and will then close when the first
+   * {@link GenericItem} is returned with something to display.
+   *
+   * No matter what you choose, if the user manually marks something open/closed they retain control.
+   */
+  open_state?: ReasoningStepOpenState;
+
+  /**
+   * The array of reasoning steps for this message.
+   */
+  steps?: ReasoningStep[];
+
+  /**
+   * Optional markdown content to explain what the step is doing.
+   */
+  content?: string;
+}
+
+/**
  * This interface contains options for a {@link MessageResponse}.
  *
  * @category Messaging
@@ -1528,7 +1595,26 @@ interface MessageResponseOptions {
   response_user_profile?: ResponseUserProfile;
 
   /**
+   * Controls the display of the reasoning steps component.
+   *
+   * Most people should use reasoning steps instead of chain of thought.
+   *
+   * Chain of thought it meant more for technical "called X API and got Y result back".
+   *
+   * Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
+   * content than debugging technical internal content.
+   */
+  reasoning?: ReasoningSteps;
+
+  /**
    * Controls the display of the chain of thought component.
+   *
+   * Most people should use reasoning steps instead of chain of thought.
+   *
+   * Chain of thought it meant more for technical "called X API and got Y result back".
+   *
+   * Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
+   * content than debugging technical internal content.
    */
   chain_of_thought?: ChainOfThoughtStep[];
 }
@@ -1853,4 +1939,7 @@ export {
   MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,
+  ReasoningSteps,
+  ReasoningStep,
+  ReasoningStepOpenState,
 };
