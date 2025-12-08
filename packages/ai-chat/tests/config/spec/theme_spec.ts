@@ -249,7 +249,7 @@ describe("Config Theme", () => {
           namespaceChanged: false,
           messagingChanged: false,
           layoutChanged: false,
-          humanAgentConfigChanged: false,
+          humanAgentFactoryChanged: false,
           headerChanged: false,
           disclaimerChanged: false,
           homescreenChanged: false,

@@ -37,7 +37,7 @@ describe("Config Change Detection", () => {
       expect(changes.layoutChanged).toBe(false);
       expect(changes.homescreenChanged).toBe(false);
       expect(changes.lightweightUIChanged).toBe(false);
-      expect(changes.humanAgentConfigChanged).toBe(false);
+      expect(changes.humanAgentFactoryChanged).toBe(false);
     });
 
     it("should detect all changes when previous config is null (first load)", () => {
@@ -76,7 +76,7 @@ describe("Config Change Detection", () => {
       expect(changes.layoutChanged).toBe(true);
       expect(changes.homescreenChanged).toBe(true);
       expect(changes.lightweightUIChanged).toBe(true);
-      expect(changes.humanAgentConfigChanged).toBe(true);
+      expect(changes.humanAgentFactoryChanged).toBe(true);
     });
 
     describe("header changes", () => {

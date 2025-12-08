@@ -16,9 +16,9 @@ import { ServiceManager } from "../services/ServiceManager";
  */
 export interface ConfigChanges {
   /**
-   * True if human agent configuration has changed (serviceDeskFactory or serviceDesk)
+   * True if the serviceDeskFactory has changed
    */
-  humanAgentConfigChanged: boolean;
+  humanAgentFactoryChanged: boolean;
 
   /**
    * True if theme configuration has changed
@@ -71,9 +71,7 @@ export function detectConfigChanges(
   if (!previousConfig) {
     // First config load - everything is "changed"
     return {
-      humanAgentConfigChanged: Boolean(
-        newConfig.serviceDeskFactory || newConfig.serviceDesk,
-      ),
+      humanAgentFactoryChanged: Boolean(newConfig.serviceDeskFactory),
       themingChanged: Boolean(
         newConfig.aiEnabled !== undefined ||
         newConfig.injectCarbonTheme !== undefined,
@@ -88,9 +86,8 @@ export function detectConfigChanges(
     };
   }
 
-  const humanAgentConfigChanged =
-    previousConfig.serviceDeskFactory !== newConfig.serviceDeskFactory ||
-    !isEqual(previousConfig.serviceDesk, newConfig.serviceDesk);
+  const humanAgentFactoryChanged =
+    previousConfig.serviceDeskFactory !== newConfig.serviceDeskFactory;
 
   const themingChanged =
     previousConfig.aiEnabled !== newConfig.aiEnabled ||
@@ -126,10 +123,11 @@ export function detectConfigChanges(
     previousConfig.input?.isVisible !== newConfig.input?.isVisible ||
     previousConfig.input?.isDisabled !== newConfig.input?.isDisabled ||
     previousConfig.launcher?.showUnreadIndicator !==
-      newConfig.launcher?.showUnreadIndicator;
+      newConfig.launcher?.showUnreadIndicator ||
+    !isEqual(previousConfig.serviceDesk, newConfig.serviceDesk);
 
   return {
-    humanAgentConfigChanged,
+    humanAgentFactoryChanged,
     themingChanged,
     messagingChanged,
     namespaceChanged,
