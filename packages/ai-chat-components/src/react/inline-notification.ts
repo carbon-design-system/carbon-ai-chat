@@ -11,15 +11,15 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatWorkspaceShell from "../components/workspace-shell/src/workspace-shell.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import CarbonInlineNotificationElement from "@carbon/web-components/es/components/notification/inline-notification.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const WorkspaceShell = withWebComponentBridge(
+const InlineNotification = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-workspace-shell",
-    elementClass: CDSAIChatWorkspaceShell,
+    tagName: "cds-inline-notification",
+    elementClass: CarbonInlineNotificationElement,
     react: React,
   }),
 );
 
-export default WorkspaceShell;
+export default InlineNotification;

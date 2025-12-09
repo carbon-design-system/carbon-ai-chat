@@ -11,12 +11,15 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatWorkspaceShellFooter from "../components/workspace-shell/src/workspace-shell-footer.js";
+import CarbonTagElement from "@carbon/web-components/es/components/tag/tag.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const WorkspaceShellFooter = createComponent({
-  tagName: "cds-aichat-workspace-shell-footer",
-  elementClass: CDSAIChatWorkspaceShellFooter,
-  react: React,
-});
+const Tag = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-tag",
+    elementClass: CarbonTagElement,
+    react: React,
+  }),
+);
 
-export default WorkspaceShellFooter;
+export default Tag;

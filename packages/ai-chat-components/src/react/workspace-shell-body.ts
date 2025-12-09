@@ -13,10 +13,10 @@ import React from "react";
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatWorkspaceShellBody from "../components/workspace-shell/src/workspace-shell-body.js";
 
-const workspaceShellBody = createComponent({
+const WorkspaceShellBody = createComponent({
   tagName: "cds-aichat-workspace-shell-body",
   elementClass: CDSAIChatWorkspaceShellBody,
   react: React,
 });
 
-export default workspaceShellBody;
+export default WorkspaceShellBody;
