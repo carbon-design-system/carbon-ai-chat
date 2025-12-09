@@ -173,19 +173,74 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @state()
   private _shouldShowMoreLessBtn = false;
 
+  /**
+   * @internal
+   */
   private _hObserveResize: { release(): null } | null = null;
+
+  /**
+   * @internal
+   */
   private _rowHeightInPixels = 16;
+
+  /**
+   * @internal
+   */
   private _isCreatingEditor = false;
+
+  /**
+   * @internal
+   */
   private contentSlot = createRef<HTMLSlotElement>();
+
+  /**
+   * @internal
+   */
   private editorContainer = createRef<HTMLDivElement>();
+
+  /**
+   * @internal
+   */
   private languageCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private readOnlyCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private wrapCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private contentSync?: ContentSyncHandle;
+
+  /**
+   * @internal
+   */
   private languageController: LanguageController | null = null;
+
+  /**
+   * @internal
+   */
   private streamingManager: StreamingManager;
+
+  /**
+   * @internal
+   */
   private codemirrorRuntime: CodeMirrorRuntime | null = null;
+
+  /**
+   * @internal
+   */
   private codemirrorRuntimePromise: Promise<CodeMirrorRuntime> | null = null;
+
+  /**
+   * @internal
+   */
   private _resizeObserver = new ResizeObserver(() => {
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     requestAnimationFrame(() => {
@@ -677,6 +732,9 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     </div>`;
   }
 
+  /**
+   * @internal
+   */
   static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,

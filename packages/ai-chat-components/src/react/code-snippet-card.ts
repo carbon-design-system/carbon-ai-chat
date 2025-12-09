@@ -14,13 +14,15 @@ import React from "react";
 import CDSAIChatCodeSnippetCard from "../components/code-snippet/src/code-snippet-card.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const CodeSnippetCard = withWebComponentBridge(createComponent({
-  tagName: "cds-aichat-code-snippet-card",
-  elementClass: CDSAIChatCodeSnippetCard,
-  react: React,
-  events: {
-    onChange: "content-change",
-  },
-}));
+const CodeSnippetCard = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-code-snippet-card",
+    elementClass: CDSAIChatCodeSnippetCard,
+    react: React,
+    events: {
+      onChange: "content-change",
+    },
+  }),
+);
 
 export default CodeSnippetCard;

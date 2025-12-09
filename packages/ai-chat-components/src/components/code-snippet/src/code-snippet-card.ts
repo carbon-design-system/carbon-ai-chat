@@ -19,7 +19,7 @@ import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
  *
  * @element cds-aichat-code-snippet-card
  */
-@carbonElement("cds-aichat-code-snippet-caed")
+@carbonElement("cds-aichat-code-snippet-card")
 class CDSAIChatCodeSnippetCard extends LitElement {
   /** Language used for syntax highlighting. */
   @property({ type: String }) language = "";

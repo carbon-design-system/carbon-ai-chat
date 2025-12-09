@@ -7,8 +7,6 @@
  *  @license
  */
 
-import "../../markdown/index.js";
-
 import { LitElement, html } from "lit";
 import { property, state } from "lit/decorators.js";
 

@@ -11,7 +11,7 @@ import "../src/chain-of-thought";
 import "../src/chain-of-thought-step";
 import "../src/tool-call-data";
 import "../src/chain-of-thought-toggle";
-import "../../markdown";
+import "../../markdown/src/markdown";
 import { html, nothing } from "lit";
 
 const sampleSteps = [
@@ -198,19 +198,19 @@ const renderStep = (step) => {
     >
       <cds-aichat-tool-call-data tool-name=${step.tool_name ?? ""}>
         ${step.description
-          ? html`<cds-aichat-markdown slot="description">
-              ${step.description}
-            </cds-aichat-markdown>`
+          ? html`<div slot="description">
+              <cds-aichat-markdown> ${step.description} </cds-aichat-markdown>
+            </div>`
           : nothing}
         ${requestMarkdown
-          ? html`<cds-aichat-markdown slot="input">
-              ${requestMarkdown}
-            </cds-aichat-markdown>`
+          ? html`<div slot="input">
+              <cds-aichat-markdown> ${requestMarkdown} </cds-aichat-markdown>
+            </div>`
           : nothing}
         ${responseMarkdown
-          ? html`<cds-aichat-markdown slot="output">
-              ${responseMarkdown}
-            </cds-aichat-markdown>`
+          ? html`<div slot="output">
+              <cds-aichat-markdown> ${responseMarkdown} </cds-aichat-markdown>
+            </div>`
           : nothing}
       </cds-aichat-tool-call-data>
     </cds-aichat-chain-of-thought-step>

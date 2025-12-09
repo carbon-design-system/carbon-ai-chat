@@ -11,8 +11,6 @@ import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
-import prefix from "../../../globals/settings.js";
-// @ts-ignore
 
 /**
  * Workspace Shell.

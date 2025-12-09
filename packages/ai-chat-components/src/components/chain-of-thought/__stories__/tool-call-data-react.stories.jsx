@@ -71,11 +71,3 @@ export const Default = {
     </ToolCallData>
   ),
 };
-
-export const WithoutLabels = {
-  render: () => (
-    <ToolCallData toolName="moderation">
-      <Markdown slot="input">Raw input flagged for safety review.</Markdown>
-    </ToolCallData>
-  ),
-};

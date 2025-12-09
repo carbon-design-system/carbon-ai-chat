@@ -166,6 +166,7 @@ class CDSAIChatTable extends LitElement {
 
   /**
    * The current page of the table we're on.
+   *
    * @internal
    */
   @state()
@@ -173,6 +174,7 @@ class CDSAIChatTable extends LitElement {
 
   /**
    * How many rows are on each page of the table.
+   *
    * @internal
    */
   @state()
@@ -401,6 +403,8 @@ class CDSAIChatTable extends LitElement {
    *
    * @param event - The page change event containing the new page number and size
    * @public
+   *
+   * @internal
    */
   public _handlePageChangeEvent = (event: PageChangeEvent) => {
     this._updateVisibleRows(event.detail?.page, event.detail?.pageSize);
@@ -414,6 +418,8 @@ class CDSAIChatTable extends LitElement {
    *
    * @param event - The page size change event containing the new page size
    * @public
+   *
+   * @internal
    */
   public _handlePageSizeChangeEvent = (event: PageChangeEvent) => {
     this._rowsPerPageChanged = true;
@@ -432,6 +438,8 @@ class CDSAIChatTable extends LitElement {
    *
    * @param event - The filter event containing the array of unfiltered rows
    * @public
+   *
+   * @internal
    */
   public _handleFilterEvent = (event: FilterEvent) => {
     // Record the new set of unfiltered row ids.

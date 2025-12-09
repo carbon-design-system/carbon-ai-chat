@@ -71,21 +71,17 @@ export const Default = {
       output-label-text=${args.outputLabelText}
       tool-label-text=${args.toolLabelText}
     >
-      <cds-aichat-markdown slot="description">
-        Searching knowledge base for password reset guidance.
-      </cds-aichat-markdown>
-      <cds-aichat-markdown slot="input">${request}</cds-aichat-markdown>
-      <cds-aichat-markdown slot="output">${response}</cds-aichat-markdown>
-    </cds-aichat-tool-call-data>
-  `,
-};
-
-export const WithoutLabels = {
-  render: () => html`
-    <cds-aichat-tool-call-data tool-name="moderation">
-      <cds-aichat-markdown slot="input">
-        Raw input flagged for safety review.
-      </cds-aichat-markdown>
+      <div slot="description">
+        <cds-aichat-markdown>
+          Searching knowledge base for password reset guidance.
+        </cds-aichat-markdown>
+      </div>
+      <div slot="input">
+        <cds-aichat-markdown>${request}</cds-aichat-markdown>
+      </div>
+      <div slot="output">
+        <cds-aichat-markdown>${response}</cds-aichat-markdown>
+      </div>
     </cds-aichat-tool-call-data>
   `,
 };

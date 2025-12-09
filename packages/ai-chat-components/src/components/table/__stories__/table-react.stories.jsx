@@ -10,9 +10,7 @@
 import React from "react";
 import { createComponent } from "@lit/react";
 import "../index";
-import TableElement, {
-  TABLE_COMPONENT_TAG_NAME,
-} from "../src/table";
+import { CDSAIChatTable } from "../src/table";
 
 const headers = [
   { text: "Name" },
@@ -73,8 +71,8 @@ const rows = [
 ];
 
 const Table = createComponent({
-  tagName: TABLE_COMPONENT_TAG_NAME,
-  elementClass: TableElement,
+  tagName: "cds-aichat-table",
+  elementClass: CDSAIChatTable,
   react: React,
   events: {
     "cds-table-filtered": "onFilter",
