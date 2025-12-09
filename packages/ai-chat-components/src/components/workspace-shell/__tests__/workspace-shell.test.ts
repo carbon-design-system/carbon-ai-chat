@@ -298,6 +298,9 @@ describe("CDSAIChatWorkspaceShellFooter - props & actions", () => {
     expect(buttons[0].getAttribute("kind")).to.equal("secondary");
     expect(buttons[1].getAttribute("kind")).to.equal("secondary");
     expect(buttons[2].getAttribute("kind")).to.equal("primary");
+    expect(buttons[0].textContent?.trim()).to.equal("Secondary");
+    expect(buttons[1].textContent?.trim()).to.equal("Secondary 2");
+    expect(buttons[2].textContent?.trim()).to.equal("Primary");
     expect(el).dom.to.equalSnapshot();
   });
 });
