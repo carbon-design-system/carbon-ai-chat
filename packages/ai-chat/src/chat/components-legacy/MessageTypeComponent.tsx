@@ -11,7 +11,7 @@
 
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { carbonIconToReact } from "./../utils/carbonIcon";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
@@ -61,7 +61,11 @@ import {
   isTextItem,
   renderAsUserDefinedMessage,
 } from "../utils/messageUtils";
+import { parseUnknownDataToMarkdown } from "../utils/parseUnknownDataToMarkdown";
 import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
+import ChainOfThoughtStep from "@carbon/ai-chat-components/es/react/chain-of-thought-step.js";
+import ChainOfThoughtToggle from "@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js";
+import ToolCallData from "@carbon/ai-chat-components/es/react/tool-call-data.js";
 import {
   AudioItem,
   ButtonItem,
@@ -118,10 +122,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const persistedHumanAgentState = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
   );
-  const locale = useSelector(
-    (state: AppState) => state.config.public.locale || "en",
-  );
   const feedbackID = message.item.message_item_options?.feedback?.id;
+  const chainOfThoughtPanelId = useUUID();
   const feedbackPanelID = useUUID();
 
   const feedbackHistory = isResponse(originalMessage)
@@ -138,6 +140,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     };
   }, [feedbackHistory]);
 
+  const [isChainOfThoughtOpen, setIsChainOfThoughtOpen] = useState(false);
+
   // Indicates if the one of the feedback details are open.
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
@@ -153,6 +157,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(
     Boolean(feedbackHistory),
   );
+
+  useEffect(() => {
+    setIsChainOfThoughtOpen(false);
+  }, [message.ui_state.id]);
 
   /**
    * Returns the appropriate component to render the given message.
@@ -628,49 +636,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   // Memoize markdown string functions for chain of thought
-  const getPaginationSupplementalText = useMemo(
-    () =>
-      ({ count }: { count: number }) => {
-        return intl.formatMessage(
-          { id: "table_paginationSupplementalText" },
-          { pagesCount: count },
-        );
-      },
-    [intl],
-  );
-
-  const getPaginationStatusText = useMemo(
-    () =>
-      ({
-        start,
-        end,
-        count,
-      }: {
-        start: number;
-        end: number;
-        count: number;
-      }) => {
-        return intl.formatMessage(
-          { id: "table_paginationStatus" },
-          { start, end, count },
-        );
-      },
-    [intl],
-  );
-
-  const getLineCountText = useMemo(
-    () =>
-      ({ count }: { count: number }) => {
-        return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
-      },
-    [intl],
-  );
-
   /**
    * Renders chain of thought component for the given {@link MessageResponse}.
    */
   function renderChainOfThought(
-    localMessageItem: LocalMessageItem,
+    _localMessageItem: LocalMessageItem,
     message: MessageResponse,
   ) {
     const chainOfThought = message.message_options?.chain_of_thought;
@@ -678,31 +648,96 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return false;
     }
 
+    const handleToggle = (event: CustomEvent<{ open: boolean }>) => {
+      const nextOpen = Boolean(event.detail?.open);
+      setIsChainOfThoughtOpen(nextOpen);
+
+      if (chainOfThoughtRef.current) {
+        scrollChainOfThought(nextOpen, chainOfThoughtRef.current);
+      }
+    };
+
+    const handleStepToggle = (event: CustomEvent<{ open: boolean }>) => {
+      scrollChainOfThought(
+        Boolean(event.detail?.open),
+        (event.target as HTMLElement) ?? chainOfThoughtRef.current,
+      );
+    };
+
     return (
-      <ChainOfThought
-        steps={chainOfThought}
-        onToggle={scrollChainOfThought}
-        onStepToggle={scrollChainOfThought}
-        formatStepLabelText={formatStepLabelText}
-        explainabilityText={languagePack.chainOfThought_explainabilityLabel}
-        inputLabelText={languagePack.chainOfThought_inputLabel}
-        outputLabelText={languagePack.chainOfThought_outputLabel}
-        toolLabelText={languagePack.chainOfThought_toolLabel}
-        // Markdown strings - Table
-        filterPlaceholderText={languagePack.table_filterPlaceholder}
-        previousPageText={languagePack.table_previousPage}
-        nextPageText={languagePack.table_nextPage}
-        itemsPerPageText={languagePack.table_itemsPerPage}
-        locale={locale}
-        getPaginationSupplementalText={getPaginationSupplementalText}
-        getPaginationStatusText={getPaginationStatusText}
-        // Markdown strings - Code snippet
-        feedback={languagePack.codeSnippet_feedback}
-        showLessText={languagePack.codeSnippet_showLessText}
-        showMoreText={languagePack.codeSnippet_showMoreText}
-        tooltipContent={languagePack.codeSnippet_tooltipContent}
-        getLineCountText={getLineCountText}
-      />
+      <div className="cds-aichat--received--chain-of-thought">
+        <ChainOfThoughtToggle
+          panelId={chainOfThoughtPanelId}
+          open={isChainOfThoughtOpen}
+          closedLabelText={languagePack.chainOfThought_explainabilityLabel}
+          openLabelText={languagePack.chainOfThought_explainabilityLabel}
+          onToggle={handleToggle}
+        />
+        <ChainOfThought
+          id={chainOfThoughtPanelId}
+          ref={chainOfThoughtRef}
+          panelId={chainOfThoughtPanelId}
+          open={isChainOfThoughtOpen}
+          onToggle={handleToggle}
+          onStepToggle={handleStepToggle}
+        >
+          {chainOfThought.map((step, index) => {
+            const stepNumber = index + 1;
+            const labelText = formatStepLabelText({
+              stepNumber,
+              stepTitle: step.title || step.tool_name || "",
+            });
+            const requestMarkdown = parseUnknownDataToMarkdown(
+              step.request?.args,
+            );
+            const responseMarkdown = parseUnknownDataToMarkdown(
+              step.response?.content,
+            );
+
+            return (
+              <ChainOfThoughtStep
+                key={step.title || step.tool_name || index}
+                title={step.title || step.tool_name || ""}
+                status={step.status || "success"}
+                stepNumber={stepNumber}
+                labelText={labelText}
+                statusSucceededLabelText={
+                  languagePack.chainOfThought_statusSucceededLabel
+                }
+                statusFailedLabelText={
+                  languagePack.chainOfThought_statusFailedLabel
+                }
+                statusProcessingLabelText={
+                  languagePack.chainOfThought_statusProcessingLabel
+                }
+              >
+                <ToolCallData
+                  toolName={step.tool_name}
+                  inputLabelText={languagePack.chainOfThought_inputLabel}
+                  outputLabelText={languagePack.chainOfThought_outputLabel}
+                  toolLabelText={languagePack.chainOfThought_toolLabel}
+                >
+                  {step.description ? (
+                    <div slot="description">
+                      <RichText text={step.description} />
+                    </div>
+                  ) : null}
+                  {requestMarkdown ? (
+                    <div slot="input">
+                      <RichText text={requestMarkdown} />
+                    </div>
+                  ) : null}
+                  {responseMarkdown ? (
+                    <div slot="output">
+                      <RichText text={responseMarkdown} />
+                    </div>
+                  ) : null}
+                </ToolCallData>
+              </ChainOfThoughtStep>
+            );
+          })}
+        </ChainOfThought>
+      </div>
     );
   }
 

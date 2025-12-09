@@ -24,8 +24,7 @@ import {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
-import type { ChainOfThoughtStep } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
-import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
+import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -458,7 +457,52 @@ export { ChainOfThoughtStepStatus };
  *
  * @category Messaging
  */
-export type { ChainOfThoughtStep };
+export interface ChainOfThoughtStep {
+  /**
+   * The plain text name of the step.
+   */
+  title?: string;
+
+  /**
+   * An optional human readable description of what the tool does.
+   *
+   * Accepts markdown formatted text.
+   */
+  description?: string;
+
+  /**
+   * The plain text name of the tool called.
+   */
+  tool_name?: string;
+
+  /**
+   * Optional request metadata sent to a tool.
+   */
+  request?: {
+    /**
+     * Arguments sent to the tool. If this is properly formed JSON, it will be shown as a code block.
+     */
+    args?: unknown;
+  };
+
+  /**
+   * Optional response from a tool.
+   */
+  response?: {
+    /**
+     * Content returned by the tool. If this is properly formed JSON, it will be shown as a code block.
+     *
+     * You can also return markdown compatible text here.
+     */
+    content: unknown;
+  };
+
+  /**
+   * Optionally, share the status of this step. An icon will appear in the view showing the status. If no status is
+   * shared, the UI will assume success.
+   */
+  status?: ChainOfThoughtStepStatus;
+}
 
 /**
  * Options that control additional features available for a message item.

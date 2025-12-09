@@ -460,6 +460,10 @@ svg.cds-aichat--sent-file-icon {
   background-color: theme.$chat-bubble-agent;
 }
 
+.cds-aichat--received--chain-of-thought {
+  margin-block-start: layout.$spacing-04;
+}
+
 .cds-aichat--message__reasoning-steps {
   padding-block-end: layout.$spacing-04;
 }

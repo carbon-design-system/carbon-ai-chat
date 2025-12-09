@@ -13,9 +13,10 @@ import React from "react";
 import CDSAIChatChainOfThought from "../components/chain-of-thought/src/chain-of-thought.js";
 import {
   type ChainOfThoughtOnToggle,
-  type ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
-} from "../components/chain-of-thought/src/types.js";
+  type ChainOfThoughtStepToggleEventDetail,
+  type ChainOfThoughtToggleEventDetail,
+} from "../components/chain-of-thought/defs.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
 const ChainOfThought = withWebComponentBridge(
@@ -23,9 +24,17 @@ const ChainOfThought = withWebComponentBridge(
     tagName: "cds-aichat-chain-of-thought",
     elementClass: CDSAIChatChainOfThought,
     react: React,
+    events: {
+      onToggle: "chain-of-thought-toggled",
+      onStepToggle: "chain-of-thought-step-toggled",
+    },
   }),
 );
 
-export type { ChainOfThoughtOnToggle, ChainOfThoughtStep };
+export type {
+  ChainOfThoughtOnToggle,
+  ChainOfThoughtStepToggleEventDetail,
+  ChainOfThoughtToggleEventDetail,
+};
 export { ChainOfThoughtStepStatus };
 export default ChainOfThought;

@@ -14,9 +14,9 @@ import {
   type MessageResponseOptions,
   type ReasoningStep,
   type StreamChunk,
+  ChainOfThoughtStepStatus,
+  type ChainOfThoughtStep,
 } from "@carbon/ai-chat";
-import type { ChainOfThoughtStep } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
-import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 
 export const scenarios = {
   "Reasoning steps": {

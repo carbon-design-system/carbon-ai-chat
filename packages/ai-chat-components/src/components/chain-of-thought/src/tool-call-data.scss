@@ -1,0 +1,28 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/type";
+@use "@carbon/layout";
+
+:host {
+  @include type.type-style("body-01");
+
+  display: block;
+}
+
+.#{$prefix}--tool-call-data {
+  padding-block-end: layout.$spacing-05;
+}
+
+.#{$prefix}--tool-call-data:last-child {
+  padding-block-end: 0;
+}
+
+.#{$prefix}--tool-call-data-label {
+  @include type.type-style("heading-01");
+}

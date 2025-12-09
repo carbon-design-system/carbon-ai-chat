@@ -7,19 +7,21 @@
  *  @license
  */
 
-import { LitElement, PropertyValues } from "lit";
-import { property, state } from "lit/decorators.js";
+import { LitElement, html } from "lit";
+import { property } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./chain-of-thought.scss?lit";
-import {
-  type ChainOfThoughtOnToggle,
-  type ChainOfThoughtStep,
-  type ChainOfThoughtStepWithToggle,
-} from "./types.js";
 import prefix from "../../../globals/settings.js";
 import { uuid } from "../../../globals/utils/uuid.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
+import type {
+  ChainOfThoughtOnToggle,
+  ChainOfThoughtStepToggleEventDetail,
+  ChainOfThoughtToggleEventDetail,
+} from "../defs.js";
+import type { CDSAIChatChainOfThoughtStep } from "./chain-of-thought-step.js";
 
-const numberFormatter = new Intl.NumberFormat("en-US");
+const stepSelector = `${prefix}-chain-of-thought-step`;
 
 @carbonElement("cds-aichat-chain-of-thought")
 class CDSAIChatChainOfThought extends LitElement {
@@ -28,50 +30,20 @@ class CDSAIChatChainOfThought extends LitElement {
   /**
    * Indicates if the details panel for the chain of thought is open.
    */
-  @property({ type: Boolean, attribute: "open", reflect: true })
+  @property({ type: Boolean, reflect: true })
   open = false;
 
   /**
-   * Array of steps in the chain of thought.
+   * When true, each child step should be fully controlled by the host.
    */
-  @property({ type: Array, attribute: "steps", reflect: true })
-  steps: ChainOfThoughtStep[] = [];
+  @property({ type: Boolean, reflect: true })
+  controlled = false;
 
   /**
-   * Formatting for label of each step item.
+   * ID of the content panel. Useful for wiring to an external toggle.
    */
-  @property({ type: Function, attribute: false })
-  formatStepLabelText: ({
-    stepNumber,
-    stepTitle,
-  }: {
-    stepNumber: number;
-    stepTitle: string;
-  }) => string = formatStepLabelTextDefault;
-
-  /**
-   * Text string used to label step input.
-   */
-  @property({ type: String, attribute: "input-label-text", reflect: true })
-  inputLabelText = "Input";
-
-  /**
-   * Text string used to label step output.
-   */
-  @property({ type: String, attribute: "output-label-text", reflect: true })
-  outputLabelText = "Output";
-
-  /**
-   * Text string used to label the tool.
-   */
-  @property({ type: String, attribute: "tool-label-text", reflect: true })
-  toolLabelText = "Tool";
-
-  /**
-   * Text string used to label the button to open the chain of thought panel.
-   */
-  @property({ type: String, attribute: "explainability-text", reflect: true })
-  explainabilityText = "Show chain of thought";
+  @property({ type: String, attribute: "panel-id", reflect: true })
+  panelId = `${prefix}-chain-of-thought-panel-id-${uuid()}`;
 
   /**
    * Optional function to call if chain of thought visibility is toggled.
@@ -85,125 +57,12 @@ class CDSAIChatChainOfThought extends LitElement {
   @property({ type: Function, attribute: false })
   onStepToggle?: ChainOfThoughtOnToggle;
 
-  /**
-   * Text string used to label the succeeded status icon.
-   */
-  @property({
-    type: String,
-    attribute: "status-succeeded-label-text",
-    reflect: true,
-  })
-  statusSucceededLabelText = "Succeeded";
-
-  /**
-   * Text string used to label the failed status icon.
-   */
-  @property({
-    type: String,
-    attribute: "status-failed-label-text",
-    reflect: true,
-  })
-  statusFailedLabelText = "Failed";
-
-  /**
-   * Text string used to label the processing status icon.
-   */
-  @property({
-    type: String,
-    attribute: "status-processing-label-text",
-    reflect: true,
-  })
-  statusProcessingLabelText = "Processing";
-
-  // Markdown component strings - Table
-  /** Placeholder text for table filters inside markdown content. */
-  @property({ type: String, attribute: "filter-placeholder-text" })
-  filterPlaceholderText = "Filter table...";
-
-  /** Label for the previous page control inside markdown tables. */
-  @property({ type: String, attribute: "previous-page-text" })
-  previousPageText = "Previous page";
-
-  /** Label for the next page control inside markdown tables. */
-  @property({ type: String, attribute: "next-page-text" })
-  nextPageText = "Next page";
-
-  /** Label for the items-per-page control inside markdown tables. */
-  @property({ type: String, attribute: "items-per-page-text" })
-  itemsPerPageText = "Items per page:";
-
-  /** Locale forwarded to markdown rendering (tables, formatting). */
-  @property({ type: String, attribute: "locale" })
-  locale = "en";
-
-  /** Optional formatter for supplemental pagination text in markdown tables. */
-  @property({ type: Object, attribute: false })
-  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
-
-  /** Optional formatter for pagination status text in markdown tables. */
-  @property({ type: Object, attribute: false })
-  getPaginationStatusText?: ({
-    start,
-    end,
-    count,
-  }: {
-    start: number;
-    end: number;
-    count: number;
-  }) => string;
-
-  // Markdown component strings - Code snippet
-  /** Feedback text displayed after copying from markdown code blocks. */
-  @property({ type: String, attribute: "feedback" })
-  feedback = "Copied!";
-
-  /** Label for collapsing long markdown code blocks. */
-  @property({ type: String, attribute: "show-less-text" })
-  showLessText = "Show less";
-
-  /** Label for expanding long markdown code blocks. */
-  @property({ type: String, attribute: "show-more-text" })
-  showMoreText = "Show more";
-
-  /** Tooltip content for the copy button in markdown code blocks. */
-  @property({ type: String, attribute: "tooltip-content" })
-  tooltipContent = "Copy code";
-
-  /** Formatter for line count text in markdown code blocks. */
-  @property({ type: Object, attribute: false })
-  getLineCountText?: ({ count }: { count: number }) => string;
-
-  /**
-   * Steps, but we add in whether the step is open or not.
-   *
-   * @internal
-   */
-  @state()
-  _steps: ChainOfThoughtStepWithToggle[] = [];
-
-  /**
-   * ID we use for a11y.
-   * @internal
-   */
-  @state()
-  _chainOfThoughtPanelID = `${prefix}-chain-of-thought-panel-id-${uuid()}`;
-
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-    const steps = this.steps ?? [];
-    this._steps = steps.map((item) => ({ ...item, open: false }));
-  }
-
-  protected updated(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has("steps")) {
-      const incomingSteps = this.steps ?? [];
-      const currentSteps = this._steps ?? [];
-      this._steps = incomingSteps.map((item, index) => ({
-        ...item,
-        open: currentSteps[index]?.open ?? false,
-      }));
+  connectedCallback() {
+    if (!this.hasAttribute("role")) {
+      this.setAttribute("role", "list");
     }
     this.addEventListener(
-      CDSAIChatChainOfThought.stepToggleEventName,
+      "chain-of-thought-step-toggled",
       this.handleStepToggle as EventListener,
     );
     super.connectedCallback();
@@ -211,7 +70,7 @@ class CDSAIChatChainOfThought extends LitElement {
 
   disconnectedCallback() {
     this.removeEventListener(
-      CDSAIChatChainOfThought.stepToggleEventName,
+      "chain-of-thought-step-toggled",
       this.handleStepToggle as EventListener,
     );
     super.disconnectedCallback();
@@ -260,7 +119,7 @@ class CDSAIChatChainOfThought extends LitElement {
     };
     this.dispatchEvent(
       new CustomEvent<ChainOfThoughtToggleEventDetail>(
-        CDSAIChatChainOfThought.eventToggle,
+        "chain-of-thought-toggled",
         {
           detail,
           bubbles: true,
@@ -288,14 +147,6 @@ class CDSAIChatChainOfThought extends LitElement {
         </div>
       </div>
     `;
-  }
-
-  static get eventToggle() {
-    return `${prefix}-chain-of-thought-toggled`;
-  }
-
-  static get stepToggleEventName() {
-    return `${prefix}-chain-of-thought-step-toggled`;
   }
 }
 
