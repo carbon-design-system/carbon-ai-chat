@@ -11,10 +11,10 @@
 import { html, fixture, expect } from "@open-wc/testing";
 import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
 import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
+import { Action } from "@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js";
+import { Launch16, Maximize16, Close16 } from "@carbon/icons";
+import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import { workspaceFooterPresets } from "../__stories__/story-data";
 import CDSAIChatWorkspaceShell from "@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell.js";
 import CDSAIChatWorkspaceShellHeader from "@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-header.js";
 import CDSAIChatWorkspaceShellBody from "@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-body.js";
@@ -26,22 +26,31 @@ import CDSAIChatWorkspaceShellFooter from "@carbon/ai-chat-components/es/compone
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
 
-const actions = [
+const actions: Action[] = [
   {
     text: "Launch",
-    icon: iconLoader(Launch16, { slot: "icon" }),
+    icon: Launch16 as CarbonIcon,
     size: "md",
+    onClick: () => {
+      console.log("Launch action clicked");
+    },
   },
   {
     text: "Maximize",
-    icon: iconLoader(Maximize16, { slot: "icon" }),
+    icon: Maximize16 as CarbonIcon,
     size: "md",
+    onClick: () => {
+      console.log("Maximize action clicked");
+    },
   },
   {
     text: "Close",
     fixed: true,
-    icon: iconLoader(Close16, { slot: "icon" }),
+    icon: Close16 as CarbonIcon,
     size: "md",
+    onClick: () => {
+      console.log("Close action clicked");
+    },
   },
 ];
 
@@ -52,6 +61,7 @@ describe("aichat workspace shell", function () {
     );
 
     expect(el).to.be.instanceOf(CDSAIChatWorkspaceShell);
+    expect(el).dom.to.equalSnapshot();
   });
 
   it("should render toolbar inside the toolbar slot", async () => {
@@ -89,6 +99,7 @@ describe("aichat workspace shell", function () {
     // Check that the toolbar was slotted
     expect(assigned.length).to.equal(1);
     expect(assigned[0].tagName.toLowerCase()).to.equal("cds-aichat-toolbar");
+    expect(el).dom.to.equalSnapshot();
   });
   it("should render notification inside the notification slot", async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
@@ -116,6 +127,7 @@ describe("aichat workspace shell", function () {
     expect(assigned[0].tagName.toLowerCase()).to.equal(
       "cds-inline-notification",
     );
+    expect(el).dom.to.equalSnapshot();
   });
   it("should render cds-aichat-workspace-shell-header inside the header slot", async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
@@ -142,6 +154,7 @@ describe("aichat workspace shell", function () {
     expect(assigned[0].tagName.toLowerCase()).to.equal(
       "cds-aichat-workspace-shell-header",
     );
+    expect(el).dom.to.equalSnapshot();
   });
   it("should render cds-aichat-workspace-shell-body inside the body slot", async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
@@ -164,6 +177,7 @@ describe("aichat workspace shell", function () {
     expect(assigned[0].tagName.toLowerCase()).to.equal(
       "cds-aichat-workspace-shell-body",
     );
+    expect(el).dom.to.equalSnapshot();
   });
   it("should render cds-aichat-workspace-shell-footer inside the footer slot", async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
@@ -209,6 +223,7 @@ describe("aichat workspace shell", function () {
     expect(assigned[0].tagName.toLowerCase()).to.equal(
       "cds-aichat-workspace-shell-footer",
     );
+    expect(el).dom.to.equalSnapshot();
   });
 });
 describe("CDSAIChatWorkspaceShellHeader - props and slot", () => {
@@ -223,6 +238,7 @@ describe("CDSAIChatWorkspaceShellHeader - props and slot", () => {
     expect(el.subTitleText).to.equal("My Subtitle");
     expect(el.getAttribute("title-text")).to.equal("My Title");
     expect(el.getAttribute("subtitle-text")).to.equal("My Subtitle");
+    expect(el).dom.to.equalSnapshot();
   });
 });
 it("should correctly project header-action content into the slot", async () => {
@@ -246,6 +262,7 @@ it("should correctly project header-action content into the slot", async () => {
   expect(btn.tagName.toLowerCase()).to.equal("cds-button");
   expect(btn.getAttribute("kind")).to.equal("tertiary");
   expect(btn.textContent?.trim()).to.equal("Edit");
+  expect(el).dom.to.equalSnapshot();
 });
 describe("CDSAIChatWorkspaceShellBody - props", () => {
   it("should render body content", async () => {
@@ -263,28 +280,24 @@ describe("CDSAIChatWorkspaceShellBody - props", () => {
     expect(elementNodes.length).to.equal(1);
     expect(elementNodes[0].tagName.toLowerCase()).to.equal("p");
     expect(elementNodes[0].textContent?.trim()).to.equal("Body content");
+    expect(el).dom.to.equalSnapshot();
   });
 });
 
 describe("CDSAIChatWorkspaceShellFooter - props & actions", () => {
-  it("should project footer-action buttons into the footer slot and expose their props", async () => {
+  it("should render the footer buttons, based on the passed actions object", async () => {
     const el = await fixture<CDSAIChatWorkspaceShellFooter>(html`
-      <cds-aichat-workspace-shell-footer>
-        <cds-button slot="footer-action" kind="primary">Button A</cds-button>
-        <cds-button slot="footer-action" kind="secondary">Button B</cds-button>
+      <cds-aichat-workspace-shell-footer
+        .actions=${workspaceFooterPresets["Three buttons"]}
+      >
       </cds-aichat-workspace-shell-footer>
     `);
-    const slot = el.shadowRoot!.querySelector(
-      'slot[name="footer-action"]',
-    ) as HTMLSlotElement;
-    expect(slot).to.exist;
-    const assigned = slot.assignedElements({ flatten: true });
-    expect(assigned.length).to.equal(2);
-    const btnA = assigned[0] as HTMLElement;
-    const btnB = assigned[1] as HTMLElement;
-    expect(btnA.getAttribute("kind")).to.equal("primary");
-    expect(btnB.getAttribute("kind")).to.equal("secondary");
-    expect(btnA.textContent?.trim()).to.equal("Button A");
-    expect(btnB.textContent?.trim()).to.equal("Button B");
+    const buttons = el.shadowRoot!.querySelectorAll(`cds-button`);
+
+    expect(buttons.length).to.equal(3);
+    expect(buttons[0].getAttribute("kind")).to.equal("secondary");
+    expect(buttons[1].getAttribute("kind")).to.equal("secondary");
+    expect(buttons[2].getAttribute("kind")).to.equal("primary");
+    expect(el).dom.to.equalSnapshot();
   });
 });

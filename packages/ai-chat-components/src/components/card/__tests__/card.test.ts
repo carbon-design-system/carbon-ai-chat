@@ -17,11 +17,26 @@ import Card from "@carbon/ai-chat-components/es/components/card/src/card.js";
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
 
+const cardContent = html`
+  <div slot="body">
+    <h4>AI Chat Card</h4>
+    <p>
+      The Carbon Design System provides a comprehensive library of components,
+      tokens, and guidelines. We need to implement the new AI Chat component
+      following Carbon's design principles and accessibility standards.
+    </p>
+  </div>
+`;
+
 describe("card", function () {
   it("should render with cds-aichat-card minimum attributes", async () => {
     const el = await fixture<Card>(
-      html`<cds-aichat-card> test </cds-aichat-card>`,
+      html`<cds-aichat-card> ${cardContent} </cds-aichat-card>`,
     );
+    expect(el).to.be.instanceOf(Card);
+    expect(el.shadowRoot).to.exist;
+    expect(el.isLayered).to.be.false;
+    expect(el.isFlush).to.be.true;
 
     await expect(el).dom.to.equalSnapshot();
   });
