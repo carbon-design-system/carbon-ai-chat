@@ -83,7 +83,7 @@ interface ChatCustomElementProps extends ChatContainerProps {
 }
 
 const customElementStylesheet =
-  isBrowser && typeof CSSStyleSheet !== "undefined"
+  isBrowser() && typeof CSSStyleSheet !== "undefined"
     ? new CSSStyleSheet()
     : null;
 
@@ -106,7 +106,10 @@ const hideStyles = `
 `;
 
 // Inject styles using adopted stylesheets when available, fallback to style element
-if (isBrowser && !document.getElementById("cds-aichat-custom-element-styles")) {
+if (
+  isBrowser() &&
+  !document.getElementById("cds-aichat-custom-element-styles")
+) {
   if (customElementStylesheet && "replaceSync" in customElementStylesheet) {
     customElementStylesheet.replaceSync(hideStyles);
     document.adoptedStyleSheets = [

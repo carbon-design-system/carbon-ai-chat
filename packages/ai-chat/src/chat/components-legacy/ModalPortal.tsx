@@ -64,7 +64,7 @@ class ModalPortal extends Component<ModalPortalProps, ModalPortalState> {
   componentWillUnmount() {
     if (this.state.attachedToHost) {
       this.state.attachedToHost.removeChild(this.modalElement);
-      // this.attachedToHost = null;
+      this.setState({ attachedToHost: null });
     }
   }
 
