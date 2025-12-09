@@ -373,7 +373,7 @@ describe("ChatContainer", () => {
         const codeSnippetElement = await waitFor(
           () => {
             const element = markdownShadow.querySelector(
-              "cds-aichat-code-snippet-tile-container",
+              "cds-aichat-code-snippet-card",
             ) as HTMLElement | null;
             if (!element) {
               throw new Error("Code snippet not rendered yet");

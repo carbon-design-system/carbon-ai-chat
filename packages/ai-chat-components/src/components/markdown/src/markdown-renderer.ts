@@ -167,7 +167,7 @@ export function renderTokenTree(
       getLineCountText,
     } = options;
 
-    return html`<cds-aichat-code-snippet-tile-container
+    return html`<cds-aichat-code-snippet-card
       .language=${language}
       .highlight=${highlight}
       .feedback=${feedback}
@@ -175,7 +175,7 @@ export function renderTokenTree(
       .showMoreText=${showMoreText}
       .tooltipContent=${tooltipContent}
       .getLineCountText=${getLineCountText}
-      >${token.content}</cds-aichat-code-snippet-tile-container
+      >${token.content}</cds-aichat-code-snippet-card
     >`;
   }
 
