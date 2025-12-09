@@ -121,6 +121,8 @@ class CDSAIChatTable extends LitElement {
   /**
    * The calculated default page size based on component width.
    * 10 for width > PAGE_SIZE_WIDTH_THRESHOLD, 5 for width <= PAGE_SIZE_WIDTH_THRESHOLD.
+   *
+   * @internal
    */
   @state()
   private _defaultPageSize = 5;
@@ -214,7 +216,14 @@ class CDSAIChatTable extends LitElement {
 
   static styles = styles;
 
+  /**
+   * @internal
+   */
   private tableRuntime: TableRuntimeModule | null = null;
+
+  /**
+   * @internal
+   */
   private tableRuntimePromise: Promise<TableRuntimeModule> | null = null;
 
   connectedCallback() {

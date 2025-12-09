@@ -127,14 +127,6 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
     );
   }
 
-  private get eventInit() {
-    return {
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-    };
-  }
-
   private evaluateBodyContent(nodes?: readonly Node[]) {
     const nodesToInspect = nodes ?? Array.from(this.childNodes);
     const hasContent = nodesToInspect.some((node) => this.isBodyNode(node));
@@ -226,7 +218,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
 
   private handleToggleRequest(nextState = !this.open) {
     const detail = { open: nextState };
-    const init = { ...this.eventInit, detail };
+    const init = { bubbles: true, cancelable: true, composed: true, detail };
     const canToggle = this.dispatchEvent(
       new CustomEvent(`chain-of-thought-step-beingtoggled`, init),
     );

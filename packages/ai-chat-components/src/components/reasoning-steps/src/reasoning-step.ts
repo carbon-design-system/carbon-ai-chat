@@ -38,11 +38,20 @@ class CDSAIChatReasoningStep extends LitElement {
   @property({ type: Boolean, attribute: "controlled", reflect: true })
   controlled = false;
 
+  /**
+   * @internal
+   */
   @state()
   private hasBodyContent = false;
 
+  /**
+   * @internal
+   */
   private headerId = generateId("header");
 
+  /**
+   * @internal
+   */
   private contentId = generateId("content");
 
   connectedCallback() {
@@ -81,14 +90,6 @@ class CDSAIChatReasoningStep extends LitElement {
     return this.shadowRoot.querySelector<HTMLButtonElement>(
       `.${baseClass}__trigger`,
     );
-  }
-
-  private get eventInit() {
-    return {
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-    };
   }
 
   private evaluateBodyContent(nodes?: readonly Node[]) {
@@ -131,7 +132,12 @@ class CDSAIChatReasoningStep extends LitElement {
 
   private handleToggleRequest(nextState = !this.open) {
     const detail = { open: nextState };
-    const init = { ...this.eventInit, detail };
+    const init = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail,
+    };
     const canToggle = this.dispatchEvent(
       new CustomEvent("reasoning-step-beingtoggled", init),
     );
