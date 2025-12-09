@@ -6,7 +6,7 @@
  *
  *  @license
  */
-/* eslint-disable react/react-in-jsx-scope */
+import React from "react";
 import Tag from "../../../react/tag";
 import Button from "../../../react/button";
 
