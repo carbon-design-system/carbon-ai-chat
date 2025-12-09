@@ -15,89 +15,11 @@ import "@carbon/web-components/es/components/icon-button/icon-button.js";
 import "@carbon/web-components/es/components/ai-label/ai-label.js";
 import "@carbon/web-components/es/components/notification/inline-notification.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import { html } from "lit";
 import { action } from "storybook/actions";
-
-import Version16 from "@carbon/icons/es/version/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
 import Edit16 from "@carbon/icons/es/edit/16.js";
-
-const actionLists = {
-  "Advanced list": [
-    {
-      text: "Version",
-      icon: iconLoader(Version16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Download",
-      icon: iconLoader(Download16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Share",
-      icon: iconLoader(Share16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Launch",
-      icon: iconLoader(Launch16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Maximize",
-      icon: iconLoader(Maximize16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Close",
-      fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-  ],
-  "Basic list": [
-    {
-      text: "Launch",
-      icon: iconLoader(Launch16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Maximize",
-      icon: iconLoader(Maximize16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Close",
-      fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-  ],
-  "Close only": [
-    {
-      text: "Close",
-      fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-  ],
-  None: [],
-};
+import { workspaceFooterPresets, actionLists } from "./story-data";
+import styles from "./story-styles.scss?lit";
+import { html } from "lit";
 
 export default {
   title: "Components/Workspace shell",
@@ -140,10 +62,7 @@ export default {
       control: {
         type: "select",
       },
-      options: {
-        "Basic text": "basic",
-        "With Tags": "withTags",
-      },
+      options: ["basic", "withTags"],
       description: "Defines the type of description text in Header Component",
     },
     showHeaderAction: {
@@ -154,22 +73,14 @@ export default {
       control: {
         type: "select",
       },
-      options: {
-        "Short text": "short",
-        "Long text": "long",
-      },
+      options: ["short", "long"],
       description: "Defines the content in Body Component",
     },
     footerAction: {
       control: {
         type: "select",
       },
-      options: {
-        "No Action": "noAction",
-        "One Button": "one",
-        "Two Button": "two",
-        "Two Button with ghost": "twoWithghost",
-      },
+      options: Object.keys(workspaceFooterPresets),
       description: "Defines the actions slot in Footer component ",
     },
   },
@@ -192,7 +103,10 @@ export default {
   },
   decorators: [
     (story) => html`
-      <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
+      <style>
+        ${styles}
+      </style>
+      <div class="example-chat-shell">${story()}</div>
     `,
   ],
 };
@@ -299,60 +213,6 @@ function getBodyContent(type) {
       `;
   }
 }
-function getFooterAction(type) {
-  switch (type) {
-    case "one":
-      return html`
-        <cds-button
-          size="2xl"
-          data-index="1"
-          kind="primary"
-          slot="footer-action"
-          data-rounded="bottom-right-md-none"
-          >Button</cds-button
-        >
-      `;
-    case "two":
-      return html`
-        <cds-button
-          size="2xl"
-          data-index="1"
-          kind="primary"
-          slot="footer-action"
-          data-rounded="bottom-right-md-none"
-          >Button</cds-button
-        >
-        <cds-button
-          size="2xl"
-          data-index="2"
-          kind="secondary"
-          slot="footer-action"
-          >Button</cds-button
-        >
-      `;
-    case "twoWithghost":
-      return html`
-        <cds-button
-          size="2xl"
-          data-index="1"
-          kind="primary"
-          slot="footer-action"
-          data-rounded="bottom-right-md-none"
-          >Button</cds-button
-        >
-        <cds-button
-          size="2xl"
-          data-index="2"
-          kind="secondary"
-          slot="footer-action"
-          >Button</cds-button
-        >
-        <cds-button size="2xl" data-index="3" kind="ghost" slot="footer-action"
-          >Button</cds-button
-        >
-      `;
-  }
-}
 
 export const Default = {
   args: {
@@ -366,56 +226,61 @@ export const Default = {
     headerDescription: "withTags",
     showHeaderAction: true,
     bodyContent: "short",
-    footerAction: "twoWithghost",
+    footerAction: "Three buttons with one ghost",
   },
   render: (args) => {
     return html`
-      <cds-aichat-toolbar
-        slot="toolbar"
-        ?overflow=${args.toolbarOverflow}
-        .actions=${args.toolbarAction}
-      >
-        <div slot="title" data-fixed>${args.toolbarTitle}</div>
-        <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
-          <div slot="body-text">
-            <p class="secondary">
-              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-              do eiusmod tempor incididunt ut fsil labore et dolore magna
-              aliqua.
-            </p>
-          </div>
-        </cds-ai-label>
-      </cds-aichat-toolbar>
-      <cds-inline-notification
-        slot="notification"
-        .title="${args.notificationTitle}"
-        .subtitle="${args.notificationSubTitle}"
-        kind="warning"
-        low-contrast=""
-        hide-close-button
-      >
-      </cds-inline-notification>
-      <cds-aichat-workspace-shell-header
-        title-text="${args.headerTitle}"
-        subtitle-text="${args.headerSubTitle}"
-      >
-        ${headerDescription(args.headerDescription)}
-        ${args.showHeaderAction &&
+      <cds-aichat-workspace-shell>
+        <cds-aichat-toolbar
+          slot="toolbar"
+          ?overflow=${args.toolbarOverflow}
+          .actions=${args.toolbarAction}
+        >
+          <div slot="title" data-fixed>${args.toolbarTitle}</div>
+          <cds-ai-label autoalign="" slot="decorator" size="2xs">
+            <div slot="body-text">
+              <p class="secondary">
+                Lorem ipsum dolor sit amet, di os consectetur adipiscing elit,
+                sed do eiusmod tempor incididunt ut fsil labore et dolore magna
+                aliqua.
+              </p>
+            </div>
+          </cds-ai-label>
+        </cds-aichat-toolbar>
+        <cds-inline-notification
+          slot="notification"
+          .title="${args.notificationTitle}"
+          .subtitle="${args.notificationSubTitle}"
+          kind="warning"
+          low-contrast=""
+          hide-close-button
+        >
+        </cds-inline-notification>
+        <cds-aichat-workspace-shell-header
+          title-text="${args.headerTitle}"
+          subtitle-text="${args.headerSubTitle}"
+        >
+          ${headerDescription(args.headerDescription)}
+          ${args.showHeaderAction &&
+          html`
+            <cds-button kind="tertiary" slot="header-action">
+              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+            </cds-button>
+          `}
+        </cds-aichat-workspace-shell-header>
+        <cds-aichat-workspace-shell-body>
+          ${getBodyContent(args.bodyContent)}
+        </cds-aichat-workspace-shell-body>
+        ${args.footerAction !== "noAction" &&
         html`
-          <cds-button kind="tertiary" slot="header-action">
-            Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-          </cds-button>
+          <cds-aichat-workspace-shell-footer
+            @cds-aichat-workspace-shell-footer-action=${(e) =>
+              action("action")(e.detail)}
+            .actions=${workspaceFooterPresets[args.footerAction]}
+          >
+          </cds-aichat-workspace-shell-footer>
         `}
-      </cds-aichat-workspace-shell-header>
-      <cds-aichat-workspace-shell-body>
-        ${getBodyContent(args.bodyContent)}
-      </cds-aichat-workspace-shell-body>
-      ${args.footerAction !== "noAction" &&
-      html`
-        <cds-aichat-workspace-shell-footer>
-          ${getFooterAction(args.footerAction)}
-        </cds-aichat-workspace-shell-footer>
-      `}
+      </cds-aichat-workspace-shell>
     `;
   },
 };

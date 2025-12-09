@@ -78,7 +78,7 @@ class CDSAIChatCodeSnippetCard extends LitElement {
   render() {
     return html`
       <cds-aichat-card>
-        <div slot="card-body">
+        <div slot="body">
           <cds-aichat-code-snippet
             data-rounded
             language=${this.language}

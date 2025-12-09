@@ -48,11 +48,11 @@ export const Small = {
   render: (args) => (
     <Wrapper width={args.maxWidth}>
       <Card isLayered={args.isLayered}>
-        <div slot="card-body" class="preview-card preview-card-small">
+        <div slot="body" class="preview-card preview-card-small">
           <h4>Document title</h4>
           <p>Subtitle</p>
         </div>
-        <div slot="card-footer">
+        <div slot="footer">
           <CardFooter
             size="md"
             actions={previewCardFooterPresets[args.footerActions]}
@@ -84,13 +84,13 @@ export const Default = {
   render: (args) => (
     <Wrapper width={args.maxWidth}>
       <Card isLayered={args.isLayered}>
-        <div slot="card-header" className="preview-card preview-card-default">
+        <div slot="header" className="preview-card preview-card-default">
           <h4>Document title</h4>
           <p>Subtitle</p>
           <p>Subtitle</p>
         </div>
 
-        <div slot="card-body">
+        <div slot="body">
           <br />
           <br />
           <br />
@@ -101,13 +101,11 @@ export const Default = {
         </div>
 
         {args.footerActions && (
-          <div slot="card-footer">
-            <CardFooter
-              size="md"
-              actions={previewCardFooterPresets[args.footerActions]}
-              onFooterAction={(e) => action("action")(e.detail)}
-            />
-          </div>
+          <CardFooter
+            size="md"
+            actions={previewCardFooterPresets[args.footerActions]}
+            onFooterAction={(e) => action("action")(e.detail)}
+          />
         )}
 
         {args.aiLabel && (
@@ -135,7 +133,7 @@ export const WithToolbar = {
   render: (args) => (
     <Wrapper width={args.maxWidth}>
       <Card isLayered={args.isLayered}>
-        <div slot="card-header" className="preview-card preview-card-toolbar">
+        <div slot="header" className="preview-card preview-card-toolbar">
           <Toolbar
             overflow
             actions={toolbarActions}
@@ -148,19 +146,14 @@ export const WithToolbar = {
             </div>
 
             {args.aiLabel && (
-              <AILabel
-                size="2xs"
-                autoalign
-                alignment="bottom"
-                slot="toolbar-ai-label"
-              >
+              <AILabel size="2xs" autoalign alignment="bottom" slot="decorator">
                 {aiContent}
               </AILabel>
             )}
           </Toolbar>
         </div>
 
-        <div slot="card-body">
+        <div slot="body">
           <br />
           <br />
           <br />
@@ -171,13 +164,11 @@ export const WithToolbar = {
         </div>
 
         {args.footerActions && (
-          <div slot="card-footer">
-            <CardFooter
-              size="md"
-              actions={previewCardFooterPresets[args.footerActions]}
-              onFooterAction={(e) => action("footer-action")(e.detail)}
-            />
-          </div>
+          <CardFooter
+            size="md"
+            actions={previewCardFooterPresets[args.footerActions]}
+            onFooterAction={(e) => action("footer-action")(e.detail)}
+          />
         )}
       </Card>
     </Wrapper>
@@ -263,7 +254,7 @@ export const WithSteps = {
     return (
       <Wrapper width={args.maxWidth}>
         <Card isLayered={args.isLayered}>
-          <div slot="card-header" className="preview-card preview-card-toolbar">
+          <div slot="header" className="preview-card preview-card-toolbar">
             <Toolbar className="preview-card-toolbar">
               <div slot="title" data-fixed>
                 <div className="title-container">
@@ -277,7 +268,7 @@ export const WithSteps = {
                   size="mini"
                   autoalign
                   alignment="bottom"
-                  slot="toolbar-ai-label"
+                  slot="decorator"
                 >
                   {aiContent}
                 </AILabel>
@@ -285,18 +276,16 @@ export const WithSteps = {
             </Toolbar>
           </div>
 
-          <div slot="card-body" className="preview-card preview-card-steps">
+          <div slot="body" className="preview-card preview-card-steps">
             <CardSteps steps={steps} />
           </div>
 
           {showFooter && (
-            <div slot="card-footer">
-              <CardFooter
-                size="md"
-                actions={previewCardFooterPresets[args.footerActions]}
-                onFooterAction={(e) => action("action")(e.detail)}
-              />
-            </div>
+            <CardFooter
+              size="md"
+              actions={previewCardFooterPresets[args.footerActions]}
+              onFooterAction={(e) => action("action")(e.detail)}
+            />
           )}
         </Card>
       </Wrapper>

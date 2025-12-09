@@ -119,7 +119,7 @@ function feedbackElementTemplate(customElementClass: FeedbackElement) {
           ${cancelLabel || "Cancel"}
         </cds-button>
       </div>
-      <div class="${prefix}--submit" data-rounded="bottom-left">
+      <div class="${prefix}--submit" data-rounded="bottom-right">
         <cds-button
           ?disabled=${isReadonly}
           size="lg"

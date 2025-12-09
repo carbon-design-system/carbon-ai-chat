@@ -174,8 +174,7 @@ export default {
     aiLabel: {
       table: { category: "slot" },
       control: "boolean",
-      description:
-        "AI Label slot in the toolbar component `slot='toolbar-ai-label'`",
+      description: "AI Label slot in the toolbar component `slot='decorator'`",
     },
     "--cds-aichat-rounded-modifier-radius": {
       control: "boolean",
@@ -221,12 +220,7 @@ export const Default = {
 
         {/* AI Label slot */}
         {aiLabel && (
-          <AILabel
-            size="2xs"
-            autoalign
-            alignment="bottom"
-            slot="toolbar-ai-label"
-          >
+          <AILabel size="2xs" autoalign alignment="bottom" slot="decorator">
             <div slot="body-text">
               <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
               <div>

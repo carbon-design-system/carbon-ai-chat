@@ -15,10 +15,10 @@ import { html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import styles from "./story-styles.scss?lit";
 import { action } from "storybook/actions";
-import { cardFooterPresets } from "./story-data";
+import { cardFooterPresets, previewCardFooterPresets } from "./story-data";
 
 const cardContent = html`
-  <div slot="card-body" class="standard-card">
+  <div slot="body" class="standard-card">
     <h4>AI Chat Card</h4>
     <p>
       The Carbon Design System provides a comprehensive library of components,
@@ -99,14 +99,11 @@ export const WithActions = {
       () => html`
         <cds-aichat-card ?is-layered=${args.isLayered}>
           ${cardContent}
-          <div slot="card-footer">
-            <cds-aichat-card-footer
-              .actions=${cardFooterPresets[args.footerActions]}
-              size=${ifDefined(args.footerSize)}
-              @cds-aichat-card-footer-action=${(e) =>
-                action("action")(e.detail)}
-            ></cds-aichat-card-footer>
-          </div>
+          <cds-aichat-card-footer
+            .actions=${cardFooterPresets[args.footerActions]}
+            size=${ifDefined(args.footerSize)}
+            @cds-aichat-card-footer-action=${(e) => action("action")(e.detail)}
+          ></cds-aichat-card-footer>
         </cds-aichat-card>
       `,
     ),
@@ -129,18 +126,15 @@ export const WithImage = {
       args.maxWidth,
       () => html`
         <cds-aichat-card ?is-layered=${args.isLayered}>
-          <div slot="card-media" data-rounded="top">
+          <div slot="media" data-rounded="top">
             <img src=${args.image} alt="Card image" />
           </div>
           ${cardContent}
-          <div slot="card-footer">
-            <cds-aichat-card-footer
-              .actions=${cardFooterPresets[args.footerActions]}
-              size=${ifDefined(args.footerSize)}
-              @cds-aichat-card-footer-action=${(e) =>
-                action("action")(e.detail)}
-            ></cds-aichat-card-footer>
-          </div>
+          <cds-aichat-card-footer
+            .actions=${cardFooterPresets[args.footerActions]}
+            size=${ifDefined(args.footerSize)}
+            @cds-aichat-card-footer-action=${(e) => action("action")(e.detail)}
+          ></cds-aichat-card-footer>
         </cds-aichat-card>
       `,
     ),
@@ -163,7 +157,7 @@ export const OnlyImage = {
       args.maxWidth,
       () => html`
         <cds-aichat-card ?is-layered=${args.isLayered}>
-          <div slot="card-media" data-rounded>
+          <div slot="media" data-rounded>
             <img src=${args.image} alt="Card image" />
           </div>
         </cds-aichat-card>
@@ -189,7 +183,7 @@ export const WithAudio = {
       args.maxWidth,
       () => html`
         <cds-aichat-card ?is-layered=${args.isLayered}>
-          <div slot="card-media" data-rounded="top">
+          <div slot="media" data-rounded="top">
             <iframe
               scrolling="no"
               title="audio example"
@@ -198,7 +192,7 @@ export const WithAudio = {
               src=${args.audio}
             ></iframe>
           </div>
-          <div slot="card-body" class="iframe-body">
+          <div slot="body" class="iframe-body">
             <h4>An audio clip from SoundCloud</h4>
             <p>This description and the title above are optional.</p>
           </div>
@@ -225,7 +219,7 @@ export const OnlyVideo = {
       args.maxWidth,
       () => html`
         <cds-aichat-card ?is-layered=${args.isLayered}>
-          <div slot="card-media" data-rounded>
+          <div slot="media" data-rounded>
             <iframe
               src=${args.video}
               title="YouTube video player"
@@ -248,7 +242,10 @@ export const CardFooter = {
     })(),
     footerActions: {
       control: "select",
-      options: Object.keys(cardFooterPresets),
+      options: Object.keys({
+        ...cardFooterPresets,
+        ...previewCardFooterPresets,
+      }),
       description:
         "Select the preset actions object to display buttons in the card footer.",
     },
@@ -286,7 +283,9 @@ export const CardFooter = {
           style=${args["--cds-aichat-rounded-modifier-radius"]
             ? "--cds-aichat-rounded-modifier-radius: 8px;"
             : ""}
-          .actions=${cardFooterPresets[args.footerActions]}
+          .actions=${{ ...cardFooterPresets, ...previewCardFooterPresets }[
+            args.footerActions
+          ]}
           size=${ifDefined(args.footerSize)}
           @cds-aichat-card-footer-action=${(e) => action("action")(e.detail)}
         ></cds-aichat-card-footer>

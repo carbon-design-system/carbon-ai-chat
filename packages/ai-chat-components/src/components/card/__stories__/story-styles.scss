@@ -70,9 +70,13 @@
     }
   }
 
-  [slot="card-media"] > * {
-    aspect-ratio: 16 / 9;
-    inline-size: 100%;
+  [slot="media"] {
+    display: flex;
+
+    > * {
+      aspect-ratio: 16 / 9;
+      inline-size: 100%;
+    }
   }
 
   .preview-card-default {
@@ -80,7 +84,7 @@
   }
 
   .preview-card-toolbar {
-    --cds-aichat-rounded-modifier-radius: 8px;
+    --cds-aichat-rounded-modifier-radius: 0.5rem;
 
     border-block-end: to-rem(1px) solid theme.$chat-bubble-border;
   }
@@ -101,10 +105,10 @@
 
   .truncated-text {
     display: -webkit-box;
+    overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     line-height: normal;
-    overflow-x: hidden;
     word-break: break-all;
   }
 }

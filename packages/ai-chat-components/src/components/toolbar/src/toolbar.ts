@@ -80,7 +80,10 @@ class CDSAIChatToolbar extends LitElement {
         .then(() => {
           this.hiddenItems = [];
         })
-        .then(() => this.setupOverflowHandler());
+        .then(() => this.setupOverflowHandler())
+        .then(() => {
+          this.measuring = false;
+        });
     }
   }
 
@@ -98,8 +101,6 @@ class CDSAIChatToolbar extends LitElement {
         this.hiddenItems = this.actions.filter(
           (_, i) => i >= visibleItems.length && !_.fixed,
         );
-
-        this.measuring = false;
       },
     });
   }
@@ -145,9 +146,11 @@ class CDSAIChatToolbar extends LitElement {
           <slot name="title"></slot>
         </div>
 
-        <div data-fixed><slot name="fixed-actions"></slot></div>
+        <div data-fixed class="cds-aichat-toolbar__fixed-actions">
+          <slot name="fixed-actions"></slot>
+        </div>
 
-        <div data-fixed><slot name="toolbar-ai-label"></slot></div>
+        <div data-fixed><slot name="decorator"></slot></div>
 
         ${repeat(nonFixedActions, (_, i) => i, renderIconButton)}
         ${this.measuring || this.hiddenItems.length > 0
@@ -167,7 +170,6 @@ class CDSAIChatToolbar extends LitElement {
                   slot: "icon",
                 })}
                 <span slot="tooltip-content">Options</span>
-
                 <cds-overflow-menu-body flipped>
                   ${repeat(
                     this.hiddenItems,

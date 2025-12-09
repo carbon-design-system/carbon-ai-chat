@@ -12,10 +12,10 @@ import {
 } from "./card.stories";
 import "./story-styles.scss";
 import { action } from "storybook/actions";
-import { cardFooterPresets } from "./story-data";
+import { cardFooterPresets, previewCardFooterPresets } from "./story-data";
 
 const cardContent = (
-  <div slot="card-body" className="standard-card">
+  <div slot="body" className="standard-card">
     <h4>AI Chat Card</h4>
     <p>
       The Carbon Design System provides a comprehensive library of components,
@@ -25,16 +25,23 @@ const cardContent = (
   </div>
 );
 
-export default {
-  title: "Components/Card",
-};
-
 const Wrapper = ({ width, children }) => {
   return width === "unset" ? (
     children
   ) : (
     <div style={{ maxWidth: width }}>{children}</div>
   );
+};
+
+export default {
+  title: "Components/Card",
+  decorators: [
+    (Story, { args }) => (
+      <Wrapper width={args.maxWidth}>
+        <Story />
+      </Wrapper>
+    ),
+  ],
 };
 
 export const Default = {
@@ -44,11 +51,7 @@ export const Default = {
   args: {
     ...DefaultWC.args,
   },
-  render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <Card isLayered={args.isLayered}>{cardContent}</Card>
-    </Wrapper>
-  ),
+  render: (args) => <Card isLayered={args.isLayered}>{cardContent}</Card>,
 };
 export const WithActions = {
   argTypes: {
@@ -58,18 +61,14 @@ export const WithActions = {
     ...WithActionsWC.args,
   },
   render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <Card isLayered={args.isLayered}>
-        {cardContent}
-        <div slot="card-footer">
-          <CardFooter
-            size={args.footerSize}
-            actions={cardFooterPresets[args.footerActions]}
-            onFooterAction={(e) => action("action")(e.detail)}
-          />
-        </div>
-      </Card>
-    </Wrapper>
+    <Card isLayered={args.isLayered}>
+      {cardContent}
+      <CardFooter
+        size={args.footerSize}
+        actions={cardFooterPresets[args.footerActions]}
+        onFooterAction={(e) => action("action")(e.detail)}
+      />
+    </Card>
   ),
 };
 
@@ -81,21 +80,17 @@ export const WithImage = {
     ...WithImageWC.args,
   },
   render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <Card isLayered={args.isLayered}>
-        <div slot="card-media" data-rounded="top">
-          <img src={args.image} alt="Card media" />
-        </div>
-        {cardContent}
-        <div slot="card-footer">
-          <CardFooter
-            size={args.footerSize}
-            actions={cardFooterPresets[args.footerActions]}
-            onFooterAction={(e) => action("action")(e.detail)}
-          />
-        </div>
-      </Card>
-    </Wrapper>
+    <Card isLayered={args.isLayered}>
+      <div slot="media" data-rounded="top">
+        <img src={args.image} alt="Card media" />
+      </div>
+      {cardContent}
+      <CardFooter
+        size={args.footerSize}
+        actions={cardFooterPresets[args.footerActions]}
+        onFooterAction={(e) => action("action")(e.detail)}
+      />
+    </Card>
   ),
 };
 
@@ -107,13 +102,11 @@ export const OnlyImage = {
     ...OnlyImageWC.args,
   },
   render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <Card isLayered={args.isLayered}>
-        <div slot="card-media" data-rounded="">
-          <img src={args.image} alt="Card image" />
-        </div>
-      </Card>
-    </Wrapper>
+    <Card isLayered={args.isLayered}>
+      <div slot="media" data-rounded="">
+        <img src={args.image} alt="Card image" />
+      </div>
+    </Card>
   ),
 };
 
@@ -125,23 +118,21 @@ export const WithAudio = {
     ...WithAudioWC.args,
   },
   render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <Card isLayered={args.isLayered}>
-        <div slot="card-media" data-rounded="top">
-          <iframe
-            title="audio example"
-            scrolling="no"
-            frameBorder="no"
-            allow="autoplay"
-            src={args.audio}
-          />
-        </div>
-        <div slot="card-body" className="iframe-body">
-          <h4>An audio clip from SoundCloud</h4>
-          <p>This description and the title above are optional.</p>
-        </div>
-      </Card>
-    </Wrapper>
+    <Card isLayered={args.isLayered}>
+      <div slot="media" data-rounded="top">
+        <iframe
+          title="audio example"
+          scrolling="no"
+          frameBorder="no"
+          allow="autoplay"
+          src={args.audio}
+        />
+      </div>
+      <div slot="body" className="iframe-body">
+        <h4>An audio clip from SoundCloud</h4>
+        <p>This description and the title above are optional.</p>
+      </div>
+    </Card>
   ),
 };
 
@@ -153,19 +144,17 @@ export const OnlyVideo = {
     ...OnlyVideoWC.args,
   },
   render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <Card isLayered={args.isLayered}>
-        <div slot="card-media" data-rounded="">
-          <iframe
-            title="video example"
-            src={args.video}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      </Card>
-    </Wrapper>
+    <Card isLayered={args.isLayered}>
+      <div slot="media" data-rounded="">
+        <iframe
+          title="video example"
+          src={args.video}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </Card>
   ),
 };
 export const CardFooterStory = {
@@ -188,17 +177,19 @@ export const CardFooterStory = {
     ...CardFooterWC.args,
   },
   render: (args) => (
-    <Wrapper width={args.maxWidth}>
-      <CardFooter
-        style={
-          args["--cds-aichat-rounded-modifier-radius"]
-            ? { "--cds-aichat-rounded-modifier-radius": "8px" }
-            : undefined
-        }
-        size={args.footerSize}
-        actions={cardFooterPresets[args.footerActions]}
-        onFooterAction={(e) => action("action")(e.detail)}
-      />
-    </Wrapper>
+    <CardFooter
+      style={
+        args["--cds-aichat-rounded-modifier-radius"]
+          ? { "--cds-aichat-rounded-modifier-radius": "8px" }
+          : undefined
+      }
+      size={args.footerSize}
+      actions={
+        { ...cardFooterPresets, ...previewCardFooterPresets }[
+          args.footerActions
+        ]
+      }
+      onFooterAction={(e) => action("action")(e.detail)}
+    />
   ),
 };

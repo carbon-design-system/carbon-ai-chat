@@ -15,14 +15,14 @@ $css--plex: true !default;
 @use "@carbon/web-components/scss/components/tile/tile";
 @use "@carbon/styles/scss/utilities/convert";
 
-.cds-aichat-card-steps {
+.#{$prefix}-card-steps {
   display: flex;
   flex-direction: column;
   container-type: inline-size;
   inline-size: 100%;
 }
 
-.cds-aichat-card-step {
+.#{$prefix}-card-step {
   display: flex;
   align-items: flex-start;
   padding: layout.$spacing-04 layout.$spacing-05;
@@ -37,7 +37,7 @@ $css--plex: true !default;
     margin-inline-end: calc(-1 * layout.$spacing-03);
   }
 
-  .cds-aichat-card-step-indicator {
+  .#{$prefix}-card-step-indicator {
     @include type-style("body-compact-01");
 
     display: flex;
@@ -47,14 +47,14 @@ $css--plex: true !default;
     white-space: nowrap;
   }
 
-  .cds-aichat-card-step-title {
+  .#{$prefix}-card-step-title {
     @include type-style("body-compact-01");
 
     margin: 0;
     color: theme.$text-secondary;
   }
 
-  .cds-aichat-card-step-description {
+  .#{$prefix}-card-step-description {
     @include type-style("label-01");
 
     margin: 0;
@@ -64,7 +64,7 @@ $css--plex: true !default;
 
 /* Container Query — relative to wrapper width */
 @container (max-width: 320px) {
-  .cds-aichat-card-step {
+  .#{$prefix}-card-step {
     flex-direction: column;
     align-items: flex-start;
     gap: layout.$spacing-03;

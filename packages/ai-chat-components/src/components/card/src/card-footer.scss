@@ -20,7 +20,7 @@ $css--plex: true !default;
   @include rounded-modifiers;
   @include stacked-modifiers;
 
-  .cds-aichat-card-footer__actions {
+  .#{$prefix}-card-footer__actions {
     display: flex;
 
     &--stacked {
@@ -34,13 +34,13 @@ $css--plex: true !default;
     }
   }
 
-  .cds-aichat-card-footer__icon-actions {
+  .#{$prefix}-card-footer__icon-actions {
     display: flex;
     justify-content: end;
     border-block-start: convert.to-rem(1px) solid theme.$chat-bubble-border;
   }
 
-  .cds-aichat-card-footer__action-viewing::part(button) {
+  .#{$prefix}-card-footer__action-viewing::part(button) {
     flex-direction: row-reverse;
     flex-grow: 0;
     align-items: center;
@@ -59,7 +59,7 @@ $css--plex: true !default;
   }
 
   cds-button[kind="ghost"]:not([disabled]) {
-    .cds-aichat-card-footer__action-icon {
+    .#{$prefix}-card-footer__action-icon {
       fill: theme.$link-primary;
     }
   }

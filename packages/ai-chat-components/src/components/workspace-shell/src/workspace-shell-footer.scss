@@ -1,0 +1,52 @@
+@use "@carbon/layout";
+@use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/breakpoint" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/styles/scss/components/button/tokens" as button-tokens;
+
+:host(#{$prefix}-workspace-shell-footer) {
+  @include rounded-modifiers;
+
+  .#{$prefix}-workspace-shell-footer {
+    display: flex;
+    justify-content: end;
+    border-block-start: 1px solid theme.$chat-bubble-border;
+
+    &:not(.#{$prefix}-workspace-shell-footer--stacked) {
+      cds-button {
+        flex: 0 1 25%;
+        min-inline-size: 11rem;
+      }
+
+      cds-button[kind="ghost"],
+      cds-button[kind="danger-ghost"] {
+        flex: 1 1 25%;
+      }
+
+      cds-button:not(:last-child) {
+        border-inline-end: 1px solid button-tokens.$button-separator;
+      }
+
+      cds-button[kind="ghost"]:not(:last-child) {
+        border-inline-end-color: theme.$chat-bubble-border;
+      }
+    }
+
+    &--stacked {
+      flex-direction: column;
+    }
+  }
+
+  .#{$prefix}-workspace-shell-footer--stacked cds-button:not(:first-child) {
+    border-block-start: 1px solid button-tokens.$button-separator;
+  }
+
+  .#{$prefix}-workspace-shell-footer--stacked
+    cds-button[kind="ghost"]:not(:first-child) {
+    border-block-start-color: theme.$chat-bubble-border;
+  }
+}

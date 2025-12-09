@@ -38,10 +38,10 @@ class Card extends CDSTile {
   render() {
     return html`
       <div ?data-flush=${this.isFlush}>
-        <slot name="card-header"></slot>
-        <slot name="card-media"></slot>
-        <slot name="card-body"></slot>
-        <slot name="card-footer"></slot>
+        <slot name="header"></slot>
+        <slot name="media"></slot>
+        <slot name="body"></slot>
+        <slot name="footer"></slot>
         <slot name="decorator"></slot>
       </div>
     `;

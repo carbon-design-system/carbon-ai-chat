@@ -31,6 +31,7 @@ export type Action = {
   disabled?: boolean;
   payload?: unknown;
   icon?: CarbonIcon;
+  onClick?: () => void;
   tooltipText?: string;
   isViewing?: boolean;
 };
@@ -43,6 +44,12 @@ export type Action = {
 class CardFooter extends LitElement {
   static styles = styles;
 
+  /**
+   * Sets default slot value to footer
+   */
+  @property({ type: String, reflect: true })
+  slot = "footer";
+
   /** Card actions to render */
   @property({ type: Array })
   actions: Action[] = [];
@@ -54,6 +61,9 @@ class CardFooter extends LitElement {
   isIconButton = false;
 
   private handleAction(action: Action) {
+    if (action.onClick) {
+      action.onClick();
+    }
     this.dispatchEvent(
       new CustomEvent("cds-aichat-card-footer-action", {
         detail: action,
@@ -139,8 +149,7 @@ class CardFooter extends LitElement {
                   @click=${() => this.handleAction(action)}
                 >
                   ${action.icon
-                    ? // @ts-ignore
-                      iconLoader(action.icon, { slot: "icon" })
+                    ? iconLoader(action.icon, { slot: "icon" })
                     : nothing}
                   <span slot="tooltip-content">${action.tooltipText}</span>
                 </cds-icon-button> `,
