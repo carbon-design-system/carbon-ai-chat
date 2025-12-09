@@ -7,8 +7,11 @@
  *  @license
  */
 
-import "./src/workspace-shell";
-import "./src/workspace-shell-toolbar";
-import "./src/workspace-shell-header";
-import "./src/workspace-shell-body";
-import "./src/workspace-shell-footer";
+@use "../../../globals/scss/modifiers" as *;
+
+$prefix: "cds-aichat";
+
+html {
+  --#{$prefix}-border-radius: 0.5rem;
+  @include rounded-modifiers;
+}
