@@ -9,7 +9,7 @@
 
 import { html, fixture, expect } from "@open-wc/testing";
 import "@carbon/ai-chat-components/es/components/card/index.js";
-import Card from "@carbon/ai-chat-components/es/components/card/index.js";
+import Card from "@carbon/ai-chat-components/es/components/card/src/card.js";
 
 /**
  * This repository uses the @web/test-runner library for testing
