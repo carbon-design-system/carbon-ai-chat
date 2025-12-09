@@ -15,7 +15,6 @@ import Launch16 from "@carbon/icons/es/launch/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import Close16 from "@carbon/icons/es/close/16.js";
 
-
 export const actionLists = {
   "Advanced list": [
     {
