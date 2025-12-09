@@ -6,7 +6,7 @@
  *
  *  @license
  */
-import React from "react";
+import * as React from "react";
 import Tag from "../../../react/tag";
 import Button from "../../../react/button";
 
