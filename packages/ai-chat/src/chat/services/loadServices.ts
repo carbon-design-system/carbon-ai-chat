@@ -86,7 +86,7 @@ function createServiceManager(appConfig: AppConfig) {
 
   // Create all custom elements for Deb.
   serviceManager.writeableElements = {};
-  if (isBrowser) {
+  if (isBrowser()) {
     serviceManager.writeableElements = {
       [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
         document.createElement("div"),

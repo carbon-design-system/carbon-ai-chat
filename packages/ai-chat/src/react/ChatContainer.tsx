@@ -257,7 +257,7 @@ function ChatContainer(props: ChatContainerProps) {
 
   // If we are in SSR mode, just short circuit here. This prevents all of our window.* and document.* stuff from trying
   // to run and erroring out.
-  if (!isBrowser) {
+  if (!isBrowser()) {
     return null;
   }
 

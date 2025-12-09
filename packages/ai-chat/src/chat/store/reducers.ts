@@ -727,7 +727,7 @@ const reducers: { [key: string]: ReducerType } = {
       ...state.persistedToBrowserStorage,
       disclaimersAccepted: {
         ...state.persistedToBrowserStorage.disclaimersAccepted,
-        [isBrowser ? window.location.hostname : "localhost"]: true,
+        [isBrowser() ? window.location.hostname : "localhost"]: true,
       },
     },
   }),

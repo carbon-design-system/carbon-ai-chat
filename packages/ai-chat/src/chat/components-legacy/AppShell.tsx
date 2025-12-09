@@ -32,6 +32,7 @@ import {
   getThemeClassNames,
 } from "../utils/styleUtils";
 import AppRegion from "./AppRegion";
+import { useMobileViewportLayout } from "../hooks/useMobileViewportLayout";
 
 interface AppShellProps extends HasServiceManager {
   hostElement?: Element;
@@ -41,6 +42,8 @@ interface AppShellProps extends HasServiceManager {
 const applicationStylesheet =
   typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
 const cssVariableOverrideStylesheet =
+  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
+const visualViewportStylesheet =
   typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
 
 export default function AppShell({
@@ -57,6 +60,9 @@ export default function AppShell({
   const theme = useSelector(
     (state: AppState) => state.config.derived.themeWithDefaults,
   );
+  const isMainWindowOpen = useSelector(
+    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow,
+  );
   const config = useSelector((state: AppState) => state.config);
   const layout = useSelector((state: AppState) => state.config.derived.layout);
 
@@ -68,15 +74,24 @@ export default function AppShell({
   const dispatch = useDispatch();
 
   const [windowSize, setWindowSize] = useState<Dimension>({
-    width: isBrowser ? window.innerWidth : 0,
-    height: isBrowser ? window.innerHeight : 0,
+    width: isBrowser() ? window.innerWidth : 0,
+    height: isBrowser() ? window.innerHeight : 0,
   });
+
+  const useMobileEnhancements =
+    IS_PHONE && !config.public.disableCustomElementMobileEnhancements;
 
   const cssVariableOverrideString = useMemo(() => {
     return convertCSSVariablesToString(cssVariableOverrides);
   }, [cssVariableOverrides]);
 
-  const dir = isBrowser ? document.dir || "auto" : "auto";
+  const { style: visualViewportStyles } = useMobileViewportLayout({
+    enabled: useMobileEnhancements,
+    isOpen: isMainWindowOpen,
+    margin: 4,
+  });
+
+  const dir = isBrowser() ? document.dir || "auto" : "auto";
 
   useOnMount(() => {
     if (!isBrowser) {
@@ -116,18 +131,26 @@ export default function AppShell({
     const rootNode = containerRef.current.getRootNode();
     const appStyles = styles;
     const cssVariableStyles = cssVariableOverrideString || "";
+    const visualViewportCSS = Object.keys(visualViewportStyles || {}).length
+      ? `.cds-aichat--container--render { ${Object.entries(visualViewportStyles)
+          .map(([key, value]) => `${key}: ${value};`)
+          .join(" ")} }`
+      : "";
 
     if (rootNode instanceof ShadowRoot) {
       if (
         applicationStylesheet &&
         "replaceSync" in applicationStylesheet &&
-        cssVariableOverrideStylesheet
+        cssVariableOverrideStylesheet &&
+        visualViewportStylesheet
       ) {
         applicationStylesheet.replaceSync(appStyles);
         cssVariableOverrideStylesheet.replaceSync(cssVariableStyles);
+        visualViewportStylesheet.replaceSync(visualViewportCSS);
         rootNode.adoptedStyleSheets = [
           applicationStylesheet,
           cssVariableOverrideStylesheet,
+          visualViewportStylesheet,
         ];
       } else {
         if (!rootNode.querySelector("style[data-base-styles]")) {
@@ -142,9 +165,39 @@ export default function AppShell({
           variableCustomStyles.textContent = cssVariableStyles;
           rootNode.appendChild(variableCustomStyles);
         }
+        const viewportStyle = rootNode.querySelector(
+          "style[data-visual-viewport-styles]",
+        );
+        if (viewportStyle) {
+          viewportStyle.textContent = visualViewportCSS;
+        } else {
+          const visualViewportStyle = document.createElement("style");
+          visualViewportStyle.dataset.visualViewportStyles = "true";
+          visualViewportStyle.textContent = visualViewportCSS;
+          rootNode.appendChild(visualViewportStyle);
+        }
+      }
+    } else if (
+      visualViewportStyles &&
+      Object.keys(visualViewportStyles).length &&
+      containerRef.current
+    ) {
+      const renderEl = containerRef.current.querySelector<HTMLElement>(
+        ".cds-aichat--container--render",
+      );
+      if (renderEl) {
+        Object.entries(visualViewportStyles).forEach(([key, value]) => {
+          renderEl.style.setProperty(key, String(value));
+        });
       }
     }
-  }, [styles, containerRef, cssVariableOverrideString, hostElement]);
+  }, [
+    styles,
+    containerRef,
+    cssVariableOverrideString,
+    hostElement,
+    visualViewportStyles,
+  ]);
 
   return (
     <div
@@ -160,9 +213,9 @@ export default function AppShell({
             "cds-aichat--container-disable-mobile-enhancements":
               hostElement &&
               config.public.disableCustomElementMobileEnhancements,
-            "cds-aichat---is-phone":
+            "cds-aichat--is-phone":
               IS_PHONE && !config.public.disableCustomElementMobileEnhancements,
-            "cds-aichat---is-phone-portrait-mode":
+            "cds-aichat--is-phone-portrait-mode":
               IS_PHONE_IN_PORTRAIT_MODE &&
               !config.public.disableCustomElementMobileEnhancements,
             "cds-aichat--frameless": !layout?.showFrame,

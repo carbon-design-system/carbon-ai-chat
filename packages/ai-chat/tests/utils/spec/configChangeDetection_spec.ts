@@ -24,7 +24,7 @@ describe("configChangeDetection", () => {
       newConfig.serviceDeskFactory = () => Promise.resolve({} as any);
 
       const changes = detectConfigChanges(baseConfig, newConfig);
-      expect(changes.humanAgentConfigChanged).toBe(true);
+      expect(changes.humanAgentFactoryChanged).toBe(true);
     });
 
     it("should detect theme changes", () => {
@@ -49,7 +49,7 @@ describe("configChangeDetection", () => {
 
     it("should detect no changes when configs are identical", () => {
       const changes = detectConfigChanges(baseConfig, baseConfig);
-      expect(changes.humanAgentConfigChanged).toBe(false);
+      expect(changes.humanAgentFactoryChanged).toBe(false);
       expect(changes.themingChanged).toBe(false);
       expect(changes.namespaceChanged).toBe(false);
     });

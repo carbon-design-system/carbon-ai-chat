@@ -103,7 +103,7 @@ export interface PublicConfig {
    * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
    *
    * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
-   * human agent will be restarted.
+   * human agent will be disconnected.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters,
@@ -111,9 +111,6 @@ export interface PublicConfig {
 
   /**
    * Any public config to apply to service desks.
-   *
-   * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
-   * human agent will be restarted.
    */
   serviceDesk?: ServiceDeskPublicConfig;
 

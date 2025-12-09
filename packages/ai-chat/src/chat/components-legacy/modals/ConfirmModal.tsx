@@ -140,7 +140,7 @@ class ConfirmModal extends Component<
           focusTrapOptions={{
             initialFocus: false,
             tabbableOptions: {
-              getShadowRoot: true, // Crucial for web components
+              getShadowRoot: true,
             },
           }}
         >

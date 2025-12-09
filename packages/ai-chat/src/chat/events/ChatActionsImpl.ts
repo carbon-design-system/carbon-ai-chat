@@ -230,7 +230,10 @@ class ChatActionsImpl {
     if (!this.alreadyHydrated) {
       history = await this.serviceManager.historyService.loadHistory();
 
-      if (serviceManager.humanAgentService) {
+      if (
+        serviceManager.humanAgentService &&
+        !serviceManager.humanAgentService.hasInitialized
+      ) {
         // Once we've got the main config which contains the details for connecting to a service desk, we can
         // initialize the human agent service.
         debugLog("Initializing the human agent service");
@@ -1178,7 +1181,7 @@ class ChatActionsImpl {
   async changeView(
     newView: ViewType | Partial<ViewState>,
     reason: {
-      viewChangeReason?: ViewChangeReason;
+      viewChangeReason: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
     },
@@ -1230,7 +1233,7 @@ class ChatActionsImpl {
   private async fireViewChangeEventsAndChangeView(
     newViewState: ViewState,
     reason: {
-      viewChangeReason?: ViewChangeReason;
+      viewChangeReason: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
     },

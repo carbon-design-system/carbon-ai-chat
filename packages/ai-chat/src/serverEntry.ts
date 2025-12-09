@@ -84,6 +84,7 @@ export {
   BusEventReceive,
   BusEventReset,
   BusEventSend,
+  BusEventStateChange,
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,

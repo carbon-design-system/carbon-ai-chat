@@ -129,6 +129,7 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
       mainWindowOpenReason = MainWindowOpenReason.OPEN_BY_DEFAULT;
     }
     await serviceManager.actions.changeView(targetViewState, {
+      viewChangeReason: ViewChangeReason.WEB_CHAT_LOADED,
       mainWindowOpenReason,
     });
   } else {

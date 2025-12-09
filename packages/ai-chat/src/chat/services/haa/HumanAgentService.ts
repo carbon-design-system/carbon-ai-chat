@@ -33,6 +33,11 @@ interface HumanAgentService {
   initialize(): Promise<void>;
 
   /**
+   * If the service desk manager has been initialized.
+   */
+  hasInitialized: boolean;
+
+  /**
    * If a custom service desk is configured, returns the name.
    */
   getCustomServiceDeskName(): string;
