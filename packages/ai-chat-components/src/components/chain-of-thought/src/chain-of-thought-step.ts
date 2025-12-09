@@ -239,9 +239,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
       this.open = nextState;
     }
 
-    this.dispatchEvent(
-      new CustomEvent(`chain-of-thought-step-toggled`, init),
-    );
+    this.dispatchEvent(new CustomEvent(`chain-of-thought-step-toggled`, init));
   }
 
   private handleButtonClick() {
