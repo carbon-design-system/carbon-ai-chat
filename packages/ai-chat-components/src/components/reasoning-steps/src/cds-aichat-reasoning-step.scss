@@ -1,0 +1,129 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/layout";
+
+:host {
+  display: block;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  color: theme.$text-helper;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+.#{$prefix}--reasoning-step {
+  inline-size: 100%;
+}
+
+.#{$prefix}--reasoning-step__trigger {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: theme.$text-helper;
+  cursor: pointer;
+  font: inherit;
+  gap: layout.$spacing-02;
+  inline-size: 100%;
+  text-align: start;
+
+  &:focus-visible {
+    outline: 2px solid theme.$focus;
+    outline-offset: 2px;
+  }
+}
+
+.#{$prefix}--reasoning-step__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: layout.$spacing-05;
+  inline-size: layout.$spacing-05;
+  transition: transform motion.$duration-moderate-02
+    motion.motion(standard, productive);
+
+  svg {
+    block-size: 100%;
+    fill: currentColor;
+    inline-size: 100%;
+  }
+}
+
+:host([open]) .#{$prefix}--reasoning-step__icon {
+  transform: rotate(90deg);
+}
+
+.#{$prefix}--reasoning-step__title {
+  flex: 1;
+  @include type.type-style("heading-01");
+
+  color: theme.$text-helper;
+}
+
+.#{$prefix}--reasoning-step__static {
+  display: flex;
+  align-items: center;
+  gap: layout.$spacing-02;
+}
+
+.#{$prefix}--reasoning-step__static-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: layout.$spacing-05;
+  inline-size: layout.$spacing-05;
+
+  svg {
+    block-size: 100%;
+    fill: currentColor;
+    inline-size: 100%;
+  }
+}
+
+.#{$prefix}--reasoning-step__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline: calc(#{layout.$spacing-05} + #{layout.$spacing-02});
+  pointer-events: none;
+  transition:
+    grid-template-rows motion.$duration-fast-02
+      motion.motion(entrance, productive),
+    opacity motion.$duration-fast-02 motion.motion(entrance, productive),
+    padding-block-end motion.$duration-fast-02
+      motion.motion(entrance, productive);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+:host([open]) .#{$prefix}--reasoning-step__panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  padding-block-end: layout.$spacing-02;
+  padding-block-start: layout.$spacing-01;
+  pointer-events: auto;
+}
+
+.#{$prefix}--reasoning-step__panel-body {
+  overflow: hidden;
+  min-block-size: 0;
+}

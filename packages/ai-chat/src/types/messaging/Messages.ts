@@ -16,7 +16,14 @@ import { DeepPartial } from "../utilities/DeepPartial";
 import { MessageErrorState } from "./LocalMessageItem";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../config/ServiceDeskConfig";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+import {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "@carbon/web-components/es/components/button/defs.js";
+import {
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 import type { ChainOfThoughtStep } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/types.js";
 
@@ -1333,7 +1340,19 @@ interface ButtonItem<TUserDefinedType = Record<string, unknown>>
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+
+  /**
+   * The button size.
+   */
+  size?: BUTTON_SIZE | CHAT_BUTTON_SIZE;
+
+  /**
+   * Whether the button should be rendered as a standard carbon button.
+   *
+   * @internal
+   */
+  is?: "standard-button";
 
   /**
    * The type of button.
@@ -1516,6 +1535,73 @@ interface MessageUIStateInternal {
 }
 
 /**
+ * If the reasoning step is open, closed, or is controlled by Carbon AI Chat.
+ *
+ * If a user elects to open/close the user action will override what is provided here.
+ *
+ * @category Messaging
+ */
+enum ReasoningStepOpenState {
+  OPEN = "open",
+  CLOSE = "close",
+  DEFAULT = "default",
+}
+
+/**
+ * An individual reasoning step.
+ *
+ * @category Messaging
+ */
+interface ReasoningStep {
+  /**
+   * The title of the reasoning step.
+   */
+  title: string;
+
+  /**
+   * Marks if this individual step is open. Only use this if you don't want the default behavior.
+   *
+   * If the step has content, by default the reasoning step will automatically open and will close when the
+   * next step(s) have content or the first {@link GenericItem} is returned with something to display.
+   *
+   * No matter what you choose, if the user manually marks something open/closed they retain control.
+   */
+  open_state?: ReasoningStepOpenState;
+
+  /**
+   * Optional markdown content to explain what the step is doing.
+   */
+  content?: string;
+}
+
+/**
+ * The interface describing how to pass reasoning steps to the UI.
+ *
+ * @category Messaging
+ */
+interface ReasoningSteps {
+  /**
+   * Marks if the reasoning step interface is open. Only use this if you don't want the default behavior.
+   *
+   * By default the reasoning step interface will automatically open and will then close when the first
+   * {@link GenericItem} is returned with something to display.
+   *
+   * No matter what you choose, if the user manually marks something open/closed they retain control.
+   */
+  open_state?: ReasoningStepOpenState;
+
+  /**
+   * The array of reasoning steps for this message.
+   */
+  steps?: ReasoningStep[];
+
+  /**
+   * Optional markdown content to explain what the step is doing.
+   */
+  content?: string;
+}
+
+/**
  * This interface contains options for a {@link MessageResponse}.
  *
  * @category Messaging
@@ -1527,7 +1613,26 @@ interface MessageResponseOptions {
   response_user_profile?: ResponseUserProfile;
 
   /**
+   * Controls the display of the reasoning steps component.
+   *
+   * Most people should use reasoning steps instead of chain of thought.
+   *
+   * Chain of thought it meant more for technical "called X API and got Y result back".
+   *
+   * Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
+   * content than debugging technical internal content.
+   */
+  reasoning?: ReasoningSteps;
+
+  /**
    * Controls the display of the chain of thought component.
+   *
+   * Most people should use reasoning steps instead of chain of thought.
+   *
+   * Chain of thought it meant more for technical "called X API and got Y result back".
+   *
+   * Reasoning steps can include that kind of detail depending on your use case, but is meant more for user friendly
+   * content than debugging technical internal content.
    */
   chain_of_thought?: ChainOfThoughtStep[];
 }
@@ -1852,5 +1957,8 @@ export {
   MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,
+  ReasoningSteps,
+  ReasoningStep,
+  ReasoningStepOpenState,
   PreviewCardItem,
 };

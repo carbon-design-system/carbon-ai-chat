@@ -16,15 +16,10 @@
  * To use the web components, directly import them.
  */
 
-export {
-  NotificationMessage,
-  ViewState,
-  ViewType,
-  PanelType,
-} from "./types/instance/apiTypes";
+// Export types and utilities without importing web components
 export { PageObjectId, TestId } from "./testing/PageObjectId";
 
-export { PersistedState } from "./types/state/AppState";
+export { ViewState, ViewType } from "./types/instance/apiTypes";
 
 export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 
@@ -32,6 +27,7 @@ export {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
   CustomPanelInstance,
+  PanelType,
   CustomPanels,
   CustomPanelOpenOptions,
 } from "./types/instance/apiTypes";
@@ -40,7 +36,6 @@ export {
   ChangeFunction,
   ChatInstance,
   ChatInstanceInput,
-  ChatInstanceNotifications,
   ChatInstanceServiceDeskActions,
   EventBusHandler,
   EventHandlers,
@@ -88,6 +83,7 @@ export {
   BusEventReceive,
   BusEventReset,
   BusEventSend,
+  BusEventStateChange,
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,
@@ -96,6 +92,10 @@ export {
   MessageSendSource,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
+
+export { PersistedState } from "./types/state/AppState";
+
+export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
 
 export {
   HomeScreenConfig,
@@ -125,8 +125,6 @@ export {
   PublicConfig,
   PublicConfigMessaging,
 } from "./types/config/PublicConfig";
-
-export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -212,6 +210,9 @@ export {
   HumanAgentMessageType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
+  ReasoningSteps,
+  ReasoningStep,
+  ReasoningStepOpenState,
   GenericItemMessageFeedbackOptions,
   GenericItemMessageOptions,
   Message,
@@ -240,6 +241,7 @@ export {
   RenderUserDefinedState,
   RenderWriteableElementResponse,
 } from "./types/component/ChatContainer";
+
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
 
 export {

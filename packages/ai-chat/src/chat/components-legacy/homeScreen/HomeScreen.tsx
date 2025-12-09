@@ -10,7 +10,7 @@
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "../../components/carbon/ChatButton";
+} from "@carbon/ai-chat-components/es/react/chat-button.js";
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import cx from "classnames";

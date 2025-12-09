@@ -28,9 +28,7 @@ import { PageObjectId } from "../../testing/PageObjectId";
 const ANIMATION_START_DETECTION_DELAY_MS = 120;
 
 interface OverlayPanelProps
-  extends HasServiceManager,
-    HasChildren,
-    HasClassName {
+  extends HasServiceManager, HasChildren, HasClassName {
   /**
    * Callback that is called after the overlay panel has opened.
    * There may be a delay before this is called to allow the panel to animate.
@@ -247,7 +245,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
     }
 
     if (
-      isBrowser &&
+      isBrowser() &&
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -258,7 +256,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   }
 
   private scheduleAnimationFallback() {
-    if (!isBrowser) {
+    if (!isBrowser()) {
       return;
     }
 
@@ -281,7 +279,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
   }
 
   private clearAnimationFallback() {
-    if (this.animationFallbackId !== null && isBrowser) {
+    if (this.animationFallbackId !== null && isBrowser()) {
       window.clearTimeout(this.animationFallbackId);
     }
 

@@ -1,0 +1,55 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/layout";
+
+:host {
+  display: block;
+  inline-size: 100%;
+}
+
+.#{$prefix}--reasoning-steps__wrapper {
+  display: grid;
+  overflow: hidden;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  padding-inline-start: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows motion.$duration-fast-02
+      motion.motion(entrance, productive),
+    padding-inline-start motion.$duration-fast-02
+      motion.motion(entrance, productive),
+    opacity motion.$duration-fast-02 motion.motion(entrance, productive);
+
+  @media screen and (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+:host([open]) .#{$prefix}--reasoning-steps__wrapper {
+  overflow: visible;
+  border-inline-start: 1px solid theme.$border-subtle-02;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  padding-inline-start: layout.$spacing-02;
+  pointer-events: auto;
+}
+
+.#{$prefix}--reasoning-steps__body {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  gap: layout.$spacing-03;
+  min-block-size: 0;
+  padding-inline-start: layout.$spacing-03;
+}

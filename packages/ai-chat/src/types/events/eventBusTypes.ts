@@ -722,8 +722,9 @@ export interface BusEventWorkspaceClose extends BusEvent {
  *
  * @category Service desk
  */
-export interface BusEventHumanAgentPreStartChat<TPayloadType = unknown>
-  extends BusEvent {
+export interface BusEventHumanAgentPreStartChat<
+  TPayloadType = unknown,
+> extends BusEvent {
   /**
    * The type of the event.
    */
@@ -751,8 +752,9 @@ export interface BusEventHumanAgentPreStartChat<TPayloadType = unknown>
  *
  * @category Service desk
  */
-export interface BusEventHumanAgentPreEndChat<TPayloadType = unknown>
-  extends BusEvent {
+export interface BusEventHumanAgentPreEndChat<
+  TPayloadType = unknown,
+> extends BusEvent {
   /**
    * The type of the event.
    */

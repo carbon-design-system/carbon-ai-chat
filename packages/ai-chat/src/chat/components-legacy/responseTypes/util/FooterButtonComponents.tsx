@@ -33,6 +33,10 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const buttonComponents =
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
+      nestedLocalMessage.item = {
+        ...nestedLocalMessage.item,
+        is: "standard-button",
+      };
       return (
         <React.Fragment key={nestedMessageID}>
           {props.renderMessageComponent({

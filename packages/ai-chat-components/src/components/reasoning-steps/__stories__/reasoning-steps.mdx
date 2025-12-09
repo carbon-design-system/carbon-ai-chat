@@ -1,0 +1,87 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as ReasoningStepsStories from "./reasoning-steps.stories";
+
+<Meta of={ReasoningStepsStories} />
+
+# AI Chat Reasoning Steps
+
+`cds-aichat-reasoning-steps` presents an ordered list of expandable reasoning steps so users can inspect how an answer was produced. Each child step uses `cds-aichat-reasoning-step`, which can be interactive (with supporting content) or static (title only) depending on the data you provide.
+
+## Key Features
+
+- **Built-in disclosure**: A top-level `open` property shows or hides the entire reasoning block without re-rendering children.
+- **Interactive or static entries**: Omit the default slot to render a non-interactive step with an em dash instead of a caret.
+- **Controlled mode**: Set `controlled` on the wrapper and steps to drive the open state from your host application.
+- **Accessibility ready**: Steps use proper `button` semantics, `aria-expanded`, and `aria-labelledby` wiring so assistive tech mirrors Carbon's accordion behavior.
+- **Customizable appearance**: CSS custom properties let you adjust padding, background, and typography while keeping consistent spacing between steps.
+
+## Getting started
+
+Import both the container and items when bundling locally:
+
+```javascript
+import "@carbon/ai-chat-components/es/components/reasoning-steps/index.js";
+```
+
+A React wrapper is also available:
+
+```javascript
+import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
+import ReasoningStep from "@carbon/ai-chat-components/es/react/reasoning-step.js";
+```
+
+<Markdown>{`${cdnJs(["reasoning-steps", "reasoning-step"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+### HTML
+
+#### Default
+
+<Canvas of={ReasoningStepsStories.Default} />
+
+#### Including static steps
+
+<Canvas of={ReasoningStepsStories.WithStaticSteps} />
+
+#### Controlled mode
+
+<Canvas of={ReasoningStepsStories.Controlled} />
+
+## `<cds-aichat-reasoning-steps>` and `<cds-aichat-reasoning-step>` attributes, properties, and events
+
+<ArgTypes of={ReasoningStepsStories.Default} />
+
+### Events
+
+| Event name | Description |
+| --- | --- |
+| `cds-aichat-reasoning-step-beingtoggled` | Fired before a step toggles. Cancel the action by calling `event.preventDefault()` or, in controlled mode, update the `open` state yourself. |
+| `cds-aichat-reasoning-step-toggled` | Fired after a user gesture requests a toggle. Use `event.detail.open` to know the desired state. |
+
+### Controlled usage
+
+```javascript
+const container = document.querySelector("cds-aichat-reasoning-steps");
+container.controlled = true;
+
+container.addEventListener("cds-aichat-reasoning-step-toggled", (event) => {
+  const step = event.composedPath().find((node) =>
+    node?.tagName?.toLowerCase() === "cds-aichat-reasoning-step"
+  );
+  if (step) {
+    step.open = event.detail.open;
+  }
+});
+```
+
+### Styling hooks
+
+- `--cds-aichat-reasoning-step-border-color`
+- `--cds-aichat-reasoning-step-background-color`
+- `--cds-aichat-reasoning-step-text-color`
+- `--cds-aichat-reasoning-step-padding-inline`
+- `--cds-aichat-reasoning-step-padding-block`
+- `--cds-aichat-reasoning-step-border-radius`
+
+Override these variables on the container to tweak the card appearance without touching individual steps.

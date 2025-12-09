@@ -7,12 +7,7 @@
  *  @license
  */
 
-import {
-  CustomPanels,
-  NotificationMessage,
-  ViewState,
-  ViewType,
-} from "./apiTypes";
+import { CustomPanels, ViewState, ViewType } from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import type { PersistedState } from "../state/AppState";
@@ -59,18 +54,30 @@ export interface PublicInputState {
 }
 
 /**
- * Represents public state for each supported custom panel variant.
+ * Represents public state for default custom panel.
+ *
+ * @category Instance
  */
 export interface PublicDefaultCustomPanelState {
   /** Indicates if the default custom panel overlay is currently open. */
   isOpen: boolean;
 }
 
+/**
+ * Represents public state for each supported custom panel variant.
+ *
+ * @category Instance
+ */
 export interface PublicCustomPanelsState {
   /** State for the default overlay-style custom panel. */
   default: PublicDefaultCustomPanelState;
 }
 
+/**
+ * Type returned by {@link ChatInstance.getState}.
+ *
+ * @category Instance
+ */
 export type PublicChatState = Readonly<
   Omit<PersistedState, "humanAgentState"> & {
     /**
@@ -106,11 +113,16 @@ export type PublicChatState = Readonly<
   }
 >;
 
+/**
+ * Methods for controlling the input field.
+ *
+ * @category Instance
+ */
 export interface ChatInstanceInput {
   /**
    * @experimental Updates the raw text queued in the input before it is sent to customSendMessage.
-   * Use this when you want to manipulate the canonical value while leaving
-   * presentation up to the default renderer or, in the future, a custom slot implementation.
+   * Use this when you want to manipulate the canonical value while leaving presentation up to the default renderer or,
+   * in the future, a custom slot implementation.
    *
    * @example
    * ```ts
@@ -306,13 +318,6 @@ interface ChatActions {
   updateIsChatLoadingCounter: (direction: IncreaseOrDecrease) => void;
 
   /**
-   * The state of notifications in the chat.
-   *
-   * @experimental
-   */
-  notifications: ChatInstanceNotifications;
-
-  /**
    * Actions for mutating the chat input contents.
    */
   input: ChatInstanceInput;
@@ -416,30 +421,6 @@ export enum WriteableElementName {
    * An element to be housed in the custom panel.
    */
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
-}
-
-/**
- * Add notification messages to the chat. This component has some a11y bugs before we can mark it complete.
- *
- * @category Instance
- *
- * @experimental
- */
-export interface ChatInstanceNotifications {
-  /**
-   * Add a system level notification to the list of system notifications.
-   */
-  addNotification: (notification: NotificationMessage) => void;
-
-  /**
-   * Remove a system level notification from the list of system notifications.
-   */
-  removeNotifications: (groupID: string) => void;
-
-  /**
-   * Remove all system level notifications from the list of system notifications.
-   */
-  removeAllNotifications: () => void;
 }
 
 /**

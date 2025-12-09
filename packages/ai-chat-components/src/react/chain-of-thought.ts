@@ -16,12 +16,15 @@ import {
   type ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
 } from "../components/chain-of-thought/src/types.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const ChainOfThought = createComponent({
-  tagName: "cds-aichat-chain-of-thought",
-  elementClass: CDSChatChainOfThoughtElement,
-  react: React,
-});
+const ChainOfThought = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-chain-of-thought",
+    elementClass: CDSChatChainOfThoughtElement,
+    react: React,
+  }),
+);
 
 export type { ChainOfThoughtOnToggle, ChainOfThoughtStep };
 export { ChainOfThoughtStepStatus };

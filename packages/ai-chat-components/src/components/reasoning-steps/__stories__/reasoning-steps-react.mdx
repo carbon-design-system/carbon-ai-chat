@@ -1,0 +1,89 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as ReasoningStepsReactStories from "./reasoning-steps-react.stories.jsx";
+
+<Meta of={ReasoningStepsReactStories} />
+
+# AI Chat Reasoning Steps (React)
+
+The `<ReasoningSteps>` and `<ReasoningStep>` components wrap the underlying web components so you can showcase chain-of-thought style reasoning in React applications without managing event wiring manually.
+
+## Key Features
+
+- **Declarative composition**: Nest `<ReasoningStep>` children inside `<ReasoningSteps>` just like regular React components.
+- **Events as props**: Use `onBeforeToggle` and `onToggle` to observe user interactions.
+- **Controlled workflows**: Combine `controlled` with React state to decide which steps stay open.
+- **Static summaries**: Render a title without children to show a non-interactive entry.
+
+## Getting started
+
+```jsx
+import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
+import ReasoningStep from "@carbon/ai-chat-components/es/react/reasoning-step.js";
+
+export function ReasoningExample({ steps }) {
+  return (
+    <ReasoningSteps open>
+      {steps.map((step) => (
+        <ReasoningStep key={step.id} title={step.title} open={step.open}>
+          {step.body}
+        </ReasoningStep>
+      ))}
+    </ReasoningSteps>
+  );
+}
+```
+
+## Stories
+
+### Default
+
+<Canvas of={ReasoningStepsReactStories.Default} />
+
+### Including static steps
+
+<Canvas of={ReasoningStepsReactStories.WithStaticSteps} />
+
+### Controlled mode
+
+<Canvas of={ReasoningStepsReactStories.Controlled} />
+
+## `<ReasoningSteps>` / `<ReasoningStep>` props and events
+
+<ArgTypes of={ReasoningStepsReactStories.Default} />
+
+### Handling toggle events
+
+```jsx
+function AuditTrail({ steps }) {
+  const [openSteps, setOpenSteps] = React.useState(new Set());
+
+  return (
+    <ReasoningSteps open controlled>
+      {steps.map((step) => (
+        <ReasoningStep
+          key={step.id}
+          data-step-id={step.id}
+          title={step.title}
+          open={openSteps.has(step.id)}
+          controlled
+          onToggle={(event) => {
+            setOpenSteps((prev) => {
+              const next = new Set(prev);
+              if (event.detail.open) {
+                next.add(step.id);
+              } else {
+                next.delete(step.id);
+              }
+              return next;
+            });
+          }}
+        >
+          {step.body}
+        </ReasoningStep>
+      ))}
+    </ReasoningSteps>
+  );
+}
+```
+
+`event.detail.open` indicates whether the user requested the step to be open or closed, enabling full control over UI state when compliance or audit requirements demand deterministic presentation.

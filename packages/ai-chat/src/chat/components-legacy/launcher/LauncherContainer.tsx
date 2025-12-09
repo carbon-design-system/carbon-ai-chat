@@ -19,7 +19,10 @@ import { TIME_TO_ENTRANCE_ANIMATION_START } from "../../../types/config/Launcher
 import { AppState, ViewType } from "../../../types/state/AppState";
 import { Launcher } from "./Launcher";
 import type { LauncherHandle } from "./Launcher";
-import { MainWindowOpenReason } from "../../../types/events/eventBusTypes";
+import {
+  MainWindowOpenReason,
+  ViewChangeReason,
+} from "../../../types/events/eventBusTypes";
 import { PageObjectId } from "../../../testing/PageObjectId";
 
 function LauncherContainer() {
@@ -119,6 +122,7 @@ function LauncherContainer() {
   const onDoToggle = useCallback(() => {
     // Otherwise try to open the main window on launcher click.
     return serviceManager.actions.changeView(ViewType.MAIN_WINDOW, {
+      viewChangeReason: ViewChangeReason.LAUNCHER_CLICKED,
       mainWindowOpenReason: MainWindowOpenReason.DEFAULT_LAUNCHER,
     });
   }, [serviceManager.actions]);
