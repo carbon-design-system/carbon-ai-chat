@@ -8,7 +8,6 @@ import IconButton from "../../../react/icon-button";
 import { Download, Maximize, View, Share, Version } from "@carbon/icons-react";
 import cx from "classnames";
 import { action } from "storybook/actions";
-import styles from "./story-styles.scss?inline";
 
 export default {
   title: "Components/Tile Container/Preview Card",
@@ -49,14 +48,6 @@ export default {
     aiLabel: true,
     maxWidth: "sm",
   },
-  decorators: [
-    (Story) => (
-      <>
-        <style>{styles}</style>
-        <Story />
-      </>
-    ),
-  ],
 };
 
 const aiContent = (
@@ -98,6 +89,7 @@ const footerAction = (args) => {
         kind="ghost"
         size="md"
         disabled
+        data-viewing
         onClick={action("onClick")}
         className="text-primary"
       >
@@ -193,24 +185,16 @@ const renderWithWrapper = (content, args) => (
 export const Small = {
   render: (args) =>
     renderWithWrapper(
-      <>
-        <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
-          <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
-          <p className="helper-text-01 text-secondary">Subtitle</p>
-          {footerAction(args)}
-        </Tile>
+      <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
+        <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
+        <p className="helper-text-01 text-secondary">Subtitle</p>
         {args.aiLabel && (
-          <AILabel
-            size="mini"
-            autoalign
-            alignment="bottom-left"
-            slot="aichat-tile-decorator"
-          >
+          <AILabel size="mini" autoalign alignment="bottom-left" slot="">
             {aiContent}
           </AILabel>
         )}
-      </>,
-
+        {footerAction(args)}
+      </Tile>,
       args,
     ),
   args: { maxWidth: "sm" },
@@ -219,39 +203,32 @@ export const Small = {
 export const Default = {
   render: (args) =>
     renderWithWrapper(
-      <>
-        <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
-          <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
-          <p className="helper-text-01 text-secondary margin-bottom-03">
-            Subtitle
-          </p>
-          <p className="helper-text-01 text-secondary">Subtitle</p>
-          {args.aiLabel && aiContent}
-          <div
-            data-flush="bottom"
-            className="border-top margin-bottom-04 margin-top-04 padding-inline"
-          >
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-          </div>
-          {footerAction(args)}
-        </Tile>
+      <Tile data-rounded className={cx({ "bg-layer": args.layered })}>
+        <h5 className="body-compact-02 margin-bottom-01">Document title</h5>
+        <p className="helper-text-01 text-secondary margin-bottom-03">
+          Subtitle
+        </p>
+        <p className="helper-text-01 text-secondary">Subtitle</p>
+        {args.aiLabel && aiContent}
+        <div
+          data-flush=""
+          className="border-top margin-bottom-04 margin-top-04 padding-inline"
+        >
+          <br />
+          <br />
+          <br />
+          <br />
+          <br />
+          <br />
+          <br />
+        </div>
         {args.aiLabel && (
-          <AILabel
-            size="mini"
-            autoalign
-            alignment="bottom-left"
-            slot="aichat-tile-decorator"
-          >
+          <AILabel size="mini" autoalign alignment="bottom-left" slot="">
             {aiContent}
           </AILabel>
         )}
-      </>,
+        {footerAction(args)}
+      </Tile>,
       args,
     ),
   args: {
@@ -293,10 +270,7 @@ export const DefaultWithToolbar = {
             ))}
           </div>
         </div>
-        <div
-          data-flush="bottom"
-          className="border-top margin-top-05 padding-inline"
-        >
+        <div data-flush="" className="border-top margin-top-05 padding-inline">
           <br />
           <br />
           <br />
@@ -338,7 +312,7 @@ export const WithSteps = {
             )}
           </div>
         </div>
-        <div data-flush="bottom" className="border-top margin-top-05">
+        <div data-flush="" className="border-top margin-top-05">
           {StepVariations[args.stepVariation]()}
         </div>
         {footerAction(args)}

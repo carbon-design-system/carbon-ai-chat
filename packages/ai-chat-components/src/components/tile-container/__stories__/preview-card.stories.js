@@ -82,6 +82,7 @@ const footerActionVariants = {
       size="md"
       kind="ghost"
       disabled
+      data-viewing
     >
       ${iconLoader(View16)} Viewing
     </cds-button>
@@ -237,6 +238,17 @@ export const Small = {
     >
       <h5 class="body-compact-02 margin-bottom-01">Document title</h5>
       <p class="helper-text-01 text-secondary">Subtitle</p>
+      ${args.aiLabel
+        ? html`<cds-ai-label
+            data-testid="ai-label"
+            size="mini"
+            autoalign
+            alignment="bottom-left"
+            slot=""
+          >
+            ${aiContent}
+          </cds-ai-label>`
+        : ""}
       ${args.footerAction(args)
         ? html`<div
             class=${classMap({
@@ -250,17 +262,6 @@ export const Small = {
           </div>`
         : ""}
     </cds-tile>
-    ${args.aiLabel
-      ? html`<cds-ai-label
-          data-testid="ai-label"
-          size="mini"
-          autoalign
-          alignment="bottom-left"
-          slot="aichat-tile-decorator"
-        >
-          ${aiContent}
-        </cds-ai-label>`
-      : ""}
   `,
 };
 
@@ -286,9 +287,20 @@ export const Default = {
       <h5 class="body-compact-02 margin-bottom-01">Document title</h5>
       <p class="helper-text-01 text-secondary margin-bottom-03">Subtitle</p>
       <p class="helper-text-01 text-secondary">Subtitle</p>
+      ${args.aiLabel
+        ? html`<cds-ai-label
+            data-testid="ai-label"
+            size="mini"
+            autoalign
+            alignment="bottom-left"
+            slot=""
+          >
+            ${aiContent}
+          </cds-ai-label>`
+        : ""}
 
       <div
-        data-flush="bottom"
+        data-flush
         class="border-top margin-bottom-04 margin-top-04 padding-inline"
       >
         <br />
@@ -312,17 +324,6 @@ export const Default = {
           </div>`
         : ""}
     </cds-tile>
-    ${args.aiLabel
-      ? html`<cds-ai-label
-          data-testid="ai-label"
-          size="mini"
-          autoalign
-          alignment="bottom-left"
-          slot="aichat-tile-decorator"
-        >
-          ${aiContent}
-        </cds-ai-label>`
-      : ""}
   `,
 };
 
@@ -360,7 +361,7 @@ export const DefaultWithToolbar = {
                 size="mini"
                 autoalign
                 alignment="bottom-left"
-                slot="tile-container-decorator"
+                slot=""
               >
                 ${aiContent}
               </cds-ai-label>`
@@ -383,7 +384,7 @@ export const DefaultWithToolbar = {
           </cds-icon-button>
         </div>
       </div>
-      <div data-flush="bottom" class="border-top margin-top-05 padding-inline">
+      <div data-flush class="border-top margin-top-05 padding-inline">
         <br />
         <br />
         <br />
@@ -440,14 +441,14 @@ export const WithSteps = {
                 size="mini"
                 autoalign
                 alignment="bottom-left"
-                slot="tile-container-decorator"
+                slot=""
               >
                 ${aiContent}
               </cds-ai-label>`
             : ""}
         </div>
       </div>
-      <div data-flush="bottom" class="border-top margin-top-05">
+      <div data-flush class="border-top margin-top-05">
         ${args.stepVariation(args)}
       </div>
       ${args.footerAction(args)

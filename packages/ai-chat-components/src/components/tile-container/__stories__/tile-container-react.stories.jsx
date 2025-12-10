@@ -6,7 +6,6 @@ import Button from "../../../react/button";
 import cx from "classnames";
 import { Launch, ArrowRight, Link } from "@carbon/icons-react";
 import { action } from "storybook/actions";
-import styles from "./story-styles.scss?inline";
 
 export default {
   title: "Components/Tile Container",
@@ -46,14 +45,6 @@ export default {
     useWrapper: true,
     footerAction: "none",
   },
-  decorators: [
-    (Story) => (
-      <>
-        <style>{styles}</style>
-        <Story />
-      </>
-    ),
-  ],
 };
 
 const tileContent = (
