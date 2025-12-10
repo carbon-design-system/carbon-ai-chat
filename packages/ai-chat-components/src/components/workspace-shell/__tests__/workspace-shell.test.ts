@@ -1,4 +1,3 @@
-// cspell:words CDSAIChatProcessing aichat
 /*
  *  Copyright IBM Corp. 2025
  *
