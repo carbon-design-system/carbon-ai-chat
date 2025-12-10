@@ -18,6 +18,7 @@ import "@carbon/web-components/es/components/list/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
 import "../../code-snippet/index.js";
 import "../../table/index.js";
+import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
 
 import type {
   TableCellContent,
@@ -164,7 +165,7 @@ export function renderTokenTree(
       showLessText,
       showMoreText,
       tooltipContent,
-      getLineCountText,
+      getLineCountText = defaultLineCountText,
     } = options;
 
     return html`<cds-aichat-code-snippet-tile-container
