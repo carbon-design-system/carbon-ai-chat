@@ -412,6 +412,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
           if (lastScrollableMessageComponent) {
             requestAnimationFrame(() => {
+              // Reset previous
+              if (this.previousLastMessage) {
+                this.previousLastMessage.style.removeProperty("min-block-size");
+              }
+
               const targetEl = lastScrollableMessageComponent?.ref?.current;
               const targetRect = targetEl.getBoundingClientRect();
               const scrollerRect = scrollElement.getBoundingClientRect();
@@ -450,10 +455,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 Math.ceil(visibleBottom - lastOffset),
               );
 
-              // Reset previous
-              if (this.previousLastMessage) {
-                this.previousLastMessage.style.removeProperty("min-block-size");
-              }
               // Add min-block-size to the latest message in order to ensure the request
               // message makes it to the top of the chat window
               latestMessageComponent.style.setProperty(
