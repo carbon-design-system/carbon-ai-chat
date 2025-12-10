@@ -332,7 +332,6 @@ class ChatContainer extends LitElement {
       .onAfterRender=${this.onAfterRender}
       .onBeforeRender=${this.onBeforeRenderOverride}
       .element=${this.element}
-    >
       ${this._writeableElementSlots.map(
         (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
       )}

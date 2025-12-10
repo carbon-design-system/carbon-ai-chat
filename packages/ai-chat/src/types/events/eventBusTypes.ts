@@ -673,7 +673,22 @@ export interface BusEventCustomPanelClose extends BusEvent {
  */
 export interface BusEventWorkspacePreOpen extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_OPEN;
-  data: MessageRequest;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message (response or request) that contains the message item.
+     */
+    fullMessage: Message;
+
+    /**
+     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
+     */
+    slot?: string;
+  };
   /**
    * The source of the message being sent.
    */
@@ -685,7 +700,22 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
  */
 export interface BusEventWorkspaceOpen extends BusEvent {
   type: BusEventType.WORKSPACE_OPEN;
-  data: MessageRequest;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message (response or request) that contains the message item.
+     */
+    fullMessage: Message;
+
+    /**
+     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
+     */
+    slot?: string;
+  };
   /**
    * The source of the message being sent.
    */
@@ -697,7 +727,22 @@ export interface BusEventWorkspaceOpen extends BusEvent {
  */
 export interface BusEventWorkspacePreClose extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_CLOSE;
-  data: MessageRequest;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message (response or request) that contains the message item.
+     */
+    fullMessage: Message;
+
+    /**
+     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
+     */
+    slot?: string;
+  };
   /**
    * The source of the message being sent.
    */
@@ -709,7 +754,22 @@ export interface BusEventWorkspacePreClose extends BusEvent {
  */
 export interface BusEventWorkspaceClose extends BusEvent {
   type: BusEventType.WORKSPACE_CLOSE;
-  data: MessageRequest;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message (response or request) that contains the message item.
+     */
+    fullMessage: Message;
+
+    /**
+     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
+     */
+    slot?: string;
+  };
   /**
    * The source of the message being sent.
    */

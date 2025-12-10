@@ -103,7 +103,8 @@ enum MoveFocusType {
 }
 
 interface MessageProps
-  extends HasServiceManager,
+  extends
+    HasServiceManager,
     HasLanguagePack,
     HasClassName,
     HasAriaAnnouncer,
@@ -825,7 +826,7 @@ class MessageComponent extends PureComponent<
         ? event.newState === "open"
         : Boolean(
             (event as unknown as CustomEvent<{ open: boolean }>).detail?.open ??
-              event.currentTarget?.open,
+            event.currentTarget?.open,
           );
     this.setState((prevState) => {
       if (prevState.autoReasoningContainerOpen === open) {
@@ -1105,7 +1106,7 @@ class MessageComponent extends PureComponent<
                       message.message_options?.reasoning,
                       Boolean(
                         localMessageItem.ui_state.streamingState &&
-                          !localMessageItem.ui_state.streamingState.isDone,
+                        !localMessageItem.ui_state.streamingState.isDone,
                       ),
                     )}
                   {messageComponent}

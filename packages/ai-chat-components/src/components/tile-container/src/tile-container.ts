@@ -77,7 +77,7 @@ class CDSAIChatTileContainer extends LitElement {
   }
 
   render() {
-    return html`<slot></slot>`;
+    return html`<slot></slot> <slot name="aichat-tile-decorator"></slot>`;
   }
 }
 

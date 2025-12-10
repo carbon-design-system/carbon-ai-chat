@@ -62,46 +62,39 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   };
 
   return (
-    <TileContainer
-      className={cx("cds-aichat-tile-container", {
-        "cds-aichat-preview-card-sm": true,
-      })}
-    >
-      <Tile data-rounded>
-        <h5 className="body-compact-02 margin-bottom-01">{item.title}</h5>
-        <p className="helper-text-01 text-secondary">{item.subtitle}</p>
-        <pre>{JSON.stringify(item.additional_data, null, 2)}</pre>
-        <div
-          className="cds-aichat--tile-container-footer margin-top-05"
-          data-flush="bottom"
-          data-rounded="bottom"
-        >
-          {!isExpired && (
-            <Button
-              kind={BUTTON_KIND.GHOST}
-              size="md"
-              disabled={isWorkspaceOpen}
-              onClick={handleClick}
-              className="text-primary"
-            >
-              {isWorkspaceOpen ? (
-                <>
-                  <View /> Viewing
-                </>
-              ) : (
-                <>
-                  View details{" "}
-                  <Maximize
-                    // @ts-ignore
-                    slot="icon"
-                  />
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </Tile>
-    </TileContainer>
+    <Tile data-rounded class="cds-aichat-preview-card-sm">
+      <h5 className="body-compact-02 margin-bottom-01">{item.title}</h5>
+      <p className="helper-text-01 text-secondary">{item.subtitle}</p>
+      <div
+        className="cds-aichat--tile-container-footer margin-top-05"
+        data-flush="bottom"
+        data-rounded="bottom"
+      >
+        {!isExpired && (
+          <Button
+            kind={BUTTON_KIND.GHOST}
+            size="md"
+            disabled={isWorkspaceOpen}
+            onClick={handleClick}
+            className="text-primary"
+          >
+            {isWorkspaceOpen ? (
+              <>
+                <View /> Viewing
+              </>
+            ) : (
+              <>
+                View details{" "}
+                <Maximize
+                  // @ts-ignore
+                  slot="icon"
+                />
+              </>
+            )}
+          </Button>
+        )}
+      </div>
+    </Tile>
   );
 }
 
