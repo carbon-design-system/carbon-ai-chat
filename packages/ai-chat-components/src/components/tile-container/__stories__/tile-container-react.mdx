@@ -1,9 +1,23 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
-import * as TileContainerReactStories from "./tile-container-react.stories";
+import * as TileContainerReactStories from "./tile-container-react.stories.jsx";
 
-<Meta of={TileContainerReactStories} />
+<Meta of={TileContainerReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Tile Container
+# Tile container
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/tile-container) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
 
 The `<TileContainer>` component wraps the Carbon Design System’s [Tile](https://web-components.carbondesignsystem.com/?path=/docs/components-tile--overview) component to apply **AI Chat–specific styles**.
 
@@ -11,7 +25,7 @@ If you are using a footer inside the container, add the class name `cds-aichat-t
 
 ---
 
-## Getting started
+### Getting started
 
 Here’s a quick example to help you get started.
 
@@ -42,6 +56,10 @@ The div containing the `cds-aichat-tile-container-footer` will have all the foot
 </TileContainer>
 ```
 
-## `<TileContainer>` attributes, properties and events
+### `<TileContainer>` attributes, properties and events
 
 Note: This component is purely a styling parent, and does not bring in any attributes
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

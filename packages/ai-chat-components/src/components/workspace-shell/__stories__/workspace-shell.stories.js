@@ -101,6 +101,7 @@ const actionLists = {
 
 export default {
   title: "Components/Workspace shell",
+  component: "cds-aichat-workspace-shell",
   argTypes: {
     toolbarTitle: {
       control: "text",

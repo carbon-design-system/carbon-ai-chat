@@ -112,6 +112,7 @@ export const parameters = {
   },
   docs: {
     codePanel: true,
+    defaultName: "Overview",
     source: {
       excludeDecorators: true,
       transform: async (source) => {
@@ -121,6 +122,12 @@ export const parameters = {
           printWidth: 80,
         });
       },
+    },
+  },
+  previewTabs: {
+    "storybook/docs/panel": {
+      title: "Overview",
+      index: 0,
     },
   },
   // Small (<672)
@@ -169,6 +176,7 @@ export const parameters = {
   },
   options: {
     storySort: {
+      method: "alphabetical",
       order: [
         "Introduction",
         [

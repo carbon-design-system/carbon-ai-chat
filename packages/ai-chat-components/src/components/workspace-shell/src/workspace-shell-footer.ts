@@ -12,7 +12,6 @@ import { customElement, property } from "lit/decorators.js";
 import "@carbon/web-components/es/components/button/button.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
-import prefix from "../../../globals/settings.js";
 
 /**
  * Workspace Shell Footer.
@@ -22,7 +21,7 @@ import prefix from "../../../globals/settings.js";
  * @slot footer-action - Represents the action area in the Footer.
  *
  */
-@customElement(`${prefix}-workspace-shell-footer`)
+@customElement("cds-aichat-workspace-shell-footer")
 class CDSAIChatWorkspaceShellFooter extends LitElement {
   static styles = styles;
 
@@ -37,4 +36,5 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
   }
 }
 
+export { CDSAIChatWorkspaceShellFooter };
 export default CDSAIChatWorkspaceShellFooter;

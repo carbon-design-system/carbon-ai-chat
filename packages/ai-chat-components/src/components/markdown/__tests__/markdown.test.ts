@@ -8,7 +8,7 @@
  */
 
 import { expect, fixture, html } from "@open-wc/testing";
-import CDSChatMarkdownElement from "../src/cds-aichat-markdown.js";
+import CDSAIChatMarkdownElement from "../src/markdown.js";
 const MARKDOWN_ELEMENT_TAG = "cds-aichat-markdown";
 
 const TEXT = `Carbon <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" onclick="window.open('https://carbondesignsystem.com', '_blank')"><defs><style>.cls-1{fill:none;}</style></defs><title>If you click on this icon, it will go to https://carbondesignsystem.com. This is here to test "shouldSanitizeHTML". If true, the click shouldn't work!</title><path d="M13.5,30.8149a1.0011,1.0011,0,0,1-.4927-.13l-8.5-4.815A1,1,0,0,1,4,25V15a1,1,0,0,1,.5073-.87l8.5-4.815a1.0013,1.0013,0,0,1,.9854,0l8.5,4.815A1,1,0,0,1,23,15V25a1,1,0,0,1-.5073.87l-8.5,4.815A1.0011,1.0011,0,0,1,13.5,30.8149ZM6,24.417l7.5,4.2485L21,24.417V15.583l-7.5-4.2485L6,15.583Z"/><path d="M28,17H26V7.583L18.5,3.3345,10.4927,7.87,9.5073,6.13l8.5-4.815a1.0013,1.0013,0,0,1,.9854,0l8.5,4.815A1,1,0,0,1,28,7Z"/><rect class="cls-1" width="32" height="32" transform="translate(32 32) rotate(180)"/></svg> is a **chemical element** with the *atomic number* 6 and symbol **C**. \`C + O₂ → CO₂\` represents one of carbon's most fundamental reactions.
@@ -23,18 +23,16 @@ if (!registeredConstructor) {
 }
 
 const MarkdownElementConstructor =
-  (registeredConstructor as typeof CDSChatMarkdownElement) ??
-  CDSChatMarkdownElement;
+  (registeredConstructor as typeof CDSAIChatMarkdownElement) ??
+  CDSAIChatMarkdownElement;
 
 type MarkdownElementInstance = InstanceType<typeof MarkdownElementConstructor>;
 
 describe("cds-aichat-markdown smoke test", () => {
   it("renders markdown when text content is provided", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown></cds-aichat-markdown>`,
+      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
     );
-
-    el.setAttribute("markdown", TEXT);
 
     await el.updateComplete;
 
@@ -47,10 +45,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("strips inline html when HTML removal attribute is set", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown
-        markdown=${TEXT}
-        remove-html
-      ></cds-aichat-markdown>`,
+      html`<cds-aichat-markdown remove-html>${TEXT}</cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -82,8 +77,9 @@ describe("cds-aichat-markdown smoke test", () => {
 
     try {
       const unsafeEl = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown markdown=${TEXT}></cds-aichat-markdown>`,
+        html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
       );
+
       await unsafeEl.updateComplete;
 
       const unsafeSvg = unsafeEl.shadowRoot?.querySelector("svg");
@@ -100,10 +96,7 @@ describe("cds-aichat-markdown smoke test", () => {
       openUrl = null;
 
       const safeEl = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown
-          markdown=${TEXT}
-          sanitize-html
-        ></cds-aichat-markdown>`,
+        html`<cds-aichat-markdown sanitize-html>${TEXT}</cds-aichat-markdown>`,
       );
       await safeEl.updateComplete;
 
@@ -125,7 +118,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("preserves svg nesting with defs and title as children", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown markdown=${TEXT}></cds-aichat-markdown>`,
+      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -158,7 +151,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("correctly adds defined attributes to links", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown markdown=${TEXT}></cds-aichat-markdown>`,
+      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
     );
 
     await el.updateComplete;

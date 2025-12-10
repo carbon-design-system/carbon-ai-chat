@@ -15,7 +15,7 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 
 // @ts-ignore
-import styles from "./cds-aichat-reasoning-step.scss?lit";
+import styles from "./reasoning-step.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
 
@@ -25,24 +25,33 @@ let idCounter = 0;
 const generateId = (segment: string) =>
   `${baseClass}-${segment}-${idCounter++}`;
 
-@carbonElement(`${prefix}-reasoning-step`)
+@carbonElement("cds-aichat-reasoning-step")
 class CDSAIChatReasoningStep extends LitElement {
   static styles = styles;
 
-  @property({ type: String })
+  @property({ type: String, attribute: "title" })
   title = "";
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: "open", reflect: true })
   open = false;
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: "controlled", reflect: true })
   controlled = false;
 
+  /**
+   * @internal
+   */
   @state()
   private hasBodyContent = false;
 
+  /**
+   * @internal
+   */
   private headerId = generateId("header");
 
+  /**
+   * @internal
+   */
   private contentId = generateId("content");
 
   connectedCallback() {
@@ -64,10 +73,6 @@ class CDSAIChatReasoningStep extends LitElement {
     }
   }
 
-  private get componentConstructor() {
-    return this.constructor as typeof CDSAIChatReasoningStep;
-  }
-
   private getTriggerElement(): HTMLButtonElement | null {
     if (!this.shadowRoot) {
       return null;
@@ -76,14 +81,6 @@ class CDSAIChatReasoningStep extends LitElement {
     return this.shadowRoot.querySelector<HTMLButtonElement>(
       `.${baseClass}__trigger`,
     );
-  }
-
-  private get eventInit() {
-    return {
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-    };
   }
 
   private evaluateBodyContent(nodes?: readonly Node[]) {
@@ -123,9 +120,14 @@ class CDSAIChatReasoningStep extends LitElement {
 
   private handleToggleRequest(nextState = !this.open) {
     const detail = { open: nextState };
-    const init = { ...this.eventInit, detail };
+    const init = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail,
+    };
     const canToggle = this.dispatchEvent(
-      new CustomEvent(this.componentConstructor.eventBeforeToggle, init),
+      new CustomEvent("reasoning-step-beingtoggled", init),
     );
 
     if (!canToggle) {
@@ -136,9 +138,7 @@ class CDSAIChatReasoningStep extends LitElement {
       this.open = nextState;
     }
 
-    this.dispatchEvent(
-      new CustomEvent(this.componentConstructor.eventToggle, init),
-    );
+    this.dispatchEvent(new CustomEvent("reasoning-step-toggled", init));
   }
 
   private handleButtonClick() {
@@ -165,14 +165,6 @@ class CDSAIChatReasoningStep extends LitElement {
     }
 
     super.focus(options);
-  }
-
-  static get eventBeforeToggle() {
-    return `${prefix}-reasoning-step-beingtoggled`;
-  }
-
-  static get eventToggle() {
-    return `${prefix}-reasoning-step-toggled`;
   }
 
   private renderInteractiveHeader() {
@@ -259,4 +251,11 @@ class CDSAIChatReasoningStep extends LitElement {
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-reasoning-step": CDSAIChatReasoningStep;
+  }
+}
+
+export { CDSAIChatReasoningStep };
 export default CDSAIChatReasoningStep;

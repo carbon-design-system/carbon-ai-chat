@@ -105,6 +105,7 @@ const actionLists = {
 
 export default {
   title: "Components/Toolbar",
+  component: "cds-aichat-toolbar",
   argTypes: {
     title: {
       control: "select",

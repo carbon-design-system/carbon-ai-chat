@@ -117,7 +117,8 @@ const footerActionVariants = {
 };
 
 export default {
-  title: "Components/Tile Container",
+  title: "Components/Tile container",
+  component: "cds-aichat-tile-container",
   argTypes: {
     maxWidth: maxWidthControl,
     useWrapper: {

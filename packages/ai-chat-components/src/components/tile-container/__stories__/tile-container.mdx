@@ -1,34 +1,30 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as TileContainerStories from "./tile-container.stories";
 
-<Meta of={TileContainerStories} />
+<Meta of={TileContainerStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Tile Container
+# Tile container
 
-The `cds-aichat-tile-container` wraps the Carbon Design System's [Tile](https://web-components.carbondesignsystem.com/?path=/docs/components-tile--overview) component to apply AI Chat styles.
-if using a footer, `cds-aichat-tile-container-footer` class name needs to be added to the footer element, with an additional class vertical to get the vertical button layout.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/tile-container) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Getting started
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+`cds-aichat-tile-container` adds AI Chat styling and spacing to Carbon tiles, making it easy to present responses, actions, or follow-up content inside a consistent shell. Use it to wrap standard `cds-tile` elements and optionally include a footer slot for primary/secondary actions.
+
+### Getting started
 
 Here's a quick example to get you started.
-
-### JS (via import)
-
-```javascript
-import "@carbon/ai-chat-components/es/components/tile-container/index.js";
-```
-
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
-```
-
-<Markdown>{`${cdnJs(["tile-container"])}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
-
-### HTML
 
 Wrap any carbon `tile`, `clickable-tile` with `cds-aichat-tile-container` to get the styles.
 The div containing the `cds-aichat-tile-container-footer` will have all the footer styles with an additional class `vertical` to change the buttons to stack.
@@ -49,6 +45,16 @@ The div containing the `cds-aichat-tile-container-footer` will have all the foot
 </cds-aichat-tile-container>
 ```
 
-## `<cds-aichat-tile-container>` attributes, properties and events
+## JS (via import)
 
-Note: This component is purely a styling parent, and does not bring in any attributes
+```javascript
+import "@carbon/ai-chat-components/es/components/tile-container/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["tile-container"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

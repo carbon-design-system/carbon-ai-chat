@@ -12,14 +12,17 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatCodeSnippetTileContainer from "../components/code-snippet/src/code-snippet-tile-container.js";
+import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const CodeSnippetTileContainer = createComponent({
-  tagName: "cds-aichat-code-snippet-tile-container",
-  elementClass: CDSAIChatCodeSnippetTileContainer,
-  react: React,
-  events: {
-    onChange: "content-change",
-  },
-});
+const CodeSnippetTileContainer = withWebComponentBridge(
+  createComponent({
+    tagName: "cds-aichat-code-snippet-tile-container",
+    elementClass: CDSAIChatCodeSnippetTileContainer,
+    react: React,
+    events: {
+      onChange: "content-change",
+    },
+  }),
+);
 
 export default CodeSnippetTileContainer;

@@ -1,28 +1,30 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ToolbarStories from "./toolbar.stories";
 
-<Meta of={ToolbarStories} />
+<Meta of={ToolbarStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Toolbar
+# Toolbar
 
-`cds-aichat-toolbar`
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/toolbar) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Getting started
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+`cds-aichat-toolbar` provides a flexible header bar for AI chat surfaces, aligning titles, labels, icon buttons, and overflow actions while handling truncation and responsive wrapping for you.
+
+### Getting started
 
 Here's a quick example to get you started.
-
-### JS (via import)
-
-```javascript
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-```
-
-<Markdown>{`${cdnJs({ components: ["toolbar"] })}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
-
-### HTML
-
 
 ```html
 <cds-aichat-toolbar title-text="${args.toolbarTitle}">
@@ -100,6 +102,20 @@ import "@carbon/ai-chat-components/es/components/toolbar/index.js";
       </cds-aichat-toolbar>
 ```
 
-## `<cds-aichat-toolbar>` attributes, properties and events
+## Component API
+
 <ArgTypes of="cds-aichat-toolbar" />
-Note: This component is purely a styling parent, and does not bring in any attributes
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/toolbar/index.js";
+```
+
+
+<Markdown>{`${cdnJs({ components: ["toolbar"] })}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

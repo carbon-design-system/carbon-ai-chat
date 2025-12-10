@@ -8,7 +8,7 @@ import { Launch, ArrowRight, Link } from "@carbon/icons-react";
 import { action } from "storybook/actions";
 
 export default {
-  title: "Components/Tile Container",
+  title: "Components/Tile container",
   component: TileContainer,
   argTypes: {
     maxWidth: {

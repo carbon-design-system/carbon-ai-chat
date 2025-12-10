@@ -10,7 +10,7 @@ import cx from "classnames";
 import { action } from "storybook/actions";
 
 export default {
-  title: "Components/Tile Container/Preview Card",
+  title: "Components/Tile container/preview card",
   component: TileContainer,
   argTypes: {
     maxWidth: {

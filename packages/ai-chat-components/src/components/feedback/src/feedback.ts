@@ -9,13 +9,16 @@
 
 import { LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
+import { feedbackElementTemplate } from "./feedback.template.js";
 // @ts-ignore
 import styles from "./feedback.scss?lit";
 
 /**
  * The component for displaying a panel requesting feedback from a user.
  */
-class FeedbackElement extends LitElement {
+@carbonElement("cds-aichat-feedback")
+class CDSAIChatFeedback extends LitElement {
   static styles = styles;
 
   /**
@@ -27,7 +30,7 @@ class FeedbackElement extends LitElement {
   /**
    * The ID of this panel.
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String, attribute: "id", reflect: true })
   id!: string;
 
   /**
@@ -63,7 +66,7 @@ class FeedbackElement extends LitElement {
   /**
    * The list of categories to show.
    */
-  @property({ type: Object, attribute: "categories", reflect: true })
+  @property({ type: Array, attribute: "categories", reflect: true })
   categories?: string[];
 
   /**
@@ -105,12 +108,16 @@ class FeedbackElement extends LitElement {
 
   /**
    * Internal saved text values for feedback.
+   *
+   * @internal
    */
   @state()
   _textInput = "";
 
   /**
    * The current set of selected categories.
+   *
+   * @internal
    */
   @state()
   _selectedCategories: Set<string> = new Set();
@@ -195,6 +202,10 @@ class FeedbackElement extends LitElement {
 
     this._selectedCategories = nextSelection;
   }
+
+  render() {
+    return feedbackElementTemplate(this);
+  }
 }
 
 /**
@@ -217,8 +228,15 @@ interface FeedbackSubmitDetails {
  */
 type FeedbackInitialValues = FeedbackSubmitDetails | null;
 
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-feedback": CDSAIChatFeedback;
+  }
+}
+
 export {
-  FeedbackElement,
+  CDSAIChatFeedback,
   type FeedbackSubmitDetails,
   type FeedbackInitialValues,
 };
+export default CDSAIChatFeedback;

@@ -11,13 +11,11 @@ import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/
 import { stopStreamingButtonTemplate } from "./src/stopStreamingButton.template";
 import { StopStreamingButtonElement } from "./src/StopStreamingButtonElement";
 
-const STOP_STREAMING_BUTTON_TAG_NAME = "cds-aichat-stop-streaming-button";
-
 /**
  * Constructed class functionality for the stop streaming button.
  */
-@carbonElement(STOP_STREAMING_BUTTON_TAG_NAME)
-class CDSChatStopStreamingButtonElement extends StopStreamingButtonElement {
+@carbonElement("cds-aichat-stop-streaming-button")
+class CDSAIChatStopStreamingButtonElement extends StopStreamingButtonElement {
   render() {
     return stopStreamingButtonTemplate(this);
   }
@@ -25,8 +23,8 @@ class CDSChatStopStreamingButtonElement extends StopStreamingButtonElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-stop-streaming-button": CDSChatStopStreamingButtonElement;
+    "cds-aichat-stop-streaming-button": CDSAIChatStopStreamingButtonElement;
   }
 }
 
-export default CDSChatStopStreamingButtonElement;
+export default CDSAIChatStopStreamingButtonElement;

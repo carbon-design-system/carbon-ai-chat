@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "../src/cds-aichat-feedback";
+import "../src/feedback";
 import { html } from "lit";
 
 const negativeCategories = [
@@ -29,6 +29,7 @@ const positiveCategories = [
 
 export default {
   title: "Components/Feedback",
+  component: "cds-aichat-feedback",
   argTypes: {
     isOpen: {
       control: "boolean",
@@ -57,6 +58,10 @@ export default {
     submitLabel: {
       control: "text",
       description: "Label for the submit button",
+    },
+    categories: {
+      control: "object",
+      description: "Array of category labels shown as chips",
     },
     showTextArea: {
       control: "boolean",

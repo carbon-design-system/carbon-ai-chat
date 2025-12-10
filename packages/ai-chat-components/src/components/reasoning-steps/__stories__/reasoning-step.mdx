@@ -1,0 +1,55 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as ReasoningStepStories from "./reasoning-step.stories";
+
+<Meta of={ReasoningStepStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+
+# Reasoning step
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+`cds-aichat-reasoning-step` is the building block for the reasoning timeline. It renders a title with optional body content, supports controlled open state, and gracefully collapses to a static line when no body is provided.
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```html
+<cds-aichat-reasoning-steps controlled open>
+  <cds-aichat-reasoning-step title="Gather context" controlled open>
+    Pulled CRM notes, entitlement data, and recent tickets tied to this user.
+  </cds-aichat-reasoning-step controlled>
+  <cds-aichat-reasoning-step title="Flagged missing data" controlled>
+  </cds-aichat-reasoning-step>
+</cds-aichat-reasoning-steps>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-reasoning-step" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/reasoning-steps/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["reasoning-steps", "reasoning-step"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

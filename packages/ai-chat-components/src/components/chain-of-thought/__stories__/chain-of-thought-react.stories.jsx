@@ -1,6 +1,10 @@
 /* eslint-disable */
 import React from "react";
 import ChainOfThought from "../../../react/chain-of-thought";
+import ChainOfThoughtStep from "../../../react/chain-of-thought-step";
+import ChainOfThoughtToggle from "../../../react/chain-of-thought-toggle";
+import ToolCallData from "../../../react/tool-call-data";
+import Markdown from "../../../react/markdown";
 
 const sampleSteps = [
   {
@@ -8,29 +12,32 @@ const sampleSteps = [
     description: "Searching the product documentation for relevant information",
     tool_name: "documentation_search",
     request: {
-      args: {
-        query: "API authentication methods",
-        filters: {
-          section: "security",
-          version: "latest",
-        },
-      },
+      args: `\`\`\`
+{
+  "query": "API authentication methods",
+  "filters": {
+    "section": "security",
+    "version": "latest"
+  }
+}
+\`\`\``,
     },
     response: {
-      content: {
-        results: [
-          {
-            title: "OAuth 2.0 Authentication",
-            snippet: "The API supports OAuth 2.0 for secure authentication...",
-          },
-          {
-            title: "API Key Authentication",
-            snippet:
-              "API keys can be used for server-to-server authentication...",
-          },
-        ],
-        count: 2,
-      },
+      content: `\`\`\`
+{
+  "results": [
+    {
+      "title": "OAuth 2.0 Authentication",
+      "snippet": "The API supports OAuth 2.0 for secure authentication..."
+    },
+    {
+      "title": "API Key Authentication",
+      "snippet": "API keys can be used for server-to-server authentication..."
+    }
+  ],
+  "count": 2
+}
+\`\`\``,
     },
     status: "success",
   },
@@ -39,19 +46,23 @@ const sampleSteps = [
     description: "Fetching user-specific configuration data",
     tool_name: "database_query",
     request: {
-      args: {
-        table: "user_settings",
-        where: {
-          user_id: "12345",
-        },
-      },
+      args: `\`\`\`
+{
+  "table": "user_settings",
+  "where": {
+    "user_id": "12345"
+  }
+}
+\`\`\``,
     },
     response: {
-      content: {
-        auth_method: "oauth",
-        scopes: ["read", "write"],
-        token_expiry: 3600,
-      },
+      content: `\`\`\`
+{
+  "auth_method": "oauth",
+  "scopes": ["read", "write"],
+  "token_expiry": 3600
+}
+\`\`\``,
     },
     status: "success",
   },
@@ -60,14 +71,20 @@ const sampleSteps = [
     description: "Synthesizing the information into a final answer",
     tool_name: "response_generator",
     request: {
-      args: {
-        context: "authentication",
-        format: "markdown",
-      },
+      args: `\`\`\`
+{
+  "context": "authentication",
+  "format": "markdown"
+}
+\`\`\``,
     },
     response: {
-      content:
-        "Based on the documentation and your settings, you're using **OAuth 2.0** authentication with read and write scopes. Your tokens expire after 1 hour.",
+      content: `\`\`\`
+{
+  "summary": "Based on the documentation and your settings, you're using OAuth 2.0 authentication with read and write scopes.",
+  "token_expiry_hours": 1
+}
+\`\`\``,
     },
     status: "success",
   },
@@ -78,13 +95,17 @@ const stepsWithDifferentStatuses = [
     title: "Validate Input",
     tool_name: "input_validator",
     request: {
-      args: {
-        input: "test@example.com",
-        type: "email",
-      },
+      args: `\`\`\`
+{
+  "input": "test@example.com",
+  "type": "email"
+}
+\`\`\``,
     },
     response: {
-      content: { valid: true },
+      content: `\`\`\`
+{ "valid": true }
+\`\`\``,
     },
     status: "success",
   },
@@ -92,13 +113,17 @@ const stepsWithDifferentStatuses = [
     title: "Send Email",
     tool_name: "email_sender",
     request: {
-      args: {
-        to: "test@example.com",
-        subject: "Test Email",
-      },
+      args: `\`\`\`
+{
+  "to": "test@example.com",
+  "subject": "Test Email"
+}
+\`\`\``,
     },
     response: {
-      content: { error: "SMTP connection timeout" },
+      content: `\`\`\`
+{ "error": "SMTP connection timeout" }
+\`\`\``,
     },
     status: "failure",
   },
@@ -106,11 +131,13 @@ const stepsWithDifferentStatuses = [
     title: "Retry Send Email",
     tool_name: "email_sender",
     request: {
-      args: {
-        to: "test@example.com",
-        subject: "Test Email",
-        retry: true,
-      },
+      args: `\`\`\`
+{
+  "to": "test@example.com",
+  "subject": "Test Email",
+  "retry": true
+}
+\`\`\``,
     },
     status: "processing",
   },
@@ -123,99 +150,115 @@ const stepsWithComplexResponses = [
       "Running statistical analysis on the provided dataset to identify trends and patterns.",
     tool_name: "data_analyzer",
     request: {
-      args: {
-        dataset_id: "sales_2024_q1",
-        metrics: ["revenue", "units_sold", "customer_count"],
-        groupBy: "month",
-      },
+      args: `\`\`\`
+{
+  "dataset_id": "sales_2024_q1",
+  "metrics": ["revenue", "units_sold", "customer_count"],
+  "groupBy": "month"
+}
+\`\`\``,
     },
     response: {
-      content: `## Analysis Results
-
-The Q1 2024 sales data shows strong performance across all metrics:
-
-### Key Findings
-
-- **Revenue Growth**: 23% increase compared to Q1 2023
-- **Unit Sales**: 15,432 units sold (+18% YoY)
-- **Customer Acquisition**: 2,847 new customers
-
-### Monthly Breakdown
-
-| Month | Revenue | Units | New Customers |
-|-------|---------|-------|---------------|
-| Jan   | $127K   | 4,832 | 892           |
-| Feb   | $143K   | 5,123 | 967           |
-| Mar   | $156K   | 5,477 | 988           |
-
-The upward trend suggests continued strong performance in Q2.`,
+      content: `\`\`\`
+{
+  "summary": "Q1 2024 sales show strong performance across revenue, units, and customer acquisition.",
+  "revenue_growth_yoy": 0.23,
+  "unit_sales": 15432,
+  "new_customers": 2847,
+  "monthly_breakdown": [
+    { "month": "Jan", "revenue": "$127K", "units": 4832, "new_customers": 892 },
+    { "month": "Feb", "revenue": "$143K", "units": 5123, "new_customers": 967 },
+    { "month": "Mar", "revenue": "$156K", "units": 5477, "new_customers": 988 }
+  ]
+}
+\`\`\``,
     },
     status: "success",
   },
 ];
 
+const renderSteps = (steps) =>
+  steps.map((step, index) => {
+    const requestMarkdown = step.request?.args;
+    const responseMarkdown = step.response?.content;
+
+    return (
+      <ChainOfThoughtStep
+        key={step.title || step.tool_name || index}
+        title={step.title}
+        status={step.status || "success"}
+        open={Boolean(step.open)}
+        stepNumber={index + 1}
+      >
+        <ToolCallData toolName={step.tool_name}>
+          {step.description ? (
+            <Markdown slot="description">{step.description}</Markdown>
+          ) : null}
+          {requestMarkdown ? (
+            <Markdown slot="input">{requestMarkdown}</Markdown>
+          ) : null}
+          {responseMarkdown ? (
+            <Markdown slot="output">{responseMarkdown}</Markdown>
+          ) : null}
+        </ToolCallData>
+      </ChainOfThoughtStep>
+    );
+  });
+
+const renderChainOfThought = (args, steps) => {
+  const [open, setOpen] = React.useState(args.open);
+  const panelId = React.useId();
+
+  React.useEffect(() => {
+    setOpen(args.open);
+  }, [args.open]);
+
+  const handleToggle = (event) => setOpen(event.detail?.open ?? false);
+
+  return (
+    <>
+      <ChainOfThoughtToggle
+        panelId={panelId}
+        open={open}
+        openLabelText={args.openLabelText}
+        closedLabelText={args.closedLabelText}
+        onToggle={handleToggle}
+      />
+      <ChainOfThought
+        id={panelId}
+        panelId={panelId}
+        open={open}
+        onToggle={handleToggle}
+      >
+        {renderSteps(steps)}
+      </ChainOfThought>
+    </>
+  );
+};
+
 export default {
-  title: "Components/Chain of Thought",
+  title: "Components/Chain of thought",
   argTypes: {
     open: {
       control: "boolean",
       description: "Whether the chain of thought panel is open",
     },
-    explainabilityText: {
+    openLabelText: {
       control: "text",
-      description: "Text for the button to open the panel",
+      description: "Text when the panel is expanded",
     },
-    inputLabelText: {
+    closedLabelText: {
       control: "text",
-      description: "Label for step inputs",
-    },
-    outputLabelText: {
-      control: "text",
-      description: "Label for step outputs",
-    },
-    toolLabelText: {
-      control: "text",
-      description: "Label for tool names",
-    },
-    statusSucceededLabelText: {
-      control: "text",
-      description: "Label for success status icon",
-    },
-    statusFailedLabelText: {
-      control: "text",
-      description: "Label for failure status icon",
-    },
-    statusProcessingLabelText: {
-      control: "text",
-      description: "Label for processing status icon",
+      description: "Text for when the panel is collapsed",
     },
   },
 };
 
-const renderChainOfThought = (args, steps) => (
-  <ChainOfThought
-    open={args.open}
-    explainabilityText={args.explainabilityText}
-    inputLabelText={args.inputLabelText}
-    outputLabelText={args.outputLabelText}
-    toolLabelText={args.toolLabelText}
-    statusSucceededLabelText={args.statusSucceededLabelText}
-    statusFailedLabelText={args.statusFailedLabelText}
-    statusProcessingLabelText={args.statusProcessingLabelText}
-    steps={steps}
-  />
-);
-
 export const Default = {
   args: {
     open: false,
-    explainabilityText: "Show chain of thought",
-    inputLabelText: "Input",
-    outputLabelText: "Output",
-    toolLabelText: "Tool",
-    statusSucceededLabelText: "Succeeded",
-    statusFailedLabelText: "Failed",
-    statusProcessingLabelText: "Processing",
+    openLabelText: "Hide chain of thought",
+    closedLabelText: "Show chain of thought",
   },
   render: (args) => renderChainOfThought(args, sampleSteps),
 };
@@ -223,27 +266,18 @@ export const Default = {
 export const WithStepsOpen = {
   args: {
     open: true,
-    explainabilityText: "Show chain of thought",
-    inputLabelText: "Input",
-    outputLabelText: "Output",
-    toolLabelText: "Tool",
-    statusSucceededLabelText: "Succeeded",
-    statusFailedLabelText: "Failed",
-    statusProcessingLabelText: "Processing",
+    openLabelText: "Hide chain of thought",
+    closedLabelText: "Show chain of thought",
   },
-  render: (args) => renderChainOfThought(args, sampleSteps),
+  render: (args) =>
+    renderChainOfThought(args, [{ ...sampleSteps[0], open: true }]),
 };
 
 export const WithDifferentStatuses = {
   args: {
     open: true,
-    explainabilityText: "Show chain of thought",
-    inputLabelText: "Input",
-    outputLabelText: "Output",
-    toolLabelText: "Tool",
-    statusSucceededLabelText: "Succeeded",
-    statusFailedLabelText: "Failed",
-    statusProcessingLabelText: "Processing",
+    openLabelText: "Hide chain of thought",
+    closedLabelText: "Show chain of thought",
   },
   render: (args) => renderChainOfThought(args, stepsWithDifferentStatuses),
 };
@@ -251,13 +285,8 @@ export const WithDifferentStatuses = {
 export const WithComplexResponses = {
   args: {
     open: true,
-    explainabilityText: "Show chain of thought",
-    inputLabelText: "Input",
-    outputLabelText: "Output",
-    toolLabelText: "Tool",
-    statusSucceededLabelText: "Succeeded",
-    statusFailedLabelText: "Failed",
-    statusProcessingLabelText: "Processing",
+    openLabelText: "Hide chain of thought",
+    closedLabelText: "Show chain of thought",
   },
   render: (args) => renderChainOfThought(args, stepsWithComplexResponses),
 };

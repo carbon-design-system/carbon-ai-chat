@@ -1,23 +1,27 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as FeedbackReactStories from "./feedback-react.stories";
+import * as FeedbackReactStories from "./feedback-react.stories.jsx";
 
-<Meta of={FeedbackReactStories} />
+<Meta of={FeedbackReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Feedback (React)
+# Feedback
 
-The `<Feedback>` component wraps the `cds-aichat-feedback` web component and provides a panel for collecting user feedback on AI responses with a React-first API.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Category Selection**: Multiple predefined categories that users can select
-- **Text Input**: Optional text area for detailed feedback
-- **Flexible Configuration**: Show/hide prompt and text area as needed
-- **Initial Values**: Pre-populate with existing feedback for editing
-- **Read-only Mode**: Display submitted feedback without allowing edits
-- **Custom Labels**: All text strings can be customized for internationalization
-- **Markdown Support**: Disclaimer text supports markdown formatting
+## Table of Contents
 
-## Getting started
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+Use `<Feedback>` to collect structured feedback on AI responses in React. It supports categories, optional freeform text, prompt copy, and read-only display when feedback has already been submitted.
+
+### Getting started
 
 Here's a quick example to get you started.
 
@@ -29,47 +33,29 @@ function FeedbackExample() {
     <Feedback
       isOpen
       title="Provide feedback"
-      prompt="Help us improve by sharing your thoughts"
+      prompt="Help us improve this response"
+      categories={["Accurate", "Helpful", "Too verbose", "Inappropriate"]}
       cancelLabel="Cancel"
       submitLabel="Submit"
-      onSubmit={(event) =>
-        console.log("Feedback submitted:", event.detail)
-      }
+      showTextArea
+      showPrompt
+      onSubmit={(event) => {
+        const { text, selectedCategories } = event.detail;
+        console.log("Feedback submitted:", { text, selectedCategories });
+      }}
       onClose={() => console.log("Feedback closed")}
     />
   );
 }
 ```
 
-### Stories
-
-#### Basic usage
-
-<Canvas of={FeedbackReactStories.Default} />
-
-#### With categories
-
-<Canvas of={FeedbackReactStories.WithCategories} />
-
-#### With disclaimer
-
-<Canvas of={FeedbackReactStories.WithDisclaimer} />
-
-#### Read-only mode
-
-<Canvas of={FeedbackReactStories.ReadOnly} />
-
-#### Without text area
-
-<Canvas of={FeedbackReactStories.WithoutTextArea} />
-
-## `<Feedback>` props and events
+## Component API
 
 <ArgTypes of={FeedbackReactStories.Default} />
 
-## Usage Patterns
+### Usage Patterns
 
-### Collecting Negative Feedback
+#### Collecting Negative Feedback
 
 ```jsx
 function NegativeFeedbackPanel() {
@@ -92,7 +78,7 @@ function NegativeFeedbackPanel() {
 }
 ```
 
-### Collecting Positive Feedback
+#### Collecting Positive Feedback
 
 ```jsx
 function PositiveFeedbackPanel() {
@@ -113,7 +99,7 @@ function PositiveFeedbackPanel() {
 }
 ```
 
-### Displaying Submitted Feedback
+#### Displaying Submitted Feedback
 
 ```jsx
 function ReadOnlyFeedbackPanel() {
@@ -131,9 +117,9 @@ function ReadOnlyFeedbackPanel() {
 }
 ```
 
-## Customization
+### Customization
 
-### Labels
+#### Labels
 
 All button labels and text can be customized:
 
@@ -143,14 +129,14 @@ All button labels and text can be customized:
 - `cancelLabel`: Cancel button text
 - `submitLabel`: Submit button text
 
-### Optional Elements
+#### Optional Elements
 
 Control visibility of UI elements:
 
 - `showPrompt`: Show/hide the instruction text
 - `showTextArea`: Show/hide the detailed feedback text area
 
-### Legal Disclaimer
+#### Legal Disclaimer
 
 Add a legal notice at the bottom of the panel using markdown:
 
@@ -159,3 +145,7 @@ Add a legal notice at the bottom of the panel using markdown:
   disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy)."
 />
 ```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

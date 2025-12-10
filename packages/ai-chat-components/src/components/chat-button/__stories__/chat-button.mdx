@@ -1,41 +1,49 @@
 import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ChatButtonStories from "./chat-button.stories";
 
-<Meta of={ChatButtonStories} />
+<Meta of={ChatButtonStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Button
+# Button
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-button) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
 
 The `cds-aichat-button` extends the Carbon Design System's [Button](https://web-components.carbondesignsystem.com/?path=/docs/components-button--overview) component with AI Chat-specific features including a quick action mode, and rounded corners designed for chat interfaces.
 
-## Key Features
-
-- **Quick Action Mode**: The `is-quick-action` prop renders the button in a compact quick-action style suitable for chat interfaces.
-- **Rounded Corners**: Applied by default to match AI chat visual patterns.
-- **Preset Defaults**: Quick action buttons automatically enforce recommended `size` and `kind` values.
-- **Full Carbon Compatibility**: Supports most of standard `<cds-button>` attributes and events.
-
-## Getting started
+### Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+```html
+<cds-aichat-button> Button </cds-aichat-button>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-button" />
+
+## JS (via import)
 
 ```javascript
 import "@carbon/ai-chat-components/es/components/chat-button/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
-```
 
 <Markdown>{`${cdnJs(["chat-button"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
+## Feedback
 
-```html
-<cds-aichat-button> Button </cds-aichat-button>
-```
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

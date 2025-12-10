@@ -1,22 +1,27 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as FeedbackButtonsReactStories from "./feedback-buttons-react.stories";
+import * as FeedbackButtonsReactStories from "./feedback-buttons-react.stories.jsx";
 
-<Meta of={FeedbackButtonsReactStories} />
+<Meta of={FeedbackButtonsReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Feedback Buttons (React)
+# Feedback buttons
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
 
 The `<FeedbackButtons>` component wraps the `cds-aichat-feedback-buttons` web component and exposes a React-friendly API for collecting quick thumbs up/down sentiment on AI responses.
 
-## Key Features
-
-- **Thumbs Up/Down**: Simple positive/negative feedback buttons
-- **Selected State**: Visual indication when feedback has been provided
-- **Disabled State**: Prevent interaction when feedback is already submitted
-- **Details Panel Integration**: Optional connection to feedback detail panels
-- **Custom Labels**: Accessibility labels can be customized
-- **Click Handlers**: Callback invoked with sentiment boolean
-
-## Getting started
+### Getting started
 
 Here's a quick example to get you started.
 
@@ -37,35 +42,13 @@ function FeedbackButtonsExample() {
 }
 ```
 
-### Stories
-
-#### Basic usage
-
-<Canvas of={FeedbackButtonsReactStories.Default} />
-
-#### With positive selected
-
-<Canvas of={FeedbackButtonsReactStories.PositiveSelected} />
-
-#### With negative selected
-
-<Canvas of={FeedbackButtonsReactStories.NegativeSelected} />
-
-#### With details panels
-
-<Canvas of={FeedbackButtonsReactStories.WithDetailsPanel} />
-
-#### Disabled state
-
-<Canvas of={FeedbackButtonsReactStories.Disabled} />
-
-## `<FeedbackButtons>` props and events
+## Component API
 
 <ArgTypes of={FeedbackButtonsReactStories.Default} />
 
-## Usage Patterns
+### Usage Patterns
 
-### Simple Feedback Recording
+#### Simple Feedback Recording
 
 ```jsx
 function SimpleFeedback() {
@@ -100,7 +83,7 @@ function SimpleFeedback() {
 }
 ```
 
-### With Feedback Details Panel
+#### With Feedback Details Panel
 
 ```jsx
 import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
@@ -137,7 +120,7 @@ function DetailedFeedback() {
 }
 ```
 
-### Toggle Behavior
+#### Toggle Behavior
 
 ```jsx
 function ToggleableFeedback() {
@@ -171,9 +154,13 @@ function ToggleableFeedback() {
 }
 ```
 
-## Accessibility
+### Accessibility
 
 - Buttons include customizable labels for screen readers
 - Uses `aria-pressed` to indicate selected state
 - Uses `aria-controls` to link to detail panels when applicable
 - Keyboard navigable with standard tab/enter interactions
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

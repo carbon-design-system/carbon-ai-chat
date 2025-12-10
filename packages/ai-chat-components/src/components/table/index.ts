@@ -7,6 +7,6 @@
  *  @license
  */
 
-import "./src/cds-aichat-table.js";
-export { default, TABLE_COMPONENT_TAG_NAME } from "./src/cds-aichat-table.js";
+import "./src/table.js";
+export { default } from "./src/table.js";
 export type { TableItemCell, TableItemRow } from "./src/types.js";
