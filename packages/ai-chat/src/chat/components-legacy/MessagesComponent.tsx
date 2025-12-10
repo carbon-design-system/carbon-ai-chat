@@ -174,7 +174,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   private previousScrollableMessage: MessageClass;
 
   /**
-   * This is the previous last message in the message list.
+   * This keeps track of the previous message.
    */
   private previousLastMessage: HTMLDivElement;
 
@@ -323,7 +323,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     // Run doAutoScroll when the window is resized to maintain proper scroll position
     // This is important for workspace functionality
-    // this.doAutoScroll();
+    this.doAutoScroll();
   };
 
   /**
@@ -410,9 +410,14 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             messageIndex--;
           }
 
+          /**
+           * We get the desired scroll position and calculate how much space is needed to
+           * bump the request to the top of the chat window. We apply this calculated space to
+           * the last message in the message list.
+           */
           if (lastScrollableMessageComponent) {
             requestAnimationFrame(() => {
-              // Reset previous
+              // Reset previous message height
               if (this.previousLastMessage) {
                 this.previousLastMessage.style.removeProperty("min-block-size");
               }
@@ -420,20 +425,40 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               const targetEl = lastScrollableMessageComponent?.ref?.current;
               const targetRect = targetEl.getBoundingClientRect();
               const scrollerRect = scrollElement.getBoundingClientRect();
+              const targetHeight = targetRect.height;
+              const scrollerHeight = scrollerRect.height;
 
               const targetOffsetWithinScroller =
                 targetRect.top - scrollerRect.top + scrollElement.scrollTop;
 
+              // Set request message at top of chat
               setScrollTop = Math.max(
                 0,
                 Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
               );
+
+              // If the request message is too tall (more than 1/4 of the chat height), we push it
+              // to the top, but only show the bottom 100px of the request message. We do this so the response
+              // isn't hidden, forcing the user to have to scroll.
+              const isVeryTall = targetHeight > scrollerHeight / 4;
+
+              if (isVeryTall) {
+                // Tall message: we want bottom 100px visible.
+                const VISIBLE_BOTTOM_PORTION = 100;
+                const tallAdjustment = Math.max(
+                  0,
+                  targetHeight - VISIBLE_BOTTOM_PORTION,
+                );
+
+                setScrollTop = setScrollTop + tallAdjustment;
+              }
 
               // Determine what the latest message is (loading / typing indicator or last message)
               let latestMessageComponent: HTMLDivElement | undefined;
 
               if (isMessageLoadingCounter > 0 || isHumanAgentTyping) {
                 latestMessageComponent = this.loadingElemRef.current;
+
                 debugAutoScroll(
                   "[doAutoScroll] isLoading visible",
                   isMessageLoadingCounter,
@@ -472,7 +497,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 this.previousScrollableMessage !==
                 lastScrollableMessageComponent
               ) {
-                console.log("setScrollTop", setScrollTop);
                 doScrollElement(scrollElement, setScrollTop, 0, animate);
                 this.checkScrollAnchor(true, setScrollTop);
 
@@ -499,7 +523,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               scrollElement,
               setScrollTop,
             );
-            console.log("are we scrolling here?");
             doScrollElement(scrollElement, setScrollTop, 0, animate);
 
             // Update the scroll anchor setting based on this new position.
