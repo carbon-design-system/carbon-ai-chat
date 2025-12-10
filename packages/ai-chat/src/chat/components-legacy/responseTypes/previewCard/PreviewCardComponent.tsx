@@ -46,6 +46,11 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       serviceManager.eventBus.fire(
         {
           type: BusEventType.WORKSPACE_PRE_OPEN,
+          data: {
+            message: props.localMessageItem,
+            fullMessage: props.fullMessage,
+            slot: "workspace",
+          },
           additional_data: item.additional_data,
         },
         serviceManager.instance,
@@ -54,6 +59,11 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       serviceManager.eventBus.fire(
         {
           type: BusEventType.WORKSPACE_OPEN,
+          data: {
+            message: props.localMessageItem,
+            fullMessage: props.fullMessage,
+            slot: "workspace",
+          },
           additional_data: item.additional_data,
         },
         serviceManager.instance,
