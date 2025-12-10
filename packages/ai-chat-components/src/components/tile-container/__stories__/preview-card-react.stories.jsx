@@ -201,6 +201,7 @@ export const Small = {
           </AILabel>
         )}
       </>,
+
       args,
     ),
   args: { maxWidth: "sm" },
