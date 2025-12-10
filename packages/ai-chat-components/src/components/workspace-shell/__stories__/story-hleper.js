@@ -6,59 +6,47 @@
  *
  *  @license
  */
-import React from "react";
-import Tag from "../../../react/tag";
-import Button from "../../../react/button";
+import { html } from "lit";
+import "@carbon/web-components/es/components/tag/tag.js";
 
 export function getHeaderDescription(type) {
   switch (type) {
     case "basic":
-      return (
+      return html`
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
           minim veniam, quis nostrud exercitation ullamco.
         </div>
-      );
+      `;
     case "withTags":
-      return (
-        <>
-          <div slot="header-description">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco.
-          </div>
-          <div slot="header-description">
-            <Tag size="sm" type="gray">
-              Tag
-            </Tag>
-            <Tag size="sm" type="gray">
-              Tag
-            </Tag>
-            <Tag size="sm" type="gray">
-              Tag
-            </Tag>
-            <Tag size="sm" type="gray">
-              Tag
-            </Tag>
-            <Tag size="sm" type="gray">
-              Tag
-            </Tag>
-          </div>
-        </>
-      );
+      return html`
+        <div slot="header-description">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco.
+        </div>
+        <div slot="header-description">
+          <cds-tag size="sm" type="gray">Tag</cds-tag>
+          <cds-tag size="sm" type="gray">Tag</cds-tag>
+          <cds-tag size="sm" type="gray">Tag</cds-tag>
+          <cds-tag size="sm" type="gray">Tag</cds-tag>
+          <cds-tag size="sm" type="gray">Tag</cds-tag>
+        </div>
+      `;
   }
 }
 
 export function getBodyContent(type) {
   switch (type) {
     case "short":
-      return `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      return html`
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
         veniam, quis nostrud exercitation ullamco.
       `;
     case "long":
-      return `
+      return html`
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur et
         velit sed erat faucibus blandit non nec felis. Nulla facilisi.
         Pellentesque nec finibus lectus. Vestibulum vitae sem eget lacus aliquam
@@ -121,69 +109,5 @@ export function getBodyContent(type) {
         porttitor, enim non bibendum mattis, ligula metus tincidunt magna, eget
         tincidunt purus nisl vel arcu.
       `;
-  }
-}
-
-export function getFooterAction(type) {
-  switch (type) {
-    case "one":
-      return (
-        <Button
-          size="2xl"
-          data-index="1"
-          kind="primary"
-          slot="footer-action"
-          data-rounded="bottom-right-md-none"
-        >
-          Button
-        </Button>
-      );
-    case "two":
-      return (
-        <>
-          <Button
-            size="2xl"
-            data-index="1"
-            kind="primary"
-            slot="footer-action"
-            data-rounded="bottom-right-md-none"
-          >
-            Button
-          </Button>
-          <Button
-            size="2xl"
-            data-index="2"
-            kind="secondary"
-            slot="footer-action"
-          >
-            Button
-          </Button>
-        </>
-      );
-    case "twoWithghost":
-      return (
-        <>
-          <Button
-            size="2xl"
-            data-index="1"
-            kind="primary"
-            slot="footer-action"
-            data-rounded="bottom-right-md-none"
-          >
-            Button
-          </Button>
-          <Button
-            size="2xl"
-            data-index="2"
-            kind="secondary"
-            slot="footer-action"
-          >
-            Button
-          </Button>
-          <Button size="2xl" data-index="3" kind="ghost" slot="footer-action">
-            Button
-          </Button>
-        </>
-      );
   }
 }

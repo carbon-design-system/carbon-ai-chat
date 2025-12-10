@@ -17,6 +17,9 @@ const WorkspaceShellFooter = createComponent({
   tagName: "cds-aichat-workspace-shell-footer",
   elementClass: CDSAIChatWorkspaceShellFooter,
   react: React,
+  events: {
+    onFooterClicked: "cds-aichat-workspace-shell-footer-clicked",
+  },
 });
 
 export default WorkspaceShellFooter;

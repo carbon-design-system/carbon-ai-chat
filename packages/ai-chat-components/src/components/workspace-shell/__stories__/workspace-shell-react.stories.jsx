@@ -9,12 +9,12 @@ import AILabel from "../../../react/ai-label";
 import InlineNotification from "../../../react/inline-notification";
 import Button from "../../../react/button";
 import Icon from "../../../react/icon";
+import { action } from "storybook/actions";
 import {
   getHeaderDescription,
   getBodyContent,
-  getFooterAction,
-} from "./story-helper";
-import { actionLists } from "./story-data";
+} from "./story-helper-react";
+import { actionLists, FooterActionList } from "./story-data";
 
 export default {
   title: "Components/Workspace Shell",
@@ -76,12 +76,7 @@ export default {
       control: {
         type: "select",
       },
-      options: {
-        "No Action": "noAction",
-        "One Button": "one",
-        "Two Button": "two",
-        "Two Button with ghost": "twoWithghost",
-      },
+      options: Object.keys(FooterActionList),
       description: "Defines the actions slot in Footer component ",
     },
   },
@@ -97,7 +92,7 @@ export const Default = {
     headerDescription: "withTags",
     showHeaderAction: true,
     bodyContent: "short",
-    footerAction: "twoWithghost",
+    footerAction: "Three buttons with one ghost",
   },
   render: ({
     toolbarTitle,
@@ -156,9 +151,10 @@ export const Default = {
           )}
         </WorkspaceShellHeader>
         <WorkspaceShellBody>{getBodyContent(bodyContent)}</WorkspaceShellBody>
-        {footerAction !== "noAction" && (
-          <WorkspaceShellFooter>
-            {getFooterAction(footerAction)}
+        {footerAction !== "None" && (
+          <WorkspaceShellFooter
+          onFooterClicked={ (data) => action("action")(data) }
+          actions={FooterActionList[footerAction]}>
           </WorkspaceShellFooter>
         )}
       </WorkspaceShell>

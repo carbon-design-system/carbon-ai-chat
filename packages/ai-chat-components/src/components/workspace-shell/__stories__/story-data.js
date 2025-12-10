@@ -87,3 +87,119 @@ export const actionLists = {
   ],
   None: [],
 };
+
+export const FooterActionList = {
+  None: undefined,
+  "One button": [
+    {
+      id: "primary",
+      label: "Primary",
+      kind: "primary",
+      payload: { test: "value" },
+    },
+  ],
+  "A danger button": [
+    {
+      id: "danger",
+      label: "Danger",
+      kind: "danger",
+      payload: { test: "value" },
+    },
+  ],
+  "A ghost button": [
+    {
+      id: "ghost",
+      label: "Ghost",
+      kind: "ghost",
+      payload: { test: "value" },
+    },
+  ],
+  "Two buttons": [
+    {
+      id: "secondary",
+      label: "Secondary",
+      kind: "secondary",
+      payload: { test: "value" },
+    },
+    {
+      id: "primary",
+      label: "Primary",
+      kind: "primary",
+      payload: { test: "value" },
+    },
+  ],
+  "Two buttons with one ghost": [
+    {
+      id: "ghost",
+      label: "Ghost",
+      kind: "ghost",
+      payload: { test: "value" },
+    },
+    {
+      id: "primary",
+      label: "Primary",
+      kind: "primary",
+      payload: { test: "value" },
+    },
+  ],
+  "Three buttons": [
+    {
+      id: "secondary",
+      label: "Secondary",
+      kind: "secondary",
+      payload: { test: "value" },
+    },
+    {
+      id: "tertiary",
+      label: "Tertiary",
+      kind: "tertiary",
+      payload: { test: "value" },
+    },
+    {
+      id: "primary",
+      label: "Primary",
+      kind: "primary",
+      payload: { test: "value" },
+    },
+  ],
+  "Three buttons with one ghost": [
+    {
+      id: "secondary",
+      label: "Secondary",
+      kind: "secondary",
+      payload: { test: "value" },
+    },
+    {
+      id: "primary",
+      label: "Primary",
+      kind: "primary",
+      payload: { test: "value" },
+    },
+    {
+      id: "ghost",
+      label: "Ghost",
+      kind: "ghost",
+      payload: { test: "value" },
+    },
+  ],
+  "Three buttons with one danger": [
+    {
+      id: "ghost",
+      label: "Ghost",
+      kind: "ghost",
+      payload: { test: "value" },
+    },
+    {
+      id: "secondary",
+      label: "Secondary",
+      kind: "secondary",
+      payload: { test: "value" },
+    },
+    {
+      id: "danger",
+      label: "Danger",
+      kind: "danger",
+      payload: { test: "value" },
+    },
+  ],
+};

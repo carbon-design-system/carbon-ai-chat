@@ -7,11 +7,10 @@
  *  @license
  */
 
-@use "../../../globals/scss/modifiers" as *;
+@use "../../../globals/scss/modifier-new" as *;
 
 $prefix: "cds-aichat";
 
 html {
-  --#{$prefix}-border-radius: 0.5rem;
   @include rounded-modifiers;
 }
