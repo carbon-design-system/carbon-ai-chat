@@ -168,7 +168,20 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private previousScrollOffsetHeight: number;
 
-  private bottomSpacerRef = React.createRef<HTMLDivElement>();
+  /**
+   * This is the previous message that was scrolled to.
+   */
+  private previousScrollableMessage: MessageClass;
+
+  /**
+   * This is the previous last message in the message list.
+   */
+  private previousLastMessage: HTMLDivElement;
+
+  /**
+   * A ref to the loading / typing indicator element.
+   */
+  private loadingElemRef = React.createRef<HTMLDivElement>();
 
   componentDidMount(): void {
     this.scrollPanelObserver = new ResizeObserver(this.onResize);
@@ -310,7 +323,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     // Run doAutoScroll when the window is resized to maintain proper scroll position
     // This is important for workspace functionality
-    this.doAutoScroll();
+    // this.doAutoScroll();
   };
 
   /**
@@ -339,7 +352,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
 
         const { scrollToTop, scrollToBottom } = options;
-        const { localMessageItems, allMessagesByID } = this.props;
+        const { localMessageItems, messageState, allMessagesByID } = this.props;
+        const { isMessageLoadingCounter } = messageState;
+        const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
+
         const scrollElement = this.messagesContainerWithScrollingRef.current;
 
         if (scrollToTop !== undefined) {
@@ -356,16 +372,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           return;
         }
 
+        const lastLocalItemIndex = localMessageItems.length - 1;
+        const lastLocalItem =
+          lastLocalItemIndex >= 0
+            ? localMessageItems[lastLocalItemIndex]
+            : null;
+
         let setScrollTop: number;
 
-        const lastLocalItemIndex = localMessageItems.length - 1;
-        const lastLocalItem = localMessageItems.length
-          ? localMessageItems[lastLocalItemIndex]
-          : null;
-        const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
-
         if (!lastLocalItem) {
-          debugAutoScroll("[doAutoScroll] No last time");
+          debugAutoScroll("[doAutoScroll] No last item — scroll to top");
           // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
           // decide it remembers the previous scroll position and set it for us.
           setScrollTop = 0;
@@ -373,12 +389,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Iterate backwards until we find the last message to scroll to. By default, resquest messages should be
           // scrolled to (not response messages). However, if a response has history.silent=true, it should not be scrolled to.
           // If all messages are not scrollable, we'll default to the bottom of the conversation.
+          let lastScrollableMessageComponent: MessageClass | undefined;
           let messageIndex = localMessageItems.length - 1;
-          let localItem = localMessageItems[messageIndex];
-          let lastScrollableMessageComponent: MessageClass = undefined;
 
           while (messageIndex >= 1) {
-            localItem = localMessageItems[messageIndex];
+            const localItem = localMessageItems[messageIndex];
             const message = allMessagesByID[localItem?.fullMessageID];
 
             if (this.shouldScrollToMessage(localItem, message)) {
@@ -387,7 +402,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               );
               debugAutoScroll(
                 `[doAutoScroll] lastScrollableMessageComponent=${messageIndex}`,
-                localMessageItems[messageIndex],
+                localItem,
                 message,
               );
               break;
@@ -396,61 +411,99 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
 
           if (lastScrollableMessageComponent) {
-            const spacerEl = this.bottomSpacerRef.current;
+            requestAnimationFrame(() => {
+              const targetEl = lastScrollableMessageComponent?.ref?.current;
+              const targetRect = targetEl.getBoundingClientRect();
+              const scrollerRect = scrollElement.getBoundingClientRect();
 
-            if (spacerEl) {
-              spacerEl.style.setProperty("min-block-size", "0px"); // reset first
-            }
+              const targetOffsetWithinScroller =
+                targetRect.top - scrollerRect.top + scrollElement.scrollTop;
 
-            const targetEl = lastScrollableMessageComponent?.ref?.current;
+              setScrollTop = Math.max(
+                0,
+                Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
+              );
 
-            const targetRect = targetEl.getBoundingClientRect();
-            const scrollerRect = scrollElement.getBoundingClientRect();
+              // Determine what the latest message is (loading / typing indicator or last message)
+              let latestMessageComponent: HTMLDivElement | undefined;
 
-            // Offset of target's top within the scroller's scroll coordinate space
-            const targetOffsetTopWithinScroller =
-              targetRect.top - scrollerRect.top + scrollElement.scrollTop;
+              if (isMessageLoadingCounter > 0 || isHumanAgentTyping) {
+                latestMessageComponent = this.loadingElemRef.current;
+                debugAutoScroll(
+                  "[doAutoScroll] isLoading visible",
+                  isMessageLoadingCounter,
+                );
+              } else {
+                const lastMsgComp = this.messageRefs.get(
+                  lastLocalItem.ui_state.id,
+                );
+                latestMessageComponent = lastMsgComp?.ref?.current;
+              }
 
-            const desiredScrollTop = Math.max(
-              0,
-              Math.floor(targetOffsetTopWithinScroller + AUTO_SCROLL_EXTRA),
-            );
+              const lastRect = latestMessageComponent.getBoundingClientRect();
+              const lastOffset =
+                lastRect.top - scrollerRect.top + scrollElement.scrollTop;
 
-            const maxScrollTop =
-              scrollElement.scrollHeight - scrollElement.clientHeight;
+              const visibleBottom = setScrollTop + scrollElement.clientHeight;
+              const deficit = Math.max(
+                0,
+                Math.ceil(visibleBottom - lastOffset),
+              );
 
-            const deficit = Math.max(
-              0,
-              Math.ceil(desiredScrollTop - maxScrollTop),
-            );
+              // Reset previous
+              if (this.previousLastMessage) {
+                this.previousLastMessage.style.removeProperty("min-block-size");
+              }
+              // Add min-block-size to the latest message in order to ensure the request
+              // message makes it to the top of the chat window
+              latestMessageComponent.style.setProperty(
+                "min-block-size",
+                `${deficit}px`,
+              );
+              this.previousLastMessage = latestMessageComponent;
 
-            setScrollTop = desiredScrollTop;
+              debugAutoScroll(
+                `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
+              );
 
-            spacerEl.style.setProperty("min-block-size", `${deficit}px`);
+              // Scroll only if target changed
+              if (
+                this.previousScrollableMessage !==
+                lastScrollableMessageComponent
+              ) {
+                console.log("setScrollTop", setScrollTop);
+                doScrollElement(scrollElement, setScrollTop, 0, animate);
+                this.checkScrollAnchor(true, setScrollTop);
 
-            debugAutoScroll(
-              `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
-            );
-          } else {
-            // No message found.
-            setScrollTop = -1;
-            debugAutoScroll("[doAutoScroll] No message found");
+                this.previousScrollableMessage = lastScrollableMessageComponent;
+              }
+
+              return;
+            });
           }
+
+          debugAutoScroll("[doAutoScroll] No scrollable message found");
+          setScrollTop = -1;
         }
 
         if (setScrollTop !== -1) {
-          if (lastMessage?.ui_state_internal?.from_history) {
-            animate = false;
-          }
-          debugAutoScroll(
-            `[doAutoScroll] doScrollElement`,
-            scrollElement,
-            setScrollTop,
-          );
-          doScrollElement(scrollElement, setScrollTop, 0, animate);
+          if (setScrollTop >= scrollElement.scrollTop) {
+            const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
+            if (lastMessage?.ui_state_internal?.from_history) {
+              animate = false;
+            }
 
-          // Update the scroll anchor setting based on this new position.
-          this.checkScrollAnchor(true, setScrollTop);
+            debugAutoScroll(
+              `[doAutoScroll] doScrollElement`,
+              scrollElement,
+              setScrollTop,
+            );
+            console.log("are we scrolling here?");
+            doScrollElement(scrollElement, setScrollTop, 0, animate);
+
+            // Update the scroll anchor setting based on this new position.
+            this.checkScrollAnchor(true, setScrollTop);
+          }
         }
       });
     } catch (error) {
@@ -644,6 +697,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   ) {
     return (
       <div
+        ref={this.loadingElemRef}
         className={`cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`}
       >
         <div className="cds-aichat--message--padding">
@@ -1021,7 +1075,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 isMessageLoadingCounter ? isMessageLoadingText : undefined,
               )}
             {this.renderScrollHandle(false)}
-            <div id="chat-bottom-spacer" ref={this.bottomSpacerRef} />
             <MountChildrenOnDelay>
               <ChatButton
                 className={cx("cds-aichat__scroll-to-bottom-button", {
