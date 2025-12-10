@@ -587,6 +587,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         role="${this.editable ? "textbox" : "region"}"
         tabindex="${this.editable && !disabled ? 0 : null}"
         class="${containerClasses}"
+        data-rounded="bottom"
         aria-label="code-snippet"
         ${this.editable ? 'aria-readonly="false" aria-multiline="true"' : ""}
         style="${this._getContainerStyles(expandedCode)}"
