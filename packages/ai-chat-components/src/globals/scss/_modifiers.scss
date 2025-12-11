@@ -40,7 +40,7 @@
   }
 
   :host([data-rounded="top"]:not([data-stacked])),
-  [data-rounded="top"] {
+  [data-rounded="top"]:not([data-stacked]) {
     @include radius(start-start, start-end);
 
     > :first-child {
@@ -60,7 +60,8 @@
     }
   }
 
-  :host([data-rounded="top"][data-stacked]) {
+  :host([data-rounded="top"][data-stacked]),
+  [data-rounded="top"][data-stacked] {
     @include radius(start-start, start-end);
 
     > :first-child {
@@ -175,7 +176,7 @@
   }
 
   :host([data-rounded="bottom-left"]:not([data-stacked])),
-  [data-rounded="bottom-left"] {
+  [data-rounded="bottom-left"]:not([data-stacked]) {
     @include radius(end-start);
 
     :first-child {
@@ -187,7 +188,8 @@
     }
   }
 
-  :host([data-rounded="bottom-left"][data-stacked]) {
+  :host([data-rounded="bottom-left"][data-stacked]),
+  [data-rounded="bottom-left"][data-stacked] {
     @include radius(end-start);
 
     :last-child {
