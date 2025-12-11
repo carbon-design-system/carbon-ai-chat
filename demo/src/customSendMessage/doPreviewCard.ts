@@ -18,30 +18,14 @@ function doPreviewCard(instance: ChatInstance) {
           text: "Here is a plan for optimizing excess inventory.",
         },
         {
-          title: "Small preview card",
-          subtitle: "subtitle",
+          title: "Optimizing excess inventory",
+          subtitle: "Created on: 12/10/24",
           response_type: MessageResponseTypes.PREVIEW_CARD,
-          // ailabel
+          additional_data: {
+            id: "some unique ID for the workspace",
+            data: "some additional data for the workspace",
+          },
         },
-        // {
-        //   title: "Large preview card",
-        //   subtitle: "subtitle",
-        //   max_width: WidthOptions.LARGE,
-        //   response_type: MessageResponseTypes.PREVIEW_CARD,
-        //   // ai label
-        //   toolbar_actions: {
-        //     // version
-        //     // download
-        //     // share
-        //     // open
-        //   },
-        // },
-        // {
-        //   title: "Large preview card with steps",
-        //   max_width: WidthOptions.LARGE,
-        //   response_type: MessageResponseTypes.PREVIEW_CARD,
-        //   // ai label
-        // },
       ],
     },
   });

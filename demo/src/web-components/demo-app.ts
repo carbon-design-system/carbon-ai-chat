@@ -203,6 +203,14 @@ export class DemoApp extends LitElement {
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: (e) => console.log("pre open", e),
+    });
+    instance.on({
+      type: BusEventType.WORKSPACE_OPEN,
+      handler: (e) => console.log("open", e),
+    });
   };
 
   /**

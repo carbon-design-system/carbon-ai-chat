@@ -673,11 +673,17 @@ export interface BusEventCustomPanelClose extends BusEvent {
  */
 export interface BusEventWorkspacePreOpen extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_OPEN;
-  data: MessageRequest;
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
 }
 
 /**
@@ -685,11 +691,17 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
  */
 export interface BusEventWorkspaceOpen extends BusEvent {
   type: BusEventType.WORKSPACE_OPEN;
-  data: MessageRequest;
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
 }
 
 /**
@@ -697,11 +709,17 @@ export interface BusEventWorkspaceOpen extends BusEvent {
  */
 export interface BusEventWorkspacePreClose extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_CLOSE;
-  data: MessageRequest;
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
 }
 
 /**
@@ -709,11 +727,17 @@ export interface BusEventWorkspacePreClose extends BusEvent {
  */
 export interface BusEventWorkspaceClose extends BusEvent {
   type: BusEventType.WORKSPACE_CLOSE;
-  data: MessageRequest;
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
 }
 
 /**

@@ -416,6 +416,7 @@ function renderAsUserDefinedMessage(
     case MessageResponseTypes.CONVERSATIONAL_SEARCH:
     case MessageResponseTypes.INLINE_ERROR:
     case MessageResponseTypes.CARD:
+    case MessageResponseTypes.PREVIEW_CARD:
     case MessageResponseTypes.CAROUSEL:
     case MessageResponseTypes.BUTTON:
     case MessageResponseTypes.GRID:

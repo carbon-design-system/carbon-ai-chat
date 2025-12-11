@@ -8,13 +8,13 @@
  *  @license
  */
 
-import TileContainer from "@carbon/ai-chat-components/es/react/tile-container.js";
-import Tile from "@carbon/ai-chat-components/es/react/tile.js";
+import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
 import Button, {
   BUTTON_KIND,
 } from "@carbon/ai-chat-components/es/react/button.js";
 import AILabel from "@carbon/ai-chat-components/es/react/ai-label";
-import { Maximize, View } from "@carbon/icons-react";
+import Maximize16 from "@carbon/icons/es/maximize/16.js";
+import View16 from "@carbon/icons/es/view/16.js";
 import cx from "classnames";
 import React, { useState } from "react";
 
@@ -42,50 +42,59 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const [isExpired, setIsExpired] = useState(false);
 
   const handleClick = () => {
-    console.log("preview card open button clicked");
-
     if (!isWorkspaceOpen) {
-      serviceManager.fire({
-        type: BusEventType.WORKSPACE_PRE_OPEN,
-      });
+      serviceManager.eventBus.fire(
+        {
+          type: BusEventType.WORKSPACE_PRE_OPEN,
+          data: {
+            message: props.localMessageItem,
+            fullMessage: props.fullMessage,
+          },
+          additional_data: item.additional_data,
+        },
+        serviceManager.instance,
+      );
       setIsWorkspaceOpen(true);
-      serviceManager.fire({
-        type: BusEventType.WORKSPACE_OPEN,
-      });
+      serviceManager.eventBus.fire(
+        {
+          type: BusEventType.WORKSPACE_OPEN,
+          data: {
+            message: props.localMessageItem,
+            fullMessage: props.fullMessage,
+          },
+          additional_data: item.additional_data,
+        },
+        serviceManager.instance,
+      );
     }
   };
 
   return (
-    <TileContainer className={cx("cds-aichat-tile-container")}>
-      <Tile data-rounded>
-        <h5 className="body-compact-02 margin-bottom-01">{item.title}</h5>
-        <p className="helper-text-01 text-secondary">{item.subtitle}</p>
-
-        {!isExpired && (
-          <Button
-            kind={BUTTON_KIND.GHOST}
-            size="md"
-            disabled={isWorkspaceOpen}
-            onClick={handleClick}
-            className="text-primary"
-          >
-            {isWorkspaceOpen ? (
-              <>
-                <View /> Viewing
-              </>
-            ) : (
-              <>
-                View details{" "}
-                <Maximize
-                  // @ts-ignore
-                  slot="icon"
-                />
-              </>
-            )}
-          </Button>
-        )}
-      </Tile>
-    </TileContainer>
+    <Card
+      data-rounded
+      class="cds-aichat-preview-card cds-aichat-preview-card__sm"
+    >
+      <div slot="body">
+        <h5 className="cds-aichat-preview-card--title">{item.title}</h5>
+        <p className="cds-aichat-preview-card--subtitle">{item.subtitle}</p>
+      </div>
+      <CardFooter
+        actions={[
+          {
+            icon: isWorkspaceOpen ? View16 : Maximize16,
+            id: "docs",
+            kind: "ghost",
+            label: "View details",
+            payload: {
+              test: "value",
+            },
+            isViewing: isWorkspaceOpen,
+          },
+        ]}
+        onFooterAction={handleClick}
+        size="md"
+      />
+    </Card>
   );
 }
 
