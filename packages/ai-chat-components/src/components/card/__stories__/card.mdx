@@ -1,6 +1,7 @@
 import { ArgTypes, Markdown, Meta, Canvas } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as CardStories from "./card.stories";
+import * as PreviewCardStories from "./preview-card.stories";
 
 <Meta of={CardStories} />
 
@@ -38,4 +39,41 @@ import Card from "@carbon/ai-chat-components/es/react/card.js";
 
 ## Component API
 
-<ArgTypes of="cds-aichat-card" />
+## `cds-aichat-card`
+
+<ArgTypes of={CardStories.Default} />
+
+## `cds-aichat-card-footer`
+
+```javascript
+actions = ${[
+  {
+    id: "primary",
+    label: "Primary",
+    kind: "primary",
+    payload: { test: "value" },
+    onClick: (e) => {
+      console.log("this is an optional handler if you wan't to pass individual onClicks this way. use @cds-aichat-card-footer-action for a common footer event.", e);
+    },
+  },
+  ...
+]}
+```
+
+<ArgTypes of={CardStories.CardFooter} />
+
+## `cds-aichat-card-steps`
+
+```javascript
+steps = ${[
+  {
+    description: "In progress...",
+    kind: "in-progress", // ICON_INDICATOR_KIND
+    label: "Step 1",
+    title: "Estimate inventory needs in all locations",
+  },
+  ...
+]}
+```
+
+<ArgTypes of={PreviewCardStories.CardSteps} />

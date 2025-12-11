@@ -51,16 +51,7 @@ export default {
 
 export const Small = {
   argTypes: {
-    isLayered: {
-      control: "boolean",
-      description: CardDefault.argTypes.isLayered.description,
-    },
-    maxWidth: {
-      control: { type: "radio", disable: true },
-      options: ["unset", "sm", "md", "lg"],
-      mapping: { unset: "unset", sm: "291px", md: "438px", lg: "535px" },
-      description: CardDefault.argTypes.maxWidth.description,
-    },
+    ...CardDefault.argTypes,
     footerActions: {
       control: "select",
       options: Object.keys(previewCardFooterPresets),
@@ -73,8 +64,7 @@ export const Small = {
     },
   },
   args: {
-    isLayered: false,
-    maxWidth: "sm",
+    ...CardDefault.args,
     footerActions: "2 ghost icon buttons",
     aiLabel: true,
   },
@@ -82,7 +72,10 @@ export const Small = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="body" class="preview-card preview-card-small">
             <h4>Document title</h4>
             <p>Subtitle</p>
@@ -364,7 +357,8 @@ export const CardSteps = {
     numberOfSteps: {
       control: { type: "number", min: 1, max: 10 },
       name: "Number of Steps",
-      description: "Number of steps to display in the card steps component.",
+      description:
+        "Number of steps to display in the card steps component. this is a storybook control. which multiplies the steps array passed to the component.",
     },
     maxWidth: {
       control: { type: "radio" },
@@ -374,7 +368,6 @@ export const CardSteps = {
     },
     label: {
       control: { type: "text" },
-      name: "Step Label",
       description: "Label for each step in the card steps component.",
     },
     kind: {
@@ -384,18 +377,15 @@ export const CardSteps = {
         ...ICON_INDICATOR_KIND,
         none: "none",
       },
-      name: "Step Kind",
       description:
         "Kind of step indicator to display. Options include `ICON_INDICATOR_KIND` values.",
     },
     title: {
       control: { type: "text" },
-      name: "Step Title",
       description: "Title for each step in the card steps component.",
     },
     description: {
       control: { type: "text" },
-      name: "Step Description",
       description: "Description for each step in the card steps component.",
     },
   },

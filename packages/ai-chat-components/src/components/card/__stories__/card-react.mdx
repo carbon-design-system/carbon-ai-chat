@@ -1,6 +1,7 @@
 import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as CardReactStories from "./card-react.stories";
+import * as PreviewCardReactStories from "./preview-card-react.stories";
 
 <Meta of={CardReactStories} />
 
@@ -39,4 +40,14 @@ function CardExample() {
 
 ## Component API
 
+## `<Card>`
+
 <ArgTypes of={CardReactStories.Default} />
+
+## `<CardFooter>`
+
+<ArgTypes of={CardReactStories.CardFooterStory} />
+
+## `<CardSteps>`
+
+<ArgTypes of={PreviewCardReactStories.CardStepsStory} />

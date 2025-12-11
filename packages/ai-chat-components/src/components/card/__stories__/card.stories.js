@@ -53,6 +53,11 @@ export const Default = {
       description:
         "If not set, the card uses `--cds-chat-shell-background`. If set, the card will use `--cds-layer` as its background.",
     },
+    isFlush: {
+      control: { type: "boolean", disable: true },
+      description:
+        "Default is `true`. which removes the padding of the card. this is useful when the elements inside the card are already padded. Set to `false` to add padding.",
+    },
     maxWidth: {
       control: "radio",
       options: ["unset", "sm", "md", "lg"],
@@ -61,12 +66,15 @@ export const Default = {
         "Sets the max width of the story container. This only affects the story wrapper and does not affect the component itself.",
     },
   },
-  args: { isLayered: false, maxWidth: "sm" },
+  args: { isLayered: false, maxWidth: "sm", isFlush: true },
   render: (args) =>
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           ${cardContent}
         </cds-aichat-card>
       `,
@@ -97,7 +105,10 @@ export const WithActions = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           ${cardContent}
           <cds-aichat-card-footer
             .actions=${cardFooterPresets[args.footerActions]}
@@ -125,7 +136,10 @@ export const WithImage = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="media" data-rounded="top">
             <img src=${args.image} alt="Card image" />
           </div>
@@ -156,7 +170,10 @@ export const OnlyImage = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="media" data-rounded>
             <img src=${args.image} alt="Card image" />
           </div>
@@ -182,7 +199,10 @@ export const WithAudio = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="media" data-rounded="top">
             <iframe
               scrolling="no"
@@ -218,7 +238,10 @@ export const OnlyVideo = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="media" data-rounded>
             <iframe
               src=${args.video}
@@ -237,7 +260,11 @@ export const OnlyVideo = {
 export const CardFooter = {
   argTypes: {
     ...(() => {
-      const { isLayered: _isLayered, ...rest } = WithActions.argTypes;
+      const {
+        isLayered: _isLayered,
+        isFlush: _isFlush,
+        ...rest
+      } = WithActions.argTypes;
       return rest;
     })(),
     footerActions: {
@@ -247,7 +274,7 @@ export const CardFooter = {
         ...previewCardFooterPresets,
       }),
       description:
-        "Select the preset actions object to display buttons in the card footer.",
+        "Select the preset actions array of objects passed to the component to display buttons in the card footer.",
     },
     footerSize: {
       control: "select",
@@ -268,7 +295,11 @@ export const CardFooter = {
   },
   args: {
     ...(() => {
-      const { isLayered: _isLayered, ...rest } = WithActions.args;
+      const {
+        isLayered: _isLayered,
+        isFlush: _isFlush,
+        ...rest
+      } = WithActions.args;
       return rest;
     })(),
     footerActions: "primary danger buttons",
