@@ -680,19 +680,10 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
     message: GenericItem;
 
     /**
-     * The full message (response or request) that contains the message item.
+     * The full message response that contains the message item.
      */
-    fullMessage: Message;
-
-    /**
-     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
-     */
-    slot?: string;
+    fullMessage: MessageResponse;
   };
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
 }
 
 /**
@@ -707,19 +698,10 @@ export interface BusEventWorkspaceOpen extends BusEvent {
     message: GenericItem;
 
     /**
-     * The full message (response or request) that contains the message item.
+     * The full message response that contains the message item.
      */
-    fullMessage: Message;
-
-    /**
-     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
-     */
-    slot?: string;
+    fullMessage: MessageResponse;
   };
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
 }
 
 /**
@@ -734,19 +716,10 @@ export interface BusEventWorkspacePreClose extends BusEvent {
     message: GenericItem;
 
     /**
-     * The full message (response or request) that contains the message item.
+     * The full message response that contains the message item.
      */
-    fullMessage: Message;
-
-    /**
-     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
-     */
-    slot?: string;
+    fullMessage: MessageResponse;
   };
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
 }
 
 /**
@@ -761,19 +734,10 @@ export interface BusEventWorkspaceClose extends BusEvent {
     message: GenericItem;
 
     /**
-     * The full message (response or request) that contains the message item.
+     * The full message response that contains the message item.
      */
-    fullMessage: Message;
-
-    /**
-     * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
-     */
-    slot?: string;
+    fullMessage: MessageResponse;
   };
-  /**
-   * The source of the message being sent.
-   */
-  source: MessageSendSource;
 }
 
 /**

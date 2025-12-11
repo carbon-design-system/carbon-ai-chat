@@ -49,7 +49,6 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
           data: {
             message: props.localMessageItem,
             fullMessage: props.fullMessage,
-            slot: "workspace",
           },
           additional_data: item.additional_data,
         },
@@ -62,7 +61,6 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
           data: {
             message: props.localMessageItem,
             fullMessage: props.fullMessage,
-            slot: "workspace",
           },
           additional_data: item.additional_data,
         },
