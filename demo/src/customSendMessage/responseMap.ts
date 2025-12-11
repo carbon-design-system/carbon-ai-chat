@@ -122,10 +122,12 @@ const RESPONSE_MAP: Record<
   "text (consecutive responses)": (instance) => {
     instance.updateIsMessageLoadingCounter("increase", "Thinking...");
     setTimeout(() => {
-      doTextWithFeedback(instance);
-      doTextWithFeedback(instance);
       instance.updateIsMessageLoadingCounter("decrease");
-    }, 5000);
+      doTextWithFeedback(instance);
+      setTimeout(() => {
+        doTextWithFeedback(instance);
+      }, 1000);
+    }, 3000);
   },
   html: (instance) => doHTML(instance),
   "html (stream)": (instance, requestOptions) =>

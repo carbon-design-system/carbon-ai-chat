@@ -351,7 +351,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           MessageErrorState.FAILED_WHILE_STREAMING
         }
         removeHTML={removeHTML}
-        doAutoScroll={props.doAutoScroll}
       />
     );
   }
