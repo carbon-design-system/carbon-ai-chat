@@ -119,13 +119,13 @@
     margin-inline-start: layout.$spacing-06;
   }
 
-  cds-aichat-code-snippet-tile-container {
+  cds-aichat-code-snippet-card {
     display: block;
     margin-block-end: layout.$spacing-05;
   }
 
   // Hide code snippet component until it's defined to prevent FOUC
-  cds-aichat-code-snippet-tile-container:not(:defined) {
+  cds-aichat-code-snippet-card:not(:defined) {
     display: none;
   }
 }
