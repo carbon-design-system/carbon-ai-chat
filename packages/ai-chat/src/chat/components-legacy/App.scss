@@ -49,11 +49,6 @@
   inset-inline-start: -10000px;
 }
 
-.cds-aichat--widget__region-container {
-  block-size: 100%;
-  inline-size: 100%;
-}
-
 .cds-aichat--modal-host {
   position: fixed;
   z-index: calc(#{chat-theme.$z-index} + 1);
@@ -106,7 +101,7 @@
   box-shadow: chat-theme.$ai-box-shadow-outer;
 }
 
-.cds-aichat--frameless .cds-aichat--widget {
+.cds-aichat--widget.cds-aichat--widget--frameless {
   border: none;
   box-shadow: none;
 }
@@ -296,15 +291,14 @@ in. */
   box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
 }
 
-.cds-aichat--frameless.cds-aichat--ai-theme .cds-aichat {
-  box-shadow: chat-theme.$ai-box-shadow-inner;
+.cds-aichat--ai-theme .cds-aichat--frameless .cds-aichat {
+  box-shadow: none;
 }
 
 .cds-aichat.cds-aichat--human-agent-app {
   min-inline-size: unset;
 }
 
-.cds-aichat--main-window,
 .cds-aichat--widget__layer {
   block-size: 100%;
   inline-size: 100%;
