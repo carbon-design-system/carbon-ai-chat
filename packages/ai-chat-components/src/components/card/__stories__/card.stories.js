@@ -51,7 +51,7 @@ export const Default = {
     isLayered: {
       control: "boolean",
       description:
-        "If not set, the card follows chat shell background color. If set, the card will have a regular carbon tile layered background.",
+        "If not set, the card uses --cds-chat-shell-background. If set, the card will use --cds-layer as its background.",
     },
     maxWidth: {
       control: "radio",
