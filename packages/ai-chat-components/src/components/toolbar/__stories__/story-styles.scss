@@ -30,15 +30,19 @@
 
 .truncated-text {
   display: -webkit-box;
+  overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   line-height: normal;
-  overflow-x: hidden;
   word-break: break-all;
 }
 
 [slot="icon"] {
   display: flex;
+}
+
+[slot="title"]:not(:has(.truncated-text)) {
+  white-space: nowrap;
 }
 
 .bold {

@@ -545,7 +545,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       containerClasses += ` ${prefix}--snippet-container--collapsed`;
     }
 
-    return html` <div class="${prefix}--snippet">
+    return html` <div class="${prefix}--snippet" data-rounded>
       <div class="${prefix}--snippet__header" data-rounded="top">
         <div class="${prefix}--snippet__meta">
           ${this._detectedLanguage && this._languageLabelLockedIn
@@ -587,6 +587,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         role="${this.editable ? "textbox" : "region"}"
         tabindex="${this.editable && !disabled ? 0 : null}"
         class="${containerClasses}"
+        data-rounded="bottom"
         aria-label="code-snippet"
         ${this.editable ? 'aria-readonly="false" aria-multiline="true"' : ""}
         style="${this._getContainerStyles(expandedCode)}"

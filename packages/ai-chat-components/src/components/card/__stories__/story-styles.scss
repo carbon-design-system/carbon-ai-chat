@@ -1,0 +1,114 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/type" as *;
+@use "@carbon/styles/scss/components/button/tokens" as *;
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+
+// story specific styles
+
+#{$prefix}-card {
+  @include rounded-modifiers;
+
+  .preview-card-default,
+  .preview-card-small,
+  .standard-card,
+  .iframe-body {
+    padding: layout.$spacing-05;
+  }
+
+  .preview-card-default,
+  .preview-card-small,
+  .standard-card {
+    h4 {
+      @include type-style("heading-01");
+
+      margin-block-end: layout.$spacing-04;
+    }
+
+    p {
+      @include type-style("body-01");
+    }
+  }
+
+  .iframe-body {
+    h4 {
+      @include type-style("body-02");
+
+      margin: 0;
+    }
+
+    p {
+      @include type-style("caption-01");
+
+      color: theme.$text-secondary;
+    }
+  }
+
+  .preview-card {
+    h4 {
+      @include type-style("body-compact-02");
+
+      color: theme.$text-primary;
+      margin-block-end: layout.$spacing-01;
+    }
+
+    p {
+      @include type-style("helper-text-01");
+
+      color: theme.$text-secondary;
+    }
+  }
+
+  [slot="media"] {
+    display: flex;
+
+    > * {
+      aspect-ratio: 16 / 9;
+      inline-size: 100%;
+    }
+  }
+
+  .preview-card-default {
+    border-block-end: to-rem(1px) solid theme.$chat-bubble-border;
+  }
+
+  .preview-card-toolbar {
+    --cds-aichat-rounded-modifier-radius: 0.5rem;
+
+    border-block-end: to-rem(1px) solid theme.$chat-bubble-border;
+  }
+
+  .ai-label-body h4 {
+    margin-block-end: layout.$spacing-05;
+  }
+
+  .title-container {
+    padding-block: layout.$spacing-04;
+    padding-inline: layout.$spacing-02;
+
+    h4,
+    p {
+      margin: 0;
+    }
+  }
+
+  .truncated-text {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-height: normal;
+    word-break: break-all;
+  }
+}
