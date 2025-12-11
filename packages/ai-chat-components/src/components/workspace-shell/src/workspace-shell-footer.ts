@@ -30,7 +30,6 @@ export type Action = {
 /**
  * Workspace Shell Footer.
  * @element cds-aichat-workspace-shell-footer
- * @slot footer-action - Represents the action area in the Footer.
  * @fires cds-aichat-workspace-shell-footer-clicked - The custom event fired when footer buttons are clicked.
  */
 @customElement(`${prefix}-workspace-shell-footer`)
