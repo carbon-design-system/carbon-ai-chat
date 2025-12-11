@@ -53,7 +53,7 @@ type Action = {
   disabled?: boolean;
   payload?: unknown;
   icon?: CarbonIcon;
-  onClick?: () => void;
+  onClick?: () => void; // this is an optional handler if you wan't to pass individual onClicks this way. use @cds-aichat-card-footer-action for a common footer event.
   tooltipText?: string;
   isViewing?: boolean;
 };
