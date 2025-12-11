@@ -46,18 +46,17 @@ import Card from "@carbon/ai-chat-components/es/react/card.js";
 ## `cds-aichat-card-footer`
 
 ```javascript
-actions = ${[
-  {
-    id: "primary",
-    label: "Primary",
-    kind: "primary",
-    payload: { test: "value" },
-    onClick: (e) => {
-      console.log("this is an optional handler if you wan't to pass individual onClicks this way. use @cds-aichat-card-footer-action for a common footer event.", e);
-    },
-  },
-  ...
-]}
+type Action = {
+  label: string;
+  id?: string;
+  kind?: BUTTON_KIND;
+  disabled?: boolean;
+  payload?: unknown;
+  icon?: CarbonIcon;
+  onClick?: () => void;
+  tooltipText?: string;
+  isViewing?: boolean;
+};
 ```
 
 <ArgTypes of={CardStories.CardFooter} />
@@ -65,15 +64,12 @@ actions = ${[
 ## `cds-aichat-card-steps`
 
 ```javascript
-steps = ${[
-  {
-    description: "In progress...",
-    kind: "in-progress", // ICON_INDICATOR_KIND
-    label: "Step 1",
-    title: "Estimate inventory needs in all locations",
-  },
-  ...
-]}
+type Step = {
+  title: string;
+  description?: string;
+  kind?: ICON_INDICATOR_KIND;
+  label?: string;
+};
 ```
 
 <ArgTypes of={PreviewCardStories.CardSteps} />
