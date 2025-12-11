@@ -36,7 +36,7 @@ import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
 ### HTML
 
 ```html
-<cds-aichat-toolbar overflow="" .actions="${actions}">
+<cds-aichat-toolbar overflow .actions="${actions}">
   <!-- Navigation slot -->
   <div slot="navigation" data-fixed="" data-rounded="top-left">
     <cds-icon-button
@@ -64,7 +64,7 @@ import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
     size="2xs"
     autoalign=""
     alignment="bottom"
-    slot="toolbar-ai-label"
+    slot="decorator"
   >
     <div slot="body-text">
       <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
