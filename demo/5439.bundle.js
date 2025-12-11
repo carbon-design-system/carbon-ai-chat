@@ -1,5 +1,5 @@
 /*! For license information please see 5439.bundle.js.LICENSE.txt */
-"use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return r}}),a(3410),a(7189),a(880),a(5457);var l=a(6707),s=a(7118),c=a(3192),d=a(3967);function r(e){const{tableTitle:t,tableDescription:a,headers:r,filterPlaceholderText:o,locale:i,_handleDownload:n,_rowsWithIDs:b,_allowFiltering:$,_handleFilterEvent:h}=e;return c.qy`<cds-table
+"use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return r}}),a(8766),a(7189),a(880),a(5457);var l=a(6707),s=a(7118),c=a(3192),d=a(3967);function r(e){const{tableTitle:t,tableDescription:a,headers:r,filterPlaceholderText:o,locale:i,_handleDownload:n,_rowsWithIDs:b,_allowFiltering:$,_handleFilterEvent:h}=e;return c.qy`<cds-table
     size="md"
     locale=${i}
     .isSortable=${$}
