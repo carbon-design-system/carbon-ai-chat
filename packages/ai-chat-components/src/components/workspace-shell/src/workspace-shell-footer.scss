@@ -11,7 +11,7 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/theme";
 @use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifier-new" as *;
+@use "../../../globals/scss/modifiers" as *;
 @use "@carbon/styles/scss/breakpoint" as *;
 
 @include rounded-modifiers;

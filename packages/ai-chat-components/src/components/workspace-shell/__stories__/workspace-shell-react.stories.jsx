@@ -1,19 +1,17 @@
 import React from "react";
 import Toolbar from "../../../react/toolbar";
-import WorkspaceShell from "../../../react/workspace-shell";
-import WorkspaceShellHeader from "../../../react/workspace-shell-header";
-import WorkspaceShellBody from "../../../react/workspace-shell-body";
-import WorkspaceShellFooter from "../../../react/workspace-shell-footer";
+import WorkspaceShell, {
+  WorkspaceShellHeader,
+  WorkspaceShellBody,
+  WorkspaceShellFooter,
+} from "../../../react/workspace-shell";
 import Edit16 from "@carbon/icons/es/edit/16.js";
 import AILabel from "../../../react/ai-label";
 import InlineNotification from "../../../react/inline-notification";
 import Button from "../../../react/button";
 import Icon from "../../../react/icon";
 import { action } from "storybook/actions";
-import {
-  getHeaderDescription,
-  getBodyContent,
-} from "./story-helper-react";
+import { getHeaderDescription, getBodyContent } from "./story-helper-react";
 import { actionLists, FooterActionList } from "./story-data";
 
 export default {
@@ -153,9 +151,9 @@ export const Default = {
         <WorkspaceShellBody>{getBodyContent(bodyContent)}</WorkspaceShellBody>
         {footerAction !== "None" && (
           <WorkspaceShellFooter
-          onFooterClicked={ (data) => action("action")(data) }
-          actions={FooterActionList[footerAction]}>
-          </WorkspaceShellFooter>
+            onFooterClicked={(data) => action("action")(data)}
+            actions={FooterActionList[footerAction]}
+          ></WorkspaceShellFooter>
         )}
       </WorkspaceShell>
     );

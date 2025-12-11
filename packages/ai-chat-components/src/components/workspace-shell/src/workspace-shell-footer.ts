@@ -120,8 +120,7 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
   }
 
   private _updateStacked() {
-    const width = this.parentElement?.clientWidth ?? 0;
-    const shouldStack = width < 678;
+    const shouldStack = window.innerWidth < 671;
 
     if (shouldStack !== this._isStacked) {
       this._isStacked = shouldStack;
