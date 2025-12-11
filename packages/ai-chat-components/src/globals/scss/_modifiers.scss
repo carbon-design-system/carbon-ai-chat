@@ -87,7 +87,7 @@
   }
 
   :host([data-rounded="top-right"]:not([data-stacked])),
-  [data-rounded="top-right"] {
+  [data-rounded="top-right"]:not([data-stacked]) {
     @include radius(start-end);
 
     :last-child {
@@ -99,7 +99,8 @@
     }
   }
 
-  :host([data-rounded="top-right"][data-stacked]) {
+  :host([data-rounded="top-right"][data-stacked]),
+  [data-rounded="top-right"][data-stacked] {
     @include radius(start-end);
 
     :first-child {
