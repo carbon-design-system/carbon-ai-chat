@@ -20,6 +20,7 @@ import { html } from "lit";
 import Edit16 from "@carbon/icons/es/edit/16.js";
 import { actionLists, FooterActionList } from "./story-data";
 import { getHeaderDescription, getBodyContent } from "./story-hleper";
+import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Workspace shell",
@@ -108,9 +109,11 @@ export default {
     },
   },
   decorators: [
-    (story) => html`
-      <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
-    `,
+    (story) =>
+      html`<style>
+          ${styles}
+        </style>
+        <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell> `,
   ],
 };
 
@@ -135,7 +138,14 @@ export const Default = {
         ?overflow=${args.toolbarOverflow}
         .actions=${args.toolbarAction}
       >
-        <div slot="title" data-fixed>${args.toolbarTitle}</div>
+        <div
+          slot="title"
+          data-fixed
+          class="story__toolbar-tile"
+          title=${args.toolbarTitle}
+        >
+          ${args.toolbarTitle}
+        </div>
         <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
           <div slot="body-text">
             <p class="secondary">

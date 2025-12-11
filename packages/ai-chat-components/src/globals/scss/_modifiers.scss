@@ -23,6 +23,7 @@
 }
 
 @mixin rounded-modifiers {
+  :host([data-rounded=""]),
   [data-rounded=""] {
     @include full-radius;
 
@@ -38,6 +39,7 @@
     }
   }
 
+  :host([data-rounded="top"]:not([data-stacked])),
   [data-rounded="top"] {
     @include radius(start-start, start-end);
 
@@ -58,6 +60,19 @@
     }
   }
 
+  :host([data-rounded="top"][data-stacked]) {
+    @include radius(start-start, start-end);
+
+    > :first-child {
+      @include radius(start-start, start-end);
+
+      &::part(button) {
+        @include radius(start-start, start-end);
+      }
+    }
+  }
+
+  :host([data-rounded="top-left"]),
   [data-rounded="top-left"] {
     @include radius(start-start);
 
@@ -70,10 +85,23 @@
     }
   }
 
+  :host([data-rounded="top-right"]:not([data-stacked])),
   [data-rounded="top-right"] {
     @include radius(start-end);
 
     :last-child {
+      @include radius(start-end);
+
+      &::part(button) {
+        @include radius(start-end);
+      }
+    }
+  }
+
+  :host([data-rounded="top-right"][data-stacked]) {
+    @include radius(start-end);
+
+    :first-child {
       @include radius(start-end);
 
       &::part(button) {
@@ -115,6 +143,8 @@
   }
 
   :host([data-rounded="bottom"]:not([data-stacked])) {
+    @include radius(end-start, end-end);
+
     > :first-child {
       @include radius(end-start);
 
@@ -133,6 +163,8 @@
   }
 
   :host([data-rounded="bottom"][data-stacked]) {
+    @include radius(end-start, end-end);
+
     > :last-child {
       @include radius(end-start, end-end);
 
@@ -142,6 +174,7 @@
     }
   }
 
+  :host([data-rounded="bottom-left"]:not([data-stacked])),
   [data-rounded="bottom-left"] {
     @include radius(end-start);
 
@@ -154,6 +187,19 @@
     }
   }
 
+  :host([data-rounded="bottom-left"][data-stacked]) {
+    @include radius(end-start);
+
+    :last-child {
+      @include radius(end-start);
+
+      &::part(button) {
+        @include radius(end-start);
+      }
+    }
+  }
+
+  :host([data-rounded="bottom-right"]),
   [data-rounded="bottom-right"] {
     @include radius(end-end);
 
@@ -163,14 +209,6 @@
       &::part(button) {
         @include radius(end-end);
       }
-    }
-  }
-
-  cds-button[data-rounded="bottom-right"] {
-    @include radius(end-end);
-
-    &::part(button) {
-      @include radius(end-end);
     }
   }
 }
