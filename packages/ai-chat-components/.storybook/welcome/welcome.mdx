@@ -1,5 +1,5 @@
-import { Meta } from '@storybook/addon-docs/blocks';
-import '@carbon/web-components/es/components/notification/inline-notification.js';
+import { Meta } from "@storybook/addon-docs/blocks";
+import "@carbon/web-components/es/components/notification/inline-notification.js";
 
 <Meta title="Introduction/Welcome" />
 
@@ -42,25 +42,22 @@ The first thing you need is **setting up a module bundler** to resolve ECMAScrip
 Once you set up a module bundler, you can start importing our component modules, for example:
 
 ```javascript
-import '@carbon/ai-chat-components/es/components/tile-container/tile-container.js';
+import "@carbon/ai-chat-components/es/components/card/card.js";
 ```
 
 Once you've imported the component modules, you can use our components in the same manner as native HTML tags, for example:
 
 ```html
-<cds-aichat-tile-container>
-  <cds-tile>
-    <h5 class="heading-01 margin-bottom-04">
-      AI Chat Tile styling wrapper
-    </h5>
-    <p class="body-01">
-      The Carbon Design System provides a comprehensive library of
-      components, tokens, and guidelines. We need to implement the new AI
-      Chat component following Carbon's design principles and accessibility
-      standards.
+<cds-aichat-card>
+  <div slot="body" class="standard-card">
+    <h4>AI Chat Card</h4>
+    <p>
+      The Carbon Design System provides a comprehensive library of components,
+      tokens, and guidelines. We need to implement the new AI Chat component
+      following Carbon's design principles and accessibility standards.
     </p>
-  </cds-tile>
-</cds-aichat-tile-container>
+  </div>
+</cds-aichat-card>
 ```
 
 ### JavaScript framework integration
