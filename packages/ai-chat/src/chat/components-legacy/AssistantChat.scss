@@ -6,6 +6,7 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 
 .cds-aichat--non-header-container {
@@ -13,42 +14,39 @@
   display: flex;
   overflow: hidden;
   flex: 1 1 0%;
-
-  container-type: inline-size;
 }
 
 .cds-aichat--messages-and-input-container {
   position: relative;
   display: flex;
-  flex: 1 1 25%;
   flex-direction: column;
-  inline-size: 25%;
+  inline-size: 100%;
+  transition: inline-size motion.$duration-fast-02
+    motion.motion(standard, productive);
+}
+// recheck verify compatibility for :has
+.cds-aichat--non-header-container:has(
+  .cds-aichat--workspace-container-panel__open
+) {
+  .cds-aichat--messages-and-input-container {
+    inline-size: 25%;
+    margin-inline: layout.$spacing-07;
+  }
 }
 
-.cds-aichat--workspace-container {
+.cds-aichat--workspace-container-panel {
   inline-size: 0;
-  transition: width 0.1s ease-in-out;
+  transition: inline-size motion.$duration-fast-02
+    motion.motion(standard, productive);
+
+  &__open {
+    inline-size: 75%;
+  }
 }
 
 .cds-aichat--workspace-container-inner {
   border: 1px solid #008000;
   block-size: 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cds-aichat--workspace-container {
-    transition: none;
-  }
-}
-
-@container (min-width: 1024px) {
-  .cds-aichat--messages-and-input-container {
-    margin-inline: 2rem;
-  }
-
-  .cds-aichat--workspace-container__open {
-    inline-size: 75%;
-  }
 }
 
 .cds-aichat--messages-container__non-input-container {

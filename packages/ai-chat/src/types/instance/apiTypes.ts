@@ -52,6 +52,12 @@ export enum PanelType {
    * Opens the panel so that it overlays the main chat content.
    */
   DEFAULT = "default",
+
+  /**
+   * Opens the Workspace panel, which opens as a panel from right to left in full screen mode. and is converted into a
+   * modal in mobile mode.
+   */
+  WORKSPACE = "workspace",
 }
 
 /**
