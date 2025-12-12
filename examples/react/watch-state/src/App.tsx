@@ -14,10 +14,11 @@ import {
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
+import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
 
 const config: PublicConfig = {
   messaging: {
@@ -33,6 +34,7 @@ const config: PublicConfig = {
         { label: "What can you help me with?" },
         { label: "Tell me about state management" },
         { label: "How do I use the STATE_CHANGE event?" },
+        { label: "Show me a user_defined response" },
       ],
     },
   },
@@ -40,18 +42,32 @@ const config: PublicConfig = {
 
 function App() {
   const [isHomescreenVisible, setIsHomescreenVisible] = useState(true);
+  const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
 
   function onBeforeRender(instance: ChatInstance) {
     // Get initial state
     const initialState = instance.getState();
     setIsHomescreenVisible(initialState.homeScreenState.isHomeScreenOpen);
+    setActiveResponseId(initialState.activeResponseId ?? null);
 
     // Listen for STATE_CHANGE events
     instance.on({
       type: BusEventType.STATE_CHANGE,
       handler: (event: any) => {
         const isHomescreen = event.newState.homeScreenState.isHomeScreenOpen;
-        setIsHomescreenVisible(isHomescreen);
+        if (
+          event.previousState?.homeScreenState.isHomeScreenOpen !==
+          event.newState.homeScreenState.isHomeScreenOpen
+        ) {
+          setIsHomescreenVisible(isHomescreen);
+        }
+
+        if (
+          event.previousState?.activeResponseId !==
+          event.newState?.activeResponseId
+        ) {
+          setActiveResponseId(event.newState.activeResponseId ?? null);
+        }
         console.log(
           "View changed via STATE_CHANGE event:",
           isHomescreen ? "Homescreen" : "Chat View",
@@ -60,6 +76,11 @@ function App() {
     });
   }
 
+  const renderUserDefinedResponse = useMemo(
+    () => renderUserDefinedResponseFactory(activeResponseId),
+    [activeResponseId],
+  );
+
   return (
     <div>
       <div>
@@ -67,7 +88,11 @@ function App() {
         <p>{isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
         <p>Watching state via STATE_CHANGE event</p>
       </div>
-      <ChatContainer {...config} onBeforeRender={onBeforeRender} />
+      <ChatContainer
+        {...config}
+        onBeforeRender={onBeforeRender}
+        renderUserDefinedResponse={renderUserDefinedResponse}
+      />
     </div>
   );
 }

@@ -7,15 +7,17 @@
  *  @license
  */
 
-import "./styles.css";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
+  BusEventType,
   CarbonTheme,
   type ChatInstance,
+  type MessageResponse,
   type PublicConfig,
+  type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { customLoadHistory } from "./customLoadHistory";
@@ -31,11 +33,57 @@ const config: PublicConfig = {
 
 @customElement("my-app")
 export class Demo extends LitElement {
+  static styles = css`
+    .external {
+      background: green;
+      color: #fff;
+      padding: 1rem;
+    }
+  `;
+
   @state()
   accessor instance!: ChatInstance;
 
+  @state()
+  accessor activeResponseId: string | null = null;
+
+  @state()
+  accessor userDefinedSlotsMap: {
+    [key: string]: { message: UserDefinedItem; fullMessage: MessageResponse };
+  } = {};
+
   onBeforeRender = (instance: ChatInstance) => {
     this.instance = instance;
+
+    const initialState = instance.getState();
+    this.activeResponseId = initialState.activeResponseId ?? null;
+
+    instance.on([
+      {
+        type: BusEventType.STATE_CHANGE,
+        handler: (event: any) => {
+          if (
+            event.previousState?.activeResponseId !==
+            event.newState?.activeResponseId
+          ) {
+            this.activeResponseId = event.newState.activeResponseId ?? null;
+          }
+        },
+      },
+      {
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: (event: any) => {
+          const { slot, message, fullMessage } = event.data;
+          if (!slot) {
+            return;
+          }
+          this.userDefinedSlotsMap = {
+            ...this.userDefinedSlotsMap,
+            [slot]: { message, fullMessage },
+          };
+        },
+      },
+    ]);
   };
 
   async injectHistory() {
@@ -46,8 +94,19 @@ export class Demo extends LitElement {
     const randomCount = Math.floor(Math.random() * 81) + 20; // Random number between 20 and 100
     const historyData = await customLoadHistory(this.instance, randomCount);
 
-    this.instance.messaging.clearConversation();
+    await this.instance.messaging.clearConversation();
     this.instance.messaging.insertHistory(historyData);
+
+    // Display the active response information for the last history message.
+    const lastMessage = historyData[historyData.length - 1]?.message;
+    const isLatest =
+      lastMessage && lastMessage.id === this.activeResponseId ? "Yes" : "Nope";
+    console.info(
+      "[History Example] Last message id:",
+      lastMessage?.id,
+      "Is latest?",
+      isLatest,
+    );
   }
 
   render() {
@@ -61,7 +120,25 @@ export class Demo extends LitElement {
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
         .injectCarbonTheme=${config.injectCarbonTheme}
-      ></cds-aichat-container>
+      >
+        ${Object.entries(this.userDefinedSlotsMap).map(
+          ([slot, { message, fullMessage }]) => {
+            const isLatest =
+              Boolean(this.activeResponseId) &&
+              fullMessage?.id === this.activeResponseId;
+            return html`<div slot=${slot} class="external">
+              ${message.user_defined?.text as string}
+              <div>
+                Latest response id:
+                ${this.activeResponseId ? this.activeResponseId : "none yet"}
+              </div>
+              <div>
+                Is this the most recent message? ${isLatest ? "Yes" : "Nope"}
+              </div>
+            </div>`;
+          },
+        )}
+      </cds-aichat-container>
     `;
   }
 }

@@ -318,6 +318,11 @@ interface ChatMessagesState {
   messageIDs: string[];
 
   /**
+   * The id of the most recently active response (including streaming).
+   */
+  activeResponseId: string | null;
+
+  /**
    * Counter that indicates if a message is loading and a loading indicator should be displayed.
    * If "0" then we do not show loading indicator.
    */

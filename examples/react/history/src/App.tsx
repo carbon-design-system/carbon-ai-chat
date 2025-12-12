@@ -43,7 +43,7 @@ function App() {
     const randomCount = Math.floor(Math.random() * 81) + 20; // Random number between 20 and 100
     const historyData = await customLoadHistory(chatInstance, randomCount);
 
-    chatInstance.messaging.clearConversation();
+    await chatInstance.messaging.clearConversation();
     chatInstance.messaging.insertHistory(historyData);
   }
 

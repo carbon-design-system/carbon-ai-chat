@@ -12,13 +12,17 @@ import React from "react";
 
 import { CustomResponseExample } from "./CustomResponseExample";
 
-function renderUserDefinedResponse(
-  state: RenderUserDefinedState,
-  instance: ChatInstance,
-) {
-  const { messageItem } = state;
-  if (messageItem) {
-    const activeResponseId = instance.getState().activeResponseId;
+function renderUserDefinedResponseFactory(activeResponseId?: string | null) {
+  return function renderUserDefinedResponse(
+    state: RenderUserDefinedState,
+    _instance: ChatInstance,
+  ) {
+    const { messageItem } = state;
+
+    if (!messageItem) {
+      return undefined;
+    }
+
     const isLatest =
       Boolean(activeResponseId) && state.fullMessage?.id === activeResponseId;
 
@@ -34,8 +38,7 @@ function renderUserDefinedResponse(
       default:
         return undefined;
     }
-  }
-  return undefined;
+  };
 }
 
-export { renderUserDefinedResponse };
+export { renderUserDefinedResponseFactory };

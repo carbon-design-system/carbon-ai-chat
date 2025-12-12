@@ -101,19 +101,11 @@ async function customLoadHistory(_instance: ChatInstance, count = 20) {
   const adjustedCount = count % 2 === 0 ? count + 1 : count;
   const history: HistoryItem[] = [];
 
-  // Randomly pick one response index for the USER_DEFINED response
-  const responseIndices = Array.from(
-    { length: adjustedCount },
-    (_, i) => i,
-  ).filter((i) => i % 2 === 0);
-  const userDefinedIndex =
-    responseIndices[Math.floor(Math.random() * responseIndices.length)];
-
   for (let i = 0; i < adjustedCount; i++) {
     const isResponse = i % 2 === 0;
 
-    // Only the selected response becomes USER_DEFINED
-    const useUserDefined = isResponse && i === userDefinedIndex;
+    // Make the last response the user_defined item to demonstrate activeResponseId
+    const useUserDefined = isResponse && i === adjustedCount - 1;
 
     history.push(generateHistoryItem(isResponse, useUserDefined));
   }
