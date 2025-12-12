@@ -119,6 +119,16 @@ const RESPONSE_MAP: Record<
     doTextWithReasoningStepsStreaming(instance, requestOptions),
   "text (stream) with single reasoning trace": (instance, requestOptions) =>
     doTextWithReasoningTraceStreaming(instance, requestOptions),
+  "text (consecutive responses)": (instance) => {
+    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+    setTimeout(() => {
+      instance.updateIsMessageLoadingCounter("decrease");
+      doTextWithFeedback(instance);
+      setTimeout(() => {
+        doTextWithFeedback(instance);
+      }, 1000);
+    }, 3000);
+  },
   html: (instance) => doHTML(instance),
   "html (stream)": (instance, requestOptions) =>
     doHTMLStreaming(
