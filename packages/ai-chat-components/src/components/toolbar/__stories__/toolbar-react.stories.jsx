@@ -14,92 +14,12 @@ import {
 import Icon from "../../../react/icon";
 import IconButton from "../../../react/icon-button";
 import AILabel from "../../../react/ai-label";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Version16 from "@carbon/icons/es/version/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import Home16 from "@carbon/icons/es/home/16.js";
-import ArrowLeft16 from "@carbon/icons/es/arrow--left/16.js";
-import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import { actionLists } from "./story-data";
+import { Home16, ArrowLeft16, OverflowMenuVertical16 } from "@carbon/icons";
 import "./story-styles.scss";
+import { Default as DefaultWC } from "./toolbar.stories";
 
 import { action } from "storybook/actions";
-
-const actionLists = {
-  "Advanced list": [
-    {
-      text: "Version",
-      icon: iconLoader(Version16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Download",
-      icon: iconLoader(Download16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Share",
-      icon: iconLoader(Share16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Launch",
-      icon: iconLoader(Launch16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Maximize",
-      icon: iconLoader(Maximize16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Close",
-      fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-  ],
-  "Basic list": [
-    {
-      text: "Launch",
-      icon: iconLoader(Launch16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Maximize",
-      icon: iconLoader(Maximize16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-    {
-      text: "Close",
-      fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-  ],
-  "Close only": [
-    {
-      text: "Close",
-      fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
-    },
-  ],
-  None: [],
-};
 
 export default {
   title: "Components/Toolbar",
@@ -254,10 +174,9 @@ export default {
     aiLabel: {
       table: { category: "slot" },
       control: "boolean",
-      description:
-        "AI Label slot in the toolbar component `slot='toolbar-ai-label'`",
+      description: "AI Label slot in the toolbar component `slot='decorator'`",
     },
-    "--cds-aichat-border-radius": {
+    "--cds-aichat-rounded-modifier-radius": {
       control: "boolean",
       description:
         "This is a story only control, which defines css custom property on the toolbar. this gets inherited automatically when placed inside ai-chat. override this to 0px in any particular scope to opt out of rounded border-radius",
@@ -267,13 +186,7 @@ export default {
 
 export const Default = {
   args: {
-    title: "default",
-    overflow: true,
-    actions: "Advanced list",
-    navigation: "home",
-    fixedActions: "none",
-    aiLabel: true,
-    "--cds-aichat-border-radius": false,
+    ...DefaultWC.args,
   },
   render: ({
     title,
@@ -281,7 +194,7 @@ export const Default = {
     actions,
     aiLabel,
     navigation,
-    "--cds-aichat-border-radius": borderRadius,
+    "--cds-aichat-rounded-modifier-radius": borderRadius,
     fixedActions,
   }) => {
     return (
@@ -289,7 +202,9 @@ export const Default = {
         actions={actions}
         overflow={overflow}
         style={
-          borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined
+          borderRadius
+            ? { "--cds-aichat-rounded-modifier-radius": "8px" }
+            : undefined
         }
       >
         {/* Navigation slot */}
@@ -305,12 +220,7 @@ export const Default = {
 
         {/* AI Label slot */}
         {aiLabel && (
-          <AILabel
-            size="2xs"
-            autoalign
-            alignment="bottom"
-            slot="toolbar-ai-label"
-          >
+          <AILabel size="2xs" autoalign alignment="bottom" slot="decorator">
             <div slot="body-text">
               <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
               <div>
