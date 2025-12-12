@@ -40,6 +40,7 @@ import WriteableElement from "./WriteableElement";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { PageObjectId } from "../../testing/PageObjectId";
+import WorkspaceContainer from "./WorkspaceContainer";
 
 interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   languagePack: LanguagePack;
@@ -389,6 +390,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
                 {this.renderMessagesAndInput()}
               </div>
             )}
+            <WorkspaceContainer></WorkspaceContainer>
           </div>
         </div>
       </div>

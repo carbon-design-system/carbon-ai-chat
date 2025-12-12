@@ -33,6 +33,7 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
 
   const panelByLocation: Record<PanelType, string> = {
     [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_ID,
+    [PanelType.WORKSPACE]: DEFAULT_CUSTOM_PANEL_ID,
   };
 
   return Object.freeze({
