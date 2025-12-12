@@ -30,7 +30,21 @@
 ) {
   .cds-aichat--messages-and-input-container {
     inline-size: 25%;
-    margin-inline: layout.$spacing-07;
+  }
+}
+
+.cds-aichat--widget--max-width {
+  .cds-aichat--non-header-container:has(
+    .cds-aichat--workspace-container-panel__open
+  ) {
+    .cds-aichat--messages-and-input-container {
+      margin-inline: layout.$spacing-07;
+    }
+  }
+
+  .cds-aichat--messages-container__non-input-container {
+    overflow: hidden auto;
+    block-size: 100%;
   }
 }
 
@@ -55,13 +69,6 @@
   overflow: hidden;
   flex: 1;
   flex-direction: column;
-}
-
-.cds-aichat--widget--max-width {
-  .cds-aichat--messages-container__non-input-container {
-    overflow: hidden auto;
-    block-size: 100%;
-  }
 }
 
 .cds-aichat--process-wizard-done-button {
