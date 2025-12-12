@@ -235,52 +235,22 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   let closeIsReversible = true;
   switch (minimizeButtonIconType) {
     case MinimizeButtonIconType.CLOSE:
-      closeIcon = (
-        <CloseLarge
-          aria-label={closeButtonLabel}
-          slot="icon"
-          className="cds-aichat--icon__close"
-        />
-      );
+      closeIcon = <CloseLarge aria-label={closeButtonLabel} slot="icon" />;
       break;
     case MinimizeButtonIconType.MINIMIZE:
-      closeIcon = (
-        <SubtractLarge
-          aria-label={closeButtonLabel}
-          slot="icon"
-          className="cds-aichat--icon__subtract"
-        />
-      );
+      closeIcon = <SubtractLarge aria-label={closeButtonLabel} slot="icon" />;
       break;
     case MinimizeButtonIconType.SIDE_PANEL_LEFT:
       closeIsReversible = false;
-      closeIcon = (
-        <SidePanelClose
-          aria-label={closeButtonLabel}
-          slot="icon"
-          className="cds-aichat--icon__side-panel-close"
-        />
-      );
+      closeIcon = <SidePanelClose aria-label={closeButtonLabel} slot="icon" />;
       break;
     case MinimizeButtonIconType.SIDE_PANEL_RIGHT:
       closeIsReversible = false;
       closeReverseIcon = true;
-      closeIcon = (
-        <SidePanelClose
-          aria-label={closeButtonLabel}
-          slot="icon"
-          className="cds-aichat--icon__side-panel-close"
-        />
-      );
+      closeIcon = <SidePanelClose aria-label={closeButtonLabel} slot="icon" />;
       break;
     default: {
-      closeIcon = (
-        <SubtractLarge
-          aria-label={closeButtonLabel}
-          slot="icon"
-          className="cds-aichat--icon__subtract"
-        />
-      );
+      closeIcon = <SubtractLarge aria-label={closeButtonLabel} slot="icon" />;
       break;
     }
   }
@@ -425,7 +395,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 "cds-aichat--reverse-icon": closeReverseIcon,
               })}
               isReversible={closeIsReversible}
-              label={closeButtonLabel}
+              label={closeButtonLabel ?? ""}
               onClick={async () => {
                 onClickClose();
               }}
@@ -499,6 +469,7 @@ function HeaderButton({
   isReversible = true,
   tooltipPosition,
   testId,
+  label,
   disabled = false,
 }: HeaderButtonProps) {
   const buttonKindVal = buttonKind || BUTTON_KIND.GHOST;
@@ -514,6 +485,7 @@ function HeaderButton({
       tooltipPosition={tooltipPosition}
       data-testid={testId}
       disabled={disabled}
+      tooltipText={label}
     >
       {children}
     </Button>
