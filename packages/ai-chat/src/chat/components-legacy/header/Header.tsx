@@ -285,9 +285,13 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       <OverflowMenu
         className="cds-aichat--header__overflow-menu"
         ref={overflowRef}
+        align={
+          isRTL ? BUTTON_TOOLTIP_POSITION.LEFT : BUTTON_TOOLTIP_POSITION.RIGHT
+        }
         tooltip-text={overflowMenuTooltip}
         aria-label={overflowMenuAriaLabel}
       >
+        <span slot="tooltip-content">{overflowMenuTooltip}</span>
         <OverflowMenuVertical
           aria-label={overflowMenuAriaLabel}
           className="cds--overflow-menu__icon"
