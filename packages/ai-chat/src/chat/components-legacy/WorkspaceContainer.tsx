@@ -30,10 +30,8 @@ function WorkspaceContainer(props: any) {
       {isSmallViewport && isWorkspaceOpen ? (
         <Modal
           open={isWorkspaceOpen}
-          onRequestClose={props.onRequestClose}
-          size="lg"
+          // onRequestClose={props.onRequestClose}
           hasScrollingContent={true}
-          modalHeading="Workspace"
           className="cds--ai-chat__workspace-modal"
         >
           <WorkspaceContainerInner {...props} />
