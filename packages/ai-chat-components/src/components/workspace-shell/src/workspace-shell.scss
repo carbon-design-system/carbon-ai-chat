@@ -40,82 +40,7 @@ $css--plex: true !default;
   padding: rem(8px);
 }
 
-:host(#{$prefix}-workspace-shell-header) {
-  display: grid;
-  align-items: baseline;
-  padding: rem(24px) rem(32px);
-  border-block-end: solid rem(1px) theme.$chat-bubble-border;
-  color: theme.$text-secondary;
-  grid-auto-flow: column;
-
-  @include type.type-style("body-01");
-
-  @include breakpoint-down("md") {
-    gap: 16px;
-    grid-auto-flow: row;
-  }
-}
-:host(#{$prefix}-workspace-shell-body) {
-  display: block;
-  overflow: auto;
-  padding: rem(24px) rem(32px);
-  block-size: rem(504px);
-}
-:host(#{$prefix}-workspace-shell-footer) {
-  display: grid;
-  align-items: stretch;
-  border-block-start: solid rem(1px) theme.$border-subtle-00;
-  grid-auto-flow: column;
-  grid-template-columns: 50% 25% 25%;
-
-  ::slotted(cds-button[data-index="1"]) {
-    grid-column: 3;
-  }
-
-  ::slotted(cds-button[data-index="2"]) {
-    grid-column: 2;
-  }
-
-  ::slotted(cds-button[data-index="3"]) {
-    grid-column: 1;
-  }
-  @include breakpoint-down("md") {
-    grid-auto-flow: row;
-    grid-template-columns: 1fr;
-
-    ::slotted(cds-button[data-index="1"]) {
-      grid-column: 1;
-    }
-
-    ::slotted(cds-button[data-index="2"]) {
-      grid-column: 1;
-    }
-
-    ::slotted(cds-button[data-index="3"]) {
-      grid-column: 1;
-    }
-  }
-}
-
 .#{$prefix}-workspace-shell {
-  &__header {
-    &-content {
-      display: grid;
-      gap: rem(16px);
-    }
-
-    &-title {
-      color: theme.$text-primary;
-      margin-block-end: rem(-14px);
-      @include type.type-style("heading-04");
-    }
-
-    &-sub-title {
-      color: theme.$text-secondary;
-      @include type.type-style("label-01");
-    }
-  }
-
   &__toolbar-action {
     display: grid;
     grid-auto-columns: rem(40px);
@@ -125,4 +50,11 @@ $css--plex: true !default;
       block-size: rem(40px);
     }
   }
+}
+
+:host(#{$prefix}-workspace-shell-body) {
+  display: block;
+  overflow: auto;
+  padding: rem(24px) rem(32px);
+  block-size: rem(504px);
 }

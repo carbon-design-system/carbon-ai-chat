@@ -1,0 +1,80 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as WorkspaceShellStories from "./workspace-shell-react.stories";
+
+<Meta of={WorkspaceShellStories} />
+
+# AI Chat Workspace shell
+
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/react/workspace-shell.js";
+import "@carbon/ai-chat-components/es/react/workspace-shell-header.js";
+import "@carbon/ai-chat-components/es/react/workspace-shell-body.js";
+import "@carbon/ai-chat-components/es/react/workspace-shell-footer.js";
+```
+
+### HTML
+
+```html
+   <WorkspaceShell>
+    <Toolbar
+    slot="toolbar"
+    actions={toolbarAction}
+    overflow={toolbarOverflow}
+  >
+    <div slot="title" data-fixed>
+      {toolbarTitle}
+    </div>
+      <AILabel
+        size="2xs"
+        autoalign
+        alignment="bottom"
+        slot="toolbar-ai-label"
+      >
+        <div slot="body-text">
+          <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
+          <div>
+            IBM watsonx is powered by the latest AI models to intelligently
+            process conversations and provide help whenever and wherever you
+            may need it.
+          </div>
+        </div>
+      </AILabel>
+  </Toolbar>
+  <InlineNotification
+  slot="notification"
+  title={notificationTitle}
+  kind="warning"
+  lowContrast={true}
+  hideCloseButton
+  >
+  </InlineNotification>
+  <WorkspaceShellHeader
+  titleText={headerTitle}
+  subTitleText={headerSubTitle}>
+    {getHeaderDescription(headerDescription)}
+    {
+      showHeaderAction && 
+       <Button kind="tertiary" slot="header-action">
+          Edit Plan <Icon icon={Edit16} slot="icon" />
+      </Button>
+    }
+  </WorkspaceShellHeader>
+  <WorkspaceShellBody>
+    {getBodyContent(bodyContent)}
+  </WorkspaceShellBody>
+    {footerAction !== "noAction" &&
+      <WorkspaceShellFooter>
+        {getFooterAction(footerAction)}
+      </WorkspaceShellFooter>
+    }
+  </WorkspaceShell>
+
+```

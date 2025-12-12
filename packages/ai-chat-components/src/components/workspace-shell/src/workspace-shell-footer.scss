@@ -1,0 +1,46 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/theme";
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/styles/scss/breakpoint" as *;
+
+@include rounded-modifiers;
+:host(#{$prefix}-workspace-shell-footer) {
+  --#{$prefix}-rounded-modifier-radius: 0.5rem;
+
+  display: grid;
+  align-items: stretch;
+  border-block-start: solid rem(1px) theme.$border-subtle-00;
+  @include breakpoint-down("md") {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+}
+
+// Fixed layout when class is present
+:host(.#{$prefix}-workspace-shell-footer__three-buttons) {
+  grid-template-columns: 50% 25% 25%;
+  @include breakpoint-down("md") {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+}
+
+// Flexible layout when class is absent
+:host(:not(.#{$prefix}-workspace-shell-footer__three-buttons)) {
+  grid-template-columns: repeat(auto-fit, minmax(80px, auto));
+  @include breakpoint-down("md") {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+}
