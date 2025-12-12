@@ -416,95 +416,104 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
            * the last message in the message list.
            */
           if (lastScrollableMessageComponent) {
-            requestAnimationFrame(() => {
-              // Reset previous message height
-              if (this.previousLastMessage) {
-                this.previousLastMessage.style.removeProperty("min-block-size");
-              }
+            const lastResponseMessage =
+              lastScrollableMessageComponent?.ref?.current;
 
-              const targetEl = lastScrollableMessageComponent?.ref?.current;
-              const targetRect = targetEl.getBoundingClientRect();
-              const scrollerRect = scrollElement.getBoundingClientRect();
-              const targetHeight = targetRect.height;
-              const scrollerHeight = scrollerRect.height;
+            // Determine what the latest message is (loading / typing indicator or last message)
+            let latestMessageComponent: HTMLDivElement | undefined;
 
-              const targetOffsetWithinScroller =
-                targetRect.top - scrollerRect.top + scrollElement.scrollTop;
+            if (isMessageLoadingCounter > 0 || isHumanAgentTyping) {
+              latestMessageComponent = this.loadingElemRef.current;
 
-              // Set request message at top of chat
-              setScrollTop = Math.max(
+              debugAutoScroll(
+                "[doAutoScroll] isLoading visible",
+                isMessageLoadingCounter,
+              );
+            } else {
+              const lastMsgComp = this.messageRefs.get(
+                lastLocalItem.ui_state.id,
+              );
+              latestMessageComponent = lastMsgComp?.ref?.current;
+            }
+
+            // Reset previous message height
+            if (
+              this.previousLastMessage !== latestMessageComponent &&
+              this.previousLastMessage !== lastResponseMessage
+            ) {
+              this.previousLastMessage?.style.removeProperty("min-block-size");
+            }
+
+            const lastResponseRect =
+              lastResponseMessage.getBoundingClientRect();
+            const scrollerRect = scrollElement.getBoundingClientRect();
+            const targetHeight = lastResponseRect.height;
+            const scrollerHeight = scrollerRect.height;
+
+            const targetOffsetWithinScroller =
+              lastResponseRect.top - scrollerRect.top + scrollElement.scrollTop;
+
+            // Set request message at top of chat
+            setScrollTop = Math.max(
+              0,
+              Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
+            );
+
+            // If the request message is too tall (more than 1/4 of the chat height), we push it
+            // to the top, but only show the bottom 100px of the request message. We do this so the response
+            // isn't hidden, forcing the user to have to scroll.
+            const isVeryTall = targetHeight > scrollerHeight / 4;
+
+            if (isVeryTall) {
+              // Tall message: we want bottom 100px visible.
+              const VISIBLE_BOTTOM_PORTION = 100;
+              const tallAdjustment = Math.max(
                 0,
-                Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
+                targetHeight - VISIBLE_BOTTOM_PORTION,
               );
 
-              // If the request message is too tall (more than 1/4 of the chat height), we push it
-              // to the top, but only show the bottom 100px of the request message. We do this so the response
-              // isn't hidden, forcing the user to have to scroll.
-              const isVeryTall = targetHeight > scrollerHeight / 4;
+              setScrollTop = setScrollTop + tallAdjustment;
+            }
 
-              if (isVeryTall) {
-                // Tall message: we want bottom 100px visible.
-                const VISIBLE_BOTTOM_PORTION = 100;
-                const tallAdjustment = Math.max(
-                  0,
-                  targetHeight - VISIBLE_BOTTOM_PORTION,
+            const lastRect = latestMessageComponent.getBoundingClientRect();
+            const lastOffset =
+              lastRect.top - scrollerRect.top + scrollElement.scrollTop;
+
+            const visibleBottom = setScrollTop + scrollElement.clientHeight;
+            const deficit = Math.max(0, Math.ceil(visibleBottom - lastOffset));
+
+            // Add min-block-size to the latest message in order to ensure the request
+            // message makes it to the top of the chat window
+            if (this.previousLastMessage !== latestMessageComponent) {
+              if (this.previousLastMessage === lastResponseMessage) {
+                this.previousLastMessage?.style.removeProperty(
+                  "min-block-size",
                 );
-
-                setScrollTop = setScrollTop + tallAdjustment;
               }
 
-              // Determine what the latest message is (loading / typing indicator or last message)
-              let latestMessageComponent: HTMLDivElement | undefined;
-
-              if (isMessageLoadingCounter > 0 || isHumanAgentTyping) {
-                latestMessageComponent = this.loadingElemRef.current;
-
-                debugAutoScroll(
-                  "[doAutoScroll] isLoading visible",
-                  isMessageLoadingCounter,
-                );
-              } else {
-                const lastMsgComp = this.messageRefs.get(
-                  lastLocalItem.ui_state.id,
-                );
-                latestMessageComponent = lastMsgComp?.ref?.current;
-              }
-
-              const lastRect = latestMessageComponent.getBoundingClientRect();
-              const lastOffset =
-                lastRect.top - scrollerRect.top + scrollElement.scrollTop;
-
-              const visibleBottom = setScrollTop + scrollElement.clientHeight;
-              const deficit = Math.max(
-                0,
-                Math.ceil(visibleBottom - lastOffset),
-              );
-
-              // Add min-block-size to the latest message in order to ensure the request
-              // message makes it to the top of the chat window
               latestMessageComponent.style.setProperty(
                 "min-block-size",
                 `${deficit}px`,
               );
+
               this.previousLastMessage = latestMessageComponent;
+            }
 
-              debugAutoScroll(
-                `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
-              );
+            debugAutoScroll(
+              `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
+            );
 
-              // Scroll only if target changed
-              if (
-                this.previousScrollableMessage !==
-                lastScrollableMessageComponent
-              ) {
-                doScrollElement(scrollElement, setScrollTop, 0, animate);
-                this.checkScrollAnchor(true, setScrollTop);
+            // Scroll only if target change
+            if (
+              this.previousScrollableMessage !== lastScrollableMessageComponent
+            ) {
+              doScrollElement(scrollElement, setScrollTop, 0, animate);
+              this.checkScrollAnchor(true, setScrollTop);
 
-                this.previousScrollableMessage = lastScrollableMessageComponent;
-              }
+              this.previousScrollableMessage = lastScrollableMessageComponent;
+            }
 
-              return;
-            });
+            return;
           }
 
           debugAutoScroll("[doAutoScroll] No scrollable message found");
