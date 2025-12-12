@@ -13,14 +13,38 @@
   display: flex;
   overflow: hidden;
   flex: 1 1 0%;
+
+  container-type: inline-size;
 }
 
 .cds-aichat--messages-and-input-container {
   position: relative;
   display: flex;
-  flex: 1;
+  flex: 1 1 25%;
   flex-direction: column;
-  inline-size: 100%;
+  inline-size: 25%;
+}
+
+.workspace-panel {
+  inline-size: 0;
+  transition: width 0.1s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-panel {
+    transition: none;
+  }
+}
+
+@container (min-width: 1024px) {
+  .cds-aichat--messages-and-input-container {
+    margin-inline: 2rem;
+  }
+
+  .workspace-panel__open {
+    background-color: var(--cds-support-success);
+    inline-size: 75%;
+  }
 }
 
 .cds-aichat--messages-container__non-input-container {
