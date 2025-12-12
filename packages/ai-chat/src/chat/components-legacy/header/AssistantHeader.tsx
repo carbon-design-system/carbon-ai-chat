@@ -134,7 +134,9 @@ function AssistantHeader(
         displayName={headerDisplayName}
         showBackButton={Boolean(allowHomeScreen && onToggleHomeScreen)}
         showRestartButton={showRestartButton}
-        backContent={<Home slot="icon" />}
+        backContent={
+          <Home aria-label={languagePack.homeScreen_returnToHome} slot="icon" />
+        }
         labelBackButton={languagePack.homeScreen_returnToHome}
         onClickRestart={onRestart}
         onClickClose={onClose}

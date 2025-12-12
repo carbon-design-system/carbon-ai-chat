@@ -192,50 +192,30 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   switch (minimizeButtonIconType) {
     case MinimizeButtonIconType.CLOSE:
       closeIcon = (
-        <CloseLarge
-          aria-label={languagePack.launcher_isOpen}
-          slot="icon"
-          className="cds-aichat--icon__close"
-        />
+        <CloseLarge aria-label={languagePack.launcher_isOpen} slot="icon" />
       );
       break;
     case MinimizeButtonIconType.MINIMIZE:
       closeIcon = (
-        <SubtractLarge
-          aria-label={languagePack.launcher_isOpen}
-          slot="icon"
-          className="cds-aichat--icon__subtract"
-        />
+        <SubtractLarge aria-label={languagePack.launcher_isOpen} slot="icon" />
       );
       break;
     case MinimizeButtonIconType.SIDE_PANEL_LEFT:
       closeIsReversible = false;
       closeIcon = (
-        <SidePanelClose
-          aria-label={languagePack.launcher_isOpen}
-          slot="icon"
-          className="cds-aichat--icon__side-panel-close"
-        />
+        <SidePanelClose aria-label={languagePack.launcher_isOpen} slot="icon" />
       );
       break;
     case MinimizeButtonIconType.SIDE_PANEL_RIGHT:
       closeIsReversible = false;
       closeReverseIcon = true;
       closeIcon = (
-        <SidePanelClose
-          aria-label={languagePack.launcher_isOpen}
-          slot="icon"
-          className="cds-aichat--icon__side-panel-close"
-        />
+        <SidePanelClose aria-label={languagePack.launcher_isOpen} slot="icon" />
       );
       break;
     default: {
       closeIcon = (
-        <SubtractLarge
-          aria-label={languagePack.launcher_isOpen}
-          slot="icon"
-          className="cds-aichat--icon__subtract"
-        />
+        <SubtractLarge aria-label={languagePack.launcher_isOpen} slot="icon" />
       );
       break;
     }
@@ -269,9 +249,15 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       <OverflowMenu
         className="cds-aichat--header__overflow-menu"
         ref={overflowRef}
+        align={
+          isRTL ? BUTTON_TOOLTIP_POSITION.LEFT : BUTTON_TOOLTIP_POSITION.RIGHT
+        }
         tooltip-text={languagePack.header_overflowMenu_options}
         aria-label={languagePack.components_overflow_ariaLabel}
       >
+        <span slot="tooltip-content">
+          {languagePack.header_overflowMenu_options}
+        </span>
         <OverflowMenuVertical
           aria-label={languagePack.components_overflow_ariaLabel}
           className="cds--overflow-menu__icon"
@@ -451,6 +437,7 @@ function HeaderButton({
   isReversible = true,
   tooltipPosition,
   testId,
+  label,
 }: HeaderButtonProps) {
   const buttonKindVal = buttonKind || BUTTON_KIND.GHOST;
   return (
@@ -464,6 +451,7 @@ function HeaderButton({
       kind={buttonKindVal as BUTTON_KIND}
       tooltipPosition={tooltipPosition}
       data-testid={testId}
+      tooltipText={label}
     >
       {children}
     </Button>
