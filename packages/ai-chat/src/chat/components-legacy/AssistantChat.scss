@@ -25,13 +25,18 @@
   inline-size: 25%;
 }
 
-.workspace-panel {
+.cds-aichat--workspace-container {
   inline-size: 0;
   transition: width 0.1s ease-in-out;
 }
 
+.cds-aichat--workspace-container-inner {
+  border: 1px solid #008000;
+  block-size: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .workspace-panel {
+  .cds-aichat--workspace-container {
     transition: none;
   }
 }
@@ -41,8 +46,7 @@
     margin-inline: 2rem;
   }
 
-  .workspace-panel__open {
-    background-color: var(--cds-support-success);
+  .cds-aichat--workspace-container__open {
     inline-size: 75%;
   }
 }

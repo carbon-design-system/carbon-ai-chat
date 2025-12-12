@@ -390,9 +390,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
                 {this.renderMessagesAndInput()}
               </div>
             )}
-            <div className="workspace-panel workspace-panel__open">
-              <WorkspaceContainer></WorkspaceContainer>
-            </div>
+            <WorkspaceContainer></WorkspaceContainer>
           </div>
         </div>
       </div>

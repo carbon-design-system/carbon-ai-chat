@@ -17,6 +17,9 @@ const Modal = createComponent({
   tagName: "cds-modal",
   elementClass: CarbonModalElement,
   react: React,
+  events: {
+    onClose: "cds-modal-closed",
+  },
 });
 
 export default Modal;

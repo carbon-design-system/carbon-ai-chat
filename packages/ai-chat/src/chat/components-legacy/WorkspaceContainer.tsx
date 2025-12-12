@@ -8,43 +8,67 @@
  */
 
 import Modal from "../components/carbon/Modal";
-import React from "react";
-// import { useSelector } from "../hooks/useSelector";
-// import { AppState } from "../../types/state/AppState";
+import Button from "../components/carbon/Button";
+import React, { useEffect, useState } from "react";
+import cx from "classnames";
 
-const WorkspaceContainerInner = (innerProps: any) => (
-  // render the actual writeable element
-  <>
+const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => (
+  <div className="cds-aichat--workspace-container-inner">
+    {/* render the actual writeable element */}
     {JSON.stringify(innerProps, null, 2)}
-    <p>look i am the captain now</p>
-  </>
+    <p>Look at me, I am the captain now!</p>
+    <Button onClick={onClose}>close</Button>
+  </div>
 );
 
 function WorkspaceContainer(props: any) {
-  // set these from redux states
-  const isSmallViewport = false;
-  const isWorkspaceOpen = true;
+  // set these from redux app state
+  const [isSmallViewport, setIsSmallViewport] = useState(false);
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(true);
+
+  const handleClose = () => {
+    setIsWorkspaceOpen(false);
+  };
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        setIsSmallViewport(width < 1024);
+      }
+    });
+
+    resizeObserver.observe(document.body);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   return (
-    <React.Suspense fallback={null}>
-      {isSmallViewport && isWorkspaceOpen ? (
-        <Modal
-          open={isWorkspaceOpen}
-          // onRequestClose={props.onRequestClose}
-          hasScrollingContent={true}
-          className="cds--ai-chat__workspace-modal"
-        >
-          <WorkspaceContainerInner {...props} />
-        </Modal>
-      ) : (
-        <div className="cds--ai-chat__workspace-container">
-          <WorkspaceContainerInner {...props} />
-        </div>
-      )}
-    </React.Suspense>
+    <div
+      className={cx("cds-aichat--workspace-container", {
+        "cds-aichat--workspace-container__open": isWorkspaceOpen,
+      })}
+    >
+      <React.Suspense fallback={null}>
+        {isSmallViewport ? (
+          <Modal
+            open={isWorkspaceOpen}
+            hasScrollingContent={true}
+            prevent-close-on-click-outside
+            className={cx("cds-aichat--workspace-modal")}
+            onClose={handleClose}
+          >
+            <WorkspaceContainerInner {...props} onClose={handleClose} />
+          </Modal>
+        ) : (
+          isWorkspaceOpen && (
+            <WorkspaceContainerInner {...props} onClose={handleClose} />
+          )
+        )}
+      </React.Suspense>
+    </div>
   );
 }
 
 WorkspaceContainer.displayName = "WorkspaceContainer";
 
-export default WorkspaceContainer;
+export default React.memo(WorkspaceContainer);
