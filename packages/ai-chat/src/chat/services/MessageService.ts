@@ -7,10 +7,26 @@
  *  @license
  */
 
-import cloneDeep from "lodash-es/cloneDeep.js";
-
+/**
+ * MessageService orchestrates outbound sends and inbound streaming for the chat widget.
+ *
+ * High-level flow:
+ * 1) `send()` queues a `MessageRequest` and kicks off the queue.
+ * 2) `runQueueIfReady()` pulls the next pending request, fires PRE_SEND/SEND events, starts loading/timeout timers,
+ *    and delegates the actual send to `customSendMessage` via `OutboundMessageCoordinator`.
+ * 3) OutboundCoordinator clones/updates the message in store, calls `customSendMessage` (sync or async), and on success
+ *    calls back into `processSuccess`; on error/cancel it resolves/rejects and advances the queue.
+ * 4) Incoming stream chunks are handled through `ChatActionsImpl`, which marks streaming and finalization via
+ *    `InboundStreamingCoordinator`. InboundCoordinator tracks response_id/item_id pairs so cancellations and
+ *    finalization can advance the queue even when response_id differs from the original request id.
+ * 5) FinalResponseChunk or cancellation clears streaming tracking and moves to the next queued message.
+ *
+ * Responsibilities:
+ * - MessageService: queueing/orchestration, PRE_SEND/SEND events, loading/timeout setup, cancellation entrypoints.
+ * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/cancelling).
+ * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
+ */
 import inputItemToLocalItem from "../schema/inputItemToLocalItem";
-import { createLocalMessageForInlineError } from "../schema/outputItemToLocalItem";
 import actions from "../store/actions";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { MessageLoadingManager } from "../utils/messageServiceUtils";
@@ -18,16 +34,14 @@ import {
   getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
 } from "../utils/messageUtils";
-import {
-  consoleError,
-  debugLog,
-  safeFetchTextWithTimeout,
-} from "../utils/miscUtils";
+import { safeFetchTextWithTimeout } from "../utils/miscUtils";
 import {
   ResolvablePromise,
   resolvablePromise,
 } from "../utils/resolvablePromise";
 import { ServiceManager } from "./ServiceManager";
+import { InboundStreamingCoordinator } from "./InboundStreamingCoordinator";
+import { OutboundMessageCoordinator } from "./OutboundMessageCoordinator";
 import {
   MessageInputType,
   MessageRequest,
@@ -35,7 +49,6 @@ import {
 } from "../../types/messaging/Messages";
 import { SendOptions } from "../../types/instance/ChatInstance";
 import {
-  BusEventSend,
   BusEventType,
   MessageSendSource,
 } from "../../types/events/eventBusTypes";
@@ -44,7 +57,7 @@ import { LanguagePack } from "../../types/config/PublicConfig";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
 import { CancellationReason } from "../../types/config/MessagingConfig";
 
-// The maximum amount of time we allow retries to take place. If we pass this time limit, we throw an error, and
+// The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
 
@@ -85,7 +98,7 @@ interface SendMessageRequest {
 
 // In order to be able to resolve the correct message in the queue, we pass along the promise we will return with the
 // message and call resolve/reject on "resolvablePromise".
-interface PendingMessageRequest extends SendMessageRequest {
+export interface PendingMessageRequest extends SendMessageRequest {
   /**
    * The ID of the {@link LocalMessageItem} created from the current request.
    */
@@ -128,12 +141,6 @@ interface PendingMessageRequest extends SendMessageRequest {
   trackData: ResponseTrackData;
 
   /**
-   * Indicate the attempt count for this request. The first attempt will have a value of 0 and the first retry will
-   * be 1.
-   */
-  tryCount: number;
-
-  /**
    * Indicates if the response has been processed.
    */
   isProcessed: boolean;
@@ -162,22 +169,25 @@ class MessageService {
   private queue: {
     /**
      * All the messages that are waiting for an attempt to be sent. If a message is currently in the process of
-     * being sent or waiting for a retry, it will not appear in this list.
+     * being sent, it will not appear in this list.
      */
     waiting: PendingMessageRequest[];
 
     /**
-     * The message that is currently in the process of being sent to the assistant. This value remains set if an attempt
-     * fails and the system is waiting to retry the send again.
+     * The message that is currently in the process of being sent to the assistant.
      */
     current: PendingMessageRequest;
   };
 
   /**
-   * Tracks the ID of the message that is currently streaming. This is set when the first chunk arrives
-   * and cleared when the FinalResponseChunk is processed. Used to handle cancellation even after queue is cleared.
+   * Handles inbound streaming tracking and lifecycle.
    */
-  private streamingMessageID: string | null = null;
+  public inboundStreaming: InboundStreamingCoordinator;
+
+  /**
+   * Handles outbound send lifecycle concerns (errors, cancellations).
+   */
+  private outboundCoordinator: OutboundMessageCoordinator;
 
   /**
    * Tracks the original message.id when processSuccess completes, so we can look up the controller
@@ -211,6 +221,20 @@ class MessageService {
   constructor(serviceManager: ServiceManager, publicConfig: PublicConfig) {
     this.serviceManager = serviceManager;
     this.messageLoadingManager = new MessageLoadingManager();
+    this.inboundStreaming = new InboundStreamingCoordinator(
+      this.messageAbortControllers,
+      () => this.moveToNextQueueItem(),
+    );
+    this.outboundCoordinator = new OutboundMessageCoordinator(
+      this.serviceManager,
+      this.messageLoadingManager,
+      (pendingRequest, errorState) =>
+        this.setMessageErrorState(pendingRequest, errorState),
+      () => this.queue.current,
+      () => this.moveToNextQueueItem(),
+      (pendingRequest, received) =>
+        this.processSuccess(pendingRequest, received),
+    );
     this.queue = {
       waiting: [],
       current: null,
@@ -224,7 +248,7 @@ class MessageService {
   }
 
   /**
-   * Process a response from assistant with 200 response code, send and return the messageResponse.
+   * Process a response from the assistant send path, return the messageResponse.
    *
    * @param current The current item in the send queue.
    * @param received A {@link MessageResponse}.
@@ -235,7 +259,7 @@ class MessageService {
   ) {
     const { requestOptions, isProcessed } = current;
 
-    // If this message was already invalidated, don't do anything.
+    // If this message was already invalidated (cancel/timeout/error already resolved it), bail out.
     if (isProcessed) {
       return;
     }
@@ -297,167 +321,21 @@ class MessageService {
   }
 
   /**
-   * Adds an inline error message to the list.
-   */
-  private addErrorMessage() {
-    const { store } = this.serviceManager;
-    const errorMessage =
-      store.getState().config.derived.languagePack.errors_singleMessage;
-    const { originalMessage, localMessage } =
-      createLocalMessageForInlineError(errorMessage);
-    store.dispatch(
-      actions.addLocalMessageItem(localMessage, originalMessage, true),
-    );
-  }
-
-  /**
-   * Process a message returned from assistant with non-200 error code. This function will attempt to retry the request
-   * up to the length of RETRY_BEHAVIOR. If more than we require more retires than that, we fail the message.
-   *
-   * @param pendingRequest The current item in the send queue.
-   * @param resultText The raw result text or error message (if any) returned from the request.
-   */
-  private async processError(
-    pendingRequest: PendingMessageRequest,
-    resultText: string,
-  ) {
-    const {
-      timeFirstRequest,
-      timeLastRequest,
-      isProcessed,
-      trackData,
-      requestOptions,
-    } = pendingRequest;
-
-    // If this message was already invalidated, don't do anything.
-    if (isProcessed) {
-      return;
-    }
-
-    trackData.lastRequestTime = Date.now() - timeLastRequest;
-    trackData.totalRequestTime = Date.now() - timeFirstRequest;
-
-    if (requestOptions.silent) {
-      // If we are in the middle of a two-step response or the message that was sent was silent, we have to throw an
-      // error manually since there isn't any user message to reference.
-      this.addErrorMessage();
-    }
-
-    this.serviceManager.actions.errorOccurred({
-      errorType: OnErrorType.MESSAGE_COMMUNICATION,
-      message: "An error occurred sending a message",
-      otherData: resultText,
-    });
-
-    this.rejectFinalErrorOnMessage(pendingRequest, resultText);
-  }
-
-  /**
-   * If we are no longer going to retry sending a message, we call this function to mark the message as failed.
-   */
-  private rejectFinalErrorOnMessage(
-    pendingRequest: PendingMessageRequest,
-    resultText = "An undefined error occurred trying to send your message.",
-  ) {
-    const { sendMessagePromise } = pendingRequest;
-
-    // At this point we've either failed too many times or we failed right away while trying to load the welcome node.
-    this.setMessageErrorState(pendingRequest, MessageErrorState.FAILED);
-
-    // After updating the error state get the message from the pendingRequest since it has potentially been updated by
-    // setting the error state.
-    const { message } = pendingRequest;
-
-    // No need to call this if it's an event message or a welcome node request.
-    if (
-      pendingRequest === this.queue.current &&
-      message.input.message_type !== MessageInputType.EVENT
-    ) {
-      this.messageLoadingManager.end();
-    }
-
-    // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
-    sendMessagePromise.doReject(new Error(resultText));
-    pendingRequest.isProcessed = true;
-
-    if (pendingRequest === this.queue.current) {
-      // Move on to next item in queue.
-      this.moveToNextQueueItem();
-    }
-  }
-
-  /**
-   * Marks a cancelled message as completed without error.
-   */
-  private resolveCancelledMessage(pendingRequest: PendingMessageRequest) {
-    const { sendMessagePromise } = pendingRequest;
-
-    this.setMessageErrorState(pendingRequest, MessageErrorState.NONE);
-
-    const { message } = pendingRequest;
-
-    if (
-      pendingRequest === this.queue.current &&
-      message.input.message_type !== MessageInputType.EVENT
-    ) {
-      this.messageLoadingManager.end();
-    }
-
-    sendMessagePromise.doResolve();
-    pendingRequest.isProcessed = true;
-
-    if (pendingRequest === this.queue.current) {
-      this.moveToNextQueueItem();
-    }
-  }
-
-  /**
-   * Sends the message to the backend. Returns "any" in the error case.
+   * Sends the message via customSendMessage.
    *
    * @param current The current item in the send queue.
    */
-  private async sendToAssistant(current: PendingMessageRequest) {
-    const { store } = this.serviceManager;
-    const state = store.getState();
+  private async sendToAssistant(
+    current: PendingMessageRequest,
+    startLoading: (() => void) | null,
+  ) {
+    const state = this.serviceManager.store.getState();
     const { customSendMessage } = state.config.public.messaging;
-
-    current.timeLastRequest = Date.now();
-
-    if (current.isProcessed) {
-      return;
-    }
-
-    try {
-      // We may update the timezone and locale on this message so we need to clone it and then update the store with
-      // the new object.
-      const message = cloneDeep(current.message);
-      current.message = message;
-      store.dispatch(actions.updateMessage(message));
-      // AbortController was already created when message was added to queue
-      debugLog("Called customSendMessage", message);
-      const busEventSend: BusEventSend = {
-        type: BusEventType.SEND,
-        data: message,
-        source: current.source,
-      };
-      await customSendMessage(
-        message,
-        {
-          signal: current.sendMessageController.signal,
-          silent: current.requestOptions.silent,
-          busEventSend: busEventSend,
-        },
-        this.serviceManager.instance,
-      );
-      await this.processSuccess(current, null);
-    } catch (error) {
-      consoleError("An error occurred while sending a message", error);
-      const resultText =
-        (error &&
-          (typeof error === "string" ? error : JSON.stringify(error))) ||
-        "There was an unidentified error.";
-      this.processError(current, resultText);
-    }
+    await this.outboundCoordinator.send(
+      current,
+      customSendMessage,
+      startLoading,
+    );
   }
 
   /**
@@ -465,101 +343,109 @@ class MessageService {
    * this.sendToAssistant.
    */
   private async runQueueIfReady() {
-    if (!this.queue.current && this.queue.waiting.length > 0) {
-      const { eventBus, store } = this.serviceManager;
-      this.clearCurrentQueueItem();
-      this.queue.current = this.queue.waiting.shift();
-      const { current } = this.queue;
-      const { message, source } = current;
-      const state = store.getState();
-      const { config } = store.getState();
-      const { public: publicConfig } = config;
-      current.timeFirstRequest = Date.now();
-
-      // Do all the normal things for our general messageRequests, however for event messages we skip this.
-      if (message.input.message_type !== MessageInputType.EVENT) {
-        const lastResponse = getLastAssistantResponseWithContext(state);
-        if (lastResponse) {
-          message.thread_id = THREAD_ID_MAIN;
-        }
-
-        const LOADING_INDICATOR_TIMER =
-          !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
-          publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
-            ? MS_MAX_SILENT_LOADING
-            : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
-
-        if (LOADING_INDICATOR_TIMER || this.timeoutMS) {
-          this.messageLoadingManager.start(
-            () => {
-              this.serviceManager.store.dispatch(
-                actions.addIsLoadingCounter(1),
-              );
-            },
-            (didExceedMaxLoading: boolean) => {
-              if (didExceedMaxLoading) {
-                this.serviceManager.store.dispatch(
-                  actions.addIsLoadingCounter(-1),
-                );
-              }
-            },
-            () => {
-              this.cancelMessageRequestByID(
-                message.id,
-                true,
-                CancellationReason.TIMEOUT,
-              );
-            },
-            LOADING_INDICATOR_TIMER,
-            this.timeoutMS,
-          );
-        }
-
-        if (current.isProcessed) {
-          // This message was cancelled.
-          return;
-        }
-
-        // Grab the original text before it can be modified by a pre:send handler.
-        const originalUserText = message.history?.label || message.input.text;
-
-        // Fire the pre:send event. User code is allowed to modify the message at this point. If this takes longer than MS_MAX_SILENT_LOADING
-        // we show a loading state.
-        await eventBus.fire(
-          {
-            type: BusEventType.PRE_SEND,
-            data: message,
-            source,
-          },
-          this.serviceManager.instance,
-        );
-
-        if (current.isProcessed) {
-          // This message was cancelled.
-          return;
-        }
-
-        // We now want to update the store with whatever edits have been made to the message.
-        const localMessage = inputItemToLocalItem(
-          message,
-          originalUserText,
-          current.localMessageID,
-        );
-        // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
-        // we don't need to update it here either.
-        if (!message.history.silent) {
-          store.dispatch(actions.updateLocalMessageItem(localMessage));
-          store.dispatch(actions.updateMessage(message));
-        }
-        deepFreeze(message);
-
-        await eventBus.fire(
-          { type: BusEventType.SEND, data: message, source },
-          this.serviceManager.instance,
-        );
-      }
-      this.sendToAssistant(current);
+    if (this.queue.current || this.queue.waiting.length === 0) {
+      return;
     }
+
+    this.clearCurrentQueueItem();
+    this.queue.current = this.queue.waiting.shift();
+    const { current } = this.queue;
+    const { message } = current;
+    current.timeFirstRequest = Date.now();
+
+    if (message.input.message_type === MessageInputType.EVENT) {
+      this.sendToAssistant(current, null);
+      return;
+    }
+
+    const { startLoading, originalUserText } =
+      this.prepareCurrentRequest(current);
+
+    if (current.isProcessed) {
+      // This message was cancelled.
+      return;
+    }
+
+    await this.firePreSendEvent(current);
+
+    if (current.isProcessed) {
+      // This message was cancelled.
+      return;
+    }
+
+    this.commitOutgoingMessage(current, originalUserText);
+
+    await this.fireSendEvent(current);
+
+    this.sendToAssistant(current, startLoading);
+  }
+
+  private prepareCurrentRequest(current: PendingMessageRequest) {
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const { public: publicConfig } = state.config;
+    const { message } = current;
+
+    const lastResponse = getLastAssistantResponseWithContext(state);
+    if (lastResponse) {
+      message.thread_id = THREAD_ID_MAIN;
+    }
+
+    const loadingIndicatorTimeout =
+      !publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs &&
+      publicConfig.messaging?.messageLoadingIndicatorTimeoutSecs !== 0
+        ? MS_MAX_SILENT_LOADING
+        : publicConfig.messaging.messageLoadingIndicatorTimeoutSecs * 1000;
+
+    const startLoading = this.buildStartLoading(
+      message,
+      loadingIndicatorTimeout,
+    );
+    const originalUserText = message.history?.label || message.input.text;
+
+    return { startLoading, originalUserText };
+  }
+
+  private async firePreSendEvent(current: PendingMessageRequest) {
+    const { message, source } = current;
+    await this.serviceManager.eventBus.fire(
+      {
+        type: BusEventType.PRE_SEND,
+        data: message,
+        source,
+      },
+      this.serviceManager.instance,
+    );
+  }
+
+  private commitOutgoingMessage(
+    current: PendingMessageRequest,
+    originalUserText: string,
+  ) {
+    const { message } = current;
+    const localMessage = inputItemToLocalItem(
+      message,
+      originalUserText,
+      current.localMessageID,
+    );
+
+    // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
+    // we don't need to update it here either.
+    if (!message.history.silent) {
+      this.serviceManager.store.dispatch(
+        actions.updateLocalMessageItem(localMessage),
+      );
+      this.serviceManager.store.dispatch(actions.updateMessage(message));
+    }
+    deepFreeze(message);
+  }
+
+  private async fireSendEvent(current: PendingMessageRequest) {
+    const { message, source } = current;
+    await this.serviceManager.eventBus.fire(
+      { type: BusEventType.SEND, data: message, source },
+      this.serviceManager.instance,
+    );
   }
 
   /**
@@ -596,21 +482,12 @@ class MessageService {
         lastRequestTime: 0,
         totalRequestTime: 0,
       },
-      tryCount: 0,
       isProcessed: false,
       source,
       sendMessageController: controller,
     };
 
     this.queue.waiting.push(newPendingMessage);
-
-    // If the current message has entered the retrying state, then we need to update the new message to put it into
-    // the waiting state.
-    if (this.queue.current) {
-      if (message.history?.error_state === MessageErrorState.RETRYING) {
-        this.setMessageErrorState(newPendingMessage, MessageErrorState.WAITING);
-      }
-    }
   }
 
   /**
@@ -620,6 +497,40 @@ class MessageService {
     if (this.queue.current) {
       this.queue.current = null;
     }
+  }
+
+  /**
+   * Builds a function that starts the loading manager and timeout handling for a message.
+   */
+  private buildStartLoading(
+    message: MessageRequest<any>,
+    loadingIndicatorTimeoutMS?: number,
+  ): (() => void) | null {
+    const loadingTimeout = loadingIndicatorTimeoutMS || 0;
+    if (!loadingTimeout && !this.timeoutMS) {
+      return null;
+    }
+
+    return () =>
+      this.messageLoadingManager.start(
+        () => {
+          this.serviceManager.store.dispatch(actions.addIsLoadingCounter(1));
+        },
+        (didExceedMaxLoading: boolean) => {
+          if (didExceedMaxLoading) {
+            this.serviceManager.store.dispatch(actions.addIsLoadingCounter(-1));
+          }
+        },
+        () => {
+          this.cancelMessageRequestByID(
+            message.id,
+            true,
+            CancellationReason.TIMEOUT,
+          );
+        },
+        loadingTimeout,
+        this.timeoutMS,
+      );
   }
 
   /**
@@ -747,50 +658,24 @@ class MessageService {
   /**
    * Marks the current message as streaming so we don't clear it from the queue until FinalResponseChunk arrives.
    * Also tracks the streaming message ID in case the queue gets cleared before finalization.
+   *
+   * Streaming chunks can arrive with response_id/item_id values that differ from the original request message.id.
+   * We record those IDs (and their AbortController) so later cancel calls can target either id.
    */
-  public markCurrentMessageAsStreaming(messageID?: string) {
-    const current = this.queue.current;
-
-    // Set the messageID (from the chunk); otherwise fall back to the current queued message id.
-    this.streamingMessageID = messageID ?? current?.message.id;
-
-    // If we have the last processed message ID, copy its controller to the response_id
-    if (messageID && this.lastProcessedMessageID) {
-      const controller = this.messageAbortControllers.get(
-        this.lastProcessedMessageID,
-      );
-      if (controller) {
-        this.messageAbortControllers.set(messageID, controller);
-      }
-    }
-
-    if (!current) {
-      return;
-    }
-
-    current.isStreaming = true;
-
-    // If messageID is provided (from chunk response_id), also store the controller under that ID
-    // because the chunk's response_id may differ from message.id
-    if (messageID && messageID !== current.message.id) {
-      const controller = current.sendMessageController;
-      if (controller) {
-        this.messageAbortControllers.set(messageID, controller);
-      }
-    }
+  public markCurrentMessageAsStreaming(messageID?: string, itemID?: string) {
+    this.inboundStreaming.markStreaming(
+      this.queue.current,
+      messageID,
+      itemID,
+      this.lastProcessedMessageID,
+    );
   }
 
   /**
    * Called when a FinalResponseChunk is processed to clear the streaming message from the queue.
    */
   public finalizeStreamingMessage(messageID: string) {
-    if (this.streamingMessageID === messageID) {
-      this.moveToNextQueueItem();
-    }
-
-    // Clean up the abort controller for this message
-    this.messageAbortControllers.delete(messageID);
-    this.streamingMessageID = null;
+    this.inboundStreaming.finalizeStreamingMessage(messageID);
   }
 
   /**
@@ -801,13 +686,12 @@ class MessageService {
     reason: string = CancellationReason.STOP_STREAMING,
   ) {
     // If there's a streaming message, cancel it even if not in queue
-    if (this.streamingMessageID) {
+    if (this.inboundStreaming.streamingMessageID) {
       await this.cancelMessageRequestByID(
-        this.streamingMessageID,
+        this.inboundStreaming.streamingMessageID,
         false,
         reason,
       );
-      this.streamingMessageID = null;
       return;
     }
 
@@ -821,6 +705,95 @@ class MessageService {
     }
   }
 
+  private findPendingRequestForCancellation(
+    responseId: string,
+    streamingEntry?: { requestId?: string },
+  ) {
+    if (
+      this.queue.current?.message.id === responseId ||
+      (streamingEntry &&
+        this.queue.current?.message.id === streamingEntry.requestId)
+    ) {
+      return this.queue.current;
+    }
+
+    if (
+      this.queue.current?.isStreaming &&
+      this.inboundStreaming.streamingMessageID
+    ) {
+      // The streaming response_id can differ from the original message.id
+      // so treat the current streaming request as a match for cancellation.
+      return this.queue.current;
+    }
+
+    const index = this.queue.waiting.findIndex(
+      (item) => item.message.id === responseId,
+    );
+    if (index !== -1) {
+      const [pendingRequest] = this.queue.waiting.splice(index, 1);
+      return pendingRequest;
+    }
+    return undefined;
+  }
+
+  private findAbortControllerForCancellation(
+    responseId: string,
+    streamingEntry: { requestId?: string; controller?: AbortController } | null,
+    pendingRequest?: PendingMessageRequest,
+  ) {
+    return (
+      this.messageAbortControllers.get(responseId) ||
+      (streamingEntry?.requestId
+        ? this.messageAbortControllers.get(streamingEntry.requestId)
+        : undefined) ||
+      (pendingRequest
+        ? this.messageAbortControllers.get(pendingRequest.message.id)
+        : undefined) ||
+      streamingEntry?.controller
+    );
+  }
+
+  private async handleCancellationResolution(
+    responseId: string,
+    pendingRequest: PendingMessageRequest | undefined,
+    controller: AbortController | undefined,
+    logError: boolean,
+    reason: string,
+  ) {
+    if (!pendingRequest && !controller) {
+      return;
+    }
+
+    const { lastResponse } = pendingRequest || {};
+    const sendMessageController =
+      controller || pendingRequest?.sendMessageController;
+
+    // If someone is using customMessageSend, we let them know they should abort the request.
+    sendMessageController?.abort(reason);
+
+    // Clean up the controller from the map and streaming tracking
+    this.inboundStreaming.clearStreamingResponse(responseId);
+
+    // Only process the pending request if it exists (it may have already been cleared from queue)
+    if (pendingRequest) {
+      if (reason === CancellationReason.TIMEOUT) {
+        this.outboundCoordinator.rejectFinalErrorOnMessage(
+          pendingRequest,
+          reason,
+        );
+        if (logError) {
+          this.serviceManager.actions.errorOccurred({
+            errorType: OnErrorType.MESSAGE_COMMUNICATION,
+            message: reason,
+            otherData: await safeFetchTextWithTimeout(lastResponse),
+          });
+        }
+      } else {
+        this.outboundCoordinator.resolveCancelledMessage(pendingRequest);
+      }
+    }
+  }
+
   /**
    * Cancel a message given an ID. Can be a message in process or one that is waiting to be processed.
    */
@@ -829,63 +802,32 @@ class MessageService {
     logError: boolean,
     reason = "Message was cancelled",
   ) {
-    let pendingRequest: PendingMessageRequest | undefined;
+    // messageID may be an item_id or response_id; resolve to whichever streaming id we tracked.
+    const responseId = this.inboundStreaming.resolveResponseId(messageID);
+    const streamingEntry = this.inboundStreaming.getStreamingMeta(responseId);
+    const wasStreamingCurrent =
+      this.inboundStreaming.streamingMessageID === responseId;
 
-    if (this.queue.current?.message.id === messageID) {
-      pendingRequest = this.queue.current;
-    } else if (
-      this.queue.current?.isStreaming &&
-      this.streamingMessageID === messageID
-    ) {
-      // The streaming response_id can differ from the original message.id
-      // so treat the current streaming request as a match for cancellation.
-      pendingRequest = this.queue.current;
-    } else {
-      const index = this.queue.waiting.findIndex(
-        (item) => item.message.id === messageID,
-      );
-      if (index !== -1) {
-        pendingRequest = this.queue.waiting[index];
-        this.queue.waiting.splice(index, 1);
-      }
-    }
+    const pendingRequest = this.findPendingRequestForCancellation(
+      responseId,
+      streamingEntry,
+    );
+    const controller = this.findAbortControllerForCancellation(
+      responseId,
+      streamingEntry,
+      pendingRequest,
+    );
 
-    // Check if we have an abort controller in the map (persists even if message cleared from queue)
-    const controller =
-      this.messageAbortControllers.get(messageID) ||
-      (pendingRequest
-        ? this.messageAbortControllers.get(pendingRequest.message.id)
-        : undefined);
+    await this.handleCancellationResolution(
+      responseId,
+      pendingRequest,
+      controller,
+      logError,
+      reason,
+    );
 
-    if (pendingRequest || controller) {
-      const { lastResponse } = pendingRequest || {};
-      const sendMessageController =
-        controller || pendingRequest?.sendMessageController;
-
-      // If someone is using customMessageSend, we let them know they should abort the request.
-      sendMessageController?.abort(reason);
-
-      // Clean up the controller from the map
-      this.messageAbortControllers.delete(messageID);
-      if (pendingRequest && messageID !== pendingRequest.message.id) {
-        this.messageAbortControllers.delete(pendingRequest.message.id);
-      }
-
-      // Only process the pending request if it exists (it may have already been cleared from queue)
-      if (pendingRequest) {
-        if (reason === CancellationReason.TIMEOUT) {
-          this.rejectFinalErrorOnMessage(pendingRequest, reason);
-          if (logError) {
-            this.serviceManager.actions.errorOccurred({
-              errorType: OnErrorType.MESSAGE_COMMUNICATION,
-              message: reason,
-              otherData: await safeFetchTextWithTimeout(lastResponse),
-            });
-          }
-        } else {
-          this.resolveCancelledMessage(pendingRequest);
-        }
-      }
+    if (!pendingRequest && wasStreamingCurrent) {
+      this.moveToNextQueueItem();
     }
   }
 }
