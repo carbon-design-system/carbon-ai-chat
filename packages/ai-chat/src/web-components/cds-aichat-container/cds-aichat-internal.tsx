@@ -17,7 +17,7 @@ import { property } from "lit/decorators.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
 
-import App from "../../chat/ChatAppEntry";
+import ChatAppEntry from "../../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
@@ -120,7 +120,7 @@ class ChatContainerInternal extends LitElement {
     const container = this.ensureReactRoot();
 
     this.root.render(
-      <App
+      <ChatAppEntry
         config={this.config}
         strings={this.strings}
         serviceDeskFactory={this.serviceDeskFactory}

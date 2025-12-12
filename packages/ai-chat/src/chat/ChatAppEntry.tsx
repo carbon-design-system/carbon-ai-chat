@@ -10,7 +10,11 @@
 import isEqual from "lodash-es/isEqual.js";
 import React, { useEffect, useRef, useState } from "react";
 import { StoreProvider } from "./providers/StoreProvider";
-
+import { WindowSizeProvider } from "./providers/WindowSizeProvider";
+import { ServiceManagerProvider } from "./providers/ServiceManagerProvider";
+import { IntlProvider } from "./providers/IntlProvider";
+import { LanguagePackProvider } from "./providers/LanguagePackProvider";
+import { AriaAnnouncerProvider } from "./providers/AriaAnnouncerProvider";
 import { ServiceManager } from "./services/ServiceManager";
 import {
   attachUserDefinedResponseHandlers,
@@ -24,8 +28,7 @@ import { WriteableElementsPortalsContainer } from "./components/WriteableElement
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";
 import { consoleError } from "./utils/miscUtils";
-import AppShell from "./components-legacy/AppShell";
-import styles from "./ChatAppEntry.scss";
+import { isBrowser } from "./utils/browserUtils";
 
 import { detectConfigChanges } from "./utils/configChangeDetection";
 import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
@@ -44,7 +47,9 @@ import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
 import { enLanguagePack, LanguagePack } from "../types/config/PublicConfig";
 import { DeepPartial } from "../types/utilities/DeepPartial";
+import { Dimension } from "../types/utilities/Dimension";
 import { setIntl } from "./utils/intlUtils";
+import AppShell from "./AppShell";
 
 /**
  * Props for the top-level Chat container. This component is responsible for
@@ -75,7 +80,7 @@ interface AppProps {
  * chat is active/connecting, the current human agent chat is ended quietly and
  * the service is recreated.
  */
-export function App({
+export function ChatAppEntry({
   config,
   strings,
   onBeforeRender,
@@ -113,7 +118,6 @@ export function App({
    * On mount, fully initialize services and the chat instance, then render.
    */
   useOnMount(() => {
-    previousConfigRef.current = config;
     /**
      * Performs the first-time bootstrap of services and the chat instance.
      * Attaches user-defined response handlers, executes lifecycle callbacks,
@@ -170,6 +174,8 @@ export function App({
           appActions.setInitialViewChangeComplete(true),
         );
 
+        previousConfigRef.current = publicConfig;
+
         if (onAfterRender) {
           setAfterRenderCallback(() => () => onAfterRender(instance));
         }
@@ -186,7 +192,6 @@ export function App({
    */
   useEffect(() => {
     const previousConfig = previousConfigRef.current;
-    previousConfigRef.current = config;
 
     if (
       serviceManager &&
@@ -204,6 +209,7 @@ export function App({
         nextEffective.serviceDesk = serviceDesk;
       }
       const configChanges = detectConfigChanges(prevEffective, nextEffective);
+
       const currentServiceManager = serviceManager;
 
       const handleDynamicUpdate = async () => {
@@ -219,6 +225,7 @@ export function App({
         }
       };
       handleDynamicUpdate();
+      previousConfigRef.current = nextEffective;
     }
   }, [config, serviceDeskFactory, serviceDesk, instance, serviceManager]);
 
@@ -264,37 +271,75 @@ export function App({
     return undefined;
   }, [afterRenderCallback, serviceManager, instance, beforeRenderComplete]);
 
+  const [windowSize, setWindowSize] = useState<Dimension>({
+    width: isBrowser() ? window.innerWidth : 0,
+    height: isBrowser() ? window.innerHeight : 0,
+  });
+
+  useOnMount(() => {
+    if (!isBrowser) {
+      return () => {};
+    }
+
+    const windowListener = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener("resize", windowListener);
+
+    const visibilityListener = () => {
+      serviceManager.store.dispatch(
+        appActions.setIsBrowserPageVisible(
+          document.visibilityState === "visible",
+        ),
+      );
+    };
+    document.addEventListener("visibilitychange", visibilityListener);
+
+    return () => {
+      window.removeEventListener("resize", windowListener);
+      document.removeEventListener("visibilitychange", visibilityListener);
+    };
+  });
+
   if (!(serviceManager && instance && beforeRenderComplete)) {
     return null;
   }
 
   return (
-    <>
-      <StoreProvider store={serviceManager.store}>
-        <AppShell
-          serviceManager={serviceManager}
-          hostElement={serviceManager.customHostElement}
-          styles={styles}
-        />
-      </StoreProvider>
+    <StoreProvider store={serviceManager.store}>
+      <WindowSizeProvider windowSize={windowSize}>
+        <ServiceManagerProvider serviceManager={serviceManager}>
+          <IntlProvider intl={serviceManager.intl}>
+            <LanguagePackProvider>
+              <AriaAnnouncerProvider>
+                <AppShell
+                  serviceManager={serviceManager}
+                  hostElement={serviceManager.customHostElement}
+                />
+                {renderUserDefinedResponse && (
+                  <UserDefinedResponsePortalsContainer
+                    chatInstance={instance}
+                    renderUserDefinedResponse={renderUserDefinedResponse}
+                    userDefinedResponseEventsBySlot={
+                      userDefinedResponseEventsBySlot
+                    }
+                    chatWrapper={chatWrapper}
+                  />
+                )}
 
-      {renderUserDefinedResponse && (
-        <UserDefinedResponsePortalsContainer
-          chatInstance={instance}
-          renderUserDefinedResponse={renderUserDefinedResponse}
-          userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
-          chatWrapper={chatWrapper}
-        />
-      )}
-
-      {renderWriteableElements && (
-        <WriteableElementsPortalsContainer
-          chatInstance={instance}
-          renderResponseMap={renderWriteableElements}
-        />
-      )}
-    </>
+                {renderWriteableElements && (
+                  <WriteableElementsPortalsContainer
+                    chatInstance={instance}
+                    renderResponseMap={renderWriteableElements}
+                  />
+                )}
+              </AriaAnnouncerProvider>
+            </LanguagePackProvider>
+          </IntlProvider>
+        </ServiceManagerProvider>
+      </WindowSizeProvider>
+    </StoreProvider>
   );
 }
 
-export default App;
+export default ChatAppEntry;

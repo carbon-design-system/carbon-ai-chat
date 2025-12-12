@@ -11,7 +11,7 @@ import { IntlShape } from "react-intl";
 import type { AppStore } from "../store/appStore";
 
 import { AppWindowFunctions } from "../components-legacy/AppWindowFunctions";
-import { MainWindowFunctions } from "../components-legacy/main/MainWindowFunctions";
+import type { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "../events/ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";

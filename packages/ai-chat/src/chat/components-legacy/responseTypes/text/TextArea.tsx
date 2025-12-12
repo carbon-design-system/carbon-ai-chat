@@ -113,7 +113,7 @@ interface TextAreaProps {
   ariaLabel?: string;
 
   /**
-   * The value for data-test-id for automated testing suites.
+   * The value for data-testid for automated testing suites.
    */
   testId?: string;
 }
