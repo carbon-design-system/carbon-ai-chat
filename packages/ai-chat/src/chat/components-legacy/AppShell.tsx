@@ -33,6 +33,7 @@ import {
 } from "../utils/styleUtils";
 import AppRegion from "./AppRegion";
 import { useMobileViewportLayout } from "../hooks/useMobileViewportLayout";
+import { PageObjectId } from "../../testing/PageObjectId";
 
 interface AppShellProps extends HasServiceManager {
   hostElement?: Element;
@@ -203,6 +204,7 @@ export default function AppShell({
     <div
       className="cds-aichat--container"
       data-namespace={originalName}
+      data-testid={PageObjectId.CHAT_WIDGET}
       ref={containerRef}
     >
       <div

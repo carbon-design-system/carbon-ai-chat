@@ -47,6 +47,9 @@ class MarkdownElement extends LitElement {
   @property({ type: String, attribute: "items-per-page-text" })
   itemsPerPageText = "Items per page:";
 
+  @property({ type: String, attribute: "download-label-text" })
+  downloadLabelText = "Download table data";
+
   @property({ type: String, attribute: "locale" })
   locale = "en";
 
@@ -103,6 +106,7 @@ class MarkdownElement extends LitElement {
       changed.has("previousPageText") ||
       changed.has("nextPageText") ||
       changed.has("itemsPerPageText") ||
+      changed.has("downloadLabelText") ||
       changed.has("locale") ||
       changed.has("getPaginationSupplementalText") ||
       changed.has("getPaginationStatusText") ||
@@ -175,6 +179,7 @@ class MarkdownElement extends LitElement {
         previousPageText: this.previousPageText,
         nextPageText: this.nextPageText,
         itemsPerPageText: this.itemsPerPageText,
+        downloadLabelText: this.downloadLabelText,
         locale: this.locale,
         getPaginationSupplementalText: this.getPaginationSupplementalText,
         getPaginationStatusText: this.getPaginationStatusText,

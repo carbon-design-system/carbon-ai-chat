@@ -86,6 +86,10 @@ export interface RenderTokenTreeOptions {
   nextPageText?: string;
   /** Text for items per page label */
   itemsPerPageText?: string;
+  /**
+   * The text used for the download button's accessible label.
+   */
+  downloadLabelText?: string;
   /** Locale for table sorting and formatting */
   locale?: string;
   /** Function to get supplemental pagination text */
@@ -429,6 +433,7 @@ function renderWithStaticTag(
         previousPageText,
         nextPageText,
         itemsPerPageText,
+        downloadLabelText,
         locale,
         getPaginationSupplementalText,
         getPaginationStatusText,
@@ -504,6 +509,7 @@ function renderWithStaticTag(
           .previousPageText=${previousPageText || "Previous page"}
           .nextPageText=${nextPageText || "Next page"}
           .itemsPerPageText=${itemsPerPageText || "Items per page:"}
+          .downloadLabelText=${downloadLabelText || "Download table data"}
           .locale=${locale || "en"}
           .getPaginationSupplementalText=${getPaginationSupplementalText ||
           DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT}

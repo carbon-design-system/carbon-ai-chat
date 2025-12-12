@@ -18,6 +18,11 @@
  */
 export enum PageObjectId {
   /**
+   * The root chat widget container (for scoping tests/accessibility checks).
+   */
+  CHAT_WIDGET = "chat_widget",
+
+  /**
    * Minimize chat button in header.
    */
   CLOSE_CHAT = "close_chat",
