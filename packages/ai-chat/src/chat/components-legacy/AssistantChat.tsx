@@ -390,7 +390,9 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
                 {this.renderMessagesAndInput()}
               </div>
             )}
-            <WorkspaceContainer></WorkspaceContainer>
+            <WorkspaceContainer
+              serviceManager={this.props.serviceManager}
+            ></WorkspaceContainer>
           </div>
         </div>
       </div>

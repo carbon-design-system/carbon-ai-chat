@@ -11,21 +11,27 @@ import Modal from "../components/carbon/Modal";
 import Button from "../components/carbon/Button";
 import { useSelector } from "../hooks/useSelector";
 import { AppState } from "../../types/state/AppState";
+import { WriteableElementName } from "../utils/constants";
+import WriteableElement from "./WriteableElement";
 import React, { useEffect, useState } from "react";
 import cx from "classnames";
 
-const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => (
-  <div className="cds-aichat--workspace-container-inner">
-    {/* render the actual writeable element */}
-    {/* <WriteableElement
-      slotName={WriteableElementName.WORKSPACE_COMPONENT}
-      id={`workspaceComponent${serviceManager.namespace.suffix}`}
-    /> */}
-    {JSON.stringify(innerProps, null, 2)}
-    <p>Look at me, I am the captain now!</p>
-    <Button onClick={onClose}>close</Button>
-  </div>
-);
+const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => {
+  const serviceManager = innerProps.serviceManager;
+  return (
+    <div className="cds-aichat--workspace-container-inner">
+      <WriteableElement
+        slotName={WriteableElementName.WORKSPACE_ELEMENT}
+        className="cds-aichat--workspace-writeable-element"
+        id={`workspaceElement${serviceManager.namespace.suffix}`}
+      />
+      <div>
+        <p>Look at me, I am the captain now!</p>
+        <Button onClick={onClose}>close</Button>
+      </div>
+    </div>
+  );
+};
 
 function WorkspaceContainer(props: any) {
   const chatWidth = useSelector((state: AppState) => state.chatWidth);
@@ -45,6 +51,9 @@ function WorkspaceContainer(props: any) {
 
   const handleClose = () => {
     setIsWorkspaceOpen(false);
+    console.log(
+      "move the workspace closing to custom panel callable api where the state change happens",
+    );
   };
 
   return (

@@ -31,6 +31,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Settings } from "../framework/types";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
+import { WorkspaceExample } from "./WorkspaceExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -143,6 +144,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       aiTooltipAfterDescriptionElement: (
         <WriteableElementExample
           location="aiTooltipAfterDescriptionElement"
+          parentStateText={stateText}
+        />
+      ),
+      workspaceElement: (
+        <WorkspaceExample
+          location="workspaceElement"
           parentStateText={stateText}
         />
       ),
