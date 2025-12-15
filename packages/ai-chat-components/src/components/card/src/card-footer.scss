@@ -1,0 +1,66 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+$css--plex: true !default;
+
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/components/button/tokens" as *;
+@use "@carbon/web-components/scss/components/tile/tile";
+@use "@carbon/styles/scss/utilities/convert";
+
+:host(#{$prefix}-card-footer) {
+  @include flush-modifiers;
+  @include rounded-modifiers;
+  @include stacked-modifiers;
+
+  .#{$prefix}-card-footer__actions {
+    display: flex;
+
+    &--stacked {
+      flex-direction: column;
+    }
+
+    // if no buttons are ghost add gap 1px
+    &:not(:has(cds-button[kind="ghost"])) {
+      background-color: $button-separator;
+      gap: convert.to-rem(1px);
+    }
+  }
+
+  .#{$prefix}-card-footer__icon-actions {
+    display: flex;
+    justify-content: end;
+    border-block-start: convert.to-rem(1px) solid theme.$chat-bubble-border;
+  }
+
+  .#{$prefix}-card-footer__action-viewing::part(button) {
+    flex-direction: row-reverse;
+    flex-grow: 0;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: layout.$spacing-03;
+    inline-size: 100%;
+  }
+
+  cds-button {
+    flex: 1;
+  }
+
+  cds-button[kind="ghost"] {
+    border-block-start: convert.to-rem(1px) solid theme.$chat-bubble-border;
+  }
+
+  cds-button[kind="ghost"]:not([disabled]) {
+    .#{$prefix}-card-footer__action-icon {
+      fill: theme.$link-primary;
+    }
+  }
+}
