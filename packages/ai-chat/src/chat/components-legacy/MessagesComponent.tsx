@@ -243,7 +243,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         message?.request_id
       ] as MessageRequest;
 
-      this.renderScrollDownNotification();
       // If the request for this response was silent, then scroll to it instead of scrolling to where the
       // silent user message would be. But don't do this if it's an empty message (which happens with a
       // skip_use_input message from an extension).
@@ -384,7 +383,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // decide it remembers the previous scroll position and set it for us.
           setScrollTop = 0;
         } else {
-          // Iterate backwards until we find the last message to scroll to. By default, resquest messages should be
+          // Iterate backwards until we find the last message to scroll to. By default, request messages should be
           // scrolled to (not response messages). However, if a response has history.silent=true, it should not be scrolled to.
           // If all messages are not scrollable, we'll default to the bottom of the conversation.
           let messageIndex = localMessageItems.length - 1;
@@ -410,6 +409,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
 
           if (lastScrollableMessageComponent) {
+            /**
+             * In order to bump the request message to the top of the chat client height, we set the
+             * `min-block-size` of a spacer div element at the bottom of the message list.
+             */
             const spacerElem = this.bottomSpacerRef.current;
             const spacerHeight =
               getComputedStyle(spacerElem).getPropertyValue("min-block-size");
@@ -422,6 +425,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               lastResponseMessage.getBoundingClientRect();
             const scrollerRect = scrollElement.getBoundingClientRect();
             const targetHeight = lastResponseRect.height;
+            // subtract the previous deficit / height of the spacer element div to prevent
+            // the desired scroll top / request message scroll position to be skewed especially
+            // as the spacer element height will be adjusted later when the response messages come
+            // through
             const scrollerHeight = scrollerRect.height - previousDeficit;
 
             const targetOffsetWithinScroller =
