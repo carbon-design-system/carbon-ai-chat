@@ -647,7 +647,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollDown: shouldRender,
       });
     },
-    100,
+    50,
     { leading: false, trailing: true },
   );
 
