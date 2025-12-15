@@ -276,6 +276,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   ) {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
+    if (!scrollElement) {
+      return;
+    }
+
     // If we're checking because of auto-scrolling, we want check the scroll position even if the scroll detection
     // is normally suspended because of something like an animation in progress.
     if (
@@ -612,6 +616,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public checkMessagesOutOfView() {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
+
+    if (!scrollElement) {
+      return false;
+    }
+
     const remainingPixelsToScroll =
       scrollElement.scrollHeight -
       scrollElement.scrollTop -

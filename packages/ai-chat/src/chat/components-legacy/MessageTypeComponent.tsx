@@ -523,7 +523,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     localMessageItem: LocalMessageItem<ConversationalSearchItem>,
     fullMessage: MessageResponse,
   ) {
-    const { scrollElementIntoView } = props;
+    const { scrollElementIntoView, doAutoScroll } = props;
     return (
       <ConversationalSearch
         localMessageItem={localMessageItem}
@@ -532,6 +532,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           fullMessage?.history?.error_state ===
           MessageErrorState.FAILED_WHILE_STREAMING
         }
+        doAutoScroll={doAutoScroll}
       />
     );
   }
