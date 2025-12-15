@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
+@use "../styles/chat-theme";
 
 .cds-aichat--non-header-container {
   position: relative;
@@ -51,6 +52,11 @@
     overflow: hidden auto;
     block-size: 100%;
   }
+}
+
+.cds-aichat--before-input-element {
+  margin: auto;
+  max-inline-size: chat-theme.$messages-max-width;
 }
 
 .cds-aichat--workspace-container-panel {

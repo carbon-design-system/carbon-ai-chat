@@ -305,6 +305,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
         <WriteableElement
           slotName={WriteableElementName.BEFORE_INPUT_ELEMENT}
           id={`beforeInputElement${serviceManager.namespace.suffix}`}
+          className="cds-aichat--before-input-element"
         />
         <Input
           ref={this.inputRef}
