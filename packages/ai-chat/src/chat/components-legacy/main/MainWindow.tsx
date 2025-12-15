@@ -433,8 +433,6 @@ class MainWindow
     });
   }
 
-  // No longer supports close-and-restart; use onClose and onRestart as separate actions
-
   /**
    * The callback that can be called to toggle between the home screen and the bot view.
    */
@@ -620,13 +618,13 @@ class MainWindow
    * otherwise it appears for a split second before home screen is loaded.
    */
   renderChat() {
-    const { isHydrated } = this.props;
+    const { isHydrated, assistantMessageState } = this.props;
 
     return (
       <div className="cds-aichat--widget--content">
-        {this.renderCustomPanel()}
         {this.renderHydrationPanel()}
-        {isHydrated && (
+        {this.renderCustomPanel()}
+        {isHydrated && !assistantMessageState.isHydratingCounter && (
           <>
             {this.renderDisclaimerPanel()}
             {this.renderResponsePanel()}
@@ -732,8 +730,7 @@ class MainWindow
 
     // We need to make an educated guess whether the home screen is going to be displayed after hydration is
     // complete, so we can show a version of the hydration panel that matches to avoid a flickering transition when
-    // the hydration panel is only displayed very briefly. If the user's assistant session has expired, this will be
-    // wrong, but it's rare enough to be not worth addressing.
+    // the hydration panel is only displayed very briefly.
     const homescreen = config.public.homescreen;
     const useHomeScreenVersion =
       homescreen?.isOn && !persistedToBrowserStorage.hasSentNonWelcomeMessage;
@@ -752,11 +749,10 @@ class MainWindow
         animationOnOpen={AnimationInType.NONE}
         animationOnClose={AnimationOutType.NONE}
         shouldOpen={
-          assistantMessageState.isHydratingCounter > 0 &&
+          assistantMessageState.isHydratingCounter &&
           !catastrophicErrorType &&
           viewState.mainWindow
         }
-        shouldHide={false}
         serviceManager={serviceManager}
         overlayPanelName={PageObjectId.HYDRATING_PANEL}
       >

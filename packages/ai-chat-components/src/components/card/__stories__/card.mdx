@@ -1,0 +1,75 @@
+import { ArgTypes, Markdown, Meta, Canvas } from "@storybook/addon-docs/blocks";
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as CardStories from "./card.stories";
+import * as PreviewCardStories from "./preview-card.stories";
+
+<Meta of={CardStories} />
+
+# Card
+
+`<cds-aichat-card>` is an extension of the Carbon Design System’s `<cds-tile>` component, designed specifically for AI Chat applications.
+
+## Key Features
+
+- **Rounded corners**: Makes use of rounded modifier scss utility. and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
+- **OOTB sub-components**: OOTB components `<cds-aichat-card-footer>` and `<cds-aichat-card-steps>` provide consistent styling and can be placed in the provided slots. You can also plug in your own components into these slots.
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+```
+
+We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
+
+```javascript
+import Card from "@carbon/ai-chat-components/es/react/card.js";
+```
+
+<Markdown>{`${cdnJs(["card"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+### HTML
+
+<Canvas of={CardStories.Default} />
+
+## Component API
+
+## `cds-aichat-card`
+
+<ArgTypes of={CardStories.Default} />
+
+## `cds-aichat-card-footer`
+
+```javascript
+type Action = {
+  label: string;
+  id?: string;
+  kind?: BUTTON_KIND;
+  disabled?: boolean;
+  payload?: unknown;
+  icon?: CarbonIcon;
+  onClick?: () => void; // this is an optional handler if you wan't to pass individual onClicks this way. use @cds-aichat-card-footer-action for a common footer event.
+  tooltipText?: string;
+  isViewing?: boolean;
+};
+```
+
+<ArgTypes of={CardStories.CardFooter} />
+
+## `cds-aichat-card-steps`
+
+```javascript
+type Step = {
+  title: string;
+  description?: string;
+  kind?: ICON_INDICATOR_KIND;
+  label?: string;
+};
+```
+
+<ArgTypes of={PreviewCardStories.CardSteps} />

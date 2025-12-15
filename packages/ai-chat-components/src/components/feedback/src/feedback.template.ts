@@ -109,7 +109,7 @@ function feedbackElementTemplate(customElementClass: FeedbackElement) {
         </div>`
       : ""}
     <div class="${prefix}--buttons">
-      <div class="${prefix}--cancel">
+      <div class="${prefix}--cancel" data-rounded="bottom-left">
         <cds-button
           ?disabled=${isReadonly}
           size="lg"
@@ -119,7 +119,7 @@ function feedbackElementTemplate(customElementClass: FeedbackElement) {
           ${cancelLabel || "Cancel"}
         </cds-button>
       </div>
-      <div class="${prefix}--submit">
+      <div class="${prefix}--submit" data-rounded="bottom-right">
         <cds-button
           ?disabled=${isReadonly}
           size="lg"
