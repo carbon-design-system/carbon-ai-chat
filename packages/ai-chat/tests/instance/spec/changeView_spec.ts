@@ -8,6 +8,7 @@
  */
 
 import { ViewState, ViewType } from "../../../src/aiChatEntry";
+import { waitFor } from "@testing-library/react";
 import {
   createBaseConfig,
   renderChatAndGetInstance,
@@ -41,15 +42,19 @@ describe("ChatInstance.changeView", () => {
 
     // Test launcher view
     await instance.changeView("launcher" as ViewType);
-    let state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
+      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    });
 
     // Test mainWindow view
     await instance.changeView("mainWindow" as ViewType);
-    state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
+      expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    });
   });
 
   it("should accept ViewState object and update Redux state", async () => {

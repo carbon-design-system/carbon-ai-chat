@@ -50,7 +50,7 @@ function StreamingRichText(props: StreamingRichTextProps) {
   const languagePack = useLanguagePack();
 
   // If the chunks change, kick off an auto-scroll.
-  useCallbackOnChange(streamingState?.isDone, doAutoScroll);
+  useCallbackOnChange(streamingState?.chunks, doAutoScroll);
 
   let textToUse;
   if (streamingState && !streamingState.isDone) {
