@@ -33,6 +33,8 @@ function WorkspaceContainer(props: any) {
   // set these from redux app state, also have the app layout into account. float, fullscreen, etc.
   const [isModal, setIsModal] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(true);
+  const state = useSelector((state: AppState) => state);
+  console.log(state);
 
   useEffect(() => {
     if (chatWidth === 0) {

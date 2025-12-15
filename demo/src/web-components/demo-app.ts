@@ -71,7 +71,7 @@ export class DemoApp extends LitElement {
       bottom: 0;
       right: 0;
       height: calc(100vh - 48px);
-      width: 100%;
+      width: calc(100vw - 320px - 2rem);
       z-index: 9999;
     }
 
