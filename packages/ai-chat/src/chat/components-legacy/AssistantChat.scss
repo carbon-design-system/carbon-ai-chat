@@ -7,12 +7,18 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "../styles/chat-theme";
 
 .cds-aichat--non-header-container {
   position: relative;
   display: flex;
   overflow: hidden;
   flex: 1 1 0%;
+}
+
+.cds-aichat--widget--max-width .cds-aichat--non-header-container {
+  margin: auto;
+  max-inline-size: chat-theme.$messages-max-width;
 }
 
 .cds-aichat--messages-and-input-container {
