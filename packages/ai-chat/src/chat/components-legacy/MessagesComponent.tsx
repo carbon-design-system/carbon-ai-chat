@@ -11,6 +11,7 @@
 
 import cx from "classnames";
 import throttle from "lodash-es/throttle.js";
+import debounce from "lodash-es/debounce.js";
 import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
@@ -638,13 +639,17 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Updates the state after checking if there are any unread messages in the chat view
    */
-  public renderScrollDownNotification() {
-    const shouldRender = this.checkMessagesOutOfView();
-    this.setState({
-      scrollHandleHasFocus: false,
-      scrollDown: shouldRender,
-    });
-  }
+  public renderScrollDownNotification = debounce(
+    () => {
+      const shouldRender = this.checkMessagesOutOfView();
+      this.setState({
+        scrollHandleHasFocus: false,
+        scrollDown: shouldRender,
+      });
+    },
+    100,
+    { leading: false, trailing: true },
+  );
 
   /**
    * Get all the elements inside the lastBotMessageGroupID.
