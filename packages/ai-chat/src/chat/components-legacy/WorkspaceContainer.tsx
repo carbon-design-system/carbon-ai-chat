@@ -9,6 +9,7 @@
 
 import Modal from "../components/carbon/Modal";
 import Button from "../components/carbon/Button";
+import { BUTTON_KIND } from "../components/carbon/Button";
 import { useSelector } from "../hooks/useSelector";
 import { AppState } from "../../types/state/AppState";
 import { WriteableElementName } from "../utils/constants";
@@ -26,8 +27,9 @@ const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => {
         id={`workspaceElement${serviceManager.namespace.suffix}`}
       />
       <div>
-        <p>Look at me, I am the captain now!</p>
-        <Button onClick={onClose}>close</Button>
+        <Button kind={BUTTON_KIND.DANGER} onClick={onClose}>
+          close
+        </Button>
       </div>
     </div>
   );
