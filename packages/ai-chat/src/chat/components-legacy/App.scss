@@ -377,6 +377,10 @@ svg.cds-aichat--icon__logout--reverse {
     margin: auto;
     block-size: 100%;
     inline-size: 100%;
+
+    &:has(.cds-aichat--workspace-container-panel__open) {
+      padding-inline: layout.$spacing-05;
+    }
   }
 }
 

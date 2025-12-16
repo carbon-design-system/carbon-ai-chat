@@ -523,11 +523,6 @@ interface WorkspacePanelState {
    * The id of the panel that is currently in focus.
    */
   panelID: string;
-
-  /**
-   * Config options for the custom panels.
-   */
-  options: CustomPanelConfigOptions;
 }
 
 interface MessagePanelState<T extends GenericItem = GenericItem> {

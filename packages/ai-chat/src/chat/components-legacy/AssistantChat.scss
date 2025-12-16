@@ -8,6 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
+@use "../styles/chat-theme";
 
 .cds-aichat--non-header-container {
   position: relative;
@@ -30,7 +31,12 @@
 ) {
   .cds-aichat--messages-and-input-container {
     inline-size: 25%;
+    min-inline-size: 360px;
   }
+}
+
+.cds-aichat--workspace-container-inner {
+  block-size: 100%;
 }
 
 .cds-aichat--widget--max-width {
@@ -38,7 +44,7 @@
     .cds-aichat--workspace-container-panel__open
   ) {
     .cds-aichat--messages-and-input-container {
-      margin-inline: layout.$spacing-07;
+      padding-inline: layout.$spacing-05;
     }
   }
 
@@ -48,7 +54,13 @@
   }
 }
 
+.cds-aichat--before-input-element {
+  margin: auto;
+  max-inline-size: chat-theme.$messages-max-width;
+}
+
 .cds-aichat--workspace-container-panel {
+  block-size: 100%;
   inline-size: 0;
   transition: inline-size motion.$duration-fast-02
     motion.motion(standard, productive);
@@ -56,11 +68,6 @@
   &__open {
     inline-size: 75%;
   }
-}
-
-.cds-aichat--workspace-container-inner {
-  border: 1px solid #008000;
-  block-size: 100%;
 }
 
 .cds-aichat--messages-container__non-input-container {
