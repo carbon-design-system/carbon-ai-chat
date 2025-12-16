@@ -421,6 +421,11 @@ export enum WriteableElementName {
    * An element to be housed in the custom panel.
    */
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
+
+  /**
+   * An element to be housed in the custom panel.
+   */
+  WORKSPACE_PANEL_ELEMENT = "workspacePanelElement",
 }
 
 /**

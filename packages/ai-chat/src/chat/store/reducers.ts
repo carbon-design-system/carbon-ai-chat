@@ -93,6 +93,7 @@ import {
   applyLocalMessageUIState,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
+  DEFAULT_WORKSPACE_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
   handleViewStateChange,
   setHomeScreenOpenState,
@@ -180,6 +181,9 @@ const reducers: { [key: string]: ReducerType } = {
       },
       customPanelState: {
         ...DEFAULT_CUSTOM_PANEL_STATE,
+      },
+      workspacePanelState: {
+        ...DEFAULT_WORKSPACE_PANEL_STATE,
       },
       isHydrated: false,
       catastrophicErrorType: null,

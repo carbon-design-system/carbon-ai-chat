@@ -19,6 +19,7 @@ import {
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
+  DEFAULT_WORKSPACE_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
   DEFAULT_INPUT_STATE,
   DEFAULT_MESSAGE_PANEL_STATE,
@@ -66,6 +67,7 @@ function createInitialAppState(): AppState {
     viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
     iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
+    workspacePanelState: DEFAULT_WORKSPACE_PANEL_STATE,
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
     announceMessage: undefined,
     initialViewChangeComplete: false,
