@@ -474,6 +474,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             if (
               this.previousScrollableMessage !== lastScrollableMessageComponent
             ) {
+              // if message comes from history, don't animate scroll
+              if (lastMessage?.ui_state_internal?.from_history) {
+                animate = false;
+              }
               doScrollElement(scrollElement, setScrollTop, 0, animate);
               this.checkScrollAnchor(true, setScrollTop);
 
