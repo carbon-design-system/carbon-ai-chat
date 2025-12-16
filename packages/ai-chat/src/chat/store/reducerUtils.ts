@@ -28,6 +28,7 @@ import {
 } from "../../types/state/AppState";
 import {
   DefaultCustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
   PanelType,
 } from "../../types/instance/apiTypes";
 import {
@@ -37,7 +38,7 @@ import {
 import {
   CornersType,
   DEFAULT_CUSTOM_PANEL_ID,
-  DEFAULT_WORKSPACE_PANEL_ID,
+  WORKSPACE_PANEL_CUSTOM_PANEL_ID,
 } from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import {
@@ -81,12 +82,19 @@ const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 
+const WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
+  {
+    preferredLocation: "end",
+    disableAnimation: false,
+  };
+deepFreeze(WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS);
+
 const DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE: Record<
   PanelType,
   DefaultCustomPanelConfigOptions
 > = {
   [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  [PanelType.WORKSPACE]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  [PanelType.WORKSPACE]: WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS,
 };
 deepFreeze(DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE);
 
@@ -98,7 +106,8 @@ const DEFAULT_CUSTOM_PANEL_STATE: CustomPanelState = {
 deepFreeze(DEFAULT_CUSTOM_PANEL_STATE);
 const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
   isOpen: false,
-  panelID: DEFAULT_WORKSPACE_PANEL_ID,
+  panelID: WORKSPACE_PANEL_CUSTOM_PANEL_ID,
+  options: WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS,
 };
 deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
 
@@ -397,6 +406,7 @@ export {
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS,
   DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE,
   DEFAULT_LAUNCHER,
   DEFAULT_MESSAGE_PANEL_STATE,

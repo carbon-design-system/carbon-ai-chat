@@ -242,6 +242,23 @@ export interface DefaultCustomPanelConfigOptions {
    */
   hideBackButton?: boolean;
 }
+/**
+ * Options supported by the workspace custom panel implementation.
+ *
+ *
+ * @category Instance
+ */
+export interface WorkspaceCustomPanelConfigOptions {
+  /**
+   * Determines if the panel open/close animation should be turned off. By default, the panel will animate up from the
+   * bottom of the chat window.
+   */
+  disableAnimation?: boolean;
+  /**
+   * Where the chat will attempt to render the workspace in logical terms. For a ltr layout "start" will render on the left and "end" will render on the right. If there is not enough room to render the workspace, it will be rendered as a panel overlaying the content with a back button.
+   */
+  preferredLocation?: "start" | "end";
+}
 
 /**
  * Options accepted by {@link CustomPanelInstance.open}. Legacy consumers may continue to pass
@@ -251,4 +268,5 @@ export interface DefaultCustomPanelConfigOptions {
  */
 export type CustomPanelOpenOptions =
   | CustomPanelConfigOptions
-  | DefaultCustomPanelConfigOptions;
+  | DefaultCustomPanelConfigOptions
+  | WorkspaceCustomPanelConfigOptions;

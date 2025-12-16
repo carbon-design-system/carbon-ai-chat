@@ -9,6 +9,9 @@
  */
 
 import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
+import { PanelType } from "@carbon/ai-chat";
+import actions from "../../../store/actions";
+import { WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS } from "../../../store/reducerUtils";
 import Button, {
   BUTTON_KIND,
 } from "@carbon/ai-chat-components/es/react/button.js";
@@ -42,6 +45,15 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const [isExpired, setIsExpired] = useState(false);
 
   const handleClick = () => {
+    // const panel = serviceManager.instance.customPanels.getPanel(PanelType.WORKSPACE);
+    // panel.open();
+
+    serviceManager.store.dispatch(
+      actions.setWorkspaceCustomPanelConfigOptions(
+        WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS,
+      ),
+    );
+
     if (!isWorkspaceOpen) {
       serviceManager.eventBus.fire(
         {

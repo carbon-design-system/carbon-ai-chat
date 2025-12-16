@@ -23,7 +23,10 @@ import {
   ThemeState,
   ViewState,
 } from "../../types/state/AppState";
-import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
+import {
+  CustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
+} from "../../types/instance/apiTypes";
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -57,6 +60,8 @@ import {
   SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
   SET_CUSTOM_PANEL_OPEN,
   SET_CUSTOM_PANEL_OPTIONS,
+  SET_WORKSPACE_PANEL_OPEN,
+  SET_WORKSPACE_PANEL_OPTIONS,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   SET_IS_BROWSER_PAGE_VISIBLE,
@@ -853,6 +858,32 @@ const reducers: { [key: string]: ReducerType } = {
       ...state,
       customPanelState: {
         ...state.customPanelState,
+        options: action.options,
+      },
+    };
+  },
+
+  [SET_WORKSPACE_PANEL_OPEN]: (
+    state: AppState,
+    action: { isOpen: boolean },
+  ) => {
+    return {
+      ...state,
+      workspacePanelState: {
+        ...state.workspacePanelState,
+        isOpen: action.isOpen,
+      },
+    };
+  },
+
+  [SET_WORKSPACE_PANEL_OPTIONS]: (
+    state: AppState,
+    action: { options: WorkspaceCustomPanelConfigOptions },
+  ) => {
+    return {
+      ...state,
+      workspacePanelState: {
+        ...state.workspacePanelState,
         options: action.options,
       },
     };

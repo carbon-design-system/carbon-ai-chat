@@ -9,6 +9,7 @@
 
 import {
   type CustomPanelConfigOptions,
+  type WorkspaceCustomPanelConfigOptions,
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
@@ -523,6 +524,11 @@ interface WorkspacePanelState {
    * The id of the panel that is currently in focus.
    */
   panelID: string;
+
+  /**
+   * Config options for the workspace panels.
+   */
+  options: WorkspaceCustomPanelConfigOptions;
 }
 
 interface MessagePanelState<T extends GenericItem = GenericItem> {
