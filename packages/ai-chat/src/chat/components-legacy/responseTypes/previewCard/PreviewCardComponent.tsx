@@ -93,7 +93,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
             icon: isWorkspaceOpen ? View16 : Maximize16,
             id: "docs",
             kind: "ghost",
-            label: "View details",
+            label: isWorkspaceOpen ? "Viewing" : "View details",
             payload: {
               test: "value",
             },

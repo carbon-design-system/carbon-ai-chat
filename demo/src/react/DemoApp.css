@@ -10,8 +10,8 @@
   bottom: 0;
   right: 0;
   height: calc(100vh - 48px);
-  /* width: calc(100vw - 320px - 2rem); */
-  width: 100%;
+  width: calc(100vw - 320px - 2rem);
+  /* width: 100%; */
   z-index: 9999;
 }
 

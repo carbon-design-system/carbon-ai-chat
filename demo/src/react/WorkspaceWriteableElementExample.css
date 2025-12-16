@@ -1,0 +1,32 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+.workspace-example-outer-react {
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.workspace-example-inner-react {
+    /* border: 1px solid var(--cds-chat-bubble-border); */
+    /* border-radius: 8px; */
+    /* padding: 1rem; */
+    background-color: var(--cds-background-contrast);
+    color: var(--cds-text-primary);
+    font-family: var(--cds-font-family);
+}
+
+p {
+    margin: 0;
+    font-size: unset;
+    font-weight: unset;
+    letter-spacing: unset;
+    line-height: unset;
+}
+
+[slot="workspacePanelElement"] {
+    block-size: 100%;
+}

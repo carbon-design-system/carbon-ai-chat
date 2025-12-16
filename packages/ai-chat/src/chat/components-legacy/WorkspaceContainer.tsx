@@ -8,17 +8,14 @@
  */
 
 import Modal from "../components/carbon/Modal";
-import Button from "../components/carbon/Button";
-import { BUTTON_KIND } from "../components/carbon/Button";
 import { useSelector } from "../hooks/useSelector";
 import { AppState } from "../../types/state/AppState";
 import { WriteableElementName } from "../utils/constants";
-import { PanelType } from "../../types/instance/apiTypes";
 import WriteableElement from "./WriteableElement";
 import React, { useEffect, useState } from "react";
 import cx from "classnames";
 
-const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => {
+const WorkspaceContainerInner = ({ ...innerProps }: any) => {
   const serviceManager = innerProps.serviceManager;
   return (
     <div className="cds-aichat--workspace-container-inner">
@@ -27,11 +24,6 @@ const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => {
         className="cds-aichat--workspace-writeable-element"
         id={`workspacePanelElement${serviceManager.namespace.suffix}`}
       />
-      <div>
-        <Button kind={BUTTON_KIND.DANGER} onClick={onClose}>
-          close
-        </Button>
-      </div>
     </div>
   );
 };
@@ -44,9 +36,6 @@ function WorkspaceContainer(props: any) {
   const isWorkspaceOpen = useSelector(
     (state: AppState) => state.workspacePanelState.isOpen,
   );
-  const panel = props.serviceManager.instance.customPanels.getPanel(
-    PanelType.WORKSPACE,
-  );
 
   useEffect(() => {
     if (chatWidth === 0) {
@@ -54,10 +43,6 @@ function WorkspaceContainer(props: any) {
     }
     setIsModal(chatWidth <= 1024);
   }, [chatWidth]);
-
-  const handleClose = () => {
-    panel.close();
-  };
 
   return (
     <React.Suspense fallback={null}>
@@ -68,9 +53,8 @@ function WorkspaceContainer(props: any) {
             hasScrollingContent={true}
             prevent-close-on-click-outside
             className={cx("cds-aichat--workspace-modal")}
-            onClose={handleClose}
           >
-            <WorkspaceContainerInner {...props} onClose={handleClose} />
+            <WorkspaceContainerInner {...props} />
           </Modal>
         </div>
       ) : (
@@ -80,7 +64,7 @@ function WorkspaceContainer(props: any) {
               "cds-aichat--workspace-container-panel__open": isWorkspaceOpen,
             })}
           >
-            <WorkspaceContainerInner {...props} onClose={handleClose} />
+            <WorkspaceContainerInner {...props} />
           </div>
         )
       )}
