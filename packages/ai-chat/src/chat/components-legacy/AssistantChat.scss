@@ -16,8 +16,10 @@
   flex: 1 1 0%;
 }
 
-.cds-aichat--widget--max-width .cds-aichat--non-header-container {
+.cds-aichat--widget--max-width
+  .cds-aichat--messages-container__input-container {
   margin: auto;
+  inline-size: 100%;
   max-inline-size: chat-theme.$messages-max-width;
 }
 
