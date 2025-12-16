@@ -8,26 +8,18 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities/convert" as *;
-@use "@carbon/styles/scss/breakpoint" as *;
 @use "./vars" as *;
 
 @mixin radius($positions...) {
   @each $pos in $positions {
     border-#{$pos}-radius: calc(
-      var(
-          --#{$prefix}-border-radius,
-          var(--#{$prefix}-tile-border-radius)
-        ) - rem(1px)
+      var(--#{$prefix}-rounded-modifier-radius) - rem(1px)
     );
   }
 }
 
 @mixin full-radius {
-  border-radius: calc(
-    var(--#{$prefix}-border-radius, var(--#{$prefix}-tile-border-radius)) - rem(
-        1px
-      )
-  );
+  border-radius: calc(var(--#{$prefix}-rounded-modifier-radius) - rem(1px));
 }
 
 @mixin rounded-modifiers {
@@ -43,25 +35,6 @@
       @include full-radius;
 
       outline-offset: rem(-1px);
-    }
-  }
-
-  [data-rounded="md-none"] {
-    @include full-radius;
-
-    > :only-child {
-      @include full-radius;
-    }
-
-    &::part(link),
-    &::part(button) {
-      @include full-radius;
-
-      outline-offset: rem(-1px);
-    }
-
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
     }
   }
 
@@ -85,82 +58,27 @@
     }
   }
 
-  [data-rounded="top-md-none"] {
-    @include radius(start-start, start-end);
+  [data-rounded="top-left"] {
+    @include radius(start-start);
 
-    > :first-child {
+    :first-child {
       @include radius(start-start);
 
       &::part(button) {
         @include radius(start-start);
       }
     }
-
-    > :last-child {
-      @include radius(start-end);
-
-      &::part(button) {
-        @include radius(start-end);
-      }
-    }
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
-    }
-  }
-
-  [data-rounded="top-left"] {
-    @include radius(start-start);
-
-    &::part(button) {
-      @include radius(start-start);
-    }
-
-    :first-child {
-      @include radius(start-start);
-    }
-  }
-
-  [data-rounded="top-left-md-none"] {
-    @include radius(start-start);
-
-    &::part(button) {
-      @include radius(start-start);
-    }
-
-    :first-child {
-      @include radius(start-start);
-    }
-
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
-    }
   }
 
   [data-rounded="top-right"] {
     @include radius(start-end);
 
-    &::part(button) {
-      @include radius(start-end);
-    }
-
     :last-child {
       @include radius(start-end);
-    }
-  }
 
-  [data-rounded="top-right-md-none"] {
-    @include radius(start-end);
-
-    &::part(button) {
-      @include radius(start-end);
-    }
-
-    :last-child {
-      @include radius(start-end);
-    }
-
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
+      &::part(button) {
+        @include radius(start-end);
+      }
     }
   }
 
@@ -196,95 +114,27 @@
     }
   }
 
-  [data-rounded="bottom-md-none"] {
-    @include radius(end-start, end-end);
-
-    &:not([data-stacked]) {
-      > :first-child {
-        @include radius(end-start);
-
-        &::part(button) {
-          @include radius(end-start);
-        }
-      }
-
-      > :last-child {
-        @include radius(end-end);
-
-        &::part(button) {
-          @include radius(end-end);
-        }
-      }
-    }
-
-    &[data-stacked] {
-      > :last-child {
-        @include radius(end-start, end-end);
-
-        &::part(button) {
-          @include radius(end-start, end-end);
-        }
-      }
-    }
-
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
-    }
-  }
-
   [data-rounded="bottom-left"] {
     @include radius(end-start);
 
-    &::part(button) {
-      @include radius(end-start);
-    }
-
     :first-child {
       @include radius(end-start);
-    }
-  }
 
-  [data-rounded="bottom-left-md-none"] {
-    @include radius(end-start);
-
-    &::part(button) {
-      @include radius(end-start);
-    }
-
-    :first-child {
-      @include radius(end-start);
-    }
-
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
+      &::part(button) {
+        @include radius(end-start);
+      }
     }
   }
 
   [data-rounded="bottom-right"] {
     @include radius(end-end);
 
-    &::part(button) {
-      @include radius(end-end);
-    }
-
     :last-child {
       @include radius(end-end);
-    }
-  }
 
-  [data-rounded="bottom-right-md-none"] {
-    @include radius(end-end);
-
-    &::part(button) {
-      @include radius(end-end);
-    }
-
-    :last-child {
-      @include radius(end-end);
-    }
-
-    @include breakpoint-down("md") {
-      --#{$prefix}-border-radius: 0;
+      &::part(button) {
+        @include radius(end-end);
+      }
     }
   }
 }
