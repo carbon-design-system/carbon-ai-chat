@@ -13,6 +13,7 @@ import { BUTTON_KIND } from "../components/carbon/Button";
 import { useSelector } from "../hooks/useSelector";
 import { AppState } from "../../types/state/AppState";
 import { WriteableElementName } from "../utils/constants";
+import { PanelType } from "../../types/instance/apiTypes";
 import WriteableElement from "./WriteableElement";
 import React, { useEffect, useState } from "react";
 import cx from "classnames";
@@ -40,9 +41,12 @@ function WorkspaceContainer(props: any) {
 
   // set these from redux app state, also have the app layout into account. float, fullscreen, etc.
   const [isModal, setIsModal] = useState(false);
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(true);
-  const state = useSelector((state: AppState) => state);
-  console.log(state);
+  const isWorkspaceOpen = useSelector(
+    (state: AppState) => state.workspacePanelState.isOpen,
+  );
+  const panel = props.serviceManager.instance.customPanels.getPanel(
+    PanelType.WORKSPACE,
+  );
 
   useEffect(() => {
     if (chatWidth === 0) {
@@ -52,10 +56,7 @@ function WorkspaceContainer(props: any) {
   }, [chatWidth]);
 
   const handleClose = () => {
-    setIsWorkspaceOpen(false);
-    console.log(
-      "move the workspace closing to custom panel callable api where the state change happens",
-    );
+    panel.close();
   };
 
   return (

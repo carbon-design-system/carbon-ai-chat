@@ -29,27 +29,34 @@ function createCustomPanelInstance(
   defaultPanelOptions: CustomPanelOpenOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
 ): CustomPanelInstance {
   let hostElement;
+
+  const panelActions = {
+    [PanelType.WORKSPACE]: {
+      setConfig: actions.setWorkspaceCustomPanelConfigOptions,
+      setOpen: actions.setWorkspaceCustomPanelOpen,
+    },
+    [PanelType.DEFAULT]: {
+      setConfig: actions.setCustomPanelConfigOptions,
+      setOpen: actions.setCustomPanelOpen,
+    },
+  } as const;
+
+  const { setConfig, setOpen } =
+    panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
+
   const customPanelInstance: CustomPanelInstance = {
     open(options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const { store } = serviceManager;
-      console.log(panelType, "panel type");
 
-      if (panelType == PanelType.DEFAULT) {
-        store.dispatch(actions.setCustomPanelConfigOptions(resolvedOptions));
-        store.dispatch(actions.setCustomPanelOpen(true));
-      } else {
-        console.log("rchdhdgfjkl;");
-
-        store.dispatch(
-          actions.setWorkspaceCustomPanelConfigOptions(resolvedOptions),
-        );
-        store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
-      }
+      store.dispatch(setConfig(resolvedOptions));
+      store.dispatch(setOpen(true));
     },
+
     close() {
-      serviceManager.store.dispatch(actions.setCustomPanelOpen(false));
+      const { store } = serviceManager;
+      store.dispatch(setOpen(false));
     },
   };
 

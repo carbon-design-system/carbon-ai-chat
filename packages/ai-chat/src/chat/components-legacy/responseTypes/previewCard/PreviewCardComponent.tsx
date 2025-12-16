@@ -9,7 +9,7 @@
  */
 
 import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import { PanelType } from "@carbon/ai-chat";
+import { PanelType } from "../../../../types/instance/apiTypes";
 import actions from "../../../store/actions";
 import { WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS } from "../../../store/reducerUtils";
 import Button, {
@@ -25,6 +25,8 @@ import React, { useState } from "react";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { BusEventType } from "../../../../types/events/eventBusTypes";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { AppState } from "../../../../types/state/AppState";
+import { useSelector } from "../../../hooks/useSelector";
 import {
   PreviewCardItem,
   MessageResponse,
@@ -41,19 +43,14 @@ interface PreviewCardComponentProps {
 function PreviewCardComponent(props: PreviewCardComponentProps) {
   const item = props.localMessageItem.item as PreviewCardItem;
   const serviceManager = useServiceManager();
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
-  const [isExpired, setIsExpired] = useState(false);
+  const isWorkspaceOpen = useSelector(
+    (state: AppState) => state.workspacePanelState.isOpen,
+  );
+  const panel = serviceManager.instance.customPanels.getPanel(
+    PanelType.WORKSPACE,
+  );
 
   const handleClick = () => {
-    // const panel = serviceManager.instance.customPanels.getPanel(PanelType.WORKSPACE);
-    // panel.open();
-
-    serviceManager.store.dispatch(
-      actions.setWorkspaceCustomPanelConfigOptions(
-        WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS,
-      ),
-    );
-
     if (!isWorkspaceOpen) {
       serviceManager.eventBus.fire(
         {
@@ -66,7 +63,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         },
         serviceManager.instance,
       );
-      setIsWorkspaceOpen(true);
+      panel.open();
       serviceManager.eventBus.fire(
         {
           type: BusEventType.WORKSPACE_OPEN,
