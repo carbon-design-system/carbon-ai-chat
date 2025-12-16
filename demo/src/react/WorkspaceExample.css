@@ -13,6 +13,6 @@
     overflow-y: auto;
 }
 
-[slot="workspaceElement"] {
+[slot="workspacePanelElement"] {
     block-size: 100%;
 }

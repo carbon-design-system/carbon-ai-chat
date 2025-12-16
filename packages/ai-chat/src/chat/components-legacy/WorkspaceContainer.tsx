@@ -22,9 +22,9 @@ const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => {
   return (
     <div className="cds-aichat--workspace-container-inner">
       <WriteableElement
-        slotName={WriteableElementName.WORKSPACE_ELEMENT}
+        slotName={WriteableElementName.WORKSPACE_PANEL_ELEMENT}
         className="cds-aichat--workspace-writeable-element"
-        id={`workspaceElement${serviceManager.namespace.suffix}`}
+        id={`workspacePanelElement${serviceManager.namespace.suffix}`}
       />
       <div>
         <Button kind={BUTTON_KIND.DANGER} onClick={onClose}>
@@ -36,8 +36,6 @@ const WorkspaceContainerInner = ({ onClose, ...innerProps }: any) => {
 };
 
 function WorkspaceContainer(props: any) {
-  console.log("in here???");
-
   const chatWidth = useSelector((state: AppState) => state.chatWidth);
 
   // set these from redux app state, also have the app layout into account. float, fullscreen, etc.

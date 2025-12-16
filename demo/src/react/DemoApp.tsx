@@ -16,6 +16,7 @@ import {
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
+  BusEventWorkspaceOpen,
   ChatContainer,
   ChatCustomElement,
   ChatInstance,
@@ -147,9 +148,9 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
-      workspaceElement: (
+      workspacePanelElement: (
         <WorkspaceExample
-          location="workspaceElement"
+          location="workspacePanelElement"
           parentStateText={stateText}
         />
       ),
@@ -197,12 +198,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     // here we add a handler to the workspace pre open and open events
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
-      handler: (e) => console.log("pre open", e),
+      handler: customWorkspacehandler,
     });
 
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
-      handler: (e) => console.log("open", e),
+      handler: customWorkspacehandler,
     });
 
     // Handle feedback event.
@@ -296,6 +297,14 @@ function customButtonHandler(event: BusEvent) {
     // eslint-disable-next-line no-alert
     window.alert(messageItem.user_defined?.text);
   }
+}
+
+/**
+ * Listens for workspace panel open event.
+ */
+function customWorkspacehandler(event: BusEvent) {
+  const { data } = event as BusEventWorkspaceOpen;
+  console.log(data, "data");
 }
 
 export { DemoApp };
