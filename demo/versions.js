@@ -15,6 +15,7 @@
  * The array should be ordered with newest versions first, there is no sorting later on.
  */
 export const AI_CHAT_VERSIONS = [
+  "v1.4.0",
   "v1.3.2",
   "v1.3.1",
   "v1.3.0",
