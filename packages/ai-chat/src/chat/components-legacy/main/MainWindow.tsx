@@ -653,6 +653,7 @@ class MainWindow
       serviceManager,
       assistantMessageState,
       humanAgentState,
+      workspacePanelState,
       allMessageItemsByID,
       isHydrated,
     } = this.props;
@@ -695,6 +696,7 @@ class MainWindow
             this.onSendInput(text, MessageSendSource.MESSAGE_INPUT)
           }
           humanAgentState={humanAgentState}
+          workspacePanelState={workspacePanelState}
           agentDisplayState={agentDisplayState}
           allMessageItemsByID={allMessageItemsByID}
           onRestart={this.onRestart}

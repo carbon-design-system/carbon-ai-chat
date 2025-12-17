@@ -9,11 +9,13 @@
 
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
+import "@carbon/web-components/es/components/dropdown/index.js";
 
 import {
   ChatInstance,
   CustomPanelOpenOptions,
   IncreaseOrDecrease,
+  PanelType,
   ViewType,
   WriteableElementName,
 } from "@carbon/ai-chat";
@@ -202,6 +204,35 @@ export class DemoChatInstanceSwitcher extends LitElement {
       panel?.close();
     });
   };
+  private _openWorkspacePanel(options: {
+    preferredLocation?: "start" | "end";
+    disableAnimation?: boolean;
+  }) {
+    this._withInstance((instance) => {
+      const panel = instance.customPanels?.getPanel(PanelType.WORKSPACE);
+      if (!panel) {
+        return;
+      }
+
+      panel.open(options);
+    });
+  }
+
+  private _handleWorkspacePanelAnimation(disableAnimation: boolean) {
+    this._openWorkspacePanel({
+      preferredLocation: "end",
+      disableAnimation,
+    });
+  }
+
+  private _handleChangeWorkspacePosition(event: CustomEvent) {
+    const preferredLocation = event.detail?.item?.value;
+
+    this._openWorkspacePanel({
+      preferredLocation,
+      disableAnimation: false,
+    });
+  }
 
   private _handleRequestFocus = () => {
     this._withInstance((instance) => {
@@ -393,6 +424,40 @@ export class DemoChatInstanceSwitcher extends LitElement {
           <cds-button kind="ghost" @click=${this._handleCloseCustomPanel}>
             Close custom panel
           </cds-button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Workspace controls</div>
+        <div class="actions">
+          <cds-dropdown
+            value="default"
+            title-text="Position"
+            @cds-dropdown-selected=${this._handleChangeWorkspacePosition}
+          >
+            <cds-dropdown-item value="default">Default</cds-dropdown-item>
+            <cds-dropdown-item value="start">start</cds-dropdown-item>
+            <cds-dropdown-item value="end">end</cds-dropdown-item>
+          </cds-dropdown>
+          <p class="panel-control__description">
+            Specifies the posotion of Workspace Panel
+          </p>
+          <div class="panel-control">
+            <cds-button
+              kind="secondary"
+              @click=${() => this._handleWorkspacePanelAnimation(true)}
+            >
+              Without Animations
+            </cds-button>
+            <p class="panel-control__description">
+              Opens Workspace Panels without the animations
+            </p>
+            <div>
+              <cds-button kind="ghost" @click=${this._handleCloseCustomPanel}>
+                Close custom panel
+              </cds-button>
+            </div>
+          </div>
         </div>
       </div>
     `;

@@ -9,6 +9,7 @@
 
 import React, { Component, RefObject } from "react";
 import { injectIntl } from "react-intl";
+import cx from "classnames";
 
 import MessagesComponent, { MessagesComponentClass } from "./MessagesComponent";
 import { HasServiceManager } from "../hocs/withServiceManager";
@@ -16,6 +17,7 @@ import { AppConfig } from "../../types/state/AppConfig";
 import {
   HumanAgentDisplayState,
   HumanAgentState,
+  WorkspacePanelState,
   ChatMessagesState,
   FileUpload,
   InputState,
@@ -52,6 +54,7 @@ interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   messageState: ChatMessagesState;
   isHydrated: boolean;
   humanAgentState: HumanAgentState;
+  workspacePanelState: WorkspacePanelState;
   agentDisplayState: HumanAgentDisplayState;
   onSendInput: (text: string) => void;
   onToggleHomeScreen: () => void;
@@ -350,10 +353,12 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
       assistantName,
       headerDisplayName,
       shouldHideChatContentForPanel,
+      workspacePanelState,
     } = this.props;
 
     const { hasCaughtError } = this.state;
-
+    const preferredLocation = workspacePanelState.options.preferredLocation;
+    const disableAnimation = workspacePanelState.options.disableAnimation;
     return (
       <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
         <div
@@ -386,14 +391,26 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
                 />
               </div>
             )}
+            {preferredLocation == "start" && (
+              <WorkspaceContainer
+                serviceManager={this.props.serviceManager}
+              ></WorkspaceContainer>
+            )}
             {!hasCaughtError && (
-              <div className="cds-aichat--messages-and-input-container">
+              <div
+                className={cx("cds-aichat--messages-and-input-container", {
+                  "cds-aichat--messages-and-input-container--no-animation":
+                    disableAnimation,
+                })}
+              >
                 {this.renderMessagesAndInput()}
               </div>
             )}
-            <WorkspaceContainer
-              serviceManager={this.props.serviceManager}
-            ></WorkspaceContainer>
+            {preferredLocation == "end" && (
+              <WorkspaceContainer
+                serviceManager={this.props.serviceManager}
+              ></WorkspaceContainer>
+            )}
           </div>
         </div>
       </div>

@@ -36,6 +36,9 @@ function WorkspaceContainer(props: any) {
   const isWorkspaceOpen = useSelector(
     (state: AppState) => state.workspacePanelState.isOpen,
   );
+  const workspaceOptions = useSelector(
+    (state: AppState) => state.workspacePanelState.options,
+  );
 
   useEffect(() => {
     if (chatWidth === 0) {
@@ -62,6 +65,8 @@ function WorkspaceContainer(props: any) {
           <div
             className={cx("cds-aichat--workspace-container-panel", {
               "cds-aichat--workspace-container-panel__open": isWorkspaceOpen,
+              "cds-aichat--workspace-container-panel--no-animation":
+                workspaceOptions.disableAnimation,
             })}
           >
             <WorkspaceContainerInner {...props} />
