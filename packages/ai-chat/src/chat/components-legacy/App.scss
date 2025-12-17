@@ -98,7 +98,7 @@
 }
 
 .cds-aichat--ai-theme .cds-aichat--widget {
-  border: solid 1px transparent;
+  border: solid 1px theme.$ai-border-start;
   background-color: theme.$chat-shell-background;
   background-image: chat-theme.$ai-background-image;
   /* TODO: For AI theme only?
