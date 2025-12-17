@@ -97,7 +97,6 @@
 }
 
 .cds-aichat--header__left-items :first-child {
-  overflow: hidden;
   border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
 }
 
