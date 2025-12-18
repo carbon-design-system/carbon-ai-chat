@@ -204,6 +204,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
       panel?.close();
     });
   };
+
   private _openWorkspacePanel(options: {
     preferredLocation?: "start" | "end";
     disableAnimation?: boolean;
@@ -217,6 +218,13 @@ export class DemoChatInstanceSwitcher extends LitElement {
       panel.open(options);
     });
   }
+
+  private _handleCloseWorkspaceanel = () => {
+    this._withInstance((instance) => {
+      const panel = instance.customPanels?.getPanel(PanelType.WORKSPACE);
+      panel?.close();
+    });
+  };
 
   private _handleWorkspacePanelAnimation(disableAnimation: boolean) {
     this._openWorkspacePanel({
@@ -453,7 +461,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
               Opens Workspace Panels without the animations
             </p>
             <div>
-              <cds-button kind="ghost" @click=${this._handleCloseCustomPanel}>
+              <cds-button kind="ghost" @click=${this._handleCloseWorkspaceanel}>
                 Close custom panel
               </cds-button>
             </div>
