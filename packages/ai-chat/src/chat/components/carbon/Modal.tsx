@@ -12,6 +12,7 @@ import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CarbonModalElement from "@carbon/web-components/es/components/modal/modal.js";
+import CarbonModalBodyElement from "@carbon/web-components/es/components/modal/modal-body.js";
 
 const Modal = createComponent({
   tagName: "cds-modal",
@@ -22,4 +23,11 @@ const Modal = createComponent({
   },
 });
 
+const ModalBody = createComponent({
+  tagName: "cds-modal-body",
+  elementClass: CarbonModalBodyElement,
+  react: React,
+});
+
 export default Modal;
+export { ModalBody };

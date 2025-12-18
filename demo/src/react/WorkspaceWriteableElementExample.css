@@ -5,28 +5,25 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-.workspace-example-outer-react {
-    padding: 1rem;
-    border-radius: 8px;
-}
-
-.workspace-example-inner-react {
-    /* border: 1px solid var(--cds-chat-bubble-border); */
-    /* border-radius: 8px; */
-    /* padding: 1rem; */
-    background-color: var(--cds-background-contrast);
-    color: var(--cds-text-primary);
-    font-family: var(--cds-font-family);
-}
-
-p {
-    margin: 0;
-    font-size: unset;
-    font-weight: unset;
-    letter-spacing: unset;
-    line-height: unset;
-}
-
 [slot="workspacePanelElement"] {
     block-size: 100%;
+}
+
+cds-aichat-workspace-shell {
+    box-sizing: border-box;
+    background-color: var(--cds-chat-shell-background);
+    block-size: 100%;
+    max-inline-size: unset;
+
+    cds-inline-notification {
+        box-sizing: border-box;
+    }
+
+    cds-aichat-toolbar {
+        border-block-end: .0625rem solid var(--cds-chat-bubble-border)
+    }
+
+    cds-aichat-workspace-shell-body {
+        block-size: calc(100% - 8.5rem);
+    }
 }

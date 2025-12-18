@@ -66,9 +66,28 @@
   max-inline-size: chat-theme.$messages-max-width;
 }
 
+.cds-aichat--workspace-modal {
+  cds-modal-body {
+    border-block-end: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  &::part(dialog) {
+    border: none;
+    border-radius: 8px;
+  }
+}
+
+.cds-aichat--workspace-writeable-element {
+  block-size: 100%;
+}
+
 .cds-aichat--workspace-container-panel {
   block-size: 100%;
   inline-size: 0;
+  padding-block: layout.$spacing-07;
+  padding-inline: layout.$spacing-05;
   transition: inline-size motion.$duration-fast-02
     motion.motion(standard, productive);
 

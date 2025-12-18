@@ -7,7 +7,7 @@
  *  @license
  */
 
-import Modal from "../components/carbon/Modal";
+import Modal, { ModalBody } from "../components/carbon/Modal";
 import { useSelector } from "../hooks/useSelector";
 import { AppState } from "../../types/state/AppState";
 import { WriteableElementName } from "../utils/constants";
@@ -49,12 +49,15 @@ function WorkspaceContainer(props: any) {
       {isModal ? (
         <div className={cx("cds-aichat--workspace-container-modal")}>
           <Modal
+            full-width
             open={isWorkspaceOpen}
             hasScrollingContent={true}
             prevent-close-on-click-outside
             className={cx("cds-aichat--workspace-modal")}
           >
-            <WorkspaceContainerInner {...props} />
+            <ModalBody>
+              <WorkspaceContainerInner {...props} />
+            </ModalBody>
           </Modal>
         </div>
       ) : (
