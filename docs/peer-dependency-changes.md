@@ -3,6 +3,13 @@
 This file tracks changes to the `peerDependencies` of the `packages/ai-chat` package over time.
 Each section corresponds to a specific version of the package and includes any dependencies that were added, removed, or updated.
 
+## Version 1.4.0
+
+**Removed**
+
+- **@carbon/icons** (was `>=11.53.0 <12.0.0`)
+- **lit** (was `>=3.1.0 <4.0.0`)
+
 ## Version 1.3.0
 
 **Updated**
