@@ -219,7 +219,7 @@ function createChatInstance({
         store.dispatch(actions.addIsLoadingCounter(0, message));
       } else {
         consoleError(
-          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined, "reset", "increase" and "decrease".`,
+          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`,
         );
       }
     },
