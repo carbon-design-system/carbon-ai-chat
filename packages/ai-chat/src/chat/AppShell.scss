@@ -12,5 +12,5 @@
   block-size: 100%;
 
   @include layout.emit-layout-tokens;
-  @include meta.load-css("./ChatAppStyles");
+  @include meta.load-css("./AppShellStyles");
 }

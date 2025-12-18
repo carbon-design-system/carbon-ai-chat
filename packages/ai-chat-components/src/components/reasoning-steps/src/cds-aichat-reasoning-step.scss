@@ -25,6 +25,10 @@
   display: none;
 }
 
+.#{$prefix}__panel--hidden {
+  display: none;
+}
+
 .#{$prefix}--reasoning-step {
   inline-size: 100%;
 }

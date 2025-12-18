@@ -1,0 +1,22 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/reset";
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/utilities/convert" as *;
+
+:host(#{$prefix}-workspace-shell-body) {
+  display: block;
+  overflow: auto;
+  padding: rem(24px) rem(32px);
+  block-size: rem(504px);
+}

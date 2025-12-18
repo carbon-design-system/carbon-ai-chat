@@ -339,6 +339,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
       children,
       className,
       shouldOpen,
+      shouldHide,
       animationOnClose,
       animationOnOpen,
       overlayPanelName,
@@ -348,7 +349,7 @@ class OverlayPanel extends PureComponent<OverlayPanelProps, OverlayPanelState> {
 
     return (
       <HideComponent
-        hidden={!isClosing && !shouldOpen}
+        hidden={(!isClosing && !shouldOpen) || shouldHide}
         className={cx("cds-aichat--overlay-panel-container", className, {
           "cds-aichat--overlay-panel-container--animating":
             isOpening || isClosing,

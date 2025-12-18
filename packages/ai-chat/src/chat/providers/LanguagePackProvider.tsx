@@ -14,18 +14,21 @@
  */
 
 import React, { ReactNode, type JSX } from "react";
+import { useSelector } from "../hooks/useSelector";
 import { LanguagePackContext } from "../contexts/LanguagePackContext";
-import type { LanguagePack } from "../../types/config/PublicConfig";
+import { AppState } from "../../types/state/AppState";
 
 interface LanguagePackProviderProps {
-  languagePack: LanguagePack;
   children?: ReactNode;
 }
 
 function LanguagePackProvider({
-  languagePack,
   children,
 }: LanguagePackProviderProps): JSX.Element {
+  const languagePack = useSelector(
+    (state: AppState) => state.config.derived.languagePack,
+  );
+
   return (
     <LanguagePackContext.Provider value={languagePack}>
       {children}

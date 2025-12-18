@@ -10,6 +10,18 @@
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "./vars" as *;
 
+// Note: This file is utilized at multiple places. please ensure changes here
+// are compatible across all usages. since these modifiers are built with DRY principles,
+// any changes here will affect all components that use these mixins.
+
+/* ----- HELPERS ----- */
+@mixin host-and-attr($selector) {
+  :host(#{$selector}),
+  #{$selector} {
+    @content;
+  }
+}
+
 @mixin radius($positions...) {
   @each $pos in $positions {
     border-#{$pos}-radius: calc(
@@ -22,13 +34,23 @@
   border-radius: calc(var(--#{$prefix}-rounded-modifier-radius) - rem(1px));
 }
 
-@mixin rounded-modifiers {
-  [data-rounded=""] {
-    @include full-radius;
+/* ----- SHARED CHILD + BUTTON ROUNDING ----- */
+@mixin round-child($selector, $positions...) {
+  > #{$selector} {
+    @include radius($positions...);
 
-    > :only-child {
-      @include full-radius;
+    &::part(button) {
+      @include radius($positions...);
     }
+  }
+}
+
+/* ----- ROUNDED MODIFIERS ----- */
+
+/* ----- BASE (HOST-LEVEL ROUNDING) ----- */
+@mixin rounded-base {
+  @include host-and-attr('[data-rounded=""]') {
+    @include full-radius;
 
     &::part(link),
     &::part(button) {
@@ -36,127 +58,168 @@
 
       outline-offset: rem(-1px);
     }
-  }
 
-  [data-rounded="top"] {
-    @include radius(start-start, start-end);
-
-    > :first-child {
-      @include radius(start-start);
-
-      &::part(button) {
-        @include radius(start-start);
-      }
-    }
-
-    > :last-child {
-      @include radius(start-end);
-
-      &::part(button) {
-        @include radius(start-end);
-      }
+    > :only-child {
+      @include full-radius;
     }
   }
+}
 
-  [data-rounded="top-left"] {
-    @include radius(start-start);
+/* ----- HOST-ONLY POSITIONAL ROUNDING ----- */
+$rounded-host-map: (
+  top: (
+    start-start,
+    start-end,
+  ),
+  top-left: (
+    start-start,
+  ),
+  top-right: (
+    start-end,
+  ),
+  bottom: (
+    end-start,
+    end-end,
+  ),
+  bottom-left: (
+    end-start,
+  ),
+  bottom-right: (
+    end-end,
+  ),
+);
 
-    :first-child {
-      @include radius(start-start);
-
-      &::part(button) {
-        @include radius(start-start);
-      }
+@mixin rounded-host-positions {
+  @each $key, $positions in $rounded-host-map {
+    @include host-and-attr('[data-rounded="#{$key}"]') {
+      @include radius($positions...);
     }
   }
+}
 
-  [data-rounded="top-right"] {
-    @include radius(start-end);
+/* ----- NON-STACKED CHILDREN ROUNDING ----- */
+$non-stacked-map: (
+  top: (
+    first: (
+      start-start,
+    ),
+    last: (
+      start-end,
+    ),
+  ),
+  top-left: (
+    first: (
+      start-start,
+    ),
+  ),
+  top-right: (
+    last: (
+      start-end,
+    ),
+  ),
+  bottom: (
+    first: (
+      end-start,
+    ),
+    last: (
+      end-end,
+    ),
+  ),
+  bottom-left: (
+    first: (
+      end-start,
+    ),
+  ),
+  bottom-right: (
+    last: (
+      end-end,
+    ),
+  ),
+);
 
-    :last-child {
-      @include radius(start-end);
-
-      &::part(button) {
-        @include radius(start-end);
-      }
-    }
-  }
-
-  [data-rounded="bottom"] {
-    @include radius(end-start, end-end);
-
-    &:not([data-stacked]) {
-      > :first-child {
-        @include radius(end-start);
-
-        &::part(button) {
-          @include radius(end-start);
-        }
-      }
-
-      > :last-child {
-        @include radius(end-end);
-
-        &::part(button) {
-          @include radius(end-end);
-        }
-      }
-    }
-
-    &[data-stacked] {
-      > :last-child {
-        @include radius(end-start, end-end);
-
-        &::part(button) {
-          @include radius(end-start, end-end);
-        }
-      }
-    }
-  }
-
-  [data-rounded="bottom-left"] {
-    @include radius(end-start);
-
-    :first-child {
-      @include radius(end-start);
-
-      &::part(button) {
-        @include radius(end-start);
-      }
-    }
-  }
-
-  [data-rounded="bottom-right"] {
-    @include radius(end-end);
-
-    :last-child {
-      @include radius(end-end);
-
-      &::part(button) {
-        @include radius(end-end);
+@mixin rounded-non-stacked {
+  @each $key, $children in $non-stacked-map {
+    @include host-and-attr('[data-rounded="#{$key}"]:not([data-stacked])') {
+      @each $pos, $radius in $children {
+        @include round-child(":#{$pos}-child", $radius...);
       }
     }
   }
 }
 
+/* ----- STACKED CHILDREN ROUNDING ----- */
+$stacked-map: (
+  top: (
+    first: (
+      start-start,
+      start-end,
+    ),
+  ),
+  top-right: (
+    first: (
+      start-end,
+    ),
+  ),
+  top-left: (
+    first: (
+      start-start,
+    ),
+  ),
+  bottom: (
+    last: (
+      end-start,
+      end-end,
+    ),
+  ),
+  bottom-right: (
+    last: (
+      end-end,
+    ),
+  ),
+  bottom-left: (
+    last: (
+      end-start,
+    ),
+  ),
+);
+
+@mixin rounded-stacked {
+  @each $key, $children in $stacked-map {
+    @include host-and-attr('[data-rounded="#{$key}"][data-stacked]') {
+      @each $pos, $radius in $children {
+        @include round-child(":#{$pos}-child", $radius...);
+      }
+    }
+  }
+}
+
+/* ----- PUBLIC ROUNDED MODIFIERS ENTRY POINT ----- */
+@mixin rounded-modifiers {
+  @include rounded-base;
+  @include rounded-host-positions;
+  @include rounded-non-stacked;
+  @include rounded-stacked;
+}
+
+/* ----- LAYOUT MODIFIERS ----- */
 @mixin stacked-modifiers {
-  [data-stacked] {
+  @include host-and-attr("[data-stacked]") {
     display: flex;
     flex-direction: column;
   }
 }
 
 @mixin flush-modifiers {
-  [data-flush=""] {
+  @include host-and-attr('[data-flush=""]') {
     margin: calc(-1 * layout.$spacing-05);
   }
 
-  [data-flush="top"] {
+  @include host-and-attr('[data-flush="top"]') {
     margin-block-start: calc(-1 * layout.$spacing-05);
     margin-inline: calc(-1 * layout.$spacing-05);
   }
 
-  [data-flush="bottom"] {
+  @include host-and-attr('[data-flush="bottom"]') {
     margin-block-end: calc(-1 * layout.$spacing-05);
     margin-inline: calc(-1 * layout.$spacing-05);
   }

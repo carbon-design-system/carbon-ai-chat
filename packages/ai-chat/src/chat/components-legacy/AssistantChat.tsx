@@ -301,31 +301,33 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
             />
           </div>
         )}
-        <WriteableElement
-          slotName={WriteableElementName.BEFORE_INPUT_ELEMENT}
-          id={`beforeInputElement${serviceManager.namespace.suffix}`}
-        />
-        <Input
-          ref={this.inputRef}
-          languagePack={languagePack}
-          serviceManager={serviceManager}
-          disableInput={this.shouldDisableInput()}
-          disableSend={this.shouldDisableSend()}
-          isInputVisible={fieldVisible}
-          onSendInput={onSendInput}
-          onUserTyping={onUserTyping}
-          showUploadButton={allowFileUploads}
-          disableUploadButton={showUploadButtonDisabled}
-          allowedFileUploadTypes={allowedFileUploadTypes}
-          allowMultipleFileUploads={allowMultipleFileUploads}
-          pendingUploads={files}
-          onFilesSelectedForUpload={this.onFilesSelectedForUpload}
-          placeholder={languagePack[inputPlaceholderKey]}
-          isStopStreamingButtonVisible={stopStreamingButtonState.isVisible}
-          isStopStreamingButtonDisabled={stopStreamingButtonState.isDisabled}
-          maxInputChars={config.public.input?.maxInputCharacters}
-          trackInputState
-        />
+        <div className="cds-aichat--messages-container__input-container">
+          <WriteableElement
+            slotName={WriteableElementName.BEFORE_INPUT_ELEMENT}
+            id={`beforeInputElement${serviceManager.namespace.suffix}`}
+          />
+          <Input
+            ref={this.inputRef}
+            languagePack={languagePack}
+            serviceManager={serviceManager}
+            disableInput={this.shouldDisableInput()}
+            disableSend={this.shouldDisableSend()}
+            isInputVisible={fieldVisible}
+            onSendInput={onSendInput}
+            onUserTyping={onUserTyping}
+            showUploadButton={allowFileUploads}
+            disableUploadButton={showUploadButtonDisabled}
+            allowedFileUploadTypes={allowedFileUploadTypes}
+            allowMultipleFileUploads={allowMultipleFileUploads}
+            pendingUploads={files}
+            onFilesSelectedForUpload={this.onFilesSelectedForUpload}
+            placeholder={languagePack[inputPlaceholderKey]}
+            isStopStreamingButtonVisible={stopStreamingButtonState.isVisible}
+            isStopStreamingButtonDisabled={stopStreamingButtonState.isDisabled}
+            maxInputChars={config.public.input?.maxInputCharacters}
+            trackInputState
+          />
+        </div>
         {this.state.showEndChatConfirmation && (
           <EndHumanAgentChatModal
             onConfirm={this.confirmHumanAgentEndChat}

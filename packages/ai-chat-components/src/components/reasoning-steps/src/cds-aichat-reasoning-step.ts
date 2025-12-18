@@ -58,9 +58,18 @@ class CDSAIChatReasoningStep extends LitElement {
     const slot =
       this.shadowRoot?.querySelector<HTMLSlotElement>("slot:not([name])");
     const nodes = slot?.assignedNodes({ flatten: true });
+    this.evaluateBodyContent(nodes);
+    this.updatePanelInertState();
+  }
 
-    if (nodes) {
-      this.evaluateBodyContent(nodes);
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+
+    if (
+      changedProperties.has("open") ||
+      changedProperties.has("hasBodyContent")
+    ) {
+      this.updatePanelInertState();
     }
   }
 
@@ -96,6 +105,8 @@ class CDSAIChatReasoningStep extends LitElement {
       if (!hasContent && this.open && !this.controlled) {
         this.open = false;
       }
+
+      this.updatePanelInertState();
     }
   }
 
@@ -119,6 +130,7 @@ class CDSAIChatReasoningStep extends LitElement {
     const nodes = slot.assignedNodes({ flatten: true });
 
     this.evaluateBodyContent(nodes);
+    this.updatePanelInertState();
   }
 
   private handleToggleRequest(nextState = !this.open) {
@@ -239,6 +251,25 @@ class CDSAIChatReasoningStep extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Apply/remove inert on assigned elements so they are untabbable when closed.
+   */
+  private updatePanelInertState() {
+    const slot =
+      this.shadowRoot?.querySelector<HTMLSlotElement>("slot:not([name])");
+
+    if (!slot) {
+      return;
+    }
+
+    const shouldInert = !this.open || !this.hasBodyContent;
+    const assignedElements = slot.assignedElements({ flatten: true });
+
+    assignedElements.forEach((element) => {
+      element.toggleAttribute("inert", shouldInert);
+    });
   }
 
   render() {
