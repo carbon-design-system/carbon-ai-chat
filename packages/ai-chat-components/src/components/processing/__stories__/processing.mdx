@@ -1,53 +1,49 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ProcessingStories from "./processing.stories";
 
-<Meta of={ProcessingStories} />
+<Meta of={ProcessingStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Processing
+# Processing
 
-The `cds-aichat-processing` element is used to indicate that data is currently being processed/loaded and the user should wait..
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/processing) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Getting started
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+Use `cds-aichat-processing` to show a compact loading treatment while an AI response is being generated.
+
+### Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+```html
+<cds-aichat-processing loop></cds-aichat-processing>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-processing" />
+
+## JS (via import)
 
 ```javascript
 import "@carbon/ai-chat-components/es/components/processing/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import Processing from "@carbon/ai-chat-components/es/react/processing.js";
-```
 
 <Markdown>{`${cdnJs(["processing"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
+## Feedback
 
-Wrap any carbon `tile`, `clickable-tile` with `cds-aichat-processing` to get the styles.
-The div containing the `cds-aichat-processing-footer` will have all the footer styles with an additional class `vertical` to change the buttons to stack.
-
-```html
-<cds-aichat-processing>
-  <cds-tile>
-    <h5 class="heading-01 margin-bottom-04">
-      AI Chat Tile styling wrapper
-    </h5>
-    <p class="body-01">
-      The Carbon Design System provides a comprehensive library of
-      components, tokens, and guidelines. We need to implement the new AI
-      Chat component following Carbon's design principles and accessibility
-      standards.
-    </p>
-  </cds-tile>
-</cds-aichat-processing>
-```
-
-## `<cds-aichat-processing>` attributes, properties and events
-
-Note: This component is purely a styling parent, and does not bring in any attributes
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

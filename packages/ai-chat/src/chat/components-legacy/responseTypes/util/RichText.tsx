@@ -120,7 +120,6 @@ function RichText(props: RichTextProps) {
   return (
     <Markdown
       debug={debug}
-      markdown={text}
       sanitizeHTML={doSanitize}
       streaming={streaming}
       highlight={highlight}
@@ -139,7 +138,9 @@ function RichText(props: RichTextProps) {
       showMoreText={languagePack.codeSnippet_showMoreText}
       tooltipContent={languagePack.codeSnippet_tooltipContent}
       getLineCountText={getLineCountText}
-    />
+    >
+      {text}
+    </Markdown>
   );
 }
 

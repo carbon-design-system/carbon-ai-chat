@@ -11,13 +11,11 @@ import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/
 import { chatHeaderAvatarTemplate } from "./src/chatHeaderAvatar.template";
 import { ChatHeaderAvatarElement } from "./src/chatHeaderAvatarElement";
 
-const CHAT_HEADER_AVATAR_TAG_NAME = "cds-aichat-chat-header-avatar";
-
 /**
  * Constructed class functionality for the chat header avatar.
  */
-@carbonElement(CHAT_HEADER_AVATAR_TAG_NAME)
-class CDSChatHeaderAvatarElement extends ChatHeaderAvatarElement {
+@carbonElement("cds-aichat-chat-header-avatar")
+class CDSAIChatHeaderAvatarElement extends ChatHeaderAvatarElement {
   render() {
     return chatHeaderAvatarTemplate(this);
   }
@@ -25,9 +23,7 @@ class CDSChatHeaderAvatarElement extends ChatHeaderAvatarElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-chat-header-avatar": CDSChatHeaderAvatarElement;
+    "cds-aichat-chat-header-avatar": CDSAIChatHeaderAvatarElement;
   }
 }
-
-export { CHAT_HEADER_AVATAR_TAG_NAME };
-export default CDSChatHeaderAvatarElement;
+export default CDSAIChatHeaderAvatarElement;

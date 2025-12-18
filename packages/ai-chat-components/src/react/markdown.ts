@@ -11,7 +11,7 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatMarkdown from "../components/markdown/src/cds-aichat-markdown.js";
+import CDSAIChatMarkdown from "../components/markdown/src/markdown.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
 const Markdown = withWebComponentBridge(

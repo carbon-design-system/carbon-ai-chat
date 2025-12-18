@@ -152,6 +152,7 @@ const renderSnippet = (args, code) => {
     feedback,
     language,
     defaultLanguage,
+    onChange,
   } = args;
 
   const commonProps = {
@@ -191,6 +192,9 @@ const renderSnippet = (args, code) => {
   }
   if (typeof defaultLanguage !== "undefined") {
     commonProps.defaultLanguage = defaultLanguage;
+  }
+  if (typeof onChange !== "undefined") {
+    commonProps.onChange = onChange;
   }
 
   return useCard ? (
@@ -315,7 +319,7 @@ const StreamingDemo = (args) => {
 };
 
 export default {
-  title: "Components/Code Snippet",
+  title: "Components/Code snippet",
   argTypes: {
     useCard: {
       control: "boolean",
@@ -384,6 +388,15 @@ export default {
       control: "text",
       description: "Default language used when detection fails",
     },
+    onChange: {
+      action: "onChange",
+      table: { category: "events" },
+      description:
+        "Fires when editable content changes. `event.detail.value` contains the new string.",
+    },
+  },
+  args: {
+    onChange: undefined,
   },
 };
 

@@ -1,20 +1,27 @@
-import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ToolbarStories from "./toolbar-react.stories";
+import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
+import * as ToolbarStories from "./toolbar-react.stories.jsx";
 
-<Meta of={ToolbarStories} />
+<Meta of={ToolbarStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Toolbar (React)
+# Toolbar
 
-The `<Toolbar>` component wraps the `cds-aichat-toolbar` web component and exposes a React API for use in React applications.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/toolbar) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Overflow**: A property/attribute to opt in to collapse actions that don't fit in the toolbar into an overflow menu.
-- **Slots**: Supports slots for navigation, title, fixed actions, and AI label.
-- **Rounded corners**: Makes use of rounded modifier scss utility. and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
+## Table of Contents
 
-## Getting started
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+`<Toolbar>` aligns titles, labels, icon buttons, and overflow actions into a responsive header for AI chat surfaces. It handles truncation and optional overflow menus so you can focus on wiring your actions.
+
+### Getting started
 
 Here's a quick example to get you started.
 
@@ -56,3 +63,11 @@ function ToolbarExample() {
   );
 }
 ```
+
+## Component API
+
+<ArgTypes of={ToolbarStories.Default} />
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

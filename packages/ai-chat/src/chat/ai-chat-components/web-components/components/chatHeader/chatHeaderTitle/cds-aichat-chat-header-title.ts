@@ -11,11 +11,10 @@ import { css, LitElement, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import styles from "./src/chatHeaderTitle.scss";
 import { chatHeaderTitleTemplate } from "./src/chatHeaderTitle.template";
 
-@carbonElement(`${prefix}-chat-header-title`)
+@carbonElement("cds-aichat-chat-header-title")
 class ChatHeaderTitleElement extends LitElement {
   static styles = css`
     ${unsafeCSS(styles)}

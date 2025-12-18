@@ -1,82 +1,57 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ChainOfThoughtStories from "./chain-of-thought.stories";
 
-<Meta of={ChainOfThoughtStories} />
+<Meta of={ChainOfThoughtStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Chain of Thought
+# Chain of thought
 
-The `cds-aichat-chain-of-thought` component displays a collapsible panel showing the reasoning steps, tool calls, and intermediate outputs that an AI agent used to arrive at its final answer. This enhances transparency and helps users understand the agent's decision-making process.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chain-of-thought) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Step-by-Step Display**: Shows each reasoning step with status indicators (processing, success, failure)
-- **Tool Call Visualization**: Displays tool names, arguments, and responses with automatic JSON formatting
-- **Collapsible Interface**: Each step can be expanded/collapsed individually for detailed inspection
-- **Status Icons**: Visual indicators for step status (succeeded, failed, processing)
-- **Markdown Support**: Step descriptions and tool responses support markdown formatting
-- **Customizable Labels**: All text strings can be customized for internationalization
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
 
-## Getting started
+## Overview
+
+Use `cds-aichat-chain-of-thought` to show the tool calls and intermediate outputs an AI agent used to reach an answer. The wrapper simply hosts slotted steps. Pair it with `cds-aichat-chain-of-thought-toggle` for the open/close control, `cds-aichat-chain-of-thought-step` for collapsible steps, and `cds-aichat-tool-call-data` to render tool input/output via slotted markdown content. Prefer `cds-aichat-reasoning-steps` for non-debugging use cases.
+
+### Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+<Canvas of={ChainOfThoughtStories.Default} />
+
+## Component API
+
+### Chain of thought
+<ArgTypes of="cds-aichat-chain-of-thought" />
+
+### Step
+<ArgTypes of="cds-aichat-chain-of-thought-step" />
+
+### Tool call data
+<ArgTypes of="cds-aichat-tool-call-data" />
+
+### Toggle
+<ArgTypes of="cds-aichat-chain-of-thought-toggle" />
+
+## JS (via import)
 
 ```javascript
 import "@carbon/ai-chat-components/es/components/chain-of-thought/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
 
-```javascript
-import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
-```
-
-<Markdown>{`${cdnJs(["chain-of-thought"])}`}</Markdown>
+<Markdown>{`${cdnJs(["chain-of-thought", "chain-of-thought-step", "tool-call-data", "chain-of-thought-toggle", "markdown"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
+## Feedback
 
-#### Basic usage
-
-<Canvas of={ChainOfThoughtStories.Default} />
-
-#### With steps open
-
-<Canvas of={ChainOfThoughtStories.WithStepsOpen} />
-
-#### With different statuses
-
-<Canvas of={ChainOfThoughtStories.WithDifferentStatuses} />
-
-#### With complex tool responses
-
-<Canvas of={ChainOfThoughtStories.WithComplexResponses} />
-
-## `<cds-aichat-chain-of-thought>` attributes, properties and events
-
-<ArgTypes of={ChainOfThoughtStories.Default} />
-
-## Step Structure
-
-Each step in the `steps` array can include:
-
-- **title**: Plain text name of the step
-- **description**: Optional markdown-formatted description of what the tool does
-- **tool_name**: Name of the tool that was called
-- **request.args**: Arguments sent to the tool (automatically formatted as JSON if applicable)
-- **response.content**: Content returned by the tool (supports JSON and markdown)
-- **status**: One of "processing", "success", or "failure"
-
-## Custom Labels
-
-All text strings used in the component can be customized through properties:
-
-- `explainability-text`: Button text to open the panel
-- `input-label-text`: Label for step inputs
-- `output-label-text`: Label for step outputs
-- `tool-label-text`: Label for tool name
-- `status-succeeded-label-text`: Label for success icon
-- `status-failed-label-text`: Label for failure icon
-- `status-processing-label-text`: Label for processing icon
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

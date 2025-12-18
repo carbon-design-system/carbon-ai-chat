@@ -10,55 +10,91 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
 import "../../card/index.js";
 import "./code-snippet.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
 
 /**
- * AI Chat code snippet wrapper that places the snippet inside the <cds-aichat-card>.
- * Custom element: cds-aichat-code-snippet-card
+ * AI Chat code snippet wrapper that places the snippet inside a Carbon tile.
+ *
+ * @element cds-aichat-code-snippet-card
  */
-@carbonElement(`${prefix}-code-snippet-card`)
+@carbonElement("cds-aichat-code-snippet-card")
 class CDSAIChatCodeSnippetCard extends LitElement {
-  // Forward all properties to the inner component
+  /** Language used for syntax highlighting. */
   @property({ type: String }) language = "";
+
+  /** Whether the snippet should be editable. */
   @property({ type: Boolean }) editable = false;
+
+  /** Whether to enable syntax highlighting. */
   @property({ type: Boolean }) highlight = false;
 
-  // Internal property - theme will be auto-detected in the future
-  @property({ attribute: false }) dark = false;
+  /** Fallback language to use when detection fails. */
+  @property({ type: String, attribute: "default-language" })
+  defaultLanguage = "javascript";
 
+  /** Text to copy when clicking the copy button. Defaults to slotted content. */
   @property({ attribute: "copy-text" })
   copyText = "";
 
+  /** Disable interactions on the snippet. */
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  /** Feedback text shown after copy. */
   @property()
   feedback = "Copied!";
 
+  /** Duration (ms) to show feedback text. */
   @property({ type: Number, attribute: "feedback-timeout" })
   feedbackTimeout = 2000;
 
+  /** Hide the copy button. */
   @property({ type: Boolean, reflect: true, attribute: "hide-copy-button" })
   hideCopyButton = false;
 
-  @property()
+  /** Maximum rows to show when collapsed. */
+  @property({ attribute: "max-collapsed-number-of-rows" })
   maxCollapsedNumberOfRows = 15;
 
+  /** Maximum rows to show when expanded (0 = unlimited). */
+  @property({ attribute: "max-expanded-number-of-rows" })
+  maxExpandedNumberOfRows = 0;
+
+  /** Minimum rows to show when collapsed. */
+  @property({ attribute: "min-collapsed-number-of-rows" })
+  minCollapsedNumberOfRows = 3;
+
+  /** Minimum rows to show when expanded. */
+  @property({ attribute: "min-expanded-number-of-rows" })
+  minExpandedNumberOfRows = 16;
+
+  /** Label for the “show less” control. */
   @property({ attribute: "show-less-text" })
   showLessText = "Show less";
 
+  /** Label for the “show more” control. */
   @property({ attribute: "show-more-text" })
   showMoreText = "Show more";
 
+  /** Tooltip label for the copy action. */
   @property({ attribute: "tooltip-content" })
   tooltipContent = "Copy to clipboard";
 
+  /** Wrap text instead of horizontal scrolling. */
   @property({ type: Boolean, reflect: true, attribute: "wrap-text" })
   wrapText = false;
 
+  /** Label for folding/collapsing code. */
+  @property({ attribute: "fold-collapse-label" })
+  foldCollapseLabel = "Collapse code block";
+
+  /** Label for unfolding/expanding code. */
+  @property({ attribute: "fold-expand-label" })
+  foldExpandLabel = "Expand code block";
+
+  /** Formatter for the line count display. */
   @property({ attribute: false })
   getLineCountText: LineCountFormatter = defaultLineCountText;
 
@@ -82,6 +118,7 @@ class CDSAIChatCodeSnippetCard extends LitElement {
           <cds-aichat-code-snippet
             data-rounded
             language=${this.language}
+            default-language=${this.defaultLanguage}
             ?editable=${this.editable}
             ?highlight=${this.highlight}
             @content-change=${this._handleContentChange}
@@ -91,11 +128,16 @@ class CDSAIChatCodeSnippetCard extends LitElement {
             feedback-timeout=${this.feedbackTimeout}
             ?hide-copy-button=${this.hideCopyButton}
             max-collapsed-number-of-rows=${this.maxCollapsedNumberOfRows}
+            max-expanded-number-of-rows=${this.maxExpandedNumberOfRows}
+            min-collapsed-number-of-rows=${this.minCollapsedNumberOfRows}
+            min-expanded-number-of-rows=${this.minExpandedNumberOfRows}
             .getLineCountText=${this.getLineCountText}
             show-less-text=${this.showLessText}
             show-more-text=${this.showMoreText}
             tooltip-content=${this.tooltipContent}
             ?wrap-text=${this.wrapText}
+            fold-collapse-label=${this.foldCollapseLabel}
+            fold-expand-label=${this.foldExpandLabel}
           >
             <slot></slot>
           </cds-aichat-code-snippet>
@@ -105,4 +147,11 @@ class CDSAIChatCodeSnippetCard extends LitElement {
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-code-snippet-card": CDSAIChatCodeSnippetCard;
+  }
+}
+
+export { CDSAIChatCodeSnippetCard };
 export default CDSAIChatCodeSnippetCard;

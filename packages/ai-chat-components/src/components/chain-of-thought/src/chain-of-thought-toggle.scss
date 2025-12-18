@@ -1,0 +1,71 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/utilities/button-reset" as button;
+@use "@carbon/layout";
+
+:host {
+  @include type.type-style("body-01");
+
+  display: block;
+  max-inline-size: 100%;
+}
+
+:host([open]) {
+  .#{$prefix}--chain-of-thought-button-chevron {
+    svg {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+.#{$prefix}--chain-of-thought-button-chevron {
+  display: flex;
+  flex-basis: layout.$spacing-06;
+  @media screen and (prefers-reduced-motion: reduce) {
+    svg {
+      transform: rotate(-90deg);
+      transition: none;
+    }
+  }
+
+  svg {
+    transform: rotate(-90deg);
+    transition: all motion.$duration-fast-02 motion.motion(standard, productive);
+  }
+}
+
+button.#{$prefix}--chain-of-thought-button {
+  @include button.reset(true);
+  @include type.type-style("heading-01");
+
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+
+  color: theme.$text-primary;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.#{$prefix}--chain-of-thought-button-label {
+  overflow: hidden;
+  flex: 0 1 auto;
+  min-inline-size: fit-content;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button.#{$prefix}--chain-of-thought-button:focus,
+button.#{$prefix}--chain-of-thought-button:focus-visible {
+  outline: 2px solid theme.$focus;
+}

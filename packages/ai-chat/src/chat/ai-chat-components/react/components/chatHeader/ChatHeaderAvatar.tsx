@@ -10,13 +10,11 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatHeaderAvatarElement, {
-  CHAT_HEADER_AVATAR_TAG_NAME,
-} from "../../../web-components/components/chatHeader/chatHeaderAvatar/cds-aichat-chat-header-avatar";
+import CDSAIChatHeaderAvatarElement from "../../../web-components/components/chatHeader/chatHeaderAvatar/cds-aichat-chat-header-avatar";
 
 const ChatHeaderAvatar = createComponent({
-  tagName: CHAT_HEADER_AVATAR_TAG_NAME,
-  elementClass: CDSChatHeaderAvatarElement,
+  tagName: "cds-aichat-chat-header-avatar",
+  elementClass: CDSAIChatHeaderAvatarElement,
   react: React,
 });
 

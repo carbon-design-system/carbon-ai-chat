@@ -42,6 +42,9 @@ export default {
   features: {
     storyStoreV7: true,
   },
+  docs: {
+    defaultName: "Overview",
+  },
   async viteFinal(config) {
     return mergeConfig(config, {
       plugins: [litStyleLoader(), litTemplateLoader()],

@@ -1,0 +1,42 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import "@carbon/web-components/es/components/notification/inline-notification.js";
+
+<Meta title="Introduction/Welcome" />
+
+# `@carbon/ai-chat-components` React
+
+Welcome to the React Storybook for the Carbon AI Chat Components. Here you'll find the React wrappers for our Carbon-flavored AI chat web components, ready to drop into React apps.
+
+<cds-inline-notification
+  open
+  kind="warning"
+  title="Beta"
+  subtitle="The Carbon AI Chat components are still stabilizing. Be sure to lock to an exact version until the 1.0.0 release of @carbon/ai-chat-components."
+  low-contrast
+  hide-close-button
+/>
+
+## Getting started
+
+Install the package with your preferred package manager:
+
+```bash
+npm install --save @carbon/ai-chat-components
+```
+
+```bash
+yarn add @carbon/ai-chat-components
+```
+
+### Using the components
+
+Each React export wraps the underlying web component so you get the same API with JSX ergonomics. For example:
+
+```jsx
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+
+function App() {
+  return <Markdown highlight># Hello, Carbon AI Chat</Markdown>;
+}
+```
+

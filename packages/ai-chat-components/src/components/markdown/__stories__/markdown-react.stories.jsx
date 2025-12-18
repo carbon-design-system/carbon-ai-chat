@@ -207,7 +207,7 @@ const StreamingMarkdownDemo = () => {
           Restart Streaming
         </button>
       </div>
-      <Markdown streaming={streaming} markdown={streamedContent} />
+      <Markdown streaming={streaming}>{streamedContent}</Markdown>
     </div>
   );
 };
@@ -296,7 +296,7 @@ export default {
 };
 
 export const Default = {
-  render: (args) => <Markdown {...args} />,
+  render: (args) => <Markdown {...args}>{args.markdown}</Markdown>,
 };
 
 export const Streaming = {
@@ -327,7 +327,7 @@ export const WithHTMLSanitization = {
         <code>onclick</code> attributes are removed while safe HTML is
         preserved.
       </p>
-      <Markdown {...args} />
+      <Markdown {...args}>{args.markdown}</Markdown>
     </div>
   ),
 };
@@ -353,7 +353,7 @@ export const WithHTMLRemoval = {
         <strong>Note:</strong> With <code>remove-html</code> enabled, all HTML
         tags are stripped, leaving only plain text and markdown.
       </p>
-      <Markdown {...args} />
+      <Markdown {...args}>{args.markdown}</Markdown>
     </div>
   ),
 };
@@ -367,5 +367,5 @@ export const WithoutHighlighting = {
     highlight: false,
     debug: true,
   },
-  render: (args) => <Markdown {...args} />,
+  render: (args) => <Markdown {...args}>{args.markdown}</Markdown>,
 };

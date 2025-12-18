@@ -24,8 +24,9 @@ function _renderScript(components: Array<any>, tag: string) {
 
   let scripts = "";
   list.forEach((component) => {
-    scripts += `<script type="module" src="https://1.www.s81c.com/common/carbon/ai-chat/${tag}/${component}.min.js"></script>\n`;
+    scripts += `<script type="module" src="https://chat.carbondesignsystem.com/components/version/${tag}/${component}.min.js"></script>\n`;
   });
+
   return scripts;
 }
 
@@ -36,12 +37,12 @@ function _renderScript(components: Array<any>, tag: string) {
  */
 export const cdnJs = (components: Array<any>) => {
   return `
-### JS (via CDN)
+## JS (via CDN)
 
  > NOTE: Only one version of artifacts should be used. Mixing versions will cause rendering issues.
 
  \`\`\`html
- ${_renderScript(components, `version/v${packageJson.version}`)}
+ ${_renderScript(components, `v${packageJson.version}`)}
  \`\`\`
    `;
 };
