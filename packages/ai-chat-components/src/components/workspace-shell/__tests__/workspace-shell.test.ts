@@ -1,4 +1,3 @@
-// cspell:words CDSAIChatProcessing aichat
 /*
  *  Copyright IBM Corp. 2025
  *
@@ -42,6 +41,27 @@ const actions = [
     fixed: true,
     icon: iconLoader(Close16, { slot: "icon" }),
     size: "md",
+  },
+];
+
+const footerActions = [
+  {
+    id: "secondary",
+    label: "Secondary",
+    kind: "secondary",
+    payload: { test: "value" },
+  },
+  {
+    id: "primary",
+    label: "Primary",
+    kind: "primary",
+    payload: { test: "value" },
+  },
+  {
+    id: "ghost",
+    label: "Ghost",
+    kind: "ghost",
+    payload: { test: "value" },
   },
 ];
 
@@ -266,25 +286,35 @@ describe("CDSAIChatWorkspaceShellBody - props", () => {
   });
 });
 
-describe("CDSAIChatWorkspaceShellFooter - props & actions", () => {
-  it("should project footer-action buttons into the footer slot and expose their props", async () => {
+describe("CDSAIChatWorkspaceShellFooter - props & events", () => {
+  it("should render footer-action buttons from the actions prop", async () => {
     const el = await fixture<CDSAIChatWorkspaceShellFooter>(html`
-      <cds-aichat-workspace-shell-footer>
-        <cds-button slot="footer-action" kind="primary">Button A</cds-button>
-        <cds-button slot="footer-action" kind="secondary">Button B</cds-button>
+      <cds-aichat-workspace-shell-footer .actions=${footerActions}>
       </cds-aichat-workspace-shell-footer>
     `);
-    const slot = el.shadowRoot!.querySelector(
-      'slot[name="footer-action"]',
-    ) as HTMLSlotElement;
-    expect(slot).to.exist;
-    const assigned = slot.assignedElements({ flatten: true });
-    expect(assigned.length).to.equal(2);
-    const btnA = assigned[0] as HTMLElement;
-    const btnB = assigned[1] as HTMLElement;
-    expect(btnA.getAttribute("kind")).to.equal("primary");
-    expect(btnB.getAttribute("kind")).to.equal("secondary");
-    expect(btnA.textContent?.trim()).to.equal("Button A");
-    expect(btnB.textContent?.trim()).to.equal("Button B");
+    const buttons = Array.from(el.shadowRoot!.querySelectorAll("cds-button"));
+    expect(buttons.length).to.equal(footerActions.length);
+  });
+  it("fires cds-aichat-workspace-shell-footer-clicked with correct detail", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShellFooter>(html`
+      <cds-aichat-workspace-shell-footer
+        .actions=${footerActions}
+      ></cds-aichat-workspace-shell-footer>
+    `);
+    const eventPromise = new Promise<CustomEvent>((resolve) => {
+      el.addEventListener(
+        "cds-aichat-workspace-shell-footer-clicked",
+        (e: Event) => resolve(e as CustomEvent),
+        { once: true },
+      );
+    });
+    const btnPrimary = Array.from(
+      el.shadowRoot!.querySelectorAll("cds-button"),
+    ).find((b) => b.textContent?.trim() === "Primary") as HTMLElement;
+    btnPrimary.click();
+    const event = await eventPromise;
+    expect(event.detail).to.deep.equal(
+      footerActions.find((a) => a.label === "Primary"),
+    );
   });
 });

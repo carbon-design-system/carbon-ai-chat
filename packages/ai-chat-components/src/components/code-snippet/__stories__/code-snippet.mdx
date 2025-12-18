@@ -1,4 +1,4 @@
-import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { ArgTypes, Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as CodeSnippetStories from "./code-snippet.stories";
 
@@ -14,7 +14,7 @@ The `cds-aichat-code-snippet` extends the Carbon Design System's [Code Snippet](
 - **Editable**: Enable in-place code editing with CodeMirror
 - **Streaming Support**: Real-time content updates for AI-generated code
 - **Auto-detect Language**: Automatically detect programming languages when not specified and highlighting is enabled
-- **Tile Container**: Optional wrapper for consistent AI Chat tile styling
+- **Card**: Optional wrapper for consistent AI Chat card styling
 
 ## Getting started
 
@@ -55,9 +55,9 @@ import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
 
 <ArgTypes of={CodeSnippetStories.Default} />
 
-## `<cds-aichat-code-snippet-tile-container>` attributes, properties and events
+## `<cds-aichat-code-snippet-card>` attributes, properties and events
 
-Note: This component forwards all properties to the inner `<cds-aichat-code-snippet>` component and wraps it in a `<cds-aichat-tile-container>` for consistent AI Chat styling.
+Note: This component forwards all properties to the inner `<cds-aichat-code-snippet>` component and wraps it in a `<cds-aichat-card>` for consistent AI Chat styling.
 
 <ArgTypes of={CodeSnippetStories.Default} />
 

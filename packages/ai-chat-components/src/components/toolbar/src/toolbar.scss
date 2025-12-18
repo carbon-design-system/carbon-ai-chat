@@ -21,8 +21,7 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class} {
     display: flex;
-    align-items: center;
-    background-color: theme.$layer-background;
+    align-items: flex-start;
     block-size: 100%;
     min-block-size: layout.$spacing-08;
 
@@ -49,11 +48,17 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class}__title {
     color: theme.$text-secondary;
+    margin-block: auto;
     margin-inline-end: auto;
+    min-inline-size: layout.$spacing-10;
     padding-inline: layout.$spacing-04;
   }
 
-  ::slotted([slot="toolbar-ai-label"]) {
+  .#{$block-class}__fixed-actions {
+    margin-block: auto;
+  }
+
+  ::slotted([slot="decorator"]) {
     min-block-size: layout.$spacing-08;
     min-inline-size: layout.$spacing-08;
   }
