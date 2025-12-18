@@ -10,7 +10,9 @@
 }
 
 cds-aichat-workspace-shell {
+    display: flex;
     box-sizing: border-box;
+    flex-direction: column;
     background-color: var(--cds-chat-shell-background);
     block-size: 100%;
     max-inline-size: unset;
@@ -24,6 +26,6 @@ cds-aichat-workspace-shell {
     }
 
     cds-aichat-workspace-shell-body {
-        block-size: calc(100% - 8.5rem);
+        flex: 1;
     }
 }
