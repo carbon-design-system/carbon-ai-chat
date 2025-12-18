@@ -10,18 +10,16 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatFeedbackButtonsElement from "../components/feedback/src/cds-aichat-feedback-buttons.js";
+// Export the actual class for the component that will *directly* be wrapped with React.
+import CarbonTagElement from "@carbon/web-components/es/components/tag/tag.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const FeedbackButtons = withWebComponentBridge(
+const Tag = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-feedback-buttons",
-    elementClass: CDSChatFeedbackButtonsElement,
+    tagName: "cds-tag",
+    elementClass: CarbonTagElement,
     react: React,
-    events: {
-      onClick: "feedback-buttons-click",
-    },
   }),
 );
 
-export default FeedbackButtons;
+export default Tag;

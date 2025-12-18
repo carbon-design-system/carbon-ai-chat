@@ -1,0 +1,53 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+$css--plex: true !default;
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/utilities/convert" as *;
+@use "@carbon/styles/scss/breakpoint" as *;
+
+:host(#{$prefix}-workspace-shell-header) {
+  display: grid;
+  align-items: baseline;
+  padding: rem(24px) rem(32px);
+  border-block-end: solid rem(1px) theme.$chat-bubble-border;
+  color: theme.$text-secondary;
+  grid-auto-flow: column;
+
+  @include type.type-style("body-01");
+
+  @include breakpoint-down("md") {
+    gap: 16px;
+    grid-auto-flow: row;
+  }
+}
+.#{$prefix}-workspace-shell {
+  &__header {
+    &-content {
+      display: grid;
+      gap: rem(16px);
+    }
+
+    &-title {
+      color: theme.$text-primary;
+      margin-block-end: rem(-14px);
+      @include type.type-style("heading-04");
+    }
+
+    &-sub-title {
+      color: theme.$text-secondary;
+      @include type.type-style("label-01");
+    }
+  }
+}

@@ -10,7 +10,7 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 // @ts-ignore
-import styles from "./workspace-shell.scss?lit";
+import styles from "./workspace-shell-header.scss?lit";
 import prefix from "../../../globals/settings.js";
 
 /**
