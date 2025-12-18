@@ -18,7 +18,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 
-import App from "../chat/ChatAppEntry";
+import ChatAppEntry from "../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { ChatContainerProps } from "../types/component/ChatContainer";
 import { ChatInstance } from "../types/instance/ChatInstance";
@@ -266,8 +266,8 @@ function ChatContainer(props: ChatContainerProps) {
       <ReactChatContainer ref={wrapperRef} />
       {container &&
         createPortal(
-          <App
-            key="stable-chat-instance" // Prevent remounting on config changes
+          <ChatAppEntry
+            key="stable-chat-instance"
             config={config}
             strings={strings}
             serviceDeskFactory={serviceDeskFactory}
@@ -281,7 +281,7 @@ function ChatContainer(props: ChatContainerProps) {
             element={element}
             chatWrapper={wrapper}
           />,
-          container, // Render AppContainer into the shadowRoot
+          container,
         )}
     </>
   );

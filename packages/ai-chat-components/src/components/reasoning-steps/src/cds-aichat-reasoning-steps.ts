@@ -41,11 +41,25 @@ class CDSAIChatReasoningSteps extends LitElement {
       this.propagateControlled();
     }
 
+    if (changedProperties.has("open")) {
+      this.propagateOpen();
+    }
+
     this.markLastVisibleStep();
   }
 
   get steps(): NodeListOf<HTMLElement> {
     return this.querySelectorAll(stepSelector);
+  }
+
+  propagateOpen() {
+    this.steps.forEach((step) => {
+      if (this.open) {
+        step.removeAttribute("inert");
+      } else {
+        step.setAttribute("inert", "");
+      }
+    });
   }
 
   propagateControlled() {

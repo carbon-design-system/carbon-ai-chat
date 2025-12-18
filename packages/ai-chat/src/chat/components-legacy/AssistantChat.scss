@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -15,6 +15,13 @@
   display: flex;
   overflow: hidden;
   flex: 1 1 0%;
+}
+
+.cds-aichat--widget--max-width
+  .cds-aichat--messages-container__input-container {
+  margin: auto;
+  inline-size: 100%;
+  max-inline-size: chat-theme.$messages-max-width;
 }
 
 .cds-aichat--messages-and-input-container {
