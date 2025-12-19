@@ -378,6 +378,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           : null;
         const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
 
+        // if message comes from history, don't animate scroll
+        if (lastMessage?.ui_state_internal?.from_history) {
+          animate = false;
+        }
+
         if (!lastLocalItem) {
           debugAutoScroll("[doAutoScroll] No last time");
           // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
@@ -410,79 +415,83 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
 
           if (lastScrollableMessageComponent) {
-            /**
-             * In order to bump the request message to the top of the chat client height, we set the
-             * `min-block-size` of a spacer div element at the bottom of the message list.
-             */
-            const spacerElem = this.bottomSpacerRef.current;
-            const spacerHeight =
-              getComputedStyle(spacerElem).getPropertyValue("min-block-size");
-            const previousDeficit = parseFloat(spacerHeight) || 0;
+            requestAnimationFrame(() => {
+              /**
+               * In order to bump the request message to the top of the chat client height, we set the
+               * `min-block-size` of a spacer div element at the bottom of the message list.
+               */
+              const spacerElem = this.bottomSpacerRef.current;
+              const spacerHeight =
+                getComputedStyle(spacerElem).getPropertyValue("min-block-size");
+              const previousDeficit = parseFloat(spacerHeight) || 0;
 
-            const lastResponseMessage =
-              lastScrollableMessageComponent?.ref?.current;
+              const lastResponseMessage =
+                lastScrollableMessageComponent?.ref?.current;
 
-            const lastResponseRect =
-              lastResponseMessage.getBoundingClientRect();
-            const scrollerRect = scrollElement.getBoundingClientRect();
-            const targetHeight = lastResponseRect.height;
-            // subtract the previous deficit / height of the spacer element div to prevent
-            // the desired scroll top / request message scroll position to be skewed especially
-            // as the spacer element height will be adjusted later when the response messages come
-            // through
-            const scrollerHeight = scrollerRect.height - previousDeficit;
+              const lastResponseRect =
+                lastResponseMessage.getBoundingClientRect();
+              const scrollerRect = scrollElement.getBoundingClientRect();
+              const targetHeight = lastResponseRect.height;
+              // subtract the previous deficit / height of the spacer element div to prevent
+              // the desired scroll top / request message scroll position to be skewed especially
+              // as the spacer element height will be adjusted later when the response messages come
+              // through
+              const scrollerHeight = scrollerRect.height - previousDeficit;
 
-            const targetOffsetWithinScroller =
-              lastResponseRect.top - scrollerRect.top + scrollElement.scrollTop;
+              const targetOffsetWithinScroller =
+                lastResponseRect.top -
+                scrollerRect.top +
+                scrollElement.scrollTop;
 
-            // Scroll position needed to set request message at top of chat
-            setScrollTop = Math.max(
-              0,
-              Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
-            );
-
-            // If the request message is too tall (more than 1/4 of the chat height), we push it
-            // to the top, but only show the bottom 100px of the request message. We do this so the response
-            // isn't hidden, forcing the user to have to scroll.
-            const isVeryTall = targetHeight > scrollerHeight / 4;
-
-            if (isVeryTall) {
-              // Tall message: we want bottom 100px visible.
-              const VISIBLE_BOTTOM_PORTION = 100;
-              const tallAdjustment = Math.max(
+              // Scroll position needed to set request message at top of chat
+              setScrollTop = Math.max(
                 0,
-                targetHeight - VISIBLE_BOTTOM_PORTION,
+                Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
               );
 
-              setScrollTop = setScrollTop + tallAdjustment;
-            }
+              // If the request message is too tall (more than 1/4 of the chat height), we push it
+              // to the top, but only show the bottom 100px of the request message. We do this so the response
+              // isn't hidden, forcing the user to have to scroll.
+              const isVeryTall = targetHeight > scrollerHeight / 4;
 
-            const lastRect = spacerElem.getBoundingClientRect();
-            const lastOffset =
-              lastRect.top - scrollerRect.top + scrollElement.scrollTop;
+              if (isVeryTall) {
+                // Tall message: we want bottom 100px visible.
+                const VISIBLE_BOTTOM_PORTION = 100;
+                const tallAdjustment = Math.max(
+                  0,
+                  targetHeight - VISIBLE_BOTTOM_PORTION,
+                );
 
-            const visibleBottom = setScrollTop + scrollElement.clientHeight;
-            const deficit = Math.max(0, Math.ceil(visibleBottom - lastOffset));
-
-            spacerElem.style.setProperty("min-block-size", `${deficit}px`);
-
-            debugAutoScroll(
-              `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
-            );
-
-            // Scroll only on request message change
-            if (
-              this.previousScrollableMessage !== lastScrollableMessageComponent
-            ) {
-              // if message comes from history, don't animate scroll
-              if (lastMessage?.ui_state_internal?.from_history) {
-                animate = false;
+                setScrollTop = setScrollTop + tallAdjustment;
               }
-              doScrollElement(scrollElement, setScrollTop, 0, animate);
-              this.checkScrollAnchor(true, setScrollTop);
 
-              this.previousScrollableMessage = lastScrollableMessageComponent;
-            }
+              const lastRect = spacerElem.getBoundingClientRect();
+              const lastOffset =
+                lastRect.top - scrollerRect.top + scrollElement.scrollTop;
+
+              const visibleBottom = setScrollTop + scrollElement.clientHeight;
+              const deficit = Math.max(
+                0,
+                Math.ceil(visibleBottom - lastOffset),
+              );
+
+              spacerElem.style.setProperty("min-block-size", `${deficit}px`);
+
+              debugAutoScroll(
+                `[doAutoScroll] Scrolling to message offsetTop=${setScrollTop}`,
+              );
+
+              // Scroll only on request message change
+              if (
+                this.previousScrollableMessage !==
+                lastScrollableMessageComponent
+              ) {
+                doScrollElement(scrollElement, setScrollTop, 0, animate);
+                this.checkScrollAnchor(true, setScrollTop);
+
+                this.previousScrollableMessage = lastScrollableMessageComponent;
+              }
+            });
 
             return;
           } else {
@@ -493,9 +502,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         }
 
         if (setScrollTop !== -1) {
-          if (lastMessage?.ui_state_internal?.from_history) {
-            animate = false;
-          }
           debugAutoScroll(
             `[doAutoScroll] doScrollElement`,
             scrollElement,
