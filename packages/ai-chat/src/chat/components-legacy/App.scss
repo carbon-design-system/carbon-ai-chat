@@ -294,7 +294,6 @@ in. */
 }
 
 .cds-aichat--ai-theme .cds-aichat {
-  overflow: hidden;
   background-color: theme.$chat-shell-background;
   background-image: chat-theme.$ai-background-image;
   box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
@@ -393,10 +392,5 @@ svg.cds-aichat--icon__logout--reverse {
     border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
     border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
     border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
-  }
-
-  .cds-aichat--panel-content {
-    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 2px));
-    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 2px));
   }
 }
