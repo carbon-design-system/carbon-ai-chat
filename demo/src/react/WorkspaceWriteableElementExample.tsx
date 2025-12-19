@@ -187,12 +187,12 @@ function WorkspaceWriteableElementExample({
         </Button>
       </WorkspaceShellHeader>
       <WorkspaceShellBody>
-        <p>
-          Location: {location}. This is a writeable element with external
-          styles. You can inject any custom content here. You are not
-          constrained by any height.
-        </p>
-        <p>Some content from parent state: {parentStateText}</p>
+        Location: {location}. This entire workspace is a writable element with
+        external styles applied. You can inject any custom content here. Common
+        examples include a text editor, code editor, or a tear sheet with steps.
+        The workspace panel takes up the full height of the chat shell.
+        <br />
+        Here is a property set by the parent application: {parentStateText}
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         onFooterClicked={handleWorkspaceFooterClick}

@@ -41,7 +41,7 @@ function WorkspaceContainer(props: any) {
     if (chatWidth === 0) {
       return;
     }
-    setIsModal(chatWidth <= 1024);
+    setIsModal(chatWidth <= 960);
   }, [chatWidth]);
 
   return (

@@ -199,6 +199,16 @@ class ChatContainer extends LitElement {
   @state()
   _instance: ChatInstance;
 
+  firstUpdated() {
+    const style = document.createElement("style");
+    style.textContent = `
+      [slot="workspacePanelElement"] {
+        block-size: 100%;
+      }
+    `;
+    this.appendChild(style);
+  }
+
   /**
    * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
    * updating this._userDefinedSlotNames;

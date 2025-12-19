@@ -36,7 +36,9 @@ class WorkspaceWriteableElementExample extends LitElement {
       block-size: 100%;
     }
     cds-aichat-workspace-shell {
+      display: flex;
       box-sizing: border-box;
+      flex-direction: column;
       background-color: var(--cds-chat-shell-background);
       block-size: 100%;
       max-inline-size: unset;
@@ -50,7 +52,7 @@ class WorkspaceWriteableElementExample extends LitElement {
       }
 
       cds-aichat-workspace-shell-body {
-        block-size: calc(100% - 8.5rem);
+        flex: 1;
       }
     }
   `;
@@ -197,9 +199,12 @@ class WorkspaceWriteableElementExample extends LitElement {
         </cds-button>
       </cds-aichat-workspace-shell-header>
       <cds-aichat-workspace-shell-body>
-        Location: ${this.location}. This is a writeable element with external
-        styles. You can inject any custom content here. You are not constrained
-        by any height. This is a property set by the parent application:
+        Location: ${this.location}. This entire workspace is a writable element
+        with external styles applied. You can inject any custom content here.
+        Common examples include a text editor, code editor, or a tear sheet with
+        steps. The workspace panel takes up the full height of the chat shell.
+        <br />
+        Here is a property set by the parent application:
         ${this.valueFromParent}.
       </cds-aichat-workspace-shell-body>
 
