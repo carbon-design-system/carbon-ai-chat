@@ -93,9 +93,14 @@
 }
 
 .cds-aichat--ai-theme .cds-aichat--widget {
-  border: solid 1px theme.$ai-border-start;
+  border: 1px solid transparent;
+  background: linear-gradient(
+      to bottom,
+      theme.$ai-border-start,
+      theme.$ai-border-end
+    )
+    border-box;
   background-color: theme.$chat-shell-background;
-  background-image: chat-theme.$ai-background-image;
   /* TODO: For AI theme only?
   These give us the 1px border on the outside that gets darker toward the top. */
   box-shadow: chat-theme.$ai-box-shadow-outer;
