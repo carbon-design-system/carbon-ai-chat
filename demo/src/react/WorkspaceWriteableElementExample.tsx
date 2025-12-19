@@ -18,6 +18,7 @@ import AILabel from "@carbon/ai-chat-components/es/react/ai-label.js";
 import InlineNotification from "@carbon/ai-chat-components/es/react/inline-notification.js";
 import Icon from "@carbon/ai-chat-components/es/react/icon.js";
 import Tag from "@carbon/ai-chat-components/es/react/tag.js";
+import Button from "@carbon/ai-chat-components/es/react/button.js";
 
 //icons
 import Edit16 from "@carbon/icons/es/edit/16.js";
@@ -29,7 +30,6 @@ import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import Close16 from "@carbon/icons/es/close/16.js";
 
 import React, { useState } from "react";
-import { Button } from "@carbon/react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
 interface WorkspaceExampleProps {
