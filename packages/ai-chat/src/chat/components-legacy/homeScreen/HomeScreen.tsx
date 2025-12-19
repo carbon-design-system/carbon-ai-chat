@@ -212,8 +212,8 @@ function HomeScreenComponent({
             <Input
               ref={homeScreenMessageInputRef}
               onSendInput={onSendInput}
-              disableInput={false}
-              isInputVisible
+              disableInput={inputConfig?.isDisabled}
+              isInputVisible={inputConfig?.isVisible !== false}
               disableSend={false}
               languagePack={languagePack}
               serviceManager={serviceManager}

@@ -49,7 +49,7 @@
   display: flex;
   overflow: hidden;
   flex-direction: column;
+  padding: layout.$spacing-03;
   gap: layout.$spacing-03;
   min-block-size: 0;
-  padding-inline-start: layout.$spacing-03;
 }

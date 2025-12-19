@@ -57,7 +57,7 @@ export enum LayoutCustomProperties {
   /**
    * Custom element layouts only.
    *
-   * Max width of messages area in fullscreen / larger views if {@link LayoutConfig.hascontentmaxwidth} is not set to
+   * Max width of messages area in fullscreen / larger views if {@link LayoutConfig.hasContentMaxWidth} is not set to
    * true.
    *
    * Defaults to `672px`.
