@@ -169,7 +169,7 @@ function WorkspaceWriteableElementExample({
       ></InlineNotification>
       <WorkspaceShellHeader
         titleText="Optimizing excess inventory plan"
-        subTitleText="Created on: 12/10/24"
+        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}
       >
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do

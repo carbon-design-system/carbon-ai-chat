@@ -184,7 +184,7 @@ class WorkspaceWriteableElementExample extends LitElement {
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header
         title-text="Optimizing excess inventory plan"
-        subtitle-text="Created on: 12/10/24"
+        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}
       >
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
