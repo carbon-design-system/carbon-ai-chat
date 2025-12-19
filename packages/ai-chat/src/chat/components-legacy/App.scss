@@ -145,6 +145,9 @@ rounded corners are enabled. */
   .cds-aichat--hydrating-container {
     border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
     border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+  }
+
+  .cds-aichat--widget__animation-container {
     border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
     border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
   }
@@ -163,7 +166,12 @@ rounded corners are enabled. */
 
   /* Overlay panels with a back button get shown UNDER the header and so don't need top rounded corners. */
   .cds-aichat--overlay-panel.cds-aichat--overlay-panel--with-back-button {
-    --cds-aichat-border-radius: 0;
+    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+
+    .cds-aichat--header {
+      --cds-aichat-border-radius: 0;
+    }
   }
 }
 
@@ -286,6 +294,7 @@ in. */
 }
 
 .cds-aichat--ai-theme .cds-aichat {
+  overflow: hidden;
   background-color: theme.$chat-shell-background;
   background-image: chat-theme.$ai-background-image;
   box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
@@ -387,7 +396,7 @@ svg.cds-aichat--icon__logout--reverse {
   }
 
   .cds-aichat--panel-content {
-    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
-    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+    border-end-end-radius: max(0px, calc(chat-theme.$border-radius - 2px));
+    border-end-start-radius: max(0px, calc(chat-theme.$border-radius - 2px));
   }
 }
