@@ -241,6 +241,52 @@ function getScrollBottom(element: HTMLElement) {
   return 0;
 }
 
+/**
+ * Continuously checks an element's height on each animation frame and resolves
+ * once the height remains unchanged for a specified number of consecutive frames (default 2 frames).
+ *
+ * This is useful for waiting until layout changes (e.g., animations, dropdowns expanding/collapsing)
+ * have fully settled before performing measurements or scroll adjustments.
+
+ */
+function waitForStableHeight(
+  el: HTMLElement,
+  opts: { frames?: number; timeoutMs?: number } = {},
+): Promise<void> {
+  const requiredStableFrames = opts.frames ?? 2;
+  const timeoutMs = opts.timeoutMs ?? 500;
+  let stableFrames = 0;
+  let lastHeight = Math.round(el.getBoundingClientRect().height);
+  let rafId: number | null = null;
+
+  return new Promise((resolve) => {
+    const deadline = performance.now() + timeoutMs;
+
+    const tick = () => {
+      const now = performance.now();
+      const h = Math.round(el.getBoundingClientRect().height);
+
+      if (h === lastHeight) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+        lastHeight = h;
+      }
+
+      if (stableFrames >= requiredStableFrames || now >= deadline) {
+        if (rafId != null) {
+          cancelAnimationFrame(rafId);
+        }
+        resolve();
+      } else {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+  });
+}
+
 export {
   SCROLLBAR_WIDTH,
   doScrollElement,
@@ -254,4 +300,5 @@ export {
   focusOnFirstFocusableItemInArrayOfElements,
   isEnterKey,
   getScrollBottom,
+  waitForStableHeight,
 };

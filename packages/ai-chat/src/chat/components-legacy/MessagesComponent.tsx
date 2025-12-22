@@ -41,7 +41,11 @@ import {
   AUTO_SCROLL_THROTTLE_TIMEOUT,
   WriteableElementName,
 } from "../utils/constants";
-import { doScrollElement, getScrollBottom } from "../utils/domUtils";
+import {
+  doScrollElement,
+  getScrollBottom,
+  waitForStableHeight,
+} from "../utils/domUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
 import { isRequest, isResponse } from "../utils/messageUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
@@ -415,7 +419,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
 
           if (lastScrollableMessageComponent) {
-            requestAnimationFrame(() => {
+            /**
+             * Make sure the message container scroll height is stable before we grab values for
+             * scroll position calculations. It can sometimes take a couple animation frames
+             * for the height to settle, especially with dropdowns which can increase / decrease
+             * the scroll height when it's open / closed.
+             */
+            waitForStableHeight(scrollElement).then(() => {
               /**
                * In order to bump the request message to the top of the chat client height, we set the
                * `min-block-size` of a spacer div element at the bottom of the message list.
@@ -492,7 +502,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 this.previousScrollableMessage = lastScrollableMessageComponent;
               }
             });
-
             return;
           } else {
             // No message found.
