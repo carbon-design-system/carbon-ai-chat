@@ -109,6 +109,12 @@ interface UnknownAction {
   [extraProps: string]: any;
 }
 
+interface SetWorkspacePanelOptionsAction {
+  type: typeof SET_WORKSPACE_PANEL_OPTIONS;
+  options: Partial<WorkspaceCustomPanelConfigOptions>;
+  [key: string]: unknown;
+}
+
 const actions = {
   /**
    * Allows you to change any portion of the app state.
@@ -417,9 +423,12 @@ const actions = {
   },
 
   setWorkspaceCustomPanelConfigOptions(
-    options: WorkspaceCustomPanelConfigOptions,
-  ) {
-    return { type: SET_WORKSPACE_PANEL_OPTIONS, options };
+    options: Partial<WorkspaceCustomPanelConfigOptions>,
+  ): SetWorkspacePanelOptionsAction {
+    return {
+      type: SET_WORKSPACE_PANEL_OPTIONS,
+      options,
+    };
   },
 
   setWorkspaceCustomPanelOpen(isOpen: boolean) {

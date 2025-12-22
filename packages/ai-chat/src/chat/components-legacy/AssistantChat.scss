@@ -31,6 +31,10 @@
   inline-size: 100%;
   transition: inline-size motion.$duration-fast-02
     motion.motion(standard, productive);
+
+  &--no-animation {
+    transition: none;
+  }
 }
 // recheck verify compatibility for :has
 .cds-aichat--non-header-container:has(
@@ -93,6 +97,10 @@
 
   &__open {
     inline-size: 75%;
+  }
+
+  &--no-animation {
+    transition: none;
   }
 }
 

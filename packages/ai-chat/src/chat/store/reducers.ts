@@ -878,13 +878,16 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_WORKSPACE_PANEL_OPTIONS]: (
     state: AppState,
-    action: { options: WorkspaceCustomPanelConfigOptions },
+    action: { options: Partial<WorkspaceCustomPanelConfigOptions> },
   ) => {
     return {
       ...state,
       workspacePanelState: {
         ...state.workspacePanelState,
-        options: action.options,
+        options: {
+          ...(state.workspacePanelState.options ?? {}),
+          ...action.options,
+        },
       },
     };
   },

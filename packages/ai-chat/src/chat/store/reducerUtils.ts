@@ -84,8 +84,8 @@ deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 
 const WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
   {
-    preferredLocation: "end",
     disableAnimation: false,
+    preferredLocation: "end",
   };
 deepFreeze(WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS);
 
