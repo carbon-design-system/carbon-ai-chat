@@ -360,6 +360,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
     const { hasCaughtError } = this.state;
     const preferredLocation = workspacePanelState.options.preferredLocation;
     const disableAnimation = workspacePanelState.options.disableAnimation;
+
     return (
       <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
         <div
