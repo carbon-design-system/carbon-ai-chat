@@ -420,8 +420,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
             title-text="Position"
             @cds-dropdown-selected=${this._handleChangeWorkspacePosition}
           >
-            <cds-dropdown-item value="end">end</cds-dropdown-item>
             <cds-dropdown-item value="start">start</cds-dropdown-item>
+            <cds-dropdown-item value="end">end</cds-dropdown-item>
           </cds-dropdown>
           <p class="panel-control__description">
             Specifies the posotion of Workspace Panel
