@@ -84,6 +84,10 @@ The Carbon AI Chat launcher welcomes and engages customers so they know where to
 
 For more information, see the documentation for {@link PublicConfig.launcher}.
 
+### Persist feedback options
+
+By default, Carbon AI Chat only displays the feedback options to the latest message. To allow for feedback options to persist for all previous messages, configure {@link PublicConfig.persistFeedback} to true.
+
 ### Writeable elements (slotted content)
 
 The Carbon AI Chat strategically provides access to various slots around the Carbon AI Chat. You can directly write to them as portals from your application with frameworks like React, Angular, Vue, or a web component. The writeable elements available are defined at {@link WriteableElementName}.
