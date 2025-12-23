@@ -382,7 +382,16 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           className="cds-aichat--non-header-container"
           {...(shouldHideChatContentForPanel ? { inert: true } : {})}
         >
-          <div className="cds-aichat--panel-content cds-aichat--non-header-container">
+          <div
+            className={cx(
+              "cds-aichat--panel-content",
+              "cds-aichat--non-header-container",
+              {
+                "cds-aichat--panel-content--workspace-start":
+                  preferredLocation === "start",
+              },
+            )}
+          >
             {hasCaughtError && (
               <div className="cds-aichat--messages-error-handler">
                 <CatastrophicError

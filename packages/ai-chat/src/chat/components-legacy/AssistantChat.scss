@@ -46,11 +46,19 @@
   }
 }
 
-.cds-aichat--workspace-container-inner {
-  block-size: 100%;
-}
-
 .cds-aichat--widget--max-width {
+  .cds-aichat--panel-content {
+    max-inline-size: 1366px;
+
+    &:has(.cds-aichat--workspace-container-panel__open) {
+      padding-inline: layout.$spacing-05;
+    }
+
+    &--workspace-start {
+      justify-content: flex-end;
+    }
+  }
+
   .cds-aichat--non-header-container:has(
     .cds-aichat--workspace-container-panel__open
   ) {
@@ -63,6 +71,10 @@
     overflow: hidden auto;
     block-size: 100%;
   }
+}
+
+.cds-aichat--workspace-container-inner {
+  block-size: 100%;
 }
 
 .cds-aichat--before-input-element {
