@@ -90,31 +90,37 @@ class TableElement extends LitElement {
    * The text used for the filter placeholder.
    */
   @property({ type: String, attribute: "filter-placeholder-text" })
-  filterPlaceholderText = "";
+  filterPlaceholderText = "Filter table...";
 
   /**
    * The text used for the pagination's previous button tooltip.
    */
   @property({ type: String, attribute: "previous-page-text" })
-  previousPageText = "";
+  previousPageText = "Previous page";
 
   /**
    * The text used for the pagination's next button tooltip.
    */
   @property({ type: String, attribute: "next-page-text" })
-  nextPageText = "";
+  nextPageText = "Next page";
 
   /**
    * The text used for the pagination's item pre page text.
    */
   @property({ type: String, attribute: "items-per-page-text" })
-  itemsPerPageText = "";
+  itemsPerPageText = "Items per page:";
+
+  /**
+   * The text used for the download button's accessible label.
+   */
+  @property({ type: String, attribute: "download-label-text" })
+  downloadLabelText = "Download table data";
 
   /**
    * The locale. Used by the carbon table component to change the collator for sorting.
    */
   @property({ type: String, attribute: "locale" })
-  locale = "";
+  locale = "en";
 
   /**
    * The calculated default page size based on component width.

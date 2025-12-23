@@ -140,9 +140,9 @@ function HomeScreenComponent({
           >
             <div className="cds-aichat--home-screen__initial-content">
               {!customContentOnly && (
-                <div className="cds-aichat--home-screen__greeting">
+                <h2 className="cds-aichat--home-screen__greeting">
                   {greeting}
-                </div>
+                </h2>
               )}
               {!customContentOnly && homeScreenWithStarters && (
                 <div

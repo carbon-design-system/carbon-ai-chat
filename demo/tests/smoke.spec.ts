@@ -7,6 +7,17 @@
 
 import { PageObjectId, ViewType } from "@carbon/ai-chat/server";
 import { test, expect } from "@playwright/test";
+import {
+  setupAccessibilityChecker,
+  checkAccessibility,
+  destroyChatSession,
+  openChatViaLauncher,
+} from "./utils";
+
+// Setup accessibility checker before all tests
+test.beforeAll(() => {
+  setupAccessibilityChecker();
+});
 
 // Import types for window.setChatConfig without emitting runtime code
 import type {} from "../types/window";
@@ -36,14 +47,11 @@ test.beforeEach(async ({ page }) => {
 
 // Clear session between all tests to ensure clean state
 test.afterEach(async ({ page }) => {
-  await page.evaluate(() => {
-    if (window.chatInstance) {
-      window.chatInstance.destroySession();
-    }
-  });
+  await destroyChatSession(page);
 });
 
 test("smoke React", async ({ page }) => {
+  test.slow();
   // Navigate to the app with float layout settings
   await page.goto("/?settings=%7B%22layout%22%3A%22float%22%7D");
 
@@ -68,6 +76,9 @@ test("smoke React", async ({ page }) => {
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
+
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "React Chat - Main Panel");
   await close.click();
 });
 
@@ -101,5 +112,60 @@ test("smoke web component", async ({ page }) => {
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
+
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "Web Component Chat - Main Panel");
+
   await close.click();
+});
+
+test("smoke react custom element", async ({ page }) => {
+  test.slow();
+  // Navigate to the app with fullscreen layout to render the custom element
+  await page.goto("/");
+
+  await page.waitForFunction(() => Boolean(window.chatInstance), {
+    timeout: 10000,
+  });
+
+  // Click launcher to open chat if it's not already open
+  await openChatViaLauncher(page);
+
+  const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
+  await expect(mainPanel).toBeVisible({ timeout: 10000 });
+
+  const input = mainPanel.getByTestId(PageObjectId.INPUT);
+  await input.click();
+  await input.fill("text");
+  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
+    "Carbon",
+  );
+});
+
+test("smoke web component custom element", async ({ page }) => {
+  // Navigate to the web component demo using the fullscreen layout (custom element)
+  await page.goto(
+    `/?settings=%7B"framework"%3A"web-component"%2C"layout"%3A"fullscreen"%2C"writeableElements"%3A"false"%2C"direction"%3A"default"%7D&config=%7B"aiEnabled"%3Atrue%2C"messaging"%3A%7B%7D%2C"header"%3A%7B"isOn"%3Afalse%7D%2C"layout"%3A%7B"showFrame"%3Afalse%7D%2C"launcher"%3A%7B"isOn"%3Atrue%7D%2C"openChatByDefault"%3Atrue%7D`,
+  );
+
+  await page.waitForLoadState("domcontentloaded");
+
+  await page.waitForFunction(() => Boolean(window.chatInstance), {
+    timeout: 10000,
+  });
+
+  // Click launcher to open chat if it's not already open
+  await openChatViaLauncher(page);
+
+  const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
+  await expect(mainPanel).toBeVisible({ timeout: 10000 });
+
+  const input = mainPanel.getByTestId(PageObjectId.INPUT);
+  await input.click();
+  await input.fill("text");
+  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
+    "Carbon",
+  );
 });
