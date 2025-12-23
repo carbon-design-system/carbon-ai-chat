@@ -9,6 +9,7 @@
 
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
+import "@carbon/web-components/es/components/dropdown/index.js";
 
 import {
   ChatInstance,
@@ -203,6 +204,21 @@ export class DemoChatInstanceSwitcher extends LitElement {
     });
   };
 
+  private _handleWorkspacePanelAnimation(event: CustomEvent) {
+    const value = event.detail.item.value;
+    const disableAnimation = value === "withoutAnimations";
+    this._withInstance((instance) => {
+      instance.updateWorkspaceAnimationBehaviour(disableAnimation);
+    });
+  }
+
+  private _handleChangeWorkspacePosition(event: CustomEvent) {
+    const preferredLocation = event.detail?.item?.value;
+    this._withInstance((instance) => {
+      instance.updateWorkspacePosition(preferredLocation);
+    });
+  }
+
   private _handleRequestFocus = () => {
     this._withInstance((instance) => {
       instance.requestFocus?.();
@@ -393,6 +409,40 @@ export class DemoChatInstanceSwitcher extends LitElement {
           <cds-button kind="ghost" @click=${this._handleCloseCustomPanel}>
             Close custom panel
           </cds-button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Workspace controls</div>
+        <div class="actions">
+          <cds-dropdown
+            value="end"
+            title-text="Position"
+            @cds-dropdown-selected=${this._handleChangeWorkspacePosition}
+          >
+            <cds-dropdown-item value="start">start</cds-dropdown-item>
+            <cds-dropdown-item value="end">end</cds-dropdown-item>
+          </cds-dropdown>
+          <p class="panel-control__description">
+            Specifies the posotion of Workspace Panel
+          </p>
+          <div class="panel-control">
+            <cds-dropdown
+              value="withAnimations"
+              title-text="Animations"
+              @cds-dropdown-selected=${this._handleWorkspacePanelAnimation}
+            >
+              <cds-dropdown-item value="withAnimations"
+                >With Animations</cds-dropdown-item
+              >
+              <cds-dropdown-item value="withoutAnimations"
+                >Without Animations</cds-dropdown-item
+              >
+            </cds-dropdown>
+            <p class="panel-control__description">
+              Disables/Enables animation for Workspace Panels.
+            </p>
+          </div>
         </div>
       </div>
     `;

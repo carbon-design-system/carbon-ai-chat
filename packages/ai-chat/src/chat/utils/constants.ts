@@ -25,6 +25,8 @@ const RESPONSE_TYPE_TIMEOUT_MS = 20000;
 
 // These are custom panel ids.
 const DEFAULT_CUSTOM_PANEL_ID = "wac-default-panel";
+// These are custom panel ids.
+const WORKSPACE_PANEL_CUSTOM_PANEL_ID = "workspace-panel";
 
 /**
  * This function serves as a placeholder in places where a functional value is required, but not expected to be
@@ -52,6 +54,7 @@ export {
   ENGLISH_US_DATE_FORMAT,
   RESPONSE_TYPE_TIMEOUT_MS,
   DEFAULT_CUSTOM_PANEL_ID,
+  WORKSPACE_PANEL_CUSTOM_PANEL_ID,
   WriteableElementName,
   FileStatusValue,
   THROW_ERROR,

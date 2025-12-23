@@ -83,6 +83,9 @@ class ChatContainerInternal extends LitElement {
         box-sizing: border-box;
         ${this.element ? "" : "z-index: var(--cds-aichat-z-index);"}
       }
+      [slot="workspacePanelElement"] {
+        block-size: 100%;
+      }
     `;
     this.appendChild(style);
     if (this.config) {
