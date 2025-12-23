@@ -286,13 +286,23 @@ export function ChatAppEntry({
     };
     window.addEventListener("resize", windowListener);
 
+    let lastVisibility: boolean | null = null;
+
     const visibilityListener = () => {
-      serviceManager.store.dispatch(
-        appActions.setIsBrowserPageVisible(
-          document.visibilityState === "visible",
-        ),
-      );
+      const store = serviceManager?.store;
+      if (!store) {
+        return;
+      }
+
+      const isVisible = document.visibilityState === "visible";
+      if (lastVisibility === isVisible) {
+        return;
+      }
+
+      lastVisibility = isVisible;
+      store.dispatch(appActions.setIsBrowserPageVisible(isVisible));
     };
+
     document.addEventListener("visibilitychange", visibilityListener);
 
     return () => {

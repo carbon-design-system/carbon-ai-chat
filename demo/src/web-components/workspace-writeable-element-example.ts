@@ -35,26 +35,6 @@ class WorkspaceWriteableElementExample extends LitElement {
     [slot="workspacePanelElement"] {
       block-size: 100%;
     }
-    cds-aichat-workspace-shell {
-      display: flex;
-      box-sizing: border-box;
-      flex-direction: column;
-      background-color: var(--cds-chat-shell-background);
-      block-size: 100%;
-      max-inline-size: unset;
-
-      cds-inline-notification {
-        box-sizing: border-box;
-      }
-
-      cds-aichat-toolbar {
-        border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
-      }
-
-      cds-aichat-workspace-shell-body {
-        flex: 1;
-      }
-    }
   `;
 
   @property({ type: String })

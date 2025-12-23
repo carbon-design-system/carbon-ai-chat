@@ -70,7 +70,7 @@ class CDSAIChatToolbar extends LitElement {
     }
     this.updateComplete.then(() => {
       this.setupOverflowHandler();
-      this.style.removeProperty('visibility');
+      this.style.removeProperty("visibility");
     });
   }
 
