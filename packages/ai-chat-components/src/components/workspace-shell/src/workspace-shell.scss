@@ -22,7 +22,8 @@ $css--plex: true !default;
   @include type.type-style("body-01");
 
   display: flex;
-  box-sizing: border-box;
+  /* stylelint-disable declaration-no-important */
+  box-sizing: border-box !important;
   flex-direction: column;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
