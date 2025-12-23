@@ -19,7 +19,7 @@ function doPreviewCard(instance: ChatInstance) {
         },
         {
           title: "Optimizing excess inventory",
-          subtitle: "Created on: 12/10/24",
+          subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
           additional_data: {
             id: "some unique ID for the workspace",

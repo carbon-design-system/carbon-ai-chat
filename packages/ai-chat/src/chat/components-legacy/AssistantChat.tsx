@@ -9,6 +9,7 @@
 
 import React, { Component, RefObject } from "react";
 import { injectIntl } from "react-intl";
+import cx from "classnames";
 
 import MessagesComponent, { MessagesComponentClass } from "./MessagesComponent";
 import { HasServiceManager } from "../hocs/withServiceManager";
@@ -16,6 +17,7 @@ import { AppConfig } from "../../types/state/AppConfig";
 import {
   HumanAgentDisplayState,
   HumanAgentState,
+  WorkspacePanelState,
   ChatMessagesState,
   FileUpload,
   InputState,
@@ -40,6 +42,7 @@ import WriteableElement from "./WriteableElement";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { PageObjectId } from "../../testing/PageObjectId";
+import WorkspaceContainer from "./WorkspaceContainer";
 
 interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   languagePack: LanguagePack;
@@ -51,6 +54,7 @@ interface ChatInterfaceProps extends HasServiceManager, HasIntl {
   messageState: ChatMessagesState;
   isHydrated: boolean;
   humanAgentState: HumanAgentState;
+  workspacePanelState: WorkspacePanelState;
   agentDisplayState: HumanAgentDisplayState;
   onSendInput: (text: string) => void;
   onToggleHomeScreen: () => void;
@@ -305,6 +309,7 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           <WriteableElement
             slotName={WriteableElementName.BEFORE_INPUT_ELEMENT}
             id={`beforeInputElement${serviceManager.namespace.suffix}`}
+            className="cds-aichat--before-input-element"
           />
           <Input
             ref={this.inputRef}
@@ -350,9 +355,12 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
       assistantName,
       headerDisplayName,
       shouldHideChatContentForPanel,
+      workspacePanelState,
     } = this.props;
 
     const { hasCaughtError } = this.state;
+    const preferredLocation = workspacePanelState.options.preferredLocation;
+    const disableAnimation = workspacePanelState.options.disableAnimation;
 
     return (
       <div data-testid={PageObjectId.MAIN_PANEL} className="cds-aichat">
@@ -374,7 +382,16 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
           className="cds-aichat--non-header-container"
           {...(shouldHideChatContentForPanel ? { inert: true } : {})}
         >
-          <div className="cds-aichat--panel-content cds-aichat--non-header-container">
+          <div
+            className={cx(
+              "cds-aichat--panel-content",
+              "cds-aichat--non-header-container",
+              {
+                "cds-aichat--panel-content--workspace-start":
+                  preferredLocation === "start",
+              },
+            )}
+          >
             {hasCaughtError && (
               <div className="cds-aichat--messages-error-handler">
                 <CatastrophicError
@@ -386,10 +403,25 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
                 />
               </div>
             )}
+            {preferredLocation == "start" && (
+              <WorkspaceContainer
+                serviceManager={this.props.serviceManager}
+              ></WorkspaceContainer>
+            )}
             {!hasCaughtError && (
-              <div className="cds-aichat--messages-and-input-container">
+              <div
+                className={cx("cds-aichat--messages-and-input-container", {
+                  "cds-aichat--messages-and-input-container--no-animation":
+                    disableAnimation,
+                })}
+              >
                 {this.renderMessagesAndInput()}
               </div>
+            )}
+            {preferredLocation == "end" && (
+              <WorkspaceContainer
+                serviceManager={this.props.serviceManager}
+              ></WorkspaceContainer>
             )}
           </div>
         </div>

@@ -15,6 +15,12 @@
   max-inline-size: chat-theme.$messages-max-width;
 }
 
+.cds-aichat--header__container {
+  background-color: theme.$chat-shell-background;
+  border-start-end-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+  border-start-start-radius: max(0px, calc(chat-theme.$border-radius - 1px));
+}
+
 .cds-aichat--header__slug-description {
   @include type.type-style("body-01");
 }

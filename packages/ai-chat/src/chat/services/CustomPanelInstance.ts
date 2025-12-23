@@ -9,8 +9,10 @@
 
 import {
   CustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
   CustomPanelInstance,
   CustomPanelOpenOptions,
+  PanelType,
 } from "../../types/instance/apiTypes";
 import actions from "../store/actions";
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "../store/reducerUtils";
@@ -22,21 +24,39 @@ import { ServiceManager } from "./ServiceManager";
  * manager is passed in instead made a private property.
  */
 function createCustomPanelInstance(
+  panelType: PanelType,
   serviceManager: ServiceManager,
   defaultPanelOptions: CustomPanelOpenOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
 ): CustomPanelInstance {
   let hostElement;
 
+  const panelActions = {
+    [PanelType.WORKSPACE]: {
+      setConfig: actions.setWorkspaceCustomPanelConfigOptions,
+      setOpen: actions.setWorkspaceCustomPanelOpen,
+    },
+    [PanelType.DEFAULT]: {
+      setConfig: actions.setCustomPanelConfigOptions,
+      setOpen: actions.setCustomPanelOpen,
+    },
+  } as const;
+
+  const { setConfig, setOpen } =
+    panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
+
   const customPanelInstance: CustomPanelInstance = {
-    open(options?: CustomPanelOpenOptions) {
+    open(options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const { store } = serviceManager;
-      store.dispatch(actions.setCustomPanelConfigOptions(resolvedOptions));
-      store.dispatch(actions.setCustomPanelOpen(true));
+
+      store.dispatch(setConfig(resolvedOptions));
+      store.dispatch(setOpen(true));
     },
+
     close() {
-      serviceManager.store.dispatch(actions.setCustomPanelOpen(false));
+      const { store } = serviceManager;
+      store.dispatch(setOpen(false));
     },
   };
 

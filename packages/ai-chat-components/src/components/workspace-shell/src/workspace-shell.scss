@@ -21,23 +21,29 @@ $css--plex: true !default;
 :host(#{$prefix}-workspace-shell) {
   @include type.type-style("body-01");
 
-  display: block;
+  display: flex;
+  /* stylelint-disable declaration-no-important */
+  box-sizing: border-box !important;
+  flex-direction: column;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
+  background-color: var(--cds-chat-shell-background);
+  block-size: 100%;
   box-shadow:
     -10px 0 100px -24px theme.$ai-popover-shadow-outer-01,
     0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
   color: theme.$text-secondary;
   inline-size: 100%;
-  max-inline-size: rem(904px);
 
   ::slotted([slot="notification"]) {
+    box-sizing: border-box;
     max-inline-size: 100%;
   }
 }
 ::slotted(#{$prefix}-toolbar) {
   display: grid;
   padding: rem(8px);
+  border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
 }
 
 .#{$prefix}-workspace-shell {
