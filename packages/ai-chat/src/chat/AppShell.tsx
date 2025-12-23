@@ -88,6 +88,7 @@ import { SingleOption } from "../types/messaging/Messages";
 import { CarbonTheme } from "../types/config/PublicConfig";
 
 import styles from "./AppShell.scss";
+import { PageObjectId } from "../testing/PageObjectId";
 
 const applicationStylesheet =
   typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
@@ -671,6 +672,13 @@ export default function AppShell({
     !isHydrationAnimationComplete ||
     (numPanelsAnimating === 0 && numPanelsOpen > 0 && !hasPanelWithBackButton);
 
+  const activateFocusTrap = Boolean(
+    publicConfig.enableFocusTrap &&
+    open &&
+    !header?.hideMinimizeButton &&
+    isHydrated &&
+    !assistantMessageState.isHydratingCounter,
+  );
   return (
     <div
       className={cx(
@@ -696,13 +704,7 @@ export default function AppShell({
       <AppShellErrorBoundary onError={handleBoundaryError}>
         <ModalPortalRootProvider hostElement={modalPortalHostElement}>
           <FocusTrap
-            active={Boolean(
-              publicConfig.enableFocusTrap &&
-              open &&
-              !header?.hideMinimizeButton &&
-              isHydrated &&
-              !assistantMessageState.isHydratingCounter,
-            )}
+            active={activateFocusTrap}
             focusTrapOptions={focusTrapOptions}
           >
             <Layer
@@ -715,6 +717,7 @@ export default function AppShell({
               }
             >
               <div
+                data-testid={PageObjectId.CHAT_WIDGET}
                 className={cx("cds-aichat--widget", {
                   "cds-aichat--widget--rounded":
                     theme.corners === CornersType.ROUND,
@@ -735,11 +738,9 @@ export default function AppShell({
                 })}
                 ref={widgetContainerRef}
               >
-                {publicConfig.enableFocusTrap &&
-                  open &&
-                  !header?.hideMinimizeButton && (
-                    <div className="cds-aichat--widget__focus-trap-glass" />
-                  )}
+                {activateFocusTrap && (
+                  <div className="cds-aichat--widget__focus-trap-glass" />
+                )}
                 <VisuallyHidden>
                   <h1>{languagePack.window_title}</h1>
                 </VisuallyHidden>

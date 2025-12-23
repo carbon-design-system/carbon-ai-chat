@@ -13,10 +13,17 @@ import {
   waitForChatReady,
   prepareDemoPage,
   waitForSetChatConfigApplied,
+  setupAccessibilityChecker,
+  checkAccessibility,
 } from "./utils";
 
 // Import types for window.setChatConfig without emitting runtime code
 import type {} from "../types/window";
+
+// Setup accessibility checker before all tests
+test.beforeAll(() => {
+  setupAccessibilityChecker();
+});
 
 // Setup common to all tests
 test.beforeEach(async ({ page }) => {
@@ -69,6 +76,10 @@ test("disclaimer disappears when Accept is clicked", async ({ page }) => {
   await expect(page.getByTestId(PageObjectId.MAIN_PANEL)).toBeVisible({
     timeout: 10000,
   });
+
+  // Run accessibility check on the chat widget
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "Disclaimer - After Accept");
 });
 
 // Confirm that updating setChatConfig disclaimer content clears the accepted flag and reopens the panel.
@@ -138,6 +149,10 @@ test("disclaimer accepted state is cleared on content change", async ({
   await expect(
     page.getByText("This is a new disclaimer that must be accepted again."),
   ).toBeVisible();
+
+  // Run accessibility check on the chat widget with new disclaimer
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "Disclaimer - New Content");
 });
 
 test("disclaimer enable and disable", async ({ page }) => {
@@ -203,4 +218,8 @@ test("disclaimer enable and disable", async ({ page }) => {
     timeout: 10000,
   });
   await expect(page.getByText("Disclaimer is back!")).toBeVisible();
+
+  // Run accessibility check on the chat widget with re-enabled disclaimer
+  const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
+  await checkAccessibility(chatWidget, "Disclaimer - Re-enabled");
 });
