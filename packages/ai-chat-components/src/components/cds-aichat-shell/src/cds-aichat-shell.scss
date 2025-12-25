@@ -1,0 +1,223 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+
+$messages-max-width: var(--cds-aichat-messages-max-width, 672px);
+$messages-min-width: var(--cds-aichat-messages-min-width, 320px);
+$workspace-min-width: var(--cds-aichat-workspace-min-width, 480px);
+
+$ai-background-image: linear-gradient(
+  to bottom,
+  #{theme.$chat-shell-background} 0,
+  #{theme.$chat-shell-background} 50%,
+  #{theme.$ai-aura-end} 50%,
+  #{theme.$ai-aura-start} 100%
+);
+$ai-box-shadow-outer: 0 4px 10px 2px #{theme.$ai-drop-shadow};
+$default-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
+$border-radius: var(--cds-aichat-border-radius, #{layout.$spacing-03});
+
+:host {
+  display: block;
+  box-sizing: border-box;
+  background: transparent;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.shell {
+  position: relative;
+  display: block;
+  border: 1px solid theme.$border-subtle-00;
+  border-radius: 0;
+  background-color: theme.$chat-shell-background;
+  background-image: none;
+  block-size: 100%;
+  box-shadow: var(--cds-aichat-box-shadow, $default-box-shadow);
+  inline-size: 100%;
+}
+
+[data-panel-slot] {
+  opacity: 1;
+  transition: opacity motion.$duration-fast-02
+    motion.motion(standard, productive);
+}
+
+[data-panel-slot][inert] {
+  opacity: 0;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  [data-panel-slot] {
+    transition: none;
+  }
+}
+
+.shell.shell--panels-animating {
+  overflow: hidden;
+}
+
+.shell.ai-theme {
+  border: 1px solid transparent;
+  background: linear-gradient(
+      to bottom,
+      theme.$ai-border-start,
+      theme.$ai-border-end
+    )
+    border-box;
+  background-color: theme.$chat-shell-background;
+  box-shadow: $ai-box-shadow-outer;
+
+  .main-chat {
+    background-color: theme.$chat-shell-background;
+    background-image: $ai-background-image;
+  }
+}
+
+.shell.frameless {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.shell.rounded {
+  border-radius: $border-radius;
+
+  .main-chat {
+    border-radius: $border-radius;
+  }
+
+  .header-with-header-after {
+    border-start-end-radius: $border-radius;
+    border-start-start-radius: $border-radius;
+
+    :first-child {
+      border-start-end-radius: $border-radius;
+      border-start-start-radius: $border-radius;
+    }
+
+    > .header:has(> slot::slotted(*)) {
+      border-start-end-radius: $border-radius;
+      border-start-start-radius: $border-radius;
+    }
+
+    > .header:not(:has(> slot::slotted(*)))
+      + .header-after:has(> slot::slotted(*)) {
+      border-start-end-radius: $border-radius;
+      border-start-start-radius: $border-radius;
+    }
+  }
+}
+
+.main-chat {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.main-content-body {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  flex: 1 1 0%;
+  flex-direction: column;
+  align-items: stretch;
+  block-size: 100%;
+  max-inline-size: 100%;
+  min-block-size: inherit;
+  min-inline-size: 0;
+}
+
+:host([show-workspace]) .main-content-body {
+  flex-direction: row;
+  container-name: main-content-body;
+  container-type: inline-size;
+}
+
+:host([workspace-in-panel]) .main-content-body {
+  flex-direction: column;
+}
+
+.input-and-messages {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+  margin: auto;
+  block-size: 100%;
+  inline-size: 100%;
+  max-inline-size: $messages-max-width;
+  min-inline-size: $messages-min-width;
+}
+
+:host([show-workspace]) .input-and-messages {
+  flex: 0 0 $messages-min-width;
+  inline-size: $messages-min-width;
+  max-inline-size: $messages-min-width;
+}
+
+:host([workspace-in-panel][show-workspace]) .input-and-messages {
+  flex: 1 1 auto;
+  inline-size: 100%;
+  max-inline-size: $messages-max-width;
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-body {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+:host([show-workspace]) .workspace {
+  flex: 1 1 auto;
+  min-inline-size: $workspace-min-width;
+}
+
+:host([show-workspace][workspace-location="end"]) .workspace {
+  order: 2;
+}
+
+:host([show-workspace][workspace-location="end"]) .input-and-messages {
+  order: 1;
+}
+
+.messages {
+  flex-grow: 1;
+}
+
+.workspace-content {
+  block-size: 100%;
+  inline-size: 100%;
+  opacity: 1;
+  transition: opacity motion.$duration-fast-02
+    motion.motion(standard, productive);
+}
+
+.workspace-content--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
