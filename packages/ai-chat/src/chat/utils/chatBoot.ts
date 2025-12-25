@@ -17,7 +17,6 @@ import { createServiceManager } from "../services/loadServices";
 import { ServiceManager } from "../services/ServiceManager";
 import { createChatInstance } from "../instance/ChatInstanceImpl";
 import { createAppConfig } from "../store/doCreateStore";
-import { loadLocale } from "./languages";
 import { setIntl } from "./intlUtils";
 import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
 
@@ -31,6 +30,7 @@ import {
 import { VIEW_STATE_ALL_CLOSED } from "../store/reducerUtils";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
+import { loadLocale } from "./languageUtils";
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps

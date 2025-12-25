@@ -34,7 +34,7 @@ import {
   toUserDateFormat,
 } from "../../../utils/dateUtils";
 import { uuid, UUIDType } from "../../../utils/lang/uuid";
-import { loadDayjsLocale } from "../../../utils/languages";
+import { loadDayjsLocale } from "../../../utils/languageUtils";
 import { createMessageRequestForDate } from "../../../utils/messageUtils";
 import { consoleError } from "../../../utils/miscUtils";
 import {
