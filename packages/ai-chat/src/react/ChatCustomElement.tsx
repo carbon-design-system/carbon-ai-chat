@@ -164,6 +164,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     layout,
     messaging,
     isReadonly,
+    persistFeedback,
     assistantName,
     locale,
     homescreen,
@@ -233,6 +234,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           layout={layout}
           messaging={messaging}
           isReadonly={isReadonly}
+          persistFeedback={persistFeedback}
           assistantName={assistantName}
           locale={locale}
           homescreen={homescreen}

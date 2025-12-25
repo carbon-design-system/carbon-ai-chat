@@ -806,8 +806,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       "cds-aichat--message--last-message": isLastMessage,
     });
 
-    // The user can only provide feedback on the last message.
-    const allowNewFeedback = localMessage.fullMessageID === lastMessageID;
+    // Allow for feedback to persist if configured to otherwise user can only
+    // provide feedback on the last message.
+    const allowNewFeedback =
+      config.public.persistFeedback ||
+      localMessage.fullMessageID === lastMessageID;
 
     const messageItemID = localMessage.ui_state.id;
     const message = (

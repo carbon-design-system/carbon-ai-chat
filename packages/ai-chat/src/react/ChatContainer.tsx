@@ -97,6 +97,7 @@ function ChatContainer(props: ChatContainerProps) {
     layout,
     messaging,
     isReadonly,
+    persistFeedback,
     assistantName,
     locale,
     homescreen,
@@ -122,6 +123,7 @@ function ChatContainer(props: ChatContainerProps) {
       layout,
       messaging,
       isReadonly,
+      persistFeedback,
       assistantName,
       locale,
       homescreen,
@@ -145,6 +147,7 @@ function ChatContainer(props: ChatContainerProps) {
       layout,
       messaging,
       isReadonly,
+      persistFeedback,
       assistantName,
       locale,
       homescreen,
@@ -152,6 +155,7 @@ function ChatContainer(props: ChatContainerProps) {
       input,
     ],
   );
+
   const wrapperRef = useRef(null); // Ref for the React wrapper component
   const [wrapper, setWrapper] = useState(null);
   const [container, setContainer] = useState<HTMLElement | null>(null); // Actual element we render the React Portal to in the Shadowroot.
