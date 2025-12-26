@@ -5,10 +5,13 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "sass:string";
+
 @use "@carbon/styles/scss/components/code-snippet/index";
 @use "@carbon/styles/scss/type";
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/themes";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/colors";
 @use "@carbon/styles/scss/spacing";
@@ -19,54 +22,12 @@
 :host {
   @include rounded-modifiers;
 
-  /* Comments and documentation */
-  --cds-syntax-comment: #{colors.$green-60};
-  --cds-syntax-line-comment: var(--cds-syntax-comment);
-  --cds-syntax-block-comment: var(--cds-syntax-comment);
-  --cds-syntax-doc-comment: var(--cds-syntax-comment);
-  --cds-syntax-doc-string: var(--cds-syntax-string);
-
-  /* Keywords */
-  --cds-syntax-keyword: #{colors.$blue-60};
-  --cds-syntax-operator-keyword: var(--cds-syntax-keyword);
-  --cds-syntax-control-keyword: #{colors.$purple-70};
-  --cds-syntax-definition-keyword: #{colors.$cyan-70};
-  --cds-syntax-module-keyword: #{colors.$purple-70};
-
-  /* Identifiers */
-  --cds-syntax-variable: #{colors.$blue-60};
-  --cds-syntax-name: var(--cds-syntax-variable);
-  --cds-syntax-variable-name: var(--cds-syntax-variable);
-  --cds-syntax-label-name: var(--cds-syntax-variable);
-  --cds-syntax-attribute: #{colors.$cyan-70};
-  --cds-syntax-attribute-name: var(--cds-syntax-attribute);
-  --cds-syntax-property-name: var(--cds-syntax-attribute);
-  --cds-syntax-tag: #{colors.$teal-60};
-  --cds-syntax-tag-name: var(--cds-syntax-tag);
-  --cds-syntax-type: #{colors.$teal-60};
-  --cds-syntax-type-name: var(--cds-syntax-type);
-  --cds-syntax-class-name: var(--cds-syntax-type);
-  --cds-syntax-namespace: var(--cds-syntax-type);
-  --cds-syntax-macro-name: var(--cds-syntax-variable);
-
-  /* Literals and primitives */
-  --cds-syntax-atom: var(--cds-text-primary);
-  --cds-syntax-literal: var(--cds-syntax-atom);
-  --cds-syntax-bool: var(--cds-syntax-atom);
-  --cds-syntax-null: var(--cds-syntax-atom);
-  --cds-syntax-self: var(--cds-syntax-tag);
-  --cds-syntax-number: #{colors.$green-60};
-  --cds-syntax-integer: var(--cds-syntax-number);
-  --cds-syntax-float: var(--cds-syntax-number);
-  --cds-syntax-unit: var(--cds-syntax-number);
-  --cds-syntax-string: theme.$text-primary;
-  --cds-syntax-special-string: #{colors.$purple-60};
-  --cds-syntax-character: var(--cds-syntax-string);
-  --cds-syntax-attribute-value: var(--cds-syntax-string);
-  --cds-syntax-regexp: #{colors.$purple-70};
-  --cds-syntax-escape: #{colors.$cool-gray-80};
-  --cds-syntax-url: var(--cds-syntax-escape);
-  --cds-syntax-color: var(--cds-text-primary);
+  // Automatically output all syntax-* tokens from the Carbon $white theme
+  @each $token, $value in themes.$white {
+    @if string.index($token, "syntax-") == 1 {
+      --cds-#{$token}: #{$value};
+    }
+  }
 
   /* Operators and punctuation */
   --cds-syntax-operator: #{colors.$cool-gray-80};
@@ -76,10 +37,10 @@
   --cds-syntax-bitwise-operator: var(--cds-syntax-operator);
   --cds-syntax-compare-operator: var(--cds-syntax-operator);
   --cds-syntax-update-operator: var(--cds-syntax-operator);
-  --cds-syntax-definition-operator: var(--cds-syntax-definition-keyword);
-  --cds-syntax-type-operator: var(--cds-syntax-tag);
-  --cds-syntax-control-operator: var(--cds-syntax-module-keyword);
-  --cds-syntax-modifier: var(--cds-syntax-keyword);
+  --cds-syntax-definition-operator: #{theme.$syntax-definition-keyword};
+  --cds-syntax-type-operator: #{theme.$syntax-tag};
+  --cds-syntax-control-operator: #{theme.$syntax-module-keyword};
+  --cds-syntax-modifier: #{theme.$syntax-keyword};
   --cds-syntax-punctuation: #{colors.$cool-gray-80};
   --cds-syntax-separator: var(--cds-syntax-punctuation);
   --cds-syntax-bracket: var(--cds-syntax-punctuation);
@@ -113,7 +74,7 @@
   --cds-syntax-meta: #{colors.$green-60};
   --cds-syntax-document-meta: var(--cds-syntax-meta);
   --cds-syntax-annotation: #{colors.$teal-60};
-  --cds-syntax-processing-instruction: var(--cds-syntax-string);
+  --cds-syntax-processing-instruction: #{theme.$syntax-string};
 
   /* Modifiers */
   --cds-syntax-definition: #{colors.$cyan-70};
@@ -139,27 +100,13 @@
 :host-context([storybook-carbon-theme="g90"]),
 :host-context([data-theme="g100"]),
 :host-context([storybook-carbon-theme="g100"]) {
-  /* Comments and documentation */
-  --cds-syntax-comment: #{colors.$green-40};
-
-  /* Keywords */
-  --cds-syntax-keyword: #{colors.$blue-50};
-  --cds-syntax-control-keyword: #{colors.$purple-40};
-  --cds-syntax-definition-keyword: #{colors.$cyan-40};
-  --cds-syntax-module-keyword: #{colors.$purple-40};
-
-  /* Identifiers */
-  --cds-syntax-variable: #{colors.$blue-30};
-  --cds-syntax-attribute: #{colors.$cyan-40};
-  --cds-syntax-tag: #{colors.$teal-30};
-  --cds-syntax-type: #{colors.$teal-30};
+  @each $token, $value in themes.$g90 {
+    @if string.index($token, "syntax-") == 1 {
+      --cds-#{$token}: #{$value};
+    }
+  }
 
   /* Literals and primitives */
-  --cds-syntax-number: #{colors.$green-30};
-  --cds-syntax-special-string: #{colors.$purple-40};
-  --cds-syntax-regexp: #{colors.$purple-40};
-  --cds-syntax-escape: #{colors.$gray-20};
-  --cds-syntax-url: var(--cds-syntax-escape);
   --cds-syntax-operator: #{colors.$gray-20};
   --cds-syntax-punctuation: #{colors.$gray-20};
   --cds-syntax-angle-bracket: #{colors.$gray-50};
