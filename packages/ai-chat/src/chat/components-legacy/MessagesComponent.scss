@@ -99,23 +99,15 @@
 .cds-aichat__scroll-to-bottom {
   position: sticky;
   z-index: 1;
-  inline-size: fit-content;
+  inline-size: layout.$spacing-07;
   inset-block-end: layout.$spacing-05;
   inset-inline-start: 50%;
   margin-block-start: calc(-1 * layout.$spacing-07);
   transform: translateX(-50%);
 }
 
-.cds-aichat__scroll-to-bottom--button {
-  transition: opacity motion.$duration-fast-02
-    motion.motion(standard, productive);
-
+.cds-aichat__scroll-to-bottom-button {
   &--hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+    display: none;
   }
 }
