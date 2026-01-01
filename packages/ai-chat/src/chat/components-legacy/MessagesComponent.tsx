@@ -1101,22 +1101,24 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
             {this.renderScrollHandle(false)}
             <div id="chat-bottom-spacer" ref={this.bottomSpacerRef} />
             <MountChildrenOnDelay>
-              <ChatButton
-                className={cx("cds-aichat__scroll-to-bottom-button", {
-                  "cds-aichat__scroll-to-bottom-button--hidden": !scrollDown,
-                })}
-                size={CHAT_BUTTON_SIZE.SMALL}
-                kind={CHAT_BUTTON_KIND.SECONDARY}
-                aria-label={languagePack.messages_scrollMoreButton}
-                onClick={() =>
-                  this.doAutoScroll({
-                    scrollToBottom: 0,
-                    preferAnimate: true,
-                  })
-                }
-              >
-                <DownToBottom slot="icon" />
-              </ChatButton>
+              <div className="cds-aichat__scroll-to-bottom">
+                <ChatButton
+                  className={cx("cds-aichat__scroll-to-bottom-button", {
+                    "cds-aichat__scroll-to-bottom-button--hidden": !scrollDown,
+                  })}
+                  size={CHAT_BUTTON_SIZE.SMALL}
+                  kind={CHAT_BUTTON_KIND.SECONDARY}
+                  aria-label={languagePack.messages_scrollMoreButton}
+                  onClick={() =>
+                    this.doAutoScroll({
+                      scrollToBottom: 0,
+                      preferAnimate: true,
+                    })
+                  }
+                >
+                  <DownToBottom slot="icon" />
+                </ChatButton>
+              </div>
             </MountChildrenOnDelay>
           </div>
         </div>
