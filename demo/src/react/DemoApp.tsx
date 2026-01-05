@@ -16,6 +16,7 @@ import {
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
+  BusEventWorkspacePreOpen,
   BusEventWorkspaceOpen,
   ChatContainer,
   ChatCustomElement,
@@ -208,12 +209,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     // here we add a handler to the workspace pre open and open events
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
-      handler: customWorkspacehandler,
+      handler: customWorkspacePreOpenHandler,
     });
 
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
-      handler: customWorkspacehandler,
+      handler: customWorkspaceOpenHandler,
     });
 
     // Handle feedback event.
@@ -310,11 +311,22 @@ function customButtonHandler(event: BusEvent) {
 }
 
 /**
+ * Listens for workspace panel pre open event.
+ */
+function customWorkspacePreOpenHandler(event: BusEvent) {
+  const { data } = event as BusEventWorkspacePreOpen;
+  console.log(
+    data,
+    "This event can be used to load additional resources into the workspace while displaying a manual loading state. in your writeableElement",
+  );
+}
+
+/**
  * Listens for workspace panel open event.
  */
-function customWorkspacehandler(event: BusEvent) {
+function customWorkspaceOpenHandler(event: BusEvent) {
   const { data } = event as BusEventWorkspaceOpen;
-  console.log(data, "data");
+  console.log(data, "open handler");
 }
 
 export { DemoApp };

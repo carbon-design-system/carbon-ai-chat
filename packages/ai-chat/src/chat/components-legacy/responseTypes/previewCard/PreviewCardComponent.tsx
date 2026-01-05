@@ -8,22 +8,16 @@
  *  @license
  */
 
+import React from "react";
 import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import { PanelType } from "../../../../types/instance/apiTypes";
-import actions from "../../../store/actions";
-import { WORKSPACE_PANEL_CUSTOM_PANEL_CONFIG_OPTIONS } from "../../../store/reducerUtils";
-import Button, {
-  BUTTON_KIND,
-} from "@carbon/ai-chat-components/es/react/button.js";
-import AILabel from "@carbon/ai-chat-components/es/react/ai-label";
+// import AILabel from "@carbon/ai-chat-components/es/react/ai-label";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import View16 from "@carbon/icons/es/view/16.js";
-import cx from "classnames";
-import React, { useState } from "react";
 
 // import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { BusEventType } from "../../../../types/events/eventBusTypes";
+import { PanelType } from "../../../../types/instance/apiTypes";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { AppState } from "../../../../types/state/AppState";
 import { useSelector } from "../../../hooks/useSelector";

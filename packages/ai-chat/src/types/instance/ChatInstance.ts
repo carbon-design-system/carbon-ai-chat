@@ -39,11 +39,15 @@ export interface ChatInstance extends EventHandlers, ChatActions {
 
   /**
    * Enables/Disables Workspace Panel animations.
+   *
+   * @experimental
    */
   updateWorkspaceAnimationBehaviour: (isDisabled: boolean) => void;
 
   /**
    * Manages the position of the workspace panel.
+   *
+   * @experimental
    */
   updateWorkspacePosition: (preferredLocation: "start" | "end") => void;
 
@@ -99,6 +103,11 @@ export interface PublicWorkspaceCustomPanelState {
 export interface PublicCustomPanelsState {
   /** State for the default overlay-style custom panel. */
   default: PublicDefaultCustomPanelState;
+  /**
+   * State for the workspace custom panel.
+   *
+   * @experimental
+   */
   workspace: PublicWorkspaceCustomPanelState;
 }
 

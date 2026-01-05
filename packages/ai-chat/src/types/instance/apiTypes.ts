@@ -54,11 +54,22 @@ export enum PanelType {
   DEFAULT = "default",
 
   /**
-   * Opens the Workspace panel, which opens as a panel from right to left in full screen mode. and is converted into a
-   * modal in mobile mode.
+   * Opens the panel in the Workspace layout.
+   *
+   * On large screens, the panel is placed at the `preferredLocation` (`start` or `end`)
+   * and pushes the chat content.
+   *
+   * On small screens, the panel behaves like `DEFAULT`.
+   *
+   * @experimental
    */
   WORKSPACE = "workspace",
 }
+
+export type PanelConfigOptionsByType = {
+  [PanelType.DEFAULT]: DefaultCustomPanelConfigOptions;
+  [PanelType.WORKSPACE]: WorkspaceCustomPanelConfigOptions;
+};
 
 /**
  * This manager handles fetching an instance for manipulating the custom panel.
@@ -245,7 +256,7 @@ export interface DefaultCustomPanelConfigOptions {
 /**
  * Options supported by the workspace custom panel implementation.
  *
- *
+ * @experimental
  * @category Instance
  */
 export interface WorkspaceCustomPanelConfigOptions {
