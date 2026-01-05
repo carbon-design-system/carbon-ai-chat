@@ -24,11 +24,18 @@ jobs:
   update-versions-file:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ secrets.PAT }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: "0"
           ref: ${{ github.event.client_payload.branch || github.ref_name }}
+          token: ${{ secrets.PAT }}
+
+      - run: |
+          git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
+          git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
 
       - name: Read version from package.json and update versions.js
         run: |
@@ -67,25 +74,10 @@ jobs:
 
       - name: Commit updated versions.js file
         run: |
-          git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
-          git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
-
-          BRANCH="chore/${{ github.event.client_payload.tag || github.event.inputs.tag }}-release"
-          git fetch origin $BRANCH || true
-
-          if git rev-parse --verify origin/$BRANCH >/dev/null 2>&1; then
-            echo "Branch $BRANCH exists, checking it out"
-            git checkout -b $BRANCH origin/$BRANCH
-          else
-            echo "Branch $BRANCH does not exist, creating it"
-            git checkout -b $BRANCH
-          fi
-
+          git pull
           git add versions.js
           git commit -m "chore: update versions.js file"
-          git push origin $BRANCH
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin ${{ github.event.client_payload.branch || github.ref_name }}
 
       - name: Put versions.js file in temp directory
         run: mkdir temp && cp versions.js temp/
