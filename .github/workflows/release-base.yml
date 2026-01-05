@@ -123,3 +123,19 @@ jobs:
         if: github.event.inputs.type == 'subsequent rc'
         run: |
           npx lerna publish prerelease --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
+
+  # This job dispatches workflow to update the versions.js file with the latest stable version
+  # and pushes the updated versions.js file up to COS.
+  # This versions.js file is used to populate the version dropdown in our demo and documentation websites.
+  update-versions-file:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: release
+    steps:
+      # Triggers only if it is a full release
+      - name: Update versions.js file and upload to COS
+        if: github.event.inputs.type == 'full release'
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          event-type: update-versions-file
+          client-payload: '{"branch": "${{ github.ref_name }}"}'
