@@ -252,12 +252,6 @@ export enum MessageSendSource {
   OPTION_DROP_DOWN = "optionDropDown",
 
   /**
-   * The message was sent as an automatic re-send when Carbon AI Chat is loaded. This occurs when Carbon AI Chat sees that the
-   * last message request did not receive a response.
-   */
-  HYDRATE_RESEND = "hydrateResend",
-
-  /**
    * The message was sent as an event history update.
    */
   HISTORY_UPDATE = "historyUpdate",

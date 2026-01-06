@@ -21,7 +21,7 @@
   "errors_somethingWrong": "Something went wrong",
   "input_ariaLabel": "Message to send",
   "input_placeholder": "Type something...",
-  "input_buttonLabel": "Click to send message",
+  "input_buttonLabel": "Send message",
   "input_uploadButtonLabel": "Add files to upload",
   "window_title": "Chat window",
   "window_ariaChatRegion": "Chat",

@@ -9,7 +9,6 @@
 
 import dayjs from "dayjs";
 import enLocaleData from "dayjs/locale/en.js";
-import React from "react";
 import { consoleError } from "./miscUtils";
 import { normalizeModuleInterop } from "./moduleInterop";
 
@@ -255,29 +254,6 @@ async function loadLocale(requestedLocale: string): Promise<ILocale> {
 }
 
 /**
- * Handles a "b" tag.
- */
-function handleBTag(chunks: any) {
-  return <b>{chunks}</b>;
-}
-
-/**
- * Handles a "br" tag.
- */
-function handleBRTag() {
-  return <br />;
-}
-
-/**
- * Adds the functions for processing HTML to the given object for use with FormattedMessage.
- */
-function addHTMLSupport(values: Record<string, any>) {
-  values.b = handleBTag;
-  values.br = handleBRTag;
-  return values;
-}
-
-/**
  * Loads a dayjs locale if it hasn't been loaded already, but doesn't replace the current globally set locale.
  *
  * @param locale The dayjs locale to load.
@@ -308,4 +284,4 @@ async function loadDayjsLocale(locale: string): Promise<string> {
   return locale;
 }
 
-export { loadLocale, addHTMLSupport, loadDayjsLocale, localeLoaders };
+export { loadLocale, loadDayjsLocale, localeLoaders };

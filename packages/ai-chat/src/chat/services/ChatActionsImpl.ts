@@ -17,8 +17,8 @@ import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
 } from "../schema/outputItemToLocalItem";
-import { HumanAgentsOnlineStatus } from "../services/haa/HumanAgentService";
-import { ServiceManager } from "../services/ServiceManager";
+import { HumanAgentsOnlineStatus } from "./haa/HumanAgentService";
+import { ServiceManager } from "./ServiceManager";
 import actions from "../store/actions";
 import { agentUpdateIsSuspended } from "../store/humanAgentActions";
 import {
@@ -55,7 +55,6 @@ import {
   isPause,
   isResponse,
   isResponseWithNestedItems,
-  isStreamCompleteItem,
   isStreamFinalResponse,
   isStreamPartialItem,
   isTyping,
@@ -74,7 +73,6 @@ import {
 } from "../utils/resolvablePromise";
 import { constructViewState } from "../utils/viewStateUtils";
 import {
-  CompleteItemChunk,
   GenericItem,
   Message,
   MessageRequest,
@@ -85,6 +83,13 @@ import {
   PauseItem,
   StreamChunk,
 } from "../../types/messaging/Messages";
+import {
+  FinalResponseChunk,
+  mergePartialResponseOptions,
+  resetStopStreamingButton,
+  resolveChunkContext,
+  shouldShowStopStreaming,
+} from "../utils/streamingUtils";
 import { AddMessageOptions } from "../../types/config/MessagingConfig";
 import {
   BusEventChunkUserDefinedResponse,
@@ -712,6 +717,7 @@ class ChatActionsImpl {
           chunk.streaming_metadata?.response_id);
       this.serviceManager.messageService.markCurrentMessageAsStreaming(
         extractedMessageID,
+        chunk.partial_item?.streaming_metadata?.id,
       );
     }
 
@@ -725,146 +731,170 @@ class ChatActionsImpl {
 
   async processChunkQueue() {
     const { chunk, options, chunkPromise } = this.chunkQueue[0];
-    let { messageID } = this.chunkQueue[0];
     const { store } = this.serviceManager;
 
     try {
-      const isCompleteItem = isStreamCompleteItem(chunk);
-      const isPartialItem = isStreamPartialItem(chunk);
-      const isFinalResponse = isStreamFinalResponse(chunk);
-
-      // Extract message ID from various chunk types
-      if (!messageID) {
-        if ("streaming_metadata" in chunk && chunk.streaming_metadata) {
-          messageID = chunk.streaming_metadata.response_id;
-        } else if (isFinalResponse && chunk.final_response?.id) {
-          messageID = chunk.final_response.id;
-        }
-      }
-
-      // Check if this chunk belongs to a message from a previous generation
-      if (messageID) {
-        const messageGeneration = this.messageGenerations.get(messageID);
+      const {
+        messageID,
+        item,
+        isCompleteItem,
+        isPartialItem,
+        isFinalResponse,
+      } = resolveChunkContext(chunk, this.chunkQueue[0].messageID);
+      const stopStreamingState =
+        store.getState().assistantInputState.stopStreamingButtonState;
+      const hideStopStreaming = () => {
         if (
-          messageGeneration !== undefined &&
-          messageGeneration !== this.restartGeneration
+          (isCompleteItem || isFinalResponse) &&
+          stopStreamingState.isVisible
         ) {
-          debugLog(
-            `[ChunkQueue] Skipping stale chunk (${isCompleteItem ? "complete" : isPartialItem ? "partial" : "final"}) for message ${messageID} from generation ${messageGeneration} (current: ${this.restartGeneration})`,
-            chunk,
-          );
-
-          // If this is a complete or final chunk from an old message, hide the stop streaming button
-          if (
-            (isCompleteItem || isFinalResponse) &&
-            store.getState().assistantInputState.stopStreamingButtonState
-              .isVisible
-          ) {
-            store.dispatch(actions.setStopStreamingButtonDisabled(false));
-            store.dispatch(actions.setStopStreamingButtonVisible(false));
-          }
-
-          this.chunkQueue.shift();
-          chunkPromise.doResolve();
-          if (this.chunkQueue[0]) {
-            this.processChunkQueue();
-          }
-          return;
+          resetStopStreamingButton(store);
         }
+      };
 
-        // If this is the first chunk for this message, record its generation
-        if (messageGeneration === undefined) {
-          this.messageGenerations.set(messageID, this.restartGeneration);
-        }
+      if (this.shouldSkipChunkDueToGeneration(messageID, hideStopStreaming)) {
+        this.advanceChunkQueue(chunkPromise);
+        return;
       }
 
-      const isStopGeneratingVisible =
-        store.getState().assistantInputState.stopStreamingButtonState.isVisible;
-
-      if (isPartialItem) {
-        const streamingData = chunk.partial_item.streaming_metadata;
-        if (streamingData?.cancellable && !isStopGeneratingVisible) {
-          store.dispatch(actions.setStopStreamingButtonVisible(true));
-        }
-      }
+      this.maybeShowStopStreaming(chunk, isPartialItem, stopStreamingState);
 
       if (messageID) {
         store.dispatch(actions.setActiveResponseId(messageID));
       }
 
       if (isCompleteItem || isPartialItem) {
-        if (messageID && !store.getState().allMessagesByID[messageID]) {
-          store.dispatch(actions.streamingStart(messageID));
-        }
-
-        const item =
-          (chunk as PartialItemChunk).partial_item ||
-          (chunk as CompleteItemChunk).complete_item;
-
-        if (messageID && item) {
-          store.dispatch(
-            actions.streamingAddChunk(
-              messageID,
-              item,
-              isCompleteItem,
-              options.disableFadeAnimation ?? true,
-            ),
-          );
-        }
-
-        // Only merge message_options; ignore any other unexpected fields in partial_response
-        if (chunk.partial_response?.message_options && messageID) {
-          store.dispatch(
-            actions.streamingMergeMessageOptions(
-              messageID,
-              chunk.partial_response.message_options,
-            ),
-          );
-        }
-
-        // Now make sure to handle any user_defined response items in the chunk.
-        if (messageID && item) {
-          await this.handleUserDefinedResponseItemsChunk(
-            messageID,
-            chunk,
-            item,
-          );
-        }
+        await this.handleStreamingChunk(
+          chunk as PartialOrCompleteItemChunk,
+          messageID,
+          item,
+          isCompleteItem,
+          options,
+        );
       } else if (isStreamFinalResponse(chunk)) {
-        this.receive(chunk.final_response, options.isLatestWelcomeNode, null, {
-          disableFadeAnimation: true,
-        });
-
-        // Notify MessageService that streaming is complete so it can clear the queue
-        if (messageID) {
-          this.serviceManager.messageService.finalizeStreamingMessage(
-            messageID,
-          );
-        }
+        await this.handleFinalResponseChunk(chunk, messageID, options);
       }
 
-      // Reset stop streaming button when a complete/final chunk arrives
-      if (
-        (isCompleteItem || isStreamFinalResponse(chunk)) &&
-        store.getState().assistantInputState.stopStreamingButtonState.isVisible
-      ) {
-        store.dispatch(actions.setStopStreamingButtonDisabled(false));
-        store.dispatch(actions.setStopStreamingButtonVisible(false));
-      }
+      this.resetStopStreamingIfNeeded(isCompleteItem, chunk);
 
-      this.chunkQueue.shift();
-      chunkPromise.doResolve();
-      if (this.chunkQueue[0]) {
-        this.processChunkQueue();
-      }
+      this.advanceChunkQueue(chunkPromise);
     } catch (error) {
       consoleError("Error processing stream chunk", error);
-      // Ensure queue continues processing and promise is rejected for callers
-      this.chunkQueue.shift();
+      this.advanceChunkQueue(chunkPromise, error);
+    }
+  }
+
+  private shouldSkipChunkDueToGeneration(
+    messageID: string | undefined,
+    hideStopStreaming: () => void,
+  ) {
+    const inboundStreaming =
+      this.serviceManager.messageService.inboundStreaming;
+    if (
+      messageID &&
+      inboundStreaming &&
+      !inboundStreaming.validateChunkGeneration(
+        messageID,
+        this.messageGenerations,
+        this.restartGeneration,
+        hideStopStreaming,
+      )
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  private maybeShowStopStreaming(
+    chunk: StreamChunk,
+    isPartialItem: boolean,
+    stopStreamingState: { isVisible: boolean },
+  ) {
+    const shouldShow = isPartialItem
+      ? shouldShowStopStreaming(
+          (chunk as PartialItemChunk).partial_item?.streaming_metadata,
+          stopStreamingState.isVisible,
+        )
+      : false;
+
+    if (shouldShow) {
+      this.serviceManager.store.dispatch(
+        actions.setStopStreamingButtonVisible(true),
+      );
+    }
+  }
+
+  private async handleStreamingChunk(
+    chunk: PartialOrCompleteItemChunk,
+    messageID: string | undefined,
+    item: DeepPartial<GenericItem> | undefined,
+    isCompleteItem: boolean,
+    options: AddMessageOptions,
+  ) {
+    const { store } = this.serviceManager;
+    if (messageID && !store.getState().allMessagesByID[messageID]) {
+      store.dispatch(actions.streamingStart(messageID));
+    }
+
+    if (messageID && item) {
+      store.dispatch(
+        actions.streamingAddChunk(
+          messageID,
+          item,
+          isCompleteItem,
+          options.disableFadeAnimation ?? true,
+        ),
+      );
+    }
+
+    mergePartialResponseOptions(store, messageID, chunk);
+
+    if (messageID && item) {
+      await this.handleUserDefinedResponseItemsChunk(messageID, chunk, item);
+    }
+  }
+
+  private async handleFinalResponseChunk(
+    chunk: FinalResponseChunk,
+    messageID: string | undefined,
+    options: AddMessageOptions,
+  ) {
+    await this.receive(
+      chunk.final_response,
+      options.isLatestWelcomeNode,
+      null,
+      {
+        disableFadeAnimation: true,
+      },
+    );
+
+    if (messageID) {
+      this.serviceManager.messageService.finalizeStreamingMessage(messageID);
+    }
+  }
+
+  private resetStopStreamingIfNeeded(
+    isCompleteItem: boolean,
+    chunk: StreamChunk,
+  ) {
+    if (isCompleteItem || isStreamFinalResponse(chunk)) {
+      resetStopStreamingButton(this.serviceManager.store);
+    }
+  }
+
+  private advanceChunkQueue(
+    chunkPromise: ResolvablePromise<void>,
+    error?: unknown,
+  ) {
+    // Ensure queue continues processing and promise is settled for callers
+    this.chunkQueue.shift();
+    if (error) {
       chunkPromise.doReject(error);
-      if (this.chunkQueue[0]) {
-        this.processChunkQueue();
-      }
+    } else {
+      chunkPromise.doResolve();
+    }
+    if (this.chunkQueue[0]) {
+      this.processChunkQueue();
     }
   }
 
@@ -1437,12 +1467,7 @@ class ChatActionsImpl {
       await this.serviceManager.messageService.cancelAllMessageRequests();
 
       // Hide the stop streaming button since we've cancelled all streams
-      if (
-        store.getState().assistantInputState.stopStreamingButtonState.isVisible
-      ) {
-        store.dispatch(actions.setStopStreamingButtonDisabled(false));
-        store.dispatch(actions.setStopStreamingButtonVisible(false));
-      }
+      resetStopStreamingButton(store);
 
       store.dispatch(actions.restartConversation());
       if (!skipHydration) {
