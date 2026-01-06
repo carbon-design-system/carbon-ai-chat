@@ -958,8 +958,7 @@ class MessageComponent extends PureComponent<
       allowNewFeedback,
     } = this.props;
 
-    const { isIntermediateStreaming, isWelcomeResponse, disableFadeAnimation } =
-      localMessageItem.ui_state;
+    const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
     const agentMessageType = messageItem.agent_message_type;
@@ -992,9 +991,6 @@ class MessageComponent extends PureComponent<
     );
 
     const isCustomMessage = renderAsUserDefinedMessage(localMessageItem.item);
-
-    // Don't show animation on the welcome node or for messages that explicitly turn it off.
-    const noAnimation = isWelcomeResponse || disableFadeAnimation;
 
     // If this is a user_defined response type with silent set, we don't want to render all the extra cruft around it.
     const agentClassName = agentMessageType
@@ -1035,7 +1031,6 @@ class MessageComponent extends PureComponent<
             "cds-aichat--message--request": messageIsRequest,
             "cds-aichat--message--system-message": isSystemMessage,
             "cds-aichat--message--response": !messageIsRequest,
-            "cds-aichat--message--no-animation": noAnimation,
             "cds-aichat--message--custom": isCustomMessage,
             "cds-aichat--message--disabled-inputs": disableUserInputs,
             "cds-aichat--message--has-focus": this.state.focusHandleHasFocus,

@@ -369,12 +369,6 @@ export interface SendOptions {
    * original message to be able to show which option was selected in the UI.
    */
   setValueSelectedForMessageID?: string;
-
-  /**
-   * @internal
-   * Indicates if the entrance fade animation for the message should be disabled.
-   */
-  disableFadeAnimation?: boolean;
 }
 
 /**

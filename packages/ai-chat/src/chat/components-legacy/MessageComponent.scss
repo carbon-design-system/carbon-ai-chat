@@ -31,12 +31,6 @@ $message-bar-width: 3px;
   /* We cannot use margin on messages as that affects the position calculations that determine how to auto-scroll the
    panel. Padding on the .cds-aichat--message--padding element must be used instead. */
   margin: 0;
-  animation: cds-aichat-fade-in motion.$duration-moderate-02
-    motion.motion(entrance, productive) forwards;
-}
-
-.cds-aichat--message.cds-aichat--message--no-animation {
-  animation: none;
 }
 
 .cds-aichat--message.cds-aichat--message--has-focus::after {

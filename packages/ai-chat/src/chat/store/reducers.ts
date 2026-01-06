@@ -1113,12 +1113,10 @@ const reducers: { [key: string]: ReducerType } = {
       chunkItem,
       fullMessageID,
       isCompleteItem,
-      disableFadeAnimation,
     }: {
       fullMessageID: string;
       chunkItem: DeepPartial<GenericItem>;
       isCompleteItem: boolean;
-      disableFadeAnimation: boolean;
     },
   ) => {
     const message = state.allMessagesByID[fullMessageID] as MessageResponse;
@@ -1137,7 +1135,6 @@ const reducers: { [key: string]: ReducerType } = {
         false,
       );
       newItem.ui_state.needsAnnouncement = false;
-      newItem.ui_state.disableFadeAnimation = disableFadeAnimation;
       newItem.ui_state.isIntermediateStreaming = true;
       if (isCompleteItem) {
         newItem.ui_state.streamingState = { chunks: [], isDone: true };

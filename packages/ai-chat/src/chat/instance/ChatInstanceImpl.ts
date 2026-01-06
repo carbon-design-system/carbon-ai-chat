@@ -255,9 +255,6 @@ function createChatInstance({
           message,
           options?.isLatestWelcomeNode ?? false,
           null,
-          {
-            disableFadeAnimation: options?.disableFadeAnimation,
-          },
         );
       },
 

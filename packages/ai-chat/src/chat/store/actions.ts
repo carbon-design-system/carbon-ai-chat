@@ -534,14 +534,12 @@ const actions = {
     fullMessageID: string,
     chunkItem: DeepPartial<GenericItem>,
     isCompleteItem: boolean,
-    disableFadeAnimation: boolean,
   ) {
     return {
       type: STREAMING_ADD_CHUNK,
       fullMessageID,
       chunkItem,
       isCompleteItem,
-      disableFadeAnimation,
     };
   },
 

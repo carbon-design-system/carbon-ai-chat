@@ -544,13 +544,11 @@ class ChatActionsImpl {
    * @param isLatestWelcomeNode Indicates if this message is a new welcome message that has just been shown to the user
    * and isn't a historical welcome message.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
-   * @param requestOptions The options that were included when the request was sent.
    */
   async receive(
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
-    requestOptions?: SendOptions,
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
 
@@ -594,7 +592,6 @@ class ChatActionsImpl {
         message,
         isLatestWelcomeNode,
         requestMessage,
-        requestOptions,
       ).catch((error) => {
         consoleError("Error processing the message response", error);
       });
@@ -769,7 +766,6 @@ class ChatActionsImpl {
           messageID,
           item,
           isCompleteItem,
-          options,
         );
       } else if (isStreamFinalResponse(chunk)) {
         await this.handleFinalResponseChunk(chunk, messageID, options);
@@ -829,7 +825,6 @@ class ChatActionsImpl {
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
     isCompleteItem: boolean,
-    options: AddMessageOptions,
   ) {
     const { store } = this.serviceManager;
     if (messageID && !store.getState().allMessagesByID[messageID]) {
@@ -838,12 +833,7 @@ class ChatActionsImpl {
 
     if (messageID && item) {
       store.dispatch(
-        actions.streamingAddChunk(
-          messageID,
-          item,
-          isCompleteItem,
-          options.disableFadeAnimation ?? true,
-        ),
+        actions.streamingAddChunk(messageID, item, isCompleteItem),
       );
     }
 
@@ -859,14 +849,7 @@ class ChatActionsImpl {
     messageID: string | undefined,
     options: AddMessageOptions,
   ) {
-    await this.receive(
-      chunk.final_response,
-      options.isLatestWelcomeNode,
-      null,
-      {
-        disableFadeAnimation: true,
-      },
-    );
+    await this.receive(chunk.final_response, options.isLatestWelcomeNode, null);
 
     if (messageID) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
@@ -1041,13 +1024,11 @@ class ChatActionsImpl {
    * @param fullMessage A {@link MessageResponse} object.
    * @param isLatestWelcomeNode If it is a new welcome node, we want to pass that data along.
    * @param requestMessage The optional {@link MessageRequest} that this response is a response to.
-   * @param requestOptions The options that were included when the request was sent.
    */
   async processMessageResponse(
     fullMessage: MessageResponse,
     isLatestWelcomeNode: boolean,
     requestMessage: MessageRequest,
-    requestOptions: SendOptions = {},
   ) {
     const { store } = this.serviceManager;
     const { config } = store.getState();
@@ -1082,7 +1063,6 @@ class ChatActionsImpl {
           messageItem,
           fullMessage,
           isLatestWelcomeNode,
-          requestOptions.disableFadeAnimation,
         );
 
         const nestedLocalMessageItems: LocalMessageItem[] = [];
@@ -1235,7 +1215,7 @@ class ChatActionsImpl {
    */
   public async insertLocalMessageResponse(message: MessageResponse) {
     message.id = uuid(UUIDType.MESSAGE);
-    await this.processMessageResponse(message, false, null, {});
+    await this.processMessageResponse(message, false, null);
   }
 
   // updateLanguagePack removed; use top-level `strings` prop on components.

@@ -257,7 +257,7 @@ class MessageService {
     current: PendingMessageRequest,
     received?: MessageResponse,
   ) {
-    const { requestOptions, isProcessed } = current;
+    const { isProcessed } = current;
 
     // If this message was already invalidated (cancel/timeout/error already resolved it), bail out.
     if (isProcessed) {
@@ -286,7 +286,6 @@ class MessageService {
           received,
           Boolean(current.message.history.is_welcome_request),
           message,
-          requestOptions,
         );
       }
       this.messageLoadingManager.end();
