@@ -97,6 +97,7 @@ const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
 const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
 const SET_IS_RESTARTING = "SET_IS_RESTARTING";
+const SET_ACTIVE_RESPONSE_ID = "SET_ACTIVE_RESPONSE_ID";
 
 interface UnknownAction {
   type: string;
@@ -229,6 +230,13 @@ const actions = {
   resetIsHydratingCounter() {
     return {
       type: RESET_IS_LOADING_COUNTER,
+    };
+  },
+
+  setActiveResponseId(activeResponseId: string | null) {
+    return {
+      type: SET_ACTIVE_RESPONSE_ID,
+      activeResponseId,
     };
   },
 
@@ -615,4 +623,5 @@ export {
   UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_IS_RESTARTING,
+  SET_ACTIVE_RESPONSE_ID,
 };

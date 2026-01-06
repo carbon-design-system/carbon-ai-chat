@@ -272,6 +272,18 @@ class ChatActionsImpl {
       serviceManager.store.dispatch(
         actions.hydrateMessageHistory(history.messageHistory),
       );
+      const { messageIDs } = history.messageHistory.assistantMessageState;
+      // The active response is simply the last message response in order (requests are ignored).
+      const lastId =
+        messageIDs.length > 0 ? messageIDs[messageIDs.length - 1] : null;
+      const lastMessage = lastId
+        ? history.messageHistory.allMessagesByID[lastId]
+        : null;
+      const activeResponseId =
+        lastMessage && isResponse(lastMessage) ? lastMessage.id : null;
+      serviceManager.store.dispatch(
+        actions.setActiveResponseId(activeResponseId),
+      );
       await this.createElementsForUserDefinedResponses(history.messageHistory);
 
       // If the latest message is a panel response type, we should open it.
@@ -325,6 +337,7 @@ class ChatActionsImpl {
       isMessageLoadingCounter: assistantMessageState.isMessageLoadingCounter,
       isMessageLoadingText: assistantMessageState.isMessageLoadingText,
       isHydratingCounter: assistantMessageState.isHydratingCounter,
+      activeResponseId: assistantMessageState.activeResponseId ?? null,
       input,
       customPanels,
     });
@@ -418,6 +431,9 @@ class ChatActionsImpl {
         ? createMessageRequestForText(message)
         : message;
 
+    // Clear any currently active response while awaiting the next one (even before hydration).
+    this.serviceManager.store.dispatch(actions.setActiveResponseId(null));
+
     // If the home screen is open, we want to close it as soon as a message is sent. Note that this will also apply
     // if the Carbon AI Chat hasn't been opened yet.
     if (
@@ -464,6 +480,9 @@ class ChatActionsImpl {
     const { store } = this.serviceManager;
 
     addDefaultsToMessage(message);
+
+    // Clear any currently active response while awaiting the next one.
+    store.dispatch(actions.setActiveResponseId(null));
 
     // Grab the original text before it can be modified by a pre:send handler.
     const originalUserText = message.history?.label || message.input.text;
@@ -654,6 +673,19 @@ class ChatActionsImpl {
     this.serviceManager.store.dispatch(
       actions.hydrateMessageHistory(newAppStateMessages),
     );
+    const mergedIDs = newAppStateMessages.assistantMessageState.messageIDs;
+    // The active response is simply the last message response in order (requests are ignored).
+    const lastId =
+      mergedIDs.length > 0 ? mergedIDs[mergedIDs.length - 1] : null;
+    const lastMessage = lastId
+      ? newAppStateMessages.allMessagesByID[lastId]
+      : null;
+    const activeResponseId =
+      lastMessage && isResponse(lastMessage) ? lastMessage.id : null;
+
+    this.serviceManager.store.dispatch(
+      actions.setActiveResponseId(activeResponseId),
+    );
     await this.createElementsForUserDefinedResponses(history.messageHistory);
 
     // Restore the scroll position.
@@ -754,6 +786,10 @@ class ChatActionsImpl {
         if (streamingData?.cancellable && !isStopGeneratingVisible) {
           store.dispatch(actions.setStopStreamingButtonVisible(true));
         }
+      }
+
+      if (messageID) {
+        store.dispatch(actions.setActiveResponseId(messageID));
       }
 
       if (isCompleteItem || isPartialItem) {
@@ -990,6 +1026,8 @@ class ChatActionsImpl {
     const output = fullMessage.output.generic;
     fullMessage.request_id = requestMessage?.id;
     addDefaultsToMessage(fullMessage);
+
+    store.dispatch(actions.setActiveResponseId(fullMessage.id));
 
     store.dispatch(actions.addMessage(fullMessage));
 

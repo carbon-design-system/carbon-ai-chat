@@ -187,6 +187,7 @@ deepFreeze(DEFAULT_HUMAN_AGENT_STATE);
 const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
   messageIDs: [],
+  activeResponseId: null,
   isMessageLoadingCounter: 0,
   isMessageLoadingText: undefined,
   isHydratingCounter: 0,

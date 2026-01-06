@@ -287,7 +287,7 @@ export function ChatAppEntry({
     window.addEventListener("resize", windowListener);
 
     const visibilityListener = () => {
-      serviceManager.store.dispatch(
+      serviceManager?.store.dispatch(
         appActions.setIsBrowserPageVisible(
           document.visibilityState === "visible",
         ),
