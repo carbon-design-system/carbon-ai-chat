@@ -36,7 +36,7 @@
     transition: none;
   }
 }
-// recheck verify compatibility for :has
+
 .cds-aichat--non-header-container:has(
   .cds-aichat--workspace-container-panel__open
 ) {

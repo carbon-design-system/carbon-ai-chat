@@ -10,7 +10,6 @@
 
 import React from "react";
 import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-// import AILabel from "@carbon/ai-chat-components/es/react/ai-label";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import View16 from "@carbon/icons/es/view/16.js";
 
