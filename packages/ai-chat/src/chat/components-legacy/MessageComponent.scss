@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -12,7 +12,6 @@
 @use "@carbon/styles/scss/utilities/button-reset" as button;
 
 $message-bar-width: 3px;
-$one-line-message-height: 88px;
 
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--message {
@@ -55,12 +54,6 @@ $one-line-message-height: 88px;
 .cds-aichat--message.cds-aichat--message--first-message.cds-aichat--message--has-focus::after {
   block-size: calc(100% - 0.5rem);
   inset-block-start: 0.5rem;
-}
-
-.cds-aichat--message--with-avatar-line.cds-aichat--message--response.cds-aichat--message--last-message:not(
-    .cds-aichat--with-human-agent
-  ) {
-  min-block-size: calc(100% - $one-line-message-height);
 }
 
 .cds-aichat--message.cds-aichat--message--last-message.cds-aichat--message--has-focus::after {

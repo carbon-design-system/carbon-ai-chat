@@ -78,6 +78,7 @@ import {
   SET_IS_RESTARTING,
   SET_VIEW_CHANGING,
   SET_VIEW_STATE,
+  SET_ACTIVE_RESPONSE_ID,
   STREAMING_ADD_CHUNK,
   STREAMING_MERGE_MESSAGE_OPTIONS,
   STREAMING_START,
@@ -175,6 +176,7 @@ const reducers: { [key: string]: ReducerType } = {
         localMessageIDs: [],
         messageIDs: [],
         isScrollAnchored: false,
+        activeResponseId: null,
       },
       allMessageItemsByID: {},
       allMessagesByID: {},
@@ -209,7 +211,17 @@ const reducers: { [key: string]: ReducerType } = {
       ...action.messageHistory,
     };
 
-    return newState;
+    const messageIDs = newState.assistantMessageState.messageIDs;
+
+    return {
+      ...newState,
+      assistantMessageState: {
+        ...newState.assistantMessageState,
+        activeResponseId: messageIDs.length
+          ? messageIDs[messageIDs.length - 1]
+          : null,
+      },
+    };
   },
 
   [ADD_LOCAL_MESSAGE_ITEM]: (
@@ -350,6 +362,9 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.assistantMessageState,
         messageIDs: newMessageIDs,
         localMessageIDs: newMessageItemsIDs,
+        activeResponseId: newMessageIDs.length
+          ? newMessageIDs[newMessageIDs.length - 1]
+          : null,
       },
     };
 
@@ -1271,6 +1286,19 @@ const reducers: { [key: string]: ReducerType } = {
           ...state.assistantInputState.stopStreamingButtonState,
           currentStreamID,
         },
+      },
+    };
+  },
+
+  [SET_ACTIVE_RESPONSE_ID]: (
+    state: AppState,
+    { activeResponseId }: { activeResponseId: string | null },
+  ) => {
+    return {
+      ...state,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        activeResponseId,
       },
     };
   },

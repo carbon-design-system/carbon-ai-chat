@@ -330,9 +330,11 @@ function renderWithStaticTag(
           ${content}
         </ul>`;
       }
-      return html`<cds-unordered-list ?nested=${nested} ${spread(attrs)}>
-        ${content}
-      </cds-unordered-list>`;
+      return html`<p>
+        <cds-unordered-list ?nested=${nested} ${spread(attrs)}>
+          ${content}
+        </cds-unordered-list>
+      </p>`;
     }
 
     case "ol": {
@@ -342,9 +344,11 @@ function renderWithStaticTag(
           ${content}
         </ol>`;
       }
-      return html`<cds-ordered-list native ?nested=${nested} ${spread(attrs)}>
-        ${content}
-      </cds-ordered-list>`;
+      return html`<p>
+        <cds-ordered-list native ?nested=${nested} ${spread(attrs)}>
+          ${content}
+        </cds-ordered-list>
+      </p>`;
     }
 
     case "li": {

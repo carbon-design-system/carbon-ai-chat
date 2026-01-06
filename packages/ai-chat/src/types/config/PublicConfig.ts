@@ -162,6 +162,11 @@ export interface PublicConfig {
   isReadonly?: boolean;
 
   /**
+   * Allows for feedback to persist in all messages, not just the latest message.
+   */
+  persistFeedback?: boolean;
+
+  /**
    * Sets the name of the assistant. Defaults to "watsonx". Used in screen reader announcements and error messages.
    */
   assistantName?: string;

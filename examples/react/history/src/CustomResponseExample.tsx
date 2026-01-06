@@ -18,20 +18,33 @@ interface CustomResponseExampleData {
 
 interface CustomResponseExampleProps {
   data: CustomResponseExampleData;
+  isLatestMessage?: boolean;
+  latestResponseId?: string;
 }
 
-function CustomResponseExample({ data }: CustomResponseExampleProps) {
+function CustomResponseExample({
+  data,
+  isLatestMessage = false,
+  latestResponseId,
+}: CustomResponseExampleProps) {
   const [timestamp, setTimestamp] = useState(0);
   useEffect(() => {
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       setTimestamp(Date.now());
     }, 1000);
+    return () => clearInterval(intervalId);
   }, []);
   return (
     <div className="external">
       This is a user_defined response type with external styles. The following
       is some text passed along for use by the back-end: {data.text}. And here
       is a value being set by state: {timestamp}.
+      <div>
+        Latest response id: {latestResponseId ? latestResponseId : "none yet"}
+      </div>
+      <div>
+        Is this the most recent message? {isLatestMessage ? "Yes" : "Nope"}
+      </div>
     </div>
   );
 }

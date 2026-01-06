@@ -397,6 +397,7 @@ export class DemoApp extends LitElement {
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
+            .persistFeedback=${this.config.persistFeedback ?? undefined}
             .assistantName=${this.config.assistantName}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}
@@ -426,6 +427,7 @@ export class DemoApp extends LitElement {
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
+            .persistFeedback=${this.config.persistFeedback ?? undefined}
             .assistantName=${this.config.assistantName}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}
