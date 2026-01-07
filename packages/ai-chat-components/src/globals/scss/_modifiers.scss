@@ -25,7 +25,10 @@
 @mixin radius($positions...) {
   @each $pos in $positions {
     border-#{$pos}-radius: calc(
-      var(--#{$prefix}-rounded-modifier-radius) - rem(1px)
+      var(
+          --#{$prefix}-rounded-modifier-radius-#{$pos},
+          var(--#{$prefix}-rounded-modifier-radius)
+        ) - rem(1px)
     );
   }
 }

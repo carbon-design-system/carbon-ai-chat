@@ -86,6 +86,7 @@
   "devDependencies": {
     "@carbon/grid": "^11.20.0",
     "@carbon/layout": "^11.19.0",
+    "@carbon/react": "^1.97.0",
     "@carbon/themes": "^11.25.0",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@isaacs/brace-expansion": "^5.0.0",

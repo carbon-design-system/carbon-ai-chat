@@ -1,0 +1,303 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * Story-specific styles for cds-aichat-shell component demonstrations.
+ * These styles are used to visualize slot boundaries and component behavior.
+ */
+
+// =============================================================================
+// Mixins for reusable patterns
+// =============================================================================
+
+@mixin rounded-corners-top {
+  border-start-end-radius: var(--cds-aichat-rounded-radius-start-end, 8px);
+  border-start-start-radius: var(--cds-aichat-rounded-radius-start-start, 8px);
+}
+
+@mixin rounded-corners-bottom {
+  border-end-end-radius: var(--cds-aichat-rounded-radius-end-end, 8px);
+  border-end-start-radius: var(--cds-aichat-rounded-radius-end-start, 8px);
+}
+
+@mixin rounded-corners-inherited-top {
+  border-start-end-radius: var(--cds-aichat-rounded-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-rounded-radius-start-start, 0);
+}
+
+@mixin rounded-corners-inherited-bottom {
+  border-end-end-radius: var(--cds-aichat-rounded-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-rounded-radius-end-start, 0);
+}
+
+// =============================================================================
+// Base component styles
+// =============================================================================
+cds-aichat-shell {
+  display: block;
+  block-size: 512px;
+  inline-size: 100%;
+}
+
+// =============================================================================
+// Slot visualization styles
+// =============================================================================
+.slot-sample {
+  padding: 0.5rem;
+  text-align: center;
+}
+
+// Full-size slots
+.history,
+.messages,
+.workspace {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+// Color-coded slot groups for visual identification
+.messages,
+.messages-before,
+.messages-after {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+
+.workspace {
+  background-color: rgba(0, 0, 255, 0.5);
+}
+
+.input-before,
+.input,
+.input-after {
+  background-color: rgba(0, 255, 0, 0.5);
+}
+
+.header,
+.header-after,
+.footer {
+  background-color: rgba(255, 255, 0, 0.5);
+}
+
+.history {
+  background-color: rgb(255, 213, 145, 0.5);
+}
+
+// =============================================================================
+// Rounded corners behavior
+// Uses CSS custom properties set by the component
+// =============================================================================
+[rounded-corners] {
+  .header.slot-sample,
+  .header-after.slot-sample {
+    @include rounded-corners-top;
+  }
+
+  // Slotted content in messages-before and messages inherits top rounded corners from parent
+  .messages-before.slot-sample,
+  .messages.slot-sample {
+    @include rounded-corners-inherited-top;
+  }
+
+  // Slotted content in bottom slots inherits bottom rounded corners from parent
+  .input-before.slot-sample,
+  .input.slot-sample,
+  .input-after.slot-sample,
+  .messages-after.slot-sample,
+  .messages.slot-sample {
+    @include rounded-corners-inherited-bottom;
+  }
+
+  .footer.slot-sample {
+    @include rounded-corners-bottom;
+  }
+}
+
+// =============================================================================
+// Panel demonstration styles
+// =============================================================================
+.panel-sample {
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-end-start,
+    0
+  );
+  border-start-end-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-start,
+    0
+  );
+  border-start-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-end,
+    0
+  );
+}
+
+.panel-controls,
+.slot-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+
+.slot-controls {
+  flex-direction: column;
+}
+
+.control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-section h4 {
+  margin: 0;
+  color: #161616;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.control-description {
+  margin: 0.25rem 0 0;
+  color: #525252;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.slot-controls label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  gap: 0.25rem;
+}
+
+.dimension-controls {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.dimension-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label-text {
+  display: flex;
+  flex-direction: column;
+  color: #525252;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 0.125rem;
+}
+
+.css-var {
+  color: #0f62fe;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.dimension-controls select {
+  padding: 0.5rem;
+  border: 1px solid #8d8d8d;
+  border-radius: 0;
+  background-color: #f4f4f4;
+  color: #161616;
+  cursor: pointer;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #e8e8e8;
+  }
+
+  &:focus {
+    border-color: #0f62fe;
+    outline: 2px solid #0f62fe;
+    outline-offset: -2px;
+  }
+}
+
+// Made with Bob
+
+// =============================================================================
+// Sidebar Workspace Shell Story Styles
+// =============================================================================
+.sidebar-workspace-shell {
+  inline-size: 320px;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: inline-size 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
+  }
+
+  &.expanded {
+    inline-size: 100%;
+  }
+}
+
+.workspace-content {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  block-size: 100%;
+  gap: 1rem;
+  inline-size: 100%;
+}
+
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-block-end: 1px solid rgba(255, 255, 255, 0.2);
+  padding-block-end: 0.5rem;
+}
+
+.workspace-body {
+  overflow: auto;
+  flex: 1;
+}
+
+.workspace-toggle-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #0f62fe;
+  border-radius: 4px;
+  background-color: #0f62fe;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #0353e9;
+  }
+}
+
+.messages-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  gap: 1rem;
+}
+
+// =============================================================================
+// Responsive Navigation Story Styles
+// =============================================================================
+.responsive-nav-menu {
+  margin-inline-start: 8px;
+}
