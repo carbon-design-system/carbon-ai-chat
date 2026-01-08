@@ -571,9 +571,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                 data-testid={PageObjectId.INPUT_SEND}
               >
                 {hasValidInput ? (
-                  <SendFilled slot="icon" />
+                  <SendFilled
+                    slot="icon"
+                    aria-label={input_buttonLabel}
+                    role="img"
+                  />
                 ) : (
-                  <Send slot="icon" />
+                  <Send slot="icon" aria-label={input_buttonLabel} role="img" />
                 )}
               </Button>
             )}

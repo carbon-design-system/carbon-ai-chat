@@ -27,12 +27,6 @@ on:
         description: "Create PR?"
         type: boolean
         default: true
-      update-versions-file:
-        # set to true to update versions.js file
-        required: true
-        description: "Update versions.js file?"
-        type: boolean
-        default: true
 
 jobs:
   create-pull-request:
@@ -97,21 +91,6 @@ jobs:
         with:
           event-type: check-peer-dependencies
           client-payload: '{"branch": "${{ github.ref_name }}", "previous-tag": "${{ github.event.inputs.previous-tag }}", "tag": "${{ github.event.inputs.tag }}"}'
-
-  # This job dispatches workflow to update the versions.js file with the latest stable version
-  # and pushes the updated versions.js file up to COS.
-  # This versions.js file is used to populate the version dropdown in our demo and documentation websites.
-  update-versions-file:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      # Triggers only if it is a full release
-      - name: Update versions.js file and upload to COS
-        if: contains(github.event.inputs.tag, '-rc.') == false && github.event.inputs.update-versions-file == 'true'
-        uses: peter-evans/repository-dispatch@v4
-        with:
-          event-type: update-versions-file
-          client-payload: '{"branch": "${{ github.ref_name }}", "tag": "${{ github.event.inputs.tag }}"}'
 
   # This job creates the release with the git tag pushed from job above with the corresponding
   # release notes from the previous version to current
