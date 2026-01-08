@@ -22,45 +22,111 @@ type AnimationState = "closed" | "closing" | "opening" | "open";
 class CdsAiChatPanel extends LitElement {
   static styles = styles;
 
+  /**
+   * @internal
+   */
   private static readonly OBSERVED_SLOTS = [
     { name: "header", stateKey: "hasHeaderContent" as const },
     { name: "body", stateKey: "hasBodyContent" as const },
     { name: "footer", stateKey: "hasFooterContent" as const },
   ];
 
+  /**
+   * Controls whether the panel is open or closed
+   */
   @property({ type: Boolean, reflect: true })
   open = false;
 
+  /**
+   * Sets the stacking priority of the panel (higher values appear on top)
+   */
   @property({ type: Number, reflect: true })
   priority = 0;
 
+  /**
+   * Makes the panel take up the full width of its container
+   */
   @property({ type: Boolean, attribute: "full-width", reflect: true })
   fullWidth = false;
 
+  /**
+   * Shows the chat header in the panel
+   */
   @property({ type: Boolean, attribute: "show-chat-header", reflect: true })
   showChatHeader = false;
 
+  /**
+   * Shows a frame border around the panel
+   */
   @property({ type: Boolean, attribute: "show-frame", reflect: true })
   showFrame = false;
 
+  /**
+   * Specifies the animation to use when opening the panel
+   */
   @property({ type: String, attribute: "animation-on-open", reflect: true })
   animationOnOpen?: string;
 
+  /**
+   * Specifies the animation to use when closing the panel
+   */
   @property({ type: String, attribute: "animation-on-close", reflect: true })
   animationOnClose?: string;
 
+  /**
+   * Makes the panel inert (non-interactive)
+   */
   @property({ type: Boolean, reflect: true })
   inert = false;
 
+  /**
+   * @internal
+   */
   private pendingAnimation: "opening" | "closing" | null = null;
+
+  /**
+   * @internal
+   */
   private animationStarted = false;
+
+  /**
+   * @internal
+   */
   private animationFallbackId: number | null = null;
+
+  /**
+   * @internal
+   */
   private animationState: AnimationState = "closed";
+
+  /**
+   * @internal
+   */
   private currentOpeningClass?: string;
+
+  /**
+   * @internal
+   */
   private currentClosingClass?: string;
+
+  /**
+   * @internal
+   */
   private resizeObserver?: ResizeObserver;
+
+  /**
+   * @internal
+   */
   private hasHeaderContent = false;
+
+  /**
+   * @internal
+   */
   private hasBodyContent = false;
+
+  /**
+   * @internal
+   */
   private hasFooterContent = false;
 
   connectedCallback(): void {
@@ -175,6 +241,9 @@ class CdsAiChatPanel extends LitElement {
     this.scheduleAnimationFallback();
   }
 
+  /**
+   * @internal
+   */
   private handleAnimationStart = (event: AnimationEvent) => {
     if (event.target !== this) {
       return;
@@ -182,6 +251,9 @@ class CdsAiChatPanel extends LitElement {
     this.animationStarted = true;
   };
 
+  /**
+   * @internal
+   */
   private handleAnimationEnd = (event: AnimationEvent) => {
     if (event.target !== this) {
       return;

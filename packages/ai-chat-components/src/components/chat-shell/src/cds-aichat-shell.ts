@@ -22,6 +22,9 @@ type StartOrEnd = "start" | "end";
 class CdsAiChatShell extends LitElement {
   static styles = styles;
 
+  /**
+   * @internal
+   */
   private static readonly OBSERVED_SLOTS = [
     { name: "header", stateKey: "hasHeaderContent" as const },
     { name: "header-after", stateKey: "hasHeaderAfterContent" as const },
@@ -33,43 +36,131 @@ class CdsAiChatShell extends LitElement {
     { name: "messages-after", stateKey: "hasMessagesAfterContent" as const },
   ];
 
+  /**
+   * Enables AI-specific theming for the chat shell
+   */
   @property({ type: Boolean, attribute: "ai-enabled", reflect: true })
   aiEnabled = false;
 
+  /**
+   * Shows a frame border around the chat shell
+   */
   @property({ type: Boolean, attribute: "show-frame", reflect: true })
   showFrame = false;
 
+  /**
+   * Applies rounded corners to the chat shell
+   */
   @property({ type: Boolean, attribute: "rounded-corners", reflect: true })
   roundedCorners = false;
 
+  /**
+   * Shows the history panel in the chat shell
+   */
   @property({ type: Boolean, attribute: "show-history", reflect: true })
   showHistory = false;
 
+  /**
+   * Shows the workspace panel in the chat shell
+   */
   @property({ type: Boolean, attribute: "show-workspace", reflect: true })
   showWorkspace = false;
 
+  /**
+   * Determines the location of the workspace panel ("start" or "end")
+   */
   @property({ type: String, attribute: "workspace-location", reflect: true })
   workspaceLocation: StartOrEnd = "start";
 
+  /**
+   * Determines the location of the history panel ("start" or "end")
+   */
   @property({ type: String, attribute: "history-location", reflect: true })
   historyLocation: StartOrEnd = "start";
 
+  /**
+   * @internal
+   */
   private panelManager?: PanelManager;
+
+  /**
+   * @internal
+   */
   private workspaceManager?: WorkspaceManager;
+
+  /**
+   * @internal
+   */
   private headerResizeObserver?: ResizeObserver;
+
+  /**
+   * @internal
+   */
   private inputAndMessagesResizeObserver?: ResizeObserver;
+
+  /**
+   * @internal
+   */
   private mainContentBodyResizeObserver?: ResizeObserver;
+
+  /**
+   * @internal
+   */
   private cssPropertyObserver?: MutationObserver;
+
+  /**
+   * @internal
+   */
   private lastKnownMessagesMaxWidth?: number;
+
+  /**
+   * @internal
+   */
   private hasHeaderContent = false;
+
+  /**
+   * @internal
+   */
   private hasHeaderAfterContent = false;
+
+  /**
+   * @internal
+   */
   private hasMessagesBeforeContent = false;
+
+  /**
+   * @internal
+   */
   private hasFooterContent = false;
+
+  /**
+   * @internal
+   */
   private hasInputAfterContent = false;
+
+  /**
+   * @internal
+   */
   private hasInputContent = false;
+
+  /**
+   * @internal
+   */
   private hasInputBeforeContent = false;
+
+  /**
+   * @internal
+   */
   private hasMessagesAfterContent = false;
+
+  /**
+   * @internal
+   */
   private inputAndMessagesAtMaxWidth = false;
+
+  /**
+   * @internal
+   */
   private shouldRenderHistory = true;
 
   private getWidgetClasses(): string {

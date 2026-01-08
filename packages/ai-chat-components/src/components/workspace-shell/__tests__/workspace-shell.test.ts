@@ -10,7 +10,6 @@
 import { html, fixture, expect } from "@open-wc/testing";
 import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
 import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Launch16 from "@carbon/icons/es/launch/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import Close16 from "@carbon/icons/es/close/16.js";
@@ -28,19 +27,22 @@ import CDSAIChatWorkspaceShellFooter from "@carbon/ai-chat-components/es/compone
 const actions = [
   {
     text: "Launch",
-    icon: iconLoader(Launch16, { slot: "icon" }),
+    icon: Launch16,
     size: "md",
+    onClick: () => {},
   },
   {
     text: "Maximize",
-    icon: iconLoader(Maximize16, { slot: "icon" }),
+    icon: Maximize16,
     size: "md",
+    onClick: () => {},
   },
   {
     text: "Close",
     fixed: true,
-    icon: iconLoader(Close16, { slot: "icon" }),
+    icon: Close16,
     size: "md",
+    onClick: () => {},
   },
 ];
 

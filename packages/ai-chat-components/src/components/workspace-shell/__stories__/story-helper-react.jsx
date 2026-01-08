@@ -7,7 +7,7 @@
  *  @license
  */
 import React from "react";
-import Tag from "../../../react/tag";
+import { Tag } from "@carbon/react";
 
 export function getHeaderDescription(type) {
   switch (type) {

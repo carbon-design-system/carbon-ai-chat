@@ -17,6 +17,12 @@ const CdsAiChatPanel = withWebComponentBridge(
     tagName: "cds-aichat-panel",
     elementClass: CdsAiChatPanelElement,
     react: React,
+    events: {
+      onOpenStart: "openstart",
+      onOpenEnd: "openend",
+      onCloseStart: "closestart",
+      onCloseEnd: "closeend",
+    },
   }),
 );
 

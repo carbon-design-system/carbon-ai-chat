@@ -11,10 +11,6 @@ import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
-import Button, {
-  BUTTON_KIND,
-  BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/button.js";
 import cx from "classnames";
 import React from "react";
 import { useSelector } from "../../../hooks/useSelector";
@@ -23,6 +19,10 @@ import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { AppState } from "../../../../types/state/AppState";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { ClickableImage } from "../util/ClickableImage";
+import Button, {
+  BUTTON_KIND,
+  BUTTON_SIZE,
+} from "../../../components/carbon/Button";
 
 interface BaseButtonComponentProps extends HasClassName {
   /**
