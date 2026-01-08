@@ -32,5 +32,8 @@ exports[`ChatContainer should match snapshot 1`] = `
   <div
     slot="customPanelElement"
   />
+  <div
+    slot="workspacePanelElement"
+  />
 </cds-aichat-react>
 `;
