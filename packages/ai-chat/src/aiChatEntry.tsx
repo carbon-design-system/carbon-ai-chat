@@ -26,6 +26,7 @@ export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 export {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
   CustomPanelInstance,
   PanelType,
   CustomPanels,

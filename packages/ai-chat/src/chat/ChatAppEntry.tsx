@@ -293,6 +293,7 @@ export function ChatAppEntry({
         ),
       );
     };
+
     document.addEventListener("visibilitychange", visibilityListener);
 
     return () => {

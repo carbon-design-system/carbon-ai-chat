@@ -17,6 +17,6 @@ $css--plex: true !default;
 :host(#{$prefix}-workspace-shell-body) {
   display: block;
   overflow: auto;
+  flex: 1;
   padding: rem(24px) rem(32px);
-  block-size: rem(504px);
 }

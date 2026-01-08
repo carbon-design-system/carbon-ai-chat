@@ -8,8 +8,11 @@
  */
 
 import { CustomPanels, PanelType } from "../../types/instance/apiTypes";
-import { DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
-import { DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE } from "../store/reducerUtils";
+import {
+  DEFAULT_CUSTOM_PANEL_ID,
+  WORKSPACE_CUSTOM_PANEL_ID,
+} from "../utils/constants";
+import { PANEL_CONFIG_OPTIONS_BY_TYPE } from "../store/reducerUtils";
 import {
   createCustomPanelInstance,
   CustomPanelInstance,
@@ -26,13 +29,20 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
   // populate this object.
   const panels: Record<string, CustomPanelInstance> = {
     [DEFAULT_CUSTOM_PANEL_ID]: createCustomPanelInstance(
+      PanelType.DEFAULT,
       serviceManger,
-      DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.DEFAULT],
+      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.DEFAULT],
+    ),
+    [WORKSPACE_CUSTOM_PANEL_ID]: createCustomPanelInstance(
+      PanelType.WORKSPACE,
+      serviceManger,
+      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.WORKSPACE],
     ),
   };
 
   const panelByLocation: Record<PanelType, string> = {
     [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_ID,
+    [PanelType.WORKSPACE]: WORKSPACE_CUSTOM_PANEL_ID,
   };
 
   return Object.freeze({

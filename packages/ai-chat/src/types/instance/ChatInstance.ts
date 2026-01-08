@@ -7,7 +7,12 @@
  *  @license
  */
 
-import { CustomPanels, ViewState, ViewType } from "./apiTypes";
+import {
+  CustomPanels,
+  ViewState,
+  ViewType,
+  WorkspaceCustomPanelConfigOptions,
+} from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import type { PersistedState } from "../state/AppState";
@@ -31,6 +36,20 @@ export interface ChatInstance extends EventHandlers, ChatActions {
    * Manager for accessing and controlling custom panels.
    */
   customPanels?: CustomPanels;
+
+  /**
+   * Enables/Disables Workspace Panel animations.
+   *
+   * @experimental
+   */
+  updateWorkspaceAnimationBehaviour: (isDisabled: boolean) => void;
+
+  /**
+   * Manages the position of the workspace panel.
+   *
+   * @experimental
+   */
+  updateWorkspacePosition: (preferredLocation: "start" | "end") => void;
 
   /**
    * Internal testing property that exposes the serviceManager.
@@ -62,6 +81,19 @@ export interface PublicDefaultCustomPanelState {
   /** Indicates if the default custom panel overlay is currently open. */
   isOpen: boolean;
 }
+/**
+ * Represents public state for workspace custom panel.
+ *
+ * @category Instance
+ */
+export interface PublicWorkspaceCustomPanelState {
+  /** Indicates if the workspace custom panel overlay is currently open. */
+  isOpen: boolean;
+  /**
+   * Config options for the workspace panels.
+   */
+  options: WorkspaceCustomPanelConfigOptions;
+}
 
 /**
  * Represents public state for each supported custom panel variant.
@@ -71,6 +103,12 @@ export interface PublicDefaultCustomPanelState {
 export interface PublicCustomPanelsState {
   /** State for the default overlay-style custom panel. */
   default: PublicDefaultCustomPanelState;
+  /**
+   * State for the workspace custom panel.
+   *
+   * @experimental
+   */
+  workspace: PublicWorkspaceCustomPanelState;
 }
 
 /**
@@ -429,6 +467,11 @@ export enum WriteableElementName {
    * An element to be housed in the custom panel.
    */
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
+
+  /**
+   * An element to be housed in the custom panel.
+   */
+  WORKSPACE_PANEL_ELEMENT = "workspacePanelElement",
 }
 
 /**

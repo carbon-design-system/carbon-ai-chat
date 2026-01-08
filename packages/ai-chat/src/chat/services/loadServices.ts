@@ -104,6 +104,8 @@ function createServiceManager(appConfig: AppConfig) {
         document.createElement("div"),
       [WriteableElementName.CUSTOM_PANEL_ELEMENT]:
         document.createElement("div"),
+      [WriteableElementName.WORKSPACE_PANEL_ELEMENT]:
+        document.createElement("div"),
     };
   }
 

@@ -122,11 +122,11 @@
   },
   "peerDependencies": {
     "@carbon/web-components": ">=2.42.0 <3.0.0",
+    "@carbon/ai-chat-components": "^0.6.0",
     "react": ">=17.0.0 <20.0.0",
     "react-dom": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
-    "@carbon/ai-chat-components": "^0.6.0",
     "@carbon/icons": "^11.53.0",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",

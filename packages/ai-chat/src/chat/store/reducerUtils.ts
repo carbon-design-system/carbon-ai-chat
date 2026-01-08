@@ -16,6 +16,7 @@ import {
   AppStateMessages,
   ChatMessagesState,
   CustomPanelState,
+  WorkspacePanelState,
   HumanAgentState,
   IFramePanelState,
   InputState,
@@ -27,13 +28,19 @@ import {
 } from "../../types/state/AppState";
 import {
   DefaultCustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
   PanelType,
+  PanelConfigOptionsByType,
 } from "../../types/instance/apiTypes";
 import {
   LauncherConfig,
   TIME_TO_ENTRANCE_ANIMATION_START,
 } from "../../types/config/LauncherConfig";
-import { CornersType, DEFAULT_CUSTOM_PANEL_ID } from "../utils/constants";
+import {
+  CornersType,
+  DEFAULT_CUSTOM_PANEL_ID,
+  WORKSPACE_CUSTOM_PANEL_ID,
+} from "../utils/constants";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import {
   HeaderConfig,
@@ -76,13 +83,18 @@ const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 
-const DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE: Record<
-  PanelType,
-  DefaultCustomPanelConfigOptions
-> = {
+const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
+  {
+    disableAnimation: false,
+    preferredLocation: "end",
+  };
+deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
+
+const PANEL_CONFIG_OPTIONS_BY_TYPE: PanelConfigOptionsByType = {
   [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  [PanelType.WORKSPACE]: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
 };
-deepFreeze(DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE);
+deepFreeze(PANEL_CONFIG_OPTIONS_BY_TYPE);
 
 const DEFAULT_CUSTOM_PANEL_STATE: CustomPanelState = {
   isOpen: false,
@@ -90,6 +102,13 @@ const DEFAULT_CUSTOM_PANEL_STATE: CustomPanelState = {
   options: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_STATE);
+
+const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
+  isOpen: false,
+  panelID: WORKSPACE_CUSTOM_PANEL_ID,
+  options: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
+};
+deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
 
 const DEFAULT_IFRAME_PANEL_STATE: IFramePanelState = {
   isOpen: false,
@@ -385,8 +404,10 @@ export {
   DEFAULT_IFRAME_PANEL_STATE,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
+  DEFAULT_WORKSPACE_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  DEFAULT_PANEL_CONFIG_OPTIONS_BY_TYPE,
+  WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
+  PANEL_CONFIG_OPTIONS_BY_TYPE,
   DEFAULT_LAUNCHER,
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,

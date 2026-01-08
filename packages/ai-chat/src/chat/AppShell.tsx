@@ -137,6 +137,7 @@ export default function AppShell({
     isHydrated,
     assistantMessageState,
     humanAgentState,
+    workspacePanelState,
     allMessageItemsByID,
     allMessagesByID,
     catastrophicErrorType,
@@ -899,6 +900,7 @@ export default function AppShell({
                                   )
                                 }
                                 humanAgentState={humanAgentState}
+                                workspacePanelState={workspacePanelState}
                                 agentDisplayState={agentDisplayState}
                                 allMessageItemsByID={allMessageItemsByID}
                                 onRestart={onRestart}

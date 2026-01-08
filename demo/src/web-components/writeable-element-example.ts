@@ -30,8 +30,9 @@ class WriteableElementExample extends LitElement {
     return html`<div class="external">
       Location: ${this.location}. This is a writeable element with external
       styles. You can inject any custom content here. You are not constrained by
-      any height. This is a property set by the parent application:
-      ${this.valueFromParent}.
+      any height.
+      <br />
+      Here is a property set by the parent application: ${this.valueFromParent}.
     </div> `;
   }
 }

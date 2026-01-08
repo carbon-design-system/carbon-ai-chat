@@ -8,20 +8,18 @@
  *  @license
  */
 
+import React from "react";
 import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import Button, {
-  BUTTON_KIND,
-} from "@carbon/ai-chat-components/es/react/button.js";
-import AILabel from "@carbon/ai-chat-components/es/react/ai-label";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import View16 from "@carbon/icons/es/view/16.js";
-import cx from "classnames";
-import React, { useState } from "react";
 
 // import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { BusEventType } from "../../../../types/events/eventBusTypes";
+import { PanelType } from "../../../../types/instance/apiTypes";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { AppState } from "../../../../types/state/AppState";
+import { useSelector } from "../../../hooks/useSelector";
 import {
   PreviewCardItem,
   MessageResponse,
@@ -38,10 +36,16 @@ interface PreviewCardComponentProps {
 function PreviewCardComponent(props: PreviewCardComponentProps) {
   const item = props.localMessageItem.item as PreviewCardItem;
   const serviceManager = useServiceManager();
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
-  const [isExpired, setIsExpired] = useState(false);
+  const isWorkspaceOpen = useSelector(
+    (state: AppState) => state.workspacePanelState.isOpen,
+  );
+  const panel = serviceManager.instance.customPanels.getPanel(
+    PanelType.WORKSPACE,
+  );
 
   const handleClick = () => {
+    const state = serviceManager.instance.getState();
+    const options = state.customPanels.workspace.options;
     if (!isWorkspaceOpen) {
       serviceManager.eventBus.fire(
         {
@@ -54,7 +58,10 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         },
         serviceManager.instance,
       );
-      setIsWorkspaceOpen(true);
+      panel.open({
+        preferredLocation: options.preferredLocation,
+        disableAnimation: options.disableAnimation,
+      });
       serviceManager.eventBus.fire(
         {
           type: BusEventType.WORKSPACE_OPEN,
@@ -84,7 +91,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
             icon: isWorkspaceOpen ? View16 : Maximize16,
             id: "docs",
             kind: "ghost",
-            label: "View details",
+            label: isWorkspaceOpen ? "Viewing" : "View details",
             payload: {
               test: "value",
             },
