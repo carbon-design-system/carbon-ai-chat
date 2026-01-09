@@ -16,7 +16,7 @@ import { actionLists, FooterActionList } from "./story-data";
 import "./story-styles.scss";
 
 export default {
-  title: "Components/Workspace Shell",
+  title: "Components/Workspace shell",
   component: WorkspaceShell,
   argTypes: {
     toolbarTitle: {

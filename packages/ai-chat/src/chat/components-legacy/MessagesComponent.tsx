@@ -592,37 +592,39 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const lastScrollableMessageElement =
       lastScrollableMessageComponent?.ref?.current;
 
-    // Get all measurements in one place
-    const metrics = this.calculateScrollMetrics(
-      lastScrollableMessageElement,
-      scrollElement,
-      spacerElem,
-    );
+    if (lastScrollableMessageElement) {
+      // Get all measurements in one place
+      const metrics = this.calculateScrollMetrics(
+        lastScrollableMessageElement,
+        scrollElement,
+        spacerElem,
+      );
 
-    // Calculate final scroll position
-    const scrollTop = this.calculateFinalScrollTop(
-      metrics.targetRect,
-      metrics.scrollerRect,
-      scrollElement,
-      metrics.scrollerHeight,
-    );
+      // Calculate final scroll position
+      const scrollTop = this.calculateFinalScrollTop(
+        metrics.targetRect,
+        metrics.scrollerRect,
+        scrollElement,
+        metrics.scrollerHeight,
+      );
 
-    // Update spacer element to ensure proper positioning
-    this.updateSpacerElement(
-      spacerElem,
-      scrollElement,
-      metrics.scrollerRect,
-      scrollTop,
-    );
+      // Update spacer element to ensure proper positioning
+      this.updateSpacerElement(
+        spacerElem,
+        scrollElement,
+        metrics.scrollerRect,
+        scrollTop,
+      );
 
-    debugAutoScroll(
-      `[doAutoScroll] Scrolling to message offsetTop=${scrollTop}`,
-    );
+      debugAutoScroll(
+        `[doAutoScroll] Scrolling to message offsetTop=${scrollTop}`,
+      );
 
-    // Perform scroll and update tracking
-    doScrollElement(scrollElement, scrollTop, 0, animate);
-    this.checkScrollAnchor(true, scrollTop);
-    this.previousScrollableMessage = lastScrollableMessageComponent;
+      // Perform scroll and update tracking
+      doScrollElement(scrollElement, scrollTop, 0, animate);
+      this.checkScrollAnchor(true, scrollTop);
+      this.previousScrollableMessage = lastScrollableMessageComponent;
+    }
   }
 
   /**
