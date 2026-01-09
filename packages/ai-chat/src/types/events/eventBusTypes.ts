@@ -664,6 +664,7 @@ export interface BusEventCustomPanelClose extends BusEvent {
 
 /**
  * @category Events
+ * @experimental
  */
 export interface BusEventWorkspacePreOpen extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_OPEN;
@@ -682,6 +683,7 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
 
 /**
  * @category Events
+ * @experimental
  */
 export interface BusEventWorkspaceOpen extends BusEvent {
   type: BusEventType.WORKSPACE_OPEN;
@@ -700,6 +702,7 @@ export interface BusEventWorkspaceOpen extends BusEvent {
 
 /**
  * @category Events
+ * @experimental
  */
 export interface BusEventWorkspacePreClose extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_CLOSE;
@@ -718,6 +721,7 @@ export interface BusEventWorkspacePreClose extends BusEvent {
 
 /**
  * @category Events
+ * @experimental
  */
 export interface BusEventWorkspaceClose extends BusEvent {
   type: BusEventType.WORKSPACE_CLOSE;
