@@ -242,12 +242,13 @@ function getScrollBottom(element: HTMLElement) {
 }
 
 /**
- * Continuously checks an element's height on each animation frame and resolves
- * once the height remains unchanged for a specified number of consecutive frames (default 2 frames).
+ * Continuously checks an element's scrollHeight on each animation frame and resolves
+ * once the scrollHeight remains unchanged for a specified number of consecutive frames (default 2 frames).
  *
- * This is useful for waiting until layout changes (e.g., animations, dropdowns expanding/collapsing)
+ * This is useful for waiting until layout changes (e.g., animations, content loading, dropdowns expanding/collapsing)
  * have fully settled before performing measurements or scroll adjustments.
-
+ *
+ * Uses scrollHeight instead of clientHeight/getBoundingClientRect to detect content changes inside scrollable containers.
  */
 function waitForStableHeight(
   el: HTMLElement,
@@ -256,7 +257,7 @@ function waitForStableHeight(
   const requiredStableFrames = opts.frames ?? 2;
   const timeoutMs = opts.timeoutMs ?? 500;
   let stableFrames = 0;
-  let lastHeight = Math.round(el.getBoundingClientRect().height);
+  let lastHeight = el.scrollHeight;
   let rafId: number | null = null;
 
   return new Promise((resolve) => {
@@ -264,7 +265,7 @@ function waitForStableHeight(
 
     const tick = () => {
       const now = performance.now();
-      const h = Math.round(el.getBoundingClientRect().height);
+      const h = el.scrollHeight;
 
       if (h === lastHeight) {
         stableFrames += 1;

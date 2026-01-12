@@ -571,11 +571,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     scrollElement: HTMLElement,
     animate: boolean,
   ): Promise<void> {
-    console.log(
-      "lastScrollableMessageComponent",
-      lastScrollableMessageComponent,
-    );
-
     /**
      * Make sure the message container scroll height is stable before we grab values for
      * scroll position calculations. It can sometimes take a couple animation frames
@@ -611,7 +606,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       // Update spacer element to ensure proper positioning
       // For streaming responses, this gets triggered again once streaming is done to ensure
       // extra bottom spacing is cleaned up
-      this.updateSpacerElement(
+      await this.updateSpacerElement(
         spacerElem,
         scrollElement,
         metrics.scrollerRect,
@@ -693,19 +688,25 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   /**
    * Updates the spacer element's min-block-size to ensure proper message positioning.
-   * This separates the DOM manipulation from the calculation logic.
+   * Waits for layout to stabilize before calculating the deficit.
    *
    * @param spacerElem - The spacer element at the bottom of the messages list
    * @param scrollElement - The scrollable container element
    * @param scrollerRect - The bounding rectangle of the scroll container
    * @param scrollTop - The calculated scroll top position
    */
-  private updateSpacerElement(
+  private async updateSpacerElement(
     spacerElem: HTMLElement,
     scrollElement: HTMLElement,
     scrollerRect: DOMRect,
     scrollTop: number,
-  ): void {
+  ): Promise<void> {
+    // Wait for the scroll container to stabilize after any layout changes
+    await waitForStableHeight(scrollElement, {
+      frames: 7,
+      timeoutMs: 500,
+    });
+
     const deficit = this.calculateSpacerDeficit(
       spacerElem,
       scrollElement,
