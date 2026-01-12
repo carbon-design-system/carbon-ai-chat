@@ -571,10 +571,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     scrollElement: HTMLElement,
     animate: boolean,
   ): Promise<void> {
-    // Early return optimization - skip expensive calculations if message hasn't changed
-    if (this.previousScrollableMessage === lastScrollableMessageComponent) {
-      return;
-    }
+    console.log(
+      "lastScrollableMessageComponent",
+      lastScrollableMessageComponent,
+    );
 
     /**
      * Make sure the message container scroll height is stable before we grab values for
@@ -609,12 +609,19 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       );
 
       // Update spacer element to ensure proper positioning
+      // For streaming responses, this gets triggered again once streaming is done to ensure
+      // extra bottom spacing is cleaned up
       this.updateSpacerElement(
         spacerElem,
         scrollElement,
         metrics.scrollerRect,
         scrollTop,
       );
+
+      // the last request message is the same, no need to set the scroll position
+      if (this.previousScrollableMessage === lastScrollableMessageComponent) {
+        return;
+      }
 
       debugAutoScroll(
         `[doAutoScroll] Scrolling to message offsetTop=${scrollTop}`,
