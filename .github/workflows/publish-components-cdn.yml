@@ -80,7 +80,7 @@ jobs:
 
 
       # If tag is a release candidate, upload the ai-chat-components React Storybook to `next` tag folder
-      # ie. chat.carbondesignsystem.com/components/storybook/tag/next/index.html
+      # ie. chat.carbondesignsystem.com/components/storybook/react/tag/next/index.html
       - name: Upload ai-chat-components React Storybook to COS under the `next` folder
         if: ${{ env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -128,7 +128,7 @@ jobs:
           DEST_DIR: "components/storybook/tag/latest"
 
       # If tag is a full candidate, upload the ai-chat-components React Storybook to `latest` tag folder
-      # ie. chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
+      # ie. chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
       - name: Upload ai-chat-components React Storybook to COS under the `next` folder
         if: ${{ !env.PRE_RELEASE }}
         uses: jakejarvis/s3-sync-action@master
@@ -175,7 +175,7 @@ jobs:
           DEST_DIR: "components/storybook/version/v${{steps.package-version.outputs.current-version}}"
 
       # Upload the ai-chat-components React Storybook to versioned folder
-      # ie. chat.carbondesignsystem.com/components/storybook/version/v1.x.0/index.html
+      # ie. chat.carbondesignsystem.com/components/storybook/react/version/v1.x.0/index.html
       - name: Upload ai-chat-components React Storybook to COS under the `next` folder
         uses: jakejarvis/s3-sync-action@master
         with:
