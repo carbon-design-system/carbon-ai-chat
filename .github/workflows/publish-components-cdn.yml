@@ -36,6 +36,7 @@ jobs:
         run: |
           cd packages/ai-chat-components
           npm run storybook:build
+          npm run storybook:react:build
       - name: Check release type
         if: contains(github.event.client_payload.tag, '-rc.') || contains(github.event.inputs.tag, '-rc.')
         run: echo "PRE_RELEASE=true" >> $GITHUB_ENV
@@ -77,6 +78,23 @@ jobs:
           SOURCE_DIR: "packages/ai-chat-components/storybook-static"
           DEST_DIR: "components/storybook/tag/next"
 
+
+      # If tag is a release candidate, upload the ai-chat-components React Storybook to `next` tag folder
+      # ie. chat.carbondesignsystem.com/components/storybook/react/tag/next/index.html
+      - name: Upload ai-chat-components React Storybook to COS under the `next` folder
+        if: ${{ env.PRE_RELEASE }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
+          DEST_DIR: "components/storybook/react/tag/next"
+
       # If tag is a full release, upload the CDN artifacts to the `latest` tag folder
       # ie. chat.carbondesignsystem.com/components/tag/latest/breadcrumb.min.js
       - name: Upload components to COS under the `latest` folder
@@ -109,6 +127,23 @@ jobs:
           SOURCE_DIR: "packages/ai-chat-components/storybook-static"
           DEST_DIR: "components/storybook/tag/latest"
 
+      # If tag is a full candidate, upload the ai-chat-components React Storybook to `latest` tag folder
+      # ie. chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
+      - name: Upload ai-chat-components React Storybook to COS under the `next` folder
+        if: ${{ !env.PRE_RELEASE }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
+          DEST_DIR: "components/storybook/react/tag/latest"
+
+
       # Upload the CDN artifacts to versioned folder
       # ie. chat.carbondesignsystem.com/components/version/v1.x.0/breadcrumb.min.js
       - name: Upload components to COS under the versioned folder
@@ -138,3 +173,19 @@ jobs:
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
           SOURCE_DIR: "packages/ai-chat-components/storybook-static"
           DEST_DIR: "components/storybook/version/v${{steps.package-version.outputs.current-version}}"
+
+      # Upload the ai-chat-components React Storybook to versioned folder
+      # ie. chat.carbondesignsystem.com/components/storybook/react/version/v1.x.0/index.html
+      - name: Upload ai-chat-components React Storybook to COS under the `next` folder
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
+          DEST_DIR: "components/storybook/react/version/v${{steps.package-version.outputs.current-version}}"
+
