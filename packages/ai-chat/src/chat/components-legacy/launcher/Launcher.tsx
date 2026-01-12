@@ -122,7 +122,7 @@ function Launcher(props: LauncherProps) {
 
   const launcherAvatar = launcherAvatarUrl ? (
     // eslint-disable-next-line jsx-a11y/alt-text
-    <img 
+    <img
       className="cds-aichat--launcher__avatar"
       src={launcherAvatarUrl}
       aria-hidden
