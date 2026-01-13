@@ -45,7 +45,7 @@
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.97.0",
-    "@carbon/web-components": "^2.42.0",
+    "@carbon/web-components": "^2.46.0",
     "@codemirror/lang-angular": "^0.1.4",
     "@codemirror/lang-cpp": "^6.0.3",
     "@codemirror/lang-css": "^6.3.1",
