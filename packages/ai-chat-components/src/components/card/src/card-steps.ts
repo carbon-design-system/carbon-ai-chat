@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { repeat } from "lit/directives/repeat.js";
 import "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
@@ -17,6 +17,7 @@ import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-i
 import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./card-steps.scss?lit";
+import { carbonElement } from "../../../globals/decorators/index.js";
 
 export type Step = {
   title: string;
@@ -27,7 +28,7 @@ export type Step = {
 /**
  * Step component
  */
-@customElement(`${prefix}-card-steps`)
+@carbonElement("cds-aichat-card-steps")
 class CardSteps extends LitElement {
   static styles = styles;
 

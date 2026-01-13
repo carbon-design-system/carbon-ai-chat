@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { PropertyValues } from "lit";
 import { CHAT_BUTTON_SIZE } from "../defs";
 import {
@@ -17,6 +17,7 @@ import {
   BUTTON_TYPE as CHAT_BUTTON_TOOLTIP_POSITION,
 } from "@carbon/web-components/es/components/button/button.js";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
 // @ts-ignore
 import styles from "./chat-button.scss?lit";
 
@@ -38,7 +39,7 @@ type ChatButtonSize =
  *
  * @element cds-aichat-button
  */
-@customElement("cds-aichat-button")
+@carbonElement("cds-aichat-button")
 class CDSAIChatButton extends CDSButton {
   static styles = styles;
 

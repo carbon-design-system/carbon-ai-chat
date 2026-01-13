@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement } from "lit/decorators.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
 
@@ -23,7 +23,7 @@ import styles from "./workspace-shell.scss?lit";
  * @slot footer - Represents the footer section, usually containing action buttons.
  *
  */
-@customElement("cds-aichat-workspace-shell")
+@carbonElement("cds-aichat-workspace-shell")
 class CDSAIChatWorkspaceShell extends LitElement {
   static styles = styles;
 

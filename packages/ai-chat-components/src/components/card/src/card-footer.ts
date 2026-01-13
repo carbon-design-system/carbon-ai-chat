@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html, nothing, PropertyValues } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { repeat } from "lit/directives/repeat.js";
@@ -23,6 +23,7 @@ import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./card-footer.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
 
 export type Action = {
   label: string;
@@ -40,7 +41,7 @@ export type Action = {
  * Footer action bar that renders Carbon buttons and emits an `action` event.
  * Consumers listen for events instead of passing callbacks.
  */
-@customElement(`${prefix}-card-footer`)
+@carbonElement("cds-aichat-card-footer")
 class CardFooter extends LitElement {
   static styles = styles;
 

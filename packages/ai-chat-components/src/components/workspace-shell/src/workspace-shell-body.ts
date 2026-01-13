@@ -8,9 +8,10 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
+import { carbonElement } from "../../../globals/decorators/index.js";
 
 /**
  * Workspace Shell Body.
@@ -18,7 +19,7 @@ import styles from "./workspace-shell.scss?lit";
  * @element cds-aichat-workspace-shell-body
  *
  */
-@customElement("cds-aichat-workspace-shell-body")
+@carbonElement("cds-aichat-workspace-shell-body")
 class CDSAIChatWorkspaceShellBody extends LitElement {
   static styles = styles;
 

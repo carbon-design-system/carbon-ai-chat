@@ -7,17 +7,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { customElement, property } from "lit/decorators.js";
-import prefix from "../../../globals/settings.js";
+import { property } from "lit/decorators.js";
 import CDSTile from "@carbon/web-components/es/components/tile/tile.js";
 // @ts-ignore
 import styles from "./card.scss?lit";
 import { html } from "lit";
+import { carbonElement } from "../../../globals/decorators/index.js";
 
 /**
  * Component extending the @carbon/web-components' button
  */
-@customElement(`${prefix}-card`)
+@carbonElement("cds-aichat-card")
 class Card extends CDSTile {
   static styles = styles;
 

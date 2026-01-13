@@ -8,12 +8,12 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import "@carbon/web-components/es/components/button/button.js";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/button.js";
-
+import { carbonElement } from "../../../globals/decorators/index.js";
 // @ts-ignore
 import styles from "./workspace-shell-footer.scss?lit";
 import prefix from "../../../globals/settings.js";
@@ -32,7 +32,7 @@ export type Action = {
  * @element cds-aichat-workspace-shell-footer
  * @fires cds-aichat-workspace-shell-footer-clicked - The custom event fired when footer buttons are clicked.
  */
-@customElement("cds-aichat-workspace-shell-footer")
+@carbonElement("cds-aichat-workspace-shell-footer")
 class CDSAIChatWorkspaceShellFooter extends LitElement {
   static styles = styles;
 
