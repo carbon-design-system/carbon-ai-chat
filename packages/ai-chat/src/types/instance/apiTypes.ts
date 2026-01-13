@@ -52,7 +52,24 @@ export enum PanelType {
    * Opens the panel so that it overlays the main chat content.
    */
   DEFAULT = "default",
+
+  /**
+   * Opens the panel in the Workspace layout.
+   *
+   * On large screens, the panel is placed at the `preferredLocation` (`start` or `end`)
+   * and pushes the chat content.
+   *
+   * On small screens, the panel behaves like `DEFAULT`.
+   *
+   * @experimental
+   */
+  WORKSPACE = "workspace",
 }
+
+export type PanelConfigOptionsByType = {
+  [PanelType.DEFAULT]: DefaultCustomPanelConfigOptions;
+  [PanelType.WORKSPACE]: WorkspaceCustomPanelConfigOptions;
+};
 
 /**
  * This manager handles fetching an instance for manipulating the custom panel.
@@ -236,6 +253,23 @@ export interface DefaultCustomPanelConfigOptions {
    */
   hideBackButton?: boolean;
 }
+/**
+ * Options supported by the workspace custom panel implementation.
+ *
+ * @experimental
+ * @category Instance
+ */
+export interface WorkspaceCustomPanelConfigOptions {
+  /**
+   * Determines if the panel open/close animation should be turned off. By default, the panel will animate up from the
+   * bottom of the chat window.
+   */
+  disableAnimation?: boolean;
+  /**
+   * Where the chat will attempt to render the workspace in logical terms. For a ltr layout "start" will render on the left and "end" will render on the right. If there is not enough room to render the workspace, it will be rendered as a panel overlaying the content with a back button.
+   */
+  preferredLocation?: "start" | "end";
+}
 
 /**
  * Options accepted by {@link CustomPanelInstance.open}. Legacy consumers may continue to pass
@@ -245,4 +279,5 @@ export interface DefaultCustomPanelConfigOptions {
  */
 export type CustomPanelOpenOptions =
   | CustomPanelConfigOptions
-  | DefaultCustomPanelConfigOptions;
+  | DefaultCustomPanelConfigOptions
+  | WorkspaceCustomPanelConfigOptions;

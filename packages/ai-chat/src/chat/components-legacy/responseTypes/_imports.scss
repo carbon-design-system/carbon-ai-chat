@@ -8,6 +8,7 @@
 @use "maxWidth" as responseType-maxWidth;
 @use "humanAgent/imports" as responseType-agent;
 @use "card/imports" as responseType-card;
+@use "previewCard/imports" as responseType-previewCard;
 @use "carousel/imports" as responseType-carousel;
 @use "conversationalSearch/imports" as responseType-conversationalSearch;
 @use "datePicker/imports" as responseType-datePicker;

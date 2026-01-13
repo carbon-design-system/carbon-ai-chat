@@ -7,7 +7,6 @@
  *  @license
  */
 
-import "./styles.css";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
@@ -19,7 +18,7 @@ import {
   type PublicConfig,
   type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
+import { html, LitElement, css } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { customSendMessage } from "./customSendMessage";
@@ -42,20 +41,45 @@ const config: PublicConfig = {
 
 @customElement("my-app")
 export class Demo extends LitElement {
+  static styles = css`
+    .external {
+      background: green;
+      color: #fff;
+      padding: 1rem;
+    }
+  `;
+
   @state()
   accessor instance!: ChatInstance;
 
   @state()
   accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
 
+  @state()
+  accessor activeResponseId: string | null = null;
+
   onBeforeRender = (instance: ChatInstance) => {
     // Set the instance in state.
     this.instance = instance;
+    const initialState = instance.getState();
+    this.activeResponseId = initialState.activeResponseId ?? null;
 
     // Register user defined response handler.
     instance.on({
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
+    });
+
+    instance.on({
+      type: BusEventType.STATE_CHANGE,
+      handler: (event: any) => {
+        if (
+          event.previousState?.activeResponseId !==
+          event.newState?.activeResponseId
+        ) {
+          this.activeResponseId = event.newState.activeResponseId ?? null;
+        }
+      },
     });
 
     // Register feedback handler.
@@ -105,16 +129,33 @@ export class Demo extends LitElement {
    * which element we should be rendering.
    */
   renderUserDefinedResponse(slot: keyof UserDefinedSlotsMap) {
-    const { message } = this.userDefinedSlotsMap[slot];
+    const slotData = this.userDefinedSlotsMap[slot];
+    if (!slotData) {
+      return null;
+    }
+
+    const { message, fullMessage } = slotData;
 
     const userDefinedMessage = message;
+    const isLatest =
+      Boolean(this.activeResponseId) &&
+      fullMessage?.id === this.activeResponseId;
 
     // Check the "type" we have used as our key.
     switch (userDefinedMessage.user_defined?.user_defined_type) {
       case "my_unique_identifier":
         // And here is an example using your own component.
-        return html`<div slot=${slot} style="color: green;">
-          ${userDefinedMessage.user_defined.text as string}
+        return html`<div slot=${slot}>
+          <div class="external">
+            ${userDefinedMessage.user_defined.text as string}
+            <div>
+              Latest response id:
+              ${this.activeResponseId ? this.activeResponseId : "none yet"}
+            </div>
+            <div>
+              Is this the most recent message? ${isLatest ? "Yes" : "Nope"}
+            </div>
+          </div>
         </div>`;
       default:
         return null;

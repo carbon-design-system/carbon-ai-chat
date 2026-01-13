@@ -255,9 +255,6 @@ function createChatInstance({
           message,
           options?.isLatestWelcomeNode ?? false,
           null,
-          {
-            disableFadeAnimation: options?.disableFadeAnimation,
-          },
         );
       },
 
@@ -320,6 +317,20 @@ function createChatInstance({
     destroySession: async (keepOpenState: boolean) => {
       debugLog("Called instance.destroySession", keepOpenState);
       return serviceManager.actions.destroySession(keepOpenState);
+    },
+
+    updateWorkspaceAnimationBehaviour: (isDisabled: boolean) => {
+      serviceManager.store.dispatch(
+        actions.setWorkspaceCustomPanelConfigOptions({
+          disableAnimation: isDisabled,
+        }),
+      );
+    },
+
+    updateWorkspacePosition: (preferredLocation: "start" | "end") => {
+      serviceManager.store.dispatch(
+        actions.setWorkspaceCustomPanelConfigOptions({ preferredLocation }),
+      );
     },
   };
 

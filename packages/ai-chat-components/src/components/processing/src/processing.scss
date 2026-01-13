@@ -26,16 +26,6 @@ $css--plex: true !default;
   transform: translateY(0);
 }
 
-[data-carbon-theme="white"] .dot,
-[data-carbon-theme="g10"] .dot {
-  stroke: $interactive;
-}
-
-[data-carbon-theme="g90"] .dot,
-[data-carbon-theme="g100"] .dot {
-  stroke: $text-secondary;
-}
-
 .linear {
   @media screen and (prefers-reduced-motion: reduce) {
     .dot--left {

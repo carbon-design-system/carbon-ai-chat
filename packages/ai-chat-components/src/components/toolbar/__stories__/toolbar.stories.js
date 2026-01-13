@@ -25,6 +25,7 @@ import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Toolbar",
+  component: "cds-aichat-toolbar",
   argTypes: {
     title: {
       control: "select",

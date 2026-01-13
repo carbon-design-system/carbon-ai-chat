@@ -25,6 +25,7 @@ const RESPONSE_TYPE_TIMEOUT_MS = 20000;
 
 // These are custom panel ids.
 const DEFAULT_CUSTOM_PANEL_ID = "wac-default-panel";
+const WORKSPACE_CUSTOM_PANEL_ID = "workspace-panel";
 
 /**
  * This function serves as a placeholder in places where a functional value is required, but not expected to be
@@ -39,9 +40,6 @@ function THROW_ERROR() {
 // padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
 const AUTO_SCROLL_EXTRA = 28 - 8;
 
-// Height of one line message including the message avatar line label
-const ONE_LINE_MESSAGE_HEIGHT = 88;
-
 // How much to throttle auto scrolling. When we are in test mode, we set this to zero.
 const AUTO_SCROLL_THROTTLE_TIMEOUT = 100;
 
@@ -52,10 +50,10 @@ export {
   ENGLISH_US_DATE_FORMAT,
   RESPONSE_TYPE_TIMEOUT_MS,
   DEFAULT_CUSTOM_PANEL_ID,
+  WORKSPACE_CUSTOM_PANEL_ID,
   WriteableElementName,
   FileStatusValue,
   THROW_ERROR,
   CornersType,
   AUTO_SCROLL_EXTRA,
-  ONE_LINE_MESSAGE_HEIGHT,
 };

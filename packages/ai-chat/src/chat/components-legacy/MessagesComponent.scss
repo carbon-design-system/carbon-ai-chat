@@ -96,21 +96,18 @@
   padding-inline-start: layout.$spacing-01;
 }
 
-.cds-aichat__scroll-to-bottom-button {
+.cds-aichat__scroll-to-bottom {
   position: sticky;
   z-index: 1;
-  display: grid;
-  justify-content: center;
+  inline-size: layout.$spacing-07;
   inset-block-end: layout.$spacing-05;
+  inset-inline-start: 50%;
   margin-block-start: calc(-1 * layout.$spacing-07);
-  transition: all motion.$duration-fast-02 motion.motion(standard, productive);
+  transform: translateX(-50%);
+}
 
+.cds-aichat__scroll-to-bottom-button {
   &--hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+    display: none;
   }
 }

@@ -17,13 +17,13 @@ import ThumbsUpFilled16 from "@carbon/icons/es/thumbs-up--filled/16.js";
 import { html, nothing } from "lit";
 
 import prefix from "../../../globals/settings.js";
-import { FeedbackButtonsElement } from "./feedback-buttons.js";
+import { CDSAIChatFeedbackButtons } from "./feedback-buttons.js";
 
 const DEFAULT_POSITIVE_LABEL = "Good response";
 const DEFAULT_NEGATIVE_LABEL = "Bad response";
 
 function feedbackButtonsElementTemplate(
-  customElementClass: FeedbackButtonsElement,
+  customElementClass: CDSAIChatFeedbackButtons,
 ) {
   const {
     isPositiveOpen,

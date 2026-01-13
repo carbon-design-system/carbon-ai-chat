@@ -77,11 +77,11 @@ cds-tile {
   }
 }
 
-// Usage inside rounded widget panel
+// Usage inside rounded widget panel, we remove one more pixel as the overlay panel brings its own border of 1px.
 .cds-aichat--widget--rounded
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components {
-  @include footer-button-radius(chat-theme.$border-radius);
+  @include footer-button-radius(calc(chat-theme.$border-radius - rem(1px)));
 }
 // Corner rounding styles end
 .cds-aichat--widget__animation-container--with-branding-banner

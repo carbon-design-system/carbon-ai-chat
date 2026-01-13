@@ -2,38 +2,28 @@ import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as ToolbarStories from "./toolbar.stories";
 
-<Meta of={ToolbarStories} />
+<Meta of={ToolbarStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Toolbar
+# Toolbar
 
-The `cds-aichat-toolbar` builds on the Carbon Design System's icon buttons, coupled with overflowHandler from @carbon/utilities to create a responsive toolbar for AI Chat applications.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/toolbar) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Overflow**: A property/attribute to opt in to collapse actions that don't fit in the toolbar into an overflow menu.
-- **Slots**: Supports slots for navigation, title, fixed actions, and AI label.
-- **Rounded corners**: Makes use of rounded modifier scss utility. and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
 
-## Getting started
+## Overview
+
+`cds-aichat-toolbar` provides a flexible header bar for AI chat surfaces, aligning titles, labels, icon buttons, and overflow actions while handling truncation and responsive wrapping for you.
+
+### Getting started
 
 Here's a quick example to get you started.
-
-### JS (via import)
-
-```javascript
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-```
-
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
-```
-
-<Markdown>{`${cdnJs(["toolbar"])}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
-
-### HTML
 
 ```html
 <cds-aichat-toolbar overflow .actions="${actions}">
@@ -50,29 +40,32 @@ import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
       <span slot="tooltip-content">Home</span>
     </cds-icon-button>
   </div>
-
-  <!-- Title slot -->
-  <div slot="title" data-fixed="">Title <span class="bold">text</span></div>
-
-  <!-- Fixed actions slot -->
-  <div slot="fixed-actions" data-fixed="">
-    <cds-button size="md">test</cds-button>
-  </div>
-
-  <!-- AI Label slot -->
-  <cds-ai-label
-    size="2xs"
-    autoalign=""
-    alignment="bottom"
-    slot="decorator"
-  >
-    <div slot="body-text">
-      <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
-      <div>
-        IBM watsonx is powered by the latest AI models to intelligently process
-        conversations and provide help whenever and wherever you may need it.
-      </div>
-    </div>
-  </cds-ai-label>
-</cds-aichat-toolbar>
 ```
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/toolbar/index.js";
+```
+
+<Markdown>{`${cdnJs(["toolbar"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+
+## Component API
+
+<ArgTypes of="cds-aichat-toolbar" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/toolbar/index.js";
+```
+
+
+<Markdown>{`${cdnJs({ components: ["toolbar"] })}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

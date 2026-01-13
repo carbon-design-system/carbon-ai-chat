@@ -1,85 +1,162 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as ChainOfThoughtReactStories from "./chain-of-thought-react.stories";
+import * as ChainOfThoughtReactStories from "./chain-of-thought-react.stories.jsx";
 
-<Meta of={ChainOfThoughtReactStories} />
+<Meta of={ChainOfThoughtReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Chain of Thought (React)
+# Chain of thought
 
-The `<ChainOfThought>` component wraps the `cds-aichat-chain-of-thought` web component and exposes a React API for displaying the reasoning steps, tool calls, and intermediate outputs used to generate an AI response.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chain-of-thought) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Step-by-Step Display**: Shows each reasoning step with status indicators (processing, success, failure)
-- **Tool Call Visualization**: Displays tool names, arguments, and responses with automatic JSON formatting
-- **Collapsible Interface**: Each step can be expanded/collapsed individually for detailed inspection
-- **Status Icons**: Visual indicators for step status (succeeded, failed, processing)
-- **Markdown Support**: Step descriptions and tool responses support markdown formatting
-- **Customizable Labels**: All text strings can be customized for internationalization
+## Table of Contents
 
-## Getting started
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+The `<ChainOfThought>` component wraps the `cds-aichat-chain-of-thought` web component and exposes a React API for displaying tool calls and intermediate outputs that an AI agent used to arrive at its final answer. Pair it with `<ChainOfThoughtToggle>`, `<ChainOfThoughtStep>`, and `<ToolCallData>` for a fully slotted flow. Prefer `<ReasoningSteps>` for most non-debugging use cases.
+
+### Getting started
 
 Here's a quick example to get you started.
 
 ```jsx
+import React from "react";
 import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
+import ChainOfThoughtStep from "@carbon/ai-chat-components/es/react/chain-of-thought-step.js";
+import ChainOfThoughtToggle from "@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js";
+import ToolCallData from "@carbon/ai-chat-components/es/react/tool-call-data.js";
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 
-function ChainOfThoughtExample({ steps }) {
+const steps = [
+  {
+    title: "Search documentation",
+    description: "Find authentication guidance in the product docs",
+    tool_name: "documentation_search",
+    request: {
+      args: `\`\`\`
+{
+  "query": "API authentication methods"
+}
+\`\`\``,
+    },
+    response: {
+      content: `\`\`\`
+{
+  "results": [
+    {
+      "title": "OAuth 2.0 Authentication",
+      "snippet": "Use OAuth 2.0 for user-facing authentication flows."
+    }
+  ]
+}
+\`\`\``,
+    },
+    status: "success",
+  },
+  {
+    title: "Fetch account settings",
+    tool_name: "database_query",
+    request: {
+      args: `\`\`\`
+{
+  "table": "user_settings",
+  "user_id": "12345"
+}
+\`\`\``,
+    },
+    response: {
+      content: `\`\`\`
+{
+  "auth_method": "oauth",
+  "scopes": ["read", "write"]
+}
+\`\`\``,
+    },
+    status: "success",
+  },
+  {
+    title: "Draft response",
+    tool_name: "response_generator",
+    request: {
+      args: `\`\`\`
+{
+  "format": "markdown"
+}
+\`\`\``,
+    },
+    response: {
+      content: `\`\`\`
+{
+  "summary": "You're using OAuth 2.0 with read and write scopes.",
+  "token_expiry_hours": 1
+}
+\`\`\``,
+    },
+    status: "processing",
+  },
+];
+
+function ChainOfThoughtExample() {
+  const [open, setOpen] = React.useState(false);
+  const panelId = React.useId();
+
   return (
-    <ChainOfThought
-      explainabilityText="Show chain of thought"
-      inputLabelText="Input"
-      outputLabelText="Output"
-      toolLabelText="Tool"
-      statusSucceededLabelText="Succeeded"
-      statusFailedLabelText="Failed"
-      statusProcessingLabelText="Processing"
-      steps={steps}
-    />
+    <>
+      <ChainOfThoughtToggle
+        panelId={panelId}
+        open={open}
+        openLabelText="Hide chain of thought"
+        closedLabelText="Show chain of thought"
+        onToggle={(event) => setOpen(event.detail.open)}
+      />
+      <ChainOfThought id={panelId} panelId={panelId} open={open}>
+        {steps.map((step, index) => {
+          const requestMarkdown = step.request?.args;
+          const responseMarkdown = step.response?.content;
+
+          return (
+            <ChainOfThoughtStep
+              key={step.title || index}
+              title={step.title}
+              status={step.status}
+              stepNumber={index + 1}
+            >
+              <ToolCallData toolName={step.tool_name}>
+                {step.description ? (
+                  <Markdown slot="description">{step.description}</Markdown>
+                ) : null}
+                {requestMarkdown ? (
+                  <Markdown slot="input">{requestMarkdown}</Markdown>
+                ) : null}
+                {responseMarkdown ? (
+                  <Markdown slot="output">{responseMarkdown}</Markdown>
+                ) : null}
+              </ToolCallData>
+            </ChainOfThoughtStep>
+          );
+        })}
+      </ChainOfThought>
+    </>
   );
 }
 ```
 
-### Stories
-
-#### Basic usage
-
-<Canvas of={ChainOfThoughtReactStories.Default} />
-
-#### With steps open
-
-<Canvas of={ChainOfThoughtReactStories.WithStepsOpen} />
-
-#### With different statuses
-
-<Canvas of={ChainOfThoughtReactStories.WithDifferentStatuses} />
-
-#### With complex tool responses
-
-<Canvas of={ChainOfThoughtReactStories.WithComplexResponses} />
-
-## `<ChainOfThought>` props and events
+## Component API
 
 <ArgTypes of={ChainOfThoughtReactStories.Default} />
 
-## Step Structure
+### Child components
 
-Each step in the `steps` array can include:
+- `<ChainOfThoughtStep>`: Collapsible step row; emits `onBeforeToggle` and `onToggle` events.
+- `<ToolCallData>`: Renders tool description, name, and request/response payloads with markdown helpers via slots.
+- `<ChainOfThoughtToggle>`: Standalone control for opening or closing a chain-of-thought wrapper via `panelId`.
 
-- **title**: Plain text name of the step
-- **description**: Optional markdown-formatted description of what the tool does
-- **tool_name**: Name of the tool that was called
-- **request.args**: Arguments sent to the tool (automatically formatted as JSON if applicable)
-- **response.content**: Content returned by the tool (supports JSON and markdown)
-- **status**: One of `"processing"`, `"success"`, or `"failure"`
+## Feedback
 
-## Custom Labels
-
-All text strings used in the component can be customized through properties:
-
-- `explainabilityText`: Button text to open the panel
-- `inputLabelText`: Label for step inputs
-- `outputLabelText`: Label for step outputs
-- `toolLabelText`: Label for tool name
-- `statusSucceededLabelText`: Label for success icon
-- `statusFailedLabelText`: Label for failure icon
-- `statusProcessingLabelText`: Label for processing icon
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

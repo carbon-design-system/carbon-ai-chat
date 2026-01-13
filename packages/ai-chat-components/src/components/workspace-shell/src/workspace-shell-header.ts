@@ -22,7 +22,7 @@ import prefix from "../../../globals/settings.js";
  * @slot header-action - Represents the action area in the workspace.
  *
  */
-@customElement(`${prefix}-workspace-shell-header`)
+@customElement("cds-aichat-workspace-shell-header")
 class CDSAIChatWorkspaceShellHeader extends LitElement {
   static styles = styles;
 
@@ -67,4 +67,5 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   }
 }
 
+export { CDSAIChatWorkspaceShellHeader };
 export default CDSAIChatWorkspaceShellHeader;

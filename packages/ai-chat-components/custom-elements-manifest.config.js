@@ -20,4 +20,51 @@ export default {
   outdir: ".",
   litelement: true,
   packagejson: false,
+  plugins: [
+    {
+      name: "carbon-element-tag",
+      analyzePhase({ ts, node, moduleDoc }) {
+        if (!ts.isClassDeclaration(node) || !node.name) {
+          return;
+        }
+
+        const decorators =
+          (typeof ts.getDecorators === "function"
+            ? ts.getDecorators(node)
+            : node.decorators) ?? [];
+
+        const decorator = decorators.find((decorator) => {
+          if (!ts.isCallExpression(decorator.expression)) {
+            return false;
+          }
+
+          const expression = decorator.expression.expression;
+          const decoratorName = ts.isIdentifier(expression)
+            ? expression.text
+            : ts.isPropertyAccessExpression(expression)
+              ? expression.name.text
+              : undefined;
+
+          return (
+            decoratorName === "carbonElement" &&
+            decorator.expression.arguments.length > 0 &&
+            ts.isStringLiteral(decorator.expression.arguments[0])
+          );
+        });
+
+        if (!decorator || !ts.isCallExpression(decorator.expression)) {
+          return;
+        }
+
+        const tagName = decorator.expression.arguments[0].text;
+        moduleDoc.declarations ??= [];
+        const declaration = moduleDoc.declarations.find(
+          (decl) => decl?.name === node.name?.text,
+        );
+        if (declaration) {
+          declaration.tagName = tagName;
+        }
+      },
+    },
+  ],
 };

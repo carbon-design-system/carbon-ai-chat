@@ -136,10 +136,10 @@ export class DemoHomeScreenSwitcher extends LitElement {
     if (!hasHomescreen) {
       return "none";
     }
-    if (this.config.homescreen.customContentOnly) {
+    if (this.config.homescreen?.customContentOnly) {
       return "custom";
     }
-    if (this.config.homescreen.disableReturn) {
+    if (this.config.homescreen?.disableReturn) {
       return "splash";
     }
     return "default";

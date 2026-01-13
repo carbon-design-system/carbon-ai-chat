@@ -121,6 +121,19 @@ describe("ChatInstance.changeView", () => {
     );
   });
 
+  it("triggers hydration when mainWindow is opened and chat is not hydrated", async () => {
+    const config = createBaseConfig();
+    const { instance, serviceManager } =
+      await renderChatAndGetInstanceWithStore(config);
+    const hydrateSpy = jest
+      .spyOn(serviceManager.actions, "hydrateChat")
+      .mockResolvedValue(undefined);
+
+    await instance.changeView(ViewType.MAIN_WINDOW);
+
+    expect(hydrateSpy).toHaveBeenCalled();
+  });
+
   describe("comprehensive ViewType tests", () => {
     it("should handle switching between all ViewType values", async () => {
       const config = createBaseConfig();

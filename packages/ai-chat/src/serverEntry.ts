@@ -28,6 +28,7 @@ export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
 export {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
   CustomPanelInstance,
   PanelType,
   CustomPanels,
@@ -74,6 +75,10 @@ export {
   BusEventCustomPanelOpen,
   BusEventCustomPanelPreClose,
   BusEventCustomPanelPreOpen,
+  BusEventWorkspaceClose,
+  BusEventWorkspaceOpen,
+  BusEventWorkspacePreClose,
+  BusEventWorkspacePreOpen,
   BusEventFeedback,
   BusEventHistoryBegin,
   BusEventHistoryEnd,

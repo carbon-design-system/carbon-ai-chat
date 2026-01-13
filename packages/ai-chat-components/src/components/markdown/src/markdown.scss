@@ -20,7 +20,7 @@
   @include type.type-style("body-01");
 
   mark {
-    border-radius: 4px;
+    border-radius: layout.$spacing-02;
     background-color: theme.$highlight;
     color: theme.$text-primary;
   }

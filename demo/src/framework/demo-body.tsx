@@ -26,6 +26,7 @@ import { ConfigManager } from "./config-manager";
 import { ReactAppManager } from "./react-app-manager";
 import "./demo-chat-theme-switcher";
 import "./demo-header-switcher";
+import "./demo-chat-feedback-switcher";
 import "./demo-layout-config-switcher";
 import "./demo-launcher-switcher";
 import "./demo-input-config-switcher";
@@ -524,6 +525,12 @@ export class DemoBody extends LitElement {
                   <demo-chat-theme-switcher
                     .config=${this.config}
                   ></demo-chat-theme-switcher>
+                  <div class="config-section">
+                    <div class="config-section__title">Feedback</div>
+                    <demo-chat-feedback-switcher
+                      .config=${this.config}
+                    ></demo-chat-feedback-switcher>
+                  </div>
                   <div class="config-section">
                     <div class="config-section__title">
                       Homescreen & disclaimer

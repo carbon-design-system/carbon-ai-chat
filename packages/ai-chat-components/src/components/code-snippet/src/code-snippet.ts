@@ -14,7 +14,6 @@ import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
 import { observeResize } from "./dom-utils.js";
 import type {
   LanguageController,
@@ -28,7 +27,7 @@ import {
 import { StreamingManager } from "./streaming-manager.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
 import type { EditorView } from "codemirror";
-import type { Compartment } from "@codemirror/state";
+import { Compartment } from "@codemirror/state";
 import { loadCodeMirrorRuntime } from "./codemirror/codemirror-loader.js";
 import "@carbon/web-components/es/components/skeleton-text/index.js";
 
@@ -44,58 +43,77 @@ import "@carbon/web-components/es/components/button/button.js";
  * automatically detects and loads language highlighting, and optionally exposes an editable surface
  * with live language re-detection and change notifications.
  */
-@carbonElement(`${prefix}-code-snippet`)
+@carbonElement("cds-aichat-code-snippet")
 class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   static styles = [styles];
 
   // CodeMirror properties
-  @property({ type: String }) language = "";
-  @property({ type: Boolean }) editable = false;
-  @property({ type: Boolean }) highlight = false;
+  /** Language used for syntax highlighting. */
+  @property({ type: String, attribute: "language" }) language = "";
+  /** Whether the snippet should be editable. */
+  @property({ type: Boolean, attribute: "editable" }) editable = false;
+  /** Whether to enable syntax highlighting. */
+  @property({ type: Boolean, attribute: "highlight" }) highlight = false;
+  /** Fallback language to use when detection fails. */
   @property({ type: String, attribute: "default-language" })
   defaultLanguage = "javascript";
+  /** Text to copy when clicking the copy button. Defaults to slotted content. */
   @property({ attribute: "copy-text" })
   copyText = "";
 
-  @property({ type: Boolean, reflect: true })
+  /** Disable interactions on the snippet. */
+  @property({ type: Boolean, reflect: true, attribute: "disabled" })
   disabled = false;
 
-  @property()
+  /** Feedback text shown after copy. */
+  @property({ attribute: "feedback" })
   feedback = "Copied!";
 
+  /** Duration (ms) to show feedback text. */
   @property({ type: Number, attribute: "feedback-timeout" })
   feedbackTimeout = 2000;
 
+  /** Hide the copy button. */
   @property({ type: Boolean, reflect: true, attribute: "hide-copy-button" })
   hideCopyButton = false;
 
-  @property()
+  /** Maximum rows to show when collapsed. */
+  @property({ attribute: "max-collapsed-number-of-rows" })
   maxCollapsedNumberOfRows = 15;
 
+  /** Maximum rows to show when expanded (0 = unlimited). */
   @property({ attribute: "max-expanded-number-of-rows" })
   maxExpandedNumberOfRows = 0;
 
+  /** Minimum rows to show when collapsed. */
   @property({ attribute: "min-collapsed-number-of-rows" })
   minCollapsedNumberOfRows = 3;
 
+  /** Minimum rows to show when expanded. */
   @property({ attribute: "min-expanded-number-of-rows" })
   minExpandedNumberOfRows = 16;
 
+  /** Label for the “show less” control. */
   @property({ attribute: "show-less-text" })
   showLessText = "Show less";
 
+  /** Label for the “show more” control. */
   @property({ attribute: "show-more-text" })
   showMoreText = "Show more";
 
+  /** Tooltip label for the copy action. */
   @property({ attribute: "tooltip-content" })
   tooltipContent = "Copy to clipboard";
 
+  /** Wrap text instead of horizontal scrolling. */
   @property({ type: Boolean, reflect: true, attribute: "wrap-text" })
   wrapText = false;
 
+  /** Label for folding/collapsing code. */
   @property({ attribute: "fold-collapse-label" })
   foldCollapseLabel = "Collapse code block";
 
+  /** Label for unfolding/expanding code. */
   @property({ attribute: "fold-expand-label" })
   foldExpandLabel = "Expand code block";
 
@@ -107,44 +125,122 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @property({ attribute: false })
   getLineCountText: LineCountFormatter = defaultLineCountText;
 
-  // Internal state for slotted content
+  /**
+   * @internal
+   */
   @property({ attribute: false })
   private _slottedContent = "";
 
+  /**
+   * @internal
+   */
   @state()
   private _detectedLanguage: string | null = null;
 
+  /**
+   * @internal
+   */
   @state()
   private _languageLabelLockedIn = false;
 
+  /**
+   * @internal
+   */
   @state()
   private _lineCount: number | null = null;
 
+  /**
+   * @internal
+   */
   @state()
   private editorView?: EditorView;
 
+  /**
+   * @internal
+   */
   @state()
   private _isEditorLoading = true;
 
-  // Private non-functional fields
+  /**
+   * @internal
+   */
   @state()
   private _expandedCode = false;
+
+  /**
+   * @internal
+   */
   @state()
   private _shouldShowMoreLessBtn = false;
 
+  /**
+   * @internal
+   */
   private _hObserveResize: { release(): null } | null = null;
+
+  /**
+   * @internal
+   */
   private _rowHeightInPixels = 16;
+
+  /**
+   * @internal
+   */
   private _isCreatingEditor = false;
+
+  /**
+   * @internal
+   */
   private contentSlot = createRef<HTMLSlotElement>();
+
+  /**
+   * @internal
+   */
   private editorContainer = createRef<HTMLDivElement>();
+
+  /**
+   * @internal
+   */
   private languageCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private readOnlyCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private wrapCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private contentSync?: ContentSyncHandle;
+
+  /**
+   * @internal
+   */
   private languageController: LanguageController | null = null;
+
+  /**
+   * @internal
+   */
   private streamingManager: StreamingManager;
+
+  /**
+   * @internal
+   */
   private codemirrorRuntime: CodeMirrorRuntime | null = null;
+
+  /**
+   * @internal
+   */
   private codemirrorRuntimePromise: Promise<CodeMirrorRuntime> | null = null;
+
+  /**
+   * @internal
+   */
   private _resizeObserver = new ResizeObserver(() => {
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     requestAnimationFrame(() => {
@@ -225,7 +321,13 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
           getContent: () => this._slottedContent,
           isHighlightEnabled: () => this.highlight,
           getEditorView: () => this.editorView,
-          getLanguageCompartment: () => this.languageCompartment!,
+          getLanguageCompartment: () => {
+            if (!this.languageCompartment) {
+              this.languageCompartment = new Compartment();
+            }
+
+            return this.languageCompartment;
+          },
           isLanguageLabelLocked: () => this._languageLabelLockedIn,
           getDefaultLanguage: () => this.defaultLanguage,
           updateState: (update) => this._applyLanguageState(update),
@@ -445,7 +547,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     }
 
     return html`<div
-      class="${prefix}--snippet__editor-skeleton"
+      class="cds-aichat--snippet__editor-skeleton"
       aria-hidden="true"
     >
       <cds-skeleton-text lines="4"></cds-skeleton-text>
@@ -536,32 +638,32 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     } = this;
 
     const disabledCopyButtonClasses = disabled
-      ? `${prefix}--snippet--disabled`
+      ? `cds-aichat--snippet--disabled`
       : "";
     const expandCodeBtnText = expandedCode ? showLessText : showMoreText;
 
-    let containerClasses = `${prefix}--snippet-container ${prefix}--snippet--codemirror`;
+    let containerClasses = `cds-aichat--snippet-container cds-aichat--snippet--codemirror`;
     if (!expandedCode) {
-      containerClasses += ` ${prefix}--snippet-container--collapsed`;
+      containerClasses += ` cds-aichat--snippet-container--collapsed`;
     }
 
-    return html` <div class="${prefix}--snippet" data-rounded>
-      <div class="${prefix}--snippet__header" data-rounded="top">
-        <div class="${prefix}--snippet__meta">
+    return html` <div class="cds-aichat--snippet">
+      <div class="cds-aichat--snippet__header" data-rounded="top">
+        <div class="cds-aichat--snippet__meta">
           ${this._detectedLanguage && this._languageLabelLockedIn
-            ? html`<div class="${prefix}--snippet__language">
+            ? html`<div class="cds-aichat--snippet__language">
                 ${this._detectedLanguage}
               </div>`
             : ""}
           ${this._detectedLanguage &&
           this._languageLabelLockedIn &&
           this._lineCount
-            ? html`<div class="${prefix}--snippet__header-separator">
+            ? html`<div class="cds-aichat--snippet__header-separator">
                 &mdash;
               </div>`
             : ""}
           ${this._lineCount
-            ? html`<div class="${prefix}--snippet__linecount">
+            ? html`<div class="cds-aichat--snippet__linecount">
                 ${this.getLineCountText({ count: this._lineCount })}
               </div>`
             : ""}
@@ -569,7 +671,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         ${hideCopyButton
           ? ``
           : html`
-              <div class="${prefix}--snippet__copy" data-rounded="top-right">
+              <div class="cds-aichat--snippet__copy" data-rounded="top-right">
                 <!-- we need the button part exposed to the top level cds-copy-button  -->
                 <cds-copy-button
                   ?disabled=${disabled}
@@ -592,25 +694,28 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         ${this.editable ? 'aria-readonly="false" aria-multiline="true"' : ""}
         style="${this._getContainerStyles(expandedCode)}"
       >
-        <div class="${prefix}--code-editor" ${ref(this.editorContainer)}></div>
+        <div class="cds-aichat--code-editor" ${ref(this.editorContainer)}></div>
         ${this.renderEditorFallback()}
       </div>
 
       ${shouldShowMoreLessBtn
         ? html`
-            <div class="${prefix}--snippet__footer" data-rounded="bottom-right">
+            <div
+              class="cds-aichat--snippet__footer"
+              data-rounded="bottom-right"
+            >
               <cds-button
                 kind="ghost"
                 size="sm"
-                button-class-name="${prefix}--snippet-btn--expand"
+                button-class-name="cds-aichat--snippet-btn--expand"
                 ?disabled=${disabled}
                 @click=${() => this._handleClickExpanded()}
               >
-                <span class="${prefix}--snippet-btn--text">
+                <span class="cds-aichat--snippet-btn--text">
                   ${expandCodeBtnText}
                 </span>
                 ${iconLoader(ChevronDown16, {
-                  class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
+                  class: `cds-aichat--icon-chevron--down cds-aichat--snippet__icon`,
                   role: "img",
                   slot: "icon",
                 })}
@@ -618,7 +723,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
             </div>
           `
         : ``}
-      <div class="${prefix}--visually-hidden">
+      <div class="cds-aichat--visually-hidden">
         <slot
           ${ref(this.contentSlot)}
           @slotchange=${this._handleSlotChange}
@@ -627,10 +732,20 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     </div>`;
   }
 
+  /**
+   * @internal
+   */
   static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    "cds-aichat-code-snippet": CDSAIChatCodeSnippet;
+  }
+}
+
+export { CDSAIChatCodeSnippet };
 export default CDSAIChatCodeSnippet;

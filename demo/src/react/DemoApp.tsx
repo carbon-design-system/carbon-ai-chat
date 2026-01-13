@@ -16,6 +16,8 @@ import {
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
+  BusEventWorkspacePreOpen,
+  BusEventWorkspaceOpen,
   ChatContainer,
   ChatCustomElement,
   ChatInstance,
@@ -31,6 +33,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Settings } from "../framework/types";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
+import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -48,6 +51,7 @@ interface AppProps {
 function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
+  const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
   const isSidebarLayout = settings.layout === "sidebar";
 
@@ -146,8 +150,15 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      workspacePanelElement: (
+        <WorkspaceWriteableElementExample
+          location="workspacePanelElement"
+          instance={instance as ChatInstance}
+          parentStateText={stateText}
+        />
+      ),
     }),
-    [stateText],
+    [stateText, instance],
   );
 
   /**
@@ -162,21 +173,29 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     const showHomeScreenElements =
       !showAllWriteableElements && isCustomHomeScreen;
 
+    let elements;
+
     if (showAllWriteableElements) {
-      return allWriteableElements;
+      elements = allWriteableElements;
     } else if (showHomeScreenElements) {
-      return {
+      elements = {
         homeScreenHeaderBottomElement:
           allWriteableElements.homeScreenHeaderBottomElement,
         homeScreenAfterStartersElement:
           allWriteableElements.homeScreenAfterStartersElement,
       };
     } else {
-      return undefined;
+      elements = {};
     }
+
+    return {
+      ...elements,
+      workspacePanelElement: allWriteableElements.workspacePanelElement,
+    };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
 
   const onBeforeRender = (instance: ChatInstance) => {
+    setInstance(instance);
     // Notify parent component that instance is ready
     onChatInstanceReady?.(instance);
 
@@ -185,6 +204,17 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     instance.on({
       type: BusEventType.MESSAGE_ITEM_CUSTOM,
       handler: customButtonHandler,
+    });
+
+    // here we add a handler to the workspace pre open and open events
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: customWorkspacePreOpenHandler,
+    });
+
+    instance.on({
+      type: BusEventType.WORKSPACE_OPEN,
+      handler: customWorkspaceOpenHandler,
     });
 
     // Handle feedback event.
@@ -278,6 +308,25 @@ function customButtonHandler(event: BusEvent) {
     // eslint-disable-next-line no-alert
     window.alert(messageItem.user_defined?.text);
   }
+}
+
+/**
+ * Listens for workspace panel pre open event.
+ */
+function customWorkspacePreOpenHandler(event: BusEvent) {
+  const { data } = event as BusEventWorkspacePreOpen;
+  console.log(
+    data,
+    "This event can be used to load additional resources into the workspace while displaying a manual loading state. in your writeableElement",
+  );
+}
+
+/**
+ * Listens for workspace panel open event.
+ */
+function customWorkspaceOpenHandler(event: BusEvent) {
+  const { data } = event as BusEventWorkspaceOpen;
+  console.log(data, "open handler");
 }
 
 export { DemoApp };

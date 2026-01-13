@@ -13,9 +13,10 @@ import Icon from "../../../react/icon";
 import { action } from "storybook/actions";
 import { getHeaderDescription, getBodyContent } from "./story-helper-react";
 import { actionLists, FooterActionList } from "./story-data";
+import "./story-styles.scss";
 
 export default {
-  title: "Components/Workspace Shell",
+  title: "Components/Workspace shell",
   component: WorkspaceShell,
   argTypes: {
     toolbarTitle: {

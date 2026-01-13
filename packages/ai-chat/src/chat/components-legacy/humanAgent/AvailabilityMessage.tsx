@@ -11,7 +11,6 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { isNil } from "../../utils/lang/langUtils";
-import { addHTMLSupport } from "../../utils/languages";
 import RichText from "../responseTypes/util/RichText";
 import { AgentAvailability } from "../../../types/config/ServiceDeskConfig";
 import { LanguagePack } from "../../../types/config/PublicConfig";
@@ -54,6 +53,20 @@ function AvailabilityMessage({
       values={addHTMLSupport(availabilityValues)}
     />
   );
+}
+
+function addHTMLSupport(values: Record<string, any>) {
+  values.b = handleBTag;
+  values.br = handleBRTag;
+  return values;
+}
+
+function handleBTag(chunks: any) {
+  return <b>{chunks}</b>;
+}
+
+function handleBRTag() {
+  return <br />;
 }
 
 export { AvailabilityMessage };

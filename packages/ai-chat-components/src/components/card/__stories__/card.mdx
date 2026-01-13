@@ -11,12 +11,14 @@ import * as PreviewCardStories from "./preview-card.stories";
 
 ## Key Features
 
-- **Rounded corners**: Makes use of rounded modifier scss utility. and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
+- **Rounded corners**: Makes use of rounded modifier scss utility and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
 - **OOTB sub-components**: OOTB components `<cds-aichat-card-footer>` and `<cds-aichat-card-steps>` provide consistent styling and can be placed in the provided slots. You can also plug in your own components into these slots.
 
 ## Getting started
 
 Here's a quick example to get you started.
+
+<Canvas of={CardStories.Default} />
 
 ### JS (via import)
 
@@ -24,18 +26,9 @@ Here's a quick example to get you started.
 import "@carbon/ai-chat-components/es/components/card/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-```
-
 <Markdown>{`${cdnJs(["card"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
-
-<Canvas of={CardStories.Default} />
 
 ## Component API
 

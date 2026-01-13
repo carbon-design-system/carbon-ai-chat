@@ -17,7 +17,7 @@ import "@carbon/web-components/es/components/textarea/index.js";
 import { html } from "lit";
 
 import prefix from "../../../globals/settings.js";
-import { FeedbackElement } from "./feedback.js";
+import { CDSAIChatFeedback } from "./feedback.js";
 
 // The maximum number of characters the user is allowed to type into the text area.
 const MAX_TEXT_COUNT = 1000;
@@ -25,7 +25,7 @@ const MAX_TEXT_COUNT = 1000;
 /**
  * Lit template for feedback.
  */
-function feedbackElementTemplate(customElementClass: FeedbackElement) {
+function feedbackElementTemplate(customElementClass: CDSAIChatFeedback) {
   const {
     _handleCancel: handleCancel,
     _handleSubmit: handleSubmit,
@@ -105,7 +105,7 @@ function feedbackElementTemplate(customElementClass: FeedbackElement) {
       : ""}
     ${disclaimer
       ? html`<div class="${prefix}--disclaimer">
-          <cds-aichat-markdown markdown="${disclaimer}"></cds-aichat-markdown>
+          <cds-aichat-markdown>${disclaimer}</cds-aichat-markdown>
         </div>`
       : ""}
     <div class="${prefix}--buttons">

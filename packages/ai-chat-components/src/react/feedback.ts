@@ -10,7 +10,7 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatFeedbackElement from "../components/feedback/src/cds-aichat-feedback.js";
+import CDSAIChatFeedbackElement from "../components/feedback/src/feedback.js";
 import {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
@@ -20,7 +20,7 @@ import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 const Feedback = withWebComponentBridge(
   createComponent({
     tagName: "cds-aichat-feedback",
-    elementClass: CDSChatFeedbackElement,
+    elementClass: CDSAIChatFeedbackElement,
     react: React,
     events: {
       onClose: "feedback-close",

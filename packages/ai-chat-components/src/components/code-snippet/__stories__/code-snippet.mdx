@@ -1,90 +1,55 @@
-import { ArgTypes, Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks";
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
 import * as CodeSnippetStories from "./code-snippet.stories";
 
-<Meta of={CodeSnippetStories} />
+<Meta of={CodeSnippetStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Code Snippet
+# Code snippet
 
-The `cds-aichat-code-snippet` extends the Carbon Design System's [Code Snippet](https://web-components.carbondesignsystem.com/?path=/docs/components-code-snippet--overview) component with AI Chat-specific features including syntax highlighting, dark theme support, real-time streaming, and editable code blocks powered by CodeMirror.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/code-snippet) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Key Features
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
-- **Syntax Highlighting**: Powered by CodeMirror with support for 100+ languages
-- **Editable**: Enable in-place code editing with CodeMirror
-- **Streaming Support**: Real-time content updates for AI-generated code
-- **Auto-detect Language**: Automatically detect programming languages when not specified and highlighting is enabled
-- **Card**: Optional wrapper for consistent AI Chat card styling
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
 
-## Getting started
+## Overview
+
+Use `cds-aichat-code-snippet-card` to present generated code with syntax highlighting, copy affordances, and optional expand/collapse controls. The card container wraps a `cds-aichat-code-snippet` instance, you can show the code snippet without a card container by using `cds-aichat-code-snippet`, which has the same API.
+
+### Getting started
 
 Here's a quick example to get you started.
 
-### JS (via import)
+```html
+<cds-aichat-code-snippet-card highlight>
+  import { summarize } from "./summarizer";
+  export async function summarizeReply(prompt) {
+    const result = await summarize(prompt);
+    return result.text;
+  }
+</cds-aichat-code-snippet-card>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-code-snippet" />
+
+## JS (via import)
 
 ```javascript
 import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
 ```
 
-We provide a lit-react wrapper for this web component to consume in a react application and can be imported as below
-
-```javascript
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
-```
 
 <Markdown>{`${cdnJs(["code-snippet"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-### HTML
+## Feedback
 
-#### Basic usage
-
-<Canvas of={CodeSnippetStories.Default} />
-
-#### With highlight
-
-<Canvas of={CodeSnippetStories.Highlight} />
-
-#### Editable code
-
-<Canvas of={CodeSnippetStories.Editable} />
-
-<Canvas of={CodeSnippetStories.EditableEmpty} />
-
-## `<cds-aichat-code-snippet>` attributes, properties and events
-
-<ArgTypes of={CodeSnippetStories.Default} />
-
-## `<cds-aichat-code-snippet-card>` attributes, properties and events
-
-Note: This component forwards all properties to the inner `<cds-aichat-code-snippet>` component and wraps it in a `<cds-aichat-card>` for consistent AI Chat styling.
-
-<ArgTypes of={CodeSnippetStories.Default} />
-
-## Streaming Content
-
-The code snippet component supports real-time content updates through slot observation and mutation observers. As content is streamed into the component, CodeMirror will efficiently update the display.
-
-If a language is provided in the markdown it will be respected.
-
-<Canvas of={CodeSnippetStories.StreamingWithLanguageSet} />
-
-If not, the language will attempt to be detected. Because the language detection is based on looking for certain syntax and keywords, many which are shared between languages, we don't display the detected language until the stream is completed to avoid switching from language X to language Y as the understanding of the streaming code improves.
-
-<Canvas of={CodeSnippetStories.StreamingWithLanguageDetection} />
-
-## Language Support
-
-The component supports syntax highlighting for 100+ languages through CodeMirror. Common languages include:
-
-- JavaScript / TypeScript
-- Python
-- Java / C / C++ / C#
-- Go / Rust
-- HTML / CSS / SCSS
-- JSON / YAML / XML
-- SQL
-- Shell / Bash
-- And many more...
-
-When `language` is not specified and `highlight` is enabled, the component will attempt to auto-detect the language.
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

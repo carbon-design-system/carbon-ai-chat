@@ -10,8 +10,7 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 // @ts-ignore
-import styles from "./workspace-shell-body.scss?lit";
-import prefix from "../../../globals/settings.js";
+import styles from "./workspace-shell.scss?lit";
 
 /**
  * Workspace Shell Body.
@@ -19,7 +18,7 @@ import prefix from "../../../globals/settings.js";
  * @element cds-aichat-workspace-shell-body
  *
  */
-@customElement(`${prefix}-workspace-shell-body`)
+@customElement("cds-aichat-workspace-shell-body")
 class CDSAIChatWorkspaceShellBody extends LitElement {
   static styles = styles;
 
@@ -34,4 +33,5 @@ class CDSAIChatWorkspaceShellBody extends LitElement {
   }
 }
 
+export { CDSAIChatWorkspaceShellBody };
 export default CDSAIChatWorkspaceShellBody;

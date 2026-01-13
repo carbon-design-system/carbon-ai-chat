@@ -10,13 +10,13 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import CDSChatFeedbackButtonsElement from "../components/feedback/src/cds-aichat-feedback-buttons.js";
+import CDSAIChatFeedbackButtons from "../components/feedback/src/feedback-buttons.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
 const FeedbackButtons = withWebComponentBridge(
   createComponent({
     tagName: "cds-aichat-feedback-buttons",
-    elementClass: CDSChatFeedbackButtonsElement,
+    elementClass: CDSAIChatFeedbackButtons,
     react: React,
     events: {
       onClick: "feedback-buttons-click",

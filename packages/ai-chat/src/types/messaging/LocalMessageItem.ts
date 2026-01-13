@@ -111,11 +111,6 @@ interface LocalMessageUIState<
   originalUserText?: string;
 
   /**
-   * Indicates if the entrance fade animation for the message should be disabled.
-   */
-  disableFadeAnimation?: boolean;
-
-  /**
    * Indicates if this message was used to start an agent conversation that was then ended.
    */
   wasHumanAgentChatEnded?: boolean;

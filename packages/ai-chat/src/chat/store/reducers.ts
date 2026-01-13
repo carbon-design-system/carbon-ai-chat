@@ -23,7 +23,10 @@ import {
   ThemeState,
   ViewState,
 } from "../../types/state/AppState";
-import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
+import {
+  CustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
+} from "../../types/instance/apiTypes";
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -57,6 +60,8 @@ import {
   SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
   SET_CUSTOM_PANEL_OPEN,
   SET_CUSTOM_PANEL_OPTIONS,
+  SET_WORKSPACE_PANEL_OPEN,
+  SET_WORKSPACE_PANEL_OPTIONS,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   SET_IS_BROWSER_PAGE_VISIBLE,
@@ -73,6 +78,7 @@ import {
   SET_IS_RESTARTING,
   SET_VIEW_CHANGING,
   SET_VIEW_STATE,
+  SET_ACTIVE_RESPONSE_ID,
   STREAMING_ADD_CHUNK,
   STREAMING_MERGE_MESSAGE_OPTIONS,
   STREAMING_START,
@@ -93,6 +99,7 @@ import {
   applyLocalMessageUIState,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
+  DEFAULT_WORKSPACE_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
   handleViewStateChange,
   setHomeScreenOpenState,
@@ -169,6 +176,7 @@ const reducers: { [key: string]: ReducerType } = {
         localMessageIDs: [],
         messageIDs: [],
         isScrollAnchored: false,
+        activeResponseId: null,
       },
       allMessageItemsByID: {},
       allMessagesByID: {},
@@ -180,6 +188,9 @@ const reducers: { [key: string]: ReducerType } = {
       },
       customPanelState: {
         ...DEFAULT_CUSTOM_PANEL_STATE,
+      },
+      workspacePanelState: {
+        ...DEFAULT_WORKSPACE_PANEL_STATE,
       },
       isHydrated: false,
       catastrophicErrorType: null,
@@ -200,7 +211,17 @@ const reducers: { [key: string]: ReducerType } = {
       ...action.messageHistory,
     };
 
-    return newState;
+    const messageIDs = newState.assistantMessageState.messageIDs;
+
+    return {
+      ...newState,
+      assistantMessageState: {
+        ...newState.assistantMessageState,
+        activeResponseId: messageIDs.length
+          ? messageIDs[messageIDs.length - 1]
+          : null,
+      },
+    };
   },
 
   [ADD_LOCAL_MESSAGE_ITEM]: (
@@ -341,6 +362,9 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.assistantMessageState,
         messageIDs: newMessageIDs,
         localMessageIDs: newMessageItemsIDs,
+        activeResponseId: newMessageIDs.length
+          ? newMessageIDs[newMessageIDs.length - 1]
+          : null,
       },
     };
 
@@ -854,6 +878,35 @@ const reducers: { [key: string]: ReducerType } = {
     };
   },
 
+  [SET_WORKSPACE_PANEL_OPEN]: (
+    state: AppState,
+    action: { isOpen: boolean },
+  ) => {
+    return {
+      ...state,
+      workspacePanelState: {
+        ...state.workspacePanelState,
+        isOpen: action.isOpen,
+      },
+    };
+  },
+
+  [SET_WORKSPACE_PANEL_OPTIONS]: (
+    state: AppState,
+    action: { options: Partial<WorkspaceCustomPanelConfigOptions> },
+  ) => {
+    return {
+      ...state,
+      workspacePanelState: {
+        ...state.workspacePanelState,
+        options: {
+          ...(state.workspacePanelState.options ?? {}),
+          ...action.options,
+        },
+      },
+    };
+  },
+
   [UPDATE_INPUT_STATE]: (
     state: AppState,
     action: { newState: Partial<InputState>; isInputToHumanAgent: boolean },
@@ -1098,12 +1151,10 @@ const reducers: { [key: string]: ReducerType } = {
       chunkItem,
       fullMessageID,
       isCompleteItem,
-      disableFadeAnimation,
     }: {
       fullMessageID: string;
       chunkItem: DeepPartial<GenericItem>;
       isCompleteItem: boolean;
-      disableFadeAnimation: boolean;
     },
   ) => {
     const message = state.allMessagesByID[fullMessageID] as MessageResponse;
@@ -1122,7 +1173,6 @@ const reducers: { [key: string]: ReducerType } = {
         false,
       );
       newItem.ui_state.needsAnnouncement = false;
-      newItem.ui_state.disableFadeAnimation = disableFadeAnimation;
       newItem.ui_state.isIntermediateStreaming = true;
       if (isCompleteItem) {
         newItem.ui_state.streamingState = { chunks: [], isDone: true };
@@ -1233,6 +1283,19 @@ const reducers: { [key: string]: ReducerType } = {
           ...state.assistantInputState.stopStreamingButtonState,
           currentStreamID,
         },
+      },
+    };
+  },
+
+  [SET_ACTIVE_RESPONSE_ID]: (
+    state: AppState,
+    { activeResponseId }: { activeResponseId: string | null },
+  ) => {
+    return {
+      ...state,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        activeResponseId,
       },
     };
   },

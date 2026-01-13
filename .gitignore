@@ -79,3 +79,5 @@ test-results
 
 # NextJS cache filees
 .next
+
+.bob

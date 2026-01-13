@@ -41,13 +41,11 @@ import { consoleError } from "../utils/miscUtils";
  * @param isLatestWelcomeNode Indicates if this message is a new welcome message that has just been shown to the user
  * and isn't a historical welcome message.
  * ID as the message.
- * @param disableFadeAnimation Indicates if the entrance fade animation for the message should be disabled.
  */
 function outputItemToLocalItem(
   messageItem: GenericItem,
   fullMessage: MessageResponse,
   isLatestWelcomeNode = false,
-  disableFadeAnimation = false,
 ): LocalMessageItem {
   // If the item comes with a streaming id, use that. Otherwise assign a new id.
   const id =
@@ -59,7 +57,6 @@ function outputItemToLocalItem(
     ui_state: {
       id,
       needsAnnouncement: !fullMessage.ui_state_internal?.from_history,
-      disableFadeAnimation,
     },
     item: messageItem,
     fullMessageID: fullMessage.id,
@@ -214,7 +211,6 @@ function createLocalMessageItemsForNestedType(
         nestedMessageItem,
         originalMessage,
         false,
-        true,
       );
 
       nestedMessageItemIDs.push(nestedLocalMessageItem.ui_state.id);

@@ -12,6 +12,7 @@ import { ChatInstance, CustomSendMessageOptions } from "@carbon/ai-chat";
 import { doAudio } from "./doAudio";
 import { doButton } from "./doButton";
 import { doCard } from "./doCard";
+import { doPreviewCard } from "./doPreviewCard";
 import { doCarousel } from "./doCarousel";
 import { doCode, doCodeStreaming } from "./doCode";
 import {
@@ -57,6 +58,7 @@ const RESPONSE_MAP: Record<
   audio: (instance) => doAudio(instance),
   button: (instance) => doButton(instance),
   card: (instance) => doCard(instance),
+  "preview card": (instance) => doPreviewCard(instance),
   carousel: (instance) => doCarousel(instance),
   code: (instance) => doCode(instance),
   "code (stream)": (instance, requestOptions) =>
@@ -119,6 +121,40 @@ const RESPONSE_MAP: Record<
     doTextWithReasoningStepsStreaming(instance, requestOptions),
   "text (stream) with single reasoning trace": (instance, requestOptions) =>
     doTextWithReasoningTraceStreaming(instance, requestOptions),
+  "text (delayed response)": (instance) => {
+    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+    setTimeout(() => {
+      instance.updateIsMessageLoadingCounter("decrease");
+      doText(instance);
+    }, 3000);
+  },
+  "text (delayed streaming response)": (instance, requestOptions) => {
+    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+    setTimeout(() => {
+      instance.updateIsMessageLoadingCounter("decrease");
+      doTextStreaming(
+        instance,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        requestOptions,
+      );
+    }, 3000);
+  },
+  "text (consecutive responses)": (instance) => {
+    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+    setTimeout(() => {
+      instance.updateIsMessageLoadingCounter("decrease");
+      doTextWithFeedback(instance);
+      setTimeout(() => {
+        doTextWithFeedback(instance);
+      }, 1000);
+    }, 3000);
+  },
   html: (instance) => doHTML(instance),
   "html (stream)": (instance, requestOptions) =>
     doHTMLStreaming(

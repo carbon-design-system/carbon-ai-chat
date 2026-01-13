@@ -14,18 +14,21 @@ import { CustomResponseExample } from "./CustomResponseExample";
 
 function renderUserDefinedResponse(
   state: RenderUserDefinedState,
-  _instance: ChatInstance,
+  instance: ChatInstance,
 ) {
   const { messageItem } = state;
-  // The event here will contain details for each user defined response that needs to be rendered.
-  // If you need to access data from the parent component, you could define this function there instead.
-
   if (messageItem) {
+    const activeResponseId = instance.getState().activeResponseId;
+    const isLatest =
+      Boolean(activeResponseId) && state.fullMessage?.id === activeResponseId;
+
     switch (messageItem.user_defined?.user_defined_type) {
       case "my_unique_identifier":
         return (
           <CustomResponseExample
             data={messageItem.user_defined as { type: string; text: string }}
+            isLatestMessage={isLatest}
+            latestResponseId={activeResponseId ?? undefined}
           />
         );
       default:

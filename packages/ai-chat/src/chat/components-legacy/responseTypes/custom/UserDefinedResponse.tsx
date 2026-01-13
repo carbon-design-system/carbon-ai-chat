@@ -52,7 +52,7 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
   const userDefinedRegistryItem =
     serviceManager.actions.getOrCreateUserDefinedElement(props.localMessageID);
 
-  useCallbackOnChange(streamingState?.chunks, doAutoScroll);
+  useCallbackOnChange(streamingState?.isDone, doAutoScroll);
 
   return (
     <div

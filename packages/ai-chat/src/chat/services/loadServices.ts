@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatActionsImpl } from "../events/ChatActionsImpl";
+import { ChatActionsImpl } from "./ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
 import { HistoryService } from "./HistoryService";
 import { createCustomPanelManager } from "./CustomPanelManager";
@@ -103,6 +103,8 @@ function createServiceManager(appConfig: AppConfig) {
       [WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT]:
         document.createElement("div"),
       [WriteableElementName.CUSTOM_PANEL_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.WORKSPACE_PANEL_ELEMENT]:
         document.createElement("div"),
     };
   }

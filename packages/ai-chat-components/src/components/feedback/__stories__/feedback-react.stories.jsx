@@ -59,11 +59,24 @@ export default {
       control: "boolean",
       description: "Show the prompt text",
     },
+    onSubmit: {
+      action: "onSubmit",
+      table: { category: "events" },
+      description:
+        "Fires when feedback is submitted. `event.detail` includes text and selectedCategories.",
+    },
+    onClose: {
+      action: "onClose",
+      table: { category: "events" },
+      description: "Fires when the panel is closed without submitting.",
+    },
   },
 };
 
 const renderFeedback = (args, options) => {
   const description = options?.description;
+  const handleSubmit = options?.onSubmit ?? args.onSubmit;
+  const handleClose = options?.onClose ?? args.onClose;
 
   return (
     <div style={{ padding: "1rem", maxWidth: "24rem" }}>
@@ -85,10 +98,10 @@ const renderFeedback = (args, options) => {
         initialValues={options?.initialValues}
         onSubmit={(event) => {
           const details = event.detail;
-          options?.onSubmit?.(details);
+          handleSubmit?.(details);
         }}
         onClose={() => {
-          options?.onClose?.();
+          handleClose?.();
         }}
       />
     </div>
@@ -106,6 +119,8 @@ export const Default = {
     submitLabel: "Submit",
     showTextArea: true,
     showPrompt: true,
+    onSubmit: undefined,
+    onClose: undefined,
   },
   render: (args) =>
     renderFeedback(args, {

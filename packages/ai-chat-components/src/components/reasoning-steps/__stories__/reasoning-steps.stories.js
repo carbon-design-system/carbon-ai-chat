@@ -7,42 +7,43 @@
  *  @license
  */
 
-import "../src/cds-aichat-reasoning-steps";
-import "../src/cds-aichat-reasoning-step";
+import "../src/reasoning-steps";
+import "../src/reasoning-step";
+import "../../markdown/src/markdown";
 import { html, css, LitElement, nothing } from "lit";
 
 const defaultSteps = [
   {
     title: "Understand the request",
     open: true,
-    body: html`<p>
+    body: html`<cds-aichat-markdown>
       Parsed the user's intent and restated it as a concise objective to make
       sure downstream steps share the same goal.
-    </p>`,
+    </cds-aichat-markdown>`,
   },
   {
     title: "Review retrieved context",
     open: false,
-    body: html`<p>
+    body: html`<cds-aichat-markdown>
       Checked the documents and conversation history to identify facts that are
       relevant to the objective and noted confidence levels.
-    </p>`,
+    </cds-aichat-markdown>`,
   },
   {
     title: "Draft an answer",
     open: false,
-    body: html`<p>
+    body: html`<cds-aichat-markdown>
       Combined the prompt with trusted context and generated a structured
       response with bullet points summarizing each insight.
-    </p>`,
+    </cds-aichat-markdown>`,
   },
   {
     title: "Validate the response",
     open: false,
-    body: html`<p>
+    body: html`<cds-aichat-markdown>
       Compared the answer with the original request, double-checked citations,
       and ensured tone guidelines were followed.
-    </p>`,
+    </cds-aichat-markdown>`,
   },
 ];
 
@@ -50,20 +51,20 @@ const mixedSteps = [
   {
     title: "Detect missing data",
     open: true,
-    body: html`<p>
+    body: html`<cds-aichat-markdown>
       Noticed the prompt referenced an attachment that was not available, so I
       documented the gap before drafting an answer.
-    </p>`,
+    </cds-aichat-markdown>`,
   },
   {
     title: "Awaiting supporting citations",
   },
   {
     title: "Ready for escalation",
-    body: html`<p>
+    body: html`<cds-aichat-markdown>
       The final recommendation needs human approval. I summarized the findings
       and highlighted the open questions to review.
-    </p>`,
+    </cds-aichat-markdown>`,
   },
 ];
 
@@ -139,27 +140,29 @@ class ControlledReasoningStepsDemo extends LitElement {
       {
         id: "gather-context",
         title: "Gather relevant context",
-        body: html`<p>
+        body: html`<cds-aichat-markdown>
           Pulled customer profile data, product catalog entries, and the latest
           troubleshooting articles that match the request.
-        </p>`,
+        </cds-aichat-markdown>`,
       },
       {
         id: "draft-plan",
         title: "Draft plan",
-        body: html`<p>
+        body: html`<cds-aichat-markdown>
           Proposed a three-step plan that addresses the user's main objective
           while calling out any assumptions.
-        </p>`,
+        </cds-aichat-markdown>`,
       },
       {
         id: "risk-check",
         title: "Run risk checks",
-        body: html`<ul>
-          <li>Verified we are not leaking PII.</li>
-          <li>Ensured rate limits are respected.</li>
-          <li>Confirmed tone aligns with support guidelines.</li>
-        </ul>`,
+        body: html`<cds-aichat-markdown>
+          <ul>
+            <li>Verified we are not leaking PII.</li>
+            <li>Ensured rate limits are respected.</li>
+            <li>Confirmed tone aligns with support guidelines.</li>
+          </ul>
+        </cds-aichat-markdown>`,
       },
       {
         id: "handoff",
@@ -238,7 +241,8 @@ if (!customElements.get("cds-aichat-reasoning-steps-controlled-demo")) {
 }
 
 export default {
-  title: "Components/Reasoning Steps",
+  title: "Components/Reasoning steps",
+  component: "cds-aichat-reasoning-steps",
   parameters: {
     docs: {
       description: {

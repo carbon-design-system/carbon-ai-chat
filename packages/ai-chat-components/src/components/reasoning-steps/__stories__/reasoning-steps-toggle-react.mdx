@@ -1,0 +1,62 @@
+import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
+import * as ReasoningStepsToggleReactStories from "./reasoning-steps-toggle-react.stories.jsx";
+
+<Meta of={ReasoningStepsToggleReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+
+# Reasoning steps toggle
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+`<ReasoningStepsToggle>` wraps the `cds-aichat-reasoning-steps-toggle` web component for React apps. Combine it with `<ReasoningSteps>` to drive wrapper visibility without hand-rolling a button.
+
+### Getting started
+
+```jsx
+import ReasoningStepsToggle from "@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js";
+import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
+import ReasoningStep from "@carbon/ai-chat-components/es/react/reasoning-step.js";
+
+function ReasoningToggleExample() {
+  const [open, setOpen] = React.useState(true);
+
+  return (
+    <>
+      <ReasoningStepsToggle
+        open={open}
+        panelID="reasoning-toggle-react"
+        openLabelText="Hide reasoning steps"
+        closedLabelText="Show reasoning steps"
+        onToggle={(event) => setOpen(event.detail?.open ?? !open)}
+      />
+      <ReasoningSteps open={open} id="reasoning-toggle-react">
+        <ReasoningStep title="Gather facts" open>
+          Combined prompt, history, and retrieved citations.
+        </ReasoningStep>
+        <ReasoningStep title="Draft answer">
+          Structured response using verified facts.
+        </ReasoningStep>
+      </ReasoningSteps>
+    </>
+  );
+}
+```
+
+## Component API
+
+<ArgTypes of={ReasoningStepsToggleReactStories.Default} />
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

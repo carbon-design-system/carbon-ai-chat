@@ -12,6 +12,7 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
 import "./user-defined-response-example";
 import "./writeable-element-example";
+import "./workspace-writeable-element-example";
 
 import {
   BusEvent,
@@ -323,47 +324,45 @@ export class DemoApp extends LitElement {
   /**
    * You only need to provide slots for the writable elements you want to use. In this demo, we fill them all with big
    * green boxes.
+   *
+   * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom writeable element.
    */
   renderWriteableElementSlots() {
-    if (!this.instance?.writeableElements) {
-      return null;
-    }
+    const ALWAYS_RENDER_KEYS = ["workspacePanelElement"];
+    const elements = this.instance?.writeableElements ?? {};
 
-    const isCustomHomeScreen =
-      this.config.homescreen?.customContentOnly === true;
-    const showAllWriteableElements = this.settings.writeableElements === "true";
-    const showHomeScreenElements =
-      !showAllWriteableElements && isCustomHomeScreen;
+    const keys =
+      this.settings.writeableElements === "true"
+        ? Object.keys(elements)
+        : this.config.homescreen?.customContentOnly
+          ? ["homeScreenHeaderBottomElement", "homeScreenAfterStartersElement"]
+          : [];
 
-    if (showAllWriteableElements) {
-      // Show all writeable elements
-      return Object.keys(this.instance.writeableElements).map((key) => {
-        return html`<div slot=${key}>
-          <writeable-element-example
-            location=${key}
-            valueFromParent=${this.valueFromParent}
-          ></writeable-element-example>
-        </div>`;
-      });
-    } else if (showHomeScreenElements) {
-      // Show only home screen specific elements
-      const homeScreenElementKeys = [
-        "homeScreenHeaderBottomElement",
-        "homeScreenAfterStartersElement",
-      ];
-      return homeScreenElementKeys
-        .filter((key) => key in this.instance.writeableElements)
-        .map((key) => {
-          return html`<div slot=${key}>
-            <writeable-element-example
-              location=${key}
-              valueFromParent=${this.valueFromParent}
-            ></writeable-element-example>
-          </div>`;
-        });
-    }
+    const finalKeys = [
+      ...ALWAYS_RENDER_KEYS,
+      ...keys.filter((k) => !ALWAYS_RENDER_KEYS.includes(k)),
+    ];
 
-    return null;
+    return finalKeys.map(
+      (key) => html`
+        <div slot=${key}>
+          ${key === "workspacePanelElement"
+            ? html`
+                <workspace-writeable-element-example
+                  location=${key}
+                  .instance=${this.instance}
+                  .valueFromParent=${this.valueFromParent}
+                ></workspace-writeable-element-example>
+              `
+            : html`
+                <writeable-element-example
+                  location=${key}
+                  valueFromParent=${this.valueFromParent}
+                ></writeable-element-example>
+              `}
+        </div>
+      `,
+    );
   }
 
   getSideBarClassName() {
@@ -398,6 +397,7 @@ export class DemoApp extends LitElement {
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
+            .persistFeedback=${this.config.persistFeedback ?? undefined}
             .assistantName=${this.config.assistantName}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}
@@ -427,6 +427,7 @@ export class DemoApp extends LitElement {
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
+            .persistFeedback=${this.config.persistFeedback ?? undefined}
             .assistantName=${this.config.assistantName}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}

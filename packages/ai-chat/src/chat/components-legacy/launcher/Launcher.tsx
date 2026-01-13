@@ -108,6 +108,18 @@ function Launcher(props: LauncherProps) {
   const extendedContainerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<CDSButton | null>(null);
 
+  const ariaLabelSuffix =
+    unreadMessageCount !== 0
+      ? formatUnreadMessageLabel?.({ count: unreadMessageCount })
+      : undefined;
+
+  const launcherAriaLabel = [
+    launcherHidden ? openLabel : closedLabel,
+    ariaLabelSuffix,
+  ]
+    .filter(Boolean)
+    .join(". ");
+
   const launcherAvatar = launcherAvatarUrl ? (
     // eslint-disable-next-line jsx-a11y/alt-text
     <img
@@ -117,9 +129,17 @@ function Launcher(props: LauncherProps) {
       alt=""
     />
   ) : aiEnabled ? (
-    <AiLaunch className="cds-aichat--launcher__svg" />
+    <AiLaunch
+      className="cds-aichat--launcher__svg"
+      aria-label={launcherAriaLabel}
+      role="img"
+    />
   ) : (
-    <ChatLaunch className="cds-aichat--launcher__svg" />
+    <ChatLaunch
+      className="cds-aichat--launcher__svg"
+      aria-label={launcherAriaLabel}
+      role="img"
+    />
   );
 
   const reduceLauncher = useCallback(() => {
@@ -150,18 +170,6 @@ function Launcher(props: LauncherProps) {
   const handleButtonRef = useCallback((element: CDSButton | null) => {
     buttonRef.current = element ?? null;
   }, []);
-
-  const ariaLabelSuffix =
-    unreadMessageCount !== 0
-      ? formatUnreadMessageLabel?.({ count: unreadMessageCount })
-      : undefined;
-
-  const launcherAriaLabel = [
-    launcherHidden ? openLabel : closedLabel,
-    ariaLabelSuffix,
-  ]
-    .filter(Boolean)
-    .join(". ");
 
   const buttonTabIndex = launcherHidden ? -1 : undefined;
 
@@ -269,13 +277,14 @@ function Launcher(props: LauncherProps) {
         className="cds-aichat--launcher-extended__close-button"
         kind={BUTTON_KIND.SECONDARY}
         size={BUTTON_SIZE.EXTRA_SMALL}
+        aria-label={closeButtonLabel}
         onClick={handleDismiss}
         tooltipPosition={
           document.dir === "rtl"
             ? BUTTON_TOOLTIP_POSITION.RIGHT
             : BUTTON_TOOLTIP_POSITION.LEFT
         }
-        tooltipText={closeButtonLabel}
+        tooltip-text={closeButtonLabel}
       >
         <CloseIcon aria-label={closeButtonLabel} slot="icon" />
       </Button>
@@ -285,6 +294,7 @@ function Launcher(props: LauncherProps) {
         role="complementary"
         id={launcherButtonId}
         aria-label={launcherAriaLabel}
+        tooltip-text={launcherAriaLabel}
         className="cds-aichat--launcher__button"
         data-testid={dataTestId}
         kind={BUTTON_KIND.PRIMARY}

@@ -86,11 +86,6 @@ export interface ChatInstanceMessaging {
  */
 export interface AddMessageOptions {
   /**
-   * Indicates if the entrance fade animation for the message should be disabled.
-   */
-  disableFadeAnimation?: boolean;
-
-  /**
    * Indicates if the message should be treated as a new welcome message (as opposed to an existing one loaded from
    * history).
    */

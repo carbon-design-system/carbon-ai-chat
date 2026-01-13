@@ -1,13 +1,27 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
-import * as ProcessingReactStories from "./processing-react.stories";
+import * as ProcessingReactStories from "./processing-react.stories.jsx";
 
-<Meta of={ProcessingReactStories} />
+<Meta of={ProcessingReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
 
-# AI Chat Processing (React)
+# Processing
 
-The `<Processing>` component wraps `cds-aichat-processing` and provides a React helper for rendering the AI Chat loading indicator while background work completes.
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/processing) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-## Getting started
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+Use `<Processing>` to show a compact AI loading indicator in React while work completes. Choose between the quick-load pulse or a looping linear animation depending on how long your task might take.
+
+### Getting started
 
 Here's a quick example to get you started.
 
@@ -15,16 +29,23 @@ Here's a quick example to get you started.
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
 
 function LoadingState() {
-  return <Processing quickLoad carbonTheme="g10" />;
+  return <Processing quickLoad />;
+}
+
+function LinearProgress() {
+  return <Processing loop />;
 }
 ```
 
-## `<Processing>` props
+## Component API
 
 <ArgTypes of={ProcessingReactStories.QuickLoad} />
 
-### Props
+#### Props
 
 - `quickLoad`: Enables the quick load animation.
 - `loop`: Enables the continuous linear animation.
-- `carbonTheme`: Sets the Carbon theme (`"g100"`, `"g90"`, `"g10"`, or `"white"`).
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

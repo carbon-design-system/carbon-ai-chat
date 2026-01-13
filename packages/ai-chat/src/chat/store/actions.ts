@@ -20,7 +20,10 @@ import {
   ThemeState,
   ViewState,
 } from "../../types/state/AppState";
-import { CustomPanelConfigOptions } from "../../types/instance/apiTypes";
+import {
+  CustomPanelConfigOptions,
+  WorkspaceCustomPanelConfigOptions,
+} from "../../types/instance/apiTypes";
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -77,7 +80,9 @@ const OPEN_IFRAME_CONTENT = "OPEN_IFRAME_CONTENT";
 const SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN =
   "SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN";
 const SET_CUSTOM_PANEL_OPTIONS = "SET_CUSTOM_PANEL_OPTIONS";
+const SET_WORKSPACE_PANEL_OPTIONS = "SET_WORKSPACE_PANEL_OPTIONS";
 const SET_CUSTOM_PANEL_OPEN = "SET_CUSTOM_PANEL_OPEN";
+const SET_WORKSPACE_PANEL_OPEN = "SET_WORKSPACE_PANEL_OPEN";
 const TOGGLE_HOME_SCREEN = "GO_BACK_TO_HOME";
 const UPDATE_INPUT_STATE = "UPDATE_INPUT_STATE";
 const SET_IS_BROWSER_PAGE_VISIBLE = "SET_IS_PAGE_VISIBLE";
@@ -97,11 +102,18 @@ const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
 const SET_STREAM_ID = "SET_STREAM_ID";
 const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
 const SET_IS_RESTARTING = "SET_IS_RESTARTING";
+const SET_ACTIVE_RESPONSE_ID = "SET_ACTIVE_RESPONSE_ID";
 
 interface UnknownAction {
   type: string;
   // Optionally, include any unknown payload or meta fields if desired
   [extraProps: string]: any;
+}
+
+interface SetWorkspacePanelOptionsAction {
+  type: typeof SET_WORKSPACE_PANEL_OPTIONS;
+  options: Partial<WorkspaceCustomPanelConfigOptions>;
+  [key: string]: unknown;
 }
 
 const actions = {
@@ -229,6 +241,13 @@ const actions = {
   resetIsHydratingCounter() {
     return {
       type: RESET_IS_LOADING_COUNTER,
+    };
+  },
+
+  setActiveResponseId(activeResponseId: string | null) {
+    return {
+      type: SET_ACTIVE_RESPONSE_ID,
+      activeResponseId,
     };
   },
 
@@ -411,6 +430,19 @@ const actions = {
     return { type: SET_CUSTOM_PANEL_OPEN, isOpen };
   },
 
+  setWorkspaceCustomPanelConfigOptions(
+    options: Partial<WorkspaceCustomPanelConfigOptions>,
+  ): SetWorkspacePanelOptionsAction {
+    return {
+      type: SET_WORKSPACE_PANEL_OPTIONS,
+      options,
+    };
+  },
+
+  setWorkspaceCustomPanelOpen(isOpen: boolean) {
+    return { type: SET_WORKSPACE_PANEL_OPEN, isOpen };
+  },
+
   /**
    * Switches between the bot and home screen views.
    */
@@ -526,14 +558,12 @@ const actions = {
     fullMessageID: string,
     chunkItem: DeepPartial<GenericItem>,
     isCompleteItem: boolean,
-    disableFadeAnimation: boolean,
   ) {
     return {
       type: STREAMING_ADD_CHUNK,
       fullMessageID,
       chunkItem,
       isCompleteItem,
-      disableFadeAnimation,
     };
   },
 
@@ -592,6 +622,8 @@ export {
   SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
   SET_CUSTOM_PANEL_OPTIONS,
   SET_CUSTOM_PANEL_OPEN,
+  SET_WORKSPACE_PANEL_OPTIONS,
+  SET_WORKSPACE_PANEL_OPEN,
   SET_CHAT_MESSAGES_PROPERTY,
   TOGGLE_HOME_SCREEN,
   UPDATE_INPUT_STATE,
@@ -615,4 +647,5 @@ export {
   UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_IS_RESTARTING,
+  SET_ACTIVE_RESPONSE_ID,
 };

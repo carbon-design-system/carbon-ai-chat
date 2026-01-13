@@ -121,6 +121,26 @@ export enum BusEventType {
   CUSTOM_PANEL_CLOSE = "customPanel:close",
 
   /**
+   * Fired before a workspace opens.
+   */
+  WORKSPACE_PRE_OPEN = "workspace:pre:open",
+
+  /**
+   * Fired after a workspace opens.
+   */
+  WORKSPACE_OPEN = "workspace:open",
+
+  /**
+   * Fired before a workspace closes.
+   */
+  WORKSPACE_PRE_CLOSE = "workspace:pre:close",
+
+  /**
+   * Fired after a workspace closes.
+   */
+  WORKSPACE_CLOSE = "workspace:close",
+
+  /**
    * This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
@@ -250,12 +270,6 @@ export enum MessageSendSource {
    * The user selected a value from a dropdown for an option response.
    */
   OPTION_DROP_DOWN = "optionDropDown",
-
-  /**
-   * The message was sent as an automatic re-send when Carbon AI Chat is loaded. This occurs when Carbon AI Chat sees that the
-   * last message request did not receive a response.
-   */
-  HYDRATE_RESEND = "hydrateResend",
 
   /**
    * The message was sent as an event history update.
@@ -646,6 +660,82 @@ export interface BusEventCustomPanelPreClose extends BusEvent {
  */
 export interface BusEventCustomPanelClose extends BusEvent {
   type: BusEventType.CUSTOM_PANEL_CLOSE;
+}
+
+/**
+ * @category Events
+ * @experimental
+ */
+export interface BusEventWorkspacePreOpen extends BusEvent {
+  type: BusEventType.WORKSPACE_PRE_OPEN;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
+}
+
+/**
+ * @category Events
+ * @experimental
+ */
+export interface BusEventWorkspaceOpen extends BusEvent {
+  type: BusEventType.WORKSPACE_OPEN;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
+}
+
+/**
+ * @category Events
+ * @experimental
+ */
+export interface BusEventWorkspacePreClose extends BusEvent {
+  type: BusEventType.WORKSPACE_PRE_CLOSE;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
+}
+
+/**
+ * @category Events
+ * @experimental
+ */
+export interface BusEventWorkspaceClose extends BusEvent {
+  type: BusEventType.WORKSPACE_CLOSE;
+  data: {
+    /**
+     * The individual message item that is being displayed in this custom response.
+     */
+    message: GenericItem;
+
+    /**
+     * The full message response that contains the message item.
+     */
+    fullMessage: MessageResponse;
+  };
 }
 
 /**

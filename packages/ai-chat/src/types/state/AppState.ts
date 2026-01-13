@@ -9,6 +9,7 @@
 
 import {
   type CustomPanelConfigOptions,
+  type WorkspaceCustomPanelConfigOptions,
   type ViewState,
   ViewType,
 } from "../instance/apiTypes";
@@ -127,6 +128,10 @@ interface AppState extends AppStateMessages {
    * The custom panel state.
    */
   customPanelState: CustomPanelState;
+  /**
+   * The workspace panel state.
+   */
+  workspacePanelState: WorkspacePanelState;
 
   /**
    * The state of the panel surfaced by response types, either with or without user input.
@@ -316,6 +321,11 @@ interface ChatMessagesState {
    * An array of message ids to correctly store the order of messages.
    */
   messageIDs: string[];
+
+  /**
+   * The id of the most recently active response (including streaming).
+   */
+  activeResponseId: string | null;
 
   /**
    * Counter that indicates if a message is loading and a loading indicator should be displayed.
@@ -509,6 +519,22 @@ interface CustomPanelState {
    */
   options: CustomPanelConfigOptions;
 }
+interface WorkspacePanelState {
+  /**
+   * Determines if the custom panel should be open.
+   */
+  isOpen: boolean;
+
+  /**
+   * The id of the panel that is currently in focus.
+   */
+  panelID: string;
+
+  /**
+   * Config options for the workspace panels.
+   */
+  options: WorkspaceCustomPanelConfigOptions;
+}
 
 interface MessagePanelState<T extends GenericItem = GenericItem> {
   /**
@@ -568,6 +594,7 @@ export {
   ViewSourcePanelState,
   CustomPanelConfigOptions,
   CustomPanelState,
+  WorkspacePanelState,
   InputState,
   FileUpload,
   MessagePanelState,

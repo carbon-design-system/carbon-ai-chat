@@ -71,9 +71,9 @@ function ConversationalSearch({
     );
   }
 
-  // If the chunks change, kick off an auto-scroll.
+  // Once done streaming, kick off an auto-scroll.
   useCallbackOnChange(
-    localMessageItem.ui_state.streamingState?.chunks,
+    localMessageItem.ui_state.streamingState?.isDone,
     doAutoScroll,
   );
 
