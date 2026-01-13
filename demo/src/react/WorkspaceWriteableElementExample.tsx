@@ -15,14 +15,14 @@ import WorkspaceShell, {
 } from "@carbon/ai-chat-components/es/react/workspace-shell.js";
 import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
 
-import Edit16 from "@carbon/icons-react/lib/Edit"; // Keep this React for the Button renderIcon
-
-import Version16 from "@carbon/icons/es/version/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
+// Using @carbon/icons-react for all icons
+import Edit16 from "@carbon/icons-react/es/Edit.js";
+import Version16 from "@carbon/icons-react/es/Version.js";
+import Download16 from "@carbon/icons-react/es/Download.js";
+import Share16 from "@carbon/icons-react/es/Share.js";
+import Launch16 from "@carbon/icons-react/es/Launch.js";
+import Maximize16 from "@carbon/icons-react/es/Maximize.js";
+import Close16 from "@carbon/icons-react/es/Close.js";
 
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
@@ -48,35 +48,30 @@ function WorkspaceWriteableElementExample({
       id: "version",
       text: "Version",
       icon: Version16,
-      size: "md",
       onClick: () => alert("Version clicked"),
     },
     {
       id: "download",
       text: "Download",
       icon: Download16,
-      size: "md",
       onClick: () => alert("Download clicked"),
     },
     {
       id: "share",
       text: "Share",
       icon: Share16,
-      size: "md",
       onClick: () => alert("Share clicked"),
     },
     {
       id: "launch",
       text: "Launch",
       icon: Launch16,
-      size: "md",
       onClick: () => alert("Launch clicked"),
     },
     {
       id: "maximize",
       text: "Maximize",
       icon: Maximize16,
-      size: "md",
       onClick: () => alert("Maximize clicked"),
     },
     {
@@ -84,7 +79,6 @@ function WorkspaceWriteableElementExample({
       text: "Close",
       fixed: true,
       icon: Close16,
-      size: "md",
       onClick: handleClose,
     },
   ]);

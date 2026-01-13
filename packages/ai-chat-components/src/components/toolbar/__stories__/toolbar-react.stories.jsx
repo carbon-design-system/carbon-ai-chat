@@ -10,7 +10,7 @@ import {
   IconButton,
   AILabel,
 } from "@carbon/react";
-import { actionLists } from "./story-data";
+import { actionLists } from "./story-data-react";
 import { Home, ArrowLeft, OverflowMenuVertical } from "@carbon/icons-react";
 import "./story-styles.scss";
 import { Default as DefaultWC } from "./toolbar.stories";

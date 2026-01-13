@@ -35,6 +35,7 @@ const watchMode = process.argv.includes("--watch");
 async function build() {
   const esInputs = await globby([
     "src/**/*.ts",
+    "src/**/*.tsx",
     "!src/**/*.test.ts",
     "!src/**/*.stories.ts",
     "!src/**/*.d.ts",
@@ -136,7 +137,7 @@ function getRollupConfig(input, rootDir, outDir) {
       nodeResolve({
         browser: true,
         mainFields: ["jsnext", "module", "main"],
-        extensions: [".js", ".ts"],
+        extensions: [".js", ".ts", ".tsx"],
       }),
       commonjs({
         include: [/node_modules/],

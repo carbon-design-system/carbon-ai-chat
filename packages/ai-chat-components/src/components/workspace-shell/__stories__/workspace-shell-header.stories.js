@@ -13,7 +13,7 @@ import "@carbon/web-components/es/components/tag/tag.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { html } from "lit";
 import Edit16 from "@carbon/icons/es/edit/16.js";
-import { getHeaderDescription, getBodyContent } from "./story-hleper";
+import { getHeaderDescription, getBodyContent } from "./story-helper";
 import styles from "./story-styles.scss?lit";
 
 export default {
