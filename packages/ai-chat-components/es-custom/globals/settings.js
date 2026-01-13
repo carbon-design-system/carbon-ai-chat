@@ -1,0 +1,20 @@
+/**
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+// Set this to a suitable prefix for your project to use in TS files
+const prefix = "cds-aichat";
+
+export { prefix as default };
+//# sourceMappingURL=settings.js.map

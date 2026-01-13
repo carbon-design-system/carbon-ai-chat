@@ -1,0 +1,33 @@
+/**
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatChainOfThought from '../components/chain-of-thought/src/chain-of-thought.js';
+export { ChainOfThoughtStepStatus } from '../components/chain-of-thought/defs.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+const ChainOfThought = withWebComponentBridge(createComponent({
+    tagName: "cds-aichat-chain-of-thought",
+    elementClass: CDSAIChatChainOfThought,
+    react: React,
+    events: {
+        onToggle: "chain-of-thought-toggled",
+        onStepToggle: "chain-of-thought-step-toggled",
+    },
+}));
+
+export { ChainOfThought as default };
+//# sourceMappingURL=chain-of-thought.js.map

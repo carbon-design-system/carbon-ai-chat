@@ -1,0 +1,1 @@
+{"version":3,"file":"feedback.js","sources":["../../src/react/feedback.ts"],"sourcesContent":[null],"names":[],"mappings":";;;;;;;;;;;;AAAA;;;;;;;AAOG;AAYH,MAAM,QAAQ,GAAG,sBAAsB,CACrC,eAAe,CAAC;AACd,IAAA,OAAO,EAAE,qBAAqB;AAC9B,IAAA,YAAY,EAAE,wBAAwB;AACtC,IAAA,KAAK,EAAE,KAAK;AACZ,IAAA,MAAM,EAAE;AACN,QAAA,OAAO,EAAE,gBAAgB;AACzB,QAAA,QAAQ,EAAE,iBAAiB;AAC5B,KAAA;AACF,CAAA,CAAC;;;;"}

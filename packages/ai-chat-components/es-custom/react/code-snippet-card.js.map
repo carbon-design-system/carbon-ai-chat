@@ -1,0 +1,1 @@
+{"version":3,"file":"code-snippet-card.js","sources":["../../src/react/code-snippet-card.ts"],"sourcesContent":[null],"names":[],"mappings":";;;;;;;;;;;;AAAA;;;;;;;AAOG;AASH,MAAM,eAAe,GAAG,sBAAsB,CAC5C,eAAe,CAAC;AACd,IAAA,OAAO,EAAE,8BAA8B;AACvC,IAAA,YAAY,EAAE,wBAAwB;AACtC,IAAA,KAAK,EAAE,KAAK;AACZ,IAAA,MAAM,EAAE;AACN,QAAA,QAAQ,EAAE,gBAAgB;AAC3B,KAAA;AACF,CAAA,CAAC;;;;"}

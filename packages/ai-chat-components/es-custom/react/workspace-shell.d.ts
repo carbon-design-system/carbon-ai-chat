@@ -1,0 +1,11 @@
+import React from "react";
+import CDSAIChatWorkspaceShell from "../components/workspace-shell/src/workspace-shell.js";
+import CDSAIChatWorkspaceShellHeader from "../components/workspace-shell/src/workspace-shell-header.js";
+import CDSAIChatWorkspaceShellBody from "../components/workspace-shell/src/workspace-shell-body.js";
+import CDSAIChatWorkspaceShellFooter from "../components/workspace-shell/src/workspace-shell-footer.js";
+declare const WorkspaceShell: React.ForwardRefExoticComponent<Omit<Record<string, unknown>, "ref"> & React.RefAttributes<CDSAIChatWorkspaceShell>>;
+declare const WorkspaceShellHeader: React.ForwardRefExoticComponent<Omit<Record<string, unknown>, "ref"> & React.RefAttributes<CDSAIChatWorkspaceShellHeader>>;
+declare const WorkspaceShellBody: React.ForwardRefExoticComponent<Omit<Record<string, unknown>, "ref"> & React.RefAttributes<CDSAIChatWorkspaceShellBody>>;
+declare const WorkspaceShellFooter: React.ForwardRefExoticComponent<Omit<Record<string, unknown>, "ref"> & React.RefAttributes<CDSAIChatWorkspaceShellFooter>>;
+export default WorkspaceShell;
+export { WorkspaceShellHeader, WorkspaceShellBody, WorkspaceShellFooter };
