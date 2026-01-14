@@ -18,6 +18,7 @@ import {
 } from "@carbon/web-components/es/components/button/button.js";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./chat-button.scss?lit";
 
@@ -39,7 +40,7 @@ type ChatButtonSize =
  *
  * @element cds-aichat-button
  */
-@carbonElement("cds-aichat-button")
+@carbonElement(`${prefix}-button`)
 class CDSAIChatButton extends CDSButton {
   static styles = styles;
 

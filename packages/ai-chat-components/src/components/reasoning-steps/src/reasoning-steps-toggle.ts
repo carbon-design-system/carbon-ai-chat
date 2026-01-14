@@ -13,8 +13,9 @@ import { carbonElement } from "../../../globals/decorators/index.js";
 import { reasoningStepsToggleTemplate } from "./reasoning-steps-toggle.template.js";
 // @ts-ignore
 import styles from "./reasoning-steps-toggle.scss?lit";
+import prefix from "../../../globals/settings.js";
 
-@carbonElement("cds-aichat-reasoning-steps-toggle")
+@carbonElement(`${prefix}-reasoning-steps-toggle`)
 class CDSAIChatReasoningStepsToggle extends LitElement {
   static styles = styles;
 

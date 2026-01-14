@@ -28,7 +28,7 @@ export type Step = {
 /**
  * Step component
  */
-@carbonElement("cds-aichat-card-steps")
+@carbonElement(`${prefix}-card-steps`)
 class CardSteps extends LitElement {
   static styles = styles;
 

@@ -11,13 +11,14 @@ import { LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import { feedbackElementTemplate } from "./feedback.template.js";
+import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./feedback.scss?lit";
 
 /**
  * The component for displaying a panel requesting feedback from a user.
  */
-@carbonElement("cds-aichat-feedback")
+@carbonElement(`${prefix}-feedback`)
 class CDSAIChatFeedback extends LitElement {
   static styles = styles;
 

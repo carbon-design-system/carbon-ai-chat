@@ -41,7 +41,7 @@ export interface Action {
  * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
  *
  */
-@carbonElement("cds-aichat-toolbar")
+@carbonElement(`${prefix}-toolbar`)
 class CDSAIChatToolbar extends LitElement {
   /** Hidden actions rendered in the overflow menu.
    *  @internal

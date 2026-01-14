@@ -14,9 +14,9 @@ import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-load
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/button.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./workspace-shell-footer.scss?lit";
-import prefix from "../../../globals/settings.js";
 
 export type Action = {
   label: string;
@@ -32,7 +32,7 @@ export type Action = {
  * @element cds-aichat-workspace-shell-footer
  * @fires cds-aichat-workspace-shell-footer-clicked - The custom event fired when footer buttons are clicked.
  */
-@carbonElement("cds-aichat-workspace-shell-footer")
+@carbonElement(`${prefix}-workspace-shell-footer`)
 class CDSAIChatWorkspaceShellFooter extends LitElement {
   static styles = styles;
 

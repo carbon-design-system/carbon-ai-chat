@@ -14,6 +14,7 @@ import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import prefix from "../../../globals/settings.js";
 import { observeResize } from "./dom-utils.js";
 import type {
   LanguageController,
@@ -43,7 +44,7 @@ import "@carbon/web-components/es/components/button/button.js";
  * automatically detects and loads language highlighting, and optionally exposes an editable surface
  * with live language re-detection and change notifications.
  */
-@carbonElement("cds-aichat-code-snippet")
+@carbonElement(`${prefix}-code-snippet`)
 class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   static styles = [styles];
 

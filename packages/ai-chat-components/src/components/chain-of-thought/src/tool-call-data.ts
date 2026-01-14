@@ -17,7 +17,7 @@ import { carbonElement } from "../../../globals/decorators/index.js";
 
 const baseClass = `${prefix}--tool-call-data`;
 
-@carbonElement("cds-aichat-tool-call-data")
+@carbonElement(`${prefix}-tool-call-data`)
 class CDSAIChatToolCallData extends LitElement {
   static styles = styles;
 

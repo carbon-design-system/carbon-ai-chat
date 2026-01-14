@@ -19,11 +19,11 @@ import {
   BUTTON_KIND,
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/button.js";
-import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./card-footer.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import prefix from "../../../globals/settings.js";
 
 export type Action = {
   label: string;
@@ -41,7 +41,7 @@ export type Action = {
  * Footer action bar that renders Carbon buttons and emits an `action` event.
  * Consumers listen for events instead of passing callbacks.
  */
-@carbonElement("cds-aichat-card-footer")
+@carbonElement(`${prefix}-card-footer`)
 class CardFooter extends LitElement {
   static styles = styles;
 
