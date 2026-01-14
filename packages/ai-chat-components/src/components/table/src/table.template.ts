@@ -90,8 +90,8 @@ function tableTemplate(tableElement: CDSAIChatTable) {
   return html`<cds-table
     size="md"
     locale=${locale}
-    .isSortable=${allowTableFiltering}
-    .useZebraStyles=${true}
+    is-sortable
+    use-zebra-styles
     @cds-table-filtered=${handleFilterEvent}
   >
     ${tableTitle &&
