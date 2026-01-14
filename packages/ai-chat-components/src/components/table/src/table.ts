@@ -50,6 +50,7 @@ const PAGE_SIZE_WIDTH_THRESHOLD = 400;
 
 /**
  * Class functionality for the Table custom element.
+ * @element cds-aichat-table
  */
 @carbonElement(`${prefix}-table`)
 class CDSAIChatTable extends LitElement {

@@ -40,6 +40,7 @@ export type Action = {
 /**
  * Footer action bar that renders Carbon buttons and emits an `action` event.
  * Consumers listen for events instead of passing callbacks.
+ * @element cds-aichat-card-footer
  */
 @carbonElement(`${prefix}-card-footer`)
 class CardFooter extends LitElement {

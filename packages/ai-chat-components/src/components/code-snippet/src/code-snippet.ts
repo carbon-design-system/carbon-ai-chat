@@ -43,6 +43,7 @@ import "@carbon/web-components/es/components/button/button.js";
  * AI Chat code snippet orchestrator that keeps CodeMirror in sync with streamed slot content,
  * automatically detects and loads language highlighting, and optionally exposes an editable surface
  * with live language re-detection and change notifications.
+ * @element cds-aichat-code-snippet
  */
 @carbonElement(`${prefix}-code-snippet`)
 class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {

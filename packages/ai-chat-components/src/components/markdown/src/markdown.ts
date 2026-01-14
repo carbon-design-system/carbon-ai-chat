@@ -21,6 +21,10 @@ import { renderTokenTree } from "./markdown-renderer.js";
 import { consoleError } from "./utils.js";
 import { markdownTemplate } from "./markdown.template.js";
 
+/**
+ * Markdown component
+ * @element cds-aichat-markdown
+ */
 @carbonElement(`${prefix}-markdown`)
 class CDSAIChatMarkdown extends LitElement {
   static styles = styles;

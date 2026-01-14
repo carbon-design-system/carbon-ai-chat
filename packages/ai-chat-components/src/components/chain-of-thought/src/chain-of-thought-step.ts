@@ -32,6 +32,10 @@ let idCounter = 0;
 const generateId = (segment: string) =>
   `${baseClass}-${segment}-${idCounter++}`;
 
+/**
+ * Chain of though step
+ * @element cds-aichat-chain-of-thought-step
+ */
 @carbonElement(`${prefix}-chain-of-thought-step`)
 class CDSAIChatChainOfThoughtStep extends LitElement {
   static styles = styles;

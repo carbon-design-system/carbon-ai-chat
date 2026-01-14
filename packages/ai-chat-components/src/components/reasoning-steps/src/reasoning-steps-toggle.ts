@@ -15,6 +15,10 @@ import { reasoningStepsToggleTemplate } from "./reasoning-steps-toggle.template.
 import styles from "./reasoning-steps-toggle.scss?lit";
 import prefix from "../../../globals/settings.js";
 
+/**
+ * Reasoning steps toggle component
+ * @element cds-aichat-reasoning-steps-toggle
+ */
 @carbonElement(`${prefix}-reasoning-steps-toggle`)
 class CDSAIChatReasoningStepsToggle extends LitElement {
   static styles = styles;

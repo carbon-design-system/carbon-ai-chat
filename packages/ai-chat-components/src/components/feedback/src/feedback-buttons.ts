@@ -15,6 +15,10 @@ import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./feedback-buttons.scss?lit";
 
+/**
+ * Feedback buttons component
+ * @element cds-aichat-feedback-buttons
+ */
 @carbonElement(`${prefix}-feedback-buttons`)
 class CDSAIChatFeedbackButtons extends LitElement {
   static styles = styles;

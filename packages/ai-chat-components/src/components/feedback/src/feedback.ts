@@ -17,6 +17,7 @@ import styles from "./feedback.scss?lit";
 
 /**
  * The component for displaying a panel requesting feedback from a user.
+ * @element cds-aichat-feedback
  */
 @carbonElement(`${prefix}-feedback`)
 class CDSAIChatFeedback extends LitElement {

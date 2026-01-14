@@ -17,6 +17,7 @@ import prefix from "../../../globals/settings.js";
 
 /**
  * Component extending the @carbon/web-components' button
+ * @element cds-aichat-card
  */
 @carbonElement(`${prefix}-card`)
 class Card extends CDSTile {

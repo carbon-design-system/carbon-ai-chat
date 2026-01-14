@@ -20,6 +20,10 @@ import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import type { ChainOfThoughtToggleEventDetail } from "../defs.js";
 
+/**
+ * Chain of thought toggle component
+ * @element cds-aichat-chain-of-thought-toggle
+ */
 @carbonElement(`${prefix}-chain-of-thought-toggle`)
 class CDSAIChatChainOfThoughtToggle extends LitElement {
   static styles = styles;
