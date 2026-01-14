@@ -92,6 +92,7 @@ async function doFakeTextStreaming(
   const responseID = crypto.randomUUID();
   const words = TEXT.split(" ");
   let isCanceled = false;
+  let lastStreamedIndex = -1;
   const timeouts: number[] = [];
 
   // Listen to abort signal (handles both stop button and restart/clear)
@@ -106,6 +107,7 @@ async function doFakeTextStreaming(
     words.forEach((word, index) => {
       const timeoutId = setTimeout(() => {
         if (!isCanceled) {
+          lastStreamedIndex = index;
           instance.messaging.addMessageChunk({
             partial_item: {
               response_type: MessageResponseTypes.TEXT,
@@ -124,7 +126,12 @@ async function doFakeTextStreaming(
       timeouts.push(timeoutId as unknown as number);
     });
 
-    await sleep(words.length * WORD_DELAY);
+    // Wait for streaming to complete or be cancelled
+    const totalDelay = words.length * WORD_DELAY;
+    const startTime = Date.now();
+    while (!isCanceled && Date.now() - startTime < totalDelay) {
+      await sleep(100);
+    }
 
     if (!isCanceled) {
       const completeItem = {
@@ -152,10 +159,14 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker
+      // Send stream_stopped marker with the text that was actually streamed
+      const streamedText =
+        lastStreamedIndex >= 0
+          ? words.slice(0, lastStreamedIndex + 1).join(" ") + " "
+          : "";
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
+        text: streamedText,
         streaming_metadata: {
           id: "1",
           stream_stopped: true,
@@ -166,6 +177,17 @@ async function doFakeTextStreaming(
         streaming_metadata: {
           response_id: responseID,
         },
+      } as StreamChunk);
+
+      const finalResponse = {
+        id: responseID,
+        output: {
+          generic: [completeItem],
+        },
+      };
+
+      instance.messaging.addMessageChunk({
+        final_response: finalResponse,
       } as StreamChunk);
     }
   } finally {
