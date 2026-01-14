@@ -19,6 +19,8 @@ $block-class: #{$prefix}-toolbar;
 :host {
   @include rounded-modifiers;
 
+  display: block;
+
   .#{$block-class} {
     display: flex;
     align-items: flex-start;

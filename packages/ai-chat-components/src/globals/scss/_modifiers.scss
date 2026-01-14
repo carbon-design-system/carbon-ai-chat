@@ -97,6 +97,12 @@ $rounded-host-map: (
   }
 }
 
+@mixin rounded-self {
+  @each $key, $positions in $rounded-host-map {
+    @include radius($positions...);
+  }
+}
+
 /* ----- NON-STACKED CHILDREN ROUNDING ----- */
 $non-stacked-map: (
   top: (
