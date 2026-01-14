@@ -89,6 +89,8 @@
   @extend .#{$cds-prefix}--snippet;
   @extend .#{$cds-prefix}--snippet--multi;
 
+  @include rounded-self;
+
   display: block;
   padding: 0;
 
