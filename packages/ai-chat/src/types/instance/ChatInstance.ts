@@ -38,20 +38,6 @@ export interface ChatInstance extends EventHandlers, ChatActions {
   customPanels?: CustomPanels;
 
   /**
-   * Enables/Disables Workspace Panel animations.
-   *
-   * @experimental
-   */
-  updateWorkspaceAnimationBehaviour: (isDisabled: boolean) => void;
-
-  /**
-   * Manages the position of the workspace panel.
-   *
-   * @experimental
-   */
-  updateWorkspacePosition: (preferredLocation: "start" | "end") => void;
-
-  /**
    * Internal testing property that exposes the serviceManager.
    * Only available when exposeServiceManagerForTesting is set to true in PublicConfig.
    *
