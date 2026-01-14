@@ -8,7 +8,8 @@
  */
 
 import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
 // @ts-ignore
 import styles from "./workspace-shell-header.scss?lit";
 import prefix from "../../../globals/settings.js";
@@ -22,7 +23,7 @@ import prefix from "../../../globals/settings.js";
  * @slot header-action - Represents the action area in the workspace.
  *
  */
-@customElement("cds-aichat-workspace-shell-header")
+@carbonElement("cds-aichat-workspace-shell-header")
 class CDSAIChatWorkspaceShellHeader extends LitElement {
   static styles = styles;
 

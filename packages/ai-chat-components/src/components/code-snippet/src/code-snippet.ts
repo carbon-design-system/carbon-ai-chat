@@ -13,7 +13,7 @@ import { createRef, ref } from "lit/directives/ref.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
 import { observeResize } from "./dom-utils.js";
 import type {
   LanguageController,

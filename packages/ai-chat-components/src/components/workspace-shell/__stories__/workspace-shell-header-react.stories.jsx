@@ -10,7 +10,7 @@ import { getHeaderDescription, getBodyContent } from "./story-helper-react";
 import "./story-styles.scss";
 
 export default {
-  title: "Components/Workspace shell/1. Header",
+  title: "Components/Workspace shell/Header",
   component: WorkspaceShellHeader,
   parameters: {
     docs: {

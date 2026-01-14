@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html, nothing } from "lit";
-import { customElement, property, state, query } from "lit/decorators.js";
+import { property, state, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { repeat } from "lit/directives/repeat.js";
 import "@carbon/web-components/es/components/button/index.js";
@@ -21,6 +21,7 @@ import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import { carbonElement } from "../../../globals/decorators/index.js";
 
 export interface Action {
   text: string;
@@ -40,7 +41,7 @@ export interface Action {
  * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
  *
  */
-@customElement("cds-aichat-toolbar")
+@carbonElement("cds-aichat-toolbar")
 class CDSAIChatToolbar extends LitElement {
   /** Hidden actions rendered in the overflow menu.
    *  @internal
