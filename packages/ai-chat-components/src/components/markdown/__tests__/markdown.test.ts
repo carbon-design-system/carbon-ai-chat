@@ -167,4 +167,185 @@ describe("cds-aichat-markdown smoke test", () => {
       throw new Error(`Link did not get target="_self" applied`);
     }
   });
+
+  describe("linkify functionality", () => {
+    it("automatically converts plain URLs to clickable links", async () => {
+      const textWithUrl = "Check out https://www.ibm.com for more info";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown>${textWithUrl}</cds-aichat-markdown>`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const link = root.querySelector('a[href="https://www.ibm.com"]');
+      expect(link).to.not.equal(null);
+      expect(link?.textContent).to.equal("https://www.ibm.com");
+      expect(link?.getAttribute("target")).to.equal("_blank");
+    });
+
+    it("converts multiple URLs in the same text", async () => {
+      const textWithMultipleUrls =
+        "Visit https://ibm.com and https://github.com for resources";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          >${textWithMultipleUrls}</cds-aichat-markdown
+        >`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const links = root.querySelectorAll("a");
+      expect(links.length).to.be.at.least(2);
+
+      const ibmLink = root.querySelector('a[href="https://ibm.com"]');
+      const githubLink = root.querySelector('a[href="https://github.com"]');
+
+      expect(ibmLink).to.not.equal(null);
+      expect(githubLink).to.not.equal(null);
+    });
+
+    it("linkifies URLs with different protocols", async () => {
+      const textWithProtocols = `
+HTTP: http://example.com
+HTTPS: https://secure.example.com
+FTP: ftp://files.example.com
+      `;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown>${textWithProtocols}</cds-aichat-markdown>`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      expect(root.querySelector('a[href="http://example.com"]')).to.not.equal(
+        null,
+      );
+      expect(
+        root.querySelector('a[href="https://secure.example.com"]'),
+      ).to.not.equal(null);
+      expect(
+        root.querySelector('a[href="ftp://files.example.com"]'),
+      ).to.not.equal(null);
+    });
+
+    it("linkifies email addresses", async () => {
+      const textWithEmail = "Contact us at support@example.com for help";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown>${textWithEmail}</cds-aichat-markdown>`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const emailLink = root.querySelector(
+        'a[href="mailto:support@example.com"]',
+      );
+      expect(emailLink).to.not.equal(null);
+      expect(emailLink?.textContent).to.equal("support@example.com");
+    });
+
+    it("linkifies URLs within markdown text alongside other formatting", async () => {
+      const mixedText =
+        "This is **bold** text with https://example.com and *italic* text";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown>${mixedText}</cds-aichat-markdown>`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const link = root.querySelector('a[href="https://example.com"]');
+      const bold = root.querySelector("strong");
+      const italic = root.querySelector("em");
+
+      expect(link).to.not.equal(null);
+      expect(bold).to.not.equal(null);
+      expect(italic).to.not.equal(null);
+    });
+
+    it("does not linkify URLs inside code blocks", async () => {
+      const codeWithUrl = "`https://example.com`";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown>${codeWithUrl}</cds-aichat-markdown>`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const code = root.querySelector("code");
+      expect(code).to.not.equal(null);
+      expect(code?.textContent).to.equal("https://example.com");
+
+      // Should not have a link inside the code element
+      const link = code?.querySelector("a");
+      expect(link).to.equal(null);
+    });
+
+    it("linkifies URLs with removeHTML enabled", async () => {
+      const textWithUrl = "Visit https://example.com for details";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown remove-html
+          >${textWithUrl}</cds-aichat-markdown
+        >`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const link = root.querySelector('a[href="https://example.com"]');
+      expect(link).to.not.equal(null);
+      expect(link?.textContent).to.equal("https://example.com");
+    });
+
+    it("sanitizes linkified URLs when sanitize-html is enabled", async () => {
+      const textWithUrl = "Check https://example.com";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown sanitize-html
+          >${textWithUrl}</cds-aichat-markdown
+        >`,
+      );
+
+      await el.updateComplete;
+
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+
+      const link = root.querySelector('a[href="https://example.com"]');
+      expect(link).to.not.equal(null);
+      // Should still have target="_blank" from renderer
+      expect(link?.getAttribute("target")).to.equal("_blank");
+    });
+  });
 });

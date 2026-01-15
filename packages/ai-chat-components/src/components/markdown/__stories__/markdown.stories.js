@@ -23,6 +23,13 @@ You can combine formatting: ==**bold highlight**== and ==*italic highlight*==.
 > This is a blockquote with **bold text** and *emphasis*.
 > It can span multiple lines and include other formatting.
 
+## Links
+URL like structures will be auto-linked like https://ibm.com or ibm.com.
+
+Also, Markdown links are supported like [Carbon Design System](https://carbondesignsystem.com).
+
+By default links open in a new window, you can make them open in the same window by adding \`{{target=_self}}\` to the URL [Carbon Design System](https://carbondesignsystem.com){{target=_self}}.
+
 ## Lists
 
 Unordered lists:
