@@ -8,8 +8,8 @@
  */
 
 import React from "react";
-import { FormattedMessage } from "react-intl";
 
+import { useIntl } from "../../hooks/useIntl";
 import { isNil } from "../../utils/lang/langUtils";
 import RichText from "../responseTypes/util/RichText";
 import { AgentAvailability } from "../../../types/config/ServiceDeskConfig";
@@ -27,6 +27,7 @@ function AvailabilityMessage({
   availability,
   fallbackText,
 }: AvailabilityMessageProps) {
+  const { formatMessage } = useIntl();
   let availabilityKey: keyof LanguagePack;
   let availabilityValues: Record<string, any>;
   let availabilityText: string;
@@ -48,10 +49,12 @@ function AvailabilityMessage({
     );
   }
   return (
-    <FormattedMessage
-      id={availabilityKey as unknown as string}
-      values={addHTMLSupport(availabilityValues)}
-    />
+    <span>
+      {formatMessage(
+        { id: availabilityKey as unknown as string },
+        addHTMLSupport(availabilityValues),
+      )}
+    </span>
   );
 }
 

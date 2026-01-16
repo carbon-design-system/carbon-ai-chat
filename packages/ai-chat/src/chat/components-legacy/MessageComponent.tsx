@@ -19,7 +19,6 @@ import { carbonIconToReact } from "../utils/carbonIcon";
 import Loading from "../components/carbon/Loading";
 import cx from "classnames";
 import React, { KeyboardEvent, PureComponent } from "react";
-import { FormattedMessage, injectIntl } from "react-intl";
 
 import { nodeToText } from "./aria/AriaAnnouncerComponent";
 import { Avatar } from "./Avatar";
@@ -104,6 +103,7 @@ enum MoveFocusType {
 
 interface MessageProps
   extends
+    HasIntl,
     HasServiceManager,
     HasLanguagePack,
     HasClassName,
@@ -232,10 +232,7 @@ interface MessageState {
   manualReasoningOpen?: boolean;
 }
 
-class MessageComponent extends PureComponent<
-  MessageProps & HasIntl,
-  MessageState
-> {
+class MessageComponent extends PureComponent<MessageProps, MessageState> {
   /**
    * Default state.
    */
@@ -487,10 +484,13 @@ class MessageComponent extends PureComponent<
 
       label = (
         <span data-cds-aichat-exclude-node-read>
-          <FormattedMessage
-            id="message_labelAssistant"
-            values={{ timestamp, actorName }}
-          />
+          {this.props.intl.formatMessage(
+            { id: "message_labelAssistant" },
+            {
+              timestamp,
+              actorName,
+            },
+          )}
         </span>
       );
 
@@ -511,7 +511,14 @@ class MessageComponent extends PureComponent<
         );
       }
     } else {
-      label = <FormattedMessage id="message_labelYou" values={{ timestamp }} />;
+      label = (
+        <span>
+          {this.props.intl.formatMessage(
+            { id: "message_labelYou" },
+            { timestamp },
+          )}
+        </span>
+      );
     }
 
     return (
@@ -1205,7 +1212,5 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
   }
 }
 
-export default withAriaAnnouncer(
-  injectIntl(MessageComponent, { forwardRef: true }),
-);
+export default withAriaAnnouncer(MessageComponent);
 export { MessageComponent as MessageClass, MoveFocusType };

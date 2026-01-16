@@ -7,12 +7,13 @@
  *  @license
  */
 
-import { createIntl } from "react-intl";
+import { createIntl } from "./i18n";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { ServiceManager } from "../services/ServiceManager";
 
 /**
- * A simple utility function to set the intl object on the given service manager.
+ * A simple utility function to set the i18n formatter on the given service manager.
+ * This replaces the previous react-intl based implementation.
  */
 function setIntl(
   serviceManager: ServiceManager,

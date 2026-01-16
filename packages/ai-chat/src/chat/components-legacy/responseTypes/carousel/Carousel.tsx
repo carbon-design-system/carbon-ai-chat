@@ -20,7 +20,7 @@ import React, {
   useState,
   Suspense,
 } from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
 import type { SwiperRef } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper/types";
@@ -126,7 +126,7 @@ function Carousel({
   initialSlide,
   onSlideChange,
 }: CarouselProps) {
-  const intl = useIntl();
+  const { formatMessage } = useIntl();
   const { carousel_prevNavButton, carousel_nextNavButton } = useLanguagePack();
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint,
@@ -141,9 +141,12 @@ function Carousel({
   }
 
   const totalSlideCount = React.Children.count(children);
-  const currentLabel = intl.formatMessage(
+  const currentLabel = formatMessage(
     { id: "components_swiper_currentLabel" },
-    { currentSlideNumber, totalSlideCount },
+    {
+      currentSlideNumber,
+      totalSlideCount,
+    },
   );
 
   if (totalSlideCount <= 1) {

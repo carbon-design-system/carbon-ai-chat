@@ -190,7 +190,9 @@ function LauncherContainer() {
       formatUnreadMessageLabel={({ count }) =>
         serviceManager.intl.formatMessage(
           { id: "icon_ariaUnreadMessages" },
-          { count: shouldShowUnreadIndicator ? Math.max(count, 1) : count },
+          {
+            count: shouldShowUnreadIndicator ? Math.max(count, 1) : count,
+          },
         )
       }
       aiEnabled={aiEnabled}

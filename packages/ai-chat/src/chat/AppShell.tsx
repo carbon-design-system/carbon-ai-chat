@@ -17,7 +17,7 @@ import React, {
 import cx from "classnames";
 import FocusTrap from "focus-trap-react";
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
-import { useIntl } from "react-intl";
+import { useIntl } from "./hooks/useIntl";
 
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
 import AssistantChat, { ChatClass } from "./components-legacy/AssistantChat";
@@ -885,6 +885,7 @@ export default function AppShell({
                               hidden={hideAssistantChatContainer}
                             >
                               <AssistantChat
+                                intl={intl}
                                 assistantName={publicConfig.assistantName}
                                 headerDisplayName={headerDisplayName}
                                 ref={botChatRef}
