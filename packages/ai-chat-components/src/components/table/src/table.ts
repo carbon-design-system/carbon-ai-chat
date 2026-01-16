@@ -216,7 +216,7 @@ class CDSAIChatTable extends LitElement {
    * @internal
    */
   @state()
-  public _allowFiltering = false;
+  public _allowFiltering = true;
 
   static styles = styles;
 
@@ -364,7 +364,7 @@ class CDSAIChatTable extends LitElement {
    */
   private _setPageSize() {
     // If there are more rows than the page size then enable filtering.
-    this._allowFiltering = this.rows.length > this._currentPageSize;
+    // this._allowFiltering = this.rows.length > this._currentPageSize;
 
     // Update the visible rows in case the page size has changed or this is the first time this web component has
     // rendered.
