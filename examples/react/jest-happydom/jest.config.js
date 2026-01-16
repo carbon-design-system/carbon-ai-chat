@@ -20,7 +20,7 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/src/jest.setup.ts"],
   transformIgnorePatterns: [
     // Allowlist the ESM dependencies that need transpilation under Jest's CJS runtime.
-    "node_modules/(?!(?:@lit|lit|lit-html|lit-element|@lit-labs|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|react-player|swiper|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|react-intl|@codemirror|@lezer|crelt|style-mod|w3c-keyname|flatpickr)/)",
+    "node_modules/(?!(?:@lit|lit|lit-html|lit-element|@lit-labs|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|react-player|swiper|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|react-intl|@formatjs|@codemirror|@lezer|crelt|style-mod|w3c-keyname|flatpickr)/)",
   ],
   moduleDirectories: ["node_modules", "<rootDir>/../../../node_modules", "src"],
   clearMocks: true,
