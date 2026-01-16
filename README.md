@@ -33,6 +33,10 @@ This is helpful if you are creating your our Carbon compliant chat widget, or if
 
 [See the @carbon/ai-chat-components README.md](./packages/ai-chat-components/README.md).
 
+## Peer dependency changes
+
+This `@carbon/ai-chat` package uses peer dependencies to avoid bundling dependencies that you may already have installed or may want to control the version of. [See the peer dependency changes documentation](./docs/peer-dependency-changes.md) for a detailed history of all peer dependency additions, removals, and version updates across package versions.
+
 ## Related tools
 
 - [Carbon Charts MCP server, IBM only](https://w3.ibm.com/innersource/portal/projects/1874876)
