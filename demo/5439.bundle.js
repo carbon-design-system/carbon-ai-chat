@@ -2,8 +2,8 @@
 "use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return r}}),a(8766),a(7189),a(880),a(5457);var l=a(7256),s=a(7118),c=a(3192),d=a(3967);function r(e){const{tableTitle:t,tableDescription:a,headers:r,filterPlaceholderText:o,downloadLabelText:i,locale:n,_handleDownload:b,_rowsWithIDs:$,_allowFiltering:h,_handleFilterEvent:p}=e;return c.qy`<cds-table
     size="md"
     locale=${n}
-    .isSortable=${h}
-    .useZebraStyles=${!0}
+    is-sortable
+    use-zebra-styles
     @cds-table-filtered=${p}
   >
     ${t&&c.qy`<cds-table-header-title slot="title"
