@@ -9,6 +9,7 @@
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../styles/chat-theme";
 
 .cds-aichat--hidden {
@@ -94,12 +95,8 @@
 
 .cds-aichat--ai-theme .cds-aichat--widget {
   border: 1px solid transparent;
-  background: linear-gradient(
-      to bottom,
-      theme.$ai-border-start,
-      theme.$ai-border-end
-    )
-    border-box;
+  @include ai-popover-gradient($background: "chat-shell-background");
+
   background-color: theme.$chat-shell-background;
   /* TODO: For AI theme only?
   These give us the 1px border on the outside that gets darker toward the top. */
@@ -299,8 +296,9 @@ in. */
 }
 
 .cds-aichat--ai-theme .cds-aichat {
+  @include ai-gradient();
+
   background-color: theme.$chat-shell-background;
-  background-image: chat-theme.$ai-background-image;
   box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
 }
 

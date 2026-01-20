@@ -46,13 +46,6 @@
   --cds-aichat-border-radius: 0;
 
   /* AI theming variables */
-  --cds-aichat-ai-background-image: linear-gradient(
-    to bottom,
-    #{theme.$chat-shell-background} 0,
-    #{theme.$chat-shell-background} 50%,
-    #{theme.$ai-aura-end} 50%,
-    #{theme.$ai-aura-start} 100%
-  );
   --cds-aichat-ai-box-shadow-inner: inset 0 -80px 70px -65px
     #{theme.$ai-inner-shadow};
   --cds-aichat-ai-box-shadow-outer: 0 4px 10px 2px #{theme.$ai-drop-shadow};

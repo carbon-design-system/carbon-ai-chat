@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -14,16 +14,6 @@
 $box-shadow: config.get-var("box-shadow", 1px 0 4px hsl(0deg 0% 9% / 30%));
 
 // AI theming variables
-$ai-background-image: config.get-var(
-  "ai-background-image",
-  linear-gradient(
-    to bottom,
-    #{theme.$chat-shell-background} 0,
-    #{theme.$chat-shell-background} 50%,
-    #{theme.$ai-aura-end} 50%,
-    #{theme.$ai-aura-start} 100%
-  )
-);
 $ai-box-shadow-inner: config.get-var(
   "ai-box-shadow-inner",
   inset 0 -80px 70px -65px #{theme.$ai-inner-shadow}

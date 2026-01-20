@@ -11,6 +11,7 @@
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/components/button/tokens";
 @use "@carbon/styles/scss/components/button" as button;
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../../styles/chat-theme";
 
 .cds-aichat--input-and-completions {
@@ -53,28 +54,8 @@
 
 // For the aiTheme we want a gradient border instead of a top border.
 .cds-aichat--ai-theme .cds-aichat--input-container {
-  // Lastly create a transparent border. The color of this border will end up being the second linear-gradient specified
-  // while the padding and content of the input field will just be the normal background color from the first gradient.
   border: button.$button-outline-width solid transparent;
-  background:
-    // Set a background gradient that is really just a solid color for the input field background color. This gradient
-    // covers the input containers padding and content, but not the border. We need a gradient here because that
-    // creates an image which is what the background prop requires.
-    linear-gradient(
-        to bottom,
-        theme.$chat-prompt-background,
-        theme.$chat-prompt-background
-      )
-      padding-box,
-    // Set a background gradient that fades from the border color to the background color. This gradient covers the
-    // input containers border, padding, and content and sits beneath the previous background layer. Because this
-    // layer is the only one of the two that covers the border it will underlay the transparent border created below.
-    linear-gradient(
-        to bottom,
-        theme.$border-subtle-00,
-        theme.$chat-prompt-background
-      )
-      border-box;
+  @include ai-popover-gradient($background: 'chat-prompt-background');
 }
 
 .cds-aichat--input-container--show-upload-button {

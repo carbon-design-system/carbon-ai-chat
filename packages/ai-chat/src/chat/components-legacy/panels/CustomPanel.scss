@@ -1,12 +1,13 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../../styles/chat-theme";
 
 .cds-aichat--custom-panel {
@@ -19,8 +20,9 @@
 }
 
 .cds-aichat--ai-theme .cds-aichat--custom-panel {
+  @include ai-gradient();
+
   background-color: theme.$chat-shell-background;
-  background-image: chat-theme.$ai-background-image;
 }
 
 .cds-aichat--ai-theme .cds-aichat--overlay-panel--with-back-button,

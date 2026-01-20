@@ -9,6 +9,7 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../../styles/chat-theme";
 
 .cds-aichat--home-screen {
@@ -19,8 +20,9 @@
 }
 
 .cds-aichat--home-screen--background-ai-theme {
+  @include ai-gradient();
+
   background-color: theme.$chat-shell-background;
-  background-image: chat-theme.$ai-background-image;
 }
 
 .cds-aichat--home-screen__home-screen-bottom-element {
