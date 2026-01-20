@@ -22,7 +22,7 @@ $css--plex: true !default;
   @include type.type-style("body-01");
 
   display: flex;
-  /* stylelint-disable declaration-no-important */
+  /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
   flex-direction: column;
   border: solid rem(1px) theme.$chat-bubble-border;
@@ -37,7 +37,8 @@ $css--plex: true !default;
 
   ::slotted([slot="notification"]) {
     box-sizing: border-box;
-    max-inline-size: 100%;
+    /* stylelint-disable-next-line declaration-no-important */
+    max-inline-size: 100% !important;
   }
 }
 ::slotted(#{$prefix}-toolbar) {

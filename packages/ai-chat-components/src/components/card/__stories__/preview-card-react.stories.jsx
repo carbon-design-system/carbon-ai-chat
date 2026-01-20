@@ -9,7 +9,7 @@ import {
   CardSteps as CardStepsWC,
 } from "./preview-card.stories";
 import { Card, CardFooter, CardSteps } from "../../../react/card";
-import AILabel from "../../../react/ai-label";
+import { AILabel } from "@carbon/react";
 import Toolbar from "../../../react/toolbar";
 import "./story-styles.scss";
 import { action } from "storybook/actions";
