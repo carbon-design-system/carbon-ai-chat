@@ -8,7 +8,6 @@
  */
 
 import React, { Component, RefObject } from "react";
-import { injectIntl } from "react-intl";
 import cx from "classnames";
 
 import MessagesComponent, { MessagesComponentClass } from "./MessagesComponent";
@@ -430,5 +429,5 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
   }
 }
 
-export default injectIntl(AssistantChat, { forwardRef: true });
+export default AssistantChat;
 export { AssistantChat as ChatClass };

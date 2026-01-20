@@ -12,6 +12,7 @@ import { property } from "lit/decorators.js";
 // @ts-ignore
 import styles from "./workspace-shell.scss?lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import prefix from "../../../globals/settings.js";
 
 /**
  * Workspace Shell Body.
@@ -19,7 +20,7 @@ import { carbonElement } from "../../../globals/decorators/index.js";
  * @element cds-aichat-workspace-shell-body
  *
  */
-@carbonElement("cds-aichat-workspace-shell-body")
+@carbonElement(`${prefix}-workspace-shell-body`)
 class CDSAIChatWorkspaceShellBody extends LitElement {
   static styles = styles;
 

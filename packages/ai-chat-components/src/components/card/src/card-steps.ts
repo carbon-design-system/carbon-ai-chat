@@ -27,8 +27,9 @@ export type Step = {
 };
 /**
  * Step component
+ * @element cds-aichat-card-steps
  */
-@carbonElement("cds-aichat-card-steps")
+@carbonElement(`${prefix}-card-steps`)
 class CardSteps extends LitElement {
   static styles = styles;
 

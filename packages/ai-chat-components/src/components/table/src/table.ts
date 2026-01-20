@@ -15,6 +15,7 @@ import { tableSkeletonTemplate } from "./table-skeleton.template";
 import { loadTableRuntime } from "./table-loader.js";
 // @ts-ignore
 import styles from "./table.scss?lit";
+import prefix from "../../../globals/settings.js";
 
 type TableRuntimeModule = Awaited<ReturnType<typeof loadTableRuntime>>;
 
@@ -49,8 +50,9 @@ const PAGE_SIZE_WIDTH_THRESHOLD = 400;
 
 /**
  * Class functionality for the Table custom element.
+ * @element cds-aichat-table
  */
-@carbonElement("cds-aichat-table")
+@carbonElement(`${prefix}-table`)
 class CDSAIChatTable extends LitElement {
   /**
    * The optional table title.
@@ -214,7 +216,7 @@ class CDSAIChatTable extends LitElement {
    * @internal
    */
   @state()
-  public _allowFiltering = false;
+  public _allowFiltering = true;
 
   static styles = styles;
 
@@ -362,7 +364,7 @@ class CDSAIChatTable extends LitElement {
    */
   private _setPageSize() {
     // If there are more rows than the page size then enable filtering.
-    this._allowFiltering = this.rows.length > this._currentPageSize;
+    // this._allowFiltering = this.rows.length > this._currentPageSize;
 
     // Update the visible rows in case the page size has changed or this is the first time this web component has
     // rendered.

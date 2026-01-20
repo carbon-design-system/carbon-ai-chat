@@ -13,11 +13,13 @@ import CDSTile from "@carbon/web-components/es/components/tile/tile.js";
 import styles from "./card.scss?lit";
 import { html } from "lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import prefix from "../../../globals/settings.js";
 
 /**
  * Component extending the @carbon/web-components' button
+ * @element cds-aichat-card
  */
-@carbonElement("cds-aichat-card")
+@carbonElement(`${prefix}-card`)
 class Card extends CDSTile {
   static styles = styles;
 

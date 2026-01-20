@@ -14,8 +14,13 @@ import { classMap } from "lit/directives/class-map.js";
 // @ts-ignore
 import styles from "./processing.scss?lit";
 import { carbonElement } from "../../../globals/decorators";
+import prefix from "../../../globals/settings.js";
 
-@carbonElement("cds-aichat-processing")
+/**
+ * Processing component
+ * @element cds-aichat-processing
+ */
+@carbonElement(`${prefix}-processing`)
 class CDSAIChatProcessing extends LitElement {
   static styles = styles;
 

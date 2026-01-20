@@ -12,7 +12,7 @@
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { carbonIconToReact } from "./../utils/carbonIcon";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../hooks/useIntl";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
 
@@ -108,7 +108,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message,
   } = props;
 
-  const intl = useIntl();
+  const { formatMessage } = useIntl();
   const languagePack = useLanguagePack();
   const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const chainOfThoughtRef = useRef<CDSAIChatChainOfThought>(null);
@@ -629,7 +629,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     stepNumber: number;
     stepTitle: string;
   }) {
-    return intl.formatMessage(
+    return formatMessage(
       { id: "chainOfThought_stepTitle" },
       { stepNumber, stepTitle },
     );

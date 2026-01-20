@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.1
-      - name: Use Node.js 24.x
+      - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
         run: npm install
@@ -30,10 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.1
-      - name: Use Node.js 24.x
+      - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
         run: |
@@ -50,10 +50,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.1
-      - name: Use Node.js 24.x
+      - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
         run: npm install
@@ -68,10 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.1
-      - name: Use Node.js 24.x
+      - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
         run: npm install
@@ -82,10 +82,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.1
-      - name: Use Node.js 24.x
+      - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
         run: npm install

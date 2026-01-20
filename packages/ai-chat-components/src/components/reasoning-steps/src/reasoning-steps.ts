@@ -18,7 +18,11 @@ import { carbonElement } from "../../../globals/decorators";
 const baseClass = `${prefix}--reasoning-steps`;
 const stepSelector = `${prefix}-reasoning-step`;
 
-@carbonElement("cds-aichat-reasoning-steps")
+/**
+ * Reasoning steps container component
+ * @element cds-aichat-reasoning-steps
+ */
+@carbonElement(`${prefix}-reasoning-steps`)
 class CDSAIChatReasoningSteps extends LitElement {
   static styles = styles;
 

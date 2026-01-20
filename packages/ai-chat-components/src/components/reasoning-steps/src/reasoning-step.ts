@@ -25,7 +25,11 @@ let idCounter = 0;
 const generateId = (segment: string) =>
   `${baseClass}-${segment}-${idCounter++}`;
 
-@carbonElement("cds-aichat-reasoning-step")
+/**
+ * Reasoning step component
+ * @element cds-aichat-reasoning-step
+ */
+@carbonElement(`${prefix}-reasoning-step`)
 class CDSAIChatReasoningStep extends LitElement {
   static styles = styles;
 

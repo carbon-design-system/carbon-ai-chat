@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { IntlShape } from "react-intl";
 import type { AppStore } from "../store/appStore";
+import { IntlShape } from "../utils/i18n";
 
 import { AppWindowFunctions } from "../components-legacy/AppWindowFunctions";
 import { EventBus } from "../events/EventBus";
@@ -137,8 +137,9 @@ class ServiceManager {
   restartCount = 0;
 
   /**
-   * An instance of the react-intl Intl object that can be used for formatting messages. This instance is available
-   * both here and through the React RawIntlProvider that makes it available to react-intl components.
+   * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available
+   * both here and through the React IntlProvider that makes it available to components via useIntl() hook.
+   * This replaces the previous react-intl IntlShape.
    */
   intl: IntlShape;
 

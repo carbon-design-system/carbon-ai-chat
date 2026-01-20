@@ -23,7 +23,11 @@ import type { CDSAIChatChainOfThoughtStep } from "./chain-of-thought-step.js";
 
 const stepSelector = `${prefix}-chain-of-thought-step`;
 
-@carbonElement("cds-aichat-chain-of-thought")
+/**
+ * Chain of thought container component
+ * @element cds-aichat-chain-of-thought
+ */
+@carbonElement(`${prefix}-chain-of-thought`)
 class CDSAIChatChainOfThought extends LitElement {
   static styles = styles;
 

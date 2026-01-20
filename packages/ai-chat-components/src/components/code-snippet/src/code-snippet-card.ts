@@ -10,6 +10,7 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import prefix from "../../../globals/settings.js";
 import "../../card/index.js";
 import "./code-snippet.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
@@ -19,7 +20,7 @@ import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
  *
  * @element cds-aichat-code-snippet-card
  */
-@carbonElement("cds-aichat-code-snippet-card")
+@carbonElement(`${prefix}-code-snippet-card`)
 class CDSAIChatCodeSnippetCard extends LitElement {
   /** Language used for syntax highlighting. */
   @property({ type: String }) language = "";

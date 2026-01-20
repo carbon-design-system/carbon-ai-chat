@@ -1080,6 +1080,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const messageItemID = localMessage.ui_state.id;
     const message = (
       <MessageComponent
+        intl={this.props.intl}
         ref={(component: MessageClass) => {
           if (component) {
             this.messageRefs.set(messageItemID, component);
@@ -1338,7 +1339,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     } else if (isMessageLoadingCounter) {
       isTypingMessage = intl.formatMessage(
         { id: "messages_assistantIsLoading" },
-        { assistantName },
+        {
+          assistantName,
+        },
       );
     }
 

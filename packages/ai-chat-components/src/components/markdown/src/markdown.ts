@@ -10,6 +10,7 @@
 import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import prefix from "../../../globals/settings.js";
 // @ts-ignore
 import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
@@ -20,7 +21,11 @@ import { renderTokenTree } from "./markdown-renderer.js";
 import { consoleError } from "./utils.js";
 import { markdownTemplate } from "./markdown.template.js";
 
-@carbonElement("cds-aichat-markdown")
+/**
+ * Markdown component
+ * @element cds-aichat-markdown
+ */
+@carbonElement(`${prefix}-markdown`)
 class CDSAIChatMarkdown extends LitElement {
   static styles = styles;
 

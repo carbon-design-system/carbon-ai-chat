@@ -18,7 +18,7 @@ import { DATE_PICKER_INPUT_KIND } from "@carbon/web-components/es/components/dat
 import dayjs from "dayjs";
 import { BaseOptions } from "flatpickr/dist/types/options";
 import React, { useCallback, useRef, useState } from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { ScrollElementIntoViewFunction } from "../../MessagesComponent";
@@ -69,7 +69,7 @@ interface DatePickerComponentProps {
 function DatePickerComponent(props: DatePickerComponentProps) {
   const { localMessage, disabled, scrollElementIntoView } = props;
   const serviceManager = useServiceManager();
-  const intl = useIntl();
+  const { formatMessage } = useIntl();
   const webChatLocale = useSelector(
     (state: AppState) => state.config.public.locale || "en",
   );
@@ -86,13 +86,13 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const [dayjsLocale, setDayjsLocale] = useState<string>();
   const datePickerRef = useRef<any>(null);
   const valueForAssistantRef = useRef<string>(undefined);
-  const inputLabel = intl.formatMessage(
+  const inputLabel = formatMessage(
     { id: "datePicker_chooseDate" },
-    { format: userDisplayFormat },
+    {
+      format: userDisplayFormat,
+    },
   );
-  const confirmButtonLabel = intl.formatMessage({
-    id: "datePicker_confirmDate",
-  });
+  const confirmButtonLabel = formatMessage({ id: "datePicker_confirmDate" });
   const isDateInfoReady = Boolean(
     flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale,
   );
