@@ -112,7 +112,7 @@ function Image(props: ImageProps) {
 
   return (
     <Tile
-      ifFlush={false}
+      isFlush={false}
       ref={rootRef}
       className={cx("cds-aichat--image", {
         "cds-aichat--image__text-and-icon": hasText && Boolean(renderIcon),
