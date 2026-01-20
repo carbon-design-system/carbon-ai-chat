@@ -134,7 +134,7 @@ jobs:
     steps:
       # Triggers only if it is a full release
       - name: Update versions.js file and upload to COS
-        if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == false
+        if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == 'false'
         uses: peter-evans/repository-dispatch@v4
         with:
           event-type: update-versions-file
