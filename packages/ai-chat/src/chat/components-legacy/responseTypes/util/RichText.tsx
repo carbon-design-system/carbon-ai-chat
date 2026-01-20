@@ -8,7 +8,7 @@
  */
 
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown.js";
@@ -68,7 +68,7 @@ function RichText(props: RichTextProps) {
 
   // Get localization data for markdown components
   const languagePack = useLanguagePack();
-  const intl = useIntl();
+  const { formatMessage } = useIntl();
   const locale = useSelector(
     (state: AppState) => state.config.public.locale || "en",
   );
@@ -78,12 +78,14 @@ function RichText(props: RichTextProps) {
   const getPaginationSupplementalText = useMemo(
     () =>
       ({ count }: { count: number }) => {
-        return intl.formatMessage(
+        return formatMessage(
           { id: "table_paginationSupplementalText" },
-          { pagesCount: count },
+          {
+            pagesCount: count,
+          },
         );
       },
-    [intl],
+    [formatMessage],
   );
 
   const getPaginationStatusText = useMemo(
@@ -97,20 +99,20 @@ function RichText(props: RichTextProps) {
         end: number;
         count: number;
       }) => {
-        return intl.formatMessage(
+        return formatMessage(
           { id: "table_paginationStatus" },
           { start, end, count },
         );
       },
-    [intl],
+    [formatMessage],
   );
 
   const getLineCountText = useMemo(
     () =>
       ({ count }: { count: number }) => {
-        return intl.formatMessage({ id: "codeSnippet_lineCount" }, { count });
+        return formatMessage({ id: "codeSnippet_lineCount" }, { count });
       },
-    [intl],
+    [formatMessage],
   );
 
   if (debug) {

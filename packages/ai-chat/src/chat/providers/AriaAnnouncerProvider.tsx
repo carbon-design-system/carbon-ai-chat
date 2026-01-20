@@ -8,7 +8,7 @@
  */
 
 import React, { useCallback, useEffect, useRef } from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../hooks/useIntl";
 
 import {
   AriaAnnouncerContext,

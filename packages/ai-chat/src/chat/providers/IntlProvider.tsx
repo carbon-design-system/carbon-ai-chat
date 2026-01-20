@@ -10,19 +10,50 @@
 /**
  * IntlProvider
  *
- * Thin wrapper around react-intl's RawIntlProvider to colocate provider components.
+ * Custom i18n provider that replaces react-intl's RawIntlProvider.
+ * This is framework-agnostic and prepares for web components migration.
  */
 
 import React, { ReactNode, type JSX } from "react";
-import { RawIntlProvider, IntlShape } from "react-intl";
+import { IntlContext } from "../contexts/IntlContext";
+import { IntlShape } from "../utils/i18n";
 
 interface IntlProviderProps {
+  /**
+   * The i18n formatter instance created by createIntl()
+   */
   intl: IntlShape;
+
+  /**
+   * Child components that will have access to i18n
+   */
   children?: ReactNode;
 }
 
+/**
+ * Provider component that makes i18n formatter available to all child components.
+ * This replaces react-intl's RawIntlProvider.
+ *
+ * @example
+ * ```typescript
+ * import { IntlProvider } from './providers/IntlProvider';
+ * import { createIntl } from './utils/i18n';
+ * import enMessages from './languages/en.json';
+ *
+ * const formatter = createIntl({ locale: 'en', messages: enMessages });
+ *
+ * function App() {
+ *   return (
+ *     <IntlProvider intl={formatter}>
+ *       <YourComponents />
+ *     </IntlProvider>
+ *   );
+ * }
+ * ```
+ */
 function IntlProvider({ intl, children }: IntlProviderProps): JSX.Element {
-  return <RawIntlProvider value={intl}>{children}</RawIntlProvider>;
+  return <IntlContext.Provider value={intl}>{children}</IntlContext.Provider>;
 }
 
 export { IntlProvider };
+export type { IntlProviderProps };

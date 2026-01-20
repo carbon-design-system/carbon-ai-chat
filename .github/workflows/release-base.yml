@@ -49,10 +49,10 @@ jobs:
           git config --global user.email ${{ secrets.CARBON_BOT_EMAIL }}
           git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
 
-      - name: Setup Node.js
+      - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: "24.x"
+          node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
           cache: "npm"
       - name: Install dependencies and build
@@ -134,7 +134,7 @@ jobs:
     steps:
       # Triggers only if it is a full release
       - name: Update versions.js file and upload to COS
-        if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == false
+        if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == 'false'
         uses: peter-evans/repository-dispatch@v4
         with:
           event-type: update-versions-file

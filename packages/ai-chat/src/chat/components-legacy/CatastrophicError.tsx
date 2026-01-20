@@ -15,7 +15,7 @@ import ChatButton, {
 } from "../components/carbon/ChatButton";
 import cx from "classnames";
 import React from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../hooks/useIntl";
 import { useSelector } from "../hooks/useSelector";
 
 import { AppState } from "../../types/state/AppState";

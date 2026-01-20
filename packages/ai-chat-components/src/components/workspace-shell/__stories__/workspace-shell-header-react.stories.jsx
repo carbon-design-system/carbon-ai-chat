@@ -3,8 +3,7 @@ import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
 } from "../../../react/workspace-shell";
-import Button from "../../../react/button";
-import Icon from "../../../react/icon";
+import { Button } from "@carbon/react";
 import Edit16 from "@carbon/icons/es/edit/16.js";
 import { getHeaderDescription, getBodyContent } from "./story-helper-react";
 import "./story-styles.scss";
@@ -108,8 +107,8 @@ export const WithAction = {
       <WorkspaceShellHeader titleText={titleText} subTitleText={subTitleText}>
         {descriptionType !== "none" && getHeaderDescription(descriptionType)}
         {showAction && (
-          <Button kind="tertiary" slot="header-action">
-            Edit Plan <Icon icon={Edit16} slot="icon" />
+          <Button icon={Edit16} kind="tertiary" slot="header-action">
+            Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
@@ -130,8 +129,8 @@ export const Complete = {
       <WorkspaceShellHeader titleText={titleText} subTitleText={subTitleText}>
         {descriptionType !== "none" && getHeaderDescription(descriptionType)}
         {showAction && (
-          <Button kind="tertiary" slot="header-action">
-            Edit Plan <Icon icon={Edit16} slot="icon" />
+          <Button icon={Edit16} kind="tertiary" slot="header-action">
+            Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>

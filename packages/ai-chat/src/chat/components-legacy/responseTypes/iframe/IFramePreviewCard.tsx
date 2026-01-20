@@ -10,7 +10,7 @@
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React from "react";
-import { useIntl } from "react-intl";
+import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
@@ -44,8 +44,8 @@ function IFramePreviewCardComponent({
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
   const { iframe_ariaImageAltText } = useLanguagePack();
-  const intl = useIntl();
-  const iframeAriaClickPreviewCardMessage = intl.formatMessage(
+  const { formatMessage } = useIntl();
+  const iframeAriaClickPreviewCardMessage = formatMessage(
     { id: "iframe_ariaClickPreviewCard" },
     { source: urlHostName },
   );

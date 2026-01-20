@@ -1,0 +1,135 @@
+import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as ChatShellReactStories from "./cds-aichat-shell-react.stories";
+
+<Meta of={ChatShellReactStories} />
+
+# Chat shell
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+The `<ChatShell>` component wraps the `cds-aichat-shell` web component to provide a flexible chat interface layout with support for headers, messages, input areas, workspaces, history panels, and overlay panels inside React applications.
+
+The shell includes support for:
+- **Header and footer slots** for custom branding and actions
+- **Messages and input areas** with before/after extension points
+- **Workspace and history sidebars** with configurable positioning
+- **Overlay panels** (`<ChatPanel>`) with priority management and animations
+- **Responsive layouts** with optional frames and rounded corners
+- **AI-enabled theming** for enhanced visual styling
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import ChatShell from "@carbon/ai-chat-components/es/react/cds-aichat-shell.js";
+
+function MyChatInterface() {
+  return (
+    <ChatShell showFrame roundedCorners>
+      <div slot="header">Chat Header</div>
+      <div slot="messages">Messages Area</div>
+      <div slot="input">Input Area</div>
+    </ChatShell>
+  );
+}
+```
+
+### Using panels
+
+Panels can be added to create overlay experiences with different priorities and animations:
+
+```jsx
+import ChatShell from "@carbon/ai-chat-components/es/react/cds-aichat-shell.js";
+import ChatPanel from "@carbon/ai-chat-components/es/react/cds-aichat-panel.js";
+
+function ChatWithPanel() {
+  const [isPanelOpen, setIsPanelOpen] = React.useState(false);
+
+  return (
+    <ChatShell showFrame>
+      <div slot="header">Chat Header</div>
+      <div slot="messages">Messages Area</div>
+      <div slot="input">Input Area</div>
+      
+      <div slot="panels">
+        <ChatPanel 
+          open={isPanelOpen}
+          showChatHeader 
+          showFrame
+          animationOnOpen="slide-in-from-bottom"
+          animationOnClose="slide-out-to-bottom">
+          <div slot="header">Panel Header</div>
+          <div slot="body">Panel Content</div>
+        </ChatPanel>
+      </div>
+    </ChatShell>
+  );
+}
+```
+
+## Component API
+
+<ArgTypes of={ChatShellReactStories.Default} />
+
+### Usage Patterns
+
+#### With Workspace Sidebar
+
+```jsx
+function ChatWithWorkspace() {
+  const [showWorkspace, setShowWorkspace] = React.useState(false);
+
+  return (
+    <ChatShell 
+      showFrame 
+      showWorkspace={showWorkspace}
+      workspaceLocation="end">
+      <div slot="header">Chat Header</div>
+      <div slot="messages">
+        <button onClick={() => setShowWorkspace(!showWorkspace)}>
+          Toggle Workspace
+        </button>
+      </div>
+      <div slot="workspace">Workspace Content</div>
+      <div slot="input">Input Area</div>
+    </ChatShell>
+  );
+}
+```
+
+#### With History Sidebar
+
+```jsx
+function ChatWithHistory() {
+  const [showHistory, setShowHistory] = React.useState(false);
+
+  return (
+    <ChatShell 
+      showFrame 
+      showHistory={showHistory}
+      historyLocation="start">
+      <div slot="header">Chat Header</div>
+      <div slot="history">History Content</div>
+      <div slot="messages">Messages Area</div>
+      <div slot="input">Input Area</div>
+    </ChatShell>
+  );
+}
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

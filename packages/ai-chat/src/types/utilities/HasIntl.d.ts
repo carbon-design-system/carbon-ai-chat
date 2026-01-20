@@ -7,18 +7,19 @@
  *  @license
  */
 
-import { IntlShape } from "react-intl";
+import { IntlShape } from "../../chat/utils/i18n";
 
 /**
- * A simple interface for objects that have a reference to an injected intl property from react-intl. This interface
- * is equivalent to "WrappedComponentProps" from their library but that name is lame and could easily conflict with
- * other names from other libraries. Also the fact that it uses a variable property name makes my editor less smart
- * about type checking this value so we'll just define an interface that's got the property name already set.
+ * A simple interface for objects that have a reference to an injected intl property.
+ * This has been updated to use our custom IntlShape instead of react-intl's IntlShape.
+ *
+ * Note: This interface is primarily used for legacy components that used injectIntl HOC.
+ * New components should use the useIntl() hook instead.
  */
 
 interface HasIntl {
   /**
-   * An injected "intl" property.
+   * An injected "intl" property containing the i18n formatter.
    */
   intl: IntlShape;
 }

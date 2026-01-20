@@ -15,6 +15,9 @@ import prettier from "prettier/standalone";
 import prettierPluginBabel from "prettier/plugins/babel";
 import prettierPluginEstree from "prettier/plugins/estree";
 
+// Import Carbon styles for React components
+import "@carbon/styles/css/styles.css";
+
 if (typeof document !== "undefined") {
   const existing = document.head.querySelector(
     'style[data-storybook-container="true"]',
@@ -105,6 +108,22 @@ export const parameters = {
           "Form Participation",
         ],
         "Components",
+        [
+          "Card",
+          "Chat shell",
+          "Chain of thought",
+          "Chat button",
+          "Code snippet",
+          [
+            "Default",
+            "Highlight",
+            "Streaming With Language Set",
+            "Streaming With Language Detection",
+            "With No Tile Container",
+            "Editable",
+            "Editable Empty",
+          ],
+        ],
         "Layout",
       ],
     },

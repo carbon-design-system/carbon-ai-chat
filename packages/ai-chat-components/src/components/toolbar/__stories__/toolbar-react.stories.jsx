@@ -1,21 +1,17 @@
 /* eslint-disable */
 import React from "react";
 import Toolbar from "../../../react/toolbar";
-import Button from "../../../react/button";
 import {
+  Button,
   OverflowMenu,
-  OverflowMenuBody,
   OverflowMenuItem,
-} from "../../../react/overflow-menu";
-import {
   ContentSwitcher,
-  ContentSwitcherItem,
-} from "../../../react/content-switcher";
-import Icon from "../../../react/icon";
-import IconButton from "../../../react/icon-button";
-import AILabel from "../../../react/ai-label";
+  Switch,
+  IconButton,
+  AILabel,
+} from "@carbon/react";
 import { actionLists } from "./story-data";
-import { Home16, ArrowLeft16, OverflowMenuVertical16 } from "@carbon/icons";
+import { Home, ArrowLeft, OverflowMenuVertical } from "@carbon/icons-react";
 import "./story-styles.scss";
 import { Default as DefaultWC } from "./toolbar.stories";
 
@@ -59,10 +55,10 @@ export default {
               align="bottom-start"
               enterDelayMs={0}
               leaveDelayMs={0}
-              onclick={action("onClick")}
+              onClick={action("onClick")}
+              label="Home"
             >
-              <Icon icon={Home16} slot="icon" />
-              <span slot="tooltip-content">Home</span>
+              <Home />
             </IconButton>
           </div>
         ),
@@ -74,10 +70,10 @@ export default {
               align="bottom-start"
               enterDelayMs={0}
               leaveDelayMs={0}
-              onclick={action("onClick")}
+              onClick={action("onClick")}
+              label="Back"
             >
-              <Icon icon={ArrowLeft16} slot="icon" />
-              <span slot="tooltip-content">Back</span>
+              <ArrowLeft />
             </IconButton>
           </div>
         ),
@@ -85,36 +81,21 @@ export default {
           <div slot="navigation" data-fixed data-rounded="top-left">
             <OverflowMenu
               size="md"
-              index="1"
-              kind="ghost"
-              align="bottom-start"
-              enter-delay-ms="0"
-              leave-delay-ms="0"
+              renderIcon={OverflowMenuVertical}
+              iconDescription="Menu"
             >
-              <Icon
-                icon={OverflowMenuVertical16}
-                slot="icon"
-                style={{
-                  color: "var(--cds-icon-primary)",
-                }}
-              />
-              <span slot="tooltip-content"> Menu </span>
-              <OverflowMenuBody>
-                <OverflowMenuItem>Stop app</OverflowMenuItem>
-                <OverflowMenuItem>Restart app</OverflowMenuItem>
-                <OverflowMenuItem>Rename app</OverflowMenuItem>
-                <OverflowMenuItem disabled>Clone and move app</OverflowMenuItem>
-                <OverflowMenuItem>Edit routes and access</OverflowMenuItem>
-                <OverflowMenuItem divider danger>
-                  Delete app
-                </OverflowMenuItem>
-              </OverflowMenuBody>
+              <OverflowMenuItem itemText="Stop app" />
+              <OverflowMenuItem itemText="Restart app" />
+              <OverflowMenuItem itemText="Rename app" />
+              <OverflowMenuItem itemText="Clone and move app" disabled />
+              <OverflowMenuItem itemText="Edit routes and access" />
+              <OverflowMenuItem itemText="Delete app" hasDivider isDelete />
             </OverflowMenu>
           </div>
         ),
         "custom 2": (
           <div slot="navigation" data-fixed data-rounded="top-left">
-            <Button onclick={action("onClick")} size="md">
+            <Button onClick={action("onClick")} size="md">
               test
             </Button>
           </div>
@@ -137,12 +118,12 @@ export default {
               selectedIndex="0"
               size="sm"
             >
-              <ContentSwitcherItem value="code" name="one">
+              <Switch value="code" name="one">
                 code
-              </ContentSwitcherItem>
-              <ContentSwitcherItem value="preview" name="two">
+              </Switch>
+              <Switch value="preview" name="two">
                 preview
-              </ContentSwitcherItem>
+              </Switch>
             </ContentSwitcher>
           </div>
         ),

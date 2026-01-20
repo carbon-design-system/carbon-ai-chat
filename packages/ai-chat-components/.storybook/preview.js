@@ -187,7 +187,11 @@ export const parameters = {
         ],
         "Components",
         [
-          "Code Snippet",
+          "Card",
+          "Chat shell",
+          "Chain of thought",
+          "Chat button",
+          "Code snippet",
           [
             "Default",
             "Highlight",

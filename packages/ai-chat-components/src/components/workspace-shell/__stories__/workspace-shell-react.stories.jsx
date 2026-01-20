@@ -5,11 +5,8 @@ import WorkspaceShell, {
   WorkspaceShellBody,
   WorkspaceShellFooter,
 } from "../../../react/workspace-shell";
-import Edit16 from "@carbon/icons/es/edit/16.js";
-import AILabel from "../../../react/ai-label";
-import InlineNotification from "../../../react/inline-notification";
-import Button from "../../../react/button";
-import Icon from "../../../react/icon";
+import { Edit } from "@carbon/icons-react";
+import { AILabel, InlineNotification, Button } from "@carbon/react";
 import { action } from "storybook/actions";
 import { getHeaderDescription, getBodyContent } from "./story-helper-react";
 import { actionLists, FooterActionList } from "./story-data";
@@ -144,8 +141,8 @@ export const Default = {
         >
           {getHeaderDescription(headerDescription)}
           {showHeaderAction && (
-            <Button kind="tertiary" slot="header-action">
-              Edit Plan <Icon icon={Edit16} slot="icon" />
+            <Button kind="tertiary" slot="header-action" renderIcon={Edit}>
+              Edit Plan
             </Button>
           )}
         </WorkspaceShellHeader>

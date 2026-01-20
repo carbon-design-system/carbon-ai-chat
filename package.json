@@ -140,6 +140,21 @@
     "extends": [
       "eslint-config-carbon"
     ],
+    "overrides": [
+      {
+        "files": [
+          "**/__tests__/**/*.ts",
+          "**/__tests__/**/*.tsx",
+          "**/*.test.ts",
+          "**/*.test.tsx",
+          "**/*.spec.ts",
+          "**/*.spec.tsx"
+        ],
+        "rules": {
+          "@typescript-eslint/no-non-null-assertion": "off"
+        }
+      }
+    ],
     "rules": {
       "jsdoc/check-tag-names": [
         "error",

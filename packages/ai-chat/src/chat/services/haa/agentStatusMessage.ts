@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { IntlShape } from "react-intl";
+import { IntlShape } from "../../utils/i18n";
 
 import {
   HumanAgentMessageType,
