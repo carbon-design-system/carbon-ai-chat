@@ -171,35 +171,37 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   }
 
   return (
-    <Tile className="cds-aichat--connect-to-human-agent">
-      <div className="cds-aichat--connect-to-human-agent__title">
-        <span>{languagePack.agent_chatTitle}</span>
-      </div>
-      <div className="cds-aichat--connect-to-human-agent__text">
-        {messageToUser}
-      </div>
-      <Button
-        className="cds-aichat--connect-to-human-agent__request-button"
-        size="md"
-        disabled={showDisabled}
-        onClick={doStartChat}
-      >
-        <ButtonIcon slot="icon" />
-        {buttonText}
-      </Button>
-      {!showDisabled && isSuspended && (
-        <div className="cds-aichat--connect-to-human-agent__suspended-warning">
-          {languagePack.agent_suspendedWarning}
+    <Tile isFlush={false} className="cds-aichat--connect-to-human-agent">
+      <div slot="body">
+        <div className="cds-aichat--connect-to-human-agent__title">
+          <span>{languagePack.agent_chatTitle}</span>
         </div>
-      )}
-      {showConfirmSuspended && (
-        <EndHumanAgentChatModal
-          title={languagePack.agent_confirmSuspendedEndChatTitle}
-          message={languagePack.agent_confirmSuspendedEndChatMessage}
-          onConfirm={doStartChat}
-          onCancel={() => setShowConfirmSuspended(false)}
-        />
-      )}
+        <div className="cds-aichat--connect-to-human-agent__text">
+          {messageToUser}
+        </div>
+        <Button
+          className="cds-aichat--connect-to-human-agent__request-button"
+          size="md"
+          disabled={showDisabled}
+          onClick={doStartChat}
+        >
+          <ButtonIcon slot="icon" />
+          {buttonText}
+        </Button>
+        {!showDisabled && isSuspended && (
+          <div className="cds-aichat--connect-to-human-agent__suspended-warning">
+            {languagePack.agent_suspendedWarning}
+          </div>
+        )}
+        {showConfirmSuspended && (
+          <EndHumanAgentChatModal
+            title={languagePack.agent_confirmSuspendedEndChatTitle}
+            message={languagePack.agent_confirmSuspendedEndChatMessage}
+            onConfirm={doStartChat}
+            onCancel={() => setShowConfirmSuspended(false)}
+          />
+        )}
+      </div>
     </Tile>
   );
 }

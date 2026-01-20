@@ -6,17 +6,6 @@
  *
  *  @license
  */
-
-import { createComponent } from "@lit/react";
-import React from "react";
-
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonTileElement from "@carbon/web-components/es/components/tile/tile.js";
-
-const Tile = createComponent({
-  tagName: "cds-tile",
-  elementClass: CarbonTileElement,
-  react: React,
-});
+import { default as Tile } from "@carbon/ai-chat-components/es/react/card.js";
 
 export default Tile;

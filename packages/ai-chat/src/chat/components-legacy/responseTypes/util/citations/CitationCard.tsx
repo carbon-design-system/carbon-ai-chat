@@ -66,8 +66,10 @@ function CitationCard({
         onClick={onSelectCitation}
         onFocus={onSelectCitation}
       >
-        <Tile>
-          <CitationCardContent citation={citation} type={type} />
+        <Tile isFlush={false}>
+          <div slot="body">
+            <CitationCardContent citation={citation} type={type} />
+          </div>
         </Tile>
       </a>
     );

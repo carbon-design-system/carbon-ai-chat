@@ -112,6 +112,7 @@ function Image(props: ImageProps) {
 
   return (
     <Tile
+      ifFlush={false}
       ref={rootRef}
       className={cx("cds-aichat--image", {
         "cds-aichat--image__text-and-icon": hasText && Boolean(renderIcon),
@@ -119,7 +120,7 @@ function Image(props: ImageProps) {
           !hideIconAndTitle && !title && !description && Boolean(renderIcon),
       })}
     >
-      <div className="cds-aichat--image__image-wrapper">
+      <div slot="media" className="cds-aichat--image__image-wrapper">
         <ImageOnly
           {...props}
           setIsError={setIsError}
@@ -128,26 +129,28 @@ function Image(props: ImageProps) {
           isLoaded={isLoaded}
         />
       </div>
-      {hasText && (
-        <TextHolderTile
-          title={title}
-          description={description}
-          displayURL={displayURL}
-          urlHostName={displayURL && getURLHostName(displayURL)}
-          hideTitle={hideIconAndTitle}
-        />
-      )}
-      {Boolean(Icon) && (
-        <Icon
-          className={cx(
-            "cds-aichat--image__icon",
-            "cds-aichat--direction-has-reversible-svg",
-            {
-              "cds-aichat--image__icon--link": displayURL,
-            },
-          )}
-        />
-      )}
+      <div slot="body">
+        {hasText && (
+          <TextHolderTile
+            title={title}
+            description={description}
+            displayURL={displayURL}
+            urlHostName={displayURL && getURLHostName(displayURL)}
+            hideTitle={hideIconAndTitle}
+          />
+        )}
+        {Boolean(Icon) && (
+          <Icon
+            className={cx(
+              "cds-aichat--image__icon",
+              "cds-aichat--direction-has-reversible-svg",
+              {
+                "cds-aichat--image__icon--link": displayURL,
+              },
+            )}
+          />
+        )}
+      </div>
     </Tile>
   );
 }

@@ -54,13 +54,15 @@ function ExpandToPanelCard({
 
   function renderTile(className?: string) {
     return (
-      <Tile className={className}>
-        <CitationCardContent
-          citation={citation}
-          type={CitationType.EXPAND_IF_NEEDED}
-          setIsExpandable={setIsExpandable}
-          isExpandable={isExpandable}
-        />
+      <Tile isFlush={false} className={className}>
+        <div slot="body">
+          <CitationCardContent
+            citation={citation}
+            type={CitationType.EXPAND_IF_NEEDED}
+            setIsExpandable={setIsExpandable}
+            isExpandable={isExpandable}
+          />
+        </div>
       </Tile>
     );
   }

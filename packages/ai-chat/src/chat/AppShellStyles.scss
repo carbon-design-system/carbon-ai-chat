@@ -30,7 +30,7 @@
   @include theme.theme(themes.$g100);
 }
 
-cds-tile {
+cds-aichat-card {
   border: 1px solid theme.$chat-bubble-border;
   border-radius: layout.$spacing-03;
   background-color: theme.$chat-shell-background;
