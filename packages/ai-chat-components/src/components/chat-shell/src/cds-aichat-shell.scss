@@ -98,7 +98,7 @@ $default-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
 
 .shell.ai-theme {
   border: 1px solid transparent;
-  @include ai-popover-gradient($background: 'chat-shell-background');
+  @include ai-popover-gradient($background: "chat-shell-background");
 
   background-color: theme.$chat-shell-background;
   box-shadow: $ai-box-shadow-outer;
