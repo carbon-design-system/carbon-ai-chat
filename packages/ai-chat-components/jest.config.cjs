@@ -13,7 +13,7 @@ module.exports = {
   },
   setupFilesAfterEnv: ["<rootDir>/src/react/__tests__/jest.setup.ts"],
   transformIgnorePatterns: [
-    "node_modules/(?!(?:@lit|lit|lit-html|lit-element|@lit-labs|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|react-player|swiper|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|react-intl|@codemirror|@lezer|crelt|style-mod|w3c-keyname)/)",
+    "node_modules/(?!(?:@lit|lit|lit-html|lit-element|@lit-labs|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|react-player|swiper|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|@codemirror|@lezer|crelt|style-mod|w3c-keyname)/)",
   ],
   clearMocks: true,
   resetMocks: true,
