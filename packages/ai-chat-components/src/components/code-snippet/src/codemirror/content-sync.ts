@@ -8,7 +8,7 @@
  */
 
 import throttle from "lodash-es/throttle.js";
-import { EditorView } from "codemirror";
+import { EditorView } from "@codemirror/view";
 
 interface ContentSyncHooks {
   getEditorView(): EditorView | undefined;

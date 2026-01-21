@@ -8,7 +8,7 @@
  */
 
 import { EditorState, Compartment } from "@codemirror/state";
-import { EditorView } from "codemirror";
+import { EditorView } from "@codemirror/view";
 import { LanguageSupport } from "@codemirror/language";
 import { createCarbonTheme } from "./theme.js";
 import {
