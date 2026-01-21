@@ -9,7 +9,7 @@
 
 import "../index";
 import { html } from "lit";
-import { getBodyContent } from "./story-hleper";
+import { getBodyContent } from "./story-helper";
 import styles from "./story-styles.scss?lit";
 
 export default {

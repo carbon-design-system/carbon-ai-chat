@@ -10,6 +10,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../../../globals/scss/vars" as *;
 
 $messages-max-width: var(--cds-aichat-messages-max-width, 672px);
@@ -17,13 +18,6 @@ $messages-min-width: var(--cds-aichat-messages-min-width, 320px);
 $workspace-min-width: var(--cds-aichat-workspace-min-width, 640px);
 $history-width: var(--cds-aichat-history-width, 320px);
 
-$ai-background-image: linear-gradient(
-  to bottom,
-  #{theme.$chat-shell-background} 0,
-  #{theme.$chat-shell-background} 50%,
-  #{theme.$ai-aura-end} 50%,
-  #{theme.$ai-aura-start} 100%
-);
 $ai-box-shadow-outer: 0 4px 10px 2px #{theme.$ai-drop-shadow};
 $default-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
 
@@ -104,18 +98,15 @@ $default-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
 
 .shell.ai-theme {
   border: 1px solid transparent;
-  background: linear-gradient(
-      to bottom,
-      theme.$ai-border-start,
-      theme.$ai-border-end
-    )
-    border-box;
+  @include ai-popover-gradient($background: "chat-shell-background");
+
   background-color: theme.$chat-shell-background;
   box-shadow: $ai-box-shadow-outer;
 
   .main-chat {
+    @include ai-gradient();
+
     background-color: theme.$chat-shell-background;
-    background-image: $ai-background-image;
   }
 }
 

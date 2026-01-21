@@ -122,7 +122,7 @@ function getRollupConfig({ folders = [] } = {}) {
       nodeResolve({
         browser: true,
         mainFields: ["jsnext", "module", "main"],
-        extensions: [".js", ".ts"],
+        extensions: [".js", ".ts", ".tsx"],
       }),
       commonjs({
         include: [/node_modules/],
