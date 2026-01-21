@@ -27,7 +27,7 @@ import {
 } from "./layout-utils.js";
 import { StreamingManager } from "./streaming-manager.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
-import type { EditorView } from "codemirror";
+import type { EditorView } from "@codemirror/view";
 import { Compartment } from "@codemirror/state";
 import { loadCodeMirrorRuntime } from "./codemirror/codemirror-loader.js";
 import "@carbon/web-components/es/components/skeleton-text/index.js";

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { EditorView } from "codemirror";
+import { EditorView } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 

@@ -10,7 +10,7 @@
 import { Compartment } from "@codemirror/state";
 import { LanguageDescription, LanguageSupport } from "@codemirror/language";
 import { languages } from "./language-data.js";
-import { EditorView } from "codemirror";
+import { EditorView } from "@codemirror/view";
 import { detectLanguage, mapLanguageName } from "./language-utils.js";
 
 interface LanguageStateUpdate {
