@@ -12,7 +12,7 @@ import Headset16 from "@carbon/icons/es/headset/16.js";
 import HelpDesk16 from "@carbon/icons/es/help-desk/16.js";
 import Logout16 from "@carbon/icons/es/logout/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import Tile from "../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import Button from "../../../components/carbon/Button";
 import React, { ReactNode, useState } from "react";
 
@@ -171,7 +171,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   }
 
   return (
-    <Tile isFlush={false} className="cds-aichat--connect-to-human-agent">
+    <Card isFlush={false} className="cds-aichat--connect-to-human-agent">
       <div slot="body">
         <div className="cds-aichat--connect-to-human-agent__title">
           <span>{languagePack.agent_chatTitle}</span>
@@ -202,7 +202,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
           />
         )}
       </div>
-    </Tile>
+    </Card>
   );
 }
 

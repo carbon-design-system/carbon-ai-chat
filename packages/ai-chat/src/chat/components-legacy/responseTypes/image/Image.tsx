@@ -7,7 +7,7 @@
  *  @license
  */
 
-import Tile from "../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import AISkeletonPlaceholder from "../../../components/carbon/AISkeletonPlaceholder";
 import SkeletonPlaceholder from "../../../components/carbon/SkeletonPlaceholder";
@@ -111,7 +111,7 @@ function Image(props: ImageProps) {
   }
 
   return (
-    <Tile
+    <Card
       isFlush={false}
       ref={rootRef}
       className={cx("cds-aichat--image", {
@@ -151,7 +151,7 @@ function Image(props: ImageProps) {
           />
         )}
       </div>
-    </Tile>
+    </Card>
   );
 }
 

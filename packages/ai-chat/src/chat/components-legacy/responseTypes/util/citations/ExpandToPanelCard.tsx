@@ -7,7 +7,7 @@
  *  @license
  */
 
-import Tile from "../../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import React, { useState } from "react";
 
 import { useServiceManager } from "../../../../hooks/useServiceManager";
@@ -54,7 +54,7 @@ function ExpandToPanelCard({
 
   function renderTile(className?: string) {
     return (
-      <Tile isFlush={false} className={className}>
+      <Card isFlush={false} className={className}>
         <div slot="body">
           <CitationCardContent
             citation={citation}
@@ -63,7 +63,7 @@ function ExpandToPanelCard({
             isExpandable={isExpandable}
           />
         </div>
-      </Tile>
+      </Card>
     );
   }
 

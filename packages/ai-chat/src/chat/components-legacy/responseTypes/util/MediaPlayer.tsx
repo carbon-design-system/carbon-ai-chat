@@ -9,7 +9,7 @@
 
 import Music32 from "@carbon/icons/es/music/32.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import Tile from "../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import React, {
   Suspense,
@@ -227,7 +227,7 @@ function MediaPlayerComponent({
    */
   function renderMediaPlayerSkeleton() {
     return (
-      <Tile isFlush={true} className="cds-aichat--media-player__skeleton">
+      <Card isFlush={true} className="cds-aichat--media-player__skeleton">
         <div slot="media">
           <div
             className="cds-aichat--media-player__skeleton-container"
@@ -243,7 +243,7 @@ function MediaPlayerComponent({
             </div>
           )}
         </div>
-      </Tile>
+      </Card>
     );
   }
 
@@ -279,7 +279,7 @@ function MediaPlayerComponent({
       <div className="cds-aichat--media-player__root" ref={rootElementRef}>
         {errorLoading && <InlineError text={errorMessage} />}
         {!errorLoading && (
-          <Tile
+          <Card
             isFlush={true}
             className={cx("cds-aichat--media-player", {
               "cds-aichat--hidden": !skeletonHidden,
@@ -348,7 +348,7 @@ function MediaPlayerComponent({
                 />
               )}
             </div>
-          </Tile>
+          </Card>
         )}
       </div>
     </>
