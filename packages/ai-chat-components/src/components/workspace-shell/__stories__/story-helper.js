@@ -23,7 +23,10 @@ import "@carbon/web-components/es/components/data-table/table-header-description
 import "@carbon/web-components/es/components/button/button.js";
 import "../../code-snippet/index.js";
 import { multilineCode } from "./story-data.js";
-import { tableHeaders, tableRows } from "../../table/__stories__/story-data.js";
+import {
+  headers as tableHeaders,
+  rows as tableRows,
+} from "../../table/__stories__/story-data.js";
 
 export function getHeaderDescription(type) {
   switch (type) {

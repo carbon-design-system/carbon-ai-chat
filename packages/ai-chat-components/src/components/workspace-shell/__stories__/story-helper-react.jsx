@@ -23,7 +23,10 @@ import {
 } from "@carbon/react";
 import CodeSnippetCard from "../../../react/code-snippet-card";
 import { multilineCode } from "./story-data.js";
-import { tableHeaders, tableRows } from "../../table/__stories__/story-data.js";
+import {
+  headers as tableHeaders,
+  rows as tableRows,
+} from "../../table/__stories__/story-data.js";
 
 export function getHeaderDescription(type) {
   switch (type) {
