@@ -143,6 +143,7 @@ function WorkspaceWriteableElementExample({
         </AILabel>
       </Toolbar>
       <InlineNotification
+        slot="notification"
         title="Notification Title"
         subtitle="Notification Subtitle"
         kind="warning"

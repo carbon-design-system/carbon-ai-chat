@@ -84,11 +84,8 @@ export function getBodyContent(type) {
           return true;
         }
         const searchLower = searchValue.toLowerCase();
-        return (
-          row.name.toLowerCase().includes(searchLower) ||
-          row.role.toLowerCase().includes(searchLower) ||
-          row.location.toLowerCase().includes(searchLower) ||
-          row.status.toLowerCase().includes(searchLower)
+        return row.cells.some((cell) =>
+          cell.text.toLowerCase().includes(searchLower),
         );
       });
 
@@ -120,7 +117,11 @@ export function getBodyContent(type) {
                   expanded
                   persistent
                   placeholder="Filter table"
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  onChange={(e) => {
+                    if (typeof e !== "string" && e.target) {
+                      setSearchValue(e.target.value);
+                    }
+                  }}
                 />
                 <Button kind="primary">Add new</Button>
               </TableToolbarContent>
@@ -128,18 +129,17 @@ export function getBodyContent(type) {
             <Table size="lg">
               <TableHead>
                 <TableRow>
-                  {tableHeaders.map((header) => (
-                    <TableHeader key={header}>{header}</TableHeader>
+                  {tableHeaders.map((header, index) => (
+                    <TableHeader key={index}>{header.text}</TableHeader>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredRows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>{row.role}</TableCell>
-                    <TableCell>{row.location}</TableCell>
-                    <TableCell>{row.status}</TableCell>
+                {filteredRows.map((row, rowIndex) => (
+                  <TableRow key={rowIndex}>
+                    {row.cells.map((cell, cellIndex) => (
+                      <TableCell key={cellIndex}>{cell.text}</TableCell>
+                    ))}
                   </TableRow>
                 ))}
               </TableBody>
