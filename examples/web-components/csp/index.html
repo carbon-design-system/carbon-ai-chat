@@ -1,0 +1,28 @@
+<!-- 
+  Copyright IBM Corp. 2025
+  
+  This source code is licensed under the Apache-2.0 license found in the
+  LICENSE file in the root directory of this source tree.
+ -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+    <title>@carbon/ai-chat - web components - CSP example</title>
+    <!-- 
+      CSP meta tag will be injected by CspHtmlWebpackPlugin during build.
+      The strictest policy we're testing:
+      - default-src 'self'
+      - script-src 'self' 'nonce-{random}'
+      - style-src 'self'
+      - No 'unsafe-inline' or 'unsafe-eval'
+    -->
+  </head>
+  <body>
+    <h3>Web Components CSP Example - Strictest Content Security Policy</h3>
+    <p>This example demonstrates @carbon/ai-chat working with a strict CSP (no 'unsafe-inline', no 'unsafe-eval').</p>
+    <my-app></my-app>
+  </body>
+</html>

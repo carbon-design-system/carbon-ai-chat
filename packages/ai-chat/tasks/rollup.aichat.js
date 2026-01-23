@@ -55,6 +55,7 @@ const dtsTsConfig = {
     jsx: 'react-jsx', // Enables the new JSX runtime
     allowSyntheticDefaultImports: true, // Allows default imports for React
     esModuleInterop: true, // Ensures compatibility with ES modules
+    stripInternal: true, // Strip @internal types from generated .d.ts files
   },
   include: [path.join(paths.src, '/**/*')],
 };
