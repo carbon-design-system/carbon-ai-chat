@@ -265,6 +265,10 @@ async function postBuild() {
           .replace(
             /@carbon\/web-components\/es\/components\/(.*?)(?=['"\s;])/g,
             "@carbon/web-components/es-custom/components/$1"
+          )
+          .replace(
+            /@carbon\/ai-chat-components\/es(\/|['"])/g,
+            "@carbon/ai-chat-components/es-custom$1"
           );
 
         const token = `__IE_PLACEHOLDER_${placeholders.length}__`;
@@ -297,6 +301,11 @@ async function postBuild() {
       transformed = transformed.replace(
         /@carbon\/web-components\/es\/components\/(.*?)(?=['"\s;])/g,
         "@carbon/web-components/es-custom/components/$1"
+      );
+
+      transformed = transformed.replace(
+        /@carbon\/ai-chat-components\/es(\/|['"])/g,
+        "@carbon/ai-chat-components/es-custom$1"
       );
 
       // restore the import/export placeholders back into the content
