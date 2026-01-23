@@ -29,7 +29,7 @@
   ],
   "scripts": {
     "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
-    "clean": "rimraf es dist storybook-static",
+    "clean": "rimraf es es-custom dist storybook-static",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
