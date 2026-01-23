@@ -12,7 +12,7 @@ import Headset16 from "@carbon/icons/es/headset/16.js";
 import HelpDesk16 from "@carbon/icons/es/help-desk/16.js";
 import Logout16 from "@carbon/icons/es/logout/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import Tile from "../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import Button from "../../../components/carbon/Button";
 import React, { ReactNode, useState } from "react";
 
@@ -171,36 +171,38 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   }
 
   return (
-    <Tile className="cds-aichat--connect-to-human-agent">
-      <div className="cds-aichat--connect-to-human-agent__title">
-        <span>{languagePack.agent_chatTitle}</span>
-      </div>
-      <div className="cds-aichat--connect-to-human-agent__text">
-        {messageToUser}
-      </div>
-      <Button
-        className="cds-aichat--connect-to-human-agent__request-button"
-        size="md"
-        disabled={showDisabled}
-        onClick={doStartChat}
-      >
-        <ButtonIcon slot="icon" />
-        {buttonText}
-      </Button>
-      {!showDisabled && isSuspended && (
-        <div className="cds-aichat--connect-to-human-agent__suspended-warning">
-          {languagePack.agent_suspendedWarning}
+    <Card isFlush={false} className="cds-aichat--connect-to-human-agent">
+      <div slot="body">
+        <div className="cds-aichat--connect-to-human-agent__title">
+          <span>{languagePack.agent_chatTitle}</span>
         </div>
-      )}
-      {showConfirmSuspended && (
-        <EndHumanAgentChatModal
-          title={languagePack.agent_confirmSuspendedEndChatTitle}
-          message={languagePack.agent_confirmSuspendedEndChatMessage}
-          onConfirm={doStartChat}
-          onCancel={() => setShowConfirmSuspended(false)}
-        />
-      )}
-    </Tile>
+        <div className="cds-aichat--connect-to-human-agent__text">
+          {messageToUser}
+        </div>
+        <Button
+          className="cds-aichat--connect-to-human-agent__request-button"
+          size="md"
+          disabled={showDisabled}
+          onClick={doStartChat}
+        >
+          <ButtonIcon slot="icon" />
+          {buttonText}
+        </Button>
+        {!showDisabled && isSuspended && (
+          <div className="cds-aichat--connect-to-human-agent__suspended-warning">
+            {languagePack.agent_suspendedWarning}
+          </div>
+        )}
+        {showConfirmSuspended && (
+          <EndHumanAgentChatModal
+            title={languagePack.agent_confirmSuspendedEndChatTitle}
+            message={languagePack.agent_confirmSuspendedEndChatMessage}
+            onConfirm={doStartChat}
+            onCancel={() => setShowConfirmSuspended(false)}
+          />
+        )}
+      </div>
+    </Card>
   );
 }
 

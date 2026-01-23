@@ -7,7 +7,7 @@
  *  @license
  */
 
-import Tile from "../../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import React from "react";
 import { CitationCardContent, CitationType } from "./CitationCardContent";
@@ -19,7 +19,7 @@ import {
 import { isValidURL } from "../../../../utils/htmlUtils";
 
 /**
- * This component takes a ConversationalSearchItemCitation OR a SearchResult and decides which kind of tile to display
+ * This component takes a ConversationalSearchItemCitation OR a SearchResult and decides which kind of Card to display
  * it in.
  */
 
@@ -66,9 +66,11 @@ function CitationCard({
         onClick={onSelectCitation}
         onFocus={onSelectCitation}
       >
-        <Tile>
-          <CitationCardContent citation={citation} type={type} />
-        </Tile>
+        <Card isFlush={false}>
+          <div slot="body">
+            <CitationCardContent citation={citation} type={type} />
+          </div>
+        </Card>
       </a>
     );
   }
