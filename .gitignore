@@ -47,6 +47,7 @@ jspm_packages
 
 dist
 es
+es-custom
 lib
 storybook-static
 storybook-react-static

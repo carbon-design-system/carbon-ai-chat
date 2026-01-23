@@ -26,6 +26,7 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import path from "path";
 import postcss from "postcss";
 import { readFileSync } from "fs";
+import fs from "fs-extra";
 import typescript from "@rollup/plugin-typescript";
 
 const packageJson = JSON.parse(readFileSync("./package.json"));
@@ -103,6 +104,7 @@ async function build() {
       });
     }
   }
+  await postBuild();
 }
 
 const banner = `/**
@@ -170,3 +172,34 @@ build().catch((error) => {
   console.log(error);
   process.exit(1);
 });
+
+// TODO: remove once @carbon/web-components supports scoped elements!
+async function postBuild() {
+  const sourceDir = path.resolve(__dirname, "../es");
+
+  if (sourceDir) {
+    const targetDir = path.resolve(__dirname, "../es-custom");
+
+    // Copy `es` directory to `es-custom`
+    await fs.copy(sourceDir, targetDir);
+
+    // Find all files in the `es-custom` directory
+    const files = await globby([`${targetDir}/**/*`], { onlyFiles: true });
+
+    // Replace "cds" (not "cds-aichat") with "cds-custom" in all files
+    await Promise.all(
+      files.map(async (file) => {
+        const content = await fs.promises.readFile(file, "utf8");
+        let updatedContent = content
+          // 1) Fix import paths
+          .replace(
+            /@carbon\/web-components\/es/g,
+            "@carbon/web-components/es-custom",
+          )
+          // 2) Replace cds → cds-custom except cds-aichat
+          .replace(/\bcds\b(?!-aichat)/g, "cds-custom");
+        await fs.promises.writeFile(file, updatedContent);
+      }),
+    );
+  }
+}
