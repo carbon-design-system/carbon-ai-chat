@@ -15,6 +15,11 @@
 
 .cds-aichat--input-and-completions {
   position: relative;
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-end-start,
+    0
+  );
   inline-size: 100%;
 }
 
@@ -23,9 +28,15 @@
   // This ensures the input field sits on top of the completions.
   z-index: 1;
   display: flex;
+  box-sizing: border-box;
   align-items: center;
   background-color: theme.$chat-prompt-background;
   border-block-start: button.$button-outline-width solid theme.$border-subtle-01;
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-end-start,
+    0
+  );
   color: theme.$text-primary;
   inline-size: 100%;
   min-block-size: 0;
@@ -46,7 +57,6 @@
     .cds-aichat--input-container {
       border: button.$button-outline-width solid theme.$border-subtle-00;
       border-radius: layout.$spacing-03;
-      margin-block-end: 32px;
     }
   }
 }
@@ -244,4 +254,9 @@ cds-button.cds-aichat--input-container__send-button:active:focus svg {
 cds-button.cds-aichat--input-container__send-button[disabled]:hover svg,
 cds-button.cds-aichat--input-container__send-button[disabled] svg {
   fill: theme.$icon-disabled;
+}
+
+.cds-aichat--before-input-element {
+  margin: auto;
+  max-inline-size: chat-theme.$messages-max-width;
 }

@@ -16,7 +16,7 @@ import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
-import { AriaLiveMessage } from "./aria/AriaLiveMessage";
+import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
 import {
   HasServiceManager,
@@ -62,7 +62,7 @@ import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
+import { MountChildrenOnDelay } from "../components/util/MountChildrenOnDelay";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -421,7 +421,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * list is still scrolled to the bottom. It will also run doAutoScroll to ensure proper scrolling behavior
    * when the window is resized.
    */
-  public onResize = () => {
+  public onResize = throttle(() => {
     this.renderScrollDownNotification();
     if (this.props.messageState.isScrollAnchored) {
       const element = this.messagesContainerWithScrollingRef.current;
@@ -433,7 +433,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     // Run doAutoScroll when the window is resized to maintain proper scroll position
     // This is important for workspace functionality
     this.doAutoScroll();
-  };
+  }, AUTO_SCROLL_THROTTLE_TIMEOUT);
 
   /**
    * This will execute an auto-scroll operation based on the current state of messages in the component. This should
@@ -744,6 +744,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const { localMessageItems, allMessagesByID } = this.props;
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
+    if (!scrollElement) {
+      debugAutoScroll("[doAutoScroll] scrollElement is null, skipping scroll");
+      return;
+    }
+
     // Handle explicit scroll options
     if (scrollToTop !== undefined) {
       this.handleScrollToTop(scrollElement, scrollToTop);
@@ -819,6 +824,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   ) => {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
+    if (!scrollElement) {
+      return;
+    }
+
     const scrollRect = scrollElement.getBoundingClientRect();
     const elementRect = element.getBoundingClientRect();
 
@@ -885,6 +894,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       if (panelComponent) {
         const scrollElement = this.messagesContainerWithScrollingRef.current;
+
+        if (!scrollElement) {
+          return;
+        }
 
         // Scroll to the top of the message.
         const setScrollTop = panelComponent.ref.current.offsetTop;

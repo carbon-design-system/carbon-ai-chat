@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../src/cds-aichat-shell";
-import "../src/cds-aichat-panel";
+import "../src/shell";
+import "../src/panel";
 import "../../card/src/card-footer";
 import "../../toolbar/src/toolbar";
 import "@carbon/web-components/es/components/ai-label/index.js";

@@ -17,7 +17,7 @@ import React from "react";
 import { WriteableElementName } from "../../types/instance/ChatInstance";
 import { useServiceManager } from "../hooks/useServiceManager";
 import { HasChildren } from "../../types/utilities/HasChildren";
-import WriteableElement from "./WriteableElement";
+import WriteableElement from "../components/util/WriteableElement";
 
 interface LatestWelcomeNodesProps extends HasChildren {
   /**

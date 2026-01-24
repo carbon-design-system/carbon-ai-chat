@@ -68,11 +68,11 @@ test("smoke React", async ({ page }) => {
   await expect(mainPanel).toBeVisible();
 
   // Wait for the close button to appear (chat may need time to initialize)
-  const close = mainPanel.getByTestId(PageObjectId.CLOSE_CHAT);
+  const close = page.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible({ timeout: 10000 });
-  await mainPanel.getByTestId(PageObjectId.INPUT).click();
-  await mainPanel.getByTestId(PageObjectId.INPUT).fill("text");
-  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await page.getByTestId(PageObjectId.INPUT).click();
+  await page.getByTestId(PageObjectId.INPUT).fill("text");
+  await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
@@ -104,11 +104,11 @@ test("smoke web component", async ({ page }) => {
   // Open the Web component chat widget, enter a message, confirm receipt of answer, close the chat.
   await page.getByTestId(PageObjectId.LAUNCHER).click();
   const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
-  const close = mainPanel.getByTestId(PageObjectId.CLOSE_CHAT);
+  const close = page.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible();
-  await mainPanel.getByTestId(PageObjectId.INPUT).click();
-  await mainPanel.getByTestId(PageObjectId.INPUT).fill("text");
-  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await page.getByTestId(PageObjectId.INPUT).click();
+  await page.getByTestId(PageObjectId.INPUT).fill("text");
+  await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
@@ -134,10 +134,10 @@ test("smoke react custom element", async ({ page }) => {
   const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
   await expect(mainPanel).toBeVisible({ timeout: 10000 });
 
-  const input = mainPanel.getByTestId(PageObjectId.INPUT);
+  const input = page.getByTestId(PageObjectId.INPUT);
   await input.click();
   await input.fill("text");
-  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
@@ -161,10 +161,10 @@ test("smoke web component custom element", async ({ page }) => {
   const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
   await expect(mainPanel).toBeVisible({ timeout: 10000 });
 
-  const input = mainPanel.getByTestId(PageObjectId.INPUT);
+  const input = page.getByTestId(PageObjectId.INPUT);
   await input.click();
   await input.fill("text");
-  await mainPanel.getByTestId(PageObjectId.INPUT_SEND).click();
+  await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );

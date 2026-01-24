@@ -1,0 +1,306 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
+@use "../../../globals/scss/vars" as *;
+@use "variables" as *;
+
+// ============================================================================
+// Host Element
+// ============================================================================
+:host {
+  display: block;
+  box-sizing: border-box;
+  background: transparent;
+  block-size: 100%;
+  container-type: inline-size;
+  font-family: var(
+    --cds-aichat-font-family,
+    "IBM Plex Sans",
+    "Helvetica Neue",
+    arial,
+    sans-serif
+  );
+  inline-size: 100%;
+}
+
+// ============================================================================
+// Shell Container
+// ============================================================================
+.shell {
+  --#{$prefix}-rounded-modifier-radius: 0;
+  --#{$prefix}-rounded-modifier-radius-start-start: 0;
+  --#{$prefix}-rounded-modifier-radius-start-end: 0;
+  --#{$prefix}-rounded-modifier-radius-end-start: 0;
+  --#{$prefix}-rounded-modifier-radius-end-end: 0;
+
+  position: relative;
+  display: block;
+  border: 1px solid theme.$border-subtle-00;
+  border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+  background-color: theme.$chat-shell-background;
+  background-image: none;
+  block-size: 100%;
+  box-shadow: var(--cds-aichat-box-shadow, $default-box-shadow);
+  inline-size: 100%;
+}
+
+.shell.shell--panels-animating {
+  overflow: hidden;
+}
+
+// Shell Modifiers - AI Theme
+.shell.ai-theme {
+  border: 1px solid transparent;
+  @include ai-popover-gradient($background: "chat-shell-background");
+
+  background-color: theme.$chat-shell-background;
+  box-shadow: $ai-box-shadow-outer;
+}
+
+// Shell Modifiers - Frameless
+.shell.frameless,
+.shell.frameless.rounded {
+  --#{$prefix}-rounded-modifier-radius: 0;
+  --#{$prefix}-rounded-modifier-radius-start-start: 0;
+  --#{$prefix}-rounded-modifier-radius-start-end: 0;
+  --#{$prefix}-rounded-modifier-radius-end-start: 0;
+  --#{$prefix}-rounded-modifier-radius-end-end: 0;
+
+  border: none;
+  border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+  box-shadow: none;
+}
+
+// Override ai-theme gradient border when frameless is applied
+.shell.frameless.ai-theme {
+  background-image: none;
+}
+
+// Shell Modifiers - Rounded
+// Base .main-chat styles (less specific, must come before .shell.rounded .main-chat)
+.main-chat {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  block-size: 100%;
+  inline-size: 100%;
+  min-block-size: 0;
+}
+
+.shell.rounded {
+  // Set the base rounded radius custom property that can be inherited by slotted content
+  --#{$prefix}-rounded-modifier-radius: #{layout.$spacing-03};
+  --#{$prefix}-rounded-modifier-radius-start-start: #{layout.$spacing-03};
+  --#{$prefix}-rounded-modifier-radius-start-end: #{layout.$spacing-03};
+  --#{$prefix}-rounded-modifier-radius-end-start: #{layout.$spacing-03};
+  --#{$prefix}-rounded-modifier-radius-end-end: #{layout.$spacing-03};
+
+  border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+
+  .main-chat {
+    border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+  }
+
+  .header-with-header-after {
+    border-start-end-radius: var(
+      --#{$prefix}-rounded-modifier-radius-start-end,
+      0
+    );
+    border-start-start-radius: var(
+      --#{$prefix}-rounded-modifier-radius-start-start,
+      0
+    );
+
+    // Apply rounded corners to header when it has content
+    > .header.has-content {
+      border-start-end-radius: var(
+        --#{$prefix}-rounded-modifier-radius-start-end,
+        0
+      );
+      border-start-start-radius: var(
+        --#{$prefix}-rounded-modifier-radius-start-start,
+        0
+      );
+    }
+
+    // Apply rounded corners to header-after only when header is empty but header-after has content
+    > .header:not(.has-content) + .header-after.has-content {
+      --#{$prefix}-rounded-modifier-radius-start-end: var(
+        --#{$prefix}-rounded-modifier-radius,
+        0
+      );
+      --#{$prefix}-rounded-modifier-radius-start-start: var(
+        --#{$prefix}-rounded-modifier-radius,
+        0
+      );
+      --#{$prefix}-rounded-modifier-radius-end-start: 0;
+      --#{$prefix}-rounded-modifier-radius-end-end: 0;
+
+      border-start-end-radius: var(
+        --#{$prefix}-rounded-modifier-radius-start-end,
+        0
+      );
+      border-start-start-radius: var(
+        --#{$prefix}-rounded-modifier-radius-start-start,
+        0
+      );
+    }
+
+    // Reset rounded corners for header when it has no content
+    > .header:not(.has-content) {
+      --#{$prefix}-rounded-modifier-radius-start-end: 0;
+      --#{$prefix}-rounded-modifier-radius-start-start: 0;
+
+      border-start-end-radius: 0;
+      border-start-start-radius: 0;
+    }
+
+    // Reset rounded corners for header-after when it has no content
+    > .header-after:not(.has-content) {
+      --#{$prefix}-rounded-modifier-radius-start-end: 0;
+      --#{$prefix}-rounded-modifier-radius-start-start: 0;
+
+      border-start-end-radius: 0;
+      border-start-start-radius: 0;
+    }
+
+    // Reset rounded corners for header-after when header has content (header takes priority)
+    > .header.has-content + .header-after.has-content {
+      --#{$prefix}-rounded-modifier-radius-start-end: 0;
+      --#{$prefix}-rounded-modifier-radius-start-start: 0;
+      --#{$prefix}-rounded-modifier-radius-end-start: 0;
+      --#{$prefix}-rounded-modifier-radius-end-end: 0;
+
+      border-end-end-radius: 0;
+      border-end-start-radius: 0;
+
+      border-start-end-radius: 0;
+      border-start-start-radius: 0;
+    }
+  }
+}
+
+// ============================================================================
+// Panel Slots
+// ============================================================================
+[data-panel-slot] {
+  opacity: 1;
+}
+
+[data-panel-slot][inert] {
+  opacity: 0;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  [data-panel-slot] {
+    transition: opacity motion.$duration-fast-02
+      motion.motion(standard, productive);
+  }
+}
+
+// ============================================================================
+// Main Content Structure
+// ============================================================================
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+.main-content-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 0%;
+  align-items: stretch;
+  block-size: 100%;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow-x: visible;
+}
+
+.shell.workspace-closing,
+.shell.workspace-opening {
+  .main-content-body {
+    overflow-x: hidden;
+  }
+}
+
+// AI theme styles for .main-chat (must come after base .main-chat)
+.shell.ai-theme .main-chat {
+  @include ai-gradient();
+
+  background-color: theme.$chat-shell-background;
+}
+
+// ============================================================================
+// History Panel
+// ============================================================================
+.history {
+  display: flex;
+  flex-direction: column;
+
+  > [data-panel-slot] {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    block-size: 100%;
+    min-block-size: 0;
+  }
+}
+
+:host([show-history]) .history {
+  flex: 0 0 auto;
+  inline-size: $history-width;
+  max-inline-size: $history-width;
+}
+
+:host([show-history][history-location="end"]) .history {
+  order: 3;
+}
+
+:host([show-history][show-workspace][workspace-location="end"]) .workspace {
+  order: 2;
+}
+
+// ============================================================================
+// Input and Messages Container
+// ============================================================================
+.input-and-messages {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+  margin: auto;
+  block-size: 100%;
+  inline-size: 100%;
+  max-inline-size: $messages-max-width;
+  min-block-size: 0;
+  min-inline-size: $messages-min-width;
+}
+
+:host([show-history][history-location="end"]) .input-and-messages {
+  order: 1;
+}
+
+/* Make sure input field gets pushed to the bottom */
+.messages {
+  flex-grow: 1;
+  min-block-size: 0;
+}
+
+// Made with Bob

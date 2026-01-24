@@ -108,52 +108,6 @@ export interface CustomPanelInstance {
 }
 
 /**
- * Describes general config options for Carbon AI Chat's internal panel components. This interface is used by legacy
- * panels rendered inside the product.
- *
- * @category Instance
- */
-export interface BasePanelConfigOptions {
-  /**
-   * The panel title which is left blank by default.
-   */
-  title?: string | null;
-
-  /**
-   * Indicates if the close button in the panel should be hidden. When {@link hidePanelHeader} is true, the close button
-   * is hidden automatically.
-   */
-  hideCloseButton?: boolean;
-
-  /**
-   * Indicates if the panel header should be hidden. Hiding the header removes the default title, close button, and back
-   * button from the chrome.
-   */
-  hidePanelHeader?: boolean;
-
-  /**
-   * Indicates if the back button in the panel should be hidden. When {@link hidePanelHeader} is true, the back button is
-   * hidden automatically.
-   */
-  hideBackButton?: boolean;
-
-  /**
-   * This callback is called when the close button is clicked.
-   */
-  onClickClose?: () => void;
-
-  /**
-   * Called when the restart button is clicked.
-   */
-  onClickRestart?: () => void;
-
-  /**
-   * This callback is called when the back button is clicked.
-   */
-  onClickBack?: () => void;
-}
-
-/**
  * Options that change how the custom panel looks. When a header is shown, it inherits styling and behavior from the
  * configured {@link HeaderConfig} (title, assistant name, AI slug, minimize button style, overflow menu, etc.) unless
  * explicitly overridden below.
@@ -174,6 +128,8 @@ export interface CustomPanelConfigOptions {
 
   /**
    * Indicates if the close/minimize button in the custom panel should be hidden.
+   *
+   * @deprecated Use {@link DefaultCustomPanelConfigOptions} for default panels.
    */
   hideCloseButton?: boolean;
 
@@ -182,6 +138,8 @@ export interface CustomPanelConfigOptions {
    * button, and back button chrome entirely. Leave this undefined to animate the panel in with the standard header; set
    * it to true when you need a chrome-free experience (for example, when the panel content provides its own close
    * controls or you want the panel to cover the chat header without animating the header into view).
+   *
+   * @deprecated Use {@link DefaultCustomPanelConfigOptions} for default panels.
    */
   hidePanelHeader?: boolean;
 
@@ -197,18 +155,24 @@ export interface CustomPanelConfigOptions {
    * behavior (which collapses the experience) before this callback fires; set {@link disableDefaultCloseAction} to true
    * if you plan to intercept the event and manage closing yourself. The callback still fires even when the default
    * action is disabled.
+   *
+   * @deprecated Use {@link DefaultCustomPanelConfigOptions} for default panels.
    */
   onClickClose?: () => void;
 
   /**
    * Called when the restart button in the header is clicked. Use this to trigger a conversation reset or your own
    * telemetry when the restart control is surfaced.
+   *
+   * @deprecated Use {@link DefaultCustomPanelConfigOptions} for default panels.
    */
   onClickRestart?: () => void;
 
   /**
    * Called after the header's back button is clicked. The panel automatically closes before this callback is invoked,
    * so you can safely run follow-up logic or analytics once the panel has been dismissed.
+   *
+   * @deprecated Use {@link DefaultCustomPanelConfigOptions} for default panels.
    */
   onClickBack?: () => void;
 
@@ -222,6 +186,8 @@ export interface CustomPanelConfigOptions {
    * button will run Carbon AI Chat's standard close routine (after verifying no view change is in progress). Set this
    * to true when you want to keep the experience open or handle closing asynchronously; you'll need to perform the
    * desired close work inside {@link onClickClose}.
+   *
+   * @deprecated Use {@link DefaultCustomPanelConfigOptions} for default panels.
    */
   disableDefaultCloseAction?: boolean;
 }
@@ -252,19 +218,35 @@ export interface DefaultCustomPanelConfigOptions {
    * Indicates if the back button in the custom panel should be hidden.
    */
   hideBackButton?: boolean;
+
+  /**
+   * Controls the icon used for the back button. Use "minimize" to indicate the
+   * panel can be returned to, or "close" to indicate the panel will not return.
+   */
+  backButtonType?: "minimize" | "close";
+
+  /**
+   * Shows the AI gradient background on your panel. Can be used with in concert with showFrame.
+   */
+  aiEnabled?: boolean;
+
+  /**
+   * Show a frame with the chat shell background instead of the gradient background for your panel content.
+   */
+  showFrame?: boolean;
+
+  /**
+   * By default, the panel will render at the width of the messages list. If you want to be able to render to a full screen
+   * width slot, set fullWidth to true.
+   */
+  fullWidth?: boolean;
 }
 /**
  * Options supported by the workspace custom panel implementation.
  *
- * @experimental
  * @category Instance
  */
 export interface WorkspaceCustomPanelConfigOptions {
-  /**
-   * Determines if the panel open/close animation should be turned off. By default, the panel will animate up from the
-   * bottom of the chat window.
-   */
-  disableAnimation?: boolean;
   /**
    * Where the chat will attempt to render the workspace in logical terms. For a ltr layout "start" will render on the left and "end" will render on the right. If there is not enough room to render the workspace, it will be rendered as a panel overlaying the content with a back button.
    */

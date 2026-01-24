@@ -5,14 +5,28 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+/* ============================================================================
+   IMPORTS & SETUP
+   ============================================================================ */
+
 @use "sass:meta";
 @use "@carbon/styles/scss/themes";
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/reset";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
+@use "./styles/chat-theme";
 
 @use "./styles";
-@use "./components-legacy/imports" as components;
+@use "./components/imports" as components;
+@use "./components-legacy/imports" as legacyComponents;
+
+/* ============================================================================
+   CARBON THEME INTEGRATION
+   Carbon Design System theme classes
+   ============================================================================ */
 
 .cds--white {
   @include theme.theme(themes.$white);
@@ -30,8 +44,268 @@
   @include theme.theme(themes.$g100);
 }
 
+/* ============================================================================
+   GLOBAL COMPONENT OVERRIDES
+   Styles for Carbon components used within the chat
+   ============================================================================ */
+
 .cds-aichat--dark,
 .cds--g90,
 .cds--g100 {
   scrollbar-color: theme.$layer-03 theme.$layer-01;
 }
+
+/* ============================================================================
+   UTILITY CLASSES
+   Reusable utility classes for common patterns
+   ============================================================================ */
+
+.cds-aichat--widget--expand-to-fit {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--hidden {
+  display: none;
+}
+
+.cds-aichat--widget__break-word {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+.cds-aichat--widget__text-ellipsis {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+/* ============================================================================
+   CONTAINER & ACCESSIBILITY
+   Main container wrapper and accessibility features
+   ============================================================================ */
+
+.cds-aichat--container--render {
+  box-sizing: border-box;
+  block-size: 100%;
+  color: theme.$text-primary;
+  inline-size: 100%;
+}
+
+.cds-aichat--container--render[dir="rtl"] {
+  direction: rtl;
+}
+
+/* ARIA live region for screen reader announcements */
+.cds-aichat--container--render > div > div[role="log"] {
+  position: absolute;
+  overflow: hidden;
+  block-size: 1px;
+  inline-size: 1px;
+  inset-inline-start: -10000px;
+}
+
+/* ============================================================================
+   WIDGET - BASE STYLES
+   Core widget container styles and theme variants
+   ============================================================================ */
+
+.cds-aichat--widget {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  block-size: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  inline-size: 100%;
+  -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
+  text-rendering: optimizelegibility;
+  visibility: visible;
+  @include type.type-style("body-01");
+}
+
+/* ============================================================================
+   WIDGET - STATE MANAGEMENT
+   Widget states, animations, and transitions
+   ============================================================================ */
+
+/* Closed state */
+.cds-aichat--widget.cds-aichat--widget--closed {
+  overflow: hidden;
+}
+
+.cds-aichat--widget.cds-aichat--widget--default-element.cds-aichat--widget--closed {
+  display: none;
+}
+
+.cds-aichat--widget.cds-aichat--widget.cds-aichat--widget--closed,
+.cds-aichat--ai-theme
+  .cds-aichat--widget.cds-aichat--widget.cds-aichat--widget--closed {
+  border: none;
+  box-shadow: none;
+}
+
+/* Launch animation */
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element {
+    animation: none;
+  }
+}
+
+.cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element:not(
+    .cds-aichat--is-phone
+  ) {
+  animation: cds-aichat-widget-in motion.$duration-moderate-02
+    motion.motion(entrance, expressive) both;
+}
+
+/* Close animation */
+@media screen and (prefers-reduced-motion: reduce) {
+  .cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
+    animation: none;
+  }
+}
+
+.cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
+  animation: cds-aichat-widget-out motion.$duration-fast-02
+    motion.motion(exit, expressive) both;
+}
+
+/* ============================================================================
+   WIDGET - POSITIONING
+   Default positioning for floating widget mode
+   ============================================================================ */
+
+.cds-aichat--widget.cds-aichat--widget--default-element {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  block-size: chat-theme.$height;
+  inline-size: chat-theme.$width;
+  inset: chat-theme.$top-position chat-theme.$right-position
+    chat-theme.$bottom-position chat-theme.$left-position;
+  max-block-size: chat-theme.$max-height;
+  max-inline-size: chat-theme.$messages-max-width;
+  min-block-size: chat-theme.$min-height;
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--widget.cds-aichat--widget--default-element {
+  inset-inline: chat-theme.$right-position chat-theme.$left-position;
+}
+
+/* ============================================================================
+   WIDGET - RESPONSIVE (MOBILE)
+   Mobile and phone-specific styles
+   ============================================================================ */
+
+.cds-aichat--is-phone:not(.cds-aichat--container-disable-mobile-enhancements)
+  .cds-aichat--widget {
+  position: fixed;
+  z-index: chat-theme.$z-index;
+  block-size: chat-theme.$height;
+  inline-size: chat-theme.$width;
+  inset: chat-theme.$top-position chat-theme.$right-position
+    chat-theme.$bottom-position chat-theme.$left-position;
+  max-block-size: chat-theme.$max-height;
+  min-block-size: chat-theme.$min-height;
+
+  &.cds-aichat--widget--launched.cds-aichat--widget--default-element {
+    animation: cds-aichat-widget-in-mobile motion.$duration-moderate-02
+      motion.motion(entrance, expressive) both;
+    inset-block-end: 1px;
+    inset-inline-start: 1px;
+  }
+}
+
+.cds-aichat--is-phone[dir="rtl"]:not(
+    .cds-aichat--container-disable-mobile-enhancements
+  )
+  .cds-aichat--widget {
+  inset-inline: chat-theme.$right-position chat-theme.$left-position;
+}
+
+/* ============================================================================
+   CHAT CONTAINER
+   Main inner chat container and theme variants
+   ============================================================================ */
+
+.cds-aichat {
+  display: flex;
+  box-sizing: border-box;
+  flex: 1;
+  flex-direction: column;
+  align-content: stretch;
+  align-items: stretch;
+  border-radius: 0;
+  margin: 0;
+  background-color: theme.$chat-shell-background;
+  block-size: 100%;
+  color: theme.$text-primary;
+  inline-size: 100%;
+  text-align: start;
+}
+
+/* AI Theme variant */
+.cds-aichat--ai-theme .cds-aichat {
+  @include ai-gradient();
+
+  background-color: theme.$chat-shell-background;
+  box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
+}
+
+.cds-aichat--ai-theme .cds-aichat--frameless .cds-aichat {
+  box-shadow: none;
+}
+
+/* ============================================================================
+   RTL & INTERNATIONALIZATION
+   Right-to-left language support and icon handling
+   ============================================================================ */
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--direction-has-reversible-svg
+  svg {
+  transform: scaleX(-1);
+}
+
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--direction-has-reversible-svg.cds-aichat--reverse-icon
+  svg {
+  transform: scaleX(1);
+}
+
+/* ============================================================================
+   MISCELLANEOUS
+   Other utility styles and configurations
+   ============================================================================ */
+
+.cds-aichat--widget__layer {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+.cds-aichat--widget--max-width {
+  --cds-aichat-border-radius: 0;
+}
+
+.cds-aichat--panel-header-content {
+  margin: auto;
+  max-inline-size: chat-theme.$messages-max-width;
+}
+
+.cds-aichat--panel-header {
+  border-block-end: 1px solid theme.$border-subtle-01;
+}
+
+.cds-aichat--panel-header--full-width {
+  .cds-aichat--panel-header-content {
+    max-inline-size: 100%;
+  }
+}
+
+// Made with Bob

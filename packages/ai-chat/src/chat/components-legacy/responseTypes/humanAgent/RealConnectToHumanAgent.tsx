@@ -27,11 +27,11 @@ import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { AvailabilityMessage } from "../../humanAgent/AvailabilityMessage";
-import { EndHumanAgentChatModal } from "../../modals/EndHumanAgentChatModal";
 import {
   ConnectToHumanAgentItem,
   MessageResponse,
 } from "../../../../types/messaging/Messages";
+import { EndHumanAgentChatModal } from "../../../components/modals/EndHumanAgentChatModal";
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);

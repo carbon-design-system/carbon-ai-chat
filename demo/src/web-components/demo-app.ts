@@ -81,10 +81,16 @@ export class DemoApp extends LitElement {
       right: 0;
       top: 48px;
       height: calc(100vh - 48px);
-      width: calc(320px + 1rem);
+      width: 320px;
       z-index: 9999;
-      transition: right 200ms;
+      transition:
+        right 200ms,
+        width 300ms cubic-bezier(0.2, 0, 0.38, 0.9);
       visibility: visible;
+    }
+
+    .sidebar--expanded {
+      width: calc(100vw - 320px - 2rem);
     }
 
     .sidebar--closing {
@@ -94,6 +100,12 @@ export class DemoApp extends LitElement {
     .sidebar--closed {
       right: calc(calc(320px + 1rem) * -1);
       visibility: hidden;
+    }
+
+    /* RTL support for expanded sidebar */
+    [dir="rtl"] .sidebar--expanded {
+      left: 0;
+      right: auto;
     }
   `;
 
@@ -112,6 +124,9 @@ export class DemoApp extends LitElement {
 
   @state()
   accessor sideBarClosing: boolean = false;
+
+  @state()
+  accessor workspaceExpanded: boolean = false;
 
   @state()
   accessor instance!: ChatInstance;
@@ -203,6 +218,28 @@ export class DemoApp extends LitElement {
     this.instance.on({
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
+    });
+
+    // Listen for workspace pre-open event to expand sidebar
+    this.instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: () => {
+        if (this.settings.layout === "sidebar") {
+          console.log("Web Component: Expanding sidebar - workspace opening");
+          this.workspaceExpanded = true;
+        }
+      },
+    });
+
+    // Listen for workspace pre-close event to contract sidebar
+    this.instance.on({
+      type: BusEventType.WORKSPACE_PRE_CLOSE,
+      handler: () => {
+        if (this.settings.layout === "sidebar") {
+          console.log("Web Component: Contracting sidebar - workspace closing");
+          this.workspaceExpanded = false;
+        }
+      },
     });
   };
 
@@ -367,6 +404,9 @@ export class DemoApp extends LitElement {
 
   getSideBarClassName() {
     let className = "sidebar";
+    if (this.workspaceExpanded) {
+      className += " sidebar--expanded";
+    }
     if (this.sideBarClosing) {
       className += " sidebar--closing";
     } else if (!this.sideBarOpen) {
