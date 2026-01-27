@@ -54,6 +54,7 @@
     "lint:license": "tools/check-license.js -a",
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
+    "telemetry:config": "lerna run telemetry:config",
     "test": "lerna run test --stream",
     "postinstall": "husky"
   },

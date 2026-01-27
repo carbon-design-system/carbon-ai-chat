@@ -37,7 +37,7 @@
     "storybook:build": "npm run custom-elements && storybook build",
     "storybook:react": "storybook dev -p 7007 -c .storybook-react",
     "storybook:react:build": "storybook build -c .storybook-react -o storybook-react-static",
-    "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src --wc",
+    "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
     "test": "npm run test:web-components && npm run test:react",
     "test:react": "jest",
     "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots",
