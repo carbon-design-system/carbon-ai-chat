@@ -9,7 +9,7 @@
 
 import Music32 from "@carbon/icons/es/music/32.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import Tile from "../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import React, {
   Suspense,
@@ -227,19 +227,23 @@ function MediaPlayerComponent({
    */
   function renderMediaPlayerSkeleton() {
     return (
-      <Tile className="cds-aichat--media-player__skeleton">
-        <div
-          className="cds-aichat--media-player__skeleton-container"
-          ref={skeletonRef}
-        >
-          <SkeletonPlaceholder className="cds-aichat--media-player__skeleton-player" />
-        </div>
-        {(title || description) && (
-          <div className="cds-aichat--media-player__skeleton-text-container">
-            <SkeletonText paragraph lineCount={2} />
+      <Card isFlush={true} className="cds-aichat--media-player__skeleton">
+        <div slot="media">
+          <div
+            className="cds-aichat--media-player__skeleton-container"
+            ref={skeletonRef}
+          >
+            <SkeletonPlaceholder className="cds-aichat--media-player__skeleton-player" />
           </div>
-        )}
-      </Tile>
+        </div>
+        <div slot="body">
+          {(title || description) && (
+            <div className="cds-aichat--media-player__skeleton-text-container">
+              <SkeletonText paragraph lineCount={2} />
+            </div>
+          )}
+        </div>
+      </Card>
     );
   }
 
@@ -275,71 +279,76 @@ function MediaPlayerComponent({
       <div className="cds-aichat--media-player__root" ref={rootElementRef}>
         {errorLoading && <InlineError text={errorMessage} />}
         {!errorLoading && (
-          <Tile
+          <Card
+            isFlush={true}
             className={cx("cds-aichat--media-player", {
               "cds-aichat--hidden": !skeletonHidden,
             })}
           >
-            <div
-              className="cds-aichat--media-player__wrapper"
-              ref={wrapperElementRef}
-            >
-              {renderMediaPlayerBackground()}
-              <Suspense fallback={renderSuspenseFallback()}>
-                <ReactPlayerComponent
-                  className="cds-aichat--media-player__player"
-                  url={source}
-                  controls
-                  width="100%"
-                  height="100%"
-                  config={{
-                    file: {
-                      forceVideo: type === MessageResponseTypes.VIDEO,
-                      attributes: {
-                        controlsList: "nodownload",
-                        "aria-label": ariaLabel || description || title,
-                        crossOrigin: "anonymous",
+            <div slot="media">
+              <div
+                className="cds-aichat--media-player__wrapper"
+                ref={wrapperElementRef}
+              >
+                {renderMediaPlayerBackground()}
+                <Suspense fallback={renderSuspenseFallback()}>
+                  <ReactPlayerComponent
+                    className="cds-aichat--media-player__player"
+                    url={source}
+                    controls
+                    width="100%"
+                    height="100%"
+                    config={{
+                      file: {
+                        forceVideo: type === MessageResponseTypes.VIDEO,
+                        attributes: {
+                          controlsList: "nodownload",
+                          "aria-label": ariaLabel || description || title,
+                          crossOrigin: "anonymous",
+                        },
+                        ...(type === MessageResponseTypes.VIDEO &&
+                        subtitle_tracks &&
+                        subtitle_tracks.length > 0
+                          ? {
+                              tracks: subtitle_tracks.map((track) => ({
+                                kind: track.kind || "subtitles",
+                                src: track.src,
+                                srcLang: track.language,
+                                label: track.label,
+                                default: track.default || false,
+                              })),
+                            }
+                          : {}),
                       },
-                      ...(type === MessageResponseTypes.VIDEO &&
-                      subtitle_tracks &&
-                      subtitle_tracks.length > 0
-                        ? {
-                            tracks: subtitle_tracks.map((track) => ({
-                              kind: track.kind || "subtitles",
-                              src: track.src,
-                              srcLang: track.language,
-                              label: track.label,
-                              default: track.default || false,
-                            })),
-                          }
-                        : {}),
-                    },
-                  }}
-                  playsinline
-                  playing={playing}
-                  onPlay={onPlay}
-                  onPause={onPause}
-                  onReady={handleReady}
-                  onError={handleError}
-                  pip
-                />
-              </Suspense>
+                    }}
+                    playsinline
+                    playing={playing}
+                    onPlay={onPlay}
+                    onPause={onPause}
+                    onReady={handleReady}
+                    onError={handleError}
+                    pip
+                  />
+                </Suspense>
+              </div>
             </div>
-            {(title || description) && (
-              <TextHolderTile
-                title={title}
-                description={description}
-                hideTitle={hideIconAndTitle}
-              />
-            )}
-            {type === MessageResponseTypes.AUDIO && transcript && (
-              <TranscriptComponent
-                text={transcript.text}
-                label={transcript.label}
-                language={transcript.language}
-              />
-            )}
-          </Tile>
+            <div slot="body">
+              {(title || description) && (
+                <TextHolderTile
+                  title={title}
+                  description={description}
+                  hideTitle={hideIconAndTitle}
+                />
+              )}
+              {type === MessageResponseTypes.AUDIO && transcript && (
+                <TranscriptComponent
+                  text={transcript.text}
+                  label={transcript.label}
+                  language={transcript.language}
+                />
+              )}
+            </div>
+          </Card>
         )}
       </div>
     </>

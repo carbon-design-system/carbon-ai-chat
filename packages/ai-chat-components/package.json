@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -15,21 +15,21 @@
   },
   "exports": {
     "./es/*": "./es/*",
+    "./es-custom/*": "./es-custom/*",
     "./es/globals/": "./es/globals/",
-    "./dist/*": "./dist/*",
     "./custom-elements.json": "./custom-elements.json",
     "./package.json": "./package.json"
   },
   "files": [
     "es/**/*",
-    "dist/**/*",
+    "es-custom/**/*",
     "custom-elements.json",
     "package.json",
     "telemetry.yml"
   ],
   "scripts": {
     "build": "npm run clean && node tasks/build.js && node tasks/build-dist.js && npm run custom-elements",
-    "clean": "rimraf es dist storybook-static",
+    "clean": "rimraf es es-custom dist storybook-static",
     "custom-elements": "cem analyze --config ./custom-elements-manifest.config.js",
     "postinstall": "ibmtelemetry --config=telemetry.yml",
     "start": "concurrently \"npm run storybook\" \"npm run storybook:react\" \"node tasks/build.js --watch\"",
@@ -47,6 +47,7 @@
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.98.0",
+    "@carbon/utilities": "^0.14.0",
     "@carbon/web-components": "^2.46.0",
     "@codemirror/autocomplete": "^6.20.0",
     "@codemirror/commands": "^6.10.1",
@@ -124,7 +125,7 @@
     "autoprefixer": "^10.4.20",
     "babel-jest": "^30.0.0",
     "concurrently": "^9.2.0",
-    "globby": "^15.0.0",
+    "globby": "^16.0.0",
     "happy-dom": "^20.0.2",
     "jest": "^30.0.0",
     "playwright": "^1.48.1",

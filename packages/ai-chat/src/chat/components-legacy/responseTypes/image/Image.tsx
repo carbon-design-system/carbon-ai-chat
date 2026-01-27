@@ -7,7 +7,7 @@
  *  @license
  */
 
-import Tile from "../../../components/carbon/Tile";
+import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import AISkeletonPlaceholder from "../../../components/carbon/AISkeletonPlaceholder";
 import SkeletonPlaceholder from "../../../components/carbon/SkeletonPlaceholder";
@@ -111,7 +111,8 @@ function Image(props: ImageProps) {
   }
 
   return (
-    <Tile
+    <Card
+      isFlush={false}
       ref={rootRef}
       className={cx("cds-aichat--image", {
         "cds-aichat--image__text-and-icon": hasText && Boolean(renderIcon),
@@ -119,7 +120,7 @@ function Image(props: ImageProps) {
           !hideIconAndTitle && !title && !description && Boolean(renderIcon),
       })}
     >
-      <div className="cds-aichat--image__image-wrapper">
+      <div slot="media" className="cds-aichat--image__image-wrapper">
         <ImageOnly
           {...props}
           setIsError={setIsError}
@@ -128,27 +129,29 @@ function Image(props: ImageProps) {
           isLoaded={isLoaded}
         />
       </div>
-      {hasText && (
-        <TextHolderTile
-          title={title}
-          description={description}
-          displayURL={displayURL}
-          urlHostName={displayURL && getURLHostName(displayURL)}
-          hideTitle={hideIconAndTitle}
-        />
-      )}
-      {Boolean(Icon) && (
-        <Icon
-          className={cx(
-            "cds-aichat--image__icon",
-            "cds-aichat--direction-has-reversible-svg",
-            {
-              "cds-aichat--image__icon--link": displayURL,
-            },
-          )}
-        />
-      )}
-    </Tile>
+      <div slot="body">
+        {hasText && (
+          <TextHolderTile
+            title={title}
+            description={description}
+            displayURL={displayURL}
+            urlHostName={displayURL && getURLHostName(displayURL)}
+            hideTitle={hideIconAndTitle}
+          />
+        )}
+        {Boolean(Icon) && (
+          <Icon
+            className={cx(
+              "cds-aichat--image__icon",
+              "cds-aichat--direction-has-reversible-svg",
+              {
+                "cds-aichat--image__icon--link": displayURL,
+              },
+            )}
+          />
+        )}
+      </div>
+    </Card>
   );
 }
 

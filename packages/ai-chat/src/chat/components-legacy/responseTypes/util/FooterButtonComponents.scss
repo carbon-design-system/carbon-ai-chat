@@ -68,10 +68,10 @@
 
 // Corner rounding styles
 // Note: Tiles shouldn't take the border radius when `.cds-aichat--widget--rounded` is set on the widget. as they are always rounded.
-// Important Note: FooterButtonComponents is a common child for `panel` and `tile`. we have to be specific with the selectors, and must scope them accordingly.
+// Important Note: FooterButtonComponents is a common child for `panel` and `aichat-card`. we have to be specific with the selectors, and must scope them accordingly.
 
-// Footer button styles scoped to tile
-cds-tile {
+// Footer button styles scoped to aichat-card
+cds-aichat-card {
   .cds-aichat--footer-button-components {
     @include footer-button-radius(layout.$spacing-03);
   }

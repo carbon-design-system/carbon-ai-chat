@@ -1566,7 +1566,7 @@ interface Chunk {
  * @category Messaging
  * @internal
  */
-interface MessageUIStateInternal {
+export interface MessageUIStateInternal {
   /**
    * @internal
    * Indicates if this message was loaded from history or if it's a new message created in the current browser
@@ -2009,7 +2009,6 @@ export {
   SearchResult,
   PartialResponse,
   UserType,
-  MessageUIStateInternal,
   MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,

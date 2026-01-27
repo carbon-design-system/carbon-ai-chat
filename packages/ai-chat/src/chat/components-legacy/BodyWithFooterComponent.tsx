@@ -54,36 +54,40 @@ function BodyWithFooterComponent({
 
   return (
     <>
-      <BodyMessageComponents
-        message={localMessageItem}
-        originalMessage={fullMessage}
-        languagePack={languagePack}
-        requestInputFocus={requestFocus}
-        disableUserInputs={inputState.isReadonly}
-        config={appConfig}
-        isMessageForInput={isMessageForInput}
-        scrollElementIntoView={THROW_ERROR}
-        serviceManager={serviceManager}
-        hideFeedback
-        showChainOfThought={false}
-        allowNewFeedback={false}
-        renderMessageComponent={renderMessageComponent}
-      />
-      <FooterButtonComponents
-        message={localMessageItem}
-        originalMessage={fullMessage}
-        languagePack={languagePack}
-        requestInputFocus={requestFocus}
-        disableUserInputs={inputState.isReadonly}
-        config={appConfig}
-        isMessageForInput={isMessageForInput}
-        scrollElementIntoView={THROW_ERROR}
-        serviceManager={serviceManager}
-        hideFeedback
-        showChainOfThought={false}
-        allowNewFeedback={false}
-        renderMessageComponent={renderMessageComponent}
-      />
+      <div slot="body">
+        <BodyMessageComponents
+          message={localMessageItem}
+          originalMessage={fullMessage}
+          languagePack={languagePack}
+          requestInputFocus={requestFocus}
+          disableUserInputs={inputState.isReadonly}
+          config={appConfig}
+          isMessageForInput={isMessageForInput}
+          scrollElementIntoView={THROW_ERROR}
+          serviceManager={serviceManager}
+          hideFeedback
+          showChainOfThought={false}
+          allowNewFeedback={false}
+          renderMessageComponent={renderMessageComponent}
+        />
+      </div>
+      <div slot="footer">
+        <FooterButtonComponents
+          message={localMessageItem}
+          originalMessage={fullMessage}
+          languagePack={languagePack}
+          requestInputFocus={requestFocus}
+          disableUserInputs={inputState.isReadonly}
+          config={appConfig}
+          isMessageForInput={isMessageForInput}
+          scrollElementIntoView={THROW_ERROR}
+          serviceManager={serviceManager}
+          hideFeedback
+          showChainOfThought={false}
+          allowNewFeedback={false}
+          renderMessageComponent={renderMessageComponent}
+        />
+      </div>
     </>
   );
 }
