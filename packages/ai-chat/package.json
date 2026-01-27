@@ -97,7 +97,7 @@
     "babel-jest": "^30.0.0",
     "concurrently": "^9.2.0",
     "fs-extra": "^11.3.2",
-    "globby": "^15.0.0",
+    "globby": "^16.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
