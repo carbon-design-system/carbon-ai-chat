@@ -33,7 +33,6 @@ interface DisclaimerProps {
   disclaimerHTML: string;
   onClose: () => void;
   disclaimerAcceptButtonRef: RefObject<CDSButton | null>;
-  disclaimerIconLabel?: string;
 }
 
 function Disclaimer({
@@ -41,7 +40,6 @@ function Disclaimer({
   onClose,
   disclaimerHTML,
   disclaimerAcceptButtonRef,
-  disclaimerIconLabel,
 }: DisclaimerProps) {
   const languagePack = useLanguagePack();
   const chatWidthBreakpoint = useSelector(
@@ -70,8 +68,7 @@ function Disclaimer({
   });
 
   function renderChatBubble() {
-    const label =
-      disclaimerIconLabel ?? languagePack.disclaimer_icon_label;
+    const label = languagePack.disclaimer_icon_label;
     return isDarkTheme ? (
       <ChatBubbleDark label={label} />
     ) : (
