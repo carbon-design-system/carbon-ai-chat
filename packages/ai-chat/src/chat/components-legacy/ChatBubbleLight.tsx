@@ -13,12 +13,10 @@ import React from "react";
  * This component renders a chat bubble for light themes.
  */
 interface ChatBubbleLightProps {
-  label?: string;
+  label: string;
 }
 
-function ChatBubbleLight({
-  label = "Chat bubble light",
-}: ChatBubbleLightProps) {
+function ChatBubbleLight({ label }: ChatBubbleLightProps) {
   const chatBubbleID = "cbl-";
   return (
     <svg
