@@ -8,55 +8,40 @@ collect:
     elements:
       allowedAttributeNames:
         # General
-        - config
         - element
-        - onAfterRender
-        - onBeforeRender
-        # cds-aichat-chain-of-thought
-        - explainability-text
-        - input-label-text
-        - open
-        - output-label-text
-        - status-failed-label-text
-        - status-processing-label-text
-        - status-succeeded-label-text
-        - steps
-        - tool-label-text
+        - strings
         # cds-aichat-chat-header-avatar
         - alt
         - corners
         - onError
         - url
-        # cds-aichat-feedback
-        - cancel-label
-        - categories
-        - class
+        # cds-aichat-container
+        - ai-disabled
+        - ai-enabled
+        - assistant-name
+        - debug
+        - disable-custom-element-mobile-enhancements
         - disclaimer
-        - id
-        - initial-values
-        - is-open
+        - expose-service-manager-for-testing
+        - header
+        - homescreen
+        - inject-carbon-theme
+        - input
         - is-readonly
-        - on-close
-        - on-submit
-        - prompt
-        - show-prompt
-        - show-text-area
-        - submit-label
-        - text-area-placeholder
-        - title
-        # cds-aichat-feedback-buttons
-        - has-negative-details
-        - has-positive-details
-        - is-negative-disabled
-        - is-negative-open
-        - is-negative-selected
-        - is-positive-disabled
-        - is-positive-open
-        - is-positive-selected
-        - negative-label
-        - on-click
-        - panel-id
-        - positive-label
+        - launcher
+        - layout
+        - locale
+        - messaging
+        - namespace
+        - open-chat-by-default
+        - service-desk
+        - should-sanitize-html
+        - should-take-focus-if-opens-automatically
+        # cds-aichat-internal
+        - config
+        - onAfterRender
+        - onBeforeRender
+        - serviceDesk
         # cds-aichat-stop-streaming-button
         - disabled
         - label
@@ -64,8 +49,8 @@ collect:
         - tooltip-alignment
       allowedAttributeStringValues:
         # General - boolean attributes
-        - "true"
-        - "false"
+        - 'true'
+        - 'false'
         # cds-aichat-chat-header-avatar - corners
         - round
         - square
