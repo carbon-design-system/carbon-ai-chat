@@ -13,7 +13,7 @@ import React from "react";
  * This component renders an a chat bubble for dark themes.
  */
 interface ChatBubbleDarkProps {
-  label: string;
+  label?: string;
 }
 
 function ChatBubbleDark({ label = "Chat bubble dark" }: ChatBubbleDarkProps) {
