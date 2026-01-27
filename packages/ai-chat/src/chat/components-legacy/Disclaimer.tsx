@@ -71,7 +71,7 @@ function Disclaimer({
 
   function renderChatBubble() {
     const label =
-      disclaimerIconLabel ?? languagePack.disclaimer_default_icon_label;
+      disclaimerIconLabel ?? languagePack.disclaimer_icon_label;
     return isDarkTheme ? (
       <ChatBubbleDark label={label} />
     ) : (
