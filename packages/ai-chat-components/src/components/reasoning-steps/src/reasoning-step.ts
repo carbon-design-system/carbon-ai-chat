@@ -13,8 +13,6 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import { property, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
-
-// @ts-ignore
 import styles from "./reasoning-step.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";

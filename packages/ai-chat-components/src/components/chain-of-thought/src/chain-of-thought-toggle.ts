@@ -13,8 +13,6 @@ import { html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-
-// @ts-ignore
 import styles from "./chain-of-thought-toggle.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";

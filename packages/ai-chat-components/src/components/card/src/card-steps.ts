@@ -15,7 +15,6 @@ import "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
 import "@carbon/web-components/es/components/loading/loading.js";
 import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./card-steps.scss?lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
 

@@ -10,8 +10,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-
-// @ts-ignore
 import styles from "./processing.scss?lit";
 import { carbonElement } from "../../../globals/decorators";
 import prefix from "../../../globals/settings.js";

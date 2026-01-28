@@ -18,7 +18,6 @@ import { createOverflowHandler } from "@carbon/utilities";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
