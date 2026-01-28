@@ -1,0 +1,40 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/convert";
+
+:host(#{$prefix}-chat-history-shell) {
+  display: block;
+  border: solid convert.rem(1px) theme.$border-subtle-00;
+  background: theme.$chat-header-background;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+:host(#{$prefix}-chat-history-header) {
+  display: flex;
+  align-items: center;
+  block-size: convert.rem(40px);
+  border-block-end: solid convert.rem(1px) theme.$border-subtle-00;
+  inline-size: 100%;
+  @include type.type-style("body-compact-01");
+
+  .#{$prefix}-chat-history-header__close-button {
+    padding-inline-end: layout.$spacing-03;
+  }
+
+  .#{$prefix}-chat-history-header__title {
+    overflow: hidden;
+    inline-size: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
