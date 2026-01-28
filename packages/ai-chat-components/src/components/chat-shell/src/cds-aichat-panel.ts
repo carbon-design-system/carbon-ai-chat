@@ -10,7 +10,6 @@
 import { LitElement, PropertyValues, html } from "lit";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-// @ts-ignore
 import styles from "./cds-aichat-panel.scss?lit";
 
 const ANIMATION_START_DETECTION_DELAY_MS = 120;

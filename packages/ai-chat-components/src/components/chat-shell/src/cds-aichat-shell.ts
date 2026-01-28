@@ -9,7 +9,6 @@
 
 import { LitElement, PropertyValues, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-// @ts-ignore
 import styles from "./cds-aichat-shell.scss?lit";
 import { PanelManager } from "./panel-manager.js";
 import { WorkspaceManager } from "./workspace-manager.js";
