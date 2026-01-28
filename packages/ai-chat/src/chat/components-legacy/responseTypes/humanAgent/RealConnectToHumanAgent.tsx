@@ -171,23 +171,17 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   }
 
   return (
-    <Card isFlush={false} className="cds-aichat--connect-to-human-agent">
-      <div slot="body">
+    <Card isFlush className="cds-aichat--connect-to-human-agent">
+      <div
+        slot="body"
+        className="cds-aichat--body-message-components__message-wrapper"
+      >
         <div className="cds-aichat--connect-to-human-agent__title">
           <span>{languagePack.agent_chatTitle}</span>
         </div>
         <div className="cds-aichat--connect-to-human-agent__text">
           {messageToUser}
         </div>
-        <Button
-          className="cds-aichat--connect-to-human-agent__request-button"
-          size="md"
-          disabled={showDisabled}
-          onClick={doStartChat}
-        >
-          <ButtonIcon slot="icon" />
-          {buttonText}
-        </Button>
         {!showDisabled && isSuspended && (
           <div className="cds-aichat--connect-to-human-agent__suspended-warning">
             {languagePack.agent_suspendedWarning}
@@ -201,6 +195,17 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
             onCancel={() => setShowConfirmSuspended(false)}
           />
         )}
+      </div>
+      <div slot="footer" className="cds-aichat--footer-button-components">
+        <Button
+          className="cds-aichat--connect-to-human-agent__request-button cds-aichat--button-item"
+          size="md"
+          disabled={showDisabled}
+          onClick={doStartChat}
+        >
+          <ButtonIcon slot="icon" />
+          {buttonText}
+        </Button>
       </div>
     </Card>
   );

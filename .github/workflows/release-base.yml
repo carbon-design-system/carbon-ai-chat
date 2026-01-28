@@ -63,6 +63,18 @@ jobs:
       - name: Continuous integration check
         run: npm run ci-check
 
+      - name: Update telemetry.yml
+        if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == 'false'
+        run: |
+          npm run telemetry:config
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Mirror is clean, exiting..."
+          else
+            git add '**/telemetry.yml'
+            git commit -m "chore(telemetry): update telemetry configs"
+            git push origin
+          fi
+
       - name: Set NPM token
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.CARBON_BOT_NPM_TOKEN }}" >> .npmrc
