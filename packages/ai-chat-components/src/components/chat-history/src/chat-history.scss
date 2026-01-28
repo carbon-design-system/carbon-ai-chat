@@ -38,3 +38,7 @@
     white-space: nowrap;
   }
 }
+
+:host(#{$prefix}-chat-history-toolbar) {
+  display: flex;
+}

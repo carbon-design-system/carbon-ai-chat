@@ -35,7 +35,8 @@ export const Default = {
   },
   render: (args) => {
     return html`<cds-aichat-chat-history-header
-      title="${args.HeaderTitle}"
-    ></cds-aichat-chat-history-header>`;
+        title="${args.HeaderTitle}"
+      ></cds-aichat-chat-history-header>
+      <cds-aichat-chat-history-toolbar></cds-aichat-chat-history-toolbar>`;
   },
 };

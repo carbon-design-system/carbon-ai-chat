@@ -9,3 +9,4 @@
 
 import "./src/chat-history-shell";
 import "./src/chat-history-header";
+import "./src/chat-history-toolbar";
