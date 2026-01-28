@@ -10,64 +10,7 @@
 import "../index";
 import { html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
-
-const headers = [
-  { text: "Name" },
-  { text: "Role" },
-  { text: "Location" },
-  { text: "Status" },
-];
-
-const rows = [
-  {
-    cells: [
-      { text: "Jordan Smith" },
-      { text: "Conversation Designer" },
-      { text: "Austin, TX" },
-      { text: "Active" },
-    ],
-  },
-  {
-    cells: [
-      { text: "Priya Patel" },
-      { text: "Applied Scientist" },
-      { text: "Bengaluru, IN" },
-      { text: "Active" },
-    ],
-  },
-  {
-    cells: [
-      { text: "Lee Chen" },
-      { text: "Product Manager" },
-      { text: "Singapore" },
-      { text: "Paused" },
-    ],
-  },
-  {
-    cells: [
-      { text: "Morgan Reyes" },
-      { text: "Researcher" },
-      { text: "Toronto, CA" },
-      { text: "Active" },
-    ],
-  },
-  {
-    cells: [
-      { text: "Samira Khan" },
-      { text: "Engineer" },
-      { text: "San Jose, CA" },
-      { text: "Active" },
-    ],
-  },
-  {
-    cells: [
-      { text: "Alex Kim" },
-      { text: "Designer" },
-      { text: "Seoul, KR" },
-      { text: "Inactive" },
-    ],
-  },
-];
+import { headers, rows } from "./story-data.js";
 
 export default {
   title: "Components/Table",
