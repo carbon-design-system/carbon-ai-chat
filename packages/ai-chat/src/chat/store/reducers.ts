@@ -62,6 +62,7 @@ import {
   SET_CUSTOM_PANEL_OPTIONS,
   SET_WORKSPACE_PANEL_OPEN,
   SET_WORKSPACE_PANEL_OPTIONS,
+  SET_WORKSPACE_PANEL_DATA,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   SET_IS_BROWSER_PAGE_VISIBLE,
@@ -886,6 +887,17 @@ const reducers: { [key: string]: ReducerType } = {
     state: AppState,
     action: { isOpen: boolean },
   ) => {
+    // When closing the panel, reset the workspace panel state to default
+    if (!action.isOpen) {
+      return {
+        ...state,
+        workspacePanelState: {
+          ...DEFAULT_WORKSPACE_PANEL_STATE,
+          isOpen: false,
+        },
+      };
+    }
+
     return {
       ...state,
       workspacePanelState: {
@@ -907,6 +919,27 @@ const reducers: { [key: string]: ReducerType } = {
           ...(state.workspacePanelState.options ?? {}),
           ...action.options,
         },
+      },
+    };
+  },
+
+  [SET_WORKSPACE_PANEL_DATA]: (
+    state: AppState,
+    action: {
+      workspaceID?: string;
+      localMessageItem?: LocalMessageItem;
+      fullMessage?: Message;
+      additionalData?: unknown;
+    },
+  ) => {
+    return {
+      ...state,
+      workspacePanelState: {
+        ...state.workspacePanelState,
+        workspaceID: action.workspaceID,
+        localMessageItem: action.localMessageItem,
+        fullMessage: action.fullMessage,
+        additionalData: action.additionalData,
       },
     };
   },

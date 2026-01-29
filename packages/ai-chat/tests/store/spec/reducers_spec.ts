@@ -431,5 +431,289 @@ describe("Store Reducers", () => {
       expect(state.config.public.header?.title).toBeUndefined();
       expect(state.config.public.header?.menuOptions).toBeUndefined();
     });
+
+    describe("Workspace Panel Data Management", () => {
+      describe("SET_WORKSPACE_PANEL_DATA action", () => {
+        it("should store workspace panel data correctly", () => {
+          const mockLocalMessageItem = {
+            id: "msg-123",
+            item: { type: "preview_card", title: "Test Card" },
+          } as any;
+          const mockFullMessage = {
+            id: "full-msg-123",
+            output: { generic: [] },
+          } as any;
+
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "workspace-456",
+              localMessageItem: mockLocalMessageItem,
+              fullMessage: mockFullMessage,
+              additionalData: { userId: "user-789", context: "test" },
+            }),
+          );
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("workspace-456");
+          expect(state.workspacePanelState.localMessageItem).toBe(
+            mockLocalMessageItem,
+          );
+          expect(state.workspacePanelState.fullMessage).toBe(mockFullMessage);
+          expect(state.workspacePanelState.additionalData).toEqual({
+            userId: "user-789",
+            context: "test",
+          });
+        });
+
+        it("should handle partial workspace data updates", () => {
+          // First set some data
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "workspace-1",
+              additionalData: { initial: "data" },
+            }),
+          );
+
+          // Then update with different data
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "workspace-2",
+              additionalData: { updated: "data" },
+            }),
+          );
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("workspace-2");
+          expect(state.workspacePanelState.additionalData).toEqual({
+            updated: "data",
+          });
+          expect(state.workspacePanelState.localMessageItem).toBeUndefined();
+          expect(state.workspacePanelState.fullMessage).toBeUndefined();
+        });
+
+        it("should handle undefined values in workspace data", () => {
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: undefined,
+              localMessageItem: undefined,
+              fullMessage: undefined,
+              additionalData: undefined,
+            }),
+          );
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBeUndefined();
+          expect(state.workspacePanelState.localMessageItem).toBeUndefined();
+          expect(state.workspacePanelState.fullMessage).toBeUndefined();
+          expect(state.workspacePanelState.additionalData).toBeUndefined();
+        });
+
+        it("should preserve other workspace panel state properties", () => {
+          // Set initial state with options
+          store.dispatch(
+            actions.setWorkspaceCustomPanelConfigOptions({
+              preferredLocation: "start",
+            }),
+          );
+
+          // Set workspace data
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "workspace-123",
+            }),
+          );
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("workspace-123");
+          expect(state.workspacePanelState.options.preferredLocation).toBe(
+            "start",
+          );
+          expect(state.workspacePanelState.isOpen).toBe(false);
+        });
+      });
+
+      describe("SET_WORKSPACE_PANEL_OPEN action with cleanup", () => {
+        beforeEach(() => {
+          // Set up workspace data before each test
+          const mockLocalMessageItem = {
+            id: "msg-123",
+            item: { type: "preview_card", title: "Test Card" },
+          } as any;
+          const mockFullMessage = {
+            id: "full-msg-123",
+            output: { generic: [] },
+          } as any;
+
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "workspace-456",
+              localMessageItem: mockLocalMessageItem,
+              fullMessage: mockFullMessage,
+              additionalData: { userId: "user-789" },
+            }),
+          );
+        });
+
+        it("should open workspace panel without clearing data", () => {
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.isOpen).toBe(true);
+          expect(state.workspacePanelState.workspaceID).toBe("workspace-456");
+          expect(state.workspacePanelState.localMessageItem).toBeDefined();
+          expect(state.workspacePanelState.fullMessage).toBeDefined();
+          expect(state.workspacePanelState.additionalData).toEqual({
+            userId: "user-789",
+          });
+        });
+
+        it("should reset workspace panel state when closing", () => {
+          // Open first
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
+          expect(
+            (store.getState() as AppState).workspacePanelState.isOpen,
+          ).toBe(true);
+
+          // Close and verify reset
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.isOpen).toBe(false);
+          expect(state.workspacePanelState.workspaceID).toBeUndefined();
+          expect(state.workspacePanelState.localMessageItem).toBeUndefined();
+          expect(state.workspacePanelState.fullMessage).toBeUndefined();
+          expect(state.workspacePanelState.additionalData).toBeUndefined();
+          expect(state.workspacePanelState).toEqual({
+            ...DEFAULT_WORKSPACE_PANEL_STATE,
+            isOpen: false,
+          });
+        });
+
+        it("should handle multiple open/close cycles correctly", () => {
+          // First cycle
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
+
+          let state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBeUndefined();
+
+          // Set new data
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "workspace-new",
+              additionalData: { new: "data" },
+            }),
+          );
+
+          // Second cycle
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
+          state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("workspace-new");
+
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
+          state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBeUndefined();
+        });
+      });
+
+      describe("Workspace panel data lifecycle", () => {
+        it("should maintain data through open state", () => {
+          const mockData = {
+            workspaceID: "ws-123",
+            additionalData: { test: "data" },
+          };
+
+          // Set data
+          store.dispatch(actions.setWorkspacePanelData(mockData));
+
+          // Open panel
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
+
+          // Data should still be there
+          let state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("ws-123");
+          expect(state.workspacePanelState.additionalData).toEqual({
+            test: "data",
+          });
+
+          // Update options while open
+          store.dispatch(
+            actions.setWorkspaceCustomPanelConfigOptions({
+              preferredLocation: "end",
+            }),
+          );
+
+          // Data should still be preserved
+          state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("ws-123");
+          expect(state.workspacePanelState.options.preferredLocation).toBe(
+            "end",
+          );
+        });
+
+        it("should allow updating data while panel is open", () => {
+          // Set initial data and open
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "ws-1",
+              additionalData: { version: 1 },
+            }),
+          );
+          store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
+
+          // Update data while open
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "ws-2",
+              additionalData: { version: 2 },
+            }),
+          );
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.isOpen).toBe(true);
+          expect(state.workspacePanelState.workspaceID).toBe("ws-2");
+          expect(state.workspacePanelState.additionalData).toEqual({
+            version: 2,
+          });
+        });
+      });
+
+      describe("Integration with other actions", () => {
+        it("should not affect workspace data when other panel states change", () => {
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "ws-123",
+              additionalData: { preserved: true },
+            }),
+          );
+
+          // Change custom panel state
+          store.dispatch(actions.setCustomPanelOpen(true));
+          store.dispatch(actions.setCustomPanelOpen(false));
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("ws-123");
+          expect(state.workspacePanelState.additionalData).toEqual({
+            preserved: true,
+          });
+        });
+
+        it("should maintain workspace data through state changes", () => {
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: "ws-persistent",
+            }),
+          );
+
+          // Perform various state changes
+          store.dispatch(actions.setHomeScreenIsOpen(true));
+          store.dispatch(actions.setIsRestarting(true));
+          store.dispatch(actions.setIsRestarting(false));
+
+          const state = store.getState() as AppState;
+          expect(state.workspacePanelState.workspaceID).toBe("ws-persistent");
+        });
+      });
+    });
   });
 });

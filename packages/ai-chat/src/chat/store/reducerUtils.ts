@@ -106,8 +106,12 @@ deepFreeze(DEFAULT_CUSTOM_PANEL_STATE);
 
 const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
   isOpen: false,
+  workspaceID: undefined,
   panelID: WORKSPACE_CUSTOM_PANEL_ID,
   options: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
+  localMessageItem: undefined,
+  fullMessage: undefined,
+  additionalData: undefined,
 };
 deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
 

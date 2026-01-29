@@ -251,6 +251,16 @@ export interface WorkspaceCustomPanelConfigOptions {
    * Where the chat will attempt to render the workspace in logical terms. For a ltr layout "start" will render on the left and "end" will render on the right. If there is not enough room to render the workspace, it will be rendered as a panel overlaying the content with a back button.
    */
   preferredLocation?: "start" | "end";
+
+  /**
+   * The ID of the workspace being opened. This will be included in WORKSPACE_PRE_CLOSE and WORKSPACE_CLOSE events.
+   */
+  workspaceId?: string;
+
+  /**
+   * Additional metadata associated with the workspace. This will be included in WORKSPACE_PRE_CLOSE and WORKSPACE_CLOSE events.
+   */
+  additionalData?: unknown;
 }
 
 /**

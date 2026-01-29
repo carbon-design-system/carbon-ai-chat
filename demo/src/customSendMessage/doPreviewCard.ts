@@ -8,11 +8,14 @@
  */
 
 import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
+import { v4 as uuid } from "uuid";
 
 function doPreviewCard(
   instance: ChatInstance,
   preferredLocation?: "start" | "end",
 ) {
+  const workspaceId = uuid();
+
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -22,13 +25,13 @@ function doPreviewCard(
         },
         {
           title: "Optimizing excess inventory",
-          subtitle: `Created on: ${new Date().toLocaleDateString()}`,
+          subtitle: `Workspace id ${workspaceId} Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
           workspace_options: {
             preferredLocation,
           },
+          workspace_id: workspaceId,
           additional_data: {
-            id: "some unique ID for the workspace",
             data: "some additional data for the workspace",
           },
         },
