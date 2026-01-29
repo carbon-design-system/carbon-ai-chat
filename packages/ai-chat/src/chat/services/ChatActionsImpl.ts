@@ -337,9 +337,6 @@ class ChatActionsImpl {
       workspace: {
         isOpen: Boolean(state.workspacePanelState.isOpen),
         options: {
-          disableAnimation: Boolean(
-            state.workspacePanelState.options.disableAnimation,
-          ),
           preferredLocation:
             state.workspacePanelState.options.preferredLocation,
         },

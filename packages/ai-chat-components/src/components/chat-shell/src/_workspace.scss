@@ -1,0 +1,198 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "variables" as *;
+
+// ============================================================================
+// Workspace Styles
+// ============================================================================
+
+// --- Base Workspace Styles ---
+.workspace {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+.workspace-slot {
+  block-size: 100%;
+  inline-size: 100%;
+  min-block-size: 0;
+}
+
+.workspace-content {
+  block-size: 100%;
+  inline-size: 100%;
+  min-block-size: 0;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .workspace-content {
+    transition: opacity motion.$duration-fast-02
+      motion.motion(standard, productive);
+  }
+}
+
+.workspace-content--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+// --- Workspace Opening/Closing States ---
+
+// During workspace checking, render workspace inline but invisible
+// Workspace starts at zero width but can grow if container expands
+.shell.workspace-checking .workspace {
+  overflow: hidden;
+  flex: 1 1 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+  visibility: hidden;
+}
+
+// During workspace checking, input-and-messages takes available space
+// This prevents centering and maintains proper layout
+.shell.workspace-checking .input-and-messages {
+  flex: 1 1 auto;
+  max-inline-size: $messages-max-width;
+}
+
+// During workspace checking-closing, keep workspace inline to maintain layout
+// Content is already faded out, so we just need to preserve the container
+.shell.workspace-checking-closing .workspace {
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+// During workspace checking-closing, input-and-messages maintains its current size
+// This prevents it from expanding prematurely before host finishes contracting
+.shell.workspace-checking-closing .input-and-messages {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+// During workspace closing, allow workspace to shrink to 0
+// Content is already faded out, container will be removed after host finishes contracting
+// This mirrors the opening behavior in reverse
+.shell.workspace-closing .workspace,
+.shell.workspace-checking-closing .workspace {
+  overflow: hidden;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  visibility: hidden;
+}
+
+// During workspace closing, input-and-messages maintains its minimum width
+// This prevents it from expanding to max-width during contraction
+// This mirrors the opening behavior in reverse
+.shell.workspace-closing .input-and-messages,
+.shell.workspace-checking-closing .input-and-messages {
+  box-sizing: border-box;
+  flex: 0 1 $messages-min-width;
+  max-inline-size: $messages-min-width;
+  min-inline-size: 0;
+}
+
+// During workspace opening, allow workspace to grow and shrink freely
+// Content is hidden, so visual appearance doesn't matter - just need proper layout
+.shell.workspace-opening .workspace {
+  overflow: hidden;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  visibility: hidden;
+}
+
+// During workspace opening, input-and-messages takes its minimum space
+// and can shrink if needed to fit within :host during expansion
+.shell.workspace-opening .input-and-messages {
+  box-sizing: border-box;
+  flex: 0 1 $messages-min-width;
+  min-inline-size: 0;
+}
+
+// --- Workspace Layout Configuration ---
+:host([show-workspace]) .main-content-body,
+.shell.workspace-closing .main-content-body {
+  flex-direction: row;
+  container-name: main-content-body;
+  container-type: inline-size;
+}
+
+:host([show-workspace][workspace-location="end"]) .input-and-messages {
+  order: 1;
+}
+
+// ============================================================================
+// Workspace in Container Mode
+// ============================================================================
+:host([workspace-in-container][show-workspace]) .workspace {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-inline-size: $workspace-min-width;
+  padding-block-end: layout.$spacing-05;
+  padding-block-start: layout.$spacing-05;
+  padding-inline-end: 0;
+  padding-inline-start: layout.$spacing-05;
+}
+
+:host([workspace-in-container][show-workspace]) .input-and-messages {
+  box-sizing: border-box;
+  flex: 0 0 $messages-min-width;
+  padding: layout.$spacing-05;
+  inline-size: $messages-min-width;
+  max-inline-size: $messages-min-width;
+}
+
+// ============================================================================
+// Workspace in Panel Mode
+// ============================================================================
+:host([workspace-in-panel][show-workspace]) .input-and-messages {
+  flex: 1 1 auto;
+  inline-size: 100%;
+  max-inline-size: $messages-max-width;
+}
+
+:host([workspace-in-panel][show-workspace]) .main-content-body {
+  flex-direction: column;
+}
+
+// Container mode workspace-location overrides (more specific, must come after panel mode)
+:host([workspace-in-container][show-workspace][workspace-location="end"])
+  .workspace {
+  order: 2;
+  padding-inline-end: layout.$spacing-05;
+}
+
+:host([workspace-in-container][show-workspace][workspace-location="end"])
+  .input-and-messages {
+  padding-inline-end: 0;
+}
+
+// ============================================================================
+// Workspace Opening State Overrides
+// ============================================================================
+// Override workspace-in-container rules during opening to prevent overflow
+// Must come after all other :host selectors for proper specificity ordering
+:host([workspace-in-container]) .shell.workspace-opening .workspace {
+  flex: 1 1 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+:host([workspace-in-container]) .shell.workspace-opening .input-and-messages {
+  flex: 0 1 $messages-min-width;
+  min-inline-size: 0;
+}
+
+// Made with Bob

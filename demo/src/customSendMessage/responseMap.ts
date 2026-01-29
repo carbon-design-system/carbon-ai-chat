@@ -48,17 +48,27 @@ import {
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
 
+const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
+  Object.fromEntries(
+    Object.entries(map).sort(([leftKey], [rightKey]) =>
+      leftKey.localeCompare(rightKey),
+    ),
+  ) as T;
+
 const RESPONSE_MAP: Record<
   string,
   (
     instance: ChatInstance,
     requestOptions?: CustomSendMessageOptions,
   ) => Promise<void> | void
-> = {
+> = sortResponseMap({
   audio: (instance) => doAudio(instance),
   button: (instance) => doButton(instance),
   card: (instance) => doCard(instance),
-  "preview card": (instance) => doPreviewCard(instance),
+  "workspace preview card (open start)": (instance) =>
+    doPreviewCard(instance, "start"),
+  "workspace preview card (open end)": (instance) =>
+    doPreviewCard(instance, "end"),
   carousel: (instance) => doCarousel(instance),
   code: (instance) => doCode(instance),
   "code (stream)": (instance, requestOptions) =>
@@ -170,6 +180,6 @@ const RESPONSE_MAP: Record<
   "user_defined (stream)": (instance, requestOptions) =>
     doUserDefinedStreaming(instance, requestOptions),
   video: (instance) => doVideo(instance),
-};
+});
 
 export { RESPONSE_MAP };

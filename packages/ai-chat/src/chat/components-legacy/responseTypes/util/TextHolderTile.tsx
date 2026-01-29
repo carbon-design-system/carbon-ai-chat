@@ -10,7 +10,7 @@
 import cx from "classnames";
 import React, { ReactNode } from "react";
 
-import VisuallyHidden from "../../util/VisuallyHidden";
+import VisuallyHidden from "../../../components/util/VisuallyHidden";
 
 interface TextHolderTileProps {
   /**

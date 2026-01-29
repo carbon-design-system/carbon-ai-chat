@@ -14,6 +14,7 @@ import {
   CustomPanelOpenOptions,
   PanelType,
 } from "../../types/instance/apiTypes";
+import { BusEventType } from "../../types/events/eventBusTypes";
 import actions from "../store/actions";
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "../store/reducerUtils";
 import { ServiceManager } from "./ServiceManager";
@@ -55,8 +56,31 @@ function createCustomPanelInstance(
     },
 
     close() {
-      const { store } = serviceManager;
+      const { store, eventBus, instance } = serviceManager;
+
+      // Fire pre-close event for workspace panel
+      if (panelType === PanelType.WORKSPACE) {
+        eventBus.fire(
+          {
+            type: BusEventType.WORKSPACE_PRE_CLOSE,
+            data: {},
+          },
+          instance,
+        );
+      }
+
       store.dispatch(setOpen(false));
+
+      // Fire close event for workspace panel
+      if (panelType === PanelType.WORKSPACE) {
+        eventBus.fire(
+          {
+            type: BusEventType.WORKSPACE_CLOSE,
+            data: {},
+          },
+          instance,
+        );
+      }
     },
   };
 

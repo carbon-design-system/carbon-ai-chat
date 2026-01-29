@@ -1,0 +1,38 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "../../styles/chat-theme";
+@use "CatastrophicErrorPanel";
+@use "DisclaimerPanel";
+@use "HydrationPanel";
+@use "IFramePanel";
+
+/* Shared panel styles - used across multiple panel components */
+
+/* These selectors apply a border radius to panel content using CSS custom properties. */
+.cds-aichat--i-frame-panel,
+.cds-aichat--view-source-panel,
+.cds-aichat--custom-panel {
+  box-sizing: border-box;
+  block-size: 100%;
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-end-start,
+    0
+  );
+  border-start-end-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-start,
+    0
+  );
+}
+
+// Made with Bob

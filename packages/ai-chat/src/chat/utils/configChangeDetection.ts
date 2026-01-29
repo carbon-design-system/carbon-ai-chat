@@ -112,7 +112,6 @@ export function detectConfigChanges(
     previousConfig.openChatByDefault !== newConfig.openChatByDefault ||
     previousConfig.shouldSanitizeHTML !== newConfig.shouldSanitizeHTML ||
     previousConfig.debug !== newConfig.debug ||
-    previousConfig.enableFocusTrap !== newConfig.enableFocusTrap ||
     previousConfig.shouldTakeFocusIfOpensAutomatically !==
       newConfig.shouldTakeFocusIfOpensAutomatically ||
     previousConfig.assistantName !== newConfig.assistantName ||

@@ -15,6 +15,18 @@ exports[`ChatContainer should have a shadow DOM with rendered content 1`] = `
     slot="beforeInputElement"
   />
   <div
+    slot="messagesBeforeElement"
+  />
+  <div
+    slot="messagesAfterElement"
+  />
+  <div
+    slot="afterInputElement"
+  />
+  <div
+    slot="footerElement"
+  />
+  <div
     slot="homeScreenHeaderBottomElement"
   />
   <div
@@ -47,6 +59,18 @@ exports[`ChatContainer should open chat when launcher is clicked 1`] = `
     slot="beforeInputElement"
   />
   <div
+    slot="messagesBeforeElement"
+  />
+  <div
+    slot="messagesAfterElement"
+  />
+  <div
+    slot="afterInputElement"
+  />
+  <div
+    slot="footerElement"
+  />
+  <div
     slot="homeScreenHeaderBottomElement"
   />
   <div
@@ -77,6 +101,18 @@ exports[`ChatContainer should render PageObjectId elements in shadow DOM 1`] = `
   />
   <div
     slot="beforeInputElement"
+  />
+  <div
+    slot="messagesBeforeElement"
+  />
+  <div
+    slot="messagesAfterElement"
+  />
+  <div
+    slot="afterInputElement"
+  />
+  <div
+    slot="footerElement"
   />
   <div
     slot="homeScreenHeaderBottomElement"
@@ -115,6 +151,18 @@ exports[`ChatContainer should render slotted content 1`] = `
   </div>
   <div
     slot="beforeInputElement"
+  />
+  <div
+    slot="messagesBeforeElement"
+  />
+  <div
+    slot="messagesAfterElement"
+  />
+  <div
+    slot="afterInputElement"
+  />
+  <div
+    slot="footerElement"
   />
   <div
     slot="homeScreenHeaderBottomElement"

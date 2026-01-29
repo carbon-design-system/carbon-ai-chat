@@ -22,6 +22,7 @@ $css--plex: true !default;
   @include type.type-style("body-01");
 
   display: flex;
+  overflow: hidden;
   /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
   flex-direction: column;
@@ -35,6 +36,11 @@ $css--plex: true !default;
   color: theme.$text-secondary;
   inline-size: 100%;
 
+  // Allow toolbar slot to shrink within the flex column so overflow handling works.
+  slot[name="toolbar"] {
+    min-inline-size: 0;
+  }
+
   ::slotted([slot="notification"]) {
     box-sizing: border-box;
     /* stylelint-disable-next-line declaration-no-important */
@@ -43,8 +49,11 @@ $css--plex: true !default;
 }
 ::slotted(#{$prefix}-toolbar) {
   display: grid;
-  padding: rem(8px);
+  box-sizing: border-box;
   border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
 }
 
 .#{$prefix}-workspace-shell {
@@ -63,5 +72,6 @@ $css--plex: true !default;
   display: block;
   overflow: auto;
   padding: rem(24px) rem(32px);
-  block-size: rem(504px);
+  block-size: 100%;
+  min-block-size: 0;
 }

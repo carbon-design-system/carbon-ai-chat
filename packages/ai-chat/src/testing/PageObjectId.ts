@@ -54,7 +54,7 @@ export enum PageObjectId {
 
   // Panel identifiers
   /**
-   * The main chat panel.
+   * The main chat messages list.
    */
   MAIN_PANEL = "main_panel",
 
