@@ -52,9 +52,13 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
+  const [workspaceAnimating, setWorkspaceAnimating] = useState<
+    "expanding" | "contracting" | null
+  >(null);
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
   const isSidebarLayout = settings.layout === "sidebar";
+  const chatElementRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setInterval(() => setStateText(Date.now().toString()), 2000);
@@ -249,6 +253,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         // Expand sidebar when workspace is opening (only in sidebar layout)
         if (isSidebarLayout) {
           console.log("Expanding sidebar - workspace opening");
+          setWorkspaceAnimating("expanding");
           setWorkspaceExpanded(true);
         }
       },
@@ -266,6 +271,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         // Contract sidebar when workspace is closing (only in sidebar layout)
         if (isSidebarLayout) {
           console.log("Contracting sidebar - workspace closing");
+          setWorkspaceAnimating("contracting");
           setWorkspaceExpanded(false);
         }
       },
@@ -301,6 +307,14 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       }
     : undefined;
 
+  // Handle transitionend to remove animation classes
+  const handleTransitionEnd = useCallback((event: React.TransitionEvent) => {
+    // Only handle width transitions
+    if (event.propertyName === "width") {
+      setWorkspaceAnimating(null);
+    }
+  }, []);
+
   // And some logic to add the right classname to our custom element depending on what mode we are in.
   let className = "";
   if (
@@ -312,6 +326,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     className = "sidebar";
     if (workspaceExpanded) {
       className += " sidebar--expanded";
+    }
+    if (workspaceAnimating === "expanding") {
+      className += " sidebar--expanding";
+    } else if (workspaceAnimating === "contracting") {
+      className += " sidebar--contracting";
     }
     if (sideBarClosing) {
       className += " sidebar--closing";
@@ -329,16 +348,18 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
-    <ChatCustomElement
-      {...config}
-      className={className as string}
-      onViewPreChange={onViewPreChange}
-      onViewChange={onViewChange}
-      onBeforeRender={onBeforeRender}
-      renderUserDefinedResponse={renderUserDefinedResponse}
-      renderWriteableElements={renderWriteableElements}
-      serviceDeskFactory={serviceDeskFactory}
-    />
+    <div ref={chatElementRef} onTransitionEnd={handleTransitionEnd}>
+      <ChatCustomElement
+        {...config}
+        className={className as string}
+        onViewPreChange={onViewPreChange}
+        onViewChange={onViewChange}
+        onBeforeRender={onBeforeRender}
+        renderUserDefinedResponse={renderUserDefinedResponse}
+        renderWriteableElements={renderWriteableElements}
+        serviceDeskFactory={serviceDeskFactory}
+      />
+    </div>
   );
 }
 
