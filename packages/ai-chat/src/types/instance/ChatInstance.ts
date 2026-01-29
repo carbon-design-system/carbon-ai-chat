@@ -75,10 +75,21 @@ export interface PublicDefaultCustomPanelState {
 export interface PublicWorkspaceCustomPanelState {
   /** Indicates if the workspace custom panel overlay is currently open. */
   isOpen: boolean;
+
   /**
    * Config options for the workspace panels.
    */
   options: WorkspaceCustomPanelConfigOptions;
+
+  /**
+   * The ID of the workspace attached to this panel. Used to match with a given Preview Card.
+   */
+  workspaceID?: string;
+
+  /**
+   * Additional metadata associated with the workspace.
+   */
+  additionalData?: unknown;
 }
 
 /**
@@ -89,6 +100,7 @@ export interface PublicWorkspaceCustomPanelState {
 export interface PublicCustomPanelsState {
   /** State for the default overlay-style custom panel. */
   default: PublicDefaultCustomPanelState;
+
   /**
    * State for the workspace custom panel.
    *
@@ -139,9 +151,16 @@ export type PublicChatState = Readonly<
     input: PublicInputState;
 
     /**
-     * @experimental State for any surfaced custom panels.
+     * State for any surfaced custom panels.
      */
     customPanels: PublicCustomPanelsState;
+
+    /**
+     * State for the workspace panel.
+     *
+     * @experimental
+     */
+    workspace: PublicWorkspaceCustomPanelState;
   }
 >;
 
@@ -427,6 +446,26 @@ export enum WriteableElementName {
    * An element that appears after the messages area and before the input area.
    */
   BEFORE_INPUT_ELEMENT = "beforeInputElement",
+
+  /**
+   * An element that appears before the messages area.
+   */
+  MESSAGES_BEFORE_ELEMENT = "messagesBeforeElement",
+
+  /**
+   * An element that appears after the messages area.
+   */
+  MESSAGES_AFTER_ELEMENT = "messagesAfterElement",
+
+  /**
+   * An element that appears after the input field.
+   */
+  AFTER_INPUT_ELEMENT = "afterInputElement",
+
+  /**
+   * An element that appears in the footer area.
+   */
+  FOOTER_ELEMENT = "footerElement",
 
   /**
    * An element that appears above the input field on the home screen.

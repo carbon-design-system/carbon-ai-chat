@@ -62,6 +62,7 @@ import {
   SET_CUSTOM_PANEL_OPTIONS,
   SET_WORKSPACE_PANEL_OPEN,
   SET_WORKSPACE_PANEL_OPTIONS,
+  SET_WORKSPACE_PANEL_DATA,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   SET_IS_BROWSER_PAGE_VISIBLE,
@@ -761,12 +762,16 @@ const reducers: { [key: string]: ReducerType } = {
     { isOpen }: { isOpen: boolean },
   ) => setHomeScreenOpenState(state, isOpen),
 
-  [TOGGLE_HOME_SCREEN]: (state: AppState) =>
-    setHomeScreenOpenState(
+  [TOGGLE_HOME_SCREEN]: (state: AppState) => {
+    const isCurrentlyOpen =
+      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen;
+    // Only show "back to assistant" button when manually navigating back to home screen (not closing it)
+    return setHomeScreenOpenState(
       state,
-      !state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
-      true,
-    ),
+      !isCurrentlyOpen,
+      !isCurrentlyOpen, // true when opening, false when closing
+    );
+  },
 
   [SET_LAUNCHER_PROPERTY]: <TPropertyName extends keyof PersistedState>(
     state: AppState,
@@ -882,6 +887,17 @@ const reducers: { [key: string]: ReducerType } = {
     state: AppState,
     action: { isOpen: boolean },
   ) => {
+    // When closing the panel, reset the workspace panel state to default
+    if (!action.isOpen) {
+      return {
+        ...state,
+        workspacePanelState: {
+          ...DEFAULT_WORKSPACE_PANEL_STATE,
+          isOpen: false,
+        },
+      };
+    }
+
     return {
       ...state,
       workspacePanelState: {
@@ -903,6 +919,27 @@ const reducers: { [key: string]: ReducerType } = {
           ...(state.workspacePanelState.options ?? {}),
           ...action.options,
         },
+      },
+    };
+  },
+
+  [SET_WORKSPACE_PANEL_DATA]: (
+    state: AppState,
+    action: {
+      workspaceID?: string;
+      localMessageItem?: LocalMessageItem;
+      fullMessage?: Message;
+      additionalData?: unknown;
+    },
+  ) => {
+    return {
+      ...state,
+      workspacePanelState: {
+        ...state.workspacePanelState,
+        workspaceID: action.workspaceID,
+        localMessageItem: action.localMessageItem,
+        fullMessage: action.fullMessage,
+        additionalData: action.additionalData,
       },
     };
   },

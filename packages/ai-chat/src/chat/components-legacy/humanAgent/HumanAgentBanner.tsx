@@ -27,7 +27,7 @@ import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { AppState } from "../../../types/state/AppState";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { doFocusRef } from "../../utils/domUtils";
-import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
+import { AnnounceOnMountComponent } from "../../components/util/AnnounceOnMountComponent";
 import { ResponseUserAvatar } from "../ResponseUserAvatar";
 import { AvailabilityMessage } from "./AvailabilityMessage";
 

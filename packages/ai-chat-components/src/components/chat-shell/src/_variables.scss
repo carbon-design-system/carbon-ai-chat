@@ -1,0 +1,24 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/styles/scss/theme";
+
+// ============================================================================
+// Variables
+// ============================================================================
+
+$messages-max-width: var(--cds-aichat-messages-max-width, 672px);
+$messages-min-width: var(--cds-aichat-messages-min-width, 320px);
+$workspace-min-width: var(--cds-aichat-workspace-min-width, 640px);
+$history-width: var(--cds-aichat-history-width, 320px);
+
+$ai-box-shadow-outer: 0 4px 10px 2px #{theme.$ai-drop-shadow};
+$default-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
+
+// Made with Bob

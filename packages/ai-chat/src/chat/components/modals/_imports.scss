@@ -1,0 +1,32 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "ConfirmModal";
+@use "../../styles/chat-theme";
+
+/* Modal host container - portal for all modals */
+.cds-aichat--modal-host {
+  position: fixed;
+  z-index: calc(#{chat-theme.$z-index} + 1);
+  display: none;
+  block-size: 100vh;
+  inline-size: 100vw;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  /* Allow pointer events only when there are child elements (modals) */
+  pointer-events: none;
+}
+
+/* When there are modal children, enable pointer events on them and block interaction with background */
+.cds-aichat--modal-host:has(> *) {
+  display: block;
+  pointer-events: auto;
+}
+
+.cds-aichat--modal-host > * {
+  pointer-events: auto;
+}

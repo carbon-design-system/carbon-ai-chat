@@ -58,6 +58,7 @@ export const Default = {
     fullWidth: false,
     showChatHeader: true,
     showPanelFrame: true,
+    panelAiEnabled: false,
     animationOnOpen: "slide-in-from-bottom",
     animationOnClose: "slide-out-to-bottom",
   },
@@ -83,6 +84,10 @@ export const Default = {
       control: "boolean",
       description: "Show visual frame around panel content",
     },
+    panelAiEnabled: {
+      control: "boolean",
+      description: "Enable AI theme for panel content",
+    },
     animationOnOpen: {
       control: { type: "select" },
       options: ["", "slide-in-from-bottom", "slide-in-from-right", "fade-in"],
@@ -104,6 +109,7 @@ export const Default = {
       fullWidth,
       showChatHeader,
       showPanelFrame,
+      panelAiEnabled,
       animationOnOpen,
       animationOnClose,
     } = args;
@@ -122,6 +128,7 @@ export const Default = {
             fullWidth={fullWidth}
             showChatHeader={showChatHeader}
             showFrame={showPanelFrame}
+            aiEnabled={panelAiEnabled}
             animationOnOpen={animationOnOpen || undefined}
             animationOnClose={animationOnClose || undefined}
           >

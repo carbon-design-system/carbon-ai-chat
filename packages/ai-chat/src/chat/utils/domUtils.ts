@@ -299,6 +299,7 @@ export {
   isTextAreaNode,
   isImageNode,
   focusOnFirstFocusableItemInArrayOfElements,
+  focusOnFirstFocusableElement,
   isEnterKey,
   getScrollBottom,
   waitForStableHeight,

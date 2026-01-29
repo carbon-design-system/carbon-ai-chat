@@ -1,0 +1,56 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../styles/chat-theme";
+
+.cds-aichat--overlay-panel--catastrophic_panel .cds-aichat--overlay-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.cds-aichat--catastrophic-error {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: layout.$spacing-03;
+}
+
+.cds-aichat--catastrophic-error
+  .cds-aichat--catastrophic-error__error-text-container
+  > svg {
+  margin-inline-start: calc(#{layout.$spacing-07} * -1);
+  max-block-size: 128px;
+  max-inline-size: 128px;
+  padding-inline-start: layout.$spacing-02;
+}
+
+.cds-aichat--catastrophic-error__error-text-container {
+  margin-block-start: layout.$spacing-06;
+  margin-inline: layout.$spacing-07;
+}
+
+.cds-aichat--catastrophic-error__error-heading {
+  @include type.type-style("heading-04");
+}
+
+.cds-aichat--catastrophic-error__error-body {
+  color: theme.$text-secondary;
+  @include type.type-style("body-01");
+
+  margin-block-start: layout.$spacing-05;
+}
+
+.cds-aichat--catastrophic-error__restart-button {
+  display: block;
+  margin-block-start: layout.$spacing-05;
+}
+
+// Made with Bob

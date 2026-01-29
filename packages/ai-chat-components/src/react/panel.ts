@@ -9,7 +9,7 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
-import CdsAiChatPanelElement from "../components/chat-shell/src/cds-aichat-panel.js";
+import CdsAiChatPanelElement from "../components/chat-shell/src/panel.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
 const CdsAiChatPanel = withWebComponentBridge(
@@ -22,6 +22,7 @@ const CdsAiChatPanel = withWebComponentBridge(
       onOpenEnd: "openend",
       onCloseStart: "closestart",
       onCloseEnd: "closeend",
+      onBodyScroll: "body-scroll",
     },
   }),
 );

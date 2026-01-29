@@ -12,6 +12,7 @@ import {
   type WorkspaceCustomPanelConfigOptions,
   type ViewState,
   ViewType,
+  DefaultCustomPanelConfigOptions,
 } from "../instance/apiTypes";
 import { LanguagePack } from "../config/PublicConfig";
 import { type FileUpload } from "../config/ServiceDeskConfig";
@@ -517,13 +518,18 @@ interface CustomPanelState {
   /**
    * Config options for the custom panels.
    */
-  options: CustomPanelConfigOptions;
+  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions;
 }
 interface WorkspacePanelState {
   /**
    * Determines if the custom panel should be open.
    */
   isOpen: boolean;
+
+  /**
+   * The id of the workspace attached to this panel. Used to match with a given Preview Card.
+   */
+  workspaceID?: string;
 
   /**
    * The id of the panel that is currently in focus.
@@ -534,6 +540,21 @@ interface WorkspacePanelState {
    * Config options for the workspace panels.
    */
   options: WorkspaceCustomPanelConfigOptions;
+
+  /**
+   * The local message item that triggered the workspace panel to open.
+   */
+  localMessageItem?: LocalMessageItem;
+
+  /**
+   * The full message response that contains the message item.
+   */
+  fullMessage?: Message;
+
+  /**
+   * Additional metadata associated with the workspace.
+   */
+  additionalData?: unknown;
 }
 
 interface MessagePanelState<T extends GenericItem = GenericItem> {

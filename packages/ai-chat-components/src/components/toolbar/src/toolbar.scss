@@ -20,12 +20,17 @@ $block-class: #{$prefix}-toolbar;
   @include rounded-modifiers;
 
   display: block;
+  max-inline-size: 100%;
+  min-inline-size: 0;
 
   .#{$block-class} {
     display: flex;
     align-items: flex-start;
     block-size: 100%;
+    inline-size: 100%;
+    max-inline-size: 100%;
     min-block-size: layout.$spacing-08;
+    min-inline-size: 0;
 
     // Suppress custom elements until styles are loaded
     #{$cds-prefix}-button:not(:defined),
@@ -61,6 +66,10 @@ $block-class: #{$prefix}-toolbar;
   }
 
   ::slotted([slot="decorator"]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-block: auto;
     min-block-size: layout.$spacing-08;
     min-inline-size: layout.$spacing-08;
   }

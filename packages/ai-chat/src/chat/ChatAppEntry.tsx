@@ -133,6 +133,9 @@ export function ChatAppEntry({
         if (serviceDesk) {
           publicConfig.serviceDesk = serviceDesk;
         }
+        // Seed the previous config immediately to avoid dynamic updates during boot.
+        previousConfigRef.current = publicConfig;
+
         const { serviceManager, instance } =
           await initServiceManagerAndInstance({
             publicConfig,
@@ -174,8 +177,6 @@ export function ChatAppEntry({
           appActions.setInitialViewChangeComplete(true),
         );
 
-        previousConfigRef.current = publicConfig;
-
         if (onAfterRender) {
           setAfterRenderCallback(() => () => onAfterRender(instance));
         }
@@ -191,43 +192,54 @@ export function ChatAppEntry({
    * Reacts to config changes to dynamic configuration updates to an existing ServiceManager.
    */
   useEffect(() => {
-    const previousConfig = previousConfigRef.current;
-
-    if (
-      serviceManager &&
-      instance &&
-      config &&
-      !isEqual(previousConfig, config)
-    ) {
-      // Build effective configs that include top-level service desk props for change detection
-      const prevEffective = mergePublicConfig(previousConfig || {});
-      const nextEffective = mergePublicConfig(config);
-      if (serviceDeskFactory) {
-        nextEffective.serviceDeskFactory = serviceDeskFactory;
-      }
-      if (serviceDesk) {
-        nextEffective.serviceDesk = serviceDesk;
-      }
-      const configChanges = detectConfigChanges(prevEffective, nextEffective);
-
-      const currentServiceManager = serviceManager;
-
-      const handleDynamicUpdate = async () => {
-        try {
-          const publicConfig = nextEffective;
-          await applyConfigChangesDynamically(
-            configChanges,
-            publicConfig,
-            currentServiceManager,
-          );
-        } catch (error) {
-          consoleError("Failed to apply config changes dynamically:", error);
-        }
-      };
-      handleDynamicUpdate();
-      previousConfigRef.current = nextEffective;
+    if (!serviceManager || !instance || !config || !beforeRenderComplete) {
+      return;
     }
-  }, [config, serviceDeskFactory, serviceDesk, instance, serviceManager]);
+
+    // Build effective configs that include top-level service desk props for change detection.
+    const nextEffective = mergePublicConfig(config);
+    if (serviceDeskFactory) {
+      nextEffective.serviceDeskFactory = serviceDeskFactory;
+    }
+    if (serviceDesk) {
+      nextEffective.serviceDesk = serviceDesk;
+    }
+
+    const previousEffective = previousConfigRef.current;
+    if (!previousEffective) {
+      // Skip the initial run so we don't dispatch during first render.
+      previousConfigRef.current = nextEffective;
+      return;
+    }
+
+    if (isEqual(previousEffective, nextEffective)) {
+      return;
+    }
+
+    const configChanges = detectConfigChanges(previousEffective, nextEffective);
+    const currentServiceManager = serviceManager;
+
+    const handleDynamicUpdate = async () => {
+      try {
+        await applyConfigChangesDynamically(
+          configChanges,
+          nextEffective,
+          currentServiceManager,
+        );
+      } catch (error) {
+        consoleError("Failed to apply config changes dynamically:", error);
+      }
+    };
+    handleDynamicUpdate();
+    previousConfigRef.current = nextEffective;
+  }, [
+    config,
+    serviceDeskFactory,
+    serviceDesk,
+    instance,
+    serviceManager,
+    beforeRenderComplete,
+  ]);
 
   // Dynamically apply strings overrides on prop change
   useEffect(() => {
@@ -316,6 +328,7 @@ export function ChatAppEntry({
                 <AppShell
                   serviceManager={serviceManager}
                   hostElement={serviceManager.customHostElement}
+                  renderWriteableElements={renderWriteableElements}
                 />
                 {renderUserDefinedResponse && (
                   <UserDefinedResponsePortalsContainer
