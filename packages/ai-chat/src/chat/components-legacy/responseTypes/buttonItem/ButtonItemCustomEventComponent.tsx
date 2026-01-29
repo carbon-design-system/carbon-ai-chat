@@ -10,10 +10,8 @@
 import TouchInteraction16 from "@carbon/icons/es/touch--interaction/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React, { useCallback } from "react";
-import { useSelector } from "../../../hooks/useSelector";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
-import { selectInputState } from "../../../store/selectors";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
   ButtonItem,
@@ -37,9 +35,7 @@ function ButtonItemCustomEventComponent({
   const messageItem = localMessageItem.item;
   const { ui_state } = localMessageItem;
   const { image_url, alt_text, label, kind, value, size, is } = messageItem;
-  const inputState = useSelector(selectInputState);
-  const isDisabled =
-    Boolean(value && ui_state.optionSelected) || inputState.isReadonly;
+  const isDisabled = Boolean(value && ui_state.optionSelected);
   const TouchInteraction = carbonIconToReact(TouchInteraction16);
 
   const onClickHandler = useCallback(async () => {

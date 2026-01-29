@@ -23,10 +23,7 @@ import {
   withServiceManager,
 } from "../hocs/withServiceManager";
 import actions from "../store/actions";
-import {
-  selectHumanAgentDisplayState,
-  selectInputState,
-} from "../store/selectors";
+import { selectHumanAgentDisplayState } from "../store/selectors";
 import { AppState, ChatMessagesState } from "../../types/state/AppState";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
@@ -1048,7 +1045,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       carbonTheme,
       useAITheme,
     } = this.props;
-    const inputState = selectInputState(this.props);
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { isMessageLoadingCounter } = messageState;
     const { disclaimersAccepted } = persistedToBrowserStorage;
@@ -1097,7 +1093,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         serviceManager={serviceManager}
         messagesIndex={messagesIndex}
         assistantName={assistantName}
-        disableUserInputs={inputState.isReadonly}
+        disableUserInputs={false}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
         requestMoveFocus={this.requestMoveFocus}
