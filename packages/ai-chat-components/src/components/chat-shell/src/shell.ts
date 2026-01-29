@@ -738,26 +738,36 @@ class CdsAiChatShell extends LitElement {
     const workspaceState = this.workspaceManager?.getState();
 
     if (shouldRenderPanel && !this.lastShouldRenderWorkspacePanel) {
-      if (
-        !this.lastWorkspaceInPanel &&
-        this.lastWorkspaceContainerVisible &&
-        !this.suppressWorkspacePanelOpenAnimation
-      ) {
-        this.suppressWorkspacePanelOpenAnimation = true;
-      }
+      // Suppress animation when switching from inline container to panel
+      // (workspace was visible inline and now moving to panel)
+      const shouldSuppressAnimation =
+        !this.lastWorkspaceInPanel && this.lastWorkspaceContainerVisible;
+
+      // IMPORTANT: Set the flag BEFORE updating state that triggers render
+      this.suppressWorkspacePanelOpenAnimation = shouldSuppressAnimation;
+
+      // Now update the state
       this.workspacePanelRendering = true;
       this.workspacePanelOpen = false;
       this.cancelWorkspacePanelOpenSchedule();
-      this.scheduleWorkspacePanelOpen();
+
+      // Request update to render the panel with the correct animation attribute
       this.requestUpdate();
+
+      // Schedule opening after the panel is rendered
+      this.scheduleWorkspacePanelOpen();
     } else if (!shouldRenderPanel && this.lastShouldRenderWorkspacePanel) {
-      if (
+      // Suppress animation when switching from panel to inline container
+      // (workspace was in panel and now moving to inline)
+      const shouldSuppressAnimation =
         this.lastWorkspaceInPanel &&
-        workspaceState?.containerVisible &&
-        !this.suppressWorkspacePanelCloseAnimation
-      ) {
-        this.suppressWorkspacePanelCloseAnimation = true;
-      }
+        (workspaceState?.containerVisible ?? false);
+
+      console.log("[syncWorkspacePanelState] CLOSING PANEL", {
+        shouldSuppressAnimation,
+      });
+
+      this.suppressWorkspacePanelCloseAnimation = shouldSuppressAnimation;
       this.cancelWorkspacePanelOpenSchedule();
       if (this.workspacePanelOpen) {
         this.workspacePanelOpen = false;
@@ -787,14 +797,17 @@ class CdsAiChatShell extends LitElement {
       return;
     }
 
+    // Use double RAF to ensure the panel element is fully rendered with correct attributes
     this.workspacePanelOpenRafId = window.requestAnimationFrame(() => {
-      this.workspacePanelOpenRafId = null;
-      this.workspacePanelOpenScheduled = false;
-      if (!this.workspaceManager?.shouldRenderPanel()) {
-        return;
-      }
-      this.workspacePanelOpen = true;
-      this.requestUpdate();
+      this.workspacePanelOpenRafId = window.requestAnimationFrame(() => {
+        this.workspacePanelOpenRafId = null;
+        this.workspacePanelOpenScheduled = false;
+        if (!this.workspaceManager?.shouldRenderPanel()) {
+          return;
+        }
+        this.workspacePanelOpen = true;
+        this.requestUpdate();
+      });
     });
   }
 
