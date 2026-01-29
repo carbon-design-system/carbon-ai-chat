@@ -163,6 +163,31 @@ class CdsAiChatShell extends LitElement {
    */
   private shouldRenderHistory = true;
 
+  /**
+   * @internal
+   */
+  private workspacePanelRendering = false;
+
+  /**
+   * @internal
+   */
+  private workspacePanelOpen = false;
+
+  /**
+   * @internal
+   */
+  private lastShouldRenderWorkspacePanel = false;
+
+  /**
+   * @internal
+   */
+  private workspacePanelOpenScheduled = false;
+
+  /**
+   * @internal
+   */
+  private workspacePanelOpenRafId: number | null = null;
+
   private getWidgetClasses(): string {
     const workspaceState = this.workspaceManager?.getState();
     return [
@@ -174,6 +199,7 @@ class CdsAiChatShell extends LitElement {
         ? "has-header-content"
         : "",
       this.hasFooterContent ? "has-footer-content" : "",
+      workspaceState?.isCheckingExpansion ? "workspace-checking" : "",
       workspaceState?.isContracting ? "workspace-closing" : "",
       workspaceState?.isExpanding ? "workspace-opening" : "",
     ]
@@ -239,9 +265,12 @@ class CdsAiChatShell extends LitElement {
   }
 
   private renderWorkspaceInline() {
-    const shouldRender = this.workspaceManager?.shouldRenderInline() ?? false;
+    const shouldRenderInline =
+      this.workspaceManager?.shouldRenderInline() ?? false;
+    const shouldSuppressInline =
+      this.workspacePanelRendering && !this.workspacePanelOpen;
 
-    if (!shouldRender) {
+    if (!shouldRenderInline || shouldSuppressInline) {
       return nothing;
     }
 
@@ -262,21 +291,30 @@ class CdsAiChatShell extends LitElement {
   }
 
   private renderWorkspacePanel() {
-    const shouldRender = this.workspaceManager?.shouldRenderPanel() ?? false;
-
-    if (!shouldRender) {
+    if (!this.workspacePanelRendering) {
       return nothing;
     }
+
+    // When switching from container to panel view, don't animate
+    // Only animate when opening from closed state
+    const workspaceState = this.workspaceManager?.getState();
+    const isTransitioningFromContainer =
+      workspaceState?.isExpanding ||
+      this.hasAttribute("workspace-in-container");
+    const animationOnOpen = isTransitioningFromContainer
+      ? "none"
+      : "slide-in-from-bottom";
 
     return html`
       <cds-aichat-panel
         data-internal-panel
-        open
-        priority="0"
+        ?open=${this.workspacePanelOpen}
         full-width
         show-chat-header
-        animation-on-open="slide-in-from-bottom"
+        body-no-padding
+        animation-on-open=${animationOnOpen}
         animation-on-close="slide-out-to-bottom"
+        @closeend=${this.handleWorkspacePanelCloseEnd}
       >
         <div slot="body" class="workspace-slot">
           <slot name="workspace"></slot>
@@ -388,6 +426,8 @@ class CdsAiChatShell extends LitElement {
     this.observeMainContentBodyWidth();
     this.observeSlotContent();
     this.observeCssProperties();
+
+    this.syncWorkspacePanelState();
   }
 
   private hasSlotContent(slotName: string): boolean {
@@ -459,6 +499,7 @@ class CdsAiChatShell extends LitElement {
       });
     }
 
+    this.syncWorkspacePanelState();
     this.panelManager?.refresh();
   }
 
@@ -469,6 +510,7 @@ class CdsAiChatShell extends LitElement {
     this.inputAndMessagesResizeObserver?.disconnect();
     this.mainContentBodyResizeObserver?.disconnect();
     this.cssPropertyObserver?.disconnect();
+    this.cancelWorkspacePanelOpenSchedule();
     super.disconnectedCallback();
   }
 
@@ -602,7 +644,7 @@ class CdsAiChatShell extends LitElement {
     }
 
     const updateHeight = (height: number) => {
-      this.style.setProperty("--cds-aichat--header-height", `${height}px`);
+      this.style.setProperty("--cds-aichat-header-height", `${height}px`);
     };
 
     const measure = () => {
@@ -671,6 +713,72 @@ class CdsAiChatShell extends LitElement {
       }
     }
   }
+
+  private syncWorkspacePanelState(): void {
+    const shouldRenderPanel =
+      this.workspaceManager?.shouldRenderPanel() ?? false;
+
+    if (shouldRenderPanel && !this.lastShouldRenderWorkspacePanel) {
+      this.workspacePanelRendering = true;
+      this.workspacePanelOpen = false;
+      this.cancelWorkspacePanelOpenSchedule();
+      this.scheduleWorkspacePanelOpen();
+      this.requestUpdate();
+    } else if (!shouldRenderPanel && this.lastShouldRenderWorkspacePanel) {
+      this.cancelWorkspacePanelOpenSchedule();
+      if (this.workspacePanelOpen) {
+        this.workspacePanelOpen = false;
+        this.requestUpdate();
+      } else {
+        this.workspacePanelRendering = false;
+        this.requestUpdate();
+      }
+    }
+
+    this.lastShouldRenderWorkspacePanel = shouldRenderPanel;
+  }
+
+  private scheduleWorkspacePanelOpen(): void {
+    if (this.workspacePanelOpenScheduled) {
+      return;
+    }
+    this.workspacePanelOpenScheduled = true;
+
+    if (typeof window === "undefined") {
+      this.workspacePanelOpenScheduled = false;
+      this.workspacePanelOpen = true;
+      return;
+    }
+
+    this.workspacePanelOpenRafId = window.requestAnimationFrame(() => {
+      this.workspacePanelOpenRafId = null;
+      this.workspacePanelOpenScheduled = false;
+      if (!this.workspaceManager?.shouldRenderPanel()) {
+        return;
+      }
+      this.workspacePanelOpen = true;
+      this.requestUpdate();
+    });
+  }
+
+  private cancelWorkspacePanelOpenSchedule(): void {
+    if (
+      this.workspacePanelOpenRafId !== null &&
+      typeof window !== "undefined"
+    ) {
+      window.cancelAnimationFrame(this.workspacePanelOpenRafId);
+    }
+    this.workspacePanelOpenRafId = null;
+    this.workspacePanelOpenScheduled = false;
+  }
+
+  private handleWorkspacePanelCloseEnd = () => {
+    if (this.workspaceManager?.shouldRenderPanel()) {
+      return;
+    }
+    this.workspacePanelRendering = false;
+    this.requestUpdate();
+  };
 }
 
 export default CdsAiChatShell;

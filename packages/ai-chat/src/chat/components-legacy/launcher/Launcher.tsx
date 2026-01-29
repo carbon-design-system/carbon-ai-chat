@@ -31,7 +31,7 @@ import Button, {
 } from "../../components/carbon/Button";
 import { doFocusRef } from "../../utils/domUtils";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
+import { AnnounceOnMountComponent } from "../../components/util/AnnounceOnMountComponent";
 import { uuid } from "../../utils/lang/uuid";
 
 const AiLaunch = carbonIconToReact(AiLaunch24);

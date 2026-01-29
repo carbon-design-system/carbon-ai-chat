@@ -10,14 +10,12 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
 
-$messages-max-width: var(--cds-aichat-messages-max-width, 672px);
-$border-radius: var(
-  --cds-aichat-rounded-radius,
-  var(--cds-aichat-rounded-modifier-radius, 0.5rem)
-);
+$messages-max-width: var(--#{$prefix}-messages-max-width, 672px);
+$border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 
 :host {
   position: absolute;
@@ -25,17 +23,17 @@ $border-radius: var(
   box-sizing: border-box;
   margin: 0;
   block-size: 100%;
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
   border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
+    --#{$prefix}-rounded-modifier-radius-end-start,
     0
   );
   border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
+    --#{$prefix}-rounded-modifier-radius-start-start,
     0
   );
   border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
+    --#{$prefix}-rounded-modifier-radius-start-end,
     0
   );
   inline-size: 100%;
@@ -45,28 +43,48 @@ $border-radius: var(
   text-align: start;
 }
 
+:host(.panel--ai-theme) {
+  @include ai-gradient();
+
+  background-color: theme.$chat-shell-background;
+}
+
+:host(:not(.panel--ai-theme)) {
+  background-color: theme.$chat-shell-background;
+}
+
 // When panel is wider than messages-max-width, add bottom border radius
 :host(.panel--with-less-than-messages-max-width) {
-  --cds-aichat-rounded-modifier-radius-end-start: #{$border-radius};
-  --cds-aichat-rounded-modifier-radius-end-end: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-end-start: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-end-end: #{$border-radius};
 }
 
 // Full-width panels: Always get bottom corners (when shell has rounded corners)
-:host(.panel--full-width) {
-  --cds-aichat-rounded-modifier-radius-end-start: #{$border-radius};
-  --cds-aichat-rounded-modifier-radius-end-end: #{$border-radius};
+:host(.panel--full-width),
+:host(:not([show-frame])) {
+  --#{$prefix}-rounded-modifier-radius-end-start: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-end-end: #{$border-radius};
 }
 
 // Full-width panels without show-chat-header: Also add top corners
-:host(.panel--full-width:not(.panel--with-chat-header)) {
-  --cds-aichat-rounded-modifier-radius-start-start: #{$border-radius};
-  --cds-aichat-rounded-modifier-radius-start-end: #{$border-radius};
+:host(.panel--full-width:not(.panel--with-chat-header)),
+:host([show-frame]:not(.panel--full-width)) {
+  --#{$prefix}-rounded-modifier-radius-start-start: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-start-end: #{$border-radius};
 }
 
 // Constrained panels without show-chat-header: Also add top corners when wider than messages-max-width
 :host(.panel--with-less-than-messages-max-width:not(.panel--with-chat-header)) {
-  --cds-aichat-rounded-modifier-radius-start-start: #{$border-radius};
-  --cds-aichat-rounded-modifier-radius-start-end: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-start-start: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-start-end: #{$border-radius};
+}
+
+// When both showChatHeader and showFrame are true: Add top corners to panel and topmost element
+:host([show-frame].panel--with-chat-header) {
+  --#{$prefix}-rounded-modifier-radius-start-start: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-start-end: #{$border-radius};
+  --#{$prefix}-rounded-modifier-radius-start-start: #{layout.$spacing-03};
+  --#{$prefix}-rounded-modifier-radius-start-end: #{layout.$spacing-03};
 }
 
 :host(.panel-container--animating) {
@@ -111,15 +129,12 @@ $border-radius: var(
 
 :host(.panel--with-chat-header) {
   overflow: hidden;
-  block-size: calc(100% - var(--cds-aichat--header-height, 0px));
+  block-size: calc(100% - var(--#{$prefix}-header-height, 0px));
   border-start-end-radius: 0;
   border-start-start-radius: 0;
   inline-size: 100%;
-  inset-block-start: var(--cds-aichat--header-height, 0);
-  inset-inline-start: 50%;
-  max-inline-size: var(--cds-aichat-max-width, 100%);
-  min-block-size: calc(100% - var(--cds-aichat--header-height, 0px));
-  transform: translateX(-50%);
+  inset-block-start: var(--#{$prefix}-header-height, 0);
+  min-block-size: calc(100% - var(--#{$prefix}-header-height, 0px));
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
@@ -140,21 +155,22 @@ $border-radius: var(
   flex-direction: column;
   margin: auto;
   block-size: 100%;
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
   border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
+    --#{$prefix}-rounded-modifier-radius-end-start,
     0
   );
   border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
+    --#{$prefix}-rounded-modifier-radius-start-end,
     0
   );
   border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
+    --#{$prefix}-rounded-modifier-radius-start-start,
     0
   );
   inline-size: 100%;
-  max-inline-size: $messages-max-width;
+  // Ensure content doesn't overflow the container
+  min-block-size: 0;
 }
 
 :host([show-frame]) .panel-content {
@@ -162,26 +178,78 @@ $border-radius: var(
   background-color: theme.$chat-shell-background;
 }
 
+:host([show-frame]:not(.panel--full-width)) .panel-content {
+  margin: auto;
+  max-inline-size: $messages-max-width;
+}
+
+.panel-body {
+  // Enable scrolling when content overflows
+  overflow: auto;
+  box-sizing: border-box;
+  // Allow body to grow and shrink, but constrain it
+  flex: 1 1 auto;
+  padding: layout.$spacing-04;
+  margin: auto;
+  inline-size: 100%;
+  max-inline-size: $messages-max-width;
+  // Critical: Allow flex item to shrink below content size
+  min-block-size: 0;
+}
+
 // Full-width panels: Always get bottom corners (when shell has rounded corners)
-:host(.panel--full-width) .panel-content {
-  background-color: transparent;
-  max-inline-size: 100%;
+:host(.panel--full-width) {
+  .panel-body {
+    max-inline-size: 100%;
+  }
+}
+
+:host(.panel--body--no-padding) {
+  .panel-body {
+    padding: 0;
+  }
 }
 
 .panel-header,
 .panel-footer {
+  // Fixed size - don't grow or shrink
   flex: 0 0 auto;
+  // Header and footer should be full width by default
+  inline-size: 100%;
+  max-inline-size: 100%;
 }
 
-.panel-body {
-  flex: 1 1 auto;
+// When showChatHeader and showFrame are true: Apply top rounded corners to header if it has content
+:host([show-frame].panel--with-chat-header) .panel-header.has-content {
+  border-start-end-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-start,
+    0
+  );
 }
 
-.panel-body.has-content {
-  padding-block-end: layout.$spacing-05;
-  padding-block-start: layout.$spacing-05;
-  padding-inline-end: layout.$spacing-05;
-  padding-inline-start: layout.$spacing-05;
+// When showChatHeader and showFrame are true: Apply top rounded corners to body if header has no content
+:host([show-frame].panel--with-chat-header)
+  .panel-header:not(.has-content)
+  + .panel-body {
+  border-start-end-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-start,
+    0
+  );
+}
+
+// Only constrain header/footer width when showFrame is true AND fullWidth is false
+:host([show-frame]:not(.panel--full-width)) .panel-header,
+:host([show-frame]:not(.panel--full-width)) .panel-footer {
+  inline-size: auto;
+  max-inline-size: $messages-max-width;
 }
 
 @keyframes cds-aichat-fade-in {
@@ -232,13 +300,13 @@ $border-radius: var(
   }
 
   to {
-    inset-block-start: var(--cds-aichat--header-height, 0);
+    inset-block-start: var(--cds-aichat-header-height, 0);
   }
 }
 
 @keyframes cds-aichat-slide-out-to-bottom-with-header {
   from {
-    inset-block-start: var(--cds-aichat--header-height, 0);
+    inset-block-start: var(--cds-aichat-header-height, 0);
   }
 
   to {

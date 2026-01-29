@@ -22,6 +22,7 @@ const CdsAiChatPanel = withWebComponentBridge(
       onOpenEnd: "openend",
       onCloseStart: "closestart",
       onCloseEnd: "closeend",
+      onBodyScroll: "body-scroll",
     },
   }),
 );

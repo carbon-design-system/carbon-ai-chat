@@ -160,12 +160,12 @@ export const Default = {
     fullWidth: false,
     showChatHeader: true,
     showFrame: true,
+    aiEnabled: false,
     animationOnOpen: "slide-in-from-bottom",
     animationOnClose: "slide-out-to-bottom",
   },
   argTypes: {
     // Hide shell-level controls
-    aiEnabled: { table: { disable: true } },
     roundedCorners: { table: { disable: true } },
     // Panel-specific argTypes only
     open: { control: "boolean" },
@@ -175,6 +175,7 @@ export const Default = {
     fullWidth: { control: "boolean" },
     showChatHeader: { control: "boolean" },
     showFrame: { control: "boolean" },
+    aiEnabled: { control: "boolean" },
     animationOnOpen: {
       control: { type: "select" },
       options: ["", "slide-in-from-bottom", "slide-in-from-right", "fade-in"],
@@ -191,6 +192,7 @@ export const Default = {
       fullWidth,
       showChatHeader,
       showFrame,
+      aiEnabled,
       animationOnOpen,
       animationOnClose,
     } = args;
@@ -205,6 +207,7 @@ export const Default = {
             ?full-width=${fullWidth}
             ?show-chat-header=${showChatHeader}
             ?show-frame=${showFrame}
+            ?ai-enabled=${aiEnabled}
             animation-on-open=${animationOnOpen || nothing}
             animation-on-close=${animationOnClose || nothing}
           >

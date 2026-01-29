@@ -158,7 +158,6 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     aiEnabled,
     shouldTakeFocusIfOpensAutomatically,
     namespace,
-    enableFocusTrap,
     shouldSanitizeHTML,
     header,
     layout,
@@ -228,7 +227,6 @@ function ChatCustomElement(props: ChatCustomElementProps) {
             shouldTakeFocusIfOpensAutomatically
           }
           namespace={namespace}
-          enableFocusTrap={enableFocusTrap}
           shouldSanitizeHTML={shouldSanitizeHTML}
           header={header}
           layout={layout}

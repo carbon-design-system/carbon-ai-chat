@@ -9,7 +9,10 @@
 
 import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
 
-function doPreviewCard(instance: ChatInstance) {
+function doPreviewCard(
+  instance: ChatInstance,
+  preferredLocation?: "start" | "end",
+) {
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -21,6 +24,9 @@ function doPreviewCard(instance: ChatInstance) {
           title: "Optimizing excess inventory",
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
+          workspace_options: {
+            preferredLocation,
+          },
           additional_data: {
             id: "some unique ID for the workspace",
             data: "some additional data for the workspace",

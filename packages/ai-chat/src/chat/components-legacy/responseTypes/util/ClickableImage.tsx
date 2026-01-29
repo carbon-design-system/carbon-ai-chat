@@ -9,7 +9,7 @@
 
 import React from "react";
 
-import VisuallyHidden from "../../util/VisuallyHidden";
+import VisuallyHidden from "../../../components/util/VisuallyHidden";
 import { Image, ImageProps } from "../image/Image";
 
 interface ClickableImageProps extends ImageProps {

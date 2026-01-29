@@ -12,6 +12,7 @@ import {
   type WorkspaceCustomPanelConfigOptions,
   type ViewState,
   ViewType,
+  DefaultCustomPanelConfigOptions,
 } from "../instance/apiTypes";
 import { LanguagePack } from "../config/PublicConfig";
 import { type FileUpload } from "../config/ServiceDeskConfig";
@@ -517,7 +518,7 @@ interface CustomPanelState {
   /**
    * Config options for the custom panels.
    */
-  options: CustomPanelConfigOptions;
+  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions;
 }
 interface WorkspacePanelState {
   /**

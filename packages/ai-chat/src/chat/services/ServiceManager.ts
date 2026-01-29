@@ -10,7 +10,6 @@
 import type { AppStore } from "../store/appStore";
 import { IntlShape } from "../utils/i18n";
 
-import { AppWindowFunctions } from "../components-legacy/AppWindowFunctions";
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
 import { HumanAgentService } from "./haa/HumanAgentService";
@@ -27,6 +26,7 @@ import {
 import { BusEvent } from "../../types/events/eventBusTypes";
 import { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "./ChatActionsImpl";
+import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -52,7 +52,7 @@ class ServiceManager {
   /**
    * The current instance of the {@link App} component. This value is not set until app is mounted.
    */
-  appWindow: AppWindowFunctions;
+  appWindow: HasRequestFocus;
 
   /**
    * The class used by the client to execute various chat actions.

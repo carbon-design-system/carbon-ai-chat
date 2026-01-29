@@ -1,5 +1,5 @@
 import React from "react";
-import { render, act, waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
 import {
   ChatContainer,
   PageObjectId,
@@ -16,6 +16,7 @@ import {
 import {
   closeChat,
   openChat,
+  renderChatContainer,
   sendUserMessage,
   waitForChatElement,
 } from "./helpers";
@@ -30,32 +31,30 @@ describe("ChatContainer", () => {
   it("should render the chat component", async () => {
     // Render ChatContainer with an inline customSendMessage so we can inject a deterministic
     // AI response without hitting a backend or wiring up WebSocket plumbing.
-    const { container } = await act(() =>
-      render(
-        <ChatContainer
-          messaging={{
-            customSendMessage(_request, _requestOptions, instance) {
-              // Return a welcome message
-              instance.messaging.addMessage({
-                output: {
-                  generic: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "Hello! How can I help you today?",
-                    },
-                  ],
-                },
-              });
-            },
-          }}
-          data-testid="chat-container"
-          renderWriteableElements={{
-            headerBottomElement: (
-              <div data-testid="custom-header">Custom Header Content</div>
-            ),
-          }}
-        />,
-      ),
+    const { container } = await renderChatContainer(
+      <ChatContainer
+        messaging={{
+          customSendMessage(_request, _requestOptions, instance) {
+            // Return a welcome message
+            instance.messaging.addMessage({
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: "Hello! How can I help you today?",
+                  },
+                ],
+              },
+            });
+          },
+        }}
+        data-testid="chat-container"
+        renderWriteableElements={{
+          headerBottomElement: (
+            <div data-testid="custom-header">Custom Header Content</div>
+          ),
+        }}
+      />,
     );
 
     // The widget renders into a custom element (`cds-aichat-react`), so wait for it to
@@ -69,26 +68,24 @@ describe("ChatContainer", () => {
   it("should open chat when launcher is clicked", async () => {
     // Exercise the full launcher interaction so we know happy-dom can open the floating widget
     // and expose the same shadow-rooted surface users see in production.
-    const { container } = await act(() =>
-      render(
-        <ChatContainer
-          messaging={{
-            customSendMessage(_request, _requestOptions, instance) {
-              console.log("customSendMessage called");
-              instance.messaging.addMessage({
-                output: {
-                  generic: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "Welcome! How can I help you?",
-                    },
-                  ],
-                },
-              });
-            },
-          }}
-        />,
-      ),
+    const { container } = await renderChatContainer(
+      <ChatContainer
+        messaging={{
+          customSendMessage(_request, _requestOptions, instance) {
+            console.log("customSendMessage called");
+            instance.messaging.addMessage({
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: "Welcome! How can I help you?",
+                  },
+                ],
+              },
+            });
+          },
+        }}
+      />,
     );
 
     // Wait for the host web component before poking into its implementation details.
@@ -127,21 +124,19 @@ describe("ChatContainer", () => {
   it("should render slotted content", async () => {
     // Render custom header content via `renderWriteableElements` so we can assert that
     // slot wiring behaves the same under happy-dom as it does in browsers.
-    const { container } = await act(() =>
-      render(
-        <ChatContainer
-          messaging={{
-            customSendMessage(_request, _requestOptions, _instance) {
-              console.log("customSendMessage");
-            },
-          }}
-          renderWriteableElements={{
-            headerBottomElement: (
-              <div data-testid="custom-header">Custom Header Content</div>
-            ),
-          }}
-        />,
-      ),
+    const { container } = await renderChatContainer(
+      <ChatContainer
+        messaging={{
+          customSendMessage(_request, _requestOptions, _instance) {
+            console.log("customSendMessage");
+          },
+        }}
+        renderWriteableElements={{
+          headerBottomElement: (
+            <div data-testid="custom-header">Custom Header Content</div>
+          ),
+        }}
+      />,
     );
 
     // Slot assertions happen outside the widget's shadow DOM: Carbon copies whatever we
@@ -165,25 +160,23 @@ describe("ChatContainer", () => {
   it("should have a shadow DOM with rendered content", async () => {
     // Push a text message through the mocked `customSendMessage` flow so the widget
     // renders markdown content we can later inspect inside the component's shadow root.
-    const { container } = await act(() =>
-      render(
-        <ChatContainer
-          messaging={{
-            customSendMessage(_request, _requestOptions, instance) {
-              instance.messaging.addMessage({
-                output: {
-                  generic: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "Test message",
-                    },
-                  ],
-                },
-              });
-            },
-          }}
-        />,
-      ),
+    const { container } = await renderChatContainer(
+      <ChatContainer
+        messaging={{
+          customSendMessage(_request, _requestOptions, instance) {
+            instance.messaging.addMessage({
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: "Test message",
+                  },
+                ],
+              },
+            });
+          },
+        }}
+      />,
     );
 
     const customElement = await waitFor(() =>
@@ -206,8 +199,18 @@ describe("ChatContainer", () => {
     expect(shadowRoot).toBeTruthy();
 
     try {
-      const markdownElement = await waitFor(() => {
+      const mainPanel = await waitFor(() => {
         const element = shadowRoot.querySelector(
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+        ) as HTMLElement | null;
+        if (!element) {
+          throw new Error("Main panel not rendered yet");
+        }
+        return element;
+      });
+
+      const markdownElement = await waitFor(() => {
+        const element = mainPanel.querySelector(
           "cds-aichat-markdown",
         ) as HTMLElement | null;
         if (!element || !(element as any).shadowRoot) {
@@ -234,25 +237,23 @@ describe("ChatContainer", () => {
   it("should render PageObjectId elements in shadow DOM", async () => {
     // Minimal render that only needs the launcher so we can document how PageObjectId
     // selectors map to real DOM elements inside the custom element's shadow tree.
-    const { container } = await act(() =>
-      render(
-        <ChatContainer
-          messaging={{
-            customSendMessage(_request, _requestOptions, instance) {
-              instance.messaging.addMessage({
-                output: {
-                  generic: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "Test message",
-                    },
-                  ],
-                },
-              });
-            },
-          }}
-        />,
-      ),
+    const { container } = await renderChatContainer(
+      <ChatContainer
+        messaging={{
+          customSendMessage(_request, _requestOptions, instance) {
+            instance.messaging.addMessage({
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: "Test message",
+                  },
+                ],
+              },
+            });
+          },
+        }}
+      />,
     );
 
     const customElement = await waitFor(() =>
@@ -281,29 +282,23 @@ describe("ChatContainer", () => {
     async () => {
       // Render a text response that embeds a markdown table and fenced code block so we
       // can assert that both complex components hydrate correctly under happy-dom.
-      const { container } = await act(() =>
-        render(
-          <ChatContainer
-            messaging={{
-              customSendMessage: async (
-                _request,
-                _requestOptions,
-                instance,
-              ) => {
-                instance.messaging.addMessage({
-                  output: {
-                    generic: [
-                      {
-                        response_type: MessageResponseTypes.TEXT,
-                        text: MARKDOWN_WITH_TABLE_AND_CODE,
-                      },
-                    ],
-                  },
-                });
-              },
-            }}
-          />,
-        ),
+      const { container } = await renderChatContainer(
+        <ChatContainer
+          messaging={{
+            customSendMessage: async (_request, _requestOptions, instance) => {
+              instance.messaging.addMessage({
+                output: {
+                  generic: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: MARKDOWN_WITH_TABLE_AND_CODE,
+                    },
+                  ],
+                },
+              });
+            },
+          }}
+        />,
       );
 
       const customElement = await waitFor(() =>
@@ -336,8 +331,18 @@ describe("ChatContainer", () => {
 
         expect(messageElement).toBeTruthy();
 
-        const markdownElement = await waitFor(() => {
+        const mainPanel = await waitFor(() => {
           const element = shadowRoot.querySelector(
+            `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+          ) as HTMLElement | null;
+          if (!element) {
+            throw new Error("Main panel not rendered yet");
+          }
+          return element;
+        });
+
+        const markdownElement = await waitFor(() => {
+          const element = mainPanel.querySelector(
             "cds-aichat-markdown",
           ) as HTMLElement | null;
           if (!element || !(element as any).shadowRoot) {
@@ -401,21 +406,19 @@ describe("ChatContainer", () => {
       // Capture the ChatContainer instance via onBeforeRender so we can inject a mocked
       // conversational-search payload and verify the resulting carousel UI.
       let instanceRef: ChatInstance | null = null;
-      const { container } = await act(() =>
-        render(
-          <ChatContainer
-            openChatByDefault
-            onBeforeRender={(instance) => {
-              instanceRef = instance;
-            }}
-            messaging={{
-              skipWelcome: true,
-              customSendMessage() {
-                return Promise.resolve();
-              },
-            }}
-          />,
-        ),
+      const { container } = await renderChatContainer(
+        <ChatContainer
+          openChatByDefault
+          onBeforeRender={(instance) => {
+            instanceRef = instance;
+          }}
+          messaging={{
+            skipWelcome: true,
+            customSendMessage() {
+              return Promise.resolve();
+            },
+          }}
+        />,
       );
 
       const customElement = (await waitForChatElement(

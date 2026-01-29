@@ -62,6 +62,18 @@ class CdsAiChatPanel extends LitElement {
   showFrame = false;
 
   /**
+   * Shows the AI gradient background
+   */
+  @property({ type: Boolean, attribute: "ai-enabled", reflect: true })
+  aiEnabled = false;
+
+  /**
+   * Removes padding from the panel body
+   */
+  @property({ type: Boolean, attribute: "body-no-padding", reflect: true })
+  bodyNoPadding = false;
+
+  /**
    * Specifies the animation to use when opening the panel
    */
   @property({ type: String, attribute: "animation-on-open", reflect: true })
@@ -138,6 +150,11 @@ class CdsAiChatPanel extends LitElement {
   }
 
   disconnectedCallback(): void {
+    const panelBody = this.renderRoot.querySelector(".panel-body");
+    if (panelBody) {
+      panelBody.removeEventListener("scroll", this.handleBodyScroll);
+    }
+
     this.removeEventListener("animationstart", this.handleAnimationStart);
     this.removeEventListener("animationend", this.handleAnimationEnd);
     this.clearAnimationFallback();
@@ -156,8 +173,16 @@ class CdsAiChatPanel extends LitElement {
     this.classList.toggle("panel--with-chat-header", this.showChatHeader);
     this.classList.toggle("panel--with-frame", this.showFrame);
     this.classList.toggle("panel--full-width", this.fullWidth);
+    this.classList.toggle("panel--ai-theme", this.aiEnabled);
+    this.classList.toggle("panel--body--no-padding", this.bodyNoPadding);
     this.updateHostClasses();
     this.observeSlotContent();
+
+    // Add scroll listener to panel-body
+    const panelBody = this.renderRoot.querySelector(".panel-body");
+    if (panelBody) {
+      panelBody.addEventListener("scroll", this.handleBodyScroll);
+    }
   }
 
   protected updated(changedProperties: PropertyValues) {
@@ -175,6 +200,14 @@ class CdsAiChatPanel extends LitElement {
 
     if (changedProperties.has("fullWidth")) {
       this.classList.toggle("panel--full-width", this.fullWidth);
+    }
+
+    if (changedProperties.has("aiEnabled")) {
+      this.classList.toggle("panel--ai-theme", this.aiEnabled);
+    }
+
+    if (changedProperties.has("bodyNoPadding")) {
+      this.classList.toggle("panel--body--no-padding", this.bodyNoPadding);
     }
 
     if (
@@ -507,6 +540,30 @@ class CdsAiChatPanel extends LitElement {
       slot.addEventListener("slotchange", updateSlotStates);
     });
   }
+
+  private handleBodyScroll = (event: Event) => {
+    const target = event.target as HTMLElement;
+    if (!target) {
+      return;
+    }
+
+    // Dispatch a custom event with scroll information
+    this.dispatchEvent(
+      new CustomEvent("body-scroll", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          scrollTop: target.scrollTop,
+          scrollHeight: target.scrollHeight,
+          clientHeight: target.clientHeight,
+          scrollBottom: target.scrollTop + target.clientHeight,
+          isAtBottom:
+            target.scrollTop + target.clientHeight >= target.scrollHeight - 1,
+          isScrollable: target.scrollHeight > target.clientHeight,
+        },
+      }),
+    );
+  };
 
   render() {
     const headerClasses = [

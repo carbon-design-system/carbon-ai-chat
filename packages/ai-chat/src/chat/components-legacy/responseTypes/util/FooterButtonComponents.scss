@@ -77,19 +77,19 @@ cds-aichat-card {
   }
 }
 
-// Usage inside rounded widget panel, we remove one more pixel as the overlay panel brings its own border of 1px.
-.cds-aichat--widget--rounded
-  .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components {
-  @include footer-button-radius(calc(chat-theme.$border-radius - rem(1px)));
+// Usage inside rounded widget panel, use CSS custom properties for rounded corners
+.cds-aichat--overlay-panel .cds-aichat--footer-button-components {
+  @include footer-button-radius(
+    var(--cds-aichat-rounded-modifier-radius-end-end, 0)
+  );
 }
 // Corner rounding styles end
-.cds-aichat--widget__animation-container--with-branding-banner
+.cds-aichat--widget--with-branding-banner
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components,
-.cds-aichat--widget:not(.cds-aichat--widget--rounded)
-  .cds-aichat--widget__animation-container:not(
-    .cds-aichat--widget__animation-container--with-branding-banner
+.cds-aichat--widget:not(
+    .cds-aichat--widget--rounded,
+    .cds-aichat--widget--with-branding-banner
   )
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components {
@@ -102,7 +102,7 @@ cds-aichat-card {
   }
 }
 
-.cds-aichat--widget__animation-container--with-branding-banner
+.cds-aichat--widget--with-branding-banner
   .cds-aichat--overlay-panel
   .cds-aichat--footer-button-components--column
   .cds-aichat--button-item.cds-aichat--button-item:last-child::part(button),

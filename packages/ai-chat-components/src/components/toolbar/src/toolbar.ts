@@ -64,6 +64,7 @@ class CDSAIChatToolbar extends LitElement {
   @state() private measuring = true;
 
   private overflowHandler?: { disconnect: () => void };
+  private visibilityObserver?: ResizeObserver;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -98,7 +99,29 @@ class CDSAIChatToolbar extends LitElement {
       return;
     }
 
+    const containerWidth = Math.round(
+      this.container.getBoundingClientRect().width,
+    );
+    if (containerWidth === 0) {
+      if (!this.visibilityObserver) {
+        this.visibilityObserver = new ResizeObserver(() => {
+          const width = Math.round(
+            this.container.getBoundingClientRect().width,
+          );
+          if (width > 0) {
+            this.visibilityObserver?.disconnect();
+            this.visibilityObserver = undefined;
+            this.setupOverflowHandler();
+          }
+        });
+        this.visibilityObserver.observe(this.container);
+      }
+      return;
+    }
+
     this.overflowHandler?.disconnect();
+    this.visibilityObserver?.disconnect();
+    this.visibilityObserver = undefined;
 
     this.overflowHandler = createOverflowHandler({
       container: this.container,
@@ -113,6 +136,8 @@ class CDSAIChatToolbar extends LitElement {
 
   disconnectedCallback() {
     this.overflowHandler?.disconnect();
+    this.visibilityObserver?.disconnect();
+    this.visibilityObserver = undefined;
     super.disconnectedCallback();
   }
 

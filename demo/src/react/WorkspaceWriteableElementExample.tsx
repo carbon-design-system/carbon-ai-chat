@@ -26,7 +26,13 @@ import Close16 from "@carbon/icons-react/es/Close.js";
 
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
-import { AILabel, Button, InlineNotification, Tag } from "@carbon/react";
+import {
+  AILabel,
+  AILabelContent,
+  Button,
+  InlineNotification,
+  Tag,
+} from "@carbon/react";
 
 interface WorkspaceExampleProps {
   location: string;
@@ -133,14 +139,18 @@ function WorkspaceWriteableElementExample({
         <div slot="title" data-fixed>
           Optimizing excess inventory
         </div>
-        <AILabel size="2xs" autoAlign>
-          <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
-          <div>
-            IBM watsonx is powered by the latest AI models to intelligently
-            process conversations and provide help whenever and wherever you may
-            need it.
-          </div>
-        </AILabel>
+        <div slot="decorator">
+          <AILabel size="2xs" autoAlign>
+            <AILabelContent>
+              <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
+              <div>
+                IBM watsonx is powered by the latest AI models to intelligently
+                process conversations and provide help whenever and wherever you
+                may need it.
+              </div>
+            </AILabelContent>
+          </AILabel>
+        </div>
       </Toolbar>
       <InlineNotification
         title="Notification Title"

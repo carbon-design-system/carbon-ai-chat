@@ -15,7 +15,7 @@ import { useCallbackOnChange } from "../../../hooks/useCallbackOnChange";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { SkeletonPlaceholder } from "../../SkeletonPicker";
+import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
 import InlineError from "../error/InlineError";
 import { CitationCard } from "../util/citations/CitationCard";
 import { ConversationalSearchText } from "./ConversationalSearchText";

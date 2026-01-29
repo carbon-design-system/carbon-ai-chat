@@ -761,12 +761,16 @@ const reducers: { [key: string]: ReducerType } = {
     { isOpen }: { isOpen: boolean },
   ) => setHomeScreenOpenState(state, isOpen),
 
-  [TOGGLE_HOME_SCREEN]: (state: AppState) =>
-    setHomeScreenOpenState(
+  [TOGGLE_HOME_SCREEN]: (state: AppState) => {
+    const isCurrentlyOpen =
+      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen;
+    // Only show "back to assistant" button when manually navigating back to home screen (not closing it)
+    return setHomeScreenOpenState(
       state,
-      !state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
-      true,
-    ),
+      !isCurrentlyOpen,
+      !isCurrentlyOpen, // true when opening, false when closing
+    );
+  },
 
   [SET_LAUNCHER_PROPERTY]: <TPropertyName extends keyof PersistedState>(
     state: AppState,

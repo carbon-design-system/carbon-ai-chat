@@ -7,9 +7,29 @@
  *  @license
  */
 
-import { act, waitFor } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { act, render, waitFor } from "@testing-library/react";
 import { PageObjectId } from "@carbon/ai-chat";
 import { WAIT_FOR_TIMEOUT } from "./constants";
+
+export async function renderChatContainer(
+  ui: ReactElement,
+): Promise<ReturnType<typeof render>> {
+  const result = render(ui);
+  const customElement = await waitForChatElement(result.container);
+  await waitFor(() => {
+    const shadowRoot = (customElement as HTMLElement).shadowRoot;
+    if (!shadowRoot) {
+      throw new Error("Chat element shadow root not ready");
+    }
+    const widget = shadowRoot.querySelector(".cds-aichat--widget");
+    if (!widget) {
+      throw new Error("Chat widget not rendered yet");
+    }
+    return widget;
+  });
+  return result;
+}
 
 export async function waitForChatElement(
   container: HTMLElement,
