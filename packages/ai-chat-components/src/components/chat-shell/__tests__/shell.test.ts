@@ -17,13 +17,22 @@ import CdsAiChatShell from "@carbon/ai-chat-components/es/components/chat-shell/
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
 
-const nextFrame = () =>
+const nextFrame = (frames = 1) =>
   new Promise<void>((resolve) => {
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => resolve());
-    } else {
-      setTimeout(() => resolve(), 0);
-    }
+    const tick = () => {
+      if (frames <= 0) {
+        resolve();
+        return;
+      }
+      frames -= 1;
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(tick);
+      } else {
+        setTimeout(tick, 0);
+      }
+    };
+
+    tick();
   });
 
 describe("cds-aichat-shell", function () {
@@ -837,7 +846,7 @@ describe("cds-aichat-shell", function () {
       expect(panelBefore).to.exist;
       expect(panelBefore?.hasAttribute("open")).to.be.false;
 
-      await nextFrame();
+      await nextFrame(2);
       await el.updateComplete;
 
       const panelAfter = el.shadowRoot!.querySelector(
@@ -869,7 +878,7 @@ describe("cds-aichat-shell", function () {
       );
 
       await el.updateComplete;
-      await nextFrame();
+      await nextFrame(2);
       await el.updateComplete;
 
       const panelOpen = el.shadowRoot!.querySelector(
