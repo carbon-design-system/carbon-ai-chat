@@ -50,7 +50,7 @@
   background-color: theme.$chat-shell-background;
   background-image: none;
   block-size: 100%;
-  box-shadow: var(--cds-aichat-box-shadow, $default-box-shadow);
+  box-shadow: $default-box-shadow;
   inline-size: 100%;
 }
 
@@ -64,7 +64,7 @@
   @include ai-popover-gradient($background: "chat-shell-background");
 
   background-color: theme.$chat-shell-background;
-  box-shadow: $ai-box-shadow-outer;
+  box-shadow: $ai-box-shadow-inner, $ai-box-shadow-outer;
 }
 
 // Shell Modifiers - Frameless

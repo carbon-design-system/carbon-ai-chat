@@ -255,7 +255,20 @@
   @include ai-gradient();
 
   background-color: theme.$chat-shell-background;
-  box-shadow: chat-theme.$ai-box-shadow-inner, chat-theme.$ai-box-shadow-outer;
+  box-shadow:
+    inset 0 -80px 70px -65px
+      var(--cds-ai-inner-shadow, #{theme.$ai-inner-shadow}),
+    0 4px 10px 2px var(--cds-ai-drop-shadow, #{theme.$ai-drop-shadow}),
+    -40px 44px 60px -24px
+      var(
+        --cds-ai-popover-shadow-outer-01,
+        #{theme.$ai-popover-shadow-outer-01}
+      ),
+    -56px 64px 64px -24px
+      var(
+        --cds-ai-popover-shadow-outer-02,
+        #{theme.$ai-popover-shadow-outer-02}
+      );
 }
 
 .cds-aichat--ai-theme .cds-aichat--frameless .cds-aichat {

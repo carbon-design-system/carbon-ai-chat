@@ -13,16 +13,6 @@
 // Web chat widget variables
 $box-shadow: config.get-var("box-shadow", 1px 0 4px hsl(0deg 0% 9% / 30%));
 
-// AI theming variables
-$ai-box-shadow-inner: config.get-var(
-  "ai-box-shadow-inner",
-  inset 0 -80px 70px -65px #{theme.$ai-inner-shadow}
-);
-$ai-box-shadow-outer: config.get-var(
-  "ai-box-shadow-outer",
-  0 4px 10px 2px #{theme.$ai-drop-shadow}
-);
-
 // Card variables
 $card-border-radius: config.get-var(
   "card-border-radius",

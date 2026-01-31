@@ -18,7 +18,14 @@ $messages-min-width: var(--cds-aichat-messages-min-width, 320px);
 $workspace-min-width: var(--cds-aichat-workspace-min-width, 640px);
 $history-width: var(--cds-aichat-history-width, 320px);
 
-$ai-box-shadow-outer: 0 4px 10px 2px #{theme.$ai-drop-shadow};
-$default-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
+$ai-box-shadow-inner: inset 0 -80px 70px -65px
+  var(--cds-ai-inner-shadow, #{theme.$ai-inner-shadow});
+$ai-box-shadow-outer:
+  0 4px 10px 2px var(--cds-ai-drop-shadow, #{theme.$ai-drop-shadow}),
+  -40px 44px 60px -24px
+    var(--cds-ai-popover-shadow-outer-01, #{theme.$ai-popover-shadow-outer-01}),
+  -56px 64px 64px -24px
+    var(--cds-ai-popover-shadow-outer-02, #{theme.$ai-popover-shadow-outer-02});
+$default-box-shadow: 0 2px 6px var(--cds-shadow, #{theme.$shadow});
 
 // Made with Bob
