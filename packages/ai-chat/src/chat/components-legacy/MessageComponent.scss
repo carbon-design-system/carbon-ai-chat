@@ -503,43 +503,48 @@ svg.cds-aichat--sent-file-icon {
   background-color: theme.$chat-avatar-bot;
 }
 
-/* Views bigger than a small phone - only apply when NOT in workspace inline container mode */
-:host(:not([workspace-in-container])) {
-  .cds-aichat--standard-width,
-  .cds-aichat--wide-width {
-    .cds-aichat--message__avatar-line
-      + .cds-aichat--message--padding
-      .cds-aichat--assistant-message
-      > div.cds-aichat--received {
-      margin-block-start: 0;
+/* Layout overrides by shell state (legacy/light DOM). */
+.cds-aichat--container--render {
+  /* Views bigger than a small phone. */
+  :where(cds-aichat-shell) {
+    &.cds-aichat--standard-width,
+    &.cds-aichat--wide-width {
+      .cds-aichat--message__avatar-line
+        + .cds-aichat--message--padding
+        .cds-aichat--assistant-message
+        > div.cds-aichat--received {
+        margin-block-start: 0;
+      }
+
+      .cds-aichat--message
+        .cds-aichat--received.cds-aichat--received--agent-status-message {
+        margin-inline: 0;
+      }
     }
 
-    .cds-aichat--message
-      .cds-aichat--received.cds-aichat--received--agent-status-message {
-      margin-inline: 0;
+    /* Both the sent and received messages fill the same space within the chat. */
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
+    &.cds-aichat--standard-width
+      .cds-aichat--message
+      .cds-aichat--sent-container {
+      /* Start = left padding + avatar + right padding. */
+      margin-inline: calc(
+          #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
+        )
+        layout.$spacing-05;
     }
-  }
-
-  /* Both the sent and received messages fill the same space within the chat. */
-  .cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
-  .cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
-  .cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-  .cds-aichat--standard-width .cds-aichat--message .cds-aichat--sent-container {
-    /* Start = left padding + avatar + right padding. */
-    margin-inline: calc(
-        #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
-      )
-      layout.$spacing-05;
   }
 
   /* Force narrow view mode when workspace is in inline container mode.
- * When the workspace is displayed inline (side-by-side with messages), the available
- * width for messages is constrained. Messages should use narrow view spacing regardless
- * of the calculated width breakpoint to prevent layout issues. */
+   * When the workspace is displayed inline (side-by-side with messages), the available
+   * width for messages is constrained. Messages should use narrow view spacing regardless
+   * of the calculated width breakpoint to prevent layout issues. */
 
-  :host([workspace-in-container]) {
-    .cds-aichat--standard-width,
-    .cds-aichat--wide-width {
+  :where(cds-aichat-shell[workspace-in-container]) {
+    &.cds-aichat--standard-width,
+    &.cds-aichat--wide-width {
       .cds-aichat--message__avatar-line
         + .cds-aichat--message--padding
         .cds-aichat--assistant-message
@@ -553,14 +558,24 @@ svg.cds-aichat--sent-file-icon {
       }
     }
 
-    /* Use narrow view margins (no avatar compensation needed in constrained space) */
-    .cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
-    .cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
-    .cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-    .cds-aichat--standard-width
+    /* Use narrow view margins (no avatar compensation needed in constrained space). */
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
+    &.cds-aichat--standard-width
       .cds-aichat--message
       .cds-aichat--sent-container {
       margin-inline: layout.$spacing-05;
+    }
+  }
+
+  /* Workspaces: open should use the no-margin-block-start variant regardless of width. */
+  :where(cds-aichat-shell[show-workspace]) {
+    .cds-aichat--message__avatar-line
+      + .cds-aichat--message--padding
+      .cds-aichat--assistant-message
+      > div.cds-aichat--received {
+      margin-block-start: 0;
     }
   }
 }
