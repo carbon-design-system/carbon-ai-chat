@@ -11,7 +11,6 @@ import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./workspace-shell-header.scss?lit";
 
 /**

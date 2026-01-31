@@ -9,8 +9,6 @@
 
 import { LitElement, html } from "lit";
 import { property, state } from "lit/decorators.js";
-
-// @ts-ignore
 import styles from "./tool-call-data.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
