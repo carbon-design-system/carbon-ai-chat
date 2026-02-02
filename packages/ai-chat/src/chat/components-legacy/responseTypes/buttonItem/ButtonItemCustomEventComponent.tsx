@@ -13,8 +13,8 @@ import React, { useCallback } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { selectInputState } from "../../../store/selectors";
+import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
   ButtonItem,
   MessageResponse,
