@@ -16,17 +16,16 @@ import "@carbon/web-components/es/components/search/search.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 import AddComment20 from "@carbon/icons/es/add-comment/20.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-// @ts-ignore
 import styles from "./chat-history.scss?lit";
 
 /**
  * Chat History Toolbar.
  *
- * @element cds-aichat-chat-history-toolbar
+ * @element cds-aichat-history-toolbar
  *
  */
-@carbonElement(`${prefix}-chat-history-toolbar`)
-export class CDSChatHistoryToolbar extends LitElement {
+@carbonElement(`${prefix}-history-toolbar`)
+export class CDSHistoryToolbar extends LitElement {
   /**
    * Sets default slot value to toolbar
    */
@@ -54,4 +53,4 @@ export class CDSChatHistoryToolbar extends LitElement {
   static styles = styles;
 }
 
-export default CDSChatHistoryToolbar;
+export default CDSHistoryToolbar;

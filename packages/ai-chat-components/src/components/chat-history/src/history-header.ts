@@ -16,17 +16,16 @@ import "@carbon/web-components/es/components/icon-button/index.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronLeft20 from "@carbon/icons/es/chevron--left/20.js";
 import RightPanelClose20 from "@carbon/icons/es/right-panel--close/20.js";
-// @ts-ignore
 import styles from "./chat-history.scss?lit";
 
 /**
  * Chat History header.
  *
- * @element cds-aichat-chat-history-header
+ * @element cds-aichat-history-header
  *
  */
-@carbonElement(`${prefix}-chat-history-header`)
-export class CDSChatHistoryHeader extends LitElement {
+@carbonElement(`${prefix}-history-header`)
+export class CDSHistoryHeader extends LitElement {
   /**
    * Sets default slot value to header
    */
@@ -82,4 +81,4 @@ export class CDSChatHistoryHeader extends LitElement {
   static styles = styles;
 }
 
-export default CDSChatHistoryHeader;
+export default CDSHistoryHeader;

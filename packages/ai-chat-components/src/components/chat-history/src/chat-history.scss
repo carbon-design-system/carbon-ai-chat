@@ -10,8 +10,9 @@
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/convert";
+@use "@carbon/web-components/scss/components/ui-shell/side-nav";
 
-:host(#{$prefix}-chat-history-shell) {
+:host(#{$prefix}-history-shell) {
   display: block;
   border: solid convert.rem(1px) theme.$border-subtle-00;
   background: theme.$chat-header-background;
@@ -19,19 +20,24 @@
   inline-size: 100%;
 }
 
-:host(#{$prefix}-chat-history-header) {
+:host(#{$prefix}-history-header) {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   block-size: convert.rem(40px);
-  border-block-end: solid convert.rem(1px) theme.$border-subtle-00;
-  inline-size: 100%;
+  border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
   @include type.type-style("body-compact-01");
 
-  .#{$prefix}-chat-history-header__close-button {
+  font-weight: 600;
+  inline-size: 100%;
+  letter-spacing: 0.1px;
+  line-height: 1.25rem;
+
+  .#{$prefix}-history-header__close-button {
     padding-inline-end: layout.$spacing-03;
   }
 
-  .#{$prefix}-chat-history-header__title {
+  .#{$prefix}-history-header__title {
     overflow: hidden;
     inline-size: 100%;
     text-overflow: ellipsis;
@@ -39,6 +45,111 @@
   }
 }
 
-:host(#{$prefix}-chat-history-toolbar) {
+:host(#{$prefix}-history-toolbar) {
   display: flex;
+
+  cds-search::part(input) {
+    background-color: theme.$chat-header-background;
+    border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+  }
+}
+
+:host(#{$prefix}-history-panel) {
+  .cds--side-nav {
+    position: relative;
+    background-color: transparent;
+    inline-size: 100%;
+    max-inline-size: 100%;
+  }
+}
+
+:host(#{$prefix}-history-panel[expanded])
+  ::slotted(#{$cds-prefix}-side-nav-items) {
+  overflow-y: auto;
+}
+
+:host(#{$prefix}-history-panel-items) {
+  @extend :host(#{$cds-prefix}-side-nav-items);
+
+  padding: 0;
+}
+
+:host(#{$prefix}-history-panel-menu) {
+  @extend :host(#{$cds-prefix}-side-nav-menu);
+
+  padding-block-start: layout.$spacing-02;
+
+  .#{$cds-prefix}--side-nav__submenu {
+    padding: 0 1rem 0 layout.$spacing-04;
+  }
+
+  .#{$cds-prefix}--side-nav__submenu-title {
+    @include type.type-style("label-01");
+  }
+
+  .#{$cds-prefix}--side-nav__icon:not(
+    .#{$cds-prefix}--side-nav__submenu-chevron
+  ) {
+    margin-inline-end: layout.$spacing-03;
+  }
+}
+
+:host(#{$prefix}-history-panel-item) {
+  @extend :host(#{$cds-prefix}-side-nav-menu-item);
+
+  button.#{$cds-prefix}--side-nav__link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background-color: transparent;
+    block-size: convert.rem(40px);
+    inline-size: 100%;
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    padding-inline-start: layout.$spacing-07;
+    text-decoration: none;
+  }
+
+  button.#{$cds-prefix}--side-nav__link:focus {
+    background-color: theme.$background-hover;
+  }
+
+  .#{$cds-prefix}--side-nav__link-text {
+    @include type.type-style("body-01");
+
+    overflow: hidden;
+    color: theme.$text-primary;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+:host(#{$prefix}-history-panel-item[active]) {
+  button.#{$cds-prefix}--side-nav__link {
+    background-color: theme.$layer-selected;
+  }
+
+  button.#{$cds-prefix}--side-nav__link:before {
+    position: absolute;
+    background-color: theme.$border-interactive;
+    content: "";
+    inline-size: 3px;
+    inset-block: 0;
+    inset-inline-start: 0;
+  }
+}
+
+:host(#{$prefix}-history-panel-item) ::slotted([slot="actions"]) {
+  visibility: hidden;
+}
+
+:host(#{$prefix}-history-panel-item:hover) ::slotted([slot="actions"]) {
+  visibility: visible;
+}
+
+:host(#{$prefix}-history-panel-item[parent-has-icon])
+  button.#{$prefix}--side-nav__link {
+  padding-inline-start: 4.5rem;
 }
