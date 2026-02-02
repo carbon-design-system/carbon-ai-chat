@@ -152,6 +152,7 @@ const DEFAULT_INPUT_STATE: InputState = {
   rawValue: "",
   displayValue: "",
   fieldVisible: true,
+  isDisabled: false,
   isReadonly: false,
   files: [],
   allowFileUploads: false,

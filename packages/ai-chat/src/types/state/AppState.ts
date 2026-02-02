@@ -209,6 +209,11 @@ interface InputState extends FileUploadCapabilities {
   fieldVisible: boolean;
 
   /**
+   * Indicates if the input field should be disabled.
+   */
+  isDisabled: boolean;
+
+  /**
    * Indicates if the input field should be made readonly.
    */
   isReadonly: boolean;

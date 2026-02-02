@@ -237,9 +237,11 @@ class AssistantChat extends Component<ChatInterfaceProps, ChatInterfaceState> {
   };
 
   private shouldDisableInput() {
+    const { inputState, agentDisplayState } = this.props;
     return (
-      this.props.inputState.isReadonly ||
-      this.props.agentDisplayState.disableInput
+      inputState.isReadonly ||
+      inputState.isDisabled ||
+      agentDisplayState.disableInput
     );
   }
 
