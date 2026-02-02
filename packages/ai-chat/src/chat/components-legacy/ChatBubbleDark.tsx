@@ -12,10 +12,18 @@ import React from "react";
 /**
  * This component renders an a chat bubble for dark themes.
  */
-function ChatBubbleDark() {
+interface ChatBubbleDarkProps {
+  label: string;
+}
+
+function ChatBubbleDark({ label }: ChatBubbleDarkProps) {
   const chatBubbleID = "cbl-";
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 80 80"
+      aria-label={label}
+    >
       <defs>
         <linearGradient
           id={`${chatBubbleID}-a`}

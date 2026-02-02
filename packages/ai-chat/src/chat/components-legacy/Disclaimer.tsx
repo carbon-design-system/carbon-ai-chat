@@ -68,7 +68,12 @@ function Disclaimer({
   });
 
   function renderChatBubble() {
-    return isDarkTheme ? <ChatBubbleDark /> : <ChatBubbleLight />;
+    const label = languagePack.disclaimer_icon_label;
+    return isDarkTheme ? (
+      <ChatBubbleDark label={label} />
+    ) : (
+      <ChatBubbleLight label={label} />
+    );
   }
 
   return (

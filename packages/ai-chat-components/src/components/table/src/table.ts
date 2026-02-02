@@ -13,7 +13,6 @@ import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators";
 import { tableSkeletonTemplate } from "./table-skeleton.template";
 import { loadTableRuntime } from "./table-loader.js";
-// @ts-ignore
 import styles from "./table.scss?lit";
 import prefix from "../../../globals/settings.js";
 

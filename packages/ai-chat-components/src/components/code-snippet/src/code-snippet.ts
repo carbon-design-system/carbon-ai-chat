@@ -33,7 +33,7 @@ import { loadCodeMirrorRuntime } from "./codemirror/codemirror-loader.js";
 import "@carbon/web-components/es/components/skeleton-text/index.js";
 
 type CodeMirrorRuntime = Awaited<ReturnType<typeof loadCodeMirrorRuntime>>;
-// @ts-ignore
+
 import styles from "./code-snippet.scss?lit";
 import "@carbon/web-components/es/components/copy-button/index.js";
 import "@carbon/web-components/es/components/copy/copy.js";

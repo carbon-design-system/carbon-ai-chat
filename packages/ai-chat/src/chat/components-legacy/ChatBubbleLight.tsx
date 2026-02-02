@@ -12,13 +12,18 @@ import React from "react";
 /**
  * This component renders a chat bubble for light themes.
  */
-function ChatBubbleLight() {
+interface ChatBubbleLightProps {
+  label: string;
+}
+
+function ChatBubbleLight({ label }: ChatBubbleLightProps) {
   const chatBubbleID = "cbl-";
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 80 80"
+      aria-label={label}
     >
       <defs>
         <linearGradient

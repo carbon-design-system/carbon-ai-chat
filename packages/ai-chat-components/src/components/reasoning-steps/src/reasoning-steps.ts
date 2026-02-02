@@ -9,8 +9,6 @@
 
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-
-// @ts-ignore
 import styles from "./reasoning-steps.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
