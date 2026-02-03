@@ -41,13 +41,16 @@ export class CDSHistoryToolbar extends LitElement {
   render() {
     const { newChatLabel } = this;
 
-    return html` <cds-search></cds-search>
-      <cds-icon-button>
-        ${iconLoader(AddComment20, {
-          slot: "icon",
-        })}
-        <span slot="tooltip-content">${newChatLabel}</span>
-      </cds-icon-button>`;
+    return html` <slot name="actions-start"></slot>
+      <cds-search></cds-search>
+      <slot name="actions-end">
+        <cds-icon-button>
+          ${iconLoader(AddComment20, {
+            slot: "icon",
+          })}
+          <span slot="tooltip-content">${newChatLabel}</span>
+        </cds-icon-button>
+      </slot>`;
   }
 
   static styles = styles;

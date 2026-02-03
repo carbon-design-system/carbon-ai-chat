@@ -61,7 +61,7 @@ export class CDSHistoryHeader extends LitElement {
 
     return html` ${showCloseAction &&
       html`<cds-icon-button
-        class="${prefix}-chat-history-header__close-button"
+        class="${prefix}--history-header__close-button"
         kind="ghost"
       >
         ${iconLoader(ChevronLeft20, {
@@ -69,7 +69,7 @@ export class CDSHistoryHeader extends LitElement {
         })}
         <span slot="tooltip-content">${closeButtonLabel}</span>
       </cds-icon-button>`}
-      <span class="${prefix}-chat-history-header__title">${title}</span>
+      <span class="${prefix}--history-header__title">${title}</span>
       <cds-icon-button kind="ghost">
         ${iconLoader(RightPanelClose20, {
           slot: "icon",

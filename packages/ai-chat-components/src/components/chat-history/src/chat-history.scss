@@ -13,7 +13,10 @@
 @use "@carbon/web-components/scss/components/ui-shell/side-nav";
 
 :host(#{$prefix}-history-shell) {
-  display: block;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
   border: solid convert.rem(1px) theme.$border-subtle-00;
   background: theme.$chat-header-background;
   block-size: 100%;
@@ -33,11 +36,11 @@
   letter-spacing: 0.1px;
   line-height: 1.25rem;
 
-  .#{$prefix}-history-header__close-button {
+  .#{$prefix}--history-header__close-button {
     padding-inline-end: layout.$spacing-03;
   }
 
-  .#{$prefix}-history-header__title {
+  .#{$prefix}--history-header__title {
     overflow: hidden;
     inline-size: 100%;
     text-overflow: ellipsis;
@@ -51,6 +54,29 @@
   cds-search::part(input) {
     background-color: theme.$chat-header-background;
     border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+  }
+}
+
+:host(#{$prefix}-history-content) {
+  display: block;
+  block-size: 100%;
+  overflow-y: auto;
+}
+
+:host(#{$prefix}-history-loading) {
+  padding: layout.$spacing-06;
+
+  #{$cds-prefix}-skeleton-text {
+    padding: layout.$spacing-06 0;
+  }
+
+  .#{$prefix}--history-loading__results {
+    border-block-end: 1px solid theme.$border-subtle;
+    margin-block-end: layout.$spacing-04;
+
+    #{$cds-prefix}-skeleton-text {
+      padding: 0 0 layout.$spacing-04 0;
+    }
   }
 }
 
@@ -124,6 +150,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  .#{$prefix}--overflow-menu__icon {
+    color: theme.$icon-primary;
+  }
 }
 
 :host(#{$prefix}-history-panel-item[active]) {
@@ -141,11 +171,13 @@
   }
 }
 
-:host(#{$prefix}-history-panel-item) ::slotted([slot="actions"]) {
+:host(#{$prefix}-history-panel-item) #{$cds-prefix}-overflow-menu {
   visibility: hidden;
 }
 
-:host(#{$prefix}-history-panel-item:hover) ::slotted([slot="actions"]) {
+:host(#{$prefix}-history-panel-item:hover) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item:focus) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item:focus-within) #{$cds-prefix}-overflow-menu {
   visibility: visible;
 }
 

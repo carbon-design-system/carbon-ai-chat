@@ -9,13 +9,12 @@
 import "../index";
 import { html } from "lit";
 import styles from "./story-styles.scss?lit";
-import prefix from "../../../globals/settings.js";
+
+import { historyItemActions, pinnedHistoryItemActions } from "./story-data";
 
 import PinFilled16 from "@carbon/icons/es/pin--filled/16.js";
 import Time16 from "@carbon/icons/es/time/16.js";
-import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import "@carbon/web-components/es/components/overflow-menu/index.js";
 
 export default {
   title: "Unstable/Chat History",
@@ -52,104 +51,103 @@ export const Default = {
               ${iconLoader(PinFilled16, {
                 slot: "title-icon",
               })}
-              <cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item
+                .actions=${pinnedHistoryItemActions}
+              >
                 Here's the onboarding doc that includes all the information to
                 get started.
-                <cds-overflow-menu slot="actions">
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
-                  })}
-                  <cds-overflow-menu-body>
-                    <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
               </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item>
-                Here's the onboarding doc that includes all the information to
-                get started.
-                <cds-overflow-menu slot="actions">
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
-                  })}
-                  <cds-overflow-menu-body>
-                    <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
+              <cds-aichat-history-panel-item
+                active
+                .actions=${pinnedHistoryItemActions}
+              >
+                Let's use this as the master invoice document.
               </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item>
-                Here's the onboarding doc that includes all the information to
-                get started.
-                <cds-overflow-menu slot="actions">
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
-                  })}
-                  <cds-overflow-menu-body>
-                    <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
+              <cds-aichat-history-panel-item
+                .actions=${pinnedHistoryItemActions}
+              >
+                Noticed some deiscrepancies between these two files.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item
+                .actions=${pinnedHistoryItemActions}
+              >
+                Do we need a PO number on every documentation here?
               </cds-aichat-history-panel-item>
             </cds-aichat-history-panel-menu>
+
+            <cds-aichat-history-panel-menu expanded title="Today">
+              ${iconLoader(Time16, {
+                slot: "title-icon",
+              })}
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Here's the onboarding doc that includes all the information to
+                get started.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Let's use this as the master invoice document.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Noticed some deiscrepancies between these two files.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Do we need a PO number on every documentation here?
+              </cds-aichat-history-panel-item>
+            </cds-aichat-history-panel-menu>
+
             <cds-aichat-history-panel-menu expanded title="Yesterday">
               ${iconLoader(Time16, {
                 slot: "title-icon",
               })}
-              <cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
                 Here's the onboarding doc that includes all the information to
                 get started.
-                <cds-overflow-menu slot="actions">
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
-                  })}
-                  <cds-overflow-menu-body>
-                    <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
               </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item active>
-                Here's the onboarding doc that includes all the information to
-                get started.
-                <cds-overflow-menu slot="actions">
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
-                  })}
-                  <cds-overflow-menu-body>
-                    <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Let's use this as the master invoice document.
               </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Noticed some deiscrepancies between these two files.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Do we need a PO number on every documentation here?
+              </cds-aichat-history-panel-item>
+            </cds-aichat-history-panel-menu>
+
+            <cds-aichat-history-panel-menu expanded title="Previous 7 days">
+              ${iconLoader(Time16, {
+                slot: "title-icon",
+              })}
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
                 Here's the onboarding doc that includes all the information to
                 get started.
-                <cds-overflow-menu slot="actions">
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
-                  })}
-                  <cds-overflow-menu-body>
-                    <cds-overflow-menu-item>Stop app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Restart app</cds-overflow-menu-item>
-                    <cds-overflow-menu-item>Rename app</cds-overflow-menu-item>
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Let's use this as the master invoice document.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Noticed some deiscrepancies between these two files.
+              </cds-aichat-history-panel-item>
+              <cds-aichat-history-panel-item .actions=${historyItemActions}>
+                Do we need a PO number on every documentation here?
               </cds-aichat-history-panel-item>
             </cds-aichat-history-panel-menu>
           </cds-aichat-history-panel-items>
         </cds-aichat-history-panel>
       </cds-aichat-history-content>`;
+  },
+};
+
+export const Loading = {
+  args: {
+    HeaderTitle: "Chats",
+  },
+  render: (args) => {
+    return html`
+      <cds-aichat-history-header
+        title="${args.HeaderTitle}"
+      ></cds-aichat-history-header>
+      <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
+      <cds-aichat-history-loading></cds-aichat-history-loading>
+    `;
   },
 };
