@@ -29,7 +29,10 @@ export class CDSHistoryContent extends LitElement {
   slot = "content";
 
   render() {
-    return html`<slot></slot>`;
+    return html` <span class="${prefix}--history-content__results-count">
+        <slot name="results-count"></slot>
+      </span>
+      <slot></slot>`;
   }
 
   static styles = styles;

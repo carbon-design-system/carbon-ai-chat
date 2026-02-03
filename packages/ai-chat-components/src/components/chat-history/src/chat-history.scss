@@ -61,6 +61,12 @@
   display: block;
   block-size: 100%;
   overflow-y: auto;
+
+  .#{$prefix}--history-content__results-count {
+    display: block;
+    padding: layout.$spacing-04 0 layout.$spacing-02 layout.$spacing-04;
+    @include type.type-style("label-01");
+  }
 }
 
 :host(#{$prefix}-history-loading) {
@@ -120,7 +126,8 @@
   }
 }
 
-:host(#{$prefix}-history-panel-item) {
+:host(#{$prefix}-history-panel-item),
+:host(#{$prefix}-history-search-item) {
   @extend :host(#{$cds-prefix}-side-nav-menu-item);
 
   button.#{$cds-prefix}--side-nav__link {
@@ -168,6 +175,26 @@
     inline-size: 3px;
     inset-block: 0;
     inset-inline-start: 0;
+  }
+}
+
+:host(#{$prefix}-history-search-item) {
+  button.#{$cds-prefix}--side-nav__link {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    block-size: layout.$spacing-10;
+    padding-inline-end: layout.$spacing-05;
+  }
+
+  .#{$cds-prefix}--side-nav__link-text {
+    inline-size: 100%;
+  }
+
+  .#{$cds-prefix}--side-nav__link-subtitle {
+    @include type.type-style("label-01");
+
+    color: theme.$text-secondary;
   }
 }
 

@@ -10,7 +10,7 @@
 import prefix from "../../../globals/settings.js";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import CDSSideNav from '@carbon/web-components/es/components/ui-shell/side-nav.js';
+import CDSSideNav from "@carbon/web-components/es/components/ui-shell/side-nav.js";
 
 import styles from "./chat-history.scss?lit";
 
@@ -25,7 +25,7 @@ export class CDSHistoryPanel extends CDSSideNav {
   /**
    * Sets default property from side nav
    */
-  @property({ type: Boolean, attribute: 'is-not-child-of-header' })
+  @property({ type: Boolean, attribute: "is-not-child-of-header" })
   isNotChildOfHeader = true;
 
   /**
@@ -35,7 +35,7 @@ export class CDSHistoryPanel extends CDSSideNav {
   expanded = true;
 
   connectedCallback() {
-    this.setAttribute('collapse-mode', 'fixed');
+    this.setAttribute("collapse-mode", "fixed");
     super.connectedCallback();
   }
 

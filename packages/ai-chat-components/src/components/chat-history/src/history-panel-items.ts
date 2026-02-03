@@ -9,7 +9,7 @@
 
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import CDSSideNavItems from '@carbon/web-components/es/components/ui-shell/side-nav-items.js';
+import CDSSideNavItems from "@carbon/web-components/es/components/ui-shell/side-nav-items.js";
 
 import styles from "./chat-history.scss?lit";
 
@@ -20,8 +20,7 @@ import styles from "./chat-history.scss?lit";
  *
  */
 @carbonElement(`${prefix}-history-panel-items`)
-export class CDSHistoryPanelItems extends CDSSideNavItems{
-
+export class CDSHistoryPanelItems extends CDSSideNavItems {
   static styles = styles;
 }
 

@@ -17,3 +17,4 @@ import "./src/history-panel";
 import "./src/history-panel-menu";
 import "./src/history-panel-item";
 import "./src/history-panel-items";
+import "./src/history-search-item";
