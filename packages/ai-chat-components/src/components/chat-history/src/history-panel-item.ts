@@ -45,7 +45,7 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
   active = false;
 
   /**
-   * The title.
+   * Chat history item title.
    */
   @property()
   title!: string;
@@ -74,7 +74,7 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
           <slot>${title}</slot>
         </span>
         <slot name="actions">
-          <cds-overflow-menu>
+          <cds-overflow-menu size="sm">
             ${iconLoader(OverflowMenuVertical16, {
               class: `${prefix}--overflow-menu__icon`,
               slot: "icon",

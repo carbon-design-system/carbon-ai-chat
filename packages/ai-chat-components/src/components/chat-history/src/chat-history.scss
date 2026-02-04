@@ -131,6 +131,8 @@
   @extend :host(#{$cds-prefix}-side-nav-menu-item);
 
   button.#{$cds-prefix}--side-nav__link {
+    @include type.type-style("body-01");
+
     position: relative;
     display: flex;
     align-items: center;
@@ -138,6 +140,7 @@
     border: none;
     background-color: transparent;
     block-size: convert.rem(40px);
+    font-family: inherit;
     inline-size: 100%;
     outline: 2px solid transparent;
     outline-offset: -2px;
@@ -150,8 +153,6 @@
   }
 
   .#{$cds-prefix}--side-nav__link-text {
-    @include type.type-style("body-01");
-
     overflow: hidden;
     color: theme.$text-primary;
     text-overflow: ellipsis;

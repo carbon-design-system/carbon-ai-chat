@@ -14,8 +14,8 @@ import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 
 import "@carbon/web-components/es/components/icon-button/index.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import ChevronLeft20 from "@carbon/icons/es/chevron--left/20.js";
-import RightPanelClose20 from "@carbon/icons/es/right-panel--close/20.js";
+import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
+import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
 import styles from "./chat-history.scss?lit";
 
 /**
@@ -64,14 +64,14 @@ export class CDSHistoryHeader extends LitElement {
         class="${prefix}--history-header__close-button"
         kind="ghost"
       >
-        ${iconLoader(ChevronLeft20, {
+        ${iconLoader(ChevronLeft16, {
           slot: "icon",
         })}
         <span slot="tooltip-content">${closeButtonLabel}</span>
       </cds-icon-button>`}
       <span class="${prefix}--history-header__title">${title}</span>
       <cds-icon-button kind="ghost">
-        ${iconLoader(RightPanelClose20, {
+        ${iconLoader(RightPanelClose16, {
           slot: "icon",
         })}
         <span slot="tooltip-content">${expandChatLabel}</span>

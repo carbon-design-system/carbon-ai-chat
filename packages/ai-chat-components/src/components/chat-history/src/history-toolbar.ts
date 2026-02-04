@@ -14,7 +14,7 @@ import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 
 import "@carbon/web-components/es/components/search/search.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
-import AddComment20 from "@carbon/icons/es/add-comment/20.js";
+import AddComment16 from "@carbon/icons/es/add-comment/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import styles from "./chat-history.scss?lit";
 
@@ -45,7 +45,7 @@ export class CDSHistoryToolbar extends LitElement {
       <cds-search></cds-search>
       <slot name="actions-end">
         <cds-icon-button>
-          ${iconLoader(AddComment20, {
+          ${iconLoader(AddComment16, {
             slot: "icon",
           })}
           <span slot="tooltip-content">${newChatLabel}</span>

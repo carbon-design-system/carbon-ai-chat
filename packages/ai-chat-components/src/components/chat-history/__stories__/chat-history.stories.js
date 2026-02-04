@@ -67,7 +67,7 @@ export const Default = {
               <cds-aichat-history-panel-item
                 .actions=${pinnedHistoryItemActions}
               >
-                Noticed some deiscrepancies between these two files.
+                Noticed some discrepancies between these two files.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item
                 .actions=${pinnedHistoryItemActions}
@@ -88,7 +88,7 @@ export const Default = {
                 Let's use this as the master invoice document.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Noticed some deiscrepancies between these two files.
+                Noticed some discrepancies between these two files.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item .actions=${historyItemActions}>
                 Do we need a PO number on every documentation here?
@@ -107,7 +107,7 @@ export const Default = {
                 Let's use this as the master invoice document.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Noticed some deiscrepancies between these two files.
+                Noticed some discrepancies between these two files.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item .actions=${historyItemActions}>
                 Do we need a PO number on every documentation here?
@@ -126,7 +126,7 @@ export const Default = {
                 Let's use this as the master invoice document.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Noticed some deiscrepancies between these two files.
+                Noticed some discrepancies between these two files.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item .actions=${historyItemActions}>
                 Do we need a PO number on every documentation here?
@@ -164,7 +164,7 @@ export const SearchResults = {
               Let's use this as the master invoice document.
             </cds-aichat-history-search-item>
             <cds-aichat-history-search-item date="Monday, 12:04 PM">
-              Noticed some deiscrepancies between these two files.
+              Noticed some discrepancies between these two files.
             </cds-aichat-history-search-item>
             <cds-aichat-history-search-item date="Monday, 12:04 PM">
               Do we need a PO number on every documentation here?
