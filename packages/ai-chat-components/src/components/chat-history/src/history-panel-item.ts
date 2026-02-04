@@ -74,7 +74,7 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
           <slot>${title}</slot>
         </span>
         <slot name="actions">
-          <cds-overflow-menu size="sm">
+          <cds-overflow-menu autoalign size="sm">
             ${iconLoader(OverflowMenuVertical16, {
               class: `${prefix}--overflow-menu__icon`,
               slot: "icon",

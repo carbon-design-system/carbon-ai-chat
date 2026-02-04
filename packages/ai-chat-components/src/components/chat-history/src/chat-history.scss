@@ -150,6 +150,8 @@
 
   button.#{$cds-prefix}--side-nav__link:focus {
     background-color: theme.$background-hover;
+    outline: 2px solid theme.$focus;
+    outline-offset: -2px;
   }
 
   .#{$cds-prefix}--side-nav__link-text {
@@ -196,6 +198,7 @@
     @include type.type-style("label-01");
 
     color: theme.$text-secondary;
+    padding-block-start: layout.$spacing-01;
   }
 }
 
