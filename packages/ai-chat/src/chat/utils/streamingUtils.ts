@@ -135,12 +135,22 @@ function resolveChunkContext(
 
 /**
  * Returns true if the stop streaming button should be shown for this chunk.
+ *
+ * If the button is already visible (e.g., from showStopButtonImmediately), this will
+ * return false to avoid redundant state updates. The button will remain visible unless
+ * the streaming metadata explicitly marks it as non-cancellable.
  */
 function shouldShowStopStreaming(
   streamingData: { cancellable?: boolean } | undefined,
   isStopGeneratingVisible: boolean,
 ) {
-  return Boolean(streamingData?.cancellable && !isStopGeneratingVisible);
+  // If button is already visible, don't show it again (avoid redundant dispatch)
+  if (isStopGeneratingVisible) {
+    return false;
+  }
+
+  // Show button if streaming data indicates it's cancellable
+  return Boolean(streamingData?.cancellable);
 }
 
 /**

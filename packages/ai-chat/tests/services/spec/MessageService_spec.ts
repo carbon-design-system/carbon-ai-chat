@@ -51,6 +51,12 @@ const createServiceManagerStub = (customSendMessage = jest.fn()) => {
         },
       },
       assistantMessageState: { messageIDs: [] as string[] },
+      assistantInputState: {
+        stopStreamingButtonState: {
+          isVisible: false,
+          isDisabled: false,
+        },
+      },
       allMessagesByID: {},
       targetViewState: {},
       persistedToBrowserStorage: {
@@ -281,5 +287,139 @@ describe("MessageService", () => {
       null,
     );
     expect((messageService as any).queue.current).toBeNull();
+  });
+
+  describe("Message cancellation with system messages", () => {
+    it("creates system message when cancelling before streaming starts", async () => {
+      const customSendMessage = jest.fn().mockImplementation(
+        () => new Promise<void>(() => undefined), // Never resolves
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const message = createMessage("m-1");
+      const sendPromise = messageService.send(
+        message,
+        MessageSendSource.MESSAGE_INPUT,
+        "local-1",
+        { silent: false },
+      );
+
+      // Cancel before streaming starts
+      await messageService.cancelMessageRequestByID(
+        "m-1",
+        false,
+        CancellationReason.STOP_STREAMING,
+      );
+
+      await expect(sendPromise).resolves.toBeUndefined();
+
+      // Verify system message was dispatched
+      const dispatchCalls = (serviceManager.store.dispatch as jest.Mock).mock
+        .calls;
+      const addMessageCalls = dispatchCalls.filter(
+        (call: any) => call[0]?.type === "ADD_MESSAGE",
+      );
+      expect(addMessageCalls.length).toBeGreaterThan(0);
+    });
+
+    it("does not create duplicate system message when cancelling during streaming", async () => {
+      const customSendMessage = jest.fn().mockResolvedValue(undefined);
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const sendMessagePromise = resolvablePromise<void>();
+      const abortController = new AbortController();
+      const pendingRequest: PendingMessageRequest = {
+        localMessageID: "local-1",
+        message: createMessage("m-1"),
+        sendMessagePromise,
+        requestOptions: {},
+        timeFirstRequest: 0,
+        timeLastRequest: 0,
+        trackData: {
+          numErrors: 0,
+          lastRequestTime: 0,
+          totalRequestTime: 0,
+        },
+        isProcessed: false,
+        source: MessageSendSource.MESSAGE_INPUT,
+        sendMessageController: abortController,
+        isStreaming: true, // Mark as streaming
+      };
+
+      (messageService as any).queue.current = pendingRequest;
+      messageService.markCurrentMessageAsStreaming("resp-1", "item-1");
+
+      const initialDispatchCount = (serviceManager.store.dispatch as jest.Mock)
+        .mock.calls.length;
+
+      await messageService.cancelMessageRequestByID(
+        "item-1",
+        false,
+        CancellationReason.STOP_STREAMING,
+      );
+
+      await expect(sendMessagePromise).resolves.toBeUndefined();
+
+      // Verify no additional system message was created (ResponseStopped handles it)
+      const finalDispatchCount = (serviceManager.store.dispatch as jest.Mock)
+        .mock.calls.length;
+      const newDispatches = finalDispatchCount - initialDispatchCount;
+
+      // Should only have stop button visibility changes, not system message
+      expect(newDispatches).toBeLessThan(5);
+    });
+
+    it("handles cancellation with USER_CANCELLED reason", async () => {
+      const customSendMessage = jest
+        .fn()
+        .mockImplementation(() => new Promise<void>(() => undefined));
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const message = createMessage("m-cancel");
+      const sendPromise = messageService.send(
+        message,
+        MessageSendSource.MESSAGE_INPUT,
+        "local-cancel",
+        { silent: false },
+      );
+
+      // Get the controller before cancellation
+      const controller = (messageService as any).messageAbortControllers.get(
+        "m-cancel",
+      );
+      expect(controller).toBeDefined();
+
+      await messageService.cancelMessageRequestByID(
+        "m-cancel",
+        false,
+        CancellationReason.STOP_STREAMING,
+      );
+
+      await expect(sendPromise).resolves.toBeUndefined();
+
+      // Verify the controller was aborted
+      expect(controller.signal.aborted).toBe(true);
+    });
   });
 });

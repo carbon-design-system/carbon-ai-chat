@@ -190,6 +190,7 @@
   "feedback_cancelLabel": "Cancel",
   "input_stopResponse": "Stop response",
   "messages_responseStopped": "Response stopped",
+  "messages_requestCancelled": "Request cancelled",
   "chainOfThought_stepTitle": "{stepNumber, number}: {stepTitle}",
   "chainOfThought_inputLabel": "Input",
   "chainOfThought_outputLabel": "Output",

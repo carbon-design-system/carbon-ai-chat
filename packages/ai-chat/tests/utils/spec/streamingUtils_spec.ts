@@ -60,22 +60,52 @@ describe("streamingUtils", () => {
   });
 
   describe("stop streaming helpers", () => {
-    it("should show stop streaming when cancellable and not visible", () => {
-      expect(shouldShowStopStreaming({ cancellable: true }, false)).toBe(true);
-      expect(shouldShowStopStreaming({ cancellable: true }, true)).toBe(false);
-      expect(shouldShowStopStreaming(undefined, false)).toBe(false);
+    describe("shouldShowStopStreaming", () => {
+      it("returns true when cancellable and button not visible", () => {
+        expect(shouldShowStopStreaming({ cancellable: true }, false)).toBe(
+          true,
+        );
+      });
+
+      it("returns false when button already visible (avoid redundant dispatch)", () => {
+        expect(shouldShowStopStreaming({ cancellable: true }, true)).toBe(
+          false,
+        );
+      });
+
+      it("returns false when streaming data is undefined", () => {
+        expect(shouldShowStopStreaming(undefined, false)).toBe(false);
+      });
+
+      it("returns false when cancellable is false", () => {
+        expect(shouldShowStopStreaming({ cancellable: false }, false)).toBe(
+          false,
+        );
+      });
+
+      it("returns false when cancellable is undefined", () => {
+        expect(shouldShowStopStreaming({}, false)).toBe(false);
+      });
+
+      it("handles edge case with button visible and non-cancellable", () => {
+        expect(shouldShowStopStreaming({ cancellable: false }, true)).toBe(
+          false,
+        );
+      });
     });
 
-    it("resets stop streaming button when visible", () => {
-      const store = createStore(true);
-      resetStopStreamingButton(store as any);
-      expect(store.dispatch).toHaveBeenCalledTimes(2);
-    });
+    describe("resetStopStreamingButton", () => {
+      it("resets stop streaming button when visible", () => {
+        const store = createStore(true);
+        resetStopStreamingButton(store as any);
+        expect(store.dispatch).toHaveBeenCalledTimes(2);
+      });
 
-    it("does nothing when button not visible", () => {
-      const store = createStore(false);
-      resetStopStreamingButton(store as any);
-      expect(store.dispatch).not.toHaveBeenCalled();
+      it("does nothing when button not visible", () => {
+        const store = createStore(false);
+        resetStopStreamingButton(store as any);
+        expect(store.dispatch).not.toHaveBeenCalled();
+      });
     });
   });
 

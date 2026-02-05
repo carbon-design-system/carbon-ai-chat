@@ -403,6 +403,24 @@ export interface PublicConfigMessaging {
    * If this function is mutated after it was initially called, the chat does not re-call it.
    */
   customLoadHistory?: (instance: ChatInstance) => Promise<HistoryItem[]>;
+
+  /**
+   * Controls when the stop streaming button becomes visible during message streaming.
+   *
+   * You must have {@link PublicConfigMessaging.customSendMessage} return a promise for
+   * this setting to work correctly.
+   *
+   * When `true`, the stop button appears immediately when `customSendMessage` is called,
+   * allowing users to cancel requests before the first streaming chunk arrives. This is
+   * useful for slow-starting requests or when you want to give users immediate control
+   * over long-running operations.
+   *
+   * When `false` (default), the stop button only appears after the first streaming chunk
+   * arrives with `cancellable: true` metadata, maintaining backward compatibility with
+   * existing behavior.
+   *
+   */
+  showStopButtonImmediately?: boolean;
 }
 
 /**

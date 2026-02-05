@@ -20,6 +20,7 @@ import "./framework/demo-homescreen-switcher";
 import "./framework/demo-theme-switcher";
 import "./framework/demo-page-theme-switcher";
 import "./framework/demo-writeable-elements-switcher";
+import "./framework/demo-stop-button-immediate-switcher";
 import "./web-components/demo-app";
 
 import { ChatInstance, PublicConfig } from "@carbon/ai-chat";

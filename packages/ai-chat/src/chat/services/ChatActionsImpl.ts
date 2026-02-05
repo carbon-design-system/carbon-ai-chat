@@ -1049,6 +1049,13 @@ class ChatActionsImpl {
 
     store.dispatch(actions.addMessage(fullMessage));
 
+    // When addMessage is called with showStopButtonImmediately enabled, hide the stop button
+    // and revert to legacy behavior (button will show on first chunk if streaming)
+    const messagingConfig = config.public.messaging || {};
+    if (messagingConfig.showStopButtonImmediately) {
+      resetStopStreamingButton(store);
+    }
+
     // The ID of the previous (visible) message item that was added to the store. When adding new items from the
     // response, this is used to ensure that each item is added in the right position.
     let previousItemID: string = null;

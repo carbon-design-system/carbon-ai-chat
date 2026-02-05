@@ -34,9 +34,11 @@ import {
   isResponse,
   isResponseWithNestedItems,
   isShowPanelButtonType,
+  isStandaloneSystemMessage,
   isStreamCompleteItem,
   isStreamFinalResponse,
   isStreamPartialItem,
+  isSystemMessageItem,
   isTextItem,
   renderAsUserDefinedMessage,
   streamItemID,
@@ -211,5 +213,99 @@ describe("messageUtils", () => {
     const cloned = createMessageRequestForChoice(option as any);
     expect(cloned).not.toBe(option.value);
     expect(cloneDeep(option.value)).toEqual(option.value);
+  });
+});
+
+describe("System message utilities", () => {
+  it("isSystemMessageItem identifies system message items", () => {
+    const systemItem = {
+      response_type: MessageResponseTypes.SYSTEM,
+      title: "Request cancelled",
+    };
+    expect(isSystemMessageItem(systemItem as any)).toBe(true);
+
+    const textItem = {
+      response_type: MessageResponseTypes.TEXT,
+      text: "Hello",
+    };
+    expect(isSystemMessageItem(textItem as any)).toBe(false);
+
+    const buttonItem = {
+      response_type: MessageResponseTypes.BUTTON,
+      title: "Click me",
+    };
+    expect(isSystemMessageItem(buttonItem as any)).toBe(false);
+  });
+
+  it("isSystemMessageItem returns false for undefined or null", () => {
+    expect(isSystemMessageItem(undefined as any)).toBe(false);
+    expect(isSystemMessageItem(null as any)).toBe(false);
+  });
+
+  it("isStandaloneSystemMessage detects standalone system messages", () => {
+    const standaloneMsg = {
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.SYSTEM,
+            title: "Processing...",
+          },
+        ],
+      },
+    };
+    expect(isStandaloneSystemMessage(standaloneMsg as any)).toBe(true);
+  });
+
+  it("isStandaloneSystemMessage detects multiple system messages as standalone", () => {
+    const multipleSystemMsg = {
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.SYSTEM,
+            title: "Step 1 complete",
+          },
+          {
+            response_type: MessageResponseTypes.SYSTEM,
+            title: "Step 2 complete",
+          },
+        ],
+      },
+    };
+    expect(isStandaloneSystemMessage(multipleSystemMsg as any)).toBe(true);
+  });
+
+  it("isStandaloneSystemMessage returns false for mixed content", () => {
+    const mixedMsg = {
+      output: {
+        generic: [
+          { response_type: MessageResponseTypes.TEXT, text: "Hi" },
+          { response_type: MessageResponseTypes.SYSTEM, title: "Status" },
+        ],
+      },
+    };
+    expect(isStandaloneSystemMessage(mixedMsg as any)).toBe(false);
+  });
+
+  it("isStandaloneSystemMessage returns false for non-response messages", () => {
+    const request = {
+      input: { text: "Hello" },
+    };
+    expect(isStandaloneSystemMessage(request as any)).toBe(false);
+  });
+
+  it("isStandaloneSystemMessage returns false for empty generic array", () => {
+    const emptyMsg = {
+      output: {
+        generic: [] as any[],
+      },
+    };
+    expect(isStandaloneSystemMessage(emptyMsg as any)).toBe(false);
+  });
+
+  it("isStandaloneSystemMessage returns false when generic is undefined", () => {
+    const noGenericMsg = {
+      output: {},
+    };
+    expect(isStandaloneSystemMessage(noGenericMsg as any)).toBe(false);
   });
 });

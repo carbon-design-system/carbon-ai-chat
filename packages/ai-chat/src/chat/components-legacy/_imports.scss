@@ -13,5 +13,6 @@
 @use "responseTypes/imports" as responseTypes;
 @use "ErrorIcon" as ErrorIcon;
 @use "ResponseStopped" as ResponseStopped;
+@use "SystemMessage" as SystemMessage;
 @use "MessageComponent";
 @use "MessagesComponent";

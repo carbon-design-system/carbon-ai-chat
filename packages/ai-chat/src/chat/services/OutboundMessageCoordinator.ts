@@ -7,7 +7,10 @@
  *  @license
  */
 
-import { createLocalMessageForInlineError } from "../schema/outputItemToLocalItem";
+import {
+  createLocalMessageForInlineError,
+  outputItemToLocalItem,
+} from "../schema/outputItemToLocalItem";
 import actions from "../store/actions";
 import { MessageLoadingManager } from "../utils/messageServiceUtils";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
@@ -15,15 +18,22 @@ import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
+  MessageResponseTypes,
+  SystemMessageItem,
 } from "../../types/messaging/Messages";
 import { CustomSendMessageOptions } from "../../types/config/MessagingConfig";
-import { OnErrorType } from "../../types/config/PublicConfig";
+import {
+  OnErrorType,
+  PublicConfigMessaging,
+} from "../../types/config/PublicConfig";
 import { ServiceManager } from "./ServiceManager";
 import { PendingMessageRequest } from "./MessageService";
 import cloneDeep from "lodash-es/cloneDeep.js";
 import { consoleError, debugLog } from "../utils/miscUtils";
 import { BusEventSend, BusEventType } from "../../types/events/eventBusTypes";
 import { ChatInstance } from "../../types/instance/ChatInstance";
+import { resetStopStreamingButton } from "../utils/streamingUtils";
+import { addDefaultsToMessage } from "../utils/messageUtils";
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,
@@ -49,6 +59,7 @@ class OutboundMessageCoordinator {
       current: PendingMessageRequest,
       received?: MessageResponse,
     ) => Promise<void>,
+    private getMessagingConfig: () => PublicConfigMessaging,
   ) {}
 
   /**
@@ -95,6 +106,9 @@ class OutboundMessageCoordinator {
       otherData: resultText,
     });
 
+    // Hide stop streaming button if visible
+    resetStopStreamingButton(this.serviceManager.store);
+
     this.rejectFinalErrorOnMessage(pendingRequest, resultText);
   }
 
@@ -133,14 +147,51 @@ class OutboundMessageCoordinator {
   }
 
   /**
-   * Marks a cancelled message as completed without error.
+   * Creates a system message to indicate cancellation.
+   */
+  createCancellationSystemMessage() {
+    const { languagePack } =
+      this.serviceManager.store.getState().config.derived;
+
+    const systemMessageItem: SystemMessageItem = {
+      response_type: MessageResponseTypes.SYSTEM,
+      title: languagePack.messages_requestCancelled,
+    };
+
+    const systemMessage: MessageResponse = {
+      output: {
+        generic: [systemMessageItem],
+      },
+    };
+
+    // Add defaults (id, thread_id, history, ui_state_internal) to the message
+    addDefaultsToMessage(systemMessage);
+
+    // Add the system message to the store
+    this.serviceManager.store.dispatch(actions.addMessage(systemMessage));
+
+    // Convert the generic item to a local message item and add it
+    const localMessageItem = outputItemToLocalItem(
+      systemMessageItem,
+      systemMessage,
+      false, // isLatestWelcomeNode
+    );
+
+    this.serviceManager.store.dispatch(
+      actions.addLocalMessageItem(localMessageItem, systemMessage, true),
+    );
+  }
+
+  /**
+   * Marks a cancelled message as completed without error and creates a system message.
    */
   resolveCancelledMessage(pendingRequest: PendingMessageRequest) {
-    const { sendMessagePromise } = pendingRequest;
+    const { sendMessagePromise, message } = pendingRequest;
 
     this.setMessageErrorState(pendingRequest, MessageErrorState.NONE);
 
-    const { message } = pendingRequest;
+    // Create a system message to indicate the request was cancelled
+    this.createCancellationSystemMessage();
 
     if (
       pendingRequest === this.getCurrent() &&
@@ -148,6 +199,9 @@ class OutboundMessageCoordinator {
     ) {
       this.messageLoadingManager.end();
     }
+
+    // Hide stop streaming button if visible
+    resetStopStreamingButton(this.serviceManager.store);
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
@@ -185,6 +239,21 @@ class OutboundMessageCoordinator {
         source: current.source,
       };
       startLoading?.();
+
+      // Show stop button immediately if configured to do so (but not for EVENT messages)
+      const messagingConfig = this.getMessagingConfig();
+      if (
+        messagingConfig.showStopButtonImmediately &&
+        message.input.message_type !== MessageInputType.EVENT
+      ) {
+        const { store } = this.serviceManager;
+        const stopStreamingState =
+          store.getState().assistantInputState.stopStreamingButtonState;
+        // Only show if not already visible
+        if (!stopStreamingState.isVisible) {
+          store.dispatch(actions.setStopStreamingButtonVisible(true));
+        }
+      }
 
       await Promise.resolve(
         customSendMessage(

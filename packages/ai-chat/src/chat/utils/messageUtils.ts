@@ -44,6 +44,7 @@ import {
   PauseItem,
   SingleOption,
   StreamChunk,
+  SystemMessageItem,
   TextItem,
   UserDefinedItem,
   WithBodyAndFooter,
@@ -544,6 +545,41 @@ function getLastAssistantResponseWithContext(state: AppState) {
   ) as MessageResponse;
 }
 
+/**
+ * Determines if the given generic item is a system message item (response).
+ * This is a type guard that narrows the type to SystemMessageItem.
+ */
+function isSystemMessageItem(item: GenericItem): item is SystemMessageItem {
+  if (!item || item === null || item === undefined) {
+    return false;
+  }
+  return (
+    item.response_type === MessageResponseTypes.SYSTEM &&
+    (item as SystemMessageItem).title !== undefined
+  );
+}
+
+/**
+ * Determines if a message should be rendered as a standalone system message.
+ * A message is standalone if ALL of its items are system messages.
+ * This means the message will render centered without avatar or bubble chrome.
+ *
+ * For responses: checks if ALL generic items are system messages
+ */
+function isStandaloneSystemMessage(message: Message): boolean {
+  // Check if it's a response with only system message items
+  if (isResponse(message)) {
+    const items = message.output.generic;
+    if (!items || items.length === 0) {
+      return false;
+    }
+    // All items must be system messages for standalone rendering
+    return items.every((item) => isSystemMessageItem(item));
+  }
+
+  return false;
+}
+
 export {
   getOptionType,
   isResponse,
@@ -583,4 +619,6 @@ export {
   getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
   isFullWidthUserDefined,
+  isSystemMessageItem,
+  isStandaloneSystemMessage,
 };

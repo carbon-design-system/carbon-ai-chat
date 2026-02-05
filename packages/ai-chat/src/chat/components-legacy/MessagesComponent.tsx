@@ -18,6 +18,7 @@ import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
 import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
+import { SystemMessage } from "./SystemMessage";
 import {
   HasServiceManager,
   withServiceManager,
@@ -47,7 +48,11 @@ import {
   waitForStableHeight,
 } from "../utils/domUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
-import { isRequest, isResponse } from "../utils/messageUtils";
+import {
+  isRequest,
+  isResponse,
+  isStandaloneSystemMessage,
+} from "../utils/messageUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
 import MessageComponent, {
   MessageClass,
@@ -1298,6 +1303,19 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     ) {
       const localMessageItem = localMessageItems[currentIndex];
       const fullMessage = allMessagesByID[localMessageItem.fullMessageID];
+
+      // Check if this is a standalone system message
+      if (isStandaloneSystemMessage(fullMessage)) {
+        const messageItemID = localMessageItem.ui_state.id;
+        renderMessageArray.push(
+          <Fragment key={messageItemID}>
+            <SystemMessage message={fullMessage} standalone={true} />
+          </Fragment>,
+        );
+        previousMessageID = localMessageItem.fullMessageID;
+        continue;
+      }
+
       const isMessageForInput =
         messageIDForInput === localMessageItem.fullMessageID;
       const isFirstMessageItem =
