@@ -238,9 +238,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   componentWillUnmount(): void {
     // Remove the listeners and observer we added previously.
-    this.scrollPanelObserver.unobserve(
-      this.messagesContainerWithScrollingRef.current,
-    );
+    if (this.scrollPanelObserver) {
+      this.scrollPanelObserver.disconnect();
+    }
   }
 
   /**

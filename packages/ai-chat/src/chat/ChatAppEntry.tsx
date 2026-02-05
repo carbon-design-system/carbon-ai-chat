@@ -299,6 +299,7 @@ export function ChatAppEntry({
     return () => {
       window.removeEventListener("resize", windowListener);
       document.removeEventListener("visibilitychange", visibilityListener);
+      serviceManager?.themeWatcherService?.stopWatching();
     };
   });
 
