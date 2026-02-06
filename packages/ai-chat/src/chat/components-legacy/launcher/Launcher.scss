@@ -27,6 +27,14 @@ $launcher-easing: motion.motion(standard, productive);
   background-color: theme.$background;
   block-size: chat-theme.$launcher-default-size;
   box-shadow: chat-theme.$box-shadow;
+
+  font-family: var(
+    --cds-aichat-font-family,
+    "IBM Plex Sans",
+    "Helvetica Neue",
+    arial,
+    sans-serif
+  );
   inline-size: chat-theme.$launcher-default-size;
   inset-block-end: chat-theme.$launcher-position-bottom;
   inset-inline-end: chat-theme.$launcher-position-right;

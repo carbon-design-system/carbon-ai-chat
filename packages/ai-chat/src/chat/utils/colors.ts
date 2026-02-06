@@ -180,7 +180,7 @@ function isColorLighterThan(color: string, thresholdPercent = 50): boolean {
     if (
       !colorValue ||
       colorValue === "" ||
-      colorValue === "var(--cds-aichat-shell-background)"
+      colorValue === "var(--cds-chat-shell-background)"
     ) {
       return false;
     }

@@ -45,17 +45,9 @@
   --cds-aichat-z-index: 99999;
   --cds-aichat-border-radius: 0;
 
-  /* AI theming variables */
-  --cds-aichat-ai-box-shadow-inner: inset 0 -80px 70px -65px
-    #{theme.$ai-inner-shadow};
-  --cds-aichat-ai-box-shadow-outer: 0 4px 10px 2px #{theme.$ai-drop-shadow};
-
   /* Card variables */
   --cds-aichat-card-border-radius: #{layout.$spacing-03};
   --cds-aichat-card-max-width: 424px;
-
-  /* Box shadow */
-  --cds-aichat-box-shadow: 1px 0 4px hsl(0deg 0% 9% / 30%);
 
   /* The smaller of 380px or the available width of the screen. The is to account for zoom levels pushing us to 320px. */
   --cds-aichat-width: min(380px, var(--cds-aichat-max-width));

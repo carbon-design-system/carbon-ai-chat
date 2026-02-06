@@ -10,6 +10,8 @@
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 import "@carbon/web-components/es/components/dropdown/index.js";
+import "@carbon/web-components/es/components/checkbox/index.js";
+import "@carbon/web-components/es/components/accordion/index.js";
 
 import {
   ChatInstance,
@@ -27,6 +29,7 @@ interface PanelControlExample {
   description: string;
   options: CustomPanelOpenOptions;
   panelBody: string;
+  apiType: "current" | "deprecated";
 }
 
 @customElement("demo-chat-instance-switcher")
@@ -71,6 +74,47 @@ export class DemoChatInstanceSwitcher extends LitElement {
       color: var(--cds-text-secondary, #525252);
       font-size: 0.875rem;
     }
+
+    .panel-section-header {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--cds-text-primary, #161616);
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--cds-border-subtle, #e0e0e0);
+    }
+
+    .panel-section-header:first-child {
+      margin-top: 0;
+    }
+
+    .panel-config {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--cds-layer-01, #f4f4f4);
+      border-radius: 4px;
+    }
+
+    .panel-config cds-checkbox {
+      margin-bottom: 0.25rem;
+    }
+
+    .panel-config-checkboxes {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    cds-accordion {
+      margin-top: 1rem;
+    }
+
+    cds-accordion-item {
+      margin-bottom: 0;
+    }
   `;
 
   @property({ type: Object })
@@ -78,63 +122,84 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   @state() accessor _isRestarting: boolean = false;
 
+  // Panel configuration state
+  @state() accessor _hideBackButton: boolean = false;
+  @state() accessor _backButtonType: "minimize" | "close" = "minimize";
+  @state() accessor _disableAnimation: boolean = false;
+  @state() accessor _aiEnabled: boolean = false;
+  @state() accessor _showFrame: boolean = false;
+  @state() accessor _fullWidth: boolean = false;
+
   private readonly _panelExamples: PanelControlExample[] = [
     {
-      id: "panel-with-back-button",
-      buttonLabel: "Open panel (with back button)",
-      description:
-        "Animates in and keeps the default header so you can use the back button.",
+      id: "panel-basic-deprecated",
+      buttonLabel: "Basic panel",
+      description: "Basic deprecated panel with title only.",
+      apiType: "deprecated",
       options: {
-        title: "Panel with navigation",
+        title: "Basic deprecated panel",
       },
       panelBody: `
-        <div style="padding: 1rem;">
-          <h3>Panel with default navigation</h3>
-          <p>The back button stays visible so visitors can return to their conversation without dismissing the panel.</p>
+        <div>
+          <h3>Basic deprecated panel</h3>
+          <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
+          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p>This demonstrates the basic usage of the deprecated CustomPanelConfigOptions interface.</p>
           <ul>
-            <li><code>hideBackButton</code>: <strong>false</strong></li>
-            <li><code>disableAnimation</code>: <strong>false</strong></li>
+            <li><code>title</code>: <strong>"Basic deprecated panel"</strong></li>
           </ul>
+          <cds-button kind="danger" data-close-panel>
+            Close Panel
+          </cds-button>
         </div>
       `,
     },
     {
-      id: "panel-without-back-button",
-      buttonLabel: "Open panel (without back button)",
-      description: "Animates in and hides the back button for focused flows.",
+      id: "panel-hidden-close-button",
+      buttonLabel: "Panel with hidden close button",
+      description: "Hides the close/minimize button in the panel header.",
+      apiType: "deprecated",
       options: {
-        title: "Panel without back button",
-        hideBackButton: true,
+        title: "Panel without close button",
+        hideCloseButton: true,
       },
       panelBody: `
-        <div style="padding: 1rem;">
-          <h3>Panel without back navigation</h3>
-          <p>This layout is useful when the panel handles its own progression.</p>
+        <div>
+          <h3>Panel without close button</h3>
+          <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
+          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p>The close/minimize button in the header is hidden. Users must use the back button or this close button.</p>
           <ul>
-            <li><code>hideBackButton</code>: <strong>true</strong></li>
+            <li><code>title</code>: <strong>"Panel without close button"</strong></li>
+            <li><code>hideCloseButton</code>: <strong>true</strong></li>
           </ul>
+          <cds-button kind="danger" data-close-panel>
+            Close Panel
+          </cds-button>
         </div>
       `,
     },
     {
-      id: "panel-without-animations",
-      buttonLabel: "Open panel (without animations)",
-      description:
-        "Skips the animation and hides the back button for focused flows.",
+      id: "panel-hidden-header",
+      buttonLabel: "Panel with hidden header",
+      description: "Completely hides the panel header chrome.",
+      apiType: "deprecated",
       options: {
-        title: "Panel without back button",
-        hideBackButton: true,
-        disableAnimation: true,
+        hidePanelHeader: true,
       },
       panelBody: `
-        <div style="padding: 1rem;">
-          <h3>Panel without back navigation</h3>
-          <p>This layout is useful when the panel handles its own progression.</p>
+        <div>
+          <h3>Panel with hidden header</h3>
+          <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
+          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p>The entire panel header is hidden, including title, AI slug, minimize button, and back button.</p>
           <ul>
-            <li><code>hideBackButton</code>: <strong>true</strong></li>
-            <li><code>disableAnimation</code>: <strong>true</strong></li>
+            <li><code>hidePanelHeader</code>: <strong>true</strong></li>
           </ul>
-          <p>The panel opened instantly because animations were disabled.</p>
+          <p>This is useful for chrome-free experiences where the panel content provides its own controls.</p>
+          <cds-button kind="danger" data-close-panel>
+            Close Panel
+          </cds-button>
         </div>
       `,
     },
@@ -183,6 +248,17 @@ export class DemoChatInstanceSwitcher extends LitElement {
     }
 
     element.innerHTML = content.trim();
+
+    // Add event listener for close button clicks within the panel
+    const closeButton = element.querySelector("[data-close-panel]");
+    if (closeButton) {
+      closeButton.addEventListener("click", () => {
+        this._withInstance((instance) => {
+          const panel = instance.customPanels?.getPanel();
+          panel?.close();
+        });
+      });
+    }
   }
 
   private _handleOpenCustomPanelExample(example: PanelControlExample) {
@@ -197,10 +273,114 @@ export class DemoChatInstanceSwitcher extends LitElement {
     });
   }
 
-  private _handleCloseCustomPanel = () => {
+  private _handleOpenConfiguredPanel = () => {
     this._withInstance((instance) => {
       const panel = instance.customPanels?.getPanel();
-      panel?.close();
+      if (!panel) {
+        return;
+      }
+
+      // Build options from current state
+      const options: any = {
+        title: "Custom Panel Configuration",
+        backButtonType: this._backButtonType,
+      };
+
+      if (this._hideBackButton) {
+        options.hideBackButton = true;
+      }
+      if (this._disableAnimation) {
+        options.disableAnimation = true;
+      }
+      if (this._aiEnabled) {
+        options.aiEnabled = true;
+      }
+      if (this._showFrame) {
+        options.showFrame = true;
+      }
+      if (this._fullWidth) {
+        options.fullWidth = true;
+      }
+
+      // Generate dynamic panel content
+      const panelBody = this._generatePanelBody(options);
+      this._writeCustomPanelContent(panelBody);
+      panel.open(options);
+    });
+  };
+
+  private _generatePanelBody(options: any): string {
+    const optionsList: string[] = [];
+
+    if (options.title) {
+      optionsList.push(
+        `<li><code>title</code>: <strong>"${options.title}"</strong></li>`,
+      );
+    }
+    if (options.hideBackButton) {
+      optionsList.push(
+        `<li><code>hideBackButton</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.backButtonType) {
+      optionsList.push(
+        `<li><code>backButtonType</code>: <strong>"${options.backButtonType}"</strong></li>`,
+      );
+    }
+    if (options.disableAnimation) {
+      optionsList.push(
+        `<li><code>disableAnimation</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.aiEnabled) {
+      optionsList.push(
+        `<li><code>aiEnabled</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.showFrame) {
+      optionsList.push(
+        `<li><code>showFrame</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.fullWidth) {
+      optionsList.push(
+        `<li><code>fullWidth</code>: <strong>true</strong></li>`,
+      );
+    }
+
+    const optionsHtml =
+      optionsList.length > 0
+        ? `<ul>${optionsList.join("\n            ")}</ul>`
+        : "<p><em>No options configured (using all defaults)</em></p>";
+
+    return `
+      <div>
+        <h3>Custom Configured Panel</h3>
+        <p><strong>API:</strong> DefaultCustomPanelConfigOptions (Current)</p>
+        <p>This panel was opened with the options you configured:</p>
+        ${optionsHtml}
+        <cds-button kind="danger" data-close-panel>
+          Close Panel
+        </cds-button>
+      </div>
+    `;
+  }
+
+  private _handleShowCatastrophicError = () => {
+    this._withInstance((instance) => {
+      const instanceWithManager = instance as any;
+      if (instanceWithManager.serviceManager) {
+        // Dispatch action directly to set catastrophicErrorType
+        instanceWithManager.serviceManager.store.dispatch({
+          type: "SET_APP_STATE_VALUE",
+          key: "catastrophicErrorType",
+          value: true,
+        });
+      } else {
+        alert(
+          "serviceManager is not available. Set exposeServiceManagerForTesting: true in PublicConfig.",
+        );
+      }
     });
   };
 
@@ -252,33 +432,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
     });
   }
 
-  private _handleInputVisibilityChange(event: CustomEvent) {
-    const checked = event.detail.checked as boolean;
-    this._inputVisible = checked;
-
-    this._withInstance((instance) => {
-      instance.updateInputFieldVisibility?.(checked);
-    });
-  }
-
-  private _handleInputsDisabledChange(event: CustomEvent) {
-    const checked = event.detail.checked as boolean;
-    this._inputsDisabled = checked;
-
-    this._withInstance((instance) => {
-      instance.updateInputIsDisabled?.(checked);
-    });
-  }
-
-  private _handleUnreadIndicatorChange(event: CustomEvent) {
-    const checked = event.detail.checked as boolean;
-    this._unreadIndicatorVisible = checked;
-
-    this._withInstance((instance) => {
-      instance.updateAssistantUnreadIndicatorVisibility?.(checked);
-    });
-  }
-
   private _handleChatLoadingCounter(direction: IncreaseOrDecrease) {
     this._withInstance((instance) => {
       instance.updateIsChatLoadingCounter?.(direction);
@@ -295,6 +448,11 @@ export class DemoChatInstanceSwitcher extends LitElement {
     this._withInstance((instance) => {
       void instance.changeView?.({ mainWindow: false, launcher: true });
     });
+  };
+
+  private _handleBackButtonTypeChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    this._backButtonType = customEvent.detail.item.value;
   };
 
   render() {
@@ -378,21 +536,110 @@ export class DemoChatInstanceSwitcher extends LitElement {
       <div class="section">
         <div class="section-title">Panel controls</div>
         <div class="actions">
-          ${this._panelExamples.map(
-            (example) => html`
-              <div class="panel-control">
-                <cds-button
-                  kind="secondary"
-                  @click=${() => this._handleOpenCustomPanelExample(example)}
-                >
-                  ${example.buttonLabel}
-                </cds-button>
-                <p class="panel-control__description">${example.description}</p>
+          <div class="panel-section-header">
+            DefaultCustomPanelConfigOptions<br />(Current API)
+          </div>
+
+          <div class="panel-config">
+            <cds-dropdown
+              value="${this._backButtonType}"
+              title-text="Back button type"
+              ?disabled=${this._hideBackButton}
+              @cds-dropdown-selected=${this._handleBackButtonTypeChanged}
+            >
+              <cds-dropdown-item value="minimize">Minimize</cds-dropdown-item>
+              <cds-dropdown-item value="close">Close</cds-dropdown-item>
+            </cds-dropdown>
+
+            <div class="panel-config-checkboxes">
+              <cds-checkbox
+                ?checked=${this._hideBackButton}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._hideBackButton = e.target.checked;
+                }}
+              >
+                Hide back button
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._disableAnimation}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._disableAnimation = e.target.checked;
+                }}
+              >
+                Disable animation
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._aiEnabled}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._aiEnabled = e.target.checked;
+                }}
+              >
+                Enable AI gradient
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._showFrame}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._showFrame = e.target.checked;
+                }}
+              >
+                Show frame border
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._fullWidth}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._fullWidth = e.target.checked;
+                }}
+              >
+                Full width layout
+              </cds-checkbox>
+            </div>
+
+            <cds-button
+              kind="primary"
+              @click=${this._handleOpenConfiguredPanel}
+            >
+              Open Panel
+            </cds-button>
+          </div>
+
+          <cds-accordion>
+            <cds-accordion-item
+              title="CustomPanelConfigOptions (Deprecated API)"
+            >
+              <div class="actions">
+                ${this._panelExamples
+                  .filter((example) => example.apiType === "deprecated")
+                  .map(
+                    (example) => html`
+                      <div class="panel-control">
+                        <cds-button
+                          kind="secondary"
+                          @click=${() =>
+                            this._handleOpenCustomPanelExample(example)}
+                        >
+                          ${example.buttonLabel}
+                        </cds-button>
+                        <p class="panel-control__description">
+                          ${example.description}
+                        </p>
+                      </div>
+                    `,
+                  )}
               </div>
-            `,
-          )}
-          <cds-button kind="ghost" @click=${this._handleCloseCustomPanel}>
-            Close custom panel
+            </cds-accordion-item>
+          </cds-accordion>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Error testing</div>
+        <div class="actions">
+          <cds-button kind="danger" @click=${this._handleShowCatastrophicError}>
+            Show catastrophic error panel
           </cds-button>
         </div>
       </div>

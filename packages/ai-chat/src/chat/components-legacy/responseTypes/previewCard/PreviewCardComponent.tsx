@@ -44,8 +44,6 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   );
 
   const handleClick = () => {
-    const state = serviceManager.instance.getState();
-    const options = state.customPanels.workspace.options;
     if (!isWorkspaceOpen) {
       serviceManager.eventBus.fire(
         {
@@ -58,10 +56,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         },
         serviceManager.instance,
       );
-      panel.open({
-        preferredLocation: options.preferredLocation,
-        disableAnimation: options.disableAnimation,
-      });
+      panel.open(item.workspace_options);
       serviceManager.eventBus.fire(
         {
           type: BusEventType.WORKSPACE_OPEN,

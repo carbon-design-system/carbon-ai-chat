@@ -95,6 +95,8 @@ function getSettings() {
       customSendMessage,
       ...config.messaging,
     },
+    // Expose service manager for testing/demo purposes
+    exposeServiceManagerForTesting: true,
   };
 
   const defaultSettings: Settings = {
