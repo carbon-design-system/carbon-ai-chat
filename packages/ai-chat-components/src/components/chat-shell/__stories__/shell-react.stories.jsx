@@ -10,9 +10,7 @@ const CoreSlotContent = () => (
   <>
     <div slot="header">
       <Toolbar>
-        <div slot="title" data-fixed>
-          Header
-        </div>
+        <div slot="title">Header</div>
       </Toolbar>
     </div>
     <div slot="history" className="history slot-sample">

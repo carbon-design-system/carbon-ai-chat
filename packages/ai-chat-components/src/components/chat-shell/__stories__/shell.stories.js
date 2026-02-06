@@ -17,7 +17,7 @@ import styles from "./story-styles.scss?lit";
 // Core slots for Default, No Header, and Panels stories
 const coreSlotContent = html`
   <cds-aichat-toolbar slot="header">
-    <div slot="title" data-fixed>Header</div>
+    <div slot="title">Header</div>
   </cds-aichat-toolbar>
   <div slot="history" class="history slot-sample">History</div>
   <div slot="workspace" class="workspace slot-sample">Workspace</div>
