@@ -160,6 +160,19 @@
   padding-inline-start: layout.$spacing-05;
 }
 
+// Add transitions for padding during workspace animations
+@media (prefers-reduced-motion: no-preference) {
+  :host([workspace-in-container]) .workspace {
+    transition: padding motion.$duration-fast-02
+      motion.motion(standard, productive);
+  }
+
+  :host([workspace-in-container]) .input-and-messages {
+    transition: padding motion.$duration-fast-02
+      motion.motion(standard, productive);
+  }
+}
+
 :host([workspace-in-container][show-workspace]) .input-and-messages {
   box-sizing: border-box;
   flex: 0 0 $messages-min-width;
@@ -197,23 +210,42 @@
 // Workspace Opening State Overrides
 // ============================================================================
 // Override workspace-in-container rules during opening to prevent overflow
+// Apply padding during opening so it transitions smoothly with the workspace expansion
 // Must come after all other :host selectors for proper specificity ordering
 :host([workspace-in-container]) .shell.workspace-opening .workspace {
   flex: 1 1 0;
-  padding: 0;
   min-inline-size: 0;
+  padding-block-end: layout.$spacing-05;
+  padding-block-start: layout.$spacing-05;
+  padding-inline-end: 0;
+  padding-inline-start: layout.$spacing-05;
 }
 
 :host([workspace-in-container]) .shell.workspace-opening .input-and-messages {
   flex: 0 1 $messages-min-width;
+  padding: layout.$spacing-05;
   min-inline-size: 0;
+}
+
+// Apply padding for end-positioned workspace during opening
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-opening
+  .workspace {
+  padding-inline-end: layout.$spacing-05;
+  padding-inline-start: 0;
+}
+
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-opening
+  .input-and-messages {
+  padding-inline-end: 0;
 }
 
 // ============================================================================
 // Workspace Closing State Overrides
 // ============================================================================
-// Maintain padding during closing states to prevent visual jump during opacity transition
-// Padding should only change after the opacity transition completes
+// Maintain padding during closing states so it transitions smoothly with workspace contraction
+// Padding will animate from its current value to 0 during the closing transition
 // Must come after all other :host selectors for proper specificity ordering
 :host([workspace-in-container]) .shell.workspace-closing .workspace,
 :host([workspace-in-container]) .shell.workspace-checking-closing .workspace {
@@ -238,6 +270,7 @@
   .shell.workspace-checking-closing
   .workspace {
   padding-inline-end: layout.$spacing-05;
+  padding-inline-start: 0;
 }
 
 :host([workspace-in-container][workspace-location="end"])
