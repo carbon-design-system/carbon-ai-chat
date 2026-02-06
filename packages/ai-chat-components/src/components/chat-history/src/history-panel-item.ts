@@ -39,10 +39,10 @@ export interface Action {
 @carbonElement(`${prefix}-history-panel-item`)
 export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
   /**
-   * `true` if the menu item should be active.
+   * `true` if the history panel item is selected.
    */
   @property({ type: Boolean, reflect: true })
-  active = false;
+  selected = false;
 
   /**
    * Chat history item title.
@@ -63,10 +63,10 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
   overflowMenuLabel = "Options";
 
   render() {
-    const { active, title, actions } = this;
+    const { selected, title, actions } = this;
     const classes = classMap({
       [`cds--side-nav__link`]: true,
-      [`cds--side-nav__link--current`]: active,
+      [`cds--side-nav__link--current`]: selected,
     });
     return html`
       <button class="${classes}">

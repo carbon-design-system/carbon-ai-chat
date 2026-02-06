@@ -59,7 +59,7 @@ export const Default = {
                 get started.
               </cds-aichat-history-panel-item>
               <cds-aichat-history-panel-item
-                active
+                selected
                 .actions=${pinnedHistoryItemActions}
               >
                 Let's use this as the master invoice document.
