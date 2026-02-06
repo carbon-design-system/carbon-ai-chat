@@ -12,3 +12,13 @@ snapshots["cds-aichat-shell Snapshots should match snapshot with rounded corners
 `;
 /* end snapshot cds-aichat-shell Snapshots should match snapshot with rounded corners */
 
+snapshots["cds-aichat-shell Snapshots should match snapshot with default configuration"] = 
+`<cds-aichat-shell
+  history-location="start"
+  style="--cds-aichat-header-height: 0px;"
+  workspace-location="start"
+>
+</cds-aichat-shell>
+`;
+/* end snapshot cds-aichat-shell Snapshots should match snapshot with default configuration */
+

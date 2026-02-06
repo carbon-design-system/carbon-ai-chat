@@ -137,8 +137,16 @@ export function useInputCallbacks({
   }, [agentDisplayState, messagesRef]);
 
   const shouldDisableInput = useCallback(() => {
-    return inputState.isReadonly || agentDisplayState.disableInput;
-  }, [inputState.isReadonly, agentDisplayState.disableInput]);
+    return (
+      inputState.isReadonly ||
+      inputState.isDisabled ||
+      agentDisplayState.disableInput
+    );
+  }, [
+    inputState.isReadonly,
+    inputState.isDisabled,
+    agentDisplayState.disableInput,
+  ]);
 
   const shouldDisableSend = useCallback(() => {
     return shouldDisableInput() || !isHydrated;
