@@ -729,8 +729,6 @@ export class WorkspaceManager {
    * @param inPanel - True to display workspace as overlay panel, false for inline
    */
   private setWorkspaceInPanel(inPanel: boolean): void {
-    console.trace("[WorkspaceManager] Call stack:");
-
     // Early exit during transitions
     if (
       this.state.isExpanding ||
