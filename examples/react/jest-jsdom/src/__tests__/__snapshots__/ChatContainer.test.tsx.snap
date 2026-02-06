@@ -21,6 +21,12 @@ exports[`ChatContainer should match snapshot 1`] = `
     slot="beforeInputElement"
   />
   <div
+    slot="afterInputElement"
+  />
+  <div
+    slot="footerElement"
+  />
+  <div
     slot="homeScreenHeaderBottomElement"
   />
   <div

@@ -21,7 +21,6 @@ We should be looking for what here can can automate, and as we do, we can remove
 
 - [ ] **Error handling:** `onError: (data) => console.log(data)`
 - [ ] **Focus behavior:** `shouldTakeFocusIfOpensAutomatically: true`
-- [ ] **Focus trap:** `enableFocusTrap: true`
 - [ ] **HTML sanitization:** `shouldSanitizeHTML: false`
 - [ ] **Namespace:** `namespace: "test1"` vs `"test2"`
 - [ ] **Assistant name:** `assistantName: "My Assistant"`

@@ -136,6 +136,7 @@
   "showMoreResults": "See more",
   "disclaimer_title": "Disclaimer",
   "disclaimer_accept": "I accept",
+  "disclaimer_icon_label": "Disclaimer icon",
   "general_ariaCloseInformationOverlay": "Close information panel.",
   "general_ariaAnnounceOpenedInformationOverlay": "An information panel has been opened.",
   "general_ariaAnnounceClosedInformationOverlay": "An information panel has been closed.",

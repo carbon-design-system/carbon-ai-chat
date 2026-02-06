@@ -15,7 +15,6 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/button.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./workspace-shell-footer.scss?lit";
 
 export type Action = {

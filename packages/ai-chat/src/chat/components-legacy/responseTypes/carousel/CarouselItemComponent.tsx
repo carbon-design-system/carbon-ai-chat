@@ -14,7 +14,7 @@ import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 
-import { SkeletonPlaceholder } from "../../SkeletonPicker";
+import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
 import { CardItemComponent } from "../card/CardItemComponent";
 import {
   CarouselItem,

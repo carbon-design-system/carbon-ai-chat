@@ -20,12 +20,41 @@ import Loading from "../components/carbon/Loading";
 import cx from "classnames";
 import React, { KeyboardEvent, PureComponent } from "react";
 
-import { nodeToText } from "./aria/AriaAnnouncerComponent";
+import { nodeToText } from "../components/aria/AriaAnnouncerComponent";
 import { Avatar } from "./Avatar";
 import { InlineError } from "./responseTypes/error/InlineError";
-import { IconHolder } from "./util/IconHolder";
-import { ImageWithFallback } from "./util/ImageWithFallback";
-import VisuallyHidden from "./util/VisuallyHidden";
+import VisuallyHidden from "../components/util/VisuallyHidden";
+
+// Inline helper components (previously in util/IconHolder.tsx and util/ImageWithFallback.tsx)
+function IconHolder({ icon }: { icon: React.ReactNode }) {
+  return <div className="cds-aichat--icon-holder">{icon}</div>;
+}
+
+function ImageWithFallback({
+  url,
+  alt,
+  fallback,
+}: {
+  url: string;
+  alt?: string;
+  fallback: React.ReactNode;
+}) {
+  const [hasError, setHasError] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasError(false);
+  }, [url]);
+
+  return (
+    <div className="cds-aichat--image-with-fallback">
+      {!hasError && url ? (
+        <img src={url} alt={alt} onError={() => setHasError(true)} />
+      ) : (
+        fallback
+      )}
+    </div>
+  );
+}
 import { HasAriaAnnouncer, withAriaAnnouncer } from "../hocs/withAriaAnnouncer";
 import { HasServiceManager } from "../hocs/withServiceManager";
 import actions from "../store/actions";

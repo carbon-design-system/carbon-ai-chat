@@ -1,0 +1,87 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as ChatShellStories from "./shell.stories";
+
+<Meta of={ChatShellStories} />
+
+# Chat shell
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+Use `cds-aichat-shell` to create a flexible chat interface layout with support for headers, messages, input areas, workspaces, history panels, and overlay panels. The shell component provides a structured container that manages the layout and positioning of various chat interface elements.
+
+The shell includes support for:
+- **Header and footer slots** for custom branding and actions
+- **Messages and input areas** with before/after extension points
+- **Workspace and history sidebars** with configurable positioning
+- **Overlay panels** (`cds-aichat-panel`) with priority management and animations
+- **Responsive layouts** with optional frames and rounded corners
+- **AI-enabled theming** for enhanced visual styling
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```html
+<cds-aichat-shell show-frame rounded-corners>
+  <div slot="header">Chat Header</div>
+  <div slot="messages">Messages Area</div>
+  <div slot="input">Input Area</div>
+</cds-aichat-shell>
+```
+
+### Using panels
+
+Panels can be added to create overlay experiences with different priorities and animations:
+
+```html
+<cds-aichat-shell show-frame>
+  <div slot="header">Chat Header</div>
+  <div slot="messages">Messages Area</div>
+  <div slot="input">Input Area</div>
+  
+  <div slot="panels">
+    <cds-aichat-panel 
+      open 
+      show-chat-header 
+      show-frame
+      animation-on-open="slide-in-from-bottom"
+      animation-on-close="slide-out-to-bottom">
+      <div slot="header">Panel Header</div>
+      <div slot="body">Panel Content</div>
+    </cds-aichat-panel>
+  </div>
+</cds-aichat-shell>
+```
+
+## Component API
+
+### cds-aichat-shell
+
+<ArgTypes of="cds-aichat-shell" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["chat-shell"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

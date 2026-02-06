@@ -19,7 +19,6 @@ import {
   BUTTON_KIND,
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/button.js";
-// @ts-ignore
 import styles from "./card-footer.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";

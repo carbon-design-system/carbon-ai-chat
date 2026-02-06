@@ -109,9 +109,6 @@ class ChatContainer extends LitElement {
   @property({ type: String })
   namespace?: string;
 
-  @state()
-  private enableFocusTrap?: boolean;
-
   @property({ type: Boolean, attribute: "should-sanitize-html" })
   shouldSanitizeHTML?: boolean;
 
@@ -263,9 +260,6 @@ class ChatContainer extends LitElement {
     if (this.namespace !== undefined) {
       resolvedConfig.namespace = this.namespace;
     }
-    if (this.enableFocusTrap !== undefined) {
-      resolvedConfig.enableFocusTrap = this.enableFocusTrap;
-    }
     if (this.shouldSanitizeHTML !== undefined) {
       resolvedConfig.shouldSanitizeHTML = this.shouldSanitizeHTML;
     }
@@ -320,6 +314,7 @@ class ChatContainer extends LitElement {
       handler: this.userDefinedHandler,
     });
     this.addWriteableElementSlots();
+    this.attachWriteableElements();
     await this.onBeforeRender?.(instance);
   };
 
@@ -331,6 +326,23 @@ class ChatContainer extends LitElement {
       },
     );
     this._writeableElementSlots = writeableElementSlots;
+  }
+
+  private attachWriteableElements() {
+    const writeableElements = this._instance?.writeableElements;
+    if (!writeableElements) {
+      return;
+    }
+
+    Object.entries(writeableElements).forEach(([slot, element]) => {
+      if (!element) {
+        return;
+      }
+      element.setAttribute("slot", slot);
+      if (!element.isConnected) {
+        this.appendChild(element);
+      }
+    });
   }
 
   /**

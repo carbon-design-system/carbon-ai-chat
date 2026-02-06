@@ -89,6 +89,7 @@ export interface PublicWorkspaceCustomPanelState {
 export interface PublicCustomPanelsState {
   /** State for the default overlay-style custom panel. */
   default: PublicDefaultCustomPanelState;
+
   /**
    * State for the workspace custom panel.
    *
@@ -139,7 +140,7 @@ export type PublicChatState = Readonly<
     input: PublicInputState;
 
     /**
-     * @experimental State for any surfaced custom panels.
+     * State for any surfaced custom panels.
      */
     customPanels: PublicCustomPanelsState;
   }
@@ -427,6 +428,16 @@ export enum WriteableElementName {
    * An element that appears after the messages area and before the input area.
    */
   BEFORE_INPUT_ELEMENT = "beforeInputElement",
+
+  /**
+   * An element that appears after the input field.
+   */
+  AFTER_INPUT_ELEMENT = "afterInputElement",
+
+  /**
+   * An element that appears in the footer area.
+   */
+  FOOTER_ELEMENT = "footerElement",
 
   /**
    * An element that appears above the input field on the home screen.

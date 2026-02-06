@@ -141,7 +141,7 @@ export const WithToolbar = {
           actions={toolbarActions}
           onToolbarAction={(e) => action("toolbar-action")(e.detail)}
         >
-          <div slot="title" data-fixed>
+          <div slot="title">
             <h4>
               <span className="truncated-text">Resource consumption</span>
             </h4>
@@ -256,7 +256,7 @@ export const WithSteps = {
       <Card isLayered={args.isLayered}>
         <div slot="header" className="preview-card preview-card-toolbar">
           <Toolbar className="preview-card-toolbar">
-            <div slot="title" data-fixed>
+            <div slot="title">
               <div className="title-container">
                 <h4>Optimizing excess inventory</h4>
                 <p>{status}</p>

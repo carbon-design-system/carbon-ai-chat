@@ -9,8 +9,7 @@
 
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-// @ts-ignore
-import styles from "./workspace-shell-body.scss?lit";
+import styles from "./workspace-shell.scss?lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 
