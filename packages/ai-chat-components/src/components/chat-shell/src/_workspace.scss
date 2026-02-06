@@ -209,4 +209,44 @@
   min-inline-size: 0;
 }
 
+// ============================================================================
+// Workspace Closing State Overrides
+// ============================================================================
+// Maintain padding during closing states to prevent visual jump during opacity transition
+// Padding should only change after the opacity transition completes
+// Must come after all other :host selectors for proper specificity ordering
+:host([workspace-in-container]) .shell.workspace-closing .workspace,
+:host([workspace-in-container]) .shell.workspace-checking-closing .workspace {
+  padding-block-end: layout.$spacing-05;
+  padding-block-start: layout.$spacing-05;
+  padding-inline-end: 0;
+  padding-inline-start: layout.$spacing-05;
+}
+
+:host([workspace-in-container]) .shell.workspace-closing .input-and-messages,
+:host([workspace-in-container])
+  .shell.workspace-checking-closing
+  .input-and-messages {
+  padding: layout.$spacing-05;
+}
+
+// Maintain padding for end-positioned workspace during closing
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-closing
+  .workspace,
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-checking-closing
+  .workspace {
+  padding-inline-end: layout.$spacing-05;
+}
+
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-closing
+  .input-and-messages,
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-checking-closing
+  .input-and-messages {
+  padding-inline-end: 0;
+}
+
 // Made with Bob
