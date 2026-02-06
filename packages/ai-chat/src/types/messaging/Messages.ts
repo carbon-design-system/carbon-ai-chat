@@ -696,6 +696,11 @@ interface PreviewCardItem<
   TUserDefinedType = Record<string, unknown>,
 > extends BaseGenericItem<TUserDefinedType> {
   /**
+   * The id of the workspace that is attached to this card.
+   */
+  workspace_id: string;
+
+  /**
    * The title of the preview card.
    */
   title?: string;
@@ -713,7 +718,7 @@ interface PreviewCardItem<
   /**
    * Additional data to be passed to workspace.
    */
-  additional_data?: any;
+  additional_data?: unknown;
 }
 
 /**

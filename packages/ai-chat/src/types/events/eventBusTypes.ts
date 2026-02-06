@@ -670,6 +670,16 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_OPEN;
   data: {
     /**
+     * The ID of the given workspace.
+     */
+    workspaceId?: string;
+
+    /**
+     * Additional meta data.
+     */
+    additionalData?: unknown;
+
+    /**
      * The individual message item that is being displayed in this custom response.
      */
     message: GenericItem;
@@ -688,6 +698,16 @@ export interface BusEventWorkspacePreOpen extends BusEvent {
 export interface BusEventWorkspaceOpen extends BusEvent {
   type: BusEventType.WORKSPACE_OPEN;
   data: {
+    /**
+     * The ID of the given workspace.
+     */
+    workspaceId?: string;
+
+    /**
+     * Additional meta data.
+     */
+    additionalData?: unknown;
+
     /**
      * The individual message item that is being displayed in this custom response.
      */
@@ -708,6 +728,16 @@ export interface BusEventWorkspacePreClose extends BusEvent {
   type: BusEventType.WORKSPACE_PRE_CLOSE;
   data: {
     /**
+     * The ID of the given workspace.
+     */
+    workspaceId?: string;
+
+    /**
+     * Additional meta data.
+     */
+    additionalData?: unknown;
+
+    /**
      * The individual message item that is being displayed in this custom response.
      */
     message: GenericItem;
@@ -726,6 +756,16 @@ export interface BusEventWorkspacePreClose extends BusEvent {
 export interface BusEventWorkspaceClose extends BusEvent {
   type: BusEventType.WORKSPACE_CLOSE;
   data: {
+    /**
+     * The ID of the given workspace.
+     */
+    workspaceId?: string;
+
+    /**
+     * Additional meta data.
+     */
+    additionalData?: unknown;
+
     /**
      * The individual message item that is being displayed in this custom response.
      */

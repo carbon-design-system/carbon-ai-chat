@@ -81,6 +81,7 @@ const SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN =
   "SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN";
 const SET_CUSTOM_PANEL_OPTIONS = "SET_CUSTOM_PANEL_OPTIONS";
 const SET_WORKSPACE_PANEL_OPTIONS = "SET_WORKSPACE_PANEL_OPTIONS";
+const SET_WORKSPACE_PANEL_DATA = "SET_WORKSPACE_PANEL_DATA";
 const SET_CUSTOM_PANEL_OPEN = "SET_CUSTOM_PANEL_OPEN";
 const SET_WORKSPACE_PANEL_OPEN = "SET_WORKSPACE_PANEL_OPEN";
 const TOGGLE_HOME_SCREEN = "GO_BACK_TO_HOME";
@@ -113,6 +114,15 @@ interface UnknownAction {
 interface SetWorkspacePanelOptionsAction {
   type: typeof SET_WORKSPACE_PANEL_OPTIONS;
   options: Partial<WorkspaceCustomPanelConfigOptions>;
+  [key: string]: unknown;
+}
+
+interface SetWorkspacePanelDataAction {
+  type: typeof SET_WORKSPACE_PANEL_DATA;
+  workspaceID?: string;
+  localMessageItem?: LocalMessageItem;
+  fullMessage?: Message;
+  additionalData?: unknown;
   [key: string]: unknown;
 }
 
@@ -443,6 +453,21 @@ const actions = {
     return { type: SET_WORKSPACE_PANEL_OPEN, isOpen };
   },
 
+  setWorkspacePanelData(data: {
+    workspaceID?: string;
+    localMessageItem?: LocalMessageItem;
+    fullMessage?: Message;
+    additionalData?: unknown;
+  }): SetWorkspacePanelDataAction {
+    return {
+      type: SET_WORKSPACE_PANEL_DATA,
+      workspaceID: data.workspaceID,
+      localMessageItem: data.localMessageItem,
+      fullMessage: data.fullMessage,
+      additionalData: data.additionalData,
+    };
+  },
+
   /**
    * Switches between the bot and home screen views.
    */
@@ -623,6 +648,7 @@ export {
   SET_CUSTOM_PANEL_OPTIONS,
   SET_CUSTOM_PANEL_OPEN,
   SET_WORKSPACE_PANEL_OPTIONS,
+  SET_WORKSPACE_PANEL_DATA,
   SET_WORKSPACE_PANEL_OPEN,
   SET_CHAT_MESSAGES_PROPERTY,
   TOGGLE_HOME_SCREEN,

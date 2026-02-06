@@ -340,7 +340,18 @@ class ChatActionsImpl {
           preferredLocation:
             state.workspacePanelState.options.preferredLocation,
         },
+        workspaceID: state.workspacePanelState.workspaceID,
+        additionalData: state.workspacePanelState.additionalData,
       },
+    });
+
+    const workspace = deepFreeze({
+      isOpen: Boolean(state.workspacePanelState.isOpen),
+      options: {
+        preferredLocation: state.workspacePanelState.options.preferredLocation,
+      },
+      workspaceID: state.workspacePanelState.workspaceID,
+      additionalData: state.workspacePanelState.additionalData,
     });
 
     return deepFreeze({
@@ -352,6 +363,7 @@ class ChatActionsImpl {
       activeResponseId: assistantMessageState.activeResponseId ?? null,
       input,
       customPanels,
+      workspace,
     });
   }
 

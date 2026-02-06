@@ -45,6 +45,8 @@ function WorkspaceWriteableElementExample({
   instance,
   parentStateText,
 }: WorkspaceExampleProps) {
+  const workspaceId = instance?.getState()?.workspace?.workspaceID || "unknown";
+
   const handleClose = () => {
     panel?.close();
   };
@@ -159,7 +161,7 @@ function WorkspaceWriteableElementExample({
         hideCloseButton
       />
       <WorkspaceShellHeader
-        titleText="Optimizing excess inventory plan"
+        titleText={`Optimizing excess inventory plan (ID: ${workspaceId.substring(0, 8)}...)`}
         subTitleText={`Created on: ${new Date().toLocaleDateString()}`}
       >
         <div slot="header-description">

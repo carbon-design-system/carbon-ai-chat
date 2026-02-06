@@ -532,6 +532,11 @@ interface WorkspacePanelState {
   isOpen: boolean;
 
   /**
+   * The id of the workspace attached to this panel. Used to match with a given Preview Card.
+   */
+  workspaceID?: string;
+
+  /**
    * The id of the panel that is currently in focus.
    */
   panelID: string;
@@ -540,6 +545,21 @@ interface WorkspacePanelState {
    * Config options for the workspace panels.
    */
   options: WorkspaceCustomPanelConfigOptions;
+
+  /**
+   * The local message item that triggered the workspace panel to open.
+   */
+  localMessageItem?: LocalMessageItem;
+
+  /**
+   * The full message response that contains the message item.
+   */
+  fullMessage?: Message;
+
+  /**
+   * Additional metadata associated with the workspace.
+   */
+  additionalData?: unknown;
 }
 
 interface MessagePanelState<T extends GenericItem = GenericItem> {

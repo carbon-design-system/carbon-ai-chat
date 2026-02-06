@@ -105,14 +105,24 @@ export class DemoApp extends LitElement {
 
     .sidebar--closing {
       right: calc(calc(320px + 1rem) * -1);
+      width: 320px;
     }
 
     .sidebar--closed {
       right: calc(calc(320px + 1rem) * -1);
+      width: 320px;
       visibility: hidden;
     }
 
     /* RTL support */
+    [dir="rtl"] .sidebar {
+      right: auto;
+      left: 0;
+      transition:
+        left 100ms,
+        visibility 0s 100ms;
+    }
+
     [dir="rtl"] .sidebar--expanded {
       left: 0;
       right: auto;
@@ -130,6 +140,20 @@ export class DemoApp extends LitElement {
         left 100ms,
         width 300ms cubic-bezier(0.2, 0, 0.38, 0.9),
         visibility 0s 100ms;
+    }
+
+    [dir="rtl"] .sidebar--closing {
+      left: calc(calc(320px + 1rem) * -1);
+      width: 320px;
+    }
+
+    [dir="rtl"] .sidebar--closed {
+      right: auto;
+      left: calc(calc(320px + 1rem) * -1);
+      width: 320px;
+      transition:
+        left 100ms,
+        visibility 0s 0s;
     }
   `;
 

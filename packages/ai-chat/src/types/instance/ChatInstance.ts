@@ -75,10 +75,21 @@ export interface PublicDefaultCustomPanelState {
 export interface PublicWorkspaceCustomPanelState {
   /** Indicates if the workspace custom panel overlay is currently open. */
   isOpen: boolean;
+
   /**
    * Config options for the workspace panels.
    */
   options: WorkspaceCustomPanelConfigOptions;
+
+  /**
+   * The ID of the workspace attached to this panel. Used to match with a given Preview Card.
+   */
+  workspaceID?: string;
+
+  /**
+   * Additional metadata associated with the workspace.
+   */
+  additionalData?: unknown;
 }
 
 /**
@@ -143,6 +154,13 @@ export type PublicChatState = Readonly<
      * State for any surfaced custom panels.
      */
     customPanels: PublicCustomPanelsState;
+
+    /**
+     * State for the workspace panel.
+     *
+     * @experimental
+     */
+    workspace: PublicWorkspaceCustomPanelState;
   }
 >;
 

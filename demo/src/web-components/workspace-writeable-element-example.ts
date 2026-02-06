@@ -136,6 +136,9 @@ class WorkspaceWriteableElementExample extends LitElement {
   }
 
   render() {
+    const workspaceId =
+      this.instance?.getState()?.workspace?.workspaceID || "unknown";
+
     return html` <cds-aichat-workspace-shell>
       <cds-aichat-toolbar
         slot="toolbar"
@@ -163,7 +166,7 @@ class WorkspaceWriteableElementExample extends LitElement {
       >
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header
-        title-text="Optimizing excess inventory plan"
+        title-text=${`Optimizing excess inventory plan (ID: ${workspaceId.substring(0, 8)}...)`}
         subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}
       >
         <div slot="header-description">
