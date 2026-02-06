@@ -1,0 +1,173 @@
+import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as ChatHeaderReactStories from "./chat-header-react.stories";
+
+<Meta of={ChatHeaderReactStories} />
+
+# Chat header
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
+
+## Overview
+
+The `<ChatHeader>` component wraps the `cds-aichat-chat-header` web component to provide a consistent header interface for chat applications inside React applications. It is built on top of the Toolbar component and includes support for navigation, title display, actions, and custom content through slots.
+
+The chat header includes support for:
+- **Navigation** - Back button or overflow menu for navigation actions
+- **Title Display** - Shows header title and optional subtitle/name
+- **Actions** - Configurable action buttons with overflow support
+- **Custom Slots** - Flexible content placement through slots
+- **Focus Management** - Built-in focus management with `requestFocus()` method
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
+import { Close, Restart } from "@carbon/icons-react";
+
+const actions = [
+  {
+    renderIcon: Restart,
+    iconDescription: "Restart conversation",
+    onClick: () => console.log("Restart clicked"),
+  },
+];
+
+const fixedActions = [
+  {
+    renderIcon: Close,
+    iconDescription: "Close chat",
+    onClick: () => console.log("Close clicked"),
+  },
+];
+
+function MyComponent() {
+  return (
+    <ChatHeader
+      slot="header"
+      headerTitle="title"
+      headerName="name"
+      actions={actions}
+      fixedActions={fixedActions}
+    />
+  );
+}
+```
+
+### Using navigation
+
+The header supports different navigation types:
+
+```jsx
+import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
+import { ArrowLeft, OverflowMenuVertical } from "@carbon/icons-react";
+
+function ChatWithBackButton() {
+  return (
+    <ChatHeader
+      navigationType="back"
+      navigationBackIcon={ArrowLeft}
+      navigationBackLabel="Back"
+      navigationBackOnClick={() => console.log('Back clicked')}
+      headerTitle="Chat"
+    />
+  );
+}
+
+function ChatWithOverflowMenu() {
+  const menuItems = [
+    { text: "Settings", onClick: () => console.log("Settings") },
+    { text: "Help", onClick: () => console.log("Help") },
+  ];
+
+  return (
+    <ChatHeader
+      navigationType="overflow"
+      navigationOverflowIcon={OverflowMenuVertical}
+      navigationOverflowLabel="Menu"
+      navigationOverflowItems={menuItems}
+      headerTitle="Chat"
+    />
+  );
+}
+```
+
+## Component API
+
+<ArgTypes of={ChatHeaderReactStories.Default} />
+
+### Usage Patterns
+
+#### With Focus Management
+
+Use refs to programmatically manage focus:
+
+```jsx
+import { useRef } from 'react';
+import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
+
+function ChatWithFocus() {
+  const headerRef = useRef(null);
+
+  const handleFocus = () => {
+    if (headerRef.current) {
+      const success = headerRef.current.requestFocus();
+      if (!success) {
+        // Fallback focus logic
+      }
+    }
+  };
+
+  return (
+    <>
+      <button onClick={handleFocus}>Focus Header</button>
+      <ChatHeader
+        ref={headerRef}
+        headerTitle="Chat"
+        actions={[/* ... */]}
+      />
+    </>
+  );
+}
+```
+
+#### With Custom Slots
+
+Use slots for custom content:
+
+```jsx
+import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
+import { Button, AILabel } from "@carbon/react";
+
+function ChatWithCustomContent() {
+  return (
+    <ChatHeader>
+      <Button slot="navigation" kind="ghost">
+        Custom Nav
+      </Button>
+      <div slot="title">
+        <h2>Custom Title</h2>
+        <p>Subtitle</p>
+      </div>
+      <AILabel slot="decorator" size="mini" kind="info">
+        AI
+      </AILabel>
+    </ChatHeader>
+  );
+}
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

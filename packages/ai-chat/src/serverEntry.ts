@@ -81,6 +81,7 @@ export {
   BusEventWorkspacePreClose,
   BusEventWorkspacePreOpen,
   BusEventFeedback,
+  BusEventHeaderMenuClick,
   BusEventHistoryBegin,
   BusEventHistoryEnd,
   BusEventMessageItemCustom,
@@ -96,6 +97,7 @@ export {
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
+  HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";

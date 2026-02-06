@@ -7,7 +7,7 @@
  *  @license
  */
 
-$css--plex: true !default;
+@use "../../../globals/scss/component-reset";
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
 @use "@carbon/styles/scss/theme";
@@ -17,6 +17,7 @@ $block-class: #{$prefix}-toolbar;
 
 /* Toolbar styles */
 :host {
+  @include component-reset.component-reset();
   @include rounded-modifiers;
 
   display: block;
@@ -59,6 +60,10 @@ $block-class: #{$prefix}-toolbar;
     margin-inline-end: auto;
     min-inline-size: layout.$spacing-10;
     padding-inline: layout.$spacing-04;
+  }
+
+  .#{$block-class}__navigation:has(::slotted(*)) ~ .#{$block-class}__title {
+    padding-inline-start: 0;
   }
 
   .#{$block-class}__fixed-actions {

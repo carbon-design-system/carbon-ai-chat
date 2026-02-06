@@ -27,7 +27,13 @@ export interface Action {
   icon: CarbonIcon;
   size?: string;
   fixed?: boolean;
+  disabled?: boolean;
   onClick: () => void;
+  /**
+   * Optional data-testid attribute for testing purposes.
+   * This allows tests to reliably find and interact with specific action buttons.
+   */
+  testId?: string;
 }
 
 /**
@@ -146,6 +152,7 @@ class CDSAIChatToolbar extends LitElement {
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
+        data-testid=${action.testId || nothing}
         @click=${action.onClick}
         size=${action.size || "md"}
         align="bottom-end"
@@ -226,7 +233,10 @@ class CDSAIChatToolbar extends LitElement {
                     this.hiddenItems,
                     (item) => item.text,
                     (item) => html`
-                      <cds-overflow-menu-item @click=${item.onClick}>
+                      <cds-overflow-menu-item
+                        ?disabled=${item.disabled}
+                        @click=${item.onClick}
+                      >
                         ${item.text}
                       </cds-overflow-menu-item>
                     `,

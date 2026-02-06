@@ -133,23 +133,10 @@
   order: 1;
 }
 
-// When workspace is closing, keep end-ordering even if show-workspace is removed
-// This prevents input-and-messages from jumping to DOM order mid-transition
-:host([workspace-location="end"]) .shell.workspace-closing .input-and-messages,
-:host([workspace-location="end"])
-  .shell.workspace-checking-closing
-  .input-and-messages {
-  order: 1;
-}
-
-:host([workspace-location="end"]) .shell.workspace-closing .workspace,
-:host([workspace-location="end"]) .shell.workspace-checking-closing .workspace {
-  order: 2;
-}
-
 // ============================================================================
 // Workspace in Container Mode
 // ============================================================================
+// These selectors must come before closing/opening state selectors for proper specificity ordering
 :host([workspace-in-container][show-workspace]) .workspace {
   box-sizing: border-box;
   flex: 1 1 auto;
@@ -206,12 +193,47 @@
   padding-inline-end: 0;
 }
 
+// When workspace is closing, keep end-ordering even if show-workspace is removed
+// This prevents input-and-messages from jumping to DOM order mid-transition
+:host([workspace-location="end"]) .shell.workspace-closing .input-and-messages,
+:host([workspace-location="end"])
+  .shell.workspace-checking-closing
+  .input-and-messages {
+  order: 1;
+}
+
+:host([workspace-location="end"]) .shell.workspace-closing .workspace,
+:host([workspace-location="end"]) .shell.workspace-checking-closing .workspace {
+  order: 2;
+}
+
+// ============================================================================
+// Workspace Closing State Overrides
+// ============================================================================
+// Maintain padding during closing states so it transitions smoothly with workspace contraction
+// Padding will animate from its current value to 0 during the closing transition
+// Less specific selectors must come before more specific ones for proper specificity ordering
+:host([workspace-in-container]) .shell.workspace-closing .workspace,
+:host([workspace-in-container]) .shell.workspace-checking-closing .workspace {
+  padding-block-end: layout.$spacing-05;
+  padding-block-start: layout.$spacing-05;
+  padding-inline-end: 0;
+  padding-inline-start: layout.$spacing-05;
+}
+
+:host([workspace-in-container]) .shell.workspace-closing .input-and-messages,
+:host([workspace-in-container])
+  .shell.workspace-checking-closing
+  .input-and-messages {
+  padding: layout.$spacing-05;
+}
+
 // ============================================================================
 // Workspace Opening State Overrides
 // ============================================================================
 // Override workspace-in-container rules during opening to prevent overflow
 // Apply padding during opening so it transitions smoothly with the workspace expansion
-// Must come after all other :host selectors for proper specificity ordering
+// Less specific selectors must come before more specific ones for proper specificity ordering
 :host([workspace-in-container]) .shell.workspace-opening .workspace {
   flex: 1 1 0;
   min-inline-size: 0;
@@ -227,40 +249,10 @@
   min-inline-size: 0;
 }
 
-// Apply padding for end-positioned workspace during opening
-:host([workspace-in-container][workspace-location="end"])
-  .shell.workspace-opening
-  .workspace {
-  padding-inline-end: layout.$spacing-05;
-  padding-inline-start: 0;
-}
-
-:host([workspace-in-container][workspace-location="end"])
-  .shell.workspace-opening
-  .input-and-messages {
-  padding-inline-end: 0;
-}
-
 // ============================================================================
-// Workspace Closing State Overrides
+// Workspace State Overrides for End-Positioned Workspace
 // ============================================================================
-// Maintain padding during closing states so it transitions smoothly with workspace contraction
-// Padding will animate from its current value to 0 during the closing transition
-// Must come after all other :host selectors for proper specificity ordering
-:host([workspace-in-container]) .shell.workspace-closing .workspace,
-:host([workspace-in-container]) .shell.workspace-checking-closing .workspace {
-  padding-block-end: layout.$spacing-05;
-  padding-block-start: layout.$spacing-05;
-  padding-inline-end: 0;
-  padding-inline-start: layout.$spacing-05;
-}
-
-:host([workspace-in-container]) .shell.workspace-closing .input-and-messages,
-:host([workspace-in-container])
-  .shell.workspace-checking-closing
-  .input-and-messages {
-  padding: layout.$spacing-05;
-}
+// More specific selectors with [workspace-location="end"] must come after less specific ones
 
 // Maintain padding for end-positioned workspace during closing
 :host([workspace-in-container][workspace-location="end"])
@@ -278,6 +270,20 @@
   .input-and-messages,
 :host([workspace-in-container][workspace-location="end"])
   .shell.workspace-checking-closing
+  .input-and-messages {
+  padding-inline-end: 0;
+}
+
+// Apply padding for end-positioned workspace during opening
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-opening
+  .workspace {
+  padding-inline-end: layout.$spacing-05;
+  padding-inline-start: 0;
+}
+
+:host([workspace-in-container][workspace-location="end"])
+  .shell.workspace-opening
   .input-and-messages {
   padding-inline-end: 0;
 }

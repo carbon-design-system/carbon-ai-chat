@@ -34,6 +34,11 @@ class WriteableElementExample extends LitElement {
       );
       border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end);
     }
+    .external--compact {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      border-radius: 0;
+    }
   `;
 
   @property({ type: String })
@@ -47,6 +52,14 @@ class WriteableElementExample extends LitElement {
     if (this.location === "aiTooltipAfterDescriptionElement") {
       classNames += " writeable-element-external--not-rounded";
     }
+
+    // Special compact display for header fixed actions
+    if (this.location === "headerFixedActionsElement") {
+      return html`<div class="external external--compact">
+        ${this.location}
+      </div>`;
+    }
+
     return html`<div class="${classNames}">
       Location: ${this.location}. Parent prop: ${this.valueFromParent}.
     </div> `;

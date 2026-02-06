@@ -88,14 +88,16 @@
 
   display: flex;
   align-items: center;
-
-  animation: cds-aichat-fade-in 600ms forwards;
-  animation-delay: 1200ms;
   block-size: 32px;
   color: theme.$text-secondary;
   font-style: italic;
   opacity: 0;
   padding-inline-start: layout.$spacing-01;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: cds-aichat-fade-in 600ms forwards;
+    animation-delay: 1200ms;
+  }
 }
 
 .cds-aichat__scroll-to-bottom {

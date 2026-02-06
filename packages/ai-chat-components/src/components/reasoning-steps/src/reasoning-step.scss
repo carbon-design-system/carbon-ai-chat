@@ -7,6 +7,7 @@
  *  @license
  */
 
+@use "../../../globals/scss/component-reset";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
@@ -14,6 +15,8 @@
 @use "@carbon/layout";
 
 :host {
+  @include component-reset.component-reset();
+
   display: block;
   border: 0;
   border-radius: 0;

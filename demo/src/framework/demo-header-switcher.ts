@@ -12,8 +12,60 @@ import "@carbon/web-components/es/components/text-input/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
 
 import { PublicConfig, MinimizeButtonIconType } from "@carbon/ai-chat";
+import Help16 from "@carbon/icons/es/help/16.js";
+import Information16 from "@carbon/icons/es/information/16.js";
+import Document16 from "@carbon/icons/es/document/16.js";
+import Chat16 from "@carbon/icons/es/chat/16.js";
+import UserAvatar16 from "@carbon/icons/es/user--avatar/16.js";
+import Settings16 from "@carbon/icons/es/settings/16.js";
+import Share16 from "@carbon/icons/es/share/16.js";
+import Download16 from "@carbon/icons/es/download/16.js";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
+// Sample actions for demo
+const sampleActions = [
+  {
+    icon: Help16,
+    text: "Help",
+    onClick: () => alert("Help clicked!"),
+  },
+  {
+    icon: Information16,
+    text: "About",
+    onClick: () => alert("About clicked!"),
+  },
+  {
+    icon: Document16,
+    text: "Documentation",
+    onClick: () => alert("Documentation clicked!"),
+  },
+  {
+    icon: Chat16,
+    text: "Feedback",
+    onClick: () => alert("Feedback clicked!"),
+  },
+  {
+    icon: UserAvatar16,
+    text: "Profile",
+    onClick: () => alert("Profile clicked!"),
+  },
+  {
+    icon: Settings16,
+    text: "Settings",
+    onClick: () => alert("Settings clicked!"),
+  },
+  {
+    icon: Share16,
+    text: "Share",
+    onClick: () => alert("Share clicked!"),
+  },
+  {
+    icon: Download16,
+    text: "Export Chat",
+    onClick: () => alert("Export Chat clicked!"),
+  },
+];
 
 @customElement("demo-header-switcher")
 export class DemoHeaderSwitcher extends LitElement {
@@ -137,8 +189,18 @@ export class DemoHeaderSwitcher extends LitElement {
           handler: () => alert("Help clicked!"),
         },
         {
+          text: "Documentation",
+          href: "https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html",
+          target: "_blank",
+        },
+        {
           text: "Settings",
           handler: () => alert("Settings clicked!"),
+        },
+        {
+          text: "Disabled Option",
+          handler: () => alert("This should not appear!"),
+          disabled: true,
         },
       ];
     } else {
@@ -157,6 +219,20 @@ export class DemoHeaderSwitcher extends LitElement {
       header.showAiLabel = true;
     } else {
       header.showAiLabel = false;
+    }
+
+    this._updateConfig({ header });
+  };
+
+  private _onSampleActionsChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const checked = customEvent.detail.checked;
+    const header = { ...this.config.header };
+
+    if (checked) {
+      header.actions = sampleActions;
+    } else {
+      delete header.actions;
     }
 
     this._updateConfig({ header });
@@ -241,6 +317,15 @@ export class DemoHeaderSwitcher extends LitElement {
           @cds-checkbox-changed=${this._onShowAiLabelChanged}
         >
           Show AI label
+        </cds-checkbox>
+      </div>
+
+      <div class="header-section">
+        <cds-checkbox
+          ?checked=${(header?.actions?.length ?? 0) > 0}
+          @cds-checkbox-changed=${this._onSampleActionsChanged}
+        >
+          Add menu actions
         </cds-checkbox>
       </div>
     `;

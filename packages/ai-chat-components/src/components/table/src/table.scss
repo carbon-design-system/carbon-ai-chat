@@ -5,6 +5,14 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "../../../globals/scss/component-reset";
+
+:host {
+  @include component-reset.component-reset();
+
+  display: block;
+}
+
 // prevent the table columns from being squished in narrow widths
 cds-table::part(inner-container) {
   display: grid;

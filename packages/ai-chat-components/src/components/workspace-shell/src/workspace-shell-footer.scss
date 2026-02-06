@@ -7,7 +7,7 @@
  *  @license
  */
 
-$css--plex: true !default;
+@use "../../../globals/scss/component-reset";
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/theme";
 @use "../../../globals/scss/vars" as *;
@@ -16,6 +16,7 @@ $css--plex: true !default;
 
 @include rounded-modifiers;
 :host(#{$prefix}-workspace-shell-footer) {
+  @include component-reset.component-reset();
   --#{$prefix}-rounded-modifier-radius: 0.5rem;
 
   display: grid;

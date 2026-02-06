@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+@use "../../../globals/scss/component-reset";
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
@@ -18,6 +19,8 @@ $messages-max-width: var(--#{$prefix}-messages-max-width, 672px);
 $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 
 :host {
+  @include component-reset.component-reset();
+
   position: absolute;
   display: block;
   box-sizing: border-box;
