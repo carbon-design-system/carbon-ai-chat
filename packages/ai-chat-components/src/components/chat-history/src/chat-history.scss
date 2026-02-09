@@ -130,7 +130,7 @@
 :host(#{$prefix}-history-search-item) {
   @extend :host(#{$cds-prefix}-side-nav-menu-item);
 
-  button.#{$cds-prefix}--side-nav__link {
+  .#{$cds-prefix}--side-nav__link {
     @include type.type-style("body-01");
 
     position: relative;
@@ -178,6 +178,36 @@
     inline-size: 3px;
     inset-block: 0;
     inset-inline-start: 0;
+  }
+}
+
+:host(#{$prefix}-history-panel-item) .#{$prefix}--history-panel-item--rename {
+  justify-content: flex-start;
+  padding: 0 layout.$spacing-06;
+  inline-size: auto;
+
+  .#{$prefix}--history-panel-item--rename__input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    block-size: layout.$spacing-07;
+    inline-size: 100%;
+    outline: layout.$spacing-01 solid theme.$focus;
+  }
+
+  input {
+    overflow: hidden;
+    flex-grow: 2;
+    border: none;
+    background-color: transparent;
+    color: theme.$text-primary;
+    padding-inline-start: layout.$spacing-03;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  input:focus {
+    outline: none;
   }
 }
 

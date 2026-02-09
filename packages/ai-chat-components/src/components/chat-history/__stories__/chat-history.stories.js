@@ -10,11 +10,15 @@ import "../index";
 import { html } from "lit";
 import styles from "./story-styles.scss?lit";
 
-import { historyItemActions, pinnedHistoryItemActions } from "./story-data";
+import {
+  historyItemActions,
+  pinnedHistoryItemActions,
+  pinnedHistoryItems,
+  historyItems,
+} from "./story-data";
 
 import PinFilled16 from "@carbon/icons/es/pin--filled/16.js";
 import Search16 from "@carbon/icons/es/search/16.js";
-import Time16 from "@carbon/icons/es/time/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 
 export default {
@@ -41,6 +45,22 @@ export const Default = {
     HeaderTitle: "Conversations",
   },
   render: (args) => {
+    // Handle history item actions
+    const handleHistoryItemAction = (event) => {
+      // Handle rename action
+      if (event.detail.action === "Rename") {
+        const element = event.detail.element;
+        if (element) {
+          element.rename = true;
+        }
+      }
+    };
+
+    // Add event listener (only once)
+    setTimeout(() => {
+      document.addEventListener("history-item-action", handleHistoryItemAction);
+    }, 0);
+
     return html` <cds-aichat-history-header
         title="${args.HeaderTitle}"
       ></cds-aichat-history-header>
@@ -52,86 +72,34 @@ export const Default = {
               ${iconLoader(PinFilled16, {
                 slot: "title-icon",
               })}
-              <cds-aichat-history-panel-item
-                .actions=${pinnedHistoryItemActions}
-              >
-                Here's the onboarding doc that includes all the information to
-                get started.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item
-                selected
-                .actions=${pinnedHistoryItemActions}
-              >
-                Let's use this as the master invoice document.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item
-                .actions=${pinnedHistoryItemActions}
-              >
-                Noticed some discrepancies between these two files.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item
-                .actions=${pinnedHistoryItemActions}
-              >
-                Do we need a PO number on every documentation here?
-              </cds-aichat-history-panel-item>
+              ${pinnedHistoryItems.map(
+                (item) => html`
+                  <cds-aichat-history-panel-item
+                    data-item-id="${item.id}"
+                    title="${item.title}"
+                    ?selected=${item.selected}
+                    ?rename=${item.rename}
+                    .actions=${pinnedHistoryItemActions}
+                  ></cds-aichat-history-panel-item>
+                `,
+              )}
             </cds-aichat-history-panel-menu>
-
-            <cds-aichat-history-panel-menu expanded title="Today">
-              ${iconLoader(Time16, {
-                slot: "title-icon",
-              })}
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Here's the onboarding doc that includes all the information to
-                get started.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Let's use this as the master invoice document.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Noticed some discrepancies between these two files.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Do we need a PO number on every documentation here?
-              </cds-aichat-history-panel-item>
-            </cds-aichat-history-panel-menu>
-
-            <cds-aichat-history-panel-menu expanded title="Yesterday">
-              ${iconLoader(Time16, {
-                slot: "title-icon",
-              })}
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Here's the onboarding doc that includes all the information to
-                get started.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Let's use this as the master invoice document.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Noticed some discrepancies between these two files.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Do we need a PO number on every documentation here?
-              </cds-aichat-history-panel-item>
-            </cds-aichat-history-panel-menu>
-
-            <cds-aichat-history-panel-menu expanded title="Previous 7 days">
-              ${iconLoader(Time16, {
-                slot: "title-icon",
-              })}
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Here's the onboarding doc that includes all the information to
-                get started.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Let's use this as the master invoice document.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Noticed some discrepancies between these two files.
-              </cds-aichat-history-panel-item>
-              <cds-aichat-history-panel-item .actions=${historyItemActions}>
-                Do we need a PO number on every documentation here?
-              </cds-aichat-history-panel-item>
-            </cds-aichat-history-panel-menu>
+            ${historyItems.map(
+              (item) => html`
+                <cds-aichat-history-panel-menu expanded title="${item.section}">
+                  ${item.icon}
+                  ${item.chats.map(
+                    (chat) => html`
+                      <cds-aichat-history-panel-item
+                        data-item-id="${chat.id}"
+                        title="${chat.title}"
+                        .actions=${historyItemActions}
+                      ></cds-aichat-history-panel-item>
+                    `,
+                  )}
+                </cds-aichat-history-panel-menu
+              `,
+            )}
           </cds-aichat-history-panel-items>
         </cds-aichat-history-panel>
       </cds-aichat-history-content>`;
