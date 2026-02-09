@@ -17,7 +17,7 @@ import {
 import { useServiceManager } from "../hooks/useServiceManager";
 import { AnnounceMessage } from "../../types/state/AppState";
 import { HasChildren } from "../../types/utilities/HasChildren";
-import { AriaAnnouncerComponent } from "../components-legacy/aria/AriaAnnouncerComponent";
+import { AriaAnnouncerComponent } from "../components/aria/AriaAnnouncerComponent";
 
 /**
  * AriaAnnouncerProvider

@@ -27,7 +27,10 @@ import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnouncement";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
 import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
-import { SkeletonPlaceholder, SkeletonText } from "../../SkeletonPicker";
+import {
+  SkeletonPlaceholder,
+  SkeletonText,
+} from "../../../components/util/SkeletonPicker";
 import { AudioComponentConfig } from "../audio/AudioComponent";
 import InlineError from "../error/InlineError";
 import { VideoComponentConfig } from "../video/VideoComponent";

@@ -4,7 +4,7 @@ export const snapshots = {};
 snapshots["cds-aichat-shell Snapshots should match snapshot with default configuration"] = 
 `<cds-aichat-shell
   history-location="start"
-  style="--cds-aichat--header-height: 0px;"
+  style="--cds-aichat-header-height: 0px;"
   workspace-location="start"
 >
 </cds-aichat-shell>
@@ -15,7 +15,7 @@ snapshots["cds-aichat-shell Snapshots should match snapshot with rounded corners
 `<cds-aichat-shell
   history-location="start"
   rounded-corners=""
-  style="--cds-aichat--header-height: 0px;"
+  style="--cds-aichat-header-height: 0px;"
   workspace-location="start"
 >
 </cds-aichat-shell>
@@ -30,7 +30,7 @@ snapshots["cds-aichat-shell Snapshots should match snapshot with all properties 
   show-frame=""
   show-history=""
   show-workspace=""
-  style="--cds-aichat--header-height: 0px;"
+  style="--cds-aichat-header-height: 0px;"
   workspace-in-panel=""
   workspace-location="start"
 >

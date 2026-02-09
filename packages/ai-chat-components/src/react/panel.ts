@@ -9,19 +9,20 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
-import CdsAiChatPanelElement from "../components/chat-shell/src/cds-aichat-panel.js";
+import CdsChatPanelElement from "../components/chat-shell/src/panel.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
 const CdsAiChatPanel = withWebComponentBridge(
   createComponent({
     tagName: "cds-aichat-panel",
-    elementClass: CdsAiChatPanelElement,
+    elementClass: CdsChatPanelElement,
     react: React,
     events: {
       onOpenStart: "openstart",
       onOpenEnd: "openend",
       onCloseStart: "closestart",
       onCloseEnd: "closeend",
+      onBodyScroll: "body-scroll",
     },
   }),
 );

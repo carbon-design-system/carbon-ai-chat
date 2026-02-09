@@ -25,6 +25,7 @@ import {
   CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
 import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
+import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -705,6 +706,11 @@ interface PreviewCardItem<
   subtitle?: string;
 
   /**
+   * Options for opening the workspace.
+   */
+  workspace_options?: WorkspaceCustomPanelConfigOptions;
+
+  /**
    * Additional data to be passed to workspace.
    */
   additional_data?: any;
@@ -1341,13 +1347,39 @@ interface MessageItemPanelInfo extends WithBodyAndFooter {
 
   /**
    * Determines if the panel header should not be visible or not.
+   *
+   * Defaults to true.
    */
   show_header?: boolean;
 
   /**
    * Determines if the panel close and open animations should be enabled or not.
+   *
+   * Defaults to true.
    */
   show_animations?: boolean;
+
+  /**
+   * Shows the AI gradient background on your panel. Can be used with in concert with showFrame.
+   *
+   * Defaults to {@link PublicConfig.aiEnabled} value.
+   */
+  ai_enabled?: boolean;
+
+  /**
+   * Show a frame with the chat shell background instead of the gradient background for your panel content.
+   *
+   * Defaults to true.
+   */
+  show_frame?: boolean;
+
+  /**
+   * By default, the panel will render at the width of the messages list. If you want to be able to render to a full screen
+   * width slot, set full_width to true.
+   *
+   * Defaults to false.
+   */
+  full_width?: boolean;
 }
 
 /**

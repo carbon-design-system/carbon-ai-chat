@@ -32,10 +32,10 @@ export default {
       table: { category: "slot" },
       options: ["default", "with truncation", "none"],
       mapping: {
-        default: html`<div slot="title" data-fixed>
+        default: html`<div slot="title">
           Title <span class="bold">text</span>
         </div>`,
-        "with truncation": html`<div slot="title" data-fixed>
+        "with truncation": html`<div slot="title">
           <span class="truncated-text">
             Lorem ipsum dolor sit amet <span class="bold">consectetur</span>
           </span>
@@ -49,7 +49,7 @@ export default {
       control: "select",
       options: ["home", "back", "custom 1", "custom 2", "none"],
       mapping: {
-        home: html` <div slot="navigation" data-fixed data-rounded="top-left">
+        home: html` <div slot="navigation" data-rounded="top-left">
           <cds-icon-button
             kind="ghost"
             @click=${action("onClick")}
@@ -61,7 +61,7 @@ export default {
             <span slot="tooltip-content">Home</span>
           </cds-icon-button>
         </div>`,
-        back: html` <div slot="navigation" data-fixed data-rounded="top-left">
+        back: html` <div slot="navigation" data-rounded="top-left">
           <cds-icon-button
             kind="ghost"
             align="bottom-start"
@@ -73,11 +73,7 @@ export default {
             <span slot="tooltip-content">Back</span>
           </cds-icon-button>
         </div>`,
-        "custom 1": html` <div
-          slot="navigation"
-          data-fixed
-          data-rounded="top-left"
-        >
+        "custom 1": html` <div slot="navigation" data-rounded="top-left">
           <cds-overflow-menu
             size="md"
             index="1"
@@ -107,11 +103,7 @@ export default {
             </cds-overflow-menu-body>
           </cds-overflow-menu>
         </div>`,
-        "custom 2": html` <div
-          slot="navigation"
-          data-fixed
-          data-rounded="top-left"
-        >
+        "custom 2": html` <div slot="navigation" data-rounded="top-left">
           <cds-button @click=${action("onClick")} size="md">test</cds-button>
         </div>`,
         none: undefined,
@@ -124,7 +116,7 @@ export default {
       control: "select",
       options: ["content switcher", "custom 1", "none"],
       mapping: {
-        "content switcher": html` <div slot="fixed-actions" data-fixed>
+        "content switcher": html` <div slot="fixed-actions">
           <cds-content-switcher
             @cds-content-switcher-selected=${(e) => console.log(e)}
             selection-mode="automatic"
@@ -139,7 +131,7 @@ export default {
             </cds-content-switcher-item>
           </cds-content-switcher>
         </div>`,
-        "custom 1": html` <div slot="fixed-actions" data-fixed>
+        "custom 1": html` <div slot="fixed-actions">
           <cds-button @click=${action("onClick")} size="md">test</cds-button>
         </div>`,
         none: undefined,
