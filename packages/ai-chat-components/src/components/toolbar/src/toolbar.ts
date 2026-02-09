@@ -63,6 +63,9 @@ class CDSAIChatToolbar extends LitElement {
   @state() private measuring = true;
 
   private overflowHandler?: { disconnect: () => void };
+  private visibilityObserver?: ResizeObserver;
+
+  private static readonly OVERFLOW_MENU_LABEL = "Options";
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -97,7 +100,29 @@ class CDSAIChatToolbar extends LitElement {
       return;
     }
 
+    const containerWidth = Math.round(
+      this.container.getBoundingClientRect().width,
+    );
+    if (containerWidth === 0) {
+      if (!this.visibilityObserver) {
+        this.visibilityObserver = new ResizeObserver(() => {
+          const width = Math.round(
+            this.container.getBoundingClientRect().width,
+          );
+          if (width > 0) {
+            this.visibilityObserver?.disconnect();
+            this.visibilityObserver = undefined;
+            this.setupOverflowHandler();
+          }
+        });
+        this.visibilityObserver.observe(this.container);
+      }
+      return;
+    }
+
     this.overflowHandler?.disconnect();
+    this.visibilityObserver?.disconnect();
+    this.visibilityObserver = undefined;
 
     this.overflowHandler = createOverflowHandler({
       container: this.container,
@@ -112,31 +137,46 @@ class CDSAIChatToolbar extends LitElement {
 
   disconnectedCallback() {
     this.overflowHandler?.disconnect();
+    this.visibilityObserver?.disconnect();
+    this.visibilityObserver = undefined;
     super.disconnectedCallback();
   }
 
-  render() {
-    const fixedActions = this.actions.filter((d) => d.fixed);
-    const nonFixedActions = this.actions.filter((d) => !d.fixed);
+  private renderIconButton = (action: Action) => {
+    return html`
+      <cds-icon-button
+        ?data-fixed=${action.fixed}
+        @click=${action.onClick}
+        size=${action.size || "md"}
+        align="bottom-end"
+        kind="ghost"
+        enter-delay-ms="0"
+        leave-delay-ms="0"
+      >
+        ${iconLoader(action.icon, {
+          slot: "icon",
+        })}
+        <span slot="tooltip-content">${action.text}</span>
+      </cds-icon-button>
+    `;
+  };
 
-    const renderIconButton = (action: Action) => {
-      return html`
-        <cds-icon-button
-          ?data-fixed=${action.fixed}
-          @click=${action.onClick}
-          size=${action.size || "md"}
-          align="bottom-end"
-          kind="ghost"
-          enter-delay-ms="0"
-          leave-delay-ms="0"
-        >
-          ${iconLoader(action.icon, {
-            slot: "icon",
-          })}
-          <span slot="tooltip-content">${action.text}</span>
-        </cds-icon-button>
-      `;
-    };
+  private getOverflowMenuSize(): OVERFLOW_MENU_SIZE {
+    return (this.actions?.[0]?.size as OVERFLOW_MENU_SIZE) || "md";
+  }
+
+  render() {
+    const { fixedActions, nonFixedActions } = this.actions.reduce(
+      (acc, action) => {
+        action.fixed
+          ? acc.fixedActions.push(action)
+          : acc.nonFixedActions.push(action);
+        return acc;
+      },
+      { fixedActions: [] as Action[], nonFixedActions: [] as Action[] },
+    );
+
+    const showOverflowMenu = this.measuring || this.hiddenItems.length > 0;
 
     return html`
       <div
@@ -157,11 +197,15 @@ class CDSAIChatToolbar extends LitElement {
 
         <div data-fixed><slot name="decorator"></slot></div>
 
-        ${repeat(nonFixedActions, (_, i) => i, renderIconButton)}
-        ${this.measuring || this.hiddenItems.length > 0
+        ${repeat(
+          nonFixedActions,
+          (action) => action.text,
+          this.renderIconButton,
+        )}
+        ${showOverflowMenu
           ? html`
               <cds-overflow-menu
-                size=${(this.actions?.[0]?.size as OVERFLOW_MENU_SIZE) || "md"}
+                size=${this.getOverflowMenuSize()}
                 align="bottom-end"
                 data-offset
                 ?data-hidden=${this.hiddenItems.length === 0}
@@ -174,7 +218,9 @@ class CDSAIChatToolbar extends LitElement {
                   class: `${prefix}-toolbar-overflow-icon`,
                   slot: "icon",
                 })}
-                <span slot="tooltip-content">Options</span>
+                <span slot="tooltip-content"
+                  >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+                >
                 <cds-overflow-menu-body flipped>
                   ${repeat(
                     this.hiddenItems,
@@ -189,7 +235,7 @@ class CDSAIChatToolbar extends LitElement {
               </cds-overflow-menu>
             `
           : nothing}
-        ${repeat(fixedActions, (_, i) => i, renderIconButton)}
+        ${repeat(fixedActions, (action) => action.text, this.renderIconButton)}
       </div>
     `;
   }

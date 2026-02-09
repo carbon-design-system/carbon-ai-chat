@@ -142,7 +142,6 @@ export const Default = {
       >
         <div
           slot="title"
-          data-fixed
           class="story__toolbar-tile"
           title=${args.toolbarTitle}
         >

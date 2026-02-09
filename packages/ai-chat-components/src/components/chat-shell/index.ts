@@ -7,5 +7,5 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/cds-aichat-shell.js";
-import "./src/cds-aichat-panel.js";
+import "./src/shell.js";
+import "./src/panel.js";

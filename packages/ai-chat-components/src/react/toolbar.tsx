@@ -90,7 +90,7 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
   // Transform React icons to CarbonIcon format
   const transformedActions = React.useMemo(() => {
     if (!actions) {
-      return actions;
+      return [];
     }
 
     return actions.map((action: ReactAction) => ({

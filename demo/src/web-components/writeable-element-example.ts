@@ -13,10 +13,26 @@ import { customElement, property } from "lit/decorators.js";
 @customElement("writeable-element-example")
 class WriteableElementExample extends LitElement {
   static styles = css`
+    .writeable-element-external--not-rounded {
+      --cds-aichat-rounded-modifier-radius-start-start: 0;
+      --cds-aichat-rounded-modifier-radius-start-end: 0;
+      --cds-aichat-rounded-modifier-radius-end-start: 0;
+      --cds-aichat-rounded-modifier-radius-end-end: 0;
+    }
     .external {
       background: green;
       color: #fff;
       padding: 1rem;
+      border-start-start-radius: var(
+        --cds-aichat-rounded-modifier-radius-start-start
+      );
+      border-start-end-radius: var(
+        --cds-aichat-rounded-modifier-radius-start-end
+      );
+      border-end-start-radius: var(
+        --cds-aichat-rounded-modifier-radius-end-start
+      );
+      border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end);
     }
   `;
 
@@ -27,12 +43,12 @@ class WriteableElementExample extends LitElement {
   accessor valueFromParent: string = "";
 
   render() {
-    return html`<div class="external">
-      Location: ${this.location}. This is a writeable element with external
-      styles. You can inject any custom content here. You are not constrained by
-      any height.
-      <br />
-      Here is a property set by the parent application: ${this.valueFromParent}.
+    let classNames = "external";
+    if (this.location === "aiTooltipAfterDescriptionElement") {
+      classNames += " writeable-element-external--not-rounded";
+    }
+    return html`<div class="${classNames}">
+      Location: ${this.location}. Parent prop: ${this.valueFromParent}.
     </div> `;
   }
 }

@@ -104,6 +104,32 @@ export class DemoInputConfigSwitcher extends LitElement {
     });
   }
 
+  private _handleFocusDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    let shouldTakeFocusIfOpensAutomatically: boolean | undefined;
+
+    if (value === DROPDOWN_DEFAULT) {
+      shouldTakeFocusIfOpensAutomatically = undefined;
+    } else if (value === DROPDOWN_TRUE) {
+      shouldTakeFocusIfOpensAutomatically = true;
+    } else if (value === DROPDOWN_FALSE) {
+      shouldTakeFocusIfOpensAutomatically = false;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent("config-changed", {
+        detail: {
+          ...this.config,
+          shouldTakeFocusIfOpensAutomatically,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   render() {
     const input = this.config?.input;
 
@@ -129,6 +155,22 @@ export class DemoInputConfigSwitcher extends LitElement {
           title-text="Disable input field"
           @cds-dropdown-selected=${(event: Event) =>
             this._handleBooleanDropdown(event, "isDisabled")}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
+            Default
+          </cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._booleanDropdownValue(
+            this.config?.shouldTakeFocusIfOpensAutomatically,
+          )}"
+          title-text="Take focus if opens automatically"
+          @cds-dropdown-selected=${this._handleFocusDropdown}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default

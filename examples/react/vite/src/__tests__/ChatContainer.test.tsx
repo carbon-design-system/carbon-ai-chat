@@ -206,8 +206,18 @@ describe("ChatContainer", () => {
     expect(shadowRoot).toBeTruthy();
 
     try {
-      const markdownElement = await waitFor(() => {
+      const mainPanel = await waitFor(() => {
         const element = shadowRoot.querySelector(
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+        ) as HTMLElement | null;
+        if (!element) {
+          throw new Error("Main panel not rendered yet");
+        }
+        return element;
+      });
+
+      const markdownElement = await waitFor(() => {
+        const element = mainPanel.querySelector(
           "cds-aichat-markdown",
         ) as HTMLElement | null;
         if (!element || !(element as any).shadowRoot) {
@@ -336,8 +346,18 @@ describe("ChatContainer", () => {
 
         expect(messageElement).toBeTruthy();
 
-        const markdownElement = await waitFor(() => {
+        const mainPanel = await waitFor(() => {
           const element = shadowRoot.querySelector(
+            `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+          ) as HTMLElement | null;
+          if (!element) {
+            throw new Error("Main panel not rendered yet");
+          }
+          return element;
+        });
+
+        const markdownElement = await waitFor(() => {
+          const element = mainPanel.querySelector(
             "cds-aichat-markdown",
           ) as HTMLElement | null;
           if (!element || !(element as any).shadowRoot) {

@@ -51,4 +51,11 @@
 
 .cds-aichat--grid .cds-aichat--media-player__root {
   inline-size: 100%;
+
+  /* Nested response types with cards should not have rounded corners since they fill the width of the container */
+  .cds-aichat--grid .cds-aichat--image,
+  .cds-aichat--grid .cds-aichat--media-player,
+  .cds-aichat--grid .cds-aichat--media-player__skeleton {
+    border-radius: 0;
+  }
 }

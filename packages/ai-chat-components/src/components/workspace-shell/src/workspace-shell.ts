@@ -36,10 +36,6 @@ class CDSAIChatWorkspaceShell extends LitElement {
       <slot name="footer"></slot>
     `;
   }
-
-  closeWorkspaceShell = () => {
-    console.log("closes the shell");
-  };
 }
 
 export { CDSAIChatWorkspaceShell };

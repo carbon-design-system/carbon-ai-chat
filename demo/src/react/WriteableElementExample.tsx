@@ -19,13 +19,13 @@ function WriteableElementExample({
   location,
   parentStateText,
 }: WriteableElementExampleProps) {
+  let classNames = "writeable-element-external";
+  if (location === "aiTooltipAfterDescriptionElement") {
+    classNames += " writeable-element-external--not-rounded";
+  }
   return (
-    <div className="writeable-element-external">
-      Location: {location}. This is a writeable element with external styles.
-      You can inject any custom content here. You are not constrained by any
-      height.
-      <br />
-      Here is a property set by the parent application: {parentStateText}
+    <div className={classNames}>
+      Location: {location}. Parent prop: {parentStateText}
     </div>
   );
 }
