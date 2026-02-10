@@ -165,9 +165,6 @@ class ChatCustomElement extends LitElement {
   @property({ type: String })
   namespace?: string;
 
-  @state()
-  private enableFocusTrap?: boolean;
-
   @property({ type: Boolean, attribute: "should-sanitize-html" })
   shouldSanitizeHTML?: boolean;
 
@@ -328,9 +325,6 @@ class ChatCustomElement extends LitElement {
     }
     if (this.namespace !== undefined) {
       resolvedConfig.namespace = this.namespace;
-    }
-    if (this.enableFocusTrap !== undefined) {
-      resolvedConfig.enableFocusTrap = this.enableFocusTrap;
     }
     if (this.shouldSanitizeHTML !== undefined) {
       resolvedConfig.shouldSanitizeHTML = this.shouldSanitizeHTML;

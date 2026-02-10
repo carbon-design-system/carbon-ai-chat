@@ -49,8 +49,8 @@ collect:
         - tooltip-alignment
       allowedAttributeStringValues:
         # General - boolean attributes
-        - 'true'
-        - 'false'
+        - "true"
+        - "false"
         # cds-aichat-chat-header-avatar - corners
         - round
         - square

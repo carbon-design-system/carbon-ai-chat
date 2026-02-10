@@ -128,8 +128,10 @@ function createInitialState(config: AppConfig): AppState {
   }
 
   if (typeof inputConfig?.isDisabled === "boolean") {
-    assistantInputState.isReadonly = inputConfig.isDisabled;
-  } else if (typeof config.public.isReadonly === "boolean") {
+    assistantInputState.isDisabled = inputConfig.isDisabled;
+  }
+
+  if (typeof config.public.isReadonly === "boolean") {
     assistantInputState.isReadonly = config.public.isReadonly;
   }
 

@@ -41,7 +41,7 @@ function THROW_ERROR() {
 const AUTO_SCROLL_EXTRA = 28 - 8;
 
 // How much to throttle auto scrolling. When we are in test mode, we set this to zero.
-const AUTO_SCROLL_THROTTLE_TIMEOUT = 100;
+const AUTO_SCROLL_THROTTLE_TIMEOUT = 200;
 
 export {
   AUTO_SCROLL_THROTTLE_TIMEOUT,

@@ -19,7 +19,7 @@ import actions from "../../../store/actions";
 import { AppState } from "../../../../types/state/AppState";
 import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { getURLHostName } from "../../../utils/browserUtils";
-import VisuallyHidden from "../../util/VisuallyHidden";
+import VisuallyHidden from "../../../components/util/VisuallyHidden";
 import { ClickableImage } from "../util/ClickableImage";
 import { IFrameItem } from "../../../../types/messaging/Messages";
 

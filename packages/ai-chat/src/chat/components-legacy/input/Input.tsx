@@ -267,6 +267,16 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     setDisplayInputValue(nextInputState.displayValue ?? "");
   }, [store, trackInputState]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (isTypingTimeout.current) {
+        clearTimeout(isTypingTimeout.current);
+        isTypingTimeout.current = null;
+      }
+    };
+  }, []);
+
   /**
    * This is called when we have detected that the user has stopped typing.
    */

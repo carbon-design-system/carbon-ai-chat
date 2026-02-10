@@ -80,12 +80,13 @@ deepFreeze(DEFAULT_LAUNCHER);
 const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   hideBackButton: false,
   disableAnimation: false,
+  fullWidth: false,
+  backButtonType: "minimize",
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 
 const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
   {
-    disableAnimation: false,
     preferredLocation: "end",
   };
 deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
@@ -152,6 +153,7 @@ const DEFAULT_INPUT_STATE: InputState = {
   rawValue: "",
   displayValue: "",
   fieldVisible: true,
+  isDisabled: false,
   isReadonly: false,
   files: [],
   allowFileUploads: false,

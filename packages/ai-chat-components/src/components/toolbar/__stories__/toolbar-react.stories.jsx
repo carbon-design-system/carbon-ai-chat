@@ -27,12 +27,12 @@ export default {
       options: ["default", "with truncation", "none"],
       mapping: {
         default: (
-          <div slot="title" data-fixed>
+          <div slot="title">
             Title <span class="bold">text</span>
           </div>
         ),
         "with truncation": (
-          <div slot="title" data-fixed>
+          <div slot="title">
             <span class="truncated-text">
               Lorem ipsum dolor sit amet <span class="bold">consectetur</span>
             </span>
@@ -48,7 +48,7 @@ export default {
       options: ["home", "back", "custom 1", "custom 2", "none"],
       mapping: {
         home: (
-          <div slot="navigation" data-fixed data-rounded="top-left">
+          <div slot="navigation" data-rounded="top-left">
             <IconButton
               size="md"
               kind="ghost"
@@ -63,7 +63,7 @@ export default {
           </div>
         ),
         back: (
-          <div slot="navigation" data-fixed data-rounded="top-left">
+          <div slot="navigation" data-rounded="top-left">
             <IconButton
               size="md"
               kind="ghost"
@@ -78,7 +78,7 @@ export default {
           </div>
         ),
         "custom 1": (
-          <div slot="navigation" data-fixed data-rounded="top-left">
+          <div slot="navigation" data-rounded="top-left">
             <OverflowMenu
               size="md"
               renderIcon={OverflowMenuVertical}
@@ -94,7 +94,7 @@ export default {
           </div>
         ),
         "custom 2": (
-          <div slot="navigation" data-fixed data-rounded="top-left">
+          <div slot="navigation" data-rounded="top-left">
             <Button onClick={action("onClick")} size="md">
               test
             </Button>
@@ -111,7 +111,7 @@ export default {
       options: ["content switcher", "custom 1", "none"],
       mapping: {
         "content switcher": (
-          <div slot="fixed-actions" data-fixed>
+          <div slot="fixed-actions">
             <ContentSwitcher
               onSelected={(e) => console.log(e)}
               selectionMode="automatic"
@@ -128,7 +128,7 @@ export default {
           </div>
         ),
         "custom 1": (
-          <div slot="fixed-actions" data-fixed>
+          <div slot="fixed-actions">
             <Button onclick={action("onClick")} size="md">
               test
             </Button>
@@ -192,9 +192,7 @@ export const Default = {
         {navigation}
 
         {/* Title slot */}
-        <div slot="title" data-fixed>
-          {title}
-        </div>
+        <div slot="title">{title}</div>
 
         {/* Fixed actions slot */}
         {fixedActions}

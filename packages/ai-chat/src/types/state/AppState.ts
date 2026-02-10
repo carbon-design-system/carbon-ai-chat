@@ -12,6 +12,7 @@ import {
   type WorkspaceCustomPanelConfigOptions,
   type ViewState,
   ViewType,
+  DefaultCustomPanelConfigOptions,
 } from "../instance/apiTypes";
 import { LanguagePack } from "../config/PublicConfig";
 import { type FileUpload } from "../config/ServiceDeskConfig";
@@ -207,6 +208,11 @@ interface InputState extends FileUploadCapabilities {
    * agent where the field will automatically become visible and then hidden again when the agent chat has ended.
    */
   fieldVisible: boolean;
+
+  /**
+   * Indicates if the input field should be disabled.
+   */
+  isDisabled: boolean;
 
   /**
    * Indicates if the input field should be made readonly.
@@ -517,7 +523,7 @@ interface CustomPanelState {
   /**
    * Config options for the custom panels.
    */
-  options: CustomPanelConfigOptions;
+  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions;
 }
 interface WorkspacePanelState {
   /**
