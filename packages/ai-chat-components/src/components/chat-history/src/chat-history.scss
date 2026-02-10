@@ -181,7 +181,8 @@
   }
 }
 
-:host(#{$prefix}-history-panel-item) .#{$prefix}--history-panel-item--rename {
+:host(#{$prefix}-history-panel-item-input)
+  .#{$prefix}--history-panel-item--rename {
   justify-content: flex-start;
   padding: 0 layout.$spacing-06;
   inline-size: auto;
