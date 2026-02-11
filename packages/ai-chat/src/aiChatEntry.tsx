@@ -203,6 +203,7 @@ export {
   OptionItem,
   OptionItemPreference,
   PartialItemChunk,
+  PartialItemChunkWithId,
   PauseItem,
   PreviewCardItem,
   StreamChunk,

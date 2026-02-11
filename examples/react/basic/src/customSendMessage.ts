@@ -12,6 +12,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
+  PartialItemChunkWithId,
   StreamChunk,
 } from "@carbon/ai-chat";
 
@@ -120,7 +121,7 @@ async function doFakeTextStreaming(
             streaming_metadata: {
               response_id: responseID,
             },
-          });
+          } as PartialItemChunkWithId);
         }
       }, index * WORD_DELAY);
       timeouts.push(timeoutId as unknown as number);

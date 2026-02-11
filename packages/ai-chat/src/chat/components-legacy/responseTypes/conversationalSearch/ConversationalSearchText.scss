@@ -9,12 +9,6 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 
-.cds-aichat--received--conversational-search .cds-aichat--received--feedback,
-.cds-aichat--wide-width .cds-aichat--conversational-search-text,
-.cds-aichat--standard-width .cds-aichat--conversational-search-text {
-  margin-inline: 56px 16px;
-}
-
 .cds-aichat--conversational-search-text__CitationsToggleContainer {
   padding-block-start: layout.$spacing-04;
 }

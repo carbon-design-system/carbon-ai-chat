@@ -37,7 +37,7 @@ To show custom content, you return the following from your server. Refer to the 
 
 The `user_defined` response injects into a slot within the Carbon AI Chat's shadow DOM. This means that it can be styled from global CSS and have a small amount of the CSS inherited from the Carbon AI Chat (font styling, and so on) styles. You can use Carbon components in addition to your own custom components.
 
-When streaming `user_defined` responses, the API only supports sending chunks of strings, not partially completed JSON. You can stringify JSON and then have your user defined handler that responds to it deal with try/catch based parsing or an optimistic parsing library.
+When streaming `user_defined` responses, the API only supports sending chunks of strings, not partially completed JSON. You can stringify JSON and then have your user defined handler that responds to it deal with try/catch based parsing or an optimistic parsing library. If you are streaming via `addMessageChunk`, be sure to include `streaming_metadata.response_id` for the message and `streaming_metadata.id` for each item so chunks correlate correctly.
 
 For more information, see the documentation for [React](React.md) and [web components](WebComponent.md).
 

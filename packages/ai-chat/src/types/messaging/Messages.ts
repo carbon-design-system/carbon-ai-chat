@@ -1951,26 +1951,34 @@ interface PartialItemChunk extends Chunk {
 }
 
 /**
- * A chunk that represents a complete update to a single message item within a streaming response.
+ * A stricter partial item chunk type for streaming implementations that want compile-time enforcement of
+ * {@link ItemStreamingMetadata.id}. This is optional and not required for compatibility.
  *
- * This chunk type exists to allow immediate replacement of a streaming item with its final, corrected version
- * before the entire message response is complete. This enables real-time corrections to individual items
- * (like fixing typos in streaming text) while other items in the same message may still be streaming.
+ * @category Messaging
+ */
+type PartialItemChunkWithId = Omit<PartialItemChunk, "partial_item"> & {
+  partial_item: DeepPartial<GenericItem> & {
+    streaming_metadata: ItemStreamingMetadata;
+  };
+};
+
+/**
+ * Completes a single streamed item before the full response is ready.
  *
- * The item provided here should have all the data necessary to render the item including any data that was
- * previously received from partial chunks. This chunk may contain corrections to previous chunks.
- *
- * Use this when you need to finalize a specific item but the overall message response isn't ready yet.
- *
- * If you are only streaming a single item you can skip
- * this chunk type entirely. CompleteItemChunk is primarily useful when streaming multiple different message
- * items and you need to finalize one item while others are still streaming.
- *
- * For ending the entire streaming response en masse, use {@link FinalResponseChunk}.
+ * Use this to replace a streamed item with its final, corrected version while other
+ * items are still streaming. The complete item should include all data needed to
+ * render the item (including anything from partial chunks). Include
+ * {@link ItemStreamingMetadata.id} to correlate with prior partial chunks and preserve
+ * identity. If you are only streaming a single item, you can skip this and send a
+ * {@link FinalResponseChunk} instead.
  *
  * @category Messaging
  */
 interface CompleteItemChunk extends Chunk {
+  /**
+   * A complete message item. If this item was streamed via partial chunks,
+   * you should include {@link ItemStreamingMetadata.id} so the UI can preserve identity.
+   */
   complete_item: GenericItem;
   /**
    * Change the agent display name and other items on the full response.
@@ -1979,22 +1987,20 @@ interface CompleteItemChunk extends Chunk {
 }
 
 /**
- * A chunk that represents the entire completed message response, signaling the end of streaming.
+ * Finalizes the full response and ends streaming.
  *
- * This chunk type exists as the definitive way to close a streaming session and provide the final,
- * authoritative version of the complete message response. Unlike {@link CompleteItemChunk} which updates
- * individual items, this chunk finalizes the entire response and triggers cleanup of streaming UI states
- * (like hiding "stop streaming" buttons).
- *
- * The response provided here should have all the data necessary to render the response including any data
- * that was previously received from item chunks. This final response may contain corrections to previous chunks.
- *
- * Use this to signal that streaming is complete and provide the canonical final state of the entire message.
- * The ID of the message should match the ID that was previously provided by streaming_metadata.response_id.
+ * This provides the authoritative final state of the full message response. It should
+ * include all items that were streamed (and any corrections). For any item that was
+ * streamed, include {@link ItemStreamingMetadata.id} to preserve identity and avoid
+ * remounts. The message ID should match streaming_metadata.response_id.
  *
  * @category Messaging
  */
 interface FinalResponseChunk {
+  /**
+   * The final message response. If this response contains items that were streamed,
+   * those items should include {@link ItemStreamingMetadata.id} to avoid remounts.
+   */
   final_response: MessageResponse;
 }
 
@@ -2111,6 +2117,7 @@ export {
   OptionItem,
   OptionItemPreference,
   PartialItemChunk,
+  PartialItemChunkWithId,
   PauseItem,
   StreamChunk,
   TextItem,
