@@ -191,9 +191,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    block-size: layout.$spacing-07;
+    block-size: layout.$spacing-08;
     inline-size: 100%;
     outline: layout.$spacing-01 solid theme.$focus;
+    outline-offset: -2px;
   }
 
   input {
