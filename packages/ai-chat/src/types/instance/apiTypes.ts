@@ -99,12 +99,12 @@ export interface CustomPanelInstance {
    *
    * @param options Custom panel options.
    */
-  open: (options?: CustomPanelOpenOptions) => void;
+  open: (options?: CustomPanelOpenOptions) => Promise<void>;
 
   /**
    * Closes the custom panel.
    */
-  close: () => void;
+  close: () => Promise<void>;
 }
 
 /**

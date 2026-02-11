@@ -27,7 +27,12 @@ export function useResizeObserver({
       return undefined;
     }
 
-    const observer = new ResizeObserver(onResize);
+    // Use requestAnimationFrame to avoid ResizeObserver loop errors
+    const observer = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        onResize();
+      });
+    });
     observer.observe(container);
 
     // Call onResize immediately to set initial dimensions

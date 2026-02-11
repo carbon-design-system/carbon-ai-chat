@@ -160,19 +160,6 @@
   padding-inline-start: layout.$spacing-05;
 }
 
-// Add transitions for padding during workspace animations
-@media (prefers-reduced-motion: no-preference) {
-  :host([workspace-in-container]) .workspace {
-    transition: padding motion.$duration-fast-02
-      motion.motion(standard, productive);
-  }
-
-  :host([workspace-in-container]) .input-and-messages {
-    transition: padding motion.$duration-fast-02
-      motion.motion(standard, productive);
-  }
-}
-
 :host([workspace-in-container][show-workspace]) .input-and-messages {
   box-sizing: border-box;
   flex: 0 0 $messages-min-width;
@@ -244,8 +231,8 @@
 // ============================================================================
 // Workspace Closing State Overrides
 // ============================================================================
-// Maintain padding during closing states so it transitions smoothly with workspace contraction
-// Padding will animate from its current value to 0 during the closing transition
+// Remove padding during closing states so it transitions to 0 smoothly with workspace contraction
+// This prevents padding from persisting after the host finishes contracting
 // Must come after all other :host selectors for proper specificity ordering
 :host([workspace-in-container]) .shell.workspace-closing .workspace,
 :host([workspace-in-container]) .shell.workspace-checking-closing .workspace {
@@ -259,10 +246,10 @@
 :host([workspace-in-container])
   .shell.workspace-checking-closing
   .input-and-messages {
-  padding: layout.$spacing-05;
+  padding: 0;
 }
 
-// Maintain padding for end-positioned workspace during closing
+// Remove padding for end-positioned workspace during closing
 :host([workspace-in-container][workspace-location="end"])
   .shell.workspace-closing
   .workspace,
@@ -279,7 +266,7 @@
 :host([workspace-in-container][workspace-location="end"])
   .shell.workspace-checking-closing
   .input-and-messages {
-  padding-inline-end: 0;
+  padding: 0;
 }
 
 // Made with Bob
