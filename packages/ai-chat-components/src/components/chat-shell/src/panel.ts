@@ -19,7 +19,7 @@ const MESSAGES_MAX_WIDTH_FALLBACK = 672; // Fallback if CSS custom property is n
 type AnimationState = "closed" | "closing" | "opening" | "open";
 
 @carbonElement("cds-aichat-panel")
-class CdsAiChatPanel extends LitElement {
+class CDSAIChatPanel extends LitElement {
   static styles = styles;
 
   /**
@@ -509,17 +509,17 @@ class CdsAiChatPanel extends LitElement {
   private observeSlotContent() {
     const updateSlotStates = () => {
       const previousStates = new Map(
-        CdsAiChatPanel.OBSERVED_SLOTS.map(({ stateKey }) => [
+        CDSAIChatPanel.OBSERVED_SLOTS.map(({ stateKey }) => [
           stateKey,
           this[stateKey],
         ]),
       );
 
-      CdsAiChatPanel.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
+      CDSAIChatPanel.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
         this[stateKey] = this.hasSlotContent(name);
       });
 
-      const hasChanged = CdsAiChatPanel.OBSERVED_SLOTS.some(
+      const hasChanged = CDSAIChatPanel.OBSERVED_SLOTS.some(
         ({ stateKey }) => previousStates.get(stateKey) !== this[stateKey],
       );
 
@@ -532,7 +532,7 @@ class CdsAiChatPanel extends LitElement {
     updateSlotStates();
 
     // Observe slot changes
-    const slots = CdsAiChatPanel.OBSERVED_SLOTS.map(({ name }) =>
+    const slots = CDSAIChatPanel.OBSERVED_SLOTS.map(({ name }) =>
       this.renderRoot.querySelector<HTMLSlotElement>(`slot[name="${name}"]`),
     ).filter((slot): slot is HTMLSlotElement => slot !== null);
 
@@ -600,4 +600,4 @@ class CdsAiChatPanel extends LitElement {
   }
 }
 
-export default CdsAiChatPanel;
+export default CDSAIChatPanel;

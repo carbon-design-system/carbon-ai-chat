@@ -75,15 +75,22 @@ class ReasoningStepsToggleDemo extends LitElement {
           .closedLabelText=${this.closedLabelText}
           @reasoning-steps-toggle=${this._handleToggle}
         ></cds-aichat-reasoning-steps-toggle>
-        <cds-aichat-reasoning-steps id=${this.panelId} .open=${this.open}>
-          ${this.steps?.map(
-            (step) => html`
-              <cds-aichat-reasoning-step title=${step.title} ?open=${step.open}>
-                ${step.body ?? nothing}
-              </cds-aichat-reasoning-step>
-            `,
-          )}
-        </cds-aichat-reasoning-steps>
+        ${this.open
+          ? html`
+              <cds-aichat-reasoning-steps id=${this.panelId} .open=${this.open}>
+                ${this.steps?.map(
+                  (step) => html`
+                    <cds-aichat-reasoning-step
+                      title=${step.title}
+                      ?open=${step.open}
+                    >
+                      ${step.body ?? nothing}
+                    </cds-aichat-reasoning-step>
+                  `,
+                )}
+              </cds-aichat-reasoning-steps>
+            `
+          : nothing}
       </div>
     `;
   }

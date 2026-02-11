@@ -19,7 +19,7 @@ import "./panel.js";
 type StartOrEnd = "start" | "end";
 
 @carbonElement("cds-aichat-shell")
-class CdsAiChatShell extends LitElement {
+class CDSAIChatShell extends LitElement {
   static styles = styles;
 
   /**
@@ -448,17 +448,17 @@ class CdsAiChatShell extends LitElement {
   private observeSlotContent() {
     const updateSlotStates = () => {
       const previousStates = new Map(
-        CdsAiChatShell.OBSERVED_SLOTS.map(({ stateKey }) => [
+        CDSAIChatShell.OBSERVED_SLOTS.map(({ stateKey }) => [
           stateKey,
           this[stateKey],
         ]),
       );
 
-      CdsAiChatShell.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
+      CDSAIChatShell.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
         this[stateKey] = this.hasSlotContent(name);
       });
 
-      const hasChanged = CdsAiChatShell.OBSERVED_SLOTS.some(
+      const hasChanged = CDSAIChatShell.OBSERVED_SLOTS.some(
         ({ stateKey }) => previousStates.get(stateKey) !== this[stateKey],
       );
 
@@ -471,7 +471,7 @@ class CdsAiChatShell extends LitElement {
     updateSlotStates();
 
     // Observe slot changes
-    const slots = CdsAiChatShell.OBSERVED_SLOTS.map(({ name }) =>
+    const slots = CDSAIChatShell.OBSERVED_SLOTS.map(({ name }) =>
       this.renderRoot.querySelector<HTMLSlotElement>(`slot[name="${name}"]`),
     ).filter((slot): slot is HTMLSlotElement => slot !== null);
 
@@ -812,4 +812,4 @@ class CdsAiChatShell extends LitElement {
   };
 }
 
-export default CdsAiChatShell;
+export default CDSAIChatShell;

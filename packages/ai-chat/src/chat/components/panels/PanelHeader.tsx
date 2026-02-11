@@ -21,7 +21,7 @@ interface PanelHeaderProps {
 }
 
 /**
- * Lightweight header wrapper for slotting into CdsAiChatPanel.
+ * Lightweight header wrapper for slotting into CDSAIChatPanel.
  * Derives defaults from header config when a custom title isn't provided.
  */
 function PanelHeader({

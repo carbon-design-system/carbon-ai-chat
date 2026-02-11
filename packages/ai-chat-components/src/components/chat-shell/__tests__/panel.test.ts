@@ -9,7 +9,7 @@
 
 import { html, fixture, expect } from "@open-wc/testing";
 import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
-import CdsAiChatPanel from "@carbon/ai-chat-components/es/components/chat-shell/src/panel.js";
+import CDSAIChatPanel from "@carbon/ai-chat-components/es/components/chat-shell/src/panel.js";
 
 /**
  * This repository uses the @web/test-runner library for testing
@@ -21,15 +21,15 @@ describe("cds-aichat-panel", function () {
   // ========== Basic Rendering Tests ==========
   describe("Basic Rendering", () => {
     it("should render with minimum attributes", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
-      expect(el).to.be.instanceOf(CdsAiChatPanel);
+      expect(el).to.be.instanceOf(CDSAIChatPanel);
       expect(el.shadowRoot).to.exist;
     });
 
     it("should have default property values", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       expect(el.open).to.be.false;
@@ -43,7 +43,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply panel and panel-container classes", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel")).to.be.true;
@@ -51,7 +51,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should render panel-content wrapper", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       const panelContent = el.shadowRoot!.querySelector(".panel-content");
@@ -62,7 +62,7 @@ describe("cds-aichat-panel", function () {
   // ========== Property/Attribute Tests ==========
   describe("Properties and Attributes", () => {
     it("should reflect open attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       expect(el.open).to.be.true;
@@ -70,7 +70,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect priority attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel priority="5"></cds-aichat-panel>`,
       );
       expect(el.priority).to.equal(5);
@@ -78,7 +78,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect full-width attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel full-width></cds-aichat-panel>`,
       );
       expect(el.fullWidth).to.be.true;
@@ -86,7 +86,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect show-chat-header attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel show-chat-header></cds-aichat-panel>`,
       );
       expect(el.showChatHeader).to.be.true;
@@ -94,7 +94,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect show-frame attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel show-frame></cds-aichat-panel>`,
       );
       expect(el.showFrame).to.be.true;
@@ -102,7 +102,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect animation-on-open attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           animation-on-open="slide-in-from-bottom"
         ></cds-aichat-panel>`,
@@ -114,7 +114,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect animation-on-close attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           animation-on-close="slide-out-to-bottom"
         ></cds-aichat-panel>`,
@@ -126,7 +126,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should reflect inert attribute", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel inert></cds-aichat-panel>`,
       );
       expect(el.inert).to.be.true;
@@ -137,7 +137,7 @@ describe("cds-aichat-panel", function () {
   // ========== Slot Content Tests ==========
   describe("Slot Content", () => {
     it("should render header slot content", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel>
           <div slot="header">Header Content</div>
         </cds-aichat-panel>`,
@@ -152,7 +152,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should render body slot content", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel>
           <div slot="body">Body Content</div>
         </cds-aichat-panel>`,
@@ -167,7 +167,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should render footer slot content", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel>
           <div slot="footer">Footer Content</div>
         </cds-aichat-panel>`,
@@ -182,7 +182,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply has-content class to header when it has content", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel>
           <div slot="header">Header</div>
         </cds-aichat-panel>`,
@@ -193,7 +193,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply has-content class to body when it has content", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel>
           <div slot="body">Body</div>
         </cds-aichat-panel>`,
@@ -204,7 +204,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply has-content class to footer when it has content", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel>
           <div slot="footer">Footer</div>
         </cds-aichat-panel>`,
@@ -215,7 +215,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should not apply has-content class when slots are empty", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -231,28 +231,28 @@ describe("cds-aichat-panel", function () {
   // ========== CSS Class Application Tests ==========
   describe("CSS Classes", () => {
     it("should apply panel--with-chat-header class when showChatHeader is true", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel show-chat-header></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--with-chat-header")).to.be.true;
     });
 
     it("should apply panel--with-frame class when showFrame is true", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel show-frame></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--with-frame")).to.be.true;
     });
 
     it("should apply panel--full-width class when fullWidth is true", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel full-width></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--full-width")).to.be.true;
     });
 
     it("should apply panel--closed class initially when not open", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--closed")).to.be.true;
@@ -260,7 +260,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply panel--open class when open is true", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -272,14 +272,14 @@ describe("cds-aichat-panel", function () {
   // ========== Animation State Tests ==========
   describe("Animation States", () => {
     it("should start in closed state", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--closed")).to.be.true;
     });
 
     it("should start in open state when open attribute is set", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -287,7 +287,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply animation class when animationOnOpen is set", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           animation-on-open="slide-in-from-bottom"
         ></cds-aichat-panel>`,
@@ -300,7 +300,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply animation class when animationOnClose is set", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           open
           animation-on-close="slide-out-to-bottom"
@@ -315,7 +315,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should apply panel-container--animating class during transitions", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           animation-on-open="slide-in-from-bottom"
         ></cds-aichat-panel>`,
@@ -326,7 +326,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should not open when inert is true", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel inert></cds-aichat-panel>`,
       );
       el.open = true;
@@ -337,7 +337,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should close when inert becomes true while open", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -353,7 +353,7 @@ describe("cds-aichat-panel", function () {
   // ========== Event Emission Tests ==========
   describe("Event Emission", () => {
     it("should emit openstart event when opening", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
 
@@ -378,7 +378,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should emit openend event after opening completes", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
 
@@ -406,7 +406,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should emit closestart event when closing", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -430,7 +430,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should emit closeend event after closing completes", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -462,14 +462,14 @@ describe("cds-aichat-panel", function () {
   // ========== Rounded Corners Tests ==========
   describe("Rounded Corners", () => {
     it("should apply rounded corners for full-width panels", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel full-width></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--full-width")).to.be.true;
     });
 
     it("should apply rounded corners when panel width is less than messages max width", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       // The panel--with-less-than-messages-max-width class is applied by ResizeObserver
@@ -478,7 +478,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should handle rounded corners with show-chat-header", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel full-width show-chat-header></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--full-width")).to.be.true;
@@ -486,7 +486,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should handle rounded corners without show-chat-header", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel full-width></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--full-width")).to.be.true;
@@ -497,7 +497,7 @@ describe("cds-aichat-panel", function () {
   // ========== Complex Scenarios ==========
   describe("Complex Scenarios", () => {
     it("should handle all properties together", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           open
           priority="10"
@@ -529,7 +529,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should handle dynamic property changes", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
 
@@ -550,7 +550,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should handle priority changes", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel priority="1"></cds-aichat-panel>`,
       );
       expect(el.priority).to.equal(1);
@@ -562,7 +562,7 @@ describe("cds-aichat-panel", function () {
     });
 
     it("should handle slot content changes dynamically", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       await el.updateComplete;
@@ -590,21 +590,21 @@ describe("cds-aichat-panel", function () {
   // ========== Snapshot Tests ==========
   describe("Snapshots", () => {
     it("should match snapshot with default configuration", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`,
       );
       await expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot when open", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel open></cds-aichat-panel>`,
       );
       await expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot with all properties", async () => {
-      const el = await fixture<CdsAiChatPanel>(
+      const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel
           open
           priority="5"

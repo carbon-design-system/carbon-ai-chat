@@ -9,7 +9,7 @@
 
 import { html, fixture, expect } from "@open-wc/testing";
 import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
-import CdsAiChatShell from "@carbon/ai-chat-components/es/components/chat-shell/src/shell.js";
+import CDSAIChatShell from "@carbon/ai-chat-components/es/components/chat-shell/src/shell.js";
 
 /**
  * This repository uses the @web/test-runner library for testing
@@ -39,15 +39,15 @@ describe("cds-aichat-shell", function () {
   // ========== Basic Rendering Tests ==========
   describe("Basic Rendering", () => {
     it("should render with minimum attributes", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
-      expect(el).to.be.instanceOf(CdsAiChatShell);
+      expect(el).to.be.instanceOf(CDSAIChatShell);
       expect(el.shadowRoot).to.exist;
     });
 
     it("should have default property values", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
       expect(el.aiEnabled).to.be.false;
@@ -60,7 +60,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render shell root element", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -71,7 +71,7 @@ describe("cds-aichat-shell", function () {
   // ========== Property/Attribute Tests ==========
   describe("Properties and Attributes", () => {
     it("should reflect ai-enabled attribute", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell ai-enabled></cds-aichat-shell>`,
       );
       expect(el.aiEnabled).to.be.true;
@@ -79,7 +79,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect show-frame attribute", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell show-frame></cds-aichat-shell>`,
       );
       expect(el.showFrame).to.be.true;
@@ -87,7 +87,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect rounded-corners attribute", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
       );
       expect(el.roundedCorners).to.be.true;
@@ -95,7 +95,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect show-history attribute", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell show-history></cds-aichat-shell>`,
       );
       expect(el.showHistory).to.be.true;
@@ -103,7 +103,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect show-workspace attribute", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell show-workspace></cds-aichat-shell>`,
       );
       expect(el.showWorkspace).to.be.true;
@@ -111,7 +111,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect workspace-location attribute with start value", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell workspace-location="start"></cds-aichat-shell>`,
       );
       expect(el.workspaceLocation).to.equal("start");
@@ -119,7 +119,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect workspace-location attribute with end value", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell workspace-location="end"></cds-aichat-shell>`,
       );
       expect(el.workspaceLocation).to.equal("end");
@@ -127,7 +127,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect history-location attribute with start value", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell history-location="start"></cds-aichat-shell>`,
       );
       expect(el.historyLocation).to.equal("start");
@@ -135,7 +135,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should reflect history-location attribute with end value", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell history-location="end"></cds-aichat-shell>`,
       );
       expect(el.historyLocation).to.equal("end");
@@ -146,7 +146,7 @@ describe("cds-aichat-shell", function () {
   // ========== CSS Class Application Tests ==========
   describe("CSS Classes", () => {
     it("should apply ai-theme class when aiEnabled is true", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell ai-enabled></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -154,7 +154,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should not apply ai-theme class when aiEnabled is false", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -162,7 +162,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should apply frameless class when showFrame is false", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -170,7 +170,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should not apply frameless class when showFrame is true", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell show-frame></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -178,7 +178,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should apply rounded class when roundedCorners is true", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -186,7 +186,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should not apply rounded class when roundedCorners is false", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
@@ -194,7 +194,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should apply has-header-content class when header slot has content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="header">Header Content</div>
         </cds-aichat-shell>`,
@@ -205,7 +205,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should apply has-footer-content class when footer slot has content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="footer">Footer Content</div>
         </cds-aichat-shell>`,
@@ -219,7 +219,7 @@ describe("cds-aichat-shell", function () {
   // ========== Slot Content Tests ==========
   describe("Slot Content", () => {
     it("should render header slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="header">Header Content</div>
         </cds-aichat-shell>`,
@@ -234,7 +234,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render header-after slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="header-after">Header After Content</div>
         </cds-aichat-shell>`,
@@ -248,7 +248,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render messages slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="messages">Messages Content</div>
         </cds-aichat-shell>`,
@@ -262,7 +262,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render input slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="input">Input Content</div>
         </cds-aichat-shell>`,
@@ -276,7 +276,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render input-before slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="input-before">Input Before Content</div>
         </cds-aichat-shell>`,
@@ -290,7 +290,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render input-after slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="input-after">Input After Content</div>
         </cds-aichat-shell>`,
@@ -304,7 +304,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render footer slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="footer">Footer Content</div>
         </cds-aichat-shell>`,
@@ -318,7 +318,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render panels slot content", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="panels">
             <cds-aichat-panel>Panel Content</cds-aichat-panel>
@@ -337,7 +337,7 @@ describe("cds-aichat-shell", function () {
   // ========== History Integration Tests ==========
   describe("History Integration", () => {
     it("should render history slot when showHistory is true", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell show-history>
           <div slot="history">History Content</div>
         </cds-aichat-shell>`,
@@ -347,7 +347,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should not render history slot when showHistory is false", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell>
           <div slot="history">History Content</div>
         </cds-aichat-shell>`,
@@ -361,7 +361,7 @@ describe("cds-aichat-shell", function () {
   describe("Rounded Corners - Critical Functionality", () => {
     describe("Base Rounded Corners Behavior", () => {
       it("should apply rounded class to shell when roundedCorners is true", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
         );
         const shell = el.shadowRoot!.querySelector(".shell");
@@ -369,7 +369,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should not apply rounded corners when roundedCorners is false", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell></cds-aichat-shell>`,
         );
         const shell = el.shadowRoot!.querySelector(".shell");
@@ -377,7 +377,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should not apply rounded corners when frameless", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
         );
         const shell = el.shadowRoot!.querySelector(".shell");
@@ -389,7 +389,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Header Rounded Corners", () => {
       it("should apply has-header-content class when header has content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header">Header</div>
           </cds-aichat-shell>`,
@@ -400,7 +400,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should detect header content with text nodes", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <span slot="header">Text content</span>
           </cds-aichat-shell>`,
@@ -411,7 +411,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should apply has-content class to header slot wrapper", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header">Header</div>
           </cds-aichat-shell>`,
@@ -424,7 +424,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should not apply has-content class when header is empty", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
         );
         await el.updateComplete;
@@ -437,7 +437,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Header-After Rounded Corners", () => {
       it("should apply has-content class to header-after when it has content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header-after">Header After</div>
           </cds-aichat-shell>`,
@@ -450,7 +450,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should prioritize header over header-after for top corners", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header">Header</div>
             <div slot="header-after">Header After</div>
@@ -474,7 +474,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Footer Rounded Corners", () => {
       it("should apply has-footer-content class when footer has content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="footer">Footer</div>
           </cds-aichat-shell>`,
@@ -485,7 +485,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should apply has-content class to footer slot wrapper", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="footer">Footer</div>
           </cds-aichat-shell>`,
@@ -500,7 +500,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Input Slots Rounded Corners Priority", () => {
       it("should detect input-after content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="input-after">Input After</div>
           </cds-aichat-shell>`,
@@ -513,7 +513,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should detect input content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="input">Input</div>
           </cds-aichat-shell>`,
@@ -526,7 +526,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should detect input-before content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="input-before">Input Before</div>
           </cds-aichat-shell>`,
@@ -539,7 +539,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should handle all input slots with content simultaneously", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="input-before">Input Before</div>
             <div slot="input">Input</div>
@@ -562,7 +562,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Messages Slots Rounded Corners", () => {
       it("should always consider messages slot as having content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
         );
         await el.updateComplete;
@@ -576,7 +576,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Complex Rounded Corners Scenarios", () => {
       it("should handle header + footer with rounded corners", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header">Header</div>
             <div slot="footer">Footer</div>
@@ -590,7 +590,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should handle all slots with content", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header">Header</div>
             <div slot="header-after">Header After</div>
@@ -629,7 +629,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should handle dynamic slot content changes", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
         );
         await el.updateComplete;
@@ -654,7 +654,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should maintain rounded corners with show-frame enabled", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell
             rounded-corners
             show-frame
@@ -666,7 +666,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should handle rounded corners with ai-enabled", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell
             rounded-corners
             ai-enabled
@@ -680,7 +680,7 @@ describe("cds-aichat-shell", function () {
 
     describe("Rounded Corners Edge Cases", () => {
       it("should detect element nodes even with whitespace", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header"></div>
           </cds-aichat-shell>`,
@@ -693,7 +693,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should detect element nodes in footer slot", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <span slot="footer"> </span>
           </cds-aichat-shell>`,
@@ -705,7 +705,7 @@ describe("cds-aichat-shell", function () {
       });
 
       it("should handle nested elements in slots", async () => {
-        const el = await fixture<CdsAiChatShell>(
+        const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header">
               <span><strong>Nested</strong> Header</span>
@@ -733,7 +733,7 @@ describe("cds-aichat-shell", function () {
     });
 
     it("should render workspace inline when width supports container mode", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell
           show-workspace
           style="
@@ -765,7 +765,7 @@ describe("cds-aichat-shell", function () {
       const requiredWidth = window.innerWidth + 200;
       const workspaceMinWidth = requiredWidth - 320;
 
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell
           show-workspace
           style="
@@ -804,7 +804,7 @@ describe("cds-aichat-shell", function () {
       const requiredWidth = window.innerWidth + 200;
       const workspaceMinWidth = requiredWidth - 320;
 
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell
           show-workspace
           style="
@@ -853,21 +853,21 @@ describe("cds-aichat-shell", function () {
   // ========== Snapshot Tests ==========
   describe("Snapshots", () => {
     it("should match snapshot with default configuration", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
       expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot with rounded corners", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
       );
       expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot with all properties enabled", async () => {
-      const el = await fixture<CdsAiChatShell>(
+      const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell
           ai-enabled
           show-frame
