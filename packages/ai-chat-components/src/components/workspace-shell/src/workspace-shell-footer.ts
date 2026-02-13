@@ -54,7 +54,12 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
     this.setAttribute("data-rounded", "bottom");
 
     // Observe parent size changes
-    this._ro = new ResizeObserver(() => this._updateStacked());
+    // Use requestAnimationFrame to avoid ResizeObserver loop errors
+    this._ro = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        this._updateStacked();
+      });
+    });
     if (this.parentElement) {
       this._ro.observe(this.parentElement);
     }

@@ -1,0 +1,25 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+.outstanding-orders-container {
+  padding: 1rem;
+  height: 100%;
+  overflow: auto;
+}
+
+.outstanding-orders-title {
+  margin-bottom: 1rem;
+}
+
+.outstanding-orders-subtitle {
+  margin-bottom: 1rem;
+  color: #525252;
+}
+
+/* Made with Bob */

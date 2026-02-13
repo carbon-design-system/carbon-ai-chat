@@ -40,8 +40,10 @@ export function usePanelCallbacks({
   }, []);
 
   const onPanelCloseEnd = useCallback(() => {
-    // Don't request focus here - useFocusManager will handle returning focus to input
-  }, []);
+    // Explicitly request focus to ensure it returns to input field
+    // useFocusManager will determine the correct focus target based on panel state
+    requestFocus();
+  }, [requestFocus]);
 
   return {
     onPanelOpenStart,

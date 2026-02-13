@@ -250,10 +250,13 @@ export class WorkspaceManager {
 
   private createHostResizeObserver(): void {
     this.hostResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const inlineSize = getInlineSizeFromEntry(entry);
-        this.throttledHandleHostResize(inlineSize);
-      }
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          const inlineSize = getInlineSizeFromEntry(entry);
+          this.throttledHandleHostResize(inlineSize);
+        }
+      });
     });
     this.hostResizeObserver.observe(this.hostElement);
   }

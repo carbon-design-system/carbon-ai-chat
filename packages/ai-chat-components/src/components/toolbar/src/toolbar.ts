@@ -112,7 +112,10 @@ class CDSAIChatToolbar extends LitElement {
           if (width > 0) {
             this.visibilityObserver?.disconnect();
             this.visibilityObserver = undefined;
-            this.setupOverflowHandler();
+            // Use requestAnimationFrame to avoid ResizeObserver loop errors
+            requestAnimationFrame(() => {
+              this.setupOverflowHandler();
+            });
           }
         });
         this.visibilityObserver.observe(this.container);

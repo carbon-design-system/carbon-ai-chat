@@ -43,6 +43,9 @@
     "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve --update-snapshots",
     "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" --node-resolve"
   },
+  "peerDependencies": {
+    "react": ">=17.0.0 <20.0.0"
+  },
   "dependencies": {
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^11.53.0",

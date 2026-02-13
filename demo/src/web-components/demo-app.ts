@@ -83,7 +83,8 @@ export class DemoApp extends LitElement {
       height: calc(100vh - 48px);
       width: 320px;
       z-index: 9999;
-      transition: right 200ms;
+      /* Carbon motion token: motion.$duration-moderate-01 (240ms) with motion.motion(standard, productive) */
+      transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
       visibility: visible;
     }
 
@@ -92,15 +93,17 @@ export class DemoApp extends LitElement {
     }
 
     .sidebar--expanding {
+      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
       transition:
-        right 200ms,
-        width 300ms cubic-bezier(0.2, 0, 0.38, 0.9);
+        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
     }
 
     .sidebar--contracting {
+      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
       transition:
-        right 200ms,
-        width 300ms cubic-bezier(0.2, 0, 0.38, 0.9);
+        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
     }
 
     .sidebar--closing {
@@ -118,9 +121,10 @@ export class DemoApp extends LitElement {
     [dir="rtl"] .sidebar {
       right: auto;
       left: 0;
+      /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
       transition:
-        left 100ms,
-        visibility 0s 100ms;
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 70ms;
     }
 
     [dir="rtl"] .sidebar--expanded {
@@ -129,17 +133,19 @@ export class DemoApp extends LitElement {
     }
 
     [dir="rtl"] .sidebar--expanding {
+      /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
       transition:
-        left 100ms,
-        width 300ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 100ms;
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 70ms;
     }
 
     [dir="rtl"] .sidebar--contracting {
+      /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
       transition:
-        left 100ms,
-        width 300ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 100ms;
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 70ms;
     }
 
     [dir="rtl"] .sidebar--closing {
@@ -151,8 +157,9 @@ export class DemoApp extends LitElement {
       right: auto;
       left: calc(calc(320px + 1rem) * -1);
       width: 320px;
+      /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
       transition:
-        left 100ms,
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
         visibility 0s 0s;
     }
   `;

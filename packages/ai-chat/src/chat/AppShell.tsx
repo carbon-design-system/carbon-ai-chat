@@ -46,6 +46,7 @@ import { useSelector } from "./hooks/useSelector";
 import { useWindowOpenState } from "./hooks/useWindowOpenState";
 import { useAutoFocusManagement } from "./hooks/useAutoFocusManagement";
 import { useFocusManager } from "./hooks/useFocusManager";
+import { useWorkspaceAnnouncements } from "./hooks/useWorkspaceAnnouncements";
 import { useStyleInjection } from "./hooks/useStyleInjection";
 import { useDerivedState } from "./hooks/useDerivedState";
 import { useHumanAgentCallbacks } from "./hooks/useHumanAgentCallbacks";
@@ -265,6 +266,11 @@ export default function AppShell({
     requestFocusRef.current = requestFocus;
   }, [requestFocus]);
 
+  // Workspace announcements - announces when workspace opens/closes
+  useWorkspaceAnnouncements({
+    serviceManager,
+  });
+
   // Style injection
   useStyleInjection({
     containerRef,
@@ -470,6 +476,9 @@ export default function AppShell({
               roundedCorners={theme.corners === CornersType.ROUND}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
+              workspaceAriaLabel={languagePack.aria_workspaceRegion}
+              historyAriaLabel={languagePack.aria_historyRegion}
+              messagesAriaLabel={languagePack.aria_messagesRegion}
             >
               <AppShellPanels
                 serviceManager={serviceManager}
