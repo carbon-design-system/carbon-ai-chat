@@ -14,11 +14,10 @@ import { classMap } from "lit/directives/class-map.js";
 import prefix from "../../../globals/settings.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import "./history-panel-item-input.js";
 import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
-import Checkmark16 from "@carbon/icons/es/checkmark/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import "@carbon/web-components/es/components/overflow-menu/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
@@ -71,7 +70,7 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
   @property({ type: String, attribute: "overflow-menu-label" })
   overflowMenuLabel = "Options";
 
-  @query("input") input!: HTMLInputElement;
+  @query(`${prefix}-history-panel-item-input`) input!: HTMLElement;
 
   /**
    * Handle menu item clicks
@@ -97,15 +96,21 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
 
   updated() {
     if (this.input) {
-      this.input.addEventListener("focus", () => {
-        this.input.select();
-      });
+      this.input.addEventListener(
+        `${prefix}-history-panel-item-input-cancel`,
+        () => {
+          this.rename = false;
+        }
+      );
 
-      // Auto-select on mount if desired
-      requestAnimationFrame(() => {
-        this.input.focus();
-        this.input.select();
-      });
+      this.input.addEventListener(
+        `${prefix}-history-panel-item-input-save`,
+        (event) => {
+          const newTitle = (event as CustomEvent).detail.newTitle;
+          this.title = newTitle;
+          this.rename = false;
+        }
+      );
     }
   }
 
@@ -114,7 +119,6 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
     const classes = classMap({
       [`cds--side-nav__link`]: true,
       [`cds--side-nav__link--current`]: selected,
-      [`${prefix}--history-panel-item--rename`]: rename,
     });
     return html`
       ${!rename
@@ -139,32 +143,16 @@ export class CDSHistoryPanelItem extends FocusMixin(LitElement) {
                         ?divider=${action.divider}
                         @click=${this._handleMenuItemClick}
                         >${action.text}${action.icon}</cds-overflow-menu-item
-                      >`,
+                      >`
                   )}
                 </cds-overflow-menu-body>
               </cds-overflow-menu>
             </slot>
           </button>`
         : html`
-      <div class="${classes}">
-        <div class="${prefix}--history-panel-item--rename__input">
-          <input type="text" value="${title}"></input>
-          <div class="${prefix}--history-panel-item--rename__actions">
-            <cds-icon-button size='sm' kind="ghost">
-              ${iconLoader(Close16, {
-                slot: "icon",
-              })}
-              <span slot="tooltip-content">Cancel</span>
-            </cds-icon-button>
-            <cds-icon-button size='sm' kind="ghost">
-              ${iconLoader(Checkmark16, {
-                slot: "icon",
-              })}
-              <span slot="tooltip-content">Save</span>
-            </cds-icon-button>
-          </div>
-        </div>
-      </div>`}
+            <cds-aichat-history-panel-item-input
+              value="${title}"></cds-aichat-history-panel-item-input>
+          `}
     `;
   }
 
