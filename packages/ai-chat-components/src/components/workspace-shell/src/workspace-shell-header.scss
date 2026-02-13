@@ -7,10 +7,8 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
+@use "../../../globals/scss/component-reset";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
@@ -18,6 +16,8 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/breakpoint" as *;
 
 :host(#{$prefix}-workspace-shell-header) {
+  @include component-reset.component-reset();
+
   display: grid;
   align-items: baseline;
   padding: rem(24px) rem(32px);

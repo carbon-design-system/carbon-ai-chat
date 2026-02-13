@@ -5,8 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-$css--plex: true !default;
-
+@use "../../../globals/scss/component-reset";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/theme";
 @use "@carbon/web-components/scss/components/button/button";
@@ -14,6 +13,7 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/utilities/convert";
 
 :host(#{$prefix}-button) {
+  @include component-reset.component-reset();
   @extend :host(#{$cds-prefix}-button);
 
   .#{$cds-prefix}--btn--ghost:not([disabled]):not(

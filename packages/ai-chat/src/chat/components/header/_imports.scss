@@ -5,12 +5,6 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-.cds-aichat--chat-header-avatar {
-  display: block;
-  block-size: 20px;
-  max-block-size: 20px;
-}
+@use "Header";
 
-.cds-aichat--chat-header-avatar--round {
-  border-radius: 10px;
-}
+// Made with Bob

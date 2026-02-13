@@ -7,11 +7,15 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
+@use "../../../globals/scss/component-reset";
 @use "@carbon/styles/scss/theme" as *;
+
+:host {
+  @include component-reset.component-reset();
+
+  display: inline-block;
+}
 
 .dots {
   block-size: 32px;

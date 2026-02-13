@@ -7,14 +7,14 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
+@use "../../../globals/scss/component-reset";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
 
 :host(#{$prefix}-workspace-shell-body) {
+  @include component-reset.component-reset();
+
   display: block;
   overflow: auto;
   flex: 1;

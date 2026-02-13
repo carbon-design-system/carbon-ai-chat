@@ -18,6 +18,9 @@ exports[`ChatContainer should match snapshot 1`] = `
     </div>
   </div>
   <div
+    slot="headerFixedActionsElement"
+  />
+  <div
     slot="beforeInputElement"
   />
   <div

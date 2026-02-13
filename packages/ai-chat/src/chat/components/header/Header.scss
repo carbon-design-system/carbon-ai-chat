@@ -1,0 +1,48 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../styles/chat-theme";
+
+// Writeable element styling (used by AppShellWriteableElements)
+.cds-aichat--widget--max-width .cds-aichat--header-bottom-element {
+  margin: auto;
+  max-inline-size: var(--cds-aichat-messages-max-width, 672px);
+}
+
+// Header container wrapper
+.cds-aichat--header__container {
+  margin: auto;
+  background-color: theme.$chat-shell-background;
+  border-start-end-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-start,
+    0
+  );
+  inline-size: 100%;
+  max-inline-size: chat-theme.$messages-max-width;
+}
+
+// AI Label (slug) styling in decorator slot
+.cds-aichat--header__slug-description {
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--header__slug-label {
+  color: theme.$text-secondary;
+  padding-block-end: layout.$spacing-04;
+  @include type.type-style("body-compact-01");
+}
+
+.cds-aichat--header__slug-title {
+  padding-block-end: layout.$spacing-04;
+}

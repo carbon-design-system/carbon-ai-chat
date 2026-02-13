@@ -7,6 +7,7 @@
 
 @use "sass:string";
 
+@use "../../../globals/scss/component-reset";
 @use "@carbon/styles/scss/components/code-snippet/index";
 @use "@carbon/styles/scss/type";
 @use "@carbon/layout";
@@ -20,6 +21,7 @@
 @use "../../../globals/scss/modifiers" as *;
 
 :host {
+  @include component-reset.component-reset();
   @include rounded-modifiers;
 
   // Automatically output all syntax-* tokens from the Carbon $white theme

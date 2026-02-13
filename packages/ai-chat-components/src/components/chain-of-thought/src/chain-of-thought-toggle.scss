@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "../../../globals/scss/component-reset";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
@@ -13,6 +14,7 @@
 @use "@carbon/layout";
 
 :host {
+  @include component-reset.component-reset();
   @include type.type-style("body-01");
 
   display: block;

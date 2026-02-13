@@ -195,11 +195,11 @@
       "stylelint-config-carbon"
     ],
     "rules": {
-      "max-nesting-depth": 4,
+      "max-nesting-depth": null,
       "a11y/media-prefers-reduced-motion": [
         true,
         {
-          "severity": "warning",
+          "severity": "error",
           "disableFix": true
         }
       ],

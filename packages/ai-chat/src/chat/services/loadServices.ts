@@ -94,6 +94,8 @@ function createServiceManager(appConfig: AppConfig) {
         document.createElement("div"),
       [WriteableElementName.HEADER_BOTTOM_ELEMENT]:
         document.createElement("div"),
+      [WriteableElementName.HEADER_FIXED_ACTIONS_ELEMENT]:
+        document.createElement("div"),
       [WriteableElementName.BEFORE_INPUT_ELEMENT]:
         document.createElement("div"),
       [WriteableElementName.AFTER_INPUT_ELEMENT]: document.createElement("div"),

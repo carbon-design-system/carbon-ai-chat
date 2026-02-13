@@ -6,13 +6,15 @@
  */
 
 @use "sass:meta";
-@use "@carbon/styles/scss/reset";
+@use "../../../globals/scss/component-reset";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/layout";
 @use "@carbon/styles/scss/components/link";
 
 :host {
+  @include component-reset.component-reset();
+
   display: block;
   inline-size: 100%;
   max-inline-size: 100%;
@@ -35,6 +37,25 @@
     font-style: italic;
   }
 
+  // Blockquote styles must come before .cds-aichat-markdown-stack to satisfy specificity ordering
+  blockquote {
+    border-inline-start: 2px solid theme.$border-subtle-00;
+    padding-inline-start: layout.$spacing-03;
+
+    > *:not(:first-child) {
+      margin-block-start: layout.$spacing-05;
+    }
+
+    > h1 + *:not(:first-child),
+    > h2 + *:not(:first-child),
+    > h3 + *:not(:first-child),
+    > h4 + *:not(:first-child),
+    > h5 + *:not(:first-child),
+    > h6 + *:not(:first-child) {
+      margin-block-start: layout.$spacing-03;
+    }
+  }
+
   .cds-aichat-markdown-stack {
     display: block;
     max-inline-size: 100%;
@@ -55,24 +76,6 @@
 
   p {
     @include type.type-style("body-01");
-  }
-
-  blockquote {
-    border-inline-start: 2px solid theme.$border-subtle-00;
-    padding-inline-start: layout.$spacing-03;
-
-    > *:not(:first-child) {
-      margin-block-start: layout.$spacing-05;
-    }
-
-    > h1 + *:not(:first-child),
-    > h2 + *:not(:first-child),
-    > h3 + *:not(:first-child),
-    > h4 + *:not(:first-child),
-    > h5 + *:not(:first-child),
-    > h6 + *:not(:first-child) {
-      margin-block-start: layout.$spacing-03;
-    }
   }
 
   pre {

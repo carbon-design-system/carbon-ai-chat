@@ -7,10 +7,8 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
+@use "../../../globals/scss/component-reset";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
@@ -19,6 +17,7 @@ $css--plex: true !default;
 
 /* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
+  @include component-reset.component-reset();
   @include type.type-style("body-01");
 
   display: flex;
