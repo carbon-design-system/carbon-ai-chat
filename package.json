@@ -25,6 +25,7 @@
     "examples/react/jest-jsdom",
     "examples/react/jest-happydom",
     "examples/react/reasoning-and-chain-of-thought",
+    "examples/react/react-17",
     "examples/react/human-agent",
     "examples/react/csp",
     "examples/web-components/basic",
