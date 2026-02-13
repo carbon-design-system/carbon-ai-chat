@@ -1,0 +1,251 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/convert";
+@use "@carbon/web-components/scss/components/ui-shell/side-nav";
+
+:host(#{$prefix}-history-shell) {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  border: solid convert.rem(1px) theme.$border-subtle-00;
+  background: theme.$chat-header-background;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+:host(#{$prefix}-history-header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  block-size: convert.rem(40px);
+  border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+  @include type.type-style("body-compact-01");
+
+  font-weight: 600;
+  inline-size: 100%;
+  letter-spacing: 0.1px;
+  line-height: 1.25rem;
+
+  .#{$prefix}--history-header__close-button {
+    padding-inline-end: layout.$spacing-03;
+  }
+
+  .#{$prefix}--history-header__title {
+    overflow: hidden;
+    inline-size: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+:host(#{$prefix}-history-toolbar) {
+  display: flex;
+
+  cds-search::part(input) {
+    background-color: theme.$chat-header-background;
+    border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+  }
+}
+
+:host(#{$prefix}-history-content) {
+  display: block;
+  block-size: 100%;
+  overflow-y: auto;
+
+  .#{$prefix}--history-content__results-count {
+    display: block;
+    padding: layout.$spacing-04 0 layout.$spacing-02 layout.$spacing-04;
+    @include type.type-style("label-01");
+  }
+}
+
+:host(#{$prefix}-history-loading) {
+  padding: layout.$spacing-06;
+
+  #{$cds-prefix}-skeleton-text {
+    padding: layout.$spacing-06 0;
+  }
+
+  .#{$prefix}--history-loading__results {
+    border-block-end: 1px solid theme.$border-subtle;
+    margin-block-end: layout.$spacing-04;
+
+    #{$cds-prefix}-skeleton-text {
+      padding: 0 0 layout.$spacing-04 0;
+    }
+  }
+}
+
+:host(#{$prefix}-history-panel) {
+  .cds--side-nav {
+    position: relative;
+    background-color: transparent;
+    inline-size: 100%;
+    max-inline-size: 100%;
+  }
+}
+
+:host(#{$prefix}-history-panel[expanded])
+  ::slotted(#{$cds-prefix}-side-nav-items) {
+  overflow-y: auto;
+}
+
+:host(#{$prefix}-history-panel-items) {
+  @extend :host(#{$cds-prefix}-side-nav-items);
+
+  padding: 0;
+}
+
+:host(#{$prefix}-history-panel-menu) {
+  @extend :host(#{$cds-prefix}-side-nav-menu);
+
+  padding-block-start: layout.$spacing-02;
+
+  .#{$cds-prefix}--side-nav__submenu {
+    padding: 0 1rem 0 layout.$spacing-04;
+  }
+
+  .#{$cds-prefix}--side-nav__submenu-title {
+    @include type.type-style("label-01");
+  }
+
+  .#{$cds-prefix}--side-nav__icon:not(
+    .#{$cds-prefix}--side-nav__submenu-chevron
+  ) {
+    margin-inline-end: layout.$spacing-03;
+  }
+}
+
+:host(#{$prefix}-history-panel-item),
+:host(#{$prefix}-history-search-item) {
+  @extend :host(#{$cds-prefix}-side-nav-menu-item);
+
+  .#{$cds-prefix}--side-nav__link {
+    @include type.type-style("body-01");
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background-color: transparent;
+    block-size: convert.rem(40px);
+    font-family: inherit;
+    inline-size: 100%;
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    padding-inline-start: layout.$spacing-07;
+    text-decoration: none;
+  }
+
+  button.#{$cds-prefix}--side-nav__link:focus {
+    background-color: theme.$background-hover;
+    outline: 2px solid theme.$focus;
+    outline-offset: -2px;
+  }
+
+  .#{$cds-prefix}--side-nav__link-text {
+    overflow: hidden;
+    color: theme.$text-primary;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .#{$prefix}--overflow-menu__icon {
+    color: theme.$icon-primary;
+  }
+}
+
+:host(#{$prefix}-history-panel-item[selected]) {
+  button.#{$cds-prefix}--side-nav__link {
+    background-color: theme.$layer-selected;
+  }
+
+  button.#{$cds-prefix}--side-nav__link:before {
+    position: absolute;
+    background-color: theme.$border-interactive;
+    content: "";
+    inline-size: 3px;
+    inset-block: 0;
+    inset-inline-start: 0;
+  }
+}
+
+:host(#{$prefix}-history-panel-item-input)
+  .#{$prefix}--history-panel-item--rename {
+  justify-content: flex-start;
+  padding: 0 layout.$spacing-06;
+  inline-size: auto;
+
+  .#{$prefix}--history-panel-item--rename__input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    block-size: layout.$spacing-08;
+    inline-size: 100%;
+    outline: layout.$spacing-01 solid theme.$focus;
+    outline-offset: -2px;
+  }
+
+  input {
+    overflow: hidden;
+    flex-grow: 2;
+    border: none;
+    background-color: transparent;
+    color: theme.$text-primary;
+    padding-inline-start: layout.$spacing-03;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  input:focus {
+    outline: none;
+  }
+}
+
+:host(#{$prefix}-history-search-item) {
+  button.#{$cds-prefix}--side-nav__link {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    block-size: layout.$spacing-10;
+    padding-inline-end: layout.$spacing-05;
+  }
+
+  .#{$cds-prefix}--side-nav__link-text {
+    inline-size: 100%;
+  }
+
+  .#{$cds-prefix}--side-nav__link-subtitle {
+    @include type.type-style("label-01");
+
+    color: theme.$text-secondary;
+    padding-block-start: layout.$spacing-01;
+  }
+}
+
+#{$cds-prefix}-overflow-menu {
+  visibility: hidden;
+}
+
+:host(#{$prefix}-history-panel-item:hover) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item:focus) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item:focus-within) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item) #{$cds-prefix}-overflow-menu[open] {
+  visibility: visible;
+}
+
+:host(#{$prefix}-history-panel-item[parent-has-icon])
+  button.#{$prefix}--side-nav__link {
+  padding-inline-start: 4.5rem;
+}
