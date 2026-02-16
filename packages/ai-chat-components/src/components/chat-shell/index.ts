@@ -9,3 +9,6 @@
 
 import "./src/shell.js";
 import "./src/panel.js";
+import "./src/chat-header.js";
+
+export { default as CdsAiChatChatHeader } from "./src/chat-header.js";
