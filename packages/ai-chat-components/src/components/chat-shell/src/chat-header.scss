@@ -1,0 +1,62 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/layout";
+
+$block-class: #{$prefix}-chat-header;
+
+:host {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+}
+
+// Wrapper div for overflow menu - provides positioning context
+.#{$block-class}-overflow-wrapper {
+  position: relative;
+
+  // Apply rounded corners to overflow menu in the wrapper
+  #{$cds-prefix}-overflow-menu {
+    border-start-start-radius: calc(
+      var(
+          --#{$prefix}-rounded-modifier-radius-start-start,
+          var(--#{$prefix}-rounded-modifier-radius)
+        ) - layout.rem(1px)
+    );
+
+    &::part(button) {
+      border-start-start-radius: calc(
+        var(
+            --#{$prefix}-rounded-modifier-radius-start-start,
+            var(--#{$prefix}-rounded-modifier-radius)
+          ) - layout.rem(1px)
+      );
+    }
+  }
+}
+
+.#{$block-class}-overflow-icon {
+  // Ensure overflow menu icon has proper color
+  color: theme.$icon-primary;
+}
+
+.#{$block-class}__title {
+  color: theme.$text-primary;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.#{$block-class}__name-text {
+  font-weight: bold;
+}
+
+// Made with Bob

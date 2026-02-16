@@ -22,6 +22,7 @@ import { HistoryItem } from "../messaging/History";
 import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
+import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -209,9 +210,34 @@ export interface CustomMenuOption {
   text: string;
 
   /**
-   * The callback handler to call when the option is selected. Provide this of "url".
+   * The callback handler to call when the option is selected.
+   * Provide either this or `href`, but not both.
    */
-  handler: () => void;
+  handler?: () => void;
+
+  /**
+   * The URL to navigate to when the option is selected.
+   * Provide either this or `handler`, but not both.
+   */
+  href?: string;
+
+  /**
+   * The target attribute for the link when using `href`.
+   * Defaults to "_self" if not specified.
+   * Common values: "_self", "_blank", "_parent", "_top"
+   */
+  target?: string;
+
+  /**
+   * If true, the menu option will be disabled and cannot be selected.
+   */
+  disabled?: boolean;
+
+  /**
+   * Optional data-testid attribute for testing purposes.
+   * This allows tests to reliably find and interact with specific menu options.
+   */
+  testId?: string;
 }
 
 /**
@@ -312,6 +338,19 @@ export interface HeaderConfig {
    * blue gradients.
    */
   showAiLabel?: boolean;
+
+  /**
+   * Custom actions to display in the header toolbar. These actions can overflow
+   * into a menu when space is limited.
+   *
+   * The icon property accepts CarbonIcon objects (from @carbon/web-components) or
+   * React icon components (from @carbon/icons-react).
+   *
+   * Built-in buttons (restart, close) will be appended after these custom actions if
+   * configured to be shown. You can, of course, disabled those OOTB icons and replace
+   * them with your own.
+   */
+  actions?: ToolbarAction[];
 }
 
 /**
@@ -332,12 +371,12 @@ export interface LayoutConfig {
   hasContentMaxWidth?: boolean;
 
   /**
-   * This flag is used to disable Carbon AI Chat's rounded corners.
+   * This flag is used to control Carbon AI Chat's rounded corners.
    */
   corners?: CornersType;
 
   /**
-   * CSS variable overrides for the chat UI.
+   * CSS variable overrides for the chat UI. This is a convienience method, you may also set these properties via CSS.
    *
    * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.height`),
    * which map to the underlying `--cds-aichat-…` custom properties.

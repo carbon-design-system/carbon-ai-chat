@@ -12,6 +12,9 @@ exports[`ChatContainer should have a shadow DOM with rendered content 1`] = `
     slot="headerBottomElement"
   />
   <div
+    slot="headerFixedActionsElement"
+  />
+  <div
     slot="beforeInputElement"
   />
   <div
@@ -50,6 +53,9 @@ exports[`ChatContainer should open chat when launcher is clicked 1`] = `
     slot="headerBottomElement"
   />
   <div
+    slot="headerFixedActionsElement"
+  />
+  <div
     slot="beforeInputElement"
   />
   <div
@@ -86,6 +92,9 @@ exports[`ChatContainer should render PageObjectId elements in shadow DOM 1`] = `
   />
   <div
     slot="headerBottomElement"
+  />
+  <div
+    slot="headerFixedActionsElement"
   />
   <div
     slot="beforeInputElement"
@@ -131,6 +140,9 @@ exports[`ChatContainer should render slotted content 1`] = `
       Custom Header Content
     </div>
   </div>
+  <div
+    slot="headerFixedActionsElement"
+  />
   <div
     slot="beforeInputElement"
   />

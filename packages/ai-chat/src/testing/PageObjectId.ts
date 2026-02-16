@@ -7,16 +7,30 @@
  *  @license
  */
 
+import { PageObjectId as BasePageObjectId } from "@carbon/ai-chat-components/es/testing/PageObjectId";
+
 /**
  * An enum of all of our data-testid we use. For some elements (like INPUT) they can appear in multiple "panels"
  * (e.g. on the home screen and in the main chat window). There are provided testids for "panels" as well so you
  * can first select a panel and then select the correct child.
+ *
+ * This extends the base PageObjectId from @carbon/ai-chat-components to include application-level test IDs.
  *
  * @category Testing
  *
  * @experimental
  */
 export enum PageObjectId {
+  /**
+   * Header title element (from @carbon/ai-chat-components).
+   */
+  HEADER_TITLE = BasePageObjectId.HEADER_TITLE,
+
+  /**
+   * Header name element (from @carbon/ai-chat-components).
+   */
+  HEADER_NAME = BasePageObjectId.HEADER_NAME,
+
   /**
    * The root chat widget container (for scoping tests/accessibility checks).
    */
@@ -41,16 +55,6 @@ export enum PageObjectId {
    * Input send button.
    */
   INPUT_SEND = "input_send",
-
-  /**
-   * The chat header title element.
-   */
-  HEADER_TITLE = "header_title",
-
-  /**
-   * The chat header name element.
-   */
-  HEADER_NAME = "header_name",
 
   // Panel identifiers
   /**

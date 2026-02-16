@@ -80,6 +80,7 @@ export {
   BusEventWorkspacePreClose,
   BusEventWorkspacePreOpen,
   BusEventFeedback,
+  BusEventHeaderMenuClick,
   BusEventHistoryBegin,
   BusEventHistoryEnd,
   BusEventMessageItemCustom,
@@ -95,6 +96,7 @@ export {
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
+  HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
@@ -115,6 +117,8 @@ export {
   ChatInstanceMessaging,
   CustomSendMessageOptions,
 } from "./types/config/MessagingConfig";
+
+export { ChatHeaderAction } from "./types/config/ChatHeaderConfig";
 
 export {
   CarbonTheme,

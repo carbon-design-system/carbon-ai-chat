@@ -443,6 +443,11 @@ export enum WriteableElementName {
   HEADER_BOTTOM_ELEMENT = "headerBottomElement",
 
   /**
+   * An element that appears in the header's fixed-actions slot (before close/minimize buttons).
+   */
+  HEADER_FIXED_ACTIONS_ELEMENT = "headerFixedActionsElement",
+
+  /**
    * An element that appears after the messages area and before the input area.
    */
   BEFORE_INPUT_ELEMENT = "beforeInputElement",
