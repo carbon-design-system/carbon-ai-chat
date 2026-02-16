@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-human-agent",
-  "version": "1.6.0",
+  "version": "1.7.0-rc.0",
   "private": true,
   "type": "module",
   "description": "A web components example using @carbon/ai-chat with a human agent service desk.",
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.6.0",
+    "@carbon/ai-chat": "^1.7.0-rc.0",
     "@carbon/web-components": "^2.46.0",
     "lit": "^3.1.0",
     "react": "^19.0.0",
