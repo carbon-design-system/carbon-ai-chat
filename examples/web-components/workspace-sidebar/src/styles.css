@@ -1,0 +1,128 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background-color: #161616;
+  color: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 10000;
+}
+
+.app-header__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.app-header__button {
+  background: transparent;
+  border: none;
+  color: #f4f4f4;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
+  transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.app-header__button:hover {
+  background-color: #353535;
+}
+
+.app-header__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sidebar {
+  position: fixed;
+  right: 0;
+  top: 48px;
+  height: calc(100vh - 48px);
+  width: 320px;
+  z-index: 9999;
+  /* Carbon motion token: motion.$duration-moderate-01 (240ms) with motion.motion(standard, productive) */
+  transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
+  visibility: visible;
+}
+
+.sidebar .chat-custom-element {
+  height: 100%;
+  width: 100%;
+}
+
+.sidebar--expanded {
+  width: calc(100vw - 320px - 2rem);
+}
+
+.sidebar--expanding {
+  /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+  transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.sidebar--contracting {
+  /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+  transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.sidebar--closing {
+  right: calc(calc(320px + 1rem) * -1);
+  width: 320px;
+}
+
+.sidebar--closed {
+  right: calc(calc(320px + 1rem) * -1);
+  width: 320px;
+  visibility: hidden;
+}
+
+/* RTL support */
+[dir="rtl"] .sidebar {
+  right: auto;
+  left: 0;
+  /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
+  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
+}
+
+[dir="rtl"] .sidebar--expanded {
+  width: calc(100vw - 320px - 2rem);
+}
+
+[dir="rtl"] .sidebar--expanding {
+  /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
+}
+
+[dir="rtl"] .sidebar--contracting {
+  /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
+}
+
+[dir="rtl"] .sidebar--closing {
+  left: calc(calc(320px + 1rem) * -1);
+  width: 320px;
+}
+
+[dir="rtl"] .sidebar--closed {
+  right: auto;
+  left: calc(calc(320px + 1rem) * -1);
+  width: 320px;
+  /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
+  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 0s;
+}
+
+/* Made with Bob */

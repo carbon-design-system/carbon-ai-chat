@@ -13,7 +13,8 @@
 @use "../../styles/chat-theme";
 
 .cds-aichat--widget--max-width
-  .cds-aichat--home-screen__home-screen-bottom-element {
+  .cds-aichat--home-screen__home-screen-bottom-element,
+.cds-aichat--home-screen {
   margin: auto;
   max-inline-size: var(--cds-aichat-messages-max-width, 672px);
 }

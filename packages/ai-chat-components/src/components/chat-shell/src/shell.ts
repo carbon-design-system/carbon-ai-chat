@@ -77,6 +77,24 @@ class CDSAIChatShell extends LitElement {
   historyLocation: StartOrEnd = "start";
 
   /**
+   * ARIA label for the workspace region
+   */
+  @property({ type: String, attribute: "workspace-aria-label" })
+  workspaceAriaLabel = "Workspace panel";
+
+  /**
+   * ARIA label for the history region
+   */
+  @property({ type: String, attribute: "history-aria-label" })
+  historyAriaLabel = "Conversation history";
+
+  /**
+   * ARIA label for the messages region
+   */
+  @property({ type: String, attribute: "messages-aria-label" })
+  messagesAriaLabel = "Chat messages";
+
+  /**
    * @internal
    */
   private panelManager?: PanelManager;
@@ -279,7 +297,13 @@ class CDSAIChatShell extends LitElement {
     const workspaceState = this.workspaceManager?.getState();
 
     return html`
-      <div class="workspace" part="slot-workspace" data-panel-slot="workspace">
+      <div
+        class="workspace"
+        part="slot-workspace"
+        data-panel-slot="workspace"
+        role="region"
+        aria-label=${this.workspaceAriaLabel}
+      >
         <div
           class=${workspaceState?.contentVisible
             ? "workspace-content"
@@ -353,7 +377,11 @@ class CDSAIChatShell extends LitElement {
 
   private renderMessagesSection() {
     return html`
-      <div class=${this.getInputAndMessagesClasses()}>
+      <div
+        class=${this.getInputAndMessagesClasses()}
+        role="region"
+        aria-label=${this.messagesAriaLabel}
+      >
         ${this.renderSlot("messages", "messages")}
         ${this.renderSlot("input-before", "input-before messages-max-width")}
         ${this.renderSlot("input", "input messages-max-width")}
@@ -366,7 +394,11 @@ class CDSAIChatShell extends LitElement {
     if (!this.showHistory || !this.shouldRenderHistory) {
       return nothing;
     }
-    return html`<div class="history">
+    return html`<div
+      class="history"
+      role="region"
+      aria-label=${this.historyAriaLabel}
+    >
       ${this.renderSlot("history", "history")}
     </div>`;
   }
@@ -536,19 +568,22 @@ class CDSAIChatShell extends LitElement {
     };
 
     this.inputAndMessagesResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== this) {
-          continue;
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          if (entry.target !== this) {
+            continue;
+          }
+          const borderBoxSize = Array.isArray(entry.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry.borderBoxSize;
+          if (borderBoxSize?.inlineSize) {
+            updateAtMaxWidth(borderBoxSize.inlineSize);
+          } else {
+            updateAtMaxWidth(entry.contentRect.width);
+          }
         }
-        const borderBoxSize = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : entry.borderBoxSize;
-        if (borderBoxSize?.inlineSize) {
-          updateAtMaxWidth(borderBoxSize.inlineSize);
-        } else {
-          updateAtMaxWidth(entry.contentRect.width);
-        }
-      }
+      });
     });
 
     this.inputAndMessagesResizeObserver.observe(this);
@@ -587,19 +622,22 @@ class CDSAIChatShell extends LitElement {
     };
 
     this.mainContentBodyResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== mainContentBody) {
-          continue;
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          if (entry.target !== mainContentBody) {
+            continue;
+          }
+          const borderBoxSize = Array.isArray(entry.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry.borderBoxSize;
+          if (borderBoxSize?.inlineSize) {
+            updateHistoryVisibility(borderBoxSize.inlineSize);
+          } else {
+            updateHistoryVisibility(entry.contentRect.width);
+          }
         }
-        const borderBoxSize = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : entry.borderBoxSize;
-        if (borderBoxSize?.inlineSize) {
-          updateHistoryVisibility(borderBoxSize.inlineSize);
-        } else {
-          updateHistoryVisibility(entry.contentRect.width);
-        }
-      }
+      });
     });
 
     this.mainContentBodyResizeObserver.observe(mainContentBody);
@@ -651,19 +689,22 @@ class CDSAIChatShell extends LitElement {
     };
 
     this.headerResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== headerWrapper) {
-          continue;
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          if (entry.target !== headerWrapper) {
+            continue;
+          }
+          const borderBoxSize = Array.isArray(entry.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry.borderBoxSize;
+          if (borderBoxSize?.blockSize) {
+            updateHeight(borderBoxSize.blockSize);
+          } else {
+            updateHeight(entry.contentRect.height);
+          }
         }
-        const borderBoxSize = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : entry.borderBoxSize;
-        if (borderBoxSize?.blockSize) {
-          updateHeight(borderBoxSize.blockSize);
-        } else {
-          updateHeight(entry.contentRect.height);
-        }
-      }
+      });
     });
 
     this.headerResizeObserver.observe(headerWrapper);

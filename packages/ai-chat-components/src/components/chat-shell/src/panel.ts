@@ -446,10 +446,13 @@ class CDSAIChatPanel extends LitElement {
     }
 
     this.resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const width = entry.contentRect.width;
-        this.updateWidthClass(width);
-      }
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          const width = entry.contentRect.width;
+          this.updateWidthClass(width);
+        }
+      });
     });
 
     this.resizeObserver.observe(this);
