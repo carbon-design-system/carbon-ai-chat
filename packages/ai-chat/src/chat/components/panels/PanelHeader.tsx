@@ -9,7 +9,8 @@
 
 import React, { useMemo } from "react";
 
-import { ChevronDown, CloseLarge } from "@carbon/icons-react";
+import ChevronDown20 from "@carbon/icons/es/chevron--down/20.js";
+import CloseLarge20 from "@carbon/icons/es/close--large/20.js";
 import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
 
 interface PanelHeaderProps {
@@ -36,7 +37,7 @@ function PanelHeader({
       ? [
           {
             text: labelBackButton ?? "",
-            icon: backButtonType === "close" ? CloseLarge : ChevronDown,
+            icon: backButtonType === "close" ? CloseLarge20 : ChevronDown20,
             size: "md",
             onClick: () => onClickBack?.(),
           },
