@@ -33,7 +33,7 @@ as-needed and do not follow a specific schedule.
 ## Release Team
 
 The release team is responsible for coordinating the `minor` and `patch`
-releases in a given week. This group is composed of a release lead and sidekick.
+releases in a given sprint. This group is composed of a release lead and sidekick.
 The release lead is responsible for:
 
 - Managing the release itself, including
@@ -185,7 +185,7 @@ from the release branch for further testing. To publish subsequent prereleases,
 
 ### Stable release
 
-A stable release occurs on the last Wednesday of the sprint and finishes later
+A stable release occurs on the last Monday of the sprint and finishes later
 in the day. This should occur after the prerelease has been tested and
 validated. During this stage, the release team will do the following:
 
