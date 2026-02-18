@@ -37,6 +37,7 @@ import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardCom
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
 import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
+import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
 import InlineError from "./responseTypes/error/InlineError";
 import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
@@ -186,6 +187,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
           {renderFeedback(localMessageItem, message)}
+          {renderCustomFooter(localMessageItem)}
         </>
       );
     }
@@ -955,6 +957,25 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       </div>
     );
   }
+
+  /**
+   * Renders the custom footer slot for the given message item if appropriate.
+   */
+  function renderCustomFooter(localMessageItem: LocalMessageItem) {
+    const footerOptions =
+      localMessageItem.item.message_item_options?.custom_footer_slot;
+
+    if (
+      props.isNestedMessageItem ||
+      !footerOptions ||
+      footerOptions.is_on === false
+    ) {
+      return false;
+    }
+
+    return <CustomFooterSlot footerOptions={footerOptions} />;
+  }
+
   return renderSpecificMessage(props.message, props.originalMessage);
 }
 

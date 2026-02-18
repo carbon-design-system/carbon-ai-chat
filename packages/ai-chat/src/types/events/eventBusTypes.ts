@@ -76,6 +76,11 @@ export enum BusEventType {
   USER_DEFINED_RESPONSE = "userDefinedResponse",
 
   /**
+   * Fired when a message with custom_footer_slot.is_on is received.
+   */
+  CUSTOM_FOOTER_SLOT = "customFooterSlot",
+
+  /**
    * Fired when history begins to load.
    */
   HISTORY_BEGIN = "history:begin",
@@ -578,6 +583,33 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
      * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
      */
     slot?: string;
+  };
+}
+
+/**
+ * Used to populate custom message footer slots.
+ *
+ * @category Events
+ */
+export interface BusEventCustomFooterSlot extends BusEvent {
+  type: BusEventType.CUSTOM_FOOTER_SLOT;
+  data: {
+    /**
+     * The unique identifier for this footer slot.
+     */
+    slotName: string;
+    /**
+     * The message item that is being rendered.
+     */
+    messageItem: GenericItem;
+    /**
+     * The assistant response object that contains the messageItem.
+     */
+    message: MessageResponse;
+    /**
+     * Any additional data to be passed to the render function.
+     */
+    additionalData?: unknown;
   };
 }
 
