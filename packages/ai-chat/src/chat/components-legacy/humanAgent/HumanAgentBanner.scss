@@ -17,8 +17,6 @@
   background-color: theme.$chat-shell-background;
   border-block-end: 1px solid theme.$border-subtle-01;
   @include type.type-style("body-01");
-
-  inline-size: 100%;
 }
 
 .cds-aichat--widget--max-width {
