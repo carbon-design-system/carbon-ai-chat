@@ -679,20 +679,20 @@ describe("cds-aichat-shell", function () {
     });
 
     describe("Rounded Corners Edge Cases", () => {
-      it("should detect element nodes even with whitespace", async () => {
+      it("should not detect element nodes with only whitespace", async () => {
         const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <div slot="header"></div>
           </cds-aichat-shell>`,
         );
         await el.updateComplete;
-        // Element nodes are always considered as having content
-        // even if they only contain whitespace
+        // Element nodes should not be considered as having content
+        // if they only contain whitespace
         const shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("has-header-content")).to.be.true;
+        expect(shell!.classList.contains("has-header-content")).to.be.false;
       });
 
-      it("should detect element nodes in footer slot", async () => {
+      it("should not detect empty element nodes in footer slot", async () => {
         const el = await fixture<CDSAIChatShell>(
           html`<cds-aichat-shell rounded-corners>
             <span slot="footer"> </span>
@@ -700,8 +700,8 @@ describe("cds-aichat-shell", function () {
         );
         await el.updateComplete;
         const shell = el.shadowRoot!.querySelector(".shell");
-        // Element nodes are always considered as having content
-        expect(shell!.classList.contains("has-footer-content")).to.be.true;
+        // Element nodes are not considered as having content when they only contain whitespace
+        expect(shell!.classList.contains("has-footer-content")).to.be.false;
       });
 
       it("should handle nested elements in slots", async () => {
