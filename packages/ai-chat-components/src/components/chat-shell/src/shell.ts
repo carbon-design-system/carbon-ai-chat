@@ -477,34 +477,52 @@ class CDSAIChatShell extends LitElement {
       // Check for element nodes
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
-
-        // Check if element has child nodes with meaningful content
-        const hasChildContent = Array.from(element.childNodes).some((child) => {
-          if (child.nodeType === Node.TEXT_NODE) {
-            return child.textContent?.trim();
-          }
-          if (child.nodeType === Node.ELEMENT_NODE) {
-            const childElement = child as Element;
-            // Ignore slot elements - they're just portals/containers
-            if (childElement.tagName.toLowerCase() === "slot") {
-              return false;
-            }
-            return true;
-          }
-          return false;
-        });
-
-        // If no child content found, check text content
-        if (!hasChildContent) {
-          const textContent = element.textContent?.trim();
-          return Boolean(textContent);
-        }
-
-        return hasChildContent;
+        return this.hasElementContent(element);
       }
 
       return false;
     });
+  }
+
+  private hasElementContent(element: Element): boolean {
+    // Check if element has child nodes with meaningful content (light DOM)
+    const hasChildContent = Array.from(element.childNodes).some((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        return child.textContent?.trim();
+      }
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const childElement = child as Element;
+        // Check slot elements recursively - they may have assigned content
+        if (childElement.tagName.toLowerCase() === "slot") {
+          const slotElement = childElement as HTMLSlotElement;
+          const assignedNodes = slotElement.assignedNodes({ flatten: true });
+          return assignedNodes.some((node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+              return node.textContent?.trim();
+            }
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              return this.hasElementContent(node as Element);
+            }
+            return false;
+          });
+        }
+        return true;
+      }
+      return false;
+    });
+
+    if (hasChildContent) {
+      return true;
+    }
+
+    // If no light DOM children, check if element has shadow root (Shadow DOM content)
+    if ((element as any).shadowRoot) {
+      return true;
+    }
+
+    // Check text content as fallback
+    const textContent = element.textContent?.trim();
+    return Boolean(textContent);
   }
 
   private observeSlotContent() {
