@@ -468,13 +468,43 @@ class CDSAIChatShell extends LitElement {
       return false;
     }
 
-    return slot
-      .assignedNodes({ flatten: true })
-      .some(
-        (node) =>
-          node.nodeType === Node.ELEMENT_NODE ||
-          (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()),
-      );
+    return slot.assignedNodes({ flatten: true }).some((node) => {
+      // Check for non-empty text nodes
+      if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+        return true;
+      }
+
+      // Check for element nodes
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+
+        // Check if element has child nodes with meaningful content
+        const hasChildContent = Array.from(element.childNodes).some((child) => {
+          if (child.nodeType === Node.TEXT_NODE) {
+            return child.textContent?.trim();
+          }
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            const childElement = child as Element;
+            // Ignore slot elements - they're just portals/containers
+            if (childElement.tagName.toLowerCase() === "slot") {
+              return false;
+            }
+            return true;
+          }
+          return false;
+        });
+
+        // If no child content found, check text content
+        if (!hasChildContent) {
+          const textContent = element.textContent?.trim();
+          return Boolean(textContent);
+        }
+
+        return hasChildContent;
+      }
+
+      return false;
+    });
   }
 
   private observeSlotContent() {
