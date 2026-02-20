@@ -30,6 +30,15 @@ const tsconfigFile = path.resolve(__dirname, "tsconfig.json");
 
 export default {
   files: ["src/**/*.test.ts"],
+  // https://modern-web.dev/docs/test-runner/cli-and-configuration/#test-runner-html
+  testRunnerHtml: (testFramework) =>
+    `<!DOCTYPE html>
+    <html>
+      <body>
+        <script>window.process = { env: { NODE_ENV: "development" } }</script>
+        <script type="module" src="${testFramework}"></script>
+      </body>
+    </html>`,
   plugins: [
     litcss({
       include: ["**/*.scss"],

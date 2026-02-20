@@ -13,7 +13,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
-import { MountChildrenOnDelay } from "../../util/MountChildrenOnDelay";
+import { MountChildrenOnDelay } from "../../../components/util/MountChildrenOnDelay";
 import InlineError from "../error/InlineError";
 
 interface IFrameComponentProps {

@@ -15,7 +15,6 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/button.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./workspace-shell-footer.scss?lit";
 
 export type Action = {
@@ -55,7 +54,12 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
     this.setAttribute("data-rounded", "bottom");
 
     // Observe parent size changes
-    this._ro = new ResizeObserver(() => this._updateStacked());
+    // Use requestAnimationFrame to avoid ResizeObserver loop errors
+    this._ro = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        this._updateStacked();
+      });
+    });
     if (this.parentElement) {
       this._ro.observe(this.parentElement);
     }

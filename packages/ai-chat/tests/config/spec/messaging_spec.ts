@@ -209,6 +209,118 @@ describe("Config Messaging", () => {
         expect(state.config.public.messaging?.messageTimeoutSecs).toBe(60);
         expect(serviceManager.messageService?.timeoutMS).toBe(60000);
       });
+
+      describe("showStopButtonImmediately config", () => {
+        it("should store showStopButtonImmediately when set to true", async () => {
+          const messaging = {
+            customSendMessage: mockCustomSendMessage,
+            showStopButtonImmediately: true,
+          };
+
+          const props: Partial<ChatContainerProps> = {
+            ...createBaseProps(),
+            messaging,
+          };
+
+          let capturedInstance: any = null;
+          const onBeforeRender = jest.fn((instance) => {
+            capturedInstance = instance;
+          });
+
+          render(
+            React.createElement(ChatContainer, {
+              ...props,
+              onBeforeRender,
+            }),
+          );
+
+          await waitFor(
+            () => {
+              expect(capturedInstance).not.toBeNull();
+            },
+            { timeout: 5000 },
+          );
+
+          const store = (capturedInstance as any).serviceManager.store;
+          const state: AppState = store.getState();
+          expect(state.config.public.messaging?.showStopButtonImmediately).toBe(
+            true,
+          );
+        });
+
+        it("should store showStopButtonImmediately when set to false", async () => {
+          const messaging = {
+            customSendMessage: mockCustomSendMessage,
+            showStopButtonImmediately: false,
+          };
+
+          const props: Partial<ChatContainerProps> = {
+            ...createBaseProps(),
+            messaging,
+          };
+
+          let capturedInstance: any = null;
+          const onBeforeRender = jest.fn((instance) => {
+            capturedInstance = instance;
+          });
+
+          render(
+            React.createElement(ChatContainer, {
+              ...props,
+              onBeforeRender,
+            }),
+          );
+
+          await waitFor(
+            () => {
+              expect(capturedInstance).not.toBeNull();
+            },
+            { timeout: 5000 },
+          );
+
+          const store = (capturedInstance as any).serviceManager.store;
+          const state: AppState = store.getState();
+          expect(state.config.public.messaging?.showStopButtonImmediately).toBe(
+            false,
+          );
+        });
+
+        it("should default showStopButtonImmediately to undefined when not provided", async () => {
+          const messaging = {
+            customSendMessage: mockCustomSendMessage,
+          };
+
+          const props: Partial<ChatContainerProps> = {
+            ...createBaseProps(),
+            messaging,
+          };
+
+          let capturedInstance: any = null;
+          const onBeforeRender = jest.fn((instance) => {
+            capturedInstance = instance;
+          });
+
+          render(
+            React.createElement(ChatContainer, {
+              ...props,
+              onBeforeRender,
+            }),
+          );
+
+          await waitFor(
+            () => {
+              expect(capturedInstance).not.toBeNull();
+            },
+            { timeout: 5000 },
+          );
+
+          const store = (capturedInstance as any).serviceManager.store;
+          const state: AppState = store.getState();
+          expect(
+            state.config.public.messaging?.showStopButtonImmediately,
+          ).toBeUndefined();
+        });
+      });
     });
   });
 });

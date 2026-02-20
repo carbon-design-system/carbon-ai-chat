@@ -9,7 +9,6 @@
 
 import { property } from "lit/decorators.js";
 import CDSTile from "@carbon/web-components/es/components/tile/tile.js";
-// @ts-ignore
 import styles from "./card.scss?lit";
 import { html } from "lit";
 import { carbonElement } from "../../../globals/decorators/index.js";

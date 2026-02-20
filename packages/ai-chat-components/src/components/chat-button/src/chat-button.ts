@@ -19,7 +19,6 @@ import {
 import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./chat-button.scss?lit";
 
 export {

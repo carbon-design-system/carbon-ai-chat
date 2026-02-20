@@ -51,12 +51,9 @@ describe("PublicConfig.input", () => {
     expect(store.getState().assistantInputState.fieldVisible).toBe(false);
   });
 
-  it("respects isDisabled", async () => {
+  it("respects isReadonly", async () => {
     const config = createBaseConfig();
-    config.input = {
-      ...config.input,
-      isDisabled: true,
-    };
+    config.isReadonly = true;
 
     const { store } = await renderChatAndGetInstanceWithStore(config);
     expect(store.getState().assistantInputState.isReadonly).toBe(true);

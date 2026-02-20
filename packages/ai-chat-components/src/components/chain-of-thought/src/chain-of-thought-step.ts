@@ -17,8 +17,6 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
-
-// @ts-ignore
 import styles from "./chain-of-thought-step.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";

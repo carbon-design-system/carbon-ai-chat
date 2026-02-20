@@ -21,6 +21,7 @@ $css--plex: true !default;
   display: grid;
   align-items: stretch;
   border-block-start: solid rem(1px) theme.$border-subtle-00;
+  margin-block-start: auto;
   @include breakpoint-down("md") {
     grid-auto-flow: row;
     grid-template-columns: 1fr;

@@ -16,8 +16,9 @@ import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
-import { AriaLiveMessage } from "./aria/AriaLiveMessage";
+import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
+import { SystemMessage } from "./SystemMessage";
 import {
   HasServiceManager,
   withServiceManager,
@@ -47,7 +48,11 @@ import {
   waitForStableHeight,
 } from "../utils/domUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
-import { isRequest, isResponse } from "../utils/messageUtils";
+import {
+  isRequest,
+  isResponse,
+  isStandaloneSystemMessage,
+} from "../utils/messageUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
 import MessageComponent, {
   MessageClass,
@@ -62,7 +67,7 @@ import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { MountChildrenOnDelay } from "./util/MountChildrenOnDelay";
+import { MountChildrenOnDelay } from "../components/util/MountChildrenOnDelay";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -198,7 +203,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   private bottomSpacerRef = React.createRef<HTMLDivElement>();
 
   componentDidMount(): void {
-    this.scrollPanelObserver = new ResizeObserver(this.onResize);
+    // Use requestAnimationFrame to avoid ResizeObserver loop errors
+    this.scrollPanelObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        this.onResize();
+      });
+    });
     this.scrollPanelObserver.observe(
       this.messagesContainerWithScrollingRef.current,
     );
@@ -238,9 +248,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
   componentWillUnmount(): void {
     // Remove the listeners and observer we added previously.
-    this.scrollPanelObserver.unobserve(
-      this.messagesContainerWithScrollingRef.current,
-    );
+    if (this.scrollPanelObserver) {
+      this.scrollPanelObserver.disconnect();
+    }
   }
 
   /**
@@ -421,7 +431,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * list is still scrolled to the bottom. It will also run doAutoScroll to ensure proper scrolling behavior
    * when the window is resized.
    */
-  public onResize = () => {
+  public onResize = throttle(() => {
     this.renderScrollDownNotification();
     if (this.props.messageState.isScrollAnchored) {
       const element = this.messagesContainerWithScrollingRef.current;
@@ -433,7 +443,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     // Run doAutoScroll when the window is resized to maintain proper scroll position
     // This is important for workspace functionality
     this.doAutoScroll();
-  };
+  }, AUTO_SCROLL_THROTTLE_TIMEOUT);
 
   /**
    * This will execute an auto-scroll operation based on the current state of messages in the component. This should
@@ -744,6 +754,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const { localMessageItems, allMessagesByID } = this.props;
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
+    if (!scrollElement) {
+      debugAutoScroll("[doAutoScroll] scrollElement is null, skipping scroll");
+      return;
+    }
+
     // Handle explicit scroll options
     if (scrollToTop !== undefined) {
       this.handleScrollToTop(scrollElement, scrollToTop);
@@ -819,6 +834,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   ) => {
     const scrollElement = this.messagesContainerWithScrollingRef.current;
 
+    if (!scrollElement) {
+      return;
+    }
+
     const scrollRect = scrollElement.getBoundingClientRect();
     const elementRect = element.getBoundingClientRect();
 
@@ -885,6 +904,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       if (panelComponent) {
         const scrollElement = this.messagesContainerWithScrollingRef.current;
+
+        if (!scrollElement) {
+          return;
+        }
 
         // Scroll to the top of the message.
         const setScrollTop = panelComponent.ref.current.offsetTop;
@@ -1285,6 +1308,19 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     ) {
       const localMessageItem = localMessageItems[currentIndex];
       const fullMessage = allMessagesByID[localMessageItem.fullMessageID];
+
+      // Check if this is a standalone system message
+      if (isStandaloneSystemMessage(fullMessage)) {
+        const messageItemID = localMessageItem.ui_state.id;
+        renderMessageArray.push(
+          <Fragment key={messageItemID}>
+            <SystemMessage message={fullMessage} standalone={true} />
+          </Fragment>,
+        );
+        previousMessageID = localMessageItem.fullMessageID;
+        continue;
+      }
+
       const isMessageForInput =
         messageIDForInput === localMessageItem.fullMessageID;
       const isFirstMessageItem =

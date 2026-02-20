@@ -39,6 +39,7 @@ import {
   ResolvablePromise,
   resolvablePromise,
 } from "../utils/resolvablePromise";
+import { resetStopStreamingButton } from "../utils/streamingUtils";
 import { ServiceManager } from "./ServiceManager";
 import { InboundStreamingCoordinator } from "./InboundStreamingCoordinator";
 import { OutboundMessageCoordinator } from "./OutboundMessageCoordinator";
@@ -234,6 +235,7 @@ class MessageService {
       () => this.moveToNextQueueItem(),
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
+      () => this.serviceManager.store.getState().config.public.messaging || {},
     );
     this.queue = {
       waiting: [],
@@ -315,6 +317,8 @@ class MessageService {
     // For streaming messages, don't clear the queue yet - wait for FinalResponseChunk to arrive
     // For non-streaming messages (addMessage), clear immediately
     if (!current.isStreaming) {
+      // Hide stop streaming button if it was shown for showStopButtonImmediately
+      resetStopStreamingButton(this.serviceManager.store);
       this.moveToNextQueueItem();
     }
   }
@@ -787,7 +791,18 @@ class MessageService {
             otherData: await safeFetchTextWithTimeout(lastResponse),
           });
         }
+      } else if (pendingRequest.isStreaming) {
+        // If we're cancelling during streaming, the ResponseStopped component will handle
+        // displaying the "Response stopped" message via the stream_stopped metadata flag.
+        // We don't need to create a system message here.
+        // Mark as processed and advance the queue
+        pendingRequest.sendMessagePromise.doResolve();
+        pendingRequest.isProcessed = true;
+        if (pendingRequest === this.queue.current) {
+          this.moveToNextQueueItem();
+        }
       } else {
+        // Only create "Request cancelled" system message if we haven't started streaming yet
         this.outboundCoordinator.resolveCancelledMessage(pendingRequest);
       }
     }

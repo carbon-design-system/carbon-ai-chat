@@ -17,23 +17,41 @@
 // =============================================================================
 
 @mixin rounded-corners-top {
-  border-start-end-radius: var(--cds-aichat-rounded-radius-start-end, 8px);
-  border-start-start-radius: var(--cds-aichat-rounded-radius-start-start, 8px);
+  border-start-end-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-end,
+    8px
+  );
+  border-start-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-start,
+    8px
+  );
 }
 
 @mixin rounded-corners-bottom {
-  border-end-end-radius: var(--cds-aichat-rounded-radius-end-end, 8px);
-  border-end-start-radius: var(--cds-aichat-rounded-radius-end-start, 8px);
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 8px);
+  border-end-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-end-start,
+    8px
+  );
 }
 
 @mixin rounded-corners-inherited-top {
-  border-start-end-radius: var(--cds-aichat-rounded-radius-start-end, 0);
-  border-start-start-radius: var(--cds-aichat-rounded-radius-start-start, 0);
+  border-start-end-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-start-start,
+    0
+  );
 }
 
 @mixin rounded-corners-inherited-bottom {
-  border-end-end-radius: var(--cds-aichat-rounded-radius-end-end, 0);
-  border-end-start-radius: var(--cds-aichat-rounded-radius-end-start, 0);
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --cds-aichat-rounded-modifier-radius-end-start,
+    0
+  );
 }
 
 // =============================================================================
@@ -62,9 +80,7 @@ cds-aichat-shell {
 }
 
 // Color-coded slot groups for visual identification
-.messages,
-.messages-before,
-.messages-after {
+.messages {
   background-color: rgba(255, 0, 0, 0.5);
 }
 
@@ -98,8 +114,7 @@ cds-aichat-shell {
     @include rounded-corners-top;
   }
 
-  // Slotted content in messages-before and messages inherits top rounded corners from parent
-  .messages-before.slot-sample,
+  // Slotted content in messages inherits top rounded corners from parent
   .messages.slot-sample {
     @include rounded-corners-inherited-top;
   }
@@ -108,7 +123,6 @@ cds-aichat-shell {
   .input-before.slot-sample,
   .input.slot-sample,
   .input-after.slot-sample,
-  .messages-after.slot-sample,
   .messages.slot-sample {
     @include rounded-corners-inherited-bottom;
   }

@@ -30,6 +30,7 @@ import "./demo-chat-feedback-switcher";
 import "./demo-layout-config-switcher";
 import "./demo-launcher-switcher";
 import "./demo-input-config-switcher";
+import "./demo-stop-button-immediate-switcher";
 import "./demo-chat-instance-switcher";
 import "./demo-direction-switcher";
 import "./demo-chat-version-switcher";
@@ -556,6 +557,12 @@ export class DemoBody extends LitElement {
                     <demo-input-config-switcher
                       .config=${this.config}
                     ></demo-input-config-switcher>
+                  </div>
+                  <div class="config-section">
+                    <div class="config-section__title">Messaging</div>
+                    <demo-stop-button-immediate-switcher
+                      .config=${this.config}
+                    ></demo-stop-button-immediate-switcher>
                   </div>
                   <div class="config-section">
                     <div class="config-section__title">Launcher</div>

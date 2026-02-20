@@ -28,6 +28,7 @@ import Feedback, {
 } from "@carbon/ai-chat-components/es/react/feedback.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { ResponseStopped } from "./ResponseStopped";
+import { SystemMessage } from "./SystemMessage";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "./responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
@@ -88,6 +89,7 @@ import {
   MessageResponseHistory,
   MessageResponseTypes,
   OptionItem,
+  SystemMessageItem,
   TextItem,
   UserType,
   VideoItem,
@@ -319,6 +321,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       case MessageResponseTypes.PREVIEW_CARD:
         return renderPreviewCard(
           localMessageItem as LocalMessageItem<PreviewCardItem>,
+          message as MessageResponse,
+        );
+      case MessageResponseTypes.SYSTEM:
+        return renderSystemMessage(
+          localMessageItem as LocalMessageItem<SystemMessageItem>,
           message as MessageResponse,
         );
       default:
@@ -612,6 +619,14 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         )}
       />
     );
+  }
+
+  function renderSystemMessage(
+    _localMessageItem: LocalMessageItem<SystemMessageItem>,
+    message: MessageResponse,
+  ) {
+    // Render inline system message (within message bubble)
+    return <SystemMessage message={message} standalone={false} />;
   }
 
   function scrollChainOfThought(open: boolean, element: HTMLElement) {

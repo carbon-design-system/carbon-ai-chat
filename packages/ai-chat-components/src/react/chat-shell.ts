@@ -9,15 +9,15 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
-import CdsAiChatShellElement from "../components/chat-shell/src/cds-aichat-shell.js";
+import CDSChatShellElement from "../components/chat-shell/src/shell.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const CdsAiChatShell = withWebComponentBridge(
+const CDSAIChatShell = withWebComponentBridge(
   createComponent({
     tagName: "cds-aichat-shell",
-    elementClass: CdsAiChatShellElement,
+    elementClass: CDSChatShellElement,
     react: React,
   }),
 );
 
-export default CdsAiChatShell;
+export default CDSAIChatShell;

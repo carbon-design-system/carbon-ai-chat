@@ -166,13 +166,12 @@ export const Stacked = {
           "Footer automatically stacks buttons vertically on narrow viewports (< 671px). Resize the viewport to see the responsive behavior.",
       },
     },
-    viewport: {
-      defaultViewport: "mobile1",
-    },
   },
+
   args: {
     actionPreset: "Three buttons with one ghost",
   },
+
   render: (args) => html`
     <cds-aichat-workspace-shell-body>
       <div style="padding: 1rem;">
@@ -189,6 +188,13 @@ export const Stacked = {
     >
     </cds-aichat-workspace-shell-footer>
   `,
+
+  globals: {
+    viewport: {
+      value: "mobile1",
+      isRotated: false,
+    },
+  },
 };
 
 // Made with Bob

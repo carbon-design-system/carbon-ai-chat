@@ -5,8 +5,19 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+ .writeable-element-external--not-rounded {
+  --cds-aichat-rounded-modifier-radius-start-start: 0;
+  --cds-aichat-rounded-modifier-radius-start-end: 0;
+  --cds-aichat-rounded-modifier-radius-end-start: 0;
+  --cds-aichat-rounded-modifier-radius-end-end: 0;
+ }
+
 .writeable-element-external {
   background: green;
   color: #fff;
   padding: 1rem;
+  border-start-start-radius: var(--cds-aichat-rounded-modifier-radius-start-start);
+  border-start-end-radius: var(--cds-aichat-rounded-modifier-radius-start-end);
+  border-end-start-radius: var(--cds-aichat-rounded-modifier-radius-end-start);
+  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end);
 }

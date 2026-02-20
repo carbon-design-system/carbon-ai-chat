@@ -115,6 +115,30 @@ $message-bar-width: 3px;
   flex-grow: 1;
   margin-inline: layout.$spacing-05;
   min-inline-size: 0;
+
+  /* Smooth transitions for message margins when workspace opens/closes.
+ * Matches workspace content transition timing for visual coherence. */
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .cds-aichat--message .cds-aichat--received,
+    .cds-aichat--message .cds-aichat--sent-container {
+      transition: margin-inline motion.$duration-fast-02
+        motion.motion(standard, productive);
+    }
+
+    .cds-aichat--message__avatar-line
+      + .cds-aichat--message--padding
+      .cds-aichat--assistant-message
+      > div.cds-aichat--received {
+      transition: margin-block-start motion.$duration-fast-02
+        motion.motion(standard, productive);
+    }
+
+    .cds-aichat--message
+      .cds-aichat--received.cds-aichat--received--agent-status-message {
+      transition: margin-inline motion.$duration-fast-02
+        motion.motion(standard, productive);
+    }
+  }
 }
 
 .cds-aichat--wide-width
@@ -479,32 +503,79 @@ svg.cds-aichat--sent-file-icon {
   background-color: theme.$chat-avatar-bot;
 }
 
-// Keyframes moved to ../../styles/_keyframes.scss
+/* Layout overrides by shell state (legacy/light DOM). */
+.cds-aichat--container--render {
+  /* Views bigger than a small phone. */
+  :where(cds-aichat-shell) {
+    &.cds-aichat--standard-width,
+    &.cds-aichat--wide-width {
+      .cds-aichat--message__avatar-line
+        + .cds-aichat--message--padding
+        .cds-aichat--assistant-message
+        > div.cds-aichat--received {
+        margin-block-start: 0;
+      }
 
-/* Views bigger than a small phone. */
-.cds-aichat--standard-width,
-.cds-aichat--wide-width {
-  .cds-aichat--message__avatar-line
-    + .cds-aichat--message--padding
-    .cds-aichat--assistant-message
-    > div.cds-aichat--received {
-    margin-block-start: 0;
+      .cds-aichat--message
+        .cds-aichat--received.cds-aichat--received--agent-status-message {
+        margin-inline: 0;
+      }
+    }
+
+    /* Both the sent and received messages fill the same space within the chat. */
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
+    &.cds-aichat--standard-width
+      .cds-aichat--message
+      .cds-aichat--sent-container {
+      /* Start = left padding + avatar + right padding. */
+      margin-inline: calc(
+          #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
+        )
+        layout.$spacing-05;
+    }
   }
 
-  .cds-aichat--message
-    .cds-aichat--received.cds-aichat--received--agent-status-message {
-    margin-inline: 0;
-  }
-}
+  /* Force narrow view mode when workspace is in inline container mode.
+   * When the workspace is displayed inline (side-by-side with messages), the available
+   * width for messages is constrained. Messages should use narrow view spacing regardless
+   * of the calculated width breakpoint to prevent layout issues. */
 
-/* Both the sent and received messages fill the same space within the chat. */
-.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
-.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
-.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-.cds-aichat--standard-width .cds-aichat--message .cds-aichat--sent-container {
-  /* Start = left padding + avatar + right padding. */
-  margin-inline: calc(
-      #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
-    )
-    layout.$spacing-05;
+  :where(cds-aichat-shell[workspace-in-container]) {
+    &.cds-aichat--standard-width,
+    &.cds-aichat--wide-width {
+      .cds-aichat--message__avatar-line
+        + .cds-aichat--message--padding
+        .cds-aichat--assistant-message
+        > div.cds-aichat--received {
+        margin-block-start: layout.$spacing-03;
+      }
+
+      .cds-aichat--message
+        .cds-aichat--received.cds-aichat--received--agent-status-message {
+        margin-inline: layout.$spacing-05;
+      }
+    }
+
+    /* Use narrow view margins (no avatar compensation needed in constrained space). */
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
+    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
+    &.cds-aichat--standard-width
+      .cds-aichat--message
+      .cds-aichat--sent-container {
+      margin-inline: layout.$spacing-05;
+    }
+  }
+
+  /* Workspaces: open should use the no-margin-block-start variant regardless of width. */
+  :where(cds-aichat-shell[show-workspace]) {
+    .cds-aichat--message__avatar-line
+      + .cds-aichat--message--padding
+      .cds-aichat--assistant-message
+      > div.cds-aichat--received {
+      margin-block-start: 0;
+    }
+  }
 }

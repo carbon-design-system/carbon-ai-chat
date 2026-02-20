@@ -14,6 +14,7 @@ import {
   CustomPanelOpenOptions,
   PanelType,
 } from "../../types/instance/apiTypes";
+import { BusEventType } from "../../types/events/eventBusTypes";
 import actions from "../store/actions";
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "../store/reducerUtils";
 import { ServiceManager } from "./ServiceManager";
@@ -45,18 +46,118 @@ function createCustomPanelInstance(
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
 
   const customPanelInstance: CustomPanelInstance = {
-    open(options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions) {
+    async open(
+      options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions,
+    ) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
-      const { store } = serviceManager;
+      const { store, eventBus, instance } = serviceManager;
+
+      // For workspace panels, close any existing workspace before opening a new one
+      if (panelType === PanelType.WORKSPACE) {
+        const state = store.getState();
+        if (state.workspacePanelState.isOpen) {
+          // Close the existing workspace panel first
+          customPanelInstance.close();
+        }
+      }
+
+      // For workspace panels, extract and store workspaceId and additionalData if provided
+      if (panelType === PanelType.WORKSPACE && options) {
+        const workspaceOptions = options as WorkspaceCustomPanelConfigOptions;
+        if (workspaceOptions.workspaceId || workspaceOptions.additionalData) {
+          store.dispatch(
+            actions.setWorkspacePanelData({
+              workspaceID: workspaceOptions.workspaceId,
+              additionalData: workspaceOptions.additionalData,
+            }),
+          );
+        }
+      }
+
+      // Fire pre-open event for workspace panel
+      if (panelType === PanelType.WORKSPACE) {
+        const state = store.getState();
+        const { workspaceID, localMessageItem, fullMessage, additionalData } =
+          state.workspacePanelState;
+
+        await eventBus.fire(
+          {
+            type: BusEventType.WORKSPACE_PRE_OPEN,
+            data: {
+              workspaceId: workspaceID,
+              additionalData,
+              message: localMessageItem?.item,
+              fullMessage,
+            },
+          },
+          instance,
+        );
+      }
 
       store.dispatch(setConfig(resolvedOptions));
       store.dispatch(setOpen(true));
+
+      // Fire open event for workspace panel
+      if (panelType === PanelType.WORKSPACE) {
+        const state = store.getState();
+        const { workspaceID, localMessageItem, fullMessage, additionalData } =
+          state.workspacePanelState;
+
+        await eventBus.fire(
+          {
+            type: BusEventType.WORKSPACE_OPEN,
+            data: {
+              workspaceId: workspaceID,
+              additionalData,
+              message: localMessageItem?.item,
+              fullMessage,
+            },
+          },
+          instance,
+        );
+      }
     },
 
-    close() {
-      const { store } = serviceManager;
+    async close() {
+      const { store, eventBus, instance } = serviceManager;
+
+      // For workspace panel, capture state BEFORE closing to preserve data for events
+      let workspaceEventData;
+      if (panelType === PanelType.WORKSPACE) {
+        const state = store.getState();
+        const { workspaceID, localMessageItem, fullMessage, additionalData } =
+          state.workspacePanelState;
+
+        workspaceEventData = {
+          workspaceId: workspaceID,
+          additionalData,
+          message: localMessageItem?.item,
+          fullMessage,
+        };
+
+        // Fire pre-close event
+        await eventBus.fire(
+          {
+            type: BusEventType.WORKSPACE_PRE_CLOSE,
+            data: workspaceEventData,
+          },
+          instance,
+        );
+      }
+
       store.dispatch(setOpen(false));
+
+      // Fire close event for workspace panel using captured data
+      if (panelType === PanelType.WORKSPACE && workspaceEventData) {
+        await eventBus.fire(
+          {
+            type: BusEventType.WORKSPACE_CLOSE,
+            data: workspaceEventData,
+          },
+          instance,
+        );
+      }
     },
   };
 

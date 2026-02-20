@@ -9,7 +9,6 @@
 
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-// @ts-ignore
 import styles from "./chain-of-thought.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { uuid } from "../../../globals/utils/uuid.js";

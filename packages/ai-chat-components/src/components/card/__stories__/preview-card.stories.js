@@ -185,7 +185,7 @@ export const WithToolbar = {
               overflow
               .actions=${toolbarActions}
             >
-              <div slot="title" data-fixed>
+              <div slot="title">
                 <h4>
                   <span class="truncated-text"> Resource consumption </span>
                 </h4>
@@ -313,7 +313,7 @@ export const WithSteps = {
         <cds-aichat-card ?is-layered=${args.isLayered}>
           <div slot="header" class="preview-card preview-card-toolbar">
             <cds-aichat-toolbar class="preview-card-toolbar">
-              <div slot="title" data-fixed>
+              <div slot="title">
                 <div class="title-container">
                   <h4>Optimising excess inventory</h4>
                   <p id="status-label">Status: running</p>

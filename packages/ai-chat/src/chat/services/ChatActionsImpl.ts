@@ -74,6 +74,7 @@ import {
 import { constructViewState } from "../utils/viewStateUtils";
 import {
   GenericItem,
+  ItemStreamingMetadata,
   Message,
   MessageRequest,
   MessageResponse,
@@ -337,13 +338,21 @@ class ChatActionsImpl {
       workspace: {
         isOpen: Boolean(state.workspacePanelState.isOpen),
         options: {
-          disableAnimation: Boolean(
-            state.workspacePanelState.options.disableAnimation,
-          ),
           preferredLocation:
             state.workspacePanelState.options.preferredLocation,
         },
+        workspaceID: state.workspacePanelState.workspaceID,
+        additionalData: state.workspacePanelState.additionalData,
       },
+    });
+
+    const workspace = deepFreeze({
+      isOpen: Boolean(state.workspacePanelState.isOpen),
+      options: {
+        preferredLocation: state.workspacePanelState.options.preferredLocation,
+      },
+      workspaceID: state.workspacePanelState.workspaceID,
+      additionalData: state.workspacePanelState.additionalData,
     });
 
     return deepFreeze({
@@ -355,6 +364,7 @@ class ChatActionsImpl {
       activeResponseId: assistantMessageState.activeResponseId ?? null,
       input,
       customPanels,
+      workspace,
     });
   }
 
@@ -841,6 +851,10 @@ class ChatActionsImpl {
       store.dispatch(actions.streamingStart(messageID));
     }
 
+    if (isCompleteItem) {
+      this.warnIfMissingCompleteItemStreamingId(messageID, item);
+    }
+
     if (messageID && item) {
       store.dispatch(
         actions.streamingAddChunk(messageID, item, isCompleteItem),
@@ -859,11 +873,134 @@ class ChatActionsImpl {
     messageID: string | undefined,
     options: AddMessageOptions,
   ) {
-    await this.receive(chunk.final_response, options.isLatestWelcomeNode, null);
+    this.warnIfMissingFinalResponseStreamingIds(
+      messageID,
+      chunk.final_response,
+    );
+    const finalResponse = this.maybePatchFinalResponseItemIds(
+      messageID,
+      chunk.final_response,
+    );
+    await this.receive(finalResponse, options.isLatestWelcomeNode, null);
 
     if (messageID) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);
     }
+  }
+
+  private warnIfMissingCompleteItemStreamingId(
+    messageID: string | undefined,
+    item: DeepPartial<GenericItem> | undefined,
+  ) {
+    if (!item || item.streaming_metadata?.id) {
+      return;
+    }
+    const idLabel = messageID ? ` for message "${messageID}"` : "";
+    consoleWarn(
+      `complete_item${idLabel} is missing streaming_metadata.id. ` +
+        "Include streaming_metadata.id to preserve item identity and avoid remounts.",
+    );
+  }
+
+  private warnIfMissingFinalResponseStreamingIds(
+    messageID: string | undefined,
+    response: MessageResponse,
+  ) {
+    if (!messageID || !response?.output?.generic?.length) {
+      return;
+    }
+    const state = this.serviceManager.store.getState();
+    const { localMessageIDs } = state.assistantMessageState;
+    const { allMessageItemsByID } = state;
+    const hasStreamedItems = localMessageIDs.some(
+      (localMessageID) =>
+        allMessageItemsByID[localMessageID]?.fullMessageID === messageID,
+    );
+    if (!hasStreamedItems) {
+      return;
+    }
+    const missingCount = response.output.generic.filter(
+      (item) => !item?.streaming_metadata?.id,
+    ).length;
+    if (missingCount > 0) {
+      consoleWarn(
+        `final_response for message "${messageID}" contains ${missingCount} item(s) ` +
+          "without streaming_metadata.id. If this response was streamed, include streaming_metadata.id " +
+          "for streamed items to preserve identity and avoid remounts.",
+      );
+    }
+  }
+
+  private maybePatchFinalResponseItemIds(
+    messageID: string | undefined,
+    response: MessageResponse,
+  ): MessageResponse {
+    if (!messageID || !response?.output?.generic?.length) {
+      return response;
+    }
+
+    const state = this.serviceManager.store.getState();
+    const responseItems = response.output.generic;
+    const existingItems = state.assistantMessageState.localMessageIDs
+      .map((localMessageID) => state.allMessageItemsByID[localMessageID])
+      .filter(
+        (localMessage) =>
+          localMessage && localMessage.fullMessageID === messageID,
+      )
+      .map((localMessage) => localMessage.item);
+
+    if (!existingItems.length) {
+      return response;
+    }
+
+    if (existingItems.length !== responseItems.length) {
+      return response;
+    }
+
+    const normalizeItem = (item: GenericItem) => {
+      if (!item) {
+        return item;
+      }
+      const { streaming_metadata: _streamingMetadata, ...rest } =
+        item as GenericItem & { streaming_metadata?: ItemStreamingMetadata };
+      return rest;
+    };
+
+    const itemsMatch = existingItems.every((existingItem, index) =>
+      isEqual(normalizeItem(existingItem), normalizeItem(responseItems[index])),
+    );
+
+    if (!itemsMatch) {
+      return response;
+    }
+
+    let didPatch = false;
+    const nextItems = responseItems.map((item, index) => {
+      const existingId = existingItems[index]?.streaming_metadata?.id;
+      if (!existingId || item?.streaming_metadata?.id) {
+        return item;
+      }
+      didPatch = true;
+      return {
+        ...item,
+        streaming_metadata: {
+          ...(item.streaming_metadata ?? {}),
+          id: existingId,
+        },
+      };
+    });
+
+    if (!didPatch) {
+      return response;
+    }
+
+    return {
+      ...response,
+      output: {
+        ...response.output,
+        generic: nextItems,
+      },
+    };
   }
 
   private resetStopStreamingIfNeeded(
@@ -1051,6 +1188,13 @@ class ChatActionsImpl {
     store.dispatch(actions.setActiveResponseId(fullMessage.id));
 
     store.dispatch(actions.addMessage(fullMessage));
+
+    // When addMessage is called with showStopButtonImmediately enabled, hide the stop button
+    // and revert to legacy behavior (button will show on first chunk if streaming)
+    const messagingConfig = config.public.messaging || {};
+    if (messagingConfig.showStopButtonImmediately) {
+      resetStopStreamingButton(store);
+    }
 
     // The ID of the previous (visible) message item that was added to the store. When adding new items from the
     // response, this is used to ensure that each item is added in the right position.

@@ -51,6 +51,10 @@ interface AppProps {
 function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
+  const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
+  const [workspaceAnimating, setWorkspaceAnimating] = useState<
+    "expanding" | "contracting" | null
+  >(null);
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
   const isSidebarLayout = settings.layout === "sidebar";
@@ -138,9 +142,27 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      homeScreenBeforeInputElement: (
+        <WriteableElementExample
+          location="homeScreenBeforeInputElement"
+          parentStateText={stateText}
+        />
+      ),
       beforeInputElement: (
         <WriteableElementExample
           location="beforeInputElement"
+          parentStateText={stateText}
+        />
+      ),
+      afterInputElement: (
+        <WriteableElementExample
+          location="afterInputElement"
+          parentStateText={stateText}
+        />
+      ),
+      footerElement: (
+        <WriteableElementExample
+          location="footerElement"
           parentStateText={stateText}
         />
       ),
@@ -209,12 +231,37 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     // here we add a handler to the workspace pre open and open events
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
-      handler: customWorkspacePreOpenHandler,
+      handler: (event: BusEvent) => {
+        const { data } = event as BusEventWorkspacePreOpen;
+        console.log(
+          data,
+          "This event can be used to load additional resources into the workspace while displaying a manual loading state. in your writeableElement",
+        );
+        // Expand sidebar when workspace is opening (only in sidebar layout)
+        if (isSidebarLayout) {
+          console.log("Expanding sidebar - workspace opening");
+          setWorkspaceAnimating("expanding");
+          setWorkspaceExpanded(true);
+        }
+      },
     });
 
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: customWorkspaceOpenHandler,
+    });
+
+    // Listen for workspace pre-close to contract the sidebar
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_CLOSE,
+      handler: () => {
+        // Contract sidebar when workspace is closing (only in sidebar layout)
+        if (isSidebarLayout) {
+          console.log("Contracting sidebar - workspace closing");
+          setWorkspaceAnimating("contracting");
+          setWorkspaceExpanded(false);
+        }
+      },
     });
 
     // Handle feedback event.
@@ -247,6 +294,14 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       }
     : undefined;
 
+  // Handle transitionend to remove animation classes
+  const handleTransitionEnd = useCallback((event: React.TransitionEvent) => {
+    // Only handle width transitions
+    if (event.propertyName === "width") {
+      setWorkspaceAnimating(null);
+    }
+  }, []);
+
   // And some logic to add the right classname to our custom element depending on what mode we are in.
   let className = "";
   if (
@@ -256,6 +311,14 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     className = "fullScreen";
   } else if (isSidebarLayout) {
     className = "sidebar";
+    if (workspaceExpanded) {
+      className += " sidebar--expanded";
+    }
+    if (workspaceAnimating === "expanding") {
+      className += " sidebar--expanding";
+    } else if (workspaceAnimating === "contracting") {
+      className += " sidebar--contracting";
+    }
     if (sideBarClosing) {
       className += " sidebar--closing";
     } else if (!sideBarOpen) {
@@ -272,16 +335,18 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
-    <ChatCustomElement
-      {...config}
-      className={className as string}
-      onViewPreChange={onViewPreChange}
-      onViewChange={onViewChange}
-      onBeforeRender={onBeforeRender}
-      renderUserDefinedResponse={renderUserDefinedResponse}
-      renderWriteableElements={renderWriteableElements}
-      serviceDeskFactory={serviceDeskFactory}
-    />
+    <div onTransitionEnd={handleTransitionEnd}>
+      <ChatCustomElement
+        {...config}
+        className={className as string}
+        onViewPreChange={onViewPreChange}
+        onViewChange={onViewChange}
+        onBeforeRender={onBeforeRender}
+        renderUserDefinedResponse={renderUserDefinedResponse}
+        renderWriteableElements={renderWriteableElements}
+        serviceDeskFactory={serviceDeskFactory}
+      />
+    </div>
   );
 }
 
@@ -308,17 +373,6 @@ function customButtonHandler(event: BusEvent) {
     // eslint-disable-next-line no-alert
     window.alert(messageItem.user_defined?.text);
   }
-}
-
-/**
- * Listens for workspace panel pre open event.
- */
-function customWorkspacePreOpenHandler(event: BusEvent) {
-  const { data } = event as BusEventWorkspacePreOpen;
-  console.log(
-    data,
-    "This event can be used to load additional resources into the workspace while displaying a manual loading state. in your writeableElement",
-  );
 }
 
 /**

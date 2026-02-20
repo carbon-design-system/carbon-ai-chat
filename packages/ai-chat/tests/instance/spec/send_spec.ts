@@ -281,5 +281,182 @@ describe("ChatInstance.send", () => {
       expect(preSendCalls[1][0].data.input.text).toBe("Second message");
       expect(preSendCalls[2][0].data.input.text).toBe("Third message");
     });
+
+    describe("Stop button with showStopButtonImmediately", () => {
+      it("shows stop button immediately when enabled", async () => {
+        let resolveCustomSend: () => void;
+        const customSendPromise = new Promise<void>((resolve) => {
+          resolveCustomSend = resolve;
+        });
+
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: true,
+          customSendMessage: async () => {
+            await customSendPromise;
+          },
+        };
+
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(config);
+
+        // Send message
+        const sendPromise = instance.send("Test message");
+
+        // Give it a moment to process
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // Check stop button is visible immediately
+        const state = store.getState();
+        expect(
+          state.assistantInputState.stopStreamingButtonState.isVisible,
+        ).toBe(true);
+
+        // Resolve the custom send to complete the test
+        if (resolveCustomSend) {
+          resolveCustomSend();
+        }
+        await sendPromise;
+      });
+
+      it("does not show stop button immediately when disabled", async () => {
+        let resolveCustomSend: () => void;
+        const customSendPromise = new Promise<void>((resolve) => {
+          resolveCustomSend = resolve;
+        });
+
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: false,
+          customSendMessage: async () => {
+            await customSendPromise;
+          },
+        };
+
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(config);
+
+        // Send message
+        const sendPromise = instance.send("Test message");
+
+        // Give it a moment to process
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // Check stop button is NOT visible (would need streaming metadata)
+        const state = store.getState();
+        expect(
+          state.assistantInputState.stopStreamingButtonState.isVisible,
+        ).toBe(false);
+
+        // Resolve the custom send to complete the test
+        if (resolveCustomSend) {
+          resolveCustomSend();
+        }
+        await sendPromise;
+      });
+
+      it("respects abort signal when stop button functionality is triggered", async () => {
+        let abortCalled = false;
+        let resolveCustomSend: () => void;
+        const customSendPromise = new Promise<void>((resolve) => {
+          resolveCustomSend = resolve;
+        });
+
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: true,
+          customSendMessage: async (message, { signal }) => {
+            signal.addEventListener("abort", () => {
+              abortCalled = true;
+              resolveCustomSend();
+            });
+            await customSendPromise;
+          },
+        };
+
+        const { instance } = await renderChatAndGetInstanceWithStore(config);
+
+        const sendPromise = instance.send("Test message");
+
+        // Give it a moment to start processing
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // Simulate clicking stop button by cancelling via serviceManager
+        await (
+          instance as any
+        ).serviceManager.messageService.cancelCurrentMessageRequest();
+
+        await sendPromise;
+
+        expect(abortCalled).toBe(true);
+      });
+
+      it("hides stop button after message completes", async () => {
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: true,
+          customSendMessage: async () => {
+            // Quick completion
+            await new Promise((resolve) => setTimeout(resolve, 10));
+          },
+        };
+
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(config);
+
+        await instance.send("Test message");
+
+        // After completion, stop button should be hidden
+        const state = store.getState();
+        expect(
+          state.assistantInputState.stopStreamingButtonState.isVisible,
+        ).toBe(false);
+      });
+
+      it("works with delayed responses", async () => {
+        const config = createBaseConfig();
+        config.messaging = {
+          showStopButtonImmediately: true,
+          customSendMessage: async (message, { signal }) => {
+            // Simulate delayed response that can be cancelled
+            return new Promise<void>((resolve, reject) => {
+              const timeoutId = setTimeout(() => {
+                if (signal.aborted) {
+                  reject(new Error("Aborted"));
+                  return;
+                }
+                resolve();
+              }, 100);
+
+              signal.addEventListener("abort", () => {
+                clearTimeout(timeoutId);
+                reject(new Error("Aborted"));
+              });
+            });
+          },
+        };
+
+        const { instance, store } =
+          await renderChatAndGetInstanceWithStore(config);
+
+        const sendPromise = instance.send("Delayed message");
+
+        // Check button is visible during delay
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        let state = store.getState();
+        expect(
+          state.assistantInputState.stopStreamingButtonState.isVisible,
+        ).toBe(true);
+
+        // Let it complete
+        await sendPromise;
+
+        // Button should be hidden after completion
+        state = store.getState();
+        expect(
+          state.assistantInputState.stopStreamingButtonState.isVisible,
+        ).toBe(false);
+      });
+    });
   });
 });

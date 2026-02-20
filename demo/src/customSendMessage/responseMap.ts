@@ -48,17 +48,27 @@ import {
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
 
+const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
+  Object.fromEntries(
+    Object.entries(map).sort(([leftKey], [rightKey]) =>
+      leftKey.localeCompare(rightKey),
+    ),
+  ) as T;
+
 const RESPONSE_MAP: Record<
   string,
   (
     instance: ChatInstance,
     requestOptions?: CustomSendMessageOptions,
   ) => Promise<void> | void
-> = {
+> = sortResponseMap({
   audio: (instance) => doAudio(instance),
   button: (instance) => doButton(instance),
   card: (instance) => doCard(instance),
-  "preview card": (instance) => doPreviewCard(instance),
+  "workspace preview card (open start)": (instance) =>
+    doPreviewCard(instance, "start"),
+  "workspace preview card (open end)": (instance) =>
+    doPreviewCard(instance, "end"),
   carousel: (instance) => doCarousel(instance),
   code: (instance) => doCode(instance),
   "code (stream)": (instance, requestOptions) =>
@@ -121,29 +131,85 @@ const RESPONSE_MAP: Record<
     doTextWithReasoningStepsStreaming(instance, requestOptions),
   "text (stream) with single reasoning trace": (instance, requestOptions) =>
     doTextWithReasoningTraceStreaming(instance, requestOptions),
-  "text (delayed response)": (instance) => {
+  "text (delayed response)": async (instance, requestOptions) => {
+    const signal = requestOptions?.signal;
+
+    // Check if already aborted
+    if (signal?.aborted) {
+      return;
+    }
+
     instance.updateIsMessageLoadingCounter("increase", "Thinking...");
-    setTimeout(() => {
-      instance.updateIsMessageLoadingCounter("decrease");
-      doText(instance);
-    }, 3000);
+
+    // Return a Promise that resolves when the work is done or cancelled
+    return new Promise<void>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        // Double-check signal wasn't aborted during delay
+        if (signal?.aborted) {
+          instance.updateIsMessageLoadingCounter("decrease");
+          reject(new Error("Aborted"));
+          return;
+        }
+        instance.updateIsMessageLoadingCounter("decrease");
+        doText(instance);
+        resolve();
+      }, 3000);
+
+      // Cancel timeout if signal is aborted
+      const abortHandler = () => {
+        clearTimeout(timeoutId);
+        instance.updateIsMessageLoadingCounter("decrease");
+        reject(new Error("Aborted"));
+      };
+      signal?.addEventListener("abort", abortHandler, { once: true });
+    });
   },
-  "text (delayed streaming response)": (instance, requestOptions) => {
+  "text (delayed streaming response)": async (instance, requestOptions) => {
+    const signal = requestOptions?.signal;
+
+    // Check if already aborted
+    if (signal?.aborted) {
+      return;
+    }
+
     instance.updateIsMessageLoadingCounter("increase", "Thinking...");
-    setTimeout(() => {
-      instance.updateIsMessageLoadingCounter("decrease");
-      doTextStreaming(
-        instance,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        requestOptions,
-      );
-    }, 3000);
+
+    // Return a Promise that resolves when the work is done or cancelled
+    return new Promise<void>((resolve, reject) => {
+      const timeoutId = setTimeout(async () => {
+        // Double-check signal wasn't aborted during delay
+        if (signal?.aborted) {
+          instance.updateIsMessageLoadingCounter("decrease");
+          reject(new Error("Aborted"));
+          return;
+        }
+        instance.updateIsMessageLoadingCounter("decrease");
+        try {
+          await doTextStreaming(
+            instance,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            requestOptions,
+          );
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      }, 3000);
+
+      // Cancel timeout if signal is aborted
+      const abortHandler = () => {
+        clearTimeout(timeoutId);
+        instance.updateIsMessageLoadingCounter("decrease");
+        reject(new Error("Aborted"));
+      };
+      signal?.addEventListener("abort", abortHandler, { once: true });
+    });
   },
   "text (consecutive responses)": (instance) => {
     instance.updateIsMessageLoadingCounter("increase", "Thinking...");
@@ -170,6 +236,6 @@ const RESPONSE_MAP: Record<
   "user_defined (stream)": (instance, requestOptions) =>
     doUserDefinedStreaming(instance, requestOptions),
   video: (instance) => doVideo(instance),
-};
+});
 
 export { RESPONSE_MAP };

@@ -76,24 +76,27 @@ export const parameters = {
       cellSize: 8,
       opacity: 0.5,
     },
-    values: [
-      {
+    options: {
+      white: {
         name: "white",
         value: white.background,
       },
-      {
+
+      g10: {
         name: "g10",
         value: g10.background,
       },
-      {
+
+      g90: {
         name: "g90",
         value: g90.background,
       },
-      {
+
+      g100: {
         name: "g100",
         value: g100.background,
       },
-    ],
+    },
   },
   controls: {
     // https://storybook.js.org/docs/react/essentials/controls#show-full-documentation-for-each-property
@@ -136,7 +139,7 @@ export const parameters = {
   // X-Large (1312 - 1584px)
   // Max (>1584)
   viewport: {
-    viewports: {
+    options: {
       sm: {
         name: "Small",
         styles: {

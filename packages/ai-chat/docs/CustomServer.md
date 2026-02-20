@@ -117,6 +117,7 @@ The final response chunk ({@link FinalResponseChunk}) signals the end of all str
 - Triggers cleanup of streaming UI states (like hiding "stop streaming" buttons)
 - Should contain the complete {@link MessageResponse} with all items
 - Must have an `id` matching the `response_id` from previous chunks
+- For any item that was streamed, include `streaming_metadata.id` to preserve identity
 - Represents what you should save in your history store.
 
 Example:
@@ -129,6 +130,9 @@ const finalResponse: MessageResponse = {
       {
         response_type: MessageResponseTypes.TEXT,
         text: finalText,
+        streaming_metadata: {
+          id: "1",
+        },
         message_item_options: {
           feedback: feedbackOptions,
         },

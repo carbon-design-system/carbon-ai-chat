@@ -339,7 +339,7 @@ export class Demo extends LitElement {
 }
 ```
 
-You may also want your `user_defined` responses to stream. In that case, you will want to listen for both {@link BusEventType.USER_DEFINED_RESPONSE} and {@link BusEventType.CHUNK_USER_DEFINED_RESPONSE} events, and make use of the `partialItems` that accumulate over time. The partialItems come back as an array of every chunk received. They are \_not\* concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case.
+You may also want your `user_defined` responses to stream. In that case, you will want to listen for both {@link BusEventType.USER_DEFINED_RESPONSE} and {@link BusEventType.CHUNK_USER_DEFINED_RESPONSE} events, and make use of the `partialItems` that accumulate over time. The partialItems come back as an array of every chunk received. They are \_not\* concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case. If you are streaming via `addMessageChunk`, be sure to include `streaming_metadata.response_id` for the message and `streaming_metadata.id` for each item so chunks correlate correctly.
 
 ```typescript
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";

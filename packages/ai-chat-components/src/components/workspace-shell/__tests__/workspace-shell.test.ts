@@ -84,7 +84,7 @@ describe("aichat workspace shell", function () {
           ?overflow=${true}
           .actions=${actions}
         >
-          <div slot="title" data-fixed>Toolbar</div>
+          <div slot="title">Toolbar</div>
           <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
             <div slot="body-text">
               <p class="secondary">

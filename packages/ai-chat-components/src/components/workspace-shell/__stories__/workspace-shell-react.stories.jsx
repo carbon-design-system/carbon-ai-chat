@@ -109,9 +109,7 @@ export const Default = {
           actions={toolbarAction}
           overflow={toolbarOverflow}
         >
-          <div slot="title" data-fixed>
-            {toolbarTitle}
-          </div>
+          <div slot="title">{toolbarTitle}</div>
           <AILabel
             size="2xs"
             autoalign

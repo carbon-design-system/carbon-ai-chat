@@ -11,7 +11,6 @@ import { LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
 import { createRef } from "lit/directives/ref.js";
@@ -312,19 +311,23 @@ class CDSAIChatMarkdown extends LitElement {
   /**
    * @internal
    */
-  private scheduleRender = throttle(() => {
-    // Lit's getter/setter pipeline can schedule multiple renders quickly.
-    // We capture the active render promise so we can report completion later.
-    const task = this.renderMarkdown();
-    const trackedTask = task.finally(() => {
-      if (this.renderTask === trackedTask) {
-        this.renderTask = null;
-      }
-    });
+  private scheduleRender = throttle(
+    () => {
+      // Lit's getter/setter pipeline can schedule multiple renders quickly.
+      // We capture the active render promise so we can report completion later.
+      const task = this.renderMarkdown();
+      const trackedTask = task.finally(() => {
+        if (this.renderTask === trackedTask) {
+          this.renderTask = null;
+        }
+      });
 
-    this.renderTask = trackedTask;
-    return trackedTask;
-  }, 150);
+      this.renderTask = trackedTask;
+      return trackedTask;
+    },
+    100,
+    { leading: true },
+  );
 
   protected async getUpdateComplete(): Promise<boolean> {
     // `updateComplete` is Lit's public hook for consumers/tests to await

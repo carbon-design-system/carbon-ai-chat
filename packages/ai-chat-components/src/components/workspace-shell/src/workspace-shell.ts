@@ -10,7 +10,6 @@
 import { LitElement, html } from "lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
-// @ts-ignore
 import styles from "./workspace-shell.scss?lit";
 
 /**
@@ -37,10 +36,6 @@ class CDSAIChatWorkspaceShell extends LitElement {
       <slot name="footer"></slot>
     `;
   }
-
-  closeWorkspaceShell = () => {
-    console.log("closes the shell");
-  };
 }
 
 export { CDSAIChatWorkspaceShell };

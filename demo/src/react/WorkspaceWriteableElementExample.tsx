@@ -26,7 +26,13 @@ import Close16 from "@carbon/icons-react/es/Close.js";
 
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
-import { AILabel, Button, InlineNotification, Tag } from "@carbon/react";
+import {
+  AILabel,
+  AILabelContent,
+  Button,
+  InlineNotification,
+  Tag,
+} from "@carbon/react";
 
 interface WorkspaceExampleProps {
   location: string;
@@ -39,6 +45,8 @@ function WorkspaceWriteableElementExample({
   instance,
   parentStateText,
 }: WorkspaceExampleProps) {
+  const workspaceId = instance?.getState()?.workspace?.workspaceID || "unknown";
+
   const handleClose = () => {
     panel?.close();
   };
@@ -130,19 +138,22 @@ function WorkspaceWriteableElementExample({
   return (
     <WorkspaceShell>
       <Toolbar slot="toolbar" actions={toolbarActions} overflow>
-        <div slot="title" data-fixed>
-          Optimizing excess inventory
+        <div slot="title">Optimizing excess inventory</div>
+        <div slot="decorator">
+          <AILabel size="2xs" autoAlign>
+            <AILabelContent>
+              <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
+              <div>
+                IBM watsonx is powered by the latest AI models to intelligently
+                process conversations and provide help whenever and wherever you
+                may need it.
+              </div>
+            </AILabelContent>
+          </AILabel>
         </div>
-        <AILabel size="2xs" autoAlign>
-          <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
-          <div>
-            IBM watsonx is powered by the latest AI models to intelligently
-            process conversations and provide help whenever and wherever you may
-            need it.
-          </div>
-        </AILabel>
       </Toolbar>
       <InlineNotification
+        slot="notification"
         title="Notification Title"
         subtitle="Notification Subtitle"
         kind="warning"
@@ -150,7 +161,7 @@ function WorkspaceWriteableElementExample({
         hideCloseButton
       />
       <WorkspaceShellHeader
-        titleText="Optimizing excess inventory plan"
+        titleText={`Optimizing excess inventory plan (ID: ${workspaceId.substring(0, 8)}...)`}
         subTitleText={`Created on: ${new Date().toLocaleDateString()}`}
       >
         <div slot="header-description">

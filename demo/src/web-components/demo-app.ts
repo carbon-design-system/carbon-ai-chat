@@ -81,19 +81,86 @@ export class DemoApp extends LitElement {
       right: 0;
       top: 48px;
       height: calc(100vh - 48px);
-      width: calc(320px + 1rem);
+      width: 320px;
       z-index: 9999;
-      transition: right 200ms;
+      /* Carbon motion token: motion.$duration-moderate-01 (240ms) with motion.motion(standard, productive) */
+      transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
       visibility: visible;
+    }
+
+    .sidebar--expanded {
+      width: calc(100vw - 320px - 2rem);
+    }
+
+    .sidebar--expanding {
+      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+      transition:
+        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+    }
+
+    .sidebar--contracting {
+      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+      transition:
+        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
     }
 
     .sidebar--closing {
       right: calc(calc(320px + 1rem) * -1);
+      width: 320px;
     }
 
     .sidebar--closed {
       right: calc(calc(320px + 1rem) * -1);
+      width: 320px;
       visibility: hidden;
+    }
+
+    /* RTL support */
+    [dir="rtl"] .sidebar {
+      right: auto;
+      left: 0;
+      /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
+      transition:
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 70ms;
+    }
+
+    [dir="rtl"] .sidebar--expanded {
+      left: 0;
+      right: auto;
+    }
+
+    [dir="rtl"] .sidebar--expanding {
+      /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+      transition:
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 70ms;
+    }
+
+    [dir="rtl"] .sidebar--contracting {
+      /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+      transition:
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 70ms;
+    }
+
+    [dir="rtl"] .sidebar--closing {
+      left: calc(calc(320px + 1rem) * -1);
+      width: 320px;
+    }
+
+    [dir="rtl"] .sidebar--closed {
+      right: auto;
+      left: calc(calc(320px + 1rem) * -1);
+      width: 320px;
+      /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
+      transition:
+        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
+        visibility 0s 0s;
     }
   `;
 
@@ -112,6 +179,12 @@ export class DemoApp extends LitElement {
 
   @state()
   accessor sideBarClosing: boolean = false;
+
+  @state()
+  accessor workspaceExpanded: boolean = false;
+
+  @state()
+  accessor workspaceAnimating: "expanding" | "contracting" | null = null;
 
   @state()
   accessor instance!: ChatInstance;
@@ -203,6 +276,30 @@ export class DemoApp extends LitElement {
     this.instance.on({
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
+    });
+
+    // Listen for workspace pre-open event to expand sidebar
+    this.instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: () => {
+        if (this.settings.layout === "sidebar") {
+          console.log("Web Component: Expanding sidebar - workspace opening");
+          this.workspaceAnimating = "expanding";
+          this.workspaceExpanded = true;
+        }
+      },
+    });
+
+    // Listen for workspace pre-close event to contract sidebar
+    this.instance.on({
+      type: BusEventType.WORKSPACE_PRE_CLOSE,
+      handler: () => {
+        if (this.settings.layout === "sidebar") {
+          console.log("Web Component: Contracting sidebar - workspace closing");
+          this.workspaceAnimating = "contracting";
+          this.workspaceExpanded = false;
+        }
+      },
     });
   };
 
@@ -365,8 +462,26 @@ export class DemoApp extends LitElement {
     );
   }
 
+  handleTransitionEnd = (event: TransitionEvent) => {
+    // Only handle width transitions on the chat element itself
+    if (
+      event.propertyName === "width" &&
+      event.target === event.currentTarget
+    ) {
+      this.workspaceAnimating = null;
+    }
+  };
+
   getSideBarClassName() {
     let className = "sidebar";
+    if (this.workspaceExpanded) {
+      className += " sidebar--expanded";
+    }
+    if (this.workspaceAnimating === "expanding") {
+      className += " sidebar--expanding";
+    } else if (this.workspaceAnimating === "contracting") {
+      className += " sidebar--contracting";
+    }
     if (this.sideBarClosing) {
       className += " sidebar--closing";
     } else if (!this.sideBarOpen) {
@@ -410,6 +525,7 @@ export class DemoApp extends LitElement {
       ${this.settings.layout === "sidebar"
         ? html`<cds-aichat-custom-element
             class=${this.getSideBarClassName()}
+            @transitionend=${this.handleTransitionEnd}
             .config=${this.config}
             .onError=${this.config.onError}
             .openChatByDefault=${this.config.openChatByDefault ?? undefined}

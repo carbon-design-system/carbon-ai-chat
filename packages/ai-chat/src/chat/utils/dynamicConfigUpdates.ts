@@ -141,29 +141,22 @@ export async function applyConfigChangesDynamically(
   // Handle lightweight UI changes coming from public config
   if (changes.lightweightUIChanged) {
     const current = store.getState().assistantInputState;
-    let nextState = current;
+    const nextState = {
+      ...current,
+    };
 
     if (typeof newConfig.input?.isVisible === "boolean") {
       if (current.fieldVisible !== newConfig.input.isVisible) {
-        nextState = {
-          ...nextState,
-          fieldVisible: newConfig.input.isVisible,
-        };
+        nextState.fieldVisible = newConfig.input.isVisible;
       }
     }
 
-    let disableValue: boolean | undefined;
     if (typeof newConfig.input?.isDisabled === "boolean") {
-      disableValue = newConfig.input.isDisabled;
-    } else if (typeof newConfig.isReadonly === "boolean") {
-      disableValue = newConfig.isReadonly;
+      nextState.isDisabled = newConfig.input.isDisabled;
     }
 
-    if (disableValue !== undefined && current.isReadonly !== disableValue) {
-      nextState = {
-        ...nextState,
-        isReadonly: disableValue,
-      };
+    if (typeof newConfig.isReadonly === "boolean") {
+      nextState.isReadonly = newConfig.isReadonly;
     }
 
     if (nextState !== current) {
