@@ -139,7 +139,7 @@
     "lit": "^3.1.0",
     "lodash-es": "^4.17.23",
     "react-player": "2.15.1",
-    "swiper": "^11.1.1",
+    "swiper": "^12.1.2",
     "tabbable": "^6.2.0",
     "tslib": "^2.6.3",
     "use-sync-external-store": "^1.2.0"
