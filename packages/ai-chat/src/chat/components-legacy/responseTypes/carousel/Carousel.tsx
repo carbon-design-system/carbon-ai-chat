@@ -67,15 +67,16 @@ const SwiperCarousel = React.lazy(async () => {
           prevEl: previousButton,
           nextEl: nextButton,
         }}
-        slidesPerView="auto"
+        slidesPerView={1}
         spaceBetween={
           MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT[chatWidthBreakpoint]
         }
         onSlideChange={onSlideChangeInternal}
         slidesOffsetBefore={
-          MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT[chatWidthBreakpoint]
+          MESSAGE_RECEIVED_LEFT_MARGIN_OFFSET_BEFORE_BREAKPOINT[
+            chatWidthBreakpoint
+          ]
         }
-        slidesOffsetAfter={16}
         rewind
       >
         {React.Children.map(children, (child) => (
@@ -93,9 +94,15 @@ const SwiperCarousel = React.lazy(async () => {
 
 // This object holds the left margin value for received messages.
 const MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT = {
-  [ChatWidthBreakpoint.NARROW]: 16,
-  [ChatWidthBreakpoint.STANDARD]: 56,
-  [ChatWidthBreakpoint.WIDE]: 56,
+  [ChatWidthBreakpoint.NARROW]: 32,
+  [ChatWidthBreakpoint.STANDARD]: 72,
+  [ChatWidthBreakpoint.WIDE]: 72,
+};
+
+const MESSAGE_RECEIVED_LEFT_MARGIN_OFFSET_BEFORE_BREAKPOINT = {
+  [ChatWidthBreakpoint.NARROW]: 12,
+  [ChatWidthBreakpoint.STANDARD]: 0,
+  [ChatWidthBreakpoint.WIDE]: 0,
 };
 
 interface CarouselProps {
