@@ -57,7 +57,7 @@ type RenderCustomMessageFooter = (
   message: MessageResponse,
   messageItem: GenericItem,
   instance: ChatInstance,
-  additionalData?: Record<string, unknown>
+  additionalData?: Record<string, unknown>,
 ) => ReactNode | null;
 
 /**
@@ -72,7 +72,7 @@ type RenderCustomMessageFooter = (
  */
 type RenderUserDefinedResponse = (
   state: RenderUserDefinedState,
-  instance: ChatInstance
+  instance: ChatInstance,
 ) => ReactNode;
 
 /**
@@ -128,6 +128,7 @@ interface ChatContainerProps extends PublicConfig {
 
 export {
   ChatContainerProps,
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderWriteableElementResponse,
   RenderUserDefinedState,

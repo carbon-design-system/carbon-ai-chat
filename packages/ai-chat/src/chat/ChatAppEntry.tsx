@@ -18,11 +18,16 @@ import { AriaAnnouncerProvider } from "./providers/AriaAnnouncerProvider";
 import { ServiceManager } from "./services/ServiceManager";
 import {
   attachUserDefinedResponseHandlers,
+  attachCustomFooterHandler,
   initServiceManagerAndInstance,
   mergePublicConfig,
   performInitialViewChange,
 } from "./utils/chatBoot";
 import { UserDefinedResponsePortalsContainer } from "./components/UserDefinedResponsePortalsContainer";
+import {
+  CustomFooterSlotState,
+  CustomFooterPortalsContainer,
+} from "./components/CustomFooterPortalsContainer";
 import { WriteableElementsPortalsContainer } from "./components/WriteableElementsPortalsContainer";
 
 import { useOnMount } from "./hooks/useOnMount";
@@ -36,6 +41,7 @@ import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
 import {
   RenderUserDefinedState,
   RenderUserDefinedResponse,
+  RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
 import type {
@@ -62,6 +68,7 @@ interface AppProps {
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
+  renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
   container: HTMLElement;
   element?: HTMLElement;
@@ -86,6 +93,7 @@ export function ChatAppEntry({
   onBeforeRender,
   onAfterRender,
   renderUserDefinedResponse,
+  renderCustomMessageFooter,
   renderWriteableElements,
   container,
   setParentInstance,
@@ -111,6 +119,10 @@ export function ChatAppEntry({
 
   const [userDefinedResponseEventsBySlot, setUserDefinedResponseEventsBySlot] =
     useState<Record<string, RenderUserDefinedState>>({});
+
+  const [customFooterSlotsByName, setCustomFooterSlotsByName] = useState<
+    Record<string, CustomFooterSlotState>
+  >({});
 
   const previousConfigRef = useRef<PublicConfig | null>(null);
 
@@ -164,6 +176,9 @@ export function ChatAppEntry({
           instance,
           setUserDefinedResponseEventsBySlot,
         );
+
+        attachCustomFooterHandler(instance, setCustomFooterSlotsByName);
+
         setInstances(instance);
 
         if (onBeforeRender) {
@@ -338,6 +353,15 @@ export function ChatAppEntry({
                     userDefinedResponseEventsBySlot={
                       userDefinedResponseEventsBySlot
                     }
+                    chatWrapper={chatWrapper}
+                  />
+                )}
+
+                {renderCustomMessageFooter && (
+                  <CustomFooterPortalsContainer
+                    chatInstance={instance}
+                    renderCustomMessageFooter={renderCustomMessageFooter}
+                    customFooterEventsBySlot={customFooterSlotsByName}
                     chatWrapper={chatWrapper}
                   />
                 )}

@@ -245,6 +245,7 @@ export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-contai
 export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
 
 export {
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,

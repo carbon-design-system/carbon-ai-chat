@@ -242,6 +242,7 @@ export {
 } from "./types/config/LauncherConfig";
 
 export {
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
