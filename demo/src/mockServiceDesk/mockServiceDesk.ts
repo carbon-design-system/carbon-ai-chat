@@ -22,6 +22,8 @@ import {
   ErrorType,
   AgentAvailability,
   MessageResponseTypes,
+  ButtonItem,
+  ButtonItemType,
   VideoItem,
   TextItem,
   UserDefinedItem,
@@ -375,6 +377,8 @@ class MockServiceDesk implements ServiceDesk {
         steps = MESSAGE_THROW();
       } else if (textLower.includes("video")) {
         steps = MESSAGE_VIDEO();
+      } else if (textLower.includes("files")) {
+        steps = MESSAGE_FILES();
       } else if (textLower.includes("custom")) {
         steps = MESSAGE_CUSTOM();
       } else if (textLower.includes("hang")) {
@@ -622,6 +626,7 @@ const HELP_TEXT = `You can send me the messages below to get a specific response
 **message throw**: This will throw an error while sending this message.
 **hang**: The service desk will never respond to this message.
 **leave**: I will leave the chat without ending it.
+**files**: I will insert some file responses.
 **video**: I will insert a video response.
 **custom**: I will insert a custom response.
 **markdown**: I will insert some markdown.`;
@@ -918,6 +923,41 @@ function MESSAGE_THROW(): MockStep[] {
   ];
 }
 
+function MESSAGE_FILES(): MockStep[] {
+  return [
+    {
+      delay: 0,
+      callback: (instance: MockServiceDesk) => {
+        const message: MessageResponse = {
+          output: {
+            generic: [
+              assertType<ButtonItem>({
+                response_type:
+                  MessageResponseTypes.BUTTON as unknown as MessageResponseTypes,
+                kind: "LINK",
+                button_type: ButtonItemType.URL,
+                url: "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/cat-1950632_1280.jpg",
+                label: "Grump Cat.png",
+                target: "_blank",
+              }),
+              assertType<ButtonItem>({
+                response_type:
+                  MessageResponseTypes.BUTTON as unknown as MessageResponseTypes,
+                kind: "LINK",
+                button_type: ButtonItemType.URL,
+                url: "https://web-chat.global.assistant.test.watson.appdomain.cloud/assets/maine-coon-694730_1280.jpg",
+                target: "_blank",
+              }),
+            ],
+          },
+        };
+
+        instance.sendMessageToUser(message, instance.mockState.currentAgent.id);
+      },
+    },
+  ];
+}
+
 function MESSAGE_VIDEO(): MockStep[] {
   return [
     {
@@ -1023,6 +1063,7 @@ export {
   MOCK_AGENT_PROFILE_EMPTY,
   MESSAGE_TO_AGENT_MULTIPLE,
   MESSAGE_TO_AGENT_TEXT,
+  MESSAGE_FILES,
   MESSAGE_VIDEO,
   MESSAGE_CUSTOM,
   MESSAGE_GARRUS_MESSAGE,
