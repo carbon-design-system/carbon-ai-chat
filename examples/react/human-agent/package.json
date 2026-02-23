@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-human-agent",
   "private": true,
-  "version": "1.7.0-rc.0",
+  "version": "1.7.0",
   "type": "module",
   "description": "A basic example using @carbon/ai-chat as a React component with a human agent.",
   "scripts": {
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.7.0-rc.0",
+    "@carbon/ai-chat": "^1.7.0",
     "@carbon/web-components": "^2.46.0",
     "lit": "^3.1.0",
     "react": "^19.0.0",
