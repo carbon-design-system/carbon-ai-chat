@@ -45,6 +45,21 @@ jobs:
         run: cd packages/ai-chat-components && npm run build
       - name: Run test
         run: npm run test
+      - name: Check for uncommitted changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Build or test process generated or modified files that are not committed."
+            echo "::error::This will cause Lerna publish to fail. Please commit these changes or update .gitignore."
+            echo ""
+            echo "Modified files:"
+            git status --porcelain
+            echo ""
+            echo "Detailed changes:"
+            git diff
+            exit 1
+          else
+            echo "✓ No uncommitted changes detected"
+          fi
 
   format:
     runs-on: ubuntu-latest
