@@ -8,6 +8,7 @@
  */
 
 import React from "react";
+import IntlMessageFormat from "intl-messageformat";
 
 import { useIntl } from "../../hooks/useIntl";
 import { isNil } from "../../utils/lang/langUtils";
@@ -27,10 +28,11 @@ function AvailabilityMessage({
   availability,
   fallbackText,
 }: AvailabilityMessageProps) {
-  const { formatMessage } = useIntl();
+  const { locale, messages } = useIntl();
   let availabilityKey: keyof LanguagePack;
   let availabilityValues: Record<string, any>;
   let availabilityText: string;
+
   if (!isNil(availability?.estimatedWaitTime)) {
     availabilityKey = "agent_connectingMinutes";
     availabilityValues = { time: availability.estimatedWaitTime };
@@ -48,28 +50,17 @@ function AvailabilityMessage({
       <RichText overrideSanitize text={availabilityText} highlight={true} />
     );
   }
-  return (
-    <span>
-      {formatMessage(
-        { id: availabilityKey as unknown as string },
-        addHTMLSupport(availabilityValues),
-      )}
-    </span>
-  );
-}
 
-function addHTMLSupport(values: Record<string, any>) {
-  values.b = handleBTag;
-  values.br = handleBRTag;
-  return values;
-}
+  const message = messages[availabilityKey as string];
+  const formatter = new IntlMessageFormat(message, locale);
+  const formattedParts = formatter.format({
+    ...availabilityValues,
+    b: (chunks: any) => <b>{chunks}</b>,
+    br: () => <br />,
+  });
 
-function handleBTag(chunks: any) {
-  return <b>{chunks}</b>;
-}
-
-function handleBRTag() {
-  return <br />;
+  // IntlMessageFormat returns an array when there are rich text elements
+  return <span>{formattedParts}</span>;
 }
 
 export { AvailabilityMessage };
