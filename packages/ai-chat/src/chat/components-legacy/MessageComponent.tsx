@@ -253,7 +253,7 @@ interface MessageState {
   /**
    * Tracks whether each reasoning step has a user-controlled open state.
    */
-  reasoningStepUserControlledStates: boolean[];
+  reasoningStepUserControlStates: boolean[];
 
   /**
    * Tracks if auto-controlled reasoning has already collapsed due to response content.
@@ -275,7 +275,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     focusHandleHasFocus: false,
     autoReasoningContainerOpen: true,
     autoReasoningStepOpenStates: [],
-    reasoningStepUserControlledStates: [],
+    reasoningStepUserControlStates: [],
     autoReasoningHasAutoCollapsed: false,
   };
 
@@ -666,7 +666,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
               stepOpenState !== ReasoningStepOpenState.DEFAULT;
             const autoState = this.state.autoReasoningStepOpenStates[index];
             const isUserControlled =
-              this.state.reasoningStepUserControlledStates[index];
+              this.state.reasoningStepUserControlStates[index];
             const stepOpen =
               hasExplicitStepState && !isUserControlled
                 ? stepOpenState === ReasoningStepOpenState.OPEN
@@ -680,7 +680,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             const stepToggleHandler = (
               event: CustomEvent<{ open: boolean }>,
             ) => {
-              console.log("stepToggleHandler", event.detail.open);
               this.handleUserControlReasoningStep(index);
               this.handleAutoReasoningStepToggle(index, event);
             };
@@ -815,9 +814,17 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       const nextStepStates =
         hasMatchingLength && prevStepStates.length
           ? prevStepStates
-          : reasoningSteps.map((_, index) =>
-              index === lastIndex ? containerOpen : false,
-            );
+          : reasoningSteps.map((_, index) => {
+              const isUserControlled =
+                prevState.reasoningStepUserControlStates[index];
+              if (
+                isUserControlled &&
+                typeof prevStepStates[index] === "boolean"
+              ) {
+                return prevStepStates[index];
+              }
+              return index === lastIndex ? containerOpen : false;
+            });
 
       let containerChanged = false;
       let stepsChanged =
@@ -838,7 +845,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       }
 
       const stepStates = shouldClose
-        ? nextStepStates.map(() => false)
+        ? nextStepStates.map((state, index) => {
+            // Don't close user-controlled steps even when shouldClose is true
+            const isUserControlled =
+              prevState.reasoningStepUserControlStates[index];
+            return isUserControlled ? state : false;
+          })
         : nextStepStates;
 
       if (
@@ -884,7 +896,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     index: number,
     event: CustomEvent<{ open: boolean }>,
   ) => {
-    console.log("handleReasongStepToggle");
     const open = Boolean(event?.detail?.open);
     this.setState((prevState) => {
       if (prevState.autoReasoningStepOpenStates[index] === open) {
@@ -892,7 +903,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       }
       const nextStates = prevState.autoReasoningStepOpenStates.slice();
       nextStates[index] = open;
-      console.log("nextAutoReasoningStepStates", nextStates);
       return {
         autoReasoningStepOpenStates: nextStates,
       };
@@ -908,9 +918,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       this.props.message?.message_options?.reasoning?.steps ?? [];
 
     this.setState((prevState) => {
-      const prevStepStates =
-        prevState.reasoningStepUserControlledStates.slice();
-      const nextStepStates = reasoningSteps.map(() => false);
+      const prevStepStates = prevState.reasoningStepUserControlStates;
+
+      const nextStepStates = reasoningSteps.map(
+        (_, index) => prevStepStates[index] ?? false,
+      );
 
       const stepsChanged =
         nextStepStates.length !== prevStepStates.length ||
@@ -918,7 +930,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
       if (stepsChanged) {
         return {
-          reasoningStepUserControlledStates: nextStepStates,
+          reasoningStepUserControlStates: nextStepStates,
         };
       }
 
@@ -928,14 +940,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   private handleUserControlReasoningStep = (index: number) => {
     this.setState((prevState) => {
-      if (prevState.reasoningStepUserControlledStates[index] === true) {
+      if (prevState.reasoningStepUserControlStates[index] === true) {
         return null;
       }
-      const nextStates = prevState.reasoningStepUserControlledStates.slice();
+      const nextStates = prevState.reasoningStepUserControlStates.slice();
       nextStates[index] = true;
-      console.log("nextUserControlStates", nextStates);
       return {
-        reasoningStepUserControlledStates: nextStates,
+        reasoningStepUserControlStates: nextStates,
       };
     });
   };
