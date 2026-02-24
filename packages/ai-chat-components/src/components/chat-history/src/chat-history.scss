@@ -109,6 +109,7 @@
 :host(#{$prefix}-history-panel-items) {
   @extend :host(#{$cds-prefix}-side-nav-items);
 
+  position: relative;
   padding: 0;
 }
 
@@ -135,6 +136,8 @@
 :host(#{$prefix}-history-panel-item),
 :host(#{$prefix}-history-search-item) {
   @extend :host(#{$cds-prefix}-side-nav-menu-item);
+
+  position: relative;
 
   .#{$cds-prefix}--side-nav__link {
     @include type.type-style("body-01");
