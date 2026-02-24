@@ -478,9 +478,14 @@ export enum WriteableElementName {
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
 
   /**
-   * An element to be housed in the custom panel.
+   * An element to be housed in the workspace panel.
    */
   WORKSPACE_PANEL_ELEMENT = "workspacePanelElement",
+
+  /**
+   * An element to be housed in the history panel.
+   */
+  HISTORY_PANEL_ELEMENT = "historyPanelElement",
 }
 
 /**
