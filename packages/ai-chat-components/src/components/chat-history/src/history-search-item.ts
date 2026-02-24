@@ -13,8 +13,8 @@ import { classMap } from "lit/directives/class-map.js";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
-import HostListener from "@carbon/web-components/es/globals/decorators/host-listener";
-import HostListenerMixin from "@carbon/web-components/es/globals/mixins/host-listener";
+import HostListener from "@carbon/web-components/es/globals/decorators/host-listener.js";
+import HostListenerMixin from "@carbon/web-components/es/globals/mixins/host-listener.js";
 import styles from "./chat-history.scss?lit";
 
 /**
