@@ -13,6 +13,7 @@ import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import Home16 from "@carbon/icons/es/home/16.js";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
+import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
 import SidePanelClose16 from "@carbon/icons/es/side-panel--close/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
@@ -60,6 +61,7 @@ const CloseLarge = carbonIconToReact(CloseLarge16);
 const Home = carbonIconToReact(Home16);
 const OverflowMenuVertical = carbonIconToReact(OverflowMenuVertical16);
 const Restart = carbonIconToReact(Restart16);
+const RightPanelClose = carbonIconToReact(RightPanelClose16);
 const SidePanelClose = carbonIconToReact(SidePanelClose16);
 const SubtractLarge = carbonIconToReact(SubtractLarge16);
 
@@ -327,7 +329,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     case MinimizeButtonIconType.SIDE_PANEL_RIGHT:
       closeIsReversible = false;
       closeReverseIcon = true;
-      closeIcon = <SidePanelClose aria-label={closeButtonLabel} slot="icon" />;
+      closeIcon = <RightPanelClose aria-label={closeButtonLabel} slot="icon" />;
       break;
     default: {
       closeIcon = <SubtractLarge aria-label={closeButtonLabel} slot="icon" />;
