@@ -120,9 +120,11 @@ const defaultReasoningSteps: ReasoningStep[] = [
     title: "Interpret the request",
     content:
       "Identified the user's main objective and clarified any constraints so downstream steps share the same intent. Parsed the tone, looked for safety-sensitive terms, and expanded acronyms to avoid ambiguity before moving on.",
+    open_state: ReasoningStepOpenState.CLOSE,
   },
   {
     title: "Considering",
+    open_state: ReasoningStepOpenState.CLOSE,
   },
   {
     title: "Check supporting documents",
@@ -162,19 +164,23 @@ Called **search_docs** tool:
   }
 }
 \`\`\``,
+    open_state: ReasoningStepOpenState.CLOSE,
   },
   {
     title: "Reading data",
+    open_state: ReasoningStepOpenState.CLOSE,
   },
   {
     title: "Evaluate possible solutions",
     content:
       "Compared internal guidance with the latest public documentation to find an approach that balances accuracy and safety. Considered two alternate paths, noted tradeoffs, and picked the one with the fewest edge cases for a quick, stable response.",
+    open_state: ReasoningStepOpenState.CLOSE,
   },
   {
     title: "Compose the response",
     content:
       "Structured the final answer with plain-language explanations and cited the most trustworthy sources. Included a short summary up front, followed by detailed steps and inline notes on where the information originated. Added a brief safety check to ensure no speculative claims slipped in.",
+    open_state: ReasoningStepOpenState.CLOSE,
   },
 ];
 

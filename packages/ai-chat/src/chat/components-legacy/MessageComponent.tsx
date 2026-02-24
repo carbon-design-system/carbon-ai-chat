@@ -251,6 +251,11 @@ interface MessageState {
   autoReasoningStepOpenStates: boolean[];
 
   /**
+   * Tracks whether each reasoning step has a user-controlled open state.
+   */
+  reasoningStepUserControlledStates: boolean[];
+
+  /**
    * Tracks if auto-controlled reasoning has already collapsed due to response content.
    */
   autoReasoningHasAutoCollapsed: boolean;
@@ -270,6 +275,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     focusHandleHasFocus: false,
     autoReasoningContainerOpen: true,
     autoReasoningStepOpenStates: [],
+    reasoningStepUserControlledStates: [],
     autoReasoningHasAutoCollapsed: false,
   };
 
@@ -657,20 +663,25 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
               typeof stepOpenState !== "undefined" &&
               stepOpenState !== ReasoningStepOpenState.DEFAULT;
             const autoState = this.state.autoReasoningStepOpenStates[index];
-            const stepOpen = hasExplicitStepState
-              ? stepOpenState === ReasoningStepOpenState.OPEN
-              : isAutoControlled
-                ? typeof autoState === "boolean"
-                  ? autoState
-                  : index === steps.length - 1
-                    ? containerOpen
-                    : false
-                : containerOpen && index === steps.length - 1;
-            const stepToggleHandler =
-              isAutoControlled && !hasExplicitStepState
-                ? (event: CustomEvent<{ open: boolean }>) =>
-                    this.handleAutoReasoningStepToggle(index, event)
-                : undefined;
+            const isUserControlled =
+              this.state.reasoningStepUserControlledStates[index];
+            const stepOpen =
+              hasExplicitStepState && !isUserControlled
+                ? stepOpenState === ReasoningStepOpenState.OPEN
+                : isAutoControlled || isUserControlled
+                  ? typeof autoState === "boolean"
+                    ? autoState
+                    : index === steps.length - 1
+                      ? containerOpen
+                      : false
+                  : containerOpen && index === steps.length - 1;
+            const stepToggleHandler = (
+              event: CustomEvent<{ open: boolean }>,
+            ) => {
+              console.log("stepToggleHandler", event.detail.open);
+              this.handleUserControlReasoningStep(index);
+              this.handleAutoReasoningStepToggle(index, event);
+            };
 
             const stepContent = step.content ? (
               <RichText
@@ -871,9 +882,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     index: number,
     event: CustomEvent<{ open: boolean }>,
   ) => {
-    if (!this.isAutoReasoning(this.props.message)) {
-      return;
-    }
+    console.log("handleReasongStepToggle");
     const open = Boolean(event?.detail?.open);
     this.setState((prevState) => {
       if (prevState.autoReasoningStepOpenStates[index] === open) {
@@ -881,8 +890,69 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       }
       const nextStates = prevState.autoReasoningStepOpenStates.slice();
       nextStates[index] = open;
+      console.log("nextAutoReasoningStepStates", nextStates);
       return {
         autoReasoningStepOpenStates: nextStates,
+      };
+    });
+  };
+
+  // private syncUserControlReasoningState() {
+  //   if (
+  //     !isResponse(this.props.message)
+  //   ) {
+  //     return;
+  //   }
+
+  //   const reasoningSteps =
+  //     this.props.message?.message_options?.reasoning?.steps ?? [];
+
+  //   this.setState((prevState) => {
+  //     const prevStepStates = prevState.reasoningStepUserControlledStates.slice(
+  //       0,
+  //       reasoningSteps.length,
+  //     );
+
+  //     const hasMatchingLength = prevStepStates.length === reasoningSteps.length;
+
+  //     const nextStepStates =
+  //       hasMatchingLength && prevStepStates.length
+  //         ? prevStepStates
+  //         : reasoningSteps.map((_, index) =>
+  //          false,
+  //           );
+
+  //     let stepsChanged =
+  //       nextStepStates.length !==
+  //         prevState.reasoningStepUserControlledStates.length ||
+  //       nextStepStates.some(
+  //         (value, index) =>
+  //           value !== prevState.reasoningStepUserControlledStates[index],
+  //       );
+
+  //     const stepStates = nextStepStates.map(() => false)
+  //     if (
+  //       stepsChanged
+  //     ) {
+  //       return {
+  //         autoReasoningStepOpenStates: stepStates,
+  //       };
+  //     }
+
+  //     return null;
+  //   });
+  // }
+
+  private handleUserControlReasoningStep = (index: number) => {
+    this.setState((prevState) => {
+      if (prevState.reasoningStepUserControlledStates[index] === true) {
+        return null;
+      }
+      const nextStates = prevState.reasoningStepUserControlledStates.slice();
+      nextStates[index] = true;
+      console.log("nextUserControlStates", nextStates);
+      return {
+        reasoningStepUserControlledStates: nextStates,
       };
     });
   };
