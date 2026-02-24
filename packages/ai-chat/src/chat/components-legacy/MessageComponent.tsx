@@ -341,6 +341,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       );
     }
     this.syncAutoReasoningState();
+    this.syncUserControlReasoningState();
   }
 
   componentDidUpdate() {
@@ -352,6 +353,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       );
     }
     this.syncAutoReasoningState();
+    this.syncUserControlReasoningState();
   }
 
   /**
@@ -897,51 +899,32 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     });
   };
 
-  // private syncUserControlReasoningState() {
-  //   if (
-  //     !isResponse(this.props.message)
-  //   ) {
-  //     return;
-  //   }
+  private syncUserControlReasoningState() {
+    if (!isResponse(this.props.message)) {
+      return;
+    }
 
-  //   const reasoningSteps =
-  //     this.props.message?.message_options?.reasoning?.steps ?? [];
+    const reasoningSteps =
+      this.props.message?.message_options?.reasoning?.steps ?? [];
 
-  //   this.setState((prevState) => {
-  //     const prevStepStates = prevState.reasoningStepUserControlledStates.slice(
-  //       0,
-  //       reasoningSteps.length,
-  //     );
+    this.setState((prevState) => {
+      const prevStepStates =
+        prevState.reasoningStepUserControlledStates.slice();
+      const nextStepStates = reasoningSteps.map(() => false);
 
-  //     const hasMatchingLength = prevStepStates.length === reasoningSteps.length;
+      const stepsChanged =
+        nextStepStates.length !== prevStepStates.length ||
+        nextStepStates.some((value, index) => value !== prevStepStates[index]);
 
-  //     const nextStepStates =
-  //       hasMatchingLength && prevStepStates.length
-  //         ? prevStepStates
-  //         : reasoningSteps.map((_, index) =>
-  //          false,
-  //           );
+      if (stepsChanged) {
+        return {
+          reasoningStepUserControlledStates: nextStepStates,
+        };
+      }
 
-  //     let stepsChanged =
-  //       nextStepStates.length !==
-  //         prevState.reasoningStepUserControlledStates.length ||
-  //       nextStepStates.some(
-  //         (value, index) =>
-  //           value !== prevState.reasoningStepUserControlledStates[index],
-  //       );
-
-  //     const stepStates = nextStepStates.map(() => false)
-  //     if (
-  //       stepsChanged
-  //     ) {
-  //       return {
-  //         autoReasoningStepOpenStates: stepStates,
-  //       };
-  //     }
-
-  //     return null;
-  //   });
-  // }
+      return null;
+    });
+  }
 
   private handleUserControlReasoningStep = (index: number) => {
     this.setState((prevState) => {
