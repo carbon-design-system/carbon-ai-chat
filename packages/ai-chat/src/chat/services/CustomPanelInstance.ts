@@ -46,7 +46,9 @@ function createCustomPanelInstance(
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
 
   const customPanelInstance: CustomPanelInstance = {
-    open(options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions) {
+    async open(
+      options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions,
+    ) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const { store, eventBus, instance } = serviceManager;
@@ -79,7 +81,7 @@ function createCustomPanelInstance(
         const { workspaceID, localMessageItem, fullMessage, additionalData } =
           state.workspacePanelState;
 
-        eventBus.fire(
+        await eventBus.fire(
           {
             type: BusEventType.WORKSPACE_PRE_OPEN,
             data: {
@@ -102,7 +104,7 @@ function createCustomPanelInstance(
         const { workspaceID, localMessageItem, fullMessage, additionalData } =
           state.workspacePanelState;
 
-        eventBus.fire(
+        await eventBus.fire(
           {
             type: BusEventType.WORKSPACE_OPEN,
             data: {
@@ -117,7 +119,7 @@ function createCustomPanelInstance(
       }
     },
 
-    close() {
+    async close() {
       const { store, eventBus, instance } = serviceManager;
 
       // For workspace panel, capture state BEFORE closing to preserve data for events
@@ -135,7 +137,7 @@ function createCustomPanelInstance(
         };
 
         // Fire pre-close event
-        eventBus.fire(
+        await eventBus.fire(
           {
             type: BusEventType.WORKSPACE_PRE_CLOSE,
             data: workspaceEventData,
@@ -148,7 +150,7 @@ function createCustomPanelInstance(
 
       // Fire close event for workspace panel using captured data
       if (panelType === PanelType.WORKSPACE && workspaceEventData) {
-        eventBus.fire(
+        await eventBus.fire(
           {
             type: BusEventType.WORKSPACE_CLOSE,
             data: workspaceEventData,

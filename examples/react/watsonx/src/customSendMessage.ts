@@ -13,6 +13,7 @@ import {
   MessageResponse,
   MessageResponseTypes,
   MessageRequest,
+  type PartialItemChunkWithId,
 } from "@carbon/ai-chat";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { getWatsonxConfig } from "./watsonxConfig";
@@ -64,7 +65,7 @@ async function streamWatsonxResponse(
     // Get access token
     const accessToken = await getAccessToken();
 
-    // Generate unique IDs for this streaming session
+    // Generate stable IDs for this streaming session (response + item)
     const responseId = `watsonx-${Date.now()}-${Math.random()
       .toString(36)
       .substring(2, 11)}`;
@@ -127,7 +128,7 @@ async function streamWatsonxResponse(
 
               if (shouldFlush && textBuffer.trim()) {
                 // Send buffered text as a chunk to preserve markdown structure
-                const chunk = {
+                const chunk: PartialItemChunkWithId = {
                   partial_item: {
                     response_type: MessageResponseTypes.TEXT,
                     text: textBuffer,
@@ -149,7 +150,7 @@ async function streamWatsonxResponse(
             if (result.stop_reason && result.stop_reason !== "not_finished") {
               // Flush any remaining buffer
               if (textBuffer.trim()) {
-                const bufferChunk = {
+                const bufferChunk: PartialItemChunkWithId = {
                   partial_item: {
                     response_type: MessageResponseTypes.TEXT,
                     text: textBuffer,
@@ -180,6 +181,23 @@ async function streamWatsonxResponse(
               };
 
               instance.messaging.addMessageChunk(finalChunk);
+              const finalResponse: MessageResponse = {
+                id: responseId,
+                output: {
+                  generic: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: accumulatedText,
+                      streaming_metadata: {
+                        id: itemId,
+                      },
+                    },
+                  ],
+                },
+              };
+              instance.messaging.addMessageChunk({
+                final_response: finalResponse,
+              });
               // fetchEventSource will handle completion automatically
             }
           }

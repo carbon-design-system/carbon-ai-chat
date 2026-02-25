@@ -12,19 +12,25 @@ import {
   BusEventType,
   BusEventWorkspacePreOpen,
   BusEventWorkspaceOpen,
+  BusEventWorkspaceClose,
   CarbonTheme,
-  ChatContainer,
+  ChatCustomElement,
   ChatInstance,
   PublicConfig,
+  RenderUserDefinedState,
+  PanelType,
 } from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "@carbon/styles/css/styles.css";
 
 // These functions hook up to your back-end.
 import { customSendMessage } from "./customSendMessage";
-// Workspace writeable element component
-import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
+// Workspace writeable element components
+import { InventoryReportExample } from "./InventoryReportExample";
+import { InventoryStatusExample } from "./InventoryStatusExample";
+import { OutstandingOrdersExample } from "./OutstandingOrdersExample";
+import { OutstandingOrdersCard } from "./OutstandingOrdersCard";
 
 /**
  * It is preferable to create your configuration object outside of your React functions. You can also make use of
@@ -37,12 +43,24 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
+  layout: {
+    showFrame: false,
+    customProperties: {
+      "messages-max-width": `max(60vw, 672px)`,
+    },
+  },
+  openChatByDefault: true,
   injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
+  const [workspaceData, setWorkspaceData] = useState<{
+    type: string | null;
+    workspaceId?: string;
+    additionalData?: any;
+  }>({ type: null });
 
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
@@ -57,6 +75,12 @@ function App() {
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: customWorkspaceOpenHandler,
+    });
+
+    // Handle workspace close event
+    instance.on({
+      type: BusEventType.WORKSPACE_CLOSE,
+      handler: customWorkspaceCloseHandler,
     });
   }
 
@@ -86,26 +110,124 @@ function App() {
   function customWorkspaceOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceOpen;
     console.log(data, "Workspace panel opened");
+
+    // Extract workspace data from the event
+    const { workspaceId, additionalData } = data;
+    const type = (additionalData as { type?: string })?.type || null;
+    setWorkspaceData({ type, workspaceId, additionalData });
   }
 
-  const renderWriteableElements = useMemo(
-    () => ({
-      workspacePanelElement: instance ? (
-        <WorkspaceWriteableElementExample
-          location="workspacePanelElement"
-          instance={instance}
-          parentStateText={stateText}
-        />
-      ) : null,
-    }),
-    [instance, stateText],
+  /**
+   * Listens for workspace panel close event.
+   */
+  function customWorkspaceCloseHandler(event: BusEvent) {
+    const { data } = event as BusEventWorkspaceClose;
+    console.log(data, "Workspace panel closed");
+
+    // Clear workspace data when panel closes
+    setWorkspaceData({ type: null });
+  }
+
+  /**
+   * Handler for user_defined response types.
+   */
+  const renderUserDefinedResponse = useCallback(
+    (state: RenderUserDefinedState, _instance: ChatInstance) => {
+      const { messageItem } = state;
+      if (messageItem) {
+        switch (messageItem.user_defined?.user_defined_type) {
+          case "outstanding_orders_card":
+            return (
+              <OutstandingOrdersCard
+                workspaceId={messageItem.user_defined.workspace_id as string}
+                onMaximize={() => {
+                  // Open workspace using the customPanels API
+                  const workspaceId = messageItem.user_defined
+                    ?.workspace_id as string;
+                  const additionalData =
+                    messageItem.user_defined?.additional_data;
+
+                  // Set workspace data for rendering
+                  setWorkspaceData({
+                    type: (additionalData as { type?: string })?.type || null,
+                    workspaceId,
+                    additionalData,
+                  });
+
+                  // Open the workspace panel
+                  const panel = _instance.customPanels?.getPanel(
+                    PanelType.WORKSPACE,
+                  );
+                  if (panel) {
+                    panel.open({
+                      workspaceId,
+                      additionalData,
+                    });
+                  }
+                }}
+              />
+            );
+          default:
+            return undefined;
+        }
+      }
+      return undefined;
+    },
+    [],
   );
 
+  const renderWriteableElements = useMemo(() => {
+    if (!instance || !workspaceData.type) {
+      return { workspacePanelElement: null };
+    }
+
+    let component;
+    switch (workspaceData.type) {
+      case "inventory_report":
+        component = (
+          <InventoryReportExample
+            location="workspacePanelElement"
+            instance={instance}
+            parentStateText={stateText}
+            workspaceId={workspaceData.workspaceId}
+            additionalData={workspaceData.additionalData}
+          />
+        );
+        break;
+      case "inventory_status":
+        component = (
+          <InventoryStatusExample
+            location="workspacePanelElement"
+            instance={instance}
+            workspaceId={workspaceData.workspaceId}
+            additionalData={workspaceData.additionalData}
+          />
+        );
+        break;
+      case "outstanding_orders":
+        component = (
+          <OutstandingOrdersExample
+            location="workspacePanelElement"
+            instance={instance}
+            workspaceId={workspaceData.workspaceId}
+            additionalData={workspaceData.additionalData}
+          />
+        );
+        break;
+      default:
+        component = null;
+    }
+
+    return { workspacePanelElement: component };
+  }, [instance, workspaceData, stateText]);
+
   return (
-    <ChatContainer
+    <ChatCustomElement
+      className="chat-custom-element"
       {...config}
       // Set the instance into state for usage.
       onBeforeRender={onBeforeRender}
+      renderUserDefinedResponse={renderUserDefinedResponse}
       renderWriteableElements={renderWriteableElements}
     />
   );

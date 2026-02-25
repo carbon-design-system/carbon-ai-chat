@@ -200,5 +200,11 @@
   "chainOfThought_statusProcessingLabel": "Processing",
   "chainOfThought_explainabilityLabel": "How did I get this answer?",
   "reasoningSteps_mainLabelOpen": "Hide reasoning",
-  "reasoningSteps_mainLabelClosed": "Show reasoning"
+  "reasoningSteps_mainLabelClosed": "Show reasoning",
+  "workspace_opened": "Workspace opened: {title}",
+  "workspace_opened_no_title": "Workspace opened",
+  "workspace_closed": "Workspace closed, returned to chat",
+  "aria_workspaceRegion": "Workspace panel",
+  "aria_historyRegion": "Conversation history",
+  "aria_messagesRegion": "Chat messages"
 }

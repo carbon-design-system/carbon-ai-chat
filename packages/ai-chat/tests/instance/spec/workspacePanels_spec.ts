@@ -73,7 +73,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       expect(state.workspacePanelState.isOpen).toBe(false);
 
       // Open panel
-      panel.open();
+      await panel.open();
 
       // Verify Redux state updated
       state = store.getState();
@@ -92,7 +92,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
         preferredLocation: "start",
       };
 
-      panel.open(workspaceOptions);
+      await panel.open(workspaceOptions);
 
       const state = store.getState();
       expect(state.workspacePanelState.isOpen).toBe(true);
@@ -110,7 +110,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
         workspaceId: "workspace-123",
       };
 
-      panel.open(workspaceOptions);
+      await panel.open(workspaceOptions);
 
       const state = store.getState();
       expect(state.workspacePanelState.isOpen).toBe(true);
@@ -130,7 +130,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
         additionalData: { userId: "user-789", context: "test" },
       };
 
-      panel.open(workspaceOptions);
+      await panel.open(workspaceOptions);
 
       const state = store.getState();
       expect(state.workspacePanelState.isOpen).toBe(true);
@@ -152,7 +152,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
         additionalData: { test: "data" },
       };
 
-      panel.open(workspaceOptions);
+      await panel.open(workspaceOptions);
 
       const state = store.getState();
       expect(state.workspacePanelState.isOpen).toBe(true);
@@ -171,7 +171,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
       // Open with data
-      panel.open({
+      await panel.open({
         preferredLocation: "start",
         workspaceId: "workspace-123",
         additionalData: { test: "data" },
@@ -182,7 +182,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       expect(state.workspacePanelState.workspaceID).toBe("workspace-123");
 
       // Close the panel
-      panel.close();
+      await panel.close();
 
       // Verify Redux state reset
       state = store.getState();
@@ -200,19 +200,19 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
       // First cycle
-      panel.open({
+      await panel.open({
         workspaceId: "workspace-1",
         additionalData: { cycle: 1 },
       });
       let state = store.getState();
       expect(state.workspacePanelState.workspaceID).toBe("workspace-1");
 
-      panel.close();
+      await panel.close();
       state = store.getState();
       expect(state.workspacePanelState.workspaceID).toBeUndefined();
 
       // Second cycle with different data
-      panel.open({
+      await panel.open({
         workspaceId: "workspace-2",
         additionalData: { cycle: 2 },
       });
@@ -220,7 +220,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       expect(state.workspacePanelState.workspaceID).toBe("workspace-2");
       expect(state.workspacePanelState.additionalData).toEqual({ cycle: 2 });
 
-      panel.close();
+      await panel.close();
       state = store.getState();
       expect(state.workspacePanelState.workspaceID).toBeUndefined();
       expect(state.workspacePanelState.additionalData).toBeUndefined();
@@ -233,28 +233,34 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
+      let preOpenResolve: (value: any) => void;
       const preOpenEventPromise = new Promise((resolve) => {
-        instance.on({
-          type: BusEventType.WORKSPACE_PRE_OPEN,
-          handler: (event) => {
-            expect(event.type).toBe(BusEventType.WORKSPACE_PRE_OPEN);
-            resolve(event);
-          },
-        });
+        preOpenResolve = resolve;
       });
 
+      let openResolve: (value: any) => void;
       const openEventPromise = new Promise((resolve) => {
-        instance.on({
-          type: BusEventType.WORKSPACE_OPEN,
-          handler: (event) => {
-            expect(event.type).toBe(BusEventType.WORKSPACE_OPEN);
-            resolve(event);
-          },
-        });
+        openResolve = resolve;
+      });
+
+      instance.on({
+        type: BusEventType.WORKSPACE_PRE_OPEN,
+        handler: (event) => {
+          expect(event.type).toBe(BusEventType.WORKSPACE_PRE_OPEN);
+          preOpenResolve(event);
+        },
+      });
+
+      instance.on({
+        type: BusEventType.WORKSPACE_OPEN,
+        handler: (event) => {
+          expect(event.type).toBe(BusEventType.WORKSPACE_OPEN);
+          openResolve(event);
+        },
       });
 
       // Open the panel
-      panel.open({ preferredLocation: "start" });
+      await panel.open({ preferredLocation: "start" });
 
       // Wait for both events to fire
       await Promise.all([preOpenEventPromise, openEventPromise]);
@@ -287,13 +293,10 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       });
 
       // First open the panel
-      panel.open({ preferredLocation: "start" });
-
-      // Wait for the panel to be fully open, then close it
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await panel.open({ preferredLocation: "start" });
 
       // Close the panel
-      panel.close();
+      await panel.close();
 
       // Wait for both events to fire
       await Promise.all([preCloseEventPromise, closeEventPromise]);
@@ -315,15 +318,13 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       });
 
       // Open with workspaceId
-      panel.open({
+      await panel.open({
         preferredLocation: "start",
         workspaceId: "workspace-with-id",
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
       // Close and verify event data
-      panel.close();
+      await panel.close();
 
       await closeEventPromise;
     });
@@ -346,16 +347,14 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       });
 
       // Open with additionalData
-      panel.open({
+      await panel.open({
         preferredLocation: "end",
         workspaceId: "workspace-123",
         additionalData: testData,
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
       // Close and verify event data
-      panel.close();
+      await panel.close();
 
       await closeEventPromise;
     });
@@ -388,7 +387,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       ]);
 
       // Open the panel
-      panel.open({
+      await panel.open({
         preferredLocation: "start",
         workspaceId: "test-workspace",
       });
@@ -406,7 +405,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       );
 
       // Close the panel
-      panel.close();
+      await panel.close();
 
       // Wait for close events
       await waitFor(() => {
@@ -448,7 +447,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       });
 
       // Open the panel to trigger the event
-      panel.open({ preferredLocation: "start" });
+      await panel.open({ preferredLocation: "start" });
 
       await eventPromise;
     });
@@ -461,14 +460,11 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
       // Open with data
-      panel.open({
+      await panel.open({
         preferredLocation: "start",
         workspaceId: "public-state-test",
         additionalData: { test: "public" },
       });
-
-      // Wait for state to update
-      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const state = instance.getState();
       expect(state.workspace).toBeDefined();
@@ -483,12 +479,10 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
-      panel.open({
+      await panel.open({
         preferredLocation: "end",
         workspaceId: "custom-panels-test",
       });
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const state = instance.getState();
       expect(state.customPanels.workspace).toBeDefined();
@@ -506,12 +500,10 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
-      panel.open({
+      await panel.open({
         workspaceId: "sync-test",
         additionalData: { synced: true },
       });
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const state = instance.getState();
 
@@ -531,20 +523,16 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const panel = instance.customPanels.getPanel(PanelType.WORKSPACE);
 
       // Open with data
-      panel.open({
+      await panel.open({
         workspaceId: "clear-test",
         additionalData: { clear: "me" },
       });
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
 
       let state = instance.getState();
       expect(state.workspace.workspaceID).toBe("clear-test");
 
       // Close
-      panel.close();
-
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await panel.close();
 
       state = instance.getState();
       expect(state.workspace.isOpen).toBe(false);
@@ -564,13 +552,13 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       const defaultPanel = instance.customPanels.getPanel(PanelType.DEFAULT);
 
       // Open default panel
-      defaultPanel.open({ title: "Default Panel" });
+      await defaultPanel.open({ title: "Default Panel" });
       let state = store.getState();
       expect(state.customPanelState.isOpen).toBe(true);
       expect(state.customPanelState.options.title).toBe("Default Panel");
 
       // Open workspace panel
-      workspacePanel.open({ workspaceId: "workspace-123" });
+      await workspacePanel.open({ workspaceId: "workspace-123" });
       state = store.getState();
       expect(state.workspacePanelState.isOpen).toBe(true);
       expect(state.workspacePanelState.workspaceID).toBe("workspace-123");
@@ -580,7 +568,7 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
       expect(state.customPanelState.options.title).toBe("Default Panel");
 
       // Close workspace panel
-      workspacePanel.close();
+      await workspacePanel.close();
       state = store.getState();
       expect(state.workspacePanelState.isOpen).toBe(false);
 

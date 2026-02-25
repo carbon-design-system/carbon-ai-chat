@@ -370,6 +370,105 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(messageItem.ui_state.isIntermediateStreaming).toBeUndefined();
   });
 
+  it("should reuse streaming IDs when final response items match existing items but omit IDs", async () => {
+    const config = createBaseConfig();
+    const { instance, store } = await renderChatAndGetInstanceWithStore(config);
+    const responseId = "msg-final-id-patch";
+    const itemId = "chunk-1";
+
+    await instance.messaging.addMessageChunk({
+      streaming_metadata: { response_id: responseId },
+      partial_item: {
+        streaming_metadata: { id: itemId },
+        response_type: MessageResponseTypes.TEXT,
+        text: "Partial ",
+      },
+    });
+
+    await instance.messaging.addMessageChunk({
+      streaming_metadata: { response_id: responseId },
+      complete_item: {
+        streaming_metadata: { id: itemId },
+        response_type: MessageResponseTypes.TEXT,
+        text: "Complete text",
+      },
+    });
+
+    const finalResponseChunk: FinalResponseChunk = {
+      final_response: {
+        id: responseId,
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: "Complete text",
+            },
+          ],
+        },
+      },
+    };
+
+    await instance.messaging.addMessageChunk(finalResponseChunk);
+
+    const state = store.getState();
+    const message = state.allMessagesByID[responseId] as MessageResponse;
+    const finalItem = message.output.generic[0] as TextItem;
+
+    expect(finalItem.streaming_metadata?.id).toBe(itemId);
+    expect(state.allMessageItemsByID[`${responseId}-${itemId}`]).toBeDefined();
+  });
+
+  it("should not reuse streaming IDs when final response items differ", async () => {
+    const config = createBaseConfig();
+    const { instance, store } = await renderChatAndGetInstanceWithStore(config);
+    const responseId = "msg-final-id-no-patch";
+    const itemId = "chunk-1";
+
+    await instance.messaging.addMessageChunk({
+      streaming_metadata: { response_id: responseId },
+      partial_item: {
+        streaming_metadata: { id: itemId },
+        response_type: MessageResponseTypes.TEXT,
+        text: "Partial ",
+      },
+    });
+
+    await instance.messaging.addMessageChunk({
+      streaming_metadata: { response_id: responseId },
+      complete_item: {
+        streaming_metadata: { id: itemId },
+        response_type: MessageResponseTypes.TEXT,
+        text: "Complete text",
+      },
+    });
+
+    const finalResponseChunk: FinalResponseChunk = {
+      final_response: {
+        id: responseId,
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.TEXT,
+              text: "Different final text",
+            },
+          ],
+        },
+      },
+    };
+
+    await instance.messaging.addMessageChunk(finalResponseChunk);
+
+    const state = store.getState();
+    const message = state.allMessagesByID[responseId] as MessageResponse;
+    const finalItem = message.output.generic[0] as TextItem;
+
+    expect(finalItem.streaming_metadata?.id).toBeUndefined();
+    // Orphaned streaming items should be removed when content differs
+    expect(
+      state.allMessageItemsByID[`${responseId}-${itemId}`],
+    ).toBeUndefined();
+  });
+
   describe("Abort signal behavior during streaming", () => {
     it("should trigger abort signal with STOP_STREAMING reason when stop button is used", async () => {
       const config = createBaseConfig();

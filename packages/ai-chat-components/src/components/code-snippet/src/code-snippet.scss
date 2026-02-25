@@ -19,6 +19,10 @@
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
 
+:host-context([data-theme="white"]),
+:host-context([storybook-carbon-theme="white"]),
+:host-context([data-theme="g10"]),
+:host-context([storybook-carbon-theme="g10"]),
 :host {
   @include rounded-modifiers;
 

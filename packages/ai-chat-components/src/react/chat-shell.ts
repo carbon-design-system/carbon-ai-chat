@@ -12,7 +12,7 @@ import React from "react";
 import CDSChatShellElement from "../components/chat-shell/src/shell.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const CdsAiChatShell = withWebComponentBridge(
+const CDSAIChatShell = withWebComponentBridge(
   createComponent({
     tagName: "cds-aichat-shell",
     elementClass: CDSChatShellElement,
@@ -20,4 +20,4 @@ const CdsAiChatShell = withWebComponentBridge(
   }),
 );
 
-export default CdsAiChatShell;
+export default CDSAIChatShell;

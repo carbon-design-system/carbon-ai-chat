@@ -12,7 +12,7 @@ import React from "react";
 import CdsChatPanelElement from "../components/chat-shell/src/panel.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-const CdsAiChatPanel = withWebComponentBridge(
+const CDSAIChatPanel = withWebComponentBridge(
   createComponent({
     tagName: "cds-aichat-panel",
     elementClass: CdsChatPanelElement,
@@ -27,4 +27,4 @@ const CdsAiChatPanel = withWebComponentBridge(
   }),
 );
 
-export default CdsAiChatPanel;
+export default CDSAIChatPanel;

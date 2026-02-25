@@ -19,7 +19,7 @@ import "./panel.js";
 type StartOrEnd = "start" | "end";
 
 @carbonElement("cds-aichat-shell")
-class CdsAiChatShell extends LitElement {
+class CDSAIChatShell extends LitElement {
   static styles = styles;
 
   /**
@@ -75,6 +75,24 @@ class CdsAiChatShell extends LitElement {
    */
   @property({ type: String, attribute: "history-location", reflect: true })
   historyLocation: StartOrEnd = "start";
+
+  /**
+   * ARIA label for the workspace region
+   */
+  @property({ type: String, attribute: "workspace-aria-label" })
+  workspaceAriaLabel = "Workspace panel";
+
+  /**
+   * ARIA label for the history region
+   */
+  @property({ type: String, attribute: "history-aria-label" })
+  historyAriaLabel = "Conversation history";
+
+  /**
+   * ARIA label for the messages region
+   */
+  @property({ type: String, attribute: "messages-aria-label" })
+  messagesAriaLabel = "Chat messages";
 
   /**
    * @internal
@@ -279,7 +297,13 @@ class CdsAiChatShell extends LitElement {
     const workspaceState = this.workspaceManager?.getState();
 
     return html`
-      <div class="workspace" part="slot-workspace" data-panel-slot="workspace">
+      <div
+        class="workspace"
+        part="slot-workspace"
+        data-panel-slot="workspace"
+        role="region"
+        aria-label=${this.workspaceAriaLabel}
+      >
         <div
           class=${workspaceState?.contentVisible
             ? "workspace-content"
@@ -353,7 +377,11 @@ class CdsAiChatShell extends LitElement {
 
   private renderMessagesSection() {
     return html`
-      <div class=${this.getInputAndMessagesClasses()}>
+      <div
+        class=${this.getInputAndMessagesClasses()}
+        role="region"
+        aria-label=${this.messagesAriaLabel}
+      >
         ${this.renderSlot("messages", "messages")}
         ${this.renderSlot("input-before", "input-before messages-max-width")}
         ${this.renderSlot("input", "input messages-max-width")}
@@ -366,7 +394,11 @@ class CdsAiChatShell extends LitElement {
     if (!this.showHistory || !this.shouldRenderHistory) {
       return nothing;
     }
-    return html`<div class="history">
+    return html`<div
+      class="history"
+      role="region"
+      aria-label=${this.historyAriaLabel}
+    >
       ${this.renderSlot("history", "history")}
     </div>`;
   }
@@ -436,29 +468,77 @@ class CdsAiChatShell extends LitElement {
       return false;
     }
 
-    return slot
-      .assignedNodes({ flatten: true })
-      .some(
-        (node) =>
-          node.nodeType === Node.ELEMENT_NODE ||
-          (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()),
-      );
+    return slot.assignedNodes({ flatten: true }).some((node) => {
+      // Check for non-empty text nodes
+      if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+        return true;
+      }
+
+      // Check for element nodes
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        return this.hasElementContent(element);
+      }
+
+      return false;
+    });
+  }
+
+  private hasElementContent(element: Element): boolean {
+    // Check if element has child nodes with meaningful content (light DOM)
+    const hasChildContent = Array.from(element.childNodes).some((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        return child.textContent?.trim();
+      }
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const childElement = child as Element;
+        // Check slot elements recursively - they may have assigned content
+        if (childElement.tagName.toLowerCase() === "slot") {
+          const slotElement = childElement as HTMLSlotElement;
+          const assignedNodes = slotElement.assignedNodes({ flatten: true });
+          return assignedNodes.some((node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+              return node.textContent?.trim();
+            }
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              return this.hasElementContent(node as Element);
+            }
+            return false;
+          });
+        }
+        return true;
+      }
+      return false;
+    });
+
+    if (hasChildContent) {
+      return true;
+    }
+
+    // If no light DOM children, check if element has shadow root (Shadow DOM content)
+    if ((element as any).shadowRoot) {
+      return true;
+    }
+
+    // Check text content as fallback
+    const textContent = element.textContent?.trim();
+    return Boolean(textContent);
   }
 
   private observeSlotContent() {
     const updateSlotStates = () => {
       const previousStates = new Map(
-        CdsAiChatShell.OBSERVED_SLOTS.map(({ stateKey }) => [
+        CDSAIChatShell.OBSERVED_SLOTS.map(({ stateKey }) => [
           stateKey,
           this[stateKey],
         ]),
       );
 
-      CdsAiChatShell.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
+      CDSAIChatShell.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
         this[stateKey] = this.hasSlotContent(name);
       });
 
-      const hasChanged = CdsAiChatShell.OBSERVED_SLOTS.some(
+      const hasChanged = CDSAIChatShell.OBSERVED_SLOTS.some(
         ({ stateKey }) => previousStates.get(stateKey) !== this[stateKey],
       );
 
@@ -471,7 +551,7 @@ class CdsAiChatShell extends LitElement {
     updateSlotStates();
 
     // Observe slot changes
-    const slots = CdsAiChatShell.OBSERVED_SLOTS.map(({ name }) =>
+    const slots = CDSAIChatShell.OBSERVED_SLOTS.map(({ name }) =>
       this.renderRoot.querySelector<HTMLSlotElement>(`slot[name="${name}"]`),
     ).filter((slot): slot is HTMLSlotElement => slot !== null);
 
@@ -536,19 +616,22 @@ class CdsAiChatShell extends LitElement {
     };
 
     this.inputAndMessagesResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== this) {
-          continue;
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          if (entry.target !== this) {
+            continue;
+          }
+          const borderBoxSize = Array.isArray(entry.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry.borderBoxSize;
+          if (borderBoxSize?.inlineSize) {
+            updateAtMaxWidth(borderBoxSize.inlineSize);
+          } else {
+            updateAtMaxWidth(entry.contentRect.width);
+          }
         }
-        const borderBoxSize = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : entry.borderBoxSize;
-        if (borderBoxSize?.inlineSize) {
-          updateAtMaxWidth(borderBoxSize.inlineSize);
-        } else {
-          updateAtMaxWidth(entry.contentRect.width);
-        }
-      }
+      });
     });
 
     this.inputAndMessagesResizeObserver.observe(this);
@@ -587,19 +670,22 @@ class CdsAiChatShell extends LitElement {
     };
 
     this.mainContentBodyResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== mainContentBody) {
-          continue;
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          if (entry.target !== mainContentBody) {
+            continue;
+          }
+          const borderBoxSize = Array.isArray(entry.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry.borderBoxSize;
+          if (borderBoxSize?.inlineSize) {
+            updateHistoryVisibility(borderBoxSize.inlineSize);
+          } else {
+            updateHistoryVisibility(entry.contentRect.width);
+          }
         }
-        const borderBoxSize = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : entry.borderBoxSize;
-        if (borderBoxSize?.inlineSize) {
-          updateHistoryVisibility(borderBoxSize.inlineSize);
-        } else {
-          updateHistoryVisibility(entry.contentRect.width);
-        }
-      }
+      });
     });
 
     this.mainContentBodyResizeObserver.observe(mainContentBody);
@@ -651,19 +737,22 @@ class CdsAiChatShell extends LitElement {
     };
 
     this.headerResizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== headerWrapper) {
-          continue;
+      // Use requestAnimationFrame to avoid ResizeObserver loop errors
+      requestAnimationFrame(() => {
+        for (const entry of entries) {
+          if (entry.target !== headerWrapper) {
+            continue;
+          }
+          const borderBoxSize = Array.isArray(entry.borderBoxSize)
+            ? entry.borderBoxSize[0]
+            : entry.borderBoxSize;
+          if (borderBoxSize?.blockSize) {
+            updateHeight(borderBoxSize.blockSize);
+          } else {
+            updateHeight(entry.contentRect.height);
+          }
         }
-        const borderBoxSize = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : entry.borderBoxSize;
-        if (borderBoxSize?.blockSize) {
-          updateHeight(borderBoxSize.blockSize);
-        } else {
-          updateHeight(entry.contentRect.height);
-        }
-      }
+      });
     });
 
     this.headerResizeObserver.observe(headerWrapper);
@@ -812,4 +901,4 @@ class CdsAiChatShell extends LitElement {
   };
 }
 
-export default CdsAiChatShell;
+export default CDSAIChatShell;

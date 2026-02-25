@@ -24,6 +24,7 @@ This will install the package that contains both the web component and React ver
 The available AI Chat components are viewable in our storybooks
 
 For web components: https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
+
 For React: https://chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
 
 ## 📝 License

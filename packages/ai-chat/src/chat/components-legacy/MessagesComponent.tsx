@@ -203,7 +203,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   private bottomSpacerRef = React.createRef<HTMLDivElement>();
 
   componentDidMount(): void {
-    this.scrollPanelObserver = new ResizeObserver(this.onResize);
+    // Use requestAnimationFrame to avoid ResizeObserver loop errors
+    this.scrollPanelObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        this.onResize();
+      });
+    });
     this.scrollPanelObserver.observe(
       this.messagesContainerWithScrollingRef.current,
     );

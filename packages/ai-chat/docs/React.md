@@ -276,6 +276,7 @@ function App() {
 You may also want your `user_defined` responses to stream. In that case, you will want to make use of {@link RenderUserDefinedState.partialItems}. The partialItems come back as an array of every chunk we have received.
 They are _not_ concatenated for you. Some folks pass in stringified JSON or JSON that needs to be passed through
 an optimistic JSON parser (one that auto fixes up partial JSON), so unlike the text response_type, we leave that concatenation to your use case.
+If you are streaming via `addMessageChunk`, be sure to include `streaming_metadata.response_id` for the message and `streaming_metadata.id` for each item so chunks correlate correctly.
 
 ```typescript
 import React, { useCallback, useEffect, useState } from 'react';
