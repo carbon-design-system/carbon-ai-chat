@@ -14,6 +14,7 @@ import prefix from "../../../globals/settings.js";
 import styles from "./workspace-shell-header.scss?lit";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import "../../truncated-text/index.js";
 
 /**
  * Workspace Shell Header.
@@ -82,7 +83,11 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
         html`
           <summary class="${prefix}-workspace-shell__header-summary">
             <h1 class="${prefix}-workspace-shell__header-title">
-              ${titleText}
+              <cds-aichat-truncated-text
+                value=${titleText}
+                lines="1"
+                type="tooltip"
+              ></cds-aichat-truncated-text>
             </h1>
             <span class="${prefix}-workspace-shell__header-chevron">
               ${iconLoader(ChevronDown16)}

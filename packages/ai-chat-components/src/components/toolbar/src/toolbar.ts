@@ -20,7 +20,7 @@ import prefix from "../../../globals/settings.js";
 import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
-import "@carbon/ibm-products-web-components/es/components/truncated-text/index.js";
+import "../../truncated-text/index.js";
 
 const blockClass = `${prefix}-toolbar`;
 
@@ -195,11 +195,11 @@ class CDSAIChatToolbar extends LitElement {
 
           <div data-fixed class="${blockClass}__title">
             <slot name="title">
-              <c4p-truncated-text
+              <cds-aichat-truncated-text
                 value=${this.titleText}
                 lines="1"
                 type="tooltip"
-              ></c4p-truncated-text>
+              ></cds-aichat-truncated-text>
             </slot>
           </div>
         </div>
