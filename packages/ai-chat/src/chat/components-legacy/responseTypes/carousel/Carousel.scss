@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -47,29 +47,18 @@ button.cds-aichat--carousel-container__navigation-button > svg {
   fill: theme.$text-secondary;
 }
 
-.swiper .cds-aichat--card-message-component {
-  display: flex;
-  flex-direction: column;
-  block-size: calc(100% - 2px);
-}
-
 .swiper .cds-aichat--body-message-components {
   flex: 1;
 }
 
-.cds-aichat--carousel-container__slide--narrow.swiper-slide {
-  max-inline-size: calc(100% - 32px);
-}
-
-.cds-aichat--carousel-container__slide--wide.swiper-slide,
-.cds-aichat--carousel-container__slide--standard.swiper-slide {
-  max-inline-size: calc(100% - 72px);
+.cds-aichat--carousel-container__slide--wide.swiper-slide {
+  max-inline-size: 100%;
 }
 
 .cds-aichat--carousel-container__controls--standard,
 .cds-aichat--carousel-container__controls--wide {
   padding-block-start: layout.$spacing-03;
-  padding-inline: 56px 16px;
+  padding-inline: 12px 16px;
 }
 
 .cds-aichat--carousel-container--one-slide {
