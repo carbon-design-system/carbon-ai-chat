@@ -35,6 +35,7 @@ export default {
     showWorkspace: false,
     workspaceLocation: "start",
     historyLocation: "start",
+    contentMaxWidth: true,
   },
   argTypes: {
     aiEnabled: { control: "boolean" },
@@ -42,6 +43,7 @@ export default {
     roundedCorners: { control: "boolean" },
     showHistory: { control: "boolean" },
     showWorkspace: { control: "boolean" },
+    contentMaxWidth: { control: "boolean" },
     workspaceLocation: {
       control: { type: "radio" },
       options: ["start", "end"],
@@ -71,6 +73,7 @@ export const Default = {
       showWorkspace,
       workspaceLocation,
       historyLocation,
+      contentMaxWidth,
     } = args;
 
     return html`
@@ -80,6 +83,7 @@ export const Default = {
         ?rounded-corners=${roundedCorners}
         ?show-history=${showHistory}
         ?show-workspace=${showWorkspace}
+        ?content-max-width=${contentMaxWidth}
         workspace-location=${workspaceLocation}
         history-location=${historyLocation}
       >
@@ -194,6 +198,7 @@ export const Slots = {
       showWorkspace,
       workspaceLocation,
       historyLocation,
+      contentMaxWidth,
       messagesMaxWidth,
       messagesMinWidth,
       workspaceMinWidth,
@@ -249,6 +254,7 @@ export const Slots = {
           ?rounded-corners=${roundedCorners}
           ?show-history=${showHistory}
           ?show-workspace=${showWorkspace}
+          ?content-max-width=${contentMaxWidth}
           workspace-location=${workspaceLocation}
           history-location=${historyLocation}
           style="
@@ -279,7 +285,13 @@ export const SidebarWorkspace = {
     showWorkspace: { control: false, table: { disable: true } },
   },
   render: (args) => {
-    const { aiEnabled, showFrame, roundedCorners, workspaceLocation } = args;
+    const {
+      aiEnabled,
+      showFrame,
+      roundedCorners,
+      workspaceLocation,
+      contentMaxWidth,
+    } = args;
 
     // Configuration constants
     const CONFIG = {
@@ -315,6 +327,7 @@ export const SidebarWorkspace = {
         ?ai-enabled=${aiEnabled}
         ?show-frame=${showFrame}
         ?rounded-corners=${roundedCorners}
+        ?content-max-width=${contentMaxWidth}
         workspace-location=${workspaceLocation}
       >
         <div slot="header" class="header slot-sample">Chat Header</div>
