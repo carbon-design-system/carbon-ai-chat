@@ -9,4 +9,4 @@
 
 // TODO: add this to core utils
 
-import "./truncated-text";
+import "./src/truncated-text";

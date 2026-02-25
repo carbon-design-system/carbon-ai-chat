@@ -12,7 +12,7 @@ import { property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { carbonElement as customElement } from "@carbon/web-components/es/globals/decorators/carbon-element.js";
-import prefix from "../../globals/settings";
+import prefix from "../../../globals/settings";
 import "@carbon/web-components/es/components/tooltip/index.js";
 import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/link/index.js";
