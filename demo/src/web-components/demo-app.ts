@@ -63,8 +63,6 @@ interface CustomFooterSlotsMap {
 }
 
 interface CustomFooterSlot {
-  slotName: string;
-  message: MessageResponse;
   messageItem: GenericItem;
   additionalData?: Record<string, unknown>;
 }
@@ -448,70 +446,13 @@ export class DemoApp extends LitElement {
    */
   customFooterHandler = (event: any) => {
     const { data } = event;
-    console.log("[WebComponent] Custom footer event received:", data);
-
-    // Initialize or update the slot
-    // const existingSlot = this.customFooterSlotsMap[data.slotName];
 
     this.customFooterSlotsMap[data.slotName] = {
-      slotName: data.slotName,
-      message: data.message,
       messageItem: data.messageItem,
       additionalData: data.additionalData,
     };
 
-    console.log(
-      "[WebComponent] Updated customFooterSlotsMap:",
-      this.customFooterSlotsMap,
-    );
     this.requestUpdate();
-
-    // Debug: Check what's actually in the DOM after update
-    setTimeout(() => {
-      const chatElement = this.shadowRoot?.querySelector(
-        "cds-aichat-custom-element, cds-aichat-container",
-      );
-      console.log("[WebComponent] Chat element:", chatElement);
-      console.log(
-        "[WebComponent] Chat element children:",
-        chatElement?.children,
-      );
-      const slotElement = chatElement?.querySelector(
-        `[slot="${data.slotName}"]`,
-      );
-      console.log("[WebComponent] Slot element in DOM:", slotElement);
-      console.log(
-        "[WebComponent] Slot element innerHTML:",
-        slotElement?.innerHTML,
-      );
-      const customFooterEl = slotElement?.querySelector(
-        "custom-footer-example",
-      ) as any;
-      console.log(
-        "[WebComponent] custom-footer-example element:",
-        customFooterEl,
-      );
-      console.log(
-        "[WebComponent] custom-footer-example.slotName:",
-        customFooterEl?.slotName,
-      );
-      console.log(
-        "[WebComponent] custom-footer-example.message:",
-        customFooterEl?.message,
-      );
-      console.log(
-        "[WebComponent] custom-footer-example.additionalData:",
-        customFooterEl?.additionalData,
-      );
-      console.log(
-        "[WebComponent] custom-footer-example shadowRoot:",
-        customFooterEl?.shadowRoot,
-      );
-      console.log(
-        "[WebComponent] custom-footer-example shadowRoot innerHTML:",
-        customFooterEl?.shadowRoot?.innerHTML,
-      );
-    }, 100);
   };
 
   /**
@@ -524,19 +465,12 @@ export class DemoApp extends LitElement {
       customFooterSlotsKeyArray,
     );
     return customFooterSlotsKeyArray.map((slotName) => {
-      const { message, messageItem, additionalData } =
+      const { messageItem, additionalData } =
         this.customFooterSlotsMap[slotName];
-      console.log("[WebComponent] Rendering slot:", slotName, "with data:", {
-        message,
-        messageItem,
-        additionalData,
-      });
+
       return html`<div slot=${slotName}>
         <custom-footer-example
-          .slotName=${slotName}
-          .message=${message}
           .messageItem=${messageItem}
-          .instance=${this.instance}
           .additionalData=${additionalData}
         ></custom-footer-example>
       </div>`;

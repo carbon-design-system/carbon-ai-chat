@@ -859,7 +859,7 @@ function doTextWithCustomFooter(instance: ChatInstance) {
             },
             custom_footer_slot: {
               is_on: true,
-              slot_name: "footer-msg-123",
+              slot_name: `footer-msg-${crypto.randomUUID()}`,
               additional_data: {
                 allow_regenerate: true,
                 allow_copy: true,

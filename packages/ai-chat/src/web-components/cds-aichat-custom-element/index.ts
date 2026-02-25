@@ -40,6 +40,7 @@ import type {
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import {
   BusEventChunkUserDefinedResponse,
+  BusEventCustomFooterSlot,
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,
@@ -267,6 +268,9 @@ class ChatCustomElement extends LitElement {
   private _writeableElementSlots: string[] = [];
 
   @state()
+  private _customFooterSlotNames: string[] = [];
+
+  @state()
   private _instance!: ChatInstance;
 
   private defaultViewChangeHandler = (event: BusEventViewChange) => {
@@ -283,6 +287,13 @@ class ChatCustomElement extends LitElement {
     const { slot } = event.data;
     if (!this._userDefinedSlotNames.includes(slot)) {
       this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+  };
+
+  private customFooterHandler = (event: BusEventCustomFooterSlot) => {
+    const { slotName } = event.data;
+    if (!this._customFooterSlotNames.includes(slotName)) {
+      this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
     }
   };
 
@@ -389,6 +400,10 @@ class ChatCustomElement extends LitElement {
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
+    this._instance.on({
+      type: BusEventType.CUSTOM_FOOTER_SLOT,
+      handler: this.customFooterHandler,
+    });
     this.addWriteableElementSlots();
     await this.onBeforeRender?.(instance);
   };
@@ -409,6 +424,9 @@ class ChatCustomElement extends LitElement {
           (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
         )}
         ${this._userDefinedSlotNames.map(
+          (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+        )}
+        ${this._customFooterSlotNames.map(
           (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
         )}
       </cds-aichat-container>

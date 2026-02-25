@@ -186,8 +186,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           {isResponseStopped && <ResponseStopped />}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
-          {renderFeedback(localMessageItem, message)}
-          {renderCustomFooter(localMessageItem)}
+          {renderFeedbackAndCustomFooter(localMessageItem, message)}
         </>
       );
     }
@@ -932,8 +931,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       );
     }
 
-    return (
-      <div className="cds-aichat--received--feedback">
+    return {
+      buttons: (
         <FeedbackButtons
           isPositiveOpen={isFeedbackOpen && isPositiveFeedbackSelected}
           isNegativeOpen={isFeedbackOpen && isNegativeFeedbackSelected}
@@ -950,12 +949,14 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             onFeedbackClicked(event.detail.isPositive)
           }
         />
+      ),
+      details: (
         <div ref={feedbackDetailsRef}>
           {renderFeedbackPopup(true)}
           {renderFeedbackPopup(false)}
         </div>
-      </div>
-    );
+      ),
+    };
   }
 
   /**
@@ -974,6 +975,33 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     }
 
     return <CustomFooterSlot footerOptions={footerOptions} />;
+  }
+
+  /**
+   * Renders both feedback buttons and custom footer in the same container.
+   */
+  function renderFeedbackAndCustomFooter(
+    localMessageItem: LocalMessageItem,
+    message: MessageResponse,
+  ) {
+    const feedback = renderFeedback(localMessageItem, message);
+    const customFooter = renderCustomFooter(localMessageItem);
+
+    // If neither feedback nor custom footer should be rendered, return false
+    if (!feedback && !customFooter) {
+      return false;
+    }
+
+    // Render both in the same feedback container div
+    return (
+      <div className="cds-aichat--received--feedback">
+        <div className="cds-aichat--message-footer">
+          {customFooter}
+          {feedback && feedback.buttons}
+        </div>
+        {feedback && feedback.details}
+      </div>
+    );
   }
 
   return renderSpecificMessage(props.message, props.originalMessage);

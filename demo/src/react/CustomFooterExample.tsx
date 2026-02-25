@@ -9,7 +9,12 @@
 
 import React from "react";
 import { ChatInstance, MessageResponse, GenericItem } from "@carbon/ai-chat";
-import "./CustomFooterExample.css";
+import { IconButton } from "@carbon/react";
+
+// Using @carbon/icons-react for all icons
+import Copy16 from "@carbon/icons-react/es/Copy.js";
+import Export16 from "@carbon/icons-react/es/Export.js";
+import Renew16 from "@carbon/icons-react/es/Renew.js";
 
 interface CustomFooterExampleProps {
   slotName: string;
@@ -20,10 +25,7 @@ interface CustomFooterExampleProps {
 }
 
 function CustomFooterExample({
-  //slotName,
-  //message,
   messageItem,
-  //instance,
   additionalData,
 }: CustomFooterExampleProps) {
   const handleCopy = () => {
@@ -36,7 +38,9 @@ function CustomFooterExample({
     }
   };
 
-  const handleRegenerate = () => alert("Regenerate response clicked");
+  const handleRegenerate = () => {
+    window.alert("Regenerate response clicked");
+  };
 
   const handleShare = () => {
     const url = additionalData?.custom_action_url as string;
@@ -48,34 +52,40 @@ function CustomFooterExample({
   return (
     <div className="custom-footer-actions">
       {Boolean(additionalData?.allow_copy) && (
-        <button
-          type="button"
+        <IconButton
           className="custom-footer-button"
+          align="top-left"
+          kind="ghost"
+          label="Copy"
+          size="sm"
           onClick={handleCopy}
-          title="Copy message text"
         >
-          Copy
-        </button>
+          <Copy16 />
+        </IconButton>
       )}
       {Boolean(additionalData?.allow_regenerate) && (
-        <button
-          type="button"
+        <IconButton
           className="custom-footer-button"
+          align="top-left"
+          kind="ghost"
+          label="Regenerate"
+          size="sm"
           onClick={handleRegenerate}
-          title="Regenerate response"
         >
-          Regenerate
-        </button>
+          <Renew16 />
+        </IconButton>
       )}
       {Boolean(additionalData?.custom_action_url) && (
-        <button
-          type="button"
+        <IconButton
           className="custom-footer-button"
+          align="top-left"
+          kind="ghost"
+          label="Share"
+          size="sm"
           onClick={handleShare}
-          title="Share message"
         >
-          Share
-        </button>
+          <Export16 />
+        </IconButton>
       )}
     </div>
   );
