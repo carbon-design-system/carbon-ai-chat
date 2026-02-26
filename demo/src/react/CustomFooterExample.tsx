@@ -14,7 +14,6 @@ import { IconButton } from "@carbon/react";
 // Using @carbon/icons-react for all icons
 import Copy16 from "@carbon/icons-react/es/Copy.js";
 import Export16 from "@carbon/icons-react/es/Export.js";
-import Renew16 from "@carbon/icons-react/es/Renew.js";
 
 interface CustomFooterExampleProps {
   slotName: string;
@@ -38,10 +37,6 @@ function CustomFooterExample({
     }
   };
 
-  const handleRegenerate = () => {
-    window.alert("Regenerate response clicked");
-  };
-
   const handleShare = () => {
     const url = additionalData?.custom_action_url as string;
     if (url) {
@@ -61,18 +56,6 @@ function CustomFooterExample({
           onClick={handleCopy}
         >
           <Copy16 />
-        </IconButton>
-      )}
-      {Boolean(additionalData?.allow_regenerate) && (
-        <IconButton
-          className="custom-footer-button"
-          align="top-left"
-          kind="ghost"
-          label="Regenerate"
-          size="sm"
-          onClick={handleRegenerate}
-        >
-          <Renew16 />
         </IconButton>
       )}
       {Boolean(additionalData?.custom_action_url) && (

@@ -14,7 +14,6 @@ import "@carbon/web-components/es/components/icon-button/index.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Copy16 from "@carbon/icons/es/copy/16.js";
 import Export16 from "@carbon/icons/es/export/16.js";
-import Renew16 from "@carbon/icons/es/renew/16.js";
 
 @customElement("custom-footer-example")
 class CustomFooterExample extends LitElement {
@@ -46,10 +45,6 @@ class CustomFooterExample extends LitElement {
     }
   };
 
-  private handleRegenerate = () => {
-    window.alert("Regenerate response clicked");
-  };
-
   private handleShare = () => {
     const url = this.additionalData?.custom_action_url as string;
     if (url) {
@@ -72,21 +67,6 @@ class CustomFooterExample extends LitElement {
               >
                 <span slot="icon">${iconLoader(Copy16)}</span>
                 <span slot="tooltip-content">Copy</span>
-              </cds-icon-button>
-            `
-          : null}
-        ${this.additionalData?.allow_regenerate
-          ? html`
-              <cds-icon-button
-                class="custom-footer-button"
-                align="top-left"
-                kind="ghost"
-                role="button"
-                size="sm"
-                @click=${this.handleRegenerate}
-              >
-                <span slot="icon">${iconLoader(Renew16)}</span>
-                <span slot="tooltip-content">Regenerate</span>
               </cds-icon-button>
             `
           : null}

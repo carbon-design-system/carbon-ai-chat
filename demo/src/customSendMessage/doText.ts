@@ -861,7 +861,6 @@ function doTextWithCustomFooter(instance: ChatInstance) {
               is_on: true,
               slot_name: `footer-msg-${crypto.randomUUID()}`,
               additional_data: {
-                allow_regenerate: true,
                 allow_copy: true,
                 custom_action_url: "https://example.com/share",
               },
