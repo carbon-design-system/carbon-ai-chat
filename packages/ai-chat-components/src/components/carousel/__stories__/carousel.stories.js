@@ -35,7 +35,7 @@ const argTypes = {
 };
 
 export default {
-  title: "Components/Carousel",
+  title: "Preview/Carousel",
   argTypes,
   decorators: [
     (story) => html`
@@ -56,7 +56,9 @@ export default {
           cards,
           (card) => html`
             <cds-aichat-card>
-              <div slot="body">${card}</div>
+              <div slot="body">
+                <div class="carousel-card">${card}</div>
+              </div>
             </cds-aichat-card>
           `,
         )}

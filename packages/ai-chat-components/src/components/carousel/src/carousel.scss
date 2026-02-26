@@ -11,11 +11,14 @@ $css--plex: true !default;
 
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/layout";
+@use "@carbon/styles/scss/type";
 
 $blockClass: #{$prefix}-carousel;
 
 .#{$blockClass} {
   &__controls {
+    @include type.type-style("label-02");
+
     display: flex;
     align-items: center;
     justify-content: flex-end;
