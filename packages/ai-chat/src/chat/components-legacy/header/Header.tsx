@@ -423,8 +423,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                     ? POPOVER_ALIGNMENT.BOTTOM_LEFT
                     : POPOVER_ALIGNMENT.BOTTOM_RIGHT
                 }
+                aria-label={aiSlugLabel}
+                role="button"
               >
-                <div slot="body-text">
+                <div role="dialog" slot="body-text">
                   {aiSlugLabel && (
                     <p className="cds-aichat--header__slug-label">
                       {aiSlugLabel}

@@ -287,10 +287,11 @@ async function postBuild() {
       let transformed = masked;
 
       // convert cds-aichat (CSS class prefixes and similar)
-      transformed = transformed.replace(/cds-aichat/g, "cds-custom-aichat");
+      // (?<!--) : not immediately preceded by '--' (so CSS variables like --cds-aichat are preserved)
+      transformed = transformed.replace(/(?<!--)cds-aichat/g, "cds-custom-aichat");
 
       // generic cds -> cds-custom with guards:
-      //  (?<!-)  : not immediately preceded by '-'  (so `--cds` or `-cds` won't match)
+      //  (?<!-)  : not immediately preceded by '-' (so `--cds`, `-cds`, and CSS variables are preserved)
       //  (?!-custom|_custom) : not already followed by -custom or _custom (prevent double replace)
       transformed = transformed.replace(
         /(?<!-)cds(?!-custom|_custom)([A-Za-z0-9_-]*)/g,

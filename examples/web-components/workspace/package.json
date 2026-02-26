@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-workspace",
-  "version": "1.6.0-rc.0",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "description": "An example using @carbon/ai-chat's Web Component workspace feature",
@@ -13,8 +13,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.7.0-rc.0",
-    "@carbon/ai-chat-components": "^0.9.0-rc.0",
+    "@carbon/ai-chat": "^1.7.0",
+    "@carbon/ai-chat-components": "^0.9.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/web-components": "^2.46.0",
     "lit": "^3.1.0",

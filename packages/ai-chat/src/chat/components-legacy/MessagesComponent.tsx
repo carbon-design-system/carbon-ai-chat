@@ -1008,6 +1008,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     index: number,
     statusMessage?: string,
   ) {
+    const languagePack = this.props.config.derived.languagePack;
     return (
       <div
         className={`cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`}
@@ -1022,6 +1023,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                     className="cds-aichat--processing-component"
                     loop
                     carbonTheme={this.props.carbonTheme}
+                    aria-label={languagePack.messages_processingLabel}
                   />{" "}
                   <div className="cds-aichat--processing-label">
                     {statusMessage}
