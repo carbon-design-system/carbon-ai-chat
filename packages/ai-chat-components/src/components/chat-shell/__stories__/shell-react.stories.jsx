@@ -51,6 +51,10 @@ export default {
       control: "boolean",
       description: "Show workspace sidebar",
     },
+    contentMaxWidth: {
+      control: "boolean",
+      description: "Constrains content to a maximum width",
+    },
     workspaceLocation: {
       control: { type: "radio" },
       options: ["start", "end"],
@@ -73,6 +77,7 @@ export const Default = {
     showWorkspace: false,
     workspaceLocation: "start",
     historyLocation: "start",
+    contentMaxWidth: true,
   },
   render: (args) => {
     const {
@@ -83,6 +88,7 @@ export const Default = {
       showWorkspace,
       workspaceLocation,
       historyLocation,
+      contentMaxWidth,
     } = args;
 
     return (
@@ -94,6 +100,7 @@ export const Default = {
         showWorkspace={showWorkspace}
         workspaceLocation={workspaceLocation}
         historyLocation={historyLocation}
+        contentMaxWidth={contentMaxWidth}
       >
         <CoreSlotContent />
       </ChatShell>
@@ -123,6 +130,7 @@ export const Slots = {
     showWorkspace: false,
     workspaceLocation: "start",
     historyLocation: "start",
+    contentMaxWidth: true,
     messagesMaxWidth: "672px",
     messagesMinWidth: "320px",
     workspaceMinWidth: "640px",
@@ -175,6 +183,7 @@ export const Slots = {
       showWorkspace,
       workspaceLocation,
       historyLocation,
+      contentMaxWidth,
       messagesMaxWidth,
       messagesMinWidth,
       workspaceMinWidth,
@@ -230,6 +239,7 @@ export const Slots = {
           showWorkspace={showWorkspace}
           workspaceLocation={workspaceLocation}
           historyLocation={historyLocation}
+          contentMaxWidth={contentMaxWidth}
           style={{
             "--cds-aichat-messages-max-width": cssVars.messagesMaxWidth,
             "--cds-aichat-messages-min-width": cssVars.messagesMinWidth,
@@ -260,6 +270,7 @@ export const SidebarWorkspace = {
     showFrame: true,
     roundedCorners: true,
     workspaceLocation: "start",
+    contentMaxWidth: true,
   },
   argTypes: {
     showHistory: { control: false, table: { disable: true } },
@@ -267,7 +278,13 @@ export const SidebarWorkspace = {
     showWorkspace: { control: false, table: { disable: true } },
   },
   render: (args) => {
-    const { aiEnabled, showFrame, roundedCorners, workspaceLocation } = args;
+    const {
+      aiEnabled,
+      showFrame,
+      roundedCorners,
+      workspaceLocation,
+      contentMaxWidth,
+    } = args;
     const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
 
     return (
@@ -278,6 +295,7 @@ export const SidebarWorkspace = {
         roundedCorners={roundedCorners}
         showWorkspace={isWorkspaceOpen}
         workspaceLocation={workspaceLocation}
+        contentMaxWidth={contentMaxWidth}
       >
         <div slot="header" className="header slot-sample">
           Chat Header

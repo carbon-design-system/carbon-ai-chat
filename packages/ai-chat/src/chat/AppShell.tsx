@@ -474,6 +474,7 @@ export default function AppShell({
               aiEnabled={theme.aiEnabled}
               showFrame={layout?.showFrame}
               roundedCorners={theme.corners === CornersType.ROUND}
+              contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
               workspaceAriaLabel={languagePack.aria_workspaceRegion}

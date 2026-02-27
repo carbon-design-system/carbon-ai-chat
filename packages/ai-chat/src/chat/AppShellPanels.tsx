@@ -135,12 +135,7 @@ export function AppShellPanels({
     "hidePanelHeader" in customPanelOptions &&
     customPanelOptions.hidePanelHeader
   );
-  const panelTitle = isLegacyCustomPanel
-    ? (customPanelOptions.title ??
-      config.derived.header?.title ??
-      config.derived.header?.name ??
-      assistantName)
-    : customPanelOptions.title;
+  const panelTitle = customPanelOptions.title;
   const headerConfigOverride = isLegacyCustomPanel
     ? {
         hideMinimizeButton:
@@ -281,7 +276,6 @@ export function AppShellPanels({
                       legacyCustomPanelOptions?.onClickRestart?.();
                     }}
                     onToggleHomeScreen={onToggleHomeScreen}
-                    headerDisplayName={assistantName}
                     isHomeScreenActive={isHomeScreenActive}
                     headerConfigOverride={headerConfigOverride}
                   />
