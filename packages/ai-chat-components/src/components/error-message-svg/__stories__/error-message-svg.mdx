@@ -1,0 +1,51 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as ErrorMessageSVGStories from "./error-message-svg.stories";
+
+<Meta of={ErrorMessageSVGStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+
+# ErrorMessageSVG
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/error-message-svg) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+Use `cds-aichat-error-message-svg` to display an illustrated error state SVG when a catastrophic or unrecoverable error has occurred. Supports both `light` and `dark` theme variants.
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```html
+<cds-aichat-error-message-svg theme="light"></cds-aichat-error-message-svg>
+```
+
+```html
+<cds-aichat-error-message-svg theme="dark"></cds-aichat-error-message-svg>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-error-message-svg" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/error-message-svg/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["error-message-svg"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

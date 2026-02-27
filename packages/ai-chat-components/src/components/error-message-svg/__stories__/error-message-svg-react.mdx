@@ -1,0 +1,46 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import * as ErrorMessageSVGReactStories from "./error-message-svg-react.stories.jsx";
+
+<Meta of={ErrorMessageSVGReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+
+# ErrorMessageSVG
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/error-message-svg) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+## Overview
+
+Use `<ErrorMessageSVG>` to display an illustrated error state SVG in React when a catastrophic or unrecoverable error has occurred. Supports both `light` and `dark` theme variants.
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import ErrorMessageSVG from "@carbon/ai-chat-components/es/react/error-message-svg.js";
+
+function ErrorState() {
+  return <ErrorMessageSVG theme="light" />;
+}
+
+function ErrorStateDark() {
+  return <ErrorMessageSVG theme="dark" />;
+}
+```
+
+## Component API
+
+<ArgTypes of={ErrorMessageSVGReactStories.Default} />
+
+#### Props
+
+- `theme`: Controls the visual theme of the SVG. Accepts `"light"` (default) or `"dark"`.
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
