@@ -11,7 +11,6 @@
 
 import cx from "classnames";
 import throttle from "lodash-es/throttle.js";
-import debounce from "lodash-es/debounce.js";
 import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
@@ -23,7 +22,6 @@ import {
   HasServiceManager,
   withServiceManager,
 } from "../hocs/withServiceManager";
-import actions from "../store/actions";
 import {
   selectHumanAgentDisplayState,
   selectInputState,
@@ -176,9 +174,14 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public messagesContainerWithScrollingRef = React.createRef<HTMLDivElement>();
 
   /**
-   * A ref to the element that acts as a handle for scrolling.
+   * A ref to the top scroll handle button.
    */
-  public scrollHandleRef = React.createRef<HTMLButtonElement>();
+  public scrollHandleTopRef = React.createRef<HTMLButtonElement>();
+
+  /**
+   * A ref to the bottom scroll handle button.
+   */
+  public scrollHandleBottomRef = React.createRef<HTMLButtonElement>();
 
   /**
    * A ref to the element that acts as a handle for scrolling.
@@ -234,14 +237,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       oldHumanAgentDisplayState.isHumanAgentTyping !==
         newHumanAgentDisplayState.isHumanAgentTyping;
 
-    if (numMessagesChanged || typingChanged) {
+    // Check if the localMessageItems array reference changed (happens during streaming when chunks are added)
+    const messageItemsChanged =
+      oldProps.localMessageItems !== newProps.localMessageItems;
+
+    if (numMessagesChanged || typingChanged || messageItemsChanged) {
       const newLastItem = arrayLastValue(newProps.localMessageItems);
       const oldLastItem = arrayLastValue(oldProps.localMessageItems);
 
       // If the last message has changed, then do an auto scroll.
       const lastItemChanged = newLastItem !== oldLastItem;
-      if (lastItemChanged || typingChanged) {
-        this.doAutoScroll({ preferAnimate: true });
+      if (lastItemChanged || numMessagesChanged || typingChanged) {
+        this.doAutoScroll();
+      }
+      if (messageItemsChanged) {
+        this.renderScrollDownNotification();
       }
     }
   }
@@ -388,62 +398,18 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param assumeScrollTop A value to assume the scroll panel is (or will be) scrolled to. This can be useful when
    * an animation is occurring and the current scroll position isn't the final scroll position.
    */
-  private checkScrollAnchor(
-    fromAutoScroll?: boolean,
-    assumeScrollTop?: number,
-  ) {
-    const scrollElement = this.messagesContainerWithScrollingRef.current;
-
-    if (!scrollElement) {
-      return;
-    }
-
-    // If we're checking because of auto-scrolling, we want check the scroll position even if the scroll detection
-    // is normally suspended because of something like an animation in progress.
-    if (
-      fromAutoScroll ||
-      (this.previousScrollOffsetHeight === scrollElement.offsetHeight &&
-        !this.props.suspendScrollDetection)
-    ) {
-      // If the scroll panel has been scrolled all the way to the bottom, turn on the anchor.
-      const assumedScrollTop =
-        assumeScrollTop !== undefined
-          ? assumeScrollTop
-          : scrollElement.scrollTop;
-      const isScrollAnchored =
-        assumedScrollTop >=
-        scrollElement.scrollHeight - scrollElement.offsetHeight;
-      if (isScrollAnchored !== this.props.messageState.isScrollAnchored) {
-        this.props.serviceManager.store.dispatch(
-          actions.setChatMessagesStateProperty(
-            "isScrollAnchored",
-            isScrollAnchored,
-          ),
-        );
-      }
-    }
-
-    this.previousScrollOffsetHeight = scrollElement.offsetHeight;
-  }
 
   /**
-   * This will check to see if the messages list is anchored to the bottom of the panel and if so, ensure that the
-   * list is still scrolled to the bottom. It will also run doAutoScroll to ensure proper scrolling behavior
-   * when the window is resized.
+   * This will run doAutoScroll to ensure proper scrolling behavior when the window is resized.
    */
-  public onResize = throttle(() => {
-    this.renderScrollDownNotification();
-    if (this.props.messageState.isScrollAnchored) {
-      const element = this.messagesContainerWithScrollingRef.current;
-      if (element) {
-        element.scrollTop = element.scrollHeight;
-      }
-    }
-
-    // Run doAutoScroll when the window is resized to maintain proper scroll position
-    // This is important for workspace functionality
-    this.doAutoScroll();
-  }, AUTO_SCROLL_THROTTLE_TIMEOUT);
+  public onResize = throttle(
+    () => {
+      this.renderScrollDownNotification();
+      this.doAutoScroll();
+    },
+    AUTO_SCROLL_THROTTLE_TIMEOUT,
+    { leading: true, trailing: true },
+  );
 
   /**
    * This will execute an auto-scroll operation based on the current state of messages in the component. This should
@@ -634,7 +600,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
       // Perform scroll and update tracking
       doScrollElement(scrollElement, scrollTop, 0, animate);
-      this.checkScrollAnchor(true, scrollTop);
       this.previousScrollableMessage = lastScrollableMessageComponent;
     }
   }
@@ -738,7 +703,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
     // decide it remembers the previous scroll position and set it for us.
     doScrollElement(scrollElement, 0, 0, animate);
-    this.checkScrollAnchor(true, 0);
   }
 
   /**
@@ -799,14 +763,24 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
   }
 
-  public doAutoScroll = throttle((options: AutoScrollOptions = {}) => {
+  public doAutoScroll = (options: AutoScrollOptions = {}) => {
     try {
       requestAnimationFrame(() => this.executeAutoScroll(options));
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
     }
-  }, AUTO_SCROLL_THROTTLE_TIMEOUT);
+  };
+
+  /**
+   * Throttled auto-scroll method for automatic scroll operations (e.g., message updates).
+   * This is throttled to prevent excessive scrolling during rapid updates.
+   */
+  public doAutoScrollThrottled = throttle(
+    this.doAutoScroll,
+    AUTO_SCROLL_THROTTLE_TIMEOUT,
+    { leading: true, trailing: true },
+  );
 
   /**
    * Returns the current scrollBottom value for the message scroll panel.
@@ -914,9 +888,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
         // Do the scrolling.
         doScrollElement(scrollElement, setScrollTop, 0, animate);
-
-        // Update the scroll anchor setting based on this new position.
-        this.checkScrollAnchor(true, setScrollTop);
       }
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
@@ -946,15 +917,14 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Updates the state after checking if there are any unread messages in the chat view
    */
-  public renderScrollDownNotification = debounce(
+  public renderScrollDownNotification = throttle(
     () => {
       const shouldRender = this.checkMessagesOutOfView();
       this.setState({
-        scrollHandleHasFocus: false,
         scrollDown: shouldRender,
       });
     },
-    50,
+    AUTO_SCROLL_THROTTLE_TIMEOUT,
     { leading: false, trailing: true },
   );
 
@@ -1126,7 +1096,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
         requestMoveFocus={this.requestMoveFocus}
-        doAutoScroll={this.doAutoScroll}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
         isLastMessageItem={isLastMessageItem}
@@ -1244,21 +1213,18 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     return (
       <button
+        key={atTop ? "scroll-handle-top" : "scroll-handle-bottom"}
         type="button"
         className="cds-aichat--messages--scroll-handle"
-        ref={this.scrollHandleRef}
+        ref={atTop ? this.scrollHandleTopRef : this.scrollHandleBottomRef}
         tabIndex={0}
         // The extra "||" can be removed when we have translations for the other keys.
         aria-label={
           languagePack[labelKey] || languagePack.messages_scrollHandle
         }
         onClick={onClick}
-        onFocus={() =>
-          this.setState({ scrollHandleHasFocus: true, ...this.state })
-        }
-        onBlur={() =>
-          this.setState({ scrollHandleHasFocus: false, ...this.state })
-        }
+        onFocus={() => this.setState({ scrollHandleHasFocus: true })}
+        onBlur={() => this.setState({ scrollHandleHasFocus: false })}
       />
     );
   }
@@ -1394,12 +1360,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           })}
           ref={this.messagesContainerWithScrollingRef}
           onScroll={() => {
-            this.checkScrollAnchor();
             this.renderScrollDownNotification();
           }}
         >
+          {this.renderScrollHandle(true)}
           <div className="cds-aichat--messages">
-            {this.renderScrollHandle(true)}
             {regularMessages}
             {(Boolean(isMessageLoadingCounter) || isHumanAgentTyping) &&
               this.renderTypingIndicator(
@@ -1407,29 +1372,30 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
                 localMessageItems.length,
                 isMessageLoadingCounter ? isMessageLoadingText : undefined,
               )}
-            {this.renderScrollHandle(false)}
+
             <div id="chat-bottom-spacer" ref={this.bottomSpacerRef} />
-            <MountChildrenOnDelay>
-              <div className="cds-aichat__scroll-to-bottom">
-                <ChatButton
-                  className={cx("cds-aichat__scroll-to-bottom-button", {
-                    "cds-aichat__scroll-to-bottom-button--hidden": !scrollDown,
-                  })}
-                  size={CHAT_BUTTON_SIZE.SMALL}
-                  kind={CHAT_BUTTON_KIND.SECONDARY}
-                  aria-label={languagePack.messages_scrollMoreButton}
-                  onClick={() =>
-                    this.doAutoScroll({
-                      scrollToBottom: 0,
-                      preferAnimate: true,
-                    })
-                  }
-                >
-                  <DownToBottom slot="icon" />
-                </ChatButton>
-              </div>
-            </MountChildrenOnDelay>
+            {scrollDown && (
+              <MountChildrenOnDelay delay={100}>
+                <div className="cds-aichat__scroll-to-bottom">
+                  <ChatButton
+                    className="cds-aichat__scroll-to-bottom-button"
+                    size={CHAT_BUTTON_SIZE.SMALL}
+                    kind={CHAT_BUTTON_KIND.SECONDARY}
+                    aria-label={languagePack.messages_scrollMoreButton}
+                    onClick={() =>
+                      this.doAutoScroll({
+                        scrollToBottom: 0,
+                        preferAnimate: true,
+                      })
+                    }
+                  >
+                    <DownToBottom slot="icon" />
+                  </ChatButton>
+                </div>
+              </MountChildrenOnDelay>
+            )}
           </div>
+          {this.renderScrollHandle(false)}
         </div>
       </div>
     );

@@ -60,7 +60,6 @@ import { HasServiceManager } from "../hocs/withServiceManager";
 import actions from "../store/actions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { HasClassName } from "../../types/utilities/HasClassName";
-import { HasDoAutoScroll } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import {
@@ -136,8 +135,7 @@ interface MessageProps
     HasServiceManager,
     HasLanguagePack,
     HasClassName,
-    HasAriaAnnouncer,
-    HasDoAutoScroll {
+    HasAriaAnnouncer {
   /**
    * The local message item that is part of the original message.
    */
@@ -1042,7 +1040,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       disableUserInputs,
       showAvatarLine,
       className,
-      doAutoScroll,
       isMessageForInput,
       scrollElementIntoView,
       isFirstMessageItem,
@@ -1075,7 +1072,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         disableUserInputs={disableUserInputs}
         isMessageForInput={isMessageForInput}
         config={config}
-        doAutoScroll={doAutoScroll}
         scrollElementIntoView={scrollElementIntoView}
         showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}

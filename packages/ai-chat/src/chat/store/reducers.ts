@@ -176,7 +176,6 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.assistantMessageState,
         localMessageIDs: [],
         messageIDs: [],
-        isScrollAnchored: false,
         activeResponseId: null,
       },
       allMessageItemsByID: {},
