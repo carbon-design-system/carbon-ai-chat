@@ -15,7 +15,7 @@ import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
 } from "../carbon/ChatButton";
-import { ErrorMessage } from "../../components-legacy/ErrorMessage";
+import ErrorMessageSVG from "@carbon/ai-chat-components/es/react/error-message-svg.js";
 import RichText from "../../components-legacy/responseTypes/util/RichText";
 import { useCarbonTheme } from "../../hooks/useCarbonTheme";
 import { carbonIconToReact } from "../../utils/carbonIcon";
@@ -55,7 +55,7 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
       )}
     >
       <div className="cds-aichat--catastrophic-error__error-text-container">
-        <ErrorMessage theme={isDarkTheme ? "dark" : "light"} />
+        <ErrorMessageSVG theme={isDarkTheme ? "dark" : "light"} />
         <div className="cds-aichat--catastrophic-error__error-heading">
           {languagePack.errors_somethingWrong}
         </div>
