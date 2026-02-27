@@ -55,6 +55,7 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";

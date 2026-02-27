@@ -13,7 +13,10 @@ import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { AppConfig } from "../../types/state/AppConfig";
 import { AppState } from "../../types/state/AppState";
 import { FileUpload } from "../../types/config/ServiceDeskConfig";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
+import {
+  LocalMessageItem,
+  MessageErrorState,
+} from "../../types/messaging/LocalMessageItem";
 import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
 import { uuid, UUIDType } from "./lang/uuid";
@@ -580,6 +583,39 @@ function isStandaloneSystemMessage(message: Message): boolean {
   return false;
 }
 
+/**
+ * Returns the ID of the last message response that should have interactive inputs enabled.
+ *
+ * As soon as the user sends a message, all previous responses are disabled to prevent re-interaction.
+ * However, if the latest request resulted in an error, the last response is re-enabled so the user
+ * isn't left stuck with a disabled input bar.
+ *
+ * @param localMessageItems - The ordered list of local message items
+ * @param allMessagesByID - Map of all messages by their IDs
+ */
+function getMessageIDForUserInput(
+  localMessageItems: LocalMessageItem[],
+  allMessagesByID: Record<string, Message>,
+): string | null {
+  for (let index = localMessageItems.length - 1; index >= 0; index--) {
+    const message = localMessageItems[index];
+    const originalMessage = allMessagesByID[message.fullMessageID];
+    if (
+      isRequest(originalMessage) &&
+      originalMessage?.history?.error_state !== MessageErrorState.FAILED
+    ) {
+      // If we find a request that was not an error, then we need to disable everything.
+      return null;
+    }
+    if (isResponse(originalMessage)) {
+      // If we didn't find a successful request, then the first response we find can be enabled.
+      return message.fullMessageID;
+    }
+  }
+  // Nothing should be enabled.
+  return null;
+}
+
 export {
   getOptionType,
   isResponse,
@@ -621,4 +657,5 @@ export {
   isFullWidthUserDefined,
   isSystemMessageItem,
   isStandaloneSystemMessage,
+  getMessageIDForUserInput,
 };

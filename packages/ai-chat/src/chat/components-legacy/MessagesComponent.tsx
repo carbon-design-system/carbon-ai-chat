@@ -7,16 +7,17 @@
  *  @license
  */
 
-/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
-
 import cx from "classnames";
 import throttle from "lodash-es/throttle.js";
 import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
-import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
+import { MessagesScrollHandle } from "./MessagesScrollHandle";
+import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
+import { MessagesTypingIndicator } from "./MessagesTypingIndicator";
+import { MessagesView } from "./MessagesView";
 import { SystemMessage } from "./SystemMessage";
 import {
   HasServiceManager,
@@ -30,42 +31,31 @@ import { AppState, ChatMessagesState } from "../../types/state/AppState";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import {
-  LocalMessageItem,
-  MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
+import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { IS_MOBILE } from "../utils/browserUtils";
 import {
-  AUTO_SCROLL_EXTRA,
   AUTO_SCROLL_THROTTLE_TIMEOUT,
   WriteableElementName,
 } from "../utils/constants";
-import {
-  doScrollElement,
-  getScrollBottom,
-  waitForStableHeight,
-} from "../utils/domUtils";
+import { doScrollElement, getScrollBottom } from "../utils/domUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
+import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
 import {
-  isRequest,
-  isResponse,
-  isStandaloneSystemMessage,
-} from "../utils/messageUtils";
+  consumeStreamingChunk,
+  pinMessageAndScroll,
+  recalculatePinnedMessageSpacer,
+  resolveAutoScrollAction,
+} from "../utils/messagesAutoScrollController";
+import { buildRenderableMessageMetadata } from "../utils/messagesRenderUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
 import MessageComponent, {
   MessageClass,
   MoveFocusType,
 } from "./MessageComponent";
-import { Message, MessageRequest } from "../../types/messaging/Messages";
+import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import Processing from "@carbon/ai-chat-components/es/react/processing.js";
-import ChatButton, {
-  CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { MountChildrenOnDelay } from "../components/util/MountChildrenOnDelay";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -136,19 +126,18 @@ interface MessagesState {
   scrollDown: boolean;
 }
 
+/**
+ * MessagesComponent orchestrates three concerns:
+ * 1) message rendering and focus navigation
+ * 2) auto-scroll lifecycle integration
+ * 3) bridge methods consumed by external callers via ref (ChatInstance/AppShell)
+ *
+ * Auto-scroll model:
+ * - A qualifying message is "pinned" near the top of the viewport.
+ * - A bottom spacer is grown/shrunk so that pin position is reachable/stable as content changes.
+ * - Streaming updates consume spacer progressively; when streaming ends we recalculate from scratch.
+ */
 class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
-  /**
-   * The visible portion (in pixels) to show at the bottom of a tall message when auto-scrolling.
-   * This ensures the response isn't completely hidden when the request message is very tall.
-   */
-  private static readonly VISIBLE_BOTTOM_PORTION_PX = 100;
-
-  /**
-   * The threshold ratio for determining if a message is "very tall".
-   * A message is considered very tall if its height exceeds this ratio of the scroller height.
-   */
-  private static readonly TALL_MESSAGE_THRESHOLD_RATIO = 0.25; // 1/4
-
   /**
    * Default state.
    */
@@ -189,14 +178,40 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public agentBannerRef = React.createRef<HasRequestFocus>();
 
   /**
-   * This is the previous value of the offset height of the scrollable element when the last scroll event was fired.
+   * The message component most recently pinned to the top of the visible scroll area.
+   * Updated when pinning/re-pinning chooses a different target.
    */
-  private previousScrollOffsetHeight: number;
+  private pinnedMessageComponent: MessageClass | null = null;
 
   /**
-   * This is the previous message that was scrolled to.
+   * In-memory spacer budget in pixels used by pin/streaming math.
+   * During streaming this can diverge from the DOM spacer height because we avoid
+   * mid-stream DOM writes; `domSpacerHeight` tracks the real DOM value.
    */
-  private previousScrollableMessage: MessageClass;
+  private currentSpacerHeight = 0;
+
+  /**
+   * The scrollHeight of the scroll container at the moment of the last pin or streaming
+   * chunk update. Used by handleStreamingChunk to compute the growth delta.
+   */
+  private lastScrollHeight = 0;
+
+  /**
+   * The scrollTop value set at the moment of the last pin. Compared against the current
+   * scrollTop at stream end to detect whether the user scrolled away from the pin during
+   * streaming. In the standard "message added, then chunks stream" flow, this is set before
+   * stream-end handling runs, so it is a stable baseline for the near-pin/away-from-pin check.
+   */
+  private pinnedScrollTop = 0;
+
+  /**
+   * The spacer height that is actually written to the DOM. This differs from
+   * currentSpacerHeight during streaming: consumeStreamingChunk no longer writes to the
+   * DOM spacer mid-stream, so domSpacerHeight stays at the pin-time value throughout the
+   * stream. Using the real DOM height in checkMessagesOutOfView prevents the
+   * scroll-to-bottom button from appearing for blank spacer space during streaming.
+   */
+  private domSpacerHeight = 0;
 
   /**
    * Spacer element at the bottom of the messages list. We set this element's
@@ -215,44 +230,110 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     this.scrollPanelObserver.observe(
       this.messagesContainerWithScrollingRef.current,
     );
-
-    this.previousScrollOffsetHeight =
-      this.messagesContainerWithScrollingRef.current.offsetHeight;
   }
 
-  componentDidUpdate(oldProps: MessagesProps) {
-    const newProps = this.props;
+  /**
+   * Captures scrollTop immediately before React commits DOM changes. Used by
+   * componentDidUpdate to detect and cancel browser-initiated scrollTop adjustments
+   * (Safari scroll anchoring) that occur synchronously during layout.
+   */
+  getSnapshotBeforeUpdate(
+    _prevProps: MessagesProps,
+    _prevState: MessagesState,
+  ): number | null {
+    const el = this.messagesContainerWithScrollingRef.current;
+    return el ? el.scrollTop : null;
+  }
 
-    // If the number of messages changes (usually because of new messages) or the state of the "is typing" indicator
-    // changes, then we need to check to see if we want to perform some auto-scrolling behavior.
-    const numMessagesChanged =
-      oldProps.localMessageItems.length !== newProps.localMessageItems.length;
+  componentDidUpdate(
+    oldProps: MessagesProps,
+    _prevState: MessagesState,
+    snapshot: number | null,
+  ): void {
+    const newItems = this.props.localMessageItems;
+    const oldItems = oldProps.localMessageItems;
 
-    const oldHumanAgentDisplayState = selectHumanAgentDisplayState(oldProps);
-    const newHumanAgentDisplayState = selectHumanAgentDisplayState(newProps);
+    const countChanged = newItems.length !== oldItems.length;
+    const itemsChanged = newItems !== oldItems;
+    // No structural or reference change means no scroll maintenance needed.
+    if (!countChanged && !itemsChanged) {
+      return;
+    }
 
-    const typingChanged =
-      oldProps.messageState.isMessageLoadingCounter !==
-        newProps.messageState.isMessageLoadingCounter ||
-      oldHumanAgentDisplayState.isHumanAgentTyping !==
-        newHumanAgentDisplayState.isHumanAgentTyping;
+    this.renderScrollDownNotification();
 
-    // Check if the localMessageItems array reference changed (happens during streaming when chunks are added)
-    const messageItemsChanged =
-      oldProps.localMessageItems !== newProps.localMessageItems;
+    if (countChanged) {
+      // Message list length changed (add/remove). Re-run auto-scroll policy so we either
+      // pin a new target, maintain the current pin, or reset for empty state.
+      this.doAutoScroll();
+      return;
+    }
 
-    if (numMessagesChanged || typingChanged || messageItemsChanged) {
-      const newLastItem = arrayLastValue(newProps.localMessageItems);
-      const oldLastItem = arrayLastValue(oldProps.localMessageItems);
+    // Array reference changed but count is the same. In this codebase, that means
+    // in-place evolution (typically streaming chunks or item-level state updates).
+    // Only perform spacer maintenance if we have a pinned message.
+    if (!this.pinnedMessageComponent) {
+      return;
+    }
 
-      // If the last message has changed, then do an auto scroll.
-      const lastItemChanged = newLastItem !== oldLastItem;
-      if (lastItemChanged || numMessagesChanged || typingChanged) {
-        this.doAutoScroll();
+    const isCurrentlyStreaming = newItems.some(
+      (item) =>
+        item.ui_state.streamingState && !item.ui_state.streamingState.isDone,
+    );
+    const wasStreaming = oldItems.some(
+      (item) =>
+        item.ui_state.streamingState && !item.ui_state.streamingState.isDone,
+    );
+
+    if (isCurrentlyStreaming) {
+      // Prevent Safari's scroll anchoring from decreasing scrollTop during streaming
+      // (the re-pin direction). getSnapshotBeforeUpdate captures scrollTop right
+      // before React commits the DOM; scroll anchoring fires synchronously during
+      // layout (between snapshot and now), so a decrease in this window is
+      // browser-initiated — restore it.
+      const el = this.messagesContainerWithScrollingRef.current;
+      if (snapshot !== null && el && el.scrollTop < snapshot) {
+        el.scrollTop = snapshot;
       }
-      if (messageItemsChanged) {
-        this.renderScrollDownNotification();
+      this.handleStreamingChunk();
+    } else if (wasStreaming) {
+      // Streaming just finished. Choose between two strategies based on where the
+      // user is relative to the pin position at the moment the stream ends.
+      //
+      // In the normal flow, doAutoScroll already pinned (or maintained) the target before
+      // this stream-end pass, so pinnedScrollTop reflects the baseline position for deciding
+      // whether the user stayed near the pin.
+      //
+      // - Near pin (scrollTop ≤ pinnedScrollTop + 60): user stayed to watch the response.
+      //   Call executePinAndScroll so the spacer and scrollTop are both written together,
+      //   overriding any Safari scroll-anchoring that fired during the spacer DOM write.
+      //
+      // - Away from pin (scrollTop > pinnedScrollTop + 60): user scrolled to read.
+      //   Recalculate the spacer, then restore the user's pre-write scrollTop. Setting
+      //   scrollTop explicitly after the spacer write overrides Safari anchoring. If they
+      //   were scrolled into blank spacer space, the browser caps them at the new content
+      //   bottom — no explicit scroll-to-bottom needed.
+      //
+      // Safari fires scroll anchoring during the final stream commit (same as mid-stream
+      // commits). Apply the directional restore here too so the rAF's position check sees
+      // the user's actual scrollTop, not the anchoring-adjusted one.
+      const elEnd = this.messagesContainerWithScrollingRef.current;
+      if (snapshot !== null && elEnd && elEnd.scrollTop < snapshot) {
+        elEnd.scrollTop = snapshot;
       }
+      requestAnimationFrame(() => {
+        const scrollElement = this.messagesContainerWithScrollingRef.current;
+        if (!scrollElement || !this.pinnedMessageComponent) {
+          return;
+        }
+        if (scrollElement.scrollTop <= this.pinnedScrollTop + 60) {
+          this.executePinAndScroll(this.pinnedMessageComponent, scrollElement);
+        } else {
+          const savedScrollTop = scrollElement.scrollTop;
+          this.executeRecalculateSpacer(scrollElement);
+          scrollElement.scrollTop = savedScrollTop;
+        }
+      });
     }
   }
 
@@ -264,146 +345,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   }
 
   /**
-   * Determines if the message should be scrolled to. By default, response messages should be scrolled to,
-   * and request messages should not be scrolled to.
-   * Special cases:
-   * 1. If a response has history.silent=true, it should not be scrolled to
-   * 2. If a message is from history, we should always scroll to it if possible
-   */
-  private shouldScrollToMessage = (
-    localItem: LocalMessageItem,
-    message: Message,
-  ) => {
-    if (isResponse(message)) {
-      const { allMessagesByID } = this.props;
-      const messageRequest = allMessagesByID[
-        message?.request_id
-      ] as MessageRequest;
-
-      // If the request for this response was silent, then scroll to it instead of scrolling to where the
-      // silent user message would be. But don't do this if it's an empty message (which happens with a
-      // skip_use_input message from an extension).
-      return (
-        messageRequest?.history?.silent && messageRequest.input?.text !== ""
-      );
-    }
-
-    return isRequest(message);
-  };
-
-  /**
-   * Retrieves the previous spacer deficit value from the spacer element's min-block-size style.
-   * The deficit represents the extra space added at the bottom to ensure proper message positioning.
-   *
-   * @param spacerElem - The spacer element at the bottom of the messages list
-   * @returns The previous deficit value in pixels, or 0 if not set
-   */
-  private getPreviousSpacerDeficit(spacerElem: HTMLElement): number {
-    const spacerHeight = spacerElem
-      ? getComputedStyle(spacerElem).getPropertyValue("min-block-size")
-      : "0";
-    return parseFloat(spacerHeight) || 0;
-  }
-
-  /**
-   * Calculates the base scroll position needed to position the target message at the top of the chat.
-   * This calculation accounts for the current scroll position and adds extra padding for visual comfort.
-   *
-   * @param targetRect - The bounding rectangle of the target message element
-   * @param scrollerRect - The bounding rectangle of the scroll container
-   * @param scrollElement - The scrollable container element
-   * @returns The calculated scroll top position in pixels
-   */
-  private calculateBaseScrollTop(
-    targetRect: DOMRect,
-    scrollerRect: DOMRect,
-    scrollElement: HTMLElement,
-  ): number {
-    const targetOffsetWithinScroller =
-      targetRect.top - scrollerRect.top + scrollElement.scrollTop;
-    return Math.max(
-      0,
-      Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
-    );
-  }
-
-  /**
-   * Adjusts the scroll position for very tall messages to ensure the response remains visible.
-   * If a message exceeds 1/4 of the chat height, we scroll past most of it, leaving only
-   * the bottom portion visible to prevent hiding the response.
-   *
-   * @param baseScrollTop - The initial calculated scroll position
-   * @param targetHeight - The height of the target message
-   * @param scrollerHeight - The height of the scroll container
-   * @returns The adjusted scroll top position
-   */
-  private adjustScrollTopForTallMessage(
-    baseScrollTop: number,
-    targetHeight: number,
-    scrollerHeight: number,
-  ): number {
-    const isVeryTall =
-      targetHeight >
-      scrollerHeight * MessagesComponent.TALL_MESSAGE_THRESHOLD_RATIO;
-
-    if (!isVeryTall) {
-      return baseScrollTop;
-    }
-
-    // For tall messages, we want only the bottom portion visible
-    const tallAdjustment = Math.max(
-      0,
-      targetHeight - MessagesComponent.VISIBLE_BOTTOM_PORTION_PX,
-    );
-
-    return baseScrollTop + tallAdjustment;
-  }
-
-  /**
-   * Calculates the deficit (extra space needed) for the spacer element to ensure
-   * the target message can be scrolled to the desired position.
-   *
-   * @param spacerElem - The spacer element at the bottom of the messages list
-   * @param scrollElement - The scrollable container element
-   * @param scrollerRect - The bounding rectangle of the scroll container
-   * @param finalScrollTop - The final calculated scroll position
-   * @returns The deficit value in pixels
-   */
-  private calculateSpacerDeficit(
-    spacerElem: HTMLElement,
-    scrollElement: HTMLElement,
-    scrollerRect: DOMRect,
-    finalScrollTop: number,
-  ): number {
-    const lastRect = spacerElem.getBoundingClientRect();
-    const lastOffset =
-      lastRect.top - scrollerRect.top + scrollElement.scrollTop;
-    const visibleBottom = finalScrollTop + scrollElement.clientHeight;
-
-    return Math.max(0, Math.ceil(visibleBottom - lastOffset));
-  }
-
-  /**
-   * This function is called when the scrollable messages list is scrolled. It will determine if the scroll panel
-   * has been scrolled all the way to the bottom and if so, it will enable the scroll anchor that will keep it there.
-   * Note that this callback is not attached via the normal react method with an `onScroll` prop as that doesn't
-   * work with under a shadow DOM. This callback is attached directly in {@link componentDidMount}.
-   *
-   * This function will also make a somewhat crude attempt to distinguish if a scroll event has occurred because the
-   * user initiated a scroll or if the application initiated a scroll as the result of a changing in size of the
-   * widget. If the user initiates a scroll, then we use that event to anchor or un-anchor the scroll panel. If the
-   * application did the scroll, we want the anchor state to remain unchanged.
-   *
-   * @param fromAutoScroll Indicates if the reason we are checking the anchor is due to an auto-scroll action.
-   * @param assumeScrollTop A value to assume the scroll panel is (or will be) scrolled to. This can be useful when
-   * an animation is occurring and the current scroll position isn't the final scroll position.
-   */
-
-  /**
    * This will run doAutoScroll to ensure proper scrolling behavior when the window is resized.
    */
   public onResize = throttle(
     () => {
+      // Resize can invalidate both "scroll down" visibility and pin geometry.
       this.renderScrollDownNotification();
       this.doAutoScroll();
     },
@@ -412,360 +358,132 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   );
 
   /**
-   * This will execute an auto-scroll operation based on the current state of messages in the component. This should
-   * be called whenever the messages change.
+   * Pin a message to the top of the visible scroll area and scroll to it instantly.
+   * Runs synchronously inside a requestAnimationFrame — must only be called from within one.
    *
-   * The scrolling rules are as follows.
-   *
-   * 1. If the last message is a welcome node, auto-scroll to the top of the message without animating. This
-   * means the user has just started a new chat, and we want to just jump to the top.
-   * 2. If the component has just mounted and the last message is not a welcome node, just jump to the bottom
-   * without animating.
-   * 3. If the typing indicator is visible, then scroll that into view.
-   * 4. Scroll to the top of the last user message. This means that the bot messages will auto-scroll until the user's
-   * last message reaches the top of the window, and then they'll stop and not scroll anymore.
-   * 5. If the there is no user message that can be scrolled to, scroll to the last bot message.
-   * 6. If the last bot message has an empty output. Just scroll to bottom.
-   *
-   * @param options The options to control how the scrolling should occur.
-   */
-  /**
-   * Handles scrolling to a specific top position.
-   *
+   * @param messageComponent - The MessageClass instance to pin
    * @param scrollElement - The scrollable container element
-   * @param scrollToTop - The scroll top position to scroll to
    */
-  private handleScrollToTop(
+  private executePinAndScroll(
+    messageComponent: MessageClass,
     scrollElement: HTMLElement,
-    scrollToTop: number,
   ): void {
-    doScrollElement(scrollElement, scrollToTop, 0);
-  }
-
-  /**
-   * Handles scrolling to a specific bottom offset.
-   *
-   * @param scrollElement - The scrollable container element
-   * @param scrollToBottom - The offset from the bottom to scroll to
-   * @param animate - Whether to animate the scroll
-   */
-  private handleScrollToBottom(
-    scrollElement: HTMLElement,
-    scrollToBottom: number,
-    animate: boolean,
-  ): void {
-    const scrollTop =
-      scrollElement.scrollHeight - scrollElement.offsetHeight - scrollToBottom;
-    doScrollElement(scrollElement, scrollTop, 0, animate);
-  }
-
-  /**
-   * Retrieves the last message item and its corresponding message data.
-   *
-   * @returns An object containing the last local item and message, or null if none exist
-   */
-  private getLastMessage(): {
-    localItem: LocalMessageItem | null;
-    message: Message | null;
-  } {
-    const { localMessageItems, allMessagesByID } = this.props;
-    const lastLocalItemIndex = localMessageItems.length - 1;
-    const lastLocalItem = localMessageItems.length
-      ? localMessageItems[lastLocalItemIndex]
-      : null;
-    const lastMessage = allMessagesByID[lastLocalItem?.fullMessageID];
-
-    return { localItem: lastLocalItem, message: lastMessage };
-  }
-
-  /**
-   * Determines whether scroll animation should be used based on options and message state.
-   *
-   * @param options - The auto-scroll options
-   * @param lastMessage - The last message in the conversation
-   * @returns True if scroll should be animated, false otherwise
-   */
-  private shouldAnimateScroll(
-    options: AutoScrollOptions,
-    lastMessage: Message | null,
-  ): boolean {
-    const preferAnimate = options.preferAnimate ?? true;
-
-    // Don't animate if message comes from history
-    if (lastMessage?.ui_state_internal?.from_history) {
-      return false;
-    }
-
-    return preferAnimate;
-  }
-
-  /**
-   * Finds the last message that should be scrolled to by iterating backwards through messages.
-   * By default, request messages should be scrolled to (not response messages).
-   * However, if a response has history.silent=true, it should be scrolled to instead.
-   *
-   * @param localMessageItems - The list of local message items
-   * @param allMessagesByID - Map of all messages by their IDs
-   * @returns An object containing the message component and its index, or null if none found
-   */
-  private findLastScrollableMessage(
-    localMessageItems: LocalMessageItem[],
-    allMessagesByID: Record<string, Message>,
-  ): { messageComponent: MessageClass; index: number } | null {
-    let messageIndex = localMessageItems.length - 1;
-
-    while (messageIndex >= 1) {
-      const localItem = localMessageItems[messageIndex];
-      const message = allMessagesByID[localItem?.fullMessageID];
-
-      if (this.shouldScrollToMessage(localItem, message)) {
-        const messageComponent = this.messageRefs.get(localItem.ui_state.id);
-        debugAutoScroll(
-          `[doAutoScroll] lastScrollableMessageComponent=${messageIndex}`,
-          localMessageItems[messageIndex],
-          message,
-        );
-        return { messageComponent, index: messageIndex };
-      }
-      messageIndex--;
-    }
-
-    return null;
-  }
-
-  /**
-   * Calculates the scroll position for a message and applies it to the scroll container.
-   * This method waits for the scroll height to stabilize, calculates the optimal scroll position,
-   * updates the spacer element, and performs the scroll if the message has changed.
-   *
-   * @param lastScrollableMessageComponent - The message component to scroll to
-   * @param scrollElement - The scrollable container element
-   * @param animate - Whether to animate the scroll
-   */
-  private async calculateAndApplyScrollPosition(
-    lastScrollableMessageComponent: MessageClass,
-    scrollElement: HTMLElement,
-    animate: boolean,
-  ): Promise<void> {
-    /**
-     * Make sure the message container scroll height is stable before we grab values for
-     * scroll position calculations. It can sometimes take a couple animation frames
-     * for the height to settle, especially with dropdowns which can increase / decrease
-     * the scroll height when it's open / closed.
-     */
-    await waitForStableHeight(scrollElement);
-
-    /**
-     * In order to bump the request message to the top of the chat client height, we set the
-     * `min-block-size` of a spacer div element at the bottom of the message list.
-     */
-    const spacerElem = this.bottomSpacerRef.current;
-    const lastScrollableMessageElement =
-      lastScrollableMessageComponent?.ref?.current;
-
-    if (lastScrollableMessageElement) {
-      // Get all measurements in one place
-      const metrics = this.calculateScrollMetrics(
-        lastScrollableMessageElement,
-        scrollElement,
-        spacerElem,
-      );
-
-      // Calculate final scroll position
-      const scrollTop = this.calculateFinalScrollTop(
-        metrics.targetRect,
-        metrics.scrollerRect,
-        scrollElement,
-        metrics.scrollerHeight,
-      );
-
-      // Update spacer element to ensure proper positioning
-      // For streaming responses, this gets triggered again once streaming is done to ensure
-      // extra bottom spacing is cleaned up
-      await this.updateSpacerElement(
-        spacerElem,
-        scrollElement,
-        metrics.scrollerRect,
-        scrollTop,
-      );
-
-      // the last request message is the same, no need to set the scroll position
-      if (this.previousScrollableMessage === lastScrollableMessageComponent) {
-        return;
-      }
-
-      debugAutoScroll(
-        `[doAutoScroll] Scrolling to message offsetTop=${scrollTop}`,
-      );
-
-      // Perform scroll and update tracking
-      doScrollElement(scrollElement, scrollTop, 0, animate);
-      this.previousScrollableMessage = lastScrollableMessageComponent;
-    }
-  }
-
-  /**
-   * Calculates all scroll-related measurements needed for positioning.
-   * This consolidates rect calculations and deficit tracking in one place.
-   *
-   * @param lastScrollableMessageElement - The target message element to scroll to
-   * @param scrollElement - The scrollable container element
-   * @param spacerElem - The spacer element at the bottom of the messages list
-   * @returns An object containing all calculated metrics
-   */
-  private calculateScrollMetrics(
-    lastScrollableMessageElement: HTMLElement,
-    scrollElement: HTMLElement,
-    spacerElem: HTMLElement,
-  ): {
-    targetRect: DOMRect;
-    scrollerRect: DOMRect;
-    scrollerHeight: number;
-    previousDeficit: number;
-  } {
-    const previousDeficit = this.getPreviousSpacerDeficit(spacerElem);
-    const targetRect = lastScrollableMessageElement.getBoundingClientRect();
-    const scrollerRect = scrollElement.getBoundingClientRect();
-    // Subtract the previous deficit to prevent scroll position skew when spacer height adjusts
-    const scrollerHeight = scrollerRect.height - previousDeficit;
-
-    return { targetRect, scrollerRect, scrollerHeight, previousDeficit };
-  }
-
-  /**
-   * Calculates the final scroll position by combining base calculation and tall message adjustment.
-   * This provides a single entry point for the complete scroll position calculation pipeline.
-   *
-   * @param targetRect - The bounding rectangle of the target message element
-   * @param scrollerRect - The bounding rectangle of the scroll container
-   * @param scrollElement - The scrollable container element
-   * @param scrollerHeight - The adjusted height of the scroll container
-   * @returns The final calculated scroll top position in pixels
-   */
-  private calculateFinalScrollTop(
-    targetRect: DOMRect,
-    scrollerRect: DOMRect,
-    scrollElement: HTMLElement,
-    scrollerHeight: number,
-  ): number {
-    const baseScrollTop = this.calculateBaseScrollTop(
-      targetRect,
-      scrollerRect,
+    const result = pinMessageAndScroll({
+      messageComponent,
       scrollElement,
-    );
-
-    return this.adjustScrollTopForTallMessage(
-      baseScrollTop,
-      targetRect.height,
-      scrollerHeight,
-    );
-  }
-
-  /**
-   * Updates the spacer element's min-block-size to ensure proper message positioning.
-   * Waits for layout to stabilize before calculating the deficit.
-   *
-   * @param spacerElem - The spacer element at the bottom of the messages list
-   * @param scrollElement - The scrollable container element
-   * @param scrollerRect - The bounding rectangle of the scroll container
-   * @param scrollTop - The calculated scroll top position
-   */
-  private async updateSpacerElement(
-    spacerElem: HTMLElement,
-    scrollElement: HTMLElement,
-    scrollerRect: DOMRect,
-    scrollTop: number,
-  ): Promise<void> {
-    // Wait for the scroll container to stabilize after any layout changes
-    await waitForStableHeight(scrollElement, {
-      frames: 7,
-      timeoutMs: 500,
+      spacerElem: this.bottomSpacerRef.current,
     });
+    if (!result) {
+      return;
+    }
 
-    const deficit = this.calculateSpacerDeficit(
-      spacerElem,
-      scrollElement,
-      scrollerRect,
-      scrollTop,
+    // Keep component-level tracking aligned with the DOM writes performed by the controller.
+    this.currentSpacerHeight = result.currentSpacerHeight;
+    this.domSpacerHeight = result.currentSpacerHeight;
+    this.lastScrollHeight = result.lastScrollHeight;
+    this.pinnedMessageComponent = result.pinnedMessageComponent;
+    this.pinnedScrollTop = result.scrollTop;
+
+    debugAutoScroll(
+      `[autoScroll] Pinned message, scrollTop=${result.scrollTop}, spacer=${result.currentSpacerHeight}px`,
     );
-    spacerElem.style.setProperty("min-block-size", `${deficit}px`);
   }
 
   /**
-   * Handles the case when there are no messages in the conversation.
-   * Scrolls to the top to prevent the browser from restoring a previous scroll position.
+   * Recalculate the spacer height for the currently pinned message without touching scrollTop.
+   * Used when content below the pin changes (resize, non-streaming response, streaming done).
+   * Runs synchronously inside a requestAnimationFrame — must only be called from within one.
    *
    * @param scrollElement - The scrollable container element
-   * @param animate - Whether to animate the scroll
    */
-  private handleNoMessages(scrollElement: HTMLElement, animate: boolean): void {
-    debugAutoScroll("[doAutoScroll] No last item");
-    // No messages, so set the scroll position to the top. If we don't set this explicitly, the browser may
-    // decide it remembers the previous scroll position and set it for us.
-    doScrollElement(scrollElement, 0, 0, animate);
+  private executeRecalculateSpacer(scrollElement: HTMLElement): void {
+    const spacerHeight = recalculatePinnedMessageSpacer({
+      pinnedMessageComponent: this.pinnedMessageComponent,
+      scrollElement,
+      spacerElem: this.bottomSpacerRef.current,
+    });
+    if (spacerHeight === null) {
+      return;
+    }
+    this.currentSpacerHeight = spacerHeight;
+    this.domSpacerHeight = spacerHeight;
   }
 
   /**
-   * Executes the auto-scroll logic based on the current state of messages.
-   * This is the core implementation that runs inside requestAnimationFrame.
-   *
-   * @param options - The auto-scroll options controlling scroll behavior
+   * Tracks streaming growth by updating in-memory spacer accounting only.
+   * No DOM spacer write happens here; the DOM is reconciled once streaming ends
+   * via executePinAndScroll/executeRecalculateSpacer.
    */
-  private executeAutoScroll(options: AutoScrollOptions): void {
-    debugAutoScroll("[doAutoScroll] Running doAutoScroll", options);
-
-    const { scrollToTop, scrollToBottom } = options;
-    const { localMessageItems, allMessagesByID } = this.props;
-    const scrollElement = this.messagesContainerWithScrollingRef.current;
-
-    if (!scrollElement) {
-      debugAutoScroll("[doAutoScroll] scrollElement is null, skipping scroll");
-      return;
-    }
-
-    // Handle explicit scroll options
-    if (scrollToTop !== undefined) {
-      this.handleScrollToTop(scrollElement, scrollToTop);
-      return;
-    }
-
-    if (scrollToBottom !== undefined) {
-      const animate = this.shouldAnimateScroll(options, null);
-      this.handleScrollToBottom(scrollElement, scrollToBottom, animate);
-      return;
-    }
-
-    // Handle automatic scrolling based on messages
-    const { localItem: lastLocalItem, message: lastMessage } =
-      this.getLastMessage();
-    const animate = this.shouldAnimateScroll(options, lastMessage);
-
-    if (!lastLocalItem) {
-      this.handleNoMessages(scrollElement, animate);
-      return;
-    }
-
-    // Find and scroll to the last scrollable message
-    const result = this.findLastScrollableMessage(
-      localMessageItems,
-      allMessagesByID,
-    );
-
-    if (result?.messageComponent) {
-      this.calculateAndApplyScrollPosition(
-        result.messageComponent,
-        scrollElement,
-        animate,
-      );
-    } else {
-      // No scrollable message found - don't scroll
-      debugAutoScroll("[doAutoScroll] No message found");
-    }
+  private handleStreamingChunk(): void {
+    const result = consumeStreamingChunk({
+      currentSpacerHeight: this.currentSpacerHeight,
+      lastScrollHeight: this.lastScrollHeight,
+      scrollElement: this.messagesContainerWithScrollingRef.current,
+    });
+    // Persist controller outputs so the next streaming frame can compute a correct delta.
+    // consumeStreamingChunk no longer writes to the DOM spacer mid-stream, so
+    // domSpacerHeight stays at the original pin-time value throughout streaming.
+    // The end-of-stream handler (executePinAndScroll / executeRecalculateSpacer)
+    // performs the single DOM write and updates domSpacerHeight at that point.
+    this.currentSpacerHeight = result.currentSpacerHeight;
+    this.lastScrollHeight = result.lastScrollHeight;
   }
 
+  /**
+   * The primary scroll entry point. Handles all scroll scenarios:
+   * - Explicit scrollToTop / scrollToBottom overrides (e.g. scroll-to-bottom button)
+   * - New qualifying message: pin it to the top of the viewport (single scroll)
+   * - Same qualifying message already pinned: recalculate spacer without scrolling
+   * - No messages: reset to top to prevent browser restoring a stale position
+   *
+   * Also used externally via ChatInstance, AppShell, and child components (UserDefinedResponse,
+   * MediaPlayer) that need to trigger a scroll or spacer update after a layout change.
+   */
   public doAutoScroll = (options: AutoScrollOptions = {}) => {
     try {
-      requestAnimationFrame(() => this.executeAutoScroll(options));
+      requestAnimationFrame(() => {
+        // Execute after DOM/layout settles for the current frame so measurements
+        // (scrollHeight, rects) match what the user can actually see.
+        const scrollElement = this.messagesContainerWithScrollingRef.current;
+        if (!scrollElement) {
+          return;
+        }
+
+        const action = resolveAutoScrollAction({
+          allMessagesByID: this.props.allMessagesByID,
+          localMessageItems: this.props.localMessageItems,
+          messageRefs: this.messageRefs,
+          options,
+          pinnedMessageComponent: this.pinnedMessageComponent,
+          scrollElement,
+        });
+
+        switch (action.type) {
+          case "scroll_to_top":
+            doScrollElement(scrollElement, action.scrollTop, 0);
+            return;
+          case "scroll_to_bottom":
+            doScrollElement(
+              scrollElement,
+              action.scrollTop,
+              0,
+              action.preferAnimate,
+            );
+            return;
+          case "reset_to_top":
+            // No messages — scroll to top so the browser doesn't restore a stale position.
+            scrollElement.scrollTop = 0;
+            return;
+          case "pin_message":
+            this.executePinAndScroll(action.messageComponent, scrollElement);
+            return;
+          case "recalculate_spacer":
+            this.executeRecalculateSpacer(scrollElement);
+            return;
+          default:
+            return;
+        }
+      });
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
@@ -907,8 +625,15 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       return false;
     }
 
+    // Subtract the real DOM spacer height, not the in-memory currentSpacerHeight.
+    // During streaming, consumeStreamingChunk decrements currentSpacerHeight each chunk
+    // but leaves the DOM spacer at its original size until content fully replaces it.
+    // Using currentSpacerHeight would make effectiveScrollHeight grow by 2× the streamed
+    // delta, causing the scroll-to-bottom button to appear for blank spacer space.
+    const effectiveScrollHeight =
+      scrollElement.scrollHeight - this.domSpacerHeight;
     const remainingPixelsToScroll =
-      scrollElement.scrollHeight -
+      effectiveScrollHeight -
       scrollElement.scrollTop -
       scrollElement.clientHeight;
     return remainingPixelsToScroll > 60;
@@ -920,6 +645,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public renderScrollDownNotification = throttle(
     () => {
       const shouldRender = this.checkMessagesOutOfView();
+      // Throttled to avoid setState churn during continuous scroll/stream updates.
       this.setState({
         scrollDown: shouldRender,
       });
@@ -964,47 +690,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     return [];
-  }
-
-  /**
-   * JSX to show typing indicator.
-   *
-   * @param isTypingMessage The aria label for the typing indicator.
-   * @param index The index of this message.
-   * @param statusMessage The optional visible message with the typing indicator
-   */
-  private renderTypingIndicator(
-    isTypingMessage: string,
-    index: number,
-    statusMessage?: string,
-  ) {
-    const languagePack = this.props.config.derived.languagePack;
-    return (
-      <div
-        className={`cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`}
-      >
-        <div className="cds-aichat--message--padding">
-          {isTypingMessage && <AriaLiveMessage message={isTypingMessage} />}
-          <div className="cds-aichat--assistant-message">
-            <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
-              <div className="cds-aichat--received--inner">
-                <div className="cds-aichat--processing">
-                  <Processing
-                    className="cds-aichat--processing-component"
-                    loop
-                    carbonTheme={this.props.carbonTheme}
-                    aria-label={languagePack.messages_processingLabel}
-                  />{" "}
-                  <div className="cds-aichat--processing-label">
-                    {statusMessage}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   /**
@@ -1212,48 +897,15 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           );
 
     return (
-      <button
-        key={atTop ? "scroll-handle-top" : "scroll-handle-bottom"}
-        type="button"
-        className="cds-aichat--messages--scroll-handle"
-        ref={atTop ? this.scrollHandleTopRef : this.scrollHandleBottomRef}
-        tabIndex={0}
+      <MessagesScrollHandle
+        buttonRef={atTop ? this.scrollHandleTopRef : this.scrollHandleBottomRef}
         // The extra "||" can be removed when we have translations for the other keys.
-        aria-label={
-          languagePack[labelKey] || languagePack.messages_scrollHandle
-        }
+        ariaLabel={languagePack[labelKey] || languagePack.messages_scrollHandle}
         onClick={onClick}
         onFocus={() => this.setState({ scrollHandleHasFocus: true })}
         onBlur={() => this.setState({ scrollHandleHasFocus: false })}
       />
     );
-  }
-
-  /**
-   * As soon as the user sends a message, we want to disable all the previous message responses to prevent the user
-   * from interacting with them again. However, if the user's message results in an error, we want to re-enable the
-   * last response from the bot to prevent the user from getting stuck in the case where the input bar is disabled.
-   * This function returns the id of the last message that is permitted to be enabled.
-   */
-  getMessageIDForUserInput() {
-    const { localMessageItems, allMessagesByID } = this.props;
-    for (let index = localMessageItems.length - 1; index >= 0; index--) {
-      const message = localMessageItems[index];
-      const originalMessage = allMessagesByID[message.fullMessageID];
-      if (
-        isRequest(originalMessage) &&
-        originalMessage?.history?.error_state !== MessageErrorState.FAILED
-      ) {
-        // If we find a request that was not an error, then we need to disable everything.
-        return null;
-      }
-      if (isResponse(originalMessage)) {
-        // If we didn't find a successful request, then the first response we find can be enabled.
-        return message.fullMessageID;
-      }
-    }
-    // Nothing should be enabled.
-    return null;
   }
 
   /**
@@ -1265,56 +917,35 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   renderMessages(messageIDForInput: string) {
     const { localMessageItems, allMessagesByID } = this.props;
     const renderMessageArray: ReactNode[] = [];
-
     const lastMessageID = arrayLastValue(localMessageItems)?.fullMessageID;
+    const metadataList = buildRenderableMessageMetadata(
+      localMessageItems,
+      allMessagesByID,
+      messageIDForInput,
+    );
 
-    let previousMessageID: string = null;
-    for (
-      let currentIndex = 0;
-      currentIndex < localMessageItems.length;
-      currentIndex++
-    ) {
-      const localMessageItem = localMessageItems[currentIndex];
-      const fullMessage = allMessagesByID[localMessageItem.fullMessageID];
-
-      // Check if this is a standalone system message
-      if (isStandaloneSystemMessage(fullMessage)) {
-        const messageItemID = localMessageItem.ui_state.id;
+    metadataList.forEach((metadata) => {
+      if (metadata.isStandaloneSystemMessage) {
         renderMessageArray.push(
-          <Fragment key={messageItemID}>
-            <SystemMessage message={fullMessage} standalone={true} />
+          <Fragment key={metadata.messageItemID}>
+            <SystemMessage message={metadata.fullMessage} standalone={true} />
           </Fragment>,
         );
-        previousMessageID = localMessageItem.fullMessageID;
-        continue;
+        return;
       }
-
-      const isMessageForInput =
-        messageIDForInput === localMessageItem.fullMessageID;
-      const isFirstMessageItem =
-        previousMessageID !== localMessageItem.fullMessageID;
-      const showBeforeWelcomeNodeElement =
-        localMessageItem.ui_state.isWelcomeResponse && isFirstMessageItem;
-      const isLastMessageItem =
-        localMessageItems.length - 1 === currentIndex ||
-        localMessageItem.fullMessageID !==
-          localMessageItems[currentIndex + 1].fullMessageID;
-
-      previousMessageID = localMessageItem.fullMessageID;
-
       renderMessageArray.push(
         this.renderMessage(
-          localMessageItem,
-          fullMessage,
-          currentIndex,
-          showBeforeWelcomeNodeElement,
-          isMessageForInput,
-          isFirstMessageItem,
-          isLastMessageItem,
+          metadata.localMessageItem,
+          metadata.fullMessage,
+          metadata.messagesIndex,
+          metadata.showBeforeWelcomeNodeElement,
+          metadata.isMessageForInput,
+          metadata.isFirstMessageItem,
+          metadata.isLastMessageItem,
           lastMessageID,
         ),
       );
-    }
+    });
 
     return renderMessageArray;
   }
@@ -1333,7 +964,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
-    const messageIDForInput = this.getMessageIDForUserInput();
+    const messageIDForInput = getMessageIDForUserInput(
+      localMessageItems,
+      this.props.allMessagesByID,
+    );
 
     const regularMessages = this.renderMessages(messageIDForInput);
 
@@ -1349,55 +983,48 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       );
     }
 
-    return (
-      <div className="cds-aichat--messages--holder">
-        {this.renderHumanAgentBanner()}
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div
-          className={cx("cds-aichat--messages__wrapper", {
-            "cds-aichat--messages__wrapper--scroll-handle-has-focus":
-              scrollHandleHasFocus,
-          })}
-          ref={this.messagesContainerWithScrollingRef}
-          onScroll={() => {
-            this.renderScrollDownNotification();
-          }}
-        >
-          {this.renderScrollHandle(true)}
-          <div className="cds-aichat--messages">
-            {regularMessages}
-            {(Boolean(isMessageLoadingCounter) || isHumanAgentTyping) &&
-              this.renderTypingIndicator(
-                isTypingMessage,
-                localMessageItems.length,
-                isMessageLoadingCounter ? isMessageLoadingText : undefined,
-              )}
+    const isTypingVisible =
+      Boolean(isMessageLoadingCounter) || isHumanAgentTyping;
+    const typingIndicator = (
+      <MessagesTypingIndicator
+        carbonTheme={this.props.carbonTheme}
+        index={localMessageItems.length}
+        isTypingMessage={isTypingMessage}
+        isVisible={isTypingVisible}
+        statusMessage={
+          isMessageLoadingCounter ? isMessageLoadingText : undefined
+        }
+        processingLabel={languagePack.messages_processingLabel}
+      />
+    );
+    const scrollDownButton = scrollDown ? (
+      <MessagesScrollToBottomButton
+        ariaLabel={languagePack.messages_scrollMoreButton}
+        onClick={() =>
+          this.doAutoScroll({
+            scrollToBottom: 0,
+            preferAnimate: true,
+          })
+        }
+        icon={<DownToBottom slot="icon" />}
+      />
+    ) : null;
 
-            <div id="chat-bottom-spacer" ref={this.bottomSpacerRef} />
-            {scrollDown && (
-              <MountChildrenOnDelay delay={100}>
-                <div className="cds-aichat__scroll-to-bottom">
-                  <ChatButton
-                    className="cds-aichat__scroll-to-bottom-button"
-                    size={CHAT_BUTTON_SIZE.SMALL}
-                    kind={CHAT_BUTTON_KIND.SECONDARY}
-                    aria-label={languagePack.messages_scrollMoreButton}
-                    onClick={() =>
-                      this.doAutoScroll({
-                        scrollToBottom: 0,
-                        preferAnimate: true,
-                      })
-                    }
-                  >
-                    <DownToBottom slot="icon" />
-                  </ChatButton>
-                </div>
-              </MountChildrenOnDelay>
-            )}
-          </div>
-          {this.renderScrollHandle(false)}
-        </div>
-      </div>
+    return (
+      <MessagesView
+        humanAgentBanner={this.renderHumanAgentBanner()}
+        messagesContainerRef={this.messagesContainerWithScrollingRef}
+        onScroll={() => {
+          this.renderScrollDownNotification();
+        }}
+        topScrollHandle={this.renderScrollHandle(true)}
+        regularMessages={regularMessages}
+        typingIndicator={typingIndicator}
+        bottomSpacerRef={this.bottomSpacerRef}
+        scrollDownButton={scrollDownButton}
+        bottomScrollHandle={this.renderScrollHandle(false)}
+        scrollHandleHasFocus={scrollHandleHasFocus}
+      />
     );
   }
 }

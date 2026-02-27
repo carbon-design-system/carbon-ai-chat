@@ -19,6 +19,7 @@ import type { PersistedState } from "../state/AppState";
 import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { MessageRequest } from "../messaging/Messages";
 import type { ServiceManager } from "../../chat/services/ServiceManager";
+import { AutoScrollOptions } from "../utilities/HasDoAutoScroll";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -337,9 +338,18 @@ interface ChatActions {
   restartConversation: () => Promise<void>;
 
   /**
-   * Initiates a doAutoScroll on the currently visible chat panel.
+   * Recalculates the chat's scroll position and spacer after an external layout change.
+   *
+   * Call this after your custom response component finishes rendering, loads media, or
+   * otherwise changes height in a way the chat cannot detect automatically (e.g. after
+   * injecting content via {@link WriteableElements}). The chat will re-pin the last
+   * qualifying message to the top of the viewport and adjust the spacer accordingly.
+   *
+   * To scroll to the very bottom of the message list instead, pass `{ scrollToBottom: 0 }`.
+   *
+   * @param options Optional overrides for scroll behavior. See {@link AutoScrollOptions}.
    */
-  doAutoScroll: () => void;
+  doAutoScroll: (options?: AutoScrollOptions) => void;
 
   /**
    * @param direction Either increases or decreases the internal counter that indicates whether the "message is loading"
