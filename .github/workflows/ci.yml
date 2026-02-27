@@ -22,7 +22,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline
       - name: Run build
         run: npm run build
 
@@ -37,7 +37,7 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: |
-          npm install
+          npm ci --prefer-offline
           npx playwright install --with-deps
       - name: Build ai-chat
         run: npm run aiChat:build
@@ -56,7 +56,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline
       - name: Check formatting of project files (staged)
         if: ${{ github.event_name == 'pull_request' }}
         run: npm run format:staged
@@ -74,7 +74,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline
       - name: Lint
         run: npm run lint && npm run lint:styles
 
@@ -88,6 +88,6 @@ jobs:
           node-version-file: '.nvmrc'
           cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline
       - name: License check
         run: npm run lint:license
