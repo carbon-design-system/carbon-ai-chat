@@ -98,6 +98,7 @@ class CDSAICarousel extends LitElement {
         <slot></slot>
         <div class="${blockClass}__controls">
           <cds-icon-button
+            class="${blockClass}__previous-btn"
             @click=${this._handlePrev}
             kind="ghost"
             size="sm"
@@ -108,8 +109,11 @@ class CDSAICarousel extends LitElement {
             ${iconLoader(ChevronLeft16, { slot: "icon" })}
             <span slot="tooltip-content">${this.previousBtnText}</span>
           </cds-icon-button>
-          <span>${this._currentIndex + 1} / ${this._lastIndex + 1}</span>
+          <span class="${blockClass}__indicator"
+            >${this._currentIndex + 1} / ${this._lastIndex + 1}</span
+          >
           <cds-icon-button
+            class="${blockClass}__next-btn"
             @click=${this._handleNext}
             kind="ghost"
             size="sm"
