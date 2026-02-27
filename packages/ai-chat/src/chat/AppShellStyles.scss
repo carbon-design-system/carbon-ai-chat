@@ -302,6 +302,10 @@
   inline-size: 100%;
 }
 
+.cds-aichat--widget__layer--hidden {
+  display: none;
+}
+
 .cds-aichat--widget--max-width {
   --cds-aichat-border-radius: 0;
 }

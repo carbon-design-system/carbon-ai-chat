@@ -437,7 +437,9 @@ export default function AppShell({
       <AppShellErrorBoundary onError={handleBoundaryError}>
         <ModalPortalRootProvider hostElement={modalPortalHostElement}>
           <Layer
-            className="cds-aichat--widget__layer"
+            className={cx("cds-aichat--widget__layer", {
+              "cds-aichat--widget__layer--hidden": !open,
+            })}
             level={
               theme.derivedCarbonTheme === CarbonTheme.G10 ||
               theme.derivedCarbonTheme === CarbonTheme.G100
