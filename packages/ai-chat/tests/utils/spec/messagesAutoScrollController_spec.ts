@@ -8,10 +8,19 @@
  */
 
 import {
+  applyStreamingSpacerDomSync,
   consumeStreamingChunk,
+  getAnchoringRestoreTarget,
+  getMessageArrayChangeFlags,
+  getStreamingTransition,
+  hasActiveStreaming,
+  hasMessagesOutOfView,
   pinMessageAndScroll,
   recalculatePinnedMessageSpacer,
   resolveAutoScrollAction,
+  resolvePublicSpacerReconciliationAction,
+  resolveStreamEndAction,
+  resolveStreamingSpacerSyncDecision,
   type AutoScrollAction,
 } from "../../../src/chat/utils/messagesAutoScrollController";
 
@@ -540,5 +549,257 @@ describe("recalculatePinnedMessageSpacer", () => {
     expect(result).toBe(220);
     // scrollTop must not have been modified.
     expect(scrollElement.scrollTop).toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// misc controller helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("getMessageArrayChangeFlags", () => {
+  it("returns false/false when arrays are the same reference and length", () => {
+    const items = [{ ui_state: { id: "1" } }] as any;
+    expect(
+      getMessageArrayChangeFlags({
+        oldItems: items,
+        newItems: items,
+      }),
+    ).toEqual({ countChanged: false, itemsChanged: false });
+  });
+
+  it("returns false/true when arrays differ by reference only", () => {
+    const oldItems = [{ ui_state: { id: "1" } }] as any;
+    const newItems = [{ ui_state: { id: "1" } }] as any;
+    expect(
+      getMessageArrayChangeFlags({
+        oldItems,
+        newItems,
+      }),
+    ).toEqual({ countChanged: false, itemsChanged: true });
+  });
+
+  it("returns true/true when lengths differ", () => {
+    const oldItems = [{ ui_state: { id: "1" } }] as any;
+    const newItems = [
+      { ui_state: { id: "1" } },
+      { ui_state: { id: "2" } },
+    ] as any;
+    expect(
+      getMessageArrayChangeFlags({
+        oldItems,
+        newItems,
+      }),
+    ).toEqual({ countChanged: true, itemsChanged: true });
+  });
+});
+
+describe("streaming state helpers", () => {
+  const doneItem = {
+    ui_state: { streamingState: { isDone: true } },
+  } as any;
+  const activeItem = {
+    ui_state: { streamingState: { isDone: false } },
+  } as any;
+  const noStreamItem = { ui_state: { streamingState: undefined } } as any;
+
+  it("hasActiveStreaming returns true only for active streams", () => {
+    expect(hasActiveStreaming([doneItem, noStreamItem] as any)).toBe(false);
+    expect(hasActiveStreaming([doneItem, activeItem] as any)).toBe(true);
+  });
+
+  it("detects enter/exit transitions", () => {
+    expect(
+      getStreamingTransition({
+        oldItems: [noStreamItem] as any,
+        newItems: [activeItem] as any,
+      }),
+    ).toEqual({
+      enteredStreaming: true,
+      exitedStreaming: false,
+      isCurrentlyStreaming: true,
+      wasStreaming: false,
+    });
+
+    expect(
+      getStreamingTransition({
+        oldItems: [activeItem] as any,
+        newItems: [doneItem] as any,
+      }),
+    ).toEqual({
+      enteredStreaming: false,
+      exitedStreaming: true,
+      isCurrentlyStreaming: false,
+      wasStreaming: true,
+    });
+  });
+});
+
+describe("getAnchoringRestoreTarget", () => {
+  it("returns null when snapshot is null", () => {
+    expect(
+      getAnchoringRestoreTarget({ currentScrollTop: 50, snapshot: null }),
+    ).toBeNull();
+  });
+
+  it("returns null when scrollTop is not reduced", () => {
+    expect(
+      getAnchoringRestoreTarget({ currentScrollTop: 90, snapshot: 80 }),
+    ).toBeNull();
+  });
+
+  it("returns snapshot when browser decreased scrollTop", () => {
+    expect(
+      getAnchoringRestoreTarget({ currentScrollTop: 40, snapshot: 80 }),
+    ).toBe(80);
+  });
+});
+
+describe("resolveStreamEndAction", () => {
+  it("treats threshold boundary as near-pin", () => {
+    expect(
+      resolveStreamEndAction({
+        nearPinThresholdPx: 60,
+        pinnedScrollTop: 100,
+        scrollTop: 160,
+      }),
+    ).toBe("re_pin_and_scroll");
+  });
+
+  it("returns preserve-scroll when away from pin", () => {
+    expect(
+      resolveStreamEndAction({
+        nearPinThresholdPx: 60,
+        pinnedScrollTop: 100,
+        scrollTop: 161,
+      }),
+    ).toBe("recalculate_and_preserve_scroll");
+  });
+});
+
+describe("hasMessagesOutOfView", () => {
+  it("subtracts dom spacer from scrollHeight", () => {
+    expect(
+      hasMessagesOutOfView({
+        clientHeight: 500,
+        domSpacerHeight: 200,
+        scrollHeight: 1500,
+        scrollTop: 740,
+        thresholdPx: 60,
+      }),
+    ).toBe(false);
+    expect(
+      hasMessagesOutOfView({
+        clientHeight: 500,
+        domSpacerHeight: 200,
+        scrollHeight: 1500,
+        scrollTop: 700,
+        thresholdPx: 60,
+      }),
+    ).toBe(true);
+  });
+});
+
+describe("resolveStreamingSpacerSyncDecision", () => {
+  it("skips sync when stream is not active", () => {
+    expect(
+      resolveStreamingSpacerSyncDecision({
+        currentSpacerHeight: 120,
+        domSpacerHeight: 200,
+        isCurrentlyStreaming: false,
+        isNearPin: true,
+        minDeltaPx: 24,
+      }),
+    ).toEqual({ shouldSync: false, targetDomSpacerHeight: 200 });
+  });
+
+  it("skips sync when user is away from pin", () => {
+    expect(
+      resolveStreamingSpacerSyncDecision({
+        currentSpacerHeight: 120,
+        domSpacerHeight: 200,
+        isCurrentlyStreaming: true,
+        isNearPin: false,
+        minDeltaPx: 24,
+      }),
+    ).toEqual({ shouldSync: false, targetDomSpacerHeight: 200 });
+  });
+
+  it("skips sync when shrink delta is below threshold", () => {
+    expect(
+      resolveStreamingSpacerSyncDecision({
+        currentSpacerHeight: 180,
+        domSpacerHeight: 200,
+        isCurrentlyStreaming: true,
+        isNearPin: true,
+        minDeltaPx: 24,
+      }),
+    ).toEqual({ shouldSync: false, targetDomSpacerHeight: 200 });
+  });
+
+  it("syncs when shrink delta meets threshold", () => {
+    expect(
+      resolveStreamingSpacerSyncDecision({
+        currentSpacerHeight: 120,
+        domSpacerHeight: 200,
+        isCurrentlyStreaming: true,
+        isNearPin: true,
+        minDeltaPx: 24,
+      }),
+    ).toEqual({ shouldSync: true, targetDomSpacerHeight: 120 });
+  });
+});
+
+describe("applyStreamingSpacerDomSync", () => {
+  it("returns null when spacer element is missing", () => {
+    const scrollElement = createMockScrollElement({
+      scrollTop: 80,
+      scrollHeight: 1100,
+    }) as any;
+    expect(
+      applyStreamingSpacerDomSync({
+        savedScrollTop: 80,
+        scrollElement,
+        spacerElem: null,
+        targetDomSpacerHeight: 120,
+      }),
+    ).toBeNull();
+  });
+
+  it("writes spacer and restores scrollTop when browser lowered it", () => {
+    const scrollElement = createMockScrollElement({
+      scrollTop: 60,
+      scrollHeight: 1100,
+    }) as any;
+    const spacerElem = createMockSpacer(400) as any;
+
+    const result = applyStreamingSpacerDomSync({
+      savedScrollTop: 80,
+      scrollElement,
+      spacerElem,
+      targetDomSpacerHeight: 120,
+    });
+
+    expect(spacerElem.style.minBlockSize).toBe("120px");
+    expect(scrollElement.scrollTop).toBe(80);
+    expect(result).toEqual({
+      correctedScrollTop: 80,
+      newLastScrollHeight: 1100,
+    });
+  });
+});
+
+describe("resolvePublicSpacerReconciliationAction", () => {
+  it("returns noop when no pinned message exists", () => {
+    expect(
+      resolvePublicSpacerReconciliationAction({ pinnedMessageComponent: null }),
+    ).toEqual({ type: "noop" });
+  });
+
+  it("returns recalculate action when pinned message exists", () => {
+    expect(
+      resolvePublicSpacerReconciliationAction({
+        pinnedMessageComponent: {} as any,
+      }),
+    ).toEqual({ type: "recalculate_spacer_preserve_scroll" });
   });
 });

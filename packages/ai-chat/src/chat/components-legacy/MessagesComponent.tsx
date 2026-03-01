@@ -41,10 +41,19 @@ import { doScrollElement, getScrollBottom } from "../utils/domUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
 import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
 import {
+  applyStreamingSpacerDomSync,
   consumeStreamingChunk,
+  getAnchoringRestoreTarget,
+  getMessageArrayChangeFlags,
+  getStreamingTransition,
+  hasActiveStreaming,
+  hasMessagesOutOfView,
   pinMessageAndScroll,
   recalculatePinnedMessageSpacer,
   resolveAutoScrollAction,
+  resolvePublicSpacerReconciliationAction,
+  resolveStreamEndAction,
+  resolveStreamingSpacerSyncDecision,
 } from "../utils/messagesAutoScrollController";
 import { buildRenderableMessageMetadata } from "../utils/messagesRenderUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
@@ -60,6 +69,9 @@ import { carbonIconToReact } from "../utils/carbonIcon";
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
 const DEBUG_AUTO_SCROLL = false;
+const STREAM_END_NEAR_PIN_THRESHOLD_PX = 60;
+const SCROLL_DOWN_THRESHOLD_PX = 60;
+const STREAMING_SPACER_SYNC_MIN_DELTA_PX = 24;
 
 /**
  * The type of the function used for scrolling elements inside the scroll panel into view.
@@ -253,8 +265,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const newItems = this.props.localMessageItems;
     const oldItems = oldProps.localMessageItems;
 
-    const countChanged = newItems.length !== oldItems.length;
-    const itemsChanged = newItems !== oldItems;
+    const { countChanged, itemsChanged } = getMessageArrayChangeFlags({
+      oldItems,
+      newItems,
+    });
     // No structural or reference change means no scroll maintenance needed.
     if (!countChanged && !itemsChanged) {
       return;
@@ -265,7 +279,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     if (countChanged) {
       // Message list length changed (add/remove). Re-run auto-scroll policy so we either
       // pin a new target, maintain the current pin, or reset for empty state.
-      this.doAutoScroll();
+      this.doAutoScrollInternal();
       return;
     }
 
@@ -276,31 +290,31 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       return;
     }
 
-    const isCurrentlyStreaming = newItems.some(
-      (item) =>
-        item.ui_state.streamingState && !item.ui_state.streamingState.isDone,
-    );
-    const wasStreaming = oldItems.some(
-      (item) =>
-        item.ui_state.streamingState && !item.ui_state.streamingState.isDone,
-    );
+    const { isCurrentlyStreaming, wasStreaming } = getStreamingTransition({
+      oldItems,
+      newItems,
+    });
 
     if (isCurrentlyStreaming) {
-      // Prevent Safari's scroll anchoring from decreasing scrollTop during streaming
-      // (the re-pin direction). getSnapshotBeforeUpdate captures scrollTop right
-      // before React commits the DOM; scroll anchoring fires synchronously during
-      // layout (between snapshot and now), so a decrease in this window is
-      // browser-initiated — restore it.
+      // Prevent Safari's scroll anchoring from decreasing scrollTop during streaming.
       const el = this.messagesContainerWithScrollingRef.current;
-      if (snapshot !== null && el && el.scrollTop < snapshot) {
-        el.scrollTop = snapshot;
+      if (el) {
+        const restoreTarget = getAnchoringRestoreTarget({
+          currentScrollTop: el.scrollTop,
+          snapshot,
+        });
+        if (restoreTarget !== null) {
+          el.scrollTop = restoreTarget;
+        }
       }
       this.handleStreamingChunk();
+      this.syncStreamingSpacerToDomThrottled();
     } else if (wasStreaming) {
+      this.syncStreamingSpacerToDomThrottled.cancel();
       // Streaming just finished. Choose between two strategies based on where the
       // user is relative to the pin position at the moment the stream ends.
       //
-      // In the normal flow, doAutoScroll already pinned (or maintained) the target before
+      // In the normal flow, doAutoScrollInternal already pinned (or maintained) the target before
       // this stream-end pass, so pinnedScrollTop reflects the baseline position for deciding
       // whether the user stayed near the pin.
       //
@@ -318,20 +332,39 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       // commits). Apply the directional restore here too so the rAF's position check sees
       // the user's actual scrollTop, not the anchoring-adjusted one.
       const elEnd = this.messagesContainerWithScrollingRef.current;
-      if (snapshot !== null && elEnd && elEnd.scrollTop < snapshot) {
-        elEnd.scrollTop = snapshot;
+      if (elEnd) {
+        const restoreTarget = getAnchoringRestoreTarget({
+          currentScrollTop: elEnd.scrollTop,
+          snapshot,
+        });
+        if (restoreTarget !== null) {
+          elEnd.scrollTop = restoreTarget;
+        }
       }
       requestAnimationFrame(() => {
         const scrollElement = this.messagesContainerWithScrollingRef.current;
         if (!scrollElement || !this.pinnedMessageComponent) {
           return;
         }
-        if (scrollElement.scrollTop <= this.pinnedScrollTop + 60) {
+        // Use the pre-commit snapshot as the stream-end decision baseline. Safari can
+        // adjust scrollTop during the final commit (not always in one direction), and
+        // using post-commit scrollTop here can misclassify "near pin" vs "away from pin".
+        const scrollTopForDecision =
+          snapshot !== null ? snapshot : scrollElement.scrollTop;
+        const streamEndAction = resolveStreamEndAction({
+          nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
+          pinnedScrollTop: this.pinnedScrollTop,
+          scrollTop: scrollTopForDecision,
+        });
+        if (streamEndAction === "re_pin_and_scroll") {
           this.executePinAndScroll(this.pinnedMessageComponent, scrollElement);
         } else {
-          const savedScrollTop = scrollElement.scrollTop;
+          // Preserve the user's pre-commit position when they are away from pin.
+          const savedScrollTop = scrollTopForDecision;
           this.executeRecalculateSpacer(scrollElement);
-          scrollElement.scrollTop = savedScrollTop;
+          if (scrollElement.scrollTop !== savedScrollTop) {
+            scrollElement.scrollTop = savedScrollTop;
+          }
         }
       });
     }
@@ -342,16 +375,19 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     if (this.scrollPanelObserver) {
       this.scrollPanelObserver.disconnect();
     }
+    this.syncStreamingSpacerToDomThrottled.cancel();
+    this.doAutoScrollThrottled.cancel();
+    this.renderScrollDownNotification.cancel();
   }
 
   /**
-   * This will run doAutoScroll to ensure proper scrolling behavior when the window is resized.
+   * This will run internal auto-scroll to ensure proper scrolling behavior when the window is resized.
    */
   public onResize = throttle(
     () => {
       // Resize can invalidate both "scroll down" visibility and pin geometry.
       this.renderScrollDownNotification();
-      this.doAutoScroll();
+      this.doAutoScrollInternal();
     },
     AUTO_SCROLL_THROTTLE_TIMEOUT,
     { leading: true, trailing: true },
@@ -430,60 +466,157 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   }
 
   /**
-   * The primary scroll entry point. Handles all scroll scenarios:
-   * - Explicit scrollToTop / scrollToBottom overrides (e.g. scroll-to-bottom button)
-   * - New qualifying message: pin it to the top of the viewport (single scroll)
-   * - Same qualifying message already pinned: recalculate spacer without scrolling
-   * - No messages: reset to top to prevent browser restoring a stale position
-   *
-   * Also used externally via ChatInstance, AppShell, and child components (UserDefinedResponse,
-   * MediaPlayer) that need to trigger a scroll or spacer update after a layout change.
+   * Reconciles in-memory spacer tracking to the spacer DOM element while streaming,
+   * but only when the user stays near the pinned position.
+   */
+  private syncStreamingSpacerToDomThrottled = throttle(
+    () => {
+      const scrollElement = this.messagesContainerWithScrollingRef.current;
+      const spacerElem = this.bottomSpacerRef.current;
+      if (!scrollElement || !spacerElem || !this.pinnedMessageComponent) {
+        return;
+      }
+
+      const isCurrentlyStreaming = hasActiveStreaming(
+        this.props.localMessageItems,
+      );
+      const streamEndAction = resolveStreamEndAction({
+        nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
+        pinnedScrollTop: this.pinnedScrollTop,
+        scrollTop: scrollElement.scrollTop,
+      });
+      const isNearPin = streamEndAction === "re_pin_and_scroll";
+
+      const syncDecision = resolveStreamingSpacerSyncDecision({
+        currentSpacerHeight: this.currentSpacerHeight,
+        domSpacerHeight: this.domSpacerHeight,
+        isCurrentlyStreaming,
+        isNearPin,
+        minDeltaPx: STREAMING_SPACER_SYNC_MIN_DELTA_PX,
+      });
+      if (!syncDecision.shouldSync) {
+        return;
+      }
+
+      const savedScrollTop = scrollElement.scrollTop;
+      const syncResult = applyStreamingSpacerDomSync({
+        savedScrollTop,
+        scrollElement,
+        spacerElem,
+        targetDomSpacerHeight: syncDecision.targetDomSpacerHeight,
+      });
+      if (!syncResult) {
+        return;
+      }
+
+      this.domSpacerHeight = syncDecision.targetDomSpacerHeight;
+      this.currentSpacerHeight = syncDecision.targetDomSpacerHeight;
+      this.lastScrollHeight = syncResult.newLastScrollHeight;
+      this.renderScrollDownNotification();
+    },
+    AUTO_SCROLL_THROTTLE_TIMEOUT,
+    { leading: false, trailing: true },
+  );
+
+  private executeResolvedAutoScrollAction(
+    options: AutoScrollOptions,
+    scrollElement: HTMLElement,
+  ): void {
+    const action = resolveAutoScrollAction({
+      allMessagesByID: this.props.allMessagesByID,
+      localMessageItems: this.props.localMessageItems,
+      messageRefs: this.messageRefs,
+      options,
+      pinnedMessageComponent: this.pinnedMessageComponent,
+      scrollElement,
+    });
+
+    switch (action.type) {
+      case "scroll_to_top":
+        doScrollElement(scrollElement, action.scrollTop, 0);
+        return;
+      case "scroll_to_bottom":
+        doScrollElement(
+          scrollElement,
+          action.scrollTop,
+          0,
+          action.preferAnimate,
+        );
+        return;
+      case "reset_to_top":
+        // No messages — scroll to top so the browser doesn't restore a stale position.
+        scrollElement.scrollTop = 0;
+        return;
+      case "pin_message":
+        this.executePinAndScroll(action.messageComponent, scrollElement);
+        return;
+      case "recalculate_spacer":
+        this.executeRecalculateSpacer(scrollElement);
+        return;
+      default:
+        return;
+    }
+  }
+
+  private reconcileSpacerAfterPublicDoAutoScroll(
+    scrollElement: HTMLElement,
+  ): void {
+    const reconciliationAction = resolvePublicSpacerReconciliationAction({
+      pinnedMessageComponent: this.pinnedMessageComponent,
+    });
+    if (reconciliationAction.type === "noop") {
+      return;
+    }
+
+    const savedScrollTop = scrollElement.scrollTop;
+    this.executeRecalculateSpacer(scrollElement);
+    if (scrollElement.scrollTop < savedScrollTop) {
+      scrollElement.scrollTop = savedScrollTop;
+    }
+    this.lastScrollHeight = scrollElement.scrollHeight;
+    this.renderScrollDownNotification();
+  }
+
+  private scheduleAutoScroll = (
+    options: AutoScrollOptions = {},
+    includePublicSpacerReconciliation = false,
+  ) => {
+    requestAnimationFrame(() => {
+      // Execute after DOM/layout settles for the current frame so measurements
+      // (scrollHeight, rects) match what the user can actually see.
+      const scrollElement = this.messagesContainerWithScrollingRef.current;
+      if (!scrollElement) {
+        return;
+      }
+
+      this.executeResolvedAutoScrollAction(options, scrollElement);
+      if (includePublicSpacerReconciliation) {
+        this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
+      }
+    });
+  };
+
+  /**
+   * Internal auto-scroll path used by component lifecycle and internal handlers.
+   * This preserves historical behavior and does not run the public spacer-reconciliation pass.
+   */
+  private doAutoScrollInternal = (options: AutoScrollOptions = {}) => {
+    try {
+      this.scheduleAutoScroll(options, false);
+    } catch (error) {
+      // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
+      consoleError("An error occurred while attempting to scroll.", error);
+    }
+  };
+
+  /**
+   * Public auto-scroll entry point exposed through ChatInstance/AppShell.
+   * In addition to normal auto-scroll resolution, this always runs a spacer
+   * reconciliation pass so external callers get up-to-date pin/spacer geometry.
    */
   public doAutoScroll = (options: AutoScrollOptions = {}) => {
     try {
-      requestAnimationFrame(() => {
-        // Execute after DOM/layout settles for the current frame so measurements
-        // (scrollHeight, rects) match what the user can actually see.
-        const scrollElement = this.messagesContainerWithScrollingRef.current;
-        if (!scrollElement) {
-          return;
-        }
-
-        const action = resolveAutoScrollAction({
-          allMessagesByID: this.props.allMessagesByID,
-          localMessageItems: this.props.localMessageItems,
-          messageRefs: this.messageRefs,
-          options,
-          pinnedMessageComponent: this.pinnedMessageComponent,
-          scrollElement,
-        });
-
-        switch (action.type) {
-          case "scroll_to_top":
-            doScrollElement(scrollElement, action.scrollTop, 0);
-            return;
-          case "scroll_to_bottom":
-            doScrollElement(
-              scrollElement,
-              action.scrollTop,
-              0,
-              action.preferAnimate,
-            );
-            return;
-          case "reset_to_top":
-            // No messages — scroll to top so the browser doesn't restore a stale position.
-            scrollElement.scrollTop = 0;
-            return;
-          case "pin_message":
-            this.executePinAndScroll(action.messageComponent, scrollElement);
-            return;
-          case "recalculate_spacer":
-            this.executeRecalculateSpacer(scrollElement);
-            return;
-          default:
-            return;
-        }
-      });
+      this.scheduleAutoScroll(options, true);
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       consoleError("An error occurred while attempting to scroll.", error);
@@ -495,7 +628,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * This is throttled to prevent excessive scrolling during rapid updates.
    */
   public doAutoScrollThrottled = throttle(
-    this.doAutoScroll,
+    this.doAutoScrollInternal,
     AUTO_SCROLL_THROTTLE_TIMEOUT,
     { leading: true, trailing: true },
   );
@@ -630,13 +763,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     // but leaves the DOM spacer at its original size until content fully replaces it.
     // Using currentSpacerHeight would make effectiveScrollHeight grow by 2× the streamed
     // delta, causing the scroll-to-bottom button to appear for blank spacer space.
-    const effectiveScrollHeight =
-      scrollElement.scrollHeight - this.domSpacerHeight;
-    const remainingPixelsToScroll =
-      effectiveScrollHeight -
-      scrollElement.scrollTop -
-      scrollElement.clientHeight;
-    return remainingPixelsToScroll > 60;
+    return hasMessagesOutOfView({
+      clientHeight: scrollElement.clientHeight,
+      domSpacerHeight: this.domSpacerHeight,
+      scrollHeight: scrollElement.scrollHeight,
+      scrollTop: scrollElement.scrollTop,
+      thresholdPx: SCROLL_DOWN_THRESHOLD_PX,
+    });
   }
 
   /**
@@ -1001,7 +1134,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       <MessagesScrollToBottomButton
         ariaLabel={languagePack.messages_scrollMoreButton}
         onClick={() =>
-          this.doAutoScroll({
+          this.doAutoScrollInternal({
             scrollToBottom: 0,
             preferAnimate: true,
           })

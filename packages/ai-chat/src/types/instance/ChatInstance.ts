@@ -346,6 +346,8 @@ interface ChatActions {
    * qualifying message to the top of the viewport and adjust the spacer accordingly.
    *
    * To scroll to the very bottom of the message list instead, pass `{ scrollToBottom: 0 }`.
+   * The spacer reconciliation pass still runs after explicit top/bottom overrides so pin
+   * geometry remains accurate for subsequent updates.
    *
    * @param options Optional overrides for scroll behavior. See {@link AutoScrollOptions}.
    */

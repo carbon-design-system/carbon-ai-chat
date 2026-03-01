@@ -221,6 +221,183 @@ interface StreamingChunkResult {
   lastScrollHeight: number;
 }
 
+interface MessageArrayChangeFlags {
+  countChanged: boolean;
+  itemsChanged: boolean;
+}
+
+interface StreamingTransition {
+  enteredStreaming: boolean;
+  exitedStreaming: boolean;
+  isCurrentlyStreaming: boolean;
+  wasStreaming: boolean;
+}
+
+type StreamEndAction = "re_pin_and_scroll" | "recalculate_and_preserve_scroll";
+
+interface StreamingSpacerSyncDecision {
+  shouldSync: boolean;
+  targetDomSpacerHeight: number;
+}
+
+interface PublicSpacerReconciliationAction {
+  type: "noop" | "recalculate_spacer_preserve_scroll";
+}
+
+function hasActiveStreaming(localMessageItems: LocalMessageItem[]): boolean {
+  return localMessageItems.some(
+    (item) =>
+      item.ui_state.streamingState && !item.ui_state.streamingState.isDone,
+  );
+}
+
+function getMessageArrayChangeFlags({
+  oldItems,
+  newItems,
+}: {
+  oldItems: LocalMessageItem[];
+  newItems: LocalMessageItem[];
+}): MessageArrayChangeFlags {
+  return {
+    countChanged: newItems.length !== oldItems.length,
+    itemsChanged: newItems !== oldItems,
+  };
+}
+
+function getStreamingTransition({
+  oldItems,
+  newItems,
+}: {
+  oldItems: LocalMessageItem[];
+  newItems: LocalMessageItem[];
+}): StreamingTransition {
+  const wasStreaming = hasActiveStreaming(oldItems);
+  const isCurrentlyStreaming = hasActiveStreaming(newItems);
+  return {
+    enteredStreaming: !wasStreaming && isCurrentlyStreaming,
+    exitedStreaming: wasStreaming && !isCurrentlyStreaming,
+    isCurrentlyStreaming,
+    wasStreaming,
+  };
+}
+
+function getAnchoringRestoreTarget({
+  currentScrollTop,
+  snapshot,
+}: {
+  currentScrollTop: number;
+  snapshot: number | null;
+}): number | null {
+  if (snapshot === null || currentScrollTop >= snapshot) {
+    return null;
+  }
+  return snapshot;
+}
+
+function resolveStreamEndAction({
+  nearPinThresholdPx,
+  pinnedScrollTop,
+  scrollTop,
+}: {
+  nearPinThresholdPx: number;
+  pinnedScrollTop: number;
+  scrollTop: number;
+}): StreamEndAction {
+  if (scrollTop <= pinnedScrollTop + nearPinThresholdPx) {
+    return "re_pin_and_scroll";
+  }
+  return "recalculate_and_preserve_scroll";
+}
+
+function hasMessagesOutOfView({
+  clientHeight,
+  domSpacerHeight,
+  scrollHeight,
+  scrollTop,
+  thresholdPx,
+}: {
+  clientHeight: number;
+  domSpacerHeight: number;
+  scrollHeight: number;
+  scrollTop: number;
+  thresholdPx: number;
+}): boolean {
+  const effectiveScrollHeight = scrollHeight - domSpacerHeight;
+  const remainingPixelsToScroll =
+    effectiveScrollHeight - scrollTop - clientHeight;
+  return remainingPixelsToScroll > thresholdPx;
+}
+
+function resolveStreamingSpacerSyncDecision({
+  currentSpacerHeight,
+  domSpacerHeight,
+  isCurrentlyStreaming,
+  isNearPin,
+  minDeltaPx,
+}: {
+  currentSpacerHeight: number;
+  domSpacerHeight: number;
+  isCurrentlyStreaming: boolean;
+  isNearPin: boolean;
+  minDeltaPx: number;
+}): StreamingSpacerSyncDecision {
+  if (!isCurrentlyStreaming || !isNearPin) {
+    return { shouldSync: false, targetDomSpacerHeight: domSpacerHeight };
+  }
+
+  const shrinkDelta = domSpacerHeight - currentSpacerHeight;
+  if (shrinkDelta < minDeltaPx) {
+    return { shouldSync: false, targetDomSpacerHeight: domSpacerHeight };
+  }
+
+  // Mid-stream sync is intentionally shrink-only.
+  if (currentSpacerHeight >= domSpacerHeight) {
+    return { shouldSync: false, targetDomSpacerHeight: domSpacerHeight };
+  }
+
+  return {
+    shouldSync: true,
+    targetDomSpacerHeight: currentSpacerHeight,
+  };
+}
+
+function applyStreamingSpacerDomSync({
+  savedScrollTop,
+  scrollElement,
+  spacerElem,
+  targetDomSpacerHeight,
+}: {
+  savedScrollTop: number;
+  scrollElement: HTMLElement;
+  spacerElem: HTMLElement | null;
+  targetDomSpacerHeight: number;
+}): { correctedScrollTop: number; newLastScrollHeight: number } | null {
+  if (!spacerElem) {
+    return null;
+  }
+
+  spacerElem.style.minBlockSize = `${Math.max(0, targetDomSpacerHeight)}px`;
+  if (scrollElement.scrollTop < savedScrollTop) {
+    scrollElement.scrollTop = savedScrollTop;
+  }
+
+  return {
+    correctedScrollTop: scrollElement.scrollTop,
+    newLastScrollHeight: scrollElement.scrollHeight,
+  };
+}
+
+function resolvePublicSpacerReconciliationAction({
+  pinnedMessageComponent,
+}: {
+  pinnedMessageComponent: MessageClass | null;
+}): PublicSpacerReconciliationAction {
+  if (!pinnedMessageComponent) {
+    return { type: "noop" };
+  }
+  return { type: "recalculate_spacer_preserve_scroll" };
+}
+
 /**
  * Chooses the next auto-scroll action with strict precedence:
  * 1) explicit API override (`scrollToTop`, `scrollToBottom`)
@@ -403,9 +580,19 @@ function consumeStreamingChunk({
 }
 
 export {
+  applyStreamingSpacerDomSync,
   consumeStreamingChunk,
+  getAnchoringRestoreTarget,
+  getMessageArrayChangeFlags,
+  getStreamingTransition,
+  hasActiveStreaming,
+  hasMessagesOutOfView,
   pinMessageAndScroll,
   recalculatePinnedMessageSpacer,
   resolveAutoScrollAction,
+  resolvePublicSpacerReconciliationAction,
+  resolveStreamEndAction,
+  resolveStreamingSpacerSyncDecision,
   type AutoScrollAction,
+  type StreamEndAction,
 };
