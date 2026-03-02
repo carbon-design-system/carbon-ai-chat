@@ -996,8 +996,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     return (
       <div className="cds-aichat--received--feedback">
         <div className="cds-aichat--message-footer">
-          {customFooter}
           {feedback && feedback.buttons}
+          {customFooter}
         </div>
         {feedback && feedback.details}
       </div>
