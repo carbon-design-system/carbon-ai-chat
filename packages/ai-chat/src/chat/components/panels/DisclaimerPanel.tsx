@@ -86,6 +86,8 @@ const DisclaimerPanel = ({
     }
   }, []);
 
+  const disclaimerDescriptionClassName = "cds-aichat--disclaimer__description";
+
   // Memoize the returned object to prevent infinite re-renders
   return useMemo(
     () => ({
@@ -100,12 +102,16 @@ const DisclaimerPanel = ({
               label={languagePack.disclaimer_icon_label}
             />
           </div>
-          <h1 className="cds-aichat--disclaimer__title">
+          <h1
+            className="cds-aichat--disclaimer__title"
+            aria-describedby={disclaimerDescriptionClassName}
+          >
             {languagePack.disclaimer_title}
           </h1>
           <div
             dangerouslySetInnerHTML={{ __html: disclaimerHTML }}
-            className="cds-aichat--disclaimer__description"
+            className={disclaimerDescriptionClassName}
+            role="dialog"
           />
         </div>
       ),
@@ -117,6 +123,8 @@ const DisclaimerPanel = ({
           onClick={onAcceptDisclaimer}
           size={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE ? "2xl" : "lg"}
           disabled={!hasReadDisclaimer}
+          role="button"
+          aria-label={languagePack.disclaimer_acceptance_label}
         >
           {languagePack.disclaimer_accept}
         </Button>

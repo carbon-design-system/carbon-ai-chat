@@ -196,8 +196,11 @@ async function postBuild() {
             /@carbon\/web-components\/es/g,
             "@carbon/web-components/es-custom",
           )
-          // 2) Replace cds → cds-custom except cds-aichat
-          .replace(/\bcds\b(?!-aichat)/g, "cds-custom");
+          // 2) Replace cds → cds-custom except:
+          //    - cds-aichat (via negative lookahead (?!-aichat))
+          //    - CSS variables like --cds-* (via negative lookbehind (?<!-))
+          //    - already transformed cds-custom/cds_custom (via negative lookahead (?!-custom|_custom))
+          .replace(/(?<!-)\bcds\b(?!-aichat|-custom|_custom)/g, "cds-custom");
         await fs.promises.writeFile(file, updatedContent);
       }),
     );

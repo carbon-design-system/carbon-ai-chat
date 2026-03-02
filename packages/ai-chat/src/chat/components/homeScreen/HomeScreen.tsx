@@ -89,7 +89,11 @@ function HomeScreenComponent({
         "cds-aichat--home-screen--hydration-complete": isHydrated,
       })}
     >
-      <div className="cds-aichat--home-screen__content">
+      <div
+        className="cds-aichat--home-screen__content"
+        role="dialog"
+        aria-label={languagePack.homeScreen_ariaHomeScreenContent}
+      >
         <div className="cds-aichat--home-screen__body-wrapper">
           <div
             className={cx("cds-aichat--home-screen__body", {

@@ -23,7 +23,7 @@ jobs:
           cache: "npm"
       - name: Install dependencies and build chat packages
         run: |
-          npm install
+          npm ci --prefer-offline
           npm run aiChat:build
 
       # Deploy demo to Github Pages using `gh-pages` package
