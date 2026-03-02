@@ -201,7 +201,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
               ${title}
             </span>
             <slot name="actions">
-              <cds-overflow-menu autoalign size="sm">
+              <cds-overflow-menu align="top-right" size="sm">
                 ${iconLoader(OverflowMenuVertical16, {
                   class: `${prefix}--overflow-menu__icon`,
                   slot: "icon",

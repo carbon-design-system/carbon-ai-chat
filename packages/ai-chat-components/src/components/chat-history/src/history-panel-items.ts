@@ -22,6 +22,11 @@ import styles from "./chat-history.scss?lit";
 @carbonElement(`${prefix}-history-panel-items`)
 class CDSAIChatHistoryPanelItems extends CDSSideNavItems {
   static styles = styles;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.setAttribute("data-floating-menu-container", "");
+  }
 }
 
 export { CDSAIChatHistoryPanelItems };
