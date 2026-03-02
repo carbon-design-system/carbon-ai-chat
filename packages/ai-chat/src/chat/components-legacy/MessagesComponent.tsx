@@ -280,6 +280,27 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       // Message list length changed (add/remove). Re-run auto-scroll policy so we either
       // pin a new target, maintain the current pin, or reset for empty state.
       this.doAutoScrollInternal();
+
+      // For non-streaming MessageResponse items added via addMessage(), the initial pin
+      // calculation may occur before response content is fully rendered, resulting in an
+      // oversized spacer. Schedule a deferred recalculation to correct the spacer after
+      // layout settles. Only do this for responses, as requests are the pinned targets
+      // themselves and don't affect spacer calculation the same way.
+      const hasNewNonStreamingResponse = newItems.some((item) => {
+        if (item.ui_state.streamingState) {
+          return false; // Skip streaming items
+        }
+        const message = this.props.allMessagesByID[item.fullMessageID];
+        const isResp = message && isResponse(message);
+        return isResp;
+      });
+
+      if (hasNewNonStreamingResponse) {
+        // Use the same throttled approach as streaming to recalculate after content settles.
+        // This is more reliable than trying to time rAF perfectly.
+        this.doAutoScrollThrottled();
+      }
+
       return;
     }
 
