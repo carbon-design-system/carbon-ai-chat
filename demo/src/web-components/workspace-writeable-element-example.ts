@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@carbon/web-components/es/components/button/index.js";
 import { PanelType } from "@carbon/ai-chat";
@@ -31,12 +31,6 @@ import Edit16 from "@carbon/icons/es/edit/16.js";
 
 @customElement("workspace-writeable-element-example")
 class WorkspaceWriteableElementExample extends LitElement {
-  static styles = css`
-    [slot="workspacePanelElement"] {
-      block-size: 100%;
-    }
-  `;
-
   @property({ type: String })
   accessor location: string = "";
 

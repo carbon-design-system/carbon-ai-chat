@@ -89,16 +89,6 @@ class ChatCustomElement extends LitElement {
     `);
   }
 
-  firstUpdated() {
-    const style = document.createElement("style");
-    style.textContent = `
-      [slot="workspacePanelElement"] {
-        block-size: 100%;
-      }
-    `;
-    this.appendChild(style);
-  }
-
   /**
    * Adopt our stylesheet into every shadowRoot.
    */
@@ -421,10 +411,10 @@ class ChatCustomElement extends LitElement {
         .element=${this}
       >
         ${this._writeableElementSlots.map(
-          (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+          (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
         )}
         ${this._userDefinedSlotNames.map(
-          (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+          (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
         )}
         ${this._customFooterSlotNames.map(
           (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,

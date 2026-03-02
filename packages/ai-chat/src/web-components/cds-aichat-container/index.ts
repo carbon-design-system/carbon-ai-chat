@@ -203,16 +203,6 @@ class ChatContainer extends LitElement {
   @state()
   _instance: ChatInstance;
 
-  firstUpdated() {
-    const style = document.createElement("style");
-    style.textContent = `
-      [slot="workspacePanelElement"] {
-        block-size: 100%;
-      }
-    `;
-    this.appendChild(style);
-  }
-
   /**
    * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
    * updating this._userDefinedSlotNames;
@@ -361,7 +351,9 @@ class ChatContainer extends LitElement {
       if (!element) {
         return;
       }
+
       element.setAttribute("slot", slot);
+
       if (!element.isConnected) {
         this.appendChild(element);
       }
@@ -379,10 +371,10 @@ class ChatContainer extends LitElement {
       .element=${this.element}
     >
       ${this._writeableElementSlots.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
       )}
       ${this._userDefinedSlotNames.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
       )}
       ${this._customFooterSlotNames.map(
         (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
