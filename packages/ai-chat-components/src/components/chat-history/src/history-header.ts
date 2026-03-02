@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
@@ -90,18 +90,19 @@ class CDSAIChatHistoryHeader extends LitElement {
     } = this;
 
     return html`
-      ${showCloseAction &&
-      html`<cds-icon-button
-        class="${prefix}--history-header__close-button"
-        kind="ghost"
-        @click=${handleCloseButtonClick}
-        @keydown=${handleCloseButtonKeyDown}
-      >
-        ${startPanel
-          ? iconLoader(SidePanelClose16, { slot: "icon" })
-          : iconLoader(ChevronLeft16, { slot: "icon" })}
-        <span slot="tooltip-content">${closeButtonLabel}</span>
-      </cds-icon-button>`}
+      ${showCloseAction
+        ? html`<cds-icon-button
+            class="${prefix}--history-header__close-button"
+            kind="ghost"
+            @click=${handleCloseButtonClick}
+            @keydown=${handleCloseButtonKeyDown}
+          >
+            ${startPanel
+              ? iconLoader(SidePanelClose16, { slot: "icon" })
+              : iconLoader(ChevronLeft16, { slot: "icon" })}
+            <span slot="tooltip-content">${closeButtonLabel}</span>
+          </cds-icon-button>`
+        : nothing}
       <span class="${prefix}--history-header__title">${title}</span>
     `;
   }
