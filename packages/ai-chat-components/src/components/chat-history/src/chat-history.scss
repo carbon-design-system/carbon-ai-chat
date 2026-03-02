@@ -272,3 +272,47 @@
   button.#{$prefix}--side-nav__link {
   padding-inline-start: 4.5rem;
 }
+
+:host(#{$prefix}-history-delete-panel) {
+  position: absolute;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: layout.$spacing-07;
+  block-size: 100%;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    background: theme.$background;
+    content: "";
+    inset: 0;
+    opacity: 0.95;
+  }
+
+  .#{$prefix}--history-delete-panel__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    @include type.type-style("heading-03");
+
+    margin: 0 0 layout.$spacing-03 0;
+  }
+
+  span {
+    @include type.type-style("body-01");
+  }
+
+  .#{$prefix}--history-delete-panel__actions {
+    display: flex;
+    gap: layout.$spacing-03;
+    padding-block-start: layout.$spacing-06;
+
+    cds-aichat-button {
+      flex: 1;
+    }
+  }
+}

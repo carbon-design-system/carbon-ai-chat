@@ -26,7 +26,8 @@ class CDSAIChatHistoryShell extends LitElement {
   render() {
     return html` <slot name="header"></slot>
       <slot name="toolbar"></slot>
-      <slot name="content"></slot>`;
+      <slot name="content"></slot>
+      <slot></slot>`;
   }
 
   static styles = styles;

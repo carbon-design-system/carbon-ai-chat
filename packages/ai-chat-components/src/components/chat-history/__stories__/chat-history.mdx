@@ -113,6 +113,10 @@ The chat history also includes specialized panel components for organizing and d
       <td><code>{'<cds-aichat-history-search-item>'}</code></td>
       <td>Search result item displaying chat title and date.</td>
     </tr>
+    <tr>
+      <td><code>{'<cds-aichat-history-delete-panel>'}</code></td>
+      <td>Delete confirmation overlay panel with cancel and delete actions.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -458,6 +462,68 @@ document.addEventListener('cds-aichat-history-panel-item-input-save', (event) =>
 document.addEventListener('cds-aichat-history-panel-item-input-cancel', () => {
   console.log('Rename cancelled');
 });
+```
+
+#### `<cds-aichat-history-delete-panel>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>history-delete-cancel</code></td>
+      <td>Fired when the cancel button is clicked or Enter is pressed on the cancel button.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>history-delete-confirm</code></td>
+      <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+**Example:**
+```javascript
+// Listen for cancel
+document.addEventListener('history-delete-cancel', () => {
+  console.log('Delete cancelled');
+  // Hide the delete panel
+  document.querySelector('cds-aichat-history-delete-panel').remove();
+});
+
+// Listen for delete confirmation
+document.addEventListener('history-delete-confirm', () => {
+  console.log('Delete confirmed');
+  // Delete the selected chat item
+  deleteSelectedChat();
+  // Hide the delete panel
+  document.querySelector('cds-aichat-history-delete-panel').remove();
+});
+```
+
+**Usage Example:**
+```html
+<cds-aichat-history-shell>
+  <cds-aichat-history-header title="Conversations"></cds-aichat-history-header>
+  <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
+  <cds-aichat-history-content>
+    <cds-aichat-history-panel aria-label="Chat history">
+      <!-- Panel items here -->
+    </cds-aichat-history-panel>
+
+    <!-- Delete confirmation panel (shown when delete action is triggered) -->
+    <cds-aichat-history-delete-panel>
+      <div slot="title">Confirm Delete</div>
+      <div slot="description">This conversation will be permanently deleted.</div>
+    </cds-aichat-history-delete-panel>
+  </cds-aichat-history-content>
+</cds-aichat-history-shell>
 ```
 
 ## Component API

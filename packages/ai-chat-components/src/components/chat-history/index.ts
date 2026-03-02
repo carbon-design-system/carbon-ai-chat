@@ -12,6 +12,7 @@ import "./src/history-header";
 import "./src/history-toolbar";
 import "./src/history-content";
 import "./src/history-loading";
+import "./src/history-delete-panel";
 
 import "./src/history-panel";
 import "./src/history-panel-menu";

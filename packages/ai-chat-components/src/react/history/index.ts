@@ -18,3 +18,4 @@ export { default as HistoryPanelItem } from "./history-panel-item.js";
 export { default as HistoryPanelItems } from "./history-panel-items.js";
 export { default as HistorySearchItem } from "./history-search-item.js";
 export { default as HistoryPanelItemInput } from "./history-panel-item-input.js";
+export { default as HistoryDeletePanel } from "./history-delete-panel.js";

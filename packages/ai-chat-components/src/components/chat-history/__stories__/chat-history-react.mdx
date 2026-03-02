@@ -31,6 +31,7 @@ import {
   HistoryPanelItem,
   HistoryPanelItems,
   HistorySearchItem,
+  HistoryDeletePanel,
 } from "@carbon/ai-chat-components/es/react/history";
 import { PinFilled, Search } from "@carbon/icons-react";
 
@@ -414,6 +415,96 @@ function ChatHistory() {
       onInputSave={handleInputSave}
       onInputCancel={handleInputCancel}
     />
+  );
+}
+```
+
+### `<HistoryDeletePanel>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Prop</th>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onHistoryDeleteCancel</code></td>
+      <td><code>history-delete-cancel</code></td>
+      <td>Fired when the cancel button is clicked or Enter is pressed on the cancel button.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>onHistoryDeleteConfirm</code></td>
+      <td><code>history-delete-confirm</code></td>
+      <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+**Example:**
+```jsx
+function ChatHistory() {
+  const [showDeletePanel, setShowDeletePanel] = useState(false);
+  const [selectedChatId, setSelectedChatId] = useState(null);
+
+  const handleDeleteAction = (event) => {
+    const { action, itemId } = event.detail;
+    if (action === 'Delete') {
+      setSelectedChatId(itemId);
+      setShowDeletePanel(true);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    console.log('Delete cancelled');
+    setShowDeletePanel(false);
+    setSelectedChatId(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    console.log('Delete confirmed for chat:', selectedChatId);
+    // Delete the selected chat item
+    deleteChat(selectedChatId);
+    setShowDeletePanel(false);
+    setSelectedChatId(null);
+  };
+
+  return (
+    <HistoryShell>
+      <HistoryHeader title="Conversations" />
+      <HistoryToolbar />
+      <HistoryContent>
+        <HistoryPanel aria-label="Chat history">
+          <HistoryPanelItems>
+            <HistoryPanelMenu expanded title="Today">
+              <HistoryPanelItem
+                id="chat-1"
+                title="My conversation"
+                actions={historyItemActions}
+                onHistoryItemAction={handleDeleteAction}
+              />
+            </HistoryPanelMenu>
+          </HistoryPanelItems>
+        </HistoryPanel>
+
+        {showDeletePanel && (
+          <HistoryDeletePanel
+            onHistoryDeleteCancel={handleDeleteCancel}
+            onHistoryDeleteConfirm={handleDeleteConfirm}
+          >
+            <div slot="title">Confirm Delete</div>
+            <div slot="description">
+              This conversation will be permanently deleted.
+            </div>
+          </HistoryDeletePanel>
+        )}
+      </HistoryContent>
+    </HistoryShell>
   );
 }
 ```
