@@ -7,6 +7,7 @@
  *  @license
  */
 
+import throttle from "lodash/throttle";
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { Message, MessageRequest } from "../../types/messaging/Messages";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
@@ -577,6 +578,196 @@ function consumeStreamingChunk({
     currentSpacerHeight: nextSpacerHeight,
     lastScrollHeight: currentScrollHeight,
   };
+}
+
+/**
+ * ============================================================================
+ * Message Resize Observer Utilities
+ * ============================================================================
+ *
+ * Utilities for observing message element size changes to detect async content
+ * loading (images, audio, video, user-defined content). Automatically stops
+ * observing messages after they settle (no size changes for a configurable timeout).
+ */
+
+/**
+ * Configuration for creating a message resize observer.
+ */
+export interface MessageResizeObserverConfig {
+  /**
+   * Callback to invoke when a significant size change is detected.
+   * Should trigger spacer recalculation.
+   */
+  onSignificantResize: () => void;
+
+  /**
+   * Function to check if there's a pinned message.
+   * Only recalculates if a message is pinned.
+   */
+  hasPinnedMessage: () => boolean;
+
+  /**
+   * Throttle timeout in milliseconds.
+   */
+  throttleTimeout: number;
+
+  /**
+   * How long to wait (in ms) after the last resize before considering a message "settled".
+   * Default: 5000 (5 seconds)
+   */
+  settleTimeout?: number;
+
+  /**
+   * Minimum size change (in px) to consider significant.
+   * Default: 10
+   */
+  significantChangeThreshold?: number;
+}
+
+/**
+ * State for a message resize observer instance.
+ */
+export interface MessageResizeObserverState {
+  /**
+   * The ResizeObserver instance.
+   */
+  observer: ResizeObserver;
+
+  /**
+   * Tracks the last known size of each observed message element.
+   */
+  messageSizes: Map<Element, number>;
+
+  /**
+   * Tracks settle timers for each observed message element.
+   */
+  settleTimers: Map<Element, NodeJS.Timeout>;
+}
+
+/**
+ * Creates and configures a ResizeObserver for message elements.
+ * The observer detects when async content (images, audio, video) loads and changes
+ * message height, triggering spacer recalculation. Automatically stops observing
+ * messages after they settle to reduce overhead.
+ *
+ * @param config - Configuration for the observer
+ * @returns State object containing the observer and tracking maps
+ */
+export function createMessageResizeObserver(
+  config: MessageResizeObserverConfig,
+): MessageResizeObserverState {
+  const {
+    onSignificantResize,
+    hasPinnedMessage,
+    throttleTimeout,
+    settleTimeout = 5000,
+    significantChangeThreshold = 10,
+  } = config;
+
+  const messageSizes = new Map<Element, number>();
+  const settleTimers = new Map<Element, NodeJS.Timeout>();
+
+  const observer = new ResizeObserver(
+    throttle(
+      (entries: ResizeObserverEntry[]) => {
+        // Only recalculate if user hasn't scrolled away from pinned message
+        if (!hasPinnedMessage()) {
+          return;
+        }
+
+        // Process each entry to update sizes and manage settle timers
+        entries.forEach((entry) => {
+          const { blockSize } = entry.borderBoxSize[0];
+          messageSizes.set(entry.target, blockSize);
+
+          // Clear existing settle timer for this message
+          const existingTimer = settleTimers.get(entry.target);
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+          }
+
+          // Set new settle timer - stop observing after settleTimeout of no changes
+          const timer = setTimeout(() => {
+            // Message hasn't resized in settleTimeout ms, stop observing
+            observer.unobserve(entry.target);
+            settleTimers.delete(entry.target);
+            messageSizes.delete(entry.target);
+          }, settleTimeout);
+
+          settleTimers.set(entry.target, timer);
+        });
+
+        // Check for significant size changes
+        const hasSignificantChange = entries.some((entry) => {
+          const { blockSize } = entry.borderBoxSize[0];
+          const prevSize = messageSizes.get(entry.target);
+
+          // Skip if this is the first measurement (no previous size)
+          if (prevSize == null) {
+            return false;
+          }
+
+          // Consider significant if > threshold change
+          return Math.abs(blockSize - prevSize) > significantChangeThreshold;
+        });
+
+        if (hasSignificantChange) {
+          onSignificantResize();
+        }
+      },
+      throttleTimeout,
+      { leading: false, trailing: true },
+    ),
+  );
+
+  return {
+    observer,
+    messageSizes,
+    settleTimers,
+  };
+}
+
+/**
+ * Updates which message elements are being observed.
+ * Call this when messages are added, removed, or the message array changes.
+ *
+ * @param state - The observer state
+ * @param messageElements - Array of message elements to observe
+ */
+export function updateObservedMessages(
+  state: MessageResizeObserverState,
+  messageElements: HTMLElement[],
+): void {
+  const { observer, messageSizes } = state;
+
+  // Observe all message elements that aren't already being observed
+  messageElements.forEach((element) => {
+    if (element && !messageSizes.has(element)) {
+      observer.observe(element);
+    }
+  });
+}
+
+/**
+ * Cleans up the ResizeObserver and all associated state.
+ * Call this on component unmount.
+ *
+ * @param state - The observer state to clean up
+ */
+export function cleanupMessageResizeObserver(
+  state: MessageResizeObserverState,
+): void {
+  const { observer, messageSizes, settleTimers } = state;
+
+  // Disconnect observer
+  observer.disconnect();
+
+  // Clear all settle timers
+  settleTimers.forEach((timer) => clearTimeout(timer));
+  settleTimers.clear();
+
+  // Clear size tracking
+  messageSizes.clear();
 }
 
 export {

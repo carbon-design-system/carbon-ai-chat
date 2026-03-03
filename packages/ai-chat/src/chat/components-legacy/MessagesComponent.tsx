@@ -42,7 +42,9 @@ import { arrayLastValue } from "../utils/lang/arrayUtils";
 import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
 import {
   applyStreamingSpacerDomSync,
+  cleanupMessageResizeObserver,
   consumeStreamingChunk,
+  createMessageResizeObserver,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
@@ -54,6 +56,8 @@ import {
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
   resolveStreamingSpacerSyncDecision,
+  updateObservedMessages as updateObservedMessagesUtil,
+  type MessageResizeObserverState,
 } from "../utils/messagesAutoScrollController";
 import { buildRenderableMessageMetadata } from "../utils/messagesRenderUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
@@ -164,6 +168,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   private scrollPanelObserver: ResizeObserver;
 
   /**
+   * State for the message resize observer that detects async content loading.
+   * This detects when async content (images, audio, video, user-defined) loads
+   * and changes the message height, allowing us to recalculate the spacer.
+   */
+  private messageResizeObserverState: MessageResizeObserverState | null = null;
+
+  /**
    * A registry of references to the child {@link MessageComponent} instances. The keys of the map are the IDs of
    * each message item and the value is the ref to the component.
    */
@@ -242,6 +253,20 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     this.scrollPanelObserver.observe(
       this.messagesContainerWithScrollingRef.current,
     );
+
+    // Create message resize observer for async content loading
+    this.messageResizeObserverState = createMessageResizeObserver({
+      onSignificantResize: () => {
+        this.doAutoScrollThrottled();
+      },
+      hasPinnedMessage: () => {
+        return this.pinnedMessageComponent !== null;
+      },
+      throttleTimeout: AUTO_SCROLL_THROTTLE_TIMEOUT,
+    });
+
+    // Start observing current messages
+    this.updateObservedMessages();
   }
 
   /**
@@ -275,6 +300,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     this.renderScrollDownNotification();
+
+    // Update observed messages when the message array changes
+    if (itemsChanged) {
+      this.updateObservedMessages();
+    }
 
     if (countChanged) {
       // Message list length changed (add/remove). Re-run auto-scroll policy so we either
@@ -392,9 +422,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   }
 
   componentWillUnmount(): void {
-    // Remove the listeners and observer we added previously.
+    // Remove the listeners and observers we added previously.
     if (this.scrollPanelObserver) {
       this.scrollPanelObserver.disconnect();
+    }
+    if (this.messageResizeObserverState) {
+      cleanupMessageResizeObserver(this.messageResizeObserverState);
+      this.messageResizeObserverState = null;
     }
     this.syncStreamingSpacerToDomThrottled.cancel();
     this.doAutoScrollThrottled.cancel();
@@ -413,6 +447,31 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     AUTO_SCROLL_THROTTLE_TIMEOUT,
     { leading: true, trailing: true },
   );
+
+  /**
+   * Updates which message elements are being observed by the messageResizeObserver.
+   * Called when messages are added, removed, or the message array changes.
+   */
+  private updateObservedMessages(): void {
+    if (!this.messageResizeObserverState) {
+      return;
+    }
+
+    // Get all current message elements
+    const messageElements: HTMLElement[] = [];
+    this.messageRefs.forEach((messageComponent) => {
+      const element = messageComponent.ref?.current;
+      if (element) {
+        messageElements.push(element);
+      }
+    });
+
+    // Update observations using utility function
+    updateObservedMessagesUtil(
+      this.messageResizeObserverState,
+      messageElements,
+    );
+  }
 
   /**
    * Pin a message to the top of the visible scroll area and scroll to it instantly.
