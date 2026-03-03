@@ -1218,9 +1218,13 @@ class ChatActionsImpl {
 
     // When addMessage is called with showStopButtonImmediately enabled, hide the stop button
     // and revert to legacy behavior (button will show on first chunk if streaming)
+    // Pass streamingMessageID to keep button visible if there's an active stream
     const messagingConfig = config.public.messaging || {};
     if (messagingConfig.showStopButtonImmediately) {
-      resetStopStreamingButton(store);
+      resetStopStreamingButton(
+        store,
+        this.serviceManager.messageService.inboundStreaming.streamingMessageID,
+      );
     }
 
     // The ID of the previous (visible) message item that was added to the store. When adding new items from the
