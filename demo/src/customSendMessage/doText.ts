@@ -872,10 +872,86 @@ function doTextWithCustomFooter(instance: ChatInstance) {
   });
 }
 
+/**
+ * Tests the edge case where customSendMessage resolves early but streaming continues.
+ * This validates the fix for showStopButtonImmediately.
+ */
+async function doTextStreamingEarlyResolve(
+  instance: ChatInstance,
+  _requestOptions?: CustomSendMessageOptions,
+) {
+  const responseID = crypto.randomUUID();
+  const fullText =
+    "Testing showStopButtonImmediately edge case. Please ensure 'Show Stop Button Immediately' is enabled in the demo settings.\n\n" +
+    "This test simulates a scenario where the customSendMessage promise resolves after the first chunk, but streaming continues.\n\n" +
+    "Expected behavior: The stop button should remain visible throughout this entire streaming response, even though the promise resolved early.\n\n" +
+    "The button should only disappear after this final chunk arrives.";
+
+  const chunks = [
+    "Testing showStopButtonImmediately edge case. Please ensure 'Show Stop Button Immediately' is enabled in the demo settings.\n\n",
+    "This test simulates a scenario where the customSendMessage promise resolves after the first chunk, but streaming continues.\n\n",
+    "Expected behavior: The stop button should remain visible throughout this entire streaming response, even though the promise resolved early.\n\n",
+    "The button should only disappear after this final chunk arrives.",
+  ];
+
+  // Send partial chunks
+  for (const chunkText of chunks) {
+    const chunk: StreamChunk = {
+      partial_item: {
+        response_type: MessageResponseTypes.TEXT,
+        text: chunkText,
+        streaming_metadata: {
+          id: "1",
+          cancellable: true,
+        },
+      },
+      streaming_metadata: {
+        response_id: responseID,
+      },
+    };
+
+    instance.messaging.addMessageChunk(chunk);
+    await sleep(1000);
+  }
+
+  // CRITICAL: customSendMessage promise resolves HERE (after all partial chunks)
+  // This is where the bug would occur - button would disappear
+  // With the fix, button should stay visible because we haven't sent final_response yet
+
+  // Send complete item
+  const completeItem = {
+    response_type: MessageResponseTypes.TEXT,
+    text: fullText,
+    streaming_metadata: {
+      id: "1",
+    },
+  };
+
+  instance.messaging.addMessageChunk({
+    complete_item: completeItem,
+    streaming_metadata: {
+      response_id: responseID,
+    },
+  } as StreamChunk);
+
+  // Send final response
+  const finalResponse: MessageResponse = {
+    id: responseID,
+    output: {
+      generic: [completeItem],
+    },
+  };
+
+  await instance.messaging.addMessageChunk({
+    final_response: finalResponse,
+  } as StreamChunk);
+}
+
 export {
   doTextChainOfThoughtStreaming,
   doTextChainOfThought,
   doTextStreaming,
+  doTextStreamingEarlyResolve,
   doTextWithReasoningStepsStreaming,
   doTextWithReasoningTraceStreaming,
   doWelcomeText,
