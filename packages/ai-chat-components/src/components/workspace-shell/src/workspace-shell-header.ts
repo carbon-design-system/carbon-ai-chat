@@ -78,7 +78,9 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   render() {
     const { titleText, subTitleText } = this;
     return html`
-      <details class="${prefix}-workspace-shell__header-content">
+      <details
+        class="${prefix}-workspace-shell__header-details ${prefix}-workspace-shell__header-content"
+      >
         ${titleText &&
         html`
           <summary class="${prefix}-workspace-shell__header-summary">
@@ -94,14 +96,16 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
             </span>
           </summary>
         `}
-        ${subTitleText &&
-        html`
-          <h3 class="${prefix}-workspace-shell__header-sub-title">
-            ${subTitleText}
-          </h3>
-        `}
-        <slot name="header-description"></slot>
-        <slot name="header-action"></slot>
+        <div class="${prefix}-workspace-shell__header-content">
+          ${subTitleText &&
+          html`
+            <h3 class="${prefix}-workspace-shell__header-sub-title">
+              ${subTitleText}
+            </h3>
+          `}
+          <slot name="header-description"></slot>
+          <slot name="header-action"></slot>
+        </div>
       </details>
     `;
   }

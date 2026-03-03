@@ -38,25 +38,27 @@ $css--plex: true !default;
     display: none;
   }
 }
+
 .#{$prefix}-workspace-shell {
   &__header {
-    &-content {
-      display: grid;
-      gap: rem(16px);
+    &-details:open .#{$prefix}-workspace-shell__header-chevron {
+      transform: rotate(180deg);
+    }
 
-      &:open .#{$prefix}-workspace-shell__header-chevron {
-        transform: rotate(180deg);
-      }
+    &-content {
+      display: flex;
+      flex-direction: column;
+      gap: rem(16px);
     }
 
     &-title {
       color: theme.$text-primary;
-      margin-block-end: rem(-14px);
       @include type.type-style("heading-04");
     }
 
     &-sub-title {
       color: theme.$text-secondary;
+      margin-block-start: rem(-14px);
       @include type.type-style("label-01");
     }
 
