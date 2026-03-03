@@ -664,6 +664,11 @@ export interface GenericItemMessageFeedbackOptions {
   disclaimer?: string;
 }
 
+/**
+ * Options that control the custom content in a message footer.
+ *
+ * @category Messaging
+ */
 export interface GenericItemCustomFooterSlotOptions {
   /**
    * Unique identifier for this footer slot. Used to match with the render function.
