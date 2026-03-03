@@ -318,7 +318,11 @@ class MessageService {
     // For non-streaming messages (addMessage), clear immediately
     if (!current.isStreaming) {
       // Hide stop streaming button if it was shown for showStopButtonImmediately
-      resetStopStreamingButton(this.serviceManager.store);
+      // Pass streamingMessageID to keep button visible if there's an active stream
+      resetStopStreamingButton(
+        this.serviceManager.store,
+        this.inboundStreaming.streamingMessageID,
+      );
       this.moveToNextQueueItem();
     }
   }

@@ -9,7 +9,7 @@
 
 import { type ReactNode } from "react";
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
-import { GenericItem, Message } from "../messaging/Messages";
+import { GenericItem, Message, MessageResponse } from "../messaging/Messages";
 import { PublicConfig } from "../config/PublicConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 
@@ -39,6 +39,26 @@ interface RenderUserDefinedState {
    */
   partialItems?: DeepPartial<GenericItem>[];
 }
+
+/**
+ * The type of the render function that is used to render a custom footer. This function should return a
+ * component that renders the custom message footer.
+ *
+ * @param slotName The unique identifier for this footer slot.
+ * @param message The assistant response object that contains the messageItem.
+ * @param messageItem The message item that is being rendered.
+ * @param instance The current instance of the Carbon AI Chat.
+ * @param additionalData Any additional data that was passed to the render function.
+ *
+ * @category React
+ */
+type RenderCustomMessageFooter = (
+  slotName: string,
+  message: MessageResponse,
+  messageItem: GenericItem,
+  instance: ChatInstance,
+  additionalData?: Record<string, unknown>,
+) => ReactNode | null;
 
 /**
  * The type of the render function that is used to render user defined responses. This function should return a
@@ -85,6 +105,11 @@ interface ChatContainerProps extends PublicConfig {
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
+   * This is the function that this component will call when a custom footer should be rendered.
+   */
+  renderCustomMessageFooter?: RenderCustomMessageFooter;
+
+  /**
    * This is the function that this component will call when a user defined response should be rendered.
    */
   renderUserDefinedResponse?: RenderUserDefinedResponse;
@@ -103,6 +128,7 @@ interface ChatContainerProps extends PublicConfig {
 
 export {
   ChatContainerProps,
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderWriteableElementResponse,
   RenderUserDefinedState,

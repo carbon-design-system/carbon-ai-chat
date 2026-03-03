@@ -17,6 +17,10 @@
     "examples/*/*",
     "packages/*"
   ],
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "aiChat:build": "lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
     "aiChat:build:profile": "cross-env profile=true lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat",

@@ -45,9 +45,6 @@ import Edit16 from "@carbon/icons/es/edit/16.js";
 @customElement("inventory-report-example")
 class InventoryReportExample extends LitElement {
   static styles = css`
-    [slot="workspacePanelElement"] {
-      block-size: 100%;
-    }
     pre {
       background: #f4f4f4;
       padding: 1rem;

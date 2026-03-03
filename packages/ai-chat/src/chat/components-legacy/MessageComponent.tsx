@@ -60,7 +60,6 @@ import { HasServiceManager } from "../hocs/withServiceManager";
 import actions from "../store/actions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { HasClassName } from "../../types/utilities/HasClassName";
-import { HasDoAutoScroll } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import {
@@ -136,8 +135,7 @@ interface MessageProps
     HasServiceManager,
     HasLanguagePack,
     HasClassName,
-    HasAriaAnnouncer,
-    HasDoAutoScroll {
+    HasAriaAnnouncer {
   /**
    * The local message item that is part of the original message.
    */
@@ -251,6 +249,11 @@ interface MessageState {
   autoReasoningStepOpenStates: boolean[];
 
   /**
+   * Tracks whether each reasoning step has a user-controlled open state.
+   */
+  reasoningStepUserControlStates: boolean[];
+
+  /**
    * Tracks if auto-controlled reasoning has already collapsed due to response content.
    */
   autoReasoningHasAutoCollapsed: boolean;
@@ -270,6 +273,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     focusHandleHasFocus: false,
     autoReasoningContainerOpen: true,
     autoReasoningStepOpenStates: [],
+    reasoningStepUserControlStates: [],
     autoReasoningHasAutoCollapsed: false,
   };
 
@@ -335,6 +339,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       );
     }
     this.syncAutoReasoningState();
+    this.syncUserControlReasoningState();
   }
 
   componentDidUpdate() {
@@ -346,6 +351,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       );
     }
     this.syncAutoReasoningState();
+    this.syncUserControlReasoningState();
   }
 
   /**
@@ -657,20 +663,24 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
               typeof stepOpenState !== "undefined" &&
               stepOpenState !== ReasoningStepOpenState.DEFAULT;
             const autoState = this.state.autoReasoningStepOpenStates[index];
-            const stepOpen = hasExplicitStepState
-              ? stepOpenState === ReasoningStepOpenState.OPEN
-              : isAutoControlled
-                ? typeof autoState === "boolean"
-                  ? autoState
-                  : index === steps.length - 1
-                    ? containerOpen
-                    : false
-                : containerOpen && index === steps.length - 1;
-            const stepToggleHandler =
-              isAutoControlled && !hasExplicitStepState
-                ? (event: CustomEvent<{ open: boolean }>) =>
-                    this.handleAutoReasoningStepToggle(index, event)
-                : undefined;
+            const isUserControlled =
+              this.state.reasoningStepUserControlStates[index];
+            const stepOpen =
+              hasExplicitStepState && !isUserControlled
+                ? stepOpenState === ReasoningStepOpenState.OPEN
+                : isAutoControlled || isUserControlled
+                  ? typeof autoState === "boolean"
+                    ? autoState
+                    : index === steps.length - 1
+                      ? containerOpen
+                      : false
+                  : containerOpen && index === steps.length - 1;
+            const stepToggleHandler = (
+              event: CustomEvent<{ open: boolean }>,
+            ) => {
+              this.handleUserControlReasoningStep(index);
+              this.handleAutoReasoningStepToggle(index, event);
+            };
 
             const stepContent = step.content ? (
               <RichText
@@ -802,9 +812,17 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       const nextStepStates =
         hasMatchingLength && prevStepStates.length
           ? prevStepStates
-          : reasoningSteps.map((_, index) =>
-              index === lastIndex ? containerOpen : false,
-            );
+          : reasoningSteps.map((_, index) => {
+              const isUserControlled =
+                prevState.reasoningStepUserControlStates[index];
+              if (
+                isUserControlled &&
+                typeof prevStepStates[index] === "boolean"
+              ) {
+                return prevStepStates[index];
+              }
+              return index === lastIndex ? containerOpen : false;
+            });
 
       let containerChanged = false;
       let stepsChanged =
@@ -825,7 +843,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       }
 
       const stepStates = shouldClose
-        ? nextStepStates.map(() => false)
+        ? nextStepStates.map((state, index) => {
+            // Don't close user-controlled steps even when shouldClose is true
+            const isUserControlled =
+              prevState.reasoningStepUserControlStates[index];
+            return isUserControlled ? state : false;
+          })
         : nextStepStates;
 
       if (
@@ -871,9 +894,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     index: number,
     event: CustomEvent<{ open: boolean }>,
   ) => {
-    if (!this.isAutoReasoning(this.props.message)) {
-      return;
-    }
     const open = Boolean(event?.detail?.open);
     this.setState((prevState) => {
       if (prevState.autoReasoningStepOpenStates[index] === open) {
@@ -883,6 +903,48 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       nextStates[index] = open;
       return {
         autoReasoningStepOpenStates: nextStates,
+      };
+    });
+  };
+
+  private syncUserControlReasoningState() {
+    if (!isResponse(this.props.message)) {
+      return;
+    }
+
+    const reasoningSteps =
+      this.props.message?.message_options?.reasoning?.steps ?? [];
+
+    this.setState((prevState) => {
+      const prevStepStates = prevState.reasoningStepUserControlStates;
+
+      const nextStepStates = reasoningSteps.map(
+        (_, index) => prevStepStates[index] ?? false,
+      );
+
+      const stepsChanged =
+        nextStepStates.length !== prevStepStates.length ||
+        nextStepStates.some((value, index) => value !== prevStepStates[index]);
+
+      if (stepsChanged) {
+        return {
+          reasoningStepUserControlStates: nextStepStates,
+        };
+      }
+
+      return null;
+    });
+  }
+
+  private handleUserControlReasoningStep = (index: number) => {
+    this.setState((prevState) => {
+      if (prevState.reasoningStepUserControlStates[index] === true) {
+        return null;
+      }
+      const nextStates = prevState.reasoningStepUserControlStates.slice();
+      nextStates[index] = true;
+      return {
+        reasoningStepUserControlStates: nextStates,
       };
     });
   };
@@ -978,7 +1040,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       disableUserInputs,
       showAvatarLine,
       className,
-      doAutoScroll,
       isMessageForInput,
       scrollElementIntoView,
       isFirstMessageItem,
@@ -1011,7 +1072,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         disableUserInputs={disableUserInputs}
         isMessageForInput={isMessageForInput}
         config={config}
-        doAutoScroll={doAutoScroll}
         scrollElementIntoView={scrollElementIntoView}
         showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}

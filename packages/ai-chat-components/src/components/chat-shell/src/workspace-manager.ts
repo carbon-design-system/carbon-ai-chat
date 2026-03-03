@@ -81,6 +81,7 @@ export class WorkspaceManager {
     this.throttledHandleHostResize = throttle(
       (inlineSize: number) => this.handleHostResize(inlineSize),
       100,
+      { leading: true, trailing: true },
     );
   }
 

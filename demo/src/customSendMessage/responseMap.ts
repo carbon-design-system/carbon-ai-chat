@@ -36,7 +36,9 @@ import {
   doTextChainOfThought,
   doTextChainOfThoughtStreaming,
   doTextStreaming,
+  doTextStreamingEarlyResolve,
   doTextStreamingWithNonWatsonAssistantProfile,
+  doTextWithCustomFooter,
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
   doTextWithHumanProfile,
@@ -101,9 +103,12 @@ const RESPONSE_MAP: Record<
       undefined,
       requestOptions,
     ),
+  "text (stream early resolve)": (instance, requestOptions) =>
+    doTextStreamingEarlyResolve(instance, requestOptions),
   "text with feedback": (instance) => doTextWithFeedback(instance),
   "text with feedback (stream)": (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),
+  "text with custom footer": (instance) => doTextWithCustomFooter(instance),
   "text from watsonx agent": (instance) =>
     doTextWithWatsonAgentProfile(instance),
   "text from third party human": (instance) => doTextWithHumanProfile(instance),

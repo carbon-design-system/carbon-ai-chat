@@ -37,6 +37,7 @@ import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardCom
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
 import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
+import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
 import InlineError from "./responseTypes/error/InlineError";
 import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
@@ -185,7 +186,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           {isResponseStopped && <ResponseStopped />}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
-          {renderFeedback(localMessageItem, message)}
+          {renderFeedbackAndCustomFooter(localMessageItem, message)}
         </>
       );
     }
@@ -375,7 +376,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           MessageErrorState.FAILED_WHILE_STREAMING
         }
         removeHTML={removeHTML}
-        doAutoScroll={props.doAutoScroll}
       />
     );
   }
@@ -482,17 +482,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message: LocalMessageItem,
     originalMessage: MessageResponse,
   ) {
-    const { serviceManager, doAutoScroll } = props;
+    const { serviceManager } = props;
     return (
       <UserDefinedResponse
-        streamingState={message.ui_state.streamingState}
         isStreamingError={
           originalMessage?.history?.error_state ===
           MessageErrorState.FAILED_WHILE_STREAMING
         }
         localMessageID={message.ui_state.id}
         serviceManager={serviceManager}
-        doAutoScroll={doAutoScroll}
       />
     );
   }
@@ -559,7 +557,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     localMessageItem: LocalMessageItem<ConversationalSearchItem>,
     fullMessage: MessageResponse,
   ) {
-    const { scrollElementIntoView, doAutoScroll } = props;
+    const { scrollElementIntoView } = props;
     return (
       <ConversationalSearch
         localMessageItem={localMessageItem}
@@ -568,7 +566,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           fullMessage?.history?.error_state ===
           MessageErrorState.FAILED_WHILE_STREAMING
         }
-        doAutoScroll={doAutoScroll}
       />
     );
   }
@@ -930,8 +927,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       );
     }
 
-    return (
-      <div className="cds-aichat--received--feedback">
+    return {
+      buttons: (
         <FeedbackButtons
           isPositiveOpen={isFeedbackOpen && isPositiveFeedbackSelected}
           isNegativeOpen={isFeedbackOpen && isNegativeFeedbackSelected}
@@ -948,13 +945,61 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             onFeedbackClicked(event.detail.isPositive)
           }
         />
+      ),
+      details: (
         <div ref={feedbackDetailsRef}>
           {renderFeedbackPopup(true)}
           {renderFeedbackPopup(false)}
         </div>
+      ),
+    };
+  }
+
+  /**
+   * Renders the custom footer slot for the given message item if appropriate.
+   */
+  function renderCustomFooter(localMessageItem: LocalMessageItem) {
+    const footerOptions =
+      localMessageItem.item.message_item_options?.custom_footer_slot;
+
+    if (
+      props.isNestedMessageItem ||
+      !footerOptions ||
+      footerOptions.is_on === false
+    ) {
+      return false;
+    }
+
+    return <CustomFooterSlot footerOptions={footerOptions} />;
+  }
+
+  /**
+   * Renders both feedback buttons and custom footer in the same container.
+   */
+  function renderFeedbackAndCustomFooter(
+    localMessageItem: LocalMessageItem,
+    message: MessageResponse,
+  ) {
+    const feedback = renderFeedback(localMessageItem, message);
+    const customFooter = renderCustomFooter(localMessageItem);
+
+    // If neither feedback nor custom footer should be rendered, return false
+    if (!feedback && !customFooter) {
+      return false;
+    }
+
+    // Render both in the same feedback container div
+    return (
+      <div className="cds-aichat--received--feedback">
+        <div className="cds-aichat--message-footer">
+          {feedback && feedback.buttons}
+          {customFooter}
+        </div>
+        {feedback && feedback.details}
       </div>
     );
   }
+
   return renderSpecificMessage(props.message, props.originalMessage);
 }
 

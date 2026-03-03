@@ -7,7 +7,6 @@
  *  @license
  */
 
-import "./WorkspaceWriteableElementExample.css"; // Assuming styles are in a separate CSS file
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
