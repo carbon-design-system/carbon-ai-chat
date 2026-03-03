@@ -51,9 +51,20 @@ export const Default = {
       control: "text",
       description: "Header title text of the chat history shell",
     },
+    searchOff: {
+      control: "boolean",
+      description:
+        "true if search should be turned off in chat history toolbar.",
+    },
+    showCloseAction: {
+      control: "boolean",
+      description: "renders close chat history action in header.",
+    },
   },
   args: {
     HeaderTitle: "Conversations",
+    searchOff: false,
+    showCloseAction: true,
   },
   render: (args) => {
     const [searchResults, setSearchResults] = useState([]);
@@ -149,8 +160,14 @@ export const Default = {
 
     return (
       <HistoryShell>
-        <HistoryHeader title={args.HeaderTitle} />
-        <HistoryToolbar onCdsSearchInput={handleSearchInput} />
+        <HistoryHeader
+          title={args.HeaderTitle}
+          showCloseAction={args.showCloseAction}
+        />
+        <HistoryToolbar
+          searchOff={args.searchOff}
+          onCdsSearchInput={handleSearchInput}
+        />
         <HistoryContent>
           {(showSearchResults || noSearchResults) && (
             <div slot="results-count">Results: {searchTotalCount}</div>

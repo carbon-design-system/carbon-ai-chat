@@ -28,7 +28,7 @@ class ChatHistoryDemo extends LitElement {
     searchTotalCount: { type: Number },
     searchValue: { type: String },
     searchOff: { type: Boolean, attribute: "search-off" },
-    startPanel: { type: Boolean, attribute: "start-panel" },
+    showCloseAction: { type: Boolean, attribute: "show-close-action" },
     showDeletePanel: { type: Boolean },
     itemToDelete: { type: String },
     pinnedItems: { type: Array },
@@ -46,6 +46,7 @@ class ChatHistoryDemo extends LitElement {
     super();
     this.headerTitle = "Conversations";
     this.searchOff = false;
+    this.showCloseAction = true;
     this.startPanel = false;
     this.searchResults = [];
     this.searchTotalCount = 0;
@@ -151,7 +152,7 @@ class ChatHistoryDemo extends LitElement {
       <cds-aichat-history-shell>
         <cds-aichat-history-header
           title="${this.headerTitle}"
-          ?start-panel=${this.startPanel}
+          ?show-close-action=${this.showCloseAction}
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar ?search-off=${this.searchOff}>
         </cds-aichat-history-toolbar>
@@ -280,22 +281,21 @@ export const Default = {
       description:
         "true if search should be turned off in chat history toolbar.",
     },
-    startPanel: {
+    showCloseAction: {
       control: "boolean",
-      description:
-        "true if chat history is diplayed in the left panel next to chat. Changes the close chat history icon.",
+      description: "renders close chat history action in header.",
     },
   },
   args: {
     HeaderTitle: "Conversations",
     searchOff: false,
-    startPanel: false,
+    showCloseAction: true,
   },
   render: (args) => html`
     <cds-aichat-history-demo
       header-title="${args.HeaderTitle}"
-      ?start-panel=${args.startPanel}
       ?search-off=${args.searchOff}
+      ?show-close-action=${args.showCloseAction}
     ></cds-aichat-history-demo>
   `,
 };

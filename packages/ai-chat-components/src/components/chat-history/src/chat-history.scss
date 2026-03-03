@@ -27,7 +27,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  block-size: convert.rem(40px);
   border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
   @include type.type-style("body-compact-01");
 
@@ -35,6 +34,7 @@
   inline-size: 100%;
   letter-spacing: 0.1px;
   line-height: 1.25rem;
+  min-block-size: convert.rem(40px);
 
   .#{$prefix}--history-header__close-button {
     padding-inline-end: layout.$spacing-03;
@@ -43,9 +43,15 @@
   .#{$prefix}--history-header__title {
     overflow: hidden;
     inline-size: 100%;
+    margin-inline-start: layout.$spacing-04;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+
+:host(#{$prefix}-history-header[show-close-action])
+  .#{$prefix}--history-header__title {
+  margin-inline-start: 0;
 }
 
 :host(#{$prefix}-history-toolbar) {
