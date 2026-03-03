@@ -142,6 +142,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     onBeforeRender,
     onAfterRender,
     renderUserDefinedResponse,
+    renderCustomMessageFooter,
     renderWriteableElements,
     className,
     id,
@@ -244,6 +245,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           onBeforeRender={onBeforeRenderOverride}
           onAfterRender={onAfterRender}
           renderUserDefinedResponse={renderUserDefinedResponse}
+          renderCustomMessageFooter={renderCustomMessageFooter}
           renderWriteableElements={renderWriteableElements}
           element={customElement}
           input={input}

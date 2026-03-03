@@ -250,7 +250,6 @@ export class VersionDropdown extends LitElement {
       <cds-dropdown
         title-text="Select @carbon/ai-chat version"
         helper-text="Changing will reset all other settings"
-        size="sm"
         .value=${this.selectedValue}
         @cds-dropdown-selected=${this.handleChange}
       >

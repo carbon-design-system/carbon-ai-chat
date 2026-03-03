@@ -17,13 +17,12 @@ import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import actions from "../../../store/actions";
 import { AppState } from "../../../../types/state/AppState";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { getURLHostName } from "../../../utils/browserUtils";
 import VisuallyHidden from "../../../components/util/VisuallyHidden";
 import { ClickableImage } from "../util/ClickableImage";
 import { IFrameItem } from "../../../../types/messaging/Messages";
 
-interface IFramePreviewCardComponentProps extends HasDoAutoScroll {
+interface IFramePreviewCardComponentProps {
   /**
    * The iframe response type item.
    */
@@ -35,7 +34,6 @@ interface IFramePreviewCardComponentProps extends HasDoAutoScroll {
  */
 function IFramePreviewCardComponent({
   messageItem,
-  doAutoScroll,
 }: IFramePreviewCardComponentProps) {
   const { source, image_url, title, description } = messageItem;
   const aiEnabled = useSelector(
@@ -62,14 +60,6 @@ function IFramePreviewCardComponent({
     }
   }
 
-  /**
-   * Handles making the image element visible by updating the image loading flag and triggering an auto scroll.
-   */
-  function handleImageLoaded() {
-    // Call doAutoScroll to account for the image container height change after the image has loaded.
-    doAutoScroll?.();
-  }
-
   return (
     <div>
       <ClickableImage
@@ -78,7 +68,6 @@ function IFramePreviewCardComponent({
         source={image_url}
         displayURL={source}
         altText={iframe_ariaImageAltText}
-        onImageLoad={handleImageLoaded}
         renderIcon={ArrowRight}
         onClick={handleCardClick}
         preventInlineError

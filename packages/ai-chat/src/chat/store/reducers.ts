@@ -176,7 +176,6 @@ const reducers: { [key: string]: ReducerType } = {
         ...state.assistantMessageState,
         localMessageIDs: [],
         messageIDs: [],
-        isScrollAnchored: false,
         activeResponseId: null,
       },
       allMessageItemsByID: {},
@@ -198,7 +197,7 @@ const reducers: { [key: string]: ReducerType } = {
     };
 
     if (newState.config.public.homescreen?.isOn) {
-      newState = setHomeScreenOpenState(newState, true);
+      newState = setHomeScreenOpenState(newState, true, false);
     }
     return newState;
   },

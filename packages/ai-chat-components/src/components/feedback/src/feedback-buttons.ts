@@ -12,7 +12,6 @@ import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import { feedbackButtonsElementTemplate } from "./feedback-buttons.template.js";
 import prefix from "../../../globals/settings.js";
-import styles from "./feedback-buttons.scss?lit";
 
 /**
  * Feedback buttons component
@@ -20,8 +19,6 @@ import styles from "./feedback-buttons.scss?lit";
  */
 @carbonElement(`${prefix}-feedback-buttons`)
 class CDSAIChatFeedbackButtons extends LitElement {
-  static styles = styles;
-
   /**
    * Indicates if the details panel for the positive feedback is open.
    */

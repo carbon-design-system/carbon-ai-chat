@@ -88,7 +88,7 @@ interface HeaderProps {
   /**
    * The name of the bot to display.
    */
-  headerDisplayName: string;
+  headerDisplayName?: string;
 
   /**
    * Indicates if the homescreen is currently active/visible.

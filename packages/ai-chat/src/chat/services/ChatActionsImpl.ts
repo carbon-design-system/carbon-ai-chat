@@ -94,6 +94,7 @@ import {
 import { AddMessageOptions } from "../../types/config/MessagingConfig";
 import {
   BusEventChunkUserDefinedResponse,
+  BusEventCustomFooterSlot,
   BusEventPreReceive,
   BusEventType,
   BusEventUserDefinedResponse,
@@ -1164,6 +1165,32 @@ class ChatActionsImpl {
   }
 
   /**
+   * If the given message should contain a custom footer slot, this will fire the {@link BusEventType.CUSTOM_FOOTER_SLOT}
+   * event so that the event listeners can attach whatever they want to the host element.
+   */
+  async handleCustomFooterSlot(
+    localMessage: LocalMessageItem,
+    originalMessage: MessageResponse,
+  ) {
+    const footerOptions =
+      localMessage.item.message_item_options?.custom_footer_slot;
+
+    if (footerOptions && footerOptions.is_on === true) {
+      const customFooterSlotEvent: BusEventCustomFooterSlot = {
+        type: BusEventType.CUSTOM_FOOTER_SLOT,
+        data: {
+          slotName: footerOptions.slot_name,
+          messageItem: localMessage.item,
+          message: originalMessage,
+          additionalData: footerOptions.additional_data,
+        },
+      };
+
+      await this.serviceManager.fire(customFooterSlotEvent);
+    }
+  }
+
+  /**
    * Takes each item in the appropriate output array and dispatches correct actions. We may want to look into
    * turning this into a formal queue as the pause response_type may cause us to lose correct order in fast
    * conversations.
@@ -1332,6 +1359,8 @@ class ChatActionsImpl {
             localMessageItem,
             fullMessage,
           );
+          // eslint-disable-next-line no-await-in-loop
+          await this.handleCustomFooterSlot(localMessageItem, fullMessage);
           if (
             !localMessageItem.item.user_defined?.silent &&
             initialRestartCount === this.serviceManager.restartCount

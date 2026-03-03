@@ -147,7 +147,8 @@
 }
 
 // Add margin-block-end to input-after when not at max width and workspace is not showing
-:host(:not([show-workspace]))
+// Only apply when content-max-width is enabled (attribute present)
+:host([content-max-width]:not([show-workspace]))
   .input-and-messages:not(.at-max-width)
   > .input-after {
   margin-block-end: 32px;

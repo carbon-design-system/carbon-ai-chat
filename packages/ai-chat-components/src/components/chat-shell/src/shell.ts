@@ -95,6 +95,13 @@ class CDSAIChatShell extends LitElement {
   messagesAriaLabel = "Chat messages";
 
   /**
+   * Constrains content to a maximum width. When false, input and related
+   * slots will extend to full container width without max-width constraints.
+   */
+  @property({ type: Boolean, attribute: "content-max-width", reflect: true })
+  contentMaxWidth = true;
+
+  /**
    * @internal
    */
   private panelManager?: PanelManager;
@@ -376,6 +383,7 @@ class CDSAIChatShell extends LitElement {
   }
 
   private renderMessagesSection() {
+    const maxWidthClass = this.contentMaxWidth ? "messages-max-width" : "";
     return html`
       <div
         class=${this.getInputAndMessagesClasses()}
@@ -383,9 +391,9 @@ class CDSAIChatShell extends LitElement {
         aria-label=${this.messagesAriaLabel}
       >
         ${this.renderSlot("messages", "messages")}
-        ${this.renderSlot("input-before", "input-before messages-max-width")}
-        ${this.renderSlot("input", "input messages-max-width")}
-        ${this.renderSlot("input-after", "input-after messages-max-width")}
+        ${this.renderSlot("input-before", `input-before ${maxWidthClass}`)}
+        ${this.renderSlot("input", `input ${maxWidthClass}`)}
+        ${this.renderSlot("input-after", `input-after ${maxWidthClass}`)}
       </div>
     `;
   }

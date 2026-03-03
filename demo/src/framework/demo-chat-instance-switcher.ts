@@ -180,6 +180,31 @@ export class DemoChatInstanceSwitcher extends LitElement {
       `,
     },
     {
+      id: "panel-hidden-back-button",
+      buttonLabel: "Panel with hidden back button",
+      description: "Hides the back button in the panel header.",
+      apiType: "deprecated",
+      options: {
+        title: "Panel without back button",
+        hideBackButton: true,
+      },
+      panelBody: `
+        <div>
+          <h3>Panel without back button</h3>
+          <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
+          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p>The back button in the header is hidden. Users are stuck interacting with the panel.</p>
+          <ul>
+            <li><code>title</code>: <strong>"Panel without back button"</strong></li>
+            <li><code>hideBackButton</code>: <strong>true</strong></li>
+          </ul>
+          <cds-button kind="danger" data-close-panel>
+            Close Panel
+          </cds-button>
+        </div>
+      `,
+    },
+    {
       id: "panel-hidden-header",
       buttonLabel: "Panel with hidden header",
       description: "Completely hides the panel header chrome.",

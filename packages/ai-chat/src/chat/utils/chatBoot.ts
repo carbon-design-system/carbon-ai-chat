@@ -24,6 +24,7 @@ import {
   BusEventChunkUserDefinedResponse,
   BusEventType,
   BusEventUserDefinedResponse,
+  BusEventCustomFooterSlot,
   MainWindowOpenReason,
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
@@ -222,6 +223,56 @@ export function attachUserDefinedResponseHandlers(
     type: BusEventType.USER_DEFINED_RESPONSE,
     handler: userDefinedResponseHandler,
   });
+  webChatInstance.on({
+    type: BusEventType.RESTART_CONVERSATION,
+    handler: restartHandler,
+  });
+}
+
+/**
+ * Attaches event handlers to the `ChatInstance` that track custom
+ * message footers in React state so they can be rendered via portals.
+ *
+ * On restart events, the tracked state is cleared.
+ */
+export function attachCustomFooterHandler(
+  webChatInstance: ChatInstance,
+  setBySlot: React.Dispatch<
+    React.SetStateAction<{
+      [key: string]: {
+        slotName: string;
+        message: any;
+        messageItem: any;
+        additionalData?: Record<string, unknown>;
+      };
+    }>
+  >,
+) {
+  function customFooterSlotHandler(event: BusEventCustomFooterSlot) {
+    setBySlot((bySlot) => {
+      return {
+        ...bySlot,
+        [event.data.slotName]: {
+          slotName: event.data.slotName,
+          message: event.data.message,
+          messageItem: event.data.messageItem,
+          additionalData: event.data.additionalData as
+            | Record<string, unknown>
+            | undefined,
+        },
+      };
+    });
+  }
+
+  function restartHandler() {
+    setBySlot({});
+  }
+
+  webChatInstance.on({
+    type: BusEventType.CUSTOM_FOOTER_SLOT,
+    handler: customFooterSlotHandler,
+  });
+
   webChatInstance.on({
     type: BusEventType.RESTART_CONVERSATION,
     handler: restartHandler,

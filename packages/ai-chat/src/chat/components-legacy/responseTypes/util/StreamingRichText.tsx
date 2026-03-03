@@ -9,15 +9,13 @@
 
 import React from "react";
 
-import { useCallbackOnChange } from "../../../hooks/useCallbackOnChange";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { LocalMessageItemStreamingState } from "../../../../types/messaging/LocalMessageItem";
 import InlineError from "../error/InlineError";
 import { RichText } from "./RichText";
 import { TextItem } from "../../../../types/messaging/Messages";
 
-interface StreamingRichTextProps extends HasDoAutoScroll {
+interface StreamingRichTextProps {
   /**
    * The full text of the item to render. This is used once the streaming is done.
    */
@@ -44,13 +42,9 @@ interface StreamingRichTextProps extends HasDoAutoScroll {
  * is streaming in chunks (currently only TextItem chunks are supported).
  */
 function StreamingRichText(props: StreamingRichTextProps) {
-  const { text, streamingState, removeHTML, isStreamingError, doAutoScroll } =
-    props;
+  const { text, streamingState, removeHTML, isStreamingError } = props;
 
   const languagePack = useLanguagePack();
-
-  // Once done streaming, kick off an auto-scroll.
-  useCallbackOnChange(streamingState?.isDone, doAutoScroll);
 
   let textToUse;
   if (streamingState && !streamingState.isDone) {

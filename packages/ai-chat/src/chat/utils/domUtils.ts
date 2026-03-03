@@ -52,7 +52,7 @@ function doScrollElementIntoView(
  * @param element The scrollable element to set the scroll position of.
  * @param scrollTop The scrollTop value to set.
  * @param scrollLeft The scrollLeft value to set.
- * @param animate Indicates if the scrolling should be done using animation.
+ * @param animate Indicates if the scrolling should be done using smooth scroll animation.
  */
 function doScrollElement(
   element: Element,
@@ -60,20 +60,18 @@ function doScrollElement(
   scrollLeft: number,
   animate = false,
 ) {
-  setTimeout(() => {
-    if (element) {
-      if (animate && element.scroll) {
-        element.scroll({
-          top: scrollTop,
-          left: scrollLeft,
-          behavior: "smooth",
-        });
-      } else {
-        element.scrollTop = scrollTop;
-        element.scrollLeft = scrollLeft;
-      }
+  if (element) {
+    if (animate && element.scroll) {
+      element.scroll({
+        top: scrollTop,
+        left: scrollLeft,
+        behavior: "smooth",
+      });
+    } else {
+      element.scrollTop = scrollTop;
+      element.scrollLeft = scrollLeft;
     }
-  });
+  }
 }
 
 /**
@@ -241,53 +239,6 @@ function getScrollBottom(element: HTMLElement) {
   return 0;
 }
 
-/**
- * Continuously checks an element's scrollHeight on each animation frame and resolves
- * once the scrollHeight remains unchanged for a specified number of consecutive frames (default 2 frames).
- *
- * This is useful for waiting until layout changes (e.g., animations, content loading, dropdowns expanding/collapsing)
- * have fully settled before performing measurements or scroll adjustments.
- *
- * Uses scrollHeight instead of clientHeight/getBoundingClientRect to detect content changes inside scrollable containers.
- */
-function waitForStableHeight(
-  el: HTMLElement,
-  opts: { frames?: number; timeoutMs?: number } = {},
-): Promise<void> {
-  const requiredStableFrames = opts.frames ?? 2;
-  const timeoutMs = opts.timeoutMs ?? 500;
-  let stableFrames = 0;
-  let lastHeight = el.scrollHeight;
-  let rafId: number | null = null;
-
-  return new Promise((resolve) => {
-    const deadline = performance.now() + timeoutMs;
-
-    const tick = () => {
-      const now = performance.now();
-      const h = el.scrollHeight;
-
-      if (h === lastHeight) {
-        stableFrames += 1;
-      } else {
-        stableFrames = 0;
-        lastHeight = h;
-      }
-
-      if (stableFrames >= requiredStableFrames || now >= deadline) {
-        if (rafId != null) {
-          cancelAnimationFrame(rafId);
-        }
-        resolve();
-      } else {
-        rafId = requestAnimationFrame(tick);
-      }
-    };
-
-    rafId = requestAnimationFrame(tick);
-  });
-}
-
 export {
   SCROLLBAR_WIDTH,
   doScrollElement,
@@ -302,5 +253,4 @@ export {
   focusOnFirstFocusableElement,
   isEnterKey,
   getScrollBottom,
-  waitForStableHeight,
 };
