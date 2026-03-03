@@ -78,6 +78,7 @@ function ChatContainer(props: ChatContainerProps) {
     serviceDeskFactory,
     serviceDesk,
     renderUserDefinedResponse,
+    renderCustomMessageFooter,
     renderWriteableElements,
     element,
     // Flattened PublicConfig properties
@@ -274,6 +275,7 @@ function ChatContainer(props: ChatContainerProps) {
             serviceDeskFactory={serviceDeskFactory}
             serviceDesk={serviceDesk}
             renderUserDefinedResponse={renderUserDefinedResponse}
+            renderCustomMessageFooter={renderCustomMessageFooter}
             renderWriteableElements={renderWriteableElements}
             onBeforeRender={onBeforeRenderOverride}
             onAfterRender={onAfterRender}

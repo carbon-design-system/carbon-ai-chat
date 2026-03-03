@@ -437,7 +437,9 @@ export default function AppShell({
       <AppShellErrorBoundary onError={handleBoundaryError}>
         <ModalPortalRootProvider hostElement={modalPortalHostElement}>
           <Layer
-            className="cds-aichat--widget__layer"
+            className={cx("cds-aichat--widget__layer", {
+              "cds-aichat--widget__layer--hidden": !open,
+            })}
             level={
               theme.derivedCarbonTheme === CarbonTheme.G10 ||
               theme.derivedCarbonTheme === CarbonTheme.G100
@@ -474,6 +476,7 @@ export default function AppShell({
               aiEnabled={theme.aiEnabled}
               showFrame={layout?.showFrame}
               roundedCorners={theme.corners === CornersType.ROUND}
+              contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
               showHistory={layout?.showHistory ?? false}

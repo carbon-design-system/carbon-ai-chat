@@ -326,7 +326,7 @@ class CDSAIChatMarkdown extends LitElement {
       return trackedTask;
     },
     100,
-    { leading: true },
+    { leading: true, trailing: true },
   );
 
   protected async getUpdateComplete(): Promise<boolean> {

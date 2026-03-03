@@ -53,6 +53,7 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
@@ -245,6 +246,7 @@ export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-contai
 export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
 
 export {
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,

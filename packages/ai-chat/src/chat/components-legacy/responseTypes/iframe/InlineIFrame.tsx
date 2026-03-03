@@ -11,14 +11,13 @@ import React, { useCallback, useState, useLayoutEffect, useRef } from "react";
 
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { getMediaDimensions } from "../../../utils/messageUtils";
 import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
 import InlineError from "../error/InlineError";
 import { IFrameComponent } from "./IFrameComponent";
 import { IFrameItem } from "../../../../types/messaging/Messages";
 
-interface InlineIframeProps extends HasDoAutoScroll {
+interface InlineIframeProps {
   /**
    * The iframe response type item.
    */
@@ -28,7 +27,7 @@ interface InlineIframeProps extends HasDoAutoScroll {
 /**
  * This component renders an inline iframe for iframe response types using the chat display "inline" option.
  */
-function InlineIFrame({ messageItem, doAutoScroll }: InlineIframeProps) {
+function InlineIFrame({ messageItem }: InlineIframeProps) {
   const ariaAnnouncer = useAriaAnnouncer();
   const { errors_iframeSource } = useLanguagePack();
   const [isError, setIsError] = useState(false);
@@ -65,7 +64,6 @@ function InlineIFrame({ messageItem, doAutoScroll }: InlineIframeProps) {
         source={source}
         title={iframeTitle}
         onTimeoutOverride={onTimeoutOverride}
-        onLoad={() => doAutoScroll?.()}
       />
     </div>
   );

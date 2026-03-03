@@ -11,13 +11,11 @@ import { ScrollElementIntoViewFunction } from "../../chat/components-legacy/Mess
 import { HasServiceManager } from "../../chat/hocs/withServiceManager";
 import { AppConfig } from "../state/AppConfig";
 import { HasDisplayOverride } from "../utilities/HasDisplayOverride";
-import { HasDoAutoScroll } from "../utilities/HasDoAutoScroll";
 import { LanguagePack } from "./LanguagePack";
 import { LocalMessageItem } from "./LocalMessageItem";
 import { Message } from "./Messages";
 
-interface MessageContextValues
-  extends HasServiceManager, HasDoAutoScroll, HasDisplayOverride {
+interface MessageContextValues extends HasServiceManager, HasDisplayOverride {
   originalMessage: Message;
   languagePack: LanguagePack;
 

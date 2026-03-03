@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html, css } from "lit";
+import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { ChatInstance } from "@carbon/ai-chat";
 import { PanelType } from "@carbon/ai-chat";
@@ -26,12 +26,6 @@ import Close16 from "@carbon/icons/es/close/16.js";
 
 @customElement("outstanding-orders-example")
 export class OutstandingOrdersExample extends LitElement {
-  static styles = css`
-    [slot="workspacePanelElement"] {
-      block-size: 100%;
-    }
-  `;
-
   @property({ type: String })
   accessor location = "";
 

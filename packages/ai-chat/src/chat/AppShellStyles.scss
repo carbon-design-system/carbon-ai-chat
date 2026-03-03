@@ -60,9 +60,32 @@
    Reusable utility classes for common patterns
    ============================================================================ */
 
-.cds-aichat--widget--expand-to-fit {
+// Mixin for elements that should expand to fit their container
+@mixin expand-to-fit {
+  overflow: hidden;
   block-size: 100%;
   inline-size: 100%;
+  max-block-size: 100%;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+// Mixin for workspace panel slotted content with additional constraints
+@mixin workspace-panel-slotted {
+  overflow: hidden;
+  block-size: 100%;
+  max-block-size: 100%;
+}
+
+.cds-aichat--widget--expand-to-fit {
+  @include expand-to-fit;
+}
+
+.cds-aichat--workspace-writeable-element {
+  ::slotted(*) {
+    @include workspace-panel-slotted;
+  }
 }
 
 .cds-aichat--history-writeable-element {
@@ -306,6 +329,10 @@
 .cds-aichat--widget__layer {
   block-size: 100%;
   inline-size: 100%;
+}
+
+.cds-aichat--widget__layer--hidden {
+  display: none;
 }
 
 .cds-aichat--widget--max-width {

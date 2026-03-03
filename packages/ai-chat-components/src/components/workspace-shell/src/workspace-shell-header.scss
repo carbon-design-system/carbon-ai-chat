@@ -24,6 +24,8 @@ $css--plex: true !default;
   border-block-end: solid rem(1px) theme.$chat-bubble-border;
   color: theme.$text-secondary;
   grid-auto-flow: column;
+  overflow-x: hidden;
+  overflow-y: auto;
 
   @include type.type-style("body-01");
 

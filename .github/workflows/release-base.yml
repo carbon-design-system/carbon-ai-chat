@@ -57,7 +57,7 @@ jobs:
           cache: "npm"
       - name: Install dependencies and build
         run: |
-          npm install
+          npm ci --prefer-offline
           npx playwright install --with-deps
           npm run build
       - name: Continuous integration check

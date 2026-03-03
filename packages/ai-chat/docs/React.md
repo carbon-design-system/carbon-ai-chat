@@ -393,3 +393,119 @@ Carbon AI Chat exports as an ES module and does not include a CJS build. Please 
 See [jsdom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/jest-jsdom) and [happydom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/jest-happydom).
 
 Despite being widely used, [jsdom](https://github.com/jsdom/jsdom) does NOT support rendering in the shadow DOM, which Carbon AI Chat makes use of. This mostly limits what you can test beyond simple "did it render anything" snapshots. [happy-dom](https://github.com/capricorn86/happy-dom) DOES support the shadow DOM and opens up a lot more ability to run more complicated test scenarios.
+
+### Custom Message Footer
+
+You can also insert a `custom_footer_slot` in chatbot messages. You must pass a {@link ChatContainerProps.renderCustomMessageFooter} function as a render prop. This function returns a React component that renders content in the message footer.
+
+Similarly to the {@link ChatContainerProps.renderUserDefinedResponse} prop, the {@link ChatContainerProps.renderCustomMessageFooter} is called every time the App rerenders and every time a new message is received with `custom_footer_slot` configured. Make sure to not call functions from inside {@link ChatContainerProps.renderCustomMessageFooter} that you don't want called on every render.
+
+Refer to the following example.
+
+```typescript
+import React from "react";
+import { ChatInstance, MessageResponse, GenericItem } from "@carbon/ai-chat";
+import { IconButton } from "@carbon/react";
+import Copy16 from "@carbon/icons-react/es/Copy.js";
+import Export16 from "@carbon/icons-react/es/Export.js";
+
+interface CustomFooterExampleProps {
+  slotName: string;
+  message: MessageResponse;
+  messageItem: GenericItem;
+  instance: ChatInstance;
+  additionalData?: Record<string, unknown>;
+}
+
+function CustomFooterExample({
+  slotName,
+  message,
+  messageItem,
+  instance,
+  additionalData,
+}: CustomFooterExampleProps) {
+  const handleCopy = () => {
+    let textToCopy = "";
+    if ("text" in messageItem && typeof messageItem.text === "string") {
+      textToCopy = messageItem.text;
+    }
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy);
+    }
+  };
+
+  const handleShare = () => {
+    const url = additionalData?.custom_action_url as string;
+    if (url) {
+      window.open(url, "_blank");
+    }
+  };
+
+  return (
+    <div className="custom-footer-actions">
+      {Boolean(additionalData?.allow_copy) && (
+        <IconButton
+          className="custom-footer-button"
+          // IconButton props
+          onClick={handleCopy}
+        >
+          <Copy16 />
+        </IconButton>
+      )}
+      {Boolean(additionalData?.custom_action_url) && (
+        <IconButton
+          className="custom-footer-button"
+          // IconButton props
+          onClick={handleShare}
+        >
+          <Export16 />
+        </IconButton>
+      )}
+    </div>
+  );
+}
+
+export { CustomFooterExample };
+```
+
+```typescript
+import React from 'react'
+import { ChatContainer, RenderCustomMessageFooter } from '@carbon/ai-chat';
+import { CustomFooterExample } from "./CustomFooterExample";
+
+const chatOptions = {
+  // Your configuration object.
+};
+
+function App() {
+  /**
+   * Handler for custom footer slot.
+   */
+  const renderCustomMessageFooter: RenderCustomMessageFooter = (
+    slotName,
+    message,
+    messageItem,
+    instance,
+    additionalData,
+  ) => {
+    return (
+      <CustomFooterExample
+        slotName={slotName}
+        message={message}
+        messageItem={messageItem}
+        instance={instance}
+        additionalData={additionalData}
+      />
+    );
+  };
+
+  return (
+    <ChatContainer
+      renderCustomMessageFooter={renderCustomMessageFooter}
+      messaging={chatOptions.messaging}
+      header={chatOptions.header}
+      launcher={chatOptions.launcher}
+    />
+  );
+}
+```

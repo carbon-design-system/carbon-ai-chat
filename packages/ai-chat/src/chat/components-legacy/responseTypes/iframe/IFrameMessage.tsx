@@ -10,7 +10,6 @@
 import React from "react";
 
 import { HasDisplayOverride } from "../../../../types/utilities/HasDisplayOverride";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { IFramePreviewCard } from "./IFramePreviewCard";
 import { InlineIFrame } from "./InlineIFrame";
@@ -19,18 +18,14 @@ import {
   IFrameItemDisplayOption,
 } from "../../../../types/messaging/Messages";
 
-interface IFrameMessageProps extends HasDoAutoScroll, HasDisplayOverride {
+interface IFrameMessageProps extends HasDisplayOverride {
   /**
    * The local message for the iframe response type.
    */
   localMessage: LocalMessageItem<IFrameItem>;
 }
 
-function IFrameMessage({
-  doAutoScroll,
-  localMessage,
-  displayOverride,
-}: IFrameMessageProps) {
+function IFrameMessage({ localMessage, displayOverride }: IFrameMessageProps) {
   const { item } = localMessage;
   const itemDisplay = item.display;
 
@@ -40,16 +35,10 @@ function IFrameMessage({
     displayOverride === IFrameItemDisplayOption.INLINE
   ) {
     // The key prop is important since it causes the IFrame to re-mount when the source changes.
-    return (
-      <InlineIFrame
-        key={item.source}
-        doAutoScroll={doAutoScroll}
-        messageItem={item}
-      />
-    );
+    return <InlineIFrame key={item.source} messageItem={item} />;
   }
 
-  return <IFramePreviewCard doAutoScroll={doAutoScroll} messageItem={item} />;
+  return <IFramePreviewCard messageItem={item} />;
 }
 
 export { IFrameMessage };

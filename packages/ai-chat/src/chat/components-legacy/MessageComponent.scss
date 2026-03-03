@@ -576,3 +576,8 @@ svg.cds-aichat--sent-file-icon {
     }
   }
 }
+
+.cds-aichat--message-footer {
+  display: flex;
+  margin-block-start: layout.$spacing-03;
+}

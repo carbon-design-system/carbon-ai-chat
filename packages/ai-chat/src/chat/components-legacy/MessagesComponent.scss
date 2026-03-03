@@ -13,6 +13,10 @@
 @use "@carbon/styles/scss/components/button/tokens";
 @use "../styles/chat-theme";
 
+.cds-aichat--typing-indicator--hidden {
+  visibility: hidden;
+}
+
 .cds-aichat--messages--holder {
   display: flex;
   overflow: hidden;

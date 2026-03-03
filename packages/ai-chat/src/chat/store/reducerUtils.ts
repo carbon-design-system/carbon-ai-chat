@@ -216,7 +216,6 @@ const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   isMessageLoadingCounter: 0,
   isMessageLoadingText: undefined,
   isHydratingCounter: 0,
-  isScrollAnchored: false,
 };
 deepFreeze(DEFAULT_CHAT_MESSAGES_STATE);
 

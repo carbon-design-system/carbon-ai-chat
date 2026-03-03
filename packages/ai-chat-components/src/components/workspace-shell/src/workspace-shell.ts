@@ -32,8 +32,12 @@ class CDSAIChatWorkspaceShell extends LitElement {
       <slot name="toolbar"></slot>
       <slot name="notification"></slot>
       <slot name="header"></slot>
-      <slot name="body"></slot>
+      </div>
+      <div class="body">
+        <slot name="body"></slot>
+      </div>
       <slot name="footer"></slot>
+  </div>
     `;
   }
 }

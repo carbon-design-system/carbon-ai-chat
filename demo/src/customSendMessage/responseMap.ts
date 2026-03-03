@@ -37,6 +37,7 @@ import {
   doTextChainOfThoughtStreaming,
   doTextStreaming,
   doTextStreamingWithNonWatsonAssistantProfile,
+  doTextWithCustomFooter,
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
   doTextWithHumanProfile,
@@ -104,6 +105,7 @@ const RESPONSE_MAP: Record<
   "text with feedback": (instance) => doTextWithFeedback(instance),
   "text with feedback (stream)": (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),
+  "text with custom footer": (instance) => doTextWithCustomFooter(instance),
   "text from watsonx agent": (instance) =>
     doTextWithWatsonAgentProfile(instance),
   "text from third party human": (instance) => doTextWithHumanProfile(instance),

@@ -23,7 +23,6 @@ import React, {
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { usePrevious } from "../../../hooks/usePrevious";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnouncement";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
 import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
@@ -53,8 +52,7 @@ const ReactPlayerComponent = React.lazy(async () => {
  * The parent interface for the different media player types (audio, video) which holds the common properties between
  * them.
  */
-interface MediaPlayerContentConfig
-  extends HasDoAutoScroll, HasNeedsAnnouncement {
+interface MediaPlayerContentConfig extends HasNeedsAnnouncement {
   /**
    * A url pointing to a video/audio file or a third-party video/audio service
    */
@@ -142,7 +140,6 @@ function MediaPlayerComponent({
   ariaLabel,
   isMixcloud,
   baseHeight,
-  doAutoScroll,
   playing,
   onPlay,
   onPause,
@@ -221,9 +218,8 @@ function MediaPlayerComponent({
   const handleReady = useCallback(() => {
     if (!skeletonHidden) {
       setSkeletonHidden(true);
-      doAutoScroll?.();
     }
-  }, [doAutoScroll, skeletonHidden]);
+  }, [skeletonHidden]);
 
   /**
    * Renders a media player skeleton. This is rendered until the react-player has loaded the provided url.

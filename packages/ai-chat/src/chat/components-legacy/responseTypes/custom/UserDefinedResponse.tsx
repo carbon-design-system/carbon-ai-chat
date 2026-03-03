@@ -17,23 +17,14 @@
 import React from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { useCallbackOnChange } from "../../../hooks/useCallbackOnChange";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
-import { LocalMessageItemStreamingState } from "../../../../types/messaging/LocalMessageItem";
 import InlineError from "../error/InlineError";
-import { UserDefinedItem } from "../../../../types/messaging/Messages";
 
-interface UserDefinedResponseProps extends HasServiceManager, HasDoAutoScroll {
+interface UserDefinedResponseProps extends HasServiceManager {
   /**
    * The id of the message that is to be rendered by this component.
    */
   localMessageID: string;
-
-  /**
-   * The current state of streaming of the text.
-   */
-  streamingState: LocalMessageItemStreamingState<UserDefinedItem>;
 
   /**
    * Indicates if this should display an error message.
@@ -42,8 +33,7 @@ interface UserDefinedResponseProps extends HasServiceManager, HasDoAutoScroll {
 }
 
 function UserDefinedResponse(props: UserDefinedResponseProps) {
-  const { doAutoScroll, isStreamingError, streamingState, serviceManager } =
-    props;
+  const { isStreamingError, serviceManager } = props;
 
   const languagePack = useLanguagePack();
 
@@ -51,8 +41,6 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
   // already have attached its own element to this element that contains the custom rendering for the message.
   const userDefinedRegistryItem =
     serviceManager.actions.getOrCreateUserDefinedElement(props.localMessageID);
-
-  useCallbackOnChange(streamingState?.isDone, doAutoScroll);
 
   return (
     <div

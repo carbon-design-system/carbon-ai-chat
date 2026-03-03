@@ -571,6 +571,11 @@ export interface GenericItemMessageOptions {
    * Controls the display of feedback options (thumbs up/down) for a message item.
    */
   feedback?: GenericItemMessageFeedbackOptions;
+
+  /**
+   * Optional configuration for a custom footer slot. This allows you to add custom content to the footer of a message.
+   */
+  custom_footer_slot?: GenericItemCustomFooterSlotOptions;
 }
 
 /**
@@ -657,6 +662,24 @@ export interface GenericItemMessageFeedbackOptions {
    * value is not provided, no text will be shown.
    */
   disclaimer?: string;
+}
+
+export interface GenericItemCustomFooterSlotOptions {
+  /**
+   * Unique identifier for this footer slot. Used to match with the render function.
+   */
+  slot_name: string;
+
+  /**
+   * Indicates whether to show the custom footer slot. This defaults to true.
+   */
+  is_on?: boolean;
+
+  /**
+   * Optional additional data to pass to the render function. This can contain
+   * any custom metadata that the frontend needs to render the footer appropriately.
+   */
+  additional_data?: Record<string, unknown>;
 }
 
 /**
