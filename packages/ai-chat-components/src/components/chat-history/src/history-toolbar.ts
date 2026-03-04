@@ -78,6 +78,7 @@ class CDSAIChatHistoryToolbar extends LitElement {
       ${!searchOff ? html`<cds-search></cds-search>` : nothing}
       <slot name="actions-end"></slot>
       <cds-icon-button
+        align="top-right"
         @click=${handleNewChatButtonClick}
         @keydown=${handleNewChatButtonKeyDown}
       >
