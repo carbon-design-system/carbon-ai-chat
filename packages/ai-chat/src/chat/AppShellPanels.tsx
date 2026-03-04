@@ -51,6 +51,7 @@ interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   isHomeScreenActive: boolean;
   customPanelState: AppState["customPanelState"];
   customPanelRef: React.RefObject<HasRequestFocus | null>;
+  historyPanelState: AppState["historyPanelState"];
   publicConfig: AppState["config"]["public"];
   showDisclaimer: boolean;
   disclaimerRef: React.RefObject<CDSButton | null>;
@@ -100,6 +101,7 @@ export function AppShellPanels({
   isHomeScreenActive,
   customPanelState,
   customPanelRef,
+  historyPanelState,
   publicConfig,
   showDisclaimer,
   disclaimerRef,
@@ -538,6 +540,34 @@ export function AppShellPanels({
           }
         />
       </ChatPanel>
+
+      {publicConfig.layout.showHistory && historyPanelState.isOpen && (
+        <ChatPanel
+          open={historyPanelState.isOpen}
+          priority={3}
+          fullWidth={historyPanelState.options.fullWidth ?? true}
+          bodyNoPadding={true}
+          aiEnabled={config.public.aiEnabled ? true : false}
+          animationOnOpen="slide-in-from-bottom"
+          animationOnClose="slide-out-to-bottom"
+          onOpenStart={() => onPanelOpenStart(true)}
+          onOpenEnd={onPanelOpenEnd}
+          onCloseStart={onPanelCloseStart}
+          onCloseEnd={() => {
+            onPanelCloseEnd(true);
+            serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
+          }}
+        >
+          <PanelWithFocus
+            body={
+              <WriteableElement
+                slotName="historyPanelElement"
+                className="cds-aichat--history-panel__content-container"
+              />
+            }
+          />
+        </ChatPanel>
+      )}
     </div>
   );
 }

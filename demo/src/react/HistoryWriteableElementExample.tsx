@@ -22,7 +22,7 @@ import {
 
 import { PinFilled, Search } from "@carbon/icons-react";
 import React, { useState, useCallback } from "react";
-import { ChatInstance } from "@carbon/ai-chat";
+import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
 interface HistoryExampleProps {
   location: string;
@@ -192,8 +192,8 @@ function HistoryWriteableElementExample({
   const handleHistoryClose = useCallback(() => {
     console.log("History close clicked");
     // In float mode, close the history panel
-    if (isFloatMode && instance?.historyPanel) {
-      instance.historyPanel.close();
+    if (isFloatMode && instance?.customPanels) {
+      instance.customPanels.getPanel(PanelType.HISTORY)?.close();
     }
   }, [isFloatMode, instance]);
 

@@ -23,6 +23,7 @@ import {
   ChatCustomElement,
   ChatInstance,
   FeedbackInteractionType,
+  PanelType,
   PublicConfig,
   RenderUserDefinedState,
   RenderCustomMessageFooter,
@@ -379,8 +380,8 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
               text: "View chats",
               handler: () => {
                 console.log("View chats clicked - opening history panel");
-                // Open the history panel using the dedicated history panel API
-                instance?.historyPanel?.open({
+                // Open the history panel using the custom panels API
+                instance?.customPanels?.getPanel(PanelType.HISTORY)?.open({
                   fullWidth: true,
                   hideBackButton: false,
                 });

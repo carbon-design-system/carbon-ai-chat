@@ -17,6 +17,7 @@ import {
   ChatMessagesState,
   CustomPanelState,
   WorkspacePanelState,
+  HistoryPanelState,
   HumanAgentState,
   IFramePanelState,
   InputState,
@@ -27,6 +28,7 @@ import {
   PersistedState,
 } from "../../types/state/AppState";
 import {
+  HistoryCustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
   PanelType,
@@ -91,9 +93,17 @@ const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
   };
 deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
 
+const HISTORY_PANEL_CONFIG_OPTIONS: HistoryCustomPanelConfigOptions = {
+  fullWidth: false,
+  hideBackButton: false,
+  disableAnimation: false,
+};
+deepFreeze(HISTORY_PANEL_CONFIG_OPTIONS);
+
 const PANEL_CONFIG_OPTIONS_BY_TYPE: PanelConfigOptionsByType = {
   [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   [PanelType.WORKSPACE]: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
+  [PanelType.HISTORY]: HISTORY_PANEL_CONFIG_OPTIONS,
 };
 deepFreeze(PANEL_CONFIG_OPTIONS_BY_TYPE);
 
@@ -114,6 +124,15 @@ const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
   additionalData: undefined,
 };
 deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
+
+const DEFAULT_HISTORY_PANEL_STATE: HistoryPanelState = {
+  isOpen: false,
+  options: {
+    hideBackButton: false,
+    fullWidth: true,
+  },
+};
+deepFreeze(DEFAULT_HISTORY_PANEL_STATE);
 
 const DEFAULT_IFRAME_PANEL_STATE: IFramePanelState = {
   isOpen: false,
@@ -410,6 +429,7 @@ export {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
+  DEFAULT_HISTORY_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
   PANEL_CONFIG_OPTIONS_BY_TYPE,

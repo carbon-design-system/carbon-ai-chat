@@ -139,6 +139,7 @@ export default function AppShell({
     assistantMessageState,
     humanAgentState,
     workspacePanelState,
+    historyPanelState,
     allMessageItemsByID,
     allMessagesByID,
     catastrophicErrorType,
@@ -503,6 +504,7 @@ export default function AppShell({
                 isHomeScreenActive={showHomeScreen}
                 customPanelState={customPanelState}
                 customPanelRef={customPanelRef}
+                historyPanelState={historyPanelState}
                 publicConfig={publicConfig}
                 showDisclaimer={showDisclaimer}
                 disclaimerRef={disclaimerRef}

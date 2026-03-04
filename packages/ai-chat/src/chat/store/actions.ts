@@ -15,6 +15,7 @@ import {
   AppStateMessages,
   ChatMessagesState,
   FileUpload,
+  HistoryPanelState,
   InputState,
   PersistedState,
   ThemeState,
@@ -84,6 +85,8 @@ const SET_WORKSPACE_PANEL_OPTIONS = "SET_WORKSPACE_PANEL_OPTIONS";
 const SET_WORKSPACE_PANEL_DATA = "SET_WORKSPACE_PANEL_DATA";
 const SET_CUSTOM_PANEL_OPEN = "SET_CUSTOM_PANEL_OPEN";
 const SET_WORKSPACE_PANEL_OPEN = "SET_WORKSPACE_PANEL_OPEN";
+const SET_HISTORY_PANEL_OPEN = "SET_HISTORY_PANEL_OPEN";
+const SET_HISTORY_PANEL_OPTIONS = "SET_HISTORY_PANEL_OPTIONS";
 const TOGGLE_HOME_SCREEN = "GO_BACK_TO_HOME";
 const UPDATE_INPUT_STATE = "UPDATE_INPUT_STATE";
 const SET_IS_BROWSER_PAGE_VISIBLE = "SET_IS_PAGE_VISIBLE";
@@ -123,6 +126,12 @@ interface SetWorkspacePanelDataAction {
   localMessageItem?: LocalMessageItem;
   fullMessage?: Message;
   additionalData?: unknown;
+  [key: string]: unknown;
+}
+
+interface SetHistoryPanelOptionsAction {
+  type: typeof SET_HISTORY_PANEL_OPTIONS;
+  options: Partial<HistoryPanelState["options"]>;
   [key: string]: unknown;
 }
 
@@ -468,6 +477,19 @@ const actions = {
     };
   },
 
+  setHistoryPanelOpen(isOpen: boolean) {
+    return { type: SET_HISTORY_PANEL_OPEN, isOpen };
+  },
+
+  setHistoryPanelOptions(
+    options: Partial<HistoryPanelState["options"]>,
+  ): SetHistoryPanelOptionsAction {
+    return {
+      type: SET_HISTORY_PANEL_OPTIONS,
+      options,
+    };
+  },
+
   /**
    * Switches between the bot and home screen views.
    */
@@ -650,6 +672,8 @@ export {
   SET_WORKSPACE_PANEL_OPTIONS,
   SET_WORKSPACE_PANEL_DATA,
   SET_WORKSPACE_PANEL_OPEN,
+  SET_HISTORY_PANEL_OPEN,
+  SET_HISTORY_PANEL_OPTIONS,
   SET_CHAT_MESSAGES_PROPERTY,
   TOGGLE_HOME_SCREEN,
   UPDATE_INPUT_STATE,

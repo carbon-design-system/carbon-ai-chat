@@ -13,6 +13,7 @@ import {
   CustomPanelInstance,
   CustomPanelOpenOptions,
   PanelType,
+  HistoryCustomPanelConfigOptions,
 } from "../../types/instance/apiTypes";
 import { BusEventType } from "../../types/events/eventBusTypes";
 import actions from "../store/actions";
@@ -40,6 +41,10 @@ function createCustomPanelInstance(
       setConfig: actions.setCustomPanelConfigOptions,
       setOpen: actions.setCustomPanelOpen,
     },
+    [PanelType.HISTORY]: {
+      setConfig: actions.setHistoryPanelOptions,
+      setOpen: actions.setHistoryPanelOpen,
+    },
   } as const;
 
   const { setConfig, setOpen } =
@@ -47,10 +52,14 @@ function createCustomPanelInstance(
 
   const customPanelInstance: CustomPanelInstance = {
     async open(
-      options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions,
+      options?:
+        | CustomPanelOpenOptions
+        | WorkspaceCustomPanelConfigOptions
+        | HistoryCustomPanelConfigOptions,
     ) {
-      const resolvedOptions = (options ??
-        defaultPanelOptions) as CustomPanelConfigOptions;
+      const resolvedOptions = (options ?? defaultPanelOptions) as
+        | CustomPanelConfigOptions
+        | HistoryCustomPanelConfigOptions;
       const { store, eventBus, instance } = serviceManager;
 
       // For workspace panels, close any existing workspace before opening a new one

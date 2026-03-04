@@ -64,11 +64,17 @@ export enum PanelType {
    * @experimental
    */
   WORKSPACE = "workspace",
+
+  /**
+   * Opens the history panel.
+   */
+  HISTORY = "history",
 }
 
 export type PanelConfigOptionsByType = {
   [PanelType.DEFAULT]: DefaultCustomPanelConfigOptions;
   [PanelType.WORKSPACE]: WorkspaceCustomPanelConfigOptions;
+  [PanelType.HISTORY]: HistoryCustomPanelConfigOptions;
 };
 
 /**
@@ -273,3 +279,45 @@ export type CustomPanelOpenOptions =
   | CustomPanelConfigOptions
   | DefaultCustomPanelConfigOptions
   | WorkspaceCustomPanelConfigOptions;
+
+/**
+ * Options for configuring the history panel appearance and behavior.
+ *
+ * @category Instance
+ */
+export interface HistoryCustomPanelConfigOptions {
+  /**
+   * By default, the panel will render at the width of the messages list. If you want to be able to render to a full screen
+   * width slot, set fullWidth to true.
+   */
+  fullWidth?: boolean;
+
+  /**
+   * Indicates if the back button in the history panel should be hidden.
+   */
+  hideBackButton?: boolean;
+
+  /**
+   * Determines if the panel open/close animation should be turned off.
+   */
+  disableAnimation?: boolean;
+}
+
+/**
+ * The history panel instance for controlling and manipulating the history panel in Carbon AI Chat.
+ *
+ * @category Instance
+ */
+export interface HistoryPanelInstance {
+  /**
+   * Opens the history panel.
+   *
+   * @param options History panel options.
+   */
+  open: (options?: HistoryCustomPanelConfigOptions) => Promise<void>;
+
+  /**
+   * Closes the history panel.
+   */
+  close: () => Promise<void>;
+}
