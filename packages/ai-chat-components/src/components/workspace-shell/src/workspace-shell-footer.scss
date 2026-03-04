@@ -33,7 +33,7 @@ $css--plex: true !default;
   grid-template-columns: 50% 25% 25%;
   @include breakpoint-down("md") {
     grid-auto-flow: row;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -42,6 +42,6 @@ $css--plex: true !default;
   grid-template-columns: repeat(auto-fit, minmax(80px, auto));
   @include breakpoint-down("md") {
     grid-auto-flow: row;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 }

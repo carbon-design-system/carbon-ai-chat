@@ -9,7 +9,6 @@
 
 import { LitElement, html, nothing } from "lit";
 import { property, state, query } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
 import { repeat } from "lit/directives/repeat.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/overflow-menu/index.js";
@@ -21,6 +20,9 @@ import prefix from "../../../globals/settings.js";
 import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
+import "../../truncated-text/index.js";
+
+const blockClass = `${prefix}-toolbar`;
 
 export interface Action {
   text: string;
@@ -40,7 +42,7 @@ export interface Action {
  * @slot toolbar-ai-label - Defines the area for displaying the AI label in the toolbar.
  *
  */
-@carbonElement(`${prefix}-toolbar`)
+@carbonElement(blockClass)
 class CDSAIChatToolbar extends LitElement {
   /** Hidden actions rendered in the overflow menu.
    *  @internal
@@ -55,10 +57,13 @@ class CDSAIChatToolbar extends LitElement {
   @property({ type: Boolean, attribute: "overflow", reflect: true })
   overflow = false;
 
+  @property({ type: String })
+  titleText?: string;
+
   /** Container holding all action buttons and the overflow menu.
    *  @internal
    */
-  @query(`.${prefix}-toolbar`) private container!: HTMLElement;
+  @query(`.${blockClass}__right`) private container!: HTMLElement;
 
   @state() private measuring = true;
 
@@ -182,63 +187,74 @@ class CDSAIChatToolbar extends LitElement {
     const showOverflowMenu = this.measuring || this.hiddenItems.length > 0;
 
     return html`
-      <div
-        data-rounded="top"
-        class=${classMap({ [`${prefix}-toolbar`]: true })}
-      >
-        <div data-fixed class="cds-aichat-toolbar__navigation">
-          <slot name="navigation"></slot>
+      <div data-rounded="top" class=${blockClass}>
+        <div data-fixed class="${blockClass}__left">
+          <div data-fixed class="${blockClass}__navigation">
+            <slot name="navigation"></slot>
+          </div>
+
+          <div data-fixed class="${blockClass}__title">
+            <slot name="title">
+              <cds-aichat-truncated-text
+                value=${this.titleText}
+                lines="1"
+                type="tooltip"
+              ></cds-aichat-truncated-text>
+            </slot>
+          </div>
         </div>
 
-        <div data-fixed class="cds-aichat-toolbar__title">
-          <slot name="title"></slot>
-        </div>
+        <div data-fixed class="${blockClass}__right">
+          <div data-fixed class="${blockClass}__fixed-actions">
+            <slot name="fixed-actions"></slot>
+          </div>
 
-        <div data-fixed class="cds-aichat-toolbar__fixed-actions">
-          <slot name="fixed-actions"></slot>
-        </div>
+          <div data-fixed><slot name="decorator"></slot></div>
 
-        <div data-fixed><slot name="decorator"></slot></div>
-
-        ${repeat(
-          nonFixedActions,
-          (action) => action.text,
-          this.renderIconButton,
-        )}
-        ${showOverflowMenu
-          ? html`
-              <cds-overflow-menu
-                size=${this.getOverflowMenuSize()}
-                align="bottom-end"
-                data-offset
-                ?data-hidden=${this.hiddenItems.length === 0}
-                kind="ghost"
-                close-on-activation
-                enter-delay-ms="0"
-                leave-delay-ms="0"
-              >
-                ${iconLoader(OverflowMenuVertical16, {
-                  class: `${prefix}-toolbar-overflow-icon`,
-                  slot: "icon",
-                })}
-                <span slot="tooltip-content"
-                  >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+          ${repeat(
+            nonFixedActions,
+            (action) => action.text,
+            this.renderIconButton,
+          )}
+          ${showOverflowMenu
+            ? html`
+                <cds-overflow-menu
+                  size=${this.getOverflowMenuSize()}
+                  align="bottom-end"
+                  data-offset
+                  ?data-hidden=${this.hiddenItems.length === 0}
+                  kind="ghost"
+                  close-on-activation
+                  enter-delay-ms="0"
+                  leave-delay-ms="0"
                 >
-                <cds-overflow-menu-body flipped>
-                  ${repeat(
-                    this.hiddenItems,
-                    (item) => item.text,
-                    (item) => html`
-                      <cds-overflow-menu-item @click=${item.onClick}>
-                        ${item.text}
-                      </cds-overflow-menu-item>
-                    `,
-                  )}
-                </cds-overflow-menu-body>
-              </cds-overflow-menu>
-            `
-          : nothing}
-        ${repeat(fixedActions, (action) => action.text, this.renderIconButton)}
+                  ${iconLoader(OverflowMenuVertical16, {
+                    class: `${blockClass}-overflow-icon`,
+                    slot: "icon",
+                  })}
+                  <span slot="tooltip-content"
+                    >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+                  >
+                  <cds-overflow-menu-body flipped>
+                    ${repeat(
+                      this.hiddenItems,
+                      (item) => item.text,
+                      (item) => html`
+                        <cds-overflow-menu-item @click=${item.onClick}>
+                          ${item.text}
+                        </cds-overflow-menu-item>
+                      `,
+                    )}
+                  </cds-overflow-menu-body>
+                </cds-overflow-menu>
+              `
+            : nothing}
+          ${repeat(
+            fixedActions,
+            (action) => action.text,
+            this.renderIconButton,
+          )}
+        </div>
       </div>
     `;
   }
