@@ -411,9 +411,22 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           this.executePinAndScroll(this.pinnedMessageComponent, scrollElement);
         } else {
           // Preserve the user's pre-commit position when they are away from pin.
+          // Zero the spacer directly instead of calling executeRecalculateSpacer.
+          // executeRecalculateSpacer can compute a positive deficit and set
+          // maxScrollTop = pinnedScrollTop, clamping the user back to the pin.
+          // On Safari, scroll anchoring during the final commit can leave
+          // scrollElement.scrollTop near pinnedScrollTop even when the user had
+          // scrolled away, making the deficit > 0 path trigger unexpectedly.
+          // Zeroing the spacer directly ensures maxScrollTop is never capped at
+          // pinnedScrollTop and we always restore the user's intended position.
           const savedScrollTop = scrollTopForDecision;
-          this.executeRecalculateSpacer(scrollElement);
-          if (scrollElement.scrollTop !== savedScrollTop) {
+          const spacerElem = this.bottomSpacerRef.current;
+          if (spacerElem) {
+            spacerElem.style.minBlockSize = "0px";
+          }
+          this.currentSpacerHeight = 0;
+          this.domSpacerHeight = 0;
+          if (scrollElement.scrollTop < savedScrollTop) {
             scrollElement.scrollTop = savedScrollTop;
           }
         }
@@ -615,14 +628,34 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       case "scroll_to_top":
         doScrollElement(scrollElement, action.scrollTop, 0);
         return;
-      case "scroll_to_bottom":
+      case "scroll_to_bottom": {
+        // During streaming `scrollHeight` includes the blank spacer, so
+        // `scrollHeight - offsetHeight` points into blank spacer territory.
+        // Subtract domSpacerHeight to land at the bottom of real content.
+        // After the instant scroll, subsequent executeRecalculateSpacer calls
+        // zero the spacer without clamping the user (their scrollTop is
+        // already at content-bottom, so the new maxScrollTop stays >= scrollTop).
+        //
+        // Cancel any pending spacer sync before scrolling. If a trailing
+        // throttle fires while scrollTop is still near the pinned position,
+        // Safari's anchoring response + restore assignment would cancel the
+        // scroll. Skip animation during streaming so scrollTop jumps
+        // immediately past the near-pin threshold, making future throttle
+        // calls return `isNearPin = false` and skip the sync entirely.
+        // Smooth animation is preserved post-streaming.
+        const isStreaming = hasActiveStreaming(this.props.localMessageItems);
+        this.syncStreamingSpacerToDomThrottled.cancel();
+        const scrollTop = isStreaming
+          ? Math.max(0, action.scrollTop - this.domSpacerHeight)
+          : action.scrollTop;
         doScrollElement(
           scrollElement,
-          action.scrollTop,
+          scrollTop,
           0,
-          action.preferAnimate,
+          action.preferAnimate && !isStreaming,
         );
         return;
+      }
       case "reset_to_top":
         // No messages — scroll to top so the browser doesn't restore a stale position.
         scrollElement.scrollTop = 0;

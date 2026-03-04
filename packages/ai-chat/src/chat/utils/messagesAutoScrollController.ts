@@ -675,40 +675,34 @@ export function createMessageResizeObserver(
           return;
         }
 
-        // Process each entry to update sizes and manage settle timers
+        // Process each entry: check for significant change before updating the stored size,
+        // then reset the settle timer.
+        let hasSignificantChange = false;
         entries.forEach((entry) => {
           const { blockSize } = entry.borderBoxSize[0];
+          const prevSize = messageSizes.get(entry.target);
+
+          // prevSize is null on the very first observation — treat as baseline, not a change.
+          if (
+            prevSize != null &&
+            Math.abs(blockSize - prevSize) > significantChangeThreshold
+          ) {
+            hasSignificantChange = true;
+          }
+
           messageSizes.set(entry.target, blockSize);
 
-          // Clear existing settle timer for this message
+          // Reset settle timer — stop observing after settleTimeout of no changes.
           const existingTimer = settleTimers.get(entry.target);
           if (existingTimer) {
             clearTimeout(existingTimer);
           }
-
-          // Set new settle timer - stop observing after settleTimeout of no changes
           const timer = setTimeout(() => {
-            // Message hasn't resized in settleTimeout ms, stop observing
             observer.unobserve(entry.target);
             settleTimers.delete(entry.target);
             messageSizes.delete(entry.target);
           }, settleTimeout);
-
           settleTimers.set(entry.target, timer);
-        });
-
-        // Check for significant size changes
-        const hasSignificantChange = entries.some((entry) => {
-          const { blockSize } = entry.borderBoxSize[0];
-          const prevSize = messageSizes.get(entry.target);
-
-          // Skip if this is the first measurement (no previous size)
-          if (prevSize == null) {
-            return false;
-          }
-
-          // Consider significant if > threshold change
-          return Math.abs(blockSize - prevSize) > significantChangeThreshold;
         });
 
         if (hasSignificantChange) {

@@ -274,7 +274,9 @@ function MediaPlayerComponent({
 
   return (
     <>
-      {!skeletonHidden && renderMediaPlayerSkeleton()}
+      <div className={cx({ "cds-aichat--hidden": skeletonHidden })}>
+        {renderMediaPlayerSkeleton()}
+      </div>
       <div className="cds-aichat--media-player__root" ref={rootElementRef}>
         {errorLoading && <InlineError text={errorMessage} />}
         {!errorLoading && (
