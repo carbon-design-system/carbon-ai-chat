@@ -36,6 +36,7 @@ import {
   doTextChainOfThought,
   doTextChainOfThoughtStreaming,
   doTextStreaming,
+  doTextStreamingEarlyResolve,
   doTextStreamingWithNonWatsonAssistantProfile,
   doTextWithCustomFooter,
   doTextWithFeedback,
@@ -102,6 +103,8 @@ const RESPONSE_MAP: Record<
       undefined,
       requestOptions,
     ),
+  "text (stream early resolve)": (instance, requestOptions) =>
+    doTextStreamingEarlyResolve(instance, requestOptions),
   "text with feedback": (instance) => doTextWithFeedback(instance),
   "text with feedback (stream)": (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),

@@ -178,11 +178,23 @@ export const Default = {
     aiEnabled: { control: "boolean" },
     animationOnOpen: {
       control: { type: "select" },
-      options: ["", "slide-in-from-bottom", "slide-in-from-right", "fade-in"],
+      options: [
+        "",
+        "slide-in-from-bottom",
+        "slide-in-from-right",
+        "slide-in-from-left",
+        "fade-in",
+      ],
     },
     animationOnClose: {
       control: { type: "select" },
-      options: ["", "slide-out-to-bottom", "slide-out-to-right", "fade-out"],
+      options: [
+        "",
+        "slide-out-to-bottom",
+        "slide-out-to-right",
+        "slide-out-to-left",
+        "fade-out",
+      ],
     },
   },
   render: (args) => {
@@ -257,5 +269,3 @@ export const Embedded = {
     `;
   },
 };
-
-// Made with Bob

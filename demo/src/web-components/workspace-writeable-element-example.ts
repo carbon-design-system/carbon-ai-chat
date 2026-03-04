@@ -138,8 +138,8 @@ class WorkspaceWriteableElementExample extends LitElement {
         slot="toolbar"
         overflow
         .actions=${this.toolbarActions}
+        titleText="Optimizing excess inventory"
       >
-        <div slot="title">Optimizing excess inventory</div>
         <cds-ai-label autoalign="" slot="decorator" size="2xs">
           <div slot="body-text">
             <p class="secondary">

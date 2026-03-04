@@ -35,11 +35,10 @@ $css--plex: true !default;
 :host(#{$prefix}-workspace-shell) {
   @include type.type-style("body-01");
 
-  display: flex;
-  overflow: hidden;
+  display: grid;
+  overflow: auto;
   /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
-  flex-direction: column;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
   background-color: var(--cds-chat-shell-background);
@@ -48,6 +47,7 @@ $css--plex: true !default;
     -10px 0 100px -24px theme.$ai-popover-shadow-outer-01,
     0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
   color: theme.$text-secondary;
+  grid-template-rows: auto auto auto 1fr auto;
   inline-size: 100%;
 
   // Allow toolbar slot to shrink within the flex column so overflow handling works.
@@ -61,8 +61,12 @@ $css--plex: true !default;
     max-inline-size: 100% !important;
   }
 }
+
+:host(#{$prefix}-workspace-shell[header-open]) {
+  grid-template-rows: auto auto 1fr 1fr auto;
+}
+
 ::slotted(#{$prefix}-toolbar) {
-  display: grid;
   box-sizing: border-box;
   border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
   inline-size: 100%;

@@ -106,6 +106,54 @@ describe("streamingUtils", () => {
         resetStopStreamingButton(store as any);
         expect(store.dispatch).not.toHaveBeenCalled();
       });
+
+      describe("with streamingMessageID parameter", () => {
+        it("keeps button visible when streaming is active (edge case fix)", () => {
+          const store = createStore(true);
+
+          // Simulate: customSendMessage resolved but streaming still active
+          resetStopStreamingButton(store as any, "active-stream-123");
+
+          // Button should STAY visible
+          expect(store.dispatch).not.toHaveBeenCalled();
+        });
+
+        it("hides button when no streaming active (streamingMessageID is null)", () => {
+          const store = createStore(true);
+
+          // Simulate: no active streaming
+          resetStopStreamingButton(store as any, null);
+
+          // Button should be hidden
+          expect(store.dispatch).toHaveBeenCalledTimes(2);
+        });
+
+        it("hides button when streamingMessageID is undefined", () => {
+          const store = createStore(true);
+
+          resetStopStreamingButton(store as any, undefined);
+
+          // Button should be hidden
+          expect(store.dispatch).toHaveBeenCalledTimes(2);
+        });
+
+        it("maintains backward compatibility (no parameter)", () => {
+          const store = createStore(true);
+
+          // Old behavior: always hide when called
+          resetStopStreamingButton(store as any);
+
+          expect(store.dispatch).toHaveBeenCalledTimes(2);
+        });
+
+        it("does nothing when button not visible, regardless of streamingMessageID", () => {
+          const store = createStore(false);
+
+          resetStopStreamingButton(store as any, "active-stream");
+
+          expect(store.dispatch).not.toHaveBeenCalled();
+        });
+      });
     });
   });
 

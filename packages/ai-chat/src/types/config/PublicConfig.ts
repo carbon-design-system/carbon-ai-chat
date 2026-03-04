@@ -413,7 +413,8 @@ export interface PublicConfigMessaging {
    * When `true`, the stop button appears immediately when `customSendMessage` is called,
    * allowing users to cancel requests before the first streaming chunk arrives. This is
    * useful for slow-starting requests or when you want to give users immediate control
-   * over long-running operations.
+   * over long-running operations. The button will remain visible as long as there is an
+   * active streaming message, even if the initial message promise resolves.
    *
    * When `false` (default), the stop button only appears after the first streaming chunk
    * arrives with `cancellable: true` metadata, maintaining backward compatibility with
