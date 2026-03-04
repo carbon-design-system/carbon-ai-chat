@@ -9,6 +9,7 @@
 
 import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
+import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
 
 import {
   BusEvent,
@@ -36,6 +37,7 @@ import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
 import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
 import { CustomFooterExample } from "./CustomFooterExample";
+import { HistoryWriteableElementExample } from "./HistoryWriteableElementExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -60,11 +62,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
   const isSidebarLayout = settings.layout === "sidebar";
+  const isFloatMode = settings.layout === "float";
 
   useEffect(() => {
     setInterval(() => setStateText(Date.now().toString()), 2000);
   }, []);
-
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
    * depending on which component should be rendered.
@@ -202,8 +204,17 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      historyPanelElement: (
+        <HistoryWriteableElementExample
+          location="historyPanelElement"
+          instance={instance as ChatInstance}
+          parentStateText={stateText}
+          isFloatMode={isFloatMode}
+        />
+      ),
     }),
-    [stateText, instance],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [instance, isFloatMode],
   );
 
   /**
@@ -236,6 +247,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     return {
       ...elements,
       workspacePanelElement: allWriteableElements.workspacePanelElement,
+      historyPanelElement: allWriteableElements.historyPanelElement,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
 
@@ -349,9 +361,39 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
+  // Add header menu options for float mode
+  const floatModeConfig = isFloatMode
+    ? {
+        ...config,
+        header: {
+          ...config.header,
+          menuOptions: [
+            {
+              text: "New chat",
+              handler: () => {
+                console.log("New chat clicked");
+                instance?.messaging?.restartConversation?.();
+              },
+            },
+            {
+              text: "View chats",
+              handler: () => {
+                console.log("View chats clicked - opening history panel");
+                // Open the history panel using the dedicated history panel API
+                instance?.historyPanel?.open({
+                  fullWidth: true,
+                  hideBackButton: false,
+                });
+              },
+            },
+          ],
+        },
+      }
+    : config;
+
   return settings.layout === "float" ? (
     <ChatContainer
-      {...config}
+      {...floatModeConfig}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}

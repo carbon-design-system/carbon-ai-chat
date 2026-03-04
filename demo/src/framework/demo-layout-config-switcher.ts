@@ -125,6 +125,25 @@ export class DemoLayoutConfigSwitcher extends LitElement {
     });
   }
 
+  private _handleHistoryDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateLayout((layout) => {
+      const next = { ...(layout ?? {}) };
+
+      if (value === DROPDOWN_DEFAULT) {
+        delete next.showHistory;
+      } else if (value === DROPDOWN_TRUE) {
+        next.showHistory = true;
+      } else if (value === DROPDOWN_FALSE) {
+        next.showHistory = false;
+      }
+
+      return this._normalizeLayout(next);
+    });
+  }
+
   private _getBooleanDropdownValue(value: boolean | undefined) {
     if (value === undefined) {
       return DROPDOWN_DEFAULT;
@@ -186,6 +205,20 @@ export class DemoLayoutConfigSwitcher extends LitElement {
           <cds-dropdown-item value="${CornersType.SQUARE}"
             >Square</cds-dropdown-item
           >
+        </cds-dropdown>
+      </div>
+
+      <div class="layout-section">
+        <cds-dropdown
+          value="${this._getBooleanDropdownValue(layout?.showHistory)}"
+          title-text="Show history"
+          @cds-dropdown-selected=${this._handleHistoryDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
+            >Default</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
         </cds-dropdown>
       </div>
     `;
