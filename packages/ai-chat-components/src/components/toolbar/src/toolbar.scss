@@ -25,7 +25,6 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class} {
     display: flex;
-    align-items: flex-start;
     block-size: 100%;
     inline-size: 100%;
     max-inline-size: 100%;
@@ -63,6 +62,16 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class}__fixed-actions {
     margin-block: auto;
+  }
+
+  .#{$block-class}__left,
+  .#{$block-class}__right {
+    display: flex;
+    flex: 1;
+  }
+
+  .#{$block-class}__right {
+    justify-content: end;
   }
 
   ::slotted([slot="decorator"]) {
