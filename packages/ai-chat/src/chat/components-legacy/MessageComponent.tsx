@@ -1048,6 +1048,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       allowNewFeedback,
     } = this.props;
 
+    // Guard against undefined message during RESTART_CONVERSATION transitions
+    // When the store is cleared, React 17's use-sync-external-store shim may
+    // trigger a re-render before all components are updated, causing message to be undefined
+    if (!message) {
+      return null;
+    }
+
     const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
