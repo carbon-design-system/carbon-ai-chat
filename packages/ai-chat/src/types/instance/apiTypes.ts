@@ -86,7 +86,10 @@ export interface CustomPanels {
   /**
    * Gets a custom panel instance.
    */
-  getPanel: (panel?: PanelType) => CustomPanelInstance;
+  getPanel(panel: PanelType.HISTORY): HistoryPanelInstance;
+  getPanel(
+    panel?: PanelType.DEFAULT | PanelType.WORKSPACE,
+  ): CustomPanelInstance;
 }
 
 /**
@@ -278,7 +281,8 @@ export interface WorkspaceCustomPanelConfigOptions {
 export type CustomPanelOpenOptions =
   | CustomPanelConfigOptions
   | DefaultCustomPanelConfigOptions
-  | WorkspaceCustomPanelConfigOptions;
+  | WorkspaceCustomPanelConfigOptions
+  | HistoryCustomPanelConfigOptions;
 
 /**
  * Options for configuring the history panel appearance and behavior.
@@ -287,20 +291,10 @@ export type CustomPanelOpenOptions =
  */
 export interface HistoryCustomPanelConfigOptions {
   /**
-   * By default, the panel will render at the width of the messages list. If you want to be able to render to a full screen
-   * width slot, set fullWidth to true.
+   * Determines if the history panel should be rendered in mobile mode (as a ChatPanel overlay).
+   * This is useful for float layouts where the panel should cover the entire chat area.
    */
-  fullWidth?: boolean;
-
-  /**
-   * Indicates if the back button in the history panel should be hidden.
-   */
-  hideBackButton?: boolean;
-
-  /**
-   * Determines if the panel open/close animation should be turned off.
-   */
-  disableAnimation?: boolean;
+  isMobile?: boolean;
 }
 
 /**
@@ -320,4 +314,12 @@ export interface HistoryPanelInstance {
    * Closes the history panel.
    */
   close: () => Promise<void>;
+
+  /**
+   * Sets options for the history panel without opening it.
+   * Useful for configuring the panel state before it's opened.
+   *
+   * @param options History panel options to set.
+   */
+  setOptions: (options: Partial<HistoryCustomPanelConfigOptions>) => void;
 }

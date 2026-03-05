@@ -347,8 +347,7 @@ class ChatActionsImpl {
       },
       history: {
         isOpen: Boolean(state.historyPanelState.isOpen),
-        hideBackButton: state.historyPanelState.options.hideBackButton,
-        fullWidth: state.historyPanelState.options.fullWidth,
+        isMobile: state.historyPanelState.options.isMobile,
       },
     });
 

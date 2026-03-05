@@ -28,7 +28,7 @@ interface HistoryExampleProps {
   location: string;
   instance: ChatInstance;
   parentStateText: string;
-  isFloatMode: boolean;
+  isMobile: boolean;
 }
 
 // Sample history data
@@ -98,14 +98,8 @@ function HistoryWriteableElementExample({
   location: _location,
   instance,
   parentStateText: _parentStateText,
-  isFloatMode,
+  isMobile,
 }: HistoryExampleProps) {
-  console.log("HistoryWriteableElementExample rendering", {
-    location: _location,
-    isFloatMode,
-    hasInstance: !!instance,
-  });
-
   const [selectedChatId, setSelectedChatId] = useState<string>("today-1");
   const [searchValue, setSearchValue] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -192,10 +186,10 @@ function HistoryWriteableElementExample({
   const handleHistoryClose = useCallback(() => {
     console.log("History close clicked");
     // In float mode, close the history panel
-    if (isFloatMode && instance?.customPanels) {
+    if (isMobile && instance?.customPanels) {
       instance.customPanels.getPanel(PanelType.HISTORY)?.close();
     }
-  }, [isFloatMode, instance]);
+  }, [isMobile, instance]);
 
   const historyItemActions = React.useMemo(
     () => [
@@ -223,7 +217,7 @@ function HistoryWriteableElementExample({
       <HistoryHeader
         title="Conversations"
         onHistoryHeaderCloseClick={handleHistoryClose}
-        showCloseAction={isFloatMode}
+        showCloseAction={isMobile}
       />
       <HistoryToolbar
         onChatHistoryNewChatClick={handleNewChat}

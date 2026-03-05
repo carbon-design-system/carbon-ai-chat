@@ -104,7 +104,6 @@ import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
-  DEFAULT_HISTORY_PANEL_STATE,
   DEFAULT_IFRAME_PANEL_STATE,
   handleViewStateChange,
   setHomeScreenOpenState,
@@ -955,7 +954,7 @@ const reducers: { [key: string]: ReducerType } = {
       return {
         ...state,
         historyPanelState: {
-          ...DEFAULT_HISTORY_PANEL_STATE,
+          ...state.historyPanelState,
           isOpen: false,
         },
       };

@@ -571,13 +571,10 @@ interface HistoryPanelState {
    */
   options: {
     /**
-     * Whether to hide the back button in the panel header.
+     * Determines if history panel renders in chat panel when in
+     * mobile breakpoint.
      */
-    hideBackButton?: boolean;
-    /**
-     * Whether the panel should take up the full width.
-     */
-    fullWidth?: boolean;
+    isMobile?: boolean;
   };
 }
 

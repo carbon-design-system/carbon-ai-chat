@@ -18,6 +18,7 @@ import {
   createCustomPanelInstance,
   CustomPanelInstance,
 } from "./CustomPanelInstance";
+import { createHistoryPanelInstance } from "./HistoryPanelInstance";
 import { ServiceManager } from "./ServiceManager";
 
 /**
@@ -28,7 +29,10 @@ import { ServiceManager } from "./ServiceManager";
 function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
   // A panels object holding all created panels. In the future if we ever support multiple panels, Deb would be able to
   // populate this object.
-  const panels: Record<string, CustomPanelInstance> = {
+  const panels: Record<
+    string,
+    CustomPanelInstance | ReturnType<typeof createHistoryPanelInstance>
+  > = {
     [DEFAULT_CUSTOM_PANEL_ID]: createCustomPanelInstance(
       PanelType.DEFAULT,
       serviceManger,
@@ -39,11 +43,7 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
       serviceManger,
       PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.WORKSPACE],
     ),
-    [HISTORY_PANEL_ID]: createCustomPanelInstance(
-      PanelType.HISTORY,
-      serviceManger,
-      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.HISTORY],
-    ),
+    [HISTORY_PANEL_ID]: createHistoryPanelInstance(serviceManger),
   };
 
   const panelByLocation: Record<PanelType, string> = {
@@ -56,7 +56,7 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
     getPanel(panelLocation: PanelType = PanelType.DEFAULT) {
       const targetPanelId =
         panelByLocation[panelLocation] ?? DEFAULT_CUSTOM_PANEL_ID;
-      return panels[targetPanelId];
+      return panels[targetPanelId] as any;
     },
   });
 }

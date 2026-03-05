@@ -28,7 +28,23 @@ function createHistoryPanelInstance(
 
       // If options are provided, update the panel options first
       if (options) {
-        store.dispatch(actions.setHistoryPanelOptions(options));
+        // Extract all valid options for the state
+        const stateOptions: Partial<HistoryCustomPanelConfigOptions> = {};
+
+        // Dynamically copy all defined properties from options
+        for (const key in options) {
+          if (
+            Object.prototype.hasOwnProperty.call(options, key) &&
+            options[key as keyof HistoryCustomPanelConfigOptions] !== undefined
+          ) {
+            stateOptions[key as keyof HistoryCustomPanelConfigOptions] =
+              options[key as keyof HistoryCustomPanelConfigOptions];
+          }
+        }
+
+        if (Object.keys(stateOptions).length > 0) {
+          store.dispatch(actions.setHistoryPanelOptions(stateOptions));
+        }
       }
 
       // Open the panel
@@ -38,6 +54,28 @@ function createHistoryPanelInstance(
     async close() {
       const { store } = serviceManager;
       store.dispatch(actions.setHistoryPanelOpen(false));
+    },
+
+    setOptions(options: Partial<HistoryCustomPanelConfigOptions>) {
+      const { store } = serviceManager;
+
+      // Extract all valid options for the state
+      const stateOptions: Partial<HistoryCustomPanelConfigOptions> = {};
+
+      // Dynamically copy all defined properties from options
+      for (const key in options) {
+        if (
+          Object.prototype.hasOwnProperty.call(options, key) &&
+          options[key as keyof HistoryCustomPanelConfigOptions] !== undefined
+        ) {
+          stateOptions[key as keyof HistoryCustomPanelConfigOptions] =
+            options[key as keyof HistoryCustomPanelConfigOptions];
+        }
+      }
+
+      if (Object.keys(stateOptions).length > 0) {
+        store.dispatch(actions.setHistoryPanelOptions(stateOptions));
+      }
     },
   };
 

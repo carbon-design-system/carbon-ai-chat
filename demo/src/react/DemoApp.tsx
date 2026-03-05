@@ -31,7 +31,13 @@ import {
   ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 
 import { Settings } from "../framework/types";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
@@ -54,8 +60,10 @@ interface AppProps {
 }
 
 function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
+  const [isHistoryPanelMobile, setIsHistoryPanelMobile] = useState(false);
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceAnimating, setWorkspaceAnimating] = useState<
     "expanding" | "contracting" | null
@@ -210,12 +218,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           location="historyPanelElement"
           instance={instance as ChatInstance}
           parentStateText={stateText}
-          isFloatMode={isFloatMode}
+          isMobile={isHistoryPanelMobile}
         />
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [instance, isFloatMode],
+    [instance, isHistoryPanelMobile],
   );
 
   /**
@@ -251,6 +259,56 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       historyPanelElement: allWriteableElements.historyPanelElement,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
+
+  /**
+   * If chat is in float mode, automatically set history panel isMobile to true so it
+   * renders in the chat panel.
+   *
+   * If chat is not in float mode, observe the container width and update the
+   * history panel's isMobile state accordingly.
+   */
+  useEffect(() => {
+    if (!instance) {
+      return;
+    }
+
+    const historyPanel = instance.customPanels?.getPanel(PanelType.HISTORY);
+    if (!historyPanel) {
+      return;
+    }
+
+    const applyMobileState = (isMobile: boolean) => {
+      setIsHistoryPanelMobile(isMobile);
+      historyPanel.setOptions({ isMobile });
+    };
+
+    if (isFloatMode) {
+      applyMobileState(true);
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    let currentIsMobile: boolean | null = null;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const shouldBeMobile = entry.contentRect.width <= 990;
+
+      if (currentIsMobile === shouldBeMobile) {
+        return;
+      }
+      currentIsMobile = shouldBeMobile;
+
+      applyMobileState(shouldBeMobile);
+    });
+
+    resizeObserver.observe(container);
+
+    return () => resizeObserver.disconnect();
+  }, [instance, isFloatMode]);
 
   const onBeforeRender = (instance: ChatInstance) => {
     setInstance(instance);
@@ -362,39 +420,37 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
-  // Add header menu options for float mode
-  const floatModeConfig = isFloatMode
-    ? {
-        ...config,
-        header: {
-          ...config.header,
-          menuOptions: [
-            {
-              text: "New chat",
-              handler: () => {
-                console.log("New chat clicked");
-                instance?.messaging?.restartConversation?.();
-              },
-            },
-            {
-              text: "View chats",
-              handler: () => {
-                console.log("View chats clicked - opening history panel");
-                // Open the history panel using the custom panels API
-                instance?.customPanels?.getPanel(PanelType.HISTORY)?.open({
-                  fullWidth: true,
-                  hideBackButton: false,
-                });
-              },
-            },
-          ],
+  // Add header menu options for chat history
+  const historyConfig = {
+    ...config,
+    header: {
+      ...config.header,
+      isOn: true,
+      menuOptions: [
+        {
+          text: "New chat",
+          handler: () => {
+            instance?.messaging?.restartConversation?.();
+          },
         },
-      }
-    : config;
+        {
+          text: "View chats",
+          handler: () => {
+            const historyPanel = instance?.customPanels?.getPanel(
+              PanelType.HISTORY,
+            );
+            if (historyPanel) {
+              historyPanel.open();
+            }
+          },
+        },
+      ],
+    },
+  };
 
   return settings.layout === "float" ? (
     <ChatContainer
-      {...floatModeConfig}
+      {...(config?.layout?.showHistory ? historyConfig : config)}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -402,9 +458,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
-    <div onTransitionEnd={handleTransitionEnd}>
+    <div ref={containerRef} onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
-        {...config}
+        {...(config?.layout?.showHistory && isHistoryPanelMobile
+          ? historyConfig
+          : config)}
         className={className as string}
         onViewPreChange={onViewPreChange}
         onViewChange={onViewChange}

@@ -94,9 +94,7 @@ const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
 deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
 
 const HISTORY_PANEL_CONFIG_OPTIONS: HistoryCustomPanelConfigOptions = {
-  fullWidth: false,
-  hideBackButton: false,
-  disableAnimation: false,
+  isMobile: true,
 };
 deepFreeze(HISTORY_PANEL_CONFIG_OPTIONS);
 
@@ -128,8 +126,7 @@ deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
 const DEFAULT_HISTORY_PANEL_STATE: HistoryPanelState = {
   isOpen: false,
   options: {
-    hideBackButton: false,
-    fullWidth: true,
+    isMobile: true,
   },
 };
 deepFreeze(DEFAULT_HISTORY_PANEL_STATE);
