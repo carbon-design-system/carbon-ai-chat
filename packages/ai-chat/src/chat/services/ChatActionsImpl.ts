@@ -33,6 +33,7 @@ import {
   AppState,
   AppStateMessages,
   InputState,
+  PendingUploadStatus,
   ViewState,
   ViewType,
 } from "../../types/state/AppState";
@@ -83,6 +84,7 @@ import {
   PartialOrCompleteItemChunk,
   PauseItem,
   StreamChunk,
+  StructuredData,
 } from "../../types/messaging/Messages";
 import {
   FinalResponseChunk,
@@ -155,6 +157,14 @@ class ChatActionsImpl {
    * messages that were started before a restart.
    */
   private messageGenerations = new Map<string, number>();
+
+  /**
+   * Maps pending upload IDs to their AbortControllers so that in-progress uploads can be cancelled
+   * when the user removes an attachment before the upload completes.
+   *
+   * AbortControllers are not serializable and therefore cannot be stored in Redux.
+   */
+  private uploadAbortControllers = new Map<string, AbortController>();
 
   /**
    * Queue of received chunks.
@@ -330,6 +340,12 @@ class ChatActionsImpl {
     const inputState = selectInputState(state);
     const input = deepFreeze({
       rawValue: inputState.rawValue ?? "",
+      structuredData: inputState.pendingStructuredData
+        ? cloneDeep(inputState.pendingStructuredData)
+        : undefined,
+      hasInFlightUploads: inputState.pendingUploads.some(
+        (u) => u.status === PendingUploadStatus.UPLOADING,
+      ),
     });
 
     const customPanels = deepFreeze({
@@ -371,6 +387,136 @@ class ChatActionsImpl {
 
   updateRawInputValue(updater: (previous: string) => string) {
     this.updateInputValue("rawValue", updater);
+  }
+
+  /**
+   * Updates the pending structured data in the input state. The updater function receives the current
+   * manual structured data (or undefined if none is set) and should return the new value.
+   * Return undefined to clear the manual structured data.
+   *
+   * @experimental
+   */
+  updateStructuredData(
+    updater: (
+      previous: StructuredData | undefined,
+    ) => StructuredData | undefined,
+  ) {
+    if (typeof updater !== "function") {
+      consoleError("Structured data updater must be a function");
+      return;
+    }
+
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const inputState = selectInputState(state);
+    // Read from manualStructuredData so the updater sees only the host-page-set portion,
+    // not the merged result that includes upload contributions.
+    const previousValue = inputState.manualStructuredData;
+
+    let nextValue: StructuredData | undefined;
+    try {
+      nextValue = updater(previousValue);
+    } catch (error) {
+      consoleError(
+        "An error occurred while updating the structured data",
+        error,
+      );
+      return;
+    }
+
+    store.dispatch(
+      actions.updateStructuredData(nextValue, selectIsInputToHumanAgent(state)),
+    );
+  }
+
+  /**
+   * Removes a pending upload from the input state by its ID.
+   * If the upload is still in progress, its AbortController is signalled.
+   *
+   * @experimental
+   */
+  removePendingUpload(uploadId: string) {
+    // Abort the upload if it is still in progress.
+    const controller = this.uploadAbortControllers.get(uploadId);
+    if (controller) {
+      controller.abort();
+      this.uploadAbortControllers.delete(uploadId);
+    }
+
+    const { store } = this.serviceManager;
+    store.dispatch(
+      actions.removePendingUpload(
+        uploadId,
+        selectIsInputToHumanAgent(store.getState()),
+      ),
+    );
+  }
+
+  /**
+   * Handles a file selected by the user in the assistant (non-human-agent) upload UI.
+   *
+   * Orchestrates the full upload lifecycle:
+   * 1. Generates a stable upload ID and creates an AbortController.
+   * 2. Dispatches ADD_PENDING_UPLOAD with status "uploading" so the UI shows a spinner.
+   * 3. Calls `UploadConfig.onFileUpload` with the File and the AbortSignal.
+   * 4. On success: dispatches UPDATE_PENDING_UPLOAD with status "complete" + contributedData.
+   * 5. On failure: dispatches UPDATE_PENDING_UPLOAD with status "error" + errorMessage.
+   * 6. If the upload was aborted (user removed the file mid-upload): silently returns.
+   *
+   * @experimental
+   */
+  async handleFileSelectedForUpload(file: File): Promise<void> {
+    const { store } = this.serviceManager;
+    const uploadConfig = store.getState().config.public.upload;
+
+    // Silently no-op if upload is not configured or disabled.
+    if (!uploadConfig?.is_on || !uploadConfig.onFileUpload) {
+      return;
+    }
+
+    const uploadId = uuid(UUIDType.FILE);
+    const controller = new AbortController();
+    this.uploadAbortControllers.set(uploadId, controller);
+
+    store.dispatch(
+      actions.addPendingUpload(
+        { id: uploadId, file, status: PendingUploadStatus.UPLOADING },
+        selectIsInputToHumanAgent(store.getState()),
+      ),
+    );
+
+    try {
+      const contributedData = await uploadConfig.onFileUpload(
+        file,
+        controller.signal,
+      );
+      // Only update if the upload was not aborted while awaiting.
+      if (!controller.signal.aborted) {
+        store.dispatch(
+          actions.updatePendingUpload(
+            uploadId,
+            { status: PendingUploadStatus.COMPLETE, contributedData },
+            selectIsInputToHumanAgent(store.getState()),
+          ),
+        );
+      }
+    } catch (error) {
+      // If the upload was aborted (user removed the file), ignore the error silently.
+      if (controller.signal.aborted) {
+        return;
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      store.dispatch(
+        actions.updatePendingUpload(
+          uploadId,
+          { status: PendingUploadStatus.ERROR, errorMessage },
+          selectIsInputToHumanAgent(store.getState()),
+        ),
+      );
+    } finally {
+      this.uploadAbortControllers.delete(uploadId);
+    }
   }
 
   private updateInputValue(
@@ -509,6 +655,33 @@ class ChatActionsImpl {
 
     // Clear any currently active response while awaiting the next one.
     store.dispatch(actions.setActiveResponseId(null));
+
+    // Block send while any file upload is still in progress.
+    const inputState = selectInputState(store.getState());
+    if (
+      inputState.pendingUploads.some(
+        (u) => u.status === PendingUploadStatus.UPLOADING,
+      )
+    ) {
+      consoleWarn(
+        "Cannot send message while file uploads are in progress. Wait for all uploads to complete or remove them.",
+      );
+      return;
+    }
+
+    // Merge pending structured data from InputState into the message if the message doesn't already
+    // have structured_data set. This handles UI-originated sends (text input + Enter/Send button).
+    // Messages sent via instance.send() with explicit structured_data are never overwritten.
+    if (inputState.pendingStructuredData && !message.input.structured_data) {
+      message.input.structured_data = cloneDeep(
+        inputState.pendingStructuredData,
+      );
+    }
+
+    // Clear the pending structured data now that it has been captured into the outgoing message.
+    store.dispatch(
+      actions.clearStructuredData(selectIsInputToHumanAgent(store.getState())),
+    );
 
     // Grab the original text before it can be modified by a pre:send handler.
     const originalUserText = message.history?.label || message.input.text;

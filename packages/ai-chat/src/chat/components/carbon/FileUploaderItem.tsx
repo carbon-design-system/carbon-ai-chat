@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
+import { createComponent, type EventName } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
@@ -17,15 +17,38 @@ import {
 } from "@carbon/web-components/es/components/file-uploader/defs.js";
 import CarbonFileUploaderItemElement from "@carbon/web-components/es/components/file-uploader/file-uploader-item.js";
 
-const FileUploaderItem = createComponent({
+type FileUploaderItemBeingDeletedEvent = CustomEvent<void>;
+type FileUploaderItemDeletedEvent = CustomEvent<void>;
+
+type FileUploaderItemEvents = {
+  onBeingDeleted: EventName<FileUploaderItemBeingDeletedEvent>;
+  onDelete: EventName<FileUploaderItemDeletedEvent>;
+};
+
+const FILE_UPLOADER_ITEM_EVENTS: FileUploaderItemEvents = {
+  onBeingDeleted:
+    CarbonFileUploaderItemElement.eventBeforeDelete as EventName<FileUploaderItemBeingDeletedEvent>,
+  onDelete:
+    CarbonFileUploaderItemElement.eventDelete as EventName<FileUploaderItemDeletedEvent>,
+};
+
+const FileUploaderItem = createComponent<
+  CarbonFileUploaderItemElement,
+  FileUploaderItemEvents
+>({
   tagName: "cds-file-uploader-item",
   elementClass: CarbonFileUploaderItemElement,
   react: React,
-  events: {
-    onBeingDeleted: "cds-file-uploader-item-beingdeleted",
-    onDelete: "cds-file-uploader-item-deleted",
-  },
+  events: FILE_UPLOADER_ITEM_EVENTS,
 });
+
+type FileUploaderItemProps = React.ComponentProps<typeof FileUploaderItem>;
 
 export default FileUploaderItem;
 export { FILE_UPLOADER_ITEM_SIZE, FILE_UPLOADER_ITEM_STATE };
+export type {
+  FileUploaderItemProps,
+  FileUploaderItemEvents,
+  FileUploaderItemBeingDeletedEvent,
+  FileUploaderItemDeletedEvent,
+};

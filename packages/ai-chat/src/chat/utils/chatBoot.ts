@@ -18,6 +18,7 @@ import { ServiceManager } from "../services/ServiceManager";
 import { createChatInstance } from "../instance/ChatInstanceImpl";
 import { createAppConfig } from "../store/doCreateStore";
 import { setIntl } from "./intlUtils";
+import { consoleError } from "./miscUtils";
 import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
 
 import {
@@ -105,6 +106,16 @@ export async function initServiceManagerAndInstance(options: {
 
   // Tell dayjs to globally use the locale
   dayjs.locale(localePack);
+
+  // Validate UploadConfig at startup so misconfiguration is surfaced early,
+  // regardless of whether the main window is open.
+  const uploadConfig = serviceManager.store.getState().config.public.upload;
+  if (uploadConfig?.is_on && !uploadConfig.onFileUpload) {
+    consoleError(
+      "[upload] UploadConfig.is_on is true but onFileUpload is not provided. " +
+        "File upload will be disabled. Please provide an onFileUpload handler in config.upload.",
+    );
+  }
 
   // Create the chat instance
   const instance = createChatInstance({ serviceManager });

@@ -14,6 +14,7 @@ import {
 } from "@carbon/ai-chat";
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
+import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
 import { KeyPairs, Settings } from "./types";
 
 function updateQueryParams(items: KeyPairs[]) {
@@ -98,6 +99,22 @@ function getSettings() {
     // Expose service manager for testing/demo purposes
     exposeServiceManagerForTesting: true,
   };
+
+  // Re-inject non-serializable upload handler when hydrating from URL.
+  // Functions are stripped during JSON serialization, so if upload.is_on is true
+  // but onFileUpload is missing (e.g. after a page refresh), restore the mock handler.
+  if (
+    defaultConfig.upload?.is_on === true &&
+    !defaultConfig.upload.onFileUpload
+  ) {
+    defaultConfig = {
+      ...defaultConfig,
+      upload: {
+        ...defaultConfig.upload,
+        onFileUpload: mockOnFileUpload,
+      },
+    };
+  }
 
   const defaultSettings: Settings = {
     framework: "react",

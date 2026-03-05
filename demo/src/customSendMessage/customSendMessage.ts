@@ -14,6 +14,7 @@ import {
 } from "@carbon/ai-chat";
 
 import { doWelcomeText } from "./doText";
+import { doFileUploadResponse } from "./doFileUpload";
 import { RESPONSE_MAP } from "./responseMap";
 
 async function customSendMessage(
@@ -22,6 +23,15 @@ async function customSendMessage(
   instance: ChatInstance,
 ) {
   if (request.input.message_type !== "event") {
+    // If the message contains file attachments, echo back the file metadata
+    // in addition to the normal text response.
+    const fileFields = request.input.structured_data?.fields?.filter(
+      (f) => f.type === "file",
+    );
+    if (fileFields && fileFields.length > 0) {
+      doFileUploadResponse(request, instance);
+    }
+
     if (request.input.text && request.input.text in RESPONSE_MAP) {
       const handler = RESPONSE_MAP[request.input.text];
       await handler(instance, requestOptions);
