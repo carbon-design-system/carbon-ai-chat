@@ -63,7 +63,9 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
-  const [isHistoryPanelMobile, setIsHistoryPanelMobile] = useState(false);
+  const [isHistoryPanelMobile, setIsHistoryPanelMobile] = useState(
+    config.history?.isMobile ?? false,
+  );
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceAnimating, setWorkspaceAnimating] = useState<
     "expanding" | "contracting" | null
@@ -265,25 +267,15 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
    * renders in the chat panel.
    *
    * If chat is not in float mode, observe the container width and update the
-   * history panel's isMobile state accordingly.
+   * history panel's isMobile config state accordingly.
    */
   useEffect(() => {
     if (!instance) {
       return;
     }
 
-    const historyPanel = instance.customPanels?.getPanel(PanelType.HISTORY);
-    if (!historyPanel) {
-      return;
-    }
-
-    const applyMobileState = (isMobile: boolean) => {
-      setIsHistoryPanelMobile(isMobile);
-      historyPanel.setOptions({ isMobile });
-    };
-
     if (isFloatMode) {
-      applyMobileState(true);
+      setIsHistoryPanelMobile(true);
       return;
     }
 
@@ -301,8 +293,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         return;
       }
       currentIsMobile = shouldBeMobile;
-
-      applyMobileState(shouldBeMobile);
+      setIsHistoryPanelMobile(shouldBeMobile);
     });
 
     resizeObserver.observe(container);
@@ -423,6 +414,10 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   // Add header menu options for chat history
   const historyConfig = {
     ...config,
+    history: {
+      ...config.history,
+      isMobile: isHistoryPanelMobile,
+    },
     header: {
       ...config.header,
       isOn: true,
@@ -450,7 +445,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
   return settings.layout === "float" ? (
     <ChatContainer
-      {...(config?.layout?.showHistory ? historyConfig : config)}
+      {...(config?.history?.isOn ? historyConfig : config)}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -460,7 +455,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   ) : (
     <div ref={containerRef} onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
-        {...(config?.layout?.showHistory && isHistoryPanelMobile
+        {...(config?.history?.isOn && isHistoryPanelMobile
           ? historyConfig
           : config)}
         className={className as string}

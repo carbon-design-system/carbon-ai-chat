@@ -541,34 +541,33 @@ export function AppShellPanels({
         />
       </ChatPanel>
 
-      {publicConfig.layout.showHistory &&
-        historyPanelState.options.isMobile && (
-          <ChatPanel
-            open={historyPanelState.isOpen}
-            priority={3}
-            fullWidth={true}
-            bodyNoPadding={true}
-            aiEnabled={config.public.aiEnabled ? true : false}
-            animationOnOpen="slide-in-from-left"
-            animationOnClose="slide-out-to-left"
-            onOpenStart={() => onPanelOpenStart(true)}
-            onOpenEnd={onPanelOpenEnd}
-            onCloseStart={onPanelCloseStart}
-            onCloseEnd={() => {
-              onPanelCloseEnd(true);
-              serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
-            }}
-          >
-            <PanelWithFocus
-              body={
-                <WriteableElement
-                  slotName="historyPanelElement"
-                  className="cds-aichat--history-panel__content-container"
-                />
-              }
-            />
-          </ChatPanel>
-        )}
+      {publicConfig.history?.isOn && publicConfig.history?.isMobile && (
+        <ChatPanel
+          open={historyPanelState.isOpen}
+          priority={3}
+          fullWidth={true}
+          bodyNoPadding={true}
+          aiEnabled={config.public.aiEnabled ? true : false}
+          animationOnOpen="slide-in-from-left"
+          animationOnClose="slide-out-to-left"
+          onOpenStart={() => onPanelOpenStart(true)}
+          onOpenEnd={onPanelOpenEnd}
+          onCloseStart={onPanelCloseStart}
+          onCloseEnd={() => {
+            onPanelCloseEnd(true);
+            serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
+          }}
+        >
+          <PanelWithFocus
+            body={
+              <WriteableElement
+                slotName="historyPanelElement"
+                className="cds-aichat--history-panel__content-container"
+              />
+            }
+          />
+        </ChatPanel>
+      )}
     </div>
   );
 }

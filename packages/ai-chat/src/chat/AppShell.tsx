@@ -480,7 +480,7 @@ export default function AppShell({
               contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
-              showHistory={layout?.showHistory ?? false}
+              showHistory={config.public.history?.isOn ?? false}
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
               historyAriaLabel={languagePack.aria_historyRegion}
               messagesAriaLabel={languagePack.aria_messagesRegion}
