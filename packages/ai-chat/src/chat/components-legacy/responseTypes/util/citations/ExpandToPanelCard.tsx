@@ -54,7 +54,7 @@ function ExpandToPanelCard({
 
   function renderTile(className?: string) {
     return (
-      <Card isFlush={false} className={className}>
+      <Card className={className}>
         <div slot="body">
           <CitationCardContent
             citation={citation}

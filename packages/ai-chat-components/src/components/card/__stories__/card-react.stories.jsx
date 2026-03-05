@@ -51,7 +51,11 @@ export const Default = {
   args: {
     ...DefaultWC.args,
   },
-  render: (args) => <Card isLayered={args.isLayered}>{cardContent}</Card>,
+  render: (args) => (
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
+      {cardContent}
+    </Card>
+  ),
 };
 export const WithActions = {
   argTypes: {
@@ -61,7 +65,7 @@ export const WithActions = {
     ...WithActionsWC.args,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       {cardContent}
       <CardFooter
         size={args.footerSize}
@@ -80,7 +84,7 @@ export const WithImage = {
     ...WithImageWC.args,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="media" data-rounded="top">
         <img src={args.image} alt="Card media" />
       </div>
@@ -102,7 +106,7 @@ export const OnlyImage = {
     ...OnlyImageWC.args,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="media" data-rounded="">
         <img src={args.image} alt="Card image" />
       </div>
@@ -118,7 +122,7 @@ export const WithAudio = {
     ...WithAudioWC.args,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="media" data-rounded="top">
         <iframe
           title="audio example"
@@ -144,7 +148,7 @@ export const OnlyVideo = {
     ...OnlyVideoWC.args,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="media" data-rounded="">
         <iframe
           title="video example"

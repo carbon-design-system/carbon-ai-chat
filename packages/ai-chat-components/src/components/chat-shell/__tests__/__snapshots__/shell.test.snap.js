@@ -1,8 +1,9 @@
 /* @web/test-runner snapshot v1 */
 export const snapshots = {};
 
-snapshots["cds-aichat-shell Snapshots should match snapshot with rounded corners"] =
+snapshots["cds-aichat-shell Snapshots should match snapshot with rounded corners"] = 
 `<cds-aichat-shell
+  content-max-width=""
   history-location="start"
   rounded-corners=""
   style="--cds-aichat-header-height: 0px;"

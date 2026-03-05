@@ -23,6 +23,22 @@ $css--plex: true !default;
     --#{$prefix}-card-border-radius,
     0.5rem
   );
+  --#{$prefix}-rounded-modifier-radius-start-start: var(
+    --#{$prefix}-card-border-radius,
+    0.5rem
+  );
+  --#{$prefix}-rounded-modifier-radius-start-end: var(
+    --#{$prefix}-card-border-radius,
+    0.5rem
+  );
+  --#{$prefix}-rounded-modifier-radius-end-start: var(
+    --#{$prefix}-card-border-radius,
+    0.5rem
+  );
+  --#{$prefix}-rounded-modifier-radius-end-end: var(
+    --#{$prefix}-card-border-radius,
+    0.5rem
+  );
 
   border: 1px solid theme.$chat-bubble-border;
   border-radius: var(--#{$prefix}-rounded-modifier-radius);
@@ -39,4 +55,8 @@ $css--plex: true !default;
 
 :host(#{$prefix}-card[is-layered]) {
   background-color: theme.$layer;
+}
+
+:host(#{$prefix}-card[is-flush]) {
+  padding: 0;
 }

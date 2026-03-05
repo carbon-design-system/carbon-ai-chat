@@ -65,6 +65,7 @@ export const Small = {
   },
   args: {
     ...CardDefault.args,
+    isFlush: true,
     footerActions: "2 ghost icon buttons",
     aiLabel: true,
   },
@@ -111,6 +112,7 @@ export const Default = {
   },
   args: {
     ...Small.args,
+    isFlush: true,
     aiLabel: true,
     footerActions: "1 ghost button with icon",
     maxWidth: "lg",
@@ -119,7 +121,10 @@ export const Default = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="header" class="preview-card preview-card-default">
             <h4>Document title</h4>
             <p>Subtitle</p>
@@ -170,6 +175,7 @@ export const WithToolbar = {
   },
   args: {
     isLayered: false,
+    isFlush: true,
     maxWidth: "lg",
     footerActions: "none",
     aiLabel: true,
@@ -178,7 +184,10 @@ export const WithToolbar = {
     maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="header" class="preview-card preview-card-toolbar">
             <cds-aichat-toolbar
               class="preview-card-toolbar"
@@ -234,6 +243,7 @@ export const WithSteps = {
   },
   args: {
     ...WithToolbar.args,
+    isFlush: true,
     footerActions: "1 ghost button with icon",
   },
   render: (args) => {
@@ -310,7 +320,10 @@ export const WithSteps = {
     return maxWidthWrapper(
       args.maxWidth,
       () => html`
-        <cds-aichat-card ?is-layered=${args.isLayered}>
+        <cds-aichat-card
+          ?is-layered=${args.isLayered}
+          ?is-flush=${args.isFlush}
+        >
           <div slot="header" class="preview-card preview-card-toolbar">
             <cds-aichat-toolbar class="preview-card-toolbar">
               <div slot="title">
