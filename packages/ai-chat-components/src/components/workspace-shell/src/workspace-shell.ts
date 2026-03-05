@@ -8,6 +8,7 @@
  */
 
 import { LitElement, html } from "lit";
+import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import styles from "./workspace-shell.scss?lit";
@@ -26,6 +27,27 @@ import styles from "./workspace-shell.scss?lit";
 @carbonElement(`${prefix}-workspace-shell`)
 class CDSAIChatWorkspaceShell extends LitElement {
   static styles = styles;
+
+  @property({ type: Boolean, reflect: true, attribute: "header-open" })
+  headerOpen = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("workspace-header-toggle", this._handleHeaderToggle);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      "workspace-header-toggle",
+      this._handleHeaderToggle,
+    );
+  }
+
+  private _handleHeaderToggle = (event: Event) => {
+    const customEvent = event as CustomEvent<{ open: boolean }>;
+    this.headerOpen = customEvent.detail.open;
+  };
 
   render() {
     return html`
