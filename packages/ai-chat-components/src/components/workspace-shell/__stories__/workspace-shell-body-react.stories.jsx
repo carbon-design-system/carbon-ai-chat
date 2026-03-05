@@ -29,6 +29,13 @@ export default {
       description: "Type of content to display in the body",
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="workspace-story-container">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export const Default = {

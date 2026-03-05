@@ -76,6 +76,13 @@ export default {
       description: "Defines the actions slot in Footer component ",
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="workspace-story-container">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export const Default = {
   args: {
