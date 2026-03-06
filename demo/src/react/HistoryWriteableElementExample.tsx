@@ -186,10 +186,10 @@ function HistoryWriteableElementExample({
   const handleHistoryClose = useCallback(() => {
     console.log("History close clicked");
     // In float mode, close the history panel
-    if (isMobile && instance?.customPanels) {
+    if (instance?.customPanels) {
       instance.customPanels.getPanel(PanelType.HISTORY)?.close();
     }
-  }, [isMobile, instance]);
+  }, [instance]);
 
   const historyItemActions = React.useMemo(
     () => [

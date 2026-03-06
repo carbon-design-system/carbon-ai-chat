@@ -347,7 +347,6 @@ class ChatActionsImpl {
       },
       history: {
         isOpen: Boolean(state.historyPanelState.isOpen),
-        isMobile: state.historyPanelState.options.isMobile,
       },
     });
 
