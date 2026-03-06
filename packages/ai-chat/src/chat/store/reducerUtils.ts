@@ -28,7 +28,6 @@ import {
   PersistedState,
 } from "../../types/state/AppState";
 import {
-  HistoryCustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
   PanelType,
@@ -93,15 +92,9 @@ const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
   };
 deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
 
-const HISTORY_PANEL_CONFIG_OPTIONS: HistoryCustomPanelConfigOptions = {
-  isMobile: true,
-};
-deepFreeze(HISTORY_PANEL_CONFIG_OPTIONS);
-
 const PANEL_CONFIG_OPTIONS_BY_TYPE: PanelConfigOptionsByType = {
   [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   [PanelType.WORKSPACE]: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
-  [PanelType.HISTORY]: HISTORY_PANEL_CONFIG_OPTIONS,
 };
 deepFreeze(PANEL_CONFIG_OPTIONS_BY_TYPE);
 

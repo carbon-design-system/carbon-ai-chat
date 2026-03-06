@@ -18,7 +18,6 @@ import {
   AppStateMessages,
   ChatMessagesState,
   FileUpload,
-  HistoryPanelState,
   InputState,
   PersistedState,
   ThemeState,
@@ -65,7 +64,6 @@ import {
   SET_WORKSPACE_PANEL_OPTIONS,
   SET_WORKSPACE_PANEL_DATA,
   SET_HISTORY_PANEL_OPEN,
-  SET_HISTORY_PANEL_OPTIONS,
   SET_HOME_SCREEN_IS_OPEN,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
   SET_IS_BROWSER_PAGE_VISIBLE,
@@ -965,22 +963,6 @@ const reducers: { [key: string]: ReducerType } = {
       historyPanelState: {
         ...state.historyPanelState,
         isOpen: action.isOpen,
-      },
-    };
-  },
-
-  [SET_HISTORY_PANEL_OPTIONS]: (
-    state: AppState,
-    action: { options: Partial<HistoryPanelState["options"]> },
-  ): AppState => {
-    return {
-      ...state,
-      historyPanelState: {
-        ...state.historyPanelState,
-        options: {
-          ...(state.historyPanelState.options ?? {}),
-          ...action.options,
-        },
       },
     };
   },

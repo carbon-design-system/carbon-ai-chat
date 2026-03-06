@@ -504,7 +504,6 @@ export default function AppShell({
                 isHomeScreenActive={showHomeScreen}
                 customPanelState={customPanelState}
                 customPanelRef={customPanelRef}
-                historyPanelState={historyPanelState}
                 publicConfig={publicConfig}
                 showDisclaimer={showDisclaimer}
                 disclaimerRef={disclaimerRef}
@@ -512,6 +511,7 @@ export default function AppShell({
                 responsePanelState={responsePanelState}
                 responsePanelRef={responsePanelRef}
                 requestFocus={requestFocus}
+                historyPanelState={historyPanelState}
                 iFramePanelState={iFramePanelState}
                 iframePanelRef={iframePanelRef}
                 viewSourcePanelState={viewSourcePanelState}

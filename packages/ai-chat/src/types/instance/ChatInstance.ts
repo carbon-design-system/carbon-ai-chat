@@ -9,7 +9,6 @@
 
 import {
   CustomPanels,
-  HistoryCustomPanelConfigOptions,
   ViewState,
   ViewType,
   WorkspaceCustomPanelConfigOptions,
@@ -102,11 +101,6 @@ export interface PublicWorkspaceCustomPanelState {
 export interface PublicHistoryPanelState {
   /** Indicates if the history panel is currently open. */
   isOpen: boolean;
-
-  /**
-   * Config options for the history panel.
-   */
-  options: HistoryCustomPanelConfigOptions;
 }
 
 /**

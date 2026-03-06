@@ -9,6 +9,7 @@
 
 /* Styles for the history writeable element example */
 [slot="historyPanelElement"] {
+  box-sizing: border-box;
   block-size: 100%;
 }
 

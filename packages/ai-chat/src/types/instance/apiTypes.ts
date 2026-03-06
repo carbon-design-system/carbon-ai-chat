@@ -67,6 +67,11 @@ export enum PanelType {
 
   /**
    * Opens the history panel.
+   *
+   * The history panel only appears in the chat panel when
+   * config.history.isMobile is true.
+   *
+   * @experimental
    */
   HISTORY = "history",
 }
@@ -74,7 +79,6 @@ export enum PanelType {
 export type PanelConfigOptionsByType = {
   [PanelType.DEFAULT]: DefaultCustomPanelConfigOptions;
   [PanelType.WORKSPACE]: WorkspaceCustomPanelConfigOptions;
-  [PanelType.HISTORY]: HistoryCustomPanelConfigOptions;
 };
 
 /**
@@ -86,10 +90,7 @@ export interface CustomPanels {
   /**
    * Gets a custom panel instance.
    */
-  getPanel(panel: PanelType.HISTORY): HistoryPanelInstance;
-  getPanel(
-    panel?: PanelType.DEFAULT | PanelType.WORKSPACE,
-  ): CustomPanelInstance;
+  getPanel: (panel?: PanelType) => CustomPanelInstance;
 }
 
 /**
@@ -281,45 +282,4 @@ export interface WorkspaceCustomPanelConfigOptions {
 export type CustomPanelOpenOptions =
   | CustomPanelConfigOptions
   | DefaultCustomPanelConfigOptions
-  | WorkspaceCustomPanelConfigOptions
-  | HistoryCustomPanelConfigOptions;
-
-/**
- * Options for configuring the history panel appearance and behavior.
- *
- * @category Instance
- */
-export interface HistoryCustomPanelConfigOptions {
-  /**
-   * Determines if the history panel should be rendered in mobile mode (as a ChatPanel overlay).
-   * This is useful for float layouts where the panel should cover the entire chat area.
-   */
-  isMobile?: boolean;
-}
-
-/**
- * The history panel instance for controlling and manipulating the history panel in Carbon AI Chat.
- *
- * @category Instance
- */
-export interface HistoryPanelInstance {
-  /**
-   * Opens the history panel.
-   *
-   * @param options History panel options.
-   */
-  open: (options?: HistoryCustomPanelConfigOptions) => Promise<void>;
-
-  /**
-   * Closes the history panel.
-   */
-  close: () => Promise<void>;
-
-  /**
-   * Sets options for the history panel without opening it.
-   * Useful for configuring the panel state before it's opened.
-   *
-   * @param options History panel options to set.
-   */
-  setOptions: (options: Partial<HistoryCustomPanelConfigOptions>) => void;
-}
+  | WorkspaceCustomPanelConfigOptions;
