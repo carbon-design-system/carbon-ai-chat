@@ -21,7 +21,7 @@ import { PanelWithFocus } from "./components/panels/PanelWithFocus";
 import { BodyMessageComponents } from "./components-legacy/responseTypes/util/BodyMessageComponents";
 import { FooterButtonComponents } from "./components-legacy/responseTypes/util/FooterButtonComponents";
 import { MessageTypeComponent } from "./components-legacy/MessageTypeComponent";
-import { Header } from "./components-legacy/header/Header";
+import { Header } from "./components/header/Header";
 import actions from "./store/actions";
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "./store/reducerUtils";
 import type {

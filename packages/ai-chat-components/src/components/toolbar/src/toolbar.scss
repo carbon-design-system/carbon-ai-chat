@@ -52,7 +52,14 @@ $block-class: #{$prefix}-toolbar;
     }
   }
 
+  .#{$block-class}__navigation {
+    display: flex;
+    align-items: center;
+    margin-block: auto;
+  }
+
   .#{$block-class}__title {
+    flex: 1;
     color: theme.$text-secondary;
     margin-block: auto;
     margin-inline-end: auto;
@@ -68,10 +75,17 @@ $block-class: #{$prefix}-toolbar;
   .#{$block-class}__right {
     display: flex;
     flex: 1;
+    min-inline-size: 0;
   }
 
   .#{$block-class}__right {
     justify-content: end;
+  }
+
+  ::slotted([slot="navigation"]) {
+    display: flex;
+    align-items: center;
+    margin-block: auto;
   }
 
   ::slotted([slot="decorator"]) {

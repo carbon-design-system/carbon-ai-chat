@@ -23,12 +23,45 @@ import { carbonElement } from "../../../globals/decorators/index.js";
 import "../../truncated-text/index.js";
 
 const blockClass = `${prefix}-toolbar`;
+import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/defs.js";
 
+/**
+ * Actions that display in the toolbar.
+ */
 export interface Action {
+  /**
+   * Tooltip text for the action.
+   */
   text: string;
+
+  /**
+   * `@carbon/icons` icon for the action.
+   */
   icon: CarbonIcon;
-  size?: string;
+
+  /**
+   * Size of button. Defaults to BUTTON_SIZE.MEDIUM.
+   */
+  size?: BUTTON_SIZE;
+
+  /**
+   * When overflow handling is enabled, setting fixed to true will force this action out of the overflow menu.
+   */
   fixed?: boolean;
+
+  /**
+   * Disable the action.
+   */
+  disabled?: boolean;
+
+  /**
+   * Optional data-testid string for e2e testing.
+   */
+  testId?: string;
+
+  /**
+   * Click handler for action.
+   */
   onClick: () => void;
 }
 
@@ -155,11 +188,13 @@ class CDSAIChatToolbar extends LitElement {
       <cds-icon-button
         ?data-fixed=${action.fixed}
         @click=${action.onClick}
-        size=${action.size || "md"}
+        size=${action.size || BUTTON_SIZE.MEDIUM}
         align="bottom-end"
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
+        data-testid=${action.testId || nothing}
+        ?disabled=${action.disabled}
       >
         ${iconLoader(action.icon, {
           slot: "icon",
@@ -170,7 +205,8 @@ class CDSAIChatToolbar extends LitElement {
   };
 
   private getOverflowMenuSize(): OVERFLOW_MENU_SIZE {
-    return (this.actions?.[0]?.size as OVERFLOW_MENU_SIZE) || "md";
+    return (this.actions?.[0]?.size ||
+      OVERFLOW_MENU_SIZE.MEDIUM) as OVERFLOW_MENU_SIZE;
   }
 
   render() {
@@ -218,35 +254,37 @@ class CDSAIChatToolbar extends LitElement {
           )}
           ${showOverflowMenu
             ? html`
-                <cds-overflow-menu
-                  size=${this.getOverflowMenuSize()}
-                  align="bottom-end"
-                  data-offset
-                  ?data-hidden=${this.hiddenItems.length === 0}
-                  kind="ghost"
-                  close-on-activation
-                  enter-delay-ms="0"
-                  leave-delay-ms="0"
-                >
-                  ${iconLoader(OverflowMenuVertical16, {
-                    class: `${blockClass}-overflow-icon`,
-                    slot: "icon",
-                  })}
-                  <span slot="tooltip-content"
-                    >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+                <div data-floating-menu-container>
+                  <cds-overflow-menu
+                    size=${this.getOverflowMenuSize()}
+                    align="bottom-end"
+                    data-offset
+                    ?data-hidden=${this.hiddenItems.length === 0}
+                    kind="ghost"
+                    close-on-activation
+                    enter-delay-ms="0"
+                    leave-delay-ms="0"
                   >
-                  <cds-overflow-menu-body flipped>
-                    ${repeat(
-                      this.hiddenItems,
-                      (item) => item.text,
-                      (item) => html`
-                        <cds-overflow-menu-item @click=${item.onClick}>
-                          ${item.text}
-                        </cds-overflow-menu-item>
-                      `,
-                    )}
-                  </cds-overflow-menu-body>
-                </cds-overflow-menu>
+                    ${iconLoader(OverflowMenuVertical16, {
+                      class: `${blockClass}-overflow-icon`,
+                      slot: "icon",
+                    })}
+                    <span slot="tooltip-content"
+                      >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+                    >
+                    <cds-overflow-menu-body flipped>
+                      ${repeat(
+                        this.hiddenItems,
+                        (item) => item.text,
+                        (item) => html`
+                          <cds-overflow-menu-item @click=${item.onClick}>
+                            ${item.text}
+                          </cds-overflow-menu-item>
+                        `,
+                      )}
+                    </cds-overflow-menu-body>
+                  </cds-overflow-menu>
+                </div>
               `
             : nothing}
           ${repeat(
