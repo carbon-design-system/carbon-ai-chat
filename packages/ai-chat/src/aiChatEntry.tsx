@@ -124,6 +124,7 @@ export {
   DisclaimerPublicConfig,
   enLanguagePack,
   HeaderConfig,
+  HistoryConfig,
   InputConfig,
   LanguagePack,
   LayoutConfig,

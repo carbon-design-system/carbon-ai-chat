@@ -345,6 +345,9 @@ class ChatActionsImpl {
         workspaceID: state.workspacePanelState.workspaceID,
         additionalData: state.workspacePanelState.additionalData,
       },
+      history: {
+        isOpen: Boolean(state.historyPanelState.isOpen),
+      },
     });
 
     const workspace = deepFreeze({

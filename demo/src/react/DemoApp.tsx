@@ -9,6 +9,7 @@
 
 import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
+import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
 
 import {
   BusEvent,
@@ -22,6 +23,7 @@ import {
   ChatCustomElement,
   ChatInstance,
   FeedbackInteractionType,
+  PanelType,
   PublicConfig,
   RenderUserDefinedState,
   RenderCustomMessageFooter,
@@ -29,13 +31,20 @@ import {
   ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 
 import { Settings } from "../framework/types";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
 import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
 import { CustomFooterExample } from "./CustomFooterExample";
+import { HistoryWriteableElementExample } from "./HistoryWriteableElementExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -51,8 +60,12 @@ interface AppProps {
 }
 
 function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
+  const [isHistoryPanelMobile, setIsHistoryPanelMobile] = useState(
+    config.history?.isMobile ?? false,
+  );
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceAnimating, setWorkspaceAnimating] = useState<
     "expanding" | "contracting" | null
@@ -60,11 +73,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
   const isSidebarLayout = settings.layout === "sidebar";
+  const isFloatMode = settings.layout === "float";
 
   useEffect(() => {
     setInterval(() => setStateText(Date.now().toString()), 2000);
   }, []);
-
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
    * depending on which component should be rendered.
@@ -202,8 +215,17 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      historyPanelElement: (
+        <HistoryWriteableElementExample
+          location="historyPanelElement"
+          instance={instance as ChatInstance}
+          parentStateText={stateText}
+          isMobile={isHistoryPanelMobile}
+        />
+      ),
     }),
-    [stateText, instance],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [instance, isHistoryPanelMobile],
   );
 
   /**
@@ -236,8 +258,48 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     return {
       ...elements,
       workspacePanelElement: allWriteableElements.workspacePanelElement,
+      historyPanelElement: allWriteableElements.historyPanelElement,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
+
+  /**
+   * If chat is in float mode, automatically set history panel isMobile to true so it
+   * renders in the chat panel.
+   *
+   * If chat is not in float mode, observe the container width and update the
+   * history panel's isMobile config state accordingly.
+   */
+  useEffect(() => {
+    if (!instance) {
+      return;
+    }
+
+    if (isFloatMode) {
+      setIsHistoryPanelMobile(true);
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    let currentIsMobile: boolean | null = null;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const shouldBeMobile = entry.contentRect.width <= 990;
+
+      if (currentIsMobile === shouldBeMobile) {
+        return;
+      }
+      currentIsMobile = shouldBeMobile;
+      setIsHistoryPanelMobile(shouldBeMobile);
+    });
+
+    resizeObserver.observe(container);
+
+    return () => resizeObserver.disconnect();
+  }, [instance, isFloatMode]);
 
   const onBeforeRender = (instance: ChatInstance) => {
     setInstance(instance);
@@ -349,9 +411,41 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
+  // Add header menu options for chat history
+  const historyConfig = {
+    ...config,
+    history: {
+      ...config.history,
+      isMobile: isHistoryPanelMobile,
+    },
+    header: {
+      ...config.header,
+      isOn: true,
+      menuOptions: [
+        {
+          text: "New chat",
+          handler: () => {
+            instance?.messaging?.restartConversation?.();
+          },
+        },
+        {
+          text: "View chats",
+          handler: () => {
+            const historyPanel = instance?.customPanels?.getPanel(
+              PanelType.HISTORY,
+            );
+            if (historyPanel) {
+              historyPanel.open();
+            }
+          },
+        },
+      ],
+    },
+  };
+
   return settings.layout === "float" ? (
     <ChatContainer
-      {...config}
+      {...(config?.history?.isOn ? historyConfig : config)}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -359,9 +453,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
-    <div onTransitionEnd={handleTransitionEnd}>
+    <div ref={containerRef} onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
-        {...config}
+        {...(config?.history?.isOn && isHistoryPanelMobile
+          ? historyConfig
+          : config)}
         className={className as string}
         onViewPreChange={onViewPreChange}
         onViewChange={onViewChange}

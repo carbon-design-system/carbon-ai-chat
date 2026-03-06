@@ -135,6 +135,11 @@ interface AppState extends AppStateMessages {
   workspacePanelState: WorkspacePanelState;
 
   /**
+   * The history panel state.
+   */
+  historyPanelState: HistoryPanelState;
+
+  /**
    * The state of the panel surfaced by response types, either with or without user input.
    */
   responsePanelState: MessagePanelState;
@@ -555,6 +560,13 @@ interface WorkspacePanelState {
   additionalData?: unknown;
 }
 
+interface HistoryPanelState {
+  /**
+   * Determines if the history panel should be open.
+   */
+  isOpen: boolean;
+}
+
 interface MessagePanelState<T extends GenericItem = GenericItem> {
   /**
    * Determines if the show panel is open.
@@ -614,6 +626,7 @@ export {
   CustomPanelConfigOptions,
   CustomPanelState,
   WorkspacePanelState,
+  HistoryPanelState,
   InputState,
   FileUpload,
   MessagePanelState,

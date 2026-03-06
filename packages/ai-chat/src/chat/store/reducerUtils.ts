@@ -17,6 +17,7 @@ import {
   ChatMessagesState,
   CustomPanelState,
   WorkspacePanelState,
+  HistoryPanelState,
   HumanAgentState,
   IFramePanelState,
   InputState,
@@ -114,6 +115,11 @@ const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
   additionalData: undefined,
 };
 deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
+
+const DEFAULT_HISTORY_PANEL_STATE: HistoryPanelState = {
+  isOpen: false,
+};
+deepFreeze(DEFAULT_HISTORY_PANEL_STATE);
 
 const DEFAULT_IFRAME_PANEL_STATE: IFramePanelState = {
   isOpen: false,
@@ -410,6 +416,7 @@ export {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
+  DEFAULT_HISTORY_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
   PANEL_CONFIG_OPTIONS_BY_TYPE,
