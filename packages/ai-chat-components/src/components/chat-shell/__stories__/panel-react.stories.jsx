@@ -93,8 +93,8 @@ export const Default = {
       options: [
         "",
         "slide-in-from-bottom",
-        "slide-in-from-right",
-        "slide-in-from-left",
+        "slide-in-from-end",
+        "slide-in-from-start",
         "fade-in",
       ],
       description: "Animation when panel opens",
@@ -104,8 +104,8 @@ export const Default = {
       options: [
         "",
         "slide-out-to-bottom",
-        "slide-out-to-right",
-        "slide-out-to-left",
+        "slide-out-to-end",
+        "slide-out-to-start",
         "fade-out",
       ],
       description: "Animation when panel closes",

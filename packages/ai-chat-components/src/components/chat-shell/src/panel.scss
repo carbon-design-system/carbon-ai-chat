@@ -111,14 +111,14 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
       slide-in-from-bottom both;
   }
 
-  :host(.panel--opening--slide-in-from-right) {
+  :host(.panel--opening--slide-in-from-end) {
     animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
-      slide-in-from-right both;
+      slide-in-from-end both;
   }
 
-  :host(.panel--opening--slide-in-from-left) {
+  :host(.panel--opening--slide-in-from-start) {
     animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
-      slide-in-from-left both;
+      slide-in-from-start both;
   }
 
   :host(.panel--closing--fade-out) {
@@ -136,14 +136,14 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
       slide-out-to-bottom both;
   }
 
-  :host(.panel--closing--slide-out-to-right) {
+  :host(.panel--closing--slide-out-to-end) {
     animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-      slide-out-to-right both;
+      slide-out-to-end both;
   }
 
-  :host(.panel--closing--slide-out-to-left) {
+  :host(.panel--closing--slide-out-to-start) {
     animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-      slide-out-to-left both;
+      slide-out-to-start both;
   }
 }
 
@@ -168,24 +168,24 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
       slide-out-to-bottom-with-header both;
   }
 
-  :host(.panel--with-chat-header.panel--opening--slide-in-from-right) {
+  :host(.panel--with-chat-header.panel--opening--slide-in-from-end) {
     animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
-      slide-in-from-right both;
+      slide-in-from-end both;
   }
 
-  :host(.panel--with-chat-header.panel--closing--slide-out-to-right) {
+  :host(.panel--with-chat-header.panel--closing--slide-out-to-end) {
     animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-      slide-out-to-right both;
+      slide-out-to-end both;
   }
 
-  :host(.panel--with-chat-header.panel--opening--slide-in-from-left) {
+  :host(.panel--with-chat-header.panel--opening--slide-in-from-start) {
     animation: motion.$duration-moderate-02 motion.motion(exit, expressive)
-      slide-in-from-left both;
+      slide-in-from-start both;
   }
 
-  :host(.panel--with-chat-header.panel--closing--slide-out-to-left) {
+  :host(.panel--with-chat-header.panel--closing--slide-out-to-start) {
     animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
-      slide-out-to-left both;
+      slide-out-to-start both;
   }
 }
 
@@ -354,7 +354,7 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   }
 }
 
-@keyframes slide-in-from-right {
+@keyframes slide-in-from-end {
   from {
     inset-inline-start: 100%;
   }
@@ -364,7 +364,7 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   }
 }
 
-@keyframes slide-out-to-right {
+@keyframes slide-out-to-end {
   from {
     inset-inline-start: 0;
   }
@@ -374,7 +374,7 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   }
 }
 
-@keyframes slide-in-from-left {
+@keyframes slide-in-from-start {
   from {
     inset-inline-start: -100%;
   }
@@ -384,7 +384,7 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   }
 }
 
-@keyframes slide-out-to-left {
+@keyframes slide-out-to-start {
   from {
     inset-inline-start: 0;
   }
