@@ -13,6 +13,7 @@ import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators";
 import { tableSkeletonTemplate } from "./table-skeleton.template";
 import { loadTableRuntime } from "./table-loader.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./table.scss?lit";
 import prefix from "../../../globals/settings.js";
 
@@ -217,7 +218,7 @@ class CDSAIChatTable extends LitElement {
   @state()
   public _allowFiltering = true;
 
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * @internal
@@ -228,6 +229,7 @@ class CDSAIChatTable extends LitElement {
    * @internal
    */
   private tableRuntimePromise: Promise<TableRuntimeModule> | null = null;
+  private hasRenderedLoadingFrame = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -246,6 +248,25 @@ class CDSAIChatTable extends LitElement {
     await this.updateComplete;
     this._updateDefaultPageSize();
     this._setPageSize();
+  }
+
+  /**
+   * While loading we only need to paint the skeleton once. Streaming updates can
+   * mutate rows/headers rapidly, so skip subsequent updates until loading ends.
+   */
+  protected shouldUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("loading")) {
+      if (this.loading) {
+        this.hasRenderedLoadingFrame = false;
+      }
+      return true;
+    }
+
+    if (this.loading && this.hasRenderedLoadingFrame) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -286,11 +307,19 @@ class CDSAIChatTable extends LitElement {
    * @protected
    */
   protected willUpdate(changedProperties: PropertyValues<this>) {
+    const loadingJustFinished =
+      changedProperties.has("loading") &&
+      changedProperties.get("loading") === true &&
+      this.loading === false;
+
     // If the headers or rows has recently updated and both are defined than we should validate the table
     // data. This will likely only happen on the web components first render cycle when the props go from undefined to
     // defined.
     if (
-      (changedProperties.has("headers") || changedProperties.has("rows")) &&
+      (changedProperties.has("headers") ||
+        changedProperties.has("rows") ||
+        loadingJustFinished) &&
+      !this.loading &&
       this.headers !== undefined &&
       this.rows !== undefined
     ) {
@@ -298,7 +327,11 @@ class CDSAIChatTable extends LitElement {
     }
 
     // If the value of tableRows updated then initialize the internal rows arrays.
-    if (changedProperties.has("rows") && this.rows !== undefined) {
+    if (
+      (changedProperties.has("rows") || loadingJustFinished) &&
+      !this.loading &&
+      this.rows !== undefined
+    ) {
       this._initializeRowsArrays();
       this._setPageSize();
     }
@@ -579,11 +612,13 @@ class CDSAIChatTable extends LitElement {
     // This could be used while we wait for a md stream containing a table to complete.
     const runtime = this.tableRuntime;
     if (this.loading || !runtime) {
+      this.hasRenderedLoadingFrame = true;
       if (!runtime) {
         void this.ensureTableRuntime();
       }
       return tableSkeletonTemplate(this._currentPageSize);
     }
+    this.hasRenderedLoadingFrame = false;
 
     const { tableTemplate, tablePaginationTemplate } = runtime;
 

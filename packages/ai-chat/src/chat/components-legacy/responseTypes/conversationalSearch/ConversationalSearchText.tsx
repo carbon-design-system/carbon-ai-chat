@@ -17,7 +17,7 @@ import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../types/messaging/Messages";
-import { RichText } from "../util/RichText";
+import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
 import { useCounter } from "../../../hooks/useCounter";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
@@ -92,7 +92,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
 
   return (
     <div className="cds-aichat--conversational-search-text">
-      <RichText
+      <MarkdownWithDefaults
         text={html}
         overrideSanitize={false}
         streaming={streamingState && !streamingState.isDone}

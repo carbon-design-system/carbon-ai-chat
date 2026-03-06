@@ -17,12 +17,14 @@ import { html } from "lit";
 function tableSkeletonTemplate(rowCount = 5) {
   // Can add header names to the skeleton if we want to
   // https://web-components.carbondesignsystem.com/?path=/docs/components-datatable-skeleton--overview#custom-headers.
-  return html`<cds-table-skeleton
-    row-count=${rowCount}
-    column-count="2"
-    .showHeader=${false}
-  >
-  </cds-table-skeleton>`;
+  return html`<div class="cds-ai-chat-table-container">
+    <cds-table-skeleton
+      row-count=${rowCount}
+      column-count="2"
+      .showHeader=${false}
+    >
+    </cds-table-skeleton>
+  </div>`;
 }
 
 export { tableSkeletonTemplate };

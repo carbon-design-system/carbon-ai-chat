@@ -81,7 +81,7 @@ function TranscriptComponent({
             "cds-aichat--media-transcript__content--visible": isExpanded,
           })}
         >
-          <Markdown sanitizeHTML>{text}</Markdown>
+          <Markdown sanitizeHTML markdown={text} />
         </div>
       )}
     </div>

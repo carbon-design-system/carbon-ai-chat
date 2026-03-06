@@ -8,14 +8,53 @@
  */
 
 import "../index";
+import "../../card/index.js";
 import { html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { headers, rows } from "./story-data.js";
+
+// Helper function to render with or without card wrapper
+const renderTable = (args) => {
+  const table = html`
+    <cds-aichat-table
+      ?data-rounded=${args.useCard}
+      table-title=${ifDefined(args.tableTitle)}
+      table-description=${ifDefined(args.tableDescription)}
+      filter-placeholder-text=${ifDefined(args.filterPlaceholderText)}
+      previous-page-text=${ifDefined(args.previousPageText)}
+      next-page-text=${ifDefined(args.nextPageText)}
+      items-per-page-text=${ifDefined(args.itemsPerPageText)}
+      locale=${ifDefined(args.locale)}
+      default-page-size=${ifDefined(args.defaultPageSize)}
+      ?loading=${args.loading}
+      .headers=${args.headers}
+      .rows=${args.rows}
+    >
+    </cds-aichat-table>
+  `;
+
+  if (args.useCard) {
+    return html`
+      <cds-aichat-card is-flush>
+        <div slot="body">${table}</div>
+      </cds-aichat-card>
+    `;
+  }
+
+  return table;
+};
 
 export default {
   title: "Components/Table",
   component: "cds-aichat-table",
   argTypes: {
+    useCard: {
+      control: "boolean",
+      description: "Wrap in card wrapper",
+      table: {
+        category: "Wrapper",
+      },
+    },
     tableTitle: {
       control: "text",
       description: "Optional heading displayed above the table.",
@@ -69,6 +108,7 @@ export default {
 
 export const Default = {
   args: {
+    useCard: true,
     tableTitle: "Agent roster",
     tableDescription: "Operational view of AI chat team members.",
     headers,
@@ -81,22 +121,7 @@ export const Default = {
     locale: "en",
     defaultPageSize: 5,
   },
-  render: (args) => html`
-    <cds-aichat-table
-      table-title=${ifDefined(args.tableTitle)}
-      table-description=${ifDefined(args.tableDescription)}
-      filter-placeholder-text=${ifDefined(args.filterPlaceholderText)}
-      previous-page-text=${ifDefined(args.previousPageText)}
-      next-page-text=${ifDefined(args.nextPageText)}
-      items-per-page-text=${ifDefined(args.itemsPerPageText)}
-      locale=${ifDefined(args.locale)}
-      default-page-size=${ifDefined(args.defaultPageSize)}
-      ?loading=${args.loading}
-      .headers=${args.headers}
-      .rows=${args.rows}
-    >
-    </cds-aichat-table>
-  `,
+  render: (args) => renderTable(args),
 };
 
 export const Loading = {
@@ -104,5 +129,13 @@ export const Loading = {
     ...Default.args,
     loading: true,
   },
-  render: Default.render,
+  render: (args) => renderTable(args),
+};
+
+export const WithPagination = {
+  args: {
+    ...Default.args,
+    defaultPageSize: 2, // 6 rows with page size 2 = 3 pages
+  },
+  render: (args) => renderTable(args),
 };

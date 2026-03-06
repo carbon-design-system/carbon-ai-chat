@@ -10,7 +10,7 @@
 import React from "react";
 
 import { HasClassName } from "../../../../types/utilities/HasClassName";
-import { RichText } from "./RichText";
+import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
 
 interface DescriptionProps extends HasClassName {
   text: string;
@@ -29,7 +29,11 @@ export default function Description({
 }: DescriptionProps) {
   return (
     <div className={`cds-aichat--description ${className}`}>
-      <RichText text={text} removeHTML={removeHTML} highlight={true} />
+      <MarkdownWithDefaults
+        text={text}
+        removeHTML={removeHTML}
+        highlight={true}
+      />
     </div>
   );
 }

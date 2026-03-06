@@ -27,7 +27,6 @@ Here's a quick example to get you started.
 
 ```jsx
 import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
-import CodeSnippetCard from "@carbon/ai-chat-components/es/react/code-snippet-card.js";
 
 function ReadOnlySnippet({ code }) {
   return (
@@ -42,11 +41,6 @@ function ReadOnlySnippet({ code }) {
 
 <ArgTypes of={CodeSnippetReactStories.Default} />
 
-### `<CodeSnippetCard>` props
-
-Note: The tile container forwards all props to the inner `<CodeSnippet>` and applies AI Chat tile styling.
-
-<ArgTypes of={CodeSnippetReactStories.Default} />
 
 ### Streaming Content
 
@@ -68,9 +62,9 @@ function StreamingSnippet({ stream }) {
   }, [stream]);
 
   return (
-    <CodeSnippetCard highlight wrapText>
+    <CodeSnippet highlight wrapText>
       {content}
-    </CodeSnippetCard>
+    </CodeSnippet>
   );
 }
 ```

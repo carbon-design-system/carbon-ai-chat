@@ -10,6 +10,7 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./processing.scss?lit";
 import { carbonElement } from "../../../globals/decorators";
 import prefix from "../../../globals/settings.js";
@@ -20,7 +21,7 @@ import prefix from "../../../globals/settings.js";
  */
 @carbonElement(`${prefix}-processing`)
 class CDSAIChatProcessing extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /** Enables the linear looping animation variant. */
   @property({ type: Boolean, attribute: "loop" })

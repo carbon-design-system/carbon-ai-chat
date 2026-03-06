@@ -1,0 +1,138 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/spacing";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/convert";
+@use "../../../globals/scss/modifiers" as *;
+@use "../../../globals/scss/vars" as *;
+
+:host {
+  @include rounded-modifiers;
+
+  display: block;
+  inline-size: 100%;
+}
+
+.audio-player {
+  inline-size: 100%;
+}
+
+.audio-player__container {
+  position: relative;
+  overflow: hidden;
+  background-color: theme.$layer-accent-01;
+  inline-size: 100%;
+
+  @include rounded-child-positions;
+}
+
+.audio-player__provider {
+  position: absolute;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+
+  @include rounded-child-positions;
+
+  // Ensure iframes also get rounded corners
+  iframe {
+    @include rounded-child-positions;
+  }
+}
+
+.audio-player__provider--hidden {
+  display: none;
+}
+
+.audio-player__skeleton {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: theme.$skeleton-background;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: skeleton-pulse 1500ms ease-in-out infinite;
+  }
+}
+
+.audio-player__skeleton-icon {
+  color: theme.$icon-on-color;
+  margin-block-end: spacing.$spacing-05;
+  opacity: 0.6;
+}
+
+.audio-player__skeleton-player {
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    theme.$skeleton-background 0%,
+    theme.$skeleton-element 50%,
+    theme.$skeleton-background 100%
+  );
+  background-size: 200% 100%;
+  block-size: 4px;
+  inline-size: 80%;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: skeleton-shimmer 2000ms ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.audio-player__error {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: spacing.$spacing-05;
+  background-color: theme.$layer-01;
+  block-size: 100%;
+  inline-size: 100%;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+
+.audio-player__error-message {
+  @include type.type-style("body-01");
+
+  margin: 0;
+  color: theme.$text-error;
+  text-align: center;
+}
+
+// Made with Bob

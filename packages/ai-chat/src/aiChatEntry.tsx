@@ -57,6 +57,10 @@ export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
+export type {
+  PerCornerConfig,
+  ResolvedCornerConfig,
+} from "./types/config/CornersType";
 export type { loadAllLazyDeps } from "./testing/helpers";
 
 export {

@@ -98,6 +98,7 @@ export class DemoHeader extends LitElement {
                 @click=${this._handleButtonClick}
               >
                 ${iconLoader(AiLaunch20, { slot: "icon" })}
+                <span slot="tooltip-content">AI Chat</span>
               </cds-header-global-action>`
             : ""}
           <cds-header-global-action
@@ -108,6 +109,7 @@ export class DemoHeader extends LitElement {
             @click=${this._handlePanelToggle}
           >
             ${iconLoader(Switcher20, { slot: "icon" })}
+            <span slot="tooltip-content">Resources</span>
           </cds-header-global-action>
         </div>
         <cds-header-panel id="switcher-panel" aria-label="Resources Panel">

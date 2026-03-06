@@ -43,11 +43,13 @@ function tableTemplate(tableElement: CDSAIChatTable) {
           ? html`<cds-table-toolbar-search
               persistent
               placeholder=${filterPlaceholderText}
+              aria-label=${filterPlaceholderText}
             ></cds-table-toolbar-search>`
           : ""}
-        <cds-button @click=${handleDownload} aria-label=${downloadLabelText}
-          >${iconLoader(Download16)}</cds-button
-        >
+        <cds-button @click=${handleDownload} tooltip-text=${downloadLabelText}>
+          ${iconLoader(Download16)}
+          <span slot="tooltip-content">${downloadLabelText}</span>
+        </cds-button>
       </cds-table-toolbar-content>
     </cds-table-toolbar>`;
   }

@@ -19,6 +19,7 @@ import {
   BUTTON_KIND,
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/button.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./card-footer.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -43,7 +44,7 @@ export type Action = {
  */
 @carbonElement(`${prefix}-card-footer`)
 class CardFooter extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Sets default slot value to footer

@@ -8,9 +8,12 @@
  */
 
 import "../src/code-snippet";
-import "../src/code-snippet-card";
+import "../../card/index.js";
+import "@carbon/web-components/es/components/ai-label/ai-label.js";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
+import Download16 from "@carbon/icons/es/download/16.js";
+import Share16 from "@carbon/icons/es/share/16.js";
 
 const multilineCode = `/**
  * Carbon highlight showcase: control keywords, types, literals, doc comments, and more.
@@ -138,34 +141,14 @@ export class TokenShowcase<T extends TokenSwatch> {
 
 // Helper function to render with or without card wrapper
 const renderSnippet = (args, code) => {
-  if (args.useCard) {
-    return html`
-      <cds-aichat-code-snippet-card
-        ?editable=${args.editable}
-        ?highlight=${args.highlight}
-        ?disabled=${args.disabled}
-        ?hide-copy-button=${args.hideCopyButton}
-        ?wrap-text=${args.wrapText}
-        max-collapsed-number-of-rows=${ifDefined(args.maxCollapsedNumberOfRows)}
-        max-expanded-number-of-rows=${ifDefined(args.maxExpandedNumberOfRows)}
-        min-collapsed-number-of-rows=${ifDefined(args.minCollapsedNumberOfRows)}
-        min-expanded-number-of-rows=${ifDefined(args.minExpandedNumberOfRows)}
-        show-more-text=${ifDefined(args.showMoreText)}
-        show-less-text=${ifDefined(args.showLessText)}
-        tooltip-content=${ifDefined(args.tooltipContent)}
-        feedback=${ifDefined(args.feedback)}
-      >
-        ${code}
-      </cds-aichat-code-snippet-card>
-    `;
-  }
-
-  return html`
+  const snippet = html`
     <cds-aichat-code-snippet
+      ?data-rounded=${args.useCard}
       ?editable=${args.editable}
       ?highlight=${args.highlight}
       ?disabled=${args.disabled}
       ?hide-copy-button=${args.hideCopyButton}
+      ?hide-header=${args.hideHeader}
       ?wrap-text=${args.wrapText}
       max-collapsed-number-of-rows=${ifDefined(args.maxCollapsedNumberOfRows)}
       max-expanded-number-of-rows=${ifDefined(args.maxExpandedNumberOfRows)}
@@ -179,6 +162,16 @@ const renderSnippet = (args, code) => {
       ${code}
     </cds-aichat-code-snippet>
   `;
+
+  if (args.useCard) {
+    return html`
+      <cds-aichat-card is-flush>
+        <div slot="body">${snippet}</div>
+      </cds-aichat-card>
+    `;
+  }
+
+  return snippet;
 };
 
 export default {
@@ -207,6 +200,10 @@ export default {
     hideCopyButton: {
       control: "boolean",
       description: "Hide the copy button",
+    },
+    hideHeader: {
+      control: "boolean",
+      description: "Hide the header/toolbar completely",
     },
     wrapText: {
       control: "boolean",
@@ -336,31 +333,27 @@ class StreamingDemo extends LitElement {
   }
 
   render() {
+    const snippet = html`
+      <cds-aichat-code-snippet
+        ?data-rounded=${this.useCard}
+        language=${this.language}
+        ?editable=${this.editable}
+        ?highlight=${this.highlight}
+        ?disabled=${this.disabled}
+        ?hide-copy-button=${this.hideCopyButton}
+        ?wrap-text=${this.wrapText}
+      >
+        ${this.streamedContent}
+      </cds-aichat-code-snippet>
+    `;
+
     const snippetContent = this.useCard
       ? html`
-          <cds-aichat-code-snippet-card
-            language=${this.language}
-            ?editable=${this.editable}
-            ?highlight=${this.highlight}
-            ?disabled=${this.disabled}
-            ?hide-copy-button=${this.hideCopyButton}
-            ?wrap-text=${this.wrapText}
-          >
-            ${this.streamedContent}
-          </cds-aichat-code-snippet-card>
+          <cds-aichat-card>
+            <div slot="body">${snippet}</div>
+          </cds-aichat-card>
         `
-      : html`
-          <cds-aichat-code-snippet
-            language=${this.language}
-            ?editable=${this.editable}
-            ?highlight=${this.highlight}
-            ?disabled=${this.disabled}
-            ?hide-copy-button=${this.hideCopyButton}
-            ?wrap-text=${this.wrapText}
-          >
-            ${this.streamedContent}
-          </cds-aichat-code-snippet>
-        `;
+      : snippet;
 
     return html`
       <div>
@@ -457,7 +450,270 @@ export const EditableEmpty = {
     editable: true,
     disabled: false,
     hideCopyButton: false,
+    hideHeader: true,
     wrapText: false,
   },
   render: (args) => renderSnippet(args, ""),
+};
+
+export const WithActions = {
+  args: {
+    useCard: true,
+    highlight: true,
+    editable: false,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+    maxCollapsedNumberOfRows: 15,
+  },
+  render: (args) => {
+    const actions = [
+      {
+        text: "Download",
+        icon: Download16,
+        onClick: () => console.log("Download clicked"),
+      },
+      {
+        text: "Share",
+        icon: Share16,
+        onClick: () => console.log("Share clicked"),
+      },
+    ];
+
+    const snippet = html`
+      <cds-aichat-code-snippet
+        ?data-rounded=${args.useCard}
+        ?editable=${args.editable}
+        ?highlight=${args.highlight}
+        ?disabled=${args.disabled}
+        ?hide-copy-button=${args.hideCopyButton}
+        ?wrap-text=${args.wrapText}
+        ?overflow=${true}
+        .actions=${actions}
+        max-collapsed-number-of-rows=${ifDefined(args.maxCollapsedNumberOfRows)}
+      >
+        ${multilineCode}
+      </cds-aichat-code-snippet>
+    `;
+
+    return args.useCard
+      ? html`
+          <cds-aichat-card>
+            <div slot="body">${snippet}</div>
+          </cds-aichat-card>
+        `
+      : snippet;
+  },
+};
+
+export const WithActionsAndDecorator = {
+  args: {
+    useCard: true,
+    highlight: true,
+    editable: false,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+    maxCollapsedNumberOfRows: 15,
+  },
+  render: (args) => {
+    const actions = [
+      {
+        text: "Download",
+        icon: Download16,
+        onClick: () => console.log("Download clicked"),
+      },
+      {
+        text: "Share",
+        icon: Share16,
+        onClick: () => console.log("Share clicked"),
+      },
+    ];
+
+    const snippet = html`
+      <cds-aichat-code-snippet
+        ?data-rounded=${args.useCard}
+        ?editable=${args.editable}
+        ?highlight=${args.highlight}
+        ?disabled=${args.disabled}
+        ?hide-copy-button=${args.hideCopyButton}
+        ?wrap-text=${args.wrapText}
+        ?overflow=${true}
+        .actions=${actions}
+        max-collapsed-number-of-rows=${ifDefined(args.maxCollapsedNumberOfRows)}
+      >
+        <cds-ai-label size="2xs" autoalign alignment="bottom" slot="decorator">
+          <div slot="body-text">
+            <div>
+              This code was generated by IBM watsonx AI. Review carefully before
+              use.
+            </div>
+          </div>
+        </cds-ai-label>
+        ${multilineCode}
+      </cds-aichat-code-snippet>
+    `;
+
+    return args.useCard
+      ? html`
+          <cds-aichat-card>
+            <div slot="body">${snippet}</div>
+          </cds-aichat-card>
+        `
+      : snippet;
+  },
+};
+
+export const WithFixedActions = {
+  args: {
+    useCard: false,
+    highlight: true,
+    editable: false,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+  },
+  render: (args) => {
+    const actions = [
+      {
+        text: "Download",
+        icon: Download16,
+        onClick: () => console.log("Download clicked"),
+      },
+    ];
+
+    return html`
+      <cds-aichat-code-snippet
+        ?editable=${args.editable}
+        ?highlight=${args.highlight}
+        ?disabled=${args.disabled}
+        ?hide-copy-button=${args.hideCopyButton}
+        ?wrap-text=${args.wrapText}
+        .actions=${actions}
+      >
+        <div slot="fixed-actions">
+          <button
+            @click=${() => console.log("Fixed action clicked")}
+            style="padding: 0.5rem; cursor: pointer; border: 1px solid #ccc; background: transparent;"
+          >
+            Fixed Action
+          </button>
+        </div>
+        ${multilineCode}
+      </cds-aichat-code-snippet>
+    `;
+  },
+};
+
+const sqlCode = `-- Order Analytics Report
+-- Analyzes purchasing patterns and outstanding orders
+
+WITH customer_orders AS (
+  SELECT
+    c.customer_id,
+    c.customer_name,
+    c.email,
+    c.region,
+    COUNT(DISTINCT o.order_id) as total_orders,
+    SUM(o.total_amount) as total_spent,
+    AVG(o.total_amount) as avg_order_value,
+    MAX(o.order_date) as last_order_date
+  FROM customers c
+  LEFT JOIN orders o ON c.customer_id = o.customer_id
+  WHERE o.order_status IN ('pending', 'processing', 'shipped')
+    AND o.order_date >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)
+  GROUP BY c.customer_id, c.customer_name, c.email, c.region
+),
+product_performance AS (
+  SELECT
+    p.product_id,
+    p.product_name,
+    p.category,
+    COUNT(DISTINCT oi.order_id) as times_ordered,
+    SUM(oi.quantity) as total_quantity_sold,
+    SUM(oi.quantity * oi.unit_price) as total_revenue,
+    AVG(oi.unit_price) as avg_selling_price
+  FROM products p
+  INNER JOIN order_items oi ON p.product_id = oi.product_id
+  INNER JOIN orders o ON oi.order_id = o.order_id
+  WHERE o.order_status != 'cancelled'
+    AND o.order_date >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)
+  GROUP BY p.product_id, p.product_name, p.category
+),
+inventory_status AS (
+  SELECT
+    i.product_id,
+    i.warehouse_location,
+    i.quantity_on_hand,
+    i.reorder_level,
+    i.reorder_quantity,
+    CASE
+      WHEN i.quantity_on_hand <= i.reorder_level THEN 'Low Stock'
+      WHEN i.quantity_on_hand <= (i.reorder_level * 1.5) THEN 'Medium Stock'
+      ELSE 'Adequate Stock'
+    END as stock_status
+  FROM inventory i
+)
+
+SELECT
+  co.customer_name,
+  co.email,
+  co.region,
+  co.total_orders,
+  co.total_spent,
+  co.avg_order_value,
+  co.last_order_date,
+  pp.product_name,
+  pp.category,
+  pp.times_ordered,
+  pp.total_quantity_sold,
+  pp.total_revenue,
+  ist.warehouse_location,
+  ist.quantity_on_hand,
+  ist.stock_status
+FROM customer_orders co
+CROSS JOIN product_performance pp
+LEFT JOIN inventory_status ist ON pp.product_id = ist.product_id
+WHERE co.total_orders > 0
+  AND pp.total_revenue > 1000
+ORDER BY co.total_spent DESC, pp.total_revenue DESC
+LIMIT 100;`;
+
+export const FullHeightMode = {
+  args: {
+    useCard: false,
+    highlight: true,
+    editable: true,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+    maxCollapsedNumberOfRows: 0,
+    maxExpandedNumberOfRows: 0,
+  },
+  render: (args) => html`
+    <div
+      style="height: 500px; display: flex; flex-direction: column; border: 1px solid #ccc; padding: 1rem;"
+    >
+      <h3 style="margin: 0 0 1rem 0;">SQL Editor (Full-Height Mode)</h3>
+      <p style="margin: 0 0 1rem 0; color: #666;">
+        When both max-collapsed-number-of-rows and max-expanded-number-of-rows
+        are set to 0, the component fills its container's height with a
+        scrollbar. Perfect for edit mode scenarios.
+      </p>
+      <div style="flex: 1; min-height: 0;">
+        <cds-aichat-code-snippet
+          language="sql"
+          ?editable=${args.editable}
+          ?highlight=${args.highlight}
+          ?disabled=${args.disabled}
+          ?hide-copy-button=${args.hideCopyButton}
+          ?wrap-text=${args.wrapText}
+          max-collapsed-number-of-rows=${args.maxCollapsedNumberOfRows}
+          max-expanded-number-of-rows=${args.maxExpandedNumberOfRows}
+        >
+          ${sqlCode}
+        </cds-aichat-code-snippet>
+      </div>
+    </div>
+  `,
 };

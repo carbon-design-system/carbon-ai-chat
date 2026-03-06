@@ -12,28 +12,28 @@ const defaultSteps = [
     title: "Gather context",
     open: true,
     body: (
-      <Markdown>
-        Pulled the last few messages plus system instructions to ground the
-        reasoning.
-      </Markdown>
+      <Markdown
+        markdown={`Pulled the last few messages plus system instructions to ground the
+reasoning.`}
+      />
     ),
   },
   {
     id: "outline",
     title: "Plan answer",
     body: (
-      <Markdown>
-        Drafted a response outline and verified coverage against the request.
-      </Markdown>
+      <Markdown
+        markdown={`Drafted a response outline and verified coverage against the request.`}
+      />
     ),
   },
   {
     id: "quality",
     title: "Quality check",
     body: (
-      <Markdown>
-        Ensured tone, safety, and citations were in place before finalizing.
-      </Markdown>
+      <Markdown
+        markdown={`Ensured tone, safety, and citations were in place before finalizing.`}
+      />
     ),
   },
 ];

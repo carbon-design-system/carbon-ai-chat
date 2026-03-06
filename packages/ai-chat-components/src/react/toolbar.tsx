@@ -20,15 +20,25 @@ import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
 export type { Action } from "../components/toolbar/src/toolbar.js";
 
 /**
- * React-specific Action interface that accepts both CarbonIcon and React icon components.
- * This allows React developers to use @carbon/icons-react directly.
+ * Toolbar action interface that accepts both CarbonIcon and React icon components.
+ * This allows developers to use either:
+ * - @carbon/icons-react (React components)
+ * - @carbon/web-components icons (CarbonIcon objects)
+ *
+ * Works with both React and web component implementations.
  */
-export interface ReactAction {
+export interface ToolbarAction {
   text: string;
   icon: CarbonIcon | React.ComponentType<any>;
   size?: string;
   fixed?: boolean;
+  disabled?: boolean;
   onClick: () => void;
+  /**
+   * Optional data-testid attribute for testing purposes.
+   * This allows tests to reliably find and interact with specific action buttons.
+   */
+  testId?: string;
 }
 
 // Base toolbar component from @lit/react
@@ -93,12 +103,14 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
       return [];
     }
 
-    return actions.map((action: ReactAction) => ({
+    return actions.map((action: ToolbarAction) => ({
       ...action,
       icon: transformReactIconToCarbonIcon(
         action.icon,
         getSizeInPixels(action.size),
       ),
+      // Preserve testId if provided
+      testId: action.testId,
     }));
   }, [actions]);
 

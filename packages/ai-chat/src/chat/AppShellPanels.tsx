@@ -153,6 +153,7 @@ export function AppShellPanels({
   return (
     <div slot="panels">
       <ChatPanel
+        panelAriaLabel={languagePack.aria_catastrophicErrorPanel}
         open={Boolean(catastrophicErrorType)}
         aiEnabled={config.public.aiEnabled ? true : false}
         priority={100}
@@ -168,6 +169,7 @@ export function AppShellPanels({
         </div>
       </ChatPanel>
       <ChatPanel
+        panelAriaLabel={languagePack.aria_hydrationPanel}
         open={shouldShowHydrationPanel}
         priority={90}
         aiEnabled={config.public.aiEnabled ? true : false}
@@ -191,6 +193,7 @@ export function AppShellPanels({
       </ChatPanel>
 
       <ChatPanel
+        panelAriaLabel={panelTitle || languagePack.aria_customPanel}
         open={customPanelState.isOpen}
         priority={60}
         fullWidth={
@@ -326,6 +329,7 @@ export function AppShellPanels({
 
       {disclaimerContent && (
         <ChatPanel
+          panelAriaLabel={languagePack.aria_disclaimerPanel}
           open={showDisclaimer}
           priority={80}
           aiEnabled={config.public.aiEnabled ? true : false}
@@ -350,6 +354,10 @@ export function AppShellPanels({
       )}
 
       <ChatPanel
+        panelAriaLabel={
+          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
+            .title || languagePack.aria_responsePanel
+        }
         open={responsePanelState.isOpen}
         priority={50}
         fullWidth={
@@ -472,6 +480,11 @@ export function AppShellPanels({
       </ChatPanel>
 
       <ChatPanel
+        panelAriaLabel={
+          iFramePanelState.messageItem?.title ||
+          iFramePanelState.messageItem?.source ||
+          languagePack.aria_iframePanel
+        }
         open={iFramePanelState.isOpen}
         priority={40}
         showFrame={true}
@@ -504,6 +517,10 @@ export function AppShellPanels({
       </ChatPanel>
 
       <ChatPanel
+        panelAriaLabel={
+          viewSourcePanelState.citationItem?.title ||
+          languagePack.aria_viewSourcePanel
+        }
         open={viewSourcePanelState.isOpen}
         priority={30}
         showFrame={true}

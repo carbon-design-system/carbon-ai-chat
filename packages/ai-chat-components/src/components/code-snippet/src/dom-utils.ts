@@ -62,8 +62,19 @@ export function extractTextContent(element: Element): string {
 
 /**
  * Extracts text content from a slot's assigned nodes without trimming so streaming whitespace is preserved.
+ * Filters out elements with a slot attribute as they are meant for named slots.
  */
 export function extractSlotContent(slot: HTMLSlotElement): string {
   const nodes = slot.assignedNodes({ flatten: true });
-  return nodes.map((node) => node.textContent || "").join("");
+  return nodes
+    .filter((node) => {
+      // Filter out elements that have a slot attribute (they're for named slots)
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        return !element.hasAttribute("slot");
+      }
+      return true;
+    })
+    .map((node) => node.textContent || "")
+    .join("");
 }

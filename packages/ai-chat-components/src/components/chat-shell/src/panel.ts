@@ -7,10 +7,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, PropertyValues, html } from "lit";
+import { LitElement, PropertyValues, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import prefix from "../../../globals/settings.js";
 // @ts-ignore
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./panel.scss?lit";
 
 const ANIMATION_START_DETECTION_DELAY_MS = 120;
@@ -18,9 +20,9 @@ const MESSAGES_MAX_WIDTH_FALLBACK = 672; // Fallback if CSS custom property is n
 
 type AnimationState = "closed" | "closing" | "opening" | "open";
 
-@carbonElement("cds-aichat-panel")
+@carbonElement(`${prefix}-panel`)
 class CDSAIChatPanel extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * @internal
@@ -90,6 +92,18 @@ class CDSAIChatPanel extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   inert = false;
+
+  /**
+   * ARIA label for the panel. Describes the panel's purpose to screen readers.
+   */
+  @property({ type: String, attribute: "panel-aria-label" })
+  panelAriaLabel?: string;
+
+  /**
+   * ID of element that labels this panel. Takes precedence over panelAriaLabel.
+   */
+  @property({ type: String, attribute: "panel-aria-labelledby" })
+  panelAriaLabelledby?: string;
 
   /**
    * @internal
@@ -588,7 +602,14 @@ class CDSAIChatPanel extends LitElement {
       .join(" ");
 
     return html`
-      <div class="panel-content">
+      <div
+        class="panel-content"
+        role="dialog"
+        aria-modal="${this.fullWidth}"
+        aria-hidden="${!this.open}"
+        aria-label=${this.panelAriaLabel || nothing}
+        aria-labelledby=${this.panelAriaLabelledby || nothing}
+      >
         <div class=${headerClasses}>
           <slot name="header"></slot>
         </div>

@@ -1,0 +1,68 @@
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as VideoPlayerStories from "./video-player.stories";
+
+<Meta of={VideoPlayerStories} />
+
+# Video Player
+
+`<cds-aichat-video-player>` provides a unified interface for playing videos from multiple sources including YouTube, Vimeo, native video files, and more.
+
+## Key Features
+
+- **Multi-source support**: Automatically detects and handles YouTube, Vimeo, native video files, and Kaltura videos
+- **Accessibility**: Built-in keyboard navigation, ARIA labels, and subtitle support
+- **Responsive**: Configurable aspect ratio for different video formats
+- **Event handling**: Custom events for play, pause, ready, and error states
+
+## Supported Video Sources
+
+The component automatically detects and handles:
+
+- **YouTube**: `https://www.youtube.com/watch?v=VIDEO_ID` or `https://youtu.be/VIDEO_ID`
+- **Vimeo**: `https://vimeo.com/VIDEO_ID`
+- **Native files**: Direct links to `.mp4`, `.webm`, `.ogg` files
+- **Kaltura**: Kaltura video URLs
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```html
+<cds-aichat-video-player
+  source="https://www.youtube.com/watch?v=eZ1NizUx9U4"
+  title="Video Title"
+  description="Video description"
+  aria-label="Educational video"
+>
+</cds-aichat-video-player>
+```
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/video-player/index.js";
+```
+
+<Markdown>{`${cdnJs(["video-player"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Events
+
+The component fires the following custom events:
+
+```javascript
+const player = document.querySelector('cds-aichat-video-player');
+
+player.addEventListener('cds-aichat-video-player-ready', (event) => {
+  console.log('Video is ready to play');
+});
+
+player.addEventListener('cds-aichat-video-player-error', (event) => {
+  console.error('Video error:', event.detail);
+});
+```
+
+## Component API
+
+<ArgTypes of={VideoPlayerStories} />

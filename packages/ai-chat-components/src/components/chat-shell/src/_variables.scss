@@ -8,16 +8,29 @@
  */
 
 @use "@carbon/styles/scss/theme";
+@use "../../../globals/scss/config" as config;
+@use "../../../globals/scss/tokens-layout" as layout;
 
 // ============================================================================
 // Variables
 // ============================================================================
 
-$messages-max-width: var(--cds-aichat-messages-max-width, 672px);
-$messages-min-width: var(--cds-aichat-messages-min-width, 320px);
-$workspace-min-width: var(--cds-aichat-workspace-min-width, 640px);
-$history-width: var(--cds-aichat-history-width, 320px);
+// Layout variables using tokens from the shared token system
+$messages-max-width: config.get-var(
+  "messages-max-width",
+  layout.$messages-max-width
+);
+$messages-min-width: config.get-var(
+  "messages-min-width",
+  layout.$messages-min-width
+);
+$workspace-min-width: config.get-var(
+  "workspace-min-width",
+  layout.$workspace-min-width
+);
+$history-width: config.get-var("history-width", layout.$history-width);
 
+// Shadow variables (component-specific, not part of shared tokens)
 $ai-box-shadow-inner: inset 0 -80px 70px -65px
   var(--cds-ai-inner-shadow, #{theme.$ai-inner-shadow});
 $ai-box-shadow-outer:
@@ -27,5 +40,3 @@ $ai-box-shadow-outer:
   -56px 64px 64px -24px
     var(--cds-ai-popover-shadow-outer-02, #{theme.$ai-popover-shadow-outer-02});
 $default-box-shadow: 0 2px 6px var(--cds-shadow, #{theme.$shadow});
-
-// Made with Bob

@@ -7,10 +7,7 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
 

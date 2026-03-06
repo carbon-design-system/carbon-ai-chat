@@ -12,6 +12,7 @@ import { createComponent } from "@lit/react";
 import "../index";
 import { CDSAIChatTable } from "../src/table";
 import { headers, rows } from "./story-data";
+import Card from "../../../react/card";
 
 const Table = createComponent({
   tagName: "cds-aichat-table",
@@ -24,9 +25,44 @@ const Table = createComponent({
   },
 });
 
+// Helper function to render with or without card wrapper
+const renderTable = (args) => {
+  const table = (
+    <Table
+      data-rounded={args.useCard}
+      table-title={args.tableTitle}
+      table-description={args.tableDescription}
+      filter-placeholder-text={args.filterPlaceholderText}
+      previous-page-text={args.previousPageText}
+      next-page-text={args.nextPageText}
+      items-per-page-text={args.itemsPerPageText}
+      locale={args.locale}
+      default-page-size={args.defaultPageSize}
+      headers={args.headers}
+      rows={args.rows}
+      loading={args.loading}
+    />
+  );
+
+  return args.useCard ? (
+    <Card isFlush>
+      <div slot="body">{table}</div>
+    </Card>
+  ) : (
+    table
+  );
+};
+
 export default {
   title: "Components/Table",
   argTypes: {
+    useCard: {
+      control: "boolean",
+      description: "Wrap in card wrapper",
+      table: {
+        category: "Wrapper",
+      },
+    },
     tableTitle: {
       control: "text",
       description: "Optional heading displayed above the table.",
@@ -80,6 +116,7 @@ export default {
 
 export const Default = {
   args: {
+    useCard: true,
     tableTitle: "Agent roster",
     tableDescription: "Operational view of AI chat team members.",
     headers,
@@ -92,21 +129,7 @@ export const Default = {
     locale: "en",
     defaultPageSize: 5,
   },
-  render: (args) => (
-    <Table
-      table-title={args.tableTitle}
-      table-description={args.tableDescription}
-      filter-placeholder-text={args.filterPlaceholderText}
-      previous-page-text={args.previousPageText}
-      next-page-text={args.nextPageText}
-      items-per-page-text={args.itemsPerPageText}
-      locale={args.locale}
-      default-page-size={args.defaultPageSize}
-      headers={args.headers}
-      rows={args.rows}
-      loading={args.loading}
-    />
-  ),
+  render: (args) => renderTable(args),
 };
 
 export const Loading = {
@@ -114,5 +137,13 @@ export const Loading = {
     ...Default.args,
     loading: true,
   },
-  render: Default.render,
+  render: (args) => renderTable(args),
+};
+
+export const WithPagination = {
+  args: {
+    ...Default.args,
+    defaultPageSize: 2, // 6 rows with page size 2 = 3 pages
+  },
+  render: (args) => renderTable(args),
 };

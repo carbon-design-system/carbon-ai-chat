@@ -11,6 +11,7 @@ import { LitElement, html } from "lit";
 import { property, query } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./workspace-shell-header.scss?lit";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
@@ -28,7 +29,7 @@ import "../../truncated-text/index.js";
  */
 @carbonElement(`${prefix}-workspace-shell-header`)
 class CDSAIChatWorkspaceShellHeader extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Sets default slot value to toolbar

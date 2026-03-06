@@ -13,6 +13,7 @@ import * as WorkspaceShellStories from "./workspace-shell.stories";
 
 ## Table of Contents
 - [Overview](#overview)
+- [Customization](#customization)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
 - [JS (via CDN)](#js-via-cdn)
@@ -83,6 +84,28 @@ Alternatively, adopters can use the **provided subcomponents**, which are design
 
 
 Using these subcomponents ensures visual consistency and predictable structure while still giving you the flexibility to build a fully customized workspace experience.
+
+## Customization
+
+> ** For information about styling slotted content with modifiers (`data-rounded`, `data-stacked`) and CSS custom properties, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+### Layout Tokens
+
+When used inside `cds-aichat-shell`, the workspace and history panel widths are controlled by chat shell layout tokens. See the Chat shell story for the full layout token list.
+
+If you are using this component with `@carbon/ai-chat` (most common) you can apply these CSS variables anywhere on your page.
+
+```css
+cds-aichat-shell {
+  --cds-aichat-workspace-min-width: 520px;
+  --cds-aichat-history-width: 360px;
+}
+```
+
+| Token | Default | Description |
+| --- | --- | --- |
+| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel |
+| `--cds-aichat-history-width` | `320px` | Width of the history / conversation list panel |
 
 ## Component API
 

@@ -183,8 +183,8 @@ export const CardFooterStory = {
   render: (args) => (
     <CardFooter
       style={
-        args["--cds-aichat-rounded-modifier-radius"]
-          ? { "--cds-aichat-rounded-modifier-radius": "8px" }
+        args["--cds-aichat-border-radius"]
+          ? { "--cds-aichat-border-radius": "8px" }
           : undefined
       }
       size={args.footerSize}

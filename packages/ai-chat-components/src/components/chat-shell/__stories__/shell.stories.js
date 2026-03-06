@@ -26,11 +26,15 @@ const coreSlotContent = html`
 `;
 
 export default {
-  title: "Components/Chat shell",
+  title: "Preview/Chat shell",
   args: {
     aiEnabled: false,
     showFrame: true,
-    roundedCorners: true,
+    cornerAll: "round",
+    cornerStartStart: undefined,
+    cornerStartEnd: undefined,
+    cornerEndStart: undefined,
+    cornerEndEnd: undefined,
     showHistory: false,
     showWorkspace: false,
     workspaceLocation: "start",
@@ -40,7 +44,31 @@ export default {
   argTypes: {
     aiEnabled: { control: "boolean" },
     showFrame: { control: "boolean" },
-    roundedCorners: { control: "boolean" },
+    cornerAll: {
+      control: { type: "radio" },
+      options: ["round", "square"],
+      description: "Sets all corners (individual corners override this)",
+    },
+    cornerStartStart: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Top-left corner in LTR (overrides cornerAll)",
+    },
+    cornerStartEnd: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Top-right corner in LTR (overrides cornerAll)",
+    },
+    cornerEndStart: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Bottom-left corner in LTR (overrides cornerAll)",
+    },
+    cornerEndEnd: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Bottom-right corner in LTR (overrides cornerAll)",
+    },
     showHistory: { control: "boolean" },
     showWorkspace: { control: "boolean" },
     contentMaxWidth: { control: "boolean" },
@@ -68,7 +96,11 @@ export const Default = {
     const {
       aiEnabled,
       showFrame,
-      roundedCorners,
+      cornerAll,
+      cornerStartStart,
+      cornerStartEnd,
+      cornerEndStart,
+      cornerEndEnd,
       showHistory,
       showWorkspace,
       workspaceLocation,
@@ -80,7 +112,11 @@ export const Default = {
       <cds-aichat-shell
         ?ai-enabled=${aiEnabled}
         ?show-frame=${showFrame}
-        ?rounded-corners=${roundedCorners}
+        corner-all=${cornerAll}
+        corner-start-start=${cornerStartStart || nothing}
+        corner-start-end=${cornerStartEnd || nothing}
+        corner-end-start=${cornerEndStart || nothing}
+        corner-end-end=${cornerEndEnd || nothing}
         ?show-history=${showHistory}
         ?show-workspace=${showWorkspace}
         ?content-max-width=${contentMaxWidth}
@@ -193,7 +229,11 @@ export const Slots = {
     const {
       aiEnabled,
       showFrame,
-      roundedCorners,
+      cornerAll,
+      cornerStartStart,
+      cornerStartEnd,
+      cornerEndStart,
+      cornerEndEnd,
       showHistory,
       showWorkspace,
       workspaceLocation,
@@ -251,7 +291,11 @@ export const Slots = {
         <cds-aichat-shell
           ?ai-enabled=${aiEnabled}
           ?show-frame=${showFrame}
-          ?rounded-corners=${roundedCorners}
+          corner-all=${cornerAll}
+          corner-start-start=${cornerStartStart || nothing}
+          corner-start-end=${cornerStartEnd || nothing}
+          corner-end-start=${cornerEndStart || nothing}
+          corner-end-end=${cornerEndEnd || nothing}
           ?show-history=${showHistory}
           ?show-workspace=${showWorkspace}
           ?content-max-width=${contentMaxWidth}
@@ -288,7 +332,11 @@ export const SidebarWorkspace = {
     const {
       aiEnabled,
       showFrame,
-      roundedCorners,
+      cornerAll,
+      cornerStartStart,
+      cornerStartEnd,
+      cornerEndStart,
+      cornerEndEnd,
       workspaceLocation,
       contentMaxWidth,
     } = args;
@@ -326,7 +374,11 @@ export const SidebarWorkspace = {
         class="sidebar-workspace-shell"
         ?ai-enabled=${aiEnabled}
         ?show-frame=${showFrame}
-        ?rounded-corners=${roundedCorners}
+        corner-all=${cornerAll}
+        corner-start-start=${cornerStartStart || nothing}
+        corner-start-end=${cornerStartEnd || nothing}
+        corner-end-start=${cornerEndStart || nothing}
+        corner-end-end=${cornerEndEnd || nothing}
         ?content-max-width=${contentMaxWidth}
         workspace-location=${workspaceLocation}
       >

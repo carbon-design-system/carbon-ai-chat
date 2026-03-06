@@ -5,6 +5,77 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/utilities/focus-outline" as *;
+@use "@carbon/styles/scss/motion";
+@use "../../../globals/scss/modifiers" as *;
+
+:host {
+  @include rounded-modifiers;
+
+  display: block;
+}
+
+// Apply rounded corners to the container when data-rounded is set
+:host([data-rounded]),
+:host([data-rounded=""]) {
+  overflow: hidden;
+
+  .cds-ai-chat-table-container {
+    @include rounded-self;
+
+    overflow: hidden;
+  }
+}
+
+// Carbon link styles for links in table cells
+a {
+  color: theme.$link-primary;
+  outline: none;
+  text-decoration: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: color motion.$duration-fast-01 motion(standard, productive);
+  }
+
+  &:hover {
+    color: theme.$link-primary-hover;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    @include focus-outline;
+
+    outline-color: theme.$focus;
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: theme.$link-primary;
+  }
+
+  &:active {
+    @include focus-outline;
+
+    color: theme.$link-primary;
+    outline-color: theme.$focus;
+    text-decoration: underline;
+  }
+
+  &:visited:hover {
+    color: theme.$link-primary-hover;
+  }
+
+  &:active:visited,
+  &:active:visited:hover {
+    @include focus-outline;
+
+    color: theme.$link-primary;
+    outline-color: theme.$focus;
+    text-decoration: underline;
+  }
+}
+
 // prevent the table columns from being squished in narrow widths
 cds-table::part(inner-container) {
   display: grid;

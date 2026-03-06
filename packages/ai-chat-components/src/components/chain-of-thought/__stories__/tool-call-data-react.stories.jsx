@@ -63,11 +63,12 @@ export const Default = {
       outputLabelText={args.outputLabelText}
       toolLabelText={args.toolLabelText}
     >
-      <Markdown slot="description">
-        Searching knowledge base for password reset guidance.
-      </Markdown>
-      <Markdown slot="input">{request}</Markdown>
-      <Markdown slot="output">{response}</Markdown>
+      <Markdown
+        slot="description"
+        markdown="Searching knowledge base for password reset guidance."
+      />
+      <Markdown slot="input" markdown={request} />
+      <Markdown slot="output" markdown={response} />
     </ToolCallData>
   ),
 };

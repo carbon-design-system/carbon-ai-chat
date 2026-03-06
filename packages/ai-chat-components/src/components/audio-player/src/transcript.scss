@@ -1,0 +1,68 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/spacing";
+@use "@carbon/styles/scss/type";
+
+:host {
+  display: block;
+}
+
+.transcript {
+  padding: 0 spacing.$spacing-05 spacing.$spacing-05 spacing.$spacing-05;
+}
+
+.transcript__toggle {
+  @include type.type-style("label-01");
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background-color: transparent;
+  color: theme.$text-secondary;
+  cursor: pointer;
+  inline-size: 100%;
+  text-align: start;
+
+  &:hover {
+    background-color: theme.$layer-hover-01;
+  }
+
+  &:focus {
+    outline: 2px solid theme.$focus;
+    outline-offset: -2px;
+  }
+}
+
+.transcript__toggle-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.transcript__language {
+  color: theme.$text-secondary;
+  font-weight: 400;
+  margin-inline-start: spacing.$spacing-02;
+}
+
+.transcript__toggle-icon {
+  flex-shrink: 0;
+  margin-inline-start: spacing.$spacing-03;
+}
+
+.transcript__content {
+  padding-block-start: spacing.$spacing-03;
+}
+
+// Made with Bob
