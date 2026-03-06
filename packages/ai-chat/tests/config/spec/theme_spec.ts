@@ -63,7 +63,12 @@ describe("Config Theme", () => {
         originalCarbonTheme: CarbonTheme.G90,
         derivedCarbonTheme: CarbonTheme.G90,
         aiEnabled: true,
-        corners: CornersType.SQUARE,
+        corners: {
+          startStart: CornersType.SQUARE,
+          startEnd: CornersType.SQUARE,
+          endStart: CornersType.SQUARE,
+          endEnd: CornersType.SQUARE,
+        },
         whiteLabelTheme: undefined,
       });
     });
@@ -93,7 +98,12 @@ describe("Config Theme", () => {
       expect(state.config.derived.themeWithDefaults).toEqual({
         derivedCarbonTheme: "white",
         originalCarbonTheme: "white",
-        corners: "round",
+        corners: {
+          startStart: CornersType.ROUND,
+          startEnd: CornersType.ROUND,
+          endStart: CornersType.ROUND,
+          endEnd: CornersType.ROUND,
+        },
         aiEnabled: true,
         whiteLabelTheme: undefined,
       });
@@ -123,7 +133,12 @@ describe("Config Theme", () => {
       expect(state.config.derived.themeWithDefaults).toEqual({
         derivedCarbonTheme: "white",
         originalCarbonTheme: null,
-        corners: "round",
+        corners: {
+          startStart: CornersType.ROUND,
+          startEnd: CornersType.ROUND,
+          endStart: CornersType.ROUND,
+          endEnd: CornersType.ROUND,
+        },
         aiEnabled: true,
         whiteLabelTheme: undefined,
       });
@@ -197,9 +212,12 @@ describe("Config Theme", () => {
         state.config.derived.themeWithDefaults.originalCarbonTheme,
       ).toEqual(CarbonTheme.G90);
       expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
-      expect(state.config.derived.themeWithDefaults.corners).toEqual(
-        CornersType.SQUARE,
-      );
+      expect(state.config.derived.themeWithDefaults.corners).toEqual({
+        startStart: CornersType.SQUARE,
+        startEnd: CornersType.SQUARE,
+        endStart: CornersType.SQUARE,
+        endEnd: CornersType.SQUARE,
+      });
     });
 
     it("should preserve derivedCarbonTheme during dynamic config updates in inherit mode", async () => {
@@ -233,7 +251,12 @@ describe("Config Theme", () => {
           originalCarbonTheme: null,
           derivedCarbonTheme: "g10",
           aiEnabled: true,
-          corners: "round",
+          corners: {
+            startStart: CornersType.ROUND,
+            startEnd: CornersType.ROUND,
+            endStart: CornersType.ROUND,
+            endEnd: CornersType.ROUND,
+          },
         },
       });
 
@@ -269,5 +292,125 @@ describe("Config Theme", () => {
       ); // Should be preserved
       expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(false); // Should be updated
     });
+  });
+});
+
+it("should store per-corner config in Redux state", async () => {
+  const layout = {
+    corners: {
+      startStart: CornersType.ROUND,
+      startEnd: CornersType.SQUARE,
+      endStart: CornersType.SQUARE,
+      endEnd: CornersType.ROUND,
+    },
+  };
+
+  const props: Partial<ChatContainerProps> = {
+    ...createBaseTestProps(),
+    injectCarbonTheme: CarbonTheme.G90,
+    aiEnabled: true,
+    layout,
+  };
+
+  let capturedInstance: any = null;
+  const onBeforeRender = jest.fn((instance) => {
+    capturedInstance = instance;
+  });
+
+  render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+  await waitFor(
+    () => {
+      expect(capturedInstance).not.toBeNull();
+    },
+    { timeout: 5000 },
+  );
+
+  const store = (capturedInstance as any).serviceManager.store;
+  const state: AppState = store.getState();
+  expect(state.config.derived.themeWithDefaults.corners).toEqual({
+    startStart: CornersType.ROUND,
+    startEnd: CornersType.SQUARE,
+    endStart: CornersType.SQUARE,
+    endEnd: CornersType.ROUND,
+  });
+});
+
+it("should handle partial per-corner config with defaults", async () => {
+  const layout = {
+    corners: {
+      startStart: CornersType.SQUARE,
+      endEnd: CornersType.SQUARE,
+      // startEnd and endStart should default to ROUND
+    },
+  };
+
+  const props: Partial<ChatContainerProps> = {
+    ...createBaseTestProps(),
+    layout,
+  };
+
+  let capturedInstance: any = null;
+  const onBeforeRender = jest.fn((instance) => {
+    capturedInstance = instance;
+  });
+
+  render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+  await waitFor(
+    () => {
+      expect(capturedInstance).not.toBeNull();
+    },
+    { timeout: 5000 },
+  );
+
+  const store = (capturedInstance as any).serviceManager.store;
+  const state: AppState = store.getState();
+  expect(state.config.derived.themeWithDefaults.corners).toEqual({
+    startStart: CornersType.SQUARE,
+    startEnd: CornersType.ROUND, // defaulted
+    endStart: CornersType.ROUND, // defaulted
+    endEnd: CornersType.SQUARE,
+  });
+});
+
+it("should force all corners to square when showFrame is false", async () => {
+  const layout = {
+    showFrame: false,
+    corners: {
+      startStart: CornersType.ROUND,
+      startEnd: CornersType.ROUND,
+      endStart: CornersType.ROUND,
+      endEnd: CornersType.ROUND,
+    },
+  };
+
+  const props: Partial<ChatContainerProps> = {
+    ...createBaseTestProps(),
+    layout,
+  };
+
+  let capturedInstance: any = null;
+  const onBeforeRender = jest.fn((instance) => {
+    capturedInstance = instance;
+  });
+
+  render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+  await waitFor(
+    () => {
+      expect(capturedInstance).not.toBeNull();
+    },
+    { timeout: 5000 },
+  );
+
+  const store = (capturedInstance as any).serviceManager.store;
+  const state: AppState = store.getState();
+  // All corners should be forced to square when showFrame is false
+  expect(state.config.derived.themeWithDefaults.corners).toEqual({
+    startStart: CornersType.SQUARE,
+    startEnd: CornersType.SQUARE,
+    endStart: CornersType.SQUARE,
+    endEnd: CornersType.SQUARE,
   });
 });

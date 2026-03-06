@@ -10,9 +10,9 @@
 import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { html } from "lit";
-import { ifDefined } from "lit/directives/if-defined.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./chain-of-thought-toggle.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -24,7 +24,7 @@ import type { ChainOfThoughtToggleEventDetail } from "../defs.js";
  */
 @carbonElement(`${prefix}-chain-of-thought-toggle`)
 class CDSAIChatChainOfThoughtToggle extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Indicates if the chain of thought panel is open.
@@ -82,7 +82,7 @@ class CDSAIChatChainOfThoughtToggle extends LitElement {
         class="${prefix}--chain-of-thought-button"
         type="button"
         aria-expanded=${this.open ? "true" : "false"}
-        aria-controls=${ifDefined(this.panelId)}
+        ?aria-controls=${this.panelId}
         ?disabled=${this.disabled}
         @click=${this.handleToggleClick}
       >

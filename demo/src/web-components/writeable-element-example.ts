@@ -14,25 +14,19 @@ import { customElement, property } from "lit/decorators.js";
 class WriteableElementExample extends LitElement {
   static styles = css`
     .writeable-element-external--not-rounded {
-      --cds-aichat-rounded-modifier-radius-start-start: 0;
-      --cds-aichat-rounded-modifier-radius-start-end: 0;
-      --cds-aichat-rounded-modifier-radius-end-start: 0;
-      --cds-aichat-rounded-modifier-radius-end-end: 0;
+      --cds-aichat-border-radius-start-start: 0;
+      --cds-aichat-border-radius-start-end: 0;
+      --cds-aichat-border-radius-end-start: 0;
+      --cds-aichat-border-radius-end-end: 0;
     }
     .external {
       background: green;
       color: #fff;
       padding: 1rem;
-      border-start-start-radius: var(
-        --cds-aichat-rounded-modifier-radius-start-start
-      );
-      border-start-end-radius: var(
-        --cds-aichat-rounded-modifier-radius-start-end
-      );
-      border-end-start-radius: var(
-        --cds-aichat-rounded-modifier-radius-end-start
-      );
-      border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end);
+      border-start-start-radius: var(--cds-aichat-border-radius-start-start);
+      border-start-end-radius: var(--cds-aichat-border-radius-start-end);
+      border-end-start-radius: var(--cds-aichat-border-radius-end-start);
+      border-end-end-radius: var(--cds-aichat-border-radius-end-end);
     }
   `;
 

@@ -7,34 +7,33 @@
 
 .app-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background-color: #161616;
-  color: #f4f4f4;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1rem;
-  z-index: 10000;
+  background-color: #161616;
+  block-size: 48px;
+  color: #f4f4f4;
+  inset-block-start: 0;
+  inset-inline: 0;
 }
 
 .app-header__title {
+  margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  margin: 0;
 }
 
 .app-header__button {
-  background: transparent;
-  border: none;
-  color: #f4f4f4;
-  cursor: pointer;
-  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #f4f4f4;
+  cursor: pointer;
   /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
   transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
 }
@@ -50,23 +49,23 @@
 
 .sidebar {
   position: fixed;
-  right: 0;
-  top: 48px;
-  height: calc(100vh - 48px);
-  width: 320px;
   z-index: 9999;
+  block-size: calc(100vh - 48px);
+  inline-size: 320px;
+  inset-block-start: 48px;
+  inset-inline-end: 0;
   /* Carbon motion token: motion.$duration-moderate-01 (240ms) with motion.motion(standard, productive) */
   transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
   visibility: visible;
 }
 
 .sidebar .chat-custom-element {
-  height: 100%;
-  width: 100%;
+  block-size: 100%;
+  inline-size: 100%;
 }
 
 .sidebar--expanded {
-  width: calc(100vw - 320px - 2rem);
+  inline-size: calc(100vw - 320px - 2rem);
 }
 
 .sidebar--expanding {
@@ -80,26 +79,25 @@
 }
 
 .sidebar--closing {
-  right: calc(calc(320px + 1rem) * -1);
-  width: 320px;
+  inline-size: 320px;
+  inset-inline-end: calc(calc(320px + 1rem) * -1);
 }
 
 .sidebar--closed {
-  right: calc(calc(320px + 1rem) * -1);
-  width: 320px;
+  inline-size: 320px;
+  inset-inline-end: calc(calc(320px + 1rem) * -1);
   visibility: hidden;
 }
 
 /* RTL support */
 [dir="rtl"] .sidebar {
-  right: auto;
-  left: 0;
+  inset-inline: 0 auto;
   /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
   transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
 }
 
 [dir="rtl"] .sidebar--expanded {
-  width: calc(100vw - 320px - 2rem);
+  inline-size: calc(100vw - 320px - 2rem);
 }
 
 [dir="rtl"] .sidebar--expanding {
@@ -113,14 +111,13 @@
 }
 
 [dir="rtl"] .sidebar--closing {
-  left: calc(calc(320px + 1rem) * -1);
-  width: 320px;
+  inline-size: 320px;
+  inset-inline-start: calc(calc(320px + 1rem) * -1);
 }
 
 [dir="rtl"] .sidebar--closed {
-  right: auto;
-  left: calc(calc(320px + 1rem) * -1);
-  width: 320px;
+  inline-size: 320px;
+  inset-inline: calc(calc(320px + 1rem) * -1) auto;
   /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
   transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 0s;
 }

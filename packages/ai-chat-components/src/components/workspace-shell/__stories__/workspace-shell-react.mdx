@@ -4,7 +4,7 @@ import * as WorkspaceShellStories from "./workspace-shell-react.stories";
 
 <Meta of={WorkspaceShellStories} />
 
-# AI Chat Workspace shell
+# Workspace shell
 
 
 ## Getting started
@@ -78,6 +78,34 @@ import "@carbon/ai-chat-components/es/react/workspace-shell-footer.js";
   </WorkspaceShell>
 
 ```
+
+## Customization
+
+> ** For information about styling slotted content with modifiers (`data-rounded`, `data-stacked`) and CSS custom properties, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+### Layout Tokens
+
+When used inside `ChatShell`, the workspace and history panel widths are controlled by chat shell layout tokens. See the Chat shell story for the full layout token list.
+
+If you are using this component with `@carbon/ai-chat` (most common) you can apply these CSS variables anywhere on your page.
+
+```jsx
+<div
+  style={{
+    "--cds-aichat-workspace-min-width": "520px",
+  }}
+>
+  <ChatShell showFrame showWorkspace>
+    <WorkspaceShell>
+      <WorkspaceShellBody>Workspace content</WorkspaceShellBody>
+    </WorkspaceShell>
+  </ChatShell>
+</div>
+```
+
+| Token | Default | Description |
+| --- | --- | --- |
+| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel. Will switch from inline to an overlay panel if it can't render to at least this size inline. |
 
 ## Feedback
 

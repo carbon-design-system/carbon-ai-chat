@@ -39,3 +39,17 @@ snapshots["cds-aichat-shell Snapshots should match snapshot with all properties 
 `;
 /* end snapshot cds-aichat-shell Snapshots should match snapshot with all properties enabled */
 
+snapshots["cds-aichat-shell Snapshots should match snapshot with mixed corner configuration"] = 
+`<cds-aichat-shell
+  content-max-width=""
+  corner-all="square"
+  corner-end-end="round"
+  corner-start-start="round"
+  data-initializing=""
+  history-location="start"
+  workspace-location="start"
+>
+</cds-aichat-shell>
+`;
+/* end snapshot cds-aichat-shell Snapshots should match snapshot with mixed corner configuration */
+

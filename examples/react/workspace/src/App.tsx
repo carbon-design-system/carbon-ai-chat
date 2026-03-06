@@ -31,6 +31,7 @@ import { InventoryReportExample } from "./InventoryReportExample";
 import { InventoryStatusExample } from "./InventoryStatusExample";
 import { OutstandingOrdersExample } from "./OutstandingOrdersExample";
 import { OutstandingOrdersCard } from "./OutstandingOrdersCard";
+import { SqlEditorExample } from "./SqlEditorExample";
 
 /**
  * It is preferable to create your configuration object outside of your React functions. You can also make use of
@@ -208,6 +209,15 @@ function App() {
         component = (
           <OutstandingOrdersExample
             location="workspacePanelElement"
+            instance={instance}
+            workspaceId={workspaceData.workspaceId}
+            additionalData={workspaceData.additionalData}
+          />
+        );
+        break;
+      case "sql_editor":
+        component = (
+          <SqlEditorExample
             instance={instance}
             workspaceId={workspaceData.workspaceId}
             additionalData={workspaceData.additionalData}

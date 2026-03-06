@@ -8,7 +8,9 @@ import React, {
 } from "react";
 
 import CodeSnippet from "../../../react/code-snippet";
-import CodeSnippetCard from "../../../react/code-snippet-card";
+import Card from "../../../react/card";
+import { Download, Share } from "@carbon/icons-react";
+import { AILabel, AILabelContent } from "@carbon/react";
 
 const multilineCode = `/**
  * Carbon highlight showcase: control keywords, types, literals, doc comments, and more.
@@ -197,10 +199,14 @@ const renderSnippet = (args, code) => {
     commonProps.onChange = onChange;
   }
 
+  const snippet = <CodeSnippet {...commonProps}>{code}</CodeSnippet>;
+
   return useCard ? (
-    <CodeSnippetCard {...commonProps}>{code}</CodeSnippetCard>
+    <Card isFlush>
+      <div slot="body">{snippet}</div>
+    </Card>
   ) : (
-    <CodeSnippet {...commonProps}>{code}</CodeSnippet>
+    snippet
   );
 };
 
@@ -296,6 +302,8 @@ const StreamingDemo = (args) => {
     commonProps.feedback = feedback;
   }
 
+  const snippet = <CodeSnippet {...commonProps}>{streamedContent}</CodeSnippet>;
+
   return (
     <div>
       <button
@@ -310,9 +318,11 @@ const StreamingDemo = (args) => {
         Restart Streaming
       </button>
       {useCard ? (
-        <CodeSnippetCard {...commonProps}>{streamedContent}</CodeSnippetCard>
+        <Card>
+          <div slot="body">{snippet}</div>
+        </Card>
       ) : (
-        <CodeSnippet {...commonProps}>{streamedContent}</CodeSnippet>
+        snippet
       )}
     </div>
   );
@@ -492,4 +502,253 @@ export const EditableEmpty = {
     wrapText: false,
   },
   render: (args) => renderSnippet(args, ""),
+};
+
+export const WithActions = {
+  args: {
+    useCard: true,
+    highlight: true,
+    editable: false,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+    maxCollapsedNumberOfRows: 15,
+  },
+  render: (args) => {
+    const actions = [
+      {
+        text: "Download",
+        icon: Download,
+        onClick: () => console.log("Download clicked"),
+      },
+      {
+        text: "Share",
+        icon: Share,
+        onClick: () => console.log("Share clicked"),
+      },
+    ];
+
+    const snippet = (
+      <CodeSnippet {...args} actions={actions} overflow>
+        {multilineCode}
+      </CodeSnippet>
+    );
+
+    return args.useCard ? (
+      <Card>
+        <div slot="body">{snippet}</div>
+      </Card>
+    ) : (
+      snippet
+    );
+  },
+};
+
+export const WithActionsAndDecorator = {
+  args: {
+    useCard: true,
+    highlight: true,
+    editable: false,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+    maxCollapsedNumberOfRows: 15,
+  },
+  render: (args) => {
+    const actions = [
+      {
+        text: "Download",
+        icon: Download,
+        onClick: () => console.log("Download clicked"),
+      },
+      {
+        text: "Share",
+        icon: Share,
+        onClick: () => console.log("Share clicked"),
+      },
+    ];
+
+    const snippet = (
+      <CodeSnippet
+        {...args}
+        data-rounded={args.useCard}
+        actions={actions}
+        overflow
+      >
+        <AILabel size="2xs" autoalign alignment="bottom" slot="decorator">
+          <AILabelContent>
+            <div>This code was generated. Review carefully before use.</div>
+          </AILabelContent>
+        </AILabel>
+        {multilineCode}
+      </CodeSnippet>
+    );
+
+    return args.useCard ? (
+      <Card>
+        <div slot="body">{snippet}</div>
+      </Card>
+    ) : (
+      snippet
+    );
+  },
+};
+
+export const WithFixedActions = {
+  args: {
+    useCard: false,
+    highlight: true,
+    editable: false,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+  },
+  render: (args) => {
+    const actions = [
+      {
+        text: "Download",
+        icon: Download,
+        onClick: () => console.log("Download clicked"),
+      },
+    ];
+
+    return (
+      <CodeSnippet {...args} actions={actions}>
+        <div slot="fixed-actions">
+          <button
+            onClick={() => console.log("Fixed action clicked")}
+            style={{
+              padding: "0.5rem",
+              cursor: "pointer",
+              border: "1px solid #ccc",
+              background: "transparent",
+            }}
+          >
+            Fixed Action
+          </button>
+        </div>
+        {multilineCode}
+      </CodeSnippet>
+    );
+  },
+};
+
+const sqlCode = `-- Order Analytics Report
+-- Analyzes purchasing patterns and outstanding orders
+
+WITH customer_orders AS (
+  SELECT
+    c.customer_id,
+    c.customer_name,
+    c.email,
+    c.region,
+    COUNT(DISTINCT o.order_id) as total_orders,
+    SUM(o.total_amount) as total_spent,
+    AVG(o.total_amount) as avg_order_value,
+    MAX(o.order_date) as last_order_date
+  FROM customers c
+  LEFT JOIN orders o ON c.customer_id = o.customer_id
+  WHERE o.order_status IN ('pending', 'processing', 'shipped')
+    AND o.order_date >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)
+  GROUP BY c.customer_id, c.customer_name, c.email, c.region
+),
+product_performance AS (
+  SELECT
+    p.product_id,
+    p.product_name,
+    p.category,
+    COUNT(DISTINCT oi.order_id) as times_ordered,
+    SUM(oi.quantity) as total_quantity_sold,
+    SUM(oi.quantity * oi.unit_price) as total_revenue,
+    AVG(oi.unit_price) as avg_selling_price
+  FROM products p
+  INNER JOIN order_items oi ON p.product_id = oi.product_id
+  INNER JOIN orders o ON oi.order_id = o.order_id
+  WHERE o.order_status != 'cancelled'
+    AND o.order_date >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)
+  GROUP BY p.product_id, p.product_name, p.category
+),
+inventory_status AS (
+  SELECT
+    i.product_id,
+    i.warehouse_location,
+    i.quantity_on_hand,
+    i.reorder_level,
+    i.reorder_quantity,
+    CASE
+      WHEN i.quantity_on_hand <= i.reorder_level THEN 'Low Stock'
+      WHEN i.quantity_on_hand <= (i.reorder_level * 1.5) THEN 'Medium Stock'
+      ELSE 'Adequate Stock'
+    END as stock_status
+  FROM inventory i
+)
+
+SELECT
+  co.customer_name,
+  co.email,
+  co.region,
+  co.total_orders,
+  co.total_spent,
+  co.avg_order_value,
+  co.last_order_date,
+  pp.product_name,
+  pp.category,
+  pp.times_ordered,
+  pp.total_quantity_sold,
+  pp.total_revenue,
+  ist.warehouse_location,
+  ist.quantity_on_hand,
+  ist.stock_status
+FROM customer_orders co
+CROSS JOIN product_performance pp
+LEFT JOIN inventory_status ist ON pp.product_id = ist.product_id
+WHERE co.total_orders > 0
+  AND pp.total_revenue > 1000
+ORDER BY co.total_spent DESC, pp.total_revenue DESC
+LIMIT 100;`;
+
+export const FullHeightMode = {
+  args: {
+    useCard: false,
+    highlight: true,
+    editable: true,
+    disabled: false,
+    hideCopyButton: false,
+    wrapText: false,
+    maxCollapsedNumberOfRows: 0,
+    maxExpandedNumberOfRows: 0,
+  },
+  render: (args) => {
+    // Create a wrapper component to properly handle the height constraint
+    const Wrapper = () => (
+      <div
+        style={{
+          height: "500px",
+          display: "flex",
+          flexDirection: "column",
+          border: "1px solid #ccc",
+          padding: "1rem",
+        }}
+      >
+        <h3 style={{ margin: "0 0 1rem 0" }}>SQL Editor (Full-Height Mode)</h3>
+        <p style={{ margin: "0 0 1rem 0", color: "#666" }}>
+          When both max-collapsed-number-of-rows and max-expanded-number-of-rows
+          are set to 0, the component fills its container's height with a
+          scrollbar. Perfect for edit mode scenarios.
+        </p>
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden",
+          }}
+        >
+          <CodeSnippet {...args} language="sql">
+            {sqlCode}
+          </CodeSnippet>
+        </div>
+      </div>
+    );
+    return <Wrapper />;
+  },
 };

@@ -157,7 +157,7 @@ export default {
       control: "boolean",
       description: "AI Label slot in the toolbar component `slot='decorator'`",
     },
-    "--cds-aichat-rounded-modifier-radius": {
+    "--cds-aichat-border-radius": {
       control: "boolean",
       description:
         "This is a story only control, which defines css custom property on the toolbar. this gets inherited automatically when placed inside ai-chat. override this to 0px in any particular scope to opt out of rounded border-radius",
@@ -175,7 +175,7 @@ export const Default = {
     actions,
     aiLabel,
     navigation,
-    "--cds-aichat-rounded-modifier-radius": borderRadius,
+    "--cds-aichat-border-radius": borderRadius,
     fixedActions,
   }) => {
     return (
@@ -184,7 +184,7 @@ export const Default = {
         overflow={overflow}
         style={
           borderRadius
-            ? { "--cds-aichat-rounded-modifier-radius": "8px" }
+            ? { "--cds-aichat-border-radius": "8px" }
             : undefined
         }
       >

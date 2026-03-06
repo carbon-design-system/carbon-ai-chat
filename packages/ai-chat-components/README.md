@@ -2,9 +2,6 @@
   Carbon AI Chat Components
 </h1>
 
-> [!WARNING]
-> Be sure to lock to an exact version as this project won't follow semantic versioning for breaking changes until the `1.0.0` release.
-
 ## Getting started
 
 ```bash

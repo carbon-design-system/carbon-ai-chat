@@ -29,7 +29,7 @@ Here's a quick example to get you started.
 import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 
 function MarkdownExample({ content }) {
-  return <Markdown highlight>{content}</Markdown>;
+  return <Markdown highlight markdown={content} />;
 }
 ```
 
@@ -147,7 +147,7 @@ function StreamingMarkdown({ generator }) {
     };
   }, [generator]);
 
-  return <Markdown streaming={streaming}>{content}</Markdown>;
+  return <Markdown streaming={streaming} markdown={content} />;
 }
 ```
 
@@ -169,14 +169,6 @@ All text strings used in embedded components can be customized:
 - `nextPageText`: Next page button text (default: "Next page")
 - `itemsPerPageText`: Items per page label (default: "Items per page:")
 - `locale`: Locale for number formatting (default: "en")
-
-### Debug Mode
-
-Enable debug mode to log parsing and rendering information to the console:
-
-```jsx
-<Markdown debug>{content}</Markdown>
-```
 
 ## Feedback
 

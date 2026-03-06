@@ -17,6 +17,7 @@ import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
 import "../../code-snippet/index.js";
+import "../../card/index.js";
 import "../../table/index.js";
 import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
 
@@ -116,11 +117,17 @@ export interface RenderTokenTreeOptions {
   tooltipContent?: string;
   /** Function to get formatted line count text */
   getLineCountText?: ({ count }: { count: number }) => string;
-}
+  /** Aria-label for code snippets when in read-only mode */
+  codeSnippetAriaLabelReadOnly?: string;
+  /** Aria-label for code snippets when in editable mode */
+  codeSnippetAriaLabelEditable?: string;
 
-const EMPTY_ATTRS = {};
-const EMPTY_TABLE_HEADERS: TableCellContent[] = [];
-const EMPTY_TABLE_ROWS: TableRowContent[] = [];
+  /**
+   * Force markdown tables to render in loading mode.
+   * Useful for freezing streaming table visuals until stream completion.
+   */
+  forceTableLoading?: boolean;
+}
 
 /**
  * Converts TokenTree to Lit TemplateResult.
@@ -170,18 +177,27 @@ export function renderTokenTree(
       showMoreText,
       tooltipContent,
       getLineCountText = defaultLineCountText,
+      codeSnippetAriaLabelReadOnly,
+      codeSnippetAriaLabelEditable,
     } = options;
 
-    return html`<cds-aichat-code-snippet-card
-      .language=${language}
-      .highlight=${highlight}
-      .feedback=${feedback}
-      .showLessText=${showLessText}
-      .showMoreText=${showMoreText}
-      .tooltipContent=${tooltipContent}
-      .getLineCountText=${getLineCountText}
-      >${token.content}</cds-aichat-code-snippet-card
-    >`;
+    return html`<cds-aichat-card is-flush>
+      <div slot="body">
+        <cds-aichat-code-snippet
+          data-rounded
+          .language=${language}
+          .highlight=${highlight}
+          .feedback=${feedback}
+          .showLessText=${showLessText}
+          .showMoreText=${showMoreText}
+          .tooltipContent=${tooltipContent}
+          .getLineCountText=${getLineCountText}
+          .ariaLabelReadOnly=${codeSnippetAriaLabelReadOnly}
+          .ariaLabelEditable=${codeSnippetAriaLabelEditable}
+          >${token.content}</cds-aichat-code-snippet
+        >
+      </div>
+    </cds-aichat-card>`;
   }
 
   // Handle structural elements (paragraphs, headings, lists, etc.)
@@ -241,15 +257,18 @@ export function renderTokenTree(
 
         return `stable-${stableKey}`;
       },
-      (c, index) =>
-        renderTokenTree(c, {
+      (c, index) => {
+        const result = renderTokenTree(c, {
           ...options,
           context: {
             ...childContext,
             parentChildren: normalizedChildren,
             currentIndex: index,
           },
-        }),
+        });
+        // Ensure we never return undefined, which Lit would render as the string "undefined"
+        return result ?? html``;
+      },
     )}`;
   }
 
@@ -432,6 +451,7 @@ function renderWithStaticTag(
 
       const {
         streaming,
+        forceTableLoading,
         context: parentContext,
         filterPlaceholderText,
         previousPageText,
@@ -444,8 +464,9 @@ function renderWithStaticTag(
       } = options;
 
       // Determine if we should show loading state during streaming
-      let isLoading = false;
+      let isLoading = Boolean(forceTableLoading);
       if (
+        !isLoading &&
         streaming &&
         parentContext?.parentChildren &&
         parentContext?.currentIndex !== undefined
@@ -482,33 +503,29 @@ function renderWithStaticTag(
           : null,
       });
 
-      // Extract table data or use empty placeholders for loading state
-      let headers: TableCellContent[];
-      let tableRows: TableRowContent[];
-
-      if (!isLoading) {
-        const extractedData = extractTableData(node);
-
-        headers = extractedData.headers.map((cell) =>
-          createCellContent(cell, { isInThead: true }),
-        );
-
-        tableRows = extractedData.rows.map((row) => ({
-          cells: row.map((cell) => createCellContent(cell)),
-        }));
-      } else {
-        // Use static empty arrays to prevent re-renders during streaming
-        headers = EMPTY_TABLE_HEADERS;
-        tableRows = EMPTY_TABLE_ROWS;
+      if (isLoading) {
+        // Keep loading output stable during streaming table assembly.
+        return html`<div class="cds-aichat-table-holder">
+          <cds-aichat-table .loading=${true}></cds-aichat-table>
+        </div>`;
       }
 
-      const tableAttrs = isLoading ? EMPTY_ATTRS : attrs;
+      const extractedData = extractTableData(node);
 
-      return html`<div class="cds-aichat-table-holder">
+      const headers: TableCellContent[] = extractedData.headers.map((cell) =>
+        createCellContent(cell, { isInThead: true }),
+      );
+
+      const tableRows: TableRowContent[] = extractedData.rows.map((row) => ({
+        cells: row.map((cell) => createCellContent(cell)),
+      }));
+
+      return html`<div class="cds-aichat-table--square">
         <cds-aichat-table
+          data-rounded
           .headers=${headers}
           .rows=${tableRows}
-          .loading=${isLoading}
+          .loading=${false}
           .filterPlaceholderText=${filterPlaceholderText || "Filter table..."}
           .previousPageText=${previousPageText || "Previous page"}
           .nextPageText=${nextPageText || "Next page"}
@@ -519,7 +536,7 @@ function renderWithStaticTag(
           DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT}
           .getPaginationStatusText=${getPaginationStatusText ||
           DEFAULT_PAGINATION_STATUS_TEXT}
-          ...=${tableAttrs}
+          ...=${attrs}
         ></cds-aichat-table>
       </div>`;
     }

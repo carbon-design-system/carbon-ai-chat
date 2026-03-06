@@ -21,7 +21,7 @@ import {
   TableToolbarSearch,
   Button,
 } from "@carbon/react";
-import CodeSnippetCard from "../../../react/code-snippet-card";
+import CodeSnippet from "../../../react/code-snippet";
 import { multilineCode } from "./story-data.js";
 import {
   headers as tableHeaders,
@@ -98,9 +98,9 @@ export function getBodyContent(type) {
             aliquam congue vitae ut elit.
           </p>
           <br />
-          <CodeSnippetCard language="typescript" highlight>
+          <CodeSnippet language="typescript" highlight>
             {multilineCode}
-          </CodeSnippetCard>
+          </CodeSnippet>
           <br />
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur

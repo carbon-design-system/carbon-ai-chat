@@ -16,34 +16,34 @@ const defaultSteps = [
   {
     title: "Understand the request",
     open: true,
-    body: html`<cds-aichat-markdown>
-      Parsed the user's intent and restated it as a concise objective to make
-      sure downstream steps share the same goal.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${`Parsed the user's intent and restated it as a concise objective to make
+sure downstream steps share the same goal.`}
+    ></cds-aichat-markdown>`,
   },
   {
     title: "Review retrieved context",
     open: false,
-    body: html`<cds-aichat-markdown>
-      Checked the documents and conversation history to identify facts that are
-      relevant to the objective and noted confidence levels.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${`Checked the documents and conversation history to identify facts that are
+relevant to the objective and noted confidence levels.`}
+    ></cds-aichat-markdown>`,
   },
   {
     title: "Draft an answer",
     open: false,
-    body: html`<cds-aichat-markdown>
-      Combined the prompt with trusted context and generated a structured
-      response with bullet points summarizing each insight.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${`Combined the prompt with trusted context and generated a structured
+response with bullet points summarizing each insight.`}
+    ></cds-aichat-markdown>`,
   },
   {
     title: "Validate the response",
     open: false,
-    body: html`<cds-aichat-markdown>
-      Compared the answer with the original request, double-checked citations,
-      and ensured tone guidelines were followed.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${`Compared the answer with the original request, double-checked citations,
+and ensured tone guidelines were followed.`}
+    ></cds-aichat-markdown>`,
   },
 ];
 
@@ -51,20 +51,20 @@ const mixedSteps = [
   {
     title: "Detect missing data",
     open: true,
-    body: html`<cds-aichat-markdown>
-      Noticed the prompt referenced an attachment that was not available, so I
-      documented the gap before drafting an answer.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${`Noticed the prompt referenced an attachment that was not available, so I
+documented the gap before drafting an answer.`}
+    ></cds-aichat-markdown>`,
   },
   {
     title: "Awaiting supporting citations",
   },
   {
     title: "Ready for escalation",
-    body: html`<cds-aichat-markdown>
-      The final recommendation needs human approval. I summarized the findings
-      and highlighted the open questions to review.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${`The final recommendation needs human approval. I summarized the findings
+and highlighted the open questions to review.`}
+    ></cds-aichat-markdown>`,
   },
 ];
 
@@ -140,29 +140,29 @@ class ControlledReasoningStepsDemo extends LitElement {
       {
         id: "gather-context",
         title: "Gather relevant context",
-        body: html`<cds-aichat-markdown>
-          Pulled customer profile data, product catalog entries, and the latest
-          troubleshooting articles that match the request.
-        </cds-aichat-markdown>`,
+        body: html`<cds-aichat-markdown
+          .markdown=${`Pulled customer profile data, product catalog entries, and the latest
+troubleshooting articles that match the request.`}
+        ></cds-aichat-markdown>`,
       },
       {
         id: "draft-plan",
         title: "Draft plan",
-        body: html`<cds-aichat-markdown>
-          Proposed a three-step plan that addresses the user's main objective
-          while calling out any assumptions.
-        </cds-aichat-markdown>`,
+        body: html`<cds-aichat-markdown
+          .markdown=${`Proposed a three-step plan that addresses the user's main objective
+while calling out any assumptions.`}
+        ></cds-aichat-markdown>`,
       },
       {
         id: "risk-check",
         title: "Run risk checks",
-        body: html`<cds-aichat-markdown>
-          <ul>
-            <li>Verified we are not leaking PII.</li>
-            <li>Ensured rate limits are respected.</li>
-            <li>Confirmed tone aligns with support guidelines.</li>
-          </ul>
-        </cds-aichat-markdown>`,
+        body: html`<cds-aichat-markdown
+          .markdown=${`<ul>
+  <li>Verified we are not leaking PII.</li>
+  <li>Ensured rate limits are respected.</li>
+  <li>Confirmed tone aligns with support guidelines.</li>
+</ul>`}
+        ></cds-aichat-markdown>`,
       },
       {
         id: "handoff",

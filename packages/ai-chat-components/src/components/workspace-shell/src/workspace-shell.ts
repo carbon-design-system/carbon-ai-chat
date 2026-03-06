@@ -11,6 +11,7 @@ import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./workspace-shell.scss?lit";
 
 /**
@@ -26,7 +27,7 @@ import styles from "./workspace-shell.scss?lit";
  */
 @carbonElement(`${prefix}-workspace-shell`)
 class CDSAIChatWorkspaceShell extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   @property({ type: Boolean, reflect: true, attribute: "header-open" })
   headerOpen = false;

@@ -143,7 +143,7 @@ function WorkspaceWriteableElementExample({
         titleText="Optimizing excess inventory"
       >
         <div slot="decorator">
-          <AILabel size="2xs" autoAlign>
+          <AILabel autoAlign={false} size="2xs" align="bottom">
             <AILabelContent>
               <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
               <div>

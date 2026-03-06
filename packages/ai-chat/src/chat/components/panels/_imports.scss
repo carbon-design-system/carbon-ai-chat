@@ -20,19 +20,10 @@
 .cds-aichat--custom-panel {
   box-sizing: border-box;
   block-size: 100%;
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
-    0
-  );
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
 }
 
 // Made with Bob

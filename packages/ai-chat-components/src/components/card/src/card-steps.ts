@@ -15,6 +15,7 @@ import "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
 import "@carbon/web-components/es/components/loading/loading.js";
 import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./card-steps.scss?lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
 
@@ -30,7 +31,7 @@ export type Step = {
  */
 @carbonElement(`${prefix}-card-steps`)
 class CardSteps extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /** Steps to render */
   @property({ type: Array })

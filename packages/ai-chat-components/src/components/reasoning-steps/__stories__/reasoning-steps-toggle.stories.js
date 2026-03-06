@@ -16,21 +16,21 @@ import { LitElement, css, html, nothing } from "lit";
 const defaultSteps = [
   {
     title: "Gather context",
-    body: html`<cds-aichat-markdown>
-      Collected relevant conversation turns and system guidance.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${"Collected relevant conversation turns and system guidance."}
+    ></cds-aichat-markdown>`,
   },
   {
     title: "Plan response",
-    body: html`<cds-aichat-markdown>
-      Outlined the answer structure before generating the final reply.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${"Outlined the answer structure before generating the final reply."}
+    ></cds-aichat-markdown>`,
   },
   {
     title: "Validate output",
-    body: html`<cds-aichat-markdown>
-      Checked tone, safety, and citation coverage before sending.
-    </cds-aichat-markdown>`,
+    body: html`<cds-aichat-markdown
+      .markdown=${"Checked tone, safety, and citation coverage before sending."}
+    ></cds-aichat-markdown>`,
   },
 ];
 

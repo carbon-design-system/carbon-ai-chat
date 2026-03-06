@@ -20,20 +20,20 @@ import * as CodeSnippetStories from "./code-snippet.stories";
 
 ## Overview
 
-Use `cds-aichat-code-snippet-card` to present generated code with syntax highlighting, copy affordances, and optional expand/collapse controls. The card container wraps a `cds-aichat-code-snippet` instance, you can show the code snippet without a card container by using `cds-aichat-code-snippet`, which has the same API.
+Use `cds-aichat-code-snippet` to present generated code with syntax highlighting, copy affordances, and optional expand/collapse controls. You can wrap it in a card component if you need a card container.
 
 ### Getting started
 
 Here's a quick example to get you started.
 
 ```html
-<cds-aichat-code-snippet-card highlight>
+<cds-aichat-code-snippet highlight>
   import { summarize } from "./summarizer";
   export async function summarizeReply(prompt) {
     const result = await summarize(prompt);
     return result.text;
   }
-</cds-aichat-code-snippet-card>
+</cds-aichat-code-snippet>
 ```
 
 ## Component API

@@ -17,14 +17,8 @@
 
 .cds-aichat--header__container {
   background-color: theme.$chat-shell-background;
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
 }
 
 .cds-aichat--header {
@@ -34,14 +28,8 @@
   background-color: theme.$chat-header-background;
   block-size: 40px;
   border-block-end: 1px solid theme.$border-subtle-00;
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
   inline-size: 100%;
   @include type.type-style("body-01");
 }
@@ -49,14 +37,8 @@
 .cds-aichat--header--content {
   position: relative;
   display: flex;
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
   inline-size: 100%;
 }
 
@@ -129,24 +111,15 @@
 }
 
 .cds-aichat--header__left-items :first-child {
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
 }
 
 .cds-aichat--header__left-items :first-child::part(button) {
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
 }
 
 .cds-aichat--header__right-buttons :last-child::part(button) {
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
 }
 
 cds-aichat-chat-header-avatar {

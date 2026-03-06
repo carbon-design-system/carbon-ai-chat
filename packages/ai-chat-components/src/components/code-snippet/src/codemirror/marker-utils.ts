@@ -135,10 +135,11 @@ export function createCarbonFoldMarker(
     });
 
     // Accessibility attributes - all styling is in theme.ts for CSP compliance
+    // Note: tabindex removed to prevent aria-hidden-focus violation
+    // Fold markers remain clickable via mouse/touch and keyboard shortcuts (Ctrl+Shift+[)
     svg.setAttribute("role", "button");
     svg.setAttribute("aria-label", open ? collapseLabel : expandLabel);
     svg.setAttribute("aria-expanded", String(open));
-    svg.setAttribute("tabindex", "0");
 
     return svg as unknown as HTMLElement;
   };

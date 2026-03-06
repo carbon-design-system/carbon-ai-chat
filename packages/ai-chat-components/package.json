@@ -17,12 +17,14 @@
     "./es/*": "./es/*",
     "./es-custom/*": "./es-custom/*",
     "./es/globals/": "./es/globals/",
+    "./scss/*": "./scss/*",
     "./custom-elements.json": "./custom-elements.json",
     "./package.json": "./package.json"
   },
   "files": [
     "es/**/*",
     "es-custom/**/*",
+    "scss/**/*",
     "custom-elements.json",
     "package.json",
     "telemetry.yml"

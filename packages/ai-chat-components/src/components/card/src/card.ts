@@ -9,6 +9,7 @@
 
 import { property } from "lit/decorators.js";
 import CDSTile from "@carbon/web-components/es/components/tile/tile.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./card.scss?lit";
 import { html } from "lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -20,7 +21,7 @@ import prefix from "../../../globals/settings.js";
  */
 @carbonElement(`${prefix}-card`)
 class Card extends CDSTile {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Specify whether the `Card` layering style. if true, the card will follow carbon layering style, otherwise chat shell layering style.

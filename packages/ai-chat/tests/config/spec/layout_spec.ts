@@ -19,6 +19,7 @@ import { doCreateStore } from "../../../src/chat/store/doCreateStore";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 import { NamespaceService } from "../../../src/chat/services/NamespaceService";
 import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import { CornersType } from "../../../src/types/config/CornersType";
 
 describe("Config Layout", () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
@@ -191,7 +192,12 @@ describe("Config Layout", () => {
           layout: {
             showFrame: false,
             hasContentMaxWidth: true,
-            corners: "square" as any,
+            corners: {
+              startStart: CornersType.SQUARE,
+              startEnd: CornersType.SQUARE,
+              endStart: CornersType.SQUARE,
+              endEnd: CornersType.SQUARE,
+            },
           },
         };
 
@@ -203,7 +209,85 @@ describe("Config Layout", () => {
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.layout?.showFrame).toBe(false);
         expect(state.config.public.layout?.hasContentMaxWidth).toBe(true);
-        expect(state.config.public.layout?.corners).toBe("square");
+        expect(state.config.derived.themeWithDefaults.corners).toEqual({
+          startStart: CornersType.SQUARE,
+          startEnd: CornersType.SQUARE,
+          endStart: CornersType.SQUARE,
+          endEnd: CornersType.SQUARE,
+        });
+      });
+
+      it("should handle per-corner configuration in layout", async () => {
+        const previousConfig: PublicConfig = {
+          layout: {
+            showFrame: true,
+          },
+        };
+
+        const newConfig: PublicConfig = {
+          layout: {
+            showFrame: true,
+            corners: {
+              startStart: CornersType.ROUND,
+              startEnd: CornersType.SQUARE,
+              endStart: CornersType.SQUARE,
+              endEnd: CornersType.ROUND,
+            },
+          },
+        };
+
+        const changes = detectConfigChanges(previousConfig, newConfig);
+        expect(changes.layoutChanged).toBe(true);
+
+        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+        const state: AppState = serviceManager.store.getState();
+        expect(state.config.derived.themeWithDefaults.corners).toEqual({
+          startStart: CornersType.ROUND,
+          startEnd: CornersType.SQUARE,
+          endStart: CornersType.SQUARE,
+          endEnd: CornersType.ROUND,
+        });
+      });
+
+      it("should force square corners when showFrame is false with per-corner config", async () => {
+        const previousConfig: PublicConfig = {
+          layout: {
+            showFrame: true,
+            corners: {
+              startStart: CornersType.ROUND,
+              startEnd: CornersType.ROUND,
+              endStart: CornersType.ROUND,
+              endEnd: CornersType.ROUND,
+            },
+          },
+        };
+
+        const newConfig: PublicConfig = {
+          layout: {
+            showFrame: false,
+            corners: {
+              startStart: CornersType.ROUND,
+              startEnd: CornersType.ROUND,
+              endStart: CornersType.ROUND,
+              endEnd: CornersType.ROUND,
+            },
+          },
+        };
+
+        const changes = detectConfigChanges(previousConfig, newConfig);
+        expect(changes.layoutChanged).toBe(true);
+
+        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+
+        const state: AppState = serviceManager.store.getState();
+        // All corners should be forced to square when showFrame is false
+        expect(state.config.derived.themeWithDefaults.corners).toEqual({
+          startStart: CornersType.SQUARE,
+          startEnd: CornersType.SQUARE,
+          endStart: CornersType.SQUARE,
+          endEnd: CornersType.SQUARE,
+        });
       });
     });
   });

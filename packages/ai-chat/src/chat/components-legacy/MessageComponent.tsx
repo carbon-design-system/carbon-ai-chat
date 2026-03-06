@@ -96,7 +96,7 @@ import {
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { ResponseUserAvatar } from "./ResponseUserAvatar";
 import { CarbonTheme } from "../../types/config/PublicConfig";
-import RichText from "./responseTypes/util/RichText";
+import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
@@ -651,7 +651,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           }
         >
           {hasContent && reasoning?.content && (
-            <RichText
+            <MarkdownWithDefaults
               text={reasoning.content}
               highlight={true}
               streaming={streaming}
@@ -683,7 +683,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             };
 
             const stepContent = step.content ? (
-              <RichText
+              <MarkdownWithDefaults
                 text={step.content}
                 highlight={true}
                 streaming={streaming}
