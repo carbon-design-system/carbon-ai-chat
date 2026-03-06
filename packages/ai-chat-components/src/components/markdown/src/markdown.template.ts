@@ -20,7 +20,9 @@ function markdownTemplate({
   renderedContent: unknown;
 }) {
   return html`
-    <div class="cds-aichat-markdown-stack">${renderedContent}</div>
+    <div role="dialog" class="cds-aichat-markdown-stack">
+      ${renderedContent}
+    </div>
     <div hidden>
       <slot ${ref(slotRef)} @slotchange=${onSlotChange}></slot>
     </div>
