@@ -80,10 +80,13 @@ class CDSAIChatToolbar extends LitElement {
   @property({ type: String })
   titleText?: string;
 
+  @property({ type: String })
+  nameText?: string;
+
   /** Container holding all action buttons and the overflow menu.
    *  @internal
    */
-  @query(`.${blockClass}__right`) private container!: HTMLElement;
+  @query(`.${blockClass}__end`) private container!: HTMLElement;
 
   @state() private measuring = true;
 
@@ -219,23 +222,40 @@ class CDSAIChatToolbar extends LitElement {
 
     return html`
       <div data-rounded="top" class=${blockClass}>
-        <div data-fixed class="${blockClass}__left">
+        <div data-fixed class="${blockClass}__start">
           <div data-fixed class="${blockClass}__navigation">
             <slot name="navigation"></slot>
           </div>
 
           <div data-fixed class="${blockClass}__title">
             <slot name="title">
-              <cds-aichat-truncated-text
-                value=${this.titleText}
-                lines="1"
-                type="tooltip"
-              ></cds-aichat-truncated-text>
+              ${this.titleText || this.nameText
+                ? html`
+                    <cds-aichat-truncated-text
+                      lines="1"
+                      type="tooltip"
+                      align="bottom-start"
+                      value="${[this.titleText, this.nameText]
+                        .filter(Boolean)
+                        .join(" ")}"
+                    >
+                      ${this.titleText
+                        ? html`<span>${this.titleText}</span>`
+                        : nothing}
+                      ${this.titleText && this.nameText ? html`` : nothing}
+                      ${this.nameText
+                        ? html`<span class="${blockClass}__name"
+                            >${this.nameText}</span
+                          >`
+                        : nothing}
+                    </cds-aichat-truncated-text>
+                  `
+                : nothing}
             </slot>
           </div>
         </div>
 
-        <div data-fixed class="${blockClass}__right">
+        <div data-fixed class="${blockClass}__end">
           <div data-fixed class="${blockClass}__fixed-actions">
             <slot name="fixed-actions"></slot>
           </div>

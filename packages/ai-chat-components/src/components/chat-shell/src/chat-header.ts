@@ -428,8 +428,14 @@ class CdsAiChatChatHeader extends LitElement {
       : html`<slot name="navigation"></slot>`;
 
     return html`
-      <cds-aichat-toolbar .actions=${this.actions} ?overflow=${this.overflow}>
-        ${navigationContent} ${this.renderTitle()}
+      <cds-aichat-toolbar
+        .actions=${this.actions}
+        ?overflow=${this.overflow}
+        titleText=${this.headerTitle || nothing}
+        nameText=${this.headerName || nothing}
+      >
+        ${navigationContent}
+        ${!this.headerTitle && !this.headerName ? this.renderTitle() : nothing}
         <slot name="fixed-actions" slot="fixed-actions"></slot>
         <slot name="decorator" slot="decorator"></slot>
       </cds-aichat-toolbar>
