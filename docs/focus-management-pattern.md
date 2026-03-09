@@ -4,6 +4,99 @@
 
 This document describes a reusable pattern for implementing focus management in web components. The pattern allows parent components (like `@carbon/ai-chat`) to request focus without understanding the internal structure of child components (like `@carbon/ai-chat-components`).
 
+## Focus Management Utilities
+
+The `@carbon/ai-chat-components` package provides comprehensive focus management utilities in `@carbon/ai-chat-components/es/globals/utils/focus-utils` that handle complex scenarios including:
+
+- **Visibility checks**: Elements hidden via CSS (`display: none`, `visibility: hidden`)
+- **Accessibility attributes**: Elements with `[hidden]`, `[inert]`, or `[aria-hidden="true"]`
+- **Disabled states**: Both native and custom elements with `[disabled]` or `[aria-disabled="true"]`
+- **Focusability validation**: Standard focusable elements and custom elements with shadow DOM
+- **Shadow DOM traversal**: Proper handling of shadow boundaries and `delegatesFocus`
+
+### Available Utilities
+
+```typescript
+import {
+  tryFocus,
+  isFocusable,
+  isElementInvisible,
+  walkComposedTree,
+  getFirstAndLastFocusableChildren,
+} from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+```
+
+#### `tryFocus(element, exceptions?)`
+
+Enhanced focus utility that validates visibility, accessibility, and focusability before attempting to set focus.
+
+```typescript
+/**
+ * @param element - The element to attempt to focus
+ * @param exceptions - Array of selectors to ignore when checking visibility (e.g., 'dialog', '[popover]')
+ * @returns True if focus was successfully set, false otherwise
+ */
+const focused = tryFocus(element);
+```
+
+#### `isFocusable(element)`
+
+Checks if an element is focusable, including support for custom elements with shadow DOM.
+
+```typescript
+/**
+ * @param element - The DOM element to check for focusability
+ * @returns True if the element is focusable, false otherwise
+ */
+const canFocus = isFocusable(element);
+```
+
+#### `isElementInvisible(element, exceptions?)`
+
+Checks if an element should be ignored due to visibility or accessibility attributes.
+
+```typescript
+/**
+ * @param element - The DOM element to check
+ * @param exceptions - Array of selectors to ignore (e.g., 'dialog', '[popover]')
+ * @returns True if the element should be ignored, false otherwise
+ */
+const invisible = isElementInvisible(element);
+```
+
+#### `walkComposedTree(node, whatToShow?, filter?, skipNode?)`
+
+Traverses the composed tree (including shadow DOM) to find elements matching criteria.
+
+```typescript
+/**
+ * @param node - The root node for traversal
+ * @param whatToShow - NodeFilter code for node types (use 0 for all nodes)
+ * @param filter - Function to filter nodes
+ * @param skipNode - Function to skip nodes and their children
+ * @returns Iterator yielding matching nodes
+ */
+for (const element of walkComposedTree(
+  root,
+  NodeFilter.SHOW_ELEMENT,
+  isFocusable,
+)) {
+  // Process focusable elements
+}
+```
+
+#### `getFirstAndLastFocusableChildren(walker)`
+
+Helper to find the first and last focusable children from a tree walker.
+
+```typescript
+/**
+ * @param walker - Iterator from walkComposedTree
+ * @returns Tuple of [first, last] focusable elements (or null if none found)
+ */
+const [first, last] = getFirstAndLastFocusableChildren(walker);
+```
+
 ## The Pattern
 
 ### Core Concept
@@ -26,10 +119,57 @@ requestFocus(): boolean;
 
 ### Implementation Pattern
 
+**Recommended: Use the shared `tryFocus` utility**
+
+```typescript
+import { tryFocus } from "../../../globals/utils/focus-utils.js";
+
+requestFocus(): boolean {
+  // Try focus targets in priority order
+  // 1. Try highest priority element
+  const highPriorityElement = this.shadowRoot?.querySelector('.high-priority');
+  if (tryFocus(highPriorityElement)) {
+    return true;
+  }
+
+  // 2. Try medium priority element
+  const mediumPriorityElement = this.shadowRoot?.querySelector('.medium-priority');
+  if (tryFocus(mediumPriorityElement)) {
+    return true;
+  }
+
+  // 3. Try any other focusable element as fallback
+  const focusableElements = this.shadowRoot?.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]'
+  );
+  for (const element of focusableElements) {
+    if (tryFocus(element)) {
+      return true;
+    }
+  }
+
+  // No focusable element found
+  return false;
+}
+```
+
+**Benefits of using the shared utility:**
+
+- ✅ Handles visibility checks automatically
+- ✅ Respects accessibility attributes (`[hidden]`, `[inert]`, `[aria-hidden]`)
+- ✅ Validates focusability (including custom elements with shadow DOM)
+- ✅ Skips disabled elements (both `[disabled]` and `[aria-disabled]`)
+- ✅ Verifies focus was actually set
+- ✅ Consistent behavior across all components
+
+**Legacy pattern (not recommended):**
+
+If you need a simple inline helper for basic cases:
+
 ```typescript
 requestFocus(): boolean {
-  // Helper to try focusing an element
-  const tryFocus = (element: HTMLElement | null | undefined): boolean => {
+  // Simple helper - use shared tryFocus utility instead for production code
+  const tryFocusSimple = (element: HTMLElement | null | undefined): boolean => {
     if (element && !element.hasAttribute("disabled")) {
       element.focus();
       return document.activeElement === element;
@@ -37,31 +177,7 @@ requestFocus(): boolean {
     return false;
   };
 
-  // Try focus targets in priority order
-  // 1. Try highest priority element
-  const highPriorityElement = this.shadowRoot?.querySelector('.high-priority');
-  if (tryFocus(highPriorityElement as HTMLElement)) {
-    return true;
-  }
-
-  // 2. Try medium priority element
-  const mediumPriorityElement = this.shadowRoot?.querySelector('.medium-priority');
-  if (tryFocus(mediumPriorityElement as HTMLElement)) {
-    return true;
-  }
-
-  // 3. Try any other focusable element as fallback
-  const focusableElements = this.shadowRoot?.querySelectorAll(
-    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
-  );
-  if (focusableElements && focusableElements.length > 0) {
-    if (tryFocus(focusableElements[0] as HTMLElement)) {
-      return true;
-    }
-  }
-
-  // No focusable element found
-  return false;
+  // ... rest of implementation
 }
 ```
 
@@ -215,40 +331,72 @@ The priority order is designed for the typical chat header use case, but develop
 
 ## Future Applications
 
-This pattern should be applied to other web components as they are created:
+This pattern should be applied to other web components as they are created. **Always use the shared `tryFocus` utility** for consistent behavior:
 
 ### Input Component (Future)
 
 ```typescript
+import { tryFocus } from "../../../globals/utils/focus-utils.js";
+
 requestFocus(): boolean {
   // Priority:
   // 1. Text input field
+  const input = this.shadowRoot?.querySelector('input[type="text"]');
+  if (tryFocus(input)) return true;
+
   // 2. Send button
+  const sendButton = this.shadowRoot?.querySelector('.send-button');
+  if (tryFocus(sendButton)) return true;
+
   // 3. Attachment button
+  const attachButton = this.shadowRoot?.querySelector('.attach-button');
+  if (tryFocus(attachButton)) return true;
+
   // 4. Any other focusable element
+  const focusable = this.shadowRoot?.querySelector('button, [href], input, select, textarea, [tabindex]');
+  return tryFocus(focusable);
 }
 ```
 
 ### Message Component (Future)
 
 ```typescript
+import { tryFocus } from "../../../globals/utils/focus-utils.js";
+
 requestFocus(): boolean {
   // Priority:
   // 1. Action buttons (copy, regenerate, etc.)
+  const actionButton = this.shadowRoot?.querySelector('.action-button');
+  if (tryFocus(actionButton)) return true;
+
   // 2. Links in message content
+  const link = this.shadowRoot?.querySelector('a[href]');
+  if (tryFocus(link)) return true;
+
   // 3. Any other focusable element
+  const focusable = this.shadowRoot?.querySelector('button, [href], input, select, textarea, [tabindex]');
+  return tryFocus(focusable);
 }
 ```
 
 ### Panel Component (Future)
 
 ```typescript
+import { tryFocus } from "../../../globals/utils/focus-utils.js";
+
 requestFocus(): boolean {
   // Priority:
   // 1. Close button
+  const closeButton = this.shadowRoot?.querySelector('.close-button');
+  if (tryFocus(closeButton)) return true;
+
   // 2. Primary action button
+  const primaryButton = this.shadowRoot?.querySelector('.primary-action');
+  if (tryFocus(primaryButton)) return true;
+
   // 3. First focusable element in content
-  // 4. Any other focusable element
+  const focusable = this.shadowRoot?.querySelector('button, [href], input, select, textarea, [tabindex]');
+  return tryFocus(focusable);
 }
 ```
 
@@ -316,6 +464,42 @@ describe("ChatHeader requestFocus", () => {
 });
 ```
 
+## Advanced Usage: Shadow DOM Traversal
+
+For complex components that need to traverse shadow DOM boundaries:
+
+```typescript
+import { walkComposedTree, isFocusable, tryFocus } from "../../../globals/utils/focus-utils.js";
+
+requestFocus(): boolean {
+  // Walk the composed tree to find all focusable elements
+  const walker = walkComposedTree(
+    this,
+    NodeFilter.SHOW_ELEMENT,
+    isFocusable
+  );
+
+  // Try to focus the first focusable element
+  for (const element of walker) {
+    if (tryFocus(element)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+## Best Practices
+
+1. **Always use the shared utilities**: Import from `@carbon/ai-chat-components/es/globals/utils/focus-utils`
+2. **Don't reinvent the wheel**: The utilities handle edge cases you might miss
+3. **Test with assistive technology**: Verify focus management works with screen readers
+4. **Consider exceptions**: Use the `exceptions` parameter for special cases like dialogs or popovers
+5. **Document priority order**: Clearly comment why elements are focused in a specific order
+
 ## Conclusion
 
-This generic focus management pattern provides a clean, reusable solution for managing focus across web components. By implementing `requestFocus()` consistently across all components, we create a predictable and accessible user experience while maintaining proper separation of concerns between parent and child components.
+This generic focus management pattern, combined with the comprehensive utilities in `@carbon/ai-chat-components`, provides a robust solution for managing focus across web components. By implementing `requestFocus()` consistently and using the shared `tryFocus` utility, we create a predictable and accessible user experience while maintaining proper separation of concerns between parent and child components.
+
+The utilities handle complex scenarios including visibility, accessibility attributes, disabled states, and shadow DOM traversal, ensuring consistent and reliable focus management throughout the application.

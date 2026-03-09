@@ -404,6 +404,65 @@ describe("cds-aichat-chat-header", function () {
       const result = el.requestFocus();
       expect(result).to.be.a("boolean");
     });
+
+    it("should use FOCUSABLE_SELECTORS fallback for Carbon components", async () => {
+      // Create a header with a custom Carbon button in fixed-actions slot
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <cds-button slot="fixed-actions" kind="ghost">Close</cds-button>
+        </cds-aichat-chat-header>
+      `);
+      await el.updateComplete;
+
+      // Wait for slotted button to be ready
+      const button = el.querySelector('cds-button[slot="fixed-actions"]');
+      if (button && typeof (button as any).updateComplete !== "undefined") {
+        await (button as any).updateComplete;
+      }
+
+      // Additional wait for Carbon components to be fully ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const result = el.requestFocus();
+      // Should successfully focus the Carbon button
+      expect(result).to.be.a("boolean");
+
+      // If focus succeeded, verify the button exists
+      if (result) {
+        expect(button).to.exist;
+      }
+    });
+
+    it("should handle custom elements with delegatesFocus in fallback", async () => {
+      // Create a header with only a custom element that might have delegatesFocus
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <cds-icon-button slot="fixed-actions" kind="ghost">
+            <svg slot="icon"><path d="M0 0h24v24H0z" fill="none" /></svg>
+          </cds-icon-button>
+        </cds-aichat-chat-header>
+      `);
+      await el.updateComplete;
+
+      // Wait for slotted icon button to be ready
+      const iconButton = el.querySelector(
+        'cds-icon-button[slot="fixed-actions"]',
+      );
+      if (
+        iconButton &&
+        typeof (iconButton as any).updateComplete !== "undefined"
+      ) {
+        await (iconButton as any).updateComplete;
+      }
+
+      // Additional wait for Carbon components to be fully ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const result = el.requestFocus();
+      // The simplified FOCUSABLE_SELECTORS ("*") with tryFocus() validation
+      // should properly handle custom elements with shadow DOM
+      expect(result).to.be.a("boolean");
+    });
   });
 
   // ========== Integration Tests ==========

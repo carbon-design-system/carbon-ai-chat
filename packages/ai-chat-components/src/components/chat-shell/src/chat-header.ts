@@ -18,6 +18,7 @@ import type { Action } from "../../toolbar/src/toolbar.js";
 import type { BaseOverflowMenuItem } from "../../../typings/overflow-menu.js";
 import prefix from "../../../globals/settings.js";
 import { PageObjectId } from "../../../testing/PageObjectId.js";
+import { tryFocus } from "../../../globals/utils/focus-utils.js";
 import styles from "./chat-header.scss?lit";
 
 /**
@@ -44,7 +45,17 @@ class CdsAiChatChatHeader extends LitElement {
 
   /**
    * Selector strings for finding focusable elements.
-   * Extracted as constants for maintainability and reusability.
+   *
+   * Design rationale:
+   * - BUTTON_SELECTORS: Used for fixed-actions slot. Targets Carbon buttons and native buttons.
+   * - NAV_BUTTON_SELECTORS: Used for navigation slot. Includes overflow menu for navigation patterns.
+   * - TOOLBAR_ACTION_SELECTOR: Specifically targets toolbar icon buttons (most common action type).
+   * - FOCUSABLE_SELECTORS: Fallback selector for any focusable element. Uses "*" because the
+   *   tryFocus() utility already performs comprehensive validation including:
+   *   - Visibility checks (display, visibility, hidden, inert, aria-hidden)
+   *   - Focusability validation (handles standard elements and custom elements with delegatesFocus)
+   *   - Actual focus verification (checks if document.activeElement changed)
+   *   This approach avoids duplicating validation logic and properly handles Carbon components.
    */
   private static readonly BUTTON_SELECTORS =
     "cds-button, cds-icon-button, button";
@@ -52,10 +63,7 @@ class CdsAiChatChatHeader extends LitElement {
   private static readonly NAV_BUTTON_SELECTORS =
     "cds-button, cds-icon-button, cds-overflow-menu, button";
 
-  private static readonly FOCUSABLE_SELECTORS =
-    "button:not([disabled]), [href], input:not([disabled]), " +
-    "select:not([disabled]), textarea:not([disabled]), " +
-    '[tabindex]:not([tabindex="-1"]):not([disabled])';
+  private static readonly FOCUSABLE_SELECTORS = "*";
 
   private static readonly TOOLBAR_ACTION_SELECTOR =
     "cds-icon-button:not([disabled])";
@@ -74,17 +82,14 @@ class CdsAiChatChatHeader extends LitElement {
 
   /**
    * Attempts to focus an element if it's focusable and not disabled.
-   * Uses type guard for runtime type safety instead of type assertions.
+   * Uses the enhanced tryFocus utility from focus-utils which checks
+   * visibility, accessibility attributes, and proper focusability.
    *
    * @param element - The element to attempt to focus
    * @returns True if focus was successfully set, false otherwise
    */
-  private tryFocus(element: Element | null | undefined): boolean {
-    if (element instanceof HTMLElement && !element.hasAttribute("disabled")) {
-      element.focus();
-      return document.activeElement === element;
-    }
-    return false;
+  private tryFocusElement(element: Element | null | undefined): boolean {
+    return tryFocus(element);
   }
 
   /**
@@ -106,7 +111,7 @@ class CdsAiChatChatHeader extends LitElement {
 
     for (const el of slot.assignedElements()) {
       const button = el.querySelector(selectors);
-      if (button instanceof HTMLElement && this.tryFocus(button)) {
+      if (button instanceof HTMLElement && this.tryFocusElement(button)) {
         return true;
       }
     }
@@ -119,50 +124,80 @@ class CdsAiChatChatHeader extends LitElement {
    * across all web components.
    *
    * Priority order:
-   * 1. First enabled button in fixed-actions slot (highest priority - usually close button)
-   * 2. First enabled button in navigation slot (back button or overflow menu)
+   * 1. First enabled button in navigation (either slotted or rendered from properties)
+   * 2. First enabled button in fixed-actions slot (usually close button)
    * 3. First enabled action button from toolbar (rendered by actions array)
    * 4. Any other focusable element (last resort)
    *
    * @returns True if focus was successfully set, false otherwise
    */
   requestFocus(): boolean {
+    // Check if navigation is rendered from properties
+    const hasNavigationProps =
+      this.navigationType && this.navigationType !== "none";
+
     // Define focus strategies in priority order
     const focusStrategies = [
-      // 1. Try navigation slot (for slotted content)
-      () =>
-        this.tryFocusSlotButtons(
-          "navigation",
-          CdsAiChatChatHeader.NAV_BUTTON_SELECTORS,
-        ),
+      // 1. Try navigation - either slotted or rendered from properties
+      () => {
+        if (hasNavigationProps) {
+          // Navigation rendered from properties - query toolbar's navigation slot
+          const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
+          const navSlot = toolbar?.shadowRoot?.querySelector(
+            'slot[name="navigation"]',
+          ) as HTMLSlotElement | null;
+
+          if (navSlot) {
+            // Get the assigned elements from the toolbar's navigation slot
+            const assignedElements = navSlot.assignedElements();
+            for (const el of assignedElements) {
+              // The element itself might be the button (e.g., cds-icon-button)
+              if (this.tryFocusElement(el)) {
+                return true;
+              }
+              // Or it might be a wrapper div containing the button
+              const button = el.querySelector(
+                CdsAiChatChatHeader.NAV_BUTTON_SELECTORS,
+              );
+              if (button && this.tryFocusElement(button)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        } else {
+          // Navigation slotted - query slot for buttons
+          return this.tryFocusSlotButtons(
+            "navigation",
+            CdsAiChatChatHeader.NAV_BUTTON_SELECTORS,
+          );
+        }
+      },
       // 2. Try fixed-actions slot
       () =>
         this.tryFocusSlotButtons(
           "fixed-actions",
           CdsAiChatChatHeader.BUTTON_SELECTORS,
         ),
-      // 3. Try navigation rendered from properties (direct children of toolbar)
-      () => {
-        const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
-        const navButton = toolbar?.querySelector(
-          'cds-icon-button[slot="navigation"], cds-overflow-menu[slot="navigation"]',
-        );
-        return navButton instanceof HTMLElement && this.tryFocus(navButton);
-      },
-      // 4. Try toolbar action buttons
+      // 3. Try toolbar action buttons
       () => {
         const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
         const buttons = toolbar?.shadowRoot?.querySelectorAll(
           CdsAiChatChatHeader.TOOLBAR_ACTION_SELECTOR,
         );
-        return buttons?.[0] instanceof HTMLElement && this.tryFocus(buttons[0]);
+        return (
+          buttons?.[0] instanceof HTMLElement &&
+          this.tryFocusElement(buttons[0])
+        );
       },
-      // 5. Try any focusable element as last resort
+      // 4. Try any focusable element as last resort
       () => {
         const focusable = this.shadowRoot?.querySelector(
           CdsAiChatChatHeader.FOCUSABLE_SELECTORS,
         );
-        return focusable instanceof HTMLElement && this.tryFocus(focusable);
+        return (
+          focusable instanceof HTMLElement && this.tryFocusElement(focusable)
+        );
       },
     ];
 
@@ -300,22 +335,23 @@ class CdsAiChatChatHeader extends LitElement {
    */
   private renderBackNavigation() {
     return html`
-      <cds-icon-button
-        slot="navigation"
-        kind="ghost"
-        size="md"
-        tooltip-alignment=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.alignment}
-        tooltip-position=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.position}
-        enter-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.enterDelayMs}
-        leave-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.leaveDelayMs}
-        @click=${this.navigationBackOnClick}
-      >
-        ${iconLoader(
-          this.navigationBackIcon,
-          CdsAiChatChatHeader.BACK_ICON_CONFIG,
-        )}
-        <span slot="tooltip-content">${this.navigationBackLabel}</span>
-      </cds-icon-button>
+      <div slot="navigation">
+        <cds-icon-button
+          kind="ghost"
+          size="md"
+          tooltip-alignment=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.alignment}
+          tooltip-position=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.position}
+          enter-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.enterDelayMs}
+          leave-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.leaveDelayMs}
+          @click=${this.navigationBackOnClick}
+        >
+          ${iconLoader(
+            this.navigationBackIcon,
+            CdsAiChatChatHeader.BACK_ICON_CONFIG,
+          )}
+          <span slot="tooltip-content">${this.navigationBackLabel}</span>
+        </cds-icon-button>
+      </div>
     `;
   }
 

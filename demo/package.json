@@ -20,8 +20,7 @@
     "@carbon/web-components": "^2.46.0",
     "lit": "^3.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "uuid": "^11.1.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
