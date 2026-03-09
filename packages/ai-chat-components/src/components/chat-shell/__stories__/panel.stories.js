@@ -105,7 +105,7 @@ const panelDefinitions = html`
 `;
 
 export default {
-  title: "Components/Chat shell/Panels",
+  title: "Preview/Chat shell/Panels",
   args: {
     aiEnabled: false,
     showFrame: true,

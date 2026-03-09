@@ -22,25 +22,19 @@ $launcher-easing: motion.motion(standard, productive);
   position: fixed;
   z-index: chat-theme.$z-index;
   border-radius: 28px;
-  animation: #{chat-config.$prefix}-launcher-in motion.$duration-moderate-01
-    motion.motion(entrance, expressive) both;
   background-color: theme.$background;
   block-size: chat-theme.$launcher-default-size;
   box-shadow: chat-theme.$box-shadow;
-
-  font-family: var(
-    --cds-aichat-font-family,
-    "IBM Plex Sans",
-    "Helvetica Neue",
-    arial,
-    sans-serif
-  );
   inline-size: chat-theme.$launcher-default-size;
   inset-block-end: chat-theme.$launcher-position-bottom;
   inset-inline-end: chat-theme.$launcher-position-right;
 
-  // Animate container width so the CTA grows inward from the edge
-  transition: inline-size $launcher-expand-duration $launcher-easing;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: #{chat-config.$prefix}-launcher-in motion.$duration-moderate-01
+      motion.motion(entrance, expressive) both;
+    // Animate container width so the CTA grows inward from the edge
+    transition: inline-size $launcher-expand-duration $launcher-easing;
+  }
 }
 
 .cds-aichat--launcher__button-container--hidden {
@@ -78,10 +72,13 @@ cds-button.cds-aichat--launcher__button {
     background-color: chat-theme.$launcher-color-background;
     block-size: chat-theme.$launcher-default-size;
     inline-size: chat-theme.$launcher-default-size;
-    transition:
-      inline-size $launcher-expand-duration $launcher-easing,
-      background 250ms ease-in-out,
-      transform 150ms ease;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        inline-size $launcher-expand-duration $launcher-easing,
+        background 250ms ease-in-out,
+        transform 150ms ease;
+    }
 
     svg {
       block-size: 24px;
@@ -241,15 +238,17 @@ cds-button.cds-aichat--launcher-extended__close-button {
  */
 
 .cds-aichat--launcher__button-container--opening {
-  .cds-aichat--launcher-extended__text-holder {
-    animation: #{chat-config.$prefix}-launcher-opening-text-holder
-      $launcher-expand-duration $launcher-easing forwards;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cds-aichat--launcher-extended__text-holder {
+      animation: #{chat-config.$prefix}-launcher-opening-text-holder
+        $launcher-expand-duration $launcher-easing forwards;
+    }
 
-  .cds-aichat--launcher-extended__greeting {
-    animation: #{chat-config.$prefix}-launcher-opening-greeting
-      $launcher-fade-duration $launcher-easing forwards;
-    animation-delay: $launcher-expand-duration;
+    .cds-aichat--launcher-extended__greeting {
+      animation: #{chat-config.$prefix}-launcher-opening-greeting
+        $launcher-fade-duration $launcher-easing forwards;
+      animation-delay: $launcher-expand-duration;
+    }
   }
 }
 
@@ -277,15 +276,17 @@ cds-button.cds-aichat--launcher-extended__close-button {
  */
 
 .cds-aichat--launcher__button-container--closing {
-  .cds-aichat--launcher-extended__greeting {
-    animation: #{chat-config.$prefix}-launcher-closing-greeting
-      $launcher-fade-duration $launcher-easing forwards;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cds-aichat--launcher-extended__greeting {
+      animation: #{chat-config.$prefix}-launcher-closing-greeting
+        $launcher-fade-duration $launcher-easing forwards;
+    }
 
-  .cds-aichat--launcher-extended__text-holder {
-    animation: #{chat-config.$prefix}-launcher-closing-text-holder
-      $launcher-expand-duration $launcher-easing forwards;
-    animation-delay: $launcher-fade-duration;
+    .cds-aichat--launcher-extended__text-holder {
+      animation: #{chat-config.$prefix}-launcher-closing-text-holder
+        $launcher-expand-duration $launcher-easing forwards;
+      animation-delay: $launcher-fade-duration;
+    }
   }
 }
 
@@ -367,40 +368,5 @@ cds-button.cds-aichat--launcher-extended__close-button {
   100% {
     inset-block-end: chat-theme.$launcher-position-bottom;
     opacity: 1;
-  }
-}
-
-/* ---------- PREFERS REDUCED MOTION ---------- */
-/* Keep animation events but soften / simplify motion */
-
-@media (prefers-reduced-motion: reduce) {
-  .cds-aichat--launcher__button-container {
-    animation-duration: motion.$duration-fast-01;
-    // No width tween in reduced motion
-    transition: none;
-  }
-
-  /* Opening / closing sequences: no staggered delays, shorter */
-  .cds-aichat--launcher__button-container--opening {
-    .cds-aichat--launcher-extended__text-holder,
-    .cds-aichat--launcher-extended__greeting {
-      animation-delay: 0ms;
-      animation-duration: motion.$duration-fast-01;
-    }
-  }
-
-  .cds-aichat--launcher__button-container--closing {
-    .cds-aichat--launcher-extended__text-holder,
-    .cds-aichat--launcher-extended__greeting {
-      animation-delay: 0ms;
-      animation-duration: motion.$duration-fast-01;
-    }
-  }
-
-  /* Button width: snap instead of animate */
-  cds-button.cds-aichat--launcher__button::part(button) {
-    transition:
-      background 250ms ease-in-out,
-      transform 150ms ease;
   }
 }

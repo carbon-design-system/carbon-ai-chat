@@ -232,7 +232,12 @@ const DEFAULT_THEME_STATE: ThemeState = {
   derivedCarbonTheme: null,
   originalCarbonTheme: null,
   aiEnabled: true,
-  corners: CornersType.ROUND,
+  corners: {
+    startStart: CornersType.ROUND,
+    startEnd: CornersType.ROUND,
+    endStart: CornersType.ROUND,
+    endEnd: CornersType.ROUND,
+  },
 };
 deepFreeze(DEFAULT_THEME_STATE);
 

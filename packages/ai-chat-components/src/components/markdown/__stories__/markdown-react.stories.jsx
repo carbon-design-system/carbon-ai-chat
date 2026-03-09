@@ -60,16 +60,46 @@ console.log(fibonacci(10)); // Output: 55
 ### Python
 
 \`\`\`python
-def quicksort(arr):
-    if len(arr) <= 1:
-        return arr
-    pivot = arr[len(arr) // 2]
-    left = [x for x in arr if x < pivot]
-    middle = [x for x in arr if x == pivot]
-    right = [x for x in arr if x > pivot]
-    return quicksort(left) + middle + quicksort(right)
+class DataProcessor:
+    """A comprehensive data processing class with multiple methods."""
+    
+    def __init__(self, data):
+        self.data = data
+        self.processed = False
+    
+    def validate_data(self):
+        """Validate input data before processing."""
+        if not isinstance(self.data, list):
+            raise TypeError("Data must be a list")
+        if len(self.data) == 0:
+            raise ValueError("Data cannot be empty")
+        return True
+    
+    def clean_data(self):
+        """Remove None values and duplicates from data."""
+        cleaned = [x for x in self.data if x is not None]
+        return list(set(cleaned))
+    
+    def sort_data(self, reverse=False):
+        """Sort data in ascending or descending order."""
+        return sorted(self.clean_data(), reverse=reverse)
+    
+    def filter_data(self, condition):
+        """Filter data based on a condition function."""
+        return [x for x in self.clean_data() if condition(x)]
+    
+    def process(self):
+        """Main processing pipeline."""
+        self.validate_data()
+        cleaned = self.clean_data()
+        sorted_data = sorted(cleaned)
+        self.processed = True
+        return sorted_data
 
-print(quicksort([3, 6, 8, 10, 1, 2, 1]))
+# Example usage
+processor = DataProcessor([3, 6, 8, 10, 1, 2, 1, None, 5])
+result = processor.process()
+print(f"Processed data: {result}")
 \`\`\`
 
 ### Inline Code
@@ -185,7 +215,11 @@ const StreamingMarkdownDemo = () => {
 
     intervalRef.current = setInterval(() => {
       if (chunkIndex < chunks.length) {
-        setStreamedContent((prev) => prev + chunks[chunkIndex]);
+        const chunk = chunks[chunkIndex];
+        // Safety check: ensure chunk is not undefined to prevent "undefined" string in output
+        if (chunk !== undefined) {
+          setStreamedContent((prev) => prev + chunk);
+        }
         chunkIndex += 1;
       } else {
         clearExistingInterval();
@@ -214,7 +248,7 @@ const StreamingMarkdownDemo = () => {
           Restart Streaming
         </button>
       </div>
-      <Markdown streaming={streaming}>{streamedContent}</Markdown>
+      <Markdown streaming={streaming} markdown={streamedContent} />
     </div>
   );
 };
@@ -241,10 +275,6 @@ export default {
     highlight: {
       control: "boolean",
       description: "Enable syntax highlighting for code blocks",
-    },
-    debug: {
-      control: "boolean",
-      description: "Enable debug logging",
     },
     feedback: {
       control: "text",
@@ -289,7 +319,6 @@ export default {
     sanitizeHTML: false,
     removeHTML: false,
     highlight: true,
-    debug: false,
     feedback: "Copied!",
     tooltipContent: "Copy code",
     showMoreText: "Show more",
@@ -303,11 +332,20 @@ export default {
 };
 
 export const Default = {
-  render: (args) => <Markdown {...args}>{args.markdown}</Markdown>,
+  render: (args) => <Markdown {...args} markdown={args.markdown} />,
 };
 
 export const Streaming = {
-  args: {},
+  args: {
+    markdown: "",
+  },
+  argTypes: {
+    markdown: {
+      table: {
+        disable: true,
+      },
+    },
+  },
   render: () => <StreamingMarkdownDemo />,
 };
 
@@ -318,7 +356,6 @@ export const WithHTMLSanitization = {
     sanitizeHTML: true,
     removeHTML: false,
     highlight: true,
-    debug: false,
   },
   render: (args) => (
     <div>
@@ -334,7 +371,7 @@ export const WithHTMLSanitization = {
         <code>onclick</code> attributes are removed while safe HTML is
         preserved.
       </p>
-      <Markdown {...args}>{args.markdown}</Markdown>
+      <Markdown {...args} markdown={args.markdown} />
     </div>
   ),
 };
@@ -346,7 +383,6 @@ export const WithHTMLRemoval = {
     sanitizeHTML: false,
     removeHTML: true,
     highlight: true,
-    debug: false,
   },
   render: (args) => (
     <div>
@@ -360,7 +396,7 @@ export const WithHTMLRemoval = {
         <strong>Note:</strong> With <code>remove-html</code> enabled, all HTML
         tags are stripped, leaving only plain text and markdown.
       </p>
-      <Markdown {...args}>{args.markdown}</Markdown>
+      <Markdown {...args} markdown={args.markdown} />
     </div>
   ),
 };
@@ -372,7 +408,6 @@ export const WithoutHighlighting = {
     sanitizeHTML: false,
     removeHTML: false,
     highlight: false,
-    debug: true,
   },
-  render: (args) => <Markdown {...args}>{args.markdown}</Markdown>,
+  render: (args) => <Markdown {...args} markdown={args.markdown} />,
 };

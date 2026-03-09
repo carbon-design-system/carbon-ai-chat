@@ -13,31 +13,31 @@
 }
 
 .outstanding-orders-card-summary {
-  margin-bottom: 1rem;
   color: #161616;
   font-weight: 500;
+  margin-block-end: 1rem;
 }
 
 .outstanding-orders-card-preview {
-  background: #f4f4f4;
   padding: 0.75rem;
   border-radius: 4px;
-  margin-bottom: 1rem;
+  background: #f4f4f4;
+  margin-block-end: 1rem;
 }
 
 .preview-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-block-end: 0.5rem;
 }
 
 .preview-row:last-child {
-  margin-bottom: 0;
+  margin-block-end: 0;
 }
 
 .preview-label {
-  font-weight: 600;
   color: #525252;
+  font-weight: 600;
 }
 
 .preview-value {
@@ -46,8 +46,8 @@
 
 .outstanding-orders-card-hint {
   margin: 0;
-  font-size: 0.875rem;
   color: #525252;
+  font-size: 0.875rem;
   font-style: italic;
 }
 

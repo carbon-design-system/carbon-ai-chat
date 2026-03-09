@@ -88,6 +88,6 @@ For better shadow DOM support, see:
 
 Both Jest examples rely on the same `transformIgnorePatterns` allowlist so Babel
 transpiles select ESM packages inside `node_modules` (Lit, Swiper, CodeMirror,
-react-player, etc.). If you add new lazy dependencies to Carbon AI Chat, update
+etc.). If you add new lazy dependencies to Carbon AI Chat, update
 that allowlist and the preload helper once—then copy the changes to both the
 jsdom and happy-dom workspaces to keep their configurations aligned.

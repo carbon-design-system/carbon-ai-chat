@@ -7,18 +7,71 @@
  *  @license
  */
 
-import { LitElement, PropertyValues, TemplateResult } from "lit";
+import { html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
-import { createRef } from "lit/directives/ref.js";
 
 import { markdownToTokenTree, TokenTree } from "./markdown-token-tree.js";
 import { renderTokenTree } from "./markdown-renderer.js";
 import { consoleError } from "./utils.js";
-import { markdownTemplate } from "./markdown.template.js";
+
+function hasTrailingTableToken(node: TokenTree): boolean {
+  if (node.token.tag === "table") {
+    return true;
+  }
+
+  const children = node.children || [];
+  if (children.length === 0) {
+    return false;
+  }
+
+  // Follow only the rightmost branch. A trailing table is one that sits at the
+  // end of the current markdown output, not just the end of an arbitrary subtree.
+  return hasTrailingTableToken(children[children.length - 1]);
+}
+
+function hasNodeAfterTable(node: TokenTree): boolean {
+  const children = node.children || [];
+  for (let index = 0; index < children.length; index++) {
+    const child = children[index];
+    if (child.token.tag === "table" && index < children.length - 1) {
+      return true;
+    }
+    if (hasNodeAfterTable(child)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasLikelyPartialTableTail(markdown: string): boolean {
+  const normalized = markdown.replace(/\r/g, "");
+  const lines = normalized.split("\n");
+  let index = lines.length - 1;
+
+  while (index >= 0 && lines[index].trim() === "") {
+    index--;
+  }
+
+  if (index < 0) {
+    return false;
+  }
+
+  const lastLine = lines[index].trim();
+
+  // During streaming, partially emitted table rows frequently end with a pipe
+  // and markdown-it can temporarily stop recognizing the table token.
+  if (lastLine.startsWith("|") || lastLine.endsWith("|")) {
+    return true;
+  }
+
+  // Keep loading mode if the tail still looks like a table separator row.
+  return /^\|?[\s:-]+(\|[\s:-]+)+\|?$/.test(lastLine);
+}
 
 /**
  * Markdown component
@@ -26,7 +79,7 @@ import { markdownTemplate } from "./markdown.template.js";
  */
 @carbonElement(`${prefix}-markdown`)
 class CDSAIChatMarkdown extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Sanitize any HTML included in the markdown. e.g. remove script tags, onclick handlers, etc.
@@ -39,6 +92,12 @@ class CDSAIChatMarkdown extends LitElement {
    */
   @property({ type: Boolean, attribute: "remove-html" })
   removeHTML = false;
+
+  /**
+   * Direct markdown source input.
+   */
+  @property({ type: String })
+  markdown = "";
 
   /**
    * If you are actively streaming, setting this to true can help prevent needless UI thrashing when writing
@@ -115,27 +174,18 @@ class CDSAIChatMarkdown extends LitElement {
   @property({ type: Object, attribute: false })
   getLineCountText?: ({ count }: { count: number }) => string;
 
-  /**
-   * Watches light DOM text updates so streaming markdown triggers re-render without changing slot assignment.
-   *
-   * @internal
-   */
-  private mutationObserver?: MutationObserver;
+  /** Aria-label for code snippets when in read-only mode. */
+  @property({ type: String, attribute: "code-snippet-aria-label-readonly" })
+  codeSnippetAriaLabelReadOnly = "Code snippet";
+
+  /** Aria-label for code snippets when in editable mode. */
+  @property({ type: String, attribute: "code-snippet-aria-label-editable" })
+  codeSnippetAriaLabelEditable = "Code editor";
 
   /**
    * @internal
    */
   private needsReparse = false;
-
-  /**
-   * @internal
-   */
-  private contentSlot = createRef<HTMLSlotElement>();
-
-  /**
-   * @internal
-   */
-  private _slottedMarkdown = "";
 
   /**
    * Tracks the latest asynchronous rendering work so callers waiting on `updateComplete` know when throttled updates are done.
@@ -144,31 +194,38 @@ class CDSAIChatMarkdown extends LitElement {
    */
   private renderTask: Promise<void> | null = null;
 
+  private hasRenderedStreamingTableLoadingFrame = false;
+  private stagedStreamingTokenTree: TokenTree | null = null;
+  private isStreamingTableLoadingMode = false;
+  private hasAdoptedLegacyLightDomMarkdown = false;
+
   connectedCallback() {
     super.connectedCallback();
+    this.adoptLegacyLightDomMarkdown();
     this.needsReparse = true;
     this.scheduleRender();
-    this._syncMarkdownFromLightDom();
-    this.mutationObserver = new MutationObserver(() => {
-      this._syncMarkdownFromLightDom();
-    });
-    this.mutationObserver.observe(this, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
   }
 
-  disconnectedCallback() {
-    this.mutationObserver?.disconnect();
-    this.mutationObserver = undefined;
-    super.disconnectedCallback();
+  private adoptLegacyLightDomMarkdown() {
+    if (this.hasAdoptedLegacyLightDomMarkdown || this.markdown) {
+      return;
+    }
+
+    // Backward compatibility: treat static light-DOM text as initial markdown
+    // when the explicit `markdown` property was not provided.
+    const legacyLightDomMarkdown = this.textContent?.trim() ?? "";
+    if (legacyLightDomMarkdown) {
+      this.markdown = legacyLightDomMarkdown;
+    }
+
+    this.hasAdoptedLegacyLightDomMarkdown = true;
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
-    if (changed.has("removeHTML")) {
+    if (changed.has("removeHTML") || changed.has("markdown")) {
       // Properties that affect token tree structure require full reparse
       // - removeHTML: changes which parser is used (html: true vs false)
+      // - markdown: updates the source text to parse
       this.needsReparse = true;
       this.scheduleRender();
     } else if (
@@ -235,23 +292,85 @@ class CDSAIChatMarkdown extends LitElement {
    */
   private renderMarkdown = async () => {
     try {
+      const markdownContent = this.markdown ?? "";
+      const previousTreeForDiff =
+        this.stagedStreamingTokenTree ?? this.tokenTree;
+      let nextTokenTree = previousTreeForDiff;
+
       if (this.needsReparse) {
         // First, we take the markdown we were given and use the markdown-it parser to turn is into a tree we can
         // transform into Lit components and compare smartly to avoid re-renders of components that were already
         // rendered when the markdown is updated (likely by streaming, but possibly by an edit somewhere in the
         // middle). It takes the current tokenTree as an argument for quick diffing to avoid re-creating parts
         // of the tree.
-        this.tokenTree = markdownToTokenTree(
-          this._slottedMarkdown,
-          this.tokenTree,
+        nextTokenTree = markdownToTokenTree(
+          markdownContent,
+          previousTreeForDiff,
           !this.removeHTML,
         );
         this.needsReparse = false;
       }
 
+      const hasStreamingTailTable =
+        Boolean(this.streaming) && hasTrailingTableToken(nextTokenTree);
+      const hasParsedNodeAfterTable = hasNodeAfterTable(nextTokenTree);
+
+      if (!this.streaming) {
+        this.isStreamingTableLoadingMode = false;
+      } else if (this.isStreamingTableLoadingMode) {
+        if (
+          hasParsedNodeAfterTable &&
+          !hasLikelyPartialTableTail(markdownContent)
+        ) {
+          this.isStreamingTableLoadingMode = false;
+        }
+      } else if (hasStreamingTailTable) {
+        this.isStreamingTableLoadingMode = true;
+      }
+
+      if (this.streaming && this.isStreamingTableLoadingMode) {
+        if (!this.hasRenderedStreamingTableLoadingFrame) {
+          if (nextTokenTree !== this.tokenTree) {
+            this.tokenTree = nextTokenTree;
+          }
+          this.renderedContent = renderTokenTree(nextTokenTree, {
+            sanitize: this.sanitizeHTML,
+            streaming: this.streaming,
+            highlight: this.highlight,
+            // Table strings
+            filterPlaceholderText: this.filterPlaceholderText,
+            previousPageText: this.previousPageText,
+            nextPageText: this.nextPageText,
+            itemsPerPageText: this.itemsPerPageText,
+            downloadLabelText: this.downloadLabelText,
+            locale: this.locale,
+            getPaginationSupplementalText: this.getPaginationSupplementalText,
+            getPaginationStatusText: this.getPaginationStatusText,
+            // Code snippet strings
+            feedback: this.feedback,
+            showLessText: this.showLessText,
+            showMoreText: this.showMoreText,
+            tooltipContent: this.tooltipContent,
+            getLineCountText: this.getLineCountText,
+          });
+          this.hasRenderedStreamingTableLoadingFrame = true;
+          this.stagedStreamingTokenTree = null;
+        } else {
+          this.stagedStreamingTokenTree = nextTokenTree;
+        }
+        return;
+      }
+
+      const renderTree = this.stagedStreamingTokenTree ?? nextTokenTree;
+      this.stagedStreamingTokenTree = null;
+      this.hasRenderedStreamingTableLoadingFrame = false;
+      if (renderTree !== this.tokenTree) {
+        this.tokenTree = renderTree;
+      }
+
       // Next we take that tree and transform it into Lit content to be rendered into the template.
       // this.renderedContent is what is rendered in the template directly.
-      this.renderedContent = renderTokenTree(this.tokenTree, {
+      this.renderedContent = renderTokenTree(renderTree, {
         sanitize: this.sanitizeHTML,
         streaming: this.streaming,
         highlight: this.highlight,
@@ -270,43 +389,13 @@ class CDSAIChatMarkdown extends LitElement {
         showMoreText: this.showMoreText,
         tooltipContent: this.tooltipContent,
         getLineCountText: this.getLineCountText,
+        codeSnippetAriaLabelReadOnly: this.codeSnippetAriaLabelReadOnly,
+        codeSnippetAriaLabelEditable: this.codeSnippetAriaLabelEditable,
       });
     } catch (error) {
       consoleError("Failed to parse markdown", error);
     }
   };
-
-  /**
-   * Reads slotted text content and uses it as the markdown source when provided.
-   */
-  private _syncMarkdownFromLightDom() {
-    const slotEl = this.contentSlot.value;
-    let content = "";
-
-    if (slotEl) {
-      content = slotEl
-        .assignedNodes({ flatten: true })
-        .map((node) => ("textContent" in node ? node.textContent || "" : ""))
-        .join("")
-        .trim();
-    } else if (this.childNodes.length) {
-      // Fallback before the slot is stamped
-      content = Array.from(this.childNodes)
-        .map((node) => ("textContent" in node ? node.textContent || "" : ""))
-        .join("")
-        .trim();
-    }
-
-    if (content && content !== this._slottedMarkdown) {
-      this._slottedMarkdown = content;
-      this.needsReparse = true;
-      this.scheduleRender();
-    }
-  }
-
-  protected firstUpdated() {
-    this._syncMarkdownFromLightDom();
-  }
 
   /**
    * @internal
@@ -356,11 +445,9 @@ class CDSAIChatMarkdown extends LitElement {
 
   protected render() {
     const { renderedContent } = this;
-    return markdownTemplate({
-      slotRef: this.contentSlot,
-      onSlotChange: () => this._syncMarkdownFromLightDom(),
-      renderedContent,
-    });
+    return html`<div class="cds-aichat-markdown-stack">
+      ${renderedContent}
+    </div>`;
   }
 }
 

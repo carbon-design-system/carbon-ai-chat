@@ -10,7 +10,7 @@
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { LanguageSupport } from "@codemirror/language";
-import { createCarbonTheme } from "./theme.js";
+import { createCarbonTheme, makeScrollerFocusable } from "./theme.js";
 import {
   baseCodeMirrorSetup,
   type BaseCodeMirrorSetupOptions,
@@ -28,9 +28,11 @@ interface EditorCreationOptions {
   languageCompartment: Compartment;
   readOnlyCompartment: Compartment;
   wrapCompartment: Compartment;
+  contentAttributesCompartment: Compartment;
   editable: boolean;
   disabled: boolean;
   wrapText: boolean;
+  ariaLabel: string;
   onDocChanged?(payload: EditorDocChangePayload): void;
   setupOptions?: BaseCodeMirrorSetupOptions;
 }
@@ -44,8 +46,10 @@ export function createEditorView({
   languageCompartment,
   readOnlyCompartment,
   wrapCompartment,
+  contentAttributesCompartment,
   editable,
   disabled,
+  ariaLabel,
   onDocChanged,
   setupOptions,
 }: EditorCreationOptions): EditorView {
@@ -58,6 +62,10 @@ export function createEditorView({
     EditorView.editable.of(editable && !disabled),
   ];
 
+  const contentAttributesExtensions = EditorView.contentAttributes.of({
+    "aria-label": ariaLabel,
+  });
+
   const wrapTheme = createCarbonTheme();
 
   const state = EditorState.create({
@@ -67,6 +75,8 @@ export function createEditorView({
       languageCompartment.of(languageExtensions),
       readOnlyCompartment.of(readOnlyExtensions),
       wrapCompartment.of(wrapTheme),
+      contentAttributesCompartment.of(contentAttributesExtensions),
+      makeScrollerFocusable(),
       EditorView.updateListener.of((update) => {
         if (update.docChanged && onDocChanged) {
           onDocChanged({
@@ -113,5 +123,23 @@ export function updateReadOnlyConfiguration(
       EditorState.readOnly.of(!editable || disabled),
       EditorView.editable.of(editable && !disabled),
     ]),
+  });
+}
+
+export function updateContentAttributes(
+  view: EditorView | undefined,
+  contentAttributesCompartment: Compartment,
+  ariaLabel: string,
+) {
+  if (!view) {
+    return;
+  }
+
+  view.dispatch({
+    effects: contentAttributesCompartment.reconfigure(
+      EditorView.contentAttributes.of({
+        "aria-label": ariaLabel,
+      }),
+    ),
   });
 }

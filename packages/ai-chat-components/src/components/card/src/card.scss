@@ -1,11 +1,9 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
-
-$css--plex: true !default;
 
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
@@ -18,31 +16,19 @@ $css--plex: true !default;
   @extend :host(#{$cds-prefix}-tile);
   @include rounded-modifiers;
   @include flush-modifiers;
-  // --cds-aichat-card-border-radius is a variable available in the AI Chat app and is 8px. We set --cds-aichat-rounded-modifier-radius to --cds-aichat-card-border-radius in this scope, and it will be passed down the node tree thus making it available throughout data-modifiers usage.
-  --#{$prefix}-rounded-modifier-radius: var(
-    --#{$prefix}-card-border-radius,
-    0.5rem
-  );
-  --#{$prefix}-rounded-modifier-radius-start-start: var(
-    --#{$prefix}-card-border-radius,
-    0.5rem
-  );
-  --#{$prefix}-rounded-modifier-radius-start-end: var(
-    --#{$prefix}-card-border-radius,
-    0.5rem
-  );
-  --#{$prefix}-rounded-modifier-radius-end-start: var(
-    --#{$prefix}-card-border-radius,
-    0.5rem
-  );
-  --#{$prefix}-rounded-modifier-radius-end-end: var(
-    --#{$prefix}-card-border-radius,
-    0.5rem
-  );
+  // Set corner properties so slotted content can inherit them
+  // These will be overridden if set from outside (e.g., from shell)
+  --#{$prefix}-border-radius-start-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-start-end: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-end-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-end-end: #{layout.$spacing-03};
 
   border: 1px solid theme.$chat-bubble-border;
-  border-radius: var(--#{$prefix}-rounded-modifier-radius);
   background-color: theme.$chat-shell-background;
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 
   ::slotted([slot="card-media"]) {
     display: flex;

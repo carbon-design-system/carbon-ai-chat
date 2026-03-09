@@ -21,7 +21,21 @@ import * as ToolbarStories from "./toolbar-react.stories.jsx";
 
 `<Toolbar>` aligns titles, labels, icon buttons, and overflow actions into a responsive header for AI chat surfaces. It handles truncation and optional overflow menus so you can focus on wiring your actions.
 
-### Getting started
+## Customization
+
+> ** For information about styling slotted content with modifiers like `data-rounded`, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+Slotted content can use `data-rounded` to align with corner rounding:
+
+```jsx
+<Toolbar>
+  <div slot="navigation" data-rounded="top-left">
+    {/* Content gets top-left corner rounding */}
+  </div>
+</Toolbar>
+```
+
+## Getting started
 
 Here's a quick example to get you started.
 

@@ -52,6 +52,8 @@ lib
 storybook-static
 storybook-react-static
 
+custom-elements.json
+
 # env file
 .env
 env.cjs
@@ -82,3 +84,5 @@ test-results
 .next
 
 .bob
+
+packages/ai-chat-components/scss

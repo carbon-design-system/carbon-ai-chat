@@ -23,3 +23,50 @@ export enum CornersType {
    */
   SQUARE = "square",
 }
+
+/**
+ * Configuration for individual corners using logical property names.
+ * Supports RTL layouts by using start/end instead of left/right.
+ *
+ * Any undefined corner will fall back to the default value (ROUND).
+ *
+ * @category Config
+ */
+export interface PerCornerConfig {
+  /**
+   * Top-left corner in LTR, top-right in RTL.
+   * Maps to border-start-start-radius.
+   */
+  startStart?: CornersType;
+
+  /**
+   * Top-right corner in LTR, top-left in RTL.
+   * Maps to border-start-end-radius.
+   */
+  startEnd?: CornersType;
+
+  /**
+   * Bottom-left corner in LTR, bottom-right in RTL.
+   * Maps to border-end-start-radius.
+   */
+  endStart?: CornersType;
+
+  /**
+   * Bottom-right corner in LTR, bottom-left in RTL.
+   * Maps to border-end-end-radius.
+   */
+  endEnd?: CornersType;
+}
+
+/**
+ * Resolved corner configuration with all corners defined.
+ * Used internally after normalizing the user's configuration.
+ *
+ * @category Config
+ */
+export interface ResolvedCornerConfig {
+  startStart: CornersType;
+  startEnd: CornersType;
+  endStart: CornersType;
+  endEnd: CornersType;
+}

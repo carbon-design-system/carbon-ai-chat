@@ -594,9 +594,15 @@ interface ThemeState {
   originalCarbonTheme: CarbonTheme | null;
 
   /**
-   * This flag is used to disable Carbon AI Chat's rounded corners.
+   * The resolved corners configuration for the chat.
+   * Each corner is individually defined after normalizing the user's configuration.
    */
-  corners: CornersType;
+  corners: {
+    startStart: CornersType;
+    startEnd: CornersType;
+    endStart: CornersType;
+    endEnd: CornersType;
+  };
 }
 
 export {

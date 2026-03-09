@@ -7,12 +7,22 @@
  *  @license
  */
 
-import { LitElement, PropertyValues } from "lit";
+import "../../markdown/index.js";
+import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/chat-button/index.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
+import "@carbon/web-components/es/components/layer/index.js";
+import "@carbon/web-components/es/components/textarea/index.js";
+
+import { html, LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
-import { feedbackElementTemplate } from "./feedback.template.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./feedback.scss?lit";
+
+// The maximum number of characters the user is allowed to type into the text area.
+const MAX_TEXT_COUNT = 1000;
 
 /**
  * The component for displaying a panel requesting feedback from a user.
@@ -20,7 +30,7 @@ import styles from "./feedback.scss?lit";
  */
 @carbonElement(`${prefix}-feedback`)
 class CDSAIChatFeedback extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * The CSS class of this panel.
@@ -94,6 +104,12 @@ class CDSAIChatFeedback extends LitElement {
    */
   @property({ type: String, attribute: "submit-label", reflect: true })
   submitLabel?: string;
+
+  /**
+   * The accessible label for the categories listbox. This label is used by screen readers to describe the purpose of the category selection list.
+   */
+  @property({ type: String, attribute: "categories-label", reflect: true })
+  categoriesLabel?: string;
 
   /**
    * Indicates whether the text area should be shown.
@@ -205,7 +221,94 @@ class CDSAIChatFeedback extends LitElement {
   }
 
   render() {
-    return feedbackElementTemplate(this);
+    const containerClasses = [`${prefix}--container`];
+    if (!this.isOpen) {
+      containerClasses.push(`${prefix}--is-closed`);
+    }
+
+    return html`<div class="${containerClasses.join(" ")}">
+      <div class="${prefix}--title-row">
+        <div class="${prefix}--title">
+          ${this.title || "Provide additional feedback"}
+        </div>
+      </div>
+      ${this.showPrompt
+        ? html`<div class="${prefix}--prompt">
+            ${this.prompt || "What do you think of this response?"}
+          </div>`
+        : ""}
+      ${this.categories?.length
+        ? html`<div class="${prefix}--categories">
+            <div
+              class="${prefix}--tag-list-container"
+              role="group"
+              aria-label="${this.categoriesLabel || "Feedback categories"}"
+            >
+              ${this.categories.map(
+                (value) =>
+                  html`<cds-chat-button
+                    class="${prefix}--tag-list-button"
+                    kind="primary"
+                    size="sm"
+                    type="button"
+                    is-quick-action
+                    aria-pressed="${this._selectedCategories.has(value)}"
+                    ?is-selected=${this._selectedCategories.has(value)}
+                    data-content="${value}"
+                    ?disabled=${this.isReadonly}
+                    @click=${this._handleCategoryClick}
+                  >
+                    ${value}
+                  </cds-chat-button>`,
+              )}
+            </div>
+          </div>`
+        : ""}
+      ${this.showTextArea
+        ? html`<div class="${prefix}--feedback-text">
+            <cds-textarea
+              id="${this.id}-text-area"
+              value="${this._textInput}"
+              class="${prefix}--feedback-text-area"
+              ?disabled=${this.isReadonly}
+              placeholder="${this.placeholder ||
+              "Provide additional feedback..."}"
+              rows="3"
+              max-count="${MAX_TEXT_COUNT}"
+              @input=${this._handleTextInput}
+            ></cds-textarea>
+          </div>`
+        : ""}
+      ${this.disclaimer
+        ? html`<div class="${prefix}--disclaimer">
+            <cds-aichat-markdown
+              .markdown=${this.disclaimer}
+            ></cds-aichat-markdown>
+          </div>`
+        : ""}
+      <div class="${prefix}--buttons">
+        <div class="${prefix}--cancel" data-rounded="bottom-left">
+          <cds-button
+            ?disabled=${this.isReadonly}
+            size="lg"
+            kind="secondary"
+            @click=${this._handleCancel}
+          >
+            ${this.cancelLabel || "Cancel"}
+          </cds-button>
+        </div>
+        <div class="${prefix}--submit" data-rounded="bottom-right">
+          <cds-button
+            ?disabled=${this.isReadonly}
+            size="lg"
+            kind="primary"
+            @click=${this._handleSubmit}
+          >
+            ${this.submitLabel || "Submit"}
+          </cds-button>
+        </div>
+      </div>
+    </div>`;
   }
 }
 

@@ -96,7 +96,7 @@ import {
   VideoItem,
   PreviewCardItem,
 } from "../../types/messaging/Messages";
-import RichText from "./responseTypes/util/RichText";
+import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
 
 /**
@@ -222,11 +222,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <div role="heading" aria-level={2}>
-            <RichText
+            <MarkdownWithDefaults
               text={userText}
               removeHTML
               overrideSanitize={true}
-            ></RichText>
+            ></MarkdownWithDefaults>
           </div>
         </div>
       );
@@ -731,17 +731,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
                 >
                   {step.description ? (
                     <div slot="description">
-                      <RichText text={step.description} />
+                      <MarkdownWithDefaults text={step.description} />
                     </div>
                   ) : null}
                   {requestMarkdown ? (
                     <div slot="input">
-                      <RichText text={requestMarkdown} />
+                      <MarkdownWithDefaults text={requestMarkdown} />
                     </div>
                   ) : null}
                   {responseMarkdown ? (
                     <div slot="output">
-                      <RichText text={responseMarkdown} />
+                      <MarkdownWithDefaults text={responseMarkdown} />
                     </div>
                   ) : null}
                 </ToolCallData>
@@ -919,6 +919,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           title={title || languagePack.feedback_defaultTitle}
           prompt={prompt || languagePack.feedback_defaultPrompt}
           categories={filteredCategories}
+          categoriesLabel={languagePack.feedback_categoriesLabel}
           placeholder={placeholder || languagePack.feedback_defaultPlaceholder}
           disclaimer={disclaimer}
           submitLabel={languagePack.feedback_submitLabel}

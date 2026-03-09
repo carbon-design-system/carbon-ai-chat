@@ -140,7 +140,7 @@ class WorkspaceWriteableElementExample extends LitElement {
         .actions=${this.toolbarActions}
         titleText="Optimizing excess inventory"
       >
-        <cds-ai-label autoalign="" slot="decorator" size="2xs">
+        <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
             <p class="secondary">
               Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed

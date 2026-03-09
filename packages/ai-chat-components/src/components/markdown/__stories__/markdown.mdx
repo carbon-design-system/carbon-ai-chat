@@ -27,7 +27,9 @@ Use `cds-aichat-markdown` to render AI responses with a predictable set of Markd
 Here's a quick example to get you started.
 
 ```html
-<cds-aichat-markdown>
+<cds-aichat-markdown id="ai-response"></cds-aichat-markdown>
+<script>
+  document.getElementById("ai-response").markdown = `
 ## Response
 
 Here is a **formatted** answer with a link to the [docs](https://carbondesignsystem.com){target=_blank rel=noopener}.
@@ -35,8 +37,8 @@ Here is a **formatted** answer with a link to the [docs](https://carbondesignsys
 > Remember to set your API key before calling the service.
 
 * Item one
-* Item two
-</cds-aichat-markdown>
+* Item two`;
+</script>
 ```
 
 ## Component API
