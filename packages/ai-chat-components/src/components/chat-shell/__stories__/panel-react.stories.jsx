@@ -90,12 +90,24 @@ export const Default = {
     },
     animationOnOpen: {
       control: { type: "select" },
-      options: ["", "slide-in-from-bottom", "slide-in-from-right", "fade-in"],
+      options: [
+        "",
+        "slide-in-from-bottom",
+        "slide-in-from-end",
+        "slide-in-from-start",
+        "fade-in",
+      ],
       description: "Animation when panel opens",
     },
     animationOnClose: {
       control: { type: "select" },
-      options: ["", "slide-out-to-bottom", "slide-out-to-right", "fade-out"],
+      options: [
+        "",
+        "slide-out-to-bottom",
+        "slide-out-to-end",
+        "slide-out-to-start",
+        "fade-out",
+      ],
       description: "Animation when panel closes",
     },
   },
