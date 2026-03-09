@@ -123,9 +123,11 @@ vi.mock(
 
 beforeEach(() => {
   // Mock ResizeObserver which is used by Carbon components
-  (window as any).ResizeObserver = vi.fn().mockImplementation(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }));
+  (window as any).ResizeObserver = vi.fn(function ResizeObserver() {
+    return {
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    };
+  });
 });
