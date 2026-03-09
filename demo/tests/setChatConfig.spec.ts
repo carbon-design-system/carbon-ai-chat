@@ -86,10 +86,12 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
     page.getByTestId(DemoPageObjectId.LEAVE_SET_CHAT_CONFIG_MODE_BUTTON),
   ).toBeVisible();
 
-  // Check if title was updated
-  await expect(page.getByTestId(PageObjectId.HEADER_TITLE)).toContainText(
-    "Test Title 1",
-  );
+  // Check if title was updated (scoped to chat_header)
+  await expect(
+    page
+      .getByTestId(PageObjectId.CHAT_HEADER)
+      .getByTestId(PageObjectId.HEADER_TITLE),
+  ).toContainText("Test Title 1");
 
   // Phase 2: Page Refresh & Error State
 
@@ -136,10 +138,12 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
 
   // 8. Assertions for recovery - sidebar should be visible again with Leave button
 
-  // Verify the header name is also applied in the main panel
-  await expect(page.getByTestId(PageObjectId.HEADER_NAME)).toContainText(
-    "Test Assistant",
-  );
+  // Verify the header name is also applied in the main panel (scoped to chat_header)
+  await expect(
+    page
+      .getByTestId(PageObjectId.CHAT_HEADER)
+      .getByTestId(PageObjectId.HEADER_NAME),
+  ).toContainText("Test Assistant");
 
   await expect(
     page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR),

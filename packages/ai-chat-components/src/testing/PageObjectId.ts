@@ -13,6 +13,11 @@
  */
 export enum PageObjectId {
   /**
+   * Chat header container element.
+   */
+  CHAT_HEADER = "chat_header",
+
+  /**
    * Header title element.
    */
   HEADER_TITLE = "header_title",

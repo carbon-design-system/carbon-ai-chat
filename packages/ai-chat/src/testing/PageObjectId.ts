@@ -22,6 +22,11 @@ import { PageObjectId as BasePageObjectId } from "@carbon/ai-chat-components/es/
  */
 export enum PageObjectId {
   /**
+   * Chat header container element (from @carbon/ai-chat-components).
+   */
+  CHAT_HEADER = BasePageObjectId.CHAT_HEADER,
+
+  /**
    * Header title element (from @carbon/ai-chat-components).
    */
   HEADER_TITLE = BasePageObjectId.HEADER_TITLE,

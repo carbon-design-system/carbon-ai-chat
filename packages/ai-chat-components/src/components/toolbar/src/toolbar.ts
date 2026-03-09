@@ -22,6 +22,7 @@ import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-load
 import { carbonElement } from "../../../globals/decorators/index.js";
 import "../../truncated-text/index.js";
 import { BaseOverflowMenuItem } from "../../../typings/overflow-menu.js";
+import { PageObjectId } from "../../../testing/PageObjectId.js";
 
 const blockClass = `${prefix}-toolbar`;
 import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/defs.js";
@@ -240,11 +241,15 @@ class CDSAIChatToolbar extends LitElement {
                         .join(" ")}"
                     >
                       ${this.titleText
-                        ? html`<span>${this.titleText}</span>`
+                        ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
+                            >${this.titleText}</span
+                          >`
                         : nothing}
                       ${this.titleText && this.nameText ? html`` : nothing}
                       ${this.nameText
-                        ? html`<span class="${blockClass}__name"
+                        ? html`<span
+                            class="${blockClass}__name"
+                            data-testid=${PageObjectId.HEADER_NAME}
                             >${this.nameText}</span
                           >`
                         : nothing}

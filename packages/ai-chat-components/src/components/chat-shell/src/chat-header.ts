@@ -469,6 +469,7 @@ class CdsAiChatChatHeader extends LitElement {
         ?overflow=${this.overflow}
         titleText=${this.headerTitle || nothing}
         nameText=${this.headerName || nothing}
+        data-testid=${PageObjectId.CHAT_HEADER}
       >
         ${navigationContent}
         ${!this.headerTitle && !this.headerName ? this.renderTitle() : nothing}

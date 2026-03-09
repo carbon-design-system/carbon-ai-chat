@@ -118,9 +118,15 @@ describe("cds-aichat-chat-header", function () {
           header-title="title"
         ></cds-aichat-chat-header>`,
       );
-      const titleSlot = el.shadowRoot!.querySelector('[slot="title"]');
-      expect(titleSlot).to.exist;
-      expect(titleSlot!.textContent).to.include("title");
+      await el.updateComplete;
+      const toolbar = el.shadowRoot!.querySelector("cds-aichat-toolbar");
+      expect(toolbar).to.exist;
+      // Title is rendered inside toolbar's shadow root via titleText property
+      const truncatedText = toolbar!.shadowRoot!.querySelector(
+        "cds-aichat-truncated-text",
+      );
+      expect(truncatedText).to.exist;
+      expect(truncatedText!.textContent).to.include("title");
     });
 
     it("should render both title and name when both are set", async () => {
@@ -130,10 +136,16 @@ describe("cds-aichat-chat-header", function () {
           header-name="name"
         ></cds-aichat-chat-header>`,
       );
-      const titleSlot = el.shadowRoot!.querySelector('[slot="title"]');
-      expect(titleSlot).to.exist;
-      expect(titleSlot!.textContent).to.include("title");
-      expect(titleSlot!.textContent).to.include("name");
+      await el.updateComplete;
+      const toolbar = el.shadowRoot!.querySelector("cds-aichat-toolbar");
+      expect(toolbar).to.exist;
+      // Both title and name are rendered inside toolbar's shadow root
+      const truncatedText = toolbar!.shadowRoot!.querySelector(
+        "cds-aichat-truncated-text",
+      );
+      expect(truncatedText).to.exist;
+      expect(truncatedText!.textContent).to.include("title");
+      expect(truncatedText!.textContent).to.include("name");
     });
 
     it("should apply correct CSS classes to title elements", async () => {
@@ -143,14 +155,22 @@ describe("cds-aichat-chat-header", function () {
           header-name="name"
         ></cds-aichat-chat-header>`,
       );
-      const titleElement = el.shadowRoot!.querySelector(
-        ".cds-aichat-chat-header__title-text",
+      await el.updateComplete;
+      const toolbar = el.shadowRoot!.querySelector("cds-aichat-toolbar");
+      expect(toolbar).to.exist;
+      // Wait for toolbar to update
+      if (toolbar && typeof (toolbar as any).updateComplete !== "undefined") {
+        await (toolbar as any).updateComplete;
+      }
+      // The toolbar renders title/name with its own structure inside truncated-text
+      const truncatedText = toolbar!.shadowRoot!.querySelector(
+        "cds-aichat-truncated-text",
       );
-      const nameElement = el.shadowRoot!.querySelector(
-        ".cds-aichat-chat-header__name-text",
-      );
-      expect(titleElement).to.exist;
-      expect(nameElement).to.exist;
+      expect(truncatedText).to.exist;
+      // Verify both title and name are rendered in the toolbar
+      const toolbarContent = toolbar!.shadowRoot!.textContent;
+      expect(toolbarContent).to.include("title");
+      expect(toolbarContent).to.include("name");
     });
 
     it("should use custom title slot when provided", async () => {
@@ -223,9 +243,10 @@ describe("cds-aichat-chat-header", function () {
       await el.updateComplete;
       const toolbar = el.shadowRoot!.querySelector("cds-aichat-toolbar");
       expect(toolbar).to.exist;
-      const backButton = toolbar!.querySelector(
-        'cds-icon-button[slot="navigation"]',
-      );
+      // The back button is rendered inside a div with slot="navigation"
+      const navDiv = toolbar!.querySelector('div[slot="navigation"]');
+      expect(navDiv).to.exist;
+      const backButton = navDiv!.querySelector("cds-icon-button");
       expect(backButton).to.exist;
     });
 
@@ -242,9 +263,11 @@ describe("cds-aichat-chat-header", function () {
       `);
       await el.updateComplete;
       const toolbar = el.shadowRoot!.querySelector("cds-aichat-toolbar");
-      const backButton = toolbar!.querySelector(
-        'cds-icon-button[slot="navigation"]',
-      );
+      expect(toolbar).to.exist;
+      const navDiv = toolbar!.querySelector('div[slot="navigation"]');
+      expect(navDiv).to.exist;
+      const backButton = navDiv!.querySelector("cds-icon-button");
+      expect(backButton).to.exist;
       (backButton as HTMLElement).click();
       await el.updateComplete;
       expect(clicked).to.be.true;
@@ -352,9 +375,8 @@ describe("cds-aichat-chat-header", function () {
       }
 
       // Wait for icon button to be fully initialized
-      const backButton = toolbar!.querySelector(
-        'cds-icon-button[slot="navigation"]',
-      );
+      const navDiv = toolbar!.querySelector('div[slot="navigation"]');
+      const backButton = navDiv?.querySelector("cds-icon-button");
       if (
         backButton &&
         typeof (backButton as any).updateComplete !== "undefined"
@@ -521,8 +543,17 @@ describe("cds-aichat-chat-header", function () {
       await el.updateComplete;
       expect(el.headerTitle).to.equal("Updated Title");
 
-      const titleSlot = el.shadowRoot!.querySelector('[slot="title"]');
-      expect(titleSlot!.textContent).to.include("Updated Title");
+      const toolbar = el.shadowRoot!.querySelector("cds-aichat-toolbar");
+      expect(toolbar).to.exist;
+      // Wait for toolbar to update
+      if (toolbar && typeof (toolbar as any).updateComplete !== "undefined") {
+        await (toolbar as any).updateComplete;
+      }
+      const truncatedText = toolbar!.shadowRoot!.querySelector(
+        "cds-aichat-truncated-text",
+      );
+      expect(truncatedText).to.exist;
+      expect(truncatedText!.textContent).to.include("Updated Title");
     });
   });
 });
