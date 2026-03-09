@@ -143,7 +143,7 @@ class CdsAiChatChatHeader extends LitElement {
         ),
       // 3. Try navigation rendered from properties (direct children of toolbar)
       () => {
-        const toolbar = this.shadowRoot?.querySelector("cds-aichat-toolbar");
+        const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
         const navButton = toolbar?.querySelector(
           'cds-icon-button[slot="navigation"], cds-overflow-menu[slot="navigation"]',
         );
@@ -151,7 +151,7 @@ class CdsAiChatChatHeader extends LitElement {
       },
       // 4. Try toolbar action buttons
       () => {
-        const toolbar = this.shadowRoot?.querySelector("cds-aichat-toolbar");
+        const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
         const buttons = toolbar?.shadowRoot?.querySelectorAll(
           CdsAiChatChatHeader.TOOLBAR_ACTION_SELECTOR,
         );
