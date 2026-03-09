@@ -21,19 +21,21 @@ import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import "../../truncated-text/index.js";
+import { BaseOverflowMenuItem } from "../../../typings/overflow-menu.js";
 
 const blockClass = `${prefix}-toolbar`;
 import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/defs.js";
 
 /**
  * Actions that display in the toolbar.
+ * Extends BaseOverflowMenuItem to support all overflow menu item properties
+ * including danger variants, dividers, and links (href/target).
+ *
+ * Actions can be either:
+ * - Interactive buttons with onClick handlers
+ * - Links with href/target attributes
  */
-export interface Action {
-  /**
-   * Tooltip text for the action.
-   */
-  text: string;
-
+export interface Action extends BaseOverflowMenuItem {
   /**
    * `@carbon/icons` icon for the action.
    */
@@ -48,21 +50,6 @@ export interface Action {
    * When overflow handling is enabled, setting fixed to true will force this action out of the overflow menu.
    */
   fixed?: boolean;
-
-  /**
-   * Disable the action.
-   */
-  disabled?: boolean;
-
-  /**
-   * Optional data-testid string for e2e testing.
-   */
-  testId?: string;
-
-  /**
-   * Click handler for action.
-   */
-  onClick: () => void;
 }
 
 /**
@@ -183,11 +170,19 @@ class CDSAIChatToolbar extends LitElement {
     super.disconnectedCallback();
   }
 
+  /**
+   * Renders an action as an icon button.
+   * Note: Some Action properties only apply when rendered in overflow menu:
+   * - danger/dangerDescription: cds-icon-button doesn't support danger variant
+   * - divider: Only applicable in menu context
+   */
   private renderIconButton = (action: Action) => {
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
         @click=${action.onClick}
+        href=${action.href || nothing}
+        target=${action.href ? action.target || "_self" : nothing}
         size=${action.size || BUTTON_SIZE.MEDIUM}
         align="bottom-end"
         kind="ghost"
@@ -277,7 +272,19 @@ class CDSAIChatToolbar extends LitElement {
                         this.hiddenItems,
                         (item) => item.text,
                         (item) => html`
-                          <cds-overflow-menu-item @click=${item.onClick}>
+                          <cds-overflow-menu-item
+                            @click=${item.onClick}
+                            href=${item.href || nothing}
+                            target=${item.href
+                              ? item.target || "_self"
+                              : nothing}
+                            ?disabled=${item.disabled}
+                            ?danger=${item.danger}
+                            danger-description=${item.dangerDescription ||
+                            nothing}
+                            ?divider=${item.divider}
+                            data-testid=${item.testId || nothing}
+                          >
                             ${item.text}
                           </cds-overflow-menu-item>
                         `,

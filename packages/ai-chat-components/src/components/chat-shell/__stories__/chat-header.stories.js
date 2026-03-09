@@ -13,9 +13,11 @@ import "@carbon/web-components/es/components/ai-label/index.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/content-switcher/index.js";
 import { html } from "lit";
+import { ref, createRef } from "lit/directives/ref.js";
 import Close from "@carbon/icons/es/close/16.js";
 import Restart from "@carbon/icons/es/restart/16.js";
 import OverflowMenuVertical from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import ChevronLeft from "@carbon/icons/es/chevron--left/16.js";
 import styles from "./story-styles.scss?lit";
 
 const sampleActions = [
@@ -216,6 +218,77 @@ export const WithOverflowNavigation = {
         <div slot="messages" class="messages slot-sample">Messages</div>
         <div slot="input" class="input slot-sample">Input</div>
       </cds-aichat-shell>
+    `;
+  },
+};
+
+export const WithFocusManagement = {
+  args: {
+    headerTitle: "title",
+    headerName: "name",
+    navigationType: "back",
+    navigationBackLabel: "Back",
+    showActions: true,
+    overflow: false,
+    fixedActions: "none",
+    aiLabel: false,
+  },
+  render: (args) => {
+    const headerRef = createRef();
+    const actions = args.showActions ? sampleActions : [];
+
+    const handleRequestFocus = () => {
+      if (headerRef.value) {
+        const success = headerRef.value.requestFocus();
+        console.log("Focus request:", success ? "successful" : "failed");
+      }
+    };
+
+    return html`
+      <style>
+        ${styles}
+      </style>
+      <div>
+        <cds-button @click=${handleRequestFocus} style="margin-bottom: 16px;">
+          Request Focus on Header
+        </cds-button>
+        <cds-aichat-shell>
+          <cds-aichat-chat-header
+            ${ref(headerRef)}
+            slot="header"
+            .headerTitle=${args.headerTitle}
+            .headerName=${args.headerName}
+            .actions=${actions}
+            ?overflow=${args.overflow}
+            navigation-type=${args.navigationType}
+            .navigationBackIcon=${ChevronLeft}
+            navigation-back-label=${args.navigationBackLabel}
+            @cds-aichat-chat-header-navigation-back-click=${() =>
+              console.log("Back clicked")}
+          >
+            ${args.fixedActions}
+            ${args.aiLabel
+              ? html` <cds-ai-label
+                  size="2xs"
+                  autoalign
+                  alignment="bottom"
+                  slot="decorator"
+                >
+                  <div slot="body-text">
+                    <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+                    <div>
+                      IBM watsonx is powered by the latest AI models to
+                      intelligently process conversations and provide help
+                      whenever and wherever you may need it.
+                    </div>
+                  </div>
+                </cds-ai-label>`
+              : ""}
+          </cds-aichat-chat-header>
+          <div slot="messages" class="messages slot-sample">Messages</div>
+          <div slot="input" class="input slot-sample">Input</div>
+        </cds-aichat-shell>
+      </div>
     `;
   },
 };

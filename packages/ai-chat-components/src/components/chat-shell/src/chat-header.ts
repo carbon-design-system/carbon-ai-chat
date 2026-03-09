@@ -15,9 +15,17 @@ import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/overflow-menu/index.js";
 import "../../toolbar/src/toolbar.js";
 import type { Action } from "../../toolbar/src/toolbar.js";
+import type { BaseOverflowMenuItem } from "../../../typings/overflow-menu.js";
 import prefix from "../../../globals/settings.js";
 import { PageObjectId } from "../../../testing/PageObjectId.js";
 import styles from "./chat-header.scss?lit";
+
+/**
+ * Navigation overflow menu item configuration.
+ * Uses BaseOverflowMenuItem which extends properties from CDSOverflowMenuItem.
+ * This type is specifically for navigation menu items (no icon property).
+ */
+export type NavigationOverflowItem = BaseOverflowMenuItem;
 
 /**
  * Chat Header component that wraps the Toolbar component.
@@ -214,14 +222,7 @@ class CdsAiChatChatHeader extends LitElement {
    * Array of overflow menu items with text and onClick handlers or href.
    */
   @property({ type: Array, attribute: false })
-  navigationOverflowItems?: Array<{
-    text: string;
-    onClick?: () => void;
-    href?: string;
-    target?: string;
-    disabled?: boolean;
-    testId?: string;
-  }>;
+  navigationOverflowItems?: NavigationOverflowItem[];
 
   /**
    * Label/tooltip text for the overflow menu button.
@@ -252,6 +253,9 @@ class CdsAiChatChatHeader extends LitElement {
           href=${item.href || nothing}
           target=${item.href ? item.target || "_self" : nothing}
           ?disabled=${item.disabled}
+          ?danger=${item.danger}
+          danger-description=${item.dangerDescription || nothing}
+          ?divider=${item.divider}
           data-testid=${item.testId || nothing}
         >
           ${item.text}
