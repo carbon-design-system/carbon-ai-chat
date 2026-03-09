@@ -51,7 +51,7 @@ button.#{$prefix}--reasoning-steps-toggle:focus-visible {
 
   svg {
     transform: rotate(180deg);
-    transition: transform motion.$duration-moderate-01
+    transition: transform motion.$duration-fast-02
       motion.motion(standard, productive);
   }
 }
