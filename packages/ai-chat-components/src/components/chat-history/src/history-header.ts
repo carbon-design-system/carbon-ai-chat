@@ -47,7 +47,7 @@ class CDSAIChatHistoryHeader extends LitElement {
    * Render close chat history panel button
    */
   @property({ type: Boolean, attribute: "show-close-action", reflect: true })
-  showCloseAction = true;
+  showCloseAction = false;
 
   /**
    * Handles close button click event
@@ -85,6 +85,7 @@ class CDSAIChatHistoryHeader extends LitElement {
         ? html`<cds-icon-button
             class="${prefix}--history-header__close-button"
             kind="ghost"
+            align="right"
             @click=${handleCloseButtonClick}
             @keydown=${handleCloseButtonKeyDown}
           >
