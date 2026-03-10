@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.8.0-rc.0",
+  "version": "1.8.0",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -77,12 +77,12 @@
     "@carbon/themes": "^11.58.0",
     "@carbon/web-components": "^2.49.0",
     "@open-wc/testing": "4.0.0",
-    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-babel": "^7.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.2",
-    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.1.4",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.3.0",
@@ -126,7 +126,7 @@
     "react-dom": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
-    "@carbon/ai-chat-components": "^0.10.0-rc.0",
+    "@carbon/ai-chat-components": "^0.10.0",
     "@carbon/icons": "^11.53.0",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",

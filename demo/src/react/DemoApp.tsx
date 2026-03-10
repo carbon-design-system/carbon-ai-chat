@@ -160,6 +160,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      headerFixedActionsElement: (
+        <WriteableElementExample
+          location="headerFixedActionsElement"
+          parentStateText={stateText}
+        />
+      ),
       welcomeNodeBeforeElement: (
         <WriteableElementExample
           location="welcomeNodeBeforeElement"

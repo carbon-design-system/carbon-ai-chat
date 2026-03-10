@@ -42,7 +42,9 @@ import { arrayLastValue } from "../utils/lang/arrayUtils";
 import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
 import {
   applyStreamingSpacerDomSync,
+  cleanupMessageResizeObserver,
   consumeStreamingChunk,
+  createMessageResizeObserver,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
@@ -54,6 +56,8 @@ import {
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
   resolveStreamingSpacerSyncDecision,
+  updateObservedMessages as updateObservedMessagesUtil,
+  type MessageResizeObserverState,
 } from "../utils/messagesAutoScrollController";
 import { buildRenderableMessageMetadata } from "../utils/messagesRenderUtils";
 import { consoleError, debugLog } from "../utils/miscUtils";
@@ -164,6 +168,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   private scrollPanelObserver: ResizeObserver;
 
   /**
+   * State for the message resize observer that detects async content loading.
+   * This detects when async content (images, audio, video, user-defined) loads
+   * and changes the message height, allowing us to recalculate the spacer.
+   */
+  private messageResizeObserverState: MessageResizeObserverState | null = null;
+
+  /**
    * A registry of references to the child {@link MessageComponent} instances. The keys of the map are the IDs of
    * each message item and the value is the ref to the component.
    */
@@ -242,6 +253,20 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     this.scrollPanelObserver.observe(
       this.messagesContainerWithScrollingRef.current,
     );
+
+    // Create message resize observer for async content loading
+    this.messageResizeObserverState = createMessageResizeObserver({
+      onSignificantResize: () => {
+        this.doAutoScrollThrottled();
+      },
+      hasPinnedMessage: () => {
+        return this.pinnedMessageComponent !== null;
+      },
+      throttleTimeout: AUTO_SCROLL_THROTTLE_TIMEOUT,
+    });
+
+    // Start observing current messages
+    this.updateObservedMessages();
   }
 
   /**
@@ -275,6 +300,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     }
 
     this.renderScrollDownNotification();
+
+    // Update observed messages when the message array changes
+    if (itemsChanged) {
+      this.updateObservedMessages();
+    }
 
     if (countChanged) {
       // Message list length changed (add/remove). Re-run auto-scroll policy so we either
@@ -381,9 +411,22 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           this.executePinAndScroll(this.pinnedMessageComponent, scrollElement);
         } else {
           // Preserve the user's pre-commit position when they are away from pin.
+          // Zero the spacer directly instead of calling executeRecalculateSpacer.
+          // executeRecalculateSpacer can compute a positive deficit and set
+          // maxScrollTop = pinnedScrollTop, clamping the user back to the pin.
+          // On Safari, scroll anchoring during the final commit can leave
+          // scrollElement.scrollTop near pinnedScrollTop even when the user had
+          // scrolled away, making the deficit > 0 path trigger unexpectedly.
+          // Zeroing the spacer directly ensures maxScrollTop is never capped at
+          // pinnedScrollTop and we always restore the user's intended position.
           const savedScrollTop = scrollTopForDecision;
-          this.executeRecalculateSpacer(scrollElement);
-          if (scrollElement.scrollTop !== savedScrollTop) {
+          const spacerElem = this.bottomSpacerRef.current;
+          if (spacerElem) {
+            spacerElem.style.minBlockSize = "0px";
+          }
+          this.currentSpacerHeight = 0;
+          this.domSpacerHeight = 0;
+          if (scrollElement.scrollTop < savedScrollTop) {
             scrollElement.scrollTop = savedScrollTop;
           }
         }
@@ -392,9 +435,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   }
 
   componentWillUnmount(): void {
-    // Remove the listeners and observer we added previously.
+    // Remove the listeners and observers we added previously.
     if (this.scrollPanelObserver) {
       this.scrollPanelObserver.disconnect();
+    }
+    if (this.messageResizeObserverState) {
+      cleanupMessageResizeObserver(this.messageResizeObserverState);
+      this.messageResizeObserverState = null;
     }
     this.syncStreamingSpacerToDomThrottled.cancel();
     this.doAutoScrollThrottled.cancel();
@@ -413,6 +460,31 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     AUTO_SCROLL_THROTTLE_TIMEOUT,
     { leading: true, trailing: true },
   );
+
+  /**
+   * Updates which message elements are being observed by the messageResizeObserver.
+   * Called when messages are added, removed, or the message array changes.
+   */
+  private updateObservedMessages(): void {
+    if (!this.messageResizeObserverState) {
+      return;
+    }
+
+    // Get all current message elements
+    const messageElements: HTMLElement[] = [];
+    this.messageRefs.forEach((messageComponent) => {
+      const element = messageComponent.ref?.current;
+      if (element) {
+        messageElements.push(element);
+      }
+    });
+
+    // Update observations using utility function
+    updateObservedMessagesUtil(
+      this.messageResizeObserverState,
+      messageElements,
+    );
+  }
 
   /**
    * Pin a message to the top of the visible scroll area and scroll to it instantly.
@@ -556,14 +628,34 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       case "scroll_to_top":
         doScrollElement(scrollElement, action.scrollTop, 0);
         return;
-      case "scroll_to_bottom":
+      case "scroll_to_bottom": {
+        // During streaming `scrollHeight` includes the blank spacer, so
+        // `scrollHeight - offsetHeight` points into blank spacer territory.
+        // Subtract domSpacerHeight to land at the bottom of real content.
+        // After the instant scroll, subsequent executeRecalculateSpacer calls
+        // zero the spacer without clamping the user (their scrollTop is
+        // already at content-bottom, so the new maxScrollTop stays >= scrollTop).
+        //
+        // Cancel any pending spacer sync before scrolling. If a trailing
+        // throttle fires while scrollTop is still near the pinned position,
+        // Safari's anchoring response + restore assignment would cancel the
+        // scroll. Skip animation during streaming so scrollTop jumps
+        // immediately past the near-pin threshold, making future throttle
+        // calls return `isNearPin = false` and skip the sync entirely.
+        // Smooth animation is preserved post-streaming.
+        const isStreaming = hasActiveStreaming(this.props.localMessageItems);
+        this.syncStreamingSpacerToDomThrottled.cancel();
+        const scrollTop = isStreaming
+          ? Math.max(0, action.scrollTop - this.domSpacerHeight)
+          : action.scrollTop;
         doScrollElement(
           scrollElement,
-          action.scrollTop,
+          scrollTop,
           0,
-          action.preferAnimate,
+          action.preferAnimate && !isStreaming,
         );
         return;
+      }
       case "reset_to_top":
         // No messages — scroll to top so the browser doesn't restore a stale position.
         scrollElement.scrollTop = 0;

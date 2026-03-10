@@ -56,7 +56,7 @@ export const Default = {
     isFlush: {
       control: { type: "boolean", disable: true },
       description:
-        "Default is `true`. which removes the padding of the card. this is useful when the elements inside the card are already padded. Set to `false` to add padding.",
+        "Setting this removes the padding of the card. This is useful when the elements inside the card are already padded.",
     },
     maxWidth: {
       control: "radio",

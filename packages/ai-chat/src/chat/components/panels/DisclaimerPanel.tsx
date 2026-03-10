@@ -42,6 +42,9 @@ const DisclaimerPanel = ({
   const { derivedCarbonTheme } = useSelector(
     (state: AppState) => state.config.derived.themeWithDefaults,
   );
+  const isOpen = useSelector(
+    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow,
+  );
   const isDarkTheme =
     derivedCarbonTheme === CarbonTheme.G90 ||
     derivedCarbonTheme === CarbonTheme.G100;
@@ -50,6 +53,9 @@ const DisclaimerPanel = ({
   const disclaimerContent = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
     const panelElement = disclaimerContent.current?.closest("cds-aichat-panel");
     if (!panelElement) {
       return undefined;
@@ -75,7 +81,7 @@ const DisclaimerPanel = ({
       clearTimeout(timeoutId2);
       clearTimeout(timeoutId3);
     };
-  }, []);
+  }, [isOpen]);
 
   const handleBodyScroll = React.useCallback((event: CustomEvent) => {
     const { isScrollable, isAtBottom } = event.detail;

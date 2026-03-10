@@ -24,7 +24,7 @@ import { LauncherContainer } from "./components-legacy/launcher/LauncherContaine
 import { InputFunctions } from "./components-legacy/input/Input";
 import Layer from "./components/carbon/Layer";
 import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import { Header } from "./components-legacy/header/Header";
+import { Header } from "./components/header/Header";
 import MessagesComponent, {
   MessagesComponentClass,
 } from "./components-legacy/MessagesComponent";

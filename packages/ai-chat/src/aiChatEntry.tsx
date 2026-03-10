@@ -21,8 +21,6 @@ export { PageObjectId, TestId } from "./testing/PageObjectId";
 
 export { ViewState, ViewType } from "./types/instance/apiTypes";
 
-export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
-
 export {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
@@ -82,6 +80,7 @@ export {
   BusEventWorkspacePreClose,
   BusEventWorkspacePreOpen,
   BusEventFeedback,
+  BusEventHeaderMenuClick,
   BusEventHistoryBegin,
   BusEventHistoryEnd,
   BusEventMessageItemCustom,
@@ -97,6 +96,7 @@ export {
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
+  HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";

@@ -93,7 +93,8 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   return (
     <Card
       data-rounded
-      class="cds-aichat-preview-card cds-aichat-preview-card__sm"
+      isFlush
+      className="cds-aichat-preview-card cds-aichat-preview-card__sm"
     >
       <div slot="body">
         <h5 className="cds-aichat-preview-card--title">{title}</h5>

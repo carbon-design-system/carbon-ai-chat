@@ -10,7 +10,6 @@
 import { html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { styleMap } from "lit/directives/style-map.js";
 import { carbonElement as customElement } from "@carbon/web-components/es/globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings";
 import "@carbon/web-components/es/components/tooltip/index.js";
@@ -28,6 +27,7 @@ const carbonPrefix = "cds";
  * TruncatedText.
  *
  * @element cds-aichat-truncated-text
+ * @slot - Default slot for custom HTML content (alternative to value property)
  */
 @customElement(elementName)
 class CDSAIChatTruncatedText extends LitElement {
@@ -106,13 +106,18 @@ class CDSAIChatTruncatedText extends LitElement {
       const computedStyle = getComputedStyle(this._textElement);
       this._lineHeight = parseFloat(computedStyle.lineHeight);
       this._setupResizeObserver();
+      // Initial overflow check after first render
+      this._updateOverflowStatus();
     });
   }
 
   protected updated(changed: Map<string, unknown>) {
     if (changed.has("lines") || changed.has("value")) {
-      this._updateOverflowStatus();
-      this._updateMaxHeight();
+      // Use requestAnimationFrame to ensure DOM is updated before checking overflow
+      requestAnimationFrame(() => {
+        this._updateOverflowStatus();
+        this._updateMaxHeight();
+      });
     }
   }
 
@@ -215,23 +220,41 @@ class CDSAIChatTruncatedText extends LitElement {
     `;
   }
 
+  private _handleSlotChange() {
+    // When slotted content changes, recalculate overflow
+    requestAnimationFrame(() => {
+      this._updateOverflowStatus();
+    });
+  }
+
   render() {
-    // Apply different styles based on truncation method
-    const contentStyle = {
-      ["--line-clamp"]: this._isExpanded ? "none" : this.lines,
-      ["max-block-size"]: this.type === "expand" ? this._maxHeight : "none",
-    };
+    // Always render slot, with value as fallback content
+    // This allows styled slotted content to be displayed while value is used for tooltip
+    const content = html`<slot @slotchange=${this._handleSlotChange}
+      >${this.value}</slot
+    >`;
+
+    // For tooltip content, always use value property (plain text for tooltip)
+    const tooltipContent = this.value;
+
+    const contentClasses = classMap({
+      [`${blockClass}_content`]: true,
+      [`${blockClass}_content--expanded`]: this._isExpanded,
+      [`${blockClass}_content--expand-type`]: this.type === "expand",
+    });
 
     const valueBody = html`
       <div
         id=${this.id}
-        class="${blockClass}_content"
-        style=${styleMap(contentStyle)}
+        class=${contentClasses}
+        style="--line-clamp-value: ${this.lines}; --max-height-value: ${this
+          ._maxHeight}"
       >
-        ${this.value}
+        ${content}
       </div>
     `;
 
+    // For tooltip, show plain text in tooltip content
     const tooltipVariant = html`
       <cds-tooltip
         align=${this.align}
@@ -240,7 +263,7 @@ class CDSAIChatTruncatedText extends LitElement {
         leave-delay-ms="0"
       >
         ${valueBody}
-        <cds-tooltip-content>${this.value}</cds-tooltip-content>
+        <cds-tooltip-content>${tooltipContent}</cds-tooltip-content>
       </cds-tooltip>
     `;
 

@@ -97,6 +97,10 @@
   min-block-size: 0;
 }
 
+.header.has-content {
+  border-block-end: 1px solid theme.$border-subtle-02;
+}
+
 .shell.rounded {
   // Set the base rounded radius custom property that can be inherited by slotted content
   --#{$prefix}-rounded-modifier-radius: #{layout.$spacing-03};
