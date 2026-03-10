@@ -224,8 +224,6 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 }
 
 .panel-body {
-  // Enable scrolling when content overflows
-  overflow: auto;
   box-sizing: border-box;
   // Allow body to grow and shrink, but constrain it
   flex: 1 1 auto;
