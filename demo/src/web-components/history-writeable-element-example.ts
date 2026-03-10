@@ -15,6 +15,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import PinFilled16 from "@carbon/icons/es/pin--filled/16.js";
 import Search16 from "@carbon/icons/es/search/16.js";
+import Delete16 from "@carbon/icons/es/delete/16.js";
 
 // Sample history data
 const PINNED_CHATS = [
@@ -95,6 +96,7 @@ export class HistoryWriteableElementExample extends LitElement {
   static styles = css`
     :host {
       display: block;
+      block-size: 100%;
 
       cds-aichat-history-shell {
         box-sizing: border-box;
@@ -215,7 +217,12 @@ export class HistoryWriteableElementExample extends LitElement {
     return [
       { text: "Rename" },
       { text: "Pin" },
-      { text: "Delete", kind: "danger" },
+      {
+        text: "Delete",
+        delete: true,
+        divider: true,
+        icon: iconLoader(Delete16, { slot: "icon" }),
+      },
     ];
   }
 
@@ -223,7 +230,12 @@ export class HistoryWriteableElementExample extends LitElement {
     return [
       { text: "Rename" },
       { text: "Unpin" },
-      { text: "Delete", kind: "danger" },
+      {
+        text: "Delete",
+        delete: true,
+        divider: true,
+        icon: iconLoader(Delete16, { slot: "icon" }),
+      },
     ];
   }
 

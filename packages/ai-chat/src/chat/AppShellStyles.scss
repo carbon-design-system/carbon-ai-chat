@@ -87,9 +87,18 @@
 }
 
 .cds-aichat--history-writeable-element {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  ::slotted(*) {
+    display: block;
+    block-size: 100%;
+  }
+}
+
+.cds-aichat--history-panel__content-container {
+  block-size: 100%;
+
+  ::slotted(*) {
+    block-size: 100%;
+  }
 }
 
 .cds-aichat--hidden {

@@ -21,6 +21,8 @@ import {
 } from "@carbon/ai-chat-components/es/react/history";
 
 import { PinFilled, Search } from "@carbon/icons-react";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import Delete16 from "@carbon/icons/es/delete/16.js";
 import React, { useState, useCallback } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
@@ -195,7 +197,12 @@ function HistoryWriteableElementExample({
     () => [
       { text: "Rename" },
       { text: "Pin" },
-      { text: "Delete", kind: "danger" },
+      {
+        text: "Delete",
+        delete: true,
+        divider: true,
+        icon: iconLoader(Delete16, { slot: "icon" }),
+      },
     ],
     [],
   );
@@ -204,7 +211,12 @@ function HistoryWriteableElementExample({
     () => [
       { text: "Rename" },
       { text: "Unpin" },
-      { text: "Delete", kind: "danger" },
+      {
+        text: "Delete",
+        delete: true,
+        divider: true,
+        icon: iconLoader(Delete16, { slot: "icon" }),
+      },
     ],
     [],
   );
