@@ -227,5 +227,8 @@
   },
   "dependencies": {
     "@carbon/ai-chat": "^0.0.0"
+  },
+  "overrides": {
+    "tar": "^7.5.10"
   }
 }

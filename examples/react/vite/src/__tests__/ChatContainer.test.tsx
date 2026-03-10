@@ -288,6 +288,7 @@ describe("ChatContainer", () => {
 
   it(
     "should render markdown-driven table and code snippet responses",
+    { timeout: TEST_TIMEOUT },
     async () => {
       // Render a text response that embeds a markdown table and fenced code block so we
       // can assert that both complex components hydrate correctly under happy-dom.
@@ -412,11 +413,11 @@ describe("ChatContainer", () => {
         await closeChat(customElement as Element);
       }
     },
-    { timeout: TEST_TIMEOUT },
   );
 
   it(
     "should render conversational search citations using the carousel",
+    { timeout: TEST_TIMEOUT },
     async () => {
       // Capture the ChatContainer instance via onBeforeRender so we can inject a mocked
       // conversational-search payload and verify the resulting carousel UI.
@@ -497,6 +498,5 @@ describe("ChatContainer", () => {
         await closeChat(customElement);
       }
     },
-    { timeout: TEST_TIMEOUT },
   );
 });
