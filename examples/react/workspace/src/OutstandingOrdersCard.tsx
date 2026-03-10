@@ -37,7 +37,7 @@ export function OutstandingOrdersCard({
   ]);
 
   return (
-    <Card>
+    <Card isFlush>
       <div slot="header">
         <Toolbar overflow actions={toolbarActions}>
           <div slot="title">Outstanding Orders</div>

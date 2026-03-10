@@ -14,24 +14,25 @@ import Button, {
 import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
-import React, {
-  MutableRefObject,
-  ReactElement,
-  useState,
-  Suspense,
-} from "react";
+import React, { MutableRefObject, ReactElement, useState } from "react";
 import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
+import { Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
 import type { SwiperRef } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper/types";
+import { A11y, Navigation } from "swiper/modules";
 
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import {
   AppState,
   ChatWidthBreakpoint,
 } from "../../../../types/state/AppState";
+
 const ChevronLeft = carbonIconToReact(ChevronLeft16);
 const ChevronRight = carbonIconToReact(ChevronRight16);
+
+const SWIPER_MODULES = [A11y, Navigation];
+
 interface SwiperCarouselProps {
   swiperRef?: MutableRefObject<SwiperRef>;
   initialSlide?: number;
@@ -42,55 +43,48 @@ interface SwiperCarouselProps {
   children?: ReactElement<any>[];
 }
 
-// Create a component that uses lazy-loaded Swiper
-const SwiperCarousel = React.lazy(async () => {
-  const [{ Swiper: SwiperComponent, SwiperSlide }, { A11y, Navigation }] =
-    await Promise.all([import("swiper/react"), import("swiper/modules")]);
-
-  const SWIPER_MODULES = [A11y, Navigation];
-
-  return {
-    default: ({
-      swiperRef,
-      initialSlide,
-      previousButton,
-      nextButton,
-      chatWidthBreakpoint,
-      onSlideChangeInternal,
-      children,
-    }: SwiperCarouselProps) => (
-      <SwiperComponent
-        ref={swiperRef}
-        initialSlide={initialSlide}
-        modules={SWIPER_MODULES}
-        navigation={{
-          prevEl: previousButton,
-          nextEl: nextButton,
-        }}
-        slidesPerView={1}
-        spaceBetween={
-          MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT[chatWidthBreakpoint]
-        }
-        onSlideChange={onSlideChangeInternal}
-        slidesOffsetBefore={
-          MESSAGE_RECEIVED_LEFT_MARGIN_OFFSET_BEFORE_BREAKPOINT[
-            chatWidthBreakpoint
-          ]
-        }
-        rewind
-      >
-        {React.Children.map(children, (child) => (
-          <SwiperSlide
-            key={child.key}
-            className={`cds-aichat--carousel-container__slide--${chatWidthBreakpoint}`}
-          >
-            {child}
-          </SwiperSlide>
-        ))}
-      </SwiperComponent>
-    ),
-  };
-});
+// Direct Swiper component (no lazy loading)
+function SwiperCarousel({
+  swiperRef,
+  initialSlide,
+  previousButton,
+  nextButton,
+  chatWidthBreakpoint,
+  onSlideChangeInternal,
+  children,
+}: SwiperCarouselProps) {
+  return (
+    <SwiperComponent
+      ref={swiperRef}
+      initialSlide={initialSlide}
+      modules={SWIPER_MODULES}
+      navigation={{
+        prevEl: previousButton,
+        nextEl: nextButton,
+      }}
+      slidesPerView={1}
+      spaceBetween={
+        MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT[chatWidthBreakpoint]
+      }
+      onSlideChange={onSlideChangeInternal}
+      slidesOffsetBefore={
+        MESSAGE_RECEIVED_LEFT_MARGIN_OFFSET_BEFORE_BREAKPOINT[
+          chatWidthBreakpoint
+        ]
+      }
+      rewind
+    >
+      {React.Children.map(children, (child) => (
+        <SwiperSlide
+          key={child.key}
+          className={`cds-aichat--carousel-container__slide--${chatWidthBreakpoint}`}
+        >
+          {child}
+        </SwiperSlide>
+      ))}
+    </SwiperComponent>
+  );
+}
 
 // This object holds the left margin value for received messages.
 const MESSAGE_RECEIVED_LEFT_MARGIN_BY_BREAKPOINT = {
@@ -167,18 +161,16 @@ function Carousel({
   return (
     <div className="cds-aichat--carousel-container">
       {nextButton && (
-        <Suspense fallback={<div />}>
-          <SwiperCarousel
-            swiperRef={swiperRef}
-            initialSlide={initialSlide}
-            previousButton={previousButton}
-            nextButton={nextButton}
-            chatWidthBreakpoint={chatWidthBreakpoint}
-            onSlideChangeInternal={onSlideChangeInternal}
-          >
-            {children}
-          </SwiperCarousel>
-        </Suspense>
+        <SwiperCarousel
+          swiperRef={swiperRef}
+          initialSlide={initialSlide}
+          previousButton={previousButton}
+          nextButton={nextButton}
+          chatWidthBreakpoint={chatWidthBreakpoint}
+          onSlideChangeInternal={onSlideChangeInternal}
+        >
+          {children}
+        </SwiperCarousel>
       )}
       <div
         className={`cds-aichat--carousel-container__controls--${chatWidthBreakpoint}`}

@@ -36,7 +36,7 @@ describe("card", function () {
     expect(el).to.be.instanceOf(Card);
     expect(el.shadowRoot).to.exist;
     expect(el.isLayered).to.be.false;
-    expect(el.isFlush).to.be.true;
+    expect(el.isFlush).to.be.false;
 
     await expect(el).dom.to.equalSnapshot();
   });

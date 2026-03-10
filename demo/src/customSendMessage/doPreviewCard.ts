@@ -8,7 +8,7 @@
  */
 
 import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
-import { v4 as uuid } from "uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 function doPreviewCard(
   instance: ChatInstance,

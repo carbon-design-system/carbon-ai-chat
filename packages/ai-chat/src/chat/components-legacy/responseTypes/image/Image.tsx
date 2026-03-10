@@ -112,7 +112,6 @@ function Image(props: ImageProps) {
 
   return (
     <Card
-      isFlush={false}
       ref={rootRef}
       className={cx("cds-aichat--image", {
         "cds-aichat--image__text-and-icon": hasText && Boolean(renderIcon),

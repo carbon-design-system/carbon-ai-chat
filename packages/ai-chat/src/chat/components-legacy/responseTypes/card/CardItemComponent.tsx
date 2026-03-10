@@ -50,7 +50,6 @@ function CardItemComponent(props: CardItemComponentProps) {
   const item = props.localMessageItem.item as CardItem;
   return (
     <Card
-      isFlush={false}
       className={cx("cds-aichat--card-message-component", {
         "cds-aichat--max-width-small":
           !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,

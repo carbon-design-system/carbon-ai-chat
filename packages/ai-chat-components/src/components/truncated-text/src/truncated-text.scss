@@ -45,12 +45,27 @@ $block-class: #{$prefix}--truncated-text;
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--line-clamp, 0);
+    -webkit-line-clamp: var(--line-clamp-value, none);
     text-overflow: clip;
     white-space: normal;
 
     &:focus {
       @include focus-outline("outline");
+    }
+
+    // When expanded, remove line clamping
+    &.#{$block-class}_content--expanded {
+      -webkit-line-clamp: none;
+    }
+
+    // When using expand type, apply max-height
+    &.#{$block-class}_content--expand-type {
+      max-block-size: var(--max-height-value, none);
+    }
+
+    // Ensure slotted content works with line-clamp
+    ::slotted(*) {
+      display: inline;
     }
   }
 

@@ -95,7 +95,7 @@ export class OutstandingOrdersCard extends LitElement {
 
   render() {
     return html`
-      <cds-aichat-card>
+      <cds-aichat-card is-flush>
         <div slot="header">
           <cds-aichat-toolbar overflow .actions=${this.toolbarActions}>
             <div slot="title">Outstanding Orders</div>

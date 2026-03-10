@@ -10,7 +10,7 @@
 import { html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
 
 import prefix from "../../../globals/settings.js";
 import { CDSAIChatReasoningStepsToggle } from "./reasoning-steps-toggle.js";
@@ -40,7 +40,7 @@ function reasoningStepsToggleTemplate(
     >
       <span class="${prefix}--reasoning-steps-toggle-label">${labelText}</span>
       <span class="${prefix}--reasoning-steps-toggle-caret" aria-hidden="true">
-        ${iconLoader(ChevronDown16)}
+        ${iconLoader(ChevronUp16)}
       </span>
     </button>
   `;

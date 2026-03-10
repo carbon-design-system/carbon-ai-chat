@@ -137,7 +137,6 @@ export const Default = {
           slot="notification"
           title={notificationTitle}
           kind="warning"
-          lowContrast={true}
           hideCloseButton
         ></InlineNotification>
         <WorkspaceShellHeader

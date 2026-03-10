@@ -21,3 +21,9 @@
   border-end-start-radius: var(--cds-aichat-rounded-modifier-radius-end-start);
   border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end);
 }
+
+.writeable-element-external--compact {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0;
+}

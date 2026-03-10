@@ -66,7 +66,7 @@ function CitationCard({
         onClick={onSelectCitation}
         onFocus={onSelectCitation}
       >
-        <Card isFlush={false}>
+        <Card>
           <div slot="body">
             <CitationCardContent citation={citation} type={type} />
           </div>

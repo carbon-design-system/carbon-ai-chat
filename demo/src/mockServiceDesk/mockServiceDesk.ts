@@ -28,7 +28,7 @@ import {
   UserType,
 } from "@carbon/ai-chat";
 
-import { v4 as uuid } from "uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 import { MARKDOWN } from "../customSendMessage/constants";
 
