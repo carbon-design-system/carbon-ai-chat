@@ -392,7 +392,7 @@ class MockServiceDesk implements ServiceDesk {
 
     // Handle any file uploads we may have.
     if (additionalData.filesToUpload) {
-      additionalData.filesToUpload.forEach((file) => {
+      additionalData.filesToUpload.forEach((file: FileUpload) => {
         // Use a setTimeout to simulate a random amount of time it takes to upload a file.
         setTimeout(
           () => {
