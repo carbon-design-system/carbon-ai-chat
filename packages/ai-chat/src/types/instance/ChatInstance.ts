@@ -101,6 +101,9 @@ export interface PublicWorkspaceCustomPanelState {
 export interface PublicHistoryPanelState {
   /** Indicates if the history panel is currently open. */
   isOpen: boolean;
+
+  /** Indicates if the history panel should open in chat panel. */
+  isMobile: boolean;
 }
 
 /**
@@ -177,6 +180,13 @@ export type PublicChatState = Readonly<
      * @experimental
      */
     workspace: PublicWorkspaceCustomPanelState;
+
+    /**
+     * State for the chat history.
+     *
+     * @experimental
+     */
+    history: PublicHistoryPanelState;
   }
 >;
 

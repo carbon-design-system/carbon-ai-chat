@@ -31,13 +31,7 @@ import {
   ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
 import { AISkeletonPlaceholder } from "@carbon/react";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Settings } from "../framework/types";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
@@ -60,12 +54,8 @@ interface AppProps {
 }
 
 function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [sideBarClosing, setSideBarClosing] = useState(false);
-  const [isHistoryPanelMobile, setIsHistoryPanelMobile] = useState(
-    config.history?.isMobile ?? false,
-  );
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceAnimating, setWorkspaceAnimating] = useState<
     "expanding" | "contracting" | null
@@ -73,7 +63,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [stateText, setStateText] = useState<string>("Initial text");
   const isSidebarLayout = settings.layout === "sidebar";
-  const isFloatMode = settings.layout === "float";
 
   useEffect(() => {
     setInterval(() => setStateText(Date.now().toString()), 2000);
@@ -226,12 +215,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           location="historyPanelElement"
           instance={instance as ChatInstance}
           parentStateText={stateText}
-          isMobile={isHistoryPanelMobile}
+          isMobile={instance?.getState().history.isMobile ?? false}
         />
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [instance, isHistoryPanelMobile],
+    [instance, instance?.getState().history.isMobile],
   );
 
   /**
@@ -267,45 +256,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       historyPanelElement: allWriteableElements.historyPanelElement,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
-
-  /**
-   * If chat is in float mode, automatically set history panel isMobile to true so it
-   * renders in the chat panel.
-   *
-   * If chat is not in float mode, observe the container width and update the
-   * history panel's isMobile config state accordingly.
-   */
-  useEffect(() => {
-    if (!instance) {
-      return;
-    }
-
-    if (isFloatMode) {
-      setIsHistoryPanelMobile(true);
-      return;
-    }
-
-    const container = containerRef.current;
-    if (!container) {
-      return;
-    }
-
-    let currentIsMobile: boolean | null = null;
-
-    const resizeObserver = new ResizeObserver(([entry]) => {
-      const shouldBeMobile = entry.contentRect.width <= 990;
-
-      if (currentIsMobile === shouldBeMobile) {
-        return;
-      }
-      currentIsMobile = shouldBeMobile;
-      setIsHistoryPanelMobile(shouldBeMobile);
-    });
-
-    resizeObserver.observe(container);
-
-    return () => resizeObserver.disconnect();
-  }, [instance, isFloatMode]);
 
   const onBeforeRender = (instance: ChatInstance) => {
     setInstance(instance);
@@ -420,10 +370,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   // Add header menu options for chat history
   const historyConfig = {
     ...config,
-    history: {
-      ...config.history,
-      isMobile: isHistoryPanelMobile,
-    },
     header: {
       ...config.header,
       isOn: true,
@@ -451,7 +397,9 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
   return settings.layout === "float" ? (
     <ChatContainer
-      {...(config?.history?.isOn ? historyConfig : config)}
+      {...(config?.history?.isOn && instance?.getState().history.isMobile
+        ? historyConfig
+        : config)}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -459,9 +407,9 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       serviceDeskFactory={serviceDeskFactory}
     />
   ) : (
-    <div ref={containerRef} onTransitionEnd={handleTransitionEnd}>
+    <div onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
-        {...(config?.history?.isOn && isHistoryPanelMobile
+        {...(config?.history?.isOn && instance?.getState().history.isMobile
           ? historyConfig
           : config)}
         className={className as string}

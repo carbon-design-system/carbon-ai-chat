@@ -565,6 +565,9 @@ interface HistoryPanelState {
    * Determines if the history panel should be open.
    */
   isOpen: boolean;
+
+  /** Indicates if the history panel should open in chat panel. */
+  isMobile: boolean;
 }
 
 interface MessagePanelState<T extends GenericItem = GenericItem> {

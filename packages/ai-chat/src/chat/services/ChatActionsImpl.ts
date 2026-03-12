@@ -347,6 +347,7 @@ class ChatActionsImpl {
       },
       history: {
         isOpen: Boolean(state.historyPanelState.isOpen),
+        isMobile: Boolean(state.historyPanelState.isMobile),
       },
     });
 
@@ -359,6 +360,11 @@ class ChatActionsImpl {
       additionalData: state.workspacePanelState.additionalData,
     });
 
+    const history = deepFreeze({
+      isOpen: Boolean(state.historyPanelState.isOpen),
+      isMobile: Boolean(state.historyPanelState.isMobile),
+    });
+
     return deepFreeze({
       ...rest,
       humanAgent,
@@ -369,6 +375,7 @@ class ChatActionsImpl {
       input,
       customPanels,
       workspace,
+      history,
     });
   }
 

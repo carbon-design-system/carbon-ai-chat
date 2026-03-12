@@ -669,7 +669,6 @@ export class DemoApp extends LitElement {
 
   // Depending on which layout is setting in settings, render the right version of AI chat.
   render() {
-    console.log("isHistoryPanelMobile", this.isHistoryPanelMobile);
     return html`
       ${this.settings.layout === "float"
         ? html`<cds-aichat-container

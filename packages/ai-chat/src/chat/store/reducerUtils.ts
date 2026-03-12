@@ -118,6 +118,7 @@ deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
 
 const DEFAULT_HISTORY_PANEL_STATE: HistoryPanelState = {
   isOpen: false,
+  isMobile: false,
 };
 deepFreeze(DEFAULT_HISTORY_PANEL_STATE);
 

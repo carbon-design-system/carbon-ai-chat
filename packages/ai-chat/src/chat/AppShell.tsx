@@ -344,7 +344,24 @@ export default function AppShell({
     serviceManager.store.dispatch(
       actions.setAppStateValue("chatWidthBreakpoint", breakpoint),
     );
-  }, [serviceManager, widgetContainerRef]);
+
+    // Update history.isMobile based on width and layout
+    // Use 990px threshold to switch history between side slot and chat panel
+    // This ensures history moves to chat panel before shell hides it at 640px
+    // Float mode (ChatContainer) always uses mobile mode
+    const isFloatMode = !useCustomHostElement;
+    const shouldBeMobile = isFloatMode || width <= 990;
+
+    // Get current state directly from store to avoid dependency loop
+    const currentState = serviceManager.store.getState();
+    const currentIsMobile = currentState.historyPanelState.isMobile;
+
+    if (currentIsMobile !== shouldBeMobile) {
+      serviceManager.store.dispatch(
+        actions.setHistoryPanelOptions(shouldBeMobile),
+      );
+    }
+  }, [widgetContainerRef, serviceManager.store, useCustomHostElement]);
 
   useResizeObserver({
     containerRef: widgetContainerRef,
