@@ -76,6 +76,7 @@ import {
   convertCSSVariablesToString,
   getThemeClassNames,
 } from "./utils/styleUtils";
+import { getCSSVariableValue } from "./utils/colors";
 
 import { AppState, ChatWidthBreakpoint } from "../types/state/AppState";
 import {
@@ -346,11 +347,28 @@ export default function AppShell({
     );
 
     // Update history.isMobile based on width and layout
-    // Use 990px threshold to switch history between side slot and chat panel
-    // This ensures history moves to chat panel before shell hides it at 640px
+    // Use the same logic as shell.ts: history is shown when width >= messagesMinWidth + historyWidth
+    // Read CSS custom properties from the container element
     // Float mode (ChatContainer) always uses mobile mode
     const isFloatMode = !useCustomHostElement;
-    const shouldBeMobile = isFloatMode || width <= 990;
+
+    // Helper to parse CSS length value with fallback
+    const parseCSSLength = (variableName: string, fallback: number): number => {
+      const value = getCSSVariableValue(variableName, container);
+      if (!value) {
+        return fallback;
+      }
+      const parsed = Number.parseFloat(value);
+      return Number.isNaN(parsed) ? fallback : parsed;
+    };
+
+    const messagesMinWidth = parseCSSLength(
+      "--cds-aichat-messages-min-width",
+      320,
+    );
+    const historyWidth = parseCSSLength("--cds-aichat-history-width", 320);
+    const requiredWidthForHistory = messagesMinWidth + historyWidth;
+    const shouldBeMobile = isFloatMode || width < requiredWidthForHistory;
 
     // Get current state directly from store to avoid dependency loop
     const currentState = serviceManager.store.getState();
