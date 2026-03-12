@@ -23,7 +23,6 @@ import {
   ChatCustomElement,
   ChatInstance,
   FeedbackInteractionType,
-  PanelType,
   PublicConfig,
   RenderUserDefinedState,
   RenderCustomMessageFooter,
@@ -367,39 +366,9 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
-  // Add header menu options for chat history
-  const historyConfig = {
-    ...config,
-    header: {
-      ...config.header,
-      isOn: true,
-      menuOptions: [
-        {
-          text: "New chat",
-          handler: () => {
-            instance?.messaging?.restartConversation?.();
-          },
-        },
-        {
-          text: "View chats",
-          handler: () => {
-            const historyPanel = instance?.customPanels?.getPanel(
-              PanelType.HISTORY,
-            );
-            if (historyPanel) {
-              historyPanel.open();
-            }
-          },
-        },
-      ],
-    },
-  };
-
   return settings.layout === "float" ? (
     <ChatContainer
-      {...(config?.history?.isOn && instance?.getState().history.isMobile
-        ? historyConfig
-        : config)}
+      {...config}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -409,9 +378,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   ) : (
     <div onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
-        {...(config?.history?.isOn && instance?.getState().history.isMobile
-          ? historyConfig
-          : config)}
+        {...config}
         className={className as string}
         onViewPreChange={onViewPreChange}
         onViewChange={onViewChange}

@@ -17,6 +17,7 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
+import { updateHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
 
 import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
@@ -76,7 +77,6 @@ import {
   convertCSSVariablesToString,
   getThemeClassNames,
 } from "./utils/styleUtils";
-import { getCSSVariableValue } from "./utils/colors";
 
 import { AppState, ChatWidthBreakpoint } from "../types/state/AppState";
 import {
@@ -329,6 +329,32 @@ export default function AppShell({
     onPanelCloseEnd,
   } = usePanelCallbacks({ requestFocus });
 
+  // Header config override for mobile history
+  const headerConfigOverride = useMemo(() => {
+    if (!historyPanelState.isMobile) {
+      return undefined;
+    }
+
+    return {
+      isOn: true,
+      menuOptions: [
+        {
+          text: "New chat",
+          handler: () => {
+            console.log("New chat clicked");
+          },
+        },
+        {
+          text: "View chats",
+          handler: () => {
+            serviceManager.store.dispatch(actions.setHistoryPanelOpen(true));
+          },
+        },
+        ...(config.derived.header?.menuOptions || []),
+      ],
+    };
+  }, [historyPanelState.isMobile, config.derived.header, serviceManager]);
+
   // Resize observer
   const handleResize = useCallback(() => {
     const container = widgetContainerRef.current;
@@ -346,40 +372,14 @@ export default function AppShell({
       actions.setAppStateValue("chatWidthBreakpoint", breakpoint),
     );
 
-    // Update history.isMobile based on width and layout
-    // Use the same logic as shell.ts: history is shown when width >= messagesMinWidth + historyWidth
-    // Read CSS custom properties from the container element
-    // Float mode (ChatContainer) always uses mobile mode
-    const isFloatMode = !useCustomHostElement;
-
-    // Helper to parse CSS length value with fallback
-    const parseCSSLength = (variableName: string, fallback: number): number => {
-      const value = getCSSVariableValue(variableName, container);
-      if (!value) {
-        return fallback;
-      }
-      const parsed = Number.parseFloat(value);
-      return Number.isNaN(parsed) ? fallback : parsed;
-    };
-
-    const messagesMinWidth = parseCSSLength(
-      "--cds-aichat-messages-min-width",
-      320,
-    );
-    const historyWidth = parseCSSLength("--cds-aichat-history-width", 320);
-    const requiredWidthForHistory = messagesMinWidth + historyWidth;
-    const shouldBeMobile = isFloatMode || width < requiredWidthForHistory;
-
-    // Get current state directly from store to avoid dependency loop
-    const currentState = serviceManager.store.getState();
-    const currentIsMobile = currentState.historyPanelState.isMobile;
-
-    if (currentIsMobile !== shouldBeMobile) {
-      serviceManager.store.dispatch(
-        actions.setHistoryPanelOptions(shouldBeMobile),
-      );
-    }
-  }, [widgetContainerRef, serviceManager.store, useCustomHostElement]);
+    // Update history mobile detection
+    updateHistoryMobileDetection({
+      width,
+      container,
+      useCustomHostElement,
+      serviceManager,
+    });
+  }, [widgetContainerRef, useCustomHostElement, serviceManager]);
 
   useResizeObserver({
     containerRef: widgetContainerRef,
@@ -557,7 +557,7 @@ export default function AppShell({
                 catastrophicErrorType={catastrophicErrorType}
               />
 
-              {config.derived.header?.isOn && (
+              {(config.derived.header?.isOn || headerConfigOverride?.isOn) && (
                 <div slot="header">
                   <Header
                     onClose={onClose}
@@ -565,6 +565,7 @@ export default function AppShell({
                     headerDisplayName={headerDisplayName}
                     onToggleHomeScreen={onToggleHomeScreen}
                     isHomeScreenActive={showHomeScreen}
+                    headerConfigOverride={headerConfigOverride}
                   />
                 </div>
               )}

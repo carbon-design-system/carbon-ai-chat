@@ -25,7 +25,6 @@ import {
   ChatInstance,
   GenericItem,
   MessageResponse,
-  PanelType,
   PublicConfig,
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -193,9 +192,6 @@ export class DemoApp extends LitElement {
   accessor sideBarClosing: boolean = false;
 
   @state()
-  accessor isHistoryPanelMobile: boolean = false;
-
-  @state()
   accessor workspaceExpanded: boolean = false;
 
   @state()
@@ -213,68 +209,6 @@ export class DemoApp extends LitElement {
   @state()
   accessor valueFromParent: string = Date.now().toString();
 
-  // Add private property for ResizeObserver
-  private _resizeObserver?: ResizeObserver;
-  private _chatElement?: HTMLElement;
-
-  /**
-   * Lit lifecycle method called after each update
-   */
-  protected updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-
-    // Set up ResizeObserver when instance becomes available
-    if (changedProperties.has("instance") && this.instance) {
-      this.setupResizeObserver();
-    }
-
-    // Clean up and recreate observer if layout changes
-    if (changedProperties.has("settings")) {
-      this.setupResizeObserver();
-    }
-  }
-
-  /**
-   * Set up ResizeObserver to track container width for history panel mobile state
-   */
-  private setupResizeObserver() {
-    // Clean up existing observer
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
-      this._resizeObserver = undefined;
-    }
-
-    // If in float mode, always set mobile to true
-    if (this.settings.layout === "float") {
-      this.isHistoryPanelMobile = true;
-      return;
-    }
-
-    // Get the chat element from shadow DOM
-    const chatElement = this.renderRoot.querySelector(
-      "cds-aichat-custom-element, cds-aichat-container",
-    ) as HTMLElement;
-
-    if (!chatElement) {
-      return;
-    }
-
-    this._chatElement = chatElement;
-    let currentIsMobile: boolean | null = null;
-
-    this._resizeObserver = new ResizeObserver(([entry]) => {
-      const shouldBeMobile = entry.contentRect.width < 640;
-
-      if (currentIsMobile === shouldBeMobile) {
-        return;
-      }
-      currentIsMobile = shouldBeMobile;
-      this.isHistoryPanelMobile = shouldBeMobile;
-    });
-
-    this._resizeObserver.observe(chatElement);
-  }
-
   private _interval?: ReturnType<typeof setInterval>;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -287,9 +221,6 @@ export class DemoApp extends LitElement {
     super.disconnectedCallback();
     if (this._interval) {
       clearInterval(this._interval);
-    }
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
     }
   }
 
@@ -344,9 +275,6 @@ export class DemoApp extends LitElement {
    */
   onBeforeRender = (instance: ChatInstance) => {
     this.instance = instance;
-
-    // Set history panel mobile state from config
-    this.isHistoryPanelMobile = this.config.history?.isMobile ?? false;
 
     // Notify parent component that instance is ready
     this.onChatInstanceReady?.(instance);
@@ -589,7 +517,8 @@ export class DemoApp extends LitElement {
                     location=${key}
                     .instance=${this.instance}
                     .valueFromParent=${this.valueFromParent}
-                    .isMobile=${this.isHistoryPanelMobile}
+                    .isMobile=${this.instance?.getState().history.isMobile ??
+                    false}
                   ></history-writeable-element-example>
                 `
               : html`
@@ -631,50 +560,12 @@ export class DemoApp extends LitElement {
     return className;
   }
 
-  /**
-   * Get config with history panel settings and header menu options
-   */
-  historyConfig() {
-    return {
-      ...this.config,
-      history: {
-        ...this.config.history,
-        isMobile: this.isHistoryPanelMobile,
-      },
-      header: {
-        ...this.config.header,
-        isOn: true,
-        menuOptions: [
-          {
-            text: "New chat",
-            handler: () => {
-              this.instance?.messaging?.restartConversation?.();
-            },
-          },
-          {
-            text: "View chats",
-            handler: () => {
-              const historyPanel = this.instance?.customPanels?.getPanel(
-                PanelType.HISTORY,
-              );
-              if (historyPanel) {
-                historyPanel.open();
-              }
-            },
-          },
-        ],
-      },
-    };
-  }
-
   // Depending on which layout is setting in settings, render the right version of AI chat.
   render() {
     return html`
       ${this.settings.layout === "float"
         ? html`<cds-aichat-container
-            .config=${this.config.history?.isOn
-              ? this.historyConfig()
-              : this.config}
+            .config=${this.config}
             .onError=${this.config.onError}
             .openChatByDefault=${this.config.openChatByDefault ?? undefined}
             .disclaimer=${this.config.disclaimer}
@@ -687,9 +578,7 @@ export class DemoApp extends LitElement {
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${this.config.history?.isOn && this.isHistoryPanelMobile
-              ? { ...this.historyConfig().header }
-              : this.config.header}
+            .header=${this.config.header}
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
@@ -707,9 +596,7 @@ export class DemoApp extends LitElement {
         ? html`<cds-aichat-custom-element
             class=${this.getSideBarClassName()}
             @transitionend=${this.handleTransitionEnd}
-            .config=${this.config.history?.isOn
-              ? this.historyConfig()
-              : this.config}
+            .config=${this.config}
             .onError=${this.config.onError}
             .openChatByDefault=${this.config.openChatByDefault ?? undefined}
             .disclaimer=${this.config.disclaimer}
@@ -722,9 +609,7 @@ export class DemoApp extends LitElement {
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${this.config.history?.isOn && this.isHistoryPanelMobile
-              ? { ...this.historyConfig().header }
-              : this.config.header}
+            .header=${this.config.header}
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
@@ -744,9 +629,7 @@ export class DemoApp extends LitElement {
       this.settings.layout === "fullscreen-no-gutter"
         ? html`<cds-aichat-custom-element
             class="fullScreen"
-            .config=${this.config.history?.isOn
-              ? this.historyConfig()
-              : this.config}
+            .config=${this.config}
             .onError=${this.config.onError}
             .openChatByDefault=${this.config.openChatByDefault ?? undefined}
             .disclaimer=${this.config.disclaimer}
@@ -759,9 +642,7 @@ export class DemoApp extends LitElement {
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${this.config.history?.isOn && this.isHistoryPanelMobile
-              ? { ...this.historyConfig().header }
-              : this.config.header}
+            .header=${this.config.header}
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
