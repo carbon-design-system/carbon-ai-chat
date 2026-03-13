@@ -224,6 +224,8 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 }
 
 .panel-body {
+  // Enable scrolling when content overflows
+  overflow: auto;
   box-sizing: border-box;
   // Allow body to grow and shrink, but constrain it
   flex: 1 1 auto;
@@ -239,6 +241,13 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 :host(.panel--full-width) {
   .panel-body {
     max-inline-size: 100%;
+  }
+}
+
+// No scroll on panel body, allows for slotted elements to set their own scroll configurations
+:host(.panel--no-scroll) {
+  .panel-body {
+    overflow: hidden;
   }
 }
 
