@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -133,14 +133,14 @@ class WorkspaceWriteableElementExample extends LitElement {
     const workspaceId =
       this.instance?.getState()?.workspace?.workspaceID || "unknown";
 
-    return html` <cds-aichat-workspace-shell>
+    return html` <cds-aichat-workspace-shell auto-collapsible-header>
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
         .actions=${this.toolbarActions}
         titleText="Optimizing excess inventory"
       >
-        <cds-ai-label autoalign="" slot="decorator" size="2xs">
+        <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
             <p class="secondary">
               Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed

@@ -29,7 +29,7 @@ const CoreSlotContent = () => (
 );
 
 export default {
-  title: "Components/Chat shell",
+  title: "Preview/Chat shell",
   argTypes: {
     aiEnabled: {
       control: "boolean",
@@ -39,9 +39,30 @@ export default {
       control: "boolean",
       description: "Show visual frame around content",
     },
-    roundedCorners: {
-      control: "boolean",
-      description: "Apply rounded corners to frame",
+    cornerAll: {
+      control: { type: "radio" },
+      options: ["round", "square"],
+      description: "Sets all corners (individual corners override this)",
+    },
+    cornerStartStart: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Top-left corner in LTR (overrides cornerAll)",
+    },
+    cornerStartEnd: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Top-right corner in LTR (overrides cornerAll)",
+    },
+    cornerEndStart: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Bottom-left corner in LTR (overrides cornerAll)",
+    },
+    cornerEndEnd: {
+      control: { type: "radio" },
+      options: [undefined, "round", "square"],
+      description: "Bottom-right corner in LTR (overrides cornerAll)",
     },
     showHistory: {
       control: "boolean",
@@ -72,7 +93,11 @@ export const Default = {
   args: {
     aiEnabled: false,
     showFrame: true,
-    roundedCorners: true,
+    cornerAll: "round",
+    cornerStartStart: undefined,
+    cornerStartEnd: undefined,
+    cornerEndStart: undefined,
+    cornerEndEnd: undefined,
     showHistory: false,
     showWorkspace: false,
     workspaceLocation: "start",
@@ -83,7 +108,11 @@ export const Default = {
     const {
       aiEnabled,
       showFrame,
-      roundedCorners,
+      cornerAll,
+      cornerStartStart,
+      cornerStartEnd,
+      cornerEndStart,
+      cornerEndEnd,
       showHistory,
       showWorkspace,
       workspaceLocation,
@@ -95,7 +124,11 @@ export const Default = {
       <ChatShell
         aiEnabled={aiEnabled}
         showFrame={showFrame}
-        roundedCorners={roundedCorners}
+        cornerAll={cornerAll}
+        cornerStartStart={cornerStartStart}
+        cornerStartEnd={cornerStartEnd}
+        cornerEndStart={cornerEndStart}
+        cornerEndEnd={cornerEndEnd}
         showHistory={showHistory}
         showWorkspace={showWorkspace}
         workspaceLocation={workspaceLocation}
@@ -125,7 +158,11 @@ export const Slots = {
   args: {
     aiEnabled: false,
     showFrame: true,
-    roundedCorners: true,
+    cornerAll: "round",
+    cornerStartStart: undefined,
+    cornerStartEnd: undefined,
+    cornerEndStart: undefined,
+    cornerEndEnd: undefined,
     showHistory: false,
     showWorkspace: false,
     workspaceLocation: "start",
@@ -178,7 +215,11 @@ export const Slots = {
     const {
       aiEnabled,
       showFrame,
-      roundedCorners,
+      cornerAll,
+      cornerStartStart,
+      cornerStartEnd,
+      cornerEndStart,
+      cornerEndEnd,
       showHistory,
       showWorkspace,
       workspaceLocation,
@@ -234,7 +275,11 @@ export const Slots = {
         <ChatShell
           aiEnabled={aiEnabled}
           showFrame={showFrame}
-          roundedCorners={roundedCorners}
+          cornerAll={cornerAll}
+          cornerStartStart={cornerStartStart}
+          cornerStartEnd={cornerStartEnd}
+          cornerEndStart={cornerEndStart}
+          cornerEndEnd={cornerEndEnd}
           showHistory={showHistory}
           showWorkspace={showWorkspace}
           workspaceLocation={workspaceLocation}
@@ -268,7 +313,11 @@ export const SidebarWorkspace = {
   args: {
     aiEnabled: false,
     showFrame: true,
-    roundedCorners: true,
+    cornerAll: "round",
+    cornerStartStart: undefined,
+    cornerStartEnd: undefined,
+    cornerEndStart: undefined,
+    cornerEndEnd: undefined,
     workspaceLocation: "start",
     contentMaxWidth: true,
   },
@@ -281,7 +330,11 @@ export const SidebarWorkspace = {
     const {
       aiEnabled,
       showFrame,
-      roundedCorners,
+      cornerAll,
+      cornerStartStart,
+      cornerStartEnd,
+      cornerEndStart,
+      cornerEndEnd,
       workspaceLocation,
       contentMaxWidth,
     } = args;
@@ -292,7 +345,11 @@ export const SidebarWorkspace = {
         className={`sidebar-workspace-shell ${isWorkspaceOpen ? "expanded" : ""}`}
         aiEnabled={aiEnabled}
         showFrame={showFrame}
-        roundedCorners={roundedCorners}
+        cornerAll={cornerAll}
+        cornerStartStart={cornerStartStart}
+        cornerStartEnd={cornerStartEnd}
+        cornerEndStart={cornerEndStart}
+        cornerEndEnd={cornerEndEnd}
         showWorkspace={isWorkspaceOpen}
         workspaceLocation={workspaceLocation}
         contentMaxWidth={contentMaxWidth}

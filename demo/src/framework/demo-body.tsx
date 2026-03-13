@@ -478,7 +478,7 @@ export class DemoBody extends LitElement {
         ? "page set-chat-config-mode-no-config"
         : "page";
 
-    return html` <div class="${pageClass}">
+    return html` <main id="main-content" class="${pageClass}">
       ${this.isSetChatConfigMode && this.hasReceivedSetChatConfig
         ? html`<div
             class="nav-block set-chat-config-sidebar"
@@ -593,7 +593,7 @@ export class DemoBody extends LitElement {
             />`
           : html``}
       </div>
-    </div>`;
+    </main>`;
   }
 }
 

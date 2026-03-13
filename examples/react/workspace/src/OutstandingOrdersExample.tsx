@@ -65,7 +65,7 @@ export function OutstandingOrdersExample({
   ]);
 
   return (
-    <WorkspaceShell>
+    <WorkspaceShell autoCollapsibleHeader>
       <Toolbar slot="toolbar" actions={toolbarActions} overflow>
         <div slot="title" data-fixed>
           Outstanding Orders

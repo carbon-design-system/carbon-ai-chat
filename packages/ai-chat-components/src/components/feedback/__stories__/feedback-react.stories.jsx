@@ -35,29 +35,29 @@ export default {
       control: "text",
       description: "Title of the feedback panel",
     },
-    prompt: {
+    body: {
       control: "text",
-      description: "Prompt text for the user",
+      description: "Body text for the user",
     },
     placeholder: {
       control: "text",
       description: "Placeholder for the text area",
     },
-    cancelLabel: {
+    secondaryLabel: {
       control: "text",
-      description: "Label for the cancel button",
+      description: "Label for the secondary button",
     },
-    submitLabel: {
+    primaryLabel: {
       control: "text",
-      description: "Label for the submit button",
+      description: "Label for the primary button",
     },
     showTextArea: {
       control: "boolean",
-      description: "Show the text area",
+      description: "Show the text area (defaults to false)",
     },
-    showPrompt: {
+    showBody: {
       control: "boolean",
-      description: "Show the prompt text",
+      description: "Show the body text (defaults to false)",
     },
     onSubmit: {
       action: "onSubmit",
@@ -87,12 +87,12 @@ const renderFeedback = (args, options) => {
         isOpen={args.isOpen}
         isReadonly={args.isReadonly}
         title={args.title}
-        prompt={args.prompt}
+        body={args.body}
         placeholder={args.placeholder}
-        cancelLabel={args.cancelLabel}
-        submitLabel={args.submitLabel}
+        secondaryLabel={args.secondaryLabel}
+        primaryLabel={args.primaryLabel}
         showTextArea={args.showTextArea}
-        showPrompt={args.showPrompt}
+        showBody={args.showBody}
         categories={options?.categories}
         disclaimer={options?.disclaimer}
         initialValues={options?.initialValues}
@@ -113,12 +113,12 @@ export const Default = {
     isOpen: true,
     isReadonly: false,
     title: "Provide feedback",
-    prompt: "Help us improve by sharing your thoughts",
+    body: "Help us improve by sharing your thoughts",
     placeholder: "Tell us more...",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit",
+    secondaryLabel: "Cancel",
+    primaryLabel: "Submit",
     showTextArea: true,
-    showPrompt: true,
+    showBody: true,
     onSubmit: undefined,
     onClose: undefined,
   },
@@ -143,12 +143,12 @@ export const WithCategories = {
     isOpen: true,
     isReadonly: false,
     title: "What went wrong?",
-    prompt: "Select all that apply and provide details",
+    body: "Select all that apply and provide details",
     placeholder: "Please describe the issue...",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit feedback",
+    secondaryLabel: "Cancel",
+    primaryLabel: "Submit feedback",
     showTextArea: true,
-    showPrompt: true,
+    showBody: true,
   },
   render: (args) =>
     renderFeedback(args, {
@@ -174,12 +174,12 @@ export const WithDisclaimer = {
     isOpen: true,
     isReadonly: false,
     title: "Share your feedback",
-    prompt: "Help us improve by sharing your thoughts",
+    body: "Help us improve by sharing your thoughts",
     placeholder: "Your feedback...",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit",
+    secondaryLabel: "Cancel",
+    primaryLabel: "Submit",
     showTextArea: true,
-    showPrompt: true,
+    showBody: true,
   },
   render: (args) =>
     renderFeedback(args, {
@@ -206,7 +206,7 @@ export const ReadOnly = {
     isReadonly: true,
     title: "Your feedback",
     showTextArea: true,
-    showPrompt: false,
+    showBody: false,
   },
   render: (args) =>
     renderFeedback(args, {
@@ -214,36 +214,6 @@ export const ReadOnly = {
       initialValues: {
         text: "The response was inaccurate and didn't address my question properly. It also included irrelevant information.",
         selectedCategories: ["Inaccurate", "Not relevant"],
-      },
-    }),
-};
-
-export const WithoutTextArea = {
-  args: {
-    isOpen: true,
-    isReadonly: false,
-    title: "Quick feedback",
-    prompt: "Select all that apply",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit",
-    showTextArea: false,
-    showPrompt: true,
-  },
-  render: (args) =>
-    renderFeedback(args, {
-      description:
-        "Collect quick sentiment using categories only, without a text field.",
-      categories: positiveCategories,
-      onSubmit: (details) => {
-        console.log("Feedback submitted:", details);
-        if (typeof window !== "undefined") {
-          window.alert(
-            `Feedback submitted!\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
-          );
-        }
-      },
-      onClose: () => {
-        console.log("Feedback closed");
       },
     }),
 };

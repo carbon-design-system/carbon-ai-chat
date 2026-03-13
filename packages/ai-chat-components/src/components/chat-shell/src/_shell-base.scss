@@ -10,7 +10,9 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/ai-gradient" as *;
+
 @use "../../../globals/scss/vars" as *;
 @use "variables" as *;
 
@@ -23,33 +25,43 @@
   background: transparent;
   block-size: 100%;
   container-type: inline-size;
-  font-family: var(
-    --cds-aichat-font-family,
-    "IBM Plex Sans",
-    "Helvetica Neue",
-    arial,
-    sans-serif
-  );
   inline-size: 100%;
+}
+
+// ============================================================================
+// Visually Hidden (for aria-live regions)
+// ============================================================================
+.visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  padding: 0;
+  border-width: 0;
+  margin: -1px;
+  block-size: 1px;
+  clip: rect(0, 0, 0, 0);
+  inline-size: 1px;
+  white-space: nowrap;
 }
 
 // ============================================================================
 // Shell Container
 // ============================================================================
 .shell {
-  --#{$prefix}-rounded-modifier-radius: 0;
-  --#{$prefix}-rounded-modifier-radius-start-start: 0;
-  --#{$prefix}-rounded-modifier-radius-start-end: 0;
-  --#{$prefix}-rounded-modifier-radius-end-start: 0;
-  --#{$prefix}-rounded-modifier-radius-end-end: 0;
+  --#{$prefix}-border-radius-start-start: 0;
+  --#{$prefix}-border-radius-start-end: 0;
+  --#{$prefix}-border-radius-end-start: 0;
+  --#{$prefix}-border-radius-end-end: 0;
 
   position: relative;
   display: block;
   border: 1px solid theme.$border-subtle-00;
-  border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
   background-color: theme.$chat-shell-background;
   background-image: none;
   block-size: 100%;
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
   box-shadow: $default-box-shadow;
   inline-size: 100%;
 }
@@ -70,14 +82,16 @@
 // Shell Modifiers - Frameless
 .shell.frameless,
 .shell.frameless.rounded {
-  --#{$prefix}-rounded-modifier-radius: 0;
-  --#{$prefix}-rounded-modifier-radius-start-start: 0;
-  --#{$prefix}-rounded-modifier-radius-start-end: 0;
-  --#{$prefix}-rounded-modifier-radius-end-start: 0;
-  --#{$prefix}-rounded-modifier-radius-end-end: 0;
+  --#{$prefix}-border-radius-start-start: 0;
+  --#{$prefix}-border-radius-start-end: 0;
+  --#{$prefix}-border-radius-end-start: 0;
+  --#{$prefix}-border-radius-end-end: 0;
 
   border: none;
-  border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+  border-end-end-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: 0;
+  border-start-start-radius: 0;
   box-shadow: none;
 }
 
@@ -97,73 +111,88 @@
   min-block-size: 0;
 }
 
+// ============================================================================
+// Initialization State - Prevent Layout Thrashing
+// ============================================================================
+// Hide .main-chat and .panels during initialization to prevent visible
+// layout shifts while calculations are performed
+:host([data-initializing]) {
+  .main-chat,
+  .panels {
+    opacity: 0;
+  }
+}
+
+// Fade in content after initialization completes
+:host(:not([data-initializing])) {
+  .main-chat,
+  .panels {
+    opacity: 1;
+  }
+}
+
+// Add smooth transition when motion is preferred
+@media screen and (prefers-reduced-motion: no-preference) {
+  .main-chat,
+  .panels {
+    transition: opacity motion.$duration-fast-02
+      motion.motion(entrance, productive);
+  }
+}
+
+// Instant appearance for users who prefer reduced motion
+@media screen and (prefers-reduced-motion: reduce) {
+  :host([data-initializing]) {
+    .main-chat,
+    .panels {
+      opacity: 1;
+      transition: none;
+    }
+  }
+}
+
 .header.has-content {
   border-block-end: 1px solid theme.$border-subtle-02;
 }
 
 .shell.rounded {
-  // Set the base rounded radius custom property that can be inherited by slotted content
-  --#{$prefix}-rounded-modifier-radius: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-start-start: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-start-end: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-end-start: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-end-end: #{layout.$spacing-03};
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
 
-  border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 
   .main-chat {
-    border-radius: var(--#{$prefix}-rounded-modifier-radius, 0);
+    border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+    border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+    border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+    border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
   }
 
   .header-with-header-after {
-    border-start-end-radius: var(
-      --#{$prefix}-rounded-modifier-radius-start-end,
-      0
-    );
-    border-start-start-radius: var(
-      --#{$prefix}-rounded-modifier-radius-start-start,
-      0
-    );
+    border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+    border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 
     // Apply rounded corners to header when it has content
     > .header.has-content {
-      border-start-end-radius: var(
-        --#{$prefix}-rounded-modifier-radius-start-end,
-        0
-      );
-      border-start-start-radius: var(
-        --#{$prefix}-rounded-modifier-radius-start-start,
-        0
-      );
+      border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+      border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
     }
 
     // Apply rounded corners to header-after only when header is empty but header-after has content
     > .header:not(.has-content) + .header-after.has-content {
-      --#{$prefix}-rounded-modifier-radius-start-end: var(
-        --#{$prefix}-rounded-modifier-radius,
-        0
-      );
-      --#{$prefix}-rounded-modifier-radius-start-start: var(
-        --#{$prefix}-rounded-modifier-radius,
-        0
-      );
-      --#{$prefix}-rounded-modifier-radius-end-start: 0;
-      --#{$prefix}-rounded-modifier-radius-end-end: 0;
+      // Top corners inherit from .shell.rounded, just reset bottom corners
+      --#{$prefix}-border-radius-end-start: 0;
+      --#{$prefix}-border-radius-end-end: 0;
 
-      border-start-end-radius: var(
-        --#{$prefix}-rounded-modifier-radius-start-end,
-        0
-      );
-      border-start-start-radius: var(
-        --#{$prefix}-rounded-modifier-radius-start-start,
-        0
-      );
+      border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+      border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
     }
 
     // Reset rounded corners for header when it has no content
     > .header:not(.has-content) {
-      --#{$prefix}-rounded-modifier-radius-start-end: 0;
-      --#{$prefix}-rounded-modifier-radius-start-start: 0;
+      --#{$prefix}-border-radius-start-end: 0;
+      --#{$prefix}-border-radius-start-start: 0;
 
       border-start-end-radius: 0;
       border-start-start-radius: 0;
@@ -171,8 +200,8 @@
 
     // Reset rounded corners for header-after when it has no content
     > .header-after:not(.has-content) {
-      --#{$prefix}-rounded-modifier-radius-start-end: 0;
-      --#{$prefix}-rounded-modifier-radius-start-start: 0;
+      --#{$prefix}-border-radius-start-end: 0;
+      --#{$prefix}-border-radius-start-start: 0;
 
       border-start-end-radius: 0;
       border-start-start-radius: 0;
@@ -180,10 +209,10 @@
 
     // Reset rounded corners for header-after when header has content (header takes priority)
     > .header.has-content + .header-after.has-content {
-      --#{$prefix}-rounded-modifier-radius-start-end: 0;
-      --#{$prefix}-rounded-modifier-radius-start-start: 0;
-      --#{$prefix}-rounded-modifier-radius-end-start: 0;
-      --#{$prefix}-rounded-modifier-radius-end-end: 0;
+      --#{$prefix}-border-radius-start-end: 0;
+      --#{$prefix}-border-radius-start-start: 0;
+      --#{$prefix}-border-radius-end-start: 0;
+      --#{$prefix}-border-radius-end-end: 0;
 
       border-end-end-radius: 0;
       border-end-start-radius: 0;

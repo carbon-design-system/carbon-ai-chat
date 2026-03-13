@@ -23,22 +23,6 @@ export default {
       control: "boolean",
       description: "Whether the negative button is disabled",
     },
-    hasPositiveDetails: {
-      control: "boolean",
-      description: "Whether positive button opens a details panel",
-    },
-    hasNegativeDetails: {
-      control: "boolean",
-      description: "Whether negative button opens a details panel",
-    },
-    isPositiveOpen: {
-      control: "boolean",
-      description: "Whether the positive details panel is open",
-    },
-    isNegativeOpen: {
-      control: "boolean",
-      description: "Whether the negative details panel is open",
-    },
     positiveLabel: {
       control: "text",
       description: "Accessibility label for positive button",
@@ -47,9 +31,31 @@ export default {
       control: "text",
       description: "Accessibility label for negative button",
     },
+    // Panel-related properties - hidden by default, shown only in WithDetailsPanel story
+    hasPositiveDetails: {
+      control: "boolean",
+      description: "Whether positive button opens a details panel",
+      table: { disable: true },
+    },
+    hasNegativeDetails: {
+      control: "boolean",
+      description: "Whether negative button opens a details panel",
+      table: { disable: true },
+    },
+    isPositiveOpen: {
+      control: "boolean",
+      description: "Whether the positive details panel is open",
+      table: { disable: true },
+    },
+    isNegativeOpen: {
+      control: "boolean",
+      description: "Whether the negative details panel is open",
+      table: { disable: true },
+    },
     panelID: {
       control: "text",
       description: "ID of the associated feedback panel",
+      table: { disable: true },
     },
   },
 };
@@ -261,10 +267,6 @@ export const Default = {
     isNegativeSelected: false,
     isPositiveDisabled: false,
     isNegativeDisabled: false,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
     positiveLabel: "Thumbs up",
     negativeLabel: "Thumbs down",
   },
@@ -282,99 +284,36 @@ export const Default = {
     }),
 };
 
-export const PositiveSelected = {
-  args: {
-    isPositiveSelected: true,
-    isNegativeSelected: false,
-    isPositiveDisabled: false,
-    isNegativeDisabled: false,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-  },
-  render: (args) =>
-    renderButtons(args, {
-      description: "Positive feedback has been provided.",
-      onClick: (isPositive) => {
-        console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
-      },
-    }),
-};
-
-export const NegativeSelected = {
-  args: {
-    isPositiveSelected: false,
-    isNegativeSelected: true,
-    isPositiveDisabled: false,
-    isNegativeDisabled: false,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-  },
-  render: (args) =>
-    renderButtons(args, {
-      description: "Negative feedback has been provided.",
-      onClick: (isPositive) => {
-        console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
-      },
-    }),
-};
-
 export const WithDetailsPanel = {
   args: {
     positiveLabel: "Thumbs up",
     negativeLabel: "Thumbs down",
     panelID: "feedback-panel-example",
+    hasPositiveDetails: true,
+    hasNegativeDetails: true,
+  },
+  argTypes: {
+    // Show panel-related properties in the table but make them read-only
+    hasPositiveDetails: {
+      control: "boolean",
+      description: "Whether positive button opens a details panel",
+      table: { disable: false },
+    },
+    hasNegativeDetails: {
+      control: "boolean",
+      description: "Whether negative button opens a details panel",
+      table: { disable: false },
+    },
+    panelID: {
+      control: false,
+      description: "ID of the associated feedback panel",
+      table: { disable: false },
+    },
   },
   render: (args) => (
     <FeedbackButtonsWithDetailsDemo
-      hasPositiveDetails={false}
-      hasNegativeDetails={true}
-      panelID={args.panelID}
-      positiveLabel={args.positiveLabel}
-      negativeLabel={args.negativeLabel}
-    />
-  ),
-};
-
-export const Disabled = {
-  args: {
-    isPositiveSelected: true,
-    isNegativeSelected: false,
-    isPositiveDisabled: true,
-    isNegativeDisabled: true,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-  },
-  render: (args) =>
-    renderButtons(args, {
-      description: "Feedback has been submitted and cannot be changed.",
-      onClick: () => {
-        console.log("Buttons are disabled, should not fire");
-      },
-    }),
-};
-
-export const BothDetails = {
-  args: {
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-    panelID: "feedback-panel-both",
-  },
-  render: (args) => (
-    <FeedbackButtonsWithDetailsDemo
-      hasPositiveDetails={true}
-      hasNegativeDetails={true}
+      hasPositiveDetails={args.hasPositiveDetails}
+      hasNegativeDetails={args.hasNegativeDetails}
       panelID={args.panelID}
       positiveLabel={args.positiveLabel}
       negativeLabel={args.negativeLabel}

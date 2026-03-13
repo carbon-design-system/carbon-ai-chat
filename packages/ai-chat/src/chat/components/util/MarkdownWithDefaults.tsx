@@ -8,16 +8,15 @@
  */
 
 import React, { useMemo } from "react";
-import { useIntl } from "../../../hooks/useIntl";
-import { useSelector } from "../../../hooks/useSelector";
+import { useIntl } from "../../hooks/useIntl";
+import { useSelector } from "../../hooks/useSelector";
 
 import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown.js";
-import { useShouldSanitizeHTML } from "../../../hooks/useShouldSanitizeHTML";
-import { AppState } from "../../../../types/state/AppState";
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { debugLog } from "../../../utils/miscUtils";
+import { useShouldSanitizeHTML } from "../../hooks/useShouldSanitizeHTML";
+import { AppState } from "../../../types/state/AppState";
+import { useLanguagePack } from "../../hooks/useLanguagePack";
 
-interface RichTextProps {
+interface MarkdownWithDefaultsProps {
   /**
    * The text (possibly containing HTML or Markdown) to display in this component.
    */
@@ -35,7 +34,7 @@ interface RichTextProps {
   overrideSanitize?: boolean;
 
   /**
-   * If we are actively streaming to this RichText component.
+   * If we are actively streaming to this MarkdownWithDefaults component.
    */
   streaming?: boolean;
 
@@ -52,7 +51,7 @@ interface RichTextProps {
  *
  * Warning: This should only be used with trusted text. Do NOT use this with text that was entered by the end-user.
  */
-function RichText(props: RichTextProps) {
+function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
   const {
     text,
     removeHTML,
@@ -72,7 +71,6 @@ function RichText(props: RichTextProps) {
   const locale = useSelector(
     (state: AppState) => state.config.public.locale || "en",
   );
-  const debug = useSelector((state: AppState) => state.config.public.debug);
 
   // Memoize string functions to prevent unnecessary re-renders
   const getPaginationSupplementalText = useMemo(
@@ -115,13 +113,9 @@ function RichText(props: RichTextProps) {
     [formatMessage],
   );
 
-  if (debug) {
-    debugLog("Receiving markdown text", { text, streaming });
-  }
-
   return (
     <Markdown
-      debug={debug}
+      markdown={text}
       sanitizeHTML={doSanitize}
       streaming={streaming}
       highlight={highlight}
@@ -140,36 +134,41 @@ function RichText(props: RichTextProps) {
       showMoreText={languagePack.codeSnippet_showMoreText}
       tooltipContent={languagePack.codeSnippet_tooltipContent}
       getLineCountText={getLineCountText}
-    >
-      {text}
-    </Markdown>
+      codeSnippetAriaLabelReadOnly={languagePack.codeSnippet_ariaLabelReadOnly}
+      codeSnippetAriaLabelEditable={languagePack.codeSnippet_ariaLabelEditable}
+    />
   );
 }
 
-const RichTextExport = React.memo(RichText, (prevProps, nextProps) => {
-  // Custom comparison to prevent re-render when only streaming changes but content is the same
-  const textEqual = prevProps.text === nextProps.text;
-  const htmlConversionEqual = prevProps.removeHTML === nextProps.removeHTML;
-  const sanitizeEqual =
-    prevProps.overrideSanitize === nextProps.overrideSanitize;
-  const highlightEqual = prevProps.highlight === nextProps.highlight;
+const MarkdownWithDefaultsExport = React.memo(
+  MarkdownWithDefaults,
+  (prevProps, nextProps) => {
+    // Custom comparison to prevent re-render when only streaming changes but content is the same
+    const textEqual = prevProps.text === nextProps.text;
+    const htmlConversionEqual = prevProps.removeHTML === nextProps.removeHTML;
+    const sanitizeEqual =
+      prevProps.overrideSanitize === nextProps.overrideSanitize;
+    const highlightEqual = prevProps.highlight === nextProps.highlight;
 
-  // If text content is identical, we don't need to re-render regardless of streaming state
-  if (textEqual && htmlConversionEqual && sanitizeEqual && highlightEqual) {
-    return true; // Skip re-render
-  }
+    // If text content is identical, we don't need to re-render regardless of streaming state
+    if (textEqual && htmlConversionEqual && sanitizeEqual && highlightEqual) {
+      return true; // Skip re-render
+    }
 
-  // If text content changed, check if streaming state is relevant
-  const streamingEqual = prevProps.streaming === nextProps.streaming;
+    // If text content changed, check if streaming state is relevant
+    const streamingEqual = prevProps.streaming === nextProps.streaming;
 
-  return (
-    textEqual &&
-    htmlConversionEqual &&
-    sanitizeEqual &&
-    highlightEqual &&
-    streamingEqual
-  );
-});
+    return (
+      textEqual &&
+      htmlConversionEqual &&
+      sanitizeEqual &&
+      highlightEqual &&
+      streamingEqual
+    );
+  },
+);
 
-export { RichTextExport as RichText };
-export default RichTextExport;
+export { MarkdownWithDefaultsExport as MarkdownWithDefaults };
+export default MarkdownWithDefaultsExport;
+
+// Made with Bob

@@ -43,21 +43,25 @@ export default {
       control: "text",
       description: "Title of the feedback panel",
     },
-    prompt: {
+    body: {
       control: "text",
-      description: "Prompt text for the user",
+      description: "Body text for the user",
     },
     placeholder: {
       control: "text",
       description: "Placeholder for the text area",
     },
-    cancelLabel: {
+    categoriesLabel: {
       control: "text",
-      description: "Label for the cancel button",
+      description: "Accessible label for the categories listbox",
     },
-    submitLabel: {
+    secondaryLabel: {
       control: "text",
-      description: "Label for the submit button",
+      description: "Label for the secondary button",
+    },
+    primaryLabel: {
+      control: "text",
+      description: "Label for the primary button",
     },
     categories: {
       control: "object",
@@ -65,11 +69,11 @@ export default {
     },
     showTextArea: {
       control: "boolean",
-      description: "Show the text area",
+      description: "Show the text area (defaults to false)",
     },
-    showPrompt: {
+    showBody: {
       control: "boolean",
-      description: "Show the prompt text",
+      description: "Show the body text (defaults to false)",
     },
   },
 };
@@ -79,36 +83,38 @@ export const Default = {
     isOpen: true,
     isReadonly: false,
     title: "Provide feedback",
-    prompt: "Help us improve by sharing your thoughts",
+    body: "Help us improve by sharing your thoughts",
     placeholder: "Tell us more...",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit",
+    secondaryLabel: "Cancel",
+    primaryLabel: "Submit",
     showTextArea: true,
-    showPrompt: true,
+    showBody: true,
   },
   render: (args) => html`
-    <cds-aichat-feedback
-      ?is-open=${args.isOpen}
-      ?is-readonly=${args.isReadonly}
-      title=${args.title}
-      prompt=${args.prompt}
-      text-area-placeholder=${args.placeholder}
-      cancel-label=${args.cancelLabel}
-      submit-label=${args.submitLabel}
-      .showTextArea=${args.showTextArea}
-      ?show-prompt=${args.showPrompt}
-      @feedback-submit=${(event) => {
-        const details = event.detail;
-        console.log("Feedback submitted:", details);
-        alert(
-          `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
-        );
-      }}
-      @feedback-close=${() => {
-        console.log("Feedback closed");
-      }}
-    >
-    </cds-aichat-feedback>
+    <div style="padding: 1rem; max-width: 24rem;">
+      <cds-aichat-feedback
+        ?is-open=${args.isOpen}
+        ?is-readonly=${args.isReadonly}
+        title=${args.title}
+        body=${args.body}
+        text-area-placeholder=${args.placeholder}
+        secondary-label=${args.secondaryLabel}
+        primary-label=${args.primaryLabel}
+        .showTextArea=${args.showTextArea}
+        ?show-body=${args.showBody}
+        @feedback-submit=${(event) => {
+          const details = event.detail;
+          console.log("Feedback submitted:", details);
+          alert(
+            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+          );
+        }}
+        @feedback-close=${() => {
+          console.log("Feedback closed");
+        }}
+      >
+      </cds-aichat-feedback>
+    </div>
   `,
 };
 
@@ -117,37 +123,41 @@ export const WithCategories = {
     isOpen: true,
     isReadonly: false,
     title: "What went wrong?",
-    prompt: "Select all that apply and provide details",
+    body: "Select all that apply and provide details",
     placeholder: "Please describe the issue...",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit feedback",
+    categoriesLabel: "Feedback categories",
+    secondaryLabel: "Cancel",
+    primaryLabel: "Submit feedback",
     showTextArea: true,
-    showPrompt: true,
+    showBody: true,
   },
   render: (args) => html`
-    <cds-aichat-feedback
-      ?is-open=${args.isOpen}
-      ?is-readonly=${args.isReadonly}
-      title=${args.title}
-      prompt=${args.prompt}
-      text-area-placeholder=${args.placeholder}
-      cancel-label=${args.cancelLabel}
-      submit-label=${args.submitLabel}
-      .showTextArea=${args.showTextArea}
-      ?show-prompt=${args.showPrompt}
-      .categories=${negativeCategories}
-      @feedback-submit=${(event) => {
-        const details = event.detail;
-        console.log("Feedback submitted:", details);
-        alert(
-          `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
-        );
-      }}
-      @feedback-close=${() => {
-        console.log("Feedback closed");
-      }}
-    >
-    </cds-aichat-feedback>
+    <div style="padding: 1rem; max-width: 24rem;">
+      <cds-aichat-feedback
+        ?is-open=${args.isOpen}
+        ?is-readonly=${args.isReadonly}
+        title=${args.title}
+        body=${args.body}
+        text-area-placeholder=${args.placeholder}
+        categories-label=${args.categoriesLabel}
+        secondary-label=${args.secondaryLabel}
+        primary-label=${args.primaryLabel}
+        .showTextArea=${args.showTextArea}
+        ?show-body=${args.showBody}
+        .categories=${negativeCategories}
+        @feedback-submit=${(event) => {
+          const details = event.detail;
+          console.log("Feedback submitted:", details);
+          alert(
+            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+          );
+        }}
+        @feedback-close=${() => {
+          console.log("Feedback closed");
+        }}
+      >
+      </cds-aichat-feedback>
+    </div>
   `,
 };
 
@@ -156,38 +166,40 @@ export const WithDisclaimer = {
     isOpen: true,
     isReadonly: false,
     title: "Share your feedback",
-    prompt: "Help us improve by sharing your thoughts",
+    body: "Help us improve by sharing your thoughts",
     placeholder: "Your feedback...",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit",
+    secondaryLabel: "Cancel",
+    primaryLabel: "Submit",
     showTextArea: true,
-    showPrompt: true,
+    showBody: true,
   },
   render: (args) => html`
-    <cds-aichat-feedback
-      ?is-open=${args.isOpen}
-      ?is-readonly=${args.isReadonly}
-      title=${args.title}
-      prompt=${args.prompt}
-      text-area-placeholder=${args.placeholder}
-      cancel-label=${args.cancelLabel}
-      submit-label=${args.submitLabel}
-      .showTextArea=${args.showTextArea}
-      ?show-prompt=${args.showPrompt}
-      .categories=${positiveCategories}
-      disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy). Your feedback may be used to improve our services."
-      @feedback-submit=${(event) => {
-        const details = event.detail;
-        console.log("Feedback submitted:", details);
-        alert(
-          `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
-        );
-      }}
-      @feedback-close=${() => {
-        console.log("Feedback closed");
-      }}
-    >
-    </cds-aichat-feedback>
+    <div style="padding: 1rem; max-width: 24rem;">
+      <cds-aichat-feedback
+        ?is-open=${args.isOpen}
+        ?is-readonly=${args.isReadonly}
+        title=${args.title}
+        body=${args.body}
+        text-area-placeholder=${args.placeholder}
+        secondary-label=${args.secondaryLabel}
+        primary-label=${args.primaryLabel}
+        .showTextArea=${args.showTextArea}
+        ?show-body=${args.showBody}
+        .categories=${positiveCategories}
+        disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy). Your feedback may be used to improve our services."
+        @feedback-submit=${(event) => {
+          const details = event.detail;
+          console.log("Feedback submitted:", details);
+          alert(
+            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+          );
+        }}
+        @feedback-close=${() => {
+          console.log("Feedback closed");
+        }}
+      >
+      </cds-aichat-feedback>
+    </div>
   `,
 };
 
@@ -197,58 +209,23 @@ export const ReadOnly = {
     isReadonly: true,
     title: "Your feedback",
     showTextArea: true,
-    showPrompt: false,
+    showBody: false,
   },
   render: (args) => html`
-    <cds-aichat-feedback
-      ?is-open=${args.isOpen}
-      ?is-readonly=${args.isReadonly}
-      title=${args.title}
-      .showTextArea=${args.showTextArea}
-      ?show-prompt=${args.showPrompt}
-      .categories=${negativeCategories}
-      .initialValues=${{
-        text: "The response was inaccurate and didn't address my question properly. It also included irrelevant information.",
-        selectedCategories: ["Inaccurate", "Not relevant"],
-      }}
-    >
-    </cds-aichat-feedback>
-  `,
-};
-
-export const WithoutTextArea = {
-  args: {
-    isOpen: true,
-    isReadonly: false,
-    title: "Quick feedback",
-    prompt: "Select all that apply",
-    cancelLabel: "Cancel",
-    submitLabel: "Submit",
-    showTextArea: false,
-    showPrompt: true,
-  },
-  render: (args) => html`
-    <cds-aichat-feedback
-      ?is-open=${args.isOpen}
-      ?is-readonly=${args.isReadonly}
-      title=${args.title}
-      prompt=${args.prompt}
-      cancel-label=${args.cancelLabel}
-      submit-label=${args.submitLabel}
-      .showTextArea=${args.showTextArea}
-      ?show-prompt=${args.showPrompt}
-      .categories=${positiveCategories}
-      @feedback-submit=${(event) => {
-        const details = event.detail;
-        console.log("Feedback submitted:", details);
-        alert(
-          `Feedback submitted!\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
-        );
-      }}
-      @feedback-close=${() => {
-        console.log("Feedback closed");
-      }}
-    >
-    </cds-aichat-feedback>
+    <div style="padding: 1rem; max-width: 24rem;">
+      <cds-aichat-feedback
+        ?is-open=${args.isOpen}
+        ?is-readonly=${args.isReadonly}
+        title=${args.title}
+        .showTextArea=${args.showTextArea}
+        ?show-body=${args.showBody}
+        .categories=${negativeCategories}
+        .initialValues=${{
+          text: "The response was inaccurate and didn't address my question properly. It also included irrelevant information.",
+          selectedCategories: ["Inaccurate", "Not relevant"],
+        }}
+      >
+      </cds-aichat-feedback>
+    </div>
   `,
 };

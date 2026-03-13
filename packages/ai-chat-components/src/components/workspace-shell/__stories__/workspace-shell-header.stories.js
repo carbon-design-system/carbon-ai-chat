@@ -26,15 +26,15 @@ export default {
           "Header section for the workspace shell, containing title, subtitle, description, and optional action buttons.",
       },
     },
+    controls: {
+      exclude: /^(?!descriptionType|showAction$).*/,
+    },
   },
   argTypes: {
-    titleText: {
-      control: "text",
-      description: "Title text for the header",
-    },
-    subTitleText: {
-      control: "text",
-      description: "Subtitle text for the header",
+    collapsible: {
+      control: "boolean",
+      description:
+        "Whether the header can be collapsed/expanded. When true, header starts collapsed and can be toggled. When false, header is always fully expanded. Useful when you have a lot of header content or when workspaces are used in small form factors.",
     },
     descriptionType: {
       control: {
@@ -66,6 +66,7 @@ export const Default = {
   args: {
     titleText: "Workspace Title",
     subTitleText: "Workspace subtitle",
+    collapsible: false,
     descriptionType: "none",
     showAction: false,
   },
@@ -73,7 +74,18 @@ export const Default = {
     <cds-aichat-workspace-shell-header
       title-text="${args.titleText}"
       subtitle-text="${args.subTitleText}"
+      ?collapsible=${args.collapsible}
     >
+      ${args.descriptionType !== "none"
+        ? getHeaderDescription(args.descriptionType)
+        : ""}
+      ${args.showAction
+        ? html`
+            <cds-button kind="tertiary" slot="header-action">
+              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+            </cds-button>
+          `
+        : ""}
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}
@@ -85,6 +97,7 @@ export const WithDescription = {
   args: {
     titleText: "Project Analysis",
     subTitleText: "Q4 2024 Performance Review",
+    collapsible: false,
     descriptionType: "basic",
     showAction: false,
   },
@@ -92,9 +105,17 @@ export const WithDescription = {
     <cds-aichat-workspace-shell-header
       title-text="${args.titleText}"
       subtitle-text="${args.subTitleText}"
+      ?collapsible=${args.collapsible}
     >
       ${args.descriptionType !== "none"
         ? getHeaderDescription(args.descriptionType)
+        : ""}
+      ${args.showAction
+        ? html`
+            <cds-button kind="tertiary" slot="header-action">
+              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+            </cds-button>
+          `
         : ""}
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
@@ -107,6 +128,7 @@ export const WithTags = {
   args: {
     titleText: "Development Plan",
     subTitleText: "Sprint 23 - Feature Implementation",
+    collapsible: false,
     descriptionType: "withTags",
     showAction: false,
   },
@@ -114,9 +136,17 @@ export const WithTags = {
     <cds-aichat-workspace-shell-header
       title-text="${args.titleText}"
       subtitle-text="${args.subTitleText}"
+      ?collapsible=${args.collapsible}
     >
       ${args.descriptionType !== "none"
         ? getHeaderDescription(args.descriptionType)
+        : ""}
+      ${args.showAction
+        ? html`
+            <cds-button kind="tertiary" slot="header-action">
+              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+            </cds-button>
+          `
         : ""}
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
@@ -129,6 +159,7 @@ export const WithAction = {
   args: {
     titleText: "Deployment Strategy",
     subTitleText: "Production Release v2.5.0",
+    collapsible: false,
     descriptionType: "basic",
     showAction: true,
   },
@@ -136,6 +167,7 @@ export const WithAction = {
     <cds-aichat-workspace-shell-header
       title-text="${args.titleText}"
       subtitle-text="${args.subTitleText}"
+      ?collapsible=${args.collapsible}
     >
       ${args.descriptionType !== "none"
         ? getHeaderDescription(args.descriptionType)
@@ -158,6 +190,7 @@ export const Complete = {
   args: {
     titleText: "Complete Header Example",
     subTitleText: "All features demonstrated",
+    collapsible: false,
     descriptionType: "withTags",
     showAction: true,
   },
@@ -165,6 +198,38 @@ export const Complete = {
     <cds-aichat-workspace-shell-header
       title-text="${args.titleText}"
       subtitle-text="${args.subTitleText}"
+      ?collapsible=${args.collapsible}
+    >
+      ${args.descriptionType !== "none"
+        ? getHeaderDescription(args.descriptionType)
+        : ""}
+      ${args.showAction
+        ? html`
+            <cds-button kind="tertiary" slot="header-action">
+              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+            </cds-button>
+          `
+        : ""}
+    </cds-aichat-workspace-shell-header>
+    <cds-aichat-workspace-shell-body>
+      ${getBodyContent("short")}
+    </cds-aichat-workspace-shell-body>
+  `,
+};
+
+export const Collapsible = {
+  args: {
+    titleText: "Collapsible Header",
+    subTitleText: "Click title to expand/collapse",
+    collapsible: true,
+    descriptionType: "basic",
+    showAction: true,
+  },
+  render: (args) => html`
+    <cds-aichat-workspace-shell-header
+      title-text="${args.titleText}"
+      subtitle-text="${args.subTitleText}"
+      ?collapsible=${args.collapsible}
     >
       ${args.descriptionType !== "none"
         ? getHeaderDescription(args.descriptionType)

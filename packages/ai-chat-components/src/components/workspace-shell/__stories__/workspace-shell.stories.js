@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -64,9 +64,10 @@ export default {
       control: {
         type: "select",
       },
-      options: {
-        "Basic text": "basic",
-        "With Tags": "withTags",
+      options: ["basic", "withTags"],
+      mapping: {
+        basic: "basic",
+        withTags: "withTags",
       },
       description: "Defines the type of description text in Header Component",
     },
@@ -74,13 +75,19 @@ export default {
       control: "boolean",
       description: "Toggles whether header actions are shown",
     },
+    autoCollapsibleHeader: {
+      control: "boolean",
+      description:
+        "Enable automatic header collapsible behavior based on available space. Note: This prop is currently experimental and is subject to future changes.",
+    },
     bodyContent: {
       control: {
         type: "select",
       },
-      options: {
-        "Short text": "short",
-        "Long text": "long",
+      options: ["short", "long"],
+      mapping: {
+        short: "short",
+        long: "long",
       },
       description: "Defines the content in Body Component",
     },
@@ -104,6 +111,7 @@ export default {
         "headerSubTitle",
         "headerDescription",
         "showHeaderAction",
+        "autoCollapsibleHeader",
         "bodyContent",
         "footerAction",
       ],
@@ -114,11 +122,10 @@ export default {
       <style>
         ${styles}
       </style>
-      <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
+      ${story()}
     `,
   ],
 };
-
 export const Default = {
   args: {
     toolbarTitle: "Title",
@@ -130,11 +137,14 @@ export const Default = {
     headerSubTitle: "Sub title",
     headerDescription: "withTags",
     showHeaderAction: true,
+    autoCollapsibleHeader: false,
     bodyContent: "short",
     footerAction: "Three buttons with one ghost",
   },
   render: (args) => {
-    return html`
+    return html` <cds-aichat-workspace-shell
+      ?auto-collapsible-header=${args.autoCollapsibleHeader}
+    >
       <cds-aichat-toolbar
         slot="toolbar"
         ?overflow=${args.toolbarOverflow}
@@ -156,7 +166,6 @@ export const Default = {
         .title="${args.notificationTitle}"
         .subtitle="${args.notificationSubTitle}"
         kind="warning"
-        low-contrast=""
         hide-close-button
       >
       </cds-inline-notification>
@@ -184,6 +193,6 @@ export const Default = {
         >
         </cds-aichat-workspace-shell-footer>
       `}
-    `;
+    </cds-aichat-workspace-shell>`;
   },
 };

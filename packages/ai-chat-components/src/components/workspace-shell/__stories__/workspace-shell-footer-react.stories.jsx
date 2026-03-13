@@ -7,6 +7,8 @@ import { action } from "storybook/actions";
 import { FooterActionList } from "./story-data";
 import "./story-styles.scss";
 
+const defaultBodyText = `This is sample content to demonstrate the footer positioning. The footer will be pushed to the bottom of the workspace shell. Shrink the workspace width below 671px to see the footer buttons stack vertically with primary actions appearing first.`;
+
 export default {
   title: "Components/Workspace shell/Footer",
   component: WorkspaceShellFooter,
@@ -19,11 +21,6 @@ export default {
     },
   },
   argTypes: {
-    actions: {
-      control: "object",
-      description:
-        "Array of action button configurations. Each action can have: label, kind, disabled, icon, and payload properties.",
-    },
     actionPreset: {
       control: {
         type: "select",
@@ -41,41 +38,13 @@ export default {
 
 export const Default = {
   args: {
-    actionPreset: "Single primary button",
-    onFooterClicked: (data) => action("footer-action")(data),
-  },
-  render: ({ actionPreset, onFooterClicked }) => (
-    <WorkspaceShell>
-      <WorkspaceShellBody>
-        <div className="story__body-content">
-          <p>
-            This is sample content to demonstrate the footer positioning. The
-            footer will be pushed to the bottom of the workspace shell.
-          </p>
-        </div>
-      </WorkspaceShellBody>
-      <WorkspaceShellFooter
-        actions={FooterActionList[actionPreset]}
-        onFooterClicked={onFooterClicked}
-      />
-    </WorkspaceShell>
-  ),
-};
-
-export const TwoButtons = {
-  args: {
     actionPreset: "Two buttons",
     onFooterClicked: (data) => action("footer-action")(data),
   },
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
       <WorkspaceShellBody>
-        <div className="story__body-content">
-          <p>
-            This is sample content to demonstrate the footer positioning. The
-            footer will be pushed to the bottom of the workspace shell.
-          </p>
-        </div>
+        <p>{defaultBodyText}</p>
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         actions={FooterActionList[actionPreset]}
@@ -93,12 +62,7 @@ export const ThreeButtons = {
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
       <WorkspaceShellBody>
-        <div className="story__body-content">
-          <p>
-            This is sample content to demonstrate the footer positioning. The
-            footer will be pushed to the bottom of the workspace shell.
-          </p>
-        </div>
+        <p>{defaultBodyText}</p>
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         actions={FooterActionList[actionPreset]}
@@ -116,12 +80,7 @@ export const WithDisabled = {
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
       <WorkspaceShellBody>
-        <div className="story__body-content">
-          <p>
-            This is sample content to demonstrate the footer positioning. The
-            footer will be pushed to the bottom of the workspace shell.
-          </p>
-        </div>
+        <p>{defaultBodyText}</p>
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         actions={FooterActionList[actionPreset]}
@@ -139,46 +98,7 @@ export const DangerActions = {
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
       <WorkspaceShellBody>
-        <div className="story__body-content">
-          <p>
-            This is sample content to demonstrate the footer positioning. The
-            footer will be pushed to the bottom of the workspace shell.
-          </p>
-        </div>
-      </WorkspaceShellBody>
-      <WorkspaceShellFooter
-        actions={FooterActionList[actionPreset]}
-        onFooterClicked={onFooterClicked}
-      />
-    </WorkspaceShell>
-  ),
-};
-
-export const Stacked = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Footer automatically stacks buttons vertically on narrow viewports (< 671px). Resize the viewport to see the responsive behavior.",
-      },
-    },
-    viewport: {
-      defaultViewport: "mobile1",
-    },
-  },
-  args: {
-    actionPreset: "Three buttons with one ghost",
-    onFooterClicked: (data) => action("footer-action")(data),
-  },
-  render: ({ actionPreset, onFooterClicked }) => (
-    <WorkspaceShell>
-      <WorkspaceShellBody>
-        <div className="story__body-content">
-          <p>
-            This is sample content to demonstrate the footer positioning. The
-            footer will be pushed to the bottom of the workspace shell.
-          </p>
-        </div>
+        <p>{defaultBodyText}</p>
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         actions={FooterActionList[actionPreset]}

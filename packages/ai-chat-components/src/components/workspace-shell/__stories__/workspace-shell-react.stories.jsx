@@ -48,9 +48,10 @@ export default {
       control: {
         type: "select",
       },
-      options: {
-        "Basic text": "basic",
-        "With Tags": "withTags",
+      options: ["basic", "withTags"],
+      mapping: {
+        basic: "basic",
+        withTags: "withTags",
       },
       description: "Defines the type of description text in Header Component",
     },
@@ -58,13 +59,18 @@ export default {
       control: "boolean",
       description: "Toggles whether header actions are shown",
     },
+    autoCollapsibleHeader: {
+      control: "boolean",
+      description: "Enable automatic header collapsible behavior based on available space. Note: This prop is currently experimental and is subject to future changes.",
+    },
     bodyContent: {
       control: {
         type: "select",
       },
-      options: {
-        "Short text": "short",
-        "Long text": "long",
+      options: ["short", "long"],
+      mapping: {
+        short: "short",
+        long: "long",
       },
       description: "Defines the content in Body Component",
     },
@@ -83,10 +89,12 @@ export const Default = {
     toolbarAction: "Advanced list",
     toolbarOverflow: true,
     notificationTitle: "Title",
+    notificationSubTitle: "Message",
     headerTitle: "Title",
     headerSubTitle: "Sub title",
     headerDescription: "withTags",
     showHeaderAction: true,
+    autoCollapsibleHeader: false,
     bodyContent: "short",
     footerAction: "Three buttons with one ghost",
   },
@@ -95,15 +103,17 @@ export const Default = {
     toolbarAction,
     toolbarOverflow,
     notificationTitle,
+    notificationSubTitle,
     headerTitle,
     headerSubTitle,
     headerDescription,
     showHeaderAction,
+    autoCollapsibleHeader,
     bodyContent,
     footerAction,
   }) => {
     return (
-      <WorkspaceShell>
+      <WorkspaceShell autoCollapsibleHeader={autoCollapsibleHeader}>
         <Toolbar
           slot="toolbar"
           actions={toolbarAction}
@@ -129,6 +139,7 @@ export const Default = {
         <InlineNotification
           slot="notification"
           title={notificationTitle}
+          subtitle={notificationSubTitle}
           kind="warning"
           hideCloseButton
         ></InlineNotification>
@@ -154,3 +165,4 @@ export const Default = {
     );
   },
 };
+

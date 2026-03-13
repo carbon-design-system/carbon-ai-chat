@@ -74,9 +74,9 @@ export function getBodyContent(type) {
             aliquam congue vitae ut elit.
           </p>
           <br />
-          <cds-aichat-code-snippet-card language="typescript" highlight>
+          <cds-aichat-code-snippet language="typescript" highlight>
             ${multilineCode}
-          </cds-aichat-code-snippet-card>
+          </cds-aichat-code-snippet>
           <br />
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur

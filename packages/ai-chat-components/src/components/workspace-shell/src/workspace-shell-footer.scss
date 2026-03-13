@@ -7,7 +7,6 @@
  *  @license
  */
 
-$css--plex: true !default;
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/theme";
 @use "../../../globals/scss/vars" as *;
@@ -15,33 +14,34 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/breakpoint" as *;
 
 @include rounded-modifiers;
-:host(#{$prefix}-workspace-shell-footer) {
-  --#{$prefix}-rounded-modifier-radius: 0.5rem;
+@include stacked-modifiers;
 
+:host(#{$prefix}-workspace-shell-footer) {
   display: grid;
   align-items: stretch;
   border-block-start: solid rem(1px) theme.$border-subtle-00;
+  container-type: inline-size;
   margin-block-start: auto;
-  @include breakpoint-down("md") {
-    grid-auto-flow: row;
-    grid-template-columns: 1fr;
-  }
 }
 
 // Fixed layout when class is present
 :host(.#{$prefix}-workspace-shell-footer__three-buttons) {
   grid-template-columns: 50% 25% 25%;
-  @include breakpoint-down("md") {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 // Flexible layout when class is absent
 :host(:not(.#{$prefix}-workspace-shell-footer__three-buttons)) {
   grid-template-columns: repeat(auto-fit, minmax(80px, auto));
-  @include breakpoint-down("md") {
+}
+
+/* Container Query — stacked layout for narrow widths */
+@container (max-width: 671px) {
+  :host(#{$prefix}-workspace-shell-footer) {
     grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+
+  :host(.#{$prefix}-workspace-shell-footer__three-buttons) {
     grid-template-columns: repeat(3, 1fr);
   }
 }

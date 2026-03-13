@@ -7,12 +7,23 @@
  *  @license
  */
 
-import { LitElement, PropertyValues } from "lit";
+import "../../markdown/index.js";
+import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/chat-button/index.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
+import "@carbon/web-components/es/components/layer/index.js";
+import "@carbon/web-components/es/components/textarea/index.js";
+
+import { html, LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
-import { feedbackElementTemplate } from "./feedback.template.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./feedback.scss?lit";
+
+// The maximum number of characters the user is allowed to type into the text area.
+const MAX_TEXT_COUNT = 1000;
 
 /**
  * The component for displaying a panel requesting feedback from a user.
@@ -20,7 +31,7 @@ import styles from "./feedback.scss?lit";
  */
 @carbonElement(`${prefix}-feedback`)
 class CDSAIChatFeedback extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * The CSS class of this panel.
@@ -49,25 +60,25 @@ class CDSAIChatFeedback extends LitElement {
   /**
    * The initial values to display in the feedback.
    */
-  @property({ type: Object, attribute: "initial-values", reflect: true })
+  @property({ type: Object, attribute: false, reflect: true })
   initialValues?: FeedbackInitialValues;
 
   /**
    * The title to display in the popup. A default value will be used if no value is provided here.
    */
   @property({ type: String, attribute: "title", reflect: true })
-  title = "";
+  title = "Provide additional feedback";
 
   /**
-   * The prompt text to display to the user. A default value will be used if no value is provided here.
+   * The body text to display to the user. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "prompt", reflect: true })
-  prompt = "";
+  @property({ type: String, attribute: "body", reflect: true })
+  body = "What do you think of this response?";
 
   /**
    * The list of categories to show.
    */
-  @property({ type: Array, attribute: "categories", reflect: true })
+  @property({ type: Array, attribute: false, reflect: true })
   categories?: string[];
 
   /**
@@ -81,31 +92,37 @@ class CDSAIChatFeedback extends LitElement {
    * The placeholder to show in the text area. A default value will be used if no value is provided here.
    */
   @property({ type: String, attribute: "text-area-placeholder", reflect: true })
-  placeholder?: string;
+  placeholder = "Provide additional feedback...";
 
   /**
-   * The label for the cancel button. A default value will be used if no value is provided here.
+   * The label for the secondary button. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "cancel-label", reflect: true })
-  cancelLabel?: string;
+  @property({ type: String, attribute: "secondary-label", reflect: true })
+  secondaryLabel?: string;
 
   /**
-   * The label for the submit button. A default value will be used if no value is provided here.
+   * The label for the primary button. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "submit-label", reflect: true })
-  submitLabel?: string;
+  @property({ type: String, attribute: "primary-label", reflect: true })
+  primaryLabel?: string;
+
+  /**
+   * The accessible label for the categories listbox. This label is used by screen readers to describe the purpose of the category selection list.
+   */
+  @property({ type: String, attribute: "categories-label", reflect: true })
+  categoriesLabel?: string;
 
   /**
    * Indicates whether the text area should be shown.
    */
   @property({ type: Boolean, attribute: "show-text-area", reflect: true })
-  showTextArea = true;
+  showTextArea = false;
 
   /**
-   * Indicates whether the prompt line should be shown.
+   * Indicates whether the body line should be shown.
    */
-  @property({ type: Boolean, attribute: "show-prompt", reflect: true })
-  showPrompt = true;
+  @property({ type: Boolean, attribute: "show-body", reflect: true })
+  showBody = false;
 
   /**
    * Internal saved text values for feedback.
@@ -205,7 +222,89 @@ class CDSAIChatFeedback extends LitElement {
   }
 
   render() {
-    return feedbackElementTemplate(this);
+    const containerClasses = {
+      [`${prefix}--container`]: true,
+      [`${prefix}--is-closed`]: !this.isOpen,
+    };
+
+    return html`<div class="${classMap(containerClasses)}">
+      <div class="${prefix}--title-row">
+        <div class="${prefix}--title">${this.title}</div>
+      </div>
+      ${this.showBody
+        ? html`<div class="${prefix}--prompt">${this.body}</div>`
+        : ""}
+      ${this.categories?.length
+        ? html`<div class="${prefix}--categories">
+            <div
+              class="${prefix}--tag-list-container"
+              role="group"
+              aria-label="${this.categoriesLabel || "Feedback categories"}"
+            >
+              ${this.categories.map(
+                (value) =>
+                  html`<cds-chat-button
+                    class="${prefix}--tag-list-button"
+                    kind="primary"
+                    size="sm"
+                    type="button"
+                    is-quick-action
+                    aria-pressed="${this._selectedCategories.has(value)}"
+                    ?is-selected=${this._selectedCategories.has(value)}
+                    data-content="${value}"
+                    ?disabled=${this.isReadonly}
+                    @click=${this._handleCategoryClick}
+                  >
+                    ${value}
+                  </cds-chat-button>`,
+              )}
+            </div>
+          </div>`
+        : ""}
+      ${this.showTextArea
+        ? html`<div class="${prefix}--feedback-text">
+            <cds-textarea
+              id="${this.id}-text-area"
+              value="${this._textInput}"
+              class="${prefix}--feedback-text-area"
+              ?disabled=${this.isReadonly}
+              placeholder="${this.placeholder}"
+              rows="3"
+              max-count="${MAX_TEXT_COUNT}"
+              @input=${this._handleTextInput}
+            ></cds-textarea>
+          </div>`
+        : ""}
+      ${this.disclaimer
+        ? html`<div class="${prefix}--disclaimer">
+            <cds-aichat-markdown
+              .markdown=${this.disclaimer}
+            ></cds-aichat-markdown>
+          </div>`
+        : ""}
+      <div class="${prefix}--buttons">
+        <div class="${prefix}--cancel" data-rounded="bottom-left">
+          <cds-button
+            ?disabled=${this.isReadonly}
+            size="lg"
+            kind="secondary"
+            @click=${this._handleCancel}
+          >
+            ${this.secondaryLabel || "Cancel"}
+          </cds-button>
+        </div>
+        <div class="${prefix}--submit" data-rounded="bottom-right">
+          <cds-button
+            ?disabled=${this.isReadonly}
+            size="lg"
+            kind="primary"
+            @click=${this._handleSubmit}
+          >
+            ${this.primaryLabel || "Submit"}
+          </cds-button>
+        </div>
+      </div>
+    </div>`;
   }
 }
 

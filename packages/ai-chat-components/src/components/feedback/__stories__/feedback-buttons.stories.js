@@ -271,22 +271,6 @@ export default {
       control: "boolean",
       description: "Whether the negative button is disabled",
     },
-    hasPositiveDetails: {
-      control: "boolean",
-      description: "Whether positive button opens a details panel",
-    },
-    hasNegativeDetails: {
-      control: "boolean",
-      description: "Whether negative button opens a details panel",
-    },
-    isPositiveOpen: {
-      control: "boolean",
-      description: "Whether the positive details panel is open",
-    },
-    isNegativeOpen: {
-      control: "boolean",
-      description: "Whether the negative details panel is open",
-    },
     positiveLabel: {
       control: "text",
       description: "Accessibility label for positive button",
@@ -295,9 +279,31 @@ export default {
       control: "text",
       description: "Accessibility label for negative button",
     },
+    // Panel-related properties - hidden by default, shown only in WithDetailsPanel story
+    hasPositiveDetails: {
+      control: "boolean",
+      description: "Whether positive button opens a details panel",
+      table: { disable: true },
+    },
+    hasNegativeDetails: {
+      control: "boolean",
+      description: "Whether negative button opens a details panel",
+      table: { disable: true },
+    },
+    isPositiveOpen: {
+      control: "boolean",
+      description: "Whether the positive details panel is open",
+      table: { disable: true },
+    },
+    isNegativeOpen: {
+      control: "boolean",
+      description: "Whether the negative details panel is open",
+      table: { disable: true },
+    },
     panelID: {
       control: "text",
       description: "ID of the associated feedback panel",
+      table: { disable: true },
     },
   },
 };
@@ -308,10 +314,6 @@ export const Default = {
     isNegativeSelected: false,
     isPositiveDisabled: false,
     isNegativeDisabled: false,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
     positiveLabel: "Thumbs up",
     negativeLabel: "Thumbs down",
   },
@@ -325,93 +327,12 @@ export const Default = {
         ?is-negative-selected=${args.isNegativeSelected}
         ?is-positive-disabled=${args.isPositiveDisabled}
         ?is-negative-disabled=${args.isNegativeDisabled}
-        ?has-positive-details=${args.hasPositiveDetails}
-        ?has-negative-details=${args.hasNegativeDetails}
-        ?is-positive-open=${args.isPositiveOpen}
-        ?is-negative-open=${args.isNegativeOpen}
         positive-label=${args.positiveLabel}
         negative-label=${args.negativeLabel}
-        panel-id=${args.panelID}
         @feedback-buttons-click=${(event) => {
           const { isPositive } = event.detail;
           console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
           alert(`${isPositive ? "Positive" : "Negative"} feedback recorded!`);
-        }}
-      >
-      </cds-aichat-feedback-buttons>
-    </div>
-  `,
-};
-
-export const PositiveSelected = {
-  args: {
-    isPositiveSelected: true,
-    isNegativeSelected: false,
-    isPositiveDisabled: false,
-    isNegativeDisabled: false,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-  },
-  render: (args) => html`
-    <div style="padding: 2rem;">
-      <p style="margin-bottom: 1rem;">Positive feedback has been provided.</p>
-      <cds-aichat-feedback-buttons
-        ?is-positive-selected=${args.isPositiveSelected}
-        ?is-negative-selected=${args.isNegativeSelected}
-        ?is-positive-disabled=${args.isPositiveDisabled}
-        ?is-negative-disabled=${args.isNegativeDisabled}
-        ?has-positive-details=${args.hasPositiveDetails}
-        ?has-negative-details=${args.hasNegativeDetails}
-        ?is-positive-open=${args.isPositiveOpen}
-        ?is-negative-open=${args.isNegativeOpen}
-        positive-label=${args.positiveLabel}
-        negative-label=${args.negativeLabel}
-        panel-id=${args.panelID}
-        @feedback-buttons-click=${(event) => {
-          const { isPositive } = event.detail;
-          console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
-        }}
-      >
-      </cds-aichat-feedback-buttons>
-    </div>
-  `,
-};
-
-export const NegativeSelected = {
-  args: {
-    isPositiveSelected: false,
-    isNegativeSelected: true,
-    isPositiveDisabled: false,
-    isNegativeDisabled: false,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-  },
-  render: (args) => html`
-    <div style="padding: 2rem;">
-      <p style="margin-bottom: 1rem;">Negative feedback has been provided.</p>
-      <cds-aichat-feedback-buttons
-        ?is-positive-selected=${args.isPositiveSelected}
-        ?is-negative-selected=${args.isNegativeSelected}
-        ?is-positive-disabled=${args.isPositiveDisabled}
-        ?is-negative-disabled=${args.isNegativeDisabled}
-        ?has-positive-details=${args.hasPositiveDetails}
-        ?has-negative-details=${args.hasNegativeDetails}
-        ?is-positive-open=${args.isPositiveOpen}
-        ?is-negative-open=${args.isNegativeOpen}
-        positive-label=${args.positiveLabel}
-        negative-label=${args.negativeLabel}
-        panel-id=${args.panelID}
-        @feedback-buttons-click=${(event) => {
-          const { isPositive } = event.detail;
-          console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
         }}
       >
       </cds-aichat-feedback-buttons>
@@ -424,78 +345,39 @@ export const WithDetailsPanel = {
     positiveLabel: "Thumbs up",
     negativeLabel: "Thumbs down",
     panelID: "feedback-panel-example",
+    hasPositiveDetails: true,
+    hasNegativeDetails: true,
+  },
+  argTypes: {
+    // Show panel-related properties in the table but make them read-only
+    hasPositiveDetails: {
+      control: "boolean",
+      description: "Whether positive button opens a details panel",
+      table: { disable: false },
+    },
+    hasNegativeDetails: {
+      control: "boolean",
+      description: "Whether negative button opens a details panel",
+      table: { disable: false },
+    },
+    panelID: {
+      control: false,
+      description: "ID of the associated feedback panel",
+      table: { disable: false },
+    },
   },
   render: (args) => html`
     <div style="padding: 2rem;">
       <p style="margin-bottom: 1rem;">
-        Negative feedback opens a details panel for more information.
+        Both buttons open details panels for collecting more information. Try
+        clicking the thumbs up or thumbs down buttons to provide feedback.
       </p>
       <cds-aichat-feedback-buttons-demo
         panel-id=${args.panelID}
         positive-label=${args.positiveLabel}
         negative-label=${args.negativeLabel}
-        has-negative-details
-      ></cds-aichat-feedback-buttons-demo>
-    </div>
-  `,
-};
-
-export const Disabled = {
-  args: {
-    isPositiveSelected: true,
-    isNegativeSelected: false,
-    isPositiveDisabled: true,
-    isNegativeDisabled: true,
-    hasPositiveDetails: false,
-    hasNegativeDetails: false,
-    isPositiveOpen: false,
-    isNegativeOpen: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-  },
-  render: (args) => html`
-    <div style="padding: 2rem;">
-      <p style="margin-bottom: 1rem;">
-        Feedback has been submitted and cannot be changed.
-      </p>
-      <cds-aichat-feedback-buttons
-        ?is-positive-selected=${args.isPositiveSelected}
-        ?is-negative-selected=${args.isNegativeSelected}
-        ?is-positive-disabled=${args.isPositiveDisabled}
-        ?is-negative-disabled=${args.isNegativeDisabled}
         ?has-positive-details=${args.hasPositiveDetails}
         ?has-negative-details=${args.hasNegativeDetails}
-        ?is-positive-open=${args.isPositiveOpen}
-        ?is-negative-open=${args.isNegativeOpen}
-        positive-label=${args.positiveLabel}
-        negative-label=${args.negativeLabel}
-        panel-id=${args.panelID}
-        @feedback-buttons-click=${() => {
-          console.log("Buttons are disabled, should not fire");
-        }}
-      >
-      </cds-aichat-feedback-buttons>
-    </div>
-  `,
-};
-
-export const BothDetails = {
-  args: {
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
-    panelID: "feedback-panel-both",
-  },
-  render: (args) => html`
-    <div style="padding: 2rem;">
-      <p style="margin-bottom: 1rem;">
-        Both buttons open details panels for collecting more information.
-      </p>
-      <cds-aichat-feedback-buttons-demo
-        panel-id=${args.panelID}
-        positive-label=${args.positiveLabel}
-        negative-label=${args.negativeLabel}
-        has-positive-details
-        has-negative-details
       ></cds-aichat-feedback-buttons-demo>
     </div>
   `,

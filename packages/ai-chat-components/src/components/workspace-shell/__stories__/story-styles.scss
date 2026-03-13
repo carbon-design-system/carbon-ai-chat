@@ -10,3 +10,13 @@
 #main-content {
   block-size: 100vh;
 }
+
+.tags {
+  display: flex;
+  gap: 4px;
+}
+
+// Ensure workspace shell has defined height for proper grid layout in storybook
+cds-aichat-workspace-shell {
+  block-size: 600px;
+}

@@ -7,10 +7,7 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
@@ -18,7 +15,6 @@ $css--plex: true !default;
 @use "@carbon/styles/scss/breakpoint" as *;
 
 :host(#{$prefix}-workspace-shell-header) {
-  overflow: auto;
   padding: rem(24px) rem(32px);
   border-block-end: solid rem(1px) theme.$chat-bubble-border;
   color: theme.$text-secondary;
@@ -41,8 +37,17 @@ $css--plex: true !default;
 
 .#{$prefix}-workspace-shell {
   &__header {
-    &-details:open .#{$prefix}-workspace-shell__header-chevron {
-      transform: rotate(180deg);
+    &-details {
+      cursor: pointer;
+
+      // Only add overflow when details is open
+      &:open {
+        overflow: auto;
+
+        .#{$prefix}-workspace-shell__header-chevron {
+          transform: rotate(180deg);
+        }
+      }
     }
 
     &-content {

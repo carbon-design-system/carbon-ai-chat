@@ -52,7 +52,11 @@ describe("cds-aichat-shell", function () {
       );
       expect(el.aiEnabled).to.be.false;
       expect(el.showFrame).to.be.false;
-      expect(el.roundedCorners).to.be.false;
+      expect(el.cornerAll).to.equal("square");
+      expect(el.cornerStartStart).to.be.undefined;
+      expect(el.cornerStartEnd).to.be.undefined;
+      expect(el.cornerEndStart).to.be.undefined;
+      expect(el.cornerEndEnd).to.be.undefined;
       expect(el.showHistory).to.be.false;
       expect(el.showWorkspace).to.be.false;
       expect(el.workspaceLocation).to.equal("start");
@@ -86,12 +90,44 @@ describe("cds-aichat-shell", function () {
       expect(el.hasAttribute("show-frame")).to.be.true;
     });
 
-    it("should reflect rounded-corners attribute", async () => {
+    it("should reflect corner-all attribute", async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
+        html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
       );
-      expect(el.roundedCorners).to.be.true;
-      expect(el.hasAttribute("rounded-corners")).to.be.true;
+      expect(el.cornerAll).to.equal("round");
+      expect(el.getAttribute("corner-all")).to.equal("round");
+    });
+
+    it("should reflect corner-start-start attribute", async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell corner-start-start="round"></cds-aichat-shell>`,
+      );
+      expect(el.cornerStartStart).to.equal("round");
+      expect(el.getAttribute("corner-start-start")).to.equal("round");
+    });
+
+    it("should reflect corner-start-end attribute", async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell corner-start-end="round"></cds-aichat-shell>`,
+      );
+      expect(el.cornerStartEnd).to.equal("round");
+      expect(el.getAttribute("corner-start-end")).to.equal("round");
+    });
+
+    it("should reflect corner-end-start attribute", async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell corner-end-start="round"></cds-aichat-shell>`,
+      );
+      expect(el.cornerEndStart).to.equal("round");
+      expect(el.getAttribute("corner-end-start")).to.equal("round");
+    });
+
+    it("should reflect corner-end-end attribute", async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell corner-end-end="round"></cds-aichat-shell>`,
+      );
+      expect(el.cornerEndEnd).to.equal("round");
+      expect(el.getAttribute("corner-end-end")).to.equal("round");
     });
 
     it("should reflect show-history attribute", async () => {
@@ -177,20 +213,28 @@ describe("cds-aichat-shell", function () {
       expect(shell!.classList.contains("frameless")).to.be.false;
     });
 
-    it("should apply rounded class when roundedCorners is true", async () => {
+    it("should apply rounded class when corner-all is round", async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
+        html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
       expect(shell!.classList.contains("rounded")).to.be.true;
     });
 
-    it("should not apply rounded class when roundedCorners is false", async () => {
+    it("should not apply rounded class when all corners are square", async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell></cds-aichat-shell>`,
+        html`<cds-aichat-shell corner-all="square"></cds-aichat-shell>`,
       );
       const shell = el.shadowRoot!.querySelector(".shell");
       expect(shell!.classList.contains("rounded")).to.be.false;
+    });
+
+    it("should apply rounded class when any individual corner is round", async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell corner-start-start="round"></cds-aichat-shell>`,
+      );
+      const shell = el.shadowRoot!.querySelector(".shell");
+      expect(shell!.classList.contains("rounded")).to.be.true;
     });
 
     it("should apply has-header-content class when header slot has content", async () => {
@@ -358,27 +402,35 @@ describe("cds-aichat-shell", function () {
   });
 
   // ========== COMPREHENSIVE ROUNDED CORNERS TESTS ==========
-  describe("Rounded Corners - Critical Functionality", () => {
+  describe("Rounded Corners - Per-Corner Control", () => {
     describe("Base Rounded Corners Behavior", () => {
-      it("should apply rounded class to shell when roundedCorners is true", async () => {
+      it("should apply rounded class when corner-all is round", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
+          html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
         );
         const shell = el.shadowRoot!.querySelector(".shell");
         expect(shell!.classList.contains("rounded")).to.be.true;
       });
 
-      it("should not apply rounded corners when roundedCorners is false", async () => {
+      it("should not apply rounded class when corner-all is square", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell></cds-aichat-shell>`,
+          html`<cds-aichat-shell corner-all="square"></cds-aichat-shell>`,
         );
         const shell = el.shadowRoot!.querySelector(".shell");
         expect(shell!.classList.contains("rounded")).to.be.false;
       });
 
-      it("should not apply rounded corners when frameless", async () => {
+      it("should apply rounded class when any individual corner is round", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
+          html`<cds-aichat-shell corner-end-end="round"></cds-aichat-shell>`,
+        );
+        const shell = el.shadowRoot!.querySelector(".shell");
+        expect(shell!.classList.contains("rounded")).to.be.true;
+      });
+
+      it("should work with frameless mode", async () => {
+        const el = await fixture<CDSAIChatShell>(
+          html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
         );
         const shell = el.shadowRoot!.querySelector(".shell");
         // Frameless is default (showFrame=false), so rounded should still be applied
@@ -387,10 +439,132 @@ describe("cds-aichat-shell", function () {
       });
     });
 
-    describe("Header Rounded Corners", () => {
+    describe("Per-Corner CSS Custom Properties", () => {
+      it("should set CSS custom properties for all corners when corner-all is round", async () => {
+        const el = await fixture<CDSAIChatShell>(
+          html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
+        );
+        await el.updateComplete;
+        const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-start-base",
+          ),
+        ).to.equal("0.5rem");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-end-base",
+          ),
+        ).to.equal("0.5rem");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-start-base",
+          ),
+        ).to.equal("0.5rem");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-end-base",
+          ),
+        ).to.equal("0.5rem");
+      });
+
+      it("should set CSS custom properties to 0 when corner-all is square", async () => {
+        const el = await fixture<CDSAIChatShell>(
+          html`<cds-aichat-shell corner-all="square"></cds-aichat-shell>`,
+        );
+        await el.updateComplete;
+        const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-start-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-end-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-start-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-end-base",
+          ),
+        ).to.equal("0");
+      });
+
+      it("should override corner-all with individual corner attributes", async () => {
+        const el = await fixture<CDSAIChatShell>(
+          html`<cds-aichat-shell
+            corner-all="square"
+            corner-start-start="round"
+          ></cds-aichat-shell>`,
+        );
+        await el.updateComplete;
+        const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-start-base",
+          ),
+        ).to.equal("0.5rem");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-end-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-start-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-end-base",
+          ),
+        ).to.equal("0");
+      });
+
+      it("should support mixed corner configurations", async () => {
+        const el = await fixture<CDSAIChatShell>(
+          html`<cds-aichat-shell
+            corner-start-start="round"
+            corner-start-end="square"
+            corner-end-start="square"
+            corner-end-end="round"
+          ></cds-aichat-shell>`,
+        );
+        await el.updateComplete;
+        const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-start-base",
+          ),
+        ).to.equal("0.5rem");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-start-end-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-start-base",
+          ),
+        ).to.equal("0");
+        expect(
+          shell!.style.getPropertyValue(
+            "--cds-aichat-border-radius-end-end-base",
+          ),
+        ).to.equal("0.5rem");
+      });
+    });
+
+    describe("Slot Content Detection", () => {
       it("should apply has-header-content class when header has content", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
+          html`<cds-aichat-shell corner-all="round">
             <div slot="header">Header</div>
           </cds-aichat-shell>`,
         );
@@ -401,7 +575,7 @@ describe("cds-aichat-shell", function () {
 
       it("should detect header content with text nodes", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
+          html`<cds-aichat-shell corner-all="round">
             <span slot="header">Text content</span>
           </cds-aichat-shell>`,
         );
@@ -410,72 +584,9 @@ describe("cds-aichat-shell", function () {
         expect(shell!.classList.contains("has-header-content")).to.be.true;
       });
 
-      it("should apply has-content class to header slot wrapper", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="header">Header</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const headerWrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="header"]',
-        );
-        expect(headerWrapper!.classList.contains("has-content")).to.be.true;
-      });
-
-      it("should not apply has-content class when header is empty", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const headerWrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="header"]',
-        );
-        expect(headerWrapper!.classList.contains("has-content")).to.be.false;
-      });
-    });
-
-    describe("Header-After Rounded Corners", () => {
-      it("should apply has-content class to header-after when it has content", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="header-after">Header After</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const wrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="header-after"]',
-        );
-        expect(wrapper!.classList.contains("has-content")).to.be.true;
-      });
-
-      it("should prioritize header over header-after for top corners", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="header">Header</div>
-            <div slot="header-after">Header After</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("has-header-content")).to.be.true;
-        // Both should have has-content class
-        const headerWrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="header"]',
-        );
-        const headerAfterWrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="header-after"]',
-        );
-        expect(headerWrapper!.classList.contains("has-content")).to.be.true;
-        expect(headerAfterWrapper!.classList.contains("has-content")).to.be
-          .true;
-      });
-    });
-
-    describe("Footer Rounded Corners", () => {
       it("should apply has-footer-content class when footer has content", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
+          html`<cds-aichat-shell corner-all="round">
             <div slot="footer">Footer</div>
           </cds-aichat-shell>`,
         );
@@ -484,229 +595,20 @@ describe("cds-aichat-shell", function () {
         expect(shell!.classList.contains("has-footer-content")).to.be.true;
       });
 
-      it("should apply has-content class to footer slot wrapper", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="footer">Footer</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const footerWrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="footer"]',
-        );
-        expect(footerWrapper!.classList.contains("has-content")).to.be.true;
-      });
-    });
-
-    describe("Input Slots Rounded Corners Priority", () => {
-      it("should detect input-after content", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="input-after">Input After</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const wrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="input-after"]',
-        );
-        expect(wrapper!.classList.contains("has-content")).to.be.true;
-      });
-
-      it("should detect input content", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="input">Input</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const wrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="input"]',
-        );
-        expect(wrapper!.classList.contains("has-content")).to.be.true;
-      });
-
-      it("should detect input-before content", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="input-before">Input Before</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const wrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="input-before"]',
-        );
-        expect(wrapper!.classList.contains("has-content")).to.be.true;
-      });
-
-      it("should handle all input slots with content simultaneously", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="input-before">Input Before</div>
-            <div slot="input">Input</div>
-            <div slot="input-after">Input After</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const inputBefore = el.shadowRoot!.querySelector(
-          '[data-panel-slot="input-before"]',
-        );
-        const input = el.shadowRoot!.querySelector('[data-panel-slot="input"]');
-        const inputAfter = el.shadowRoot!.querySelector(
-          '[data-panel-slot="input-after"]',
-        );
-        expect(inputBefore!.classList.contains("has-content")).to.be.true;
-        expect(input!.classList.contains("has-content")).to.be.true;
-        expect(inputAfter!.classList.contains("has-content")).to.be.true;
-      });
-    });
-
-    describe("Messages Slots Rounded Corners", () => {
-      it("should always consider messages slot as having content", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const wrapper = el.shadowRoot!.querySelector(
-          '[data-panel-slot="messages"]',
-        );
-        // Messages slot always has has-content class per the component logic
-        expect(wrapper!.classList.contains("has-content")).to.be.true;
-      });
-    });
-
-    describe("Complex Rounded Corners Scenarios", () => {
-      it("should handle header + footer with rounded corners", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="header">Header</div>
-            <div slot="footer">Footer</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("has-header-content")).to.be.true;
-        expect(shell!.classList.contains("has-footer-content")).to.be.true;
-        expect(shell!.classList.contains("rounded")).to.be.true;
-      });
-
-      it("should handle all slots with content", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <div slot="header">Header</div>
-            <div slot="header-after">Header After</div>
-            <div slot="messages">Messages</div>
-            <div slot="input-before">Input Before</div>
-            <div slot="input">Input</div>
-            <div slot="input-after">Input After</div>
-            <div slot="footer">Footer</div>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("rounded")).to.be.true;
-        expect(shell!.classList.contains("has-header-content")).to.be.true;
-        expect(shell!.classList.contains("has-footer-content")).to.be.true;
-
-        // Verify all slot wrappers have has-content class
-        const slots = [
-          "header",
-          "header-after",
-          "messages",
-          "input-before",
-          "input",
-          "input-after",
-          "footer",
-        ];
-        slots.forEach((slotName) => {
-          const wrapper = el.shadowRoot!.querySelector(
-            `[data-panel-slot="${slotName}"]`,
-          );
-          expect(
-            wrapper!.classList.contains("has-content"),
-            `${slotName} should have has-content class`,
-          ).to.be.true;
-        });
-      });
-
-      it("should handle dynamic slot content changes", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-
-        // Initially no header content
-        let shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("has-header-content")).to.be.false;
-
-        // Add header content dynamically
-        const headerDiv = document.createElement("div");
-        headerDiv.setAttribute("slot", "header");
-        headerDiv.textContent = "Dynamic Header";
-        el.appendChild(headerDiv);
-
-        // Wait for slotchange event to be processed
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        await el.updateComplete;
-
-        // Should now have header content
-        shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("has-header-content")).to.be.true;
-      });
-
-      it("should maintain rounded corners with show-frame enabled", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell
-            rounded-corners
-            show-frame
-          ></cds-aichat-shell>`,
-        );
-        const shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("rounded")).to.be.true;
-        expect(shell!.classList.contains("frameless")).to.be.false;
-      });
-
-      it("should handle rounded corners with ai-enabled", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell
-            rounded-corners
-            ai-enabled
-          ></cds-aichat-shell>`,
-        );
-        const shell = el.shadowRoot!.querySelector(".shell");
-        expect(shell!.classList.contains("rounded")).to.be.true;
-        expect(shell!.classList.contains("ai-theme")).to.be.true;
-      });
-    });
-
-    describe("Rounded Corners Edge Cases", () => {
       it("should not detect element nodes with only whitespace", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
+          html`<cds-aichat-shell corner-all="round">
             <div slot="header"></div>
           </cds-aichat-shell>`,
         );
         await el.updateComplete;
-        // Element nodes should not be considered as having content
-        // if they only contain whitespace
         const shell = el.shadowRoot!.querySelector(".shell");
         expect(shell!.classList.contains("has-header-content")).to.be.false;
       });
 
-      it("should not detect empty element nodes in footer slot", async () => {
-        const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
-            <span slot="footer"> </span>
-          </cds-aichat-shell>`,
-        );
-        await el.updateComplete;
-        const shell = el.shadowRoot!.querySelector(".shell");
-        // Element nodes are not considered as having content when they only contain whitespace
-        expect(shell!.classList.contains("has-footer-content")).to.be.false;
-      });
-
       it("should handle nested elements in slots", async () => {
         const el = await fixture<CDSAIChatShell>(
-          html`<cds-aichat-shell rounded-corners>
+          html`<cds-aichat-shell corner-all="round">
             <div slot="header">
               <span><strong>Nested</strong> Header</span>
             </div>
@@ -861,7 +763,7 @@ describe("cds-aichat-shell", function () {
 
     it("should match snapshot with rounded corners", async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell rounded-corners></cds-aichat-shell>`,
+        html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
       );
       expect(el).dom.to.equalSnapshot();
     });
@@ -871,9 +773,19 @@ describe("cds-aichat-shell", function () {
         html`<cds-aichat-shell
           ai-enabled
           show-frame
-          rounded-corners
+          corner-all="round"
           show-history
           show-workspace
+        ></cds-aichat-shell>`,
+      );
+      expect(el).dom.to.equalSnapshot();
+    });
+
+    it("should match snapshot with mixed corner configuration", async () => {
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          corner-start-start="round"
+          corner-end-end="round"
         ></cds-aichat-shell>`,
       );
       expect(el).dom.to.equalSnapshot();

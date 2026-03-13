@@ -29,9 +29,9 @@ const MarkdownElementConstructor =
 type MarkdownElementInstance = InstanceType<typeof MarkdownElementConstructor>;
 
 describe("cds-aichat-markdown smoke test", () => {
-  it("renders markdown when text content is provided", async () => {
+  it("renders markdown when markdown property is provided", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -45,7 +45,10 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("strips inline html when HTML removal attribute is set", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown remove-html>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown
+        remove-html
+        .markdown=${TEXT}
+      ></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -77,7 +80,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
     try {
       const unsafeEl = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
       );
 
       await unsafeEl.updateComplete;
@@ -96,7 +99,10 @@ describe("cds-aichat-markdown smoke test", () => {
       openUrl = null;
 
       const safeEl = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown sanitize-html>${TEXT}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          sanitize-html
+          .markdown=${TEXT}
+        ></cds-aichat-markdown>`,
       );
       await safeEl.updateComplete;
 
@@ -118,7 +124,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("preserves svg nesting with defs and title as children", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -151,7 +157,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("correctly adds defined attributes to links", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -172,7 +178,9 @@ describe("cds-aichat-markdown smoke test", () => {
     it("automatically converts plain URLs to clickable links", async () => {
       const textWithUrl = "Check out https://www.ibm.com for more info";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${textWithUrl}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${textWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -193,8 +201,8 @@ describe("cds-aichat-markdown smoke test", () => {
         "Visit https://ibm.com and https://github.com for resources";
       const el = await fixture<MarkdownElementInstance>(
         html`<cds-aichat-markdown
-          >${textWithMultipleUrls}</cds-aichat-markdown
-        >`,
+          .markdown=${textWithMultipleUrls}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -217,11 +225,13 @@ describe("cds-aichat-markdown smoke test", () => {
     it("linkifies URLs with different protocols", async () => {
       const textWithProtocols = `
 HTTP: http://example.com
-HTTPS: https://secure.example.com
-FTP: ftp://files.example.com
+      HTTPS: https://secure.example.com
+      FTP: ftp://files.example.com
       `;
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${textWithProtocols}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${textWithProtocols}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -245,7 +255,9 @@ FTP: ftp://files.example.com
     it("linkifies email addresses", async () => {
       const textWithEmail = "Contact us at support@example.com for help";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${textWithEmail}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${textWithEmail}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -266,7 +278,9 @@ FTP: ftp://files.example.com
       const mixedText =
         "This is **bold** text with https://example.com and *italic* text";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${mixedText}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${mixedText}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -288,7 +302,9 @@ FTP: ftp://files.example.com
     it("does not linkify URLs inside code blocks", async () => {
       const codeWithUrl = "`https://example.com`";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${codeWithUrl}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${codeWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -310,9 +326,10 @@ FTP: ftp://files.example.com
     it("linkifies URLs with removeHTML enabled", async () => {
       const textWithUrl = "Visit https://example.com for details";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown remove-html
-          >${textWithUrl}</cds-aichat-markdown
-        >`,
+        html`<cds-aichat-markdown
+          remove-html
+          .markdown=${textWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -330,9 +347,10 @@ FTP: ftp://files.example.com
     it("sanitizes linkified URLs when sanitize-html is enabled", async () => {
       const textWithUrl = "Check https://example.com";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown sanitize-html
-          >${textWithUrl}</cds-aichat-markdown
-        >`,
+        html`<cds-aichat-markdown
+          sanitize-html
+          .markdown=${textWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;

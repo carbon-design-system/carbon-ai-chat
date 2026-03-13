@@ -7,9 +7,38 @@
  *  @license
  */
 
-import { EditorView } from "@codemirror/view";
+import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
+
+/**
+ * Extension that makes the .cm-scroller element keyboard focusable.
+ * This fixes the "scrollable-region-focusable" accessibility violation
+ * by changing tabindex from -1 (programmatic focus only) to 0 (keyboard focusable).
+ *
+ * @returns CodeMirror extension
+ */
+export function makeScrollerFocusable() {
+  return ViewPlugin.fromClass(
+    class {
+      constructor(view: EditorView) {
+        this.updateScrollerTabIndex(view);
+      }
+
+      update(update: ViewUpdate) {
+        // Re-apply on any update to ensure it persists
+        this.updateScrollerTabIndex(update.view);
+      }
+
+      updateScrollerTabIndex(view: EditorView) {
+        const scroller = view.scrollDOM;
+        if (scroller && scroller.getAttribute("tabindex") === "-1") {
+          scroller.setAttribute("tabindex", "0");
+        }
+      }
+    },
+  );
+}
 
 /**
  * Creates a CodeMirror theme that uses Carbon Design System CSS custom properties.

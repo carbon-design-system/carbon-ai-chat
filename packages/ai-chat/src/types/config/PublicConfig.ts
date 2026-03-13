@@ -10,7 +10,7 @@
 import { ChatInstance } from "../instance/ChatInstance";
 import { CustomSendMessageOptions } from "./MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
-import { CornersType } from "./CornersType";
+import { CornersType, PerCornerConfig } from "./CornersType";
 import { HomeScreenConfig } from "./HomeScreenConfig";
 import type { LayoutCustomProperties } from "./LayoutCustomProperties";
 import type {
@@ -371,9 +371,26 @@ export interface LayoutConfig {
   hasContentMaxWidth?: boolean;
 
   /**
-   * This flag is used to control Carbon AI Chat's rounded corners.
+   * Controls the corner style of the chat component.
+   *
+   * Can be a simple CornersType value to apply to all corners:
+   * ```typescript
+   * corners: CornersType.ROUND
+   * ```
+   *
+   * Or a PerCornerConfig object to control each corner individually:
+   * ```typescript
+   * corners: {
+   *   startStart: CornersType.ROUND,  // top-left in LTR
+   *   startEnd: CornersType.ROUND,    // top-right in LTR
+   *   endStart: CornersType.SQUARE,   // bottom-left in LTR
+   *   endEnd: CornersType.SQUARE      // bottom-right in LTR
+   * }
+   * ```
+   *
+   * Undefined corners in PerCornerConfig will fall back to CornersType.ROUND.
    */
-  corners?: CornersType;
+  corners?: CornersType | PerCornerConfig;
 
   /**
    * CSS variable overrides for the chat UI. This is a convienience method, you may also set these properties via CSS.

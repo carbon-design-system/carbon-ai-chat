@@ -68,62 +68,6 @@ ${TEXT}
 `;
 
 const CODE = `\`\`\`
-/**
- * Example doc comment with a URL https://carbon.design
- */
-import type { Config as Configuration } from "./config";
-import { readFile } from "fs/promises";
-
-namespace Demo {
-  export enum Status {
-    New = "NEW",
-    Done = "DONE",
-  }
-
-  @Component()
-  export class Analyzer<T extends number> {
-    static readonly version = "1.0.0";
-    #pattern = /#(?<hex>[0-9A-F]{6})/g;
-
-    constructor(private readonly source: string | null = null) {}
-
-    async *run(items: string[]): AsyncGenerator<Result<T>> {
-      parse: for (const id of items) {
-        if (!id) {
-          continue parse;
-        }
-
-        yield {
-          id,
-          status: Status.New,
-          ok: true,
-        } as Result<T>;
-      }
-    }
-  }
-}
-
-declare module "legacy" {
-  export function legacy(flag?: boolean): void;
-}
-
-type Result<T> = {
-  readonly id: string;
-  status: Demo.Status;
-  ok: boolean;
-};
-
-const hexSample = "#ff6600";
-const maybeValue: number | null = 42.5;
-const escaped = "line\\nbreak";
-const invalidHex = 0xZ;
-
-/* multi-line
-   block comment */
-// trailing comment
-\`\`\`
-
-\`\`\`
 from dataclasses import dataclass
 
 class Greeter:

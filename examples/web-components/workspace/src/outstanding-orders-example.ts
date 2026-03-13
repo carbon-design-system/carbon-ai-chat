@@ -68,7 +68,7 @@ export class OutstandingOrdersExample extends LitElement {
     const orders = this.additionalData?.orders || [];
 
     return html`
-      <cds-aichat-workspace-shell>
+      <cds-aichat-workspace-shell auto-collapsible-header>
         <cds-aichat-toolbar
           slot="toolbar"
           overflow

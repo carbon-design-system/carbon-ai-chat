@@ -1,0 +1,70 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+// CSS Custom Properties for AI Chat Components
+// This file exports all tokens as CSS custom properties that can be customized by consumers
+
+@use "./utilities" as utilities;
+@use "./tokens-layout" as layout;
+@use "./tokens-component" as component;
+
+// ============================================================================
+// CSS Custom Properties Export
+// ============================================================================
+// These are the public API for customizing AI Chat Components
+// All properties use the --cds-aichat-* prefix
+:root {
+  // Layout tokens
+  @include utilities.declaration(
+    "messages-max-width",
+    layout.$messages-max-width
+  );
+  @include utilities.declaration(
+    "messages-min-width",
+    layout.$messages-min-width
+  );
+  @include utilities.declaration(
+    "workspace-min-width",
+    layout.$workspace-min-width
+  );
+  @include utilities.declaration("history-width", layout.$history-width);
+  @include utilities.declaration("card-max-width", layout.$card-max-width);
+
+  // Component tokens
+  @include utilities.declaration("border-radius", component.$border-radius);
+  @include utilities.declaration(
+    "card-border-radius",
+    component.$card-border-radius
+  );
+  @include utilities.declaration("border-radius", component.$border-radius);
+  @include utilities.declaration(
+    "border-radius-start-start",
+    component.$border-radius-start-start
+  );
+  @include utilities.declaration(
+    "border-radius-start-end",
+    component.$border-radius-start-end
+  );
+  @include utilities.declaration(
+    "border-radius-end-start",
+    component.$border-radius-end-start
+  );
+  @include utilities.declaration(
+    "border-radius-end-end",
+    component.$border-radius-end-end
+  );
+}
+
+// ============================================================================
+// Internal/Computed Properties (Documentation Only)
+// ============================================================================
+// These properties are set at runtime by JavaScript and should not be defined here:
+// - --cds-aichat-header-height: Set dynamically by chat-shell component based on header size
+// - --cds-aichat-scrollbar-width: May be set dynamically based on browser scrollbar width
+// - --cds-aichat-homescreen-starter-index: Set per-element for staggered animations
+
+// Made with Bob

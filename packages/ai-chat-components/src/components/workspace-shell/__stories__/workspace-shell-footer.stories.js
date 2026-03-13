@@ -13,6 +13,8 @@ import { html } from "lit";
 import { FooterActionList } from "./story-data";
 import styles from "./story-styles.scss?lit";
 
+const defaultBodyText = `This is sample content to demonstrate the footer positioning. The footer will be pushed to the bottom of the workspace shell. Shrink the workspace width below 671px to see the footer buttons stack vertically with primary actions appearing first.`;
+
 export default {
   title: "Components/Workspace shell/Footer",
   component: "cds-aichat-workspace-shell-footer",
@@ -25,11 +27,6 @@ export default {
     },
   },
   argTypes: {
-    actions: {
-      control: "object",
-      description:
-        "Array of action button configurations. Each action can have: label, kind, disabled, icon, and payload properties.",
-    },
     actionPreset: {
       control: {
         type: "select",
@@ -50,38 +47,11 @@ export default {
 
 export const Default = {
   args: {
-    actionPreset: "Single primary button",
-  },
-  render: (args) => html`
-    <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
-        <p>
-          This is sample content to demonstrate the footer positioning. The
-          footer will be pushed to the bottom of the workspace shell.
-        </p>
-      </div>
-    </cds-aichat-workspace-shell-body>
-    <cds-aichat-workspace-shell-footer
-      @cds-aichat-workspace-shell-footer-clicked=${(e) =>
-        action("footer-action")(e.detail)}
-      .actions=${FooterActionList[args.actionPreset]}
-    >
-    </cds-aichat-workspace-shell-footer>
-  `,
-};
-
-export const TwoButtons = {
-  args: {
     actionPreset: "Two buttons",
   },
   render: (args) => html`
     <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
-        <p>
-          This is sample content to demonstrate the footer positioning. The
-          footer will be pushed to the bottom of the workspace shell.
-        </p>
-      </div>
+      <p>${defaultBodyText}</p>
     </cds-aichat-workspace-shell-body>
     <cds-aichat-workspace-shell-footer
       @cds-aichat-workspace-shell-footer-clicked=${(e) =>
@@ -98,12 +68,7 @@ export const ThreeButtons = {
   },
   render: (args) => html`
     <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
-        <p>
-          This is sample content to demonstrate the footer positioning. The
-          footer will be pushed to the bottom of the workspace shell.
-        </p>
-      </div>
+      <p>${defaultBodyText}</p>
     </cds-aichat-workspace-shell-body>
     <cds-aichat-workspace-shell-footer
       @cds-aichat-workspace-shell-footer-clicked=${(e) =>
@@ -120,12 +85,7 @@ export const WithDisabled = {
   },
   render: (args) => html`
     <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
-        <p>
-          This is sample content to demonstrate the footer positioning. The
-          footer will be pushed to the bottom of the workspace shell.
-        </p>
-      </div>
+      <p>${defaultBodyText}</p>
     </cds-aichat-workspace-shell-body>
     <cds-aichat-workspace-shell-footer
       @cds-aichat-workspace-shell-footer-clicked=${(e) =>
@@ -142,12 +102,7 @@ export const DangerActions = {
   },
   render: (args) => html`
     <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
-        <p>
-          This is sample content to demonstrate the footer positioning. The
-          footer will be pushed to the bottom of the workspace shell.
-        </p>
-      </div>
+      <p>${defaultBodyText}</p>
     </cds-aichat-workspace-shell-body>
     <cds-aichat-workspace-shell-footer
       @cds-aichat-workspace-shell-footer-clicked=${(e) =>
@@ -156,45 +111,6 @@ export const DangerActions = {
     >
     </cds-aichat-workspace-shell-footer>
   `,
-};
-
-export const Stacked = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Footer automatically stacks buttons vertically on narrow viewports (< 671px). Resize the viewport to see the responsive behavior.",
-      },
-    },
-  },
-
-  args: {
-    actionPreset: "Three buttons with one ghost",
-  },
-
-  render: (args) => html`
-    <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
-        <p>
-          This is sample content to demonstrate the footer positioning. The
-          footer will be pushed to the bottom of the workspace shell.
-        </p>
-      </div>
-    </cds-aichat-workspace-shell-body>
-    <cds-aichat-workspace-shell-footer
-      @cds-aichat-workspace-shell-footer-clicked=${(e) =>
-        action("footer-action")(e.detail)}
-      .actions=${FooterActionList[args.actionPreset]}
-    >
-    </cds-aichat-workspace-shell-footer>
-  `,
-
-  globals: {
-    viewport: {
-      value: "mobile1",
-      isRotated: false,
-    },
-  },
 };
 
 // Made with Bob
