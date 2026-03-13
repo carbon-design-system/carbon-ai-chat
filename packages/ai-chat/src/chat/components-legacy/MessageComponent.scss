@@ -489,6 +489,10 @@ svg.cds-aichat--sent-file-icon {
   padding-block-end: layout.$spacing-04;
 }
 
+.cds-aichat--message__reasoning-steps--closed {
+  display: none;
+}
+
 .cds-aichat--container--render[dir="rtl"]
   .cds-aichat--received--from-agent.cds-aichat--received--text {
   border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;

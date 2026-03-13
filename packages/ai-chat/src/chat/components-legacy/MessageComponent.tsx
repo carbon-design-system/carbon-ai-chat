@@ -641,7 +641,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const containerOpen = this.getReasoningContainerOpen(reasoning);
 
     return (
-      <div className="cds-aichat--message__reasoning-steps">
+      <div
+        className={cx("cds-aichat--message__reasoning-steps", {
+          "cds-aichat--message__reasoning-steps--closed": !containerOpen,
+        })}
+      >
         <ReasoningStepsComponent
           controlled
           id={this.getReasoningContainerId()}
