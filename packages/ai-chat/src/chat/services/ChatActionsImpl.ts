@@ -385,7 +385,14 @@ class ChatActionsImpl {
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
-    const previousValue = (inputState[field] ?? "") as string;
+    let previousValue = (inputState[field] ?? "") as string;
+
+    // Normalize the previous value: treat "\n" as empty string
+    // This handles the case where the user manually deleted all input,
+    // leaving behind a newline character that should be treated as empty.
+    if (field === "rawValue" && previousValue === "\n") {
+      previousValue = "";
+    }
 
     let nextValue: string;
     try {
@@ -406,10 +413,9 @@ class ChatActionsImpl {
 
     const payload: Partial<InputState> = { [field]: nextValue };
 
-    if (
-      field === "rawValue" &&
-      (inputState.displayValue ?? "") === previousValue
-    ) {
+    // When updating rawValue, always sync displayValue to keep them consistent.
+    // The component will re-render and apply any custom rendering (e.g., toDisplayHTML conversion).
+    if (field === "rawValue") {
       payload.displayValue = nextValue;
     }
 

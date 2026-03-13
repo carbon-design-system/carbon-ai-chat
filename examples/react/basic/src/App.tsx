@@ -41,6 +41,7 @@ function App() {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
 
   function onBeforeRender(instance: ChatInstance) {
+    window.chatInstance = instance;
     const initialState = instance.getState();
     setActiveResponseId(initialState.activeResponseId ?? null);
 
