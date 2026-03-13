@@ -37,15 +37,10 @@ function ButtonItemURLComponent({
         <Link
           className="cds-aichat--widget__break-word"
           href={url}
-          inline={true}
           target={target}
           rel="noopener noreferrer"
         >
-          <LaunchIcon
-            slot="icon"
-            className="cds--link__icon"
-            aria-label="Launch"
-          />
+          <LaunchIcon slot="icon" className="icon" aria-label="Launch" />
           {label || url}
         </Link>
       </div>
