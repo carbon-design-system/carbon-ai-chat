@@ -483,14 +483,21 @@ const ContentEditableInput = forwardRef<
           "cds-aichat--text-area--disabled": disabled,
         })}
       >
+        {/* Placeholder overlay - hidden from screen readers */}
+        {!rawValue && placeholder && (
+          <div className="cds-aichat--text-area-placeholder" aria-hidden="true">
+            {placeholder}
+          </div>
+        )}
         {/* The main contenteditable div that users interact with */}
         <div
           ref={editorRef}
           aria-label={ariaLabel}
           aria-multiline="true"
+          aria-live="off"
+          aria-atomic="false"
           className="cds-aichat--text-area-textarea"
           contentEditable={!disabled}
-          data-placeholder={placeholder}
           data-testid={testId}
           aria-disabled={disabled}
           onBlur={onBlur}

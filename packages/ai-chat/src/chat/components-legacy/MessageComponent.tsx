@@ -20,7 +20,7 @@ import Loading from "../components/carbon/Loading";
 import cx from "classnames";
 import React, { KeyboardEvent, PureComponent } from "react";
 
-import { nodeToText } from "../components/aria/AriaAnnouncerComponent";
+import { nodeToText } from "../utils/domUtils";
 import { Avatar } from "./Avatar";
 import { InlineError } from "./responseTypes/error/InlineError";
 import VisuallyHidden from "../components/util/VisuallyHidden";
@@ -85,6 +85,7 @@ import {
   HumanAgentMessageType,
   Message,
   MessageRequest,
+  MessageResponse,
   MessageResponseTypes,
   ReasoningStep as ReasoningStepData,
   ReasoningStepOpenState,
@@ -300,13 +301,31 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   };
 
   private isAgent: boolean;
+
+  private getSpeakerName() {
+    const { message, assistantName } = this.props;
+    const response = message as MessageResponse;
+
+    // Get the response user profile if available
+    const responseUserProfile = response.message_options?.response_user_profile;
+
+    const speakerName = responseUserProfile
+      ? responseUserProfile.nickname === "watsonx" && assistantName
+        ? assistantName
+        : responseUserProfile.nickname
+      : assistantName;
+
+    return speakerName;
+  }
+
   /**
    * Returns an ARIA message that can be used to indicate that the widget (either assistant or agent) was responsible for
    * saying a specific message.
    */
   private getWidgetSaidMessage() {
-    const { intl, assistantName, localMessageItem } = this.props;
+    const { intl, localMessageItem } = this.props;
     let messageId: keyof LanguagePack;
+
     if (localMessageItem.item.agent_message_type) {
       // For the human agent view, we only want to say "agent said" for messages that are text. The status messages
       // do not need this announcement.
@@ -319,7 +338,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       this.isAgent = false;
     }
     return messageId
-      ? intl.formatMessage({ id: messageId }, { assistantName })
+      ? intl.formatMessage(
+          { id: messageId },
+          { assistantName: this.getSpeakerName() },
+        )
       : null;
   }
 
@@ -386,21 +408,24 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * @see renderFocusHandle
    */
   public requestHandleFocus() {
-    const { languagePack, intl, message, assistantName } = this.props;
+    const { languagePack, intl, message } = this.props;
 
     // Announce who said it and then the actual message. The "Assistant said" text is normally only read once per
     // MessageResponse instead of once per LocalMessage but since we're moving focus between each LocalMessage, go
     // ahead and announce the "who" part for each one.
     const whoAnnouncement = isRequest(message)
       ? languagePack.messages_youSaid
-      : intl.formatMessage({ id: "messages_assistantSaid" }, { assistantName });
+      : intl.formatMessage(
+          { id: "messages_assistantSaid" },
+          { assistantName: this.getSpeakerName() },
+        );
 
     const strings: string[] = [whoAnnouncement];
     nodeToText(this.messageRef.current, strings);
 
-    // Using this aria-label allows us to make sure that this text is read out loud before JAWS reads its "1 of 2"
-    // list item message that it adds after reading the aria-label.
-    this.focusHandleRef.current.setAttribute("aria-label", strings.join(" "));
+    const ariaLabel = strings.join(" ");
+
+    this.focusHandleRef.current.setAttribute("aria-label", ariaLabel);
 
     doFocusRef(this.focusHandleRef, true);
   }
@@ -641,7 +666,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const containerOpen = this.getReasoningContainerOpen(reasoning);
 
     return (
-      <div className="cds-aichat--message__reasoning-steps">
+      <div
+        className={cx("cds-aichat--message__reasoning-steps", {
+          "cds-aichat--message__reasoning-steps--open": containerOpen,
+        })}
+      >
         <ReasoningStepsComponent
           controlled
           id={this.getReasoningContainerId()}
@@ -1138,7 +1167,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       >
         {this.renderFocusHandle()}
         {showAvatarLine && this.renderAvatarLine(localMessageItem, message)}
-        <div className="cds-aichat--message--padding">
+        <div
+          className="cds-aichat--message--padding"
+          aria-hidden={this.state.focusHandleHasFocus ? "true" : undefined}
+        >
           {isResponse(message) && (
             <div className="cds-aichat--assistant-message">
               {readWidgetSaid && (

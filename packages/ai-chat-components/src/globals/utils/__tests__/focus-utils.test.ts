@@ -9,6 +9,7 @@
 
 import { html, fixture, expect } from "@open-wc/testing";
 import {
+  getDeepActiveElement,
   isElementInvisible,
   isFocusable,
   tryFocus,
@@ -210,6 +211,130 @@ describe("focus-utils", function () {
     });
   });
 
+  describe("getDeepActiveElement", function () {
+    it("should return the active element when no shadow DOM", async () => {
+      const el = await fixture<HTMLButtonElement>(html`<button>Click</button>`);
+      el.focus();
+      expect(getDeepActiveElement()).to.equal(el);
+    });
+
+    it("should return null when no element has focus", async () => {
+      // Blur any focused element
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      const result = getDeepActiveElement();
+      // Result could be body or null depending on browser
+      expect(result === null || result === document.body).to.be.true;
+    });
+
+    it("should traverse into shadow DOM to find focused element", async () => {
+      // Create a custom element with shadow DOM
+      class TestElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: "open" });
+          const button = document.createElement("button");
+          button.textContent = "Shadow Button";
+          button.id = "shadow-btn";
+          shadow.appendChild(button);
+        }
+      }
+      customElements.define("test-shadow-element", TestElement);
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <test-shadow-element></test-shadow-element>
+        </div>
+      `);
+
+      const testElement = container.querySelector(
+        "test-shadow-element",
+      ) as TestElement;
+      const shadowButton = testElement.shadowRoot?.querySelector(
+        "#shadow-btn",
+      ) as HTMLButtonElement;
+
+      shadowButton.focus();
+      const deepActive = getDeepActiveElement();
+      expect(deepActive).to.equal(shadowButton);
+    });
+
+    it("should handle nested shadow DOM", async () => {
+      // Create nested custom elements with shadow DOM
+      class InnerElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: "open" });
+          const input = document.createElement("input");
+          input.type = "text";
+          input.id = "inner-input";
+          shadow.appendChild(input);
+        }
+      }
+      customElements.define("test-inner-element", InnerElement);
+
+      class OuterElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: "open" });
+          const inner = document.createElement("test-inner-element");
+          shadow.appendChild(inner);
+        }
+      }
+      customElements.define("test-outer-element", OuterElement);
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <test-outer-element></test-outer-element>
+        </div>
+      `);
+
+      const outerElement = container.querySelector(
+        "test-outer-element",
+      ) as OuterElement;
+      const innerElement = outerElement.shadowRoot?.querySelector(
+        "test-inner-element",
+      ) as InnerElement;
+      const input = innerElement.shadowRoot?.querySelector(
+        "#inner-input",
+      ) as HTMLInputElement;
+
+      input.focus();
+      const deepActive = getDeepActiveElement();
+      expect(deepActive).to.equal(input);
+    });
+
+    it("should handle slotted elements", async () => {
+      // Create a custom element that uses slots
+      class SlotElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: "open" });
+          const slot = document.createElement("slot");
+          shadow.appendChild(slot);
+        }
+      }
+      customElements.define("test-slot-element", SlotElement);
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <test-slot-element>
+            <button id="slotted-btn">Slotted Button</button>
+          </test-slot-element>
+        </div>
+      `);
+
+      const button = container.querySelector(
+        "#slotted-btn",
+      ) as HTMLButtonElement;
+      button.focus();
+
+      const deepActive = getDeepActiveElement();
+      expect(deepActive).to.equal(button);
+    });
+  });
+
   describe("tryFocus", function () {
     it("should successfully focus a focusable element", async () => {
       const el = await fixture<HTMLButtonElement>(html`<button>Click</button>`);
@@ -293,6 +418,103 @@ describe("focus-utils", function () {
       const result2 = tryFocus(btn2);
       expect(result2).to.be.true;
       expect(document.activeElement).to.equal(btn2);
+    });
+
+    it("should not call focus() if element already has focus", async () => {
+      const el = await fixture<HTMLButtonElement>(html`<button>Click</button>`);
+
+      // Focus the element first
+      el.focus();
+      expect(document.activeElement).to.equal(el);
+
+      // Track if focus was called again
+      let focusCalled = false;
+      const originalFocus = el.focus.bind(el);
+      el.focus = function () {
+        focusCalled = true;
+        originalFocus();
+      };
+
+      // Try to focus again - should not call focus()
+      const result = tryFocus(el);
+      expect(result).to.be.true;
+      expect(focusCalled).to.be.false;
+
+      // Restore original focus method
+      el.focus = originalFocus;
+    });
+
+    it("should work with shadow DOM elements", async () => {
+      // Create a custom element with shadow DOM
+      class FocusTestElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: "open" });
+          const button = document.createElement("button");
+          button.textContent = "Shadow Button";
+          button.id = "shadow-focus-btn";
+          shadow.appendChild(button);
+        }
+      }
+      customElements.define("focus-test-element", FocusTestElement);
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <focus-test-element></focus-test-element>
+        </div>
+      `);
+
+      const testElement = container.querySelector(
+        "focus-test-element",
+      ) as FocusTestElement;
+      const shadowButton = testElement.shadowRoot?.querySelector(
+        "#shadow-focus-btn",
+      ) as HTMLButtonElement;
+
+      const result = tryFocus(shadowButton);
+      expect(result).to.be.true;
+
+      // Verify using getDeepActiveElement
+      const deepActive = getDeepActiveElement();
+      expect(deepActive).to.equal(shadowButton);
+    });
+
+    it("should return true when element contains the focused element (delegatesFocus)", async () => {
+      // Create a custom element with delegatesFocus
+      class DelegateElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({
+            mode: "open",
+            delegatesFocus: true,
+          });
+          const input = document.createElement("input");
+          input.type = "text";
+          input.id = "delegate-input";
+          shadow.appendChild(input);
+        }
+      }
+      customElements.define("delegate-focus-element", DelegateElement);
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <delegate-focus-element></delegate-focus-element>
+        </div>
+      `);
+
+      const delegateElement = container.querySelector(
+        "delegate-focus-element",
+      ) as DelegateElement;
+
+      // When we focus the custom element, it should delegate to the input
+      const result = tryFocus(delegateElement);
+      expect(result).to.be.true;
+
+      // The deep active element should be the input inside
+      const deepActive = getDeepActiveElement();
+      const input =
+        delegateElement.shadowRoot?.querySelector("#delegate-input");
+      expect(deepActive).to.equal(input);
     });
   });
 

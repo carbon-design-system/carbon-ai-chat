@@ -284,7 +284,7 @@ Here is some Carbon <svg xmlns="http://www.w3.org/2000/svg" width="16" height="1
 <hr>
 <small><em>Carbon's unique ability to form four bonds makes it the perfect element for complex biological molecules.</em></small>`;
 
-const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is harded coded with responses to show a subset of the functionality of Carbon AI Chat.
+const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is hard coded with responses to show a subset of the functionality of Carbon AI Chat.
 
 You can type **help** to see this message again.`;
 

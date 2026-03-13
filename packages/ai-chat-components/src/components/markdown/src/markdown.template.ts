@@ -21,7 +21,7 @@ function markdownTemplate({
 }) {
   return html`
     <div class="cds-aichat-markdown-stack">${renderedContent}</div>
-    <div hidden>
+    <div aria-hidden="true" hidden>
       <slot ${ref(slotRef)} @slotchange=${onSlotChange}></slot>
     </div>
   `;

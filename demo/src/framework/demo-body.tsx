@@ -34,6 +34,7 @@ import "./demo-stop-button-immediate-switcher";
 import "./demo-chat-instance-switcher";
 import "./demo-direction-switcher";
 import "./demo-chat-version-switcher";
+import "./demo-keyboard-shortcut-switcher";
 import "@carbon/web-components/es/components/button/index.js";
 
 const { defaultConfig, defaultSettings } = getSettings();
@@ -563,6 +564,12 @@ export class DemoBody extends LitElement {
                     <demo-stop-button-immediate-switcher
                       .config=${this.config}
                     ></demo-stop-button-immediate-switcher>
+                  </div>
+                  <div class="config-section">
+                    <div class="config-section__title">Keyboard Shortcuts</div>
+                    <demo-keyboard-shortcut-switcher
+                      .config=${this.config}
+                    ></demo-keyboard-shortcut-switcher>
                   </div>
                   <div class="config-section">
                     <div class="config-section__title">Launcher</div>

@@ -13,7 +13,6 @@
 
 import { ErrorInfo } from "react";
 
-import { AppConfig } from "../../types/state/AppConfig";
 import { FileUpload } from "../../types/config/ServiceDeskConfig";
 import { FileStatusValue, WA_CONSOLE_PREFIX } from "./constants";
 import { resolveOrTimeout } from "./lang/promiseUtils";
@@ -150,17 +149,6 @@ function callOnError(onError: (data: OnErrorData) => void, data: OnErrorData) {
   }
 }
 
-function getAssistantName(aiEnabled: boolean | undefined, config: AppConfig) {
-  let assistantName;
-  if (aiEnabled) {
-    assistantName = "watsonx";
-  } else {
-    assistantName = config.public.assistantName || "watsonx";
-  }
-
-  return assistantName;
-}
-
 export {
   assertType,
   debugLog,
@@ -175,5 +163,4 @@ export {
   isValidForUpload,
   safeFetchTextWithTimeout,
   callOnError,
-  getAssistantName,
 };

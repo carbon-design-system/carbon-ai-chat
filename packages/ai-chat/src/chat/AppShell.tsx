@@ -17,6 +17,9 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
+import { matchesShortcut } from "./utils/keyboardUtils";
+import { getDeepActiveElement } from "./utils/domUtils";
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../types/config/ShortcutConfig";
 
 import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
@@ -44,7 +47,6 @@ import { useMobileViewportLayout } from "./hooks/useMobileViewportLayout";
 import { useOnMount } from "./hooks/useOnMount";
 import { useSelector } from "./hooks/useSelector";
 import { useWindowOpenState } from "./hooks/useWindowOpenState";
-import { useAutoFocusManagement } from "./hooks/useAutoFocusManagement";
 import { useFocusManager } from "./hooks/useFocusManager";
 import { useWorkspaceAnnouncements } from "./hooks/useWorkspaceAnnouncements";
 import { useStyleInjection } from "./hooks/useStyleInjection";
@@ -59,11 +61,7 @@ import {
   selectHumanAgentDisplayState,
   selectInputState,
 } from "./store/selectors";
-import {
-  consoleError,
-  createDidCatchErrorData,
-  getAssistantName,
-} from "./utils/miscUtils";
+import { consoleError, createDidCatchErrorData } from "./utils/miscUtils";
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
@@ -201,7 +199,7 @@ export default function AppShell({
     [],
   );
   const useCustomHostElement = Boolean(hostElement);
-  const headerDisplayName = header?.name || publicConfig.assistantName;
+  const headerDisplayName = header?.name;
   const inputState = selectInputState(appState);
   const agentDisplayState = selectHumanAgentDisplayState(appState);
 
@@ -233,17 +231,10 @@ export default function AppShell({
     requestFocus: requestFocusCallback,
   });
 
-  // Auto-focus management - must come before useFocusManager
-  const { shouldAutoFocus } = useAutoFocusManagement({
-    shouldTakeFocusIfOpensAutomatically:
-      publicConfig.shouldTakeFocusIfOpensAutomatically,
-    hasSentNonWelcomeMessage:
-      persistedToBrowserStorage.hasSentNonWelcomeMessage,
-    localMessageIDs: assistantMessageState.localMessageIDs,
-    allMessageItemsByID,
-    allMessagesByID,
-    requestFocus: requestFocusCallback,
-  });
+  // Auto-focus is based on config only - no dynamic toggling to avoid
+  // interrupting screen reader announcements when messages arrive
+  const shouldAutoFocus =
+    publicConfig.shouldTakeFocusIfOpensAutomatically ?? true;
 
   // Focus manager - provides requestFocus function
   const requestFocus = useFocusManager({
@@ -387,6 +378,105 @@ export default function AppShell({
     messagesRef.current?.doScrollToMessage(messageID, animate);
   }, []);
 
+  // Handle keyboard shortcut for toggling focus between message list and input
+  const handleFocusToggle = useCallback(() => {
+    try {
+      // Use the Input component's hasFocus() method to check focus state
+      // This encapsulates the internal focus detection logic
+      const inputHasFocus = inputRef.current?.hasFocus() ?? false;
+
+      if (inputHasFocus) {
+        // Move focus to first item of last message
+        messagesRef.current?.requestFocusOnFirstItemOfLastMessage();
+      } else {
+        // Use requestFocus() for consistency with focus management pattern
+        inputRef.current?.requestFocus();
+      }
+    } catch (error) {
+      consoleError("An error occurred in handleFocusToggle", error);
+    }
+  }, []);
+
+  // Add keyboard event listener for focus toggle shortcut and Escape to exit message navigation
+  useEffect(() => {
+    const shortcutConfig =
+      publicConfig.keyboardShortcuts?.messageFocusToggle ||
+      DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
+
+    // Check if shortcuts are enabled (default to false if not specified)
+    const shortcutsEnabled = shortcutConfig.is_on === true;
+
+    console.log("[AppShell] Keyboard shortcut config:", {
+      fullConfig: publicConfig.keyboardShortcuts,
+      messageFocusToggle: publicConfig.keyboardShortcuts?.messageFocusToggle,
+      shortcutConfig,
+      shortcutsEnabled,
+      is_on: shortcutConfig.is_on,
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Log F6 key presses for debugging
+      if (event.key === "F6" || event.code === "F6") {
+        console.log("[AppShell] F6 key pressed:", {
+          key: event.key,
+          code: event.code,
+          shortcutsEnabled,
+          matchesShortcut: matchesShortcut(event, shortcutConfig),
+          shortcutConfig,
+        });
+      }
+
+      if (shortcutsEnabled && matchesShortcut(event, shortcutConfig)) {
+        console.log("[AppShell] Shortcut matched! Toggling focus.");
+        // Always handle the shortcut, even if it originates from the input field
+        event.preventDefault();
+        event.stopPropagation();
+        handleFocusToggle();
+      } else if (event.key === "Escape") {
+        // If focus is in the messages area, return to input field
+        // Use getDeepActiveElement to traverse all shadow DOM levels
+        const activeElement = getDeepActiveElement();
+
+        // Search within containerRef, not the entire document
+        const messagesWrapper = containerRef.current?.querySelector(
+          ".cds-aichat--messages__wrapper",
+        );
+        const messagesContainer = containerRef.current?.querySelector(
+          ".cds-aichat--messages",
+        );
+        const inputContainer =
+          containerRef.current?.querySelector(".cds-aichat--input");
+
+        // Check if focus is in messages area but not in input
+        if (
+          activeElement &&
+          (messagesWrapper?.contains(activeElement) ||
+            messagesContainer?.contains(activeElement)) &&
+          !inputContainer?.contains(activeElement)
+        ) {
+          event.preventDefault();
+          inputRef.current?.requestFocus();
+        }
+      }
+    };
+
+    // Only attach listener when chat is open and container is available
+    if (viewState.mainWindow && containerRef.current) {
+      const container = containerRef.current;
+      container.addEventListener("keydown", handleKeyDown);
+      return () => {
+        container.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+
+    return undefined;
+  }, [
+    publicConfig.keyboardShortcuts,
+    handleFocusToggle,
+    viewState.mainWindow,
+    containerRef,
+  ]);
+
   const mainWindowFunctions = useMemo<MainWindowFunctions>(
     () => ({
       requestFocus,
@@ -486,10 +576,7 @@ export default function AppShell({
               <AppShellPanels
                 serviceManager={serviceManager}
                 languagePack={languagePack}
-                assistantName={getAssistantName(
-                  config.public.aiEnabled,
-                  config,
-                )}
+                assistantName={publicConfig.assistantName}
                 isHydratingComplete={isHydratingComplete}
                 shouldShowHydrationPanel={shouldShowHydrationPanel}
                 onPanelOpenStart={onPanelOpenStart}
