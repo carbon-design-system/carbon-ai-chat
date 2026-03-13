@@ -54,7 +54,7 @@ function ChatHistory() {
   return (
     <HistoryShell>
       <HistoryHeader title="Conversations" />
-      <HistoryToolbar onCdsSearchInput={handleSearchInput} />
+      <HistoryToolbar onSearchInput={handleSearchInput} />
       <HistoryContent>
         <div slot="results-count">Results: 10</div>
         <HistoryPanel aria-label="Chat history">
@@ -66,7 +66,7 @@ function ChatHistory() {
                 title="Important conversation"
                 selected={true}
                 actions={pinnedHistoryItemActions}
-                onHistoryItemAction={handleHistoryItemAction}
+                onMenuAction={handleHistoryItemAction}
               />
             </HistoryPanelMenu>
             <HistoryPanelMenu expanded title="Today">
@@ -75,7 +75,7 @@ function ChatHistory() {
                 id="chat-2"
                 title="Recent chat"
                 actions={historyItemActions}
-                onHistoryItemAction={handleHistoryItemAction}
+                onMenuAction={handleHistoryItemAction}
               />
             </HistoryPanelMenu>
           </HistoryPanelItems>
@@ -150,7 +150,7 @@ The chat history React components emit several custom events that you can listen
   </thead>
   <tbody>
     <tr>
-      <td><code>onHistoryItemSelected</code></td>
+      <td><code>onSelected</code></td>
       <td><code>history-item-selected</code></td>
       <td>Fired when the history panel item is clicked (but not when clicking on interactive elements like the overflow menu).</td>
       <td>
@@ -160,7 +160,7 @@ The chat history React components emit several custom events that you can listen
       </td>
     </tr>
     <tr>
-      <td><code>onHistoryItemAction</code></td>
+      <td><code>onMenuAction</code></td>
       <td><code>history-item-action</code></td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
@@ -205,8 +205,8 @@ function ChatHistory() {
     <HistoryPanelItem
       id="chat-1"
       title="My conversation"
-      onHistoryItemSelected={handleItemSelected}
-      onHistoryItemAction={handleItemAction}
+      onSelected={handleItemSelected}
+      onMenuAction={handleItemAction}
     />
   );
 }
@@ -225,7 +225,7 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onHistorySearchItemSelected</code></td>
+      <td><code>onSelected</code></td>
       <td><code>history-search-item-selected</code></td>
       <td>Fired when a search result item is clicked.</td>
       <td>
@@ -251,7 +251,7 @@ function SearchResults() {
     <HistorySearchItem
       id="search-1"
       date="Monday, 12:04 PM"
-      onHistorySearchItemSelected={handleSearchItemSelected}
+      onSelected={handleSearchItemSelected}
     >
       Search result text
     </HistorySearchItem>
@@ -272,7 +272,7 @@ function SearchResults() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onHistoryHeaderCloseClick</code></td>
+      <td><code>onClose</code></td>
       <td><code>history-header-close-click</code></td>
       <td>Fired when the close button in the header is clicked.</td>
       <td>None</td>
@@ -295,7 +295,7 @@ function ChatHistory() {
       <HistoryShell>
         <HistoryHeader
           title="Conversations"
-          onHistoryHeaderCloseClick={handleHeaderClose}
+          onClose={handleHeaderClose}
         />
         {/* ... rest of content */}
       </HistoryShell>
@@ -317,13 +317,13 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onChatHistoryNewChatClick</code></td>
+      <td><code>onNewChatClick</code></td>
       <td><code>chat-history-new-chat-click</code></td>
       <td>Fired when the new chat button is clicked.</td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onCdsSearchInput</code></td>
+      <td><code>onSearchInput</code></td>
       <td><code>cds-search-input</code></td>
       <td>Fired when the user types in the search field.</td>
       <td>
@@ -355,8 +355,8 @@ function ChatHistory() {
     <HistoryShell>
       <HistoryHeader title="Conversations" />
       <HistoryToolbar
-        onChatHistoryNewChatClick={handleNewChat}
-        onCdsSearchInput={handleSearchInput}
+        onNewChatClick={handleNewChat}
+        onSearchInput={handleSearchInput}
       />
       {/* ... rest of content */}
     </HistoryShell>
@@ -390,6 +390,21 @@ function ChatHistory() {
       <td><code>cds-aichat-history-panel-item-input-cancel</code></td>
       <td>Fired when the user cancels renaming a history item.</td>
       <td>None</td>
+    </tr>
+    <tr>
+      <td><code>onRenameCancel</code></td>
+      <td><code>history-panel-item-input-cancel</code></td>
+      <td>Fired when the user cancels renaming a history item.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>onRenameSave</code></td>
+      <td><code>history-panel-item-input-save</code></td>
+      <td>Fired when the user saves a renamed history item.</td>
+      <td>
+        • <code>newTitle</code> (string) - The new title entered<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
     </tr>
   </tbody>
 </table>
@@ -432,13 +447,13 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onHistoryDeleteCancel</code></td>
+      <td><code>onCancel</code></td>
       <td><code>history-delete-cancel</code></td>
       <td>Fired when the cancel button is clicked or Enter is pressed on the cancel button.</td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onHistoryDeleteConfirm</code></td>
+      <td><code>onConfirm</code></td>
       <td><code>history-delete-confirm</code></td>
       <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
       <td>None</td>
@@ -486,7 +501,7 @@ function ChatHistory() {
                 id="chat-1"
                 title="My conversation"
                 actions={historyItemActions}
-                onHistoryItemAction={handleDeleteAction}
+                onMenuAction={handleDeleteAction}
               />
             </HistoryPanelMenu>
           </HistoryPanelItems>
@@ -494,8 +509,8 @@ function ChatHistory() {
 
         {showDeletePanel && (
           <HistoryDeletePanel
-            onHistoryDeleteCancel={handleDeleteCancel}
-            onHistoryDeleteConfirm={handleDeleteConfirm}
+            onCancel={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
           >
             <div slot="title">Confirm Delete</div>
             <div slot="description">

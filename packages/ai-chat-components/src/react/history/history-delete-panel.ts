@@ -18,8 +18,8 @@ const HistoryDeletePanel = withWebComponentBridge(
     elementClass: CDSAIChatHistoryDeletePanel,
     react: React,
     events: {
-      onHistoryDeleteCancel: "history-delete-cancel",
-      onHistoryDeleteConfirm: "history-delete-confirm",
+      onCancel: "history-delete-cancel",
+      onConfirm: "history-delete-confirm",
     },
   }),
 );

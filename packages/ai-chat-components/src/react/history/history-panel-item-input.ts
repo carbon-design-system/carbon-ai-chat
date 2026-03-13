@@ -18,8 +18,8 @@ const HistoryPanelItemInput = withWebComponentBridge(
     elementClass: CDSAIChatHistoryPanelItemInput,
     react: React,
     events: {
-      onInputCancel: "cds-aichat-history-panel-item-input-cancel",
-      onInputSave: "cds-aichat-history-panel-item-input-save",
+      onInputCancel: "history-panel-item-input-cancel",
+      onInputSave: "history-panel-item-input-save",
     },
   }),
 );

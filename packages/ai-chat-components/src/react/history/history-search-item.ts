@@ -18,7 +18,7 @@ const HistorySearchItem = withWebComponentBridge(
     elementClass: CDSAIChatHistorySearchItem,
     react: React,
     events: {
-      onHistorySearchItemSelected: "history-search-item-selected",
+      onSelected: "history-search-item-selected",
     },
   }),
 );

@@ -125,7 +125,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       composed: true,
     };
     const inputCancelEvent = new CustomEvent(
-      `${prefix}-history-panel-item-input-cancel`,
+      "history-panel-item-input-cancel",
       init,
     );
     this.dispatchEvent(inputCancelEvent);
@@ -145,7 +145,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       },
     };
     const inputSaveEvent = new CustomEvent(
-      `${prefix}-history-panel-item-input-save`,
+      "history-panel-item-input-save",
       init,
     );
     this.dispatchEvent(inputSaveEvent);

@@ -18,7 +18,7 @@ const HistoryHeader = withWebComponentBridge(
     elementClass: CDSAIChatHistoryHeader,
     react: React,
     events: {
-      onHistoryHeaderCloseClick: "history-header-close-click",
+      onClose: "history-header-close-click",
     },
   }),
 );
