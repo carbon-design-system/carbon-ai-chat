@@ -40,6 +40,10 @@ function createCustomPanelInstance(
       setConfig: actions.setCustomPanelConfigOptions,
       setOpen: actions.setCustomPanelOpen,
     },
+    [PanelType.HISTORY]: {
+      setConfig: actions.setCustomPanelConfigOptions,
+      setOpen: actions.setHistoryPanelOpen,
+    },
   } as const;
 
   const { setConfig, setOpen } =

@@ -17,6 +17,7 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
+import { updateHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
 
 import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
@@ -83,7 +84,7 @@ import {
   HasDoAutoScroll,
 } from "../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
-import { MessageSendSource } from "../types/events/eventBusTypes";
+import { MessageSendSource, BusEventType } from "../types/events/eventBusTypes";
 import { CarbonTheme } from "../types/config/PublicConfig";
 
 import styles from "./AppShell.scss";
@@ -139,6 +140,7 @@ export default function AppShell({
     assistantMessageState,
     humanAgentState,
     workspacePanelState,
+    historyPanelState,
     allMessageItemsByID,
     allMessagesByID,
     catastrophicErrorType,
@@ -327,6 +329,44 @@ export default function AppShell({
     onPanelCloseEnd,
   } = usePanelCallbacks({ requestFocus });
 
+  // Header config override for mobile history
+  const headerConfigOverride = useMemo(() => {
+    if (!historyPanelState.isMobile) {
+      return undefined;
+    }
+
+    return {
+      isOn: true,
+      menuOptions: [
+        {
+          text: languagePack.history_new_chat,
+          handler: () => {
+            serviceManager.fire({
+              type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+            });
+          },
+        },
+        {
+          text: languagePack.history_view_chats,
+          handler: () => {
+            serviceManager.fire({
+              type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+            });
+
+            serviceManager.store.dispatch(actions.setHistoryPanelOpen(true));
+          },
+        },
+        ...(config.derived.header?.menuOptions || []),
+      ],
+    };
+  }, [
+    historyPanelState.isMobile,
+    config.derived.header,
+    serviceManager,
+    languagePack.history_new_chat,
+    languagePack.history_view_chats,
+  ]);
+
   // Resize observer
   const handleResize = useCallback(() => {
     const container = widgetContainerRef.current;
@@ -343,7 +383,15 @@ export default function AppShell({
     serviceManager.store.dispatch(
       actions.setAppStateValue("chatWidthBreakpoint", breakpoint),
     );
-  }, [serviceManager, widgetContainerRef]);
+
+    // Update history mobile detection
+    updateHistoryMobileDetection({
+      width,
+      container,
+      useCustomHostElement,
+      serviceManager,
+    });
+  }, [widgetContainerRef, useCustomHostElement, serviceManager]);
 
   useResizeObserver({
     containerRef: widgetContainerRef,
@@ -479,6 +527,7 @@ export default function AppShell({
               contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
+              showHistory={config.public.history?.isOn ?? false}
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
               historyAriaLabel={languagePack.aria_historyRegion}
               messagesAriaLabel={languagePack.aria_messagesRegion}
@@ -509,6 +558,7 @@ export default function AppShell({
                 responsePanelState={responsePanelState}
                 responsePanelRef={responsePanelRef}
                 requestFocus={requestFocus}
+                historyPanelState={historyPanelState}
                 iFramePanelState={iFramePanelState}
                 iframePanelRef={iframePanelRef}
                 viewSourcePanelState={viewSourcePanelState}
@@ -519,7 +569,7 @@ export default function AppShell({
                 catastrophicErrorType={catastrophicErrorType}
               />
 
-              {config.derived.header?.isOn && (
+              {(config.derived.header?.isOn || headerConfigOverride?.isOn) && (
                 <div slot="header">
                   <Header
                     onClose={onClose}
@@ -527,6 +577,7 @@ export default function AppShell({
                     headerDisplayName={headerDisplayName}
                     onToggleHomeScreen={onToggleHomeScreen}
                     isHomeScreenActive={showHomeScreen}
+                    headerConfigOverride={headerConfigOverride}
                   />
                 </div>
               )}
@@ -608,6 +659,14 @@ export default function AppShell({
                   slotName={WriteableElementName.WORKSPACE_PANEL_ELEMENT}
                   className="cds-aichat--workspace-writeable-element cds-aichat--widget--expand-to-fit"
                   id={`workspacePanelElement${serviceManager.namespace.suffix}`}
+                />
+              </div>
+
+              <div slot="history" className="cds-aichat--widget--expand-to-fit">
+                <WriteableElement
+                  slotName={WriteableElementName.HISTORY_PANEL_ELEMENT}
+                  className="cds-aichat--history-writeable-element cds-aichat--widget--expand-to-fit"
+                  id={`historyPanelElement${serviceManager.namespace.suffix}`}
                 />
               </div>
             </ChatShell>

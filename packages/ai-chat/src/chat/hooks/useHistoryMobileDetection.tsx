@@ -1,0 +1,69 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { getCSSVariableValue } from "../utils/colors";
+import actions from "../store/actions";
+import { ServiceManager } from "../services/ServiceManager";
+
+interface UpdateHistoryMobileDetectionParams {
+  width: number;
+  container: HTMLElement;
+  useCustomHostElement: boolean;
+  serviceManager: ServiceManager;
+}
+
+/**
+ * Updates history panel mobile mode based on container width.
+ *
+ * This function determines if the history panel should be in mobile mode by:
+ * - Checking if the app is in float mode (ChatContainer)
+ * - Comparing container width against required width for history panel
+ * - Reading CSS custom properties for messages min width and history width
+ *
+ * Float mode (ChatContainer) always uses mobile mode.
+ * Otherwise, history is shown when width >= messagesMinWidth + historyWidth
+ * (same logic as shell.ts)
+ */
+export function updateHistoryMobileDetection({
+  width,
+  container,
+  useCustomHostElement,
+  serviceManager,
+}: UpdateHistoryMobileDetectionParams): void {
+  // Float mode (ChatContainer) always uses mobile mode
+  const isFloatMode = !useCustomHostElement;
+
+  // Helper to parse CSS length value with fallback
+  const parseCSSLength = (variableName: string, fallback: number): number => {
+    const value = getCSSVariableValue(variableName, container);
+    if (!value) {
+      return fallback;
+    }
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
+  };
+
+  const messagesMinWidth = parseCSSLength(
+    "--cds-aichat-messages-min-width",
+    320,
+  );
+  const historyWidth = parseCSSLength("--cds-aichat-history-width", 320);
+  const requiredWidthForHistory = messagesMinWidth + historyWidth;
+  const shouldBeMobile = isFloatMode || width < requiredWidthForHistory;
+
+  // Get current state directly from store to avoid dependency loop
+  const currentState = serviceManager.store.getState();
+  const currentIsMobile = currentState.historyPanelState.isMobile;
+
+  if (currentIsMobile !== shouldBeMobile) {
+    serviceManager.store.dispatch(
+      actions.setHistoryPanelOptions(shouldBeMobile),
+    );
+  }
+}
