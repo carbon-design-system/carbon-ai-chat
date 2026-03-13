@@ -14,7 +14,6 @@ import { carbonIconToReact } from "../../utils/carbonIcon";
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import FileUploaderItem, {
   FILE_UPLOADER_ITEM_SIZE,
-  FILE_UPLOADER_ITEM_STATE,
 } from "../../components/carbon/FileUploaderItem";
 import cx from "classnames";
 import React, {
@@ -49,6 +48,7 @@ import {
   ContentEditableInputHandle,
   ContentEditableChange,
 } from "./ContentEditableInput";
+import { getFileUploaderItemDisplayProps } from "./fileUploaderItemStateUtils";
 import { BusEventType } from "../../../types/events/eventBusTypes";
 import { PageObjectId } from "../../../testing/PageObjectId";
 import {
@@ -149,6 +149,15 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
   onFilesSelectedForUpload?: (files: FileUpload[]) => void;
 
   /**
+   * Optional override for the remove-file action. When provided, this is called instead of
+   * dispatching the default `removeFileUpload` Redux action. Use this in the assistant upload
+   * context where pending uploads are tracked separately from the human-agent file list.
+   *
+   * @param fileID The ID of the file to remove.
+   */
+  onRemoveFile?: (fileID: string) => void;
+
+  /**
    * Determines if the "stop streaming" button should be visible. This also indicates that a streamed response can be
    * cancelled.
    */
@@ -191,6 +200,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     allowMultipleFileUploads,
     showUploadButton,
     onFilesSelectedForUpload,
+    onRemoveFile: onRemoveFileProp,
     onSendInput,
     blurOnSend,
     serviceManager,
@@ -383,20 +393,29 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   /**
    * The callback that is called when the user removes a file from the upload area.
+   * If an `onRemoveFile` prop was provided (e.g. for the assistant upload context), it is
+   * called instead of the default Redux dispatch.
    */
   function onRemoveFile(fileID: string) {
-    const isInputToHumanAgent = selectIsInputToHumanAgent(
-      serviceManager.store.getState(),
-    );
-    serviceManager.store.dispatch(
-      actions.removeFileUpload(fileID, isInputToHumanAgent),
-    );
+    if (onRemoveFileProp) {
+      onRemoveFileProp(fileID);
+    } else {
+      const isInputToHumanAgent = selectIsInputToHumanAgent(
+        serviceManager.store.getState(),
+      );
+      serviceManager.store.dispatch(
+        actions.removeFileUpload(fileID, isInputToHumanAgent),
+      );
+    }
     // After we remove the file, we need to move focus back to the input field.
     textAreaRef.current?.takeFocus();
   }
 
   /**
    * The callback that is called when the user selects a file using the file input.
+   * In the human-agent context, files are also added to the Redux `files[]` array via
+   * `addInputFile`. In the assistant upload context (`isInputToHumanAgent === false`),
+   * only `onFilesSelectedForUpload` is called — the upload lifecycle is managed externally.
    */
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     const isInputToHumanAgent = selectIsInputToHumanAgent(
@@ -412,7 +431,12 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         file: files[index],
       };
       newFiles.push(newFile);
-      dispatch(actions.addInputFile(newFile, isInputToHumanAgent));
+      // Only add to the human-agent file list when in human-agent mode.
+      // In the assistant upload context, the upload lifecycle is managed by
+      // handleFileSelectedForUpload via the onFilesSelectedForUpload callback.
+      if (isInputToHumanAgent) {
+        dispatch(actions.addInputFile(newFile, true));
+      }
     }
     onFilesSelectedForUpload?.(newFiles);
 
@@ -524,14 +548,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
             {Boolean(pendingUploads?.length) && (
               <div className="cds-aichat--input-container__files-container">
                 {pendingUploads.map((fileUpload, index) => {
+                  const fileUploaderItemDisplayProps =
+                    getFileUploaderItemDisplayProps(fileUpload, languagePack);
+
                   return (
                     <FileUploaderItem
                       // eslint-disable-next-line react/no-array-index-key
                       key={index}
                       iconDescription={
-                        languagePack.fileSharing_removeButtonTitle
+                        fileUploaderItemDisplayProps.iconDescription
                       }
-                      state={FILE_UPLOADER_ITEM_STATE.EDIT}
+                      state={fileUploaderItemDisplayProps.state}
                       errorSubject={fileUpload.errorMessage}
                       invalid={fileUpload.isError}
                       size={FILE_UPLOADER_ITEM_SIZE.SMALL}

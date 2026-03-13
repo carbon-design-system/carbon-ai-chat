@@ -116,13 +116,21 @@ export class ConfigManager {
       return;
     }
 
-    // Create config copy without customSendMessage for serialization
+    // Create config copy without non-serializable functions (functions cannot be JSON stringified)
     const configForSerialization: PublicConfig = {
       ...config,
       messaging: config.messaging
         ? {
             ...config.messaging,
             customSendMessage: undefined,
+          }
+        : undefined,
+      // Strip onFileUpload (function) so it doesn't appear as "[object Object]" in the URL.
+      // It will be re-injected by getSettings() on page load when upload.is_on === true.
+      upload: config.upload
+        ? {
+            ...config.upload,
+            onFileUpload: undefined,
           }
         : undefined,
     };

@@ -132,7 +132,10 @@ export {
   OnErrorType,
   PublicConfig,
   PublicConfigMessaging,
+  UploadConfig,
 } from "./types/config/PublicConfig";
+
+export { PendingUpload, PendingUploadStatus } from "./types/state/AppState";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -232,6 +235,13 @@ export {
   MessageHistoryFeedback,
   SearchResult,
   UserType,
+  StructuredData,
+  StructuredField,
+  StructuredFieldType,
+  StructuredFieldValue,
+  InlineFile,
+  ExternalFileReference,
+  FileFieldValue,
 } from "./types/messaging/Messages";
 
 export { HistoryItem } from "./types/messaging/History";

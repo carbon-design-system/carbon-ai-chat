@@ -50,6 +50,7 @@ import { useWorkspaceAnnouncements } from "./hooks/useWorkspaceAnnouncements";
 import { useStyleInjection } from "./hooks/useStyleInjection";
 import { useDerivedState } from "./hooks/useDerivedState";
 import { useHumanAgentCallbacks } from "./hooks/useHumanAgentCallbacks";
+import { useAssistantUploadCallbacks } from "./hooks/useAssistantUploadCallbacks";
 import { usePanelCallbacks } from "./hooks/usePanelCallbacks";
 import { useInputCallbacks } from "./hooks/useInputCallbacks";
 import { useResizeObserver } from "./hooks/useResizeObserver";
@@ -77,7 +78,11 @@ import {
   getThemeClassNames,
 } from "./utils/styleUtils";
 
-import { AppState, ChatWidthBreakpoint } from "../types/state/AppState";
+import {
+  AppState,
+  ChatWidthBreakpoint,
+  PendingUpload,
+} from "../types/state/AppState";
 import {
   AutoScrollOptions,
   HasDoAutoScroll,
@@ -85,6 +90,8 @@ import {
 import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
 import { MessageSendSource } from "../types/events/eventBusTypes";
 import { CarbonTheme } from "../types/config/PublicConfig";
+import { FileStatusValue } from "./utils/constants";
+import type { FileUpload } from "../types/config/ServiceDeskConfig";
 
 import styles from "./AppShell.scss";
 import { PageObjectId } from "../testing/PageObjectId";
@@ -318,6 +325,42 @@ export default function AppShell({
     allowMultipleFileUploads: inputState.allowMultipleFileUploads,
     requestInputFocus,
   });
+
+  // Assistant upload callbacks (non-human-agent context)
+  const { onAssistantFilesSelectedForUpload, onRemoveAssistantUpload } =
+    useAssistantUploadCallbacks({ serviceManager });
+
+  // Determine whether the assistant upload button should be shown.
+  // It is shown when UploadConfig.is_on is true AND we are not in a human-agent session.
+  const uploadConfig = publicConfig.upload;
+  const isAssistantUploadEnabled =
+    uploadConfig?.is_on === true &&
+    Boolean(uploadConfig.onFileUpload) &&
+    !agentDisplayState.isConnectingOrConnected;
+
+  // Map PendingUpload[] → FileUpload[] so the shared Input component can render them.
+  // PendingUpload uses status "uploading" | "complete" | "error"; FileUpload uses FileStatusValue.
+  const assistantPendingUploadsForDisplay: FileUpload[] = useMemo(
+    () =>
+      inputState.pendingUploads.map((u: PendingUpload) => ({
+        id: u.id,
+        file: u.file,
+        status:
+          u.status === "uploading"
+            ? FileStatusValue.UPLOADING
+            : FileStatusValue.EDIT,
+        isError: u.status === "error",
+        errorMessage: u.errorMessage,
+      })),
+    [inputState.pendingUploads],
+  );
+
+  // Disable the assistant upload button when the max number of files has been reached.
+  // Only disable if maxFiles is explicitly configured; if not set, there is no limit.
+  const assistantUploadButtonDisabled =
+    isAssistantUploadEnabled &&
+    uploadConfig?.maxFiles !== undefined &&
+    inputState.pendingUploads.length >= uploadConfig.maxFiles;
 
   // Panel callbacks
   const {
@@ -580,12 +623,40 @@ export default function AppShell({
                     onSendInput(text, MessageSendSource.MESSAGE_INPUT)
                   }
                   onUserTyping={onUserTyping}
-                  showUploadButton={inputState.allowFileUploads}
-                  disableUploadButton={showUploadButtonDisabled}
-                  allowedFileUploadTypes={inputState.allowedFileUploadTypes}
-                  allowMultipleFileUploads={inputState.allowMultipleFileUploads}
-                  pendingUploads={inputState.files}
-                  onFilesSelectedForUpload={onFilesSelectedForUpload}
+                  showUploadButton={
+                    inputState.allowFileUploads || isAssistantUploadEnabled
+                  }
+                  disableUploadButton={
+                    inputState.allowFileUploads
+                      ? showUploadButtonDisabled
+                      : assistantUploadButtonDisabled
+                  }
+                  allowedFileUploadTypes={
+                    inputState.allowFileUploads
+                      ? inputState.allowedFileUploadTypes
+                      : uploadConfig?.accept
+                  }
+                  allowMultipleFileUploads={
+                    inputState.allowFileUploads
+                      ? inputState.allowMultipleFileUploads
+                      : uploadConfig?.maxFiles === undefined ||
+                        uploadConfig.maxFiles > 1
+                  }
+                  pendingUploads={
+                    inputState.allowFileUploads
+                      ? inputState.files
+                      : assistantPendingUploadsForDisplay
+                  }
+                  onFilesSelectedForUpload={
+                    inputState.allowFileUploads
+                      ? onFilesSelectedForUpload
+                      : onAssistantFilesSelectedForUpload
+                  }
+                  onRemoveFile={
+                    isAssistantUploadEnabled && !inputState.allowFileUploads
+                      ? onRemoveAssistantUpload
+                      : undefined
+                  }
                   placeholder={
                     languagePack[agentDisplayState.inputPlaceholderKey]
                   }

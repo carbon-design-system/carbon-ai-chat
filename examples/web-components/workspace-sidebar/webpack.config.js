@@ -6,47 +6,15 @@
  */
 
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import Statoscope from "@statoscope/webpack-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
-import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-
-const { default: StatoscopeWebpackPlugin } = Statoscope;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const shouldAnalyze = process.env.ANALYZE === "true";
-
 const environment = process.env.ENVIRONMENT
   ? process.env.ENVIRONMENT
   : "production";
-
-const createPlugins = (includeAnalysis) => {
-  const plugins = [
-    new HtmlWebpackPlugin({
-      template: "./index.html",
-      inject: "body",
-    }),
-  ];
-
-  if (includeAnalysis) {
-    plugins.push(
-      new StatoscopeWebpackPlugin({
-        statsOptions: { modules: true, reasons: true },
-        open: "file",
-      }),
-    );
-
-    plugins.push(new BundleAnalyzerPlugin());
-
-    console.log(
-      "Statoscope analysis enabled - report will be generated after build",
-    );
-  }
-
-  return plugins;
-};
 
 export default () => {
   const port = process.env.PORT || 3006;
@@ -61,10 +29,6 @@ export default () => {
     },
     resolve: {
       extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
-    },
-    stats: {
-      modules: true, // list modules
-      reasons: true, // include why they were included
     },
     module: {
       rules: [
@@ -90,7 +54,12 @@ export default () => {
         },
       ],
     },
-    plugins: createPlugins(shouldAnalyze),
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: "./index.html",
+        inject: "body",
+      }),
+    ],
     devtool: "source-map",
     devServer: {
       static: path.join(__dirname, "dist"),

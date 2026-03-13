@@ -170,6 +170,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     homescreen,
     launcher,
     input,
+    upload,
   } = props;
 
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
@@ -238,6 +239,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           locale={locale}
           homescreen={homescreen}
           launcher={launcher}
+          upload={upload}
           // Other ChatContainer props
           strings={strings}
           serviceDeskFactory={serviceDeskFactory}

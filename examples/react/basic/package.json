@@ -6,8 +6,7 @@
   "description": "A basic example using @carbon/ai-chat as a React component.",
   "scripts": {
     "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
-    "build": "webpack --config ./webpack.config.js",
-    "build:profile": "ANALYZE=true webpack --config ./webpack.config.js"
+    "build": "webpack --config ./webpack.config.js"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -17,15 +16,13 @@
     "@carbon/web-components": "^2.46.0",
     "lit": "^3.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "webpack-bundle-analyzer": "^4.10.2"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
-    "@statoscope/webpack-plugin": "^5.29.0",
     "babel-loader": "^9.2.1",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
