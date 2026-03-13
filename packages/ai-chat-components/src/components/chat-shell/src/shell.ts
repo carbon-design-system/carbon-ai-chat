@@ -339,6 +339,7 @@ class CDSAIChatShell extends LitElement {
         data-internal-panel
         ?open=${this.workspacePanelOpen}
         full-width
+        no-scroll
         show-chat-header
         body-no-padding
         animation-on-open=${animationOnOpen}
