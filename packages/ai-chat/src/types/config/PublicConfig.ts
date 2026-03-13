@@ -368,11 +368,6 @@ export interface HistoryConfig {
    * Indicates if the history panel should be shown.
    */
   isOn?: boolean;
-
-  /**
-   * Indicates if the history panel should be shown on chat panel.
-   */
-  isMobile?: boolean;
 }
 
 /**

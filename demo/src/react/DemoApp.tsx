@@ -214,12 +214,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           location="historyPanelElement"
           instance={instance as ChatInstance}
           parentStateText={stateText}
-          isMobile={instance?.getState().history.isMobile ?? false}
+          isMobile={instance?.getState().customPanels.history.isMobile ?? false}
         />
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [instance, instance?.getState().history.isMobile],
+    [instance, instance?.getState().customPanels.history.isMobile],
   );
 
   /**
@@ -302,6 +302,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           setWorkspaceExpanded(false);
         }
       },
+    });
+
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+      handler: () => console.log("open new history chat"),
     });
 
     // Handle feedback event.

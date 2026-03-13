@@ -180,13 +180,6 @@ export type PublicChatState = Readonly<
      * @experimental
      */
     workspace: PublicWorkspaceCustomPanelState;
-
-    /**
-     * State for the chat history.
-     *
-     * @experimental
-     */
-    history: PublicHistoryPanelState;
   }
 >;
 

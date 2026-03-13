@@ -84,7 +84,7 @@ import {
   HasDoAutoScroll,
 } from "../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
-import { MessageSendSource } from "../types/events/eventBusTypes";
+import { MessageSendSource, BusEventType } from "../types/events/eventBusTypes";
 import { CarbonTheme } from "../types/config/PublicConfig";
 
 import styles from "./AppShell.scss";
@@ -339,21 +339,33 @@ export default function AppShell({
       isOn: true,
       menuOptions: [
         {
-          text: "New chat",
+          text: languagePack.history_new_chat,
           handler: () => {
-            console.log("New chat clicked");
+            serviceManager.fire({
+              type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+            });
           },
         },
         {
-          text: "View chats",
+          text: languagePack.history_view_chats,
           handler: () => {
+            serviceManager.fire({
+              type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+            });
+
             serviceManager.store.dispatch(actions.setHistoryPanelOpen(true));
           },
         },
         ...(config.derived.header?.menuOptions || []),
       ],
     };
-  }, [historyPanelState.isMobile, config.derived.header, serviceManager]);
+  }, [
+    historyPanelState.isMobile,
+    config.derived.header,
+    serviceManager,
+    languagePack.history_new_chat,
+    languagePack.history_view_chats,
+  ]);
 
   // Resize observer
   const handleResize = useCallback(() => {
