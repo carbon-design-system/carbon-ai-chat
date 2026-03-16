@@ -339,6 +339,7 @@ class CDSAIChatShell extends LitElement {
         data-internal-panel
         ?open=${this.workspacePanelOpen}
         full-width
+        no-scroll
         show-chat-header
         body-no-padding
         animation-on-open=${animationOnOpen}
@@ -839,10 +840,6 @@ class CDSAIChatShell extends LitElement {
       const shouldSuppressAnimation =
         this.lastWorkspaceInPanel &&
         (workspaceState?.containerVisible ?? false);
-
-      console.log("[syncWorkspacePanelState] CLOSING PANEL", {
-        shouldSuppressAnimation,
-      });
 
       this.suppressWorkspacePanelCloseAnimation = shouldSuppressAnimation;
       this.cancelWorkspacePanelOpenSchedule();

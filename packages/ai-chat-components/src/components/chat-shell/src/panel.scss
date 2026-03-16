@@ -244,6 +244,13 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   }
 }
 
+// No scroll on panel body, allows for slotted elements to set their own scroll configurations
+:host(.panel--no-scroll) {
+  .panel-body {
+    overflow: hidden;
+  }
+}
+
 :host(.panel--body--no-padding) {
   .panel-body {
     padding: 0;

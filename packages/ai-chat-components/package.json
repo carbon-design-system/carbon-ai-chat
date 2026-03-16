@@ -104,7 +104,7 @@
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@happy-dom/jest-environment": "^20.0.2",
     "@isaacs/brace-expansion": "^5.0.0",
-    "@mordech/vite-lit-loader": "^0.37.0",
+    "@mordech/vite-lit-loader": "^0.38.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",

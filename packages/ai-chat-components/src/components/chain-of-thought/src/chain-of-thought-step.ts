@@ -324,9 +324,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
         <span class="${baseClass}-header-title">
           <slot name="title">${headerTitle}</slot>
         </span>
-        <span class="${statusClass}" aria-hidden="false"
-          >${this.renderStatusIcon()}</span
-        >
+        <span class="${statusClass}">${this.renderStatusIcon()}</span>
       </button>
     `;
   }
@@ -356,7 +354,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
         id=${this.contentId}
         class="${baseClass}-content"
         part="wrapper"
-        aria-hidden="${this.open && !isHidden ? "false" : "true"}"
+        ?aria-hidden=${!this.open}
         role=${ifDefined(!isHidden ? "region" : undefined)}
         aria-labelledby=${ifDefined(!isHidden ? this.headerId : undefined)}
         ?hidden=${isHidden || !this.open}

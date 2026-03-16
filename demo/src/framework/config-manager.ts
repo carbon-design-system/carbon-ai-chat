@@ -51,7 +51,43 @@ export class ConfigManager {
           oldConfig.messaging?.customSendMessage ||
           customSendMessage,
       },
+      // Properly merge keyboardShortcuts with deep merge for nested messageFocusToggle
+      keyboardShortcuts:
+        newConfig.keyboardShortcuts || oldConfig.keyboardShortcuts
+          ? ({
+              ...(oldConfig.keyboardShortcuts || {}),
+              ...(newConfig.keyboardShortcuts || {}),
+              messageFocusToggle:
+                oldConfig.keyboardShortcuts?.messageFocusToggle ||
+                newConfig.keyboardShortcuts?.messageFocusToggle
+                  ? {
+                      key:
+                        newConfig.keyboardShortcuts?.messageFocusToggle?.key ||
+                        oldConfig.keyboardShortcuts?.messageFocusToggle?.key ||
+                        "F6",
+                      modifiers: {
+                        ...(oldConfig.keyboardShortcuts?.messageFocusToggle
+                          ?.modifiers || {}),
+                        ...(newConfig.keyboardShortcuts?.messageFocusToggle
+                          ?.modifiers || {}),
+                      },
+                      is_on:
+                        newConfig.keyboardShortcuts?.messageFocusToggle
+                          ?.is_on ??
+                        oldConfig.keyboardShortcuts?.messageFocusToggle
+                          ?.is_on ??
+                        true,
+                    }
+                  : undefined,
+            } as any)
+          : undefined,
     };
+
+    console.log("[ConfigManager] Processing config change:", {
+      oldConfig: oldConfig.keyboardShortcuts,
+      newConfig: newConfig.keyboardShortcuts,
+      mergedConfig: config.keyboardShortcuts,
+    });
 
     // Explicitly remove top-level sections that were set back to default (undefined)
     if (

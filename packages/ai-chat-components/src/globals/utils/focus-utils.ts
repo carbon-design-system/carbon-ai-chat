@@ -8,6 +8,52 @@
  */
 
 /**
+ * Gets the deepest active element, traversing through all shadow DOM boundaries.
+ * This handles nested shadow roots, slotted elements, and will return the actual
+ * focused element regardless of how many shadow DOM levels exist.
+ *
+ * @returns The deepest active element, or null if no element has focus
+ */
+function getDeepActiveElement(): Element | null {
+  let activeElement = document.activeElement;
+
+  // Traverse through all shadow DOM levels and handle slotted elements
+  while (activeElement) {
+    // If the active element is a slot, get the actual assigned element that has focus
+    if (activeElement instanceof HTMLSlotElement) {
+      const assignedElements = activeElement.assignedElements({
+        flatten: true,
+      });
+      // Find which assigned element actually has focus
+      const focusedAssigned = assignedElements.find((el) => {
+        if ((el as any).shadowRoot?.activeElement) {
+          return true;
+        }
+        return (
+          el === document.activeElement || el.contains(document.activeElement)
+        );
+      });
+      if (focusedAssigned) {
+        activeElement = focusedAssigned;
+        continue;
+      }
+    }
+
+    // Check if there's a shadow root with an active element
+    const shadowRoot = (activeElement as any).shadowRoot;
+    if (shadowRoot?.activeElement) {
+      activeElement = shadowRoot.activeElement;
+      continue;
+    }
+
+    // No deeper level found
+    break;
+  }
+
+  return activeElement;
+}
+
+/**
  * Checks if an element should be ignored due to visibility or accessibility attributes.
  *
  * @param element - The DOM element to check
@@ -72,7 +118,8 @@ function isFocusable(element: Element): boolean {
 /**
  * Attempts to focus an element if it's focusable, visible, and not disabled.
  * This is an enhanced version that checks visibility, accessibility attributes,
- * and proper focusability before attempting to set focus.
+ * and proper focusability before attempting to set focus. It is shadow DOM aware
+ * and handles slotted elements correctly.
  *
  * @param element - The element to attempt to focus
  * @param exceptions - Array of selectors to ignore when checking visibility (e.g., 'dialog', '[popover]')
@@ -96,13 +143,20 @@ function tryFocus(
     return false;
   }
 
-  // Attempt to focus
-  const previousActiveElement = document.activeElement;
-  element.focus();
+  // Get the current deep active element (shadow DOM aware)
+  const previousActiveElement = getDeepActiveElement();
 
-  // Verify focus was actually set by checking if activeElement changed
-  // This works across shadow DOM boundaries and with delegatesFocus configurations
-  return previousActiveElement !== document.activeElement;
+  // Only call focus if the element doesn't already have focus
+  if (previousActiveElement !== element) {
+    element.focus();
+  }
+
+  // Verify focus was actually set by checking the deep active element
+  // This works across shadow DOM boundaries, with slotted elements, and delegatesFocus configurations
+  const currentActiveElement = getDeepActiveElement();
+  return (
+    currentActiveElement === element || element.contains(currentActiveElement)
+  );
 }
 
 /**
@@ -166,6 +220,7 @@ function getFirstAndLastFocusableChildren(
 }
 
 export {
+  getDeepActiveElement,
   isElementInvisible,
   isFocusable,
   tryFocus,

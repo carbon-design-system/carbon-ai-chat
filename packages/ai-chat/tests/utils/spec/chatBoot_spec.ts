@@ -43,6 +43,42 @@ describe("chatBoot utils", () => {
       );
       expect(publicConfig.exposeServiceManagerForTesting).toBe(true);
     });
+
+    it("sets default assistantName to 'watsonx'", () => {
+      const base = createBaseTestProps();
+      const publicConfig = mergePublicConfig(base);
+
+      // Default assistantName should be set
+      expect(publicConfig.assistantName).toBe("watsonx");
+    });
+
+    it("preserves custom assistantName when provided", () => {
+      const base = createBaseTestProps();
+      base.assistantName = "Custom Assistant";
+      const publicConfig = mergePublicConfig(base);
+
+      // Custom assistantName should be preserved
+      expect(publicConfig.assistantName).toBe("Custom Assistant");
+    });
+
+    it("uses default assistantName when not provided", () => {
+      const base = createBaseTestProps();
+      // Explicitly not setting assistantName
+      delete (base as any).assistantName;
+      const publicConfig = mergePublicConfig(base);
+
+      // Should fall back to default
+      expect(publicConfig.assistantName).toBe("watsonx");
+    });
+
+    it("allows empty string as assistantName", () => {
+      const base = createBaseTestProps();
+      base.assistantName = "";
+      const publicConfig = mergePublicConfig(base);
+
+      // Empty string should be preserved
+      expect(publicConfig.assistantName).toBe("");
+    });
   });
 
   describe("initServiceManagerAndInstance", () => {

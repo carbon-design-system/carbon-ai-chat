@@ -39,6 +39,7 @@ import { loadLocale } from "./languageUtils";
  * branches. Callers can override any of these via the incoming partial config.
  */
 export const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
+  assistantName: "watsonx",
   openChatByDefault: false,
   shouldTakeFocusIfOpensAutomatically: true,
   serviceDesk: {},
