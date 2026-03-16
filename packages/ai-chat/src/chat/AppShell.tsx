@@ -406,28 +406,8 @@ export default function AppShell({
     // Check if shortcuts are enabled (default to false if not specified)
     const shortcutsEnabled = shortcutConfig.is_on === true;
 
-    console.log("[AppShell] Keyboard shortcut config:", {
-      fullConfig: publicConfig.keyboardShortcuts,
-      messageFocusToggle: publicConfig.keyboardShortcuts?.messageFocusToggle,
-      shortcutConfig,
-      shortcutsEnabled,
-      is_on: shortcutConfig.is_on,
-    });
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Log F6 key presses for debugging
-      if (event.key === "F6" || event.code === "F6") {
-        console.log("[AppShell] F6 key pressed:", {
-          key: event.key,
-          code: event.code,
-          shortcutsEnabled,
-          matchesShortcut: matchesShortcut(event, shortcutConfig),
-          shortcutConfig,
-        });
-      }
-
       if (shortcutsEnabled && matchesShortcut(event, shortcutConfig)) {
-        console.log("[AppShell] Shortcut matched! Toggling focus.");
         // Always handle the shortcut, even if it originates from the input field
         event.preventDefault();
         event.stopPropagation();

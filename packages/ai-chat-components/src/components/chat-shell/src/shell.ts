@@ -840,10 +840,6 @@ class CDSAIChatShell extends LitElement {
         this.lastWorkspaceInPanel &&
         (workspaceState?.containerVisible ?? false);
 
-      console.log("[syncWorkspacePanelState] CLOSING PANEL", {
-        shouldSuppressAnimation,
-      });
-
       this.suppressWorkspacePanelCloseAnimation = shouldSuppressAnimation;
       this.cancelWorkspacePanelOpenSchedule();
       if (this.workspacePanelOpen) {
