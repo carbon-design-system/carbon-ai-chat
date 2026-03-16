@@ -69,6 +69,7 @@ import {
 import { FileStatusValue } from "../utils/constants";
 import { doFocusRef } from "../utils/domUtils";
 import {
+  getSpeakerName,
   isConnectToHumanAgent,
   isFullWidthUserDefined,
   isOptionItem,
@@ -302,28 +303,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   private isAgent: boolean;
 
-  private getSpeakerName() {
-    const { message, assistantName } = this.props;
-    const response = message as MessageResponse;
-
-    // Get the response user profile if available
-    const responseUserProfile = response.message_options?.response_user_profile;
-
-    const speakerName = responseUserProfile
-      ? responseUserProfile.nickname === "watsonx" && assistantName
-        ? assistantName
-        : responseUserProfile.nickname
-      : assistantName;
-
-    return speakerName;
-  }
-
   /**
    * Returns an ARIA message that can be used to indicate that the widget (either assistant or agent) was responsible for
    * saying a specific message.
    */
   private getWidgetSaidMessage() {
-    const { intl, localMessageItem } = this.props;
+    const { intl, localMessageItem, message, assistantName } = this.props;
     let messageId: keyof LanguagePack;
 
     if (localMessageItem.item.agent_message_type) {
@@ -340,7 +325,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     return messageId
       ? intl.formatMessage(
           { id: messageId },
-          { assistantName: this.getSpeakerName() },
+          {
+            assistantName: getSpeakerName(
+              message as MessageResponse,
+              assistantName,
+            ),
+          },
         )
       : null;
   }
@@ -408,7 +398,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * @see renderFocusHandle
    */
   public requestHandleFocus() {
-    const { languagePack, intl, message } = this.props;
+    const { languagePack, intl, message, assistantName } = this.props;
 
     // Announce who said it and then the actual message. The "Assistant said" text is normally only read once per
     // MessageResponse instead of once per LocalMessage but since we're moving focus between each LocalMessage, go
@@ -417,7 +407,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       ? languagePack.messages_youSaid
       : intl.formatMessage(
           { id: "messages_assistantSaid" },
-          { assistantName: this.getSpeakerName() },
+          {
+            assistantName: getSpeakerName(
+              message as MessageResponse,
+              assistantName,
+            ),
+          },
         );
 
     const strings: string[] = [whoAnnouncement];

@@ -50,6 +50,7 @@ import {
   createMessageRequestForText,
   createMessageResponseForText,
   createWelcomeRequest,
+  getSpeakerName,
   hasServiceDesk,
   isConnectToHumanAgent,
   isPause,
@@ -784,13 +785,8 @@ class ChatActionsImpl {
     const message = store.getState().allMessagesByID[messageID] as
       | MessageResponse
       | undefined;
-    const responseUserProfile = message?.message_options?.response_user_profile;
 
-    const speakerName = responseUserProfile
-      ? responseUserProfile.nickname === "watsonx" && assistantName
-        ? assistantName
-        : responseUserProfile.nickname
-      : assistantName;
+    const speakerName = getSpeakerName(message, assistantName);
 
     store.dispatch(
       actions.announceMessage({
