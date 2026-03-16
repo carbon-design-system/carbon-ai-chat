@@ -21,6 +21,33 @@ import PinFilled16 from "@carbon/icons/es/pin--filled/16.js";
 import Search16 from "@carbon/icons/es/search/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 
+// Return id of selected chat item or undefined if no item is selected
+const findSelectedItemId = (pinnedItems, regularItems) => {
+  // Check pinned items
+  const selectedPinned = pinnedItems.find((item) => item.selected);
+  if (selectedPinned) {
+    return selectedPinned.id;
+  }
+
+  // Checked regular items
+  for (const section of regularItems) {
+    const selectedChat = section.chats.find((chat) => chat.selected);
+    if (selectedChat) {
+      return selectedChat.id;
+    }
+  }
+
+  return undefined;
+};
+
+// Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
+const getIndexByTimestamp = (items, timestamp) => {
+  const index = items.findIndex(
+    (item) => timestamp >= Date.parse(item.lastUpdated),
+  );
+  return index === -1 ? items.length : index;
+};
+
 class ChatHistoryDemo extends LitElement {
   static properties = {
     headerTitle: { type: String, attribute: "header-title" },
@@ -28,6 +55,7 @@ class ChatHistoryDemo extends LitElement {
     searchTotalCount: { type: Number },
     searchValue: { type: String },
     searchOff: { type: Boolean, attribute: "search-off" },
+    selectedId: { type: String },
     showCloseAction: { type: Boolean, attribute: "show-close-action" },
     showDeletePanel: { type: Boolean },
     itemToDelete: { type: String },
@@ -51,12 +79,16 @@ class ChatHistoryDemo extends LitElement {
     this.searchResults = [];
     this.searchTotalCount = 0;
     this.searchValue = "";
+    this.selectedId = findSelectedItemId(pinnedHistoryItems, historyItems);
     this.showDeletePanel = false;
     this.itemToDelete = null;
-    this.pinnedItems = [...pinnedHistoryItems];
+    this.pinnedItems = pinnedHistoryItems.map((item) => ({
+      ...item,
+      rename: false,
+    }));
     this.regularItems = historyItems.map((section) => ({
       ...section,
-      chats: [...section.chats],
+      chats: section.chats.map((chat) => ({ ...chat, rename: false })),
     }));
   }
 
@@ -69,19 +101,130 @@ class ChatHistoryDemo extends LitElement {
     this.addEventListener("cds-search-input", this._handleSearchInput);
     this.addEventListener("history-delete-cancel", this._handleDeleteCancel);
     this.addEventListener("history-delete-confirm", this._handleDeleteConfirm);
+    this.addEventListener("history-item-selected", this._handleSelectChat);
+    this.addEventListener(
+      "history-panel-item-input-save",
+      this._handleRenameSave,
+    );
   }
+
+  _handleSelectChat = (event) => {
+    const itemId = event.detail.itemId;
+
+    if (this.selectedId === itemId) {
+      return;
+    }
+
+    const itemExists =
+      this.pinnedItems.some((item) => item.id === itemId) ||
+      this.regularItems.some((section) =>
+        section.chats.some((chat) => chat.id === itemId),
+      );
+
+    if (itemExists) {
+      this.selectedId = itemId;
+
+      // Update pinned items
+      this.pinnedItems = this.pinnedItems.map((item) => ({
+        ...item,
+        selected: item.id === itemId,
+      }));
+
+      // Update regular items
+      this.regularItems = this.regularItems.map((section) => ({
+        ...section,
+        chats: section.chats.map((chat) => ({
+          ...chat,
+          selected: chat.id === itemId,
+        })),
+      }));
+    }
+  };
+
+  _handlePinToTop = (itemId) => {
+    const itemToPin = this.regularItems
+      .flatMap((section) => section.chats)
+      .find((chat) => chat.id === itemId);
+
+    if (itemToPin !== undefined) {
+      // Remove from regular items
+      this.regularItems = this.regularItems.map((section) => ({
+        ...section,
+        chats: section.chats.filter((chat) => chat.id !== itemToPin.id),
+      }));
+
+      // Add to start of pinned items
+      this.pinnedItems = [
+        { ...itemToPin, isPinned: true },
+        ...this.pinnedItems,
+      ];
+      this.requestUpdate();
+    }
+  };
+
+  _handleUnpin = (itemId) => {
+    const itemToUnpin = this.pinnedItems.find((chat) => chat.id === itemId);
+
+    if (itemToUnpin !== undefined) {
+      // Remove from pinned items
+      this.pinnedItems = this.pinnedItems.filter(
+        (chat) => chat.id !== itemToUnpin.id,
+      );
+
+      // Add to regular items
+      const now = new Date("Feb 10, 7:30 PM");
+      const today = now.setHours(0, 0, 0, 0);
+      const yesterday = today - 24 * 60 * 60 * 1000;
+      const itemToUnpinTs = Date.parse(itemToUnpin.lastUpdated);
+
+      let sectionMatch = "";
+      if (itemToUnpinTs > today) {
+        sectionMatch = "Today";
+      } else if (itemToUnpinTs > yesterday) {
+        sectionMatch = "Yesterday";
+      } else {
+        sectionMatch = "Previous 7 days";
+      }
+
+      const newRegularItems = this.regularItems.map((item) => {
+        if (item.section === sectionMatch) {
+          const index = getIndexByTimestamp(item.chats, itemToUnpinTs);
+          const chats = [...item.chats];
+          chats.splice(index, 0, { ...itemToUnpin, isPinned: false });
+          return {
+            ...item,
+            chats,
+          };
+        }
+        return item;
+      });
+
+      this.regularItems = newRegularItems;
+      this.requestUpdate();
+    }
+  };
 
   _handleHistoryItemAction = (event) => {
     const action = event.detail.action;
 
-    if (action === "Delete") {
-      this.itemToDelete = event.detail.itemId;
-      this.showDeletePanel = true;
-    } else if (action === "Rename") {
-      const element = event.detail.element;
-      if (element) {
-        element.rename = true;
-      }
+    switch (action) {
+      case "Delete":
+        this.itemToDelete = event.detail.itemId;
+        this.showDeletePanel = true;
+        break;
+      case "Rename":
+        if (event.detail.element) {
+          event.detail.element.rename = true;
+        }
+        break;
+      case "Pin to top":
+        this._handlePinToTop(event.detail.itemId);
+        break;
+      case "Unpin":
+        this._handleUnpin(event.detail.itemId);
+        break;
+      default:
+        break;
     }
   };
 
@@ -110,15 +253,42 @@ class ChatHistoryDemo extends LitElement {
     this.requestUpdate();
   };
 
+  _handleRenameSave = (event) => {
+    const itemId = event.detail.itemId;
+
+    if (itemId) {
+      this.pinnedItems = this.pinnedItems.map((chat) =>
+        chat.id === itemId
+          ? {
+              ...chat,
+              title: event.detail.newTitle,
+            }
+          : chat,
+      );
+
+      this.regularItems = this.regularItems.map((section) => ({
+        ...section,
+        chats: section.chats.map((chat) =>
+          chat.id === itemId
+            ? {
+                ...chat,
+                title: event.detail.newTitle,
+              }
+            : chat,
+        ),
+      }));
+    }
+  };
+
   _handleSearchInput = (event) => {
-    const searchValue = event.detail.value.toLowerCase();
+    const inputValue = event.detail.value.toLowerCase();
 
     // Combine all results into a single array
     const results = [];
 
     // Add matching pinned items
-    pinnedHistoryItems.forEach((item) => {
-      if (item.title.toLowerCase().includes(searchValue)) {
+    this.pinnedItems.forEach((item) => {
+      if (item.title.toLowerCase().includes(inputValue)) {
         results.push({
           ...item,
           isPinned: true,
@@ -127,9 +297,9 @@ class ChatHistoryDemo extends LitElement {
     });
 
     // Add matching history items
-    historyItems.forEach((section) => {
+    this.regularItems.forEach((section) => {
       section.chats.forEach((chat) => {
-        if (chat.title.toLowerCase().includes(searchValue)) {
+        if (chat.title.toLowerCase().includes(inputValue)) {
           results.push({
             ...chat,
             section: section.section,
@@ -141,7 +311,7 @@ class ChatHistoryDemo extends LitElement {
 
     this.searchResults = results;
     this.searchTotalCount = results.length;
-    this.searchValue = searchValue;
+    this.searchValue = inputValue;
   };
 
   render() {
@@ -230,6 +400,7 @@ class ChatHistoryDemo extends LitElement {
                               <cds-aichat-history-panel-item
                                 id="${chat.id}"
                                 title="${chat.title}"
+                                ?selected=${chat.selected}
                                 .actions=${historyItemActions}
                               ></cds-aichat-history-panel-item>
                             `,

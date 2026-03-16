@@ -36,9 +36,9 @@ type TooltipAlignment =
  * Chat History panel item input.
  *
  * @element cds-aichat-history-panel-item-input
- * @fires cds-aichat-history-panel-item-input-cancel
+ * @fires history-panel-item-input-cancel
  *   The custom event fired after an input is canceled.
- * @fires cds-aichat-history-panel-item-input-save
+ * @fires history-panel-item-input-save
  *   The custom event fired after an input is saved.
  */
 @carbonElement(`${prefix}-history-panel-item-input`)
@@ -125,7 +125,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       composed: true,
     };
     const inputCancelEvent = new CustomEvent(
-      `${prefix}-history-panel-item-input-cancel`,
+      "history-panel-item-input-cancel",
       init,
     );
     this.dispatchEvent(inputCancelEvent);
@@ -145,7 +145,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       },
     };
     const inputSaveEvent = new CustomEvent(
-      `${prefix}-history-panel-item-input-save`,
+      "history-panel-item-input-save",
       init,
     );
     this.dispatchEvent(inputSaveEvent);

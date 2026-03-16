@@ -18,8 +18,8 @@ const HistoryToolbar = withWebComponentBridge(
     elementClass: CDSAIChatHistoryToolbar,
     react: React,
     events: {
-      onCdsSearchInput: "cds-search-input",
-      onChatHistoryNewChatClick: "chat-history-new-chat-click",
+      onSearchInput: "cds-search-input",
+      onNewChatClick: "chat-history-new-chat-click",
     },
   }),
 );
