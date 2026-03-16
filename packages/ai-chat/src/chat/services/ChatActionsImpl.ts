@@ -758,7 +758,7 @@ class ChatActionsImpl {
         !this.announcedStreamingStarts.has(extractedMessageID)
       ) {
         this.announcedStreamingStarts.add(extractedMessageID);
-        this.announceStreamingStart(extractedMessageID);
+        this.announceStreamingStart(extractedMessageID, chunk);
       }
     }
 
@@ -773,20 +773,40 @@ class ChatActionsImpl {
   /**
    * Announces that streaming has started for a message.
    * This provides immediate feedback to screen reader users that the assistant is responding.
+   *
+   * @param messageID - The ID of the message being streamed
+   * @param chunk - The first chunk received, which may contain response_user_profile
    */
-  private announceStreamingStart(messageID: string) {
+  private announceStreamingStart(messageID: string, chunk: StreamChunk) {
     const { store } = this.serviceManager;
     const { config } = store.getState();
 
     // Get the assistant name from config
     const assistantName = config.public.assistantName;
 
-    // Get the message to check for custom sender name (cast to MessageResponse to access message_options)
+    // Try to get response_user_profile from the chunk first (for streaming messages)
+    // This is important because the message might not be in the store yet
+    const chunkProfile = isStreamPartialItem(chunk)
+      ? chunk.partial_response?.message_options?.response_user_profile
+      : undefined;
+
+    // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
       | MessageResponse
       | undefined;
 
-    const speakerName = getSpeakerName(message, assistantName);
+    // Create a temporary message object with the profile from chunk if available
+    const messageWithProfile: MessageResponse | undefined = chunkProfile
+      ? ({
+          ...message,
+          message_options: {
+            ...message?.message_options,
+            response_user_profile: chunkProfile,
+          },
+        } as MessageResponse)
+      : message;
+
+    const speakerName = getSpeakerName(messageWithProfile, assistantName);
 
     store.dispatch(
       actions.announceMessage({
