@@ -1028,10 +1028,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       moveFocus = MoveFocusType.PREVIOUS;
     } else if (event.key === "ArrowDown") {
       moveFocus = MoveFocusType.NEXT;
-    } else if (event.key === "Home") {
-      moveFocus = MoveFocusType.FIRST;
-    } else if (event.key === "End") {
-      moveFocus = MoveFocusType.LAST;
     } else if (event.key === "Escape") {
       moveFocus = MoveFocusType.INPUT;
     } else if (event.key === "Enter" || event.key === " ") {
