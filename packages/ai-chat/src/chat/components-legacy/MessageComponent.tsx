@@ -1021,6 +1021,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       return;
     }
 
+    // Note: VoiceOver will eat the Home and End events and apply their own behavior for those buttons.
+
     let moveFocus: MoveFocusType;
     if (event.key === "ArrowUp") {
       moveFocus = MoveFocusType.PREVIOUS;
