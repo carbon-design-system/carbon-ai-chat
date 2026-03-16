@@ -211,18 +211,23 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   max-block-size: 157px;
 }
 
-.cds-aichat--input-container
-  .cds-aichat--text-area
-  .cds-aichat--text-area-textarea[data-has-content="false"]::before {
+// Placeholder overlay element - positioned absolutely over the input
+.cds-aichat--input-container .cds-aichat--text-area-placeholder {
   position: absolute;
+  // Ensure it's above the textarea but below any other overlays
+  z-index: 1;
   color: theme.$text-placeholder;
-
-  content: attr(data-placeholder);
   inset: 0;
   pointer-events: none;
   white-space: pre-wrap;
   word-wrap: break-word;
   @include type.type-style("body-02");
+}
+
+// Keep the textarea at base z-index
+.cds-aichat--input-container .cds-aichat--text-area-textarea {
+  position: relative;
+  z-index: 2;
 }
 
 .cds-aichat--input-container__send-button-container,

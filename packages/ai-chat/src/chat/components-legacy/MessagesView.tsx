@@ -38,7 +38,7 @@ function MessagesView({
   return (
     <div className="cds-aichat--messages--holder">
       {humanAgentBanner}
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      {topScrollHandle}
       <div
         className={cx("cds-aichat--messages__wrapper", {
           "cds-aichat--messages__wrapper--scroll-handle-has-focus":
@@ -47,15 +47,14 @@ function MessagesView({
         ref={messagesContainerRef}
         onScroll={onScroll}
       >
-        {topScrollHandle}
         <div className="cds-aichat--messages">
           {regularMessages}
           {typingIndicator}
           <div id="chat-bottom-spacer" ref={bottomSpacerRef} />
           {scrollDownButton}
         </div>
-        {bottomScrollHandle}
       </div>
+      {bottomScrollHandle}
     </div>
   );
 }

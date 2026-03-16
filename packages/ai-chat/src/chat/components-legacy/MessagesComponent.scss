@@ -54,15 +54,21 @@
   white-space: nowrap;
 }
 
-.cds-aichat--messages__wrapper--scroll-handle-has-focus::after {
-  position: absolute;
-  box-sizing: border-box;
-  border: solid 2px theme.$focus;
-  block-size: 100%;
-  content: "";
-  inline-size: 100%;
-  inset-block-start: 0;
+// Desktop-specific styles for scroll handle using Carbon clickable tile
+.cds-aichat--messages--scroll-handle-desktop {
+  overflow: hidden;
+  padding: 0 1rem;
+  margin: auto;
+  block-size: 0;
+  max-inline-size: chat-theme.$messages-max-width;
   pointer-events: none;
+
+  // Show on focus - expand to full height
+  &:focus {
+    padding: 1rem;
+    block-size: auto;
+    pointer-events: auto;
+  }
 }
 
 .cds-aichat--messages {

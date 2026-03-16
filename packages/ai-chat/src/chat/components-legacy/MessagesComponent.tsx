@@ -38,8 +38,10 @@ import {
   WriteableElementName,
 } from "../utils/constants";
 import { doScrollElement, getScrollBottom } from "../utils/domUtils";
+import { formatShortcutForDisplay } from "../utils/keyboardUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
 import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../types/config/ShortcutConfig";
 import {
   applyStreamingSpacerDomSync,
   cleanupMessageResizeObserver,
@@ -821,6 +823,35 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   }
 
   /**
+   * Moves focus to the first item of the last message.
+   * Used by keyboard shortcut to toggle between input and message list.
+   */
+  public requestFocusOnFirstItemOfLastMessage() {
+    const { localMessageItems } = this.props;
+    if (localMessageItems.length === 0) {
+      return false;
+    }
+
+    // Get the last message's full ID
+    const lastItem = localMessageItems[localMessageItems.length - 1];
+    const lastMessageID = lastItem.fullMessageID;
+
+    // Find the first item of that message
+    const firstItemOfLastMessage = localMessageItems.find(
+      (item) => item.fullMessageID === lastMessageID,
+    );
+
+    if (firstItemOfLastMessage) {
+      const ref = this.messageRefs.get(firstItemOfLastMessage.ui_state.id);
+      if (ref) {
+        ref.requestHandleFocus();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Scrolls to the (full) message with the given ID. Since there may be multiple message items in a given
    * message, this will scroll the first message to the top of the message window.
    *
@@ -974,6 +1005,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       carbonTheme,
       useAITheme,
     } = this.props;
+
     const inputState = selectInputState(this.props);
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { isMessageLoadingCounter } = messageState;
@@ -1086,14 +1118,16 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           break;
         case MoveFocusType.NEXT:
           index = currentMessageIndex + 1;
+          // Stop at the last item instead of wrapping to the beginning
           if (index >= localMessageItems.length) {
-            index = 0;
+            index = localMessageItems.length - 1;
           }
           break;
         case MoveFocusType.PREVIOUS:
           index = currentMessageIndex - 1;
+          // Stop at the first item instead of wrapping to the end
           if (index < 0) {
-            index = localMessageItems.length - 1;
+            index = 0;
           }
           break;
         default:
@@ -1124,14 +1158,44 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private renderScrollHandle(atTop: boolean) {
     const { languagePack } = this.props.config.derived;
+    const { intl, config } = this.props;
 
     let labelKey: keyof LanguagePack;
+    let ariaLabel: string;
+
     if (IS_MOBILE) {
       labelKey = atTop ? "messages_scrollHandle" : "messages_scrollHandleEnd";
+      ariaLabel = languagePack[labelKey] || languagePack.messages_scrollHandle;
     } else {
-      labelKey = atTop
-        ? "messages_scrollHandleDetailed"
-        : "messages_scrollHandleEndDetailed";
+      // Get the keyboard shortcut configuration
+      const shortcutConfig =
+        config.public.keyboardShortcuts?.messageFocusToggle ||
+        DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
+
+      // Check if shortcuts are enabled (default to true if not specified)
+      const shortcutsEnabled = shortcutConfig.is_on !== false;
+
+      if (shortcutsEnabled) {
+        // Use messages with shortcut information
+        labelKey = atTop
+          ? "messages_scrollHandleDetailed"
+          : "messages_scrollHandleEndDetailed";
+
+        const shortcutText = formatShortcutForDisplay(shortcutConfig);
+
+        // Format the message with the shortcut parameter
+        ariaLabel = intl.formatMessage(
+          { id: labelKey },
+          { shortcut: shortcutText },
+        );
+      } else {
+        // Use messages without shortcut information
+        labelKey = atTop
+          ? "messages_scrollHandleDetailedNoShortcut"
+          : "messages_scrollHandleEndDetailedNoShortcut";
+
+        ariaLabel = intl.formatMessage({ id: labelKey });
+      }
     }
 
     const onClick = IS_MOBILE
@@ -1145,8 +1209,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     return (
       <MessagesScrollHandle
         buttonRef={atTop ? this.scrollHandleTopRef : this.scrollHandleBottomRef}
-        // The extra "||" can be removed when we have translations for the other keys.
-        ariaLabel={languagePack[labelKey] || languagePack.messages_scrollHandle}
+        ariaLabel={ariaLabel}
         onClick={onClick}
         onFocus={() => this.setState({ scrollHandleHasFocus: true })}
         onBlur={() => this.setState({ scrollHandleHasFocus: false })}
@@ -1243,18 +1306,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         processingLabel={languagePack.messages_processingLabel}
       />
     );
-    const scrollDownButton = scrollDown ? (
-      <MessagesScrollToBottomButton
-        ariaLabel={languagePack.messages_scrollMoreButton}
-        onClick={() =>
-          this.doAutoScrollInternal({
-            scrollToBottom: 0,
-            preferAnimate: true,
-          })
-        }
-        icon={<DownToBottom slot="icon" />}
-      />
-    ) : null;
+    // Don't show scroll-down button when scroll handle has focus
+    // (the handle's expansion can trigger false positive scroll detection)
+    const scrollDownButton =
+      scrollDown && !scrollHandleHasFocus ? (
+        <MessagesScrollToBottomButton
+          ariaLabel={languagePack.messages_scrollMoreButton}
+          onClick={() =>
+            this.doAutoScrollInternal({
+              scrollToBottom: 0,
+              preferAnimate: true,
+            })
+          }
+          icon={<DownToBottom slot="icon" />}
+        />
+      ) : null;
 
     return (
       <MessagesView

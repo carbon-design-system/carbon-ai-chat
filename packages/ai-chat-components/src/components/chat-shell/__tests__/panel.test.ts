@@ -35,6 +35,7 @@ describe("cds-aichat-panel", function () {
       expect(el.open).to.be.false;
       expect(el.priority).to.equal(0);
       expect(el.fullWidth).to.be.false;
+      expect(el.noScroll).to.be.false;
       expect(el.showChatHeader).to.be.false;
       expect(el.showFrame).to.be.false;
       expect(el.animationOnOpen).to.be.undefined;
@@ -83,6 +84,14 @@ describe("cds-aichat-panel", function () {
       );
       expect(el.fullWidth).to.be.true;
       expect(el.hasAttribute("full-width")).to.be.true;
+    });
+
+    it("should reflect no-scroll attribute", async () => {
+      const el = await fixture<CDSAIChatPanel>(
+        html`<cds-aichat-panel no-scroll></cds-aichat-panel>`,
+      );
+      expect(el.noScroll).to.be.true;
+      expect(el.hasAttribute("no-scroll")).to.be.true;
     });
 
     it("should reflect show-chat-header attribute", async () => {
@@ -249,6 +258,13 @@ describe("cds-aichat-panel", function () {
         html`<cds-aichat-panel full-width></cds-aichat-panel>`,
       );
       expect(el.classList.contains("panel--full-width")).to.be.true;
+    });
+
+    it("should apply panel--no-scroll class when noScroll is true", async () => {
+      const el = await fixture<CDSAIChatPanel>(
+        html`<cds-aichat-panel no-scroll></cds-aichat-panel>`,
+      );
+      expect(el.classList.contains("panel--no-scroll")).to.be.true;
     });
 
     it("should apply panel--closed class initially when not open", async () => {

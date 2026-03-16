@@ -50,6 +50,13 @@ class CDSAIChatPanel extends LitElement {
   fullWidth = false;
 
   /**
+   * Sets overflow to hidden to the panel body container to allow
+   * scrolling to be customized within the slotted elements
+   */
+  @property({ type: Boolean, attribute: "no-scroll", reflect: true })
+  noScroll = false;
+
+  /**
    * Shows the chat header in the panel
    */
   @property({ type: Boolean, attribute: "show-chat-header", reflect: true })
@@ -173,6 +180,7 @@ class CDSAIChatPanel extends LitElement {
     this.classList.toggle("panel--with-chat-header", this.showChatHeader);
     this.classList.toggle("panel--with-frame", this.showFrame);
     this.classList.toggle("panel--full-width", this.fullWidth);
+    this.classList.toggle("panel--no-scroll", this.noScroll);
     this.classList.toggle("panel--ai-theme", this.aiEnabled);
     this.classList.toggle("panel--body--no-padding", this.bodyNoPadding);
     this.updateHostClasses();

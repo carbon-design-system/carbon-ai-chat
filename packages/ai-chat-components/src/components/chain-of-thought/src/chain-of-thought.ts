@@ -141,7 +141,7 @@ class CDSAIChatChainOfThought extends LitElement {
         <div
           id=${this.panelId}
           class="${prefix}--chain-of-thought-content"
-          aria-hidden=${this.open ? "false" : "true"}
+          ?aria-hidden=${!this.open}
           ?hidden=${!this.open}
         >
           <div class="${prefix}--chain-of-thought-inner-content">

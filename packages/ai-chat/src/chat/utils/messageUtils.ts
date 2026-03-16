@@ -616,6 +616,35 @@ function getMessageIDForUserInput(
   return null;
 }
 
+/**
+ * Gets the speaker name for a message response, considering custom response user profiles.
+ *
+ * Logic:
+ * 1. If no custom profile exists, use the default assistantName from config
+ * 2. For all other custom profile nicknames (third-party bots, human agents, etc.), use the profile nickname as-is
+ *
+ * @param message - The message response to get the speaker name from
+ * @param assistantName - The default assistant name from config (typically "watsonx")
+ * @returns The speaker name to display in announcements and UI
+ */
+function getSpeakerName(
+  message: MessageResponse | undefined,
+  assistantName: string | undefined,
+): string | undefined {
+  // Get the response user profile if available
+  const responseUserProfile = message?.message_options?.response_user_profile;
+
+  if (!responseUserProfile || !responseUserProfile?.nickname) {
+    // No custom profile provided - use the default assistant name from config
+    // This is the most common case for standard Watson Assistant responses
+    return assistantName;
+  }
+
+  // For all other nicknames (third-party bots, human agents, custom assistants),
+  // use the profile's nickname exactly as provided
+  return responseUserProfile.nickname;
+}
+
 export {
   getOptionType,
   isResponse,
@@ -658,4 +687,5 @@ export {
   isSystemMessageItem,
   isStandaloneSystemMessage,
   getMessageIDForUserInput,
+  getSpeakerName,
 };

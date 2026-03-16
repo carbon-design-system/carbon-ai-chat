@@ -486,11 +486,12 @@ svg.cds-aichat--sent-file-icon {
 }
 
 .cds-aichat--message__reasoning-steps {
-  padding-block-end: layout.$spacing-04;
+  display: none;
 }
 
-.cds-aichat--message__reasoning-steps--closed {
-  display: none;
+.cds-aichat--message__reasoning-steps--open {
+  display: block;
+  padding-block-end: layout.$spacing-04;
 }
 
 .cds-aichat--container--render[dir="rtl"]
