@@ -223,6 +223,13 @@ $messages-max-width: var(--#{$prefix}-messages-max-width, 672px);
   }
 }
 
+// No scroll on panel body, allows for slotted elements to set their own scroll configurations
+:host(.panel--no-scroll) {
+  .panel-body {
+    overflow: hidden;
+  }
+}
+
 :host(.panel--body--no-padding) {
   .panel-body {
     padding: 0;
