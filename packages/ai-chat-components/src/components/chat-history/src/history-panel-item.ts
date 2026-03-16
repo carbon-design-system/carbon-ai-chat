@@ -81,6 +81,57 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
 
   @query(`${prefix}-history-panel-item-input`) input!: HTMLElement;
 
+  @query("cds-overflow-menu") overflowMenu!: HTMLElement;
+  @query("cds-overflow-menu-body") overflowMenuBody!: HTMLElement;
+
+  /**
+   *
+   * The current cds-overflow-menu doesn't support opening the menu body in different
+   * directions (top / bottom). This method detects if there's enough space below
+   * the menu trigger to show the menu body, and if not, it flips the menu to open upward
+   * by setting the `transform` style on the menu body; This is a workaround until the
+   * Carbon core team adds support for this.
+   *
+   */
+  private _adjustMenuPosition() {
+    if (!this.overflowMenu || !this.overflowMenuBody) {
+      return;
+    }
+
+    const menuRect = this.overflowMenu.getBoundingClientRect();
+    const menuBodyRect = this.overflowMenuBody.getBoundingClientRect();
+    const actualMenuHeight = menuBodyRect.height || this.actions.length * 40; // fallback
+
+    const parentContainer = this.closest(`${prefix}-history-content`);
+    if (!parentContainer) {
+      return;
+    }
+
+    const containerRect = parentContainer.getBoundingClientRect();
+    const spaceBelow = containerRect.bottom - menuRect.bottom;
+    const spaceAbove = menuRect.top - containerRect.top;
+    const menuTriggerHeight = 32; // height of the menu trigger
+
+    // Use actual height for comparison
+    if (spaceBelow < actualMenuHeight && spaceAbove > spaceBelow) {
+      this.overflowMenuBody.style.transform = `translateY(calc(-100% - ${menuTriggerHeight}px))`;
+    } else {
+      // Default: open downward
+      this.overflowMenuBody.style.transform = " ";
+    }
+  }
+
+  /**
+   * Handler for overflow menu trigger keydown event
+   *
+   * * @param event The event.
+   */
+  private _handleMenuTriggerKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Enter") {
+      this._adjustMenuPosition();
+    }
+  };
+
   /**
    * Handle menu item clicks
    */
@@ -181,6 +232,8 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       title,
       actions,
       rename,
+      _adjustMenuPosition: adjustMenuPosition,
+      _handleMenuTriggerKeyDown: handleMenuTriggerKeyDown,
       _handleMenuItemClick: handleMenuItemClick,
       _handleMenuItemKeyDown: handleMenuItemKeyDown,
     } = this;
@@ -195,7 +248,12 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
               ${title}
             </span>
             <slot name="actions">
-              <cds-overflow-menu align="top-right" size="sm">
+              <cds-overflow-menu
+                align="top-right"
+                size="sm"
+                @click=${adjustMenuPosition}
+                @keydown=${handleMenuTriggerKeyDown}
+              >
                 ${iconLoader(OverflowMenuVertical16, {
                   class: `${prefix}--overflow-menu__icon`,
                   slot: "icon",
