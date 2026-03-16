@@ -36,9 +36,9 @@ type TooltipAlignment =
  * Chat History panel item input.
  *
  * @element cds-aichat-history-panel-item-input
- * @fires cds-aichat-history-panel-item-input-cancel
+ * @fires history-panel-item-input-cancel
  *   The custom event fired after an input is canceled.
- * @fires cds-aichat-history-panel-item-input-save
+ * @fires history-panel-item-input-save
  *   The custom event fired after an input is saved.
  */
 @carbonElement(`${prefix}-history-panel-item-input`)

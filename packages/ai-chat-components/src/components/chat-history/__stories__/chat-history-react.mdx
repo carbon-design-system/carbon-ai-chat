@@ -377,8 +377,8 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onInputSave</code></td>
-      <td><code>cds-aichat-history-panel-item-input-save</code></td>
+      <td><code>onSave</code></td>
+      <td><code>history-panel-item-input-save</code></td>
       <td>Fired when the user saves a renamed history item.</td>
       <td>
         • <code>newTitle</code> (string) - The new title entered<br/>
@@ -386,8 +386,8 @@ function ChatHistory() {
       </td>
     </tr>
     <tr>
-      <td><code>onInputCancel</code></td>
-      <td><code>cds-aichat-history-panel-item-input-cancel</code></td>
+      <td><code>onCancel</code></td>
+      <td><code>history-panel-item-input-cancel</code></td>
       <td>Fired when the user cancels renaming a history item.</td>
       <td>None</td>
     </tr>
@@ -427,8 +427,8 @@ function ChatHistory() {
     <HistoryPanelItemInput
       value="Current title"
       itemId="chat-1"
-      onInputSave={handleInputSave}
-      onInputCancel={handleInputCancel}
+      onSave={handleInputSave}
+      onCancel={handleInputCancel}
     />
   );
 }

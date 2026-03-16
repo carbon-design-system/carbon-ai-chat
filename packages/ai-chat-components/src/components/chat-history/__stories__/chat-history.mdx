@@ -433,7 +433,7 @@ document.addEventListener('cds-search-input', (event) => {
   </thead>
   <tbody>
     <tr>
-      <td><code>cds-aichat-history-panel-item-input-save</code></td>
+      <td><code>history-panel-item-input-save</code></td>
       <td>Fired when the user saves a renamed history item.</td>
       <td>
         • <code>newTitle</code> (string) - The new title entered<br/>
@@ -441,7 +441,7 @@ document.addEventListener('cds-search-input', (event) => {
       </td>
     </tr>
     <tr>
-      <td><code>cds-aichat-history-panel-item-input-cancel</code></td>
+      <td><code>history-panel-item-input-cancel</code></td>
       <td>Fired when the user cancels renaming a history item.</td>
       <td>None</td>
     </tr>
@@ -451,7 +451,7 @@ document.addEventListener('cds-search-input', (event) => {
 **Example:**
 ```javascript
 // Listen for save
-document.addEventListener('cds-aichat-history-panel-item-input-save', (event) => {
+document.addEventListener('history-panel-item-input-save', (event) => {
   const { newTitle, itemId } = event.detail;
   console.log(`Item ${itemId} renamed to: ${newTitle}`);
   // Update the item title in your data store
@@ -459,7 +459,7 @@ document.addEventListener('cds-aichat-history-panel-item-input-save', (event) =>
 });
 
 // Listen for cancel
-document.addEventListener('cds-aichat-history-panel-item-input-cancel', () => {
+document.addEventListener('history-panel-item-input-cancel', () => {
   console.log('Rename cancelled');
 });
 ```
