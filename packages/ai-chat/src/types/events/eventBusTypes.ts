@@ -91,6 +91,16 @@ export enum BusEventType {
   HISTORY_END = "history:end",
 
   /**
+   * Fired when new chat option within the chat header menu is selected.
+   */
+  HISTORY_PANEL_NEW_CHAT = "history:newChat",
+
+  /**
+   * Fired before mobile chat history panel opens.
+   */
+  HISTORY_PANEL_PRE_OPEN = "historyPanel:pre:open",
+
+  /**
    * Fired before a conversation restarts.
    */
   PRE_RESTART_CONVERSATION = "pre:restartConversation",
@@ -697,6 +707,27 @@ export interface BusEventCustomPanelPreClose extends BusEvent {
  */
 export interface BusEventCustomPanelClose extends BusEvent {
   type: BusEventType.CUSTOM_PANEL_CLOSE;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventHistoryPanelNewChat extends BusEvent {
+  type: BusEventType.HISTORY_PANEL_NEW_CHAT;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventHistoryPanelPreOpen extends BusEvent {
+  type: BusEventType.HISTORY_PANEL_PRE_OPEN;
+}
+
+/**
+ * @category Events
+ */
+export interface BusEventCustomPanelPreOpen extends BusEvent {
+  type: BusEventType.CUSTOM_PANEL_PRE_OPEN;
 }
 
 /**

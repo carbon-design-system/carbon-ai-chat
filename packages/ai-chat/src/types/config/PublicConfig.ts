@@ -142,6 +142,11 @@ export interface PublicConfig {
   header?: HeaderConfig;
 
   /**
+   * The config object for chat history.
+   */
+  history?: HistoryConfig;
+
+  /**
    * The config object for changing Carbon AI Chat's layout.
    */
   layout?: LayoutConfig;
@@ -351,6 +356,18 @@ export interface HeaderConfig {
    * them with your own.
    */
   actions?: ToolbarAction[];
+}
+
+/**
+ * Configuration for the history panel of the chat.
+ *
+ * @category Config
+ */
+export interface HistoryConfig {
+  /**
+   * Indicates if the history panel should be shown.
+   */
+  isOn?: boolean;
 }
 
 /**
