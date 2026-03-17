@@ -9,7 +9,7 @@
 
 import { LitElement, html } from "lit";
 import prefix from "../../../globals/settings.js";
-import { property } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import "../../chat-button/index.js";
 import TrashCan16 from "@carbon/icons/es/trash-can/16.js";
@@ -30,6 +30,15 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
 
   @property({ type: String, attribute: "delete-text", reflect: true })
   deleteText = "Delete";
+
+  @query('cds-aichat-button[kind="danger"]')
+  _deleteButton;
+
+  // auto focus on delete button when delete panel first renders.
+  async firstUpdated() {
+    await this.updateComplete;
+    this._deleteButton?.shadowRoot?.querySelector("button").focus();
+  }
 
   /**
    * Handles cancel button click event
