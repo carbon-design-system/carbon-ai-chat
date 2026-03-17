@@ -73,7 +73,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
     } = this;
 
     return html`
-      <div class="${prefix}--history-delete-panel__content">
+      <div aria-live="polite" class="${prefix}--history-delete-panel__content">
         <h1><slot name="title">Confirm Delete</slot></h1>
         <span
           ><slot name="description"
