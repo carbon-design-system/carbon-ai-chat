@@ -55,11 +55,12 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    */
   @property({ type: String })
   id;
+
   /**
-   * Chat history item title.
+   * Chat history item name.
    */
   @property({ reflect: true })
-  title!: string;
+  name!: string;
 
   /**
    * `true` if the history panel item is in rename mode.
@@ -147,7 +148,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       detail: {
         action: menuItemText,
         itemId: this.id,
-        itemTitle: this.title,
+        itemName: this.name,
         element: this,
       },
     });
@@ -195,7 +196,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       composed: true,
       detail: {
         itemId: this.id,
-        itemTitle: this.title,
+        itemName: this.name,
         element: this,
       },
     });
@@ -218,8 +219,8 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       });
 
       this.input.addEventListener("history-panel-item-input-save", (event) => {
-        const newTitle = (event as CustomEvent).detail.newTitle;
-        this.title = newTitle;
+        const newName = (event as CustomEvent).detail.newName;
+        this.name = newName;
         this.rename = false;
       });
     }
@@ -229,7 +230,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     const {
       id,
       selected,
-      title,
+      name,
       actions,
       rename,
       _adjustMenuPosition: adjustMenuPosition,
@@ -244,9 +245,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     return html`
       ${!rename
         ? html` <button class="${classes}">
-            <span part="title" class="cds--side-nav__link-text">
-              ${title}
-            </span>
+            <span part="name" class="cds--side-nav__link-text"> ${name} </span>
             <slot name="actions">
               <cds-overflow-menu
                 align="top-right"
@@ -278,7 +277,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
           </button>`
         : html`
             <cds-aichat-history-panel-item-input
-              value="${title}"
+              value="${name}"
               item-id="${id}"
             ></cds-aichat-history-panel-item-input>
           `}

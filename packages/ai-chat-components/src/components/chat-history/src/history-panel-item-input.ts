@@ -140,7 +140,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       bubbles: true,
       composed: true,
       detail: {
-        newTitle: this.value,
+        newName: this.value,
         itemId: this.itemId,
       },
     };

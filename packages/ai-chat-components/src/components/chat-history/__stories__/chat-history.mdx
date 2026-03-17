@@ -129,7 +129,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ```html
 <cds-aichat-history-shell>
-  <cds-aichat-history-header title="Conversations"></cds-aichat-history-header>
+  <cds-aichat-history-header header-title="Conversations"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
   <cds-aichat-history-content>
     <cds-aichat-history-panel aria-label="Chat history">
@@ -137,18 +137,18 @@ Using these subcomponents ensures visual consistency and predictable structure w
         <cds-aichat-history-panel-menu expanded title="Pinned">
           <cds-aichat-history-panel-item
             id="chat-1"
-            title="Important conversation"
+            name="Important conversation"
             selected
           ></cds-aichat-history-panel-item>
         </cds-aichat-history-panel-menu>
         <cds-aichat-history-panel-menu expanded title="Today">
           <cds-aichat-history-panel-item
             id="chat-2"
-            title="Recent chat"
+            name="Recent chat"
           ></cds-aichat-history-panel-item>
           <cds-aichat-history-panel-item
             id="chat-3"
-            title="Another chat"
+            name="Another chat"
           ></cds-aichat-history-panel-item>
         </cds-aichat-history-panel-menu>
       </cds-aichat-history-panel-items>
@@ -161,24 +161,20 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ```html
 <cds-aichat-history-shell>
-  <cds-aichat-history-header title="Chats"></cds-aichat-history-header>
+  <cds-aichat-history-header header-title="Chats"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
   <cds-aichat-history-content>
     <div slot="results-count">Results: 4</div>
     <cds-aichat-history-panel aria-label="Search results">
       <cds-aichat-history-panel-items>
         <cds-aichat-history-panel-menu expanded title="Search results">
-          <cds-aichat-history-search-item date="Monday, 12:04 PM">
-            Here's the onboarding doc that includes all the information to get started.
+          <cds-aichat-history-search-item name="Here's the onboarding doc that includes all the information to get started." date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
-          <cds-aichat-history-search-item date="Monday, 12:04 PM">
-            Let's use this as the master invoice document.
+          <cds-aichat-history-search-item name="Let's use this as the master invoice document." date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
-          <cds-aichat-history-search-item date="Monday, 12:04 PM">
-            Noticed some discrepancies between these two files.
+          <cds-aichat-history-search-item name="Noticed some discrepancies between these two files." date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
-          <cds-aichat-history-search-item date="Monday, 12:04 PM">
-            Do we need a PO number on every documentation here?
+          <cds-aichat-history-search-item name="Do we need a PO number on every documentation here?" date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
         </cds-aichat-history-panel-menu>
       </cds-aichat-history-panel-items>
@@ -191,7 +187,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ```html
 <cds-aichat-history-shell>
-  <cds-aichat-history-header title="Chats"></cds-aichat-history-header>
+  <cds-aichat-history-header header-title="Chats"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
   <cds-aichat-history-loading></cds-aichat-history-loading>
 </cds-aichat-history-shell>
@@ -201,7 +197,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ```html
 <cds-aichat-history-shell>
-  <cds-aichat-history-header title="Chats"></cds-aichat-history-header>
+  <cds-aichat-history-header header-title="Chats"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
   <cds-aichat-history-content>
     <div slot="results-count">No available chats</div>
@@ -213,7 +209,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ```html
 <cds-aichat-history-shell>
-  <cds-aichat-history-header title="Conversations"></cds-aichat-history-header>
+  <cds-aichat-history-header header-title="Conversations"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
   <cds-aichat-history-content>
     <cds-aichat-history-panel aria-label="Chat history">
@@ -221,7 +217,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
         <cds-aichat-history-panel-menu expanded title="Today">
           <cds-aichat-history-panel-item
             id="chat-1"
-            title="Chat with actions"
+            name="Chat with actions"
           ></cds-aichat-history-panel-item>
         </cds-aichat-history-panel-menu>
       </cds-aichat-history-panel-items>
@@ -234,7 +230,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
   document.addEventListener('history-item-action', (event) => {
     console.log('Action:', event.detail.action);
     console.log('Item ID:', event.detail.itemId);
-    console.log('Item Title:', event.detail.itemTitle);
+    console.log('Item Name:', event.detail.itemName);
 
     // Handle rename action
     if (event.detail.action === 'Rename') {
@@ -271,7 +267,7 @@ The chat history components emit several custom events that you can listen for t
       <td>Fired when the history panel item is clicked (but not when clicking on interactive elements like the overflow menu).</td>
       <td>
         • <code>itemId</code> (string) - The ID of the history item<br/>
-        • <code>itemTitle</code> (string) - The title of the history item<br/>
+        • <code>itemName</code> (string) - The name of the history item<br/>
         • <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
@@ -281,7 +277,7 @@ The chat history components emit several custom events that you can listen for t
       <td>
         • <code>action</code> (string) - The text of the action clicked<br/>
         • <code>itemId</code> (string) - The ID of the history item<br/>
-        • <code>itemTitle</code> (string) - The title of the history item<br/>
+        • <code>itemName</code> (string) - The name of the history item<br/>
         • <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
@@ -292,25 +288,25 @@ The chat history components emit several custom events that you can listen for t
 ```javascript
 // Listen for item selection
 document.addEventListener('history-item-selected', (event) => {
-  const { itemId, itemTitle } = event.detail;
-  console.log(`Selected chat: ${itemTitle} (ID: ${itemId})`);
+  const { itemId, itemName } = event.detail;
+  console.log(`Selected chat: ${itemName} (ID: ${itemId})`);
   // Load the selected conversation
   loadConversation(itemId);
 });
 
 // Listen for item actions
 document.addEventListener('history-item-action', (event) => {
-  const { action, itemId, itemTitle, element } = event.detail;
+  const { action, itemId, itemName, element } = event.detail;
 
   switch(action) {
     case 'Rename':
       element.rename = true;
       break;
     case 'Delete':
-      console.log(`Deleting chat: ${itemTitle}`);
+      console.log(`Deleting chat: ${itemName}`);
       break;
     case 'Pin':
-      console.log(`Pinning chat: ${itemTitle}`);
+      console.log(`Pinning chat: ${itemName}`);
       break;
   }
 });
@@ -332,7 +328,7 @@ document.addEventListener('history-item-action', (event) => {
       <td>Fired when a search result item is clicked.</td>
       <td>
         • <code>itemId</code> (string) - The ID of the search item<br/>
-        • <code>itemTitle</code> (string) - The title of the search item<br/>
+        • <code>itemName</code> (string) - The name of the search item<br/>
         • <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
@@ -342,8 +338,8 @@ document.addEventListener('history-item-action', (event) => {
 **Example:**
 ```javascript
 document.addEventListener('history-search-item-selected', (event) => {
-  const { itemId, itemTitle } = event.detail;
-  console.log(`Selected search result: ${itemTitle}`);
+  const { itemId, itemName } = event.detail;
+  console.log(`Selected search result: ${itemName}`);
   // Navigate to the selected conversation
   navigateToConversation(itemId);
 });
@@ -436,7 +432,7 @@ document.addEventListener('cds-search-input', (event) => {
       <td><code>history-panel-item-input-save</code></td>
       <td>Fired when the user saves a renamed history item.</td>
       <td>
-        • <code>newTitle</code> (string) - The new title entered<br/>
+        • <code>newName</code> (string) - The new name entered<br/>
         • <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
@@ -452,10 +448,10 @@ document.addEventListener('cds-search-input', (event) => {
 ```javascript
 // Listen for save
 document.addEventListener('history-panel-item-input-save', (event) => {
-  const { newTitle, itemId } = event.detail;
-  console.log(`Item ${itemId} renamed to: ${newTitle}`);
-  // Update the item title in your data store
-  updateChatTitle(itemId, newTitle);
+  const { newName, itemId } = event.detail;
+  console.log(`Item ${itemId} renamed to: ${newName}`);
+  // Update the item name in your data store
+  updateChatName(itemId, newName);
 });
 
 // Listen for cancel
@@ -510,7 +506,7 @@ document.addEventListener('history-delete-confirm', () => {
 **Usage Example:**
 ```html
 <cds-aichat-history-shell>
-  <cds-aichat-history-header title="Conversations"></cds-aichat-history-header>
+  <cds-aichat-history-header header-title="Conversations"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
   <cds-aichat-history-content>
     <cds-aichat-history-panel aria-label="Chat history">

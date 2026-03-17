@@ -50,24 +50,23 @@ export const pinnedHistoryItemActions = [
 export const pinnedHistoryItems = [
   {
     id: "pinned-0",
-    title:
-      "Here's the onboarding doc that includes all the information to get started.",
+    name: "Here's the onboarding doc that includes all the information to get started.",
     lastUpdated: "Feb 10, 6:30 PM",
   },
   {
     id: "pinned-1",
-    title: "Let's use this as the master invoice document.",
+    name: "Let's use this as the master invoice document.",
     selected: true,
     lastUpdated: "Feb 10, 5:45 PM",
   },
   {
     id: "pinned-2",
-    title: "Noticed some discrepancies between these two files.",
+    name: "Noticed some discrepancies between these two files.",
     lastUpdated: "Feb 10, 4:20 PM",
   },
   {
     id: "pinned-3",
-    title: "Do we need a PO number on every documentation here?",
+    name: "Do we need a PO number on every documentation here?",
     lastUpdated: "Feb 10, 3:10 PM",
   },
 ];
@@ -75,81 +74,78 @@ export const pinnedHistoryItems = [
 export const historyItems = [
   {
     section: "Today",
-    icon: iconLoader(Time16, { slot: "title-icon" }),
+    icon: iconLoader(Time16, { slot: "name-icon" }),
     chats: [
       {
         id: "today-0",
-        title:
-          "Here's the onboarding doc that includes all the information to get started.",
+        name: "Here's the onboarding doc that includes all the information to get started.",
         lastUpdated: "Feb 10, 6:30 PM",
       },
       {
         id: "today-1",
-        title: "Let's use this as the master invoice document.",
+        name: "Let's use this as the master invoice document.",
         lastUpdated: "Feb 10, 5:45 PM",
       },
       {
         id: "today-2",
-        title: "Noticed some discrepancies between these two files.",
+        name: "Noticed some discrepancies between these two files.",
         lastUpdated: "Feb 10, 4:20 PM",
       },
       {
         id: "today-3",
-        title: "Do we need a PO number on every documentation here?",
+        name: "Do we need a PO number on every documentation here?",
         lastUpdated: "Feb 10, 3:10 PM",
       },
     ],
   },
   {
     section: "Yesterday",
-    icon: iconLoader(Time16, { slot: "title-icon" }),
+    icon: iconLoader(Time16, { slot: "name-icon" }),
     chats: [
       {
         id: "yesterday-0",
-        title:
-          "Here's the onboarding doc that includes all the information to get started.",
+        name: "Here's the onboarding doc that includes all the information to get started.",
         lastUpdated: "Feb 9, 8:15 PM",
       },
       {
         id: "yesterday-1",
-        title: "Let's use this as the master invoice document.",
+        name: "Let's use this as the master invoice document.",
         lastUpdated: "Feb 9, 6:30 PM",
       },
       {
         id: "yesterday-2",
-        title: "Noticed some discrepancies between these two files.",
+        name: "Noticed some discrepancies between these two files.",
         lastUpdated: "Feb 9, 4:45 PM",
       },
       {
         id: "yesterday-3",
-        title: "Let's troubleshoot this.",
+        name: "Let's troubleshoot this.",
         lastUpdated: "Feb 9, 2:20 PM",
       },
     ],
   },
   {
     section: "Previous 7 days",
-    icon: iconLoader(Time16, { slot: "title-icon" }),
+    icon: iconLoader(Time16, { slot: "name-icon" }),
     chats: [
       {
         id: "previous-0",
-        title:
-          "Here's the onboarding doc that includes all the information to get started.",
+        name: "Here's the onboarding doc that includes all the information to get started.",
         lastUpdated: "Feb 5, 7:00 PM",
       },
       {
         id: "previous-1",
-        title: "Let's use this as the master invoice document.",
+        name: "Let's use this as the master invoice document.",
         lastUpdated: "Feb 4, 4:30 PM",
       },
       {
         id: "previous-2",
-        title: "Noticed some discrepancies between these two files.",
+        name: "Noticed some discrepancies between these two files.",
         lastUpdated: "Feb 4, 2:15 PM",
       },
       {
         id: "previous-3",
-        title: "Let's troubleshoot this.",
+        name: "Let's troubleshoot this.",
         lastUpdated: "Feb 3, 11:45 AM",
       },
     ],

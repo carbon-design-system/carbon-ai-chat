@@ -34,8 +34,8 @@ class CDSAIChatHistoryHeader extends LitElement {
   /**
    * Header title
    */
-  @property({ type: String, reflect: true })
-  title = "Conversations";
+  @property({ type: String, reflect: true, attribute: "header-title" })
+  headerTitle = "Conversations";
 
   /**
    * Label for close chat history button.
@@ -65,7 +65,7 @@ class CDSAIChatHistoryHeader extends LitElement {
     const {
       closeButtonLabel,
       showCloseAction,
-      title,
+      headerTitle,
       _handleCloseButtonClick: handleCloseButtonClick,
     } = this;
 
@@ -81,7 +81,7 @@ class CDSAIChatHistoryHeader extends LitElement {
             <span slot="tooltip-content">${closeButtonLabel}</span>
           </cds-icon-button>`
         : nothing}
-      <span class="${prefix}--history-header__title">${title}</span>
+      <span class="${prefix}--history-header__title">${headerTitle}</span>
     `;
   }
 
