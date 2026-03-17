@@ -63,10 +63,8 @@ function SelectComponent(props: SelectProps) {
   } = props;
 
   const [isBeingOpened, setIsBeingOpened] = useState(false);
-  const [pendingSelection, setPendingSelection] = useState<SingleOption | null>(
-    null,
-  );
   const rootRef = useRef<HTMLDivElement>(undefined);
+  const pendingSelectionRef = useRef<SingleOption | null>(null);
 
   // Generate a unique ID that we can use for each instance of our dropdowns.
   const counter = useCounter();
@@ -84,13 +82,13 @@ function SelectComponent(props: SelectProps) {
         }
         setIsBeingOpened(false);
       });
-    } else if (pendingSelection) {
+    } else if (pendingSelectionRef.current) {
       // Dropdown has closed and we have a pending selection - send it now
       // This ensures autoscroll calculations happen after the dropdown is fully closed
       onChange({
-        selectedItem: pendingSelection,
+        selectedItem: pendingSelectionRef.current,
       });
-      setPendingSelection(null);
+      pendingSelectionRef.current = null;
     }
   };
 
@@ -100,10 +98,10 @@ function SelectComponent(props: SelectProps) {
 
     // Store the selection but don't send immediately
     // Wait for the dropdown to close (handleToggle will send it)
-    setPendingSelection({
+    pendingSelectionRef.current = {
       label,
       value: { input: { text } },
-    });
+    };
   };
 
   return (
