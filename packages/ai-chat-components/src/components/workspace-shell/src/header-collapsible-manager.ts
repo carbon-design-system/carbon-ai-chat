@@ -20,10 +20,14 @@ export interface CollapsibleState {
  */
 export class HeaderCollapsibleManager {
   private resizeObserver?: ResizeObserver;
-  private mutationObserver?: MutationObserver;
   private onStateChangeCallback?: (state: CollapsibleState) => void;
   private isManagerControlled = false;
   private hadInitialAttribute = false;
+  private calculationPending = false;
+  private lastState?: CollapsibleState;
+  private throttleTimeout?: number;
+  private expandedHeaderHeight?: number;
+  private slotChangeHandler?: () => void;
 
   constructor(
     private readonly shellRoot: ShadowRoot,
@@ -44,6 +48,7 @@ export class HeaderCollapsibleManager {
   connect(onStateChange: (state: CollapsibleState) => void): void {
     this.onStateChangeCallback = onStateChange;
     this.setupResizeObserver();
+    this.setupSlotChangeListener();
   }
 
   /**
@@ -51,9 +56,26 @@ export class HeaderCollapsibleManager {
    */
   disconnect(): void {
     this.resizeObserver?.disconnect();
-    this.mutationObserver?.disconnect();
+    if (this.throttleTimeout) {
+      clearTimeout(this.throttleTimeout);
+    }
+    this.removeSlotChangeListener();
     this.onStateChangeCallback = undefined;
     this.isManagerControlled = false;
+    this.calculationPending = false;
+    this.lastState = undefined;
+    this.expandedHeaderHeight = undefined;
+  }
+
+  /**
+   * Reset the stored expanded header height.
+   * Call this when workspace content changes to recalculate with new header size.
+   */
+  reset(): void {
+    this.expandedHeaderHeight = undefined;
+    this.lastState = undefined;
+    // Trigger a new calculation
+    this.calculateCollapsibleState();
   }
 
   /**
@@ -65,59 +87,61 @@ export class HeaderCollapsibleManager {
     }
 
     this.resizeObserver = new ResizeObserver(() => {
-      // Use requestAnimationFrame to avoid ResizeObserver loop errors
-      requestAnimationFrame(() => {
-        this.calculateCollapsibleState();
-      });
-    });
-
-    // Observe the host element for total height
-    this.resizeObserver.observe(this.hostElement);
-
-    // Observe each slot's assigned elements
-    const slots = ["toolbar", "notification", "header", "footer"];
-    slots.forEach((slotName) => {
-      const slot = this.shellRoot.querySelector<HTMLSlotElement>(
-        `slot[name="${slotName}"]`,
-      );
-      if (slot) {
-        const assignedElements = slot.assignedElements();
-        assignedElements.forEach((el) => {
-          this.resizeObserver?.observe(el as Element);
-          // Also observe mutations within each slotted element
-          this.observeMutations(el as HTMLElement);
-        });
+      // Throttle calculations to max once per 150ms to prevent performance issues
+      if (this.throttleTimeout) {
+        return;
       }
+
+      this.throttleTimeout = window.setTimeout(() => {
+        this.throttleTimeout = undefined;
+        if (!this.calculationPending) {
+          this.calculationPending = true;
+          requestAnimationFrame(() => {
+            this.calculationPending = false;
+            this.calculateCollapsibleState();
+          });
+        }
+      }, 150);
     });
+
+    // Only observe the host element - this is sufficient to detect size changes
+    // Observing individual slots was causing performance issues
+    this.resizeObserver.observe(this.hostElement);
 
     // Initial calculation
     this.calculateCollapsibleState();
   }
 
   /**
-   * Set up MutationObserver to watch for content changes within slotted elements
+   * Set up listener for slot content changes to reset when header content changes
    */
-  private observeMutations(element: HTMLElement): void {
-    if (typeof MutationObserver === "undefined") {
-      return;
-    }
+  private setupSlotChangeListener(): void {
+    const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
+      'slot[name="header"]',
+    );
 
-    if (!this.mutationObserver) {
-      this.mutationObserver = new MutationObserver(() => {
-        // Use requestAnimationFrame to batch multiple mutations
-        requestAnimationFrame(() => {
-          this.calculateCollapsibleState();
-        });
-      });
+    if (headerSlot) {
+      this.slotChangeHandler = () => {
+        // Reset expanded height when slot content changes
+        this.reset();
+      };
+      headerSlot.addEventListener("slotchange", this.slotChangeHandler);
     }
+  }
 
-    // Observe changes to the element's subtree (children, attributes, text)
-    this.mutationObserver.observe(element, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      characterData: true,
-    });
+  /**
+   * Remove slot change listener
+   */
+  private removeSlotChangeListener(): void {
+    if (this.slotChangeHandler) {
+      const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
+        'slot[name="header"]',
+      );
+      if (headerSlot) {
+        headerSlot.removeEventListener("slotchange", this.slotChangeHandler);
+      }
+      this.slotChangeHandler = undefined;
+    }
   }
 
   /**
@@ -129,10 +153,29 @@ export class HeaderCollapsibleManager {
     // Get individual slot heights
     const toolbarHeight = this.getSlotHeight("toolbar");
     const notificationHeight = this.getSlotHeight("notification");
-    const headerHeight = this.getSlotHeight("header");
+    const currentHeaderHeight = this.getSlotHeight("header");
     const footerHeight = this.getSlotHeight("footer");
 
-    // Calculate available body height
+    // Store the expanded header height ONCE when we first see it expanded
+    // Never update it after that to avoid flip-flopping
+    const headerElement = this.getHeaderElement();
+    const isCurrentlyCollapsed = headerElement?.hasAttribute("collapsible");
+
+    // Only store expanded height if we don't have one yet AND header is not collapsed
+    if (
+      !this.expandedHeaderHeight &&
+      !isCurrentlyCollapsed &&
+      currentHeaderHeight > 0
+    ) {
+      // First time seeing the expanded header, store this as the permanent reference
+      this.expandedHeaderHeight = currentHeaderHeight;
+    }
+
+    // Use the expanded height for calculations to avoid flip-flopping
+    // If we don't have expanded height yet, use current (only happens on very first render)
+    const headerHeight = this.expandedHeaderHeight || currentHeaderHeight;
+
+    // Calculate available body height using the EXPANDED header height
     const availableBodyHeight =
       totalHeight -
       toolbarHeight -
@@ -141,17 +184,37 @@ export class HeaderCollapsibleManager {
       footerHeight;
 
     // Determine if header should be collapsible
-    // Rule: If body would be smaller than header, collapse the header
+    // Rule: If body would be smaller than expanded header, collapse the header
     const shouldCollapse = availableBodyHeight < headerHeight;
 
-    // Notify callback
-    if (this.onStateChangeCallback) {
-      this.onStateChangeCallback({
+    // Only notify if state actually changed to prevent unnecessary updates
+    if (
+      !this.lastState ||
+      this.lastState.shouldCollapse !== shouldCollapse ||
+      this.lastState.availableBodyHeight !== availableBodyHeight ||
+      this.lastState.headerHeight !== headerHeight
+    ) {
+      this.lastState = {
         shouldCollapse,
         availableBodyHeight,
         headerHeight,
-      });
+      };
+
+      // Notify callback
+      if (this.onStateChangeCallback) {
+        this.onStateChangeCallback(this.lastState);
+      }
     }
+  }
+
+  /**
+   * Get the header element
+   */
+  private getHeaderElement(): HTMLElement | null {
+    const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
+      'slot[name="header"]',
+    );
+    return (headerSlot?.assignedElements()[0] as HTMLElement) || null;
   }
 
   /**
@@ -200,10 +263,12 @@ export class HeaderCollapsibleManager {
     const headerElement = headerSlot?.assignedElements()[0] as HTMLElement;
 
     if (headerElement && !this.hasManualOverride()) {
-      if (shouldCollapse) {
+      const currentlyHasAttr = headerElement.hasAttribute("collapsible");
+
+      if (shouldCollapse && !currentlyHasAttr) {
         headerElement.setAttribute("collapsible", "");
         this.isManagerControlled = true;
-      } else {
+      } else if (!shouldCollapse && currentlyHasAttr) {
         headerElement.removeAttribute("collapsible");
         this.isManagerControlled = false;
       }

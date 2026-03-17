@@ -47,10 +47,22 @@
 // Shell Container
 // ============================================================================
 .shell {
-  --#{$prefix}-border-radius-start-start: 0;
-  --#{$prefix}-border-radius-start-end: 0;
-  --#{$prefix}-border-radius-end-start: 0;
-  --#{$prefix}-border-radius-end-end: 0;
+  --#{$prefix}-border-radius-start-start: var(
+    --#{$prefix}-border-radius-start-start-base,
+    0
+  );
+  --#{$prefix}-border-radius-start-end: var(
+    --#{$prefix}-border-radius-start-end-base,
+    0
+  );
+  --#{$prefix}-border-radius-end-start: var(
+    --#{$prefix}-border-radius-end-start-base,
+    0
+  );
+  --#{$prefix}-border-radius-end-end: var(
+    --#{$prefix}-border-radius-end-end-base,
+    0
+  );
 
   position: relative;
   display: block;
@@ -116,7 +128,7 @@
 // ============================================================================
 // Hide .main-chat and .panels during initialization to prevent visible
 // layout shifts while calculations are performed
-:host([data-initializing]) {
+.shell.initializing {
   .main-chat,
   .panels {
     opacity: 0;
@@ -124,7 +136,7 @@
 }
 
 // Fade in content after initialization completes
-:host(:not([data-initializing])) {
+.shell:not(.initializing) {
   .main-chat,
   .panels {
     opacity: 1;
@@ -142,7 +154,7 @@
 
 // Instant appearance for users who prefer reduced motion
 @media screen and (prefers-reduced-motion: reduce) {
-  :host([data-initializing]) {
+  .shell.initializing {
     .main-chat,
     .panels {
       opacity: 1;

@@ -43,8 +43,9 @@ export class ResizeObserverManager {
       return;
     }
 
-    const headerWrapper =
-      this.shellRoot.querySelector<HTMLElement>(".header-wrapper");
+    const headerWrapper = this.shellRoot.querySelector<HTMLElement>(
+      ".header-with-header-after",
+    );
 
     if (!headerWrapper) {
       return;
@@ -221,12 +222,12 @@ export class ResizeObserverManager {
   getMessagesMaxWidth(): number {
     const value = this.getCssLengthFromProperty(
       "--cds-aichat-messages-max-width",
-      1056,
+      672,
     );
 
     // Cache the value for performance
     const parsed = parseFloat(String(value));
-    this.lastKnownMessagesMaxWidth = isNaN(parsed) ? 1056 : parsed;
+    this.lastKnownMessagesMaxWidth = isNaN(parsed) ? 672 : parsed;
     return this.lastKnownMessagesMaxWidth;
   }
 

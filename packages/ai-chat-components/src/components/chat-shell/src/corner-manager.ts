@@ -22,6 +22,7 @@ export class CornerManager {
     config: CornerConfig,
   ) {
     this.config = config;
+    this.updateCornerCSSVariables();
   }
 
   /**

@@ -14,19 +14,3 @@
   margin-block-start: layout.$spacing-05;
   max-inline-size: 380px;
 }
-
-/* When the dropdown is opened, we want to add some temporary padding while performing the scroll calculations so that
-
-   it scrolls by a little more than it needs to. This class is only added while the calculation is performed. */
-
-.cds-aichat--custom-select-temporary-padding {
-  padding-block-end: layout.$spacing-11;
-}
-
-cds-dropdown::part(trigger-button) {
-  block-size: 2.5rem;
-}
-
-cds-dropdown::part(menu-body) {
-  position: static;
-}

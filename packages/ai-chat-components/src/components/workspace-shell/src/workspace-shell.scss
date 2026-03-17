@@ -19,7 +19,6 @@
   @include type.type-style("body-01");
 
   display: flex;
-  overflow: auto;
   /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
   flex-direction: column;

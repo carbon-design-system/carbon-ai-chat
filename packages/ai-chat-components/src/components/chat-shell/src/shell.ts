@@ -8,7 +8,7 @@
  */
 
 import { LitElement, PropertyValues, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 // @ts-ignore
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./shell.scss?lit";
@@ -176,10 +176,8 @@ class CDSAIChatShell extends LitElement {
    * @internal
    * Flag to track if the component is still initializing.
    * Used to hide content during initial layout calculations to prevent visible thrashing.
-   * This property is reflected as an attribute and used by CSS, so it appears unused in TS.
    */
-  @property({ type: Boolean, reflect: true, attribute: "data-initializing" })
-  // @ts-ignore - Used as reflected attribute for CSS styling
+  @state()
   private _isInitializing = true;
 
   /**
@@ -349,13 +347,54 @@ class CDSAIChatShell extends LitElement {
     this.ariaAnnouncerManager?.announce(this.workspaceClosedAnnouncement);
   }
 
+  /**
+   * Handles workspace visibility changes from WorkspaceManager
+   * @internal
+   */
+  private handleWorkspaceVisibilityChange = (
+    visible: boolean,
+    inPanel: boolean,
+  ): void => {
+    // Don't announce during initialization
+    if (!this.initializationManager?.isInitializationComplete()) {
+      return;
+    }
+
+    // For panel mode, syncWorkspacePanelState already handles announcements
+    // Only announce for inline mode changes
+    if (!inPanel) {
+      // Add extra delay to allow button state changes to be announced first
+      // This prevents the workspace announcement from being interrupted
+      if (typeof window !== "undefined") {
+        window.setTimeout(() => {
+          if (visible) {
+            this.ariaAnnouncerManager?.announce(
+              this.workspaceOpenedAnnouncement,
+            );
+          } else {
+            this.ariaAnnouncerManager?.announce(
+              this.workspaceClosedAnnouncement,
+            );
+          }
+        }, 100); // 100ms delay before queuing the announcement (which has its own 250ms delay)
+      }
+    }
+  };
+
   private getWidgetClasses(): string {
     const workspaceState = this.workspaceManager?.getState();
+    const hasAnyRoundedCorner =
+      this.cornerAll === "round" ||
+      this.cornerStartStart === "round" ||
+      this.cornerStartEnd === "round" ||
+      this.cornerEndStart === "round" ||
+      this.cornerEndEnd === "round";
     return [
       "shell",
+      this._isInitializing ? "initializing" : "",
       this.aiEnabled ? "ai-theme" : "",
       this.showFrame ? "" : "frameless",
-      this.cornerManager?.hasAnyRoundedCorner() ? "rounded" : "",
+      hasAnyRoundedCorner ? "rounded" : "",
       this.hasHeaderContent || this.hasHeaderAfterContent
         ? "has-header-content"
         : "",
@@ -606,6 +645,8 @@ class CDSAIChatShell extends LitElement {
     this.initializationManager.onComplete(() => {
       this._isInitializing = false;
       this.requestUpdate();
+      // Enable workspace announcements after initialization is complete
+      this.workspaceManager?.enableAnnouncements();
     });
 
     // Initialize slot observer
@@ -699,12 +740,19 @@ class CDSAIChatShell extends LitElement {
     }
 
     // Initialize workspace manager
-    this.workspaceManager = new WorkspaceManager(widgetRoot, this, {
-      showWorkspace: this.showWorkspace,
-      showHistory: this.showHistory,
-      workspaceLocation: this.workspaceLocation,
-      roundedCorners: this.cornerManager.hasAnyRoundedCorner(),
-    });
+    this.workspaceManager = new WorkspaceManager(
+      widgetRoot,
+      this,
+      {
+        showWorkspace: this.showWorkspace,
+        showHistory: this.showHistory,
+        workspaceLocation: this.workspaceLocation,
+        roundedCorners: this.cornerManager.hasAnyRoundedCorner(),
+      },
+      {
+        onWorkspaceVisibilityChange: this.handleWorkspaceVisibilityChange,
+      },
+    );
     this.workspaceManager.connect();
 
     this.syncWorkspacePanelState();

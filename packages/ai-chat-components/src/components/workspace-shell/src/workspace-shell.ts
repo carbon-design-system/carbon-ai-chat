@@ -93,8 +93,18 @@ class CDSAIChatWorkspaceShell extends LitElement {
       return;
     }
 
+    // Don't create a new manager if one already exists
+    if (this.headerCollapsibleManager) {
+      return;
+    }
+
     this.updateComplete.then(() => {
       if (!this.shadowRoot) {
+        return;
+      }
+
+      // Double-check in case manager was created while waiting for updateComplete
+      if (this.headerCollapsibleManager) {
         return;
       }
 

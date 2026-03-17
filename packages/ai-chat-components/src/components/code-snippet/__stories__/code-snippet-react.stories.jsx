@@ -10,7 +10,7 @@ import React, {
 import CodeSnippet from "../../../react/code-snippet";
 import Card from "../../../react/card";
 import { Download, Share } from "@carbon/icons-react";
-import { AILabel, AILabelContent } from "@carbon/react";
+import { AILabel, AILabelContent, Button } from "@carbon/react";
 import { multilineCode } from "./sample-code.js";
 
 const renderSnippet = (args, code) => {
@@ -286,17 +286,9 @@ export const WithHeaderSlotsFilled = {
           </AILabelContent>
         </AILabel>
         <div slot="fixed-actions">
-          <button
-            onClick={() => console.log("Fixed action clicked")}
-            style={{
-              padding: "0.5rem",
-              cursor: "pointer",
-              border: "1px solid #ccc",
-              background: "transparent",
-            }}
-          >
-            Fixed Action
-          </button>
+          <Button size="sm" onClick={() => console.log("Fixed action clicked")}>
+            Action
+          </Button>
         </div>
       </CodeSnippet>
     );

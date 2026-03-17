@@ -10,6 +10,7 @@
 import "../src/code-snippet";
 import "../../card/index.js";
 import "@carbon/web-components/es/components/ai-label/ai-label.js";
+import "@carbon/web-components/es/components/button/button.js";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import Download16 from "@carbon/icons/es/download/16.js";
@@ -242,11 +243,10 @@ export const WithHeaderSlotsFilled = {
           </div>
         </cds-ai-label>
         <div slot="fixed-actions">
-          <button
-            @click=${() => console.log("Fixed action clicked")}
-            style="padding: 0.5rem; cursor: pointer; border: 1px solid #ccc; background: transparent;"
-          >
-            Fixed Action
+          <cds-button
+            size="sm"
+            @click=${() => console.log("Fixed action clicked")}>
+            Button
           </button>
         </div>
       </cds-aichat-code-snippet>

@@ -758,14 +758,14 @@ describe("cds-aichat-shell", function () {
       const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell></cds-aichat-shell>`,
       );
-      expect(el).dom.to.equalSnapshot();
+      await expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot with rounded corners", async () => {
       const el = await fixture<CDSAIChatShell>(
         html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`,
       );
-      expect(el).dom.to.equalSnapshot();
+      await expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot with all properties enabled", async () => {
@@ -778,7 +778,7 @@ describe("cds-aichat-shell", function () {
           show-workspace
         ></cds-aichat-shell>`,
       );
-      expect(el).dom.to.equalSnapshot();
+      await expect(el).dom.to.equalSnapshot();
     });
 
     it("should match snapshot with mixed corner configuration", async () => {
@@ -788,7 +788,7 @@ describe("cds-aichat-shell", function () {
           corner-end-end="round"
         ></cds-aichat-shell>`,
       );
-      expect(el).dom.to.equalSnapshot();
+      await expect(el).dom.to.equalSnapshot();
     });
   });
 });

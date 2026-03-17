@@ -31,8 +31,7 @@
   overflow: hidden auto;
   flex: 1;
   block-size: 100%;
-  inline-size: calc(100% - var(--cds-aichat-scrollbar-width, 0px));
-  margin-inline-start: var(--cds-aichat-scrollbar-width, 0);
+  inline-size: 100%;
 }
 
 .cds-aichat--messages__wrapper:focus {
