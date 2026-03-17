@@ -65,7 +65,7 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
   @HostListener("keydown")
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       this._handleClick();
     }

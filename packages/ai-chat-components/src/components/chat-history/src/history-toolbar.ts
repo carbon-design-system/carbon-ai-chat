@@ -56,32 +56,17 @@ class CDSAIChatHistoryToolbar extends LitElement {
     );
   };
 
-  /**
-   * Handle keydown event on new chat button
-   * @param event
-   */
-  _handleNewChatButtonKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleNewChatButtonClick();
-    }
-  };
-
   render() {
     const {
       newChatLabel,
       searchOff,
       _handleNewChatButtonClick: handleNewChatButtonClick,
-      _handleNewChatButtonKeyDown: handleNewChatButtonKeyDown,
     } = this;
 
     return html` <slot name="actions-start"></slot>
       ${!searchOff ? html`<cds-search></cds-search>` : nothing}
       <slot name="actions-end"></slot>
-      <cds-icon-button
-        align="top-right"
-        @click=${handleNewChatButtonClick}
-        @keydown=${handleNewChatButtonKeyDown}
-      >
+      <cds-icon-button align="top-right" @click=${handleNewChatButtonClick}>
         ${iconLoader(AddComment16, {
           slot: "icon",
         })}

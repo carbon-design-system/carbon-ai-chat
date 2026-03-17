@@ -55,34 +55,12 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
     );
   };
 
-  /**
-   * Handle keydown event on cancel button
-   * @param event
-   */
-  _handleCancelKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleCancelClick();
-    }
-  };
-
-  /**
-   * Handle keydown event on delete button
-   * @param event
-   */
-  _handleDeleteKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleDeleteClick();
-    }
-  };
-
   render() {
     const {
       cancelText,
       deleteText,
       _handleCancelClick: handleCancelClick,
       _handleDeleteClick: handleDeleteClick,
-      _handleCancelKeyDown: handleCancelKeyDown,
-      _handleDeleteKeyDown: handleDeleteKeyDown,
     } = this;
 
     return html`
@@ -98,14 +76,9 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
             size="sm"
             kind="tertiary"
             @click=${handleCancelClick}
-            @keydown=${handleCancelKeyDown}
             >${cancelText}</cds-aichat-button
           >
-          <cds-aichat-button
-            size="sm"
-            kind="danger"
-            @click=${handleDeleteClick}
-            @keydown=${handleDeleteKeyDown}
+          <cds-aichat-button size="sm" kind="danger" @click=${handleDeleteClick}
             >${deleteText}
             ${iconLoader(TrashCan16, { slot: "icon" })}</cds-aichat-button
           >

@@ -127,7 +127,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleMenuTriggerKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.key === " ") {
       this._adjustMenuPosition();
     }
   };
@@ -160,7 +160,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleMenuItemKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.key === " ") {
       this._handleMenuItemClick(event);
     }
   };

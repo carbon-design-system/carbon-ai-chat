@@ -61,23 +61,12 @@ class CDSAIChatHistoryHeader extends LitElement {
     );
   };
 
-  /**
-   * Handle keydown event on close button
-   * @param event
-   */
-  _handleCloseButtonKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleCloseButtonClick();
-    }
-  };
-
   render() {
     const {
       closeButtonLabel,
       showCloseAction,
       title,
       _handleCloseButtonClick: handleCloseButtonClick,
-      _handleCloseButtonKeyDown: handleCloseButtonKeyDown,
     } = this;
 
     return html`
@@ -87,7 +76,6 @@ class CDSAIChatHistoryHeader extends LitElement {
             kind="ghost"
             align="right"
             @click=${handleCloseButtonClick}
-            @keydown=${handleCloseButtonKeyDown}
           >
             ${iconLoader(ChevronLeft16, { slot: "icon" })}
             <span slot="tooltip-content">${closeButtonLabel}</span>
