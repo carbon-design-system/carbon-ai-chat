@@ -358,8 +358,13 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     allowHomeScreen,
   ]);
 
+  const hasContentMaxWidth = headerConfig?.hasContentMaxWidth ?? false;
+  const headerContainerClassName = hasContentMaxWidth
+    ? "cds-aichat--header__container cds-aichat--header-constrain-width"
+    : "cds-aichat--header__container";
+
   return (
-    <div className="cds-aichat--header__container">
+    <div className={headerContainerClassName}>
       <ChatHeader
         ref={chatHeaderRef}
         actions={actions}

@@ -58,6 +58,7 @@ const DEFAULT_HEADER: HeaderConfig = {
   isOn: true,
   minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
   showAiLabel: true,
+  hasContentMaxWidth: false,
 };
 
 deepFreeze(DEFAULT_HEADER);

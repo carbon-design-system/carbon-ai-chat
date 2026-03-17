@@ -614,8 +614,7 @@ export class DemoApp extends LitElement {
             >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
           >`
         : html``}
-      ${this.settings.layout === "fullscreen" ||
-      this.settings.layout === "fullscreen-no-gutter"
+      ${this.settings.layout === "fullscreen"
         ? html`<cds-aichat-custom-element
             class="fullScreen"
             .config=${this.config}

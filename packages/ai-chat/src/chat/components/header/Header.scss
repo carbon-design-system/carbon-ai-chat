@@ -6,24 +6,44 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "../../styles/chat-theme";
 
 // Writeable element styling (used by AppShellWriteableElements)
-.cds-aichat--widget--max-width .cds-aichat--header-bottom-element {
+// Only apply max-width constraint when header is configured to constrain width
+.cds-aichat--widget--max-width
+  .cds-aichat--header-bottom-element.cds-aichat--header-constrain-width {
   margin: auto;
   max-inline-size: var(--cds-aichat-messages-max-width, 672px);
 }
 
 // Header container wrapper
 .cds-aichat--header__container {
-  margin: auto;
   background-color: theme.$chat-shell-background;
   border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
   border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
-  inline-size: 100%;
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    transition:
+      margin motion.$duration-moderate-01 motion.motion(standard, productive),
+      inline-size motion.$duration-moderate-01
+        motion.motion(standard, productive);
+  }
+}
+
+// Only apply max-width constraint when header is configured to constrain width
+.cds-aichat--header__container.cds-aichat--header-constrain-width {
+  margin: auto;
   max-inline-size: chat-theme.$messages-max-width;
+}
+
+.cds-aichat--widget--max-width {
+  .cds-aichat--header__container:not(.cds-aichat--header-constrain-width) {
+    margin-inline-end: layout.$spacing-05;
+    margin-inline-start: layout.$spacing-05;
+  }
 }
 
 // AI Label (slug) styling in decorator slot

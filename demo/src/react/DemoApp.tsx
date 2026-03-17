@@ -333,10 +333,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
   let className = "";
-  if (
-    settings.layout === "fullscreen" ||
-    settings.layout === "fullscreen-no-gutter"
-  ) {
+  if (settings.layout === "fullscreen") {
     className = "fullScreen";
   } else if (isSidebarLayout) {
     className = "sidebar";
