@@ -138,12 +138,18 @@ class CDSAIChatChainOfThought extends LitElement {
 
   render() {
     return html`
-      <slot
-        id=${this.panelId}
-        class="${prefix}--chain-of-thought-content"
-        ?inert=${this.open ? false : true}
-        ?hidden=${this.open ? false : true}
-      ></slot>
+      <div class="${prefix}--chain-of-thought">
+        <div
+          id=${this.panelId}
+          class="${prefix}--chain-of-thought-content"
+          ?aria-hidden=${!this.open}
+          ?hidden=${!this.open}
+        >
+          <div class="${prefix}--chain-of-thought-inner-content">
+            <slot></slot>
+          </div>
+        </div>
+      </div>
     `;
   }
 }

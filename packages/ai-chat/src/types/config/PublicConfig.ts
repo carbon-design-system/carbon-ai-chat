@@ -23,6 +23,7 @@ import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
+import type { KeyboardShortcuts } from "./ShortcutConfig";
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -196,6 +197,14 @@ export interface PublicConfig {
    * Optional partial language pack overrides. Values merge with defaults.
    */
   strings?: DeepPartial<LanguagePack>;
+
+  /**
+   * Configuration for keyboard shortcuts in the chat.
+   * Allows customization of keyboard shortcuts for various actions.
+   *
+   * @experimental
+   */
+  keyboardShortcuts?: KeyboardShortcuts;
 }
 
 /**

@@ -13,7 +13,6 @@ import AISkeletonPlaceholder from "../../../components/carbon/AISkeletonPlacehol
 import SkeletonPlaceholder from "../../../components/carbon/SkeletonPlaceholder";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnouncement";
 import { getURLHostName } from "../../../utils/browserUtils";
@@ -72,27 +71,16 @@ function Image(props: ImageProps) {
     description,
     displayURL,
     hideIconAndTitle,
-    needsAnnouncement,
     renderIcon,
     inline,
   } = props;
-  const ariaAnnouncer = useAriaAnnouncer();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
 
   const rootRef = useRef(undefined);
-  // This ref is for merely saving the initial value of shouldAnnounce prop.
-  const needsAnnouncementRef = useRef(needsAnnouncement);
   const hasText = Boolean(title || description || displayURL);
 
   const Icon = renderIcon;
-
-  // This effect announces the contents of this response type once the image has loaded.
-  useEffect(() => {
-    if (isLoaded && needsAnnouncementRef.current) {
-      ariaAnnouncer(rootRef.current);
-    }
-  }, [ariaAnnouncer, isLoaded]);
 
   if (isError) {
     return <InlineError text={imageError} />;

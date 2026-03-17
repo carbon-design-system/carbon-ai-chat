@@ -138,6 +138,11 @@ export {
   PublicConfigMessaging,
 } from "./types/config/PublicConfig";
 
+export {
+  ChatShortcutConfig,
+  KeyboardShortcuts,
+} from "./types/config/ShortcutConfig";
+
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
 

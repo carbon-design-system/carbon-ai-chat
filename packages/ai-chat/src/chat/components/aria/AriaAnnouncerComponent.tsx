@@ -11,50 +11,22 @@ import React from "react";
 
 import { AnnounceMessage } from "../../../types/state/AppState";
 import HasIntl from "../../../types/utilities/HasIntl";
-import {
-  isElement,
-  isImageNode,
-  isInputNode,
-  isTextAreaNode,
-  isTextNode,
-} from "../../utils/domUtils";
+import { nodeToText } from "../../utils/domUtils";
 import VisuallyHidden from "../util/VisuallyHidden";
-import { isBrowser } from "../../utils/browserUtils";
-
-// The set of types for an INPUT node that we want to announce the value of.
-const ANNOUNCE_INPUT_TYPES = new Set([
-  "button",
-  "date",
-  "datetime-local",
-  "email",
-  "file",
-  "month",
-  "number",
-  "range",
-  "reset",
-  "search",
-  "submit",
-  "tel",
-  "text",
-  "time",
-  "url",
-  "week",
-]);
-
-const ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE = "data-cds-aichat-exclude-node-read";
 
 /**
  * This component holds several aria live-regions that are used to make screen reader announcements by the application.
  * This component can announce both plain text as well as the content of complex HTML elements. HTML elements will be
  * converted to a raw text format before being announced.
  *
- * The component makes use of two live-region elements that are permanently attached to the DOM. It will alternate
- * between the usage of these two elements to announce changes. This accomplishes a few things. First, in my initial
+ * The component makes use of three live-region elements that are permanently attached to the DOM. It will rotate
+ * between the usage of these three elements to announce changes. This accomplishes a few things. First, in my initial
  * work, I kept finding cases where the browser would re-read the entire live region when elements are added to it even
  * with aria-relevant="additions" and aria-atomic="false". Clearing the previous content was the only way to stop that
  * happening. However you can't simply add the content and then immediately clear it because sometimes the SR won't read
- * the content without some sort of delay before it's cleared (even waiting a tick isn't enough). In addition, a second
- * element will make sure the SR will read a new message even if it has the same content as a previous message.
+ * the content without some sort of delay before it's cleared (even waiting a tick isn't enough). In addition, multiple
+ * elements will make sure the SR will read a new message even if it has the same content as a previous message, and
+ * using three elements provides better reliability by ensuring there's always a fresh element available.
  */
 class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
   /**
@@ -68,9 +40,14 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
   private ref2 = React.createRef<HTMLDivElement>();
 
   /**
-   * Indicates which of the two elements should next to be used to announce a new message.
+   * The third element into which the messages will be added.
    */
-  private useRef1 = true;
+  private ref3 = React.createRef<HTMLDivElement>();
+
+  /**
+   * Indicates which of the three elements should next be used to announce a new message (0, 1, or 2).
+   */
+  private currentRefIndex = 0;
 
   /**
    * The set of values that are to be announced on the next tick. This will be null to indicate that a setTimeout
@@ -130,16 +107,22 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
       }
     });
 
-    const useElement = this.useRef1 ? this.ref1.current : this.ref2.current;
+    const refs = [this.ref1, this.ref2, this.ref3];
+    const useElement = refs[this.currentRefIndex].current;
+
     if (useElement) {
       useElement.innerText = strings.join(" ");
 
-      // Clear the previous element and then swap the active one.
-      const clearElement = this.useRef1 ? this.ref2.current : this.ref1.current;
-      clearElement.innerHTML = "";
+      // Clear the other two elements
+      refs.forEach((ref, index) => {
+        if (index !== this.currentRefIndex && ref.current) {
+          ref.current.innerHTML = "";
+        }
+      });
     }
 
-    this.useRef1 = !this.useRef1;
+    // Rotate to the next element (0 -> 1 -> 2 -> 0)
+    this.currentRefIndex = (this.currentRefIndex + 1) % 3;
     this.pendingValues = null;
   };
 
@@ -150,76 +133,9 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
       <VisuallyHidden className="cds-aichat--aria-announcer">
         <div ref={this.ref1} aria-live="polite" />
         <div ref={this.ref2} aria-live="polite" />
+        <div ref={this.ref3} aria-live="polite" />
       </VisuallyHidden>
     );
-  }
-}
-
-/**
- * Converts the given node into text by extracting all of the text content from it and any children inside of it.
- * Any resulting pieces of text will be added to the given array.
- */
-function nodeToText(node: Node, strings: string[]) {
-  if (isElement(node)) {
-    if (
-      (!isBrowser() || window.getComputedStyle(node).display !== "none") &&
-      node.getAttribute("aria-hidden") !== "true" &&
-      !node.hasAttribute(ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE)
-    ) {
-      trimAndPush(node.getAttribute("aria-label"), strings);
-
-      if (
-        isInputNode(node) &&
-        ANNOUNCE_INPUT_TYPES.has(node.type.toLowerCase())
-      ) {
-        // If the node has a value, announce that. Otherwise announce any placeholder text.
-        if (node.value === "") {
-          trimAndPush(node.placeholder, strings);
-        } else {
-          trimAndPush(node.value, strings);
-        }
-      } else if (isTextAreaNode(node)) {
-        // For text areas, the value is built from children so we don't need to add the value to the strings here.
-        // The children will get added below.
-        if (node.value === "") {
-          trimAndPush(node.placeholder, strings);
-        }
-      } else if (isImageNode(node)) {
-        trimAndPush(node.alt, strings);
-      }
-
-      // Recursively go through all of the children. Most nodes will have children either in the shadowRoot.childNodes
-      // or in childNodes. However web components that take advantage of slots will have both. With such a node
-      // the shadowRoot comes first within the DOM and can contain children with aria-label's as well as <slots /> (which don't
-      // have aria-label's). After the shadowRoot the childNodes are the next sibling. Some of those childNodes will
-      // match to the corresponding slots in the shadowRoot and should have aria-label's. Because the shadowRoot is
-      // often just a wrapper around the slots it makes sense to recursively go through those nodes first before
-      // processing the slots farther down.
-      if (node.shadowRoot) {
-        node.shadowRoot.childNodes?.forEach((childNode) => {
-          nodeToText(childNode, strings);
-        });
-      }
-      if (node.childNodes) {
-        node.childNodes.forEach((childNode) => {
-          nodeToText(childNode, strings);
-        });
-      }
-    }
-  } else if (isTextNode(node)) {
-    trimAndPush(node.data, strings);
-  }
-}
-
-/**
- * Trims the given value and pushes it on to the given array assuming it has any content.
- */
-function trimAndPush(value: string, strings: string[]) {
-  if (value) {
-    value = value.trim();
-    if (value) {
-      strings.push(value.replaceAll("\n", " "));
-    }
   }
 }
 
@@ -230,4 +146,4 @@ function hasNodeType(value: any): value is Node {
   return value.nodeType !== undefined;
 }
 
-export { AriaAnnouncerComponent, nodeToText };
+export { AriaAnnouncerComponent };

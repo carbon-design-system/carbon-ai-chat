@@ -883,8 +883,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         class="${classMap(containerClasses)}"
         data-rounded="bottom"
         ${this.editable
-          ? `aria-label="${this.ariaLabelEditable}" aria-readonly="false" aria-multiline="true" role="textbox" tabindex="0"`
-          : ""}
+          ? `aria-label="${this.ariaLabelEditable}" aria-readonly="false" aria-multiline="true"`
+          : `aria-label="${this._slottedContent || "code-snippet"}"`}
         ${ref(this.snippetContainer)}
       >
         <div class="${prefix}--code-editor" ${ref(this.editorContainer)}></div>

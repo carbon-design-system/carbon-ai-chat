@@ -490,6 +490,11 @@ svg.cds-aichat--sent-file-icon {
 }
 
 .cds-aichat--message__reasoning-steps {
+  display: none;
+}
+
+.cds-aichat--message__reasoning-steps--open {
+  display: block;
   padding-block-end: layout.$spacing-04;
 }
 

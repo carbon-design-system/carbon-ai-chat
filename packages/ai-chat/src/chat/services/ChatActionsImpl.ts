@@ -50,6 +50,7 @@ import {
   createMessageRequestForText,
   createMessageResponseForText,
   createWelcomeRequest,
+  getSpeakerName,
   hasServiceDesk,
   isConnectToHumanAgent,
   isPause,
@@ -155,6 +156,12 @@ class ChatActionsImpl {
    * messages that were started before a restart.
    */
   private messageGenerations = new Map<string, number>();
+
+  /**
+   * Tracks which message IDs have had their "streaming start" announced.
+   * Prevents duplicate announcements for the same streaming message.
+   */
+  private announcedStreamingStarts = new Set<string>();
 
   /**
    * Queue of received chunks.
@@ -739,10 +746,20 @@ class ChatActionsImpl {
         messageID ||
         ("streaming_metadata" in chunk &&
           chunk.streaming_metadata?.response_id);
+
       this.serviceManager.messageService.markCurrentMessageAsStreaming(
         extractedMessageID,
         chunk.partial_item?.streaming_metadata?.id,
       );
+
+      // Announce streaming start on first chunk for this message
+      if (
+        extractedMessageID &&
+        !this.announcedStreamingStarts.has(extractedMessageID)
+      ) {
+        this.announcedStreamingStarts.add(extractedMessageID);
+        this.announceStreamingStart(extractedMessageID, chunk);
+      }
     }
 
     const chunkPromise = resolvablePromise();
@@ -751,6 +768,52 @@ class ChatActionsImpl {
       this.processChunkQueue();
     }
     return chunkPromise;
+  }
+
+  /**
+   * Announces that streaming has started for a message.
+   * This provides immediate feedback to screen reader users that the assistant is responding.
+   *
+   * @param messageID - The ID of the message being streamed
+   * @param chunk - The first chunk received, which may contain response_user_profile
+   */
+  private announceStreamingStart(messageID: string, chunk: StreamChunk) {
+    const { store } = this.serviceManager;
+    const { config } = store.getState();
+
+    // Get the assistant name from config
+    const assistantName = config.public.assistantName;
+
+    // Try to get response_user_profile from the chunk first (for streaming messages)
+    // This is important because the message might not be in the store yet
+    const chunkProfile = isStreamPartialItem(chunk)
+      ? chunk.partial_response?.message_options?.response_user_profile
+      : undefined;
+
+    // If not in chunk, try to get from stored message (fallback)
+    const message = store.getState().allMessagesByID[messageID] as
+      | MessageResponse
+      | undefined;
+
+    // Create a temporary message object with the profile from chunk if available
+    const messageWithProfile: MessageResponse | undefined = chunkProfile
+      ? ({
+          ...message,
+          message_options: {
+            ...message?.message_options,
+            response_user_profile: chunkProfile,
+          },
+        } as MessageResponse)
+      : message;
+
+    const speakerName = getSpeakerName(messageWithProfile, assistantName);
+
+    store.dispatch(
+      actions.announceMessage({
+        messageID: "messages_streamingStart",
+        messageValues: { sender: speakerName },
+      }),
+    );
   }
 
   async processChunkQueue() {
@@ -1606,6 +1669,9 @@ class ChatActionsImpl {
 
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.restartGeneration++;
+
+      // Clear streaming start announcements tracking
+      this.announcedStreamingStarts.clear();
 
       // Mark all existing messages as belonging to the OLD generation by keeping them in the map
       // (don't clear - this way we can detect stale chunks from old messages)
