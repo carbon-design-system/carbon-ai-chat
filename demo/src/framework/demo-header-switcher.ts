@@ -238,11 +238,35 @@ export class DemoHeaderSwitcher extends LitElement {
     this._updateConfig({ header });
   };
 
+  private _onHasContentMaxWidthChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value;
+    const header = { ...this.config.header };
+
+    if (value === "default") {
+      delete header.hasContentMaxWidth;
+    } else if (value === "true") {
+      header.hasContentMaxWidth = true;
+    } else if (value === "false") {
+      header.hasContentMaxWidth = false;
+    }
+
+    this._updateConfig({ header });
+  };
+
   private _getCurrentMinimizeButtonType(): string {
     if (this.config?.header?.hideMinimizeButton) {
       return "none";
     }
     return this.config?.header?.minimizeButtonIconType || "default";
+  }
+
+  private _getHasContentMaxWidthValue(): string {
+    const value = this.config?.header?.hasContentMaxWidth;
+    if (value === undefined) {
+      return "default";
+    }
+    return value ? "true" : "false";
   }
 
   render() {
@@ -327,6 +351,18 @@ export class DemoHeaderSwitcher extends LitElement {
         >
           Add menu actions
         </cds-checkbox>
+      </div>
+
+      <div class="header-section">
+        <cds-dropdown
+          value="${this._getHasContentMaxWidthValue()}"
+          title-text="Has content max width"
+          @cds-dropdown-selected=${this._onHasContentMaxWidthChanged}
+        >
+          <cds-dropdown-item value="default">Default</cds-dropdown-item>
+          <cds-dropdown-item value="true">True</cds-dropdown-item>
+          <cds-dropdown-item value="false">False</cds-dropdown-item>
+        </cds-dropdown>
       </div>
     `;
   }
