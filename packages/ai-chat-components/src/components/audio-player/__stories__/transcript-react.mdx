@@ -1,0 +1,120 @@
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
+import * as TranscriptReactStories from "./transcript-react.stories";
+
+<Meta of={TranscriptReactStories} />
+
+# Transcript
+
+The `<Transcript>` React component provides an accessible, expandable/collapsible interface for displaying audio and video transcripts.
+
+## Key Features
+
+- **Expandable/collapsible**: Clean interface that expands on demand
+- **Markdown support**: Render formatted transcript text
+- **Accessibility**: Proper ARIA attributes and keyboard navigation
+- **Event handling**: React-friendly event callbacks
+- **Internationalization**: Support for multiple languages
+
+## Use Cases
+
+The transcript component is ideal for:
+
+- Providing text alternatives for audio content
+- Meeting accessibility requirements (WCAG)
+- Allowing users to search or reference specific content
+- Supporting users who prefer reading over listening
+
+## Getting started
+
+Here's a quick example to get you started.
+
+### Installation
+
+```bash
+npm install @carbon/ai-chat-components
+```
+
+### Basic Usage
+
+```jsx
+import { Transcript } from "@carbon/ai-chat-components/es/react/transcript";
+
+function MyComponent() {
+  return (
+    <Transcript
+      text="My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff."
+      label="English Transcript"
+      language="en"
+    />
+  );
+}
+```
+
+### With Audio Player
+
+The transcript component works seamlessly with the audio player in a Card layout:
+
+```jsx
+import { AudioPlayer } from "@carbon/ai-chat-components/es/react/audio-player";
+import { Card } from "@carbon/ai-chat-components/es/react/card";
+import { Transcript } from "@carbon/ai-chat-components/es/react/transcript";
+
+function AudioWithTranscript() {
+  return (
+    <Card>
+      <div slot="media" data-rounded="top">
+        <AudioPlayer
+          source="https://example.com/audio.mp3"
+          ariaLabel="Audio title"
+        />
+      </div>
+      <div slot="body">
+        <h4>Audio Title</h4>
+        <p>Audio description</p>
+        <Transcript
+          text="Transcript text here..."
+          label="English Transcript"
+          language="en"
+        />
+      </div>
+    </Card>
+  );
+}
+```
+
+### With Event Handling
+
+```jsx
+import { Transcript } from "@carbon/ai-chat-components/es/react/transcript";
+import { useState } from "react";
+
+function TranscriptWithState() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div>
+      <p>Transcript is currently: {isExpanded ? "Expanded" : "Collapsed"}</p>
+      <Transcript
+        text="Transcript text here..."
+        label="English Transcript"
+        language="en"
+        onCdsAichatTranscriptToggle={(e) => {
+          setIsExpanded(e.detail.expanded);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## Events
+
+The component supports the following event:
+
+| Event Name | Description | Event Detail |
+|------------|-------------|--------------|
+| `onCdsAichatTranscriptToggle` | Fired when transcript is expanded or collapsed | `{ expanded: boolean }` |
+
+## Component API
+
+<ArgTypes of={TranscriptReactStories} />

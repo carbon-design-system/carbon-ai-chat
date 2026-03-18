@@ -11,7 +11,7 @@
  * Normalizes CommonJS and ESM default exports so that dynamically imported
  * modules always return the actual value we care about (component, class, etc).
  *
- * Some libraries (like `react-player`) can emit shapes such as:
+ * Some libraries can emit shapes such as:
  *   { default: Component }
  *   { default: { default: Component } }
  *   Component

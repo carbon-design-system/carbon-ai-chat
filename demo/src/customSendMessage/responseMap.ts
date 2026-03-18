@@ -9,7 +9,7 @@
 
 import { ChatInstance, CustomSendMessageOptions } from "@carbon/ai-chat";
 
-import { doAudio } from "./doAudio";
+import { doAudioSoundCloud, doAudioMp3 } from "./doAudio";
 import { doButton } from "./doButton";
 import { doCard } from "./doCard";
 import { doPreviewCard } from "./doPreviewCard";
@@ -48,7 +48,7 @@ import {
   doTextWithWatsonAgentProfile,
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
-import { doVideo } from "./doVideo";
+import { doVideoYouTube, doVideoVimeo, doVideoKaltura } from "./doVideo";
 
 const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
   Object.fromEntries(
@@ -64,7 +64,8 @@ const RESPONSE_MAP: Record<
     requestOptions?: CustomSendMessageOptions,
   ) => Promise<void> | void
 > = sortResponseMap({
-  audio: (instance) => doAudio(instance),
+  "audio - soundcloud": (instance) => doAudioSoundCloud(instance),
+  "audio - mp3": (instance) => doAudioMp3(instance),
   button: (instance) => doButton(instance),
   card: (instance) => doCard(instance),
   "workspace preview card (open start)": (instance) =>
@@ -240,7 +241,9 @@ const RESPONSE_MAP: Record<
   user_defined: (instance) => doUserDefined(instance),
   "user_defined (stream)": (instance, requestOptions) =>
     doUserDefinedStreaming(instance, requestOptions),
-  video: (instance) => doVideo(instance),
+  "video - youtube": (instance) => doVideoYouTube(instance),
+  "video - vimeo": (instance) => doVideoVimeo(instance),
+  "video - kaltura": (instance) => doVideoKaltura(instance),
 });
 
 export { RESPONSE_MAP };
