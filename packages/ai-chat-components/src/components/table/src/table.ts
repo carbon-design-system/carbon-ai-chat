@@ -204,6 +204,17 @@ class CDSAIChatTable extends LitElement {
   public _filterVisibleRowIDs: Set<string> = new Set();
 
   /**
+   * Flag to track when row visibility needs to be updated after the DOM has rendered.
+   * This is necessary because _updateVisibleRows() queries the DOM for rendered rows,
+   * which don't exist yet during willUpdate(). Setting this flag defers the visibility
+   * update until the updated() lifecycle method runs after rendering is complete.
+   *
+   * @internal
+   */
+  @state()
+  private _needsVisibilityUpdate = false;
+
+  /**
    * All of the rows for the table with IDs.
    *
    * @internal
@@ -308,6 +319,18 @@ class CDSAIChatTable extends LitElement {
    * @protected
    */
   protected willUpdate(changedProperties: PropertyValues<this>) {
+    // Calculate default page size on first render to ensure correct page size is set.
+    // For streaming tables: happens when loading=true (before skeleton renders)
+    // For non-streaming tables: happens when rows are first set
+    if (
+      (changedProperties.has("loading") && this.loading) ||
+      (changedProperties.has("rows") &&
+        this.rows !== undefined &&
+        !this.loading)
+    ) {
+      this._updateDefaultPageSize();
+    }
+
     const loadingJustFinished =
       changedProperties.has("loading") &&
       changedProperties.get("loading") === true &&
@@ -334,7 +357,36 @@ class CDSAIChatTable extends LitElement {
       this.rows !== undefined
     ) {
       this._initializeRowsArrays();
-      this._setPageSize();
+      // Set flag to update visibility after DOM renders, rather than calling _setPageSize() here.
+      // This is critical for streaming tables where rows don't exist in the DOM yet during willUpdate().
+      this._needsVisibilityUpdate = true;
+    }
+  }
+
+  /**
+   * Called after the element's DOM has been updated.
+   * Handles deferred visibility updates that require the DOM to be fully rendered.
+   *
+   * This is essential for streaming tables: when loading completes, willUpdate() sets
+   * _needsVisibilityUpdate=true, but the actual row elements don't exist in the DOM yet.
+   * By deferring _updateVisibleRows() to this lifecycle method, we ensure the rows are
+   * rendered and can be properly queried and hidden/shown for pagination.
+   *
+   * We use requestAnimationFrame to ensure Carbon Web Components table rows are fully
+   * rendered in the DOM before attempting to query and hide/show them.
+   *
+   * @param changedProperties - Map of properties that changed during the update
+   * @protected
+   */
+  protected updated(changedProperties: PropertyValues<this>) {
+    super.updated(changedProperties);
+
+    if (this._needsVisibilityUpdate) {
+      this._needsVisibilityUpdate = false;
+      // Use requestAnimationFrame to ensure Carbon table rows are fully rendered
+      requestAnimationFrame(() => {
+        this._updateVisibleRows();
+      });
     }
   }
 
@@ -393,14 +445,18 @@ class CDSAIChatTable extends LitElement {
    * Filtering is enabled when there are more rows than can fit on a single page,
    * allowing users to search and paginate through large datasets.
    *
+   * This method is called from firstUpdated() for non-streaming tables where the DOM
+   * is already rendered. For streaming tables, visibility updates are deferred via the
+   * _needsVisibilityUpdate flag and handled in updated() lifecycle method.
+   *
    * @private
    */
   private _setPageSize() {
     // If there are more rows than the page size then enable filtering.
     // this._allowFiltering = this.rows.length > this._currentPageSize;
 
-    // Update the visible rows in case the page size has changed or this is the first time this web component has
-    // rendered.
+    // Update visible rows. This is safe to call here because _setPageSize() is only
+    // called from firstUpdated(), which runs after the DOM is rendered.
     this._updateVisibleRows();
   }
 
@@ -420,6 +476,11 @@ class CDSAIChatTable extends LitElement {
     try {
       const runtime = await this.tableRuntimePromise;
       this.tableRuntime = runtime;
+      // When runtime loads for the first time, we need to update row visibility
+      // because we're transitioning from skeleton to actual table
+      if (!this.loading && this.rows !== undefined && this.rows.length > 0) {
+        this._needsVisibilityUpdate = true;
+      }
       this.requestUpdate();
       return runtime;
     } catch (error) {

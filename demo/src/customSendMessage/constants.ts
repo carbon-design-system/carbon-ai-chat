@@ -24,8 +24,7 @@ const TABLE = `
 | Nitrogen     | N      | 7             | 15    | 2      | 14.007          | [He] 2s² 2p³    | Covalent| -210               | -196               |
 | Oxygen       | O      | 8             | 16    | 2      | 15.999          | [He] 2s² 2p⁴    | Covalent| -218               | -183               |
 | Fluorine     | F      | 9             | 17    | 2      | 18.998          | [He] 2s² 2p⁵    | Covalent| -220               | -188               |
-| Neon         | Ne     | 10            | 18    | 2      | 20.180          | [He] 2s² 2p⁶    | Noble   | -249               | -246               |
-`;
+| Neon         | Ne     | 10            | 18    | 2      | 20.180          | [He] 2s² 2p⁶    | Noble   | -249               | -246               |`;
 
 const UNORDERED_LIST = `
 - Carbon allotropes
@@ -165,8 +164,6 @@ const MARKDOWN = `
 ${TEXT}
 ---
 ${HEADERS}
----
-${TABLE}
 ---
 ${BLOCKQUOTE}
 ---

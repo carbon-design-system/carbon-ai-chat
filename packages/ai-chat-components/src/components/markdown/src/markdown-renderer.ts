@@ -496,29 +496,31 @@ function renderWithStaticTag(
           : null,
       });
 
-      if (isLoading) {
-        // Keep loading output stable during streaming table assembly.
-        return html`<div class="cds-aichat-table-holder">
-          <cds-aichat-table .loading=${true}></cds-aichat-table>
-        </div>`;
+      // Only extract and process table data when not loading to avoid unnecessary work.
+      // During loading, the table shows a skeleton and doesn't need the actual data.
+      let headers: TableCellContent[] = [];
+      let tableRows: TableRowContent[] = [];
+
+      if (!isLoading) {
+        const extractedData = extractTableData(node);
+        headers = extractedData.headers.map((cell) =>
+          createCellContent(cell, { isInThead: true }),
+        );
+        tableRows = extractedData.rows.map((row) => ({
+          cells: row.map((cell) => createCellContent(cell)),
+        }));
       }
 
-      const extractedData = extractTableData(node);
-
-      const headers: TableCellContent[] = extractedData.headers.map((cell) =>
-        createCellContent(cell, { isInThead: true }),
-      );
-
-      const tableRows: TableRowContent[] = extractedData.rows.map((row) => ({
-        cells: row.map((cell) => createCellContent(cell)),
-      }));
-
+      // Always return the same structure to allow Lit to reuse the table element.
+      // When isLoading is true, the table component will show a skeleton state.
+      // When isLoading is false, it will show the actual data.
+      // This prevents recreating the table element and preserves its internal state.
       return html`<div class="cds-aichat-table--square">
         <cds-aichat-table
           data-rounded
           .headers=${headers}
           .rows=${tableRows}
-          .loading=${false}
+          .loading=${isLoading}
           .filterPlaceholderText=${tableFilterPlaceholderText}
           .previousPageText=${tablePreviousPageText}
           .nextPageText=${tableNextPageText}
