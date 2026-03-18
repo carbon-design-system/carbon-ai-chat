@@ -1,0 +1,321 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/convert";
+@use "@carbon/web-components/scss/components/ui-shell/side-nav";
+
+:host(#{$prefix}-history-shell) {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  border: solid convert.rem(1px) theme.$border-subtle-00;
+  background: theme.$chat-header-background;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+:host(#{$prefix}-history-header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+  @include type.type-style("body-compact-01");
+
+  font-weight: 600;
+  inline-size: 100%;
+  letter-spacing: 0.1px;
+  line-height: 1.25rem;
+  min-block-size: convert.rem(40px);
+
+  .#{$prefix}--history-header__close-button {
+    padding-inline-end: layout.$spacing-03;
+  }
+
+  .#{$prefix}--history-header__title {
+    overflow: hidden;
+    inline-size: 100%;
+    margin-inline-start: layout.$spacing-04;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+:host(#{$prefix}-history-header[show-close-action])
+  .#{$prefix}--history-header__title {
+  margin-inline-start: 0;
+}
+
+:host(#{$prefix}-history-toolbar) {
+  display: flex;
+
+  cds-search::part(input) {
+    background-color: theme.$chat-header-background;
+    border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+  }
+}
+
+:host(#{$prefix}-history-toolbar[search-off]) {
+  justify-content: flex-end;
+  border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
+}
+
+:host(#{$prefix}-history-content) {
+  display: block;
+  overflow-y: auto;
+
+  .#{$prefix}--history-content__results-count {
+    display: block;
+    padding: layout.$spacing-04 0 layout.$spacing-02 layout.$spacing-04;
+    @include type.type-style("label-01");
+  }
+}
+
+:host(#{$prefix}-history-loading) {
+  overflow: hidden;
+  padding: layout.$spacing-06;
+
+  #{$cds-prefix}-skeleton-text {
+    padding: layout.$spacing-06 0;
+  }
+
+  .#{$prefix}--history-loading__results {
+    border-block-end: 1px solid theme.$border-subtle;
+    margin-block-end: layout.$spacing-04;
+
+    #{$cds-prefix}-skeleton-text {
+      padding: 0 0 layout.$spacing-04 0;
+    }
+  }
+}
+
+:host(#{$prefix}-history-panel) {
+  display: flex;
+  flex-direction: column;
+
+  .cds--side-nav {
+    position: relative;
+    background-color: transparent;
+    inline-size: 100%;
+    max-inline-size: 100%;
+  }
+}
+
+:host(#{$prefix}-history-panel-items) {
+  @extend :host(#{$cds-prefix}-side-nav-items);
+
+  position: relative;
+  padding: 0;
+}
+
+:host(#{$prefix}-history-panel-menu) {
+  @extend :host(#{$cds-prefix}-side-nav-menu);
+
+  padding-block-start: layout.$spacing-02;
+
+  .#{$cds-prefix}--side-nav__submenu {
+    padding: 0 1rem 0 layout.$spacing-04;
+  }
+
+  .#{$cds-prefix}--side-nav__submenu-title {
+    @include type.type-style("label-01");
+  }
+
+  .#{$cds-prefix}--side-nav__icon:not(
+    .#{$cds-prefix}--side-nav__submenu-chevron
+  ) {
+    margin-inline-end: layout.$spacing-03;
+  }
+}
+
+:host(#{$prefix}-history-panel-item),
+:host(#{$prefix}-history-search-item) {
+  @extend :host(#{$cds-prefix}-side-nav-menu-item);
+
+  position: relative;
+
+  .#{$cds-prefix}--side-nav__link {
+    @include type.type-style("body-01");
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background-color: transparent;
+    block-size: convert.rem(40px);
+    cursor: pointer;
+    font-family: inherit;
+    inline-size: 100%;
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    padding-inline-start: layout.$spacing-07;
+    text-decoration: none;
+  }
+
+  button.#{$cds-prefix}--side-nav__link:focus {
+    background-color: theme.$background-hover;
+    outline: 2px solid theme.$focus;
+    outline-offset: -2px;
+  }
+
+  .#{$cds-prefix}--side-nav__link-text {
+    overflow: hidden;
+    color: theme.$text-primary;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .#{$prefix}--overflow-menu__icon {
+    color: theme.$icon-primary;
+  }
+}
+
+:host(#{$prefix}-history-panel-item[rename]) {
+  display: flex;
+  align-items: center;
+  block-size: convert.rem(40px);
+}
+
+:host(#{$prefix}-history-panel-item[selected]) {
+  button.#{$cds-prefix}--side-nav__link {
+    background-color: theme.$layer-selected;
+  }
+
+  button.#{$cds-prefix}--side-nav__link:before {
+    position: absolute;
+    background-color: theme.$border-interactive;
+    content: "";
+    inline-size: 3px;
+    inset-block: 0;
+    inset-inline-start: 0;
+  }
+}
+
+:host(#{$prefix}-history-panel-item-input) {
+  padding: 0 layout.$spacing-06;
+  inline-size: 100%;
+
+  .#{$prefix}--history-panel-item--rename__input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    block-size: layout.$spacing-07;
+    inline-size: 100%;
+    outline: layout.$spacing-01 solid theme.$focus;
+  }
+
+  input {
+    @include type.type-style("body-01");
+
+    overflow: hidden;
+    flex-grow: 2;
+    border: none;
+    background-color: transparent;
+    color: theme.$text-primary;
+    padding-inline-start: layout.$spacing-03;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  input:focus {
+    outline: none;
+  }
+}
+
+:host(#{$prefix}-history-search-item) {
+  button.#{$cds-prefix}--side-nav__link {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    block-size: layout.$spacing-10;
+    padding-inline-end: layout.$spacing-05;
+  }
+
+  .#{$cds-prefix}--side-nav__link-text {
+    inline-size: 100%;
+    text-align: start;
+  }
+
+  .#{$cds-prefix}--side-nav__link-subtitle {
+    @include type.type-style("label-01");
+
+    color: theme.$text-secondary;
+    padding-block-start: layout.$spacing-01;
+  }
+}
+
+:host(#{$prefix}-history-search-item[disabled])
+  button.#{$cds-prefix}--side-nav__link {
+  background-color: transparent;
+  cursor: default;
+  outline: none;
+}
+
+#{$cds-prefix}-overflow-menu {
+  visibility: hidden;
+}
+
+:host(#{$prefix}-history-panel-item:hover) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item:focus) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item:focus-within) #{$cds-prefix}-overflow-menu,
+:host(#{$prefix}-history-panel-item) #{$cds-prefix}-overflow-menu[open] {
+  visibility: visible;
+}
+
+:host(#{$prefix}-history-panel-item[parent-has-icon])
+  button.#{$prefix}--side-nav__link {
+  padding-inline-start: 4.5rem;
+}
+
+:host(#{$prefix}-history-delete-panel) {
+  position: absolute;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: layout.$spacing-07;
+  block-size: 100%;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    background: theme.$background;
+    content: "";
+    inset: 0;
+    opacity: 0.95;
+  }
+
+  .#{$prefix}--history-delete-panel__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    @include type.type-style("heading-03");
+
+    margin: 0 0 layout.$spacing-03 0;
+  }
+
+  span {
+    @include type.type-style("body-01");
+  }
+
+  .#{$prefix}--history-delete-panel__actions {
+    display: flex;
+    gap: layout.$spacing-03;
+    padding-block-start: layout.$spacing-06;
+
+    cds-aichat-button {
+      flex: 1;
+    }
+  }
+}

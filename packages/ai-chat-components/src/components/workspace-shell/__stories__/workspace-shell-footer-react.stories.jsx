@@ -34,6 +34,13 @@ export default {
       description: "Event fired when a footer button is clicked",
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="workspace-story-container">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export const Default = {
