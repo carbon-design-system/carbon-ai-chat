@@ -15,7 +15,6 @@
 @use "../../../globals/scss/modifiers" as *;
 
 $messages-max-width: var(--#{$prefix}-messages-max-width, 672px);
-$border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 
 :host {
   position: absolute;
@@ -23,19 +22,10 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   box-sizing: border-box;
   margin: 0;
   block-size: 100%;
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
-  border-start-end-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-start,
-    0
-  );
-  border-start-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-end,
-    0
-  );
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-start, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-end, 0);
   inline-size: 100%;
   inset-block-start: 0;
   inset-inline-start: 0;
@@ -55,36 +45,34 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 
 // When panel is wider than messages-max-width, add bottom border radius
 :host(.panel--with-less-than-messages-max-width) {
-  --#{$prefix}-rounded-modifier-radius-end-start: #{$border-radius};
-  --#{$prefix}-rounded-modifier-radius-end-end: #{$border-radius};
+  --#{$prefix}-border-radius-end-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-end-end: #{layout.$spacing-03};
 }
 
 // Full-width panels: Always get bottom corners (when shell has rounded corners)
 :host(.panel--full-width),
 :host(:not([show-frame])) {
-  --#{$prefix}-rounded-modifier-radius-end-start: #{$border-radius};
-  --#{$prefix}-rounded-modifier-radius-end-end: #{$border-radius};
+  --#{$prefix}-border-radius-end-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-end-end: #{layout.$spacing-03};
 }
 
 // Full-width panels without show-chat-header: Also add top corners
 :host(.panel--full-width:not(.panel--with-chat-header)),
 :host([show-frame]:not(.panel--full-width)) {
-  --#{$prefix}-rounded-modifier-radius-start-start: #{$border-radius};
-  --#{$prefix}-rounded-modifier-radius-start-end: #{$border-radius};
+  --#{$prefix}-border-radius-start-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-start-end: #{layout.$spacing-03};
 }
 
 // Constrained panels without show-chat-header: Also add top corners when wider than messages-max-width
 :host(.panel--with-less-than-messages-max-width:not(.panel--with-chat-header)) {
-  --#{$prefix}-rounded-modifier-radius-start-start: #{$border-radius};
-  --#{$prefix}-rounded-modifier-radius-start-end: #{$border-radius};
+  --#{$prefix}-border-radius-start-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-start-end: #{layout.$spacing-03};
 }
 
 // When both showChatHeader and showFrame are true: Add top corners to panel and topmost element
 :host([show-frame].panel--with-chat-header) {
-  --#{$prefix}-rounded-modifier-radius-start-start: #{$border-radius};
-  --#{$prefix}-rounded-modifier-radius-start-end: #{$border-radius};
-  --#{$prefix}-rounded-modifier-radius-start-start: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-start-end: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-start-start: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-start-end: #{layout.$spacing-03};
 }
 
 :host(.panel-container--animating) {
@@ -195,19 +183,10 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
   flex-direction: column;
   margin: auto;
   block-size: 100%;
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
-  border-start-end-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-start,
-    0
-  );
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
   inline-size: 100%;
   // Ensure content doesn't overflow the container
   min-block-size: 0;
@@ -268,28 +247,16 @@ $border-radius: var(--#{$prefix}-rounded-modifier-radius, 0.5rem);
 
 // When showChatHeader and showFrame are true: Apply top rounded corners to header if it has content
 :host([show-frame].panel--with-chat-header) .panel-header.has-content {
-  border-start-end-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 }
 
 // When showChatHeader and showFrame are true: Apply top rounded corners to body if header has no content
 :host([show-frame].panel--with-chat-header)
   .panel-header:not(.has-content)
   + .panel-body {
-  border-start-end-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 }
 
 // Only constrain header/footer width when showFrame is true AND fullWidth is false

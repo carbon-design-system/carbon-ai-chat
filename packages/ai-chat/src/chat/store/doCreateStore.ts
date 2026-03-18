@@ -14,6 +14,10 @@ import { AppConfig } from "../../types/state/AppConfig";
 import { AppState, ThemeState } from "../../types/state/AppState";
 import { IS_PHONE } from "../utils/browserUtils";
 import { CornersType } from "../utils/constants";
+import {
+  PerCornerConfig,
+  ResolvedCornerConfig,
+} from "../../types/config/CornersType";
 import { LanguagePack, PublicConfig } from "../../types/config/PublicConfig";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
@@ -243,18 +247,80 @@ function doCreateStore(
 }
 
 /**
- * Returns the corner type for the Carbon AI Chat widget.
+ * Checks if a corners configuration is a PerCornerConfig object.
  */
-function getThemeCornersType(publicConfig: PublicConfig) {
-  if (
-    getLayoutState(publicConfig).showFrame === false ||
-    IS_PHONE ||
-    publicConfig.layout?.corners === CornersType.SQUARE
-  ) {
-    return CornersType.SQUARE;
+function isPerCornerConfig(
+  corners: CornersType | PerCornerConfig | undefined,
+): corners is PerCornerConfig {
+  return (
+    typeof corners === "object" &&
+    corners !== null &&
+    (corners.startStart !== undefined ||
+      corners.startEnd !== undefined ||
+      corners.endStart !== undefined ||
+      corners.endEnd !== undefined)
+  );
+}
+
+/**
+ * Normalizes a corners configuration to a resolved per-corner configuration.
+ * Handles both simple CornersType values and PerCornerConfig objects.
+ */
+function normalizeCorners(
+  corners: CornersType | PerCornerConfig | undefined,
+  defaultValue: CornersType,
+): ResolvedCornerConfig {
+  if (isPerCornerConfig(corners)) {
+    // Per-corner config: use provided values or fall back to default
+    return {
+      startStart: corners.startStart ?? defaultValue,
+      startEnd: corners.startEnd ?? defaultValue,
+      endStart: corners.endStart ?? defaultValue,
+      endEnd: corners.endEnd ?? defaultValue,
+    };
   }
 
-  return DEFAULT_THEME_STATE.corners;
+  // Simple config: apply the same value to all corners
+  const cornerValue = corners ?? defaultValue;
+  return {
+    startStart: cornerValue,
+    startEnd: cornerValue,
+    endStart: cornerValue,
+    endEnd: cornerValue,
+  };
+}
+
+/**
+ * Returns the resolved corner configuration for the Carbon AI Chat widget.
+ */
+function getThemeCornersType(publicConfig: PublicConfig): ResolvedCornerConfig {
+  const layoutState = getLayoutState(publicConfig);
+
+  // If frame is disabled or on phone, force all corners to square
+  if (layoutState.showFrame === false || IS_PHONE) {
+    return {
+      startStart: CornersType.SQUARE,
+      startEnd: CornersType.SQUARE,
+      endStart: CornersType.SQUARE,
+      endEnd: CornersType.SQUARE,
+    };
+  }
+
+  // If corners is explicitly set to SQUARE (simple config), force all to square
+  if (publicConfig.layout?.corners === CornersType.SQUARE) {
+    return {
+      startStart: CornersType.SQUARE,
+      startEnd: CornersType.SQUARE,
+      endStart: CornersType.SQUARE,
+      endEnd: CornersType.SQUARE,
+    };
+  }
+
+  // Otherwise, normalize the corners configuration
+  return normalizeCorners(
+    publicConfig.layout?.corners,
+    DEFAULT_THEME_STATE.corners.startStart, // Use default from one corner
+  );
 }
 
 function getLayoutState(publicConfig: PublicConfig): LayoutConfig {

@@ -48,7 +48,7 @@ const sampleOverflowItems = [
 ];
 
 export default {
-  title: "Components/Chat shell/Header",
+  title: "Preview/Chat shell/Header",
   args: {
     headerTitle: "title",
     headerName: "name",

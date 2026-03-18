@@ -39,7 +39,7 @@ export type NavigationOverflowItem = BaseOverflowMenuItem;
  * @slot decorator - Decorative elements like AI labels
  * @slot fixed-actions - Actions that never overflow (allows passing custom components)
  */
-@carbonElement("cds-aichat-chat-header")
+@carbonElement(`${prefix}-chat-header`)
 class CdsAiChatChatHeader extends LitElement {
   static styles = styles;
 

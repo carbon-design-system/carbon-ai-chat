@@ -93,12 +93,12 @@ function InventoryStatusExample({
   };
 
   return (
-    <WorkspaceShell>
+    <WorkspaceShell autoCollapsibleHeader>
       <Toolbar slot="toolbar" actions={toolbarActions} overflow>
         <div slot="title" data-fixed>
           Current inventory status
         </div>
-        <AILabel size="2xs" autoAlign>
+        <AILabel size="2xs" autoAlign={false} align="bottom">
           <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
           <div>
             IBM watsonx is powered by the latest AI models to intelligently

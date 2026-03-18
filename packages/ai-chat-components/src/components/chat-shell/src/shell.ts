@@ -8,30 +8,36 @@
  */
 
 import { LitElement, PropertyValues, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 // @ts-ignore
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./shell.scss?lit";
 import { PanelManager } from "./panel-manager.js";
 import { WorkspaceManager } from "./workspace-manager.js";
+import { CornerManager } from "./corner-manager.js";
+import { SlotObserver } from "./slot-observer.js";
+import { InitializationManager } from "./initialization-manager.js";
+import { ResizeObserverManager } from "./resize-observer-manager.js";
+import { AriaAnnouncerManager } from "./aria-announcer-manager.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import prefix from "../../../globals/settings.js";
+import type { StartOrEnd, SlotConfig } from "./types.js";
 import "./panel.js";
 
-type StartOrEnd = "start" | "end";
-
-@carbonElement("cds-aichat-shell")
+@carbonElement(`${prefix}-shell`)
 class CDSAIChatShell extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * @internal
    */
-  private static readonly OBSERVED_SLOTS = [
-    { name: "header", stateKey: "hasHeaderContent" as const },
-    { name: "header-after", stateKey: "hasHeaderAfterContent" as const },
-    { name: "footer", stateKey: "hasFooterContent" as const },
-    { name: "input-after", stateKey: "hasInputAfterContent" as const },
-    { name: "input", stateKey: "hasInputContent" as const },
-    { name: "input-before", stateKey: "hasInputBeforeContent" as const },
+  private static readonly OBSERVED_SLOTS: readonly SlotConfig[] = [
+    { name: "header", stateKey: "hasHeaderContent" },
+    { name: "header-after", stateKey: "hasHeaderAfterContent" },
+    { name: "footer", stateKey: "hasFooterContent" },
+    { name: "input-after", stateKey: "hasInputAfterContent" },
+    { name: "input", stateKey: "hasInputContent" },
+    { name: "input-before", stateKey: "hasInputBeforeContent" },
   ];
 
   /**
@@ -47,10 +53,39 @@ class CDSAIChatShell extends LitElement {
   showFrame = false;
 
   /**
-   * Applies rounded corners to the chat shell
+   * Sets the corner style for all corners. Individual corner-* attributes override this value.
+   * Values: "round" or "square". Defaults to "square".
    */
-  @property({ type: Boolean, attribute: "rounded-corners", reflect: true })
-  roundedCorners = false;
+  @property({ type: String, attribute: "corner-all", reflect: true })
+  cornerAll: "round" | "square" = "square";
+
+  /**
+   * Controls the start-start corner (top-left in LTR, top-right in RTL).
+   * Values: "round" or "square". Overrides cornerAll if set.
+   */
+  @property({ type: String, attribute: "corner-start-start", reflect: true })
+  cornerStartStart?: "round" | "square";
+
+  /**
+   * Controls the start-end corner (top-right in LTR, top-left in RTL).
+   * Values: "round" or "square". Overrides cornerAll if set.
+   */
+  @property({ type: String, attribute: "corner-start-end", reflect: true })
+  cornerStartEnd?: "round" | "square";
+
+  /**
+   * Controls the end-start corner (bottom-left in LTR, bottom-right in RTL).
+   * Values: "round" or "square". Overrides cornerAll if set.
+   */
+  @property({ type: String, attribute: "corner-end-start", reflect: true })
+  cornerEndStart?: "round" | "square";
+
+  /**
+   * Controls the end-end corner (bottom-right in LTR, bottom-left in RTL).
+   * Values: "round" or "square". Overrides cornerAll if set.
+   */
+  @property({ type: String, attribute: "corner-end-end", reflect: true })
+  cornerEndEnd?: "round" | "square";
 
   /**
    * Shows the history panel in the chat shell
@@ -95,11 +130,55 @@ class CDSAIChatShell extends LitElement {
   messagesAriaLabel = "Chat messages";
 
   /**
+   * Announcement text for when a panel opens
+   */
+  @property({ type: String, attribute: "panel-opened-announcement" })
+  panelOpenedAnnouncement = "Panel opened";
+
+  /**
+   * Announcement text for when a panel closes
+   */
+  @property({ type: String, attribute: "panel-closed-announcement" })
+  panelClosedAnnouncement = "Panel closed";
+
+  /**
+   * Announcement text for when workspace opens
+   */
+  @property({ type: String, attribute: "workspace-opened-announcement" })
+  workspaceOpenedAnnouncement = "Workspace opened";
+
+  /**
+   * Announcement text for when workspace closes
+   */
+  @property({ type: String, attribute: "workspace-closed-announcement" })
+  workspaceClosedAnnouncement = "Workspace closed, returned to chat";
+
+  /**
+   * Announcement text for when history becomes visible
+   */
+  @property({ type: String, attribute: "history-shown-announcement" })
+  historyShownAnnouncement = "Conversation history is now visible";
+
+  /**
+   * Announcement text for when history becomes hidden
+   */
+  @property({ type: String, attribute: "history-hidden-announcement" })
+  historyHiddenAnnouncement = "Conversation history is now hidden";
+
+  /**
    * Constrains content to a maximum width. When false, input and related
    * slots will extend to full container width without max-width constraints.
    */
   @property({ type: Boolean, attribute: "content-max-width", reflect: true })
-  contentMaxWidth = true;
+  contentMaxWidth = false;
+
+  /**
+   * @internal
+   * Flag to track if the component is still initializing.
+   * Used to hide content during initial layout calculations to prevent visible thrashing.
+   */
+  @state()
+  private _isInitializing = true;
 
   /**
    * @internal
@@ -114,56 +193,37 @@ class CDSAIChatShell extends LitElement {
   /**
    * @internal
    */
-  private headerResizeObserver?: ResizeObserver;
+  private cornerManager?: CornerManager;
 
   /**
    * @internal
    */
-  private inputAndMessagesResizeObserver?: ResizeObserver;
+  private slotObserver?: SlotObserver;
 
   /**
    * @internal
    */
-  private mainContentBodyResizeObserver?: ResizeObserver;
+  private initializationManager?: InitializationManager;
 
   /**
    * @internal
    */
-  private cssPropertyObserver?: MutationObserver;
+  private resizeObserverManager?: ResizeObserverManager;
 
   /**
    * @internal
    */
-  private lastKnownMessagesMaxWidth?: number;
+  private ariaAnnouncerManager?: AriaAnnouncerManager;
 
   /**
    * @internal
+   * Cached slot content state from SlotObserver
    */
   private hasHeaderContent = false;
-
-  /**
-   * @internal
-   */
   private hasHeaderAfterContent = false;
-
-  /**
-   * @internal
-   */
   private hasFooterContent = false;
-
-  /**
-   * @internal
-   */
   private hasInputAfterContent = false;
-
-  /**
-   * @internal
-   */
   private hasInputContent = false;
-
-  /**
-   * @internal
-   */
   private hasInputBeforeContent = false;
 
   /**
@@ -221,13 +281,120 @@ class CDSAIChatShell extends LitElement {
    */
   private suppressWorkspacePanelCloseAnimation = false;
 
+  /**
+   * Handles panel open events and announces to screen readers
+   * @internal
+   */
+  private handlePanelOpen = (event: Event): void => {
+    // Only announce for non-workspace panels (workspace has its own announcement)
+    const target = event.target as HTMLElement;
+
+    // Check if the event target is the internal workspace panel
+    // or if it's a child of the internal panel
+    if (target?.hasAttribute("data-internal-panel")) {
+      return;
+    }
+
+    // Also check if the target is inside an internal panel
+    const closestPanel = target?.closest?.(
+      "cds-aichat-panel[data-internal-panel]",
+    );
+    if (closestPanel) {
+      return;
+    }
+
+    this.ariaAnnouncerManager?.announce(this.panelOpenedAnnouncement);
+  };
+
+  /**
+   * Handles panel close events and announces to screen readers
+   * @internal
+   */
+  private handlePanelClose = (event: Event): void => {
+    // Only announce for non-workspace panels (workspace has its own announcement)
+    const target = event.target as HTMLElement;
+
+    // Check if the event target is the internal workspace panel
+    // or if it's a child of the internal panel
+    if (target?.hasAttribute("data-internal-panel")) {
+      return;
+    }
+
+    // Also check if the target is inside an internal panel
+    const closestPanel = target?.closest?.(
+      "cds-aichat-panel[data-internal-panel]",
+    );
+    if (closestPanel) {
+      return;
+    }
+
+    this.ariaAnnouncerManager?.announce(this.panelClosedAnnouncement);
+  };
+
+  /**
+   * Announces workspace opened to screen readers
+   * @internal
+   */
+  private announceWorkspaceOpened(): void {
+    this.ariaAnnouncerManager?.announce(this.workspaceOpenedAnnouncement);
+  }
+
+  /**
+   * Announces workspace closed to screen readers
+   * @internal
+   */
+  private announceWorkspaceClosed(): void {
+    this.ariaAnnouncerManager?.announce(this.workspaceClosedAnnouncement);
+  }
+
+  /**
+   * Handles workspace visibility changes from WorkspaceManager
+   * @internal
+   */
+  private handleWorkspaceVisibilityChange = (
+    visible: boolean,
+    inPanel: boolean,
+  ): void => {
+    // Don't announce during initialization
+    if (!this.initializationManager?.isInitializationComplete()) {
+      return;
+    }
+
+    // For panel mode, syncWorkspacePanelState already handles announcements
+    // Only announce for inline mode changes
+    if (!inPanel) {
+      // Add extra delay to allow button state changes to be announced first
+      // This prevents the workspace announcement from being interrupted
+      if (typeof window !== "undefined") {
+        window.setTimeout(() => {
+          if (visible) {
+            this.ariaAnnouncerManager?.announce(
+              this.workspaceOpenedAnnouncement,
+            );
+          } else {
+            this.ariaAnnouncerManager?.announce(
+              this.workspaceClosedAnnouncement,
+            );
+          }
+        }, 100); // 100ms delay before queuing the announcement (which has its own 250ms delay)
+      }
+    }
+  };
+
   private getWidgetClasses(): string {
     const workspaceState = this.workspaceManager?.getState();
+    const hasAnyRoundedCorner =
+      this.cornerAll === "round" ||
+      this.cornerStartStart === "round" ||
+      this.cornerStartEnd === "round" ||
+      this.cornerEndStart === "round" ||
+      this.cornerEndEnd === "round";
     return [
       "shell",
+      this._isInitializing ? "initializing" : "",
       this.aiEnabled ? "ai-theme" : "",
       this.showFrame ? "" : "frameless",
-      this.roundedCorners ? "rounded" : "",
+      hasAnyRoundedCorner ? "rounded" : "",
       this.hasHeaderContent || this.hasHeaderAfterContent
         ? "has-header-content"
         : "",
@@ -415,6 +582,17 @@ class CDSAIChatShell extends LitElement {
   render() {
     return html`
       <div class=${this.getWidgetClasses()}>
+        <!-- Hidden aria-live regions for screen reader announcements -->
+        <div
+          class="visually-hidden"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
+        <div
+          class="visually-hidden"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
         <div class="main-chat">
           ${this.renderHeader()}
           <div class="main-content">
@@ -435,154 +613,187 @@ class CDSAIChatShell extends LitElement {
 
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
-    const panelsSlot = this.renderRoot.querySelector<HTMLSlotElement>(
-      'slot[name="panels"]',
-    );
-
-    if (!panelsSlot) {
-      return;
-    }
-
     const widgetRoot = this.renderRoot.querySelector<HTMLElement>(".shell");
-
     if (!widgetRoot) {
       return;
     }
 
-    this.panelManager = new PanelManager(panelsSlot, widgetRoot);
-    this.panelManager.connect();
+    // Initialize aria announcer manager
+    const ariaLiveRegions = this.renderRoot.querySelectorAll<HTMLDivElement>(
+      '[aria-live="polite"]',
+    );
+    if (ariaLiveRegions.length >= 2) {
+      this.ariaAnnouncerManager = new AriaAnnouncerManager();
+      this.ariaAnnouncerManager.connect(ariaLiveRegions[0], ariaLiveRegions[1]);
+    }
 
-    this.workspaceManager = new WorkspaceManager(widgetRoot, this, {
-      showWorkspace: this.showWorkspace,
-      showHistory: this.showHistory,
-      workspaceLocation: this.workspaceLocation,
-      roundedCorners: this.roundedCorners,
+    // Listen for panel open/close events
+    this.addEventListener("openend", this.handlePanelOpen);
+    this.addEventListener("closeend", this.handlePanelClose);
+
+    // Initialize corner manager
+    this.cornerManager = new CornerManager(widgetRoot, {
+      cornerAll: this.cornerAll,
+      cornerStartStart: this.cornerStartStart,
+      cornerStartEnd: this.cornerStartEnd,
+      cornerEndStart: this.cornerEndStart,
+      cornerEndEnd: this.cornerEndEnd,
     });
+
+    // Initialize initialization manager FIRST (before observers that use it)
+    this.initializationManager = new InitializationManager();
+    this.initializationManager.onComplete(() => {
+      this._isInitializing = false;
+      this.requestUpdate();
+      // Enable workspace announcements after initialization is complete
+      this.workspaceManager?.enableAnnouncements();
+    });
+
+    // Initialize slot observer
+    this.slotObserver = new SlotObserver(
+      this.renderRoot as ShadowRoot,
+      CDSAIChatShell.OBSERVED_SLOTS,
+    );
+    this.slotObserver.connect(() => {
+      // Update cached slot state
+      const state = this.slotObserver?.getSlotContentState();
+      this.hasHeaderContent = state?.hasHeaderContent || false;
+      this.hasHeaderAfterContent = state?.hasHeaderAfterContent || false;
+      this.hasFooterContent = state?.hasFooterContent || false;
+      this.hasInputContent = state?.hasInputContent || false;
+      this.hasInputAfterContent = state?.hasInputAfterContent || false;
+      this.hasInputBeforeContent = state?.hasInputBeforeContent || false;
+
+      // Mark initialization complete
+      this.initializationManager?.markStateSet("hasSlotContent");
+
+      this.requestUpdate();
+    });
+
+    // Initialize resize observer manager
+    this.resizeObserverManager = new ResizeObserverManager(
+      this.renderRoot as ShadowRoot,
+      this,
+    );
+
+    // Observe header height
+    this.resizeObserverManager.observeHeaderHeight((height) => {
+      widgetRoot.style.setProperty("--cds-aichat-header-height", `${height}px`);
+    });
+
+    // Observe input and messages width
+    this.resizeObserverManager.observeInputAndMessagesWidth(
+      ({ isAtMaxWidth }) => {
+        if (this.inputAndMessagesAtMaxWidth !== isAtMaxWidth) {
+          this.inputAndMessagesAtMaxWidth = isAtMaxWidth;
+          this.requestUpdate();
+        }
+      },
+      () => {
+        // Initial measurement callback
+        this.initializationManager?.markStateSet("inputAndMessagesAtMaxWidth");
+      },
+    );
+
+    // Observe main content body width
+    this.resizeObserverManager.observeMainContentBodyWidth(
+      this.showHistory,
+      ({ shouldRenderHistory }) => {
+        if (this.shouldRenderHistory !== shouldRenderHistory) {
+          const wasVisible = this.shouldRenderHistory;
+          this.shouldRenderHistory = shouldRenderHistory;
+
+          // Announce history visibility changes (but not on initial load)
+          if (this.initializationManager?.isInitializationComplete()) {
+            if (shouldRenderHistory && !wasVisible) {
+              this.ariaAnnouncerManager?.announce(
+                this.historyShownAnnouncement,
+              );
+            } else if (!shouldRenderHistory && wasVisible) {
+              this.ariaAnnouncerManager?.announce(
+                this.historyHiddenAnnouncement,
+              );
+            }
+          }
+
+          this.requestUpdate();
+        }
+      },
+      () => {
+        // Initial measurement callback
+        this.initializationManager?.markStateSet("shouldRenderHistory");
+      },
+    );
+
+    // Observe CSS properties
+    this.resizeObserverManager.observeCssProperties(() => {
+      this.requestUpdate();
+    });
+
+    // Initialize panel manager
+    const panelsSlot = this.renderRoot.querySelector<HTMLSlotElement>(
+      'slot[name="panels"]',
+    );
+    if (panelsSlot) {
+      this.panelManager = new PanelManager(panelsSlot, widgetRoot);
+      this.panelManager.connect();
+    }
+
+    // Initialize workspace manager
+    this.workspaceManager = new WorkspaceManager(
+      widgetRoot,
+      this,
+      {
+        showWorkspace: this.showWorkspace,
+        showHistory: this.showHistory,
+        workspaceLocation: this.workspaceLocation,
+        roundedCorners: this.cornerManager.hasAnyRoundedCorner(),
+      },
+      {
+        onWorkspaceVisibilityChange: this.handleWorkspaceVisibilityChange,
+      },
+    );
     this.workspaceManager.connect();
 
-    this.observeHeaderHeight();
-    this.observeInputAndMessagesWidth();
-    this.observeMainContentBodyWidth();
-    this.observeSlotContent();
-    this.observeCssProperties();
-
     this.syncWorkspacePanelState();
-  }
-
-  private hasSlotContent(slotName: string): boolean {
-    const slot = this.renderRoot.querySelector<HTMLSlotElement>(
-      `slot[name="${slotName}"]`,
-    );
-    if (!slot) {
-      return false;
-    }
-
-    return slot.assignedNodes({ flatten: true }).some((node) => {
-      // Check for non-empty text nodes
-      if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
-        return true;
-      }
-
-      // Check for element nodes
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node as Element;
-        return this.hasElementContent(element);
-      }
-
-      return false;
-    });
-  }
-
-  private hasElementContent(element: Element): boolean {
-    // Check if element has child nodes with meaningful content (light DOM)
-    const hasChildContent = Array.from(element.childNodes).some((child) => {
-      if (child.nodeType === Node.TEXT_NODE) {
-        return child.textContent?.trim();
-      }
-      if (child.nodeType === Node.ELEMENT_NODE) {
-        const childElement = child as Element;
-        // Check slot elements recursively - they may have assigned content
-        if (childElement.tagName.toLowerCase() === "slot") {
-          const slotElement = childElement as HTMLSlotElement;
-          const assignedNodes = slotElement.assignedNodes({ flatten: true });
-          return assignedNodes.some((node) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-              return node.textContent?.trim();
-            }
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              return this.hasElementContent(node as Element);
-            }
-            return false;
-          });
-        }
-        return true;
-      }
-      return false;
-    });
-
-    if (hasChildContent) {
-      return true;
-    }
-
-    // If no light DOM children, check if element has shadow root (Shadow DOM content)
-    if ((element as any).shadowRoot) {
-      return true;
-    }
-
-    // Check text content as fallback
-    const textContent = element.textContent?.trim();
-    return Boolean(textContent);
-  }
-
-  private observeSlotContent() {
-    const updateSlotStates = () => {
-      const previousStates = new Map(
-        CDSAIChatShell.OBSERVED_SLOTS.map(({ stateKey }) => [
-          stateKey,
-          this[stateKey],
-        ]),
-      );
-
-      CDSAIChatShell.OBSERVED_SLOTS.forEach(({ name, stateKey }) => {
-        this[stateKey] = this.hasSlotContent(name);
-      });
-
-      const hasChanged = CDSAIChatShell.OBSERVED_SLOTS.some(
-        ({ stateKey }) => previousStates.get(stateKey) !== this[stateKey],
-      );
-
-      if (hasChanged) {
-        this.requestUpdate();
-      }
-    };
-
-    // Initial check
-    updateSlotStates();
-
-    // Observe slot changes
-    const slots = CDSAIChatShell.OBSERVED_SLOTS.map(({ name }) =>
-      this.renderRoot.querySelector<HTMLSlotElement>(`slot[name="${name}"]`),
-    ).filter((slot): slot is HTMLSlotElement => slot !== null);
-
-    slots.forEach((slot) => {
-      slot.addEventListener("slotchange", updateSlotStates);
-    });
   }
 
   protected updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
+    // Update corner manager when corner properties change
+    if (
+      changedProperties.has("cornerAll") ||
+      changedProperties.has("cornerStartStart") ||
+      changedProperties.has("cornerStartEnd") ||
+      changedProperties.has("cornerEndStart") ||
+      changedProperties.has("cornerEndEnd")
+    ) {
+      this.cornerManager?.updateCorners({
+        cornerAll: this.cornerAll,
+        cornerStartStart: this.cornerStartStart,
+        cornerStartEnd: this.cornerStartEnd,
+        cornerEndStart: this.cornerEndStart,
+        cornerEndEnd: this.cornerEndEnd,
+      });
+    }
+
+    // Update workspace manager when relevant properties change
     if (
       changedProperties.has("showWorkspace") ||
       changedProperties.has("showHistory") ||
       changedProperties.has("workspaceLocation") ||
-      changedProperties.has("roundedCorners")
+      changedProperties.has("cornerAll") ||
+      changedProperties.has("cornerStartStart") ||
+      changedProperties.has("cornerStartEnd") ||
+      changedProperties.has("cornerEndStart") ||
+      changedProperties.has("cornerEndEnd")
     ) {
       this.workspaceManager?.updateConfig({
         showWorkspace: this.showWorkspace,
         showHistory: this.showHistory,
         workspaceLocation: this.workspaceLocation,
-        roundedCorners: this.roundedCorners,
+        roundedCorners: this.cornerManager?.hasAnyRoundedCorner() ?? false,
       });
     }
 
@@ -593,221 +804,16 @@ class CDSAIChatShell extends LitElement {
   disconnectedCallback() {
     this.panelManager?.disconnect();
     this.workspaceManager?.disconnect();
-    this.headerResizeObserver?.disconnect();
-    this.inputAndMessagesResizeObserver?.disconnect();
-    this.mainContentBodyResizeObserver?.disconnect();
-    this.cssPropertyObserver?.disconnect();
+    this.slotObserver?.disconnect();
+    this.resizeObserverManager?.disconnect();
+    this.ariaAnnouncerManager?.disconnect();
     this.cancelWorkspacePanelOpenSchedule();
+
+    // Clean up event listeners
+    this.removeEventListener("openend", this.handlePanelOpen);
+    this.removeEventListener("closeend", this.handlePanelClose);
+
     super.disconnectedCallback();
-  }
-
-  private observeInputAndMessagesWidth() {
-    // We need to observe the :host width, not .input-and-messages width
-    // When :host < max-width, .input-and-messages fills the container and needs rounded corners
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const messagesMaxWidth = this.getMessagesMaxWidth();
-
-    const updateAtMaxWidth = (hostWidth: number) => {
-      // When host is less than max-width, input-and-messages is "at max width" (filling container)
-      const isAtMaxWidth = hostWidth < messagesMaxWidth;
-      if (this.inputAndMessagesAtMaxWidth !== isAtMaxWidth) {
-        this.inputAndMessagesAtMaxWidth = isAtMaxWidth;
-        this.requestUpdate();
-      }
-    };
-
-    const measure = () => {
-      const rect = this.getBoundingClientRect();
-      updateAtMaxWidth(rect.width);
-    };
-
-    this.inputAndMessagesResizeObserver = new ResizeObserver((entries) => {
-      // Use requestAnimationFrame to avoid ResizeObserver loop errors
-      requestAnimationFrame(() => {
-        for (const entry of entries) {
-          if (entry.target !== this) {
-            continue;
-          }
-          const borderBoxSize = Array.isArray(entry.borderBoxSize)
-            ? entry.borderBoxSize[0]
-            : entry.borderBoxSize;
-          if (borderBoxSize?.inlineSize) {
-            updateAtMaxWidth(borderBoxSize.inlineSize);
-          } else {
-            updateAtMaxWidth(entry.contentRect.width);
-          }
-        }
-      });
-    });
-
-    this.inputAndMessagesResizeObserver.observe(this);
-    measure();
-  }
-
-  private observeMainContentBodyWidth() {
-    if (typeof ResizeObserver === "undefined" || !this.showHistory) {
-      return;
-    }
-
-    const mainContentBody =
-      this.renderRoot.querySelector<HTMLElement>(".main-content-body");
-
-    if (!mainContentBody) {
-      return;
-    }
-
-    const updateHistoryVisibility = (width: number) => {
-      const messagesMinWidth = this.getCssLengthFromProperty(
-        "--cds-aichat-messages-min-width",
-        320,
-      );
-      const historyWidth = this.getCssLengthFromProperty(
-        "--cds-aichat-history-width",
-        320,
-      );
-
-      const requiredWidth = messagesMinWidth + historyWidth;
-      const newShouldRenderHistory = width >= requiredWidth;
-
-      if (this.shouldRenderHistory !== newShouldRenderHistory) {
-        this.shouldRenderHistory = newShouldRenderHistory;
-        this.requestUpdate();
-      }
-    };
-
-    this.mainContentBodyResizeObserver = new ResizeObserver((entries) => {
-      // Use requestAnimationFrame to avoid ResizeObserver loop errors
-      requestAnimationFrame(() => {
-        for (const entry of entries) {
-          if (entry.target !== mainContentBody) {
-            continue;
-          }
-          const borderBoxSize = Array.isArray(entry.borderBoxSize)
-            ? entry.borderBoxSize[0]
-            : entry.borderBoxSize;
-          if (borderBoxSize?.inlineSize) {
-            updateHistoryVisibility(borderBoxSize.inlineSize);
-          } else {
-            updateHistoryVisibility(entry.contentRect.width);
-          }
-        }
-      });
-    });
-
-    this.mainContentBodyResizeObserver.observe(mainContentBody);
-
-    // Initial measurement
-    const rect = mainContentBody.getBoundingClientRect();
-    updateHistoryVisibility(rect.width);
-  }
-
-  private getCssLengthFromProperty(
-    propertyName: string,
-    fallback: number,
-  ): number {
-    const value = getComputedStyle(this).getPropertyValue(propertyName).trim();
-    if (!value) {
-      return fallback;
-    }
-    const parsed = Number.parseFloat(value);
-    return Number.isNaN(parsed) ? fallback : parsed;
-  }
-
-  private getMessagesMaxWidth(): number {
-    const value = getComputedStyle(this)
-      .getPropertyValue("--cds-aichat-messages-max-width")
-      .trim();
-    if (!value) {
-      return 672; // Default fallback from SCSS
-    }
-    const parsed = Number.parseFloat(value);
-    return Number.isNaN(parsed) ? 672 : parsed;
-  }
-
-  private observeHeaderHeight() {
-    const headerWrapper = this.renderRoot.querySelector<HTMLElement>(
-      ".header-with-header-after",
-    );
-
-    if (!headerWrapper || typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const updateHeight = (height: number) => {
-      this.style.setProperty("--cds-aichat-header-height", `${height}px`);
-    };
-
-    const measure = () => {
-      const rect = headerWrapper.getBoundingClientRect();
-      updateHeight(rect.height);
-    };
-
-    this.headerResizeObserver = new ResizeObserver((entries) => {
-      // Use requestAnimationFrame to avoid ResizeObserver loop errors
-      requestAnimationFrame(() => {
-        for (const entry of entries) {
-          if (entry.target !== headerWrapper) {
-            continue;
-          }
-          const borderBoxSize = Array.isArray(entry.borderBoxSize)
-            ? entry.borderBoxSize[0]
-            : entry.borderBoxSize;
-          if (borderBoxSize?.blockSize) {
-            updateHeight(borderBoxSize.blockSize);
-          } else {
-            updateHeight(entry.contentRect.height);
-          }
-        }
-      });
-    });
-
-    this.headerResizeObserver.observe(headerWrapper);
-    measure();
-  }
-
-  /**
-   * Observe CSS custom properties that affect messages max width.
-   * When --cds-aichat-messages-max-width changes, recalculate the at-max-width state.
-   */
-  private observeCssProperties(): void {
-    if (typeof MutationObserver === "undefined") {
-      return;
-    }
-
-    // Store initial value
-    this.lastKnownMessagesMaxWidth = this.getMessagesMaxWidth();
-
-    // Watch for style attribute changes on the host element
-    this.cssPropertyObserver = new MutationObserver(() => {
-      this.checkMessagesMaxWidthChange();
-    });
-
-    this.cssPropertyObserver.observe(this, {
-      attributes: true,
-      attributeFilter: ["style"],
-    });
-  }
-
-  /**
-   * Check if --cds-aichat-messages-max-width has changed and trigger recalculation.
-   */
-  private checkMessagesMaxWidthChange(): void {
-    const currentMaxWidth = this.getMessagesMaxWidth();
-
-    if (currentMaxWidth !== this.lastKnownMessagesMaxWidth) {
-      this.lastKnownMessagesMaxWidth = currentMaxWidth;
-
-      // Recalculate the at-max-width state with the new max width
-      const rect = this.getBoundingClientRect();
-      const isAtMaxWidth = rect.width < currentMaxWidth;
-      if (this.inputAndMessagesAtMaxWidth !== isAtMaxWidth) {
-        this.inputAndMessagesAtMaxWidth = isAtMaxWidth;
-        this.requestUpdate();
-      }
-    }
   }
 
   private syncWorkspacePanelState(): void {
@@ -834,6 +840,11 @@ class CDSAIChatShell extends LitElement {
 
       // Schedule opening after the panel is rendered
       this.scheduleWorkspacePanelOpen();
+
+      // Announce workspace opened (only when actually opening, not switching views)
+      if (!shouldSuppressAnimation) {
+        this.announceWorkspaceOpened();
+      }
     } else if (!shouldRenderPanel && this.lastShouldRenderWorkspacePanel) {
       // Suppress animation when switching from panel to inline container
       // (workspace was in panel and now moving to inline)
@@ -846,6 +857,11 @@ class CDSAIChatShell extends LitElement {
       if (this.workspacePanelOpen) {
         this.workspacePanelOpen = false;
         this.requestUpdate();
+
+        // Announce workspace closed (only when actually closing, not switching views)
+        if (!shouldSuppressAnimation) {
+          this.announceWorkspaceClosed();
+        }
       } else {
         this.workspacePanelRendering = false;
         this.requestUpdate();

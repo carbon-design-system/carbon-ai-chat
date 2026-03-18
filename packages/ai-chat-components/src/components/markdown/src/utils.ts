@@ -15,10 +15,3 @@ const CONSOLE_PREFIX = "[carbon-ai-chat-components]";
 export function consoleError(message: string, ...args: any[]) {
   console.error(`${CONSOLE_PREFIX} ${message}`, ...args);
 }
-
-/**
- * Console log with prefix
- */
-export function consoleLog(message: string, ...args: any[]) {
-  console.log(`${CONSOLE_PREFIX} ${message}`, ...args);
-}

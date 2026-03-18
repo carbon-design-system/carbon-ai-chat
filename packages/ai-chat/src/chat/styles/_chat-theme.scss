@@ -10,34 +10,33 @@
 @use "@carbon/layout";
 @use "chat-config" as config;
 
+// Import shared tokens from @carbon/ai-chat-components
+@use "@carbon/ai-chat-components/scss/tokens-layout" as shared-layout;
+@use "@carbon/ai-chat-components/scss/tokens-component" as shared-component;
+
+// ============================================================================
+// Container-Specific Variables (ChatContainer floating widget)
+// ============================================================================
+
 // Web chat widget variables
 $box-shadow: config.get-var("box-shadow", 1px 0 4px hsl(0deg 0% 9% / 30%));
 
-// Card variables
-$card-border-radius: config.get-var(
-  "card-border-radius",
-  #{layout.$spacing-03}
-);
-$card-max-width: config.get-var("card-max-width", 424px);
-
-// Application Layout Variables
+// Application Layout Variables (container-specific)
 $max-height: config.get-var("max-height", 640px);
 $min-height: config.get-var("min-height", 150px);
-$messages-max-width: config.get-var("messages-max-width", 672px);
 $width: config.get-var("width", 380px);
 $height: config.get-var("height", calc(100vh - (2 * #{layout.$spacing-07})));
 
-// Position Variables
+// Position Variables (container-specific)
 $bottom-position: config.get-var("bottom-position", #{layout.$spacing-09});
 $right-position: config.get-var("right-position", #{layout.$spacing-07});
 $top-position: config.get-var("top-position", auto);
 $left-position: config.get-var("left-position", auto);
 
-// Styling Variables
+// Styling Variables (container-specific)
 $z-index: config.get-var("z-index", 99999);
-$border-radius: config.get-var("border-radius", 0px);
 
-// Launcher Variables
+// Launcher Variables (container-specific sizing/positioning)
 $launcher-default-size: config.get-var("launcher-default-size", 56px);
 $launcher-position-bottom: config.get-var(
   "launcher-position-bottom",
@@ -49,59 +48,90 @@ $launcher-position-right: config.get-var(
 );
 $launcher-extended-width: config.get-var("launcher-extended-width", 280px);
 
-$launcher-expanded-message-color-background: config.get-var(
-  "launcher-expanded-message-color-background",
-  #{button.$button-primary}
+// ============================================================================
+// Shared Variables (from @carbon/ai-chat-components)
+// ============================================================================
+// These reference the shared token system and are available across both packages
+
+// Layout tokens
+$messages-max-width: config.get-var(
+  "messages-max-width",
+  shared-layout.$messages-max-width
+);
+$card-max-width: config.get-var(
+  "card-max-width",
+  shared-layout.$card-max-width
 );
 
-// Launcher Color Variables
+// Component tokens
+$border-radius: config.get-var(
+  "border-radius",
+  shared-component.$border-radius
+);
+$card-border-radius: config.get-var(
+  "card-border-radius",
+  shared-component.$card-border-radius
+);
+
+// ============================================================================
+// Launcher Color Tokens (ChatContainer-specific)
+// ============================================================================
+// These tokens are specific to the ChatContainer floating widget launcher
+
+// Launcher button colors
 $launcher-color-background: config.get-var(
   "launcher-color-background",
-  #{button.$button-primary}
+  button.$button-primary
 );
 $launcher-color-avatar: config.get-var(
   "launcher-color-avatar",
-  #{theme.$text-on-color}
+  theme.$text-on-color
 );
 $launcher-color-background-hover: config.get-var(
   "launcher-color-background-hover",
-  #{button.$button-primary-hover}
+  button.$button-primary-hover
 );
 $launcher-color-background-active: config.get-var(
   "launcher-color-background-active",
-  #{button.$button-primary-active}
+  button.$button-primary-active
 );
 $launcher-color-focus-border: config.get-var(
   "launcher-color-focus-border",
-  #{theme.$text-on-color}
+  theme.$text-on-color
 );
 $launcher-mobile-color-text: config.get-var(
   "launcher-mobile-color-text",
-  #{theme.$text-on-color}
+  theme.$text-on-color
 );
+
+// Launcher expanded message colors
 $launcher-expanded-message-color-text: config.get-var(
   "launcher-expanded-message-color-text",
-  #{theme.$text-on-color}
+  theme.$text-on-color
+);
+$launcher-expanded-message-color-background: config.get-var(
+  "launcher-expanded-message-color-background",
+  button.$button-primary
 );
 $launcher-expanded-message-color-background-hover: config.get-var(
   "launcher-expanded-message-color-background-hover",
-  #{button.$button-primary-hover}
+  button.$button-primary-hover
 );
 $launcher-expanded-message-color-background-active: config.get-var(
   "launcher-expanded-message-color-background-active",
-  #{button.$button-primary-active}
+  button.$button-primary-active
 );
 $launcher-expanded-message-color-focus-border: config.get-var(
   "launcher-expanded-message-color-focus-border",
-  #{theme.$text-on-color}
+  theme.$text-on-color
 );
 
-// Unread Indicator Variables
+// Unread indicator colors
 $unread-indicator-color-background: config.get-var(
   "unread-indicator-color-background",
-  #{theme.$support-error}
+  theme.$support-error
 );
 $unread-indicator-color-text: config.get-var(
   "unread-indicator-color-text",
-  #{theme.$text-on-color}
+  theme.$text-on-color
 );

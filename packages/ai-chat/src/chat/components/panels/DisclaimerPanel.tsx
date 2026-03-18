@@ -108,16 +108,12 @@ const DisclaimerPanel = ({
               label={languagePack.disclaimer_icon_label}
             />
           </div>
-          <h1
-            className="cds-aichat--disclaimer__title"
-            aria-describedby={disclaimerDescriptionClassName}
-          >
+          <h1 className="cds-aichat--disclaimer__title">
             {languagePack.disclaimer_title}
           </h1>
           <div
             dangerouslySetInnerHTML={{ __html: disclaimerHTML }}
             className={disclaimerDescriptionClassName}
-            role="dialog"
           />
         </div>
       ),

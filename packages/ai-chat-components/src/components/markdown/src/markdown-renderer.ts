@@ -17,6 +17,7 @@ import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
 import "../../code-snippet/index.js";
+import "../../card/index.js";
 import "../../table/index.js";
 import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
 
@@ -24,11 +25,7 @@ import type {
   TableCellContent,
   TableRowContent,
 } from "../../table/src/table.js";
-import {
-  DEFAULT_PAGINATION_STATUS_TEXT,
-  DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT,
-  extractTableData,
-} from "./utils/table-helpers.js";
+import { extractTableData } from "./utils/table-helpers.js";
 import type { TableCellData } from "./utils/table-helpers.js";
 import { combineConsecutiveHtmlInline } from "./utils/html-helpers.js";
 import type { TokenTree } from "./markdown-token-tree.js";
@@ -74,28 +71,43 @@ export interface RenderTokenTreeOptions {
     currentIndex?: number;
   };
 
+  // Code snippet properties
   /** Whether to enable syntax highlighting in code blocks */
-  highlight?: boolean;
+  codeSnippetHighlight?: boolean;
+  /** Feedback text shown after copying */
+  codeSnippetFeedback?: string;
+  /** Text for show less button */
+  codeSnippetShowLessText?: string;
+  /** Text for show more button */
+  codeSnippetShowMoreText?: string;
+  /** Tooltip text for copy button */
+  codeSnippetCopyButtonTooltipContent?: string;
+  /** Function to get formatted line count text */
+  codeSnippetGetLineCountText?: ({ count }: { count: number }) => string;
+  /** Aria-label for code snippets when in read-only mode */
+  codeSnippetAriaLabelReadOnly?: string;
+  /** Aria-label for code snippets when in editable mode */
+  codeSnippetAriaLabelEditable?: string;
 
-  // Table strings
+  // Table properties
   /** Placeholder text for table filter input */
-  filterPlaceholderText?: string;
+  tableFilterPlaceholderText?: string;
   /** Text for previous page button tooltip */
-  previousPageText?: string;
+  tablePreviousPageText?: string;
   /** Text for next page button tooltip */
-  nextPageText?: string;
+  tableNextPageText?: string;
   /** Text for items per page label */
-  itemsPerPageText?: string;
+  tableItemsPerPageText?: string;
   /**
    * The text used for the download button's accessible label.
    */
-  downloadLabelText?: string;
+  tableDownloadLabelText?: string;
   /** Locale for table sorting and formatting */
-  locale?: string;
+  tableLocale?: string;
   /** Function to get supplemental pagination text */
-  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
+  tableGetPaginationSupplementalText?: ({ count }: { count: number }) => string;
   /** Function to get pagination status text */
-  getPaginationStatusText?: ({
+  tableGetPaginationStatusText?: ({
     start,
     end,
     count,
@@ -105,22 +117,12 @@ export interface RenderTokenTreeOptions {
     count: number;
   }) => string;
 
-  // Code snippet strings
-  /** Feedback text shown after copying */
-  feedback?: string;
-  /** Text for show less button */
-  showLessText?: string;
-  /** Text for show more button */
-  showMoreText?: string;
-  /** Tooltip text for copy button */
-  tooltipContent?: string;
-  /** Function to get formatted line count text */
-  getLineCountText?: ({ count }: { count: number }) => string;
+  /**
+   * Force markdown tables to render in loading mode.
+   * Useful for freezing streaming table visuals until stream completion.
+   */
+  forceTableLoading?: boolean;
 }
-
-const EMPTY_ATTRS = {};
-const EMPTY_TABLE_HEADERS: TableCellContent[] = [];
-const EMPTY_TABLE_ROWS: TableRowContent[] = [];
 
 /**
  * Converts TokenTree to Lit TemplateResult.
@@ -164,24 +166,31 @@ export function renderTokenTree(
   if (token.type === "fence") {
     const language = token.info?.trim() ?? "";
     const {
-      highlight = true,
-      feedback,
-      showLessText,
-      showMoreText,
-      tooltipContent,
-      getLineCountText = defaultLineCountText,
+      codeSnippetHighlight = true,
+      codeSnippetShowLessText,
+      codeSnippetShowMoreText,
+      codeSnippetCopyButtonTooltipContent,
+      codeSnippetGetLineCountText = defaultLineCountText,
+      codeSnippetAriaLabelReadOnly,
+      codeSnippetAriaLabelEditable,
     } = options;
 
-    return html`<cds-aichat-code-snippet-card
-      .language=${language}
-      .highlight=${highlight}
-      .feedback=${feedback}
-      .showLessText=${showLessText}
-      .showMoreText=${showMoreText}
-      .tooltipContent=${tooltipContent}
-      .getLineCountText=${getLineCountText}
-      >${token.content}</cds-aichat-code-snippet-card
-    >`;
+    return html`<cds-aichat-card is-flush>
+      <div slot="body">
+        <cds-aichat-code-snippet
+          data-rounded
+          .language=${language}
+          .highlight=${codeSnippetHighlight}
+          .showLessText=${codeSnippetShowLessText}
+          .showMoreText=${codeSnippetShowMoreText}
+          .copyButtonTooltipContent=${codeSnippetCopyButtonTooltipContent}
+          .getLineCountText=${codeSnippetGetLineCountText}
+          .ariaLabelReadOnly=${codeSnippetAriaLabelReadOnly}
+          .ariaLabelEditable=${codeSnippetAriaLabelEditable}
+          .code=${token.content}
+        ></cds-aichat-code-snippet>
+      </div>
+    </cds-aichat-card>`;
   }
 
   // Handle structural elements (paragraphs, headings, lists, etc.)
@@ -241,15 +250,18 @@ export function renderTokenTree(
 
         return `stable-${stableKey}`;
       },
-      (c, index) =>
-        renderTokenTree(c, {
+      (c, index) => {
+        const result = renderTokenTree(c, {
           ...options,
           context: {
             ...childContext,
             parentChildren: normalizedChildren,
             currentIndex: index,
           },
-        }),
+        });
+        // Ensure we never return undefined, which Lit would render as the string "undefined"
+        return result ?? html``;
+      },
     )}`;
   }
 
@@ -432,20 +444,22 @@ function renderWithStaticTag(
 
       const {
         streaming,
+        forceTableLoading,
         context: parentContext,
-        filterPlaceholderText,
-        previousPageText,
-        nextPageText,
-        itemsPerPageText,
-        downloadLabelText,
-        locale,
-        getPaginationSupplementalText,
-        getPaginationStatusText,
+        tableFilterPlaceholderText,
+        tablePreviousPageText,
+        tableNextPageText,
+        tableItemsPerPageText,
+        tableDownloadLabelText,
+        tableLocale,
+        tableGetPaginationSupplementalText,
+        tableGetPaginationStatusText,
       } = options;
 
       // Determine if we should show loading state during streaming
-      let isLoading = false;
+      let isLoading = Boolean(forceTableLoading);
       if (
+        !isLoading &&
         streaming &&
         parentContext?.parentChildren &&
         parentContext?.currentIndex !== undefined
@@ -482,44 +496,38 @@ function renderWithStaticTag(
           : null,
       });
 
-      // Extract table data or use empty placeholders for loading state
-      let headers: TableCellContent[];
-      let tableRows: TableRowContent[];
-
-      if (!isLoading) {
-        const extractedData = extractTableData(node);
-
-        headers = extractedData.headers.map((cell) =>
-          createCellContent(cell, { isInThead: true }),
-        );
-
-        tableRows = extractedData.rows.map((row) => ({
-          cells: row.map((cell) => createCellContent(cell)),
-        }));
-      } else {
-        // Use static empty arrays to prevent re-renders during streaming
-        headers = EMPTY_TABLE_HEADERS;
-        tableRows = EMPTY_TABLE_ROWS;
+      if (isLoading) {
+        // Keep loading output stable during streaming table assembly.
+        return html`<div class="cds-aichat-table-holder">
+          <cds-aichat-table .loading=${true}></cds-aichat-table>
+        </div>`;
       }
 
-      const tableAttrs = isLoading ? EMPTY_ATTRS : attrs;
+      const extractedData = extractTableData(node);
 
-      return html`<div class="cds-aichat-table-holder">
+      const headers: TableCellContent[] = extractedData.headers.map((cell) =>
+        createCellContent(cell, { isInThead: true }),
+      );
+
+      const tableRows: TableRowContent[] = extractedData.rows.map((row) => ({
+        cells: row.map((cell) => createCellContent(cell)),
+      }));
+
+      return html`<div class="cds-aichat-table--square">
         <cds-aichat-table
+          data-rounded
           .headers=${headers}
           .rows=${tableRows}
-          .loading=${isLoading}
-          .filterPlaceholderText=${filterPlaceholderText || "Filter table..."}
-          .previousPageText=${previousPageText || "Previous page"}
-          .nextPageText=${nextPageText || "Next page"}
-          .itemsPerPageText=${itemsPerPageText || "Items per page:"}
-          .downloadLabelText=${downloadLabelText || "Download table data"}
-          .locale=${locale || "en"}
-          .getPaginationSupplementalText=${getPaginationSupplementalText ||
-          DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT}
-          .getPaginationStatusText=${getPaginationStatusText ||
-          DEFAULT_PAGINATION_STATUS_TEXT}
-          ...=${tableAttrs}
+          .loading=${false}
+          .filterPlaceholderText=${tableFilterPlaceholderText}
+          .previousPageText=${tablePreviousPageText}
+          .nextPageText=${tableNextPageText}
+          .itemsPerPageText=${tableItemsPerPageText}
+          .downloadLabelText=${tableDownloadLabelText}
+          .locale=${tableLocale}
+          .getPaginationSupplementalText=${tableGetPaginationSupplementalText}
+          .getPaginationStatusText=${tableGetPaginationStatusText}
+          ...=${attrs}
         ></cds-aichat-table>
       </div>`;
     }

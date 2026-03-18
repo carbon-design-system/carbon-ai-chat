@@ -22,7 +22,7 @@ import {
 const WORKSPACE_MIN_WIDTH_FALLBACK = 640;
 const MESSAGES_MIN_WIDTH_FALLBACK = 320;
 const HISTORY_WIDTH_FALLBACK = 320;
-const EXPANSION_POLL_INTERVAL_MS = 200;
+const EXPANSION_POLL_INTERVAL_MS = 50;
 const EXPANSION_THRESHOLD_PX = 1;
 
 interface WorkspaceConfig {
@@ -30,6 +30,10 @@ interface WorkspaceConfig {
   showHistory: boolean;
   workspaceLocation: "start" | "end";
   roundedCorners: boolean;
+}
+
+interface WorkspaceCallbacks {
+  onWorkspaceVisibilityChange?: (visible: boolean, inPanel: boolean) => void;
 }
 
 interface WorkspaceState {
@@ -72,11 +76,16 @@ export class WorkspaceManager {
     messagesMinWidth?: number;
     historyWidth?: number;
   } = {};
+  private lastAnnouncedVisibility: {
+    visible: boolean;
+    inPanel: boolean;
+  } | null = null;
 
   constructor(
     private readonly shellRoot: HTMLElement,
     private readonly hostElement: HTMLElement,
     private config: WorkspaceConfig,
+    private callbacks?: WorkspaceCallbacks,
   ) {
     this.throttledHandleHostResize = throttle(
       (inlineSize: number) => this.handleHostResize(inlineSize),
@@ -110,6 +119,19 @@ export class WorkspaceManager {
     this.clearExpansionTimers();
     this.clearContractionTimers();
     this.cssPropertyObserver?.disconnect();
+  }
+
+  /**
+   * Reset announcement tracking. Call this after initialization is complete
+   * to enable announcements for subsequent visibility changes.
+   */
+  enableAnnouncements(): void {
+    // Initialize tracking with current state
+    // This prevents announcing the current state, but will announce future changes
+    this.lastAnnouncedVisibility = {
+      visible: this.state.containerVisible && this.state.contentVisible,
+      inPanel: this.state.inPanel,
+    };
   }
 
   /**
@@ -769,6 +791,12 @@ export class WorkspaceManager {
       return;
     }
     this.setState({ contentVisible: visible });
+
+    // Notify when content becomes visible/hidden
+    if (this.state.containerVisible) {
+      this.notifyVisibilityChange(visible, this.state.inPanel);
+    }
+
     this.requestHostUpdate();
   }
 
@@ -776,8 +804,39 @@ export class WorkspaceManager {
     if (this.state.containerVisible === show) {
       return;
     }
+
+    const wasVisible = this.state.containerVisible && this.state.contentVisible;
     this.setState({ containerVisible: show });
+
+    // Notify when container is added (workspace opening)
+    if (!wasVisible && show && this.state.contentVisible) {
+      this.notifyVisibilityChange(true, this.state.inPanel);
+    }
+
+    // Notify when container is removed (workspace closing)
+    if (wasVisible && !show) {
+      this.notifyVisibilityChange(false, this.state.inPanel);
+    }
+
     this.requestHostUpdate();
+  }
+
+  private notifyVisibilityChange(visible: boolean, inPanel: boolean): void {
+    // Don't announce if visibility state hasn't actually changed
+    if (
+      this.lastAnnouncedVisibility &&
+      this.lastAnnouncedVisibility.visible === visible &&
+      this.lastAnnouncedVisibility.inPanel === inPanel
+    ) {
+      return;
+    }
+
+    // Don't announce during initialization (when lastAnnouncedVisibility is null)
+    if (this.lastAnnouncedVisibility !== null) {
+      this.callbacks?.onWorkspaceVisibilityChange?.(visible, inPanel);
+    }
+
+    this.lastAnnouncedVisibility = { visible, inPanel };
   }
 
   private setState(updates: Partial<WorkspaceState>): void {

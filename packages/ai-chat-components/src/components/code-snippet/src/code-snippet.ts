@@ -9,8 +9,10 @@
 
 import { LitElement, html } from "lit";
 import { property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { createRef, ref } from "lit/directives/ref.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import Copy16 from "@carbon/icons/es/copy/16.js";
 import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -24,6 +26,7 @@ import type { ContentSyncHandle } from "./codemirror/content-sync.js";
 import {
   buildContainerStyles,
   evaluateShowMoreButton,
+  type ContainerStyleProperties,
 } from "./layout-utils.js";
 import { StreamingManager } from "./streaming-manager.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
@@ -31,12 +34,13 @@ import type { EditorView } from "@codemirror/view";
 import { Compartment } from "@codemirror/state";
 import { loadCodeMirrorRuntime } from "./codemirror/codemirror-loader.js";
 import "@carbon/web-components/es/components/skeleton-text/index.js";
+import "../../toolbar/src/toolbar.js";
+import type { Action } from "../../toolbar/src/toolbar.js";
 
 type CodeMirrorRuntime = Awaited<ReturnType<typeof loadCodeMirrorRuntime>>;
 
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./code-snippet.scss?lit";
-import "@carbon/web-components/es/components/copy-button/index.js";
-import "@carbon/web-components/es/components/copy/copy.js";
 import "@carbon/web-components/es/components/button/button.js";
 
 /**
@@ -44,12 +48,29 @@ import "@carbon/web-components/es/components/button/button.js";
  * automatically detects and loads language highlighting, and optionally exposes an editable surface
  * with live language re-detection and change notifications.
  * @element cds-aichat-code-snippet
+ * @slot fixed-actions - Actions that never overflow (passed to toolbar)
+ * @slot decorator - Decorative elements like AI labels (passed to toolbar)
  */
 @carbonElement(`${prefix}-code-snippet`)
 class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
-  static styles = [styles];
+  static styles = [commonStyles, styles];
+
+  // Toolbar properties
+  /** Array of actions that can overflow into a menu when space is limited. */
+  @property({ type: Array, attribute: false })
+  actions: Action[] = [];
+
+  /** Enable overflow behavior for actions. */
+  @property({ type: Boolean, attribute: "overflow", reflect: true })
+  overflow = false;
 
   // CodeMirror properties
+  /**
+   * Direct code source input.
+   */
+  @property({ type: String })
+  code = "";
+
   /** Language used for syntax highlighting. */
   @property({ type: String, attribute: "language" }) language = "";
   /** Whether the snippet should be editable. */
@@ -67,23 +88,26 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @property({ type: Boolean, reflect: true, attribute: "disabled" })
   disabled = false;
 
-  /** Feedback text shown after copy. */
-  @property({ attribute: "feedback" })
-  feedback = "Copied!";
-
-  /** Duration (ms) to show feedback text. */
-  @property({ type: Number, attribute: "feedback-timeout" })
-  feedbackTimeout = 2000;
-
   /** Hide the copy button. */
   @property({ type: Boolean, reflect: true, attribute: "hide-copy-button" })
   hideCopyButton = false;
 
-  /** Maximum rows to show when collapsed. */
+  /** Hide the header/toolbar completely. */
+  @property({ type: Boolean, reflect: true, attribute: "hide-header" })
+  hideHeader = false;
+
+  /**
+   * Maximum rows to show when collapsed.
+   * Set to 0 along with maxExpandedNumberOfRows to enable fill-container mode.
+   */
   @property({ attribute: "max-collapsed-number-of-rows" })
   maxCollapsedNumberOfRows = 15;
 
-  /** Maximum rows to show when expanded (0 = unlimited). */
+  /**
+   * Maximum rows to show when expanded (0 = unlimited).
+   * Set to 0 along with maxCollapsedNumberOfRows to enable fill-container mode,
+   * where the component fills its container's height with a scrollbar.
+   */
   @property({ attribute: "max-expanded-number-of-rows" })
   maxExpandedNumberOfRows = 0;
 
@@ -104,12 +128,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   showMoreText = "Show more";
 
   /** Tooltip label for the copy action. */
-  @property({ attribute: "tooltip-content" })
-  tooltipContent = "Copy to clipboard";
-
-  /** Wrap text instead of horizontal scrolling. */
-  @property({ type: Boolean, reflect: true, attribute: "wrap-text" })
-  wrapText = false;
+  @property({ attribute: "copy-button-tooltip-content" })
+  copyButtonTooltipContent = "Copy to clipboard";
 
   /** Label for folding/collapsing code. */
   @property({ attribute: "fold-collapse-label" })
@@ -118,6 +138,14 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /** Label for unfolding/expanding code. */
   @property({ attribute: "fold-expand-label" })
   foldExpandLabel = "Expand code block";
+
+  /** Aria-label for the code editor when in read-only mode. */
+  @property({ attribute: "aria-label-readonly" })
+  ariaLabelReadOnly = "Code snippet";
+
+  /** Aria-label for the code editor when in editable mode. */
+  @property({ attribute: "aria-label-editable" })
+  ariaLabelEditable = "Code editor";
 
   /**
    * The function used to format the line count text.
@@ -183,6 +211,11 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /**
    * @internal
    */
+  private hasAdoptedLightDomCode = false;
+
+  /**
+   * @internal
+   */
   private _rowHeightInPixels = 16;
 
   /**
@@ -203,6 +236,11 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /**
    * @internal
    */
+  private snippetContainer = createRef<HTMLDivElement>();
+
+  /**
+   * @internal
+   */
   private languageCompartment: Compartment | null = null;
 
   /**
@@ -218,6 +256,11 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /**
    * @internal
    */
+  private contentAttributesCompartment: Compartment | null = null;
+
+  /**
+   * @internal
+   */
   private contentSync?: ContentSyncHandle;
 
   /**
@@ -228,7 +271,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /**
    * @internal
    */
-  private streamingManager: StreamingManager;
+  private streamingManager?: StreamingManager;
 
   /**
    * @internal
@@ -250,6 +293,16 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     });
   });
 
+  /**
+   * @internal
+   * Computed property to detect fill-container mode
+   */
+  private get _isFillMode(): boolean {
+    return (
+      this.maxCollapsedNumberOfRows === 0 && this.maxExpandedNumberOfRows === 0
+    );
+  }
+
   constructor() {
     super();
     this.streamingManager = new StreamingManager({
@@ -257,11 +310,27 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       getHost: () => this,
       onContentUpdate: (content) => {
         const previous = this._slottedContent;
-        if (content !== previous) {
+        // Only update from slot if code property is not set
+        if (!this.code && content !== previous) {
           this._slottedContent = content;
         }
       },
     });
+  }
+
+  private adoptLightDomCode() {
+    if (this.hasAdoptedLightDomCode || this.code) {
+      return;
+    }
+
+    // Backward compatibility: treat static light-DOM text as initial code
+    // when the explicit `code` property was not provided.
+    const lightDomCode = this.textContent?.trim() ?? "";
+    if (lightDomCode) {
+      this.code = lightDomCode;
+    }
+
+    this.hasAdoptedLightDomCode = true;
   }
 
   private _applyLanguageState(update: LanguageStateUpdate) {
@@ -280,9 +349,26 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    */
   private async _handleCopyClick() {
     try {
-      await navigator.clipboard.writeText(
-        this._slottedContent || this.copyText || "",
-      );
+      const textToCopy = this._slottedContent || this.copyText || "";
+
+      // Try modern Clipboard API first (HTTPS only)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        // Fallback for HTTP or older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        textArea.style.opacity = "0";
+        textArea.setAttribute("aria-hidden", "true");
+        textArea.setAttribute("tabindex", "-1");
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
     } catch (error) {
       console.error("Failed to copy text:", error);
     }
@@ -318,6 +404,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         this.languageCompartment = new runtime.Compartment();
         this.readOnlyCompartment = new runtime.Compartment();
         this.wrapCompartment = new runtime.Compartment();
+        this.contentAttributesCompartment = new runtime.Compartment();
         this.languageController = new runtime.LanguageController({
           getLanguageAttribute: () => this.language,
           getContent: () => this._slottedContent,
@@ -332,6 +419,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
           },
           isLanguageLabelLocked: () => this._languageLabelLockedIn,
           getDefaultLanguage: () => this.defaultLanguage,
+          getDetectedLanguage: () => this._detectedLanguage,
           updateState: (update) => this._applyLanguageState(update),
         });
         this.requestUpdate();
@@ -379,10 +467,12 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       createContentSync,
       applyLanguageSupport,
       updateReadOnlyConfiguration,
+      updateContentAttributes,
     } = this.codemirrorRuntime;
     const languageController = this.languageController;
     const languageCompartment = this.languageCompartment;
     const readOnlyCompartment = this.readOnlyCompartment;
+    const contentAttributesCompartment = this.contentAttributesCompartment;
 
     const needsRecreate = !this.editorView || changedProperties.has("editable");
 
@@ -432,6 +522,20 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
           disabled: this.disabled,
         });
       }
+
+      if (
+        contentAttributesCompartment &&
+        (changedProperties.has("_detectedLanguage") ||
+          changedProperties.has("editable") ||
+          changedProperties.has("ariaLabelReadOnly") ||
+          changedProperties.has("ariaLabelEditable"))
+      ) {
+        updateContentAttributes(
+          this.editorView,
+          contentAttributesCompartment,
+          this._getAriaLabel(),
+        );
+      }
     }
   }
 
@@ -445,6 +549,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     const languageCompartment = this.languageCompartment;
     const readOnlyCompartment = this.readOnlyCompartment;
     const wrapCompartment = this.wrapCompartment;
+    const contentAttributesCompartment = this.contentAttributesCompartment;
 
     if (
       !container ||
@@ -452,7 +557,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       !languageController ||
       !languageCompartment ||
       !readOnlyCompartment ||
-      !wrapCompartment
+      !wrapCompartment ||
+      !contentAttributesCompartment
     ) {
       return;
     }
@@ -470,9 +576,10 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         languageCompartment,
         readOnlyCompartment,
         wrapCompartment,
+        contentAttributesCompartment,
         editable: this.editable,
         disabled: this.disabled,
-        wrapText: this.wrapText,
+        ariaLabel: this._getAriaLabel(),
         onDocChanged: ({ content, lineCount }) => {
           this._lineCount = lineCount;
 
@@ -508,9 +615,28 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   }
 
   /**
-   * Calculates the inline styles for the snippet container based on expanded state and min/max row constraints.
+   * Generates the appropriate aria-label for the code editor based on language and editable state.
    */
-  private _getContainerStyles(expandedCode: boolean): string {
+  private _getAriaLabel(): string {
+    const language = this._detectedLanguage;
+    const editable = this.editable;
+
+    if (editable) {
+      return language
+        ? this.ariaLabelEditable.replace("{language}", language)
+        : this.ariaLabelEditable;
+    } else {
+      return language
+        ? this.ariaLabelReadOnly.replace("{language}", language)
+        : this.ariaLabelReadOnly;
+    }
+  }
+
+  /**
+   * Calculates the CSS custom properties for the snippet container based on expanded state and min/max row constraints.
+   * CSP-compliant: returns properties to be set via element.style.setProperty()
+   */
+  private _getContainerStyles(expandedCode: boolean): ContainerStyleProperties {
     return buildContainerStyles({
       expanded: expandedCode,
       maxCollapsed: this.maxCollapsedNumberOfRows,
@@ -519,6 +645,26 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       minExpanded: this.minExpandedNumberOfRows,
       rowHeight: this._rowHeightInPixels,
     });
+  }
+
+  /**
+   * Applies CSS custom properties to the snippet container element.
+   * CSP-compliant: uses setProperty() instead of inline style attribute.
+   */
+  private _applyContainerStyles() {
+    const container = this.snippetContainer.value;
+    if (!container) {
+      return;
+    }
+
+    const properties = this._getContainerStyles(this._expandedCode);
+
+    // Apply each custom property
+    for (const [property, value] of Object.entries(properties)) {
+      if (value !== undefined) {
+        container.style.setProperty(property, value);
+      }
+    }
   }
 
   /**
@@ -549,7 +695,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     }
 
     return html`<div
-      class="cds-aichat--snippet__editor-skeleton"
+      class="${prefix}--snippet__editor-skeleton"
       aria-hidden="true"
     >
       <cds-skeleton-text lines="4"></cds-skeleton-text>
@@ -562,13 +708,15 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    */
   connectedCallback() {
     super.connectedCallback();
+    this.adoptLightDomCode();
     if (this._hObserveResize) {
       this._hObserveResize = this._hObserveResize.release();
     }
     this._hObserveResize = observeResize(this._resizeObserver, this);
 
-    this.streamingManager.reset(this._slottedContent);
-    this.streamingManager.connect();
+    this.streamingManager?.reset(this._slottedContent);
+    this.streamingManager?.connect();
+
     void this.ensureCodeMirrorRuntime();
   }
 
@@ -576,14 +724,23 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * Hooks into the rendered slot once Lit has stamped the template so we can observe streaming updates.
    */
   protected firstUpdated() {
-    this.streamingManager.syncSlotObservers();
+    this.streamingManager?.syncSlotObservers();
+    // Apply initial container styles (CSP-compliant)
+    this._applyContainerStyles();
   }
 
   /**
    * Ensures we capture any pre-rendered slot content before the initial paint, keeping the editor in sync from the first frame.
    */
-  willUpdate(_changedProperties: Map<string, any>) {
-    this.streamingManager.ensureInitialContent();
+  willUpdate(changedProperties: Map<string, any>) {
+    if (changedProperties.has("code")) {
+      // When code property changes, update internal content
+      if (this.code) {
+        this._slottedContent = this.code;
+      }
+    }
+
+    this.streamingManager?.ensureInitialContent();
 
     // Update expanded-code attribute before render to avoid change-in-update warning
     if (this._expandedCode) {
@@ -597,7 +754,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * Responds to slot churn caused by streaming tokens emitted from the chat pipeline, forcing a full rescan when the slot re-projects.
    */
   private _handleSlotChange() {
-    this.streamingManager.handleSlotChange();
+    this.streamingManager?.handleSlotChange();
   }
 
   /**
@@ -610,7 +767,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     }
     // Cancel any pending throttled updates
     this.contentSync?.cancel();
-    this.streamingManager.dispose();
+    this.streamingManager?.dispose();
     this.languageController?.dispose();
     this.destroyEditor();
   }
@@ -620,6 +777,70 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    */
   updated(changedProperties: Map<string, any>) {
     this.updateEditor(changedProperties);
+
+    // Apply container styles when expanded state or row constraints change
+    if (
+      changedProperties.has("_expandedCode") ||
+      changedProperties.has("maxCollapsedNumberOfRows") ||
+      changedProperties.has("maxExpandedNumberOfRows") ||
+      changedProperties.has("minCollapsedNumberOfRows") ||
+      changedProperties.has("minExpandedNumberOfRows")
+    ) {
+      this._applyContainerStyles();
+    }
+
+    // Apply fill-mode class to host element
+    if (this._isFillMode) {
+      this.classList.add(`${prefix}--snippet-container--fill-mode`);
+    } else {
+      this.classList.remove(`${prefix}--snippet-container--fill-mode`);
+    }
+  }
+
+  /**
+   * Gets all actions including the copy button prepended if enabled.
+   * @returns Array of actions for the toolbar
+   */
+  private _getToolbarActions(): Action[] {
+    if (this.hideCopyButton) {
+      return this.actions;
+    }
+
+    const copyAction: Action = {
+      text: this.copyButtonTooltipContent,
+      icon: Copy16,
+      onClick: () => this._handleCopyClick(),
+    };
+
+    return [copyAction, ...this.actions];
+  }
+
+  /**
+   * Renders the title content for the toolbar (language label and line count).
+   * @returns Template result for title slot
+   */
+  private renderTitle() {
+    return html`
+      <div slot="title" data-rounded="top" class="${prefix}--snippet__meta">
+        ${this._detectedLanguage && this._languageLabelLockedIn
+          ? html`<div class="${prefix}--snippet__language">
+              ${this._detectedLanguage}
+            </div>`
+          : ""}
+        ${this._detectedLanguage &&
+        this._languageLabelLockedIn &&
+        this._lineCount
+          ? html`<div class="${prefix}--snippet__header-separator">
+              &mdash;
+            </div>`
+          : ""}
+        ${this._lineCount
+          ? html`<div class="${prefix}--snippet__linecount">
+              ${this.getLineCountText({ count: this._lineCount })}
+            </div>`
+          : ""}
+      </div>
+    `;
   }
 
   /**
@@ -628,96 +849,63 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   render() {
     const {
       disabled,
-      feedback,
-      feedbackTimeout,
-      hideCopyButton,
-      tooltipContent,
       showMoreText,
       showLessText,
       _expandedCode: expandedCode,
-      _handleCopyClick: handleCopyClick,
       _shouldShowMoreLessBtn: shouldShowMoreLessBtn,
     } = this;
 
-    const disabledCopyButtonClasses = disabled
-      ? `cds-aichat--snippet--disabled`
-      : "";
     const expandCodeBtnText = expandedCode ? showLessText : showMoreText;
 
-    let containerClasses = `cds-aichat--snippet-container cds-aichat--snippet--codemirror`;
-    if (!expandedCode) {
-      containerClasses += ` cds-aichat--snippet-container--collapsed`;
-    }
+    const containerClasses = {
+      [`${prefix}--snippet-container`]: true,
+      [`${prefix}--snippet--codemirror`]: true,
+      [`${prefix}--snippet-container--collapsed`]: !expandedCode,
+      [`${prefix}--snippet-container--fill-mode`]: this._isFillMode,
+    };
 
-    return html` <div class="cds-aichat--snippet">
-      <div class="cds-aichat--snippet__header" data-rounded="top">
-        <div class="cds-aichat--snippet__meta">
-          ${this._detectedLanguage && this._languageLabelLockedIn
-            ? html`<div class="cds-aichat--snippet__language">
-                ${this._detectedLanguage}
-              </div>`
-            : ""}
-          ${this._detectedLanguage &&
-          this._languageLabelLockedIn &&
-          this._lineCount
-            ? html`<div class="cds-aichat--snippet__header-separator">
-                &mdash;
-              </div>`
-            : ""}
-          ${this._lineCount
-            ? html`<div class="cds-aichat--snippet__linecount">
-                ${this.getLineCountText({ count: this._lineCount })}
-              </div>`
-            : ""}
-        </div>
-        ${hideCopyButton
-          ? ``
-          : html`
-              <div class="cds-aichat--snippet__copy" data-rounded="top-right">
-                <!-- we need the button part exposed to the top level cds-copy-button  -->
-                <cds-copy-button
-                  ?disabled=${disabled}
-                  button-class-name=${disabledCopyButtonClasses}
-                  feedback=${feedback}
-                  feedback-timeout=${feedbackTimeout}
-                  @click="${handleCopyClick}"
-                >
-                  ${tooltipContent}
-                </cds-copy-button>
-              </div>
-            `}
-      </div>
+    return html` <div class="${prefix}--snippet">
+      ${!this.hideHeader
+        ? html`
+            <cds-aichat-toolbar
+              class="${prefix}--snippet__header"
+              .actions=${this._getToolbarActions()}
+              ?overflow=${this.overflow}
+            >
+              ${this.renderTitle()}
+              <slot name="fixed-actions" slot="fixed-actions"></slot>
+              <slot name="decorator" slot="decorator"></slot>
+            </cds-aichat-toolbar>
+          `
+        : ""}
+
       <div
-        role="${this.editable ? "textbox" : "region"}"
-        tabindex="${this.editable && !disabled ? 0 : null}"
-        class="${containerClasses}"
+        class="${classMap(containerClasses)}"
         data-rounded="bottom"
-        aria-label="${this._slottedContent || "code-snippet"}"
-        ${this.editable ? 'aria-readonly="false" aria-multiline="true"' : ""}
-        style="${this._getContainerStyles(expandedCode)}"
+        ${this.editable
+          ? `aria-label="${this.ariaLabelEditable}" aria-readonly="false" aria-multiline="true"`
+          : `aria-label="${this._slottedContent || "code-snippet"}"`}
+        ${ref(this.snippetContainer)}
       >
-        <div class="cds-aichat--code-editor" ${ref(this.editorContainer)}></div>
+        <div class="${prefix}--code-editor" ${ref(this.editorContainer)}></div>
         ${this.renderEditorFallback()}
       </div>
 
       ${shouldShowMoreLessBtn
         ? html`
-            <div
-              class="cds-aichat--snippet__footer"
-              data-rounded="bottom-right"
-            >
+            <div class="${prefix}--snippet__footer" data-rounded="bottom-right">
               <cds-button
                 kind="ghost"
                 size="sm"
-                button-class-name="cds-aichat--snippet-btn--expand"
+                button-class-name="${prefix}--snippet-btn--expand"
                 ?disabled=${disabled}
                 @click=${() => this._handleClickExpanded()}
               >
-                <span class="cds-aichat--snippet-btn--text">
+                <span class="${prefix}--snippet-btn--text">
                   ${expandCodeBtnText}
                 </span>
                 ${iconLoader(ChevronDown16, {
-                  class: `cds-aichat--icon-chevron--down cds-aichat--snippet__icon`,
+                  class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
                   role: "img",
                   slot: "icon",
                 })}
@@ -725,7 +913,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
             </div>
           `
         : ``}
-      <div class="cds-aichat--visually-hidden">
+      <div class="${prefix}--visually-hidden">
         <slot
           ${ref(this.contentSlot)}
           @slotchange=${this._handleSlotChange}
@@ -751,3 +939,4 @@ declare global {
 
 export { CDSAIChatCodeSnippet };
 export default CDSAIChatCodeSnippet;
+export type { Action } from "../../toolbar/src/toolbar.js";

@@ -424,6 +424,7 @@ function renderAsUserDefinedMessage(
     case MessageResponseTypes.CAROUSEL:
     case MessageResponseTypes.BUTTON:
     case MessageResponseTypes.GRID:
+    case MessageResponseTypes.SYSTEM:
       return false;
     default:
       return true;

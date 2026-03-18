@@ -19,6 +19,8 @@ import * as FeedbackReactStories from "./feedback-react.stories.jsx";
 
 Use `<Feedback>` to collect structured feedback on AI responses in React. It supports categories, optional freeform text, prompt copy, and read-only display when feedback has already been submitted.
 
+**Note:** The `showTextArea` and `showBody` props default to `false`. You must explicitly set them to `true` to enable the text area and body text display.
+
 ### Getting started
 
 Here's a quick example to get you started.
@@ -31,12 +33,12 @@ function FeedbackExample() {
     <Feedback
       isOpen
       title="Provide feedback"
-      prompt="Help us improve this response"
+      body="Help us improve this response"
       categories={["Accurate", "Helpful", "Too verbose", "Inappropriate"]}
-      cancelLabel="Cancel"
-      submitLabel="Submit"
-      showTextArea
-      showPrompt
+      secondaryLabel="Cancel"
+      primaryLabel="Submit"
+      showTextArea={true}
+      showBody={true}
       onSubmit={(event) => {
         const { text, selectedCategories } = event.detail;
         console.log("Feedback submitted:", { text, selectedCategories });
@@ -122,16 +124,16 @@ function ReadOnlyFeedbackPanel() {
 All button labels and text can be customized:
 
 - `title`: Panel title
-- `prompt`: Instructions for the user
+- `body`: Instructions for the user
 - `placeholder`: Text area placeholder
-- `cancelLabel`: Cancel button text
-- `submitLabel`: Submit button text
+- `secondaryLabel`: Secondary button text
+- `primaryLabel`: Primary button text
 
 #### Optional Elements
 
 Control visibility of UI elements:
 
-- `showPrompt`: Show/hide the instruction text
+- `showBody`: Show/hide the instruction text
 - `showTextArea`: Show/hide the detailed feedback text area
 
 #### Legal Disclaimer

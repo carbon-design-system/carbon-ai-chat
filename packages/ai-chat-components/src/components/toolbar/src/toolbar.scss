@@ -7,7 +7,6 @@
  *  @license
  */
 
-$css--plex: true !default;
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
 @use "@carbon/styles/scss/theme";
@@ -70,6 +69,10 @@ $block-class: #{$prefix}-toolbar;
   // Style for name text - this needs to be at the host level to style slotted content
   .#{$block-class}__name {
     font-weight: bold;
+  }
+
+  .#{$block-class}__navigation:has(::slotted(*)) ~ .#{$block-class}__title {
+    padding-inline-start: 0;
   }
 
   .#{$block-class}__fixed-actions {

@@ -30,6 +30,7 @@ import "./inventory-report-example";
 import "./inventory-status-example";
 import "./outstanding-orders-example";
 import "./outstanding-orders-card";
+import "./sql-editor-example";
 import "./styles.css";
 
 interface UserDefinedSlotsMap {
@@ -487,6 +488,12 @@ export class Demo extends LitElement {
           .additionalData=${this.workspaceAdditionalData}
           location="workspace"
         ></outstanding-orders-example>`;
+      case "sql_editor":
+        return html`<sql-editor-example
+          .instance=${this.instance}
+          .workspaceId=${this.workspaceId}
+          .additionalData=${this.workspaceAdditionalData}
+        ></sql-editor-example>`;
       default:
         return html``;
     }

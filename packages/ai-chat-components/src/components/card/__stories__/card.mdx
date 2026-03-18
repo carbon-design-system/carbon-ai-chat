@@ -11,8 +11,58 @@ import * as PreviewCardStories from "./preview-card.stories";
 
 ## Key Features
 
-- **Rounded corners**: Makes use of rounded modifier scss utility and can be controlled via `--cds-aichat-rounded-modifier-radius` CSS variable.
-- **OOTB sub-components**: OOTB components `<cds-aichat-card-footer>` and `<cds-aichat-card-steps>` provide consistent styling and can be placed in the provided slots. You can also plug in your own components into these slots.
+- **Rounded corners**: Customizable via `--cds-aichat-card-border-radius` CSS variable
+- **Padding control**: `is-flush` attribute controls tile padding
+- **OOTB sub-components**: `<cds-aichat-card-footer>` and `<cds-aichat-card-steps>` provide consistent styling
+
+## Customization
+
+> ** For detailed information about the modifier system (`data-rounded`, `data-stacked`) and CSS custom properties, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+### Padding Control
+
+By default, the card preserves the tile's default padding. Use `is-flush="true"` to remove it:
+
+```html
+<!-- Default: tile padding preserved -->
+<cds-aichat-card></cds-aichat-card>
+
+<!-- Remove tile padding -->
+<cds-aichat-card is-flush="true"></cds-aichat-card>
+```
+
+**For mixed content**, keep the default padding (or explicitly set `is-flush="false"`), then use `data-flush` on individual slots that should extend to the card edges:
+
+```html
+<cds-aichat-card>
+  <img slot="media" src="..." data-flush />
+  <div slot="body">Content with padding</div>
+</cds-aichat-card>
+```
+
+> **Note:** When `is-flush="true"`, tile padding is removed for all slots. Adding `data-flush` to slotted content in that case would apply a redundant negative margin and push content outside the card's bounds.
+
+| Value | Description |
+| --- | --- |
+| `data-flush=""` | Removes padding on all sides |
+| `data-flush="top"` | Removes top and horizontal padding |
+| `data-flush="bottom"` | Removes bottom and horizontal padding |
+
+### Slotted Content Rounding
+
+Use `data-rounded` with slotted content for automatic first/last child rounding:
+
+```html
+<cds-aichat-card>
+  <div slot="body" data-rounded="bottom" data-stacked>
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3 (rounded bottom corners)</div>
+  </div>
+</cds-aichat-card>
+```
+
+See [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers) for complete documentation.
 
 ## Getting started
 
@@ -46,7 +96,7 @@ type Action = {
   disabled?: boolean;
   payload?: unknown;
   icon?: CarbonIcon;
-  onClick?: () => void; // this is an optional handler if you wan't to pass individual onClicks this way. use @cds-aichat-card-footer-action for a common footer event.
+  onClick?: () => void;
   tooltipText?: string;
   isViewing?: boolean;
 };

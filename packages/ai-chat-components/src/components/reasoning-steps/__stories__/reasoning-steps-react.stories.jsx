@@ -11,40 +11,40 @@ const defaultSteps = [
     title: "Understand the request",
     open: true,
     body: (
-      <Markdown>
-        Parsed the prompt, highlighted constraints, and summarized the desired
-        outcome before searching for context.
-      </Markdown>
+      <Markdown
+        markdown={`Parsed the prompt, highlighted constraints, and summarized the desired
+outcome before searching for context.`}
+      />
     ),
   },
   {
     id: "gather-context",
     title: "Gather supporting context",
     body: (
-      <Markdown>
-        Retrieved related CRM notes, the current entitlement, and the latest
-        knowledge base article covering the requested workflow.
-      </Markdown>
+      <Markdown
+        markdown={`Retrieved related CRM notes, the current entitlement, and the latest
+knowledge base article covering the requested workflow.`}
+      />
     ),
   },
   {
     id: "draft-response",
     title: "Draft response",
     body: (
-      <Markdown>
-        Generated an outline covering prerequisites, recommended actions, and a
-        confidence score for each suggestion.
-      </Markdown>
+      <Markdown
+        markdown={`Generated an outline covering prerequisites, recommended actions, and a
+confidence score for each suggestion.`}
+      />
     ),
   },
   {
     id: "quality-check",
     title: "Quality check",
     body: (
-      <Markdown>
-        Double-checked that every claim is cited, confirmed there are no
-        conflicting instructions, and ensured tone guidelines are satisfied.
-      </Markdown>
+      <Markdown
+        markdown={`Double-checked that every claim is cited, confirmed there are no
+conflicting instructions, and ensured tone guidelines are satisfied.`}
+      />
     ),
   },
 ];
@@ -54,10 +54,10 @@ const staticSteps = [
     id: "flag-gap",
     title: "Flagged missing information",
     body: (
-      <Markdown>
-        The prompt references a contract number that is not present in the data
-        set. Marked this as a gap for the reviewer.
-      </Markdown>
+      <Markdown
+        markdown={`The prompt references a contract number that is not present in the data
+set. Marked this as a gap for the reviewer.`}
+      />
     ),
   },
   {
@@ -68,10 +68,10 @@ const staticSteps = [
     id: "human-review",
     title: "Queued for human review",
     body: (
-      <Markdown>
-        Provided a condensed summary plus key questions to unblock the next
-        stage once artifacts arrive.
-      </Markdown>
+      <Markdown
+        markdown={`Provided a condensed summary plus key questions to unblock the next
+stage once artifacts arrive.`}
+      />
     ),
   },
 ];
@@ -117,30 +117,30 @@ const ControlledExample = () => {
         id: "collect-signals",
         title: "Collect signals",
         body: (
-          <Markdown>
-            Pulled telemetry from the past 24 hours plus the latest error budget
-            numbers referenced in the prompt.
-          </Markdown>
+          <Markdown
+            markdown={`Pulled telemetry from the past 24 hours plus the latest error budget
+numbers referenced in the prompt.`}
+          />
         ),
       },
       {
         id: "evaluate-options",
         title: "Evaluate options",
         body: (
-          <Markdown>
-            Compared two viable remediation paths and scored them based on
-            impact, risk, and implementation effort.
-          </Markdown>
+          <Markdown
+            markdown={`Compared two viable remediation paths and scored them based on
+impact, risk, and implementation effort.`}
+          />
         ),
       },
       {
         id: "compose-reply",
         title: "Compose reply",
         body: (
-          <Markdown>
-            Crafted the recommended response with inline citations for every
-            factual statement.
-          </Markdown>
+          <Markdown
+            markdown={`Crafted the recommended response with inline citations for every
+factual statement.`}
+          />
         ),
       },
       {

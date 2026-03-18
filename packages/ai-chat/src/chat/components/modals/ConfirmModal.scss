@@ -18,18 +18,9 @@
   justify-content: center;
   background-color: theme.$overlay;
   block-size: 100%;
-  @include type.type-style("body-01");
-
-  font-family: var(
-    --cds-aichat-font-family,
-    "IBM Plex Sans",
-    "Helvetica Neue",
-    arial,
-    sans-serif
-  );
-
   inline-size: 100%;
   inset-block-start: 0;
+  @include type.type-style("body-01");
 }
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__container {

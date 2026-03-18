@@ -17,6 +17,7 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
+import { useAriaAnnouncer } from "./hooks/useAriaAnnouncer";
 import { matchesShortcut } from "./utils/keyboardUtils";
 import { getDeepActiveElement } from "./utils/domUtils";
 import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../types/config/ShortcutConfig";
@@ -48,7 +49,6 @@ import { useOnMount } from "./hooks/useOnMount";
 import { useSelector } from "./hooks/useSelector";
 import { useWindowOpenState } from "./hooks/useWindowOpenState";
 import { useFocusManager } from "./hooks/useFocusManager";
-import { useWorkspaceAnnouncements } from "./hooks/useWorkspaceAnnouncements";
 import { useStyleInjection } from "./hooks/useStyleInjection";
 import { useDerivedState } from "./hooks/useDerivedState";
 import { useHumanAgentCallbacks } from "./hooks/useHumanAgentCallbacks";
@@ -67,7 +67,6 @@ import {
   IS_PHONE_IN_PORTRAIT_MODE,
   isBrowser,
 } from "./utils/browserUtils";
-import { CornersType } from "./utils/constants";
 import { SCROLLBAR_WIDTH } from "./utils/domUtils";
 import { calculateChatWidthBreakpoint } from "./utils/breakpointUtils";
 import {
@@ -129,6 +128,7 @@ export default function AppShell({
   renderWriteableElements,
 }: AppShellProps) {
   const intl = useIntl();
+  const ariaAnnouncer = useAriaAnnouncer();
   const appState = useSelector<AppState, AppState>((state) => state);
   const {
     config,
@@ -257,10 +257,26 @@ export default function AppShell({
     requestFocusRef.current = requestFocus;
   }, [requestFocus]);
 
-  // Workspace announcements - announces when workspace opens/closes
-  useWorkspaceAnnouncements({
-    serviceManager,
-  });
+  // Announce home screen visibility changes
+  useEffect(() => {
+    // Skip announcement on initial mount
+    if (!isHydrated) {
+      return;
+    }
+
+    if (showHomeScreen) {
+      ariaAnnouncer(languagePack.homeScreen_shown);
+    } else if (persistedToBrowserStorage.hasSentNonWelcomeMessage) {
+      // Only announce returning to conversation if user has sent messages
+      ariaAnnouncer(languagePack.homeScreen_hidden);
+    }
+  }, [
+    showHomeScreen,
+    isHydrated,
+    ariaAnnouncer,
+    languagePack,
+    persistedToBrowserStorage.hasSentNonWelcomeMessage,
+  ]);
 
   // Style injection
   useStyleInjection({
@@ -545,13 +561,36 @@ export default function AppShell({
               }}
               aiEnabled={theme.aiEnabled}
               showFrame={layout?.showFrame}
-              roundedCorners={theme.corners === CornersType.ROUND}
+              cornerAll={
+                theme.corners.startStart === theme.corners.startEnd &&
+                theme.corners.startStart === theme.corners.endStart &&
+                theme.corners.startStart === theme.corners.endEnd
+                  ? theme.corners.startStart
+                  : undefined
+              }
+              cornerStartStart={theme.corners.startStart}
+              cornerStartEnd={theme.corners.startEnd}
+              cornerEndStart={theme.corners.endStart}
+              cornerEndEnd={theme.corners.endEnd}
               contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
               historyAriaLabel={languagePack.aria_historyRegion}
               messagesAriaLabel={languagePack.aria_messagesRegion}
+              panelOpenedAnnouncement={languagePack.panel_opened}
+              panelClosedAnnouncement={languagePack.panel_closed}
+              workspaceOpenedAnnouncement={
+                workspacePanelState.options.title
+                  ? intl.formatMessage(
+                      { id: "workspace_opened" },
+                      { title: workspacePanelState.options.title },
+                    )
+                  : languagePack.workspace_opened_no_title
+              }
+              workspaceClosedAnnouncement={languagePack.workspace_closed}
+              historyShownAnnouncement={languagePack.history_shown}
+              historyHiddenAnnouncement={languagePack.history_hidden}
             >
               <AppShellPanels
                 serviceManager={serviceManager}

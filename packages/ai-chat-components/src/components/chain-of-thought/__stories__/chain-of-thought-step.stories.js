@@ -94,11 +94,18 @@ export const Default = {
         step-number="1"
       >
         <cds-aichat-tool-call-data tool-name="incident_lookup">
-          <cds-aichat-markdown slot="description">
-            Look up recent outages affecting the EU region before escalating.
-          </cds-aichat-markdown>
-          <cds-aichat-markdown slot="input">${request}</cds-aichat-markdown>
-          <cds-aichat-markdown slot="output">${response}</cds-aichat-markdown>
+          <cds-aichat-markdown
+            slot="description"
+            .markdown=${"Look up recent outages affecting the EU region before escalating."}
+          ></cds-aichat-markdown>
+          <cds-aichat-markdown
+            slot="input"
+            .markdown=${request}
+          ></cds-aichat-markdown>
+          <cds-aichat-markdown
+            slot="output"
+            .markdown=${response}
+          ></cds-aichat-markdown>
         </cds-aichat-tool-call-data>
       </cds-aichat-chain-of-thought-step>
       <cds-aichat-chain-of-thought-step

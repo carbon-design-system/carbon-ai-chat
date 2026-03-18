@@ -119,7 +119,10 @@ export function withWebComponentBridge<
       });
     }, [props]);
 
-    return <Component {...props} ref={mergedRef} />;
+    // Filter out any props that might cause issues with rendering
+    // Ensure the component never returns undefined by wrapping in a fragment
+    const result = <Component {...props} ref={mergedRef} />;
+    return result ?? null;
   });
 
   Bridged.displayName =

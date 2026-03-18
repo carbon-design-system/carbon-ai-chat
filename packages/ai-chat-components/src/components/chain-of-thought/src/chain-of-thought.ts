@@ -9,6 +9,7 @@
 
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./chain-of-thought.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { uuid } from "../../../globals/utils/uuid.js";
@@ -28,7 +29,7 @@ const stepSelector = `${prefix}-chain-of-thought-step`;
  */
 @carbonElement(`${prefix}-chain-of-thought`)
 class CDSAIChatChainOfThought extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Indicates if the details panel for the chain of thought is open.

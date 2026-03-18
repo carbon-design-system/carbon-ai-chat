@@ -37,17 +37,28 @@ function tableTemplate(tableElement: CDSAIChatTable) {
   } = tableElement;
 
   function toolbarElement() {
+    // Check if RTL direction is set
+    const isRTL =
+      document.dir === "rtl" || document.documentElement.dir === "rtl";
+    const tooltipPosition = isRTL ? "right-start" : "left-start";
+
     return html`<cds-table-toolbar slot="toolbar">
       <cds-table-toolbar-content>
         ${allowTableFiltering
           ? html`<cds-table-toolbar-search
               persistent
               placeholder=${filterPlaceholderText}
+              aria-label=${filterPlaceholderText}
             ></cds-table-toolbar-search>`
           : ""}
-        <cds-button @click=${handleDownload} aria-label=${downloadLabelText}
-          >${iconLoader(Download16)}</cds-button
+        <cds-button
+          @click=${handleDownload}
+          tooltip-text=${downloadLabelText}
+          tooltip-position=${tooltipPosition}
         >
+          ${iconLoader(Download16)}
+          <span slot="tooltip-content">${downloadLabelText}</span>
+        </cds-button>
       </cds-table-toolbar-content>
     </cds-table-toolbar>`;
   }

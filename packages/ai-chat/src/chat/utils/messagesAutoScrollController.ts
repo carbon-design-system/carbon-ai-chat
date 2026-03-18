@@ -660,8 +660,8 @@ export function createMessageResizeObserver(
     onSignificantResize,
     hasPinnedMessage,
     throttleTimeout,
-    settleTimeout = 5000,
-    significantChangeThreshold = 10,
+    settleTimeout = 3000,
+    significantChangeThreshold = 60,
   } = config;
 
   const messageSizes = new Map<Element, number>();

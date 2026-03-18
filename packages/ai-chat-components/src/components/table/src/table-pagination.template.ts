@@ -11,6 +11,7 @@ import "@carbon/web-components/es/components/pagination/index.js";
 import "@carbon/web-components/es/components/select/index.js";
 
 import { html } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { TableRowContent } from "./table.js";
 
 // Import only the constants, not the class
@@ -76,8 +77,8 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     backward-text=${previousPageText}
     forward-text=${nextPageText}
     items-per-page-text=${itemsPerPageText}
-    .formatSupplementalText=${getPaginationSupplementalText}
-    .formatStatusWithDeterminateTotal=${getPaginationStatusText}
+    .formatSupplementalText=${ifDefined(getPaginationSupplementalText)}
+    .formatStatusWithDeterminateTotal=${ifDefined(getPaginationStatusText)}
     @cds-pagination-changed-current=${handlePageChangeEvent}
     @cds-page-sizes-select-changed=${handlePageSizeChangeEvent}
   >

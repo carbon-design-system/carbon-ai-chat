@@ -9,7 +9,7 @@
 
 import { Dropdown, DropdownItem } from "../../../components/carbon/Dropdown";
 import cx from "classnames";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { useCounter } from "../../../hooks/useCounter";
@@ -20,6 +20,7 @@ import {
   MessageInput,
   SingleOption,
 } from "../../../../types/messaging/Messages";
+import { DROPDOWN_SIZE } from "@carbon/web-components/es/components/dropdown/defs.js";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -63,25 +64,31 @@ function SelectComponent(props: SelectProps) {
 
   const [isBeingOpened, setIsBeingOpened] = useState(false);
   const rootRef = useRef<HTMLDivElement>(undefined);
+  const pendingSelectionRef = useRef<SingleOption | null>(null);
 
   // Generate a unique ID that we can use for each instance of our dropdowns.
   const counter = useCounter();
   const id = `${counter}${serviceManager.namespace.suffix}`;
 
-  const handleToggle = () => {
-    setIsBeingOpened(true);
+  const handleToggle = (e: CustomEvent<{ open: boolean }>) => {
+    const isOpen = e.detail.open;
 
-    requestAnimationFrame(() => {
-      if (rootRef.current) {
-        doScrollElementIntoView(rootRef.current, true);
-      }
-      setIsBeingOpened(false);
-    });
-  };
+    if (isOpen) {
+      setIsBeingOpened(true);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-      e.preventDefault();
+      requestAnimationFrame(() => {
+        if (rootRef.current) {
+          doScrollElementIntoView(rootRef.current, true);
+        }
+        setIsBeingOpened(false);
+      });
+    } else if (pendingSelectionRef.current) {
+      // Dropdown has closed and we have a pending selection - send it now
+      // This ensures autoscroll calculations happen after the dropdown is fully closed
+      onChange({
+        selectedItem: pendingSelectionRef.current,
+      });
+      pendingSelectionRef.current = null;
     }
   };
 
@@ -89,27 +96,13 @@ function SelectComponent(props: SelectProps) {
     const label = e.detail.item.textContent;
     const text = e.detail.item.value;
 
-    onChange({
-      selectedItem: {
-        label,
-        value: { input: { text } },
-      },
-    });
+    // Store the selection but don't send immediately
+    // Wait for the dropdown to close (handleToggle will send it)
+    pendingSelectionRef.current = {
+      label,
+      value: { input: { text } },
+    };
   };
-
-  // Effect to add overrides on list box to make the dropdown take the proper height after expanding
-  useEffect(() => {
-    setTimeout(() => {
-      const listBox = rootRef.current
-        ?.querySelector("cds-dropdown")
-        ?.shadowRoot?.querySelector(".cds--list-box--md") as HTMLElement | null;
-
-      if (listBox) {
-        listBox.style.blockSize = "unset";
-        listBox.style.maxBlockSize = "unset";
-      }
-    });
-  }, []);
 
   return (
     <div ref={rootRef}>
@@ -129,12 +122,12 @@ function SelectComponent(props: SelectProps) {
           label={languagePack.options_select}
           title-text={languagePack.options_select}
           hideLabel
+          size={DROPDOWN_SIZE.MEDIUM}
           aria-label={
             disableUserInputs ? languagePack.options_ariaOptionsDisabled : title
           }
           disabled={disableUserInputs}
           onToggled={handleToggle}
-          onKeyDown={handleKeyDown}
           onSelected={handleSelected}
         >
           {options.map((option) => (

@@ -51,10 +51,10 @@ const renderSteps = (steps) =>
     >
       <ToolCallData toolName={step.toolName}>
         {step.description ? (
-          <Markdown slot="description">{step.description}</Markdown>
+          <Markdown slot="description" markdown={step.description} />
         ) : null}
-        {step.input ? <Markdown slot="input">{step.input}</Markdown> : null}
-        {step.output ? <Markdown slot="output">{step.output}</Markdown> : null}
+        {step.input ? <Markdown slot="input" markdown={step.input} /> : null}
+        {step.output ? <Markdown slot="output" markdown={step.output} /> : null}
       </ToolCallData>
     </ChainOfThoughtStep>
   ));

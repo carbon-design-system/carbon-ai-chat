@@ -17,41 +17,23 @@
 // =============================================================================
 
 @mixin rounded-corners-top {
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    8px
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    8px
-  );
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 8px);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 8px);
 }
 
 @mixin rounded-corners-bottom {
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 8px);
-  border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
-    8px
-  );
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 8px);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 8px);
 }
 
 @mixin rounded-corners-inherited-top {
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
 }
 
 @mixin rounded-corners-inherited-bottom {
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
 }
 
 // =============================================================================
@@ -136,19 +118,10 @@ cds-aichat-shell {
 // Panel demonstration styles
 // =============================================================================
 .panel-sample {
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
-    0
-  );
-  border-start-end-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-start,
-    0
-  );
-  border-start-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-start-end,
-    0
-  );
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  border-start-end-radius: var(--cds-aichat-border-radius-start-start, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-end, 0);
 }
 
 .panel-controls,

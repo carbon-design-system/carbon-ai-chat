@@ -17,6 +17,7 @@ import { createOverflowHandler } from "@carbon/utilities";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -184,6 +185,7 @@ class CDSAIChatToolbar extends LitElement {
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
+        data-testid=${action.testId || nothing}
         @click=${action.onClick}
         href=${action.href || nothing}
         target=${action.href ? action.target || "_self" : nothing}
@@ -192,7 +194,6 @@ class CDSAIChatToolbar extends LitElement {
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
-        data-testid=${action.testId || nothing}
         ?disabled=${action.disabled}
       >
         ${iconLoader(action.icon, {
@@ -329,7 +330,7 @@ class CDSAIChatToolbar extends LitElement {
     `;
   }
 
-  static styles = styles;
+  static styles = [commonStyles, styles];
 }
 
 export { CDSAIChatToolbar };

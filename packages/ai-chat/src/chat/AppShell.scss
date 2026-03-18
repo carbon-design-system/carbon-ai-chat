@@ -6,11 +6,11 @@
  */
 
 @use "sass:meta";
-@use "@carbon/styles/scss/layout";
+@use "@carbon/ai-chat-components/scss/common";
+@use "@carbon/styles/scss/type";
 
 :host {
   block-size: 100%;
-
-  @include layout.emit-layout-tokens;
+  font-family: type.font-family("sans");
   @include meta.load-css("./AppShellStyles");
 }

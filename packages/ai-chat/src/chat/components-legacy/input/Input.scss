@@ -15,11 +15,8 @@
 
 .cds-aichat--input-and-completions {
   position: relative;
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
   inline-size: 100%;
 }
 
@@ -32,11 +29,8 @@
   align-items: center;
   background-color: theme.$chat-prompt-background;
   border-block-start: button.$button-outline-width solid theme.$border-subtle-01;
-  border-end-end-radius: var(--cds-aichat-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --cds-aichat-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
   color: theme.$text-primary;
   inline-size: 100%;
   min-block-size: 0;
