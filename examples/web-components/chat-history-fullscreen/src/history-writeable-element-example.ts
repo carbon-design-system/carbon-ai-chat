@@ -74,7 +74,6 @@ export class HistoryWriteableElementExample extends LitElement {
       cds-aichat-history-shell {
         box-sizing: border-box;
         block-size: 100%;
-        height: 100vh;
       }
     }
   `;
@@ -98,7 +97,7 @@ export class HistoryWriteableElementExample extends LitElement {
   accessor itemToDelete: string | null = null;
 
   @state()
-  accessor selectedChatId: string = "";
+  accessor selectedChatId: string = "pinned-1";
 
   @state()
   accessor searchValue: string = "";

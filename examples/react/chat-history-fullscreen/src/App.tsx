@@ -26,6 +26,9 @@ import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 import { ChatHistoryExample } from "./ChatHistoryExample";
 
 const config: PublicConfig = {
+  history: {
+    isOn: true,
+  },
   messaging: {
     customSendMessage,
     customLoadHistory,
@@ -35,7 +38,6 @@ const config: PublicConfig = {
     customProperties: {
       "messages-max-width": `max(60vw, 672px)`,
     },
-    showHistory: true,
   },
   openChatByDefault: true,
   injectCarbonTheme: CarbonTheme.WHITE,

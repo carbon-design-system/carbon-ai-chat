@@ -8,6 +8,7 @@
  */
 
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import "./history-writeable-element-example";
 
 import {
   BusEventType,
@@ -42,9 +43,6 @@ const config: PublicConfig = {
   },
   layout: {
     showFrame: false,
-    customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
-    },
   },
   openChatByDefault: true,
   injectCarbonTheme: CarbonTheme.WHITE,
@@ -57,16 +55,31 @@ export class Demo extends LitElement {
       height: 100vh;
       width: 100vw;
     }
+
+    .external {
+      background: green;
+      color: #fff;
+      padding: 1rem;
+    }
   `;
 
   @state()
   accessor instance!: ChatInstance;
 
   @state()
-  accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
+  accessor activeResponseId: string | null = null;
 
   @state()
-  accessor activeResponseId: string | null = null;
+  accessor workspaceType: string | null = null;
+
+  @state()
+  accessor workspaceId: string | undefined = undefined;
+
+  @state()
+  accessor workspaceAdditionalData: any = null;
+
+  @state()
+  accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
 
   @state()
   accessor valueFromParent: string = Date.now().toString();
@@ -76,12 +89,6 @@ export class Demo extends LitElement {
     this.instance = instance;
     const initialState = instance.getState();
     this.activeResponseId = initialState.activeResponseId ?? null;
-
-    // Register user defined response handler.
-    instance.on({
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
 
     instance.on({
       type: BusEventType.STATE_CHANGE,
@@ -94,6 +101,60 @@ export class Demo extends LitElement {
         }
       },
     });
+
+    // Register user defined response handler.
+    instance.on({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      handler: this.userDefinedHandler,
+    });
+
+    // Register workspace panel handlers.
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: this.workspacePanelPreOpenHandler,
+    });
+
+    instance.on({
+      type: BusEventType.WORKSPACE_OPEN,
+      handler: this.workspacePanelOpenHandler,
+    });
+
+    instance.on({
+      type: BusEventType.WORKSPACE_CLOSE,
+      handler: this.workspacePanelCloseHandler,
+    });
+  };
+
+   /**
+   * Handles when the workspace panel is about to open.
+   */
+  workspacePanelPreOpenHandler = (event: any) => {
+    console.log(event, "Workspace panel pre-open");
+  };
+
+  /**
+   * Handles when the workspace panel is opened.
+   */
+  workspacePanelOpenHandler = (event: any) => {
+    console.log(event, "Workspace panel opened");
+
+    // Extract workspace data from the event
+    const { workspaceId, additionalData } = event.data;
+    this.workspaceId = workspaceId;
+    this.workspaceAdditionalData = additionalData;
+    this.workspaceType = (additionalData as { type?: string })?.type || null;
+  };
+
+  /**
+   * Handles when the workspace panel is closed.
+   */
+  workspacePanelCloseHandler = (event: any) => {
+    console.log(event, "Workspace panel closed");
+
+    // Clear workspace data when panel closes
+    this.workspaceType = null;
+    this.workspaceId = undefined;
+    this.workspaceAdditionalData = null;
   };
 
   /**
@@ -159,58 +220,26 @@ export class Demo extends LitElement {
     }
   }
 
-  /**
-   * You only need to provide slots for the writable elements you want to use. In this demo, we fill them all with big
-   * green boxes.
-   *
-   * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom writeable element.
-   */
   renderWriteableElementSlots() {
-    const ALWAYS_RENDER_KEYS = ["workspacePanelElement", "historyPanelElement"];
-    const elements = this.instance?.writeableElements ?? {};
+    const key = "historyPanelElement";
 
-    const keys = Object.keys(elements);
-
-    const finalKeys = [
-      ...ALWAYS_RENDER_KEYS,
-      ...keys.filter((k) => !ALWAYS_RENDER_KEYS.includes(k)),
-    ];
-
-    return finalKeys.map(
-      (key) => html`
-        <div slot=${key}>
-          ${key === "workspacePanelElement"
-            ? html`
-                <workspace-writeable-element-example
-                  location=${key}
-                  .instance=${this.instance}
-                  .valueFromParent=${this.valueFromParent}
-                ></workspace-writeable-element-example>
-              `
-            : key === "historyPanelElement"
-              ? html`
-                  <history-writeable-element-example
-                    location=${key}
-                    .instance=${this.instance}
-                    .valueFromParent=${this.valueFromParent}
-                    .isMobile=${false}
-                  ></history-writeable-element-example>
-                `
-              : html`
-                  <writeable-element-example
-                    location=${key}
-                    valueFromParent=${this.valueFromParent}
-                  ></writeable-element-example>
-                `}
-        </div>
-      `,
-    );
+    return html`
+      <div slot=${key}>
+        <history-writeable-element-example
+          location=${key}
+          .instance=${this.instance}
+          .valueFromParent=${this.valueFromParent}
+          .isMobile=${this.instance?.getState().customPanels.history.isMobile ??
+          false}
+        ></history-writeable-element-example>
+      </div>
+    `;
   }
 
   render() {
     return html`
       <cds-aichat-custom-element
-         class="chat-custom-element"
+        class="chat-custom-element"
         .history=${config.history}
         .injectCarbonTheme=${config.injectCarbonTheme ?? undefined}
         .layout=${config.layout}
