@@ -22,7 +22,6 @@ export default defineConfig({
         inline: [
           "@carbon/ai-chat-components",
           "@carbon/web-components",
-          "react-player",
           "swiper",
         ],
       },

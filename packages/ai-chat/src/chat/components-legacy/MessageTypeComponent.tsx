@@ -448,7 +448,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         baseHeight={getMediaDimensions(item)?.base_height}
         ariaLabel={alt_text}
         subtitle_tracks={file_accessibility?.subtitle_tracks}
-        needsAnnouncement={message.ui_state.needsAnnouncement}
       />
     );
   }
@@ -463,7 +462,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         description={description}
         ariaLabel={alt_text}
         transcript={file_accessibility?.transcript}
-        needsAnnouncement={message.ui_state.needsAnnouncement}
       />
     );
   }

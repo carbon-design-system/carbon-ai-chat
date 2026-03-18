@@ -22,6 +22,7 @@ function doAudio(instance: ChatInstance) {
           title: "An audio clip from SoundCloud",
           description: "This description and the title above are optional.",
           source: "https://soundcloud.com/kelab-gklm/baby-shark-do-do-do",
+          alt_text: "Baby Shark audio clip from SoundCloud",
         },
         {
           response_type: MessageResponseTypes.AUDIO,
@@ -29,6 +30,7 @@ function doAudio(instance: ChatInstance) {
           description: "This example includes a transcript for accessibility.",
           source:
             "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
+          alt_text: "Audio recording about teapot and David Hasselhoff",
           file_accessibility: {
             transcript: {
               text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
@@ -42,4 +44,52 @@ function doAudio(instance: ChatInstance) {
   });
 }
 
-export { doAudio };
+function doAudioSoundCloud(instance: ChatInstance) {
+  instance.messaging.addMessage({
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.TEXT,
+          text: "Here's an audio clip from SoundCloud:",
+        },
+        {
+          response_type: MessageResponseTypes.AUDIO,
+          title: "An audio clip from SoundCloud",
+          description: "This description and the title above are optional.",
+          source: "https://soundcloud.com/kelab-gklm/baby-shark-do-do-do",
+          alt_text: "Baby Shark audio clip from SoundCloud",
+        },
+      ],
+    },
+  });
+}
+
+function doAudioMp3(instance: ChatInstance) {
+  instance.messaging.addMessage({
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.TEXT,
+          text: "Here's a native mp3 file with transcript for accessibility:",
+        },
+        {
+          response_type: MessageResponseTypes.AUDIO,
+          title: "Your own mp3 file with transcript",
+          description: "This example includes a transcript for accessibility.",
+          source:
+            "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
+          alt_text: "Audio recording about teapot and David Hasselhoff",
+          file_accessibility: {
+            transcript: {
+              text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
+              language: "en",
+              label: "English Transcript",
+            },
+          },
+        },
+      ],
+    },
+  });
+}
+
+export { doAudio, doAudioSoundCloud, doAudioMp3 };
