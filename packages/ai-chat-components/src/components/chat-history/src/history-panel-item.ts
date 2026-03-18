@@ -162,7 +162,60 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    */
   private _handleMenuItemKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
       this._handleMenuItemClick(event);
+      // Close the overflow menu after handling the action
+      if (this.overflowMenu) {
+        (this.overflowMenu as any).open = false;
+      }
+      return;
+    }
+
+    // Handle arrow keys
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+
+      // Find the menu body - the event target is the menu item
+      const target = event.target as HTMLElement;
+      const menuBody = target.closest("cds-overflow-menu-body");
+
+      if (!menuBody) {
+        return;
+      }
+
+      const menuItems = Array.from(
+        menuBody.querySelectorAll("cds-overflow-menu-item:not([disabled])"),
+      ) as HTMLElement[];
+
+      if (menuItems.length === 0) {
+        return;
+      }
+
+      const currentIndex = menuItems.findIndex(
+        (item) =>
+          item.contains(document.activeElement) ||
+          item === document.activeElement ||
+          item.matches(":focus-within"),
+      );
+
+      let nextIndex: number;
+      if (currentIndex === -1) {
+        // No item focused, focus first or last
+        nextIndex = direction === 1 ? 0 : menuItems.length - 1;
+      } else {
+        // Navigate to next/previous with wrapping
+        nextIndex = currentIndex + direction;
+        if (nextIndex < 0) {
+          nextIndex = menuItems.length - 1;
+        } else if (nextIndex >= menuItems.length) {
+          nextIndex = 0;
+        }
+      }
+
+      menuItems[nextIndex]?.focus();
     }
   };
 
