@@ -7,12 +7,10 @@
  *  @license
  */
 
-import throttle from "lodash/throttle";
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { Message, MessageRequest } from "../../types/messaging/Messages";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import { MessageClass } from "../components-legacy/MessageComponent";
-import { AUTO_SCROLL_EXTRA } from "./constants";
 import { isRequest, isResponse } from "./messageUtils";
 
 /**
@@ -22,7 +20,47 @@ import { isRequest, isResponse } from "./messageUtils";
  * - Keep DOM-independent policy decisions (what to do next) separate from component lifecycle code.
  * - Keep geometry calculations and spacer math centralized so the pinning behavior has one source of truth.
  * - Return explicit action objects that the caller can execute, rather than mutating component state here.
+ *
+ * ## Two-Layer Spacer Adjustment Approach
+ *
+ * When a user sends a message, the outbound message is pinned to the top of the scroll viewport
+ * using a dynamically-sized spacer div at the bottom of the scrollable container. As streaming
+ * response content arrives and grows, the spacer shrinks to maintain the pinned position.
+ *
+ * **Problem:** When streaming response content collapses (e.g., reasoning steps closing with a
+ * CSS animation), the spacer needs to grow to compensate. A ResizeObserver on the active response
+ * element handles general size changes, but it doesn't fire frequently enough during CSS transitions
+ * to keep the spacer in sync, causing a visual blip where the content shrinks faster than the
+ * spacer compensates.
+ *
+ * **Solution:** Use a two-layer approach:
+ *
+ * 1. **ResizeObserver (baseline):** Stays on the active response element for general size changes.
+ *    Uses a delta-based approach — track the previous height, compute the difference on each callback,
+ *    and adjust the spacer by the inverse of the delta. Never recompute the spacer from absolute
+ *    measurements to avoid cumulative errors.
+ *
+ * 2. **requestAnimationFrame loop (animation):** When the ResizeObserver detects a negative
+ *    delta (content shrinking, meaning a collapse animation just started), kick off a rAF polling
+ *    loop that reads `getBoundingClientRect().height` on the response element every frame and
+ *    applies the same delta-based spacer correction. Cancel the loop after the height stabilizes
+ *    for 5 consecutive frames (animation complete).
+ *
+ * The spacer starts large (full container height minus pinned message height) when the user sends
+ * a message, and naturally shrinks as response content streams in. The rAF loop is a targeted fix
+ * only active during CSS collapse animations — the ResizeObserver handles everything else.
  */
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/**
+ * When we auto-scroll to a message, we want to scroll a bit more than necessary because messages have a lot of
+ * padding on the top that we want to cut off when scrolling. This is the extra amount we scroll by. There's 28px of
+ * padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
+ */
+const AUTO_SCROLL_EXTRA = 28 - 8;
 
 /**
  * The visible portion (in pixels) to show at the bottom of a tall message when auto-scrolling.
@@ -35,6 +73,84 @@ const VISIBLE_BOTTOM_PORTION_PX = 100;
  * A message is considered very tall if its height exceeds this ratio of the scroller height.
  */
 const TALL_MESSAGE_THRESHOLD_RATIO = 0.25; // 1/4
+
+// ============================================================================
+// Types and Interfaces
+// ============================================================================
+
+/**
+ * Declarative decision output consumed by MessagesComponent.doAutoScroll().
+ * Keeping this explicit makes branching behavior testable and easy to inspect.
+ */
+type AutoScrollAction =
+  | {
+      scrollTop: number;
+      type: "scroll_to_top";
+    }
+  | {
+      preferAnimate: boolean;
+      scrollTop: number;
+      type: "scroll_to_bottom";
+    }
+  | {
+      type: "reset_to_top";
+    }
+  | {
+      messageComponent: MessageClass;
+      type: "pin_message";
+    }
+  | {
+      type: "recalculate_spacer";
+    }
+  | {
+      type: "noop";
+    };
+
+interface ResolveAutoScrollActionParams {
+  allMessagesByID: Record<string, Message>;
+  localMessageItems: LocalMessageItem[];
+  messageRefs: Map<string, MessageClass>;
+  options: AutoScrollOptions;
+  pinnedMessageComponent: MessageClass | null;
+  scrollElement: HTMLElement;
+}
+
+interface PinAndScrollResult {
+  // Mirrors the spacer DOM write that was just performed.
+  currentSpacerHeight: number;
+  // Baseline used by streaming delta tracking.
+  lastScrollHeight: number;
+  // The message now considered "pinned".
+  pinnedMessageComponent: MessageClass;
+  scrollTop: number;
+}
+
+interface SpacerRecalculationResult {
+  deficit: number;
+  scrollTop: number;
+}
+
+interface MessageArrayChangeFlags {
+  countChanged: boolean;
+  itemsChanged: boolean;
+}
+
+interface StreamingTransition {
+  enteredStreaming: boolean;
+  exitedStreaming: boolean;
+  isCurrentlyStreaming: boolean;
+  wasStreaming: boolean;
+}
+
+type StreamEndAction = "re_pin_and_scroll" | "recalculate_and_preserve_scroll";
+
+interface PublicSpacerReconciliationAction {
+  type: "noop" | "recalculate_spacer_preserve_scroll";
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
 /**
  * Determines if a message qualifies as a scroll target.
@@ -168,83 +284,6 @@ function calculateSpacerDeficit(
   return Math.max(0, Math.ceil(visibleBottom - spacerOffset));
 }
 
-/**
- * Declarative decision output consumed by MessagesComponent.doAutoScroll().
- * Keeping this explicit makes branching behavior testable and easy to inspect.
- */
-type AutoScrollAction =
-  | {
-      scrollTop: number;
-      type: "scroll_to_top";
-    }
-  | {
-      preferAnimate: boolean;
-      scrollTop: number;
-      type: "scroll_to_bottom";
-    }
-  | {
-      type: "reset_to_top";
-    }
-  | {
-      messageComponent: MessageClass;
-      type: "pin_message";
-    }
-  | {
-      type: "recalculate_spacer";
-    }
-  | {
-      type: "noop";
-    };
-
-interface ResolveAutoScrollActionParams {
-  allMessagesByID: Record<string, Message>;
-  localMessageItems: LocalMessageItem[];
-  messageRefs: Map<string, MessageClass>;
-  options: AutoScrollOptions;
-  pinnedMessageComponent: MessageClass | null;
-  scrollElement: HTMLElement;
-}
-
-interface PinAndScrollResult {
-  // Mirrors the spacer DOM write that was just performed.
-  currentSpacerHeight: number;
-  // Baseline used by streaming delta tracking.
-  lastScrollHeight: number;
-  // The message now considered "pinned".
-  pinnedMessageComponent: MessageClass;
-  scrollTop: number;
-}
-
-interface StreamingChunkResult {
-  // May decrease to zero as content replaces the spacer.
-  currentSpacerHeight: number;
-  // Advances each chunk to keep delta math frame-to-frame.
-  lastScrollHeight: number;
-}
-
-interface MessageArrayChangeFlags {
-  countChanged: boolean;
-  itemsChanged: boolean;
-}
-
-interface StreamingTransition {
-  enteredStreaming: boolean;
-  exitedStreaming: boolean;
-  isCurrentlyStreaming: boolean;
-  wasStreaming: boolean;
-}
-
-type StreamEndAction = "re_pin_and_scroll" | "recalculate_and_preserve_scroll";
-
-interface StreamingSpacerSyncDecision {
-  shouldSync: boolean;
-  targetDomSpacerHeight: number;
-}
-
-interface PublicSpacerReconciliationAction {
-  type: "noop" | "recalculate_spacer_preserve_scroll";
-}
-
 function hasActiveStreaming(localMessageItems: LocalMessageItem[]): boolean {
   return localMessageItems.some(
     (item) =>
@@ -327,65 +366,6 @@ function hasMessagesOutOfView({
   const remainingPixelsToScroll =
     effectiveScrollHeight - scrollTop - clientHeight;
   return remainingPixelsToScroll > thresholdPx;
-}
-
-function resolveStreamingSpacerSyncDecision({
-  currentSpacerHeight,
-  domSpacerHeight,
-  isCurrentlyStreaming,
-  isNearPin,
-  minDeltaPx,
-}: {
-  currentSpacerHeight: number;
-  domSpacerHeight: number;
-  isCurrentlyStreaming: boolean;
-  isNearPin: boolean;
-  minDeltaPx: number;
-}): StreamingSpacerSyncDecision {
-  if (!isCurrentlyStreaming || !isNearPin) {
-    return { shouldSync: false, targetDomSpacerHeight: domSpacerHeight };
-  }
-
-  const shrinkDelta = domSpacerHeight - currentSpacerHeight;
-  if (shrinkDelta < minDeltaPx) {
-    return { shouldSync: false, targetDomSpacerHeight: domSpacerHeight };
-  }
-
-  // Mid-stream sync is intentionally shrink-only.
-  if (currentSpacerHeight >= domSpacerHeight) {
-    return { shouldSync: false, targetDomSpacerHeight: domSpacerHeight };
-  }
-
-  return {
-    shouldSync: true,
-    targetDomSpacerHeight: currentSpacerHeight,
-  };
-}
-
-function applyStreamingSpacerDomSync({
-  savedScrollTop,
-  scrollElement,
-  spacerElem,
-  targetDomSpacerHeight,
-}: {
-  savedScrollTop: number;
-  scrollElement: HTMLElement;
-  spacerElem: HTMLElement | null;
-  targetDomSpacerHeight: number;
-}): { correctedScrollTop: number; newLastScrollHeight: number } | null {
-  if (!spacerElem) {
-    return null;
-  }
-
-  spacerElem.style.minBlockSize = `${Math.max(0, targetDomSpacerHeight)}px`;
-  if (scrollElement.scrollTop < savedScrollTop) {
-    scrollElement.scrollTop = savedScrollTop;
-  }
-
-  return {
-    correctedScrollTop: scrollElement.scrollTop,
-    newLastScrollHeight: scrollElement.scrollHeight,
-  };
 }
 
 function resolvePublicSpacerReconciliationAction({
@@ -508,6 +488,11 @@ function pinMessageAndScroll({
   };
 }
 
+interface SpacerRecalculationResult {
+  deficit: number;
+  scrollTop: number;
+}
+
 function recalculatePinnedMessageSpacer({
   pinnedMessageComponent,
   scrollElement,
@@ -516,68 +501,34 @@ function recalculatePinnedMessageSpacer({
   pinnedMessageComponent: MessageClass | null;
   scrollElement: HTMLElement;
   spacerElem: HTMLElement | null;
-}): number | null {
+}): SpacerRecalculationResult | null {
   const targetElem = pinnedMessageComponent?.ref?.current;
   if (!spacerElem || !targetElem) {
     return null;
   }
 
-  const targetRect = targetElem.getBoundingClientRect();
+  // SIMPLIFIED APPROACH: During resize events (e.g., reasoning steps closing), we don't
+  // need to recalculate where the message SHOULD be - we just need to preserve the
+  // CURRENT scroll position. The complex calculations (adjustScrollTopForTallMessage, etc.)
+  // are only needed during initial pinning. Here, we just ensure the spacer is large
+  // enough to keep the current scrollTop reachable.
+
+  // Batch DOM reads
+  const currentScrollTop = scrollElement.scrollTop;
+  const clientHeight = scrollElement.clientHeight;
+  const spacerRect = spacerElem.getBoundingClientRect();
   const scrollerRect = scrollElement.getBoundingClientRect();
 
-  const baseScrollTop = calculateBaseScrollTop(
-    targetRect,
-    scrollerRect,
-    scrollElement.scrollTop,
-  );
-  const scrollTop = adjustScrollTopForTallMessage(
-    baseScrollTop,
-    targetRect.height,
-    scrollerRect.height,
-  );
+  // Calculate minimum spacer needed to maintain current scroll position.
+  // The spacer must ensure that (scrollTop + clientHeight) is reachable.
+  const spacerOffset = spacerRect.top - scrollerRect.top + currentScrollTop;
+  const visibleBottom = currentScrollTop + clientHeight;
+  const deficit = Math.max(0, Math.ceil(visibleBottom - spacerOffset));
 
-  const deficit = calculateSpacerDeficit(
-    spacerElem,
-    scrollElement,
-    scrollerRect,
-    scrollTop,
-  );
-
-  // Recalculate spacer without touching scrollTop to avoid visual jumps.
+  // Write spacer (no need to set scrollTop - we're preserving it)
   spacerElem.style.minBlockSize = `${deficit}px`;
-  return deficit;
-}
 
-/**
- * Tracks streaming content growth by comparing scrollHeight deltas against the remaining
- * spacer. Updates the in-memory spacer accounting but does NOT write to the DOM spacer —
- * that is left entirely to the end-of-stream recalculation (executePinAndScroll or
- * executeRecalculateSpacer). Writing the spacer mid-stream would shrink scrollHeight
- * abruptly and cause the browser to cap scrollTop, visually jumping the user back to
- * the pin position even if they had scrolled down to follow the response.
- */
-function consumeStreamingChunk({
-  currentSpacerHeight,
-  lastScrollHeight,
-  scrollElement,
-}: {
-  currentSpacerHeight: number;
-  lastScrollHeight: number;
-  scrollElement: HTMLElement | null;
-}): StreamingChunkResult {
-  if (!scrollElement || currentSpacerHeight === 0) {
-    return { currentSpacerHeight, lastScrollHeight };
-  }
-
-  const currentScrollHeight = scrollElement.scrollHeight;
-  const delta = currentScrollHeight - lastScrollHeight;
-  // If content grows, spacer shrinks. If content contracts, spacer may grow again to preserve pin semantics.
-  const nextSpacerHeight = Math.max(0, currentSpacerHeight - delta);
-
-  return {
-    currentSpacerHeight: nextSpacerHeight,
-    lastScrollHeight: currentScrollHeight,
-  };
+  return { deficit, scrollTop: currentScrollTop };
 }
 
 /**
@@ -596,9 +547,10 @@ function consumeStreamingChunk({
 export interface MessageResizeObserverConfig {
   /**
    * Callback to invoke when a significant size change is detected.
-   * Should trigger spacer recalculation.
+   * Receives the delta (change in height) for spacer adjustment.
+   * Negative delta means content shrank, positive means it grew.
    */
-  onSignificantResize: () => void;
+  onSignificantResize: (delta: number) => void;
 
   /**
    * Function to check if there's a pinned message.
@@ -607,13 +559,8 @@ export interface MessageResizeObserverConfig {
   hasPinnedMessage: () => boolean;
 
   /**
-   * Throttle timeout in milliseconds.
-   */
-  throttleTimeout: number;
-
-  /**
    * How long to wait (in ms) after the last resize before considering a message "settled".
-   * Default: 5000 (5 seconds)
+   * Default: 3000 (3 seconds)
    */
   settleTimeout?: number;
 
@@ -641,7 +588,199 @@ export interface MessageResizeObserverState {
   /**
    * Tracks settle timers for each observed message element.
    */
-  settleTimers: Map<Element, NodeJS.Timeout>;
+  settleTimers: Map<Element, ReturnType<typeof setTimeout>>;
+
+  /**
+   * Animation polling state for tracking CSS animations.
+   */
+  animationPollingState: AnimationPollingState | null;
+}
+
+/**
+ * State for requestAnimationFrame polling during CSS animations.
+ * This provides frame-by-frame height tracking when ResizeObserver
+ * doesn't fire frequently enough during CSS transitions.
+ */
+interface AnimationPollingState {
+  /**
+   * The requestAnimationFrame ID for cancellation.
+   */
+  rafId: number | null;
+
+  /**
+   * The element being polled for height changes.
+   */
+  element: HTMLElement | null;
+
+  /**
+   * Previous height used for delta calculation.
+   */
+  previousHeight: number;
+
+  /**
+   * Count of consecutive frames with no height change.
+   * Used to detect when animation has completed.
+   */
+  stableFrames: number;
+
+  /**
+   * Callback to invoke with height delta on each frame.
+   */
+  onHeightChange: (delta: number) => void;
+}
+
+/**
+ * Processes resize observer entries to detect significant size changes and manage settle timers.
+ * Uses delta-based tracking to compute height changes for spacer adjustment.
+ *
+ * @param entries - Array of ResizeObserverEntry objects from the observer callback
+ * @param messageSizes - Map tracking the last known size of each observed element
+ * @param settleTimers - Map tracking settle timers for each observed element
+ * @param observer - The ResizeObserver instance for unobserving settled elements
+ * @param animationPollingState - State for rAF polling during CSS animations
+ * @param config - Configuration object containing thresholds and callbacks
+ * @param config.significantChangeThreshold - Minimum size change (in px) to consider significant
+ * @param config.settleTimeout - Time to wait (in ms) before considering a message settled
+ * @param config.onSignificantResize - Callback to invoke with height delta when significant change detected
+ */
+function processResizeEntries(
+  entries: ResizeObserverEntry[],
+  messageSizes: Map<Element, number>,
+  settleTimers: Map<Element, ReturnType<typeof setTimeout>>,
+  observer: ResizeObserver,
+  animationPollingState: AnimationPollingState | null,
+  config: {
+    significantChangeThreshold: number;
+    settleTimeout: number;
+    onSignificantResize: (delta: number) => void;
+  },
+): void {
+  let totalDelta = 0;
+  let hasSignificantChange = false;
+
+  entries.forEach((entry) => {
+    const { blockSize } = entry.borderBoxSize[0];
+    const prevSize = messageSizes.get(entry.target);
+
+    // prevSize is null on the very first observation — treat as baseline, not a change.
+    if (prevSize != null) {
+      const delta = blockSize - prevSize;
+
+      if (Math.abs(delta) > config.significantChangeThreshold) {
+        hasSignificantChange = true;
+        totalDelta += delta;
+
+        // If content is shrinking (negative delta) and no rAF loop is active,
+        // start polling to catch CSS animation frames that ResizeObserver misses
+        if (
+          delta < 0 &&
+          animationPollingState &&
+          !animationPollingState.rafId
+        ) {
+          startAnimationPolling(
+            entry.target as HTMLElement,
+            animationPollingState,
+            config.onSignificantResize,
+          );
+        }
+      }
+    }
+
+    messageSizes.set(entry.target, blockSize);
+
+    // Reset settle timer — stop observing after settleTimeout of no changes.
+    const existingTimer = settleTimers.get(entry.target);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+    const timer = setTimeout(() => {
+      observer.unobserve(entry.target);
+      settleTimers.delete(entry.target);
+      messageSizes.delete(entry.target);
+    }, config.settleTimeout);
+    settleTimers.set(entry.target, timer);
+  });
+
+  if (hasSignificantChange) {
+    config.onSignificantResize(totalDelta);
+  }
+}
+
+/**
+ * Starts requestAnimationFrame polling for an element during CSS animations.
+ * This provides frame-by-frame height tracking when ResizeObserver doesn't fire
+ * frequently enough during CSS transitions/animations.
+ *
+ * @param element - The element to poll for height changes
+ * @param state - Animation polling state
+ * @param onHeightChange - Callback to invoke with height delta on each frame
+ */
+function startAnimationPolling(
+  element: HTMLElement,
+  state: AnimationPollingState,
+  onHeightChange: (delta: number) => void,
+): void {
+  // Cancel any existing polling
+  if (state.rafId !== null) {
+    cancelAnimationFrame(state.rafId);
+  }
+
+  // Initialize state
+  state.element = element;
+  state.previousHeight = element.getBoundingClientRect().height;
+  state.stableFrames = 0;
+  state.onHeightChange = onHeightChange;
+
+  // Start polling loop
+  const poll = () => {
+    if (!state.element) {
+      return;
+    }
+
+    const currentHeight = state.element.getBoundingClientRect().height;
+    const delta = currentHeight - state.previousHeight;
+
+    if (delta !== 0) {
+      // Height changed - apply spacer adjustment and reset stability counter
+      state.onHeightChange(delta);
+      state.previousHeight = currentHeight;
+      state.stableFrames = 0;
+    } else {
+      // Height stable - increment counter
+      state.stableFrames++;
+    }
+
+    // Continue polling if animation hasn't stabilized (< 5 stable frames)
+    if (state.stableFrames < 5) {
+      state.rafId = requestAnimationFrame(poll);
+    } else {
+      // Animation complete - cleanup
+      state.rafId = null;
+      state.element = null;
+    }
+  };
+
+  state.rafId = requestAnimationFrame(poll);
+}
+
+/**
+ * Stops any active animation polling and cleans up state.
+ *
+ * @param state - Animation polling state to cleanup
+ */
+export function stopAnimationPolling(
+  state: AnimationPollingState | null,
+): void {
+  if (!state) {
+    return;
+  }
+
+  if (state.rafId !== null) {
+    cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+  }
+  state.element = null;
+  state.stableFrames = 0;
 }
 
 /**
@@ -649,6 +788,11 @@ export interface MessageResizeObserverState {
  * The observer detects when async content (images, audio, video) loads and changes
  * message height, triggering spacer recalculation. Automatically stops observing
  * messages after they settle to reduce overhead.
+ *
+ * Uses a two-layer approach for handling size changes:
+ * 1. ResizeObserver (baseline) - Handles general size changes with delta-based tracking
+ * 2. requestAnimationFrame loop (animation補助) - Activated during CSS animations for
+ *    frame-by-frame compensation when ResizeObserver doesn't fire frequently enough
  *
  * @param config - Configuration for the observer
  * @returns State object containing the observer and tracking maps
@@ -659,65 +803,53 @@ export function createMessageResizeObserver(
   const {
     onSignificantResize,
     hasPinnedMessage,
-    throttleTimeout,
     settleTimeout = 3000,
-    significantChangeThreshold = 60,
+    significantChangeThreshold = 10,
   } = config;
 
   const messageSizes = new Map<Element, number>();
-  const settleTimers = new Map<Element, NodeJS.Timeout>();
+  const settleTimers = new Map<Element, ReturnType<typeof setTimeout>>();
 
-  const observer = new ResizeObserver(
-    throttle(
-      (entries: ResizeObserverEntry[]) => {
-        // Only recalculate if user hasn't scrolled away from pinned message
-        if (!hasPinnedMessage()) {
-          return;
-        }
+  // Initialize animation polling state for CSS animation tracking
+  const animationPollingState: AnimationPollingState = {
+    rafId: null,
+    element: null,
+    previousHeight: 0,
+    stableFrames: 0,
+    onHeightChange: () => {
+      // Will be set by startAnimationPolling
+    },
+  };
 
-        // Process each entry: check for significant change before updating the stored size,
-        // then reset the settle timer.
-        let hasSignificantChange = false;
-        entries.forEach((entry) => {
-          const { blockSize } = entry.borderBoxSize[0];
-          const prevSize = messageSizes.get(entry.target);
+  const observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+    // Only recalculate if user hasn't scrolled away from pinned message
+    if (!hasPinnedMessage()) {
+      return;
+    }
 
-          // prevSize is null on the very first observation — treat as baseline, not a change.
-          if (
-            prevSize != null &&
-            Math.abs(blockSize - prevSize) > significantChangeThreshold
-          ) {
-            hasSignificantChange = true;
-          }
-
-          messageSizes.set(entry.target, blockSize);
-
-          // Reset settle timer — stop observing after settleTimeout of no changes.
-          const existingTimer = settleTimers.get(entry.target);
-          if (existingTimer) {
-            clearTimeout(existingTimer);
-          }
-          const timer = setTimeout(() => {
-            observer.unobserve(entry.target);
-            settleTimers.delete(entry.target);
-            messageSizes.delete(entry.target);
-          }, settleTimeout);
-          settleTimers.set(entry.target, timer);
-        });
-
-        if (hasSignificantChange) {
-          onSignificantResize();
-        }
+    // Process resize entries immediately (synchronously) to prevent race conditions
+    // with CSS animations. The delta-based approach tracks height changes and triggers
+    // rAF polling when content shrinks (collapse animations), providing frame-by-frame
+    // compensation that ResizeObserver alone cannot achieve during CSS transitions.
+    processResizeEntries(
+      entries,
+      messageSizes,
+      settleTimers,
+      observer,
+      animationPollingState,
+      {
+        significantChangeThreshold,
+        settleTimeout,
+        onSignificantResize,
       },
-      throttleTimeout,
-      { leading: false, trailing: true },
-    ),
-  );
+    );
+  });
 
   return {
     observer,
     messageSizes,
     settleTimers,
+    animationPollingState,
   };
 }
 
@@ -751,7 +883,10 @@ export function updateObservedMessages(
 export function cleanupMessageResizeObserver(
   state: MessageResizeObserverState,
 ): void {
-  const { observer, messageSizes, settleTimers } = state;
+  const { observer, messageSizes, settleTimers, animationPollingState } = state;
+
+  // Stop any active animation polling
+  stopAnimationPolling(animationPollingState);
 
   // Disconnect observer
   observer.disconnect();
@@ -763,21 +898,69 @@ export function cleanupMessageResizeObserver(
   // Clear size tracking
   messageSizes.clear();
 }
+/**
+ * Checks if any new non-streaming response messages were added to the message list.
+ *
+ * This is used to determine if we need to schedule a deferred spacer recalculation,
+ * as non-streaming responses may not have their full content rendered when the initial
+ * pin calculation occurs, resulting in an oversized spacer.
+ *
+ * @param newItems - The current array of local message items
+ * @param allMessagesByID - Map of all messages by their full message ID
+ * @returns true if at least one non-streaming response was found, false otherwise
+ */
+function hasNewNonStreamingResponse(
+  newItems: LocalMessageItem[],
+  allMessagesByID: Record<string, Message>,
+): boolean {
+  return newItems.some((item) => {
+    // Skip streaming items - they handle their own spacer updates
+    if (item.ui_state.streamingState) {
+      return false;
+    }
+
+    // Check if this is a response message
+    const message = allMessagesByID[item.fullMessageID];
+    const isResp = message && isResponse(message);
+    return isResp;
+  });
+}
+
+/**
+ * Calculates the scroll position to restore after Safari's scroll anchoring behavior.
+ *
+ * Safari can automatically adjust scrollTop during DOM updates (scroll anchoring).
+ * This function determines if we need to restore the user's intended scroll position
+ * by comparing the current scrollTop with the pre-update snapshot.
+ *
+ * @param currentScrollTop - The current scroll position after the update
+ * @param snapshot - The scroll position captured before the update (from getSnapshotBeforeUpdate)
+ * @returns The scroll position to restore, or null if no restoration is needed
+ */
+function applySafariScrollAnchoringRestore(
+  currentScrollTop: number,
+  snapshot: number | null,
+): number | null {
+  const restoreTarget = getAnchoringRestoreTarget({
+    currentScrollTop,
+    snapshot,
+  });
+
+  return restoreTarget;
+}
 
 export {
-  applyStreamingSpacerDomSync,
-  consumeStreamingChunk,
+  applySafariScrollAnchoringRestore,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
-  hasActiveStreaming,
   hasMessagesOutOfView,
+  hasNewNonStreamingResponse,
   pinMessageAndScroll,
   recalculatePinnedMessageSpacer,
   resolveAutoScrollAction,
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
-  resolveStreamingSpacerSyncDecision,
   type AutoScrollAction,
   type StreamEndAction,
 };
