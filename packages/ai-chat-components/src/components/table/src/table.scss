@@ -19,12 +19,8 @@
 // Apply rounded corners to the container when data-rounded is set
 :host([data-rounded]),
 :host([data-rounded=""]) {
-  overflow: hidden;
-
   .cds-ai-chat-table-container {
     @include rounded-self;
-
-    overflow: hidden;
   }
 }
 

@@ -550,7 +550,7 @@ export default function AppShell({
                 [WIDTH_BREAKPOINT_WIDE]:
                   chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
               })}
-              ref={(el) => {
+              ref={(el: HTMLElement) => {
                 widgetContainerRef.current = el;
                 animationContainerRef.current = el;
               }}

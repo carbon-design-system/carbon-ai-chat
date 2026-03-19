@@ -411,7 +411,7 @@ export class DemoBody extends LitElement {
   /**
    * Handle settings changes from sidebar controls
    */
-  private _onSettingsChanged = (event: Event) => {
+  private _onSettingsChanged = async (event: Event) => {
     event.stopPropagation(); // Prevent bubbling to parent demo-container
 
     const customEvent = event as CustomEvent;
@@ -426,6 +426,22 @@ export class DemoBody extends LitElement {
     this.settings = newSettings;
 
     this._dispatchSettingsChangeEvent();
+
+    // Apply header settings to config (if they changed)
+    const headerSettingsChanged =
+      oldSettings.showHeader !== newSettings.showHeader ||
+      oldSettings.showMenuOptions !== newSettings.showMenuOptions ||
+      oldSettings.showSampleActions !== newSettings.showSampleActions;
+
+    if (headerSettingsChanged) {
+      // Import DemoHeaderSwitcher to access the static method
+      const { DemoHeaderSwitcher } = await import("./demo-header-switcher");
+      const updatedConfig = DemoHeaderSwitcher.applySettingsToConfig(
+        this.config,
+        newSettings,
+      );
+      this.config = updatedConfig;
+    }
 
     // Update query parameters with new settings
     this._updateQueryParamsForSettings(newSettings, shouldRefresh);
@@ -551,6 +567,7 @@ export class DemoBody extends LitElement {
                     <div class="config-section__title">Header</div>
                     <demo-header-switcher
                       .config=${this.config}
+                      .settings=${this.settings}
                     ></demo-header-switcher>
                   </div>
                   <div class="config-section">

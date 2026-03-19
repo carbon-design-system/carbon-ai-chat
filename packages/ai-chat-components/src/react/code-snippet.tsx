@@ -10,6 +10,7 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/defs.js";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatCodeSnippet from "../components/code-snippet/src/code-snippet.js";
@@ -26,7 +27,7 @@ export type { Action } from "../components/code-snippet/src/code-snippet.js";
 export interface ReactAction {
   text: string;
   icon: CarbonIcon | React.ComponentType<any>;
-  size?: string;
+  size?: BUTTON_SIZE;
   fixed?: boolean;
   onClick: () => void;
 }

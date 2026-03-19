@@ -12,6 +12,9 @@ interface Settings {
   layout: "float" | "sidebar" | "fullscreen" | "fullscreen-no-gutter";
   writeableElements: "true" | "false";
   direction: "default" | "ltr" | "rtl";
+  showHeader?: boolean;
+  showMenuOptions?: boolean;
+  showSampleActions?: boolean;
 }
 
 interface KeyPairs {
