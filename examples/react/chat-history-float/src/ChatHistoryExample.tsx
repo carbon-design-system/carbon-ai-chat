@@ -30,14 +30,23 @@ import {
 } from "./chat-history-data";
 import { PinFilled, Search } from "@carbon/icons-react";
 import "./ChatHistoryExample.css";
+import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
 interface ChatHistoryExampleProps {
-  headerTitle: string;
-  searchOff: boolean;
-  showCloseAction: boolean;
+  instance: ChatInstance;
+  parentStateText?: string;
   loadChat: (event: CustomEvent) => Promise<void>;
 }
 
+// Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
+const getIndexByTimestamp = (items: resultItem[], timestamp: number) => {
+  const index = items.findIndex(
+    (item) => timestamp >= Date.parse(item.lastUpdated),
+  );
+  return index === -1 ? items.length : index;
+};
+
+// Returns the id of the currently selected item in the history panel
 const findSelectedItemId = (
   pinnedItems: resultItem[],
   regularItems: resultItemSection[],
@@ -58,13 +67,11 @@ const findSelectedItemId = (
 };
 
 function ChatHistoryExample({
-  headerTitle,
-  searchOff,
-  showCloseAction,
+  instance,
+  parentStateText: _parentStateText,
   loadChat,
 }: ChatHistoryExampleProps) {
   const [searchResults, setSearchResults] = useState<resultItem[]>([]);
-  const [searchTotalCount, setSearchTotalCount] = useState(0);
   const [searchValue, setSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState<string | undefined>(
     findSelectedItemId(pinnedHistoryItems, historyItems),
@@ -81,7 +88,7 @@ function ChatHistoryExample({
     })),
   );
 
-  const handleSelectChat = (event: CustomEvent) => {
+  const handleSelectChat = useCallback((event: CustomEvent) => {
     const itemId = event.detail.itemId;
 
     if (selectedId === itemId) {
@@ -118,15 +125,7 @@ function ChatHistoryExample({
 
       loadChat(event);
     }
-  };
-
-  // Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
-  const getIndexByTimestamp = (items: resultItem[], timestamp: number) => {
-    const index = items.findIndex(
-      (item) => timestamp >= Date.parse(item.lastUpdated),
-    );
-    return index === -1 ? items.length : index;
-  };
+  }, [selectedId, pinnedItems, regularItems, loadChat]);
 
   const handlePinToTop = useCallback(
     (itemId: string) => {
@@ -194,33 +193,6 @@ function ChatHistoryExample({
     [pinnedItems],
   );
 
-  const handleHistoryItemAction = useCallback(
-    (event: any) => {
-      const action = event.detail.action;
-
-      switch (action) {
-        case "Delete":
-          setItemToDelete(event.detail.itemId);
-          setShowDeletePanel(true);
-          break;
-        case "Rename":
-          if (event.detail.element) {
-            event.detail.element.rename = true;
-          }
-          break;
-        case "Pin to top":
-          handlePinToTop(event.detail.itemId);
-          break;
-        case "Unpin":
-          handleUnpin(event.detail.itemId);
-          break;
-        default:
-          break;
-      }
-    },
-    [handlePinToTop, handleUnpin],
-  );
-
   const handleDeleteCancel = useCallback(() => {
     setShowDeletePanel(false);
     setItemToDelete(null);
@@ -274,6 +246,33 @@ function ChatHistoryExample({
     }
   }, []);
 
+  const handleHistoryItemAction = useCallback(
+    (event: any) => {
+      const action = event.detail.action;
+
+      switch (action) {
+        case "Delete":
+          setItemToDelete(event.detail.itemId);
+          setShowDeletePanel(true);
+          break;
+        case "Rename":
+          if (event.detail.element) {
+            event.detail.element.rename = true;
+          }
+          break;
+        case "Pin to top":
+          handlePinToTop(event.detail.itemId);
+          break;
+        case "Unpin":
+          handleUnpin(event.detail.itemId);
+          break;
+        default:
+          break;
+      }
+    },
+    [handlePinToTop, handleUnpin],
+  );
+
   const handleSearchInput = useCallback(
     (event: any) => {
       const searchVal = event.detail.value.toLowerCase();
@@ -305,25 +304,44 @@ function ChatHistoryExample({
       });
 
       setSearchResults(results);
-      setSearchTotalCount(results.length);
       setSearchValue(searchVal);
     },
     [pinnedItems, regularItems],
   );
 
-  const showSearchResults = searchTotalCount > 0 && searchValue;
-  const noSearchResults = searchTotalCount === 0 && searchValue;
+  // Handle new chat
+  const handleNewChat = useCallback(() => {
+    console.log("Creating new chat");
+    // Create new conversation - you would typically call your API here
+    // For demo purposes, we'll just log it
+  }, []);
+
+  // Handle history close
+  const handleHistoryClose = useCallback(() => {
+    console.log("History close clicked");
+    // In float mode, close the history panel
+    if (instance?.customPanels) {
+      instance.customPanels.getPanel(PanelType.HISTORY)?.close();
+    }
+  }, [instance]);
+
+  const showSearchResults = searchResults.length > 0 && searchValue;
+  const noSearchResults = searchResults.length === 0 && searchValue;
 
   return (
     <HistoryShell>
-      <HistoryHeader title={headerTitle} showCloseAction={showCloseAction} />
+      <HistoryHeader
+        title="Conversations"
+        onHistoryHeaderCloseClick={handleHistoryClose}
+        showCloseAction={true}
+      />
       <HistoryToolbar
-        searchOff={searchOff}
-        onCdsSearchInput={handleSearchInput}
+        onChatHistoryNewChatClick={handleNewChat}
+        onSearchInput={handleSearchInput}
       />
       <HistoryContent>
         {(showSearchResults || noSearchResults) && (
-          <div slot="results-count">Results: {searchTotalCount}</div>
+          <div slot="results-count">Results: {searchResults.length}</div>
         )}
         <HistoryPanel aria-label="Chat history">
           <HistoryPanelItems>
@@ -392,8 +410,8 @@ function ChatHistoryExample({
       </HistoryContent>
       {showDeletePanel && (
         <HistoryDeletePanel
-          onHistoryDeleteCancel={handleDeleteCancel}
-          onHistoryDeleteConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
         >
           <div slot="title">Confirm Delete</div>
           <div slot="description">

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import "./history-writeable-element-example";
 
 import {
@@ -41,25 +41,12 @@ const config: PublicConfig = {
     customSendMessage,
     customLoadHistory,
   },
-  layout: {
-    showFrame: false,
-  },
-  openChatByDefault: true,
   injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
 export class Demo extends LitElement {
   static styles = css`
-    .fullScreen {
-      position: fixed;
-      bottom: 0;
-      right: 0;
-      height: 100vh;
-      width: 100vw;
-      z-index: 9999;
-    }
-
     .external {
       background: green;
       color: #fff;
@@ -218,11 +205,10 @@ export class Demo extends LitElement {
 
   render() {
     return html`
-      <cds-aichat-custom-element
-        class="fullScreen"
+      <cds-aichat-container
         .config=${config}
         .onBeforeRender=${this.onBeforeRender}
-        >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
+        >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-container
       >
     `;
   }

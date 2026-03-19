@@ -13,7 +13,7 @@ import {
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
@@ -30,42 +30,14 @@ const config: PublicConfig = {
     customSendMessage,
     customLoadHistory,
   },
-  layout: {
-    showHistory: true,
+  history: {
+    isOn: true,
   },
   injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
-  const [historyPanelOpen, setHistoryPanelOpen] = useState(false);
-
-  const floatModeConfig = {
-    ...config,
-    header: {
-      ...config.header,
-      menuOptions: [
-        {
-          text: "New chat",
-          handler: () => {
-            console.log("New chat clicked");
-          },
-        },
-        {
-          text: "View chats",
-          handler: () => {
-            setHistoryPanelOpen(true);
-            // Open the custom panel with history content
-            instance?.customPanels?.getPanel()?.open({
-              title: "Chat History",
-              hideBackButton: false,
-              fullWidth: true,
-            });
-          },
-        },
-      ],
-    },
-  };
 
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
@@ -82,26 +54,25 @@ function App() {
     instance.messaging.insertHistory(historyData);
   };
 
-  const renderWriteableElements = useMemo(() => {
-    if (!instance) {
-      return { historyPanelElement: null };
-    }
-
-    const chatHistory = (
+  const historyWriteableElementExample = useMemo(
+    () => (
       <ChatHistoryExample
-        showCloseAction={false}
-        searchOff={false}
-        headerTitle="Conversations"
+        instance={instance as ChatInstance}
         loadChat={loadChat}
       />
-    );
+    ),
+    [instance, loadChat],
+  );
 
-    return { customPanelElement: chatHistory };
-  }, [instance, loadChat]);
+  const renderWriteableElements = useMemo(() => {
+    return {
+      historyPanelElement: historyWriteableElementExample,
+    };
+  }, [historyWriteableElementExample]);
 
   return (
     <ChatContainer
-      {...floatModeConfig}
+      {...config}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderWriteableElements={renderWriteableElements}

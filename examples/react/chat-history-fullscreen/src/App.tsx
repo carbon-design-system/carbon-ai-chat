@@ -13,7 +13,7 @@ import {
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
@@ -45,10 +45,31 @@ const config: PublicConfig = {
 
 function App() {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
+    
+    // Initialize isMobile from current state
+    const initialIsMobile = instance.getState().customPanels.history.isMobile;
+    setIsMobile(initialIsMobile);
   }
+
+  // Listen for window resize to update isMobile state
+  useEffect(() => {
+    if (!instance) return;
+
+    const handleResize = () => {
+      const newIsMobile = instance.getState().customPanels.history.isMobile;
+      setIsMobile(newIsMobile);
+    };
+
+    window.addEventListener("resize", handleResize);
+    
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [instance]);
 
   const loadChat = async (event: CustomEvent) => {
     if (!instance) {
@@ -61,22 +82,22 @@ function App() {
     instance.messaging.insertHistory(historyData);
   };
 
-  const renderWriteableElements = useMemo(() => {
-    if (!instance) {
-      return { historyPanelElement: null };
-    }
-
-    const chatHistory = (
+  const historyWriteableElementExample = useMemo(
+    () => (
       <ChatHistoryExample
-        showCloseAction={false}
-        searchOff={false}
-        headerTitle="Conversations"
+        instance={instance as ChatInstance}
+        isMobile={isMobile}
         loadChat={loadChat}
       />
-    );
+    ),
+    [instance, isMobile, loadChat],
+  );
 
-    return { historyPanelElement: chatHistory };
-  }, [instance, loadChat]);
+  const renderWriteableElements = useMemo(() => {
+    return {
+      historyPanelElement: historyWriteableElementExample,
+    };
+  }, [historyWriteableElementExample]);
 
   return (
     <ChatCustomElement

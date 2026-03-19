@@ -1,12 +1,13 @@
-/* 
+/*
  *  Copyright IBM Corp. 2026
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
  */
 
-/* Styles for the history writeable element example */
-[slot="historyPanelElement"] {
-  box-sizing: border-box;
-  block-size: 100%;
+declare module "@carbon/icons/es/*" {
+  const icon: any;
+  export default icon;
 }
