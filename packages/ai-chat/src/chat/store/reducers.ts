@@ -19,6 +19,8 @@ import {
   ChatMessagesState,
   FileUpload,
   InputState,
+  PendingUpload,
+  PendingUploadStatus,
   PersistedState,
   ThemeState,
   ViewState,
@@ -44,6 +46,7 @@ import {
   ANNOUNCE_MESSAGE,
   CHANGE_STATE,
   CLEAR_INPUT_FILES,
+  CLEAR_STRUCTURED_DATA,
   CLOSE_IFRAME_PANEL,
   FILE_UPLOAD_INPUT_ERROR,
   HYDRATE_CHAT,
@@ -87,11 +90,15 @@ import {
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_INPUT_STATE,
   UPDATE_LOCAL_MESSAGE_ITEM,
+  UPDATE_STRUCTURED_DATA,
   UPDATE_MESSAGE,
   UPDATE_PERSISTED_STATE,
   UPDATE_THEME_STATE,
   RESET_IS_HYDRATING_COUNTER,
   RESET_IS_LOADING_COUNTER,
+  ADD_PENDING_UPLOAD,
+  UPDATE_PENDING_UPLOAD,
+  REMOVE_PENDING_UPLOAD,
 } from "./actions";
 import { humanAgentReducers } from "./humanAgentReducers";
 import {
@@ -121,6 +128,67 @@ import {
 } from "../../types/messaging/Messages";
 
 type ReducerType = (state: AppState, action?: any) => AppState;
+
+/**
+ * Rebuilds `pendingStructuredData` by combining `manualStructuredData` with the
+ * `contributedData` from every completed upload in `pendingUploads`.
+ *
+ * - `fields` arrays are **concatenated** (not merged by index) so that manual fields
+ *   and upload-contributed fields coexist side-by-side.
+ * - `user_defined` objects are deep-merged; later entries win on scalar conflicts.
+ *
+ * Returns `undefined` when there is nothing to combine.
+ */
+function rebuildPendingStructuredData(
+  inputState: InputState,
+): import("../../types/messaging/Messages").StructuredData | undefined {
+  type SD = import("../../types/messaging/Messages").StructuredData;
+  type SF = import("../../types/messaging/Messages").StructuredField;
+
+  const parts: SD[] = [];
+
+  if (inputState.manualStructuredData) {
+    parts.push(inputState.manualStructuredData);
+  }
+
+  for (const upload of inputState.pendingUploads) {
+    if (
+      upload.status === PendingUploadStatus.COMPLETE &&
+      upload.contributedData
+    ) {
+      parts.push(upload.contributedData);
+    }
+  }
+
+  if (parts.length === 0) {
+    return undefined;
+  }
+
+  // Concatenate all fields arrays.
+  const allFields: SF[] = [];
+  for (const part of parts) {
+    if (part.fields) {
+      allFields.push(...part.fields);
+    }
+  }
+
+  // Deep-merge all user_defined objects.
+  const userDefinedParts = parts
+    .map((p) => p.user_defined)
+    .filter((ud): ud is Record<string, unknown> => ud != null);
+  const mergedUserDefined =
+    userDefinedParts.length > 0 ? merge({}, ...userDefinedParts) : undefined;
+
+  const result: SD = {};
+  if (allFields.length > 0) {
+    result.fields = allFields;
+  }
+  if (mergedUserDefined !== undefined) {
+    result.user_defined = mergedUserDefined;
+  }
+
+  return result;
+}
 
 // The set of agent message types that should be excluded on the unread agent message count.
 const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
@@ -1060,6 +1128,107 @@ const reducers: { [key: string]: ReducerType } = {
       },
       isInputToHumanAgent,
     );
+  },
+
+  [UPDATE_STRUCTURED_DATA]: (
+    state: AppState,
+    {
+      structuredData,
+      isInputToHumanAgent,
+    }: {
+      structuredData:
+        | import("../../types/messaging/Messages").StructuredData
+        | undefined;
+      isInputToHumanAgent: boolean;
+    },
+  ) => {
+    const currentInputState = getInputState(state, isInputToHumanAgent);
+    const nextInputState: InputState = {
+      ...currentInputState,
+      manualStructuredData: structuredData,
+    };
+    nextInputState.pendingStructuredData =
+      rebuildPendingStructuredData(nextInputState);
+    return applyInputState(state, nextInputState, isInputToHumanAgent);
+  },
+
+  [CLEAR_STRUCTURED_DATA]: (
+    state: AppState,
+    { isInputToHumanAgent }: { isInputToHumanAgent: boolean },
+  ) => {
+    const currentInputState = getInputState(state, isInputToHumanAgent);
+    return applyInputState(
+      state,
+      {
+        ...currentInputState,
+        manualStructuredData: undefined,
+        pendingUploads: [],
+        pendingStructuredData: undefined,
+      },
+      isInputToHumanAgent,
+    );
+  },
+
+  [ADD_PENDING_UPLOAD]: (
+    state: AppState,
+    {
+      upload,
+      isInputToHumanAgent,
+    }: { upload: PendingUpload; isInputToHumanAgent: boolean },
+  ) => {
+    const currentInputState = getInputState(state, isInputToHumanAgent);
+    const nextInputState: InputState = {
+      ...currentInputState,
+      pendingUploads: [...currentInputState.pendingUploads, upload],
+    };
+    nextInputState.pendingStructuredData =
+      rebuildPendingStructuredData(nextInputState);
+    return applyInputState(state, nextInputState, isInputToHumanAgent);
+  },
+
+  [UPDATE_PENDING_UPLOAD]: (
+    state: AppState,
+    {
+      uploadId,
+      patch,
+      isInputToHumanAgent,
+    }: {
+      uploadId: string;
+      patch: Partial<PendingUpload>;
+      isInputToHumanAgent: boolean;
+    },
+  ) => {
+    const currentInputState = getInputState(state, isInputToHumanAgent);
+    const nextUploads = currentInputState.pendingUploads.map((u) =>
+      u.id === uploadId ? { ...u, ...patch } : u,
+    );
+    const nextInputState: InputState = {
+      ...currentInputState,
+      pendingUploads: nextUploads,
+    };
+    nextInputState.pendingStructuredData =
+      rebuildPendingStructuredData(nextInputState);
+    return applyInputState(state, nextInputState, isInputToHumanAgent);
+  },
+
+  [REMOVE_PENDING_UPLOAD]: (
+    state: AppState,
+    {
+      uploadId,
+      isInputToHumanAgent,
+    }: { uploadId: string; isInputToHumanAgent: boolean },
+  ) => {
+    const currentInputState = getInputState(state, isInputToHumanAgent);
+    const nextUploads = currentInputState.pendingUploads.filter(
+      (u) => u.id !== uploadId,
+    );
+    const nextInputState: InputState = {
+      ...currentInputState,
+      pendingUploads: nextUploads,
+    };
+    nextInputState.pendingStructuredData =
+      rebuildPendingStructuredData(nextInputState);
+    return applyInputState(state, nextInputState, isInputToHumanAgent);
   },
 
   [FILE_UPLOAD_INPUT_ERROR]: (

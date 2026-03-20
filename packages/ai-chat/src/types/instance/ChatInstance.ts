@@ -17,7 +17,7 @@ import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
 import type { PersistedState } from "../state/AppState";
 import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
-import { MessageRequest } from "../messaging/Messages";
+import { MessageRequest, StructuredData } from "../messaging/Messages";
 import type { ServiceManager } from "../../chat/services/ServiceManager";
 import { AutoScrollOptions } from "../utilities/HasDoAutoScroll";
 
@@ -57,6 +57,22 @@ export interface PublicInputState {
    * @experimental Raw text currently queued in the input before being sent to customSendMessage.
    */
   rawValue: string;
+
+  /**
+   * A snapshot of the pending structured data currently queued in the input. This data will be merged
+   * into the next outgoing {@link MessageRequest} when the user sends a message via the UI.
+   *
+   * @experimental
+   */
+  structuredData?: StructuredData;
+
+  /**
+   * `true` while one or more file uploads initiated via {@link UploadConfig.onFileUpload} are still
+   * in progress.  The send button is disabled while this is `true`.
+   *
+   * @experimental
+   */
+  hasInFlightUploads: boolean;
 }
 
 /**
@@ -182,6 +198,43 @@ export interface ChatInstanceInput {
    * ```
    */
   updateRawValue: (updater: (previous: string) => string) => void;
+
+  /**
+   * Updates the pending structured data that will be merged into the next outgoing {@link MessageRequest}
+   * when the user sends a message via the UI send button or Enter key. The updater function receives the
+   * current pending structured data (or `undefined` if none is set) and should return the new value.
+   * Return `undefined` to clear the pending structured data.
+   *
+   * This is the primary mechanism for pushing structured inputs (form fields, file references, etc.)
+   * into the active input so they are included when the user hits Send.
+   *
+   * @example
+   * ```ts
+   * // Add a field to the pending structured data
+   * instance.input.updateStructuredData((prev) => ({
+   *   ...prev,
+   *   fields: [
+   *     ...(prev?.fields ?? []),
+   *     { id: 'rating', type: 'number', value: 4 }
+   *   ]
+   * }));
+   *
+   * // Replace all pending structured data
+   * instance.input.updateStructuredData(() => ({
+   *   fields: [{ id: 'selection', type: 'multi_select', value: ['a', 'b'] }]
+   * }));
+   *
+   * // Clear pending structured data
+   * instance.input.updateStructuredData(() => undefined);
+   * ```
+   *
+   * @experimental
+   */
+  updateStructuredData: (
+    updater: (
+      previous: StructuredData | undefined,
+    ) => StructuredData | undefined,
+  ) => void;
 }
 
 /**
