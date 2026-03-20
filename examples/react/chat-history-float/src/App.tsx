@@ -13,7 +13,7 @@ import {
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.

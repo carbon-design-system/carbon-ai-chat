@@ -19,7 +19,7 @@ import {
   type UserDefinedItem,
 } from "@carbon/ai-chat";
 import { html, LitElement, css } from "lit";
-import { customElement, state, property } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 
 import { customSendMessage } from "./customSendMessage";
 import { customLoadHistory } from "./customLoadHistory";
@@ -99,6 +99,20 @@ export class Demo extends LitElement {
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
+  };
+
+  /**
+   * Handles loading a new chat history.
+   */
+  _loadChat = async (event: CustomEvent) => {
+    if (!this.instance) {
+      return;
+    }
+    const requestText = event.detail.chatTitle;
+    const historyData = await customLoadHistory(this.instance, requestText);
+
+    await this.instance.messaging.clearConversation();
+    this.instance.messaging.insertHistory(historyData);
   };
 
   /**
@@ -222,6 +236,7 @@ export class Demo extends LitElement {
         class="fullScreen"
         .config=${config}
         .onBeforeRender=${this.onBeforeRender}
+        @history-panel-load-chat=${this._loadChat}
         >${this.renderUserDefinedSlots()}${this.renderWriteableElementSlots()}</cds-aichat-custom-element
       >
     `;

@@ -26,13 +26,15 @@ import {
   resultItemSection,
 } from "./chat-history-data";
 
-interface SearchResult {
-  id: string;
-  title: string;
-  section?: string;
-  isPinned: boolean;
-}
+// Returns index of a chat item in a section when ordered (descending) by lastUpdated timestamp
+const getIndexByTimestamp = (items: resultItem[], timestamp: number) => {
+  const index = items.findIndex(
+    (item) => timestamp >= Date.parse(item.lastUpdated),
+  );
+  return index === -1 ? items.length : index;
+};
 
+// Returns id of the currently selected item in the history panel
 const findSelectedItemId = (
   pinnedItems: resultItem[],
   regularItems: resultItemSection[],
@@ -50,14 +52,6 @@ const findSelectedItemId = (
   }
 
   return undefined;
-};
-
-// Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
-const getIndexByTimestamp = (items: resultItem[], timestamp: number) => {
-  const index = items.findIndex(
-    (item) => timestamp >= Date.parse(item.lastUpdated),
-  );
-  return index === -1 ? items.length : index;
 };
 
 /**
@@ -78,57 +72,54 @@ export class HistoryWriteableElementExample extends LitElement {
     }
   `;
 
-  @property({ type: String })
-  accessor location!: string;
-
   @property({ type: Object })
   accessor instance!: ChatInstance;
 
-  @property({ type: String })
-  accessor valueFromParent!: string;
-
   @property({ type: Boolean })
   accessor isMobile: boolean = false;
-
-  @property({ type: String })
-  accessor headerTitle: string = "Conversations";
 
   @state()
   accessor itemToDelete: string | null = null;
 
   @state()
-  accessor selectedChatId: string = "pinned-1";
+  accessor selectedChatId: string | undefined = findSelectedItemId(
+    pinnedHistoryItems,
+    historyItems,
+  );
 
   @state()
   accessor searchValue: string = "";
 
   @state()
-  accessor searchResults: SearchResult[] = [];
+  accessor searchResults: resultItem[] = [];
 
   @state()
   accessor showDeletePanel: Boolean = false;
 
   @state()
-  accessor pinnedItems: resultItem[] =
-    pinnedHistoryItems.map((item) => ({ ...item, rename: false })) || [];
+  accessor pinnedItems: resultItem[] = pinnedHistoryItems.map((item) => ({
+    ...item,
+    rename: false,
+  }));
 
   @state()
-  accessor regularItems: resultItemSection[] =
-    historyItems.map((section) => ({
-      ...section,
-      chats: section.chats.map((chat) => ({ ...chat, rename: false })),
-    })) || [];
+  accessor regularItems: resultItemSection[] = historyItems.map((section) => ({
+    ...section,
+    chats: section.chats.map((chat) => ({ ...chat, rename: false })),
+  }));
 
   firstUpdated() {
-    // Add event listeners after first render
-    this.addEventListener("history-delete-cancel", this._handleDeleteCancel);
-    this.addEventListener("history-delete-confirm", this._handleDeleteConfirm);
-    // this.addEventListener(
-    //   "history-panel-item-input-save",
-    //   this._handleRenameSave,
-    // );
+    window.addEventListener("resize", this._handleResize);
   }
 
+  // Window resize handler
+  _handleResize = () => {
+    const newIsMobile = this.instance.getState().customPanels.history.isMobile;
+    this.isMobile = newIsMobile;
+    this.requestUpdate();
+  };
+
+  // Handle select chat
   _handleSelectChat = (event: CustomEvent) => {
     const itemId = event.detail.itemId;
 
@@ -159,9 +150,22 @@ export class HistoryWriteableElementExample extends LitElement {
           selected: chat.id === itemId,
         })),
       }));
+
+      // Dispatch load chat event
+      const init = {
+        bubbles: true,
+        composed: true,
+        detail: {
+          chatTitle: event.detail.itemTitle,
+        },
+      };
+
+      const loadChatEvent = new CustomEvent("history-panel-load-chat", init);
+      this.dispatchEvent(loadChatEvent);
     }
   };
 
+  // Handle pin chat
   _handlePinToTop = (itemId: string) => {
     const itemToPin = this.regularItems
       .flatMap((section) => section.chats)
@@ -183,6 +187,7 @@ export class HistoryWriteableElementExample extends LitElement {
     }
   };
 
+  // Handle unpin chat
   _handleUnpin = (itemId: string) => {
     const itemToUnpin = this.pinnedItems.find((chat) => chat.id === itemId);
 
@@ -225,36 +230,14 @@ export class HistoryWriteableElementExample extends LitElement {
     }
   };
 
-  _handleHistoryItemAction = (event: CustomEvent) => {
-    const action = event.detail.action;
-
-    switch (action) {
-      case "Delete":
-        this.itemToDelete = event.detail.itemId;
-        this.showDeletePanel = true;
-        break;
-      case "Rename":
-        if (event.detail.element) {
-          event.detail.element.rename = true;
-        }
-        break;
-      case "Pin to top":
-        this._handlePinToTop(event.detail.itemId);
-        break;
-      case "Unpin":
-        this._handleUnpin(event.detail.itemId);
-        break;
-      default:
-        break;
-    }
-  };
-
+  // Handle delete panel cancel
   _handleDeleteCancel = () => {
     this.showDeletePanel = false;
     this.itemToDelete = null;
     this.requestUpdate();
   };
 
+  // Handle delete panel confirm
   _handleDeleteConfirm = () => {
     if (this.itemToDelete) {
       // Remove from pinned items
@@ -274,6 +257,7 @@ export class HistoryWriteableElementExample extends LitElement {
     this.requestUpdate();
   };
 
+  // Handle rename chat save
   _handleRenameSave = (event: CustomEvent) => {
     const itemId = event.detail.itemId;
 
@@ -301,21 +285,32 @@ export class HistoryWriteableElementExample extends LitElement {
     }
   };
 
-  // Handle new chat
-  _handleNewChat = () => {
-    console.log("Creating new chat");
-    // Create new conversation - you would typically call your API here
-    // For demo purposes, we'll just log it
-  };
+  // Handle chat action event
+  _handleHistoryItemAction = (event: CustomEvent) => {
+    const action = event.detail.action;
 
-  _handleHistoryClose = () => {
-    console.log("History close clicked");
-    // In float mode, close the history panel
-    if (this.instance?.customPanels) {
-      this.instance.customPanels.getPanel(PanelType.HISTORY)?.close();
+    switch (action) {
+      case "Delete":
+        this.itemToDelete = event.detail.itemId;
+        this.showDeletePanel = true;
+        break;
+      case "Rename":
+        if (event.detail.element) {
+          event.detail.element.rename = true;
+        }
+        break;
+      case "Pin to top":
+        this._handlePinToTop(event.detail.itemId);
+        break;
+      case "Unpin":
+        this._handleUnpin(event.detail.itemId);
+        break;
+      default:
+        break;
     }
   };
 
+  // Handle search input event
   _handleSearchInput = (event: CustomEvent) => {
     const inputValue = event.detail.value.toLowerCase();
 
@@ -349,6 +344,21 @@ export class HistoryWriteableElementExample extends LitElement {
     this.searchValue = inputValue;
   };
 
+  // Handle new chat
+  _handleNewChat = () => {
+    window.alert("Creating new chat");
+    // Create new conversation - you would typically call your API here
+    // For demo purposes, we'll just alert it
+  };
+
+  // Handle close history panel
+  _handleHistoryClose = () => {
+    // In float mode, close the history panel
+    if (this.instance?.customPanels) {
+      this.instance.customPanels.getPanel(PanelType.HISTORY)?.close();
+    }
+  };
+
   get showSearchResults() {
     return this.searchResults.length > 0 && this.searchValue;
   }
@@ -358,11 +368,8 @@ export class HistoryWriteableElementExample extends LitElement {
   }
 
   render() {
-    const showSearchResults = this.searchResults.length > 0 && this.searchValue;
-    const noSearchResults = this.searchResults.length === 0 && this.searchValue;
-
     return html`
-      <cds-aichat-history-shell class="history-writeable-element">
+      <cds-aichat-history-shell>
         <cds-aichat-history-header
           title="Conversations"
           ?show-close-action=${this.isMobile}
@@ -404,7 +411,7 @@ export class HistoryWriteableElementExample extends LitElement {
                         (result) => html`
                           <cds-aichat-history-search-item
                             id=${result.id}
-                            date=${result.section || "Pinned"}
+                            date=${result.lastUpdated}
                             @history-search-item-selected=${this
                               ._handleSelectChat}
                           >
@@ -424,10 +431,14 @@ export class HistoryWriteableElementExample extends LitElement {
                           <cds-aichat-history-panel-item
                             id=${chat.id}
                             title=${chat.title}
-                            ?selected=${chat.id === this.selectedChatId}
+                            ?selected=${chat.selected}
+                            ?rename=${chat.rename}
                             .actions=${pinnedHistoryItemActions}
                             @history-item-selected=${this._handleSelectChat}
-                            @history-item-action=${this._handleHistoryItemAction}
+                            @history-item-menu-action=${this
+                              ._handleHistoryItemAction}
+                            @history-panel-item-input-save=${this
+                              ._handleRenameSave}
                           ></cds-aichat-history-panel-item>
                         `,
                       )}
@@ -444,11 +455,14 @@ export class HistoryWriteableElementExample extends LitElement {
                               <cds-aichat-history-panel-item
                                 id=${chat.id}
                                 title=${chat.title}
-                                ?selected=${chat.id === this.selectedChatId}
+                                ?selected=${chat.selected}
+                                ?rename=${chat.rename}
                                 .actions=${historyItemActions}
-                                @history-item-selected=${this
-                                  ._handleSelectChat}
-                                @history-item-action=${this._handleHistoryItemAction}
+                                @history-item-selected=${this._handleSelectChat}
+                                @history-item-menu-action=${this
+                                  ._handleHistoryItemAction}
+                                @history-panel-item-input-save=${this
+                                  ._handleRenameSave}
                               ></cds-aichat-history-panel-item>
                             `,
                           )}
@@ -460,6 +474,19 @@ export class HistoryWriteableElementExample extends LitElement {
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
         </cds-aichat-history-content>
+        ${this.showDeletePanel
+          ? html`
+              <cds-aichat-history-delete-panel
+                @history-delete-cancel=${this._handleDeleteCancel}
+                @history-delete-confirm=${this._handleDeleteConfirm}
+              >
+                <div slot="title">Confirm Delete</div>
+                <div slot="description">
+                  This conversation will be permanently deleted.
+                </div>
+              </cds-aichat-history-delete-panel>
+            `
+          : ""}
       </cds-aichat-history-shell>
     `;
   }

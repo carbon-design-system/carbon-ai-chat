@@ -16,7 +16,7 @@ import {
   MessageResponseTypes,
 } from "@carbon/ai-chat";
 
-import {pinnedHistoryItems,} from "./chat-history-data";
+import { pinnedHistoryItems } from "./chat-history-data";
 
 function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
   const randomId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;

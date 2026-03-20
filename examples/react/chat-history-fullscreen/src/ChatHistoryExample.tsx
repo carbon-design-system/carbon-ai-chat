@@ -39,7 +39,7 @@ interface ChatHistoryExampleProps {
   loadChat: (event: CustomEvent) => Promise<void>;
 }
 
-// Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
+// Returns index of a chat item in a section when ordered (descending) by lastUpdated timestamp
 const getIndexByTimestamp = (items: resultItem[], timestamp: number) => {
   const index = items.findIndex(
     (item) => timestamp >= Date.parse(item.lastUpdated),
@@ -47,7 +47,7 @@ const getIndexByTimestamp = (items: resultItem[], timestamp: number) => {
   return index === -1 ? items.length : index;
 };
 
-// Returns the id of the currently selected item in the history panel
+// Returns id of the currently selected item in the history panel
 const findSelectedItemId = (
   pinnedItems: resultItem[],
   regularItems: resultItemSection[],
@@ -90,45 +90,50 @@ function ChatHistoryExample({
     })),
   );
 
-  const handleSelectChat = useCallback((event: CustomEvent) => {
-    const itemId = event.detail.itemId;
+  // Handle select chat
+  const handleSelectChat = useCallback(
+    (event: CustomEvent) => {
+      const itemId = event.detail.itemId;
 
-    if (selectedId === itemId) {
-      return;
-    }
+      if (selectedId === itemId) {
+        return;
+      }
 
-    const itemExists =
-      pinnedItems.some((item) => item.id === itemId) ||
-      regularItems.some((section) =>
-        section.chats.some((chat) => chat.id === itemId),
-      );
+      const itemExists =
+        pinnedItems.some((item) => item.id === itemId) ||
+        regularItems.some((section) =>
+          section.chats.some((chat) => chat.id === itemId),
+        );
 
-    if (itemExists) {
-      setSelectedId(itemId);
+      if (itemExists) {
+        setSelectedId(itemId);
 
-      // Update pinned items
-      setPinnedItems((prev) =>
-        prev.map((item) => ({
-          ...item,
-          selected: item.id === itemId,
-        })),
-      );
-
-      // Update regular items
-      setRegularItems((prev) =>
-        prev.map((section) => ({
-          ...section,
-          chats: section.chats.map((chat) => ({
-            ...chat,
-            selected: chat.id === itemId,
+        // Update pinned items
+        setPinnedItems((prev) =>
+          prev.map((item) => ({
+            ...item,
+            selected: item.id === itemId,
           })),
-        })),
-      );
+        );
 
-      loadChat(event);
-    }
-  }, [selectedId, pinnedItems, regularItems, loadChat]);
+        // Update regular items
+        setRegularItems((prev) =>
+          prev.map((section) => ({
+            ...section,
+            chats: section.chats.map((chat) => ({
+              ...chat,
+              selected: chat.id === itemId,
+            })),
+          })),
+        );
 
+        loadChat(event);
+      }
+    },
+    [selectedId, pinnedItems, regularItems, loadChat],
+  );
+
+  // Handle pin chat
   const handlePinToTop = useCallback(
     (itemId: string) => {
       const itemToPin = regularItems
@@ -151,6 +156,7 @@ function ChatHistoryExample({
     [regularItems],
   );
 
+  // Handle unpin chat
   const handleUnpin = useCallback(
     (itemId: string) => {
       const itemToUnpin = pinnedItems.find((chat) => chat.id === itemId);
@@ -195,11 +201,13 @@ function ChatHistoryExample({
     [pinnedItems],
   );
 
+  // Handle delete panel cancel
   const handleDeleteCancel = useCallback(() => {
     setShowDeletePanel(false);
     setItemToDelete(null);
   }, []);
 
+  // Handle delete panel confirm
   const handleDeleteConfirm = useCallback(() => {
     if (itemToDelete) {
       // Remove from pinned items
@@ -218,6 +226,7 @@ function ChatHistoryExample({
     setItemToDelete(null);
   }, [itemToDelete]);
 
+  // Handle rename chat save
   const handleRenameSave = useCallback((event: CustomEvent) => {
     const itemId = event.detail.itemId;
     if (itemId) {
@@ -248,6 +257,7 @@ function ChatHistoryExample({
     }
   }, []);
 
+  // Handle chat action event
   const handleHistoryItemAction = useCallback(
     (event: any) => {
       const action = event.detail.action;
@@ -275,6 +285,7 @@ function ChatHistoryExample({
     [handlePinToTop, handleUnpin],
   );
 
+  // Handle search input event
   const handleSearchInput = useCallback(
     (event: any) => {
       const searchVal = event.detail.value.toLowerCase();
@@ -313,14 +324,13 @@ function ChatHistoryExample({
 
   // Handle new chat
   const handleNewChat = useCallback(() => {
-    console.log("Creating new chat");
+    window.alert("Creating new chat");
     // Create new conversation - you would typically call your API here
-    // For demo purposes, we'll just log it
+    // For demo purposes, we'll just alert it
   }, []);
 
-  // Handle history close
+  /// Handle close history panel
   const handleHistoryClose = useCallback(() => {
-    console.log("History close clicked");
     // In float mode, close the history panel
     if (instance?.customPanels) {
       instance.customPanels.getPanel(PanelType.HISTORY)?.close();
@@ -334,11 +344,11 @@ function ChatHistoryExample({
     <HistoryShell>
       <HistoryHeader
         title="Conversations"
-        onHistoryHeaderCloseClick={handleHistoryClose}
+        onClose={handleHistoryClose}
         showCloseAction={isMobile}
       />
       <HistoryToolbar
-        onChatHistoryNewChatClick={handleNewChat}
+        onNewChatClick={handleNewChat}
         onSearchInput={handleSearchInput}
       />
       <HistoryContent>
@@ -359,7 +369,11 @@ function ChatHistoryExample({
               <HistoryPanelMenu expanded title="Search results">
                 <Search slot="title-icon" />
                 {searchResults.map((result) => (
-                  <HistorySearchItem key={result.id} date={result.lastUpdated}>
+                  <HistorySearchItem
+                    key={result.id}
+                    date={result.lastUpdated}
+                    onSelected={handleSelectChat}
+                  >
                     {result.title}
                   </HistorySearchItem>
                 ))}
