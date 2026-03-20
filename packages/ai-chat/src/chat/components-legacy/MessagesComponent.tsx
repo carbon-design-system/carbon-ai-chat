@@ -269,19 +269,30 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const spacerElem = this.bottomSpacerRef.current;
 
         if (scrollElement && spacerElem && this.pinnedMessageComponent) {
-          // Check if user has manually scrolled away from the pinned position.
-          // Allow a small tolerance (50px) for minor scroll adjustments.
+          // Detect if scrollTop was capped by the browser due to scrollHeight reduction.
+          // When content shrinks significantly (e.g., large reasoning trace collapse) and
+          // scrollHeight drops below pinnedScrollTop + clientHeight, the browser caps
+          // scrollTop to scrollHeight - clientHeight. This looks like the user scrolled
+          // away but is actually browser-initiated.
+          const maxScrollTop =
+            scrollElement.scrollHeight - scrollElement.clientHeight;
+          const wasBrowserCapped =
+            scrollElement.scrollTop >= maxScrollTop - 2 &&
+            scrollElement.scrollTop < this.pinnedScrollTop;
+
+          // Always adjust spacer — keeps scrollHeight stable regardless of scroll position.
+          // Inverse delta: content grows (+delta) → spacer shrinks (-delta)
+          //                content shrinks (-delta) → spacer grows (+delta)
+          this.domSpacerHeight = Math.max(0, this.domSpacerHeight - delta);
+          spacerElem.style.minBlockSize = `${this.domSpacerHeight}px`;
+
+          // Restore scrollTop if user is near the pin, or if browser capped scrollTop.
           const scrollDelta = Math.abs(
             scrollElement.scrollTop - this.pinnedScrollTop,
           );
           const hasScrolledAway = scrollDelta > 50;
-
-          if (!hasScrolledAway) {
-            // User is still near the pin - apply delta-based spacer adjustment.
-            // Inverse delta: content grows (+delta) → spacer shrinks (-delta)
-            //                content shrinks (-delta) → spacer grows (+delta)
-            this.domSpacerHeight = Math.max(0, this.domSpacerHeight - delta);
-            spacerElem.style.minBlockSize = `${this.domSpacerHeight}px`;
+          if (!hasScrolledAway || wasBrowserCapped) {
+            scrollElement.scrollTop = this.pinnedScrollTop;
           }
         }
       },

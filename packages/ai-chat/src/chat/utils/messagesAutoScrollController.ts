@@ -727,7 +727,7 @@ function startAnimationPolling(
 
   // Initialize state
   state.element = element;
-  state.previousHeight = element.getBoundingClientRect().height;
+  state.previousHeight = Math.round(element.getBoundingClientRect().height);
   state.stableFrames = 0;
   state.onHeightChange = onHeightChange;
 
@@ -737,7 +737,9 @@ function startAnimationPolling(
       return;
     }
 
-    const currentHeight = state.element.getBoundingClientRect().height;
+    const currentHeight = Math.round(
+      state.element.getBoundingClientRect().height,
+    );
     const delta = currentHeight - state.previousHeight;
 
     if (delta !== 0) {
