@@ -15,7 +15,7 @@
  */
 
 import React, { useCallback, useRef } from "react";
-import { useSyncExternalStore as useSyncExternalStoreShim } from "use-sync-external-store/shim";
+import { useSyncExternalStore as useSyncExternalStoreShim } from "use-sync-external-store/shim/index.js";
 import { useStore } from "./useStore";
 
 /** Choose the right `useSyncExternalStore` (React 17 uses the shim). */
