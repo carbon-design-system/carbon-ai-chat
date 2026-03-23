@@ -13,7 +13,7 @@ import {
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
@@ -49,7 +49,7 @@ function App() {
 
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
-    
+
     // Initialize isMobile from current state
     const initialIsMobile = instance.getState().customPanels.history.isMobile;
     setIsMobile(initialIsMobile);
@@ -57,7 +57,9 @@ function App() {
 
   // Listen for window resize to update isMobile state
   useEffect(() => {
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     const handleResize = () => {
       const newIsMobile = instance.getState().customPanels.history.isMobile;
@@ -65,22 +67,25 @@ function App() {
     };
 
     window.addEventListener("resize", handleResize);
-    
+
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, [instance]);
 
-  const loadChat = async (event: CustomEvent) => {
-    if (!instance) {
-      return;
-    }
-    const requestText = event.detail.itemTitle;
-    const historyData = await customLoadHistory(instance, requestText);
+  const loadChat = useCallback(
+    async (event: CustomEvent) => {
+      if (!instance) {
+        return;
+      }
+      const requestText = event.detail.itemTitle;
+      const historyData = await customLoadHistory(instance, requestText);
 
-    await instance.messaging.clearConversation();
-    instance.messaging.insertHistory(historyData);
-  };
+      await instance.messaging.clearConversation();
+      instance.messaging.insertHistory(historyData);
+    },
+    [instance],
+  );
 
   const historyWriteableElementExample = useMemo(
     () => (

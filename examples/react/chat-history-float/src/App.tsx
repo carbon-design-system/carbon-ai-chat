@@ -13,7 +13,7 @@ import {
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
@@ -43,16 +43,19 @@ function App() {
     setInstance(instance);
   }
 
-  const loadChat = async (event: CustomEvent) => {
-    if (!instance) {
-      return;
-    }
-    const requestText = event.detail.itemTitle;
-    const historyData = await customLoadHistory(instance, requestText);
+  const loadChat = useCallback(
+    async (event: CustomEvent) => {
+      if (!instance) {
+        return;
+      }
+      const requestText = event.detail.itemTitle;
+      const historyData = await customLoadHistory(instance, requestText);
 
-    await instance.messaging.clearConversation();
-    instance.messaging.insertHistory(historyData);
-  };
+      await instance.messaging.clearConversation();
+      instance.messaging.insertHistory(historyData);
+    },
+    [instance],
+  );
 
   const historyWriteableElementExample = useMemo(
     () => (
