@@ -34,8 +34,8 @@ class CDSAIChatHistoryHeader extends LitElement {
   /**
    * Header title
    */
-  @property({ type: String, reflect: true })
-  title = "Conversations";
+  @property({ type: String, reflect: true, attribute: "header-title" })
+  headerTitle = "Conversations";
 
   /**
    * Label for close chat history button.
@@ -61,23 +61,12 @@ class CDSAIChatHistoryHeader extends LitElement {
     );
   };
 
-  /**
-   * Handle keydown event on close button
-   * @param event
-   */
-  _handleCloseButtonKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleCloseButtonClick();
-    }
-  };
-
   render() {
     const {
       closeButtonLabel,
       showCloseAction,
-      title,
+      headerTitle,
       _handleCloseButtonClick: handleCloseButtonClick,
-      _handleCloseButtonKeyDown: handleCloseButtonKeyDown,
     } = this;
 
     return html`
@@ -87,13 +76,12 @@ class CDSAIChatHistoryHeader extends LitElement {
             kind="ghost"
             align="right"
             @click=${handleCloseButtonClick}
-            @keydown=${handleCloseButtonKeyDown}
           >
             ${iconLoader(ChevronLeft16, { slot: "icon" })}
             <span slot="tooltip-content">${closeButtonLabel}</span>
           </cds-icon-button>`
         : nothing}
-      <span class="${prefix}--history-header__title">${title}</span>
+      <span class="${prefix}--history-header__title">${headerTitle}</span>
     `;
   }
 

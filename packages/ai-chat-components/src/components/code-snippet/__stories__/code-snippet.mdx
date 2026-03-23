@@ -19,21 +19,40 @@ import * as CodeSnippetStories from "./code-snippet.stories";
 
 ## Overview
 
-Use `cds-aichat-code-snippet-card` to present generated code with syntax highlighting, copy affordances, and optional expand/collapse controls. The card container wraps a `cds-aichat-code-snippet` instance, you can show the code snippet without a card container by using `cds-aichat-code-snippet`, which has the same API.
+Use `cds-aichat-code-snippet` to present generated code with syntax highlighting, copy affordances, and optional expand/collapse controls. You can wrap it in a card component if you need a card container.
 
 ### Getting started
 
-Here's a quick example to get you started.
+Here's a quick example to get you started using the `code` attribute (recommended):
 
 ```html
-<cds-aichat-code-snippet-card highlight>
+<script>
+  const code = `import { summarize } from "./summarizer";
+export async function summarizeReply(prompt) {
+  const result = await summarize(prompt);
+  return result.text;
+}`;
+</script>
+
+<cds-aichat-code-snippet highlight code="${code}">
+</cds-aichat-code-snippet>
+```
+
+### Using slotted content (alternative)
+
+You can also provide code via slotted content, though the attribute-based approach is recommended for better performance, especially when streaming content:
+
+```html
+<cds-aichat-code-snippet highlight>
   import { summarize } from "./summarizer";
   export async function summarizeReply(prompt) {
     const result = await summarize(prompt);
     return result.text;
   }
-</cds-aichat-code-snippet-card>
+</cds-aichat-code-snippet>
 ```
+
+**Performance Note:** The `code` attribute is more efficient than slotted content because it bypasses the slot change detection mechanism. This is particularly beneficial when streaming code content, as it reduces unnecessary DOM operations and improves rendering performance.
 
 ## Component API
 

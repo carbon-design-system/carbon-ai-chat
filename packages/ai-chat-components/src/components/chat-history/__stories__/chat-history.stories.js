@@ -261,7 +261,7 @@ class ChatHistoryDemo extends LitElement {
         chat.id === itemId
           ? {
               ...chat,
-              title: event.detail.newTitle,
+              name: event.detail.newName,
             }
           : chat,
       );
@@ -272,7 +272,7 @@ class ChatHistoryDemo extends LitElement {
           chat.id === itemId
             ? {
                 ...chat,
-                title: event.detail.newTitle,
+                name: event.detail.newName,
               }
             : chat,
         ),
@@ -288,7 +288,7 @@ class ChatHistoryDemo extends LitElement {
 
     // Add matching pinned items
     this.pinnedItems.forEach((item) => {
-      if (item.title.toLowerCase().includes(inputValue)) {
+      if (item.name.toLowerCase().includes(inputValue)) {
         results.push({
           ...item,
           isPinned: true,
@@ -299,7 +299,7 @@ class ChatHistoryDemo extends LitElement {
     // Add matching history items
     this.regularItems.forEach((section) => {
       section.chats.forEach((chat) => {
-        if (chat.title.toLowerCase().includes(inputValue)) {
+        if (chat.name.toLowerCase().includes(inputValue)) {
           results.push({
             ...chat,
             section: section.section,
@@ -321,7 +321,7 @@ class ChatHistoryDemo extends LitElement {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          title="${this.headerTitle}"
+          header-title="${this.headerTitle}"
           ?show-close-action=${this.showCloseAction}
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar ?search-off=${this.searchOff}>
@@ -361,9 +361,9 @@ class ChatHistoryDemo extends LitElement {
                       ${this.searchResults.map(
                         (result) => html`
                           <cds-aichat-history-search-item
+                            name="${result.name}"
                             date="${result.lastUpdated}"
                           >
-                            ${result.title}
                           </cds-aichat-history-search-item>
                         `,
                       )}
@@ -380,7 +380,7 @@ class ChatHistoryDemo extends LitElement {
                         (item) => html`
                           <cds-aichat-history-panel-item
                             id="${item.id}"
-                            title="${item.title}"
+                            name="${item.name}"
                             ?selected=${item.selected}
                             ?rename=${item.rename}
                             .actions=${pinnedHistoryItemActions}
@@ -399,7 +399,7 @@ class ChatHistoryDemo extends LitElement {
                             (chat) => html`
                               <cds-aichat-history-panel-item
                                 id="${chat.id}"
-                                title="${chat.title}"
+                                name="${chat.name}"
                                 ?selected=${chat.selected}
                                 .actions=${historyItemActions}
                               ></cds-aichat-history-panel-item>
@@ -476,7 +476,7 @@ export const SearchResults = {
     return html`
     <cds-aichat-history-shell>
       <cds-aichat-history-header
-        title="Chats"
+        header-title="Chats"
       ></cds-aichat-history-header>
       <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
       <cds-aichat-history-content>
@@ -517,7 +517,7 @@ export const Loading = {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          title="${args.HeaderTitle}"
+          header-title="${args.HeaderTitle}"
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-loading></cds-aichat-history-loading>
@@ -534,7 +534,7 @@ export const EmptyState = {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          title="${args.HeaderTitle}"
+          header-title="${args.HeaderTitle}"
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-content>
@@ -553,7 +553,7 @@ export const DeleteFlow = {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          title="${args.HeaderTitle}"
+          header-title="${args.HeaderTitle}"
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-content>
@@ -567,7 +567,7 @@ export const DeleteFlow = {
                   (item) => html`
                     <cds-aichat-history-panel-item
                       id="${item.id}"
-                      title="${item.title}"
+                      name="${item.name}"
                       ?selected=${item.selected}
                       ?rename=${item.rename}
                       .actions=${pinnedHistoryItemActions}
@@ -586,7 +586,7 @@ export const DeleteFlow = {
                       (chat) => html`
                         <cds-aichat-history-panel-item
                           id="${chat.id}"
-                          title="${chat.title}"
+                          name="${chat.name}"
                           .actions=${historyItemActions}
                         ></cds-aichat-history-panel-item>
                       `,

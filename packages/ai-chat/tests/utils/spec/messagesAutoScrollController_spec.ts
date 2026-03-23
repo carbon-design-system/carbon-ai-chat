@@ -8,19 +8,17 @@
  */
 
 import {
-  applyStreamingSpacerDomSync,
-  consumeStreamingChunk,
+  applySafariScrollAnchoringRestore,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
-  hasActiveStreaming,
   hasMessagesOutOfView,
+  hasNewNonStreamingResponse,
   pinMessageAndScroll,
   recalculatePinnedMessageSpacer,
   resolveAutoScrollAction,
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
-  resolveStreamingSpacerSyncDecision,
   type AutoScrollAction,
 } from "../../../src/chat/utils/messagesAutoScrollController";
 
@@ -79,105 +77,6 @@ function createMockMessageComponent(rectTop: number, rectHeight: number) {
   };
   return { ref: { current: targetElem } } as any;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// consumeStreamingChunk
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe("consumeStreamingChunk", () => {
-  it("returns inputs unchanged when scrollElement is null", () => {
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 200,
-      lastScrollHeight: 1000,
-      scrollElement: null,
-    });
-    expect(result).toEqual({
-      currentSpacerHeight: 200,
-      lastScrollHeight: 1000,
-    });
-  });
-
-  it("returns inputs unchanged when currentSpacerHeight is already 0", () => {
-    const scrollElement = createMockScrollElement({
-      scrollHeight: 1100,
-    }) as any;
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 0,
-      lastScrollHeight: 1000,
-      scrollElement,
-    });
-    // Early-exit when spacer is already exhausted — no delta computation performed.
-    expect(result).toEqual({ currentSpacerHeight: 0, lastScrollHeight: 1000 });
-  });
-
-  it("decrements spacer by the content growth delta", () => {
-    const scrollElement = createMockScrollElement({
-      scrollHeight: 1050,
-    }) as any;
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 200,
-      lastScrollHeight: 1000,
-      scrollElement,
-    });
-    // delta = 50; nextSpacerHeight = 200 - 50 = 150
-    expect(result).toEqual({
-      currentSpacerHeight: 150,
-      lastScrollHeight: 1050,
-    });
-  });
-
-  it("clamps spacer to 0 when content grew by exactly the spacer amount", () => {
-    const scrollElement = createMockScrollElement({
-      scrollHeight: 1050,
-    }) as any;
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 50,
-      lastScrollHeight: 1000,
-      scrollElement,
-    });
-    // delta = 50; nextSpacerHeight = max(0, 50 - 50) = 0
-    expect(result).toEqual({ currentSpacerHeight: 0, lastScrollHeight: 1050 });
-  });
-
-  it("clamps spacer to 0 when content grew beyond the remaining spacer", () => {
-    const scrollElement = createMockScrollElement({
-      scrollHeight: 1100,
-    }) as any;
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 30,
-      lastScrollHeight: 1000,
-      scrollElement,
-    });
-    // delta = 100; nextSpacerHeight = max(0, 30 - 100) = 0
-    expect(result).toEqual({ currentSpacerHeight: 0, lastScrollHeight: 1100 });
-  });
-
-  it("grows spacer when content contracted (negative delta)", () => {
-    const scrollElement = createMockScrollElement({ scrollHeight: 980 }) as any;
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 100,
-      lastScrollHeight: 1000,
-      scrollElement,
-    });
-    // delta = -20; nextSpacerHeight = max(0, 100 - (-20)) = 120
-    expect(result).toEqual({ currentSpacerHeight: 120, lastScrollHeight: 980 });
-  });
-
-  it("returns unchanged spacer when scrollHeight has not changed", () => {
-    const scrollElement = createMockScrollElement({
-      scrollHeight: 1000,
-    }) as any;
-    const result = consumeStreamingChunk({
-      currentSpacerHeight: 100,
-      lastScrollHeight: 1000,
-      scrollElement,
-    });
-    expect(result).toEqual({
-      currentSpacerHeight: 100,
-      lastScrollHeight: 1000,
-    });
-  });
-});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // resolveAutoScrollAction
@@ -530,7 +429,7 @@ describe("recalculatePinnedMessageSpacer", () => {
     expect(result).toBeNull();
   });
 
-  it("writes the correct spacer height and returns the value without touching scrollTop", () => {
+  it("writes the correct spacer height and returns the value, preserving current scrollTop", () => {
     const scrollElement = createMockScrollElement({
       scrollTop: 0,
       clientHeight: 500,
@@ -545,9 +444,13 @@ describe("recalculatePinnedMessageSpacer", () => {
       spacerElem,
     });
 
-    expect(spacerElem.style.minBlockSize).toBe("220px");
-    expect(result).toBe(220);
-    // scrollTop must not have been modified.
+    // Spacer deficit is calculated to keep current scrollTop (0) reachable:
+    // visibleBottom = scrollTop (0) + clientHeight (500) = 500
+    // spacerOffset = spacerRect.top (400) - scrollerRect.top (0) + scrollTop (0) = 400
+    // deficit = max(0, ceil(500 - 400)) = 100
+    expect(spacerElem.style.minBlockSize).toBe("100px");
+    expect(result).toEqual({ deficit: 100, scrollTop: 0 });
+    // scrollTop is preserved (not updated) - function only ensures spacer is large enough
     expect(scrollElement.scrollTop).toBe(0);
   });
 });
@@ -601,11 +504,6 @@ describe("streaming state helpers", () => {
     ui_state: { streamingState: { isDone: false } },
   } as any;
   const noStreamItem = { ui_state: { streamingState: undefined } } as any;
-
-  it("hasActiveStreaming returns true only for active streams", () => {
-    expect(hasActiveStreaming([doneItem, noStreamItem] as any)).toBe(false);
-    expect(hasActiveStreaming([doneItem, activeItem] as any)).toBe(true);
-  });
 
   it("detects enter/exit transitions", () => {
     expect(
@@ -699,95 +597,6 @@ describe("hasMessagesOutOfView", () => {
   });
 });
 
-describe("resolveStreamingSpacerSyncDecision", () => {
-  it("skips sync when stream is not active", () => {
-    expect(
-      resolveStreamingSpacerSyncDecision({
-        currentSpacerHeight: 120,
-        domSpacerHeight: 200,
-        isCurrentlyStreaming: false,
-        isNearPin: true,
-        minDeltaPx: 24,
-      }),
-    ).toEqual({ shouldSync: false, targetDomSpacerHeight: 200 });
-  });
-
-  it("skips sync when user is away from pin", () => {
-    expect(
-      resolveStreamingSpacerSyncDecision({
-        currentSpacerHeight: 120,
-        domSpacerHeight: 200,
-        isCurrentlyStreaming: true,
-        isNearPin: false,
-        minDeltaPx: 24,
-      }),
-    ).toEqual({ shouldSync: false, targetDomSpacerHeight: 200 });
-  });
-
-  it("skips sync when shrink delta is below threshold", () => {
-    expect(
-      resolveStreamingSpacerSyncDecision({
-        currentSpacerHeight: 180,
-        domSpacerHeight: 200,
-        isCurrentlyStreaming: true,
-        isNearPin: true,
-        minDeltaPx: 24,
-      }),
-    ).toEqual({ shouldSync: false, targetDomSpacerHeight: 200 });
-  });
-
-  it("syncs when shrink delta meets threshold", () => {
-    expect(
-      resolveStreamingSpacerSyncDecision({
-        currentSpacerHeight: 120,
-        domSpacerHeight: 200,
-        isCurrentlyStreaming: true,
-        isNearPin: true,
-        minDeltaPx: 24,
-      }),
-    ).toEqual({ shouldSync: true, targetDomSpacerHeight: 120 });
-  });
-});
-
-describe("applyStreamingSpacerDomSync", () => {
-  it("returns null when spacer element is missing", () => {
-    const scrollElement = createMockScrollElement({
-      scrollTop: 80,
-      scrollHeight: 1100,
-    }) as any;
-    expect(
-      applyStreamingSpacerDomSync({
-        savedScrollTop: 80,
-        scrollElement,
-        spacerElem: null,
-        targetDomSpacerHeight: 120,
-      }),
-    ).toBeNull();
-  });
-
-  it("writes spacer and restores scrollTop when browser lowered it", () => {
-    const scrollElement = createMockScrollElement({
-      scrollTop: 60,
-      scrollHeight: 1100,
-    }) as any;
-    const spacerElem = createMockSpacer(400) as any;
-
-    const result = applyStreamingSpacerDomSync({
-      savedScrollTop: 80,
-      scrollElement,
-      spacerElem,
-      targetDomSpacerHeight: 120,
-    });
-
-    expect(spacerElem.style.minBlockSize).toBe("120px");
-    expect(scrollElement.scrollTop).toBe(80);
-    expect(result).toEqual({
-      correctedScrollTop: 80,
-      newLastScrollHeight: 1100,
-    });
-  });
-});
-
 describe("resolvePublicSpacerReconciliationAction", () => {
   it("returns noop when no pinned message exists", () => {
     expect(
@@ -801,5 +610,251 @@ describe("resolvePublicSpacerReconciliationAction", () => {
         pinnedMessageComponent: {} as any,
       }),
     ).toEqual({ type: "recalculate_spacer_preserve_scroll" });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // hasNewNonStreamingResponse
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  describe("hasNewNonStreamingResponse", () => {
+    it("should return true when a non-streaming response is present", () => {
+      const mockResponse = {
+        id: "resp-1",
+        request_id: "req-1",
+        output: { text: "Hello" },
+      } as any;
+
+      const localMessageItems = [
+        {
+          fullMessageID: "resp-1",
+          ui_state: {
+            id: "ui-1",
+            streamingState: undefined,
+          },
+        },
+      ] as any;
+
+      const allMessagesByID = {
+        "resp-1": mockResponse,
+      };
+
+      const result = hasNewNonStreamingResponse(
+        localMessageItems,
+        allMessagesByID,
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return false when only streaming responses are present", () => {
+      const mockResponse = {
+        id: "resp-1",
+        request_id: "req-1",
+        output: { text: "Hello" },
+      } as any;
+
+      const localMessageItems = [
+        {
+          fullMessageID: "resp-1",
+          ui_state: {
+            id: "ui-1",
+            streamingState: { isDone: false },
+          },
+        },
+      ] as any;
+
+      const allMessagesByID = {
+        "resp-1": mockResponse,
+      };
+
+      const result = hasNewNonStreamingResponse(
+        localMessageItems,
+        allMessagesByID,
+      );
+      expect(result).toBe(false);
+    });
+
+    it("should return false when only request messages are present", () => {
+      const mockRequest = {
+        id: "req-1",
+        input: { text: "Hello" },
+      } as any;
+
+      const localMessageItems = [
+        {
+          fullMessageID: "req-1",
+          ui_state: {
+            id: "ui-1",
+            streamingState: undefined,
+          },
+        },
+      ] as any;
+
+      const allMessagesByID = {
+        "req-1": mockRequest,
+      };
+
+      const result = hasNewNonStreamingResponse(
+        localMessageItems,
+        allMessagesByID,
+      );
+      expect(result).toBe(false);
+    });
+
+    it("should return false when message list is empty", () => {
+      const localMessageItems = [] as any;
+      const allMessagesByID = {};
+
+      const result = hasNewNonStreamingResponse(
+        localMessageItems,
+        allMessagesByID,
+      );
+      expect(result).toBe(false);
+    });
+
+    it("should return true when mixed messages include at least one non-streaming response", () => {
+      const mockRequest = {
+        id: "req-1",
+        input: { text: "Hello" },
+      } as any;
+
+      const mockStreamingResponse = {
+        id: "resp-1",
+        request_id: "req-1",
+        output: { text: "Streaming..." },
+      } as any;
+
+      const mockNonStreamingResponse = {
+        id: "resp-2",
+        request_id: "req-1",
+        output: { text: "Complete" },
+      } as any;
+
+      const localMessageItems = [
+        {
+          fullMessageID: "req-1",
+          ui_state: { id: "ui-1", streamingState: undefined },
+        },
+        {
+          fullMessageID: "resp-1",
+          ui_state: { id: "ui-2", streamingState: { isDone: false } },
+        },
+        {
+          fullMessageID: "resp-2",
+          ui_state: { id: "ui-3", streamingState: undefined },
+        },
+      ] as any;
+
+      const allMessagesByID = {
+        "req-1": mockRequest,
+        "resp-1": mockStreamingResponse,
+        "resp-2": mockNonStreamingResponse,
+      };
+
+      const result = hasNewNonStreamingResponse(
+        localMessageItems,
+        allMessagesByID,
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return false when message is not found in allMessagesByID", () => {
+      const localMessageItems = [
+        {
+          fullMessageID: "missing-id",
+          ui_state: { id: "ui-1", streamingState: undefined },
+        },
+      ] as any;
+
+      const allMessagesByID = {};
+
+      const result = hasNewNonStreamingResponse(
+        localMessageItems,
+        allMessagesByID,
+      );
+      expect(result).toBe(false);
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // applySafariScrollAnchoringRestore
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  describe("applySafariScrollAnchoringRestore", () => {
+    it("should return restore target when snapshot differs from current scrollTop", () => {
+      const currentScrollTop = 100;
+      const snapshot = 150;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBe(150);
+    });
+
+    it("should return null when snapshot is null", () => {
+      const currentScrollTop = 100;
+      const snapshot: number | null = null;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("should return null when snapshot equals current scrollTop", () => {
+      const currentScrollTop = 100;
+      const snapshot = 100;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("should handle scroll position decrease from Safari anchoring", () => {
+      const currentScrollTop = 50;
+      const snapshot = 100;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBe(100);
+    });
+
+    it("should return null when scroll position increases", () => {
+      const currentScrollTop = 150;
+      const snapshot = 100;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("should handle zero scroll positions correctly", () => {
+      const currentScrollTop = 0;
+      const snapshot = 0;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("should handle large scroll values correctly", () => {
+      const currentScrollTop = 5000;
+      const snapshot = 5100;
+
+      const result = applySafariScrollAnchoringRestore(
+        currentScrollTop,
+        snapshot,
+      );
+      expect(result).toBe(5100);
+    });
   });
 });

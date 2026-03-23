@@ -20,7 +20,6 @@ import Close16 from "@carbon/icons/es/close/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 
 import styles from "./chat-history.scss?lit";
-import { KeyboardEvent } from "react";
 
 type TooltipAlignment =
   | "top"
@@ -140,7 +139,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       bubbles: true,
       composed: true,
       detail: {
-        newTitle: this.value,
+        newName: this.value,
         itemId: this.itemId,
       },
     };
@@ -150,6 +149,18 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
     );
     this.dispatchEvent(inputSaveEvent);
   }
+
+  /**
+   * Handler for rename action button clicks
+   */
+  private _handleActionButtonClick = (event: Event) => {
+    const target = event.currentTarget as HTMLElement;
+    if (target.className === "rename-action--cancel") {
+      this._handleCancel();
+    } else if (target.className === "rename-action--save") {
+      this._handleSave();
+    }
+  };
 
   /**
    * Handler for keydown event
@@ -174,7 +185,19 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
   };
 
   /**
-   * Handles `blur` event handler on the document this element is in.
+   * Handler for rename action button keydown event
+   *
+   * * @param event The event.
+   */
+  private _handleActionButtonKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this._handleActionButtonClick(event);
+    }
+  };
+
+  /**
+   * Handles `blur` events.
    *
    * @param event The event.
    */
@@ -221,22 +244,22 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       value,
       _canSave: canSave,
       _handleInput: handleInput,
-      _handleSave: handleSave,
-      _handleCancel: handleCancel,
       _handleKeydown: handleKeydown,
+      _handleActionButtonClick: handleActionButtonClick,
+      _handleActionButtonKeyDown: handleActionButtonKeyDown,
     } = this;
 
     return html`
         <div class="${prefix}--history-panel-item--rename__input">
           <input type="text" placeholder="${placeholder}" value="${value}" @input="${handleInput}"  @keydown=${handleKeydown} aria-label="${labelText}"></input>
           <div class="${prefix}--history-panel-item--rename__actions">
-            <cds-icon-button align="${tooltipAlignment}" size="sm" kind="ghost" @click=${handleCancel}>
+            <cds-icon-button class="rename-action--cancel" align="${tooltipAlignment}" size="sm" kind="ghost" @click=${handleActionButtonClick} @keydown=${handleActionButtonKeyDown}>
               ${iconLoader(Close16, {
                 slot: "icon",
               })}
               <span slot="tooltip-content">${cancelLabel}</span>
             </cds-icon-button>
-            <cds-icon-button align="${tooltipAlignment}" size="sm" kind="ghost" @click=${handleSave} ?disabled=${!canSave}>
+            <cds-icon-button class="rename-action--save" align="${tooltipAlignment}" size="sm" kind="ghost" @click=${handleActionButtonClick} @keydown=${handleActionButtonKeyDown} ?disabled=${!canSave}>
               ${iconLoader(Checkmark16, {
                 slot: "icon",
               })}

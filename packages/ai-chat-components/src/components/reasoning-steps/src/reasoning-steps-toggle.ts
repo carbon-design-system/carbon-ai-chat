@@ -7,10 +7,13 @@
  *  @license
  */
 
-import { LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
-import { reasoningStepsToggleTemplate } from "./reasoning-steps-toggle.template.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./reasoning-steps-toggle.scss?lit";
 import prefix from "../../../globals/settings.js";
 
@@ -20,7 +23,7 @@ import prefix from "../../../globals/settings.js";
  */
 @carbonElement(`${prefix}-reasoning-steps-toggle`)
 class CDSAIChatReasoningStepsToggle extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Indicates if the reasoning steps panel is open.
@@ -71,7 +74,28 @@ class CDSAIChatReasoningStepsToggle extends LitElement {
   }
 
   render() {
-    return reasoningStepsToggleTemplate(this);
+    const labelText = this.open ? this.openLabelText : this.closedLabelText;
+
+    return html`
+      <button
+        class="${prefix}--reasoning-steps-toggle"
+        type="button"
+        aria-expanded=${this.open ? "true" : "false"}
+        aria-controls=${ifDefined(this.panelID)}
+        ?disabled=${this.disabled}
+        @click=${this.handleToggleClick}
+      >
+        <span class="${prefix}--reasoning-steps-toggle-label"
+          >${labelText}</span
+        >
+        <span
+          class="${prefix}--reasoning-steps-toggle-caret"
+          aria-hidden="true"
+        >
+          ${iconLoader(ChevronUp16)}
+        </span>
+      </button>
+    `;
   }
 }
 

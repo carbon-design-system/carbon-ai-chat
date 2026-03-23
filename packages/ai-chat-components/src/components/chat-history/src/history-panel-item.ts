@@ -55,11 +55,12 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    */
   @property({ type: String })
   id;
+
   /**
-   * Chat history item title.
+   * Chat history item name.
    */
   @property({ reflect: true })
-  title!: string;
+  name!: string;
 
   /**
    * `true` if the history panel item is in rename mode.
@@ -127,7 +128,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleMenuTriggerKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.key === " ") {
       this._adjustMenuPosition();
     }
   };
@@ -147,7 +148,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       detail: {
         action: menuItemText,
         itemId: this.id,
-        itemTitle: this.title,
+        itemName: this.name,
         element: this,
       },
     });
@@ -160,8 +161,61 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleMenuItemKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
       this._handleMenuItemClick(event);
+      // Close the overflow menu after handling the action
+      if (this.overflowMenu) {
+        (this.overflowMenu as any).open = false;
+      }
+      return;
+    }
+
+    // Handle arrow keys
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+
+      // Find the menu body - the event target is the menu item
+      const target = event.target as HTMLElement;
+      const menuBody = target.closest("cds-overflow-menu-body");
+
+      if (!menuBody) {
+        return;
+      }
+
+      const menuItems = Array.from(
+        menuBody.querySelectorAll("cds-overflow-menu-item:not([disabled])"),
+      ) as HTMLElement[];
+
+      if (menuItems.length === 0) {
+        return;
+      }
+
+      const currentIndex = menuItems.findIndex(
+        (item) =>
+          item.contains(document.activeElement) ||
+          item === document.activeElement ||
+          item.matches(":focus-within"),
+      );
+
+      let nextIndex: number;
+      if (currentIndex === -1) {
+        // No item focused, focus first or last
+        nextIndex = direction === 1 ? 0 : menuItems.length - 1;
+      } else {
+        // Navigate to next/previous with wrapping
+        nextIndex = currentIndex + direction;
+        if (nextIndex < 0) {
+          nextIndex = menuItems.length - 1;
+        } else if (nextIndex >= menuItems.length) {
+          nextIndex = 0;
+        }
+      }
+
+      menuItems[nextIndex]?.focus();
     }
   };
 
@@ -195,7 +249,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       composed: true,
       detail: {
         itemId: this.id,
-        itemTitle: this.title,
+        itemName: this.name,
         element: this,
       },
     });
@@ -218,8 +272,8 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       });
 
       this.input.addEventListener("history-panel-item-input-save", (event) => {
-        const newTitle = (event as CustomEvent).detail.newTitle;
-        this.title = newTitle;
+        const newName = (event as CustomEvent).detail.newName;
+        this.name = newName;
         this.rename = false;
       });
     }
@@ -229,7 +283,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     const {
       id,
       selected,
-      title,
+      name,
       actions,
       rename,
       _adjustMenuPosition: adjustMenuPosition,
@@ -244,9 +298,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     return html`
       ${!rename
         ? html` <button class="${classes}">
-            <span part="title" class="cds--side-nav__link-text">
-              ${title}
-            </span>
+            <span part="name" class="cds--side-nav__link-text"> ${name} </span>
             <slot name="actions">
               <cds-overflow-menu
                 align="top-right"
@@ -278,7 +330,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
           </button>`
         : html`
             <cds-aichat-history-panel-item-input
-              value="${title}"
+              value="${name}"
               item-id="${id}"
             ></cds-aichat-history-panel-item-input>
           `}

@@ -18,7 +18,7 @@ yarn add @carbon/ai-chat
 
 This will install the package that contains both the web component and React versions of the chat application.
 
-## 📖 Documentation
+## Documentation
 
 - [Documentation site](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html)
 - [Demo site](https://chat.carbondesignsystem.com/tag/latest/demo/index.html)

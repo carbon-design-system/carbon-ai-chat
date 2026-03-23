@@ -24,8 +24,7 @@ const TABLE = `
 | Nitrogen     | N      | 7             | 15    | 2      | 14.007          | [He] 2s² 2p³    | Covalent| -210               | -196               |
 | Oxygen       | O      | 8             | 16    | 2      | 15.999          | [He] 2s² 2p⁴    | Covalent| -218               | -183               |
 | Fluorine     | F      | 9             | 17    | 2      | 18.998          | [He] 2s² 2p⁵    | Covalent| -220               | -188               |
-| Neon         | Ne     | 10            | 18    | 2      | 20.180          | [He] 2s² 2p⁶    | Noble   | -249               | -246               |
-`;
+| Neon         | Ne     | 10            | 18    | 2      | 20.180          | [He] 2s² 2p⁶    | Noble   | -249               | -246               |`;
 
 const UNORDERED_LIST = `
 - Carbon allotropes
@@ -68,62 +67,6 @@ ${TEXT}
 `;
 
 const CODE = `\`\`\`
-/**
- * Example doc comment with a URL https://carbon.design
- */
-import type { Config as Configuration } from "./config";
-import { readFile } from "fs/promises";
-
-namespace Demo {
-  export enum Status {
-    New = "NEW",
-    Done = "DONE",
-  }
-
-  @Component()
-  export class Analyzer<T extends number> {
-    static readonly version = "1.0.0";
-    #pattern = /#(?<hex>[0-9A-F]{6})/g;
-
-    constructor(private readonly source: string | null = null) {}
-
-    async *run(items: string[]): AsyncGenerator<Result<T>> {
-      parse: for (const id of items) {
-        if (!id) {
-          continue parse;
-        }
-
-        yield {
-          id,
-          status: Status.New,
-          ok: true,
-        } as Result<T>;
-      }
-    }
-  }
-}
-
-declare module "legacy" {
-  export function legacy(flag?: boolean): void;
-}
-
-type Result<T> = {
-  readonly id: string;
-  status: Demo.Status;
-  ok: boolean;
-};
-
-const hexSample = "#ff6600";
-const maybeValue: number | null = 42.5;
-const escaped = "line\\nbreak";
-const invalidHex = 0xZ;
-
-/* multi-line
-   block comment */
-// trailing comment
-\`\`\`
-
-\`\`\`
 from dataclasses import dataclass
 
 class Greeter:
@@ -222,8 +165,6 @@ ${TEXT}
 ---
 ${HEADERS}
 ---
-${TABLE}
----
 ${BLOCKQUOTE}
 ---
 ${ORDERED_LIST}
@@ -284,7 +225,7 @@ Here is some Carbon <svg xmlns="http://www.w3.org/2000/svg" width="16" height="1
 <hr>
 <small><em>Carbon's unique ability to form four bonds makes it the perfect element for complex biological molecules.</em></small>`;
 
-const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is harded coded with responses to show a subset of the functionality of Carbon AI Chat.
+const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is hard coded with responses to show a subset of the functionality of Carbon AI Chat.
 
 You can type **help** to see this message again.`;
 

@@ -12,7 +12,7 @@ import IntlMessageFormat from "intl-messageformat";
 
 import { useIntl } from "../../hooks/useIntl";
 import { isNil } from "../../utils/lang/langUtils";
-import RichText from "../responseTypes/util/RichText";
+import { MarkdownWithDefaults } from "../../components/util/MarkdownWithDefaults";
 import { AgentAvailability } from "../../../types/config/ServiceDeskConfig";
 import { LanguagePack } from "../../../types/config/PublicConfig";
 
@@ -47,7 +47,11 @@ function AvailabilityMessage({
 
   if (availabilityText) {
     return (
-      <RichText overrideSanitize text={availabilityText} highlight={true} />
+      <MarkdownWithDefaults
+        overrideSanitize
+        text={availabilityText}
+        highlight={true}
+      />
     );
   }
 

@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -17,12 +17,14 @@
     "./es/*": "./es/*",
     "./es-custom/*": "./es-custom/*",
     "./es/globals/": "./es/globals/",
+    "./scss/*": "./scss/*",
     "./custom-elements.json": "./custom-elements.json",
     "./package.json": "./package.json"
   },
   "files": [
     "es/**/*",
     "es-custom/**/*",
+    "scss/**/*",
     "custom-elements.json",
     "package.json",
     "telemetry.yml"
@@ -104,7 +106,7 @@
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@happy-dom/jest-environment": "^20.0.2",
     "@isaacs/brace-expansion": "^5.0.0",
-    "@mordech/vite-lit-loader": "^0.37.0",
+    "@mordech/vite-lit-loader": "^0.38.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",

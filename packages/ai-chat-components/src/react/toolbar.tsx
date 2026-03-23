@@ -17,8 +17,12 @@ import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
 
 /**
- * React-specific Action interface that accepts both CarbonIcon and React icon components.
- * This allows React developers to use @carbon/icons-react directly.
+ * Toolbar action interface that accepts both CarbonIcon and React icon components.
+ * This allows developers to use either:
+ * - @carbon/icons-react (React components)
+ * - @carbon/web-components icons (CarbonIcon objects)
+ *
+ * Works with both React and web component implementations.
  */
 export interface ToolbarAction extends Omit<Action, "icon"> {
   /**
@@ -95,6 +99,8 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
         action.icon,
         getSizeInPixels(action.size),
       ),
+      // Preserve testId if provided
+      testId: action.testId,
     }));
   }, [actions]);
 

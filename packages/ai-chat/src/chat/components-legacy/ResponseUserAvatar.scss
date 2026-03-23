@@ -19,6 +19,7 @@
 }
 
 .cds-aichat--response-user-avatar .cds-aichat--response-user-avatar__circle {
+  padding: 2px;
   border: button.$button-border-width solid currentcolor;
   border-radius: 50%;
   background-color: transparent;

@@ -16,28 +16,22 @@
 
 // Main content area gets bottom corners by default
 .shell.rounded .main-content {
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
 
   // Footer has priority - gets bottom corners when it has content
   > .footer.has-content {
-    --#{$prefix}-rounded-modifier-radius-start-start: 0;
-    --#{$prefix}-rounded-modifier-radius-start-end: 0;
+    --#{$prefix}-border-radius-start-start: 0;
+    --#{$prefix}-border-radius-start-end: 0;
 
-    border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-    border-end-start-radius: var(
-      --#{$prefix}-rounded-modifier-radius-end-start,
-      0
-    );
+    border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+    border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
   }
 
   // Reset footer corners when no content
   > .footer:not(.has-content) {
-    --#{$prefix}-rounded-modifier-radius-end-start: 0;
-    --#{$prefix}-rounded-modifier-radius-end-end: 0;
+    --#{$prefix}-border-radius-end-start: 0;
+    --#{$prefix}-border-radius-end-end: 0;
 
     border-end-end-radius: 0;
     border-end-start-radius: 0;
@@ -51,38 +45,50 @@
 // When header or header-after has content, reset top corners for input-and-messages
 // This prevents slotted content from incorrectly applying rounded corners
 .shell.rounded.has-header-content .input-and-messages {
-  --#{$prefix}-rounded-modifier-radius-start-start: 0;
-  --#{$prefix}-rounded-modifier-radius-start-end: 0;
+  --#{$prefix}-border-radius-start-start: 0;
+  --#{$prefix}-border-radius-start-end: 0;
 }
 
 // When NOT at max width (>672px), reset top and bottom corners on input-and-messages
 // This prevents centered content from getting rounded corners
 .shell.rounded .input-and-messages:not(.at-max-width) {
-  --#{$prefix}-rounded-modifier-radius-start-start: 0;
-  --#{$prefix}-rounded-modifier-radius-start-end: 0;
-  --#{$prefix}-rounded-modifier-radius-end-start: 0;
-  --#{$prefix}-rounded-modifier-radius-end-end: 0;
+  --#{$prefix}-border-radius-start-start: 0;
+  --#{$prefix}-border-radius-start-end: 0;
+  --#{$prefix}-border-radius-end-start: 0;
+  --#{$prefix}-border-radius-end-end: 0;
 }
 
 // When footer has content, reset bottom corners for input-and-messages
 // This prevents slotted content from incorrectly applying rounded corners
 .shell.rounded.has-footer-content .input-and-messages {
-  --#{$prefix}-rounded-modifier-radius-end-start: 0;
-  --#{$prefix}-rounded-modifier-radius-end-end: 0;
+  --#{$prefix}-border-radius-end-start: 0;
+  --#{$prefix}-border-radius-end-end: 0;
 }
 
 // When input-and-messages is at max width but NO header content, keep the rounded corners
 // (they will be inherited by messages)
 .shell.rounded:not(.has-header-content) .input-and-messages.at-max-width {
-  --#{$prefix}-rounded-modifier-radius-start-start: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-start-end: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-start-start: var(
+    --#{$prefix}-border-radius-start-start-base,
+    #{layout.$spacing-03}
+  );
+  --#{$prefix}-border-radius-start-end: var(
+    --#{$prefix}-border-radius-start-end-base,
+    #{layout.$spacing-03}
+  );
 }
 
 // When input-and-messages is at max width but NO footer content, keep the rounded corners
 // (they will be inherited by input-after, input, input-before, or messages)
 .shell.rounded:not(.has-footer-content) .input-and-messages.at-max-width {
-  --#{$prefix}-rounded-modifier-radius-end-start: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-end-end: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-end-start: var(
+    --#{$prefix}-border-radius-end-start-base,
+    #{layout.$spacing-03}
+  );
+  --#{$prefix}-border-radius-end-end: var(
+    --#{$prefix}-border-radius-end-end-base,
+    #{layout.$spacing-03}
+  );
 }
 
 // ============================================================================
@@ -94,8 +100,8 @@
   > .input-after:not(.has-content),
   > .input:not(.has-content),
   > .input-before:not(.has-content) {
-    --#{$prefix}-rounded-modifier-radius-end-start: 0;
-    --#{$prefix}-rounded-modifier-radius-end-end: 0;
+    --#{$prefix}-border-radius-end-start: 0;
+    --#{$prefix}-border-radius-end-end: 0;
 
     border-end-end-radius: 0;
     border-end-start-radius: 0;
@@ -105,11 +111,8 @@
   // This must come BEFORE the reset rules to maintain proper specificity
   &:not(.has-input-after-content, .has-input-content, .has-input-before-content)
     > .messages {
-    border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-    border-end-start-radius: var(
-      --#{$prefix}-rounded-modifier-radius-end-start,
-      0
-    );
+    border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+    border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
   }
 
   // Reset corners for messages in various contexts (must come after the fallback rule)
@@ -119,8 +122,8 @@
   &:not(.has-input-after-content).has-input-content > .messages,
   // When input-before has content (and input-after/input are empty), reset corners for slots below it
   &:not(.has-input-after-content, .has-input-content).has-input-before-content > .messages {
-    --#{$prefix}-rounded-modifier-radius-end-start: 0;
-    --#{$prefix}-rounded-modifier-radius-end-end: 0;
+    --#{$prefix}-border-radius-end-start: 0;
+    --#{$prefix}-border-radius-end-end: 0;
 
     border-end-end-radius: 0;
     border-end-start-radius: 0;
@@ -130,11 +133,8 @@
 // Priority cascade for bottom slots within input-and-messages
 // 1. input-after has highest priority
 .shell.rounded .input-and-messages > .input-after.has-content {
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
 }
 
 // Explicitly set custom properties on input-after when at max width and no footer
@@ -142,8 +142,14 @@
 .shell.rounded:not(.has-footer-content)
   .input-and-messages.at-max-width
   > .input-after.has-content {
-  --#{$prefix}-rounded-modifier-radius-end-start: #{layout.$spacing-03};
-  --#{$prefix}-rounded-modifier-radius-end-end: #{layout.$spacing-03};
+  --#{$prefix}-border-radius-end-start: var(
+    --#{$prefix}-border-radius-end-start-base,
+    #{layout.$spacing-03}
+  );
+  --#{$prefix}-border-radius-end-end: var(
+    --#{$prefix}-border-radius-end-end-base,
+    #{layout.$spacing-03}
+  );
 }
 
 // Add margin-block-end to input-after when not at max width and workspace is not showing
@@ -158,30 +164,24 @@
 .shell.rounded
   .input-and-messages:not(.has-input-after-content)
   > .input.has-content {
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
 }
 
 // 3. input-before gets corners only if input-after and input are empty
 .shell.rounded
   .input-and-messages:not(.has-input-after-content, .has-input-content)
   > .input-before.has-content {
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
 }
 
 // When input-after has content, reset corners for all slots below it
 .shell.rounded .input-and-messages.has-input-after-content {
   > .input,
   > .input-before {
-    --#{$prefix}-rounded-modifier-radius-end-start: 0;
-    --#{$prefix}-rounded-modifier-radius-end-end: 0;
+    --#{$prefix}-border-radius-end-start: 0;
+    --#{$prefix}-border-radius-end-end: 0;
 
     border-end-end-radius: 0;
     border-end-start-radius: 0;
@@ -192,8 +192,8 @@
 .shell.rounded
   .input-and-messages:not(.has-input-after-content).has-input-content {
   > .input-before {
-    --#{$prefix}-rounded-modifier-radius-end-start: 0;
-    --#{$prefix}-rounded-modifier-radius-end-end: 0;
+    --#{$prefix}-border-radius-end-start: 0;
+    --#{$prefix}-border-radius-end-end: 0;
 
     border-end-end-radius: 0;
     border-end-start-radius: 0;

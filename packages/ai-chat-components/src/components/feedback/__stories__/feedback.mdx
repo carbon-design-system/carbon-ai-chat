@@ -21,6 +21,8 @@ import * as FeedbackStories from "./feedback.stories";
 
 Use `cds-aichat-feedback` to collect structured feedback on AI responses. It supports category chips, optional freeform text, prompt copy, and read-only display for previously submitted feedback.
 
+**Note:** The `show-text-area` and `show-body` attributes default to `false`. You must explicitly set them to enable the text area and body text display.
+
 ### Getting started
 
 Here's a quick example to get you started.
@@ -29,6 +31,7 @@ Here's a quick example to get you started.
 <script type="module">
   const panel = document.querySelector("cds-aichat-feedback");
   panel.categories = ["Accurate", "Helpful", "Too verbose", "Inappropriate"];
+  panel.showTextArea = true;  // Enable text area
   panel.addEventListener("feedback-submit", (event) => {
     console.log("Submitted feedback:", event.detail);
   });
@@ -41,12 +44,12 @@ Here's a quick example to get you started.
   id="feedback-panel"
   is-open
   title="Tell us what you think"
-  prompt="Help us improve this response"
+  body="Help us improve this response"
   text-area-placeholder="What worked well? What missed the mark?"
-  cancel-label="Cancel"
-  submit-label="Submit"
+  secondary-label="Cancel"
+  primary-label="Submit"
   show-text-area
-  show-prompt
+  show-body
 ></cds-aichat-feedback>
 ```
 

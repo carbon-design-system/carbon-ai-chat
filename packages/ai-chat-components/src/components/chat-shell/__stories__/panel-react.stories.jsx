@@ -1,5 +1,6 @@
 /* eslint-disable */
 import React, { useState } from "react";
+import "@carbon/web-components/es/components/toggle/index.js";
 
 import ChatShell from "../../../react/chat-shell.js";
 import ChatPanel from "../../../react/panel.js";
@@ -29,7 +30,7 @@ const CoreSlotContent = () => (
 );
 
 export default {
-  title: "Components/Chat shell/Panels",
+  title: "Preview/Chat shell/Panels",
   argTypes: {
     aiEnabled: {
       control: "boolean",
@@ -61,6 +62,7 @@ export const Default = {
     panelAiEnabled: false,
     animationOnOpen: "slide-in-from-bottom",
     animationOnClose: "slide-out-to-bottom",
+    panelAriaLabel: "Configurable panel",
   },
   argTypes: {
     // Panel-specific argTypes
@@ -110,6 +112,10 @@ export const Default = {
       ],
       description: "Animation when panel closes",
     },
+    panelAriaLabel: {
+      control: "text",
+      description: "ARIA label for the panel",
+    },
   },
   render: (args) => {
     const {
@@ -124,6 +130,7 @@ export const Default = {
       panelAiEnabled,
       animationOnOpen,
       animationOnClose,
+      panelAriaLabel,
     } = args;
 
     return (
@@ -143,6 +150,7 @@ export const Default = {
             aiEnabled={panelAiEnabled}
             animationOnOpen={animationOnOpen || undefined}
             animationOnClose={animationOnClose || undefined}
+            panelAriaLabel={panelAriaLabel}
           >
             <div slot="header">
               <h4>Panel Header</h4>
@@ -213,14 +221,10 @@ const panelConfigs = [
 ];
 
 export const Embedded = {
-  args: {
-    aiEnabled: false,
-    showFrame: true,
-    roundedCorners: true,
+  parameters: {
+    controls: { disable: true },
   },
-  render: (args) => {
-    const { aiEnabled, showFrame, roundedCorners } = args;
-
+  render: () => {
     // State for each panel
     const [panelStates, setPanelStates] = useState(
       panelConfigs.reduce((acc, config) => {
@@ -246,23 +250,15 @@ export const Embedded = {
             order in which the panels were opened.
           </p>
           {panelConfigs.map(({ id, label }) => (
-            <button
+            <cds-toggle
               key={id}
-              onClick={() => togglePanel(id)}
-              style={{
-                backgroundColor: panelStates[id] ? "green" : "red",
-                color: "white",
-              }}
-            >
-              Toggle {label}
-            </button>
+              label-text={label}
+              checked={panelStates[id]}
+              onCds-toggle-changed={(e) => togglePanel(id)}
+            ></cds-toggle>
           ))}
         </div>
-        <ChatShell
-          aiEnabled={aiEnabled}
-          showFrame={showFrame}
-          roundedCorners={roundedCorners}
-        >
+        <ChatShell aiEnabled={false} showFrame={true} roundedCorners={true}>
           <CoreSlotContent />
           <div slot="panels">
             {/* Standard panel */}
@@ -273,6 +269,7 @@ export const Embedded = {
               showFrame
               animationOnOpen="slide-in-from-bottom"
               animationOnClose="slide-out-to-bottom"
+              panelAriaLabel="Standard panel"
             >
               <div slot="header">
                 <h4>Standard panel</h4>
@@ -290,6 +287,7 @@ export const Embedded = {
               priority={0}
               animationOnOpen="slide-in-from-bottom"
               animationOnClose="slide-out-to-bottom"
+              panelAriaLabel="Standard panel takeover panel"
             >
               <div slot="header">
                 <h4>Standard panel takeover panel</h4>
@@ -310,6 +308,7 @@ export const Embedded = {
               showFrame
               animationOnOpen="slide-in-from-bottom"
               animationOnClose="slide-out-to-bottom"
+              panelAriaLabel="Fullscreen panel"
             >
               <div slot="header" className="panel-sample">
                 <h4>Fullscreen panel</h4>
@@ -332,6 +331,7 @@ export const Embedded = {
               open={panelStates["panel-primary-full"]}
               priority={2}
               fullWidth
+              panelAriaLabel="Fullscreen takeover panel"
             >
               <div slot="header">
                 <h4>Fullscreen takeover panel. (highest priority)</h4>

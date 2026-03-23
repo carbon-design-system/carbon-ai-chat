@@ -26,6 +26,7 @@ interface LanguageControllerConfig {
   getLanguageCompartment(): Compartment;
   isLanguageLabelLocked(): boolean;
   getDefaultLanguage(): string;
+  getDetectedLanguage(): string | null;
   updateState(update: LanguageStateUpdate): void;
 }
 
@@ -45,6 +46,8 @@ export class LanguageController {
   async resolveLanguageSupport(): Promise<LanguageSupport | null> {
     const languageAttr = this.config.getLanguageAttribute();
     const content = this.config.getContent();
+    const isHighlightEnabled = this.config.isHighlightEnabled();
+    const currentDetectedLanguage = this.config.getDetectedLanguage();
 
     let languageToUse = languageAttr
       ? (mapLanguageName(languageAttr) ?? languageAttr)
@@ -78,12 +81,17 @@ export class LanguageController {
     );
 
     const detectedLanguage = langDesc ? languageToUse : null;
-    this.config.updateState({
-      detectedLanguage,
-      lockLabel: Boolean(languageAttr && detectedLanguage),
-    });
 
-    if (!this.config.isHighlightEnabled() || !langDesc) {
+    // Preserve detected language when highlight is toggled
+    // Only update state if the detected language has actually changed or needs to be cleared
+    if (detectedLanguage !== currentDetectedLanguage) {
+      this.config.updateState({
+        detectedLanguage,
+        lockLabel: Boolean(languageAttr && detectedLanguage),
+      });
+    }
+
+    if (!isHighlightEnabled || !langDesc) {
       return null;
     }
 

@@ -272,7 +272,7 @@ export const Default = {
             chat.id === itemId
               ? {
                   ...chat,
-                  title: event.detail.newTitle,
+                  name: event.detail.newName,
                 }
               : chat,
           ),
@@ -285,7 +285,7 @@ export const Default = {
               chat.id === itemId
                 ? {
                     ...chat,
-                    title: event.detail.newTitle,
+                    name: event.detail.newName,
                   }
                 : chat,
             ),
@@ -303,7 +303,7 @@ export const Default = {
 
         // Add matching pinned items
         pinnedItems.forEach((item) => {
-          if (item.title.toLowerCase().includes(searchVal)) {
+          if (item.name.toLowerCase().includes(searchVal)) {
             results.push({
               ...item,
               isPinned: true,
@@ -314,7 +314,7 @@ export const Default = {
         // Add matching history items
         regularItems.forEach((section) => {
           section.chats.forEach((chat) => {
-            if (chat.title.toLowerCase().includes(searchVal)) {
+            if (chat.name.toLowerCase().includes(searchVal)) {
               results.push({
                 ...chat,
                 section: section.section,
@@ -337,7 +337,7 @@ export const Default = {
     return (
       <HistoryShell>
         <HistoryHeader
-          title={args.HeaderTitle}
+          headerTitle={args.HeaderTitle}
           showCloseAction={args.showCloseAction}
         />
         <HistoryToolbar
@@ -364,10 +364,9 @@ export const Default = {
                   {searchResults.map((result) => (
                     <HistorySearchItem
                       key={result.id}
+                      name={result.name}
                       date={result.lastUpdated}
-                    >
-                      {result.title}
-                    </HistorySearchItem>
+                    ></HistorySearchItem>
                   ))}
                 </HistoryPanelMenu>
               )}
@@ -379,7 +378,7 @@ export const Default = {
                       <HistoryPanelItem
                         key={item.id}
                         id={item.id}
-                        title={item.title}
+                        name={item.name}
                         selected={item.selected}
                         rename={item.rename}
                         actions={pinnedHistoryItemActions}
@@ -400,7 +399,7 @@ export const Default = {
                         <HistoryPanelItem
                           key={chat.id}
                           id={chat.id}
-                          title={chat.title}
+                          name={chat.name}
                           selected={chat.selected}
                           rename={chat.rename}
                           actions={historyItemActions}
@@ -439,7 +438,7 @@ export const SearchResults = {
   render: (args) => {
     return (
       <HistoryShell>
-        <HistoryHeader title={args.HeaderTitle} />
+        <HistoryHeader headerTitle={args.HeaderTitle} />
         <HistoryToolbar />
         <HistoryContent>
           <div slot="results-count">Results: 4</div>
@@ -476,7 +475,7 @@ export const Loading = {
   render: (args) => {
     return (
       <HistoryShell>
-        <HistoryHeader title={args.HeaderTitle} />
+        <HistoryHeader headerTitle={args.HeaderTitle} />
         <HistoryToolbar />
         <HistoryLoading />
       </HistoryShell>
@@ -491,7 +490,7 @@ export const EmptyState = {
   render: (args) => {
     return (
       <HistoryShell>
-        <HistoryHeader title={args.HeaderTitle} />
+        <HistoryHeader headerTitle={args.HeaderTitle} />
         <HistoryToolbar />
         <HistoryContent>
           <div slot="results-count">No available chats</div>
@@ -508,7 +507,7 @@ export const DeleteFlow = {
   render: (args) => {
     return (
       <HistoryShell>
-        <HistoryHeader title={args.HeaderTitle} />
+        <HistoryHeader headerTitle={args.HeaderTitle} />
         <HistoryToolbar />
         <HistoryContent>
           <HistoryPanel aria-label="Chat history">
@@ -519,7 +518,7 @@ export const DeleteFlow = {
                   <HistoryPanelItem
                     key={item.id}
                     id={item.id}
-                    title={item.title}
+                    name={item.name}
                     selected={item.selected}
                     actions={pinnedHistoryItemActions}
                   />
@@ -536,7 +535,7 @@ export const DeleteFlow = {
                     <HistoryPanelItem
                       key={chat.id}
                       id={chat.id}
-                      title={chat.title}
+                      name={chat.name}
                       actions={historyItemActions}
                     />
                   ))}

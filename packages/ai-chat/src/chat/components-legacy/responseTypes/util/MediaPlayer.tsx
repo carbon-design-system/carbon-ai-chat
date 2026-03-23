@@ -226,7 +226,7 @@ function MediaPlayerComponent({
    */
   function renderMediaPlayerSkeleton() {
     return (
-      <Card isFlush={true} className="cds-aichat--media-player__skeleton">
+      <Card className="cds-aichat--media-player__skeleton">
         <div slot="media">
           <div
             className="cds-aichat--media-player__skeleton-container"

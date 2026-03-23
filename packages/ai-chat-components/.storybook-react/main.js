@@ -18,6 +18,7 @@ const require = createRequire(import.meta.url);
 export default {
   stories: [
     "./welcome/welcome.mdx",
+    "./welcome/styling-and-modifiers.mdx",
     "../src/**/__stories__/*-react.mdx",
     "../src/**/__stories__/*.stories.@(jsx|tsx)",
   ],

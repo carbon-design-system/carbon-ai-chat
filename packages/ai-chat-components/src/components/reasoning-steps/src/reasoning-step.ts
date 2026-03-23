@@ -13,6 +13,7 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import { property, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./reasoning-step.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators";
@@ -29,7 +30,7 @@ const generateId = (segment: string) =>
  */
 @carbonElement(`${prefix}-reasoning-step`)
 class CDSAIChatReasoningStep extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   @property({ type: String, attribute: "title" })
   title = "";

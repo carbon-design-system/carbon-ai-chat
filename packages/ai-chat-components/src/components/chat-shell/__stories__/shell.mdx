@@ -12,6 +12,7 @@ import * as ChatShellStories from "./shell.stories";
 
 ## Table of Contents
 - [Overview](#overview)
+- [Customization](#customization)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
 - [JS (via CDN)](#js-via-cdn)
@@ -34,7 +35,7 @@ The shell includes support for:
 Here's a quick example to get you started.
 
 ```html
-<cds-aichat-shell show-frame rounded-corners>
+<cds-aichat-shell content-max-width show-frame rounded-corners>
   <div slot="header">Chat Header</div>
   <div slot="messages">Messages Area</div>
   <div slot="input">Input Area</div>
@@ -46,7 +47,7 @@ Here's a quick example to get you started.
 Panels can be added to create overlay experiences with different priorities and animations:
 
 ```html
-<cds-aichat-shell show-frame>
+<cds-aichat-shell content-max-width show-frame>
   <div slot="header">Chat Header</div>
   <div slot="messages">Messages Area</div>
   <div slot="input">Input Area</div>
@@ -64,6 +65,32 @@ Panels can be added to create overlay experiences with different priorities and 
   </div>
 </cds-aichat-shell>
 ```
+
+## Customization
+
+> ** For information about styling slotted content with modifiers (`data-rounded`, `data-stacked`) and CSS custom properties, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+### Layout Tokens
+
+Use CSS custom properties to adjust layout sizing.
+
+```css
+cds-aichat-shell {
+  --cds-aichat-messages-max-width: 720px;
+  --cds-aichat-messages-min-width: 320px;
+  --cds-aichat-workspace-min-width: 520px;
+  --cds-aichat-history-width: 360px;
+  --cds-aichat-card-max-width: 460px;
+}
+```
+
+| Token | Default | Description |
+| --- | --- | --- |
+| `--cds-aichat-messages-max-width` | `672px` | Maximum width for message content area |
+| `--cds-aichat-messages-min-width` | `320px` | Minimum width for message content area |
+| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel |
+| `--cds-aichat-history-width` | `320px` | Width of the history / conversation list panel |
+| `--cds-aichat-card-max-width` | `424px` | Maximum width for card components |
 
 ## Component API
 

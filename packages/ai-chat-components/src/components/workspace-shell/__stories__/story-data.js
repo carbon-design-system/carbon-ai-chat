@@ -128,6 +128,36 @@ export const FooterActionList = {
       payload: { test: "value" },
     },
   ],
+  "With disabled button": [
+    {
+      id: "secondary",
+      label: "Secondary",
+      kind: "secondary",
+      disabled: true,
+      payload: { test: "value" },
+    },
+    {
+      id: "primary",
+      label: "Primary",
+      kind: "primary",
+      disabled: true,
+      payload: { test: "value" },
+    },
+  ],
+  "Danger actions": [
+    {
+      id: "secondary",
+      label: "Cancel",
+      kind: "secondary",
+      payload: { test: "value" },
+    },
+    {
+      id: "danger",
+      label: "Delete",
+      kind: "danger",
+      payload: { test: "value" },
+    },
+  ],
   "Two buttons with one ghost": [
     {
       id: "ghost",

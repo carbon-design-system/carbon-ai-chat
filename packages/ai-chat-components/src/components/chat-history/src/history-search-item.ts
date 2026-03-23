@@ -28,10 +28,10 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
   FocusMixin(LitElement),
 ) {
   /**
-   * Chat item title.
+   * Chat item name.
    */
   @property()
-  title!: string;
+  name!: string;
 
   /**
    * Date associated with chat history item.
@@ -54,7 +54,7 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
       composed: true,
       detail: {
         itemId: this.id,
-        itemTitle: this.title,
+        itemName: this.name,
         element: this,
       },
     });
@@ -65,21 +65,21 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
   @HostListener("keydown")
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       this._handleClick();
     }
   };
 
   render() {
-    const { title, date } = this;
+    const { name, date } = this;
     const classes = classMap({
       [`cds--side-nav__link`]: true,
     });
     return html`
       <button class="${classes}">
-        <span part="title" class="cds--side-nav__link-text">
-          <slot>${title}</slot>
+        <span part="name" class="cds--side-nav__link-text">
+          <slot>${name}</slot>
         </span>
         <span part="date" class="cds--side-nav__link-subtitle"> ${date} </span>
       </button>

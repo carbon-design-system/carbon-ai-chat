@@ -3,8 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const postcss = require('postcss');
 
-module.exports = {
-  async process(src, filename) {
+function transform(src, filename) {
     // If the file doesn't exist or is empty, return a default export
     if (!fs.existsSync(filename)) {
       return {
@@ -14,10 +13,10 @@ module.exports = {
 
     try {
       let css = src;
-      
-      // If it's a SCSS file, compile it
+
+      // If it's a SCSS file, compile it (sync)
       if (filename.endsWith('.scss')) {
-        const result = await sass.compileStringAsync(src, {
+        const result = sass.compileString(src, {
           loadPaths: [
             path.dirname(filename),
             path.resolve(process.cwd(), 'node_modules'),
@@ -29,8 +28,8 @@ module.exports = {
         css = result.css;
       }
 
-      // Apply autoprefixer and other PostCSS processing
-      const processed = await postcss().process(css, { from: filename });
+      // Apply PostCSS processing (sync with no async plugins)
+      const processed = postcss().process(css, { from: filename });
 
       // Return the compiled CSS as a string export
       return {
@@ -43,5 +42,14 @@ module.exports = {
         code: 'module.exports = "";',
       };
     }
+}
+
+module.exports = {
+  process(src, filename) {
+    return transform(src, filename);
+  },
+  // Jest 28+ will use this for async transforms; keep it for compatibility.
+  async processAsync(src, filename) {
+    return transform(src, filename);
   },
 };

@@ -10,11 +10,6 @@ collect:
         # General
         - element
         - strings
-        # cds-aichat-chat-header-avatar
-        - alt
-        - corners
-        - onError
-        - url
         # cds-aichat-container
         - ai-disabled
         - ai-enabled
@@ -51,9 +46,6 @@ collect:
         # General - boolean attributes
         - "true"
         - "false"
-        # cds-aichat-chat-header-avatar - corners
-        - round
-        - square
   npm:
     dependencies: null
   js:

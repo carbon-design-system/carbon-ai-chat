@@ -17,6 +17,7 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
 import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
 import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./chain-of-thought-step.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -36,7 +37,7 @@ const generateId = (segment: string) =>
  */
 @carbonElement(`${prefix}-chain-of-thought-step`)
 class CDSAIChatChainOfThoughtStep extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   @property({ type: String, attribute: "title" })
   title = "";
@@ -324,9 +325,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
         <span class="${baseClass}-header-title">
           <slot name="title">${headerTitle}</slot>
         </span>
-        <span class="${statusClass}" aria-hidden="false"
-          >${this.renderStatusIcon()}</span
-        >
+        <span class="${statusClass}">${this.renderStatusIcon()}</span>
       </button>
     `;
   }
@@ -356,7 +355,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
         id=${this.contentId}
         class="${baseClass}-content"
         part="wrapper"
-        aria-hidden="${this.open && !isHidden ? "false" : "true"}"
+        ?aria-hidden=${!this.open}
         role=${ifDefined(!isHidden ? "region" : undefined)}
         aria-labelledby=${ifDefined(!isHidden ? this.headerId : undefined)}
         ?hidden=${isHidden || !this.open}

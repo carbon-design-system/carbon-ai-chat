@@ -102,14 +102,14 @@ class InventoryStatusExample extends LitElement {
   }
 
   render() {
-    return html` <cds-aichat-workspace-shell>
+    return html` <cds-aichat-workspace-shell auto-collapsible-header>
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
         .actions=${this.toolbarActions}
       >
         <div slot="title" data-fixed>Current inventory status</div>
-        <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
+        <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
             <p class="secondary">
               IBM watsonx is powered by the latest AI models to intelligently

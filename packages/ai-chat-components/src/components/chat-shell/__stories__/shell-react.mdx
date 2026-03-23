@@ -11,6 +11,7 @@ import * as ChatShellReactStories from "./shell-react.stories";
 ## Table of Contents
 
 - [Overview](#overview)
+- [Customization](#customization)
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
@@ -36,7 +37,7 @@ import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
 
 function MyChatInterface() {
   return (
-    <ChatShell showFrame roundedCorners>
+    <ChatShell contentMaxWidth showFrame roundedCorners>
       <div slot="header">Chat Header</div>
       <div slot="messages">Messages Area</div>
       <div slot="input">Input Area</div>
@@ -57,7 +58,7 @@ function ChatWithPanel() {
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
 
   return (
-    <ChatShell showFrame>
+    <ChatShell contentMaxWidth showFrame>
       <div slot="header">Chat Header</div>
       <div slot="messages">Messages Area</div>
       <div slot="input">Input Area</div>
@@ -78,6 +79,40 @@ function ChatWithPanel() {
 }
 ```
 
+## Customization
+
+> ** For information about styling slotted content with modifiers (`data-rounded`, `data-stacked`) and CSS custom properties, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+### Layout Tokens
+
+Use CSS custom properties to adjust layout sizing. Apply them to a wrapper around `<ChatShell>` or to a parent selector.
+
+```jsx
+<div
+  style={{
+    "--cds-aichat-messages-max-width": "720px",
+    "--cds-aichat-messages-min-width": "320px",
+    "--cds-aichat-workspace-min-width": "520px",
+    "--cds-aichat-history-width": "360px",
+    "--cds-aichat-card-max-width": "460px",
+  }}
+>
+  <ChatShell contentMaxWidth showFrame roundedCorners>
+    <div slot="header">Chat Header</div>
+    <div slot="messages">Messages Area</div>
+    <div slot="input">Input Area</div>
+  </ChatShell>
+</div>
+```
+
+| Token | Default | Description |
+| --- | --- | --- |
+| `--cds-aichat-messages-max-width` | `672px` | Maximum width for message content area |
+| `--cds-aichat-messages-min-width` | `320px` | Minimum width for message content area |
+| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel |
+| `--cds-aichat-history-width` | `320px` | Width of the history / conversation list panel |
+| `--cds-aichat-card-max-width` | `424px` | Maximum width for card components |
+
 ## Component API
 
 <ArgTypes of={ChatShellReactStories.Default} />
@@ -92,7 +127,8 @@ function ChatWithWorkspace() {
 
   return (
     <ChatShell 
-      showFrame 
+      showFrame
+      contentMaxWidth 
       showWorkspace={showWorkspace}
       workspaceLocation="end">
       <div slot="header">Chat Header</div>
@@ -117,6 +153,7 @@ function ChatWithHistory() {
   return (
     <ChatShell 
       showFrame 
+      contentMaxWidth
       showHistory={showHistory}
       historyLocation="start">
       <div slot="header">Chat Header</div>

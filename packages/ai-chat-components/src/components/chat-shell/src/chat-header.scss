@@ -28,16 +28,16 @@ $block-class: #{$prefix}-chat-header;
   #{$cds-prefix}-overflow-menu {
     border-start-start-radius: calc(
       var(
-          --#{$prefix}-rounded-modifier-radius-start-start,
-          var(--#{$prefix}-rounded-modifier-radius)
+          --#{$prefix}-border-radius-start-start,
+          var(--#{$prefix}-border-radius)
         ) - layout.rem(1px)
     );
 
     &::part(button) {
       border-start-start-radius: calc(
         var(
-            --#{$prefix}-rounded-modifier-radius-start-start,
-            var(--#{$prefix}-rounded-modifier-radius)
+            --#{$prefix}-border-radius-start-start,
+            var(--#{$prefix}-border-radius)
           ) - layout.rem(1px)
       );
     }

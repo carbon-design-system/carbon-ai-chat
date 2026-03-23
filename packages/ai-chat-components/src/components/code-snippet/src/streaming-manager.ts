@@ -89,6 +89,14 @@ export class StreamingManager {
     }
 
     for (const node of assignedNodes) {
+      // Skip elements with slot attribute - they're for named slots
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        if (element.hasAttribute("slot")) {
+          continue;
+        }
+      }
+
       if (node.nodeType === Node.TEXT_NODE) {
         this.observer.observe(node, {
           characterData: true,

@@ -9,7 +9,7 @@
 
 import { LitElement, html } from "lit";
 import prefix from "../../../globals/settings.js";
-import { property } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import "../../chat-button/index.js";
 import TrashCan16 from "@carbon/icons/es/trash-can/16.js";
@@ -30,6 +30,15 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
 
   @property({ type: String, attribute: "delete-text", reflect: true })
   deleteText = "Delete";
+
+  @query('cds-aichat-button[kind="danger"]')
+  _deleteButton;
+
+  // auto focus on delete button when delete panel first renders.
+  async firstUpdated() {
+    await this.updateComplete;
+    this._deleteButton?.shadowRoot?.querySelector("button").focus();
+  }
 
   /**
    * Handles cancel button click event
@@ -55,38 +64,16 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
     );
   };
 
-  /**
-   * Handle keydown event on cancel button
-   * @param event
-   */
-  _handleCancelKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleCancelClick();
-    }
-  };
-
-  /**
-   * Handle keydown event on delete button
-   * @param event
-   */
-  _handleDeleteKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
-      this._handleDeleteClick();
-    }
-  };
-
   render() {
     const {
       cancelText,
       deleteText,
       _handleCancelClick: handleCancelClick,
       _handleDeleteClick: handleDeleteClick,
-      _handleCancelKeyDown: handleCancelKeyDown,
-      _handleDeleteKeyDown: handleDeleteKeyDown,
     } = this;
 
     return html`
-      <div class="${prefix}--history-delete-panel__content">
+      <div aria-live="polite" class="${prefix}--history-delete-panel__content">
         <h1><slot name="title">Confirm Delete</slot></h1>
         <span
           ><slot name="description"
@@ -98,14 +85,9 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
             size="sm"
             kind="tertiary"
             @click=${handleCancelClick}
-            @keydown=${handleCancelKeyDown}
             >${cancelText}</cds-aichat-button
           >
-          <cds-aichat-button
-            size="sm"
-            kind="danger"
-            @click=${handleDeleteClick}
-            @keydown=${handleDeleteKeyDown}
+          <cds-aichat-button size="sm" kind="danger" @click=${handleDeleteClick}
             >${deleteText}
             ${iconLoader(TrashCan16, { slot: "icon" })}</cds-aichat-button
           >
