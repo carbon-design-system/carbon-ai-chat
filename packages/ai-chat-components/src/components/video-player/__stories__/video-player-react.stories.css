@@ -1,0 +1,23 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.video-player-card-body {
+  padding: 1rem;
+}
+
+.video-player-card-title {
+  margin: 0 0 0.5rem 0;
+}
+
+.video-player-card-description {
+  margin: 0;
+  color: var(--cds-text-secondary);
+}
+
+/* Made with Bob */

@@ -23,12 +23,6 @@ async function preloadSwiper() {
   await Promise.all([import("swiper/react"), import("swiper/modules")]);
 }
 
-async function preloadReactPlayer() {
-  // Node's dynamic import returns a namespace object for CommonJS modules; normalize it.
-  const reactPlayerModule = await import("react-player/lazy/index.js");
-  normalizeModuleInterop(reactPlayerModule);
-}
-
 async function preloadColor() {
   const colorModule = await import("color");
   normalizeModuleInterop(colorModule);
@@ -50,7 +44,6 @@ async function loadAllLazyDeps(): Promise<void> {
   await Promise.all([
     loadComponentLazyDeps(),
     preloadSwiper(),
-    preloadReactPlayer(),
     preloadColor(),
     preloadDayjsLocales(),
   ]);
