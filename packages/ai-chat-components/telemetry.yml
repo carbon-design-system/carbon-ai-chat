@@ -9,40 +9,24 @@ collect:
       allowedAttributeNames:
         # General
         - actions
+        - align
+        - autoalign
         - closed-label-text
+        - collapse-label
         - controlled
-        - copy-text
-        - default-language
         - disabled
-        - download-label-text
-        - editable
-        - feedback
-        - feedback-timeout
-        - filter-placeholder-text
-        - fold-collapse-label
-        - fold-expand-label
-        - hide-copy-button
-        - highlight
-        - items-per-page-text
-        - language
-        - locale
-        - max-collapsed-number-of-rows
-        - max-expanded-number-of-rows
-        - min-collapsed-number-of-rows
-        - min-expanded-number-of-rows
-        - next-page-text
-        - oncontent-change
+        - expand-label
+        - id
+        - lines
         - open
         - open-label-text
+        - overflow
         - panel-id
-        - previous-page-text
-        - show-less-text
-        - show-more-text
         - size
         - slot
         - title
-        - tooltip-content
-        - wrap-text
+        - type
+        - value
         # cds-aichat-button
         - is-quick-action
         # cds-aichat-card
@@ -66,21 +50,46 @@ collect:
         - step-number
         # cds-aichat-chain-of-thought-toggle
         - onchain-of-thought-toggle
+        # cds-aichat-chat-header
+        - header-name
+        - header-title
+        - navigation-back-label
+        - navigation-overflow-label
+        - navigation-type
+        # cds-aichat-code-snippet
+        - aria-label-editable
+        - aria-label-readonly
+        - code
+        - copy-button-tooltip-content
+        - copy-text
+        - default-language
+        - editable
+        - fold-collapse-label
+        - fold-expand-label
+        - hide-copy-button
+        - hide-header
+        - highlight
+        - language
+        - max-collapsed-number-of-rows
+        - max-expanded-number-of-rows
+        - min-collapsed-number-of-rows
+        - min-expanded-number-of-rows
+        - oncontent-change
+        - show-less-text
+        - show-more-text
         # cds-aichat-feedback
-        - cancel-label
-        - categories
+        - body
+        - categories-label
         - class
         - disclaimer
-        - id
-        - initial-values
         - is-open
         - is-readonly
         - onfeedback-close
         - onfeedback-submit
-        - prompt
-        - show-prompt
+        - primary-label
+        - secondary-label
+        - show-body
         - show-text-area
-        - submit-label
         - text-area-placeholder
         # cds-aichat-feedback-buttons
         - has-negative-details
@@ -95,9 +104,22 @@ collect:
         - onfeedback-buttons-click
         - positive-label
         # cds-aichat-markdown
+        - code-snippet-aria-label-editable
+        - code-snippet-aria-label-readonly
+        - code-snippet-copy-button-tooltip-content
+        - code-snippet-highlight
+        - code-snippet-show-less-text
+        - code-snippet-show-more-text
+        - markdown
         - remove-html
         - sanitize-html
         - streaming
+        - table-download-label-text
+        - table-filter-placeholder-text
+        - table-items-per-page-text
+        - table-locale
+        - table-next-page-text
+        - table-previous-page-text
         # cds-aichat-processing
         - loop
         - quick-load
@@ -108,7 +130,13 @@ collect:
         - onreasoning-steps-toggle
         # cds-aichat-table
         - default-page-size
+        - download-label-text
+        - filter-placeholder-text
+        - items-per-page-text
         - loading
+        - locale
+        - next-page-text
+        - previous-page-text
         - table-description
         - table-title
         # cds-aichat-tool-call-data
@@ -117,20 +145,32 @@ collect:
         - tool-label-text
         - tool-name
         # cds-aichat-toolbar
-        - overflow
+        - nameText
+        - titleText
+        # cds-aichat-workspace-shell
+        - auto-collapsible-header
         # cds-aichat-workspace-shell-footer
         - oncds-aichat-workspace-shell-footer-clicked
         # cds-aichat-workspace-shell-header
+        - collapsible
+        - onworkspace-header-toggle
         - subtitle-text
         - title-text
       allowedAttributeStringValues:
         # General - boolean attributes
         - "true"
         - "false"
+        # General - type
+        - expand
+        - tooltip
         # cds-aichat-chain-of-thought-step - status
         - failure
         - processing
         - success
+        # cds-aichat-chat-header - navigation-type
+        - back
+        - none
+        - overflow
   npm:
     dependencies: null
   js:
