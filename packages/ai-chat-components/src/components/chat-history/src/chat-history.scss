@@ -36,6 +36,10 @@
   inline-size: 100%;
 }
 
+:host(#{$prefix}-history-shell:has(#{$prefix}-history-delete-panel)) {
+  overflow: hidden;
+}
+
 :host(#{$prefix}-history-header) {
   display: flex;
   align-items: center;
@@ -293,27 +297,20 @@
   position: absolute;
   z-index: 9999;
   display: flex;
+  overflow: hidden;
   flex-direction: column;
   justify-content: center;
   padding: layout.$spacing-08;
-  block-size: 100%;
-  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
-  border-end-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-end-start,
-    0
-  );
-  border-start-end-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-end,
-    0
-  );
-  border-start-start-radius: var(
-    --#{$prefix}-rounded-modifier-radius-start-start,
-    0
-  );
+  border-radius: var(--#{$prefix}-rounded-modifier-radius-start-start, 0)
+    var(--#{$prefix}-rounded-modifier-radius-start-end, 0)
+    var(--#{$prefix}-rounded-modifier-radius-end-end, 0)
+    var(--#{$prefix}-rounded-modifier-radius-end-start, 0);
+  inset: 0;
 
   &::before {
     position: absolute;
     z-index: -1;
+    border-radius: inherit;
     background: theme.$background;
     content: "";
     inset: 0;
