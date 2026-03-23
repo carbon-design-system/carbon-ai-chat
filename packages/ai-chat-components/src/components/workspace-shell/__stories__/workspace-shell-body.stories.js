@@ -40,7 +40,9 @@ export default {
       <style>
         ${styles}
       </style>
-      <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
+      <div class="workspace-story-container">
+        <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
+      </div>
     `,
   ],
 };

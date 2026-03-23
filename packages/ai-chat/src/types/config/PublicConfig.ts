@@ -349,6 +349,16 @@ export interface HeaderConfig {
   showAiLabel?: boolean;
 
   /**
+   * Controls whether the header should be constrained to the messages max width
+   * (--cds-aichat-messages-max-width) or go full width. When true, the header
+   * will be constrained to match the message width. When false (default), the
+   * header will span the full width of the chat container.
+   *
+   * @default false
+   */
+  hasContentMaxWidth?: boolean;
+
+  /**
    * Custom actions to display in the header toolbar. These actions can overflow
    * into a menu when space is limited.
    *

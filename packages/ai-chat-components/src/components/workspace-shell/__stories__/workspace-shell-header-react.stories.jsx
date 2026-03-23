@@ -44,6 +44,13 @@ export default {
       description: "Whether to show the action button",
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="workspace-story-container">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export const Default = {

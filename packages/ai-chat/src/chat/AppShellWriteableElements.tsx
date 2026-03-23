@@ -13,6 +13,8 @@ import WriteableElement from "./components/util/WriteableElement";
 import { WriteableElementName } from "../types/instance/ChatInstance";
 import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import { HasServiceManager } from "./hocs/withServiceManager";
+import { useSelector } from "./hooks/useSelector";
+import { AppState } from "../types/state/AppState";
 
 interface AppShellWriteableElementsProps extends HasServiceManager {
   showHomeScreen: boolean;
@@ -93,15 +95,30 @@ export function AppShellWriteableElements({
   renderWriteableElements,
 }: AppShellWriteableElementsProps) {
   const suffix = serviceManager.namespace.suffix;
+  const hasContentMaxWidth = useSelector(
+    (state: AppState) =>
+      state.config.derived.header.hasContentMaxWidth ?? false,
+  );
 
   const elements = useMemo(
     () =>
-      ELEMENT_CONFIGS.map((config) => ({
-        wrapperSlot: config.wrapperSlot,
-        slotName: resolveValue(config.slotName, showHomeScreen),
-        id: `${resolveValue(config.idSuffix, showHomeScreen)}${suffix}`,
-        className: resolveValue(config.className, showHomeScreen),
-      })).filter((element) => {
+      ELEMENT_CONFIGS.map((config) => {
+        const baseClassName = resolveValue(config.className, showHomeScreen);
+        // Add constrain-width class to header-bottom-element if configured
+        const isHeaderBottomElement =
+          baseClassName === "cds-aichat--header-bottom-element";
+        const className =
+          isHeaderBottomElement && hasContentMaxWidth
+            ? `${baseClassName} cds-aichat--header-constrain-width`
+            : baseClassName;
+
+        return {
+          wrapperSlot: config.wrapperSlot,
+          slotName: resolveValue(config.slotName, showHomeScreen),
+          id: `${resolveValue(config.idSuffix, showHomeScreen)}${suffix}`,
+          className,
+        };
+      }).filter((element) => {
         // Only render the element if content exists in renderWriteableElements
         // If renderWriteableElements is not provided, render all elements (backward compatibility)
         if (!renderWriteableElements) {
@@ -111,7 +128,7 @@ export function AppShellWriteableElements({
           element.slotName as WriteableElementName
         ];
       }),
-    [showHomeScreen, suffix, renderWriteableElements],
+    [showHomeScreen, suffix, renderWriteableElements, hasContentMaxWidth],
   );
 
   return (
