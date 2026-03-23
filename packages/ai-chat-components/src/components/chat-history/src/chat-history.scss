@@ -20,6 +20,19 @@
   border: solid convert.rem(1px) theme.$border-subtle-00;
   background: theme.$chat-header-background;
   block-size: 100%;
+  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --#{$prefix}-rounded-modifier-radius-end-start,
+    0
+  );
+  border-start-end-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-start,
+    0
+  );
   inline-size: 100%;
 }
 
@@ -284,6 +297,19 @@
   justify-content: center;
   padding: layout.$spacing-07;
   block-size: 100%;
+  border-end-end-radius: var(--#{$prefix}-rounded-modifier-radius-end-end, 0);
+  border-end-start-radius: var(
+    --#{$prefix}-rounded-modifier-radius-end-start,
+    0
+  );
+  border-start-end-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-end,
+    0
+  );
+  border-start-start-radius: var(
+    --#{$prefix}-rounded-modifier-radius-start-start,
+    0
+  );
 
   &::before {
     position: absolute;
