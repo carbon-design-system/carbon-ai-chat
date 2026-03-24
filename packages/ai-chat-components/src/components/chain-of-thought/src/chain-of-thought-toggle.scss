@@ -30,6 +30,7 @@
 .#{$prefix}--chain-of-thought-button-chevron {
   display: flex;
   flex-basis: layout.$spacing-06;
+  margin-inline-end: 2px;
   @media screen and (prefers-reduced-motion: reduce) {
     svg {
       transform: rotate(-90deg);
