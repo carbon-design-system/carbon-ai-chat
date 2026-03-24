@@ -183,7 +183,6 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
-          isOn: false,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
@@ -191,29 +190,6 @@ function getSettings() {
           ...defaultConfig.layout,
           showFrame: false,
           hasContentMaxWidth: undefined,
-        },
-        launcher: {
-          ...defaultConfig.launcher,
-          isOn: true,
-        },
-        openChatByDefault: true,
-      };
-      delete defaultConfig.header?.minimizeButtonIconType;
-      break;
-    case "fullscreen-no-gutter":
-      defaultConfig = {
-        ...defaultConfig,
-        header: {
-          ...defaultConfig.header,
-          isOn: false,
-          hideMinimizeButton: undefined,
-          minimizeButtonIconType: undefined,
-        },
-        layout: {
-          ...defaultConfig.layout,
-          showFrame: false,
-          hasContentMaxWidth: false,
-          corners: CornersType.SQUARE,
         },
         launcher: {
           ...defaultConfig.launcher,

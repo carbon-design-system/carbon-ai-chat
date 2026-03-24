@@ -10,7 +10,12 @@
 import "@testing-library/jest-dom";
 import React from "react";
 import { loadAllLazyDeps } from "@carbon/ai-chat/server";
-import { vi } from "vitest";
+import { vi, expect } from "vitest";
+import { shadowDomSerializer } from "./__tests__/snapshot-serializer";
+
+// Register custom snapshot serializer to handle dynamic content in shadow DOM
+// This normalizes Lit comment markers and UUID-based IDs in snapshots
+expect.addSnapshotSerializer(shadowDomSerializer);
 
 // Preload every lazily imported dependency (CodeMirror, DataTable, Swiper,
 // react-player, Day.js locales, etc.) once before the suite runs. That keeps
@@ -123,9 +128,11 @@ vi.mock(
 
 beforeEach(() => {
   // Mock ResizeObserver which is used by Carbon components
-  (window as any).ResizeObserver = vi.fn().mockImplementation(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }));
+  (window as any).ResizeObserver = vi.fn(function ResizeObserver() {
+    return {
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    };
+  });
 });

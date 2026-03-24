@@ -61,7 +61,8 @@ export default {
     },
     autoCollapsibleHeader: {
       control: "boolean",
-      description: "Enable automatic header collapsible behavior based on available space. Note: This prop is currently experimental and is subject to future changes.",
+      description:
+        "Enable automatic header collapsible behavior based on available space. Note: This prop is currently experimental and is subject to future changes.",
     },
     bodyContent: {
       control: {
@@ -82,6 +83,13 @@ export default {
       description: "Defines the actions slot in Footer component ",
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="workspace-story-container">
+        <Story />
+      </div>
+    ),
+  ],
 };
 export const Default = {
   args: {
@@ -165,4 +173,3 @@ export const Default = {
     );
   },
 };
-

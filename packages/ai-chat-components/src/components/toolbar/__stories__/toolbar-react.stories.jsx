@@ -183,9 +183,7 @@ export const Default = {
         actions={actions}
         overflow={overflow}
         style={
-          borderRadius
-            ? { "--cds-aichat-border-radius": "8px" }
-            : undefined
+          borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined
         }
       >
         {/* Navigation slot */}
