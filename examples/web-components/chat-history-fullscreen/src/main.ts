@@ -108,7 +108,7 @@ export class Demo extends LitElement {
     if (!this.instance) {
       return;
     }
-    const requestText = event.detail.chatTitle;
+    const requestText = event.detail.chatName;
     const historyData = await customLoadHistory(this.instance, requestText);
 
     await this.instance.messaging.clearConversation();

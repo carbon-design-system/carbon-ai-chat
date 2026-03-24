@@ -91,7 +91,7 @@ export class HistoryWriteableElementExample extends LitElement {
   accessor searchResults: resultItem[] = [];
 
   @state()
-  accessor showDeletePanel: Boolean = false;
+  accessor showDeletePanel: boolean = false;
 
   @state()
   accessor pinnedItems: resultItem[] = pinnedHistoryItems.map((item) => ({
@@ -142,7 +142,7 @@ export class HistoryWriteableElementExample extends LitElement {
         bubbles: true,
         composed: true,
         detail: {
-          chatTitle: event.detail.itemTitle,
+          chatName: event.detail.itemName,
         },
       };
 
@@ -252,7 +252,7 @@ export class HistoryWriteableElementExample extends LitElement {
         chat.id === itemId
           ? {
               ...chat,
-              title: event.detail.newTitle,
+              name: event.detail.newName,
             }
           : chat,
       );
@@ -263,7 +263,7 @@ export class HistoryWriteableElementExample extends LitElement {
           chat.id === itemId
             ? {
                 ...chat,
-                title: event.detail.newTitle,
+                name: event.detail.newName,
               }
             : chat,
         ),
@@ -305,7 +305,7 @@ export class HistoryWriteableElementExample extends LitElement {
 
     // Add matching pinned items
     this.pinnedItems.forEach((item) => {
-      if (item.title.toLowerCase().includes(inputValue)) {
+      if (item.name.toLowerCase().includes(inputValue)) {
         results.push({
           ...item,
           isPinned: true,
@@ -316,7 +316,7 @@ export class HistoryWriteableElementExample extends LitElement {
     // Add matching history items
     this.regularItems.forEach((section) => {
       section.chats.forEach((chat) => {
-        if (chat.title.toLowerCase().includes(inputValue)) {
+        if (chat.name.toLowerCase().includes(inputValue)) {
           results.push({
             ...chat,
             section: section.section,
@@ -356,7 +356,7 @@ export class HistoryWriteableElementExample extends LitElement {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          title="Conversations"
+          header-title="Conversations"
           ?show-close-action=${true}
           @history-header-close-click=${this._handleHistoryClose}
         ></cds-aichat-history-header>
@@ -400,7 +400,7 @@ export class HistoryWriteableElementExample extends LitElement {
                             @history-search-item-selected=${this
                               ._handleSelectChat}
                           >
-                            ${result.title}
+                            ${result.name}
                           </cds-aichat-history-search-item>
                         `,
                       )}
@@ -415,7 +415,7 @@ export class HistoryWriteableElementExample extends LitElement {
                         (chat) => html`
                           <cds-aichat-history-panel-item
                             id=${chat.id}
-                            title=${chat.title}
+                            name=${chat.name}
                             ?selected=${chat.selected}
                             ?rename=${chat.rename}
                             .actions=${pinnedHistoryItemActions}
@@ -439,7 +439,7 @@ export class HistoryWriteableElementExample extends LitElement {
                             (chat) => html`
                               <cds-aichat-history-panel-item
                                 id=${chat.id}
-                                title=${chat.title}
+                                name=${chat.name}
                                 ?selected=${chat.selected}
                                 ?rename=${chat.rename}
                                 .actions=${historyItemActions}
