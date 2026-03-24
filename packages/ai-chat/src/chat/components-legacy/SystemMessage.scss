@@ -14,19 +14,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: layout.$spacing-05 layout.$spacing-03;
-  margin: layout.$spacing-03 0;
+  margin: layout.$spacing-07 layout.$spacing-05 0 layout.$spacing-05;
 
   &-text {
     @include type.type-style("body-01");
 
-    padding: layout.$spacing-03 layout.$spacing-05;
-    border-radius: layout.$spacing-02;
-    background-color: transparent;
     color: theme.$text-secondary;
     font-style: italic;
-
-    max-inline-size: 600px;
     text-align: center;
   }
 }
@@ -37,10 +31,6 @@
   .cds-aichat--system-message-inline {
     @include type.type-style("body-01");
 
-    padding: layout.$spacing-03 0;
-    margin: layout.$spacing-03 0;
-    border-block-end: 1px solid theme.$border-subtle-01;
-    border-block-start: 1px solid theme.$border-subtle-01;
     color: theme.$text-secondary;
     font-style: italic;
     text-align: center;
