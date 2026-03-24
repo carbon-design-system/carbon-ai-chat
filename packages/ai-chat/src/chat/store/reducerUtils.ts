@@ -169,6 +169,7 @@ const DEFAULT_INPUT_STATE: InputState = {
     isVisible: false,
     isDisabled: false,
   },
+  pendingUploads: [],
 };
 
 deepFreeze(DEFAULT_INPUT_STATE);

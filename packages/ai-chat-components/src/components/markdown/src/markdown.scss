@@ -178,6 +178,15 @@
     list-style: none;
   }
 
+  // List item spacing (moved before more specific selectors)
+  li {
+    padding-inline-start: layout.$spacing-02;
+  }
+
+  li + li {
+    margin-block-start: layout.$spacing-03;
+  }
+
   // Unordered lists
   ul {
     margin-inline-start: layout.$spacing-05;
@@ -237,15 +246,6 @@
 
   ol ol > li::before {
     content: counter(item, lower-latin) ".";
-  }
-
-  // List item spacing
-  li {
-    padding-inline-start: layout.$spacing-02;
-  }
-
-  li + li {
-    margin-block-start: layout.$spacing-03;
   }
 
   .cds-aichat-table--square {

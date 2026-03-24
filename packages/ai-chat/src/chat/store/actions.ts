@@ -20,6 +20,7 @@ import {
   ThemeState,
   ViewState,
 } from "../../types/state/AppState";
+import type { StructuredData } from "../../types/messaging/Messages";
 import {
   CustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
@@ -104,6 +105,11 @@ const SET_STREAM_ID = "SET_STREAM_ID";
 const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
 const SET_IS_RESTARTING = "SET_IS_RESTARTING";
 const SET_ACTIVE_RESPONSE_ID = "SET_ACTIVE_RESPONSE_ID";
+const UPDATE_STRUCTURED_DATA = "UPDATE_STRUCTURED_DATA";
+const CLEAR_STRUCTURED_DATA = "CLEAR_STRUCTURED_DATA";
+const ADD_PENDING_UPLOAD = "ADD_PENDING_UPLOAD";
+const UPDATE_PENDING_UPLOAD = "UPDATE_PENDING_UPLOAD";
+const REMOVE_PENDING_UPLOAD = "REMOVE_PENDING_UPLOAD";
 
 interface UnknownAction {
   type: string;
@@ -611,6 +617,72 @@ const actions = {
   updateThemeState(themeState: ThemeState) {
     return { type: UPDATE_THEME_STATE, themeState };
   },
+
+  /**
+   * Updates the pending structured data in the input state. The updater function receives the current
+   * pending structured data and should return the new value (or undefined to clear it).
+   *
+   * @experimental
+   */
+  updateStructuredData(
+    structuredData: StructuredData | undefined,
+    isInputToHumanAgent: boolean,
+  ) {
+    return {
+      type: UPDATE_STRUCTURED_DATA,
+      structuredData,
+      isInputToHumanAgent,
+    };
+  },
+
+  /**
+   * Clears the pending structured data from the input state after it has been merged into an outgoing message.
+   * Also clears all pending uploads and manual structured data.
+   *
+   * @experimental
+   */
+  clearStructuredData(isInputToHumanAgent: boolean) {
+    return { type: CLEAR_STRUCTURED_DATA, isInputToHumanAgent };
+  },
+
+  /**
+   * Adds a new pending upload entry to the input state.
+   *
+   * @experimental
+   */
+  addPendingUpload(
+    upload: import("../../types/state/AppState").PendingUpload,
+    isInputToHumanAgent: boolean,
+  ) {
+    return { type: ADD_PENDING_UPLOAD, upload, isInputToHumanAgent };
+  },
+
+  /**
+   * Updates an existing pending upload entry (e.g. to mark it complete or errored).
+   *
+   * @experimental
+   */
+  updatePendingUpload(
+    uploadId: string,
+    patch: Partial<import("../../types/state/AppState").PendingUpload>,
+    isInputToHumanAgent: boolean,
+  ) {
+    return {
+      type: UPDATE_PENDING_UPLOAD,
+      uploadId,
+      patch,
+      isInputToHumanAgent,
+    };
+  },
+
+  /**
+   * Removes a pending upload entry by ID (e.g. when the user deletes an attachment).
+   *
+   * @experimental
+   */
+  removePendingUpload(uploadId: string, isInputToHumanAgent: boolean) {
+    return { type: REMOVE_PENDING_UPLOAD, uploadId, isInputToHumanAgent };
+  },
 };
 
 export default actions;
@@ -673,5 +745,10 @@ export {
   UPDATE_THEME_STATE,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_IS_RESTARTING,
+  ADD_PENDING_UPLOAD,
+  UPDATE_PENDING_UPLOAD,
+  REMOVE_PENDING_UPLOAD,
   SET_ACTIVE_RESPONSE_ID,
+  UPDATE_STRUCTURED_DATA,
+  CLEAR_STRUCTURED_DATA,
 };
