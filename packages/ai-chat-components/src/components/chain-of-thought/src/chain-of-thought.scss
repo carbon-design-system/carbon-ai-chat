@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -26,14 +26,11 @@
 .#{$prefix}--chain-of-thought-content {
   display: none;
   overflow: hidden;
+  border: 1px solid theme.$border-subtle-01;
+  background-color: theme.$layer-01;
+  margin-block-start: layout.$spacing-03;
   max-block-size: 0;
   opacity: 0;
   transition: all motion.$duration-fast-02 motion.motion(entrance, productive)
     allow-discrete;
-}
-
-.#{$prefix}--chain-of-thought-inner-content {
-  border: 1px solid theme.$border-subtle-01;
-  background-color: theme.$layer-01;
-  margin-block-start: layout.$spacing-03;
 }

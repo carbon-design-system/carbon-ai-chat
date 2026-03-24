@@ -24,6 +24,7 @@ import {
   FeedbackInteractionType,
   PublicConfig,
   RenderUserDefinedState,
+  RenderCustomMessageFooter,
   ServiceDesk,
   ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
@@ -34,6 +35,7 @@ import { Settings } from "../framework/types";
 import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
 import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
+import { CustomFooterExample } from "./CustomFooterExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -114,6 +116,27 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   );
 
   /**
+   * Handler for custom footer slot.
+   */
+  const renderCustomMessageFooter: RenderCustomMessageFooter = (
+    slotName,
+    message,
+    messageItem,
+    instance,
+    additionalData,
+  ) => {
+    return (
+      <CustomFooterExample
+        slotName={slotName}
+        message={message}
+        messageItem={messageItem}
+        instance={instance}
+        additionalData={additionalData}
+      />
+    );
+  };
+
+  /**
    * You can return a React element for each writeable element.
    */
   const allWriteableElements = useMemo(
@@ -121,6 +144,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       headerBottomElement: (
         <WriteableElementExample
           location="headerBottomElement"
+          parentStateText={stateText}
+        />
+      ),
+      headerFixedActionsElement: (
+        <WriteableElementExample
+          location="headerFixedActionsElement"
           parentStateText={stateText}
         />
       ),
@@ -304,10 +333,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
   let className = "";
-  if (
-    settings.layout === "fullscreen" ||
-    settings.layout === "fullscreen-no-gutter"
-  ) {
+  if (settings.layout === "fullscreen") {
     className = "fullScreen";
   } else if (isSidebarLayout) {
     className = "sidebar";
@@ -331,6 +357,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       {...config}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
+      renderCustomMessageFooter={renderCustomMessageFooter}
       renderWriteableElements={renderWriteableElements}
       serviceDeskFactory={serviceDeskFactory}
     />
@@ -343,6 +370,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         onViewChange={onViewChange}
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
+        renderCustomMessageFooter={renderCustomMessageFooter}
         renderWriteableElements={renderWriteableElements}
         serviceDeskFactory={serviceDeskFactory}
       />

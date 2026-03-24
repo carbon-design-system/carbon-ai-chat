@@ -12,8 +12,61 @@ import "@carbon/web-components/es/components/text-input/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
 
 import { PublicConfig, MinimizeButtonIconType } from "@carbon/ai-chat";
+import Help16 from "@carbon/icons/es/help/16.js";
+import Information16 from "@carbon/icons/es/information/16.js";
+import Document16 from "@carbon/icons/es/document/16.js";
+import Chat16 from "@carbon/icons/es/chat/16.js";
+import UserAvatar16 from "@carbon/icons/es/user--avatar/16.js";
+import Settings16 from "@carbon/icons/es/settings/16.js";
+import Share16 from "@carbon/icons/es/share/16.js";
+import Download16 from "@carbon/icons/es/download/16.js";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import type { Settings } from "./types";
+
+// Sample actions for demo
+const sampleActions = [
+  {
+    icon: Help16,
+    text: "Help",
+    onClick: () => alert("Help clicked!"),
+  },
+  {
+    icon: Information16,
+    text: "About",
+    onClick: () => alert("About clicked!"),
+  },
+  {
+    icon: Document16,
+    text: "Documentation",
+    onClick: () => alert("Documentation clicked!"),
+  },
+  {
+    icon: Chat16,
+    text: "Feedback",
+    onClick: () => alert("Feedback clicked!"),
+  },
+  {
+    icon: UserAvatar16,
+    text: "Profile",
+    onClick: () => alert("Profile clicked!"),
+  },
+  {
+    icon: Settings16,
+    text: "Settings",
+    onClick: () => alert("Settings clicked!"),
+  },
+  {
+    icon: Share16,
+    text: "Share",
+    onClick: () => alert("Share clicked!"),
+  },
+  {
+    icon: Download16,
+    text: "Export Chat",
+    onClick: () => alert("Export Chat clicked!"),
+  },
+];
 
 @customElement("demo-header-switcher")
 export class DemoHeaderSwitcher extends LitElement {
@@ -42,6 +95,9 @@ export class DemoHeaderSwitcher extends LitElement {
   @property({ type: Object })
   accessor config!: PublicConfig;
 
+  @property({ type: Object })
+  accessor settings!: Settings;
+
   private _updateConfig(updates: Partial<PublicConfig>) {
     const newConfig = {
       ...this.config,
@@ -55,6 +111,77 @@ export class DemoHeaderSwitcher extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  private _updateSettings(updates: Partial<Settings>) {
+    const newSettings = {
+      ...this.settings,
+      ...updates,
+    };
+
+    this.dispatchEvent(
+      new CustomEvent("settings-changed", {
+        detail: newSettings,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  /**
+   * Apply settings to config by adding complex objects (menuOptions, actions)
+   * based on settings state. This keeps complex objects out of URL serialization.
+   */
+  static applySettingsToConfig(
+    config: PublicConfig,
+    settings: Settings,
+  ): PublicConfig {
+    const header = { ...config.header };
+
+    // Apply showHeader setting
+    if (settings.showHeader === false) {
+      header.isOn = false;
+    } else if (settings.showHeader === true) {
+      delete header.isOn;
+    }
+
+    // Apply showMenuOptions setting
+    if (settings.showMenuOptions) {
+      header.menuOptions = [
+        {
+          text: "Help",
+          handler: () => alert("Help clicked!"),
+        },
+        {
+          text: "Documentation",
+          href: "https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html",
+          target: "_blank",
+        },
+        {
+          text: "Settings",
+          handler: () => alert("Settings clicked!"),
+        },
+        {
+          text: "Disabled Option",
+          handler: () => alert("This should not appear!"),
+          disabled: true,
+        },
+      ];
+    } else {
+      delete header.menuOptions;
+    }
+
+    // Apply showSampleActions setting
+    if (settings.showSampleActions) {
+      header.actions = sampleActions;
+    } else {
+      delete header.actions;
+    }
+
+    return {
+      ...config,
+      header,
+    };
   }
 
   private _onMinimizeButtonTypeChanged = (event: Event) => {
@@ -100,15 +227,11 @@ export class DemoHeaderSwitcher extends LitElement {
   private _onIsOnChanged = (event: Event) => {
     const customEvent = event as CustomEvent;
     const checked = customEvent.detail.checked;
-    const header = { ...this.config.header };
 
-    if (checked) {
-      header.isOn = false;
-    } else {
-      delete header.isOn;
-    }
-
-    this._updateConfig({ header });
+    // Update settings instead of config
+    this._updateSettings({
+      showHeader: !checked,
+    });
   };
 
   private _onShowRestartButtonChanged = (event: Event) => {
@@ -128,24 +251,11 @@ export class DemoHeaderSwitcher extends LitElement {
   private _onMenuOptionsChanged = (event: Event) => {
     const customEvent = event as CustomEvent;
     const checked = customEvent.detail.checked;
-    const header = { ...this.config.header };
 
-    if (checked) {
-      header.menuOptions = [
-        {
-          text: "Help",
-          handler: () => alert("Help clicked!"),
-        },
-        {
-          text: "Settings",
-          handler: () => alert("Settings clicked!"),
-        },
-      ];
-    } else {
-      delete header.menuOptions;
-    }
-
-    this._updateConfig({ header });
+    // Update settings instead of config
+    this._updateSettings({
+      showMenuOptions: checked,
+    });
   };
 
   private _onShowAiLabelChanged = (event: Event) => {
@@ -162,11 +272,45 @@ export class DemoHeaderSwitcher extends LitElement {
     this._updateConfig({ header });
   };
 
+  private _onSampleActionsChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const checked = customEvent.detail.checked;
+
+    // Update settings instead of config
+    this._updateSettings({
+      showSampleActions: checked,
+    });
+  };
+
+  private _onHasContentMaxWidthChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value;
+    const header = { ...this.config.header };
+
+    if (value === "default") {
+      delete header.hasContentMaxWidth;
+    } else if (value === "true") {
+      header.hasContentMaxWidth = true;
+    } else if (value === "false") {
+      header.hasContentMaxWidth = false;
+    }
+
+    this._updateConfig({ header });
+  };
+
   private _getCurrentMinimizeButtonType(): string {
     if (this.config?.header?.hideMinimizeButton) {
       return "none";
     }
     return this.config?.header?.minimizeButtonIconType || "default";
+  }
+
+  private _getHasContentMaxWidthValue(): string {
+    const value = this.config?.header?.hasContentMaxWidth;
+    if (value === undefined) {
+      return "default";
+    }
+    return value ? "true" : "false";
   }
 
   render() {
@@ -175,7 +319,7 @@ export class DemoHeaderSwitcher extends LitElement {
       <div class="header-section">
         <div class="header-section">
           <cds-checkbox
-            ?checked=${header?.isOn === false}
+            ?checked=${this.settings?.showHeader === false}
             @cds-checkbox-changed=${this._onIsOnChanged}
           >
             Hide chat header
@@ -228,7 +372,7 @@ export class DemoHeaderSwitcher extends LitElement {
 
       <div class="header-section">
         <cds-checkbox
-          ?checked=${(header?.menuOptions?.length ?? 0) > 0}
+          ?checked=${this.settings?.showMenuOptions === true}
           @cds-checkbox-changed=${this._onMenuOptionsChanged}
         >
           Add menu options
@@ -242,6 +386,27 @@ export class DemoHeaderSwitcher extends LitElement {
         >
           Show AI label
         </cds-checkbox>
+      </div>
+
+      <div class="header-section">
+        <cds-checkbox
+          ?checked=${this.settings?.showSampleActions === true}
+          @cds-checkbox-changed=${this._onSampleActionsChanged}
+        >
+          Add menu actions
+        </cds-checkbox>
+      </div>
+
+      <div class="header-section">
+        <cds-dropdown
+          value="${this._getHasContentMaxWidthValue()}"
+          title-text="Has content max width"
+          @cds-dropdown-selected=${this._onHasContentMaxWidthChanged}
+        >
+          <cds-dropdown-item value="default">Default</cds-dropdown-item>
+          <cds-dropdown-item value="true">True</cds-dropdown-item>
+          <cds-dropdown-item value="false">False</cds-dropdown-item>
+        </cds-dropdown>
       </div>
     `;
   }

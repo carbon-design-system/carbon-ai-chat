@@ -52,7 +52,7 @@ function doScrollElementIntoView(
  * @param element The scrollable element to set the scroll position of.
  * @param scrollTop The scrollTop value to set.
  * @param scrollLeft The scrollLeft value to set.
- * @param animate Indicates if the scrolling should be done using animation.
+ * @param animate Indicates if the scrolling should be done using smooth scroll animation.
  */
 function doScrollElement(
   element: Element,
@@ -60,20 +60,18 @@ function doScrollElement(
   scrollLeft: number,
   animate = false,
 ) {
-  setTimeout(() => {
-    if (element) {
-      if (animate && element.scroll) {
-        element.scroll({
-          top: scrollTop,
-          left: scrollLeft,
-          behavior: "smooth",
-        });
-      } else {
-        element.scrollTop = scrollTop;
-        element.scrollLeft = scrollLeft;
-      }
+  if (element) {
+    if (animate && element.scroll) {
+      element.scroll({
+        top: scrollTop,
+        left: scrollLeft,
+        behavior: "smooth",
+      });
+    } else {
+      element.scrollTop = scrollTop;
+      element.scrollLeft = scrollLeft;
     }
-  });
+  }
 }
 
 /**
@@ -109,7 +107,7 @@ function getScrollbarWidth(): number {
 function doFocus(element: HTMLElement | SVGElement, preventScroll = false) {
   if (
     element &&
-    document.activeElement !== element &&
+    getDeepActiveElement() !== element &&
     tabbable(element, { getShadowRoot: true })
   ) {
     element.focus({ preventScroll });
@@ -242,50 +240,177 @@ function getScrollBottom(element: HTMLElement) {
 }
 
 /**
- * Continuously checks an element's scrollHeight on each animation frame and resolves
- * once the scrollHeight remains unchanged for a specified number of consecutive frames (default 2 frames).
+ * Gets the deepest active element, traversing through all shadow DOM boundaries.
+ * This handles nested shadow roots, slotted elements, and will return the actual
+ * focused element regardless of how many shadow DOM levels exist.
  *
- * This is useful for waiting until layout changes (e.g., animations, content loading, dropdowns expanding/collapsing)
- * have fully settled before performing measurements or scroll adjustments.
- *
- * Uses scrollHeight instead of clientHeight/getBoundingClientRect to detect content changes inside scrollable containers.
+ * @returns The deepest active element, or null if no element has focus
  */
-function waitForStableHeight(
-  el: HTMLElement,
-  opts: { frames?: number; timeoutMs?: number } = {},
-): Promise<void> {
-  const requiredStableFrames = opts.frames ?? 2;
-  const timeoutMs = opts.timeoutMs ?? 500;
-  let stableFrames = 0;
-  let lastHeight = el.scrollHeight;
-  let rafId: number | null = null;
+function getDeepActiveElement(): Element | null {
+  let activeElement = document.activeElement;
 
-  return new Promise((resolve) => {
-    const deadline = performance.now() + timeoutMs;
-
-    const tick = () => {
-      const now = performance.now();
-      const h = el.scrollHeight;
-
-      if (h === lastHeight) {
-        stableFrames += 1;
-      } else {
-        stableFrames = 0;
-        lastHeight = h;
-      }
-
-      if (stableFrames >= requiredStableFrames || now >= deadline) {
-        if (rafId != null) {
-          cancelAnimationFrame(rafId);
+  // Traverse through all shadow DOM levels and handle slotted elements
+  while (activeElement) {
+    // If the active element is a slot, get the actual assigned element that has focus
+    if (activeElement instanceof HTMLSlotElement) {
+      const assignedElements = activeElement.assignedElements({
+        flatten: true,
+      });
+      // Find which assigned element actually has focus
+      const focusedAssigned = assignedElements.find((el) => {
+        if ((el as any).shadowRoot?.activeElement) {
+          return true;
         }
-        resolve();
-      } else {
-        rafId = requestAnimationFrame(tick);
+        return (
+          el === document.activeElement || el.contains(document.activeElement)
+        );
+      });
+      if (focusedAssigned) {
+        activeElement = focusedAssigned;
+        continue;
       }
-    };
+    }
 
-    rafId = requestAnimationFrame(tick);
-  });
+    // Check if there's a shadow root with an active element
+    const shadowRoot = (activeElement as any).shadowRoot;
+    if (shadowRoot?.activeElement) {
+      activeElement = shadowRoot.activeElement;
+      continue;
+    }
+
+    // No deeper level found
+    break;
+  }
+
+  return activeElement;
+}
+
+/**
+ * Determines if the given node is an HTMLSlotElement.
+ * Slot elements are used in shadow DOM to distribute content from the light DOM.
+ */
+function isSlotElement(node: Node): node is HTMLSlotElement {
+  return node.nodeName === "SLOT";
+}
+
+// The set of types for an INPUT node that we want to announce the value of.
+const ANNOUNCE_INPUT_TYPES = new Set([
+  "button",
+  "date",
+  "datetime-local",
+  "email",
+  "file",
+  "month",
+  "number",
+  "range",
+  "reset",
+  "search",
+  "submit",
+  "tel",
+  "text",
+  "time",
+  "url",
+  "week",
+]);
+
+const ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE = "data-cds-aichat-exclude-node-read";
+
+/**
+ * Converts the given node into text by extracting all of the text content from it and any children inside of it.
+ * Any resulting pieces of text will be added to the given array.
+ *
+ * This function is used by the AriaAnnouncerComponent to convert DOM nodes into text that can be announced
+ * by screen readers. It handles various node types including elements, text nodes, slots, and shadow DOM.
+ */
+function nodeToText(node: Node, strings: string[]) {
+  if (isElement(node)) {
+    if (
+      (typeof window === "undefined" ||
+        window.getComputedStyle(node).display !== "none") &&
+      node.getAttribute("aria-hidden") !== "true" &&
+      !node.hasAttribute(ANNOUNCE_NODE_EXCLUDE_ATTRIBUTE) &&
+      node.tagName !== "BUTTON" &&
+      node.getAttribute("role") !== "button"
+    ) {
+      trimAndPush(node.getAttribute("aria-label"), strings);
+
+      if (
+        isInputNode(node) &&
+        ANNOUNCE_INPUT_TYPES.has(node.type.toLowerCase())
+      ) {
+        // If the node has a value, announce that. Otherwise announce any placeholder text.
+        if (node.value === "") {
+          trimAndPush(node.placeholder, strings);
+        } else {
+          trimAndPush(node.value, strings);
+        }
+      } else if (isTextAreaNode(node)) {
+        // For text areas, the value is built from children so we don't need to add the value to the strings here.
+        // The children will get added below.
+        if (node.value === "") {
+          trimAndPush(node.placeholder, strings);
+        }
+      } else if (isImageNode(node)) {
+        trimAndPush(node.alt, strings);
+      }
+
+      // Handle slot elements specially to access their assigned (slotted) content.
+      // Slot elements distribute content from the light DOM into the shadow DOM, but their childNodes
+      // only contain fallback content. We need to use assignedNodes() to get the actual slotted content.
+      if (isSlotElement(node)) {
+        // Check if the slot's parent element has aria-hidden="true"
+        // This prevents double-reading when components use hidden slots to hold source content
+        // while displaying rendered content elsewhere (e.g., cds-aichat-markdown)
+        const parent = node.parentElement;
+        if (parent && parent.getAttribute("aria-hidden") === "true") {
+          // Skip processing this slot entirely since its parent is marked as hidden
+          return;
+        }
+
+        // Get assigned nodes with flatten: true to handle nested slots correctly
+        const assignedNodes = node.assignedNodes({ flatten: true });
+
+        if (assignedNodes.length > 0) {
+          // Process the assigned (slotted) content instead of the slot's fallback content
+          assignedNodes.forEach((assignedNode) => {
+            nodeToText(assignedNode, strings);
+          });
+          // Return early to avoid processing the slot's fallback content
+          return;
+        }
+        // If no assigned nodes, fall through to process the slot's fallback content below
+      }
+
+      // Recursively go through all of the children.
+      // If the element has a shadow root, only process shadow DOM children.
+      // Light DOM children (childNodes) will be processed through their corresponding slots in the shadow DOM.
+      // This prevents double-reading of slotted content and respects aria-hidden on slot containers.
+      if (node.shadowRoot) {
+        node.shadowRoot.childNodes?.forEach((childNode) => {
+          nodeToText(childNode, strings);
+        });
+      } else if (node.childNodes) {
+        // Only process direct children if there's no shadow root
+        node.childNodes.forEach((childNode) => {
+          nodeToText(childNode, strings);
+        });
+      }
+    }
+  } else if (isTextNode(node)) {
+    trimAndPush(node.data, strings);
+  }
+}
+
+/**
+ * Trims the given value and pushes it on to the given array assuming it has any content.
+ */
+function trimAndPush(value: string, strings: string[]) {
+  if (value) {
+    value = value.trim();
+    if (value) {
+      strings.push(value.replaceAll("\n", " "));
+    }
+  }
 }
 
 export {
@@ -298,9 +423,11 @@ export {
   isInputNode,
   isTextAreaNode,
   isImageNode,
+  isSlotElement,
   focusOnFirstFocusableItemInArrayOfElements,
   focusOnFirstFocusableElement,
   isEnterKey,
   getScrollBottom,
-  waitForStableHeight,
+  getDeepActiveElement,
+  nodeToText,
 };

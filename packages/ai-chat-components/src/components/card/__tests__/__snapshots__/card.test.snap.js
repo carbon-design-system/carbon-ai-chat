@@ -2,10 +2,7 @@
 export const snapshots = {};
 
 snapshots["card should render with cds-aichat-card minimum attributes"] = 
-`<cds-aichat-card
-  color-scheme=""
-  is-flush=""
->
+`<cds-aichat-card color-scheme="">
   <div slot="body">
     <h4>
       AI Chat Card

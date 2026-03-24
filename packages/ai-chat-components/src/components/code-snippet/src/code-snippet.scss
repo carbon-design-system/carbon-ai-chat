@@ -7,7 +7,6 @@
 
 @use "sass:string";
 
-@use "@carbon/styles/scss/components/code-snippet/index";
 @use "@carbon/styles/scss/type";
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
@@ -34,17 +33,30 @@
   }
 }
 
+// In fill mode, the host needs to fill its container
+:host(.cds-aichat--snippet-container--fill-mode) {
+  block-size: 100%;
+}
+
 .#{$prefix}--snippet {
-  @extend .#{$cds-prefix}--snippet;
-  @extend .#{$cds-prefix}--snippet--multi;
+  display: block;
+  padding: 0;
+  background: theme.$background;
+  font-family: inherit;
+  max-inline-size: 100%;
 
   @include rounded-self;
 
-  display: block;
-  padding: 0;
+  // Masking removed - was causing issues with scrollbars
+  code {
+    @include type.type-style("code-01");
+  }
+}
 
-  background: theme.$background;
-  max-inline-size: 100%;
+:host(.cds-aichat--snippet-container--fill-mode) .#{$prefix}--snippet {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
 }
 
 :host-context([data-theme="g90"]),
@@ -59,7 +71,10 @@
 }
 
 :host([disabled]) {
-  @extend .#{$cds-prefix}--snippet--disabled;
+  .#{$prefix}--snippet {
+    background-color: theme.$layer;
+    color: theme.$text-disabled;
+  }
 
   .#{$prefix}--snippet-container {
     cursor: not-allowed;
@@ -68,10 +83,16 @@
   .cm-editor {
     pointer-events: none;
   }
+
+  .#{$prefix}--snippet__icon {
+    fill: theme.$icon-disabled;
+  }
 }
 
 :host([hide-copy-button]) {
-  @extend .#{$cds-prefix}--snippet--no-copy;
+  .#{$prefix}--snippet-container pre {
+    padding-inline-end: 0;
+  }
 }
 
 :host([wrap-text]) {
@@ -82,15 +103,35 @@
 }
 
 .#{$prefix}--snippet-container {
-  @extend .#{$cds-prefix}--snippet-container;
-
   position: relative;
-}
-
-:host([expanded-code]) .#{$prefix}--snippet-container {
-  padding-block-end: spacing.$spacing-05;
+  order: 1;
+  max-block-size: var(--cds-snippet-max-height, 100%);
+  min-block-size: var(--cds-snippet-min-height, 100%);
+  overflow-y: auto;
+  pointer-events: auto;
   transition: max-height motion.$duration-moderate-01
     motion(standard, productive);
+
+  &:focus {
+    @include focus-outline("outline");
+
+    outline-offset: 0;
+  }
+
+  pre {
+    overflow: auto;
+    padding-block-end: spacing.$spacing-06;
+    padding-inline-end: spacing.$spacing-06;
+
+    code {
+      overflow: hidden;
+    }
+  }
+}
+
+.#{$prefix}--snippet-container--fill-mode {
+  block-size: 100%;
+  overflow-y: auto;
 }
 
 .#{$prefix}--snippet--codemirror {
@@ -123,12 +164,7 @@
 }
 
 .#{$prefix}--snippet__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: theme.$layer-01;
   border-block-end: 1px solid theme.$border-subtle-02;
-  padding-inline-start: layout.$spacing-05;
 }
 
 .#{$prefix}--snippet__meta {

@@ -36,7 +36,9 @@ import {
   doTextChainOfThought,
   doTextChainOfThoughtStreaming,
   doTextStreaming,
+  doTextStreamingEarlyResolve,
   doTextStreamingWithNonWatsonAssistantProfile,
+  doTextWithCustomFooter,
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
   doTextWithHumanProfile,
@@ -47,6 +49,7 @@ import {
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
+import { doSystemMessage } from "./doSystemMessage";
 
 const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
   Object.fromEntries(
@@ -85,6 +88,8 @@ const RESPONSE_MAP: Record<
   "unordered list": (instance) => doList(instance),
   "option list": (instance) => doOption(instance),
   "ordered list": (instance) => doOrderedList(instance),
+  "system message (inline)": (instance) => doSystemMessage(instance, true),
+  "system message (stand alone)": (instance) => doSystemMessage(instance),
   table: (instance) => doTable(instance),
   "table (stream)": (instance, requestOptions) =>
     doTableStreaming(instance, requestOptions),
@@ -101,9 +106,12 @@ const RESPONSE_MAP: Record<
       undefined,
       requestOptions,
     ),
+  "text (stream early resolve)": (instance, requestOptions) =>
+    doTextStreamingEarlyResolve(instance, requestOptions),
   "text with feedback": (instance) => doTextWithFeedback(instance),
   "text with feedback (stream)": (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),
+  "text with custom footer": (instance) => doTextWithCustomFooter(instance),
   "text from watsonx agent": (instance) =>
     doTextWithWatsonAgentProfile(instance),
   "text from third party human": (instance) => doTextWithHumanProfile(instance),

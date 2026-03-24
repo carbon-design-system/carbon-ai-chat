@@ -7,7 +7,6 @@ import * as ChainOfThoughtReactStories from "./chain-of-thought-react.stories.js
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chain-of-thought) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
 ## Table of Contents
 
@@ -15,7 +14,6 @@ import * as ChainOfThoughtReactStories from "./chain-of-thought-react.stories.js
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
-{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
 
 ## Overview
 
@@ -129,13 +127,13 @@ function ChainOfThoughtExample() {
             >
               <ToolCallData toolName={step.tool_name}>
                 {step.description ? (
-                  <Markdown slot="description">{step.description}</Markdown>
+                  <Markdown slot="description" markdown={step.description} />
                 ) : null}
                 {requestMarkdown ? (
-                  <Markdown slot="input">{requestMarkdown}</Markdown>
+                  <Markdown slot="input" markdown={requestMarkdown} />
                 ) : null}
                 {responseMarkdown ? (
-                  <Markdown slot="output">{responseMarkdown}</Markdown>
+                  <Markdown slot="output" markdown={responseMarkdown} />
                 ) : null}
               </ToolCallData>
             </ChainOfThoughtStep>

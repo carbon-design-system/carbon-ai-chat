@@ -11,9 +11,7 @@ import React, { Suspense, useMemo, useRef, useState } from "react";
 import type { SwiperRef } from "swiper/react";
 
 import { ScrollElementIntoViewFunction } from "../../MessagesComponent";
-import { useCallbackOnChange } from "../../../hooks/useCallbackOnChange";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { HasDoAutoScroll } from "../../../../types/utilities/HasDoAutoScroll";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
 import InlineError from "../error/InlineError";
@@ -25,7 +23,7 @@ import {
 } from "../../../../types/messaging/Messages";
 import Carousel from "../carousel/Carousel";
 
-interface ConversationalSearchProps extends HasDoAutoScroll {
+interface ConversationalSearchProps {
   /**
    * The search item to display.
    */
@@ -46,7 +44,6 @@ function ConversationalSearch({
   localMessageItem,
   scrollElementIntoView,
   isStreamingError,
-  doAutoScroll,
 }: ConversationalSearchProps) {
   const [selectedCitationIndex, setSelectedCitationIndex] = useState<number>(0);
   const [citationsOpen, setCitationsOpen] = useState(false);
@@ -70,12 +67,6 @@ function ConversationalSearch({
       50,
     );
   }
-
-  // Once done streaming, kick off an auto-scroll.
-  useCallbackOnChange(
-    localMessageItem.ui_state.streamingState?.isDone,
-    doAutoScroll,
-  );
 
   // Note: the AI button below has a specific component in the latest Carbon library we could swap in after we
   // upgrade our Carbon version.

@@ -7,10 +7,7 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
@@ -22,7 +19,6 @@ $css--plex: true !default;
   @include type.type-style("body-01");
 
   display: flex;
-  overflow: auto;
   /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
   flex-direction: column;
@@ -35,10 +31,17 @@ $css--plex: true !default;
     0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
   color: theme.$text-secondary;
   inline-size: 100%;
+  min-block-size: rem(400px);
 
-  // Allow toolbar slot to shrink within the flex column so overflow handling works.
+  // Prevent toolbar from shrinking - it should maintain its natural height
   slot[name="toolbar"] {
+    flex-shrink: 0;
     min-inline-size: 0;
+  }
+
+  // Prevent notification from shrinking - it should maintain its natural height
+  slot[name="notification"] {
+    flex-shrink: 0;
   }
 
   ::slotted([slot="notification"]) {
@@ -46,9 +49,25 @@ $css--plex: true !default;
     /* stylelint-disable-next-line declaration-no-important */
     max-inline-size: 100% !important;
   }
+
+  // Prevent header from shrinking - it should maintain its natural height
+  slot[name="header"] {
+    flex-shrink: 0;
+  }
+
+  // Make body slot grow to fill available space and become scrollable when content is large
+  slot[name="body"] {
+    flex: 1 1 auto;
+    min-block-size: 0;
+  }
+
+  // Prevent footer from shrinking - it should maintain its natural height
+  slot[name="footer"] {
+    flex-shrink: 0;
+  }
 }
+
 ::slotted(#{$prefix}-toolbar) {
-  display: grid;
   box-sizing: border-box;
   border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
   inline-size: 100%;
@@ -69,9 +88,9 @@ $css--plex: true !default;
 }
 
 :host(#{$prefix}-workspace-shell-body) {
-  display: block;
+  display: flex;
   overflow: auto;
+  flex-direction: column;
   padding: rem(24px) rem(32px);
-  block-size: 100%;
   min-block-size: 0;
 }

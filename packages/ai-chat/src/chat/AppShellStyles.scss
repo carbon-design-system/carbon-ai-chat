@@ -13,7 +13,7 @@
 @use "@carbon/styles/scss/themes";
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/reset";
+
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/ai-gradient" as *;
@@ -60,9 +60,30 @@
    Reusable utility classes for common patterns
    ============================================================================ */
 
-.cds-aichat--widget--expand-to-fit {
+// Mixin for elements that should expand to fit their container
+@mixin expand-to-fit {
   block-size: 100%;
   inline-size: 100%;
+  max-block-size: 100%;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+// Mixin for workspace panel slotted content with additional constraints
+@mixin workspace-panel-slotted {
+  block-size: 100%;
+  max-block-size: 100%;
+}
+
+.cds-aichat--widget--expand-to-fit {
+  @include expand-to-fit;
+}
+
+.cds-aichat--workspace-writeable-element {
+  ::slotted(*) {
+    @include workspace-panel-slotted;
+  }
 }
 
 .cds-aichat--hidden {
@@ -151,29 +172,21 @@
 }
 
 /* Launch animation */
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element {
-    animation: none;
-  }
-}
-
 .cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element:not(
     .cds-aichat--is-phone
   ) {
-  animation: cds-aichat-widget-in motion.$duration-moderate-02
-    motion.motion(entrance, expressive) both;
-}
-
-/* Close animation */
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
-    animation: none;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: cds-aichat-widget-in motion.$duration-moderate-02
+      motion.motion(entrance, expressive) both;
   }
 }
 
+/* Close animation */
 .cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
-  animation: cds-aichat-widget-out motion.$duration-fast-02
-    motion.motion(exit, expressive) both;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: cds-aichat-widget-out motion.$duration-fast-02
+      motion.motion(exit, expressive) both;
+  }
 }
 
 /* ============================================================================
@@ -215,10 +228,13 @@
   min-block-size: chat-theme.$min-height;
 
   &.cds-aichat--widget--launched.cds-aichat--widget--default-element {
-    animation: cds-aichat-widget-in-mobile motion.$duration-moderate-02
-      motion.motion(entrance, expressive) both;
     inset-block-end: 1px;
     inset-inline-start: 1px;
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: cds-aichat-widget-in-mobile motion.$duration-moderate-02
+        motion.motion(entrance, expressive) both;
+    }
   }
 }
 
@@ -300,6 +316,10 @@
 .cds-aichat--widget__layer {
   block-size: 100%;
   inline-size: 100%;
+}
+
+.cds-aichat--widget__layer--hidden {
+  display: none;
 }
 
 .cds-aichat--widget--max-width {

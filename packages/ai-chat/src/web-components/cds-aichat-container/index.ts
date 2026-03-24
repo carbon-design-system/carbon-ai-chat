@@ -39,12 +39,13 @@ import type {
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import {
   BusEventChunkUserDefinedResponse,
+  BusEventCustomFooterSlot,
   BusEventType,
   BusEventUserDefinedResponse,
 } from "../../types/events/eventBusTypes";
 
 /**
- * The cds-aichat-container managing creating slotted elements for user_defined responses and writable elements.
+ * The cds-aichat-container managing creating slotted elements for user_defined responses, custom message footers, and writable elements.
  * It then passes that slotted content into cds-aichat-internal. That component will boot up the full chat application
  * and pass the slotted elements into their slots.
  */
@@ -185,6 +186,12 @@ class ChatContainer extends LitElement {
   _userDefinedSlotNames: string[] = [];
 
   /**
+   * The existing array of slot names for all custom footers.
+   */
+  @state()
+  _customFooterSlotNames: string[] = [];
+
+  /**
    * The existing array of slot names for all writeable elements.
    */
   @state()
@@ -195,16 +202,6 @@ class ChatContainer extends LitElement {
    */
   @state()
   _instance: ChatInstance;
-
-  firstUpdated() {
-    const style = document.createElement("style");
-    style.textContent = `
-      [slot="workspacePanelElement"] {
-        block-size: 100%;
-      }
-    `;
-    this.appendChild(style);
-  }
 
   /**
    * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
@@ -217,6 +214,18 @@ class ChatContainer extends LitElement {
     const { slot } = event.data;
     if (!this._userDefinedSlotNames.includes(slot)) {
       this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+  };
+
+  /**
+   * Adds the slot attribute to the element for the custom_footer_slot type and then injects it into the component by
+   * updating this._customFooterSlotNames;
+   */
+  customFooterHandler = (event: BusEventCustomFooterSlot) => {
+    // This element already has `slotName` as an attribute.
+    const { slotName } = event.data;
+    if (!this._customFooterSlotNames.includes(slotName)) {
+      this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
     }
   };
 
@@ -313,6 +322,10 @@ class ChatContainer extends LitElement {
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
     });
+    this._instance.on({
+      type: BusEventType.CUSTOM_FOOTER_SLOT,
+      handler: this.customFooterHandler,
+    });
     this.addWriteableElementSlots();
     this.attachWriteableElements();
     await this.onBeforeRender?.(instance);
@@ -338,7 +351,9 @@ class ChatContainer extends LitElement {
       if (!element) {
         return;
       }
+
       element.setAttribute("slot", slot);
+
       if (!element.isConnected) {
         this.appendChild(element);
       }
@@ -356,9 +371,12 @@ class ChatContainer extends LitElement {
       .element=${this.element}
     >
       ${this._writeableElementSlots.map(
-        (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
       )}
       ${this._userDefinedSlotNames.map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
+      )}
+      ${this._customFooterSlotNames.map(
         (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
       )}
     </cds-aichat-internal>`;

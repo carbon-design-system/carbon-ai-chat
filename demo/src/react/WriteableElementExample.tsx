@@ -23,6 +23,16 @@ function WriteableElementExample({
   if (location === "aiTooltipAfterDescriptionElement") {
     classNames += " writeable-element-external--not-rounded";
   }
+
+  // Special compact display for header fixed actions
+  if (location === "headerFixedActionsElement") {
+    return (
+      <div className="writeable-element-external writeable-element-external--compact">
+        {location}
+      </div>
+    );
+  }
+
   return (
     <div className={classNames}>
       Location: {location}. Parent prop: {parentStateText}

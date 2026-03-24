@@ -6,16 +6,21 @@
  */
 
 @use "sass:meta";
-@use "@carbon/styles/scss/reset";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/layout";
-@use "@carbon/styles/scss/components/link";
+@use "@carbon/styles/scss/utilities/focus-outline" as *;
+@use "@carbon/styles/scss/motion";
+@use "../../../globals/scss/vars" as *;
 
 :host {
   display: block;
   inline-size: 100%;
   max-inline-size: 100%;
+  --#{$prefix}-border-radius-start-start: 0.5rem;
+  --#{$prefix}-border-radius-start-end: 0.5rem;
+  --#{$prefix}-border-radius-end-start: 0.5rem;
+  --#{$prefix}-border-radius-end-end: 0.5rem;
 
   @include type.type-style("body-01");
 
@@ -33,6 +38,25 @@
   i,
   em {
     font-style: italic;
+  }
+
+  // Blockquote styles must come before .cds-aichat-markdown-stack to satisfy specificity ordering
+  blockquote {
+    border-inline-start: 2px solid theme.$border-subtle-00;
+    padding-inline-start: layout.$spacing-03;
+
+    > *:not(:first-child) {
+      margin-block-start: layout.$spacing-05;
+    }
+
+    > h1 + *:not(:first-child),
+    > h2 + *:not(:first-child),
+    > h3 + *:not(:first-child),
+    > h4 + *:not(:first-child),
+    > h5 + *:not(:first-child),
+    > h6 + *:not(:first-child) {
+      margin-block-start: layout.$spacing-03;
+    }
   }
 
   .cds-aichat-markdown-stack {
@@ -57,21 +81,50 @@
     @include type.type-style("body-01");
   }
 
-  blockquote {
-    border-inline-start: 2px solid theme.$border-subtle-00;
-    padding-inline-start: layout.$spacing-03;
+  a {
+    color: theme.$link-primary;
+    outline: none;
+    text-decoration: none;
 
-    > *:not(:first-child) {
-      margin-block-start: layout.$spacing-05;
+    @media (prefers-reduced-motion: no-preference) {
+      transition: color motion.$duration-fast-01 motion(standard, productive);
     }
 
-    > h1 + *:not(:first-child),
-    > h2 + *:not(:first-child),
-    > h3 + *:not(:first-child),
-    > h4 + *:not(:first-child),
-    > h5 + *:not(:first-child),
-    > h6 + *:not(:first-child) {
-      margin-block-start: layout.$spacing-03;
+    &:hover {
+      color: theme.$link-primary-hover;
+      text-decoration: underline;
+    }
+
+    &:focus {
+      @include focus-outline;
+
+      outline-color: theme.$focus;
+      text-decoration: underline;
+    }
+
+    &:visited {
+      color: theme.$link-primary;
+    }
+
+    &:active {
+      @include focus-outline;
+
+      color: theme.$link-primary;
+      outline-color: theme.$focus;
+      text-decoration: underline;
+    }
+
+    &:visited:hover {
+      color: theme.$link-primary-hover;
+    }
+
+    &:active:visited,
+    &:active:visited:hover {
+      @include focus-outline;
+
+      color: theme.$link-primary;
+      outline-color: theme.$focus;
+      text-decoration: underline;
     }
   }
 
@@ -115,17 +168,103 @@
     @include type.type-style("heading-01");
   }
 
+  // List styles - following Carbon Design System patterns
+  ol,
+  ul {
+    @include type.type-style("body-01");
+
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  // Unordered lists
+  ul {
+    margin-inline-start: layout.$spacing-05;
+  }
+
+  ul > li {
+    position: relative;
+    color: theme.$text-primary;
+
+    &::before {
+      position: absolute;
+      // – en dash
+      content: "\002013";
+      inset-inline-start: calc(-1 * #{layout.$spacing-05});
+    }
+  }
+
+  // Ordered lists
+  ol {
+    counter-reset: item;
+    margin-inline-start: layout.$spacing-05;
+  }
+
+  ol > li {
+    position: relative;
+    color: theme.$text-primary;
+
+    &::before {
+      position: absolute;
+      content: counter(item) ".";
+      counter-increment: item;
+      inset-inline-start: calc(-1 * #{layout.$spacing-05});
+    }
+  }
+
+  // Nested lists
+  ul ul,
+  ol ol,
+  ul ol,
+  ol ul {
+    margin-block-start: layout.$spacing-03;
+    margin-inline-start: layout.$spacing-07;
+  }
+
+  // Nested unordered lists use square bullets
+  ul ul > li::before {
+    // ▪ square
+    content: "\0025AA";
+    // offset to account for smaller ▪ vs –
+    inset-inline-start: calc(-1 * #{layout.$spacing-04});
+  }
+
+  // Nested ordered lists use lower-latin
+  ol ol {
+    list-style-type: lower-latin;
+  }
+
+  ol ol > li::before {
+    content: counter(item, lower-latin) ".";
+  }
+
+  // List item spacing
+  li {
+    padding-inline-start: layout.$spacing-02;
+  }
+
+  li + li {
+    margin-block-start: layout.$spacing-03;
+  }
+
+  .cds-aichat-table--square {
+    --#{$prefix}-border-radius-start-start: 0;
+    --#{$prefix}-border-radius-start-end: 0;
+    --#{$prefix}-border-radius-end-start: 0;
+    --#{$prefix}-border-radius-end-end: 0;
+  }
+
   cds-ordered-list:not([nested]) cds-list-item {
     margin-inline-start: layout.$spacing-06;
   }
 
-  cds-aichat-code-snippet-card {
+  cds-aichat-code-snippet {
     display: block;
-    margin-block-end: layout.$spacing-05;
   }
 
   // Hide code snippet component until it's defined to prevent FOUC
-  cds-aichat-code-snippet-card:not(:defined) {
+  cds-aichat-code-snippet:not(:defined) {
     display: none;
   }
 }

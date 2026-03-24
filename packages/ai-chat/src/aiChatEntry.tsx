@@ -21,8 +21,6 @@ export { PageObjectId, TestId } from "./testing/PageObjectId";
 
 export { ViewState, ViewType } from "./types/instance/apiTypes";
 
-export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
-
 export {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
@@ -53,9 +51,14 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
+export type {
+  PerCornerConfig,
+  ResolvedCornerConfig,
+} from "./types/config/CornersType";
 export type { loadAllLazyDeps } from "./testing/helpers";
 
 export {
@@ -71,6 +74,7 @@ export {
   BusEventChatReady,
   BusEventChunkUserDefinedResponse,
   BusEventClosePanelButtonClicked,
+  BusEventCustomFooterSlot,
   BusEventCustomPanelClose,
   BusEventCustomPanelOpen,
   BusEventCustomPanelPreClose,
@@ -80,6 +84,7 @@ export {
   BusEventWorkspacePreClose,
   BusEventWorkspacePreOpen,
   BusEventFeedback,
+  BusEventHeaderMenuClick,
   BusEventHistoryBegin,
   BusEventHistoryEnd,
   BusEventMessageItemCustom,
@@ -95,6 +100,7 @@ export {
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
+  HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
@@ -131,6 +137,11 @@ export {
   PublicConfig,
   PublicConfigMessaging,
 } from "./types/config/PublicConfig";
+
+export {
+  ChatShortcutConfig,
+  KeyboardShortcuts,
+} from "./types/config/ShortcutConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -180,6 +191,7 @@ export {
   EventInputData,
   FinalResponseChunk,
   GenericItem,
+  GenericItemCustomFooterSlotOptions,
   GenericItemMessageFeedbackCategories,
   GridItem,
   HorizontalCellAlignment,
@@ -245,6 +257,7 @@ export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-contai
 export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
 
 export {
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,

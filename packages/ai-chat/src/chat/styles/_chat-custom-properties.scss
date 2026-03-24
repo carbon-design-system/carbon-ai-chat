@@ -11,16 +11,22 @@
 @use "@carbon/styles/scss/components/button/tokens";
 @use "@carbon/styles/scss/motion";
 
+// Import shared tokens from @carbon/ai-chat-components
+// These are the public configurable tokens that are shared across both packages
+@use "@carbon/ai-chat-components/scss/custom-properties" as shared-tokens;
+
 .cds-aichat--container--render {
   /* **************************************************************************************************************** */
 
-  /* Generic variables using for common values that are repeated throughout the widget. */
+  /* Shared tokens from @carbon/ai-chat-components */
+  /* These are imported and will be available as CSS custom properties */
+  /* See @carbon/ai-chat-components/scss/_custom-properties.scss for the full list */
 
   /* **************************************************************************************************************** */
 
-  /* Internal properties where reuse is needed */
+  /* Container-specific properties (ChatContainer floating widget) */
 
-  /* Application */
+  /* Application sizing and positioning */
   --cds-aichat-max-height: 640px;
 
   /* WCAG 2.1 states that the widget must be usable at 320x256 (or the equivalent from zoom happening) https://www.w3.org/WAI/WCAG21/Understanding/reflow.html
@@ -29,52 +35,55 @@
     150px,
     calc(min(256px, 100vh) - var(--cds-aichat-bottom-position))
   );
-  --cds-aichat-messages-max-width: 672px;
-  --cds-aichat-messages-min-width: 320px;
-  --cds-aichat-workspace-min-width: 480px;
+
+  /* Container positioning */
   --cds-aichat-bottom-position: #{layout.$spacing-09};
   --cds-aichat-right-position: #{layout.$spacing-07};
   --cds-aichat-top-position: auto;
   --cds-aichat-left-position: auto;
 
-  /* **************************************************************************************************************** */
-
-  /* Customizations applied by tooling or developer configuration */
-
-  /* Miscellaneous */
-  --cds-aichat-z-index: 99999;
-  --cds-aichat-border-radius: 0;
-
-  /* Card variables */
-  --cds-aichat-card-border-radius: #{layout.$spacing-03};
-  --cds-aichat-card-max-width: 424px;
-
-  /* The smaller of 380px or the available width of the screen. The is to account for zoom levels pushing us to 320px. */
+  /* Container sizing */
+  /* The smaller of 380px or the available width of the screen. This is to account for zoom levels pushing us to 320px. */
   --cds-aichat-width: min(380px, var(--cds-aichat-max-width));
   --cds-aichat-height: calc(100vh - (2 * #{layout.$spacing-07}));
 
-  /* Launcher Variables */
+  /* Container z-index */
+  --cds-aichat-z-index: 99999;
+
+  /* **************************************************************************************************************** */
+
+  /* Launcher properties (ChatContainer-specific) */
+  /* These properties control the floating launcher button appearance and behavior */
+
+  /* Launcher sizing and positioning */
   --cds-aichat-launcher-default-size: 56px;
   --cds-aichat-launcher-position-bottom: #{layout.$spacing-09};
   --cds-aichat-launcher-position-right: #{layout.$spacing-07};
   --cds-aichat-launcher-extended-width: 280px;
 
-  /* Launcher Color Variables */
+  /* Launcher colors */
   --cds-aichat-launcher-color-background: #{tokens.$button-primary};
   --cds-aichat-launcher-color-avatar: #{theme.$text-on-color};
   --cds-aichat-launcher-color-background-hover: #{tokens.$button-primary-hover};
   --cds-aichat-launcher-color-background-active: #{tokens.$button-primary-active};
   --cds-aichat-launcher-color-focus-border: #{theme.$text-on-color};
   --cds-aichat-launcher-mobile-color-text: #{theme.$text-on-color};
+
+  /* Launcher expanded message colors */
   --cds-aichat-launcher-expanded-message-color-text: #{theme.$text-on-color};
   --cds-aichat-launcher-expanded-message-color-background: #{tokens.$button-primary};
   --cds-aichat-launcher-expanded-message-color-background-hover: #{tokens.$button-primary-hover};
   --cds-aichat-launcher-expanded-message-color-background-active: #{tokens.$button-primary-active};
   --cds-aichat-launcher-expanded-message-color-focus-border: #{theme.$text-on-color};
 
-  /* Unread Indicator Variables */
+  /* Unread indicator colors */
   --cds-aichat-unread-indicator-color-background: #{theme.$support-error};
   --cds-aichat-unread-indicator-color-text: #{theme.$text-on-color};
+
+  /* **************************************************************************************************************** */
+
+  /* Home screen animation index (internal) */
+  /* Note: This is set per-element in HomeScreen.scss for staggered animations */
 }
 
 .cds-aichat--container--render .cds-aichat--widget--rounded {

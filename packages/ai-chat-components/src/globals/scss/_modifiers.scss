@@ -26,15 +26,11 @@
   @each $pos in $positions {
     border-#{$pos}-radius: calc(
       var(
-          --#{$prefix}-rounded-modifier-radius-#{$pos},
-          var(--#{$prefix}-rounded-modifier-radius)
+          --#{$prefix}-border-radius-#{$pos},
+          var(--#{$prefix}-border-radius)
         ) - rem(1px)
     );
   }
-}
-
-@mixin full-radius {
-  border-radius: calc(var(--#{$prefix}-rounded-modifier-radius) - rem(1px));
 }
 
 /* ----- SHARED CHILD + BUTTON ROUNDING ----- */
@@ -53,17 +49,17 @@
 /* ----- BASE (HOST-LEVEL ROUNDING) ----- */
 @mixin rounded-base {
   @include host-and-attr('[data-rounded=""]') {
-    @include full-radius;
+    @include rounded-self;
 
     &::part(link),
     &::part(button) {
-      @include full-radius;
+      @include rounded-self;
 
       outline-offset: rem(-1px);
     }
 
     > :only-child {
-      @include full-radius;
+      @include rounded-self;
     }
   }
 }

@@ -9,6 +9,7 @@
 
 import { LitElement, html } from "lit";
 import { property, state } from "lit/decorators.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./tool-call-data.scss?lit";
 import prefix from "../../../globals/settings.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -21,7 +22,7 @@ const baseClass = `${prefix}--tool-call-data`;
  */
 @carbonElement(`${prefix}-tool-call-data`)
 class CDSAIChatToolCallData extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Plain text name of the tool.

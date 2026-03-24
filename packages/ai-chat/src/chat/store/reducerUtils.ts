@@ -58,6 +58,7 @@ const DEFAULT_HEADER: HeaderConfig = {
   isOn: true,
   minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
   showAiLabel: true,
+  hasContentMaxWidth: false,
 };
 
 deepFreeze(DEFAULT_HEADER);
@@ -216,7 +217,6 @@ const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   isMessageLoadingCounter: 0,
   isMessageLoadingText: undefined,
   isHydratingCounter: 0,
-  isScrollAnchored: false,
 };
 deepFreeze(DEFAULT_CHAT_MESSAGES_STATE);
 
@@ -233,7 +233,12 @@ const DEFAULT_THEME_STATE: ThemeState = {
   derivedCarbonTheme: null,
   originalCarbonTheme: null,
   aiEnabled: true,
-  corners: CornersType.ROUND,
+  corners: {
+    startStart: CornersType.ROUND,
+    startEnd: CornersType.ROUND,
+    endStart: CornersType.ROUND,
+    endEnd: CornersType.ROUND,
+  },
 };
 deepFreeze(DEFAULT_THEME_STATE);
 

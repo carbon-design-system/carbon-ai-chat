@@ -37,6 +37,7 @@ import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardCom
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
 import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
+import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
 import InlineError from "./responseTypes/error/InlineError";
 import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
@@ -95,7 +96,7 @@ import {
   VideoItem,
   PreviewCardItem,
 } from "../../types/messaging/Messages";
-import RichText from "./responseTypes/util/RichText";
+import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
 
 /**
@@ -185,7 +186,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           {isResponseStopped && <ResponseStopped />}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
-          {renderFeedback(localMessageItem, message)}
+          {renderFeedbackAndCustomFooter(localMessageItem, message)}
         </>
       );
     }
@@ -221,11 +222,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <div role="heading" aria-level={2}>
-            <RichText
+            <MarkdownWithDefaults
               text={userText}
               removeHTML
               overrideSanitize={true}
-            ></RichText>
+            ></MarkdownWithDefaults>
           </div>
         </div>
       );
@@ -375,7 +376,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           MessageErrorState.FAILED_WHILE_STREAMING
         }
         removeHTML={removeHTML}
-        doAutoScroll={props.doAutoScroll}
       />
     );
   }
@@ -482,17 +482,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message: LocalMessageItem,
     originalMessage: MessageResponse,
   ) {
-    const { serviceManager, doAutoScroll } = props;
+    const { serviceManager } = props;
     return (
       <UserDefinedResponse
-        streamingState={message.ui_state.streamingState}
         isStreamingError={
           originalMessage?.history?.error_state ===
           MessageErrorState.FAILED_WHILE_STREAMING
         }
         localMessageID={message.ui_state.id}
         serviceManager={serviceManager}
-        doAutoScroll={doAutoScroll}
       />
     );
   }
@@ -559,7 +557,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     localMessageItem: LocalMessageItem<ConversationalSearchItem>,
     fullMessage: MessageResponse,
   ) {
-    const { scrollElementIntoView, doAutoScroll } = props;
+    const { scrollElementIntoView } = props;
     return (
       <ConversationalSearch
         localMessageItem={localMessageItem}
@@ -568,7 +566,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           fullMessage?.history?.error_state ===
           MessageErrorState.FAILED_WHILE_STREAMING
         }
-        doAutoScroll={doAutoScroll}
       />
     );
   }
@@ -734,17 +731,17 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
                 >
                   {step.description ? (
                     <div slot="description">
-                      <RichText text={step.description} />
+                      <MarkdownWithDefaults text={step.description} />
                     </div>
                   ) : null}
                   {requestMarkdown ? (
                     <div slot="input">
-                      <RichText text={requestMarkdown} />
+                      <MarkdownWithDefaults text={requestMarkdown} />
                     </div>
                   ) : null}
                   {responseMarkdown ? (
                     <div slot="output">
-                      <RichText text={responseMarkdown} />
+                      <MarkdownWithDefaults text={responseMarkdown} />
                     </div>
                   ) : null}
                 </ToolCallData>
@@ -918,20 +915,21 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               : null
           }
           showTextArea={show_text_area}
-          showPrompt={show_prompt}
+          showBody={show_prompt}
           title={title || languagePack.feedback_defaultTitle}
-          prompt={prompt || languagePack.feedback_defaultPrompt}
+          body={prompt || languagePack.feedback_defaultPrompt}
           categories={filteredCategories}
+          categoriesLabel={languagePack.feedback_categoriesLabel}
           placeholder={placeholder || languagePack.feedback_defaultPlaceholder}
           disclaimer={disclaimer}
-          submitLabel={languagePack.feedback_submitLabel}
-          cancelLabel={languagePack.feedback_cancelLabel}
+          primaryLabel={languagePack.feedback_submitLabel}
+          secondaryLabel={languagePack.feedback_cancelLabel}
         />
       );
     }
 
-    return (
-      <div className="cds-aichat--received--feedback">
+    return {
+      buttons: (
         <FeedbackButtons
           isPositiveOpen={isFeedbackOpen && isPositiveFeedbackSelected}
           isNegativeOpen={isFeedbackOpen && isNegativeFeedbackSelected}
@@ -948,13 +946,61 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             onFeedbackClicked(event.detail.isPositive)
           }
         />
+      ),
+      details: (
         <div ref={feedbackDetailsRef}>
           {renderFeedbackPopup(true)}
           {renderFeedbackPopup(false)}
         </div>
+      ),
+    };
+  }
+
+  /**
+   * Renders the custom footer slot for the given message item if appropriate.
+   */
+  function renderCustomFooter(localMessageItem: LocalMessageItem) {
+    const footerOptions =
+      localMessageItem.item.message_item_options?.custom_footer_slot;
+
+    if (
+      props.isNestedMessageItem ||
+      !footerOptions ||
+      footerOptions.is_on === false
+    ) {
+      return false;
+    }
+
+    return <CustomFooterSlot footerOptions={footerOptions} />;
+  }
+
+  /**
+   * Renders both feedback buttons and custom footer in the same container.
+   */
+  function renderFeedbackAndCustomFooter(
+    localMessageItem: LocalMessageItem,
+    message: MessageResponse,
+  ) {
+    const feedback = renderFeedback(localMessageItem, message);
+    const customFooter = renderCustomFooter(localMessageItem);
+
+    // If neither feedback nor custom footer should be rendered, return false
+    if (!feedback && !customFooter) {
+      return false;
+    }
+
+    // Render both in the same feedback container div
+    return (
+      <div className="cds-aichat--received--feedback">
+        <div className="cds-aichat--message-footer">
+          {feedback && feedback.buttons}
+          {customFooter}
+        </div>
+        {feedback && feedback.details}
       </div>
     );
   }
+
   return renderSpecificMessage(props.message, props.originalMessage);
 }
 

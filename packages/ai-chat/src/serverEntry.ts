@@ -23,8 +23,6 @@ export { loadAllLazyDeps } from "./testing/helpers";
 // Export all types without the web component implementations
 export { ViewState, ViewType } from "./types/instance/apiTypes";
 
-export { ChatHeaderConfig } from "./types/config/ChatHeaderConfig";
-
 export {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
@@ -55,6 +53,7 @@ export {
   WriteableElementName,
   WriteableElements,
 } from "./types/instance/ChatInstance";
+export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
 export { CornersType } from "./types/config/CornersType";
@@ -81,6 +80,7 @@ export {
   BusEventWorkspacePreClose,
   BusEventWorkspacePreOpen,
   BusEventFeedback,
+  BusEventHeaderMenuClick,
   BusEventHistoryBegin,
   BusEventHistoryEnd,
   BusEventMessageItemCustom,
@@ -96,6 +96,7 @@ export {
   BusEventViewChange,
   BusEventViewPreChange,
   FeedbackInteractionType,
+  HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
@@ -132,6 +133,11 @@ export {
   PublicConfig,
   PublicConfigMessaging,
 } from "./types/config/PublicConfig";
+
+export {
+  ChatShortcutConfig,
+  KeyboardShortcuts,
+} from "./types/config/ShortcutConfig";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -242,6 +248,7 @@ export {
 } from "./types/config/LauncherConfig";
 
 export {
+  RenderCustomMessageFooter,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,

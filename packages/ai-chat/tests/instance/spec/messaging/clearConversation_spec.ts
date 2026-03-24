@@ -152,9 +152,6 @@ describe("ChatInstance.messaging.clearConversation", () => {
       // Loading states should be reset
       expect(state.assistantMessageState.isMessageLoadingCounter).toBe(0);
       expect(state.assistantMessageState.isHydratingCounter).toBe(0);
-
-      // Scroll state should be reset to default
-      expect(state.assistantMessageState.isScrollAnchored).toBe(false);
     });
 
     it("should handle multiple calls to clearConversation", async () => {

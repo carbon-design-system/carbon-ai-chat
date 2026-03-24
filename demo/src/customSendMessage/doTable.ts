@@ -13,7 +13,7 @@ import { TABLE } from "./constants";
 import { doText, doTextStreaming } from "./doText";
 
 function doTable(instance: ChatInstance) {
-  doText(instance, `A markdown table in the text response type.\n\n${TABLE}`);
+  doText(instance, `A periodic table in markdown format.\n\n${TABLE}`);
 }
 
 async function doTableStreaming(

@@ -5,10 +5,10 @@ import ReasoningStep from "../../../react/reasoning-step";
 import Markdown from "../../../react/markdown";
 
 const defaultBody = (
-  <Markdown>
-    Confirmed the retrieved snippets map to the user's request and captured any
-    open questions before drafting a response.
-  </Markdown>
+  <Markdown
+    markdown={`Confirmed the retrieved snippets map to the user's request and captured any
+open questions before drafting a response.`}
+  />
 );
 
 export default {

@@ -7,7 +7,6 @@ import * as ToolbarStories from "./toolbar-react.stories.jsx";
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/toolbar) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-{/* <!-- START doctoc generated TOC please keep comment here to allow auto update --> <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --> */}
 
 ## Table of Contents
 
@@ -15,13 +14,26 @@ import * as ToolbarStories from "./toolbar-react.stories.jsx";
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
-{/* <!-- END doctoc generated TOC please keep comment here to allow auto update --> */}
 
 ## Overview
 
 `<Toolbar>` aligns titles, labels, icon buttons, and overflow actions into a responsive header for AI chat surfaces. It handles truncation and optional overflow menus so you can focus on wiring your actions.
 
-### Getting started
+## Customization
+
+> ** For information about styling slotted content with modifiers like `data-rounded`, see [Styling & Modifiers](/?path=/docs/introduction-welcome--docs#styling--modifiers).**
+
+Slotted content can use `data-rounded` to align with corner rounding:
+
+```jsx
+<Toolbar>
+  <div slot="navigation" data-rounded="top-left">
+    {/* Content gets top-left corner rounding */}
+  </div>
+</Toolbar>
+```
+
+## Getting started
 
 Here's a quick example to get you started.
 

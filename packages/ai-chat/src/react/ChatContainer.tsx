@@ -78,6 +78,7 @@ function ChatContainer(props: ChatContainerProps) {
     serviceDeskFactory,
     serviceDesk,
     renderUserDefinedResponse,
+    renderCustomMessageFooter,
     renderWriteableElements,
     element,
     // Flattened PublicConfig properties
@@ -102,6 +103,7 @@ function ChatContainer(props: ChatContainerProps) {
     homescreen,
     launcher,
     input,
+    keyboardShortcuts,
   } = props;
   // Reconstruct PublicConfig from flattened props
   const config = useMemo(
@@ -127,6 +129,7 @@ function ChatContainer(props: ChatContainerProps) {
       homescreen,
       launcher,
       input,
+      keyboardShortcuts,
     }),
     [
       onError,
@@ -150,6 +153,7 @@ function ChatContainer(props: ChatContainerProps) {
       homescreen,
       launcher,
       input,
+      keyboardShortcuts,
     ],
   );
 
@@ -274,6 +278,7 @@ function ChatContainer(props: ChatContainerProps) {
             serviceDeskFactory={serviceDeskFactory}
             serviceDesk={serviceDesk}
             renderUserDefinedResponse={renderUserDefinedResponse}
+            renderCustomMessageFooter={renderCustomMessageFooter}
             renderWriteableElements={renderWriteableElements}
             onBeforeRender={onBeforeRenderOverride}
             onAfterRender={onAfterRender}

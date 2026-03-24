@@ -15,6 +15,7 @@ export {
   createEditorView,
   applyLanguageSupport,
   updateReadOnlyConfiguration,
+  updateContentAttributes,
 } from "./editor-manager.js";
 export { EditorView } from "@codemirror/view";
 export { Compartment } from "@codemirror/state";

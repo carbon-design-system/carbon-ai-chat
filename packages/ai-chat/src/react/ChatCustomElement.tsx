@@ -142,6 +142,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     onBeforeRender,
     onAfterRender,
     renderUserDefinedResponse,
+    renderCustomMessageFooter,
     renderWriteableElements,
     className,
     id,
@@ -169,6 +170,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     homescreen,
     launcher,
     input,
+    keyboardShortcuts,
   } = props;
 
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
@@ -237,6 +239,8 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           locale={locale}
           homescreen={homescreen}
           launcher={launcher}
+          input={input}
+          keyboardShortcuts={keyboardShortcuts}
           // Other ChatContainer props
           strings={strings}
           serviceDeskFactory={serviceDeskFactory}
@@ -244,9 +248,9 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           onBeforeRender={onBeforeRenderOverride}
           onAfterRender={onAfterRender}
           renderUserDefinedResponse={renderUserDefinedResponse}
+          renderCustomMessageFooter={renderCustomMessageFooter}
           renderWriteableElements={renderWriteableElements}
           element={customElement}
-          input={input}
         />
       )}
     </div>

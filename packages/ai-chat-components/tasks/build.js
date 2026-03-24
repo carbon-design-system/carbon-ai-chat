@@ -175,6 +175,20 @@ build().catch((error) => {
 
 // TODO: remove once @carbon/web-components supports scoped elements!
 async function postBuild() {
+  // Copy SCSS token files to scss/ for consumption by other packages
+  const scssSourceDir = path.resolve(__dirname, "../src/globals/scss");
+  const scssTargetDir = path.resolve(__dirname, "../scss");
+
+  await fs.ensureDir(scssTargetDir);
+  await fs.copy(scssSourceDir, scssTargetDir, {
+    filter: (src) => {
+      // Only copy .scss files and README.md
+      return src.endsWith(".scss") || fs.statSync(src).isDirectory();
+    },
+  });
+
+  console.log("Copied SCSS token files to scss/");
+
   const sourceDir = path.resolve(__dirname, "../es");
 
   if (sourceDir) {

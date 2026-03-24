@@ -17,6 +17,10 @@
     "examples/*/*",
     "packages/*"
   ],
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "aiChat:build": "lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat --scope @carbon/ai-chat-examples-demo",
     "aiChat:build:profile": "cross-env profile=true lerna run build --stream --scope @carbon/ai-chat-components --scope @carbon/ai-chat",
@@ -173,11 +177,11 @@
       "stylelint-config-carbon"
     ],
     "rules": {
-      "max-nesting-depth": 4,
+      "max-nesting-depth": null,
       "a11y/media-prefers-reduced-motion": [
         true,
         {
-          "severity": "warning",
+          "severity": "error",
           "disableFix": true
         }
       ],
@@ -223,5 +227,8 @@
   },
   "dependencies": {
     "@carbon/ai-chat": "^0.0.0"
+  },
+  "overrides": {
+    "tar": "^7.5.10"
   }
 }

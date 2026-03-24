@@ -34,6 +34,7 @@ import "./demo-stop-button-immediate-switcher";
 import "./demo-chat-instance-switcher";
 import "./demo-direction-switcher";
 import "./demo-chat-version-switcher";
+import "./demo-keyboard-shortcut-switcher";
 import "@carbon/web-components/es/components/button/index.js";
 
 const { defaultConfig, defaultSettings } = getSettings();
@@ -410,7 +411,7 @@ export class DemoBody extends LitElement {
   /**
    * Handle settings changes from sidebar controls
    */
-  private _onSettingsChanged = (event: Event) => {
+  private _onSettingsChanged = async (event: Event) => {
     event.stopPropagation(); // Prevent bubbling to parent demo-container
 
     const customEvent = event as CustomEvent;
@@ -425,6 +426,22 @@ export class DemoBody extends LitElement {
     this.settings = newSettings;
 
     this._dispatchSettingsChangeEvent();
+
+    // Apply header settings to config (if they changed)
+    const headerSettingsChanged =
+      oldSettings.showHeader !== newSettings.showHeader ||
+      oldSettings.showMenuOptions !== newSettings.showMenuOptions ||
+      oldSettings.showSampleActions !== newSettings.showSampleActions;
+
+    if (headerSettingsChanged) {
+      // Import DemoHeaderSwitcher to access the static method
+      const { DemoHeaderSwitcher } = await import("./demo-header-switcher");
+      const updatedConfig = DemoHeaderSwitcher.applySettingsToConfig(
+        this.config,
+        newSettings,
+      );
+      this.config = updatedConfig;
+    }
 
     // Update query parameters with new settings
     this._updateQueryParamsForSettings(newSettings, shouldRefresh);
@@ -478,7 +495,7 @@ export class DemoBody extends LitElement {
         ? "page set-chat-config-mode-no-config"
         : "page";
 
-    return html` <div class="${pageClass}">
+    return html` <main id="main-content" class="${pageClass}">
       ${this.isSetChatConfigMode && this.hasReceivedSetChatConfig
         ? html`<div
             class="nav-block set-chat-config-sidebar"
@@ -550,6 +567,7 @@ export class DemoBody extends LitElement {
                     <div class="config-section__title">Header</div>
                     <demo-header-switcher
                       .config=${this.config}
+                      .settings=${this.settings}
                     ></demo-header-switcher>
                   </div>
                   <div class="config-section">
@@ -563,6 +581,12 @@ export class DemoBody extends LitElement {
                     <demo-stop-button-immediate-switcher
                       .config=${this.config}
                     ></demo-stop-button-immediate-switcher>
+                  </div>
+                  <div class="config-section">
+                    <div class="config-section__title">Keyboard Shortcuts</div>
+                    <demo-keyboard-shortcut-switcher
+                      .config=${this.config}
+                    ></demo-keyboard-shortcut-switcher>
                   </div>
                   <div class="config-section">
                     <div class="config-section__title">Launcher</div>
@@ -593,7 +617,7 @@ export class DemoBody extends LitElement {
             />`
           : html``}
       </div>
-    </div>`;
+    </main>`;
   }
 }
 

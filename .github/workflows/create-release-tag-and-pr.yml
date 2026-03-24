@@ -109,7 +109,7 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline
 
       # Generate the changelog with the local 'get-changelog.js' script and output to 'changelog.txt' file
       - name: Run changelog script

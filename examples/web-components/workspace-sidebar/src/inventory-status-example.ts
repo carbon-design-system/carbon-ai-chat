@@ -21,10 +21,6 @@ import Close16 from "@carbon/icons/es/close/16.js";
 @customElement("inventory-status-example")
 class InventoryStatusExample extends LitElement {
   static styles = css`
-    [slot="workspacePanelElement"] {
-      block-size: 100%;
-    }
-
     pre {
       background: #f4f4f4;
       padding: 1rem;
@@ -113,7 +109,7 @@ class InventoryStatusExample extends LitElement {
         .actions=${this.toolbarActions}
       >
         <div slot="title" data-fixed>Current inventory status</div>
-        <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
+        <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
             <p class="secondary">
               IBM watsonx is powered by the latest AI models to intelligently

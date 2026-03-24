@@ -302,6 +302,11 @@ function Launcher(props: LauncherProps) {
         ref={handleButtonRef}
         tabIndex={buttonTabIndex}
         type={BUTTON_TYPE.BUTTON}
+        tooltipPosition={
+          document.dir === "rtl"
+            ? BUTTON_TOOLTIP_POSITION.RIGHT
+            : BUTTON_TOOLTIP_POSITION.LEFT
+        }
       >
         <div className="cds-aichat--launcher__wrapper">
           <div

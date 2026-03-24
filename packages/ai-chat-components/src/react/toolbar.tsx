@@ -8,27 +8,27 @@
  */
 
 import { createComponent } from "@lit/react";
-import React from "react";
+import React, { ComponentType } from "react";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatToolbar from "../components/toolbar/src/toolbar.js";
+import CDSAIChatToolbar, { Action } from "../components/toolbar/src/toolbar.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
 
-// Re-export the Action interface from the web component
-export type { Action } from "../components/toolbar/src/toolbar.js";
-
 /**
- * React-specific Action interface that accepts both CarbonIcon and React icon components.
- * This allows React developers to use @carbon/icons-react directly.
+ * Toolbar action interface that accepts both CarbonIcon and React icon components.
+ * This allows developers to use either:
+ * - @carbon/icons-react (React components)
+ * - @carbon/web-components icons (CarbonIcon objects)
+ *
+ * Works with both React and web component implementations.
  */
-export interface ReactAction {
-  text: string;
-  icon: CarbonIcon | React.ComponentType<any>;
-  size?: string;
-  fixed?: boolean;
-  onClick: () => void;
+export interface ToolbarAction extends Omit<Action, "icon"> {
+  /**
+   * Either an icon from `@carbon/icons` or from `@carbon/icons-react`.
+   */
+  icon: CarbonIcon | ComponentType<any>;
 }
 
 // Base toolbar component from @lit/react
@@ -93,12 +93,14 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
       return [];
     }
 
-    return actions.map((action: ReactAction) => ({
+    return actions.map((action: ToolbarAction) => ({
       ...action,
       icon: transformReactIconToCarbonIcon(
         action.icon,
         getSizeInPixels(action.size),
       ),
+      // Preserve testId if provided
+      testId: action.testId,
     }));
   }, [actions]);
 
@@ -106,6 +108,8 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
 });
 
 Toolbar.displayName = "Toolbar";
+
+export type { Action };
 
 export default Toolbar;
 

@@ -12,6 +12,7 @@ import {
   initServiceManagerAndInstance,
   performInitialViewChange,
   attachUserDefinedResponseHandlers,
+  attachCustomFooterHandler,
 } from "../../../src/chat/utils/chatBoot";
 
 import { createBaseTestProps } from "../../test_helpers";
@@ -41,6 +42,42 @@ describe("chatBoot utils", () => {
         base.messaging?.customSendMessage,
       );
       expect(publicConfig.exposeServiceManagerForTesting).toBe(true);
+    });
+
+    it("sets default assistantName to 'watsonx'", () => {
+      const base = createBaseTestProps();
+      const publicConfig = mergePublicConfig(base);
+
+      // Default assistantName should be set
+      expect(publicConfig.assistantName).toBe("watsonx");
+    });
+
+    it("preserves custom assistantName when provided", () => {
+      const base = createBaseTestProps();
+      base.assistantName = "Custom Assistant";
+      const publicConfig = mergePublicConfig(base);
+
+      // Custom assistantName should be preserved
+      expect(publicConfig.assistantName).toBe("Custom Assistant");
+    });
+
+    it("uses default assistantName when not provided", () => {
+      const base = createBaseTestProps();
+      // Explicitly not setting assistantName
+      delete (base as any).assistantName;
+      const publicConfig = mergePublicConfig(base);
+
+      // Should fall back to default
+      expect(publicConfig.assistantName).toBe("watsonx");
+    });
+
+    it("allows empty string as assistantName", () => {
+      const base = createBaseTestProps();
+      base.assistantName = "";
+      const publicConfig = mergePublicConfig(base);
+
+      // Empty string should be preserved
+      expect(publicConfig.assistantName).toBe("");
     });
   });
 
@@ -181,6 +218,59 @@ describe("chatBoot utils", () => {
         data: { slot: "s1", chunk: { complete_item: { id: "i2" } } },
       });
       expect(bySlot.s1.messageItem).toEqual({ id: "i2" });
+
+      // Simulate restart: state should reset
+      handlers[BusEventType.RESTART_CONVERSATION]({
+        type: BusEventType.RESTART_CONVERSATION,
+      });
+      expect(bySlot).toEqual({});
+    });
+  });
+  describe("attachCustomFooterHandler", () => {
+    it("updates state on custom footer slot events", () => {
+      const handlers: Record<
+        string | number,
+        (event: BusEvent & { data?: any }) => void
+      > = {};
+      const fakeInstance: any = {
+        on: ({ type, handler }: any) => {
+          handlers[type] = handler;
+        },
+      };
+
+      let bySlot: any = {};
+      const setBySlot = (updater: any) => {
+        bySlot = typeof updater === "function" ? updater(bySlot) : updater;
+      };
+
+      attachCustomFooterHandler(
+        fakeInstance as unknown as ChatInstance,
+        setBySlot as any,
+      );
+
+      // Simulate custom footer slot event
+      handlers[BusEventType.CUSTOM_FOOTER_SLOT]({
+        type: BusEventType.CUSTOM_FOOTER_SLOT,
+        data: {
+          slotName: "footer1",
+          message: { id: "msg1" },
+          messageItem: { id: "item1", text: "Hello" },
+          additionalData: { customKey: "customValue", count: 42 },
+        },
+      });
+
+      expect(bySlot.footer1.slotName).toBe("footer1");
+      expect(bySlot.footer1.message).toEqual({ id: "msg1" });
+      expect(bySlot.footer1.messageItem).toEqual({
+        id: "item1",
+        text: "Hello",
+      });
+      expect(bySlot.footer1.additionalData).toEqual({
+        customKey: "customValue",
+        count: 42,
+      });
+
+      expect(Object.keys(bySlot)).toEqual(["footer1"]);
 
       // Simulate restart: state should reset
       handlers[BusEventType.RESTART_CONVERSATION]({

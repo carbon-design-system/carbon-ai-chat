@@ -51,9 +51,10 @@ export const Small = {
   },
   args: {
     ...SmallWC.args,
+    isFlush: true,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="body" class="preview-card preview-card-small">
         <h4>Document title</h4>
         <p>Subtitle</p>
@@ -85,9 +86,10 @@ export const Default = {
   },
   args: {
     ...DefaultWC.args,
+    isFlush: true,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="header" className="preview-card preview-card-default">
         <h4>Document title</h4>
         <p>Subtitle</p>
@@ -132,9 +134,10 @@ export const WithToolbar = {
   },
   args: {
     ...WithToolbarWC.args,
+    isFlush: true,
   },
   render: (args) => (
-    <Card isLayered={args.isLayered}>
+    <Card isLayered={args.isLayered} isFlush={args.isFlush}>
       <div slot="header" className="preview-card preview-card-toolbar">
         <Toolbar
           overflow
@@ -182,6 +185,7 @@ export const WithSteps = {
   },
   args: {
     ...WithStepsWC.args,
+    isFlush: true,
   },
   render: (args) => {
     const initialSteps = [
@@ -253,7 +257,7 @@ export const WithSteps = {
     }, [currentStep]);
 
     return (
-      <Card isLayered={args.isLayered}>
+      <Card isLayered={args.isLayered} isFlush={args.isFlush}>
         <div slot="header" className="preview-card preview-card-toolbar">
           <Toolbar className="preview-card-toolbar">
             <div slot="title">

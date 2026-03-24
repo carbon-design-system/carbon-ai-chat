@@ -348,13 +348,6 @@ interface ChatMessagesState {
    * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
    */
   isHydratingCounter: number;
-
-  /**
-   * Indicates if the scrollable area of the widget is anchored to the bottom such that if any changes in the scroll
-   * panel size occur, the panel will automatically be scrolled back to the bottom. The anchor is enabled whenever
-   * a scroll event occurs that brings the panel to the bottom. It also starts anchored as the panel is initially empty.
-   */
-  isScrollAnchored: boolean;
 }
 
 /**
@@ -601,9 +594,15 @@ interface ThemeState {
   originalCarbonTheme: CarbonTheme | null;
 
   /**
-   * This flag is used to disable Carbon AI Chat's rounded corners.
+   * The resolved corners configuration for the chat.
+   * Each corner is individually defined after normalizing the user's configuration.
    */
-  corners: CornersType;
+  corners: {
+    startStart: CornersType;
+    startEnd: CornersType;
+    endStart: CornersType;
+    endEnd: CornersType;
+  };
 }
 
 export {

@@ -8,10 +8,14 @@
  */
 
 import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./workspace-shell-header.scss?lit";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import "../../truncated-text/index.js";
 
 /**
  * Workspace Shell Header.
@@ -21,10 +25,11 @@ import styles from "./workspace-shell-header.scss?lit";
  * @slot header-description - Represents the description area in the Header.
  * @slot header-action - Represents the action area in the workspace.
  *
+ * @fires workspace-header-toggle - Fired when the details element is toggled
  */
 @carbonElement(`${prefix}-workspace-shell-header`)
 class CDSAIChatWorkspaceShellHeader extends LitElement {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Sets default slot value to toolbar
@@ -44,24 +49,103 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   @property({ type: String, attribute: "subtitle-text" })
   subTitleText;
 
+  /**
+   * Controls whether the header can be collapsed/expanded.
+   * When true, header starts collapsed and can be toggled.
+   * When false, header is always fully expanded.
+   */
+  @property({ type: Boolean, reflect: true })
+  collapsible = false;
+
+  /**
+   * @internal
+   */
+  @query("details")
+  private _detailsElement?: HTMLDetailsElement;
+
+  firstUpdated() {
+    if (this.collapsible && this._detailsElement) {
+      this._detailsElement.addEventListener("toggle", this._handleToggle);
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._detailsElement) {
+      this._detailsElement.removeEventListener("toggle", this._handleToggle);
+    }
+  }
+
+  /**
+   * @internal
+   */
+  private _handleToggle = () => {
+    const isOpen = this._detailsElement?.open || false;
+    this.dispatchEvent(
+      new CustomEvent("workspace-header-toggle", {
+        detail: { open: isOpen },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  };
+
   render() {
-    const { titleText, subTitleText } = this;
+    const { titleText, subTitleText, collapsible } = this;
+
+    const headerContent = html`
+      ${subTitleText &&
+      html`
+        <h3 class="${prefix}-workspace-shell__header-sub-title">
+          ${subTitleText}
+        </h3>
+      `}
+      <slot name="header-description"></slot>
+      <slot name="header-action"></slot>
+    `;
+
+    if (collapsible) {
+      // Collapsible mode: starts closed, can be toggled
+      return html`
+        <details
+          class="${prefix}-workspace-shell__header-details ${prefix}-workspace-shell__header-content"
+        >
+          ${titleText &&
+          html`
+            <summary class="${prefix}-workspace-shell__header-summary">
+              <h1 class="${prefix}-workspace-shell__header-title">
+                <cds-aichat-truncated-text
+                  value=${titleText}
+                  lines="1"
+                  type="tooltip"
+                ></cds-aichat-truncated-text>
+              </h1>
+              <span class="${prefix}-workspace-shell__header-chevron">
+                ${iconLoader(ChevronDown16)}
+              </span>
+            </summary>
+          `}
+          <div class="${prefix}-workspace-shell__header-content">
+            ${headerContent}
+          </div>
+        </details>
+      `;
+    }
+
+    // Non-collapsible: render without details/summary
     return html`
       <div class="${prefix}-workspace-shell__header-content">
         ${titleText &&
         html`
-          <h1 class="${prefix}-workspace-shell__header-title">${titleText}</h1>
+          <h1 class="${prefix}-workspace-shell__header-title">
+            <cds-aichat-truncated-text
+              value=${titleText}
+              lines="1"
+              type="tooltip"
+            ></cds-aichat-truncated-text>
+          </h1>
         `}
-        ${subTitleText &&
-        html`
-          <h3 class="${prefix}-workspace-shell__header-sub-title">
-            ${subTitleText}
-          </h3>
-        `}
-        <slot name="header-description"></slot>
-      </div>
-      <div class="${prefix}-workspace-shell__header-action">
-        <slot name="header-action"></slot>
+        ${headerContent}
       </div>
     `;
   }

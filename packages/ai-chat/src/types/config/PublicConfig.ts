@@ -10,7 +10,7 @@
 import { ChatInstance } from "../instance/ChatInstance";
 import { CustomSendMessageOptions } from "./MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
-import { CornersType } from "./CornersType";
+import { CornersType, PerCornerConfig } from "./CornersType";
 import { HomeScreenConfig } from "./HomeScreenConfig";
 import type { LayoutCustomProperties } from "./LayoutCustomProperties";
 import type {
@@ -22,6 +22,8 @@ import { HistoryItem } from "../messaging/History";
 import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
+import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
+import type { KeyboardShortcuts } from "./ShortcutConfig";
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -195,6 +197,14 @@ export interface PublicConfig {
    * Optional partial language pack overrides. Values merge with defaults.
    */
   strings?: DeepPartial<LanguagePack>;
+
+  /**
+   * Configuration for keyboard shortcuts in the chat.
+   * Allows customization of keyboard shortcuts for various actions.
+   *
+   * @experimental
+   */
+  keyboardShortcuts?: KeyboardShortcuts;
 }
 
 /**
@@ -209,9 +219,34 @@ export interface CustomMenuOption {
   text: string;
 
   /**
-   * The callback handler to call when the option is selected. Provide this of "url".
+   * The callback handler to call when the option is selected.
+   * Provide either this or `href`, but not both.
    */
-  handler: () => void;
+  handler?: () => void;
+
+  /**
+   * The URL to navigate to when the option is selected.
+   * Provide either this or `handler`, but not both.
+   */
+  href?: string;
+
+  /**
+   * The target attribute for the link when using `href`.
+   * Defaults to "_self" if not specified.
+   * Common values: "_self", "_blank", "_parent", "_top"
+   */
+  target?: string;
+
+  /**
+   * If true, the menu option will be disabled and cannot be selected.
+   */
+  disabled?: boolean;
+
+  /**
+   * Optional data-testid attribute for testing purposes.
+   * This allows tests to reliably find and interact with specific menu options.
+   */
+  testId?: string;
 }
 
 /**
@@ -312,6 +347,29 @@ export interface HeaderConfig {
    * blue gradients.
    */
   showAiLabel?: boolean;
+
+  /**
+   * Controls whether the header should be constrained to the messages max width
+   * (--cds-aichat-messages-max-width) or go full width. When true, the header
+   * will be constrained to match the message width. When false (default), the
+   * header will span the full width of the chat container.
+   *
+   * @default false
+   */
+  hasContentMaxWidth?: boolean;
+
+  /**
+   * Custom actions to display in the header toolbar. These actions can overflow
+   * into a menu when space is limited.
+   *
+   * The icon property accepts CarbonIcon objects (from @carbon/web-components) or
+   * React icon components (from @carbon/icons-react).
+   *
+   * Built-in buttons (restart, close) will be appended after these custom actions if
+   * configured to be shown. You can, of course, disabled those OOTB icons and replace
+   * them with your own.
+   */
+  actions?: ToolbarAction[];
 }
 
 /**
@@ -332,12 +390,29 @@ export interface LayoutConfig {
   hasContentMaxWidth?: boolean;
 
   /**
-   * This flag is used to disable Carbon AI Chat's rounded corners.
+   * Controls the corner style of the chat component.
+   *
+   * Can be a simple CornersType value to apply to all corners:
+   * ```typescript
+   * corners: CornersType.ROUND
+   * ```
+   *
+   * Or a PerCornerConfig object to control each corner individually:
+   * ```typescript
+   * corners: {
+   *   startStart: CornersType.ROUND,  // top-left in LTR
+   *   startEnd: CornersType.ROUND,    // top-right in LTR
+   *   endStart: CornersType.SQUARE,   // bottom-left in LTR
+   *   endEnd: CornersType.SQUARE      // bottom-right in LTR
+   * }
+   * ```
+   *
+   * Undefined corners in PerCornerConfig will fall back to CornersType.ROUND.
    */
-  corners?: CornersType;
+  corners?: CornersType | PerCornerConfig;
 
   /**
-   * CSS variable overrides for the chat UI.
+   * CSS variable overrides for the chat UI. This is a convienience method, you may also set these properties via CSS.
    *
    * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.height`),
    * which map to the underlying `--cds-aichat-…` custom properties.
@@ -413,7 +488,8 @@ export interface PublicConfigMessaging {
    * When `true`, the stop button appears immediately when `customSendMessage` is called,
    * allowing users to cancel requests before the first streaming chunk arrives. This is
    * useful for slow-starting requests or when you want to give users immediate control
-   * over long-running operations.
+   * over long-running operations. The button will remain visible as long as there is an
+   * active streaming message, even if the initial message promise resolves.
    *
    * When `false` (default), the stop button only appears after the first streaming chunk
    * arrives with `cancellable: true` metadata, maintaining backward compatibility with

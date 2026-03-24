@@ -50,6 +50,7 @@ import {
   createMessageRequestForText,
   createMessageResponseForText,
   createWelcomeRequest,
+  getSpeakerName,
   hasServiceDesk,
   isConnectToHumanAgent,
   isPause,
@@ -94,6 +95,7 @@ import {
 import { AddMessageOptions } from "../../types/config/MessagingConfig";
 import {
   BusEventChunkUserDefinedResponse,
+  BusEventCustomFooterSlot,
   BusEventPreReceive,
   BusEventType,
   BusEventUserDefinedResponse,
@@ -154,6 +156,12 @@ class ChatActionsImpl {
    * messages that were started before a restart.
    */
   private messageGenerations = new Map<string, number>();
+
+  /**
+   * Tracks which message IDs have had their "streaming start" announced.
+   * Prevents duplicate announcements for the same streaming message.
+   */
+  private announcedStreamingStarts = new Set<string>();
 
   /**
    * Queue of received chunks.
@@ -384,7 +392,14 @@ class ChatActionsImpl {
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
-    const previousValue = (inputState[field] ?? "") as string;
+    let previousValue = (inputState[field] ?? "") as string;
+
+    // Normalize the previous value: treat "\n" as empty string
+    // This handles the case where the user manually deleted all input,
+    // leaving behind a newline character that should be treated as empty.
+    if (field === "rawValue" && previousValue === "\n") {
+      previousValue = "";
+    }
 
     let nextValue: string;
     try {
@@ -405,10 +420,9 @@ class ChatActionsImpl {
 
     const payload: Partial<InputState> = { [field]: nextValue };
 
-    if (
-      field === "rawValue" &&
-      (inputState.displayValue ?? "") === previousValue
-    ) {
+    // When updating rawValue, always sync displayValue to keep them consistent.
+    // The component will re-render and apply any custom rendering (e.g., toDisplayHTML conversion).
+    if (field === "rawValue") {
       payload.displayValue = nextValue;
     }
 
@@ -732,10 +746,20 @@ class ChatActionsImpl {
         messageID ||
         ("streaming_metadata" in chunk &&
           chunk.streaming_metadata?.response_id);
+
       this.serviceManager.messageService.markCurrentMessageAsStreaming(
         extractedMessageID,
         chunk.partial_item?.streaming_metadata?.id,
       );
+
+      // Announce streaming start on first chunk for this message
+      if (
+        extractedMessageID &&
+        !this.announcedStreamingStarts.has(extractedMessageID)
+      ) {
+        this.announcedStreamingStarts.add(extractedMessageID);
+        this.announceStreamingStart(extractedMessageID, chunk);
+      }
     }
 
     const chunkPromise = resolvablePromise();
@@ -744,6 +768,52 @@ class ChatActionsImpl {
       this.processChunkQueue();
     }
     return chunkPromise;
+  }
+
+  /**
+   * Announces that streaming has started for a message.
+   * This provides immediate feedback to screen reader users that the assistant is responding.
+   *
+   * @param messageID - The ID of the message being streamed
+   * @param chunk - The first chunk received, which may contain response_user_profile
+   */
+  private announceStreamingStart(messageID: string, chunk: StreamChunk) {
+    const { store } = this.serviceManager;
+    const { config } = store.getState();
+
+    // Get the assistant name from config
+    const assistantName = config.public.assistantName;
+
+    // Try to get response_user_profile from the chunk first (for streaming messages)
+    // This is important because the message might not be in the store yet
+    const chunkProfile = isStreamPartialItem(chunk)
+      ? chunk.partial_response?.message_options?.response_user_profile
+      : undefined;
+
+    // If not in chunk, try to get from stored message (fallback)
+    const message = store.getState().allMessagesByID[messageID] as
+      | MessageResponse
+      | undefined;
+
+    // Create a temporary message object with the profile from chunk if available
+    const messageWithProfile: MessageResponse | undefined = chunkProfile
+      ? ({
+          ...message,
+          message_options: {
+            ...message?.message_options,
+            response_user_profile: chunkProfile,
+          },
+        } as MessageResponse)
+      : message;
+
+    const speakerName = getSpeakerName(messageWithProfile, assistantName);
+
+    store.dispatch(
+      actions.announceMessage({
+        messageID: "messages_streamingStart",
+        messageValues: { sender: speakerName },
+      }),
+    );
   }
 
   async processChunkQueue() {
@@ -1164,6 +1234,32 @@ class ChatActionsImpl {
   }
 
   /**
+   * If the given message should contain a custom footer slot, this will fire the {@link BusEventType.CUSTOM_FOOTER_SLOT}
+   * event so that the event listeners can attach whatever they want to the host element.
+   */
+  async handleCustomFooterSlot(
+    localMessage: LocalMessageItem,
+    originalMessage: MessageResponse,
+  ) {
+    const footerOptions =
+      localMessage.item.message_item_options?.custom_footer_slot;
+
+    if (footerOptions && footerOptions.is_on === true) {
+      const customFooterSlotEvent: BusEventCustomFooterSlot = {
+        type: BusEventType.CUSTOM_FOOTER_SLOT,
+        data: {
+          slotName: footerOptions.slot_name,
+          messageItem: localMessage.item,
+          message: originalMessage,
+          additionalData: footerOptions.additional_data,
+        },
+      };
+
+      await this.serviceManager.fire(customFooterSlotEvent);
+    }
+  }
+
+  /**
    * Takes each item in the appropriate output array and dispatches correct actions. We may want to look into
    * turning this into a formal queue as the pause response_type may cause us to lose correct order in fast
    * conversations.
@@ -1191,9 +1287,13 @@ class ChatActionsImpl {
 
     // When addMessage is called with showStopButtonImmediately enabled, hide the stop button
     // and revert to legacy behavior (button will show on first chunk if streaming)
+    // Pass streamingMessageID to keep button visible if there's an active stream
     const messagingConfig = config.public.messaging || {};
     if (messagingConfig.showStopButtonImmediately) {
-      resetStopStreamingButton(store);
+      resetStopStreamingButton(
+        store,
+        this.serviceManager.messageService.inboundStreaming.streamingMessageID,
+      );
     }
 
     // The ID of the previous (visible) message item that was added to the store. When adding new items from the
@@ -1332,6 +1432,8 @@ class ChatActionsImpl {
             localMessageItem,
             fullMessage,
           );
+          // eslint-disable-next-line no-await-in-loop
+          await this.handleCustomFooterSlot(localMessageItem, fullMessage);
           if (
             !localMessageItem.item.user_defined?.silent &&
             initialRestartCount === this.serviceManager.restartCount
@@ -1567,6 +1669,9 @@ class ChatActionsImpl {
 
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.restartGeneration++;
+
+      // Clear streaming start announcements tracking
+      this.announcedStreamingStarts.clear();
 
       // Mark all existing messages as belonging to the OLD generation by keeping them in the map
       // (don't clear - this way we can detect stale chunks from old messages)

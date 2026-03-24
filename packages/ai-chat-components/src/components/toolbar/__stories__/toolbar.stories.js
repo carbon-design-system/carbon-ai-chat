@@ -157,7 +157,7 @@ export default {
       control: "boolean",
       description: "AI Label slot in the toolbar component `slot='decorator'`",
     },
-    "--cds-aichat-rounded-modifier-radius": {
+    "--cds-aichat-border-radius": {
       control: "boolean",
       description:
         "Setting this property with 8px will apply the border radius to the toolbar component.",
@@ -181,7 +181,7 @@ export const Default = {
     navigation: "home",
     fixedActions: "none",
     aiLabel: true,
-    "--cds-aichat-rounded-modifier-radius": false,
+    "--cds-aichat-border-radius": false,
   },
 
   render: ({
@@ -191,12 +191,12 @@ export const Default = {
     aiLabel,
     navigation,
     fixedActions,
-    "--cds-aichat-rounded-modifier-radius": borderRadius,
+    "--cds-aichat-border-radius": borderRadius,
   }) => html`
     <cds-aichat-toolbar
       .actions=${actions}
       ?overflow=${overflow}
-      style=${borderRadius ? "--cds-aichat-rounded-modifier-radius: 8px;" : ""}
+      style=${borderRadius ? "--cds-aichat-border-radius: 8px;" : ""}
     >
       <!-- Navigation slot -->
       ${navigation}

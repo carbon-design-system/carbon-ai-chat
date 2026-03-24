@@ -56,7 +56,7 @@ export const Default = {
     isFlush: {
       control: { type: "boolean", disable: true },
       description:
-        "Default is `true`. which removes the padding of the card. this is useful when the elements inside the card are already padded. Set to `false` to add padding.",
+        "Setting this removes the padding of the card. This is useful when the elements inside the card are already padded.",
     },
     maxWidth: {
       control: "radio",
@@ -281,7 +281,7 @@ export const CardFooter = {
       options: ["md", "lg"],
       description: "Set the size of the footer actions container.",
     },
-    "--cds-aichat-rounded-modifier-radius": {
+    "--cds-aichat-border-radius": {
       control: "boolean",
       description:
         "Setting this property with 8px will apply the border radius to the card footer component.",
@@ -304,15 +304,15 @@ export const CardFooter = {
     })(),
     footerActions: "primary danger buttons",
     footerSize: "lg",
-    "--cds-aichat-rounded-modifier-radius": false,
+    "--cds-aichat-border-radius": false,
   },
   render: (args) =>
     maxWidthWrapper(
       args.maxWidth,
       () => html`
         <cds-aichat-card-footer
-          style=${args["--cds-aichat-rounded-modifier-radius"]
-            ? "--cds-aichat-rounded-modifier-radius: 8px;"
+          style=${args["--cds-aichat-border-radius"]
+            ? "--cds-aichat-border-radius: 8px;"
             : ""}
           .actions=${{ ...cardFooterPresets, ...previewCardFooterPresets }[
             args.footerActions

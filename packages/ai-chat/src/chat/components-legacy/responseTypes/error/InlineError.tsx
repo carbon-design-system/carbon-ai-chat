@@ -11,7 +11,7 @@ import React from "react";
 
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { ErrorIcon } from "../../ErrorIcon";
-import RichText from "../util/RichText";
+import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
 
 export function InlineError({ text }: { text?: string }) {
   const languagePack = useLanguagePack();
@@ -21,7 +21,7 @@ export function InlineError({ text }: { text?: string }) {
         <ErrorIcon className="cds-aichat--inline-error--icon" />
       </div>
       <div className="cds-aichat--inline-error--text">
-        <RichText
+        <MarkdownWithDefaults
           removeHTML
           text={text || languagePack.errors_generalContent}
           highlight={true}

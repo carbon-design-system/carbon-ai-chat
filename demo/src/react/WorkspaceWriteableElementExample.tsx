@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,6 @@
  *  @license
  */
 
-import "./WorkspaceWriteableElementExample.css"; // Assuming styles are in a separate CSS file
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
@@ -136,11 +135,15 @@ function WorkspaceWriteableElementExample({
   };
 
   return (
-    <WorkspaceShell>
-      <Toolbar slot="toolbar" actions={toolbarActions} overflow>
-        <div slot="title">Optimizing excess inventory</div>
+    <WorkspaceShell autoCollapsibleHeader>
+      <Toolbar
+        slot="toolbar"
+        actions={toolbarActions}
+        overflow
+        titleText="Optimizing excess inventory"
+      >
         <div slot="decorator">
-          <AILabel size="2xs" autoAlign>
+          <AILabel autoAlign={false} size="2xs" align="bottom">
             <AILabelContent>
               <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
               <div>
@@ -157,7 +160,6 @@ function WorkspaceWriteableElementExample({
         title="Notification Title"
         subtitle="Notification Subtitle"
         kind="warning"
-        lowContrast={true}
         hideCloseButton
       />
       <WorkspaceShellHeader

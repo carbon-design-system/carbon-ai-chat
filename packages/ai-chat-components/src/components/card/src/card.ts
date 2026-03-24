@@ -9,6 +9,7 @@
 
 import { property } from "lit/decorators.js";
 import CDSTile from "@carbon/web-components/es/components/tile/tile.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./card.scss?lit";
 import { html } from "lit";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -20,7 +21,7 @@ import prefix from "../../../globals/settings.js";
  */
 @carbonElement(`${prefix}-card`)
 class Card extends CDSTile {
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * Specify whether the `Card` layering style. if true, the card will follow carbon layering style, otherwise chat shell layering style.
@@ -29,22 +30,20 @@ class Card extends CDSTile {
   isLayered = false;
 
   /**
-   * Specify whether the padding should be removed from the card. default is true.
-   * This is useful when the card is used as a container for other components
-   * and you want to remove the default padding from cds-tile.
+   * Specify whether the padding should be removed from the card. default is false.
+   * When true, removes the default padding from cds-tile, useful when the card
+   * is used as a container for other components that need to be flush against edges.
    */
   @property({ type: Boolean, attribute: "is-flush", reflect: true })
-  isFlush = true;
+  isFlush = false;
 
   render() {
     return html`
-      <div ?data-flush=${this.isFlush}>
-        <slot name="header"></slot>
-        <slot name="media"></slot>
-        <slot name="body"></slot>
-        <slot name="footer"></slot>
-        <slot name="decorator"></slot>
-      </div>
+      <slot name="header"></slot>
+      <slot name="media"></slot>
+      <slot name="body"></slot>
+      <slot name="footer"></slot>
+      <slot name="decorator"></slot>
     `;
   }
 }

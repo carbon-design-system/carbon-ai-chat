@@ -76,6 +76,11 @@ export enum BusEventType {
   USER_DEFINED_RESPONSE = "userDefinedResponse",
 
   /**
+   * Fired when a message with custom_footer_slot.is_on is received.
+   */
+  CUSTOM_FOOTER_SLOT = "customFooterSlot",
+
+  /**
    * Fired when history begins to load.
    */
   HISTORY_BEGIN = "history:begin",
@@ -215,6 +220,11 @@ export enum BusEventType {
    * Fired if the disclaimer is accepted.
    */
   DISCLAIMER_ACCEPTED = "disclaimerAccepted",
+
+  /**
+   * Fired when a user clicks on navigation items in the chat header (homescreen button or overflow menu).
+   */
+  HEADER_MENU_CLICK = "header:menuClick",
 }
 
 /**
@@ -578,6 +588,33 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
      * The slot name for users of the web components cds-aichat-container or cds-aichat-custom-element.
      */
     slot?: string;
+  };
+}
+
+/**
+ * Used to populate custom message footer slots.
+ *
+ * @category Events
+ */
+export interface BusEventCustomFooterSlot extends BusEvent {
+  type: BusEventType.CUSTOM_FOOTER_SLOT;
+  data: {
+    /**
+     * The unique identifier for this footer slot.
+     */
+    slotName: string;
+    /**
+     * The message item that is being rendered.
+     */
+    messageItem: GenericItem;
+    /**
+     * The assistant response object that contains the messageItem.
+     */
+    message: MessageResponse;
+    /**
+     * Any additional data to be passed to the render function.
+     */
+    additionalData?: unknown;
   };
 }
 
@@ -965,6 +1002,58 @@ export interface BusEventStateChange extends BusEvent {
    * The new state after the change.
    */
   newState: PublicChatState;
+}
+
+/**
+ * The type of navigation item clicked in the header.
+ *
+ * @category Events
+ */
+export enum HeaderMenuClickType {
+  /**
+   * The homescreen/back button was clicked.
+   */
+  HOMESCREEN_BUTTON = "homescreenButton",
+
+  /**
+   * The overflow menu button was clicked (menu opened).
+   */
+  OVERFLOW_MENU_OPENED = "overflowMenuOpened",
+
+  /**
+   * An item in the overflow menu was clicked.
+   */
+  OVERFLOW_MENU_ITEM = "overflowMenuItem",
+}
+
+/**
+ * This event is fired when a user clicks on navigation items in the chat header.
+ * This includes the homescreen button and overflow menu items.
+ *
+ * @category Events
+ */
+export interface BusEventHeaderMenuClick extends BusEvent {
+  /**
+   * The type of the event.
+   */
+  type: BusEventType.HEADER_MENU_CLICK;
+
+  /**
+   * The type of navigation item that was clicked.
+   */
+  clickType: HeaderMenuClickType;
+
+  /**
+   * For overflow menu items, this is the index of the item clicked.
+   * For homescreen button, this will be undefined.
+   */
+  menuItemIndex?: number;
+
+  /**
+   * For overflow menu items, this is the text label of the item clicked.
+   * For homescreen button, this will be the back button label.
+   */
+  menuItemText?: string;
 }
 
 /**

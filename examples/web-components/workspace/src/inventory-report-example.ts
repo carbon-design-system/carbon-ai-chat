@@ -13,6 +13,7 @@ import "@carbon/web-components/es/components/button/index.js";
 import { PanelType } from "@carbon/ai-chat";
 import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
 import "@carbon/ai-chat-components/es/components/toolbar/index.js";
+import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/tag/tag.js";
@@ -45,9 +46,6 @@ import Edit16 from "@carbon/icons/es/edit/16.js";
 @customElement("inventory-report-example")
 class InventoryReportExample extends LitElement {
   static styles = css`
-    [slot="workspacePanelElement"] {
-      block-size: 100%;
-    }
     pre {
       background: #f4f4f4;
       padding: 1rem;
@@ -220,14 +218,14 @@ class InventoryReportExample extends LitElement {
       },
     ];
 
-    return html` <cds-aichat-workspace-shell>
+    return html` <cds-aichat-workspace-shell auto-collapsible-header>
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
         .actions=${this.toolbarActions}
       >
         <div slot="title" data-fixed>Optimizing excess inventory</div>
-        <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
+        <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
             <p class="secondary">
               Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
@@ -278,7 +276,9 @@ class InventoryReportExample extends LitElement {
         </p>
         <br />
         <h4>Additional Data from Preview Card:</h4>
-        <pre>${JSON.stringify(this.additionalData, null, 2)}</pre>
+        <cds-aichat-code-snippet
+          code=${JSON.stringify(this.additionalData, null, 2)}
+        ></cds-aichat-code-snippet>
         <br />
         <cds-layer>
           <br />

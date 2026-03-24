@@ -45,9 +45,6 @@ import Edit16 from "@carbon/icons/es/edit/16.js";
 @customElement("inventory-report-example")
 class InventoryReportExample extends LitElement {
   static styles = css`
-    [slot="workspacePanelElement"] {
-      block-size: 100%;
-    }
     pre {
       background: #f4f4f4;
       padding: 1rem;
@@ -227,7 +224,7 @@ class InventoryReportExample extends LitElement {
         .actions=${this.toolbarActions}
       >
         <div slot="title" data-fixed>Optimizing excess inventory</div>
-        <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
+        <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
             <p class="secondary">
               Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed

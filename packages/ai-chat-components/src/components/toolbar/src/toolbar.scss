@@ -7,7 +7,6 @@
  *  @license
  */
 
-$css--plex: true !default;
 @use "../../../globals/scss/vars" as *;
 @use "../../../globals/scss/modifiers" as *;
 @use "@carbon/styles/scss/theme";
@@ -25,7 +24,7 @@ $block-class: #{$prefix}-toolbar;
 
   .#{$block-class} {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     block-size: 100%;
     inline-size: 100%;
     max-inline-size: 100%;
@@ -53,15 +52,52 @@ $block-class: #{$prefix}-toolbar;
     }
   }
 
+  .#{$block-class}__navigation {
+    display: flex;
+    align-items: center;
+    margin-block: auto;
+  }
+
   .#{$block-class}__title {
-    color: theme.$text-secondary;
+    flex: 1;
     margin-block: auto;
     margin-inline-end: auto;
     min-inline-size: layout.$spacing-10;
     padding-inline: layout.$spacing-04;
   }
 
+  // Style for name text - this needs to be at the host level to style slotted content
+  .#{$block-class}__name {
+    font-weight: bold;
+  }
+
+  .#{$block-class}__navigation:has(::slotted(*)) ~ .#{$block-class}__title {
+    padding-inline-start: 0;
+  }
+
   .#{$block-class}__fixed-actions {
+    margin-block: auto;
+  }
+
+  .#{$block-class}__start,
+  .#{$block-class}__end {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .#{$block-class}__start {
+    flex-grow: 1;
+  }
+
+  .#{$block-class}__end {
+    flex-shrink: 1;
+    justify-content: end;
+  }
+
+  ::slotted([slot="navigation"]) {
+    display: flex;
+    align-items: center;
     margin-block: auto;
   }
 

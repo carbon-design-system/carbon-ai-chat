@@ -20,7 +20,7 @@ import Loading from "../components/carbon/Loading";
 import cx from "classnames";
 import React, { KeyboardEvent, PureComponent } from "react";
 
-import { nodeToText } from "../components/aria/AriaAnnouncerComponent";
+import { nodeToText } from "../utils/domUtils";
 import { Avatar } from "./Avatar";
 import { InlineError } from "./responseTypes/error/InlineError";
 import VisuallyHidden from "../components/util/VisuallyHidden";
@@ -60,7 +60,6 @@ import { HasServiceManager } from "../hocs/withServiceManager";
 import actions from "../store/actions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { HasClassName } from "../../types/utilities/HasClassName";
-import { HasDoAutoScroll } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import {
@@ -70,6 +69,7 @@ import {
 import { FileStatusValue } from "../utils/constants";
 import { doFocusRef } from "../utils/domUtils";
 import {
+  getSpeakerName,
   isConnectToHumanAgent,
   isFullWidthUserDefined,
   isOptionItem,
@@ -86,6 +86,7 @@ import {
   HumanAgentMessageType,
   Message,
   MessageRequest,
+  MessageResponse,
   MessageResponseTypes,
   ReasoningStep as ReasoningStepData,
   ReasoningStepOpenState,
@@ -97,7 +98,7 @@ import {
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { ResponseUserAvatar } from "./ResponseUserAvatar";
 import { CarbonTheme } from "../../types/config/PublicConfig";
-import RichText from "./responseTypes/util/RichText";
+import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
@@ -136,8 +137,7 @@ interface MessageProps
     HasServiceManager,
     HasLanguagePack,
     HasClassName,
-    HasAriaAnnouncer,
-    HasDoAutoScroll {
+    HasAriaAnnouncer {
   /**
    * The local message item that is part of the original message.
    */
@@ -302,13 +302,15 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   };
 
   private isAgent: boolean;
+
   /**
    * Returns an ARIA message that can be used to indicate that the widget (either assistant or agent) was responsible for
    * saying a specific message.
    */
   private getWidgetSaidMessage() {
-    const { intl, assistantName, localMessageItem } = this.props;
+    const { intl, localMessageItem, message, assistantName } = this.props;
     let messageId: keyof LanguagePack;
+
     if (localMessageItem.item.agent_message_type) {
       // For the human agent view, we only want to say "agent said" for messages that are text. The status messages
       // do not need this announcement.
@@ -321,7 +323,15 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       this.isAgent = false;
     }
     return messageId
-      ? intl.formatMessage({ id: messageId }, { assistantName })
+      ? intl.formatMessage(
+          { id: messageId },
+          {
+            assistantName: getSpeakerName(
+              message as MessageResponse,
+              assistantName,
+            ),
+          },
+        )
       : null;
   }
 
@@ -395,14 +405,22 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     // ahead and announce the "who" part for each one.
     const whoAnnouncement = isRequest(message)
       ? languagePack.messages_youSaid
-      : intl.formatMessage({ id: "messages_assistantSaid" }, { assistantName });
+      : intl.formatMessage(
+          { id: "messages_assistantSaid" },
+          {
+            assistantName: getSpeakerName(
+              message as MessageResponse,
+              assistantName,
+            ),
+          },
+        );
 
     const strings: string[] = [whoAnnouncement];
     nodeToText(this.messageRef.current, strings);
 
-    // Using this aria-label allows us to make sure that this text is read out loud before JAWS reads its "1 of 2"
-    // list item message that it adds after reading the aria-label.
-    this.focusHandleRef.current.setAttribute("aria-label", strings.join(" "));
+    const ariaLabel = strings.join(" ");
+
+    this.focusHandleRef.current.setAttribute("aria-label", ariaLabel);
 
     doFocusRef(this.focusHandleRef, true);
   }
@@ -510,8 +528,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             <ResponseUserAvatar
               responseUserProfile={responseUserProfile}
               languagePack={languagePack}
-              width="32px"
-              height="32px"
+              width="24px"
+              height="24px"
             />
           );
         }
@@ -643,7 +661,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const containerOpen = this.getReasoningContainerOpen(reasoning);
 
     return (
-      <div className="cds-aichat--message__reasoning-steps">
+      <div
+        className={cx("cds-aichat--message__reasoning-steps", {
+          "cds-aichat--message__reasoning-steps--open": containerOpen,
+        })}
+      >
         <ReasoningStepsComponent
           controlled
           id={this.getReasoningContainerId()}
@@ -653,7 +675,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           }
         >
           {hasContent && reasoning?.content && (
-            <RichText
+            <MarkdownWithDefaults
               text={reasoning.content}
               highlight={true}
               streaming={streaming}
@@ -685,7 +707,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             };
 
             const stepContent = step.content ? (
-              <RichText
+              <MarkdownWithDefaults
                 text={step.content}
                 highlight={true}
                 streaming={streaming}
@@ -999,15 +1021,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       return;
     }
 
+    // Note: VoiceOver will eat the Home and End events and apply their own behavior for those buttons.
+
     let moveFocus: MoveFocusType;
     if (event.key === "ArrowUp") {
       moveFocus = MoveFocusType.PREVIOUS;
     } else if (event.key === "ArrowDown") {
       moveFocus = MoveFocusType.NEXT;
-    } else if (event.key === "Home") {
-      moveFocus = MoveFocusType.FIRST;
-    } else if (event.key === "End") {
-      moveFocus = MoveFocusType.LAST;
     } else if (event.key === "Escape") {
       moveFocus = MoveFocusType.INPUT;
     } else if (event.key === "Enter" || event.key === " ") {
@@ -1042,7 +1062,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       disableUserInputs,
       showAvatarLine,
       className,
-      doAutoScroll,
       isMessageForInput,
       scrollElementIntoView,
       isFirstMessageItem,
@@ -1050,6 +1069,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       hideFeedback,
       allowNewFeedback,
     } = this.props;
+
+    // Guard against undefined message during RESTART_CONVERSATION transitions
+    // When the store is cleared, React 17's use-sync-external-store shim may
+    // trigger a re-render before all components are updated, causing message to be undefined
+    if (!message) {
+      return null;
+    }
 
     const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
@@ -1075,7 +1101,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         disableUserInputs={disableUserInputs}
         isMessageForInput={isMessageForInput}
         config={config}
-        doAutoScroll={doAutoScroll}
         scrollElementIntoView={scrollElementIntoView}
         showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}
@@ -1135,7 +1160,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       >
         {this.renderFocusHandle()}
         {showAvatarLine && this.renderAvatarLine(localMessageItem, message)}
-        <div className="cds-aichat--message--padding">
+        <div
+          className="cds-aichat--message--padding"
+          aria-hidden={this.state.focusHandleHasFocus ? "true" : undefined}
+        >
           {isResponse(message) && (
             <div className="cds-aichat--assistant-message">
               {readWidgetSaid && (
