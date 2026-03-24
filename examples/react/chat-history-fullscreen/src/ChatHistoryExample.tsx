@@ -235,7 +235,7 @@ function ChatHistoryExample({
           chat.id === itemId
             ? {
                 ...chat,
-                title: event.detail.newTitle,
+                name: event.detail.newName,
               }
             : chat,
         ),
@@ -248,7 +248,7 @@ function ChatHistoryExample({
             chat.id === itemId
               ? {
                   ...chat,
-                  title: event.detail.newTitle,
+                  name: event.detail.newName,
                 }
               : chat,
           ),
@@ -295,7 +295,7 @@ function ChatHistoryExample({
 
       // Add matching pinned items
       pinnedItems.forEach((item) => {
-        if (item.title.toLowerCase().includes(searchVal)) {
+        if (item.name.toLowerCase().includes(searchVal)) {
           results.push({
             ...item,
             isPinned: true,
@@ -306,7 +306,7 @@ function ChatHistoryExample({
       // Add matching history items
       regularItems.forEach((section) => {
         section.chats.forEach((chat) => {
-          if (chat.title.toLowerCase().includes(searchVal)) {
+          if (chat.name.toLowerCase().includes(searchVal)) {
             results.push({
               ...chat,
               section: section.section,
@@ -343,7 +343,7 @@ function ChatHistoryExample({
   return (
     <HistoryShell>
       <HistoryHeader
-        title="Conversations"
+        headerTitle="Conversations"
         onClose={handleHistoryClose}
         showCloseAction={isMobile}
       />
@@ -374,7 +374,7 @@ function ChatHistoryExample({
                     date={result.lastUpdated}
                     onSelected={handleSelectChat}
                   >
-                    {result.title}
+                    {result.name}
                   </HistorySearchItem>
                 ))}
               </HistoryPanelMenu>
@@ -387,7 +387,7 @@ function ChatHistoryExample({
                     <HistoryPanelItem
                       key={item.id}
                       id={item.id}
-                      title={item.title}
+                      name={item.name}
                       selected={item.selected}
                       rename={item.rename}
                       actions={pinnedHistoryItemActions}
@@ -408,7 +408,7 @@ function ChatHistoryExample({
                       <HistoryPanelItem
                         key={chat.id}
                         id={chat.id}
-                        title={chat.title}
+                        name={chat.name}
                         selected={chat.selected}
                         rename={chat.rename}
                         actions={historyItemActions}

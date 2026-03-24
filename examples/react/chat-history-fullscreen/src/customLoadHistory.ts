@@ -58,7 +58,7 @@ function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
 
 async function customLoadHistory(
   _instance: ChatInstance,
-  requestText = pinnedHistoryItems[1].title,
+  requestText = pinnedHistoryItems[1].name,
 ) {
   const responseTexts = [
     "**Bold text** with some *italic* formatting.",

@@ -35,63 +35,63 @@ interface HistoryExampleProps {
 
 // Sample history data
 const PINNED_CHATS = [
-  { id: "pinned-1", title: "Important conversation about AI", pinned: true },
-  { id: "pinned-2", title: "Project planning discussion", pinned: true },
-  { id: "pinned-3", title: "Code review best practices", pinned: true },
+  { id: "pinned-1", name: "Important conversation about AI", pinned: true },
+  { id: "pinned-2", name: "Project planning discussion", pinned: true },
+  { id: "pinned-3", name: "Code review best practices", pinned: true },
 ];
 
 const HISTORY_SECTIONS = [
   {
     section: "Today",
     chats: [
-      { id: "today-1", title: "How to optimize database queries" },
-      { id: "today-2", title: "React best practices" },
-      { id: "today-3", title: "TypeScript type inference" },
-      { id: "today-4", title: "Debugging memory leaks in Node.js" },
-      { id: "today-5", title: "Understanding async/await patterns" },
-      { id: "today-6", title: "CSS animations and transitions" },
-      { id: "today-7", title: "Git branching strategies" },
+      { id: "today-1", name: "How to optimize database queries" },
+      { id: "today-2", name: "React best practices" },
+      { id: "today-3", name: "TypeScript type inference" },
+      { id: "today-4", name: "Debugging memory leaks in Node.js" },
+      { id: "today-5", name: "Understanding async/await patterns" },
+      { id: "today-6", name: "CSS animations and transitions" },
+      { id: "today-7", name: "Git branching strategies" },
     ],
   },
   {
     section: "Yesterday",
     chats: [
-      { id: "yesterday-1", title: "CSS Grid layout examples" },
-      { id: "yesterday-2", title: "API design patterns" },
-      { id: "yesterday-3", title: "Testing strategies for React apps" },
-      { id: "yesterday-4", title: "Webpack configuration tips" },
-      { id: "yesterday-5", title: "Accessibility best practices" },
-      { id: "yesterday-6", title: "Performance optimization techniques" },
+      { id: "yesterday-1", name: "CSS Grid layout examples" },
+      { id: "yesterday-2", name: "API design patterns" },
+      { id: "yesterday-3", name: "Testing strategies for React apps" },
+      { id: "yesterday-4", name: "Webpack configuration tips" },
+      { id: "yesterday-5", name: "Accessibility best practices" },
+      { id: "yesterday-6", name: "Performance optimization techniques" },
     ],
   },
   {
     section: "Last 7 days",
     chats: [
-      { id: "week-1", title: "Machine learning basics" },
-      { id: "week-2", title: "Docker containerization" },
-      { id: "week-3", title: "GraphQL vs REST" },
-      { id: "week-4", title: "Microservices architecture" },
-      { id: "week-5", title: "CI/CD pipeline setup" },
-      { id: "week-6", title: "Database indexing strategies" },
-      { id: "week-7", title: "Security best practices" },
-      { id: "week-8", title: "Cloud deployment options" },
-      { id: "week-9", title: "Monitoring and logging" },
-      { id: "week-10", title: "Code refactoring techniques" },
+      { id: "week-1", name: "Machine learning basics" },
+      { id: "week-2", name: "Docker containerization" },
+      { id: "week-3", name: "GraphQL vs REST" },
+      { id: "week-4", name: "Microservices architecture" },
+      { id: "week-5", name: "CI/CD pipeline setup" },
+      { id: "week-6", name: "Database indexing strategies" },
+      { id: "week-7", name: "Security best practices" },
+      { id: "week-8", name: "Cloud deployment options" },
+      { id: "week-9", name: "Monitoring and logging" },
+      { id: "week-10", name: "Code refactoring techniques" },
     ],
   },
   {
     section: "Last 30 days",
     chats: [
-      { id: "month-1", title: "Introduction to Kubernetes" },
-      { id: "month-2", title: "Redux state management" },
-      { id: "month-3", title: "WebSocket implementation" },
-      { id: "month-4", title: "OAuth 2.0 authentication" },
-      { id: "month-5", title: "Progressive Web Apps" },
-      { id: "month-6", title: "Server-side rendering with Next.js" },
-      { id: "month-7", title: "Mobile-first design principles" },
-      { id: "month-8", title: "API rate limiting strategies" },
-      { id: "month-9", title: "Data visualization with D3.js" },
-      { id: "month-10", title: "Serverless architecture patterns" },
+      { id: "month-1", name: "Introduction to Kubernetes" },
+      { id: "month-2", name: "Redux state management" },
+      { id: "month-3", name: "WebSocket implementation" },
+      { id: "month-4", name: "OAuth 2.0 authentication" },
+      { id: "month-5", name: "Progressive Web Apps" },
+      { id: "month-6", name: "Server-side rendering with Next.js" },
+      { id: "month-7", name: "Mobile-first design principles" },
+      { id: "month-8", name: "API rate limiting strategies" },
+      { id: "month-9", name: "Data visualization with D3.js" },
+      { id: "month-10", name: "Serverless architecture patterns" },
     ],
   },
 ];
@@ -108,30 +108,30 @@ function HistoryWriteableElementExample({
 
   // Handle chat selection
   const handleChatSelected = useCallback((event: any) => {
-    const { itemId, itemTitle } = event.detail;
-    console.log(`Selected chat: ${itemTitle} (${itemId})`);
+    const { itemId, itemName } = event.detail;
+    console.log(`Selected chat: ${itemName} (${itemId})`);
     setSelectedChatId(itemId);
     // Here you would typically load the conversation
   }, []);
 
   // Handle chat actions (rename, delete, pin, etc.)
   const handleChatAction = useCallback((event: any) => {
-    const { action, itemTitle, element } = event.detail;
+    const { action, itemName, element } = event.detail;
 
     switch (action) {
       case "Rename":
         element.rename = true;
         break;
       case "Delete":
-        console.log(`Deleting chat: ${itemTitle}`);
+        console.log(`Deleting chat: ${itemName}`);
         // Handle delete
         break;
       case "Pin":
-        console.log(`Pinning chat: ${itemTitle}`);
+        console.log(`Pinning chat: ${itemName}`);
         // Handle pin
         break;
       case "Unpin":
-        console.log(`Unpinning chat: ${itemTitle}`);
+        console.log(`Unpinning chat: ${itemName}`);
         // Handle unpin
         break;
       default:
@@ -150,7 +150,7 @@ function HistoryWriteableElementExample({
 
       // Add matching pinned items
       PINNED_CHATS.forEach((item) => {
-        if (item.title.toLowerCase().includes(value)) {
+        if (item.name.toLowerCase().includes(value)) {
           results.push({
             ...item,
             isPinned: true,
@@ -161,7 +161,7 @@ function HistoryWriteableElementExample({
       // Add matching history items
       HISTORY_SECTIONS.forEach((section) => {
         section.chats.forEach((chat) => {
-          if (chat.title.toLowerCase().includes(value)) {
+          if (chat.name.toLowerCase().includes(value)) {
             results.push({
               ...chat,
               section: section.section,
@@ -227,7 +227,7 @@ function HistoryWriteableElementExample({
   return (
     <HistoryShell className="history-writeable-element">
       <HistoryHeader
-        title="Conversations"
+        headerTitle="Conversations"
         onHistoryHeaderCloseClick={handleHistoryClose}
         showCloseAction={isMobile}
       />
@@ -261,7 +261,7 @@ function HistoryWriteableElementExample({
                     date={result.section || "Pinned"}
                     onHistorySearchItemSelected={handleChatSelected}
                   >
-                    {result.title}
+                    {result.name}
                   </HistorySearchItem>
                 ))}
               </HistoryPanelMenu>
@@ -277,7 +277,7 @@ function HistoryWriteableElementExample({
                     <HistoryPanelItem
                       key={chat.id}
                       id={chat.id}
-                      title={chat.title}
+                      name={chat.name}
                       selected={chat.id === selectedChatId}
                       actions={pinnedHistoryItemActions}
                       onHistoryItemSelected={handleChatSelected}
@@ -298,7 +298,7 @@ function HistoryWriteableElementExample({
                       <HistoryPanelItem
                         key={chat.id}
                         id={chat.id}
-                        title={chat.title}
+                        name={chat.name}
                         selected={chat.id === selectedChatId}
                         actions={historyItemActions}
                         onHistoryItemSelected={handleChatSelected}

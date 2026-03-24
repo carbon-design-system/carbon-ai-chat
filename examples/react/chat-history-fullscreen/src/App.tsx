@@ -78,7 +78,7 @@ function App() {
       if (!instance) {
         return;
       }
-      const requestText = event.detail.itemTitle;
+      const requestText = event.detail.itemName;
       const historyData = await customLoadHistory(instance, requestText);
 
       await instance.messaging.clearConversation();
