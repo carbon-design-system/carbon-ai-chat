@@ -28,6 +28,7 @@ import "./demo-chat-theme-switcher";
 import "./demo-header-switcher";
 import "./demo-chat-feedback-switcher";
 import "./demo-layout-config-switcher";
+import "./demo-chat-history-switcher";
 import "./demo-launcher-switcher";
 import "./demo-input-config-switcher";
 import "./demo-stop-button-immediate-switcher";
@@ -102,6 +103,7 @@ export class DemoBody extends LitElement {
     }
 
     .config-section > demo-header-switcher,
+    .config-section > demo-chat-history-switcher,
     .config-section > demo-layout-config-switcher,
     .config-section > demo-launcher-switcher,
     .config-section > demo-input-config-switcher,
@@ -544,6 +546,10 @@ export class DemoBody extends LitElement {
                     .config=${this.config}
                   ></demo-chat-theme-switcher>
                   <div class="config-section">
+                    <div class="config-section__title">History</div>
+                    <demo-chat-history-switcher
+                      .config=${this.config}
+                    ></demo-chat-history-switcher>
                     <div class="config-section__title">Feedback</div>
                     <demo-chat-feedback-switcher
                       .config=${this.config}
