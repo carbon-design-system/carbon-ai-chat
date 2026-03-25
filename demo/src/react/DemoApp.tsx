@@ -211,7 +211,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       ),
       historyPanelElement: (
         <HistoryWriteableElementExample
-          location="historyPanelElement"
           instance={instance as ChatInstance}
           parentStateText={stateText}
           isMobile={instance?.getState().customPanels.history.isMobile ?? false}
