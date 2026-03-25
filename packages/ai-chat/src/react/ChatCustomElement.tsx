@@ -161,6 +161,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     namespace,
     shouldSanitizeHTML,
     header,
+    history,
     layout,
     messaging,
     isReadonly,
@@ -231,6 +232,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           namespace={namespace}
           shouldSanitizeHTML={shouldSanitizeHTML}
           header={header}
+          history={history}
           layout={layout}
           messaging={messaging}
           isReadonly={isReadonly}
