@@ -272,6 +272,11 @@ export enum MinimizeButtonIconType {
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
   SIDE_PANEL_RIGHT = "side-panel-right",
+
+  /**
+   * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
+   */
+  SIDE_PANEL_DOWN = "side-panel-down",
 }
 
 /**

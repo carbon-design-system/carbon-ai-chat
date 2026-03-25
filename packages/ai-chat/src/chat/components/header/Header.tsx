@@ -14,6 +14,8 @@ import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import RightPanelOpen16 from "@carbon/icons/es/right-panel--open/16.js";
 import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
+import BottomPanelClose16 from "@carbon/icons/es/bottom-panel--close/16.js";
+import BottomPanelOpen16 from "@carbon/icons/es/bottom-panel--open/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
@@ -289,6 +291,9 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           break;
         case MinimizeButtonIconType.SIDE_PANEL_RIGHT:
           closeIconToUse = isOpen ? RightPanelClose16 : RightPanelOpen16;
+          break;
+        case MinimizeButtonIconType.SIDE_PANEL_DOWN:
+          closeIconToUse = isOpen ? BottomPanelClose16 : BottomPanelOpen16;
           break;
         default:
           closeIconToUse = SubtractLarge16;
