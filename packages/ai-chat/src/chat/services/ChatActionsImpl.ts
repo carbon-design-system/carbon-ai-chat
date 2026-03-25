@@ -352,6 +352,10 @@ class ChatActionsImpl {
         workspaceID: state.workspacePanelState.workspaceID,
         additionalData: state.workspacePanelState.additionalData,
       },
+      history: {
+        isOpen: Boolean(state.historyPanelState.isOpen),
+        isMobile: Boolean(state.historyPanelState.isMobile),
+      },
     });
 
     const workspace = deepFreeze({
@@ -361,6 +365,11 @@ class ChatActionsImpl {
       },
       workspaceID: state.workspacePanelState.workspaceID,
       additionalData: state.workspacePanelState.additionalData,
+    });
+
+    const history = deepFreeze({
+      isOpen: Boolean(state.historyPanelState.isOpen),
+      isMobile: Boolean(state.historyPanelState.isMobile),
     });
 
     return deepFreeze({
@@ -373,6 +382,7 @@ class ChatActionsImpl {
       input,
       customPanels,
       workspace,
+      history,
     });
   }
 

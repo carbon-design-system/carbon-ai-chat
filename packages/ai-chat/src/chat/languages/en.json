@@ -68,6 +68,8 @@
   "header_previewLinkTitle": "Assistant preview",
   "header_ariaAssistantAvatar": "{assistantName} avatar image",
   "header_overflowMenu_options": "Options",
+  "history_view_chats": "View chats",
+  "history_new_chat": "New chat",
   "homeScreen_returnToAssistant": "Return to conversation",
   "homeScreen_returnToHome": "Return to the home screen",
   "homeScreen_overflowMenuHomeScreen": "Home screen",
