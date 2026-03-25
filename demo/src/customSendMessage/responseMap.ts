@@ -49,6 +49,7 @@ import {
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doVideo } from "./doVideo";
+import { doSystemMessage } from "./doSystemMessage";
 
 const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
   Object.fromEntries(
@@ -87,6 +88,8 @@ const RESPONSE_MAP: Record<
   "unordered list": (instance) => doList(instance),
   "option list": (instance) => doOption(instance),
   "ordered list": (instance) => doOrderedList(instance),
+  "system message (inline)": (instance) => doSystemMessage(instance, true),
+  "system message (stand alone)": (instance) => doSystemMessage(instance),
   table: (instance) => doTable(instance),
   "table (stream)": (instance, requestOptions) =>
     doTableStreaming(instance, requestOptions),
