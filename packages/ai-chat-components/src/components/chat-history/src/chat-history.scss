@@ -17,7 +17,10 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  border: solid convert.rem(1px) theme.$border-subtle-00;
+  border: var(
+    --history-shell-border,
+    solid #{convert.rem(1px)} #{theme.$border-subtle-00}
+  );
   background: theme.$chat-header-background;
   block-size: 100%;
   border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
