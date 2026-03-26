@@ -148,6 +148,9 @@ export class HistoryWriteableElementExample extends LitElement {
 
       const loadChatEvent = new CustomEvent("history-panel-load-chat", init);
       this.dispatchEvent(loadChatEvent);
+
+      // close the history panel
+      this._handleHistoryClose();
     }
   };
 

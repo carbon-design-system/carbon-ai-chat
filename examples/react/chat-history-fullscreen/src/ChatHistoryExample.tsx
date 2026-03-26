@@ -90,6 +90,14 @@ function ChatHistoryExample({
     })),
   );
 
+  // Handle close history panel
+  const handleHistoryClose = useCallback(() => {
+    // In float mode, close the history panel
+    if (instance?.customPanels) {
+      instance.customPanels.getPanel(PanelType.HISTORY)?.close();
+    }
+  }, [instance]);
+
   // Handle select chat
   const handleSelectChat = useCallback(
     (event: CustomEvent) => {
@@ -128,9 +136,21 @@ function ChatHistoryExample({
         );
 
         loadChat(event);
+
+        if (isMobile === true) {
+          // close the history panel
+          handleHistoryClose();
+        }
       }
     },
-    [selectedId, pinnedItems, regularItems, loadChat],
+    [
+      selectedId,
+      pinnedItems,
+      regularItems,
+      loadChat,
+      isMobile,
+      handleHistoryClose,
+    ],
   );
 
   // Handle pin chat
@@ -328,14 +348,6 @@ function ChatHistoryExample({
     // Create new conversation - you would typically call your API here
     // For demo purposes, we'll just alert it
   }, []);
-
-  /// Handle close history panel
-  const handleHistoryClose = useCallback(() => {
-    // In float mode, close the history panel
-    if (instance?.customPanels) {
-      instance.customPanels.getPanel(PanelType.HISTORY)?.close();
-    }
-  }, [instance]);
 
   const showSearchResults = searchResults.length > 0 && searchValue;
   const noSearchResults = searchResults.length === 0 && searchValue;
