@@ -6,6 +6,8 @@
  *
  *  @license
  */
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import Delete16 from "@carbon/icons/es/delete/16.js";
 
 export interface resultItem {
   id: string;
@@ -33,6 +35,7 @@ export const historyItemActions = [
     text: "Delete",
     delete: true,
     divider: true,
+    icon: iconLoader(Delete16, { slot: "icon" }),
   },
 ];
 
@@ -47,6 +50,7 @@ export const pinnedHistoryItemActions = [
     text: "Delete",
     delete: true,
     divider: true,
+    icon: iconLoader(Delete16, { slot: "icon" }),
   },
 ];
 
