@@ -564,6 +564,7 @@ export function AppShellPanels({
           priority={3}
           fullWidth={true}
           bodyNoPadding={true}
+          noScroll={true}
           aiEnabled={config.public.aiEnabled ? true : false}
           animationOnOpen="slide-in-from-start"
           animationOnClose="slide-out-to-start"
