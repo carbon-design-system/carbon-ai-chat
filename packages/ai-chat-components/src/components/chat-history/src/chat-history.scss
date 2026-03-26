@@ -298,9 +298,9 @@
     position: absolute;
     z-index: -1;
     border-radius: var(--#{$prefix}-border-radius-start-start, 0)
-    var(--#{$prefix}-border-radius-start-end, 0)
-    var(--#{$prefix}-border-radius-end-end, 0)
-    var(--#{$prefix}-border-radius-end-start, 0);
+      var(--#{$prefix}-border-radius-start-end, 0)
+      var(--#{$prefix}-border-radius-end-end, 0)
+      var(--#{$prefix}-border-radius-end-start, 0);
     background: theme.$background;
     content: "";
     inset: 0;

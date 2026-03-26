@@ -88,6 +88,9 @@ export class Demo extends LitElement {
   @state()
   accessor valueFromParent: string = Date.now().toString();
 
+  @state()
+  accessor isMobile: boolean = false;
+
   onBeforeRender = (instance: ChatInstance) => {
     // Set the instance in state.
     this.instance = instance;
@@ -98,6 +101,18 @@ export class Demo extends LitElement {
     instance.on({
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: this.userDefinedHandler,
+    });
+
+    instance.on({
+      type: BusEventType.STATE_CHANGE,
+      handler: (event: any) => {
+        if (
+          event.previousState?.customPanels.history.isMobile !==
+          event.newState?.customPanels.history.isMobile
+        ) {
+          this.isMobile = event.newState?.customPanels.history.isMobile;
+        }
+      },
     });
   };
 
@@ -223,8 +238,7 @@ export class Demo extends LitElement {
           location=${key}
           .instance=${this.instance}
           .valueFromParent=${this.valueFromParent}
-          .isMobile=${this.instance?.getState().customPanels.history.isMobile ??
-          false}
+          .isMobile=${this.isMobile}
         ></history-writeable-element-example>
       </div>
     `;
