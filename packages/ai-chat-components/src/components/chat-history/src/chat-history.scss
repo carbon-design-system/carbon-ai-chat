@@ -287,15 +287,15 @@
   flex-direction: column;
   justify-content: center;
   padding: layout.$spacing-07;
-  border-radius: var(--#{$prefix}-border-radius-start-start, 0)
-    var(--#{$prefix}-border-radius-start-end, 0)
-    var(--#{$prefix}-border-radius-end-end, 0)
-    var(--#{$prefix}-border-radius-end-start, 0);
   inset: 0;
 
   &::before {
     position: absolute;
     z-index: -1;
+    border-radius: var(--#{$prefix}-border-radius-start-start, 0)
+      var(--#{$prefix}-border-radius-start-end, 0)
+      var(--#{$prefix}-border-radius-end-end, 0)
+      var(--#{$prefix}-border-radius-end-start, 0);
     background: theme.$background;
     content: "";
     inset: 0;
