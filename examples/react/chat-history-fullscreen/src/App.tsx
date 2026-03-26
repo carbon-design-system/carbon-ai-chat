@@ -12,8 +12,9 @@ import {
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
+  BusEventType,
 } from "@carbon/ai-chat";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
@@ -53,25 +54,19 @@ function App() {
     // Initialize isMobile from current state
     const initialIsMobile = instance.getState().customPanels.history.isMobile;
     setIsMobile(initialIsMobile);
+
+    instance.on({
+      type: BusEventType.STATE_CHANGE,
+      handler: (event: any) => {
+        if (
+          event.previousState?.customPanels.history.isMobile !==
+          event.newState?.customPanels.history.isMobile
+        ) {
+          setIsMobile(event.newState?.customPanels.history.isMobile);
+        }
+      },
+    });
   }
-
-  // Listen for window resize to update isMobile state
-  useEffect(() => {
-    if (!instance) {
-      return;
-    }
-
-    const handleResize = () => {
-      const newIsMobile = instance.getState().customPanels.history.isMobile;
-      setIsMobile(newIsMobile);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [instance]);
 
   const loadChat = useCallback(
     async (event: CustomEvent) => {
