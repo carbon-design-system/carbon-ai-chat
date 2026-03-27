@@ -78,7 +78,7 @@ export const Default = {
     },
   },
   args: {
-    HeaderTitle: "Conversations",
+    HeaderTitle: "Chats",
     searchOff: false,
     showCloseAction: true,
   },

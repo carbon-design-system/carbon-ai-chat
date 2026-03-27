@@ -53,7 +53,7 @@ function ChatHistory() {
 
   return (
     <HistoryShell>
-      <HistoryHeader headerTitle="Conversations" />
+      <HistoryHeader headerTitle="Chats" />
       <HistoryToolbar onSearchInput={handleSearchInput} />
       <HistoryContent>
         <div slot="results-count">Results: 10</div>
@@ -292,7 +292,7 @@ function ChatHistory() {
     isHistoryVisible && (
       <HistoryShell>
         <HistoryHeader
-          headerTitle="Conversations"
+          headerTitle="Chats"
           onClose={handleHeaderClose}
         />
         {/* ... rest of content */}
@@ -351,7 +351,7 @@ function ChatHistory() {
 
   return (
     <HistoryShell>
-      <HistoryHeader headerTitle="Conversations" />
+      <HistoryHeader headerTitle="Chats" />
       <HistoryToolbar
         onNewChatClick={handleNewChat}
         onSearchInput={handleSearchInput}
@@ -489,7 +489,7 @@ function ChatHistory() {
 
   return (
     <HistoryShell>
-      <HistoryHeader headerTitle="Conversations" />
+      <HistoryHeader headerTitle="Chats" />
       <HistoryToolbar />
       <HistoryContent>
         <HistoryPanel aria-label="Chat history">

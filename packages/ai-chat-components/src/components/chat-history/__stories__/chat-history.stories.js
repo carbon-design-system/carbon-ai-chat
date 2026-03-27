@@ -72,7 +72,7 @@ class ChatHistoryDemo extends LitElement {
 
   constructor() {
     super();
-    this.headerTitle = "Conversations";
+    this.headerTitle = "Chats";
     this.searchOff = false;
     this.showCloseAction = true;
     this.startPanel = false;
@@ -467,7 +467,7 @@ export const Default = {
     },
   },
   args: {
-    HeaderTitle: "Conversations",
+    HeaderTitle: "Chats",
     searchOff: false,
     showCloseAction: true,
   },
