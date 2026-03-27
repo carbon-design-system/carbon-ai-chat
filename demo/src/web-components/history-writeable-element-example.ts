@@ -418,51 +418,62 @@ export class HistoryWriteableElementExample extends LitElement {
                 : ""}
               ${!this.showSearchResults && !this.noSearchResults
                 ? html`
-                    <cds-aichat-history-panel-menu expanded title="Pinned">
-                      ${iconLoader(PinFilled16, { slot: "title-icon" })}
-                      ${this.pinnedItems.map(
-                        (chat) => html`
-                          <cds-aichat-history-panel-item
-                            id=${chat.id}
-                            name=${chat.name}
-                            ?selected=${chat.selected}
-                            ?rename=${chat.rename}
-                            .actions=${pinnedHistoryItemActions}
-                            @history-item-selected=${this._handleSelectChat}
-                            @history-item-menu-action=${this
-                              ._handleHistoryItemAction}
-                            @history-panel-item-input-save=${this
-                              ._handleRenameSave}
-                          ></cds-aichat-history-panel-item>
+                    ${this.pinnedItems.length > 0
+                      ? html`
+                          <cds-aichat-history-panel-menu
+                            expanded
+                            title="Pinned"
+                          >
+                            ${iconLoader(PinFilled16, { slot: "title-icon" })}
+                            ${this.pinnedItems.map(
+                              (chat) => html`
+                                <cds-aichat-history-panel-item
+                                  id=${chat.id}
+                                  name=${chat.name}
+                                  ?selected=${chat.selected}
+                                  ?rename=${chat.rename}
+                                  .actions=${pinnedHistoryItemActions}
+                                  @history-item-selected=${this
+                                    ._handleSelectChat}
+                                  @history-item-menu-action=${this
+                                    ._handleHistoryItemAction}
+                                  @history-panel-item-input-save=${this
+                                    ._handleRenameSave}
+                                ></cds-aichat-history-panel-item>
+                              `,
+                            )}
+                          </cds-aichat-history-panel-menu>
+                        `
+                      : ""}
+                    ${this.regularItems
+                      .filter((section) => section.chats.length > 0)
+                      .map(
+                        (section) => html`
+                          <cds-aichat-history-panel-menu
+                            expanded
+                            title=${section.section}
+                          >
+                            ${iconLoader(Search16, { slot: "title-icon" })}
+                            ${section.chats.map(
+                              (chat) => html`
+                                <cds-aichat-history-panel-item
+                                  id=${chat.id}
+                                  name=${chat.name}
+                                  ?selected=${chat.selected}
+                                  ?rename=${chat.rename}
+                                  .actions=${historyItemActions}
+                                  @history-item-selected=${this
+                                    ._handleSelectChat}
+                                  @history-item-menu-action=${this
+                                    ._handleHistoryItemAction}
+                                  @history-panel-item-input-save=${this
+                                    ._handleRenameSave}
+                                ></cds-aichat-history-panel-item>
+                              `,
+                            )}
+                          </cds-aichat-history-panel-menu>
                         `,
                       )}
-                    </cds-aichat-history-panel-menu>
-                    ${this.regularItems.map(
-                      (section) => html`
-                        <cds-aichat-history-panel-menu
-                          expanded
-                          title=${section.section}
-                        >
-                          ${iconLoader(Search16, { slot: "title-icon" })}
-                          ${section.chats.map(
-                            (chat) => html`
-                              <cds-aichat-history-panel-item
-                                id=${chat.id}
-                                name=${chat.name}
-                                ?selected=${chat.selected}
-                                ?rename=${chat.rename}
-                                .actions=${historyItemActions}
-                                @history-item-selected=${this._handleSelectChat}
-                                @history-item-menu-action=${this
-                                  ._handleHistoryItemAction}
-                                @history-panel-item-input-save=${this
-                                  ._handleRenameSave}
-                              ></cds-aichat-history-panel-item>
-                            `,
-                          )}
-                        </cds-aichat-history-panel-menu>
-                      `,
-                    )}
                   `
                 : ""}
             </cds-aichat-history-panel-items>
