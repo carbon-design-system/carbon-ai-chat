@@ -194,6 +194,9 @@ export class ResizeObserverManager {
     // Initial measurement
     const rect = mainContentBody.getBoundingClientRect();
     updateHistoryVisibility(rect.width);
+
+    // Mark initialization complete after initial measurement
+    onInitialMeasurement?.();
   }
 
   /**
