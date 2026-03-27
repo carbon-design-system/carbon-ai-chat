@@ -30,7 +30,7 @@ import {
 } from "../fixtures/history/chatHistoryData";
 import { customLoadHistory } from "../fixtures/history/customLoadHistory";
 
-import { PinFilled, Search } from "@carbon/icons-react";
+import { PinFilled, Search, Time } from "@carbon/icons-react";
 import React, { useState, useCallback } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
@@ -358,7 +358,7 @@ function HistoryWriteableElementExample({
   return (
     <HistoryShell>
       <HistoryHeader
-        headerTitle="Conversations"
+        headerTitle="Chats"
         onClose={handleHistoryClose}
         showCloseAction={isMobile}
       />
@@ -422,7 +422,7 @@ function HistoryWriteableElementExample({
                       expanded
                       title={item.section}
                     >
-                      <Search slot="title-icon" />
+                      <Time slot="title-icon" />
                       {item.chats.map((chat) => (
                         <HistoryPanelItem
                           key={chat.id}

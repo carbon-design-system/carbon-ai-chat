@@ -15,6 +15,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import PinFilled16 from "@carbon/icons/es/pin--filled/16.js";
 import Search16 from "@carbon/icons/es/search/16.js";
+import Time16 from "@carbon/icons/es/time/16.js";
 import {
   historyItemActions,
   pinnedHistoryItemActions,
@@ -365,7 +366,7 @@ export class HistoryWriteableElementExample extends LitElement {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          header-title="Conversations"
+          header-title="Chats"
           ?show-close-action=${this.isMobile}
           @history-header-close-click=${this._handleHistoryClose}
         ></cds-aichat-history-header>
@@ -453,7 +454,7 @@ export class HistoryWriteableElementExample extends LitElement {
                             expanded
                             title=${section.section}
                           >
-                            ${iconLoader(Search16, { slot: "title-icon" })}
+                            ${iconLoader(Time16, { slot: "title-icon" })}
                             ${section.chats.map(
                               (chat) => html`
                                 <cds-aichat-history-panel-item
