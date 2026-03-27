@@ -372,42 +372,51 @@ class ChatHistoryDemo extends LitElement {
                 : ""}
               ${!showSearchResults && !noSearchResults
                 ? html`
-                    <cds-aichat-history-panel-menu expanded title="Pinned">
-                      ${iconLoader(PinFilled16, {
-                        slot: "title-icon",
-                      })}
-                      ${this.pinnedItems.map(
+                    ${this.pinnedItems.length > 0
+                      ? html`
+                          <cds-aichat-history-panel-menu
+                            expanded
+                            title="Pinned"
+                          >
+                            ${iconLoader(PinFilled16, {
+                              slot: "title-icon",
+                            })}
+                            ${this.pinnedItems.map(
+                              (item) => html`
+                                <cds-aichat-history-panel-item
+                                  id="${item.id}"
+                                  name="${item.name}"
+                                  ?selected=${item.selected}
+                                  ?rename=${item.rename}
+                                  .actions=${pinnedHistoryItemActions}
+                                ></cds-aichat-history-panel-item>
+                              `,
+                            )}
+                          </cds-aichat-history-panel-menu>
+                        `
+                      : ""}
+                    ${this.regularItems
+                      .filter((item) => item.chats.length > 0)
+                      .map(
                         (item) => html`
-                          <cds-aichat-history-panel-item
-                            id="${item.id}"
-                            name="${item.name}"
-                            ?selected=${item.selected}
-                            ?rename=${item.rename}
-                            .actions=${pinnedHistoryItemActions}
-                          ></cds-aichat-history-panel-item>
+                          <cds-aichat-history-panel-menu
+                            expanded
+                            title="${item.section}"
+                          >
+                            ${item.icon}
+                            ${item.chats.map(
+                              (chat) => html`
+                                <cds-aichat-history-panel-item
+                                  id="${chat.id}"
+                                  name="${chat.name}"
+                                  ?selected=${chat.selected}
+                                  .actions=${historyItemActions}
+                                ></cds-aichat-history-panel-item>
+                              `,
+                            )}
+                          </cds-aichat-history-panel-menu>
                         `,
                       )}
-                    </cds-aichat-history-panel-menu>
-                    ${this.regularItems.map(
-                      (item) => html`
-                        <cds-aichat-history-panel-menu
-                          expanded
-                          title="${item.section}"
-                        >
-                          ${item.icon}
-                          ${item.chats.map(
-                            (chat) => html`
-                              <cds-aichat-history-panel-item
-                                id="${chat.id}"
-                                name="${chat.name}"
-                                ?selected=${chat.selected}
-                                .actions=${historyItemActions}
-                              ></cds-aichat-history-panel-item>
-                            `,
-                          )}
-                        </cds-aichat-history-panel-menu>
-                      `,
-                    )}
                   `
                 : ""}
             </cds-aichat-history-panel-items>

@@ -31,7 +31,7 @@ import {
   historyItems,
 } from "./story-data";
 
-import { PinFilled, Search } from "@carbon/icons-react";
+import { PinFilled, Search, Time } from "@carbon/icons-react";
 
 export default {
   title: "Unstable/Chat History",
@@ -372,44 +372,48 @@ export const Default = {
               )}
               {!showSearchResults && !noSearchResults && (
                 <>
-                  <HistoryPanelMenu expanded title="Pinned">
-                    <PinFilled slot="title-icon" />
-                    {pinnedItems.map((item) => (
-                      <HistoryPanelItem
-                        key={item.id}
-                        id={item.id}
-                        name={item.name}
-                        selected={item.selected}
-                        rename={item.rename}
-                        actions={pinnedHistoryItemActions}
-                        onMenuAction={handleHistoryItemAction}
-                        onSelected={handleSelectChat}
-                        onRenameSave={handleRenameSave}
-                      />
-                    ))}
-                  </HistoryPanelMenu>
-                  {regularItems.map((item) => (
-                    <HistoryPanelMenu
-                      key={item.section}
-                      expanded
-                      title={item.section}
-                    >
-                      <Search slot="title-icon" />
-                      {item.chats.map((chat) => (
+                  {pinnedItems.length > 0 && (
+                    <HistoryPanelMenu expanded title="Pinned">
+                      <PinFilled slot="title-icon" />
+                      {pinnedItems.map((item) => (
                         <HistoryPanelItem
-                          key={chat.id}
-                          id={chat.id}
-                          name={chat.name}
-                          selected={chat.selected}
-                          rename={chat.rename}
-                          actions={historyItemActions}
+                          key={item.id}
+                          id={item.id}
+                          name={item.name}
+                          selected={item.selected}
+                          rename={item.rename}
+                          actions={pinnedHistoryItemActions}
                           onMenuAction={handleHistoryItemAction}
                           onSelected={handleSelectChat}
                           onRenameSave={handleRenameSave}
                         />
                       ))}
                     </HistoryPanelMenu>
-                  ))}
+                  )}
+                  {regularItems
+                    .filter((item) => item.chats.length > 0)
+                    .map((item) => (
+                      <HistoryPanelMenu
+                        key={item.section}
+                        expanded
+                        title={item.section}
+                      >
+                        <Time slot="title-icon" />
+                        {item.chats.map((chat) => (
+                          <HistoryPanelItem
+                            key={chat.id}
+                            id={chat.id}
+                            name={chat.name}
+                            selected={chat.selected}
+                            rename={chat.rename}
+                            actions={historyItemActions}
+                            onMenuAction={handleHistoryItemAction}
+                            onSelected={handleSelectChat}
+                            onRenameSave={handleRenameSave}
+                          />
+                        ))}
+                      </HistoryPanelMenu>
+                    ))}
                 </>
               )}
             </HistoryPanelItems>
