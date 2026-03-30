@@ -319,6 +319,12 @@ export class DemoApp extends LitElement {
         }
       },
     });
+
+    // Listen for when new chat option is selected from the chat header overflow menu
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+      handler: () => window.alert("Creating new chat from header menu"),
+    });
   };
 
   /**
