@@ -35,7 +35,7 @@ class CDSAIChatHistoryHeader extends LitElement {
    * Header title
    */
   @property({ type: String, reflect: true, attribute: "header-title" })
-  headerTitle = "Conversations";
+  headerTitle = "Chats";
 
   /**
    * Label for close chat history button.
