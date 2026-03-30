@@ -499,8 +499,10 @@ export class DemoBody extends LitElement {
 
     return html` <main id="main-content" class="${pageClass}">
       ${this.isSetChatConfigMode && this.hasReceivedSetChatConfig
-        ? html`<div
+        ? html`<aside
             class="nav-block set-chat-config-sidebar"
+            role="complementary"
+            aria-label="Configuration Mode"
             data-testid="config_sidebar"
           >
             <div class="title">setChatConfig Mode Active</div>
@@ -516,86 +518,226 @@ export class DemoBody extends LitElement {
             >
               Leave setChatConfig Mode
             </cds-button>
-          </div>`
+          </aside>`
         : !this.isSetChatConfigMode
-          ? html`<div class="nav-block" data-testid="config_sidebar">
+          ? html`<aside
+              class="nav-block"
+              role="complementary"
+              aria-label="Demo Configuration"
+              data-testid="config_sidebar"
+            >
               <cds-accordion>
                 <cds-accordion-item title="Choose Chat Component">
-                  <demo-chat-version-switcher></demo-chat-version-switcher>
-                  <demo-version-switcher
-                    .settings=${this.settings}
-                  ></demo-version-switcher>
-                  <demo-layout-switcher
-                    .settings=${this.settings}
-                  ></demo-layout-switcher>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="version-heading"
+                  >
+                    <div class="config-section__title" id="version-heading">
+                      Version
+                    </div>
+                    <demo-chat-version-switcher></demo-chat-version-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="framework-heading"
+                  >
+                    <div class="config-section__title" id="framework-heading">
+                      Framework
+                    </div>
+                    <demo-version-switcher
+                      .settings=${this.settings}
+                    ></demo-version-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="layout-type-heading"
+                  >
+                    <div class="config-section__title" id="layout-type-heading">
+                      Layout Type
+                    </div>
+                    <demo-layout-switcher
+                      .settings=${this.settings}
+                    ></demo-layout-switcher>
+                  </div>
                 </cds-accordion-item>
                 <cds-accordion-item title="Page Settings">
-                  <demo-page-theme-switcher></demo-page-theme-switcher>
-                  <demo-direction-switcher
-                    .settings=${this.settings}
-                  ></demo-direction-switcher>
-                  <demo-writeable-elements-switcher
-                    .settings=${this.settings}
-                  ></demo-writeable-elements-switcher>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="page-theme-heading"
+                  >
+                    <div class="config-section__title" id="page-theme-heading">
+                      Page Theme
+                    </div>
+                    <demo-page-theme-switcher></demo-page-theme-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="direction-heading"
+                  >
+                    <div class="config-section__title" id="direction-heading">
+                      Text Direction
+                    </div>
+                    <demo-direction-switcher
+                      .settings=${this.settings}
+                    ></demo-direction-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="writeable-elements-heading"
+                  >
+                    <div
+                      class="config-section__title"
+                      id="writeable-elements-heading"
+                    >
+                      Writeable Elements
+                    </div>
+                    <demo-writeable-elements-switcher
+                      .settings=${this.settings}
+                    ></demo-writeable-elements-switcher>
+                  </div>
                 </cds-accordion-item>
                 <cds-accordion-item title="Chat Configuration">
-                  <demo-theme-switcher
-                    .config=${this.config}
-                  ></demo-theme-switcher>
-                  <demo-chat-theme-switcher
-                    .config=${this.config}
-                  ></demo-chat-theme-switcher>
-                  <div class="config-section">
-                    <div class="config-section__title">History</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="carbon-theme-heading"
+                  >
+                    <div
+                      class="config-section__title"
+                      id="carbon-theme-heading"
+                    >
+                      Carbon Theme
+                    </div>
+                    <demo-theme-switcher
+                      .config=${this.config}
+                    ></demo-theme-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="ai-theme-heading"
+                  >
+                    <div class="config-section__title" id="ai-theme-heading">
+                      AI Theme
+                    </div>
+                    <demo-chat-theme-switcher
+                      .config=${this.config}
+                    ></demo-chat-theme-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="history-heading"
+                  >
+                    <div class="config-section__title" id="history-heading">
+                      History
+                    </div>
                     <demo-chat-history-switcher
                       .config=${this.config}
                     ></demo-chat-history-switcher>
-                    <div class="config-section__title">Feedback</div>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="feedback-heading"
+                  >
+                    <div class="config-section__title" id="feedback-heading">
+                      Feedback
+                    </div>
                     <demo-chat-feedback-switcher
                       .config=${this.config}
                     ></demo-chat-feedback-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="homescreen-heading"
+                  >
+                    <div class="config-section__title" id="homescreen-heading">
                       Homescreen & disclaimer
                     </div>
                     <demo-homescreen-switcher
                       .config=${this.config}
                     ></demo-homescreen-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">Layout</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="layout-heading"
+                  >
+                    <div class="config-section__title" id="layout-heading">
+                      Layout
+                    </div>
                     <demo-layout-config-switcher
                       .config=${this.config}
                     ></demo-layout-config-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">Header</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="header-heading"
+                  >
+                    <div class="config-section__title" id="header-heading">
+                      Header
+                    </div>
                     <demo-header-switcher
                       .config=${this.config}
                       .settings=${this.settings}
                     ></demo-header-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">Input</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="input-heading"
+                  >
+                    <div class="config-section__title" id="input-heading">
+                      Input
+                    </div>
                     <demo-input-config-switcher
                       .config=${this.config}
                     ></demo-input-config-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">Messaging</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="messaging-heading"
+                  >
+                    <div class="config-section__title" id="messaging-heading">
+                      Messaging
+                    </div>
                     <demo-stop-button-immediate-switcher
                       .config=${this.config}
                     ></demo-stop-button-immediate-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">Keyboard Shortcuts</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="keyboard-shortcuts-heading"
+                  >
+                    <div
+                      class="config-section__title"
+                      id="keyboard-shortcuts-heading"
+                    >
+                      Keyboard Shortcuts
+                    </div>
                     <demo-keyboard-shortcut-switcher
                       .config=${this.config}
                     ></demo-keyboard-shortcut-switcher>
                   </div>
-                  <div class="config-section">
-                    <div class="config-section__title">Launcher</div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="launcher-heading"
+                  >
+                    <div class="config-section__title" id="launcher-heading">
+                      Launcher
+                    </div>
                     <demo-launcher-switcher
                       .config=${this.config}
                     ></demo-launcher-switcher>
@@ -609,7 +751,7 @@ export class DemoBody extends LitElement {
                     </cds-accordion-item>`
                   : null}
               </cds-accordion>
-            </div>`
+            </aside>`
           : ""}
       <div class="main">
         ${this.settings.framework === "web-component" &&
