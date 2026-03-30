@@ -1,9 +1,9 @@
 name: ci-check
 on:
   push:
-    branches: [ main, release/v*, feat/integration-chat-history ]
+    branches: [ main, release/v*, feat/integrate-chat-history ]
   pull_request:
-    branches: [ main, release/v*, feat/integration-chat-history ]
+    branches: [ main, release/v*, feat/integrate-chat-history ]
   merge_group:
     types: [checks_requested]
 
