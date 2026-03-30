@@ -9,7 +9,7 @@
 
 import { LitElement, html } from "lit";
 import prefix from "../../../globals/settings.js";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 
 import styles from "./chat-history.scss?lit";
@@ -28,11 +28,35 @@ class CDSAIChatHistoryContent extends LitElement {
   @property({ type: String, reflect: true })
   slot = "content";
 
+  /**
+   * Tracks whether the results-count slot has content
+   */
+  @state()
+  private _hasResultsCount = false;
+
+  /**
+   * Handle slot change to detect if results-count has content
+   */
+  private _handleResultsCountSlotChange(e: Event) {
+    const slot = e.target as HTMLSlotElement;
+    this._hasResultsCount = slot.assignedNodes().length > 0;
+  }
+
   render() {
-    return html` <span class="${prefix}--history-content__results-count">
-        <slot name="results-count"></slot>
-      </span>
-      <slot></slot>`;
+    return html`
+      ${this._hasResultsCount
+        ? html`<span class="${prefix}--history-content__results-count">
+            <slot
+              name="results-count"
+              @slotchange=${this._handleResultsCountSlotChange}
+            ></slot>
+          </span>`
+        : html`<slot
+            name="results-count"
+            @slotchange=${this._handleResultsCountSlotChange}
+          ></slot>`}
+      <slot></slot>
+    `;
   }
 
   static styles = styles;
