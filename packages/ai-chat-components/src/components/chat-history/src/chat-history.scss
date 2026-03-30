@@ -30,10 +30,6 @@
   inline-size: 100%;
 }
 
-:host(#{$prefix}-history-shell:has(#{$prefix}-history-delete-panel)) {
-  overflow: hidden;
-}
-
 :host(#{$prefix}-history-header) {
   display: flex;
   align-items: center;
@@ -297,7 +293,6 @@
   position: absolute;
   z-index: 9999;
   display: flex;
-  overflow: hidden;
   flex-direction: column;
   justify-content: center;
   padding: layout.$spacing-07;
