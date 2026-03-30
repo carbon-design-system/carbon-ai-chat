@@ -74,7 +74,7 @@ export const pinnedHistoryItems = [
 export const historyItems = [
   {
     section: "Today",
-    icon: iconLoader(Time16, { slot: "name-icon" }),
+    icon: iconLoader(Time16, { slot: "title-icon" }),
     chats: [
       {
         id: "today-0",
@@ -100,7 +100,7 @@ export const historyItems = [
   },
   {
     section: "Yesterday",
-    icon: iconLoader(Time16, { slot: "name-icon" }),
+    icon: iconLoader(Time16, { slot: "title-icon" }),
     chats: [
       {
         id: "yesterday-0",
@@ -126,7 +126,7 @@ export const historyItems = [
   },
   {
     section: "Previous 7 days",
-    icon: iconLoader(Time16, { slot: "name-icon" }),
+    icon: iconLoader(Time16, { slot: "title-icon" }),
     chats: [
       {
         id: "previous-0",
