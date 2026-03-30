@@ -1702,7 +1702,6 @@ class ChatActionsImpl {
         await serviceManager.humanAgentService.endChat(true, false, false);
       }
 
-      this.serviceManager.instance.updateInputFieldVisibility(true);
       await this.serviceManager.messageService.cancelAllMessageRequests();
 
       // Hide the stop streaming button since we've cancelled all streams
