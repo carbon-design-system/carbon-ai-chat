@@ -702,7 +702,11 @@ function processResizeEntries(
   });
 
   if (hasSignificantChange) {
-    config.onSignificantResize(totalDelta);
+    // Wrap callback in requestAnimationFrame to avoid ResizeObserver loop errors
+    // The callback modifies DOM (spacer height), which can trigger more resize observations
+    requestAnimationFrame(() => {
+      config.onSignificantResize(totalDelta);
+    });
   }
 }
 

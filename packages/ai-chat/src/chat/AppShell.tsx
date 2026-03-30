@@ -129,6 +129,12 @@ export default function AppShell({
 }: AppShellProps) {
   const intl = useIntl();
   const ariaAnnouncer = useAriaAnnouncer();
+
+  // Make ariaAnnouncer available to services
+  useEffect(() => {
+    serviceManager.ariaAnnouncer = ariaAnnouncer;
+  }, [serviceManager, ariaAnnouncer]);
+
   const appState = useSelector<AppState, AppState>((state) => state);
   const {
     config,

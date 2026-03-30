@@ -9,6 +9,7 @@
 
 import type { AppStore } from "../store/appStore";
 import { IntlShape } from "../utils/i18n";
+import { AriaAnnouncerFunctionType } from "../contexts/AriaAnnouncerContext";
 
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
@@ -148,6 +149,12 @@ class ServiceManager {
    * This replaces the previous react-intl IntlShape.
    */
   intl: IntlShape;
+
+  /**
+   * The aria announcer function that can be used to make screen reader announcements.
+   * This is set by the AppShell component when it mounts.
+   */
+  ariaAnnouncer: AriaAnnouncerFunctionType;
 
   /**
    * As part of the view change work a bug was exposed where someone calling openWindow, closeWindow, or toggleOpen,
