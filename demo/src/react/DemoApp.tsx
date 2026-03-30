@@ -211,7 +211,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       ),
       historyPanelElement: (
         <HistoryWriteableElementExample
-          location="historyPanelElement"
           instance={instance as ChatInstance}
           parentStateText={stateText}
           isMobile={instance?.getState().customPanels.history.isMobile ?? false}
@@ -306,7 +305,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
     instance.on({
       type: BusEventType.HISTORY_PANEL_NEW_CHAT,
-      handler: () => console.log("open new history chat"),
+      handler: () => window.alert("Creating new chat from header menu"),
     });
 
     // Handle feedback event.

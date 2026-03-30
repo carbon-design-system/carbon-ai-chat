@@ -13,4 +13,8 @@
   block-size: 100%;
 }
 
+cds-aichat-history-shell {
+  border-block-start: none;
+}
+
 /* Additional custom styles can be added here as needed */

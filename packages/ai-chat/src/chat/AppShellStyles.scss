@@ -97,6 +97,8 @@
   block-size: 100%;
 
   ::slotted(*) {
+    --history-shell-border: none;
+
     block-size: 100%;
   }
 }
