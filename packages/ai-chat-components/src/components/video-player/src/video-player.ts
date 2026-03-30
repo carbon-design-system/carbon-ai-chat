@@ -9,6 +9,7 @@
 
 import { LitElement, html } from "lit";
 import { property, state, query } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
@@ -45,7 +46,7 @@ class VideoPlayer extends LitElement {
    * ARIA label for accessibility
    */
   @property({ type: String, attribute: "aria-label" })
-  ariaLabel = "";
+  ariaLabel = "Video player";
 
   /**
    * Whether the video should be playing
@@ -134,7 +135,7 @@ class VideoPlayer extends LitElement {
   /**
    * Query the provider container element
    */
-  @query(".video-player__provider")
+  @query(`.${prefix}--video-player__provider`)
   private providerContainer!: HTMLDivElement;
 
   private provider: BaseProvider | null = null;
@@ -378,8 +379,14 @@ class VideoPlayer extends LitElement {
    */
   private renderError() {
     return html`
-      <div class="video-player__error" role="alert" aria-live="assertive">
-        <p class="video-player__error-message">${this.errorMessage}</p>
+      <div
+        class="${prefix}--video-player__error"
+        role="alert"
+        aria-live="assertive"
+      >
+        <p class="${prefix}--video-player__error-message">
+          ${this.errorMessage}
+        </p>
       </div>
     `;
   }
@@ -388,14 +395,17 @@ class VideoPlayer extends LitElement {
    * Render the component
    */
   render() {
-    const containerStyle = `padding-top: ${this.aspectRatioPercentage}%`;
-
     return html`
-      <div class="video-player">
+      <div
+        class="${prefix}--video-player"
+        role="region"
+        aria-label=${this.ariaLabel}
+        style="--video-player-aspect-ratio: ${this.aspectRatioPercentage}%"
+      >
         ${this.statusMessage
           ? html`
               <div
-                class="video-player__status"
+                class="${prefix}--video-player__status"
                 role="status"
                 aria-live="polite"
                 aria-atomic="true"
@@ -404,12 +414,14 @@ class VideoPlayer extends LitElement {
               </div>
             `
           : ""}
-        <div class="video-player__container" style="${containerStyle}">
+        <div class="${prefix}--video-player__container">
           ${this.hasError ? this.renderError() : ""}
           <div
-            class="video-player__provider ${this.hasError
-              ? "video-player__provider--hidden"
-              : ""} ${this.isReady ? "video-player__provider--ready" : ""}"
+            class="${classMap({
+              [`${prefix}--video-player__provider`]: true,
+              [`${prefix}--video-player__provider--hidden`]: this.hasError,
+              [`${prefix}--video-player__provider--ready`]: this.isReady,
+            })}"
           ></div>
         </div>
       </div>

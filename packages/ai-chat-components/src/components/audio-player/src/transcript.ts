@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -60,10 +60,10 @@ class Transcript extends LitElement {
   hideLabel = "Hide";
 
   /**
-   * Internal state: expanded status
+   * Controlled expanded status
    */
-  @state()
-  private expanded = false;
+  @property({ type: Boolean })
+  expanded = false;
 
   /**
    * Unique ID for aria-controls relationship
@@ -72,15 +72,14 @@ class Transcript extends LitElement {
 
   /**
    * Toggle transcript visibility
+   * Dispatches event for parent to handle state change
    */
   private handleToggle(): void {
-    this.expanded = !this.expanded;
-
     this.dispatchEvent(
       new CustomEvent("cds-aichat-transcript-toggle", {
         bubbles: true,
         composed: true,
-        detail: { expanded: this.expanded },
+        detail: { expanded: !this.expanded },
       }),
     );
   }
@@ -95,19 +94,19 @@ class Transcript extends LitElement {
     const toggleLabel = `${actionLabel} ${displayLabel}`;
 
     return html`
-      <div class="transcript">
+      <div class="${prefix}--transcript">
         <button
-          class="transcript__toggle"
+          class="${prefix}--transcript__toggle"
           @click=${this.handleToggle}
           aria-expanded="${this.expanded}"
           aria-controls="${this.contentId}"
           aria-label="${toggleLabel}"
           type="button"
         >
-          <span class="transcript__toggle-label" aria-hidden="true">
+          <span class="${prefix}--transcript__toggle-label" aria-hidden="true">
             ${displayLabel}
             ${this.language
-              ? html`<span class="transcript__language">
+              ? html`<span class="${prefix}--transcript__language">
                   (${this.language})
                 </span>`
               : ""}
@@ -118,7 +117,7 @@ class Transcript extends LitElement {
           ? html`
               <div
                 id="${this.contentId}"
-                class="transcript__content"
+                class="${prefix}--transcript__content"
                 role="region"
                 aria-label="${displayLabel}"
               >

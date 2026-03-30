@@ -18,6 +18,7 @@ const Transcript = createComponent({
   events: {
     onTranscriptToggle: "cds-aichat-transcript-toggle",
   },
+  displayName: "Transcript",
 });
 
 export { Transcript };

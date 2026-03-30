@@ -9,6 +9,7 @@
 
 import { LitElement, html } from "lit";
 import { property, state, query } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
@@ -43,7 +44,7 @@ class AudioPlayer extends LitElement {
    * ARIA label for accessibility
    */
   @property({ type: String, attribute: "aria-label" })
-  ariaLabel = "";
+  ariaLabel = "Audio player";
 
   /**
    * Whether the audio should be playing
@@ -120,7 +121,7 @@ class AudioPlayer extends LitElement {
   /**
    * Query the provider container element
    */
-  @query(".audio-player__provider")
+  @query(`.${prefix}--audio-player__provider`)
   private providerContainer!: HTMLDivElement;
 
   private provider: BaseProvider | null = null;
@@ -362,8 +363,14 @@ class AudioPlayer extends LitElement {
    */
   private renderError() {
     return html`
-      <div class="audio-player__error" role="alert" aria-live="assertive">
-        <p class="audio-player__error-message">${this.errorMessage}</p>
+      <div
+        class="${prefix}--audio-player__error"
+        role="alert"
+        aria-live="assertive"
+      >
+        <p class="${prefix}--audio-player__error-message">
+          ${this.errorMessage}
+        </p>
       </div>
     `;
   }
@@ -373,14 +380,17 @@ class AudioPlayer extends LitElement {
    */
   render() {
     const isSoundCloud = this.audioSourceType === AudioSource.SOUNDCLOUD;
-    const containerClass = `audio-player__container ${isSoundCloud ? "audio-player__container--soundcloud" : ""}`;
 
     return html`
-      <div class="audio-player">
+      <div
+        class="${prefix}--audio-player"
+        role="region"
+        aria-label=${this.ariaLabel}
+      >
         ${this.statusMessage
           ? html`
               <div
-                class="audio-player__status"
+                class="${prefix}--audio-player__status"
                 role="status"
                 aria-live="polite"
                 aria-atomic="true"
@@ -389,12 +399,19 @@ class AudioPlayer extends LitElement {
               </div>
             `
           : ""}
-        <div class="${containerClass}">
+        <div
+          class="${classMap({
+            [`${prefix}--audio-player__container`]: true,
+            [`${prefix}--audio-player__container--soundcloud`]: isSoundCloud,
+          })}"
+        >
           ${this.hasError ? this.renderError() : ""}
           <div
-            class="audio-player__provider ${this.hasError
-              ? "audio-player__provider--hidden"
-              : ""} ${this.isReady ? "audio-player__provider--ready" : ""}"
+            class="${classMap({
+              [`${prefix}--audio-player__provider`]: true,
+              [`${prefix}--audio-player__provider--hidden`]: this.hasError,
+              [`${prefix}--audio-player__provider--ready`]: this.isReady,
+            })}"
           ></div>
         </div>
       </div>

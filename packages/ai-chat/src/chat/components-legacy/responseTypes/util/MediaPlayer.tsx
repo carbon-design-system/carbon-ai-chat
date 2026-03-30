@@ -113,6 +113,8 @@ function MediaPlayerComponent({
   subtitle_tracks,
   transcript,
 }: MediaPlayerProps) {
+  const [transcriptExpanded, setTranscriptExpanded] = React.useState(false);
+
   const {
     errors_audioSource,
     errors_videoSource,
@@ -130,6 +132,13 @@ function MediaPlayerComponent({
     media_videoPlayer_readyLabel,
     media_videoPlayer_errorLabel,
   } = useLanguagePack();
+
+  const handleTranscriptToggle = React.useCallback(
+    (event: CustomEvent<{ expanded: boolean }>) => {
+      setTranscriptExpanded(event.detail.expanded);
+    },
+    [],
+  );
 
   const isAudio = type === MessageResponseTypes.AUDIO;
   const errorMessage = isAudio ? errors_audioSource : errors_videoSource;
@@ -176,6 +185,8 @@ function MediaPlayerComponent({
                 language={transcript.language}
                 show-label={media_transcript_show}
                 hide-label={media_transcript_hide}
+                expanded={transcriptExpanded}
+                onTranscriptToggle={handleTranscriptToggle}
               />
             )}
           </div>

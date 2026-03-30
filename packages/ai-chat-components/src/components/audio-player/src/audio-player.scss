@@ -15,21 +15,21 @@
 @use "../../../globals/scss/modifiers" as *;
 @use "../../../globals/scss/vars" as *;
 
-:host {
+:host(#{$prefix}-audio-player) {
   @include rounded-modifiers;
 
   display: block;
 }
 
-.audio-player__container {
+.#{$prefix}--audio-player__container {
   @include rounded-child-positions;
 }
 
-.audio-player__container--soundcloud {
+.#{$prefix}--audio-player__container--soundcloud {
   block-size: 128px;
 }
 
-.audio-player__provider {
+.#{$prefix}--audio-player__provider {
   @include rounded-child-positions;
 
   // Ensure iframes fill the container and get rounded corners
@@ -52,17 +52,17 @@
   }
 }
 
-.audio-player__provider--ready {
+.#{$prefix}--audio-player__provider--ready {
   iframe {
     opacity: 1;
   }
 }
 
-.audio-player__provider--hidden {
+.#{$prefix}--audio-player__provider--hidden {
   display: none;
 }
 
-.audio-player__error {
+.#{$prefix}--audio-player__error {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,7 @@
   min-block-size: 54px;
 }
 
-.audio-player__error-message {
+.#{$prefix}--audio-player__error-message {
   @include type.type-style("body-01");
 
   margin: 0;
@@ -79,7 +79,7 @@
   text-align: center;
 }
 
-.audio-player__status {
+.#{$prefix}--audio-player__status {
   position: absolute;
   overflow: hidden;
   padding: 0;
