@@ -470,6 +470,13 @@ class ChatActionsImpl {
         ? createMessageRequestForText(message)
         : message;
 
+    // If focus is not already on the input field, put focus on it before sending
+    // This ensures focus is set for all message sends, including API calls
+    // Only focus on the input field if it's available; don't move focus elsewhere
+    if (this.serviceManager.inputComponent) {
+      this.serviceManager.inputComponent.requestFocus();
+    }
+
     // Clear any currently active response while awaiting the next one (even before hydration).
     this.serviceManager.store.dispatch(actions.setActiveResponseId(null));
 

@@ -487,6 +487,13 @@ export default function AppShell({
     mainWindowRef.current = mainWindowFunctions;
     serviceManager.mainWindow = mainWindowFunctions;
   }, [mainWindowFunctions, serviceManager]);
+
+  // Set the input component reference in the service manager
+  useEffect(() => {
+    if (inputRef.current) {
+      serviceManager.inputComponent = inputRef.current;
+    }
+  }, [inputRef, serviceManager]);
   // Set scrollbar width CSS variable
   useEffect(() => {
     const container = widgetContainerRef.current;
