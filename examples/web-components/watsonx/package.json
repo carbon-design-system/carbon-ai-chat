@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "latest",
+    "@carbon/ai-chat": "*",
     "@carbon/web-components": "^2.49.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "concurrently": "^9.2.0",

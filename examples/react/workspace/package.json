@@ -13,8 +13,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "latest",
-    "@carbon/ai-chat-components": "latest",
+    "@carbon/ai-chat": "*",
+    "@carbon/ai-chat-components": "*",
     "@carbon/icons-react": "^11.53.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.49.0",

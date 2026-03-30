@@ -13,7 +13,7 @@
   "author": "IBM Corp",
   "license": "Apache-2.0",
   "dependencies": {
-    "@carbon/ai-chat": "latest",
+    "@carbon/ai-chat": "*",
     "@carbon/web-components": "^2.49.0",
     "lit": "^3.1.0",
     "next": "^16.1.5",
