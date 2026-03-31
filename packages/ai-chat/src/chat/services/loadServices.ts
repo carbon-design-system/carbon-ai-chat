@@ -110,6 +110,8 @@ function createServiceManager(appConfig: AppConfig) {
         document.createElement("div"),
       [WriteableElementName.WORKSPACE_PANEL_ELEMENT]:
         document.createElement("div"),
+      [WriteableElementName.HISTORY_PANEL_ELEMENT]:
+        document.createElement("div"),
     };
   }
 

@@ -9,6 +9,7 @@
 
 import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
+import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
 
 import {
   BusEvent,
@@ -36,6 +37,7 @@ import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
 import { WriteableElementExample } from "./WriteableElementExample";
 import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
 import { CustomFooterExample } from "./CustomFooterExample";
+import { HistoryWriteableElementExample } from "./HistoryWriteableElementExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -64,7 +66,6 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   useEffect(() => {
     setInterval(() => setStateText(Date.now().toString()), 2000);
   }, []);
-
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
    * depending on which component should be rendered.
@@ -208,8 +209,16 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      historyPanelElement: (
+        <HistoryWriteableElementExample
+          instance={instance as ChatInstance}
+          parentStateText={stateText}
+          isMobile={instance?.getState().customPanels.history.isMobile ?? false}
+        />
+      ),
     }),
-    [stateText, instance],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [instance, instance?.getState().customPanels.history.isMobile],
   );
 
   /**
@@ -242,6 +251,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     return {
       ...elements,
       workspacePanelElement: allWriteableElements.workspacePanelElement,
+      historyPanelElement: allWriteableElements.historyPanelElement,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
 
@@ -291,6 +301,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           setWorkspaceExpanded(false);
         }
       },
+    });
+
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+      handler: () => window.alert("Creating new chat from header menu"),
     });
 
     // Handle feedback event.

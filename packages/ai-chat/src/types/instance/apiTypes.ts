@@ -64,6 +64,16 @@ export enum PanelType {
    * @experimental
    */
   WORKSPACE = "workspace",
+
+  /**
+   * Opens the history panel.
+   *
+   * The history panel only appears in the chat panel when
+   * config.history.isMobile is true.
+   *
+   * @experimental
+   */
+  HISTORY = "history",
 }
 
 export type PanelConfigOptionsByType = {

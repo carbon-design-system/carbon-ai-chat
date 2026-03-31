@@ -14,6 +14,7 @@ import "./user-defined-response-example";
 import "./custom-footer-example";
 import "./writeable-element-example";
 import "./workspace-writeable-element-example";
+import "./history-writeable-element-example";
 
 import {
   BusEvent,
@@ -318,6 +319,12 @@ export class DemoApp extends LitElement {
         }
       },
     });
+
+    // Listen for when new chat option is selected from the chat header overflow menu
+    instance.on({
+      type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+      handler: () => window.alert("Creating new chat from header menu"),
+    });
   };
 
   /**
@@ -484,7 +491,7 @@ export class DemoApp extends LitElement {
    * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom writeable element.
    */
   renderWriteableElementSlots() {
-    const ALWAYS_RENDER_KEYS = ["workspacePanelElement"];
+    const ALWAYS_RENDER_KEYS = ["workspacePanelElement", "historyPanelElement"];
     const elements = this.instance?.writeableElements ?? {};
 
     const keys =
@@ -510,12 +517,22 @@ export class DemoApp extends LitElement {
                   .valueFromParent=${this.valueFromParent}
                 ></workspace-writeable-element-example>
               `
-            : html`
-                <writeable-element-example
-                  location=${key}
-                  valueFromParent=${this.valueFromParent}
-                ></writeable-element-example>
-              `}
+            : key === "historyPanelElement"
+              ? html`
+                  <history-writeable-element-example
+                    location=${key}
+                    .instance=${this.instance}
+                    .valueFromParent=${this.valueFromParent}
+                    .isMobile=${this.instance?.getState().customPanels.history
+                      .isMobile ?? false}
+                  ></history-writeable-element-example>
+                `
+              : html`
+                  <writeable-element-example
+                    location=${key}
+                    valueFromParent=${this.valueFromParent}
+                  ></writeable-element-example>
+                `}
         </div>
       `,
     );
