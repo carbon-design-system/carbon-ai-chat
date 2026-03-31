@@ -130,6 +130,12 @@ export default function AppShell({
 }: AppShellProps) {
   const intl = useIntl();
   const ariaAnnouncer = useAriaAnnouncer();
+
+  // Make ariaAnnouncer available to services
+  useEffect(() => {
+    serviceManager.ariaAnnouncer = ariaAnnouncer;
+  }, [serviceManager, ariaAnnouncer]);
+
   const appState = useSelector<AppState, AppState>((state) => state);
   const {
     config,
@@ -536,6 +542,13 @@ export default function AppShell({
     mainWindowRef.current = mainWindowFunctions;
     serviceManager.mainWindow = mainWindowFunctions;
   }, [mainWindowFunctions, serviceManager]);
+
+  // Set the input component reference in the service manager
+  useEffect(() => {
+    if (inputRef.current) {
+      serviceManager.inputComponent = inputRef.current;
+    }
+  }, [inputRef, serviceManager]);
   // Set scrollbar width CSS variable
   useEffect(() => {
     const container = widgetContainerRef.current;
