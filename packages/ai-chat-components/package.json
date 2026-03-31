@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "0.11.0",
+  "version": "1.0.0-rc.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -10,8 +10,7 @@
     "directory": "packages/ai-chat"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "exports": {
     "./es/*": "./es/*",
