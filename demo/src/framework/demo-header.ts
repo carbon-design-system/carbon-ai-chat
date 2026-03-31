@@ -42,6 +42,9 @@ export class DemoHeader extends LitElement {
   @state()
   private accessor _panelExpanded = false;
 
+  @state()
+  private accessor _panelAnnouncement = "";
+
   onClick = async () => {
     if (this.chatInstance) {
       const state = this.chatInstance?.getState();
@@ -106,9 +109,11 @@ export class DemoHeader extends LitElement {
     if (panel.hasAttribute("expanded")) {
       panel.removeAttribute("expanded");
       this._panelExpanded = false;
+      this._panelAnnouncement = "Resources Panel closed";
     } else {
       panel.setAttribute("expanded", "");
       this._panelExpanded = true;
+      this._panelAnnouncement = "Resources Panel opened";
     }
   };
 
@@ -186,6 +191,14 @@ export class DemoHeader extends LitElement {
           </cds-switcher>
         </cds-header-panel>
       </cds-header>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;"
+      >
+        ${this._panelAnnouncement}
+      </div>
     `;
   }
 }
