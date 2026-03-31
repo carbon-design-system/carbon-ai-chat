@@ -12,11 +12,15 @@ import {
   CompleteItemChunk,
   FinalResponseChunk,
   GenericItem,
+  MessageResponseTypes,
   PartialItemChunk,
   PartialOrCompleteItemChunk,
   StreamChunk,
+  TextItem,
+  UserDefinedItem,
 } from "../../types/messaging/Messages";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
+import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import {
   isStreamCompleteItem,
   isStreamFinalResponse,
@@ -195,11 +199,99 @@ function mergePartialResponseOptions(
   }
 }
 
+/**
+ * Internal helper function to check if an item has displayable content.
+ * This is the core logic shared by both chunk and message content detection.
+ *
+ * @param item - The item to check (can be partial)
+ * @param responseType - The response type of the item
+ * @returns true if the item has displayable content
+ */
+function hasDisplayableContentForItem(
+  item: DeepPartial<GenericItem> | undefined,
+  responseType: string | undefined,
+): boolean {
+  if (!item || !responseType) {
+    return false;
+  }
+
+  // TEXT: Must have non-empty trimmed text
+  if (responseType === MessageResponseTypes.TEXT) {
+    const text = (item as Partial<TextItem>).text;
+    return Boolean(text && text.trim().length > 0);
+  }
+
+  // USER_DEFINED: Check for user_defined object
+  if (responseType === MessageResponseTypes.USER_DEFINED) {
+    return Boolean((item as Partial<UserDefinedItem>).user_defined);
+  }
+
+  // Other types: If response_type is set, consider it as having content
+  return true;
+}
+
+/**
+ * Determines if a streaming chunk has displayable content.
+ * This is used to decide when to announce that streaming has started.
+ *
+ * For TEXT items: Returns true only if text is non-empty after trimming
+ * For USER_DEFINED items: Returns true if user_defined object exists
+ * For other types: Returns true if response_type is set
+ *
+ * @param chunk - The streaming chunk to check
+ * @returns true if the chunk has content that should be displayed
+ */
+function chunkHasDisplayableContent(chunk: StreamChunk): boolean {
+  if (!isStreamPartialItem(chunk)) {
+    return false;
+  }
+
+  const item = chunk.partial_item;
+  return hasDisplayableContentForItem(item, item.response_type);
+}
+
+/**
+ * Determines if a local message item has displayable content.
+ * This is used to decide when to close the reasoning steps UI.
+ *
+ * For TEXT items: Checks both the item text and streaming chunks
+ * For other types: Uses the same logic as chunkHasDisplayableContent
+ *
+ * @param localMessageItem - The local message item to check
+ * @returns true if the message has content that should be displayed
+ */
+function messageHasDisplayableContent(
+  localMessageItem: LocalMessageItem | undefined,
+): boolean {
+  if (!localMessageItem || !localMessageItem.item?.response_type) {
+    return false;
+  }
+
+  const { item, ui_state: uiState } = localMessageItem;
+
+  // For TEXT items, check streaming chunks if available
+  if (item.response_type === MessageResponseTypes.TEXT) {
+    const textFromStreaming = uiState.streamingState
+      ? uiState.streamingState.chunks
+          .map((chunk) => (chunk as Partial<TextItem>).text ?? "")
+          .join("")
+      : undefined;
+    const text = (item as TextItem).text.length
+      ? (item as TextItem).text
+      : textFromStreaming;
+    return Boolean(text && text.trim());
+  }
+
+  return hasDisplayableContentForItem(item, item.response_type);
+}
+
 export {
+  chunkHasDisplayableContent,
   FinalResponseChunk,
-  StreamingTracker,
   mergePartialResponseOptions,
+  messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
+  StreamingTracker,
 };
