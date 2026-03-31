@@ -31,6 +31,12 @@ You may make use of individual React and web components from `@carbon/ai-chat` w
 
 This is helpful if you are creating your our Carbon compliant chat widget, or if you want to use existing components when extending Carbon AI chat.
 
+The available AI Chat components are viewable in our storybooks
+
+For React: https://chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
+
+For web components: https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
+
 [See the @carbon/ai-chat-components README.md](./packages/ai-chat-components/README.md).
 
 ## Peer dependency changes

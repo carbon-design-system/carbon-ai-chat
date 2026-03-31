@@ -105,6 +105,7 @@ function ChatContainer(props: ChatContainerProps) {
     launcher,
     input,
     keyboardShortcuts,
+    upload,
   } = props;
   // Reconstruct PublicConfig from flattened props
   const config = useMemo(
@@ -132,6 +133,7 @@ function ChatContainer(props: ChatContainerProps) {
       launcher,
       input,
       keyboardShortcuts,
+      upload,
     }),
     [
       onError,
@@ -157,6 +159,7 @@ function ChatContainer(props: ChatContainerProps) {
       launcher,
       input,
       keyboardShortcuts,
+      upload,
     ],
   );
 

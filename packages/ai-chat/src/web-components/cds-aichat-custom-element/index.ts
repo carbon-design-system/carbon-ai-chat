@@ -29,6 +29,7 @@ import {
   PublicConfigMessaging,
   LanguagePack,
   InputConfig,
+  UploadConfig,
 } from "../../types/config/PublicConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
@@ -168,6 +169,9 @@ class ChatCustomElement extends LitElement {
 
   @property({ type: Object })
   input?: InputConfig;
+
+  @property({ attribute: false, type: Object })
+  upload?: UploadConfig;
 
   @property({ type: Object })
   layout?: LayoutConfig;
@@ -339,6 +343,9 @@ class ChatCustomElement extends LitElement {
     }
     if (this.input !== undefined) {
       resolvedConfig.input = this.input;
+    }
+    if (this.upload !== undefined) {
+      resolvedConfig.upload = this.upload;
     }
     if (this.layout !== undefined) {
       resolvedConfig.layout = this.layout;

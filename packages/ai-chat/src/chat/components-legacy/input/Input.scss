@@ -26,6 +26,7 @@
   z-index: 1;
   display: flex;
   box-sizing: border-box;
+  flex-wrap: wrap;
   align-items: center;
   background-color: theme.$chat-prompt-background;
   border-block-start: button.$button-outline-width solid theme.$border-subtle-01;
@@ -38,21 +39,6 @@
   outline-offset: -2px;
   padding-block: layout.$spacing-04;
   padding-inline: layout.$spacing-05 layout.$spacing-03;
-}
-
-.cds-aichat--container--render.cds-aichat--container-disable-mobile-enhancements,
-.cds-aichat--container--render:not(.cds-aichat--is-phone-portrait-mode) {
-  .cds-aichat--widget--max-width {
-    .cds-aichat--input-and-completions {
-      margin: 0 auto;
-      max-inline-size: chat-theme.$messages-max-width;
-    }
-
-    .cds-aichat--input-container {
-      border: button.$button-outline-width solid theme.$border-subtle-00;
-      border-radius: layout.$spacing-03;
-    }
-  }
 }
 
 // For the aiTheme we want a gradient border instead of a top border.
@@ -81,6 +67,25 @@
       border-box;
 }
 
+.cds-aichat--assistant-container .cds-aichat--input-container {
+  display: flex;
+}
+
+.cds-aichat--container--render.cds-aichat--container-disable-mobile-enhancements,
+.cds-aichat--container--render:not(.cds-aichat--is-phone-portrait-mode) {
+  .cds-aichat--widget--max-width {
+    .cds-aichat--input-and-completions {
+      margin: 0 auto;
+      max-inline-size: chat-theme.$messages-max-width;
+    }
+
+    .cds-aichat--input-container {
+      border: button.$button-outline-width solid theme.$border-subtle-00;
+      border-radius: layout.$spacing-03;
+    }
+  }
+}
+
 .cds-aichat--input-container--show-upload-button {
   padding-inline-start: layout.$spacing-03;
 }
@@ -96,12 +101,18 @@
 }
 
 .cds-aichat--input-container__files-container {
-  overflow: auto;
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  inline-size: 100%;
   margin-block-start: layout.$spacing-03;
   max-block-size: 200px;
+  overflow-x: hidden;
+  overflow-y: auto;
 
   cds-file-uploader-item {
-    margin-block-end: 0;
+    margin-block-end: layout.$spacing-03;
+    margin-inline-end: layout.$spacing-03;
   }
 }
 
@@ -121,17 +132,17 @@
   inline-size: 32px;
 }
 
-.cds-aichat--input-container__upload-input:focus
-  + .cds-aichat--input-container__upload-button {
-  box-shadow: inset 0 0 0 button.$button-border-width theme.$focus;
-}
-
 .cds-aichat--input-container__upload-button:hover {
   background-color: theme.$background-hover;
 }
 
 .cds-aichat--input-container__upload-button:active {
   background-color: theme.$background-active;
+}
+
+.cds-aichat--input-container__upload-input:focus
+  + .cds-aichat--input-container__upload-button {
+  box-shadow: inset 0 0 0 button.$button-border-width theme.$focus;
 }
 
 .cds-aichat--input-container
@@ -151,23 +162,12 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   flex: 1 0;
   flex-direction: column;
   justify-content: center;
+  order: 1;
   block-size: 100%;
 }
 
 .cds-aichat--input-container--has-focus {
   outline-color: theme.$focus;
-}
-
-.cds-aichat--input-container
-  .cds-aichat--input-container__left-container
-  .cds-aichat--text-area
-  .cds-aichat--text-area-textarea {
-  // The focus border is simulated by adding it to the container.
-  border: none;
-}
-
-.cds-aichat--assistant-container .cds-aichat--input-container {
-  display: flex;
 }
 
 .cds-aichat--input-container .cds-aichat--text-area {
@@ -181,6 +181,12 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
 
 .cds-aichat--input-container--show-upload-button .cds-aichat--text-area {
   inline-size: calc(100% - 32px);
+}
+
+// Keep the textarea at base z-index (moved before more specific selectors)
+.cds-aichat--input-container .cds-aichat--text-area-textarea {
+  position: relative;
+  z-index: 2;
 }
 
 .cds-aichat--input-container
@@ -205,8 +211,15 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   max-block-size: 157px;
 }
 
-// Placeholder overlay element - positioned absolutely over the input
-.cds-aichat--input-container .cds-aichat--text-area-placeholder {
+.cds-aichat--input-container
+  .cds-aichat--input-container__left-container
+  .cds-aichat--text-area
+  .cds-aichat--text-area-textarea {
+  // The focus border is simulated by adding it to the container.
+  border: none;
+}
+
+.cds-aichat--text-area-placeholder {
   position: absolute;
   // Ensure it's above the textarea but below any other overlays
   z-index: 1;
@@ -218,12 +231,6 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   @include type.type-style("body-02");
 }
 
-// Keep the textarea at base z-index
-.cds-aichat--input-container .cds-aichat--text-area-textarea {
-  position: relative;
-  z-index: 2;
-}
-
 .cds-aichat--input-container__send-button-container,
 .cds-aichat--input-container__upload-button-container {
   display: flex;
@@ -231,10 +238,8 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   align-self: flex-start;
 }
 
-.cds-aichat--container--render[dir="rtl"]
-  .cds-aichat--input-container__send-button
-  svg {
-  transform: scale(-1, 1);
+.cds-aichat--input-container__send-button-container {
+  order: 1;
 }
 
 cds-button.cds-aichat--input-container__send-button svg {
@@ -244,15 +249,19 @@ cds-button.cds-aichat--input-container__send-button svg {
   inline-size: layout.$spacing-05;
 }
 
+cds-button.cds-aichat--input-container__send-button[disabled] svg {
+  fill: theme.$icon-disabled;
+}
+
 cds-button.cds-aichat--input-container__send-button:active svg,
-cds-button.cds-aichat--input-container__send-button:focus svg,
-cds-button.cds-aichat--input-container__send-button:active:focus svg {
+cds-button.cds-aichat--input-container__send-button:focus svg {
   fill: theme.$interactive;
 }
 
-cds-button.cds-aichat--input-container__send-button[disabled]:hover svg,
-cds-button.cds-aichat--input-container__send-button[disabled] svg {
-  fill: theme.$icon-disabled;
+.cds-aichat--container--render[dir="rtl"]
+  .cds-aichat--input-container__send-button
+  svg {
+  transform: scale(-1, 1);
 }
 
 .cds-aichat--before-input-element {
