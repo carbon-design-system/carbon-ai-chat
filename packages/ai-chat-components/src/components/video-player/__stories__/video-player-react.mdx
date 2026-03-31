@@ -1,0 +1,73 @@
+import { ArgTypes, Meta } from "@storybook/addon-docs/blocks";
+import * as VideoPlayerReactStories from "./video-player-react.stories.jsx";
+
+<Meta of={VideoPlayerReactStories} />
+
+# Video Player
+
+The `<VideoPlayer>` component wraps the `cds-aichat-video-player` web component and exposes a React API for use in React applications.
+
+## Key Features
+
+- **Multi-source support**: Automatically detects and handles YouTube, Vimeo, native video files, and Kaltura videos
+- **Accessibility**: Built-in keyboard navigation, ARIA labels, and subtitle support
+- **Responsive**: Configurable aspect ratio for different video formats
+- **Event handling**: React event handlers for play, pause, ready, and error states
+
+## Supported Video Sources
+
+The component automatically detects and handles:
+
+- **YouTube**: `https://www.youtube.com/watch?v=VIDEO_ID` or `https://youtu.be/VIDEO_ID`
+- **Vimeo**: `https://vimeo.com/VIDEO_ID`
+- **Native files**: Direct links to `.mp4`, `.webm`, `.ogg` files
+- **Kaltura**: Kaltura video URLs
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import VideoPlayer from "@carbon/ai-chat-components/es/react/video-player.js";
+
+function VideoExample() {
+  return (
+    <VideoPlayer
+      source="https://www.youtube.com/watch?v=eZ1NizUx9U4"
+      title="Video Title"
+      description="Video description"
+      ariaLabel="Educational video"
+    />
+  );
+}
+```
+
+## Events
+
+The component supports the following event handlers:
+
+```jsx
+import VideoPlayer from "@carbon/ai-chat-components/es/react/video-player.js";
+
+function VideoExample() {
+  const handleReady = (event) => {
+    console.log('Video is ready to play');
+  };
+
+  const handleError = (event) => {
+    console.error('Video error:', event.detail);
+  };
+
+  return (
+    <VideoPlayer
+      source="https://www.youtube.com/watch?v=eZ1NizUx9U4"
+      onReady={handleReady}
+      onError={handleError}
+    />
+  );
+}
+```
+
+## Component API
+
+<ArgTypes of={VideoPlayerReactStories} />

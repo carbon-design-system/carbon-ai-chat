@@ -102,6 +102,15 @@ $rounded-host-map: (
   }
 }
 
+/* ----- CHILD ELEMENT POSITIONAL ROUNDING ----- */
+@mixin rounded-child-positions {
+  @each $key, $positions in $rounded-host-map {
+    :host([data-rounded="#{$key}"]) & {
+      @include radius($positions...);
+    }
+  }
+}
+
 /* ----- NON-STACKED CHILDREN ROUNDING ----- */
 $non-stacked-map: (
   top: (

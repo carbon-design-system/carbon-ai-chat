@@ -1,0 +1,71 @@
+import { ArgTypes, Meta } from "@storybook/addon-docs/blocks";
+import * as AudioPlayerReactStories from "./audio-player-react.stories.jsx";
+
+<Meta of={AudioPlayerReactStories} />
+
+# Audio Player
+
+The `<AudioPlayer>` component wraps the `cds-aichat-audio-player` web component and exposes a React API for use in React applications.
+
+## Key Features
+
+- **Multi-source support**: Automatically detects and handles SoundCloud and native audio files
+- **Accessibility**: Built-in keyboard navigation, ARIA labels, and transcript support
+- **Responsive**: Configurable aspect ratio for visual consistency
+- **Event handling**: React event handlers for play, pause, ready, and error states
+
+## Supported Audio Sources
+
+The component automatically detects and handles:
+
+- **SoundCloud**: `https://soundcloud.com/...`
+- **Native files**: Direct links to `.mp3`, `.wav`, `.ogg`, `.m4a` files
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import AudioPlayer from "@carbon/ai-chat-components/es/react/audio-player.js";
+
+function AudioExample() {
+  return (
+    <AudioPlayer
+      source="https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill"
+      title="Audio Title"
+      description="Audio description"
+      ariaLabel="Podcast episode"
+    />
+  );
+}
+```
+
+## Events
+
+The component supports the following event handlers:
+
+```jsx
+import AudioPlayer from "@carbon/ai-chat-components/es/react/audio-player.js";
+
+function AudioExample() {
+  const handleReady = (event) => {
+    console.log('Audio is ready to play');
+  };
+
+  const handleError = (event) => {
+    console.error('Audio error:', event.detail);
+  };
+
+  return (
+    <AudioPlayer
+      source="https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill"
+      onReady={handleReady}
+      onError={handleError}
+    />
+  );
+}
+```
+
+## Component API
+
+<ArgTypes of={AudioPlayerReactStories} />

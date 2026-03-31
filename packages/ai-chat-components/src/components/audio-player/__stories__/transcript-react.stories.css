@@ -1,0 +1,29 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.audio-player-card-body {
+  padding: 1rem;
+}
+
+.audio-player-card-title {
+  margin: 0 0 0.5rem 0;
+}
+
+.audio-player-card-description {
+  margin: 0 0 1rem 0;
+  color: var(--cds-text-secondary);
+}
+
+.transcript-examples-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Made with Bob */
