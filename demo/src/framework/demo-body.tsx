@@ -361,7 +361,7 @@ export class DemoBody extends LitElement {
    */
   private async _renderReactAppWithConfig(config: PublicConfig): Promise<void> {
     const setChatConfigState = this.setChatConfigManager.getState();
-
+    const container = this.querySelector("#root") as HTMLElement;
     await this.reactAppManager.renderReactApp(
       config,
       this.settings,
@@ -369,6 +369,7 @@ export class DemoBody extends LitElement {
       (instance: ChatInstance) => {
         this._setChatInstance(instance);
       },
+      container,
     );
   }
 
@@ -497,7 +498,7 @@ export class DemoBody extends LitElement {
         ? "page set-chat-config-mode-no-config"
         : "page";
 
-    return html` <main id="main-content" class="${pageClass}">
+    return html` <div class="${pageClass}">
       ${this.isSetChatConfigMode && this.hasReceivedSetChatConfig
         ? html`<aside
             class="nav-block set-chat-config-sidebar"
@@ -753,7 +754,13 @@ export class DemoBody extends LitElement {
               </cds-accordion>
             </aside>`
           : ""}
-      <div class="main">
+      <main
+        class="main"
+        role="main"
+        id="main-content"
+        aria-label="Carbon AI Chat demo chat widget"
+      >
+        <slot></slot>
         ${this.settings.framework === "web-component" &&
         !(this.isSetChatConfigMode && !this.hasReceivedSetChatConfig)
           ? html`<demo-app
@@ -764,8 +771,8 @@ export class DemoBody extends LitElement {
               }}
             />`
           : html``}
-      </div>
-    </main>`;
+      </main>
+    </div>`;
   }
 }
 

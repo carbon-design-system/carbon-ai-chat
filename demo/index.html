@@ -19,7 +19,7 @@
       .skip-to-main {
         position: absolute;
         left: -9999px;
-        z-index: 999;
+        z-index: 10002;
         padding: 1em;
         background-color: #161616;
         color: #ffffff;
@@ -31,7 +31,7 @@
         left: 50%;
         transform: translateX(-50%);
         top: 0;
-        z-index: 9999;
+        z-index: 10002;
       }
 
       /* Visually hidden but accessible to screen readers */
@@ -89,11 +89,12 @@
     <nav aria-label="Skip navigation">
       <a href="#main-content" class="skip-to-main">Skip to main content</a>
     </nav>
-    <h1 class="visually-hidden">Carbon AI Chat Demo</h1>
     <demo-container>
       <div slot="demo-header"><demo-header ></demo-header></div>
-      <demo-body slot="demo-body"></demo-body>
+      <demo-body slot="demo-body">
+        <h1 class="visually-hidden">Carbon AI Chat Demo</h1>
+        <div id="root"></div>
+      </demo-body>
     </demo-container>
-    <div id="root"></div>
   </body>
 </html>
