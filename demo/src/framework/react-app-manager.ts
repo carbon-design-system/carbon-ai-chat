@@ -38,9 +38,8 @@ export class ReactAppManager {
     settings: Settings,
     setChatConfigState: SetChatConfigModeState,
     onChatInstanceReady: (instance: ChatInstance) => void,
+    container: HTMLElement,
   ): Promise<void> {
-    const container = document.querySelector("#root") as HTMLElement;
-
     // Create root only once to avoid memory leaks
     if (!this.root) {
       this.root = createRoot(container);

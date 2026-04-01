@@ -9,6 +9,7 @@
 
 import type { AppStore } from "../store/appStore";
 import { IntlShape } from "../utils/i18n";
+import { AriaAnnouncerFunctionType } from "../contexts/AriaAnnouncerContext";
 
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
@@ -27,6 +28,7 @@ import { BusEvent } from "../../types/events/eventBusTypes";
 import { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
+import type { InputFunctions } from "../components-legacy/input/Input";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -53,6 +55,11 @@ class ServiceManager {
    * The current instance of the {@link App} component. This value is not set until app is mounted.
    */
   appWindow: HasRequestFocus;
+
+  /**
+   * The current instance of the Input component. This value is not set until the input is mounted.
+   */
+  inputComponent: InputFunctions;
 
   /**
    * The class used by the client to execute various chat actions.
@@ -142,6 +149,12 @@ class ServiceManager {
    * This replaces the previous react-intl IntlShape.
    */
   intl: IntlShape;
+
+  /**
+   * The aria announcer function that can be used to make screen reader announcements.
+   * This is set by the AppShell component when it mounts.
+   */
+  ariaAnnouncer: AriaAnnouncerFunctionType;
 
   /**
    * As part of the view change work a bug was exposed where someone calling openWindow, closeWindow, or toggleOpen,

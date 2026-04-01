@@ -32,6 +32,31 @@ import { getSettings } from "./framework/utils";
 
 const { defaultConfig, defaultSettings } = getSettings();
 
+// Handle skip link to work with shadow DOM
+// The #main-content element is inside the shadow DOM of demo-body,
+// so we need to manually handle the focus when the skip link is clicked
+document.addEventListener("DOMContentLoaded", () => {
+  const skipLink = document.querySelector(".skip-to-main");
+  if (skipLink) {
+    skipLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      const demoBody = document.querySelector("demo-body");
+      const mainContent = demoBody?.shadowRoot?.querySelector(
+        "#main-content",
+      ) as HTMLElement | null;
+      if (mainContent) {
+        // Make the main element focusable if it isn't already
+        if (!mainContent.hasAttribute("tabindex")) {
+          mainContent.setAttribute("tabindex", "-1");
+        }
+        mainContent.focus();
+        // Optionally scroll into view
+        mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+});
+
 @customElement("demo-container")
 export class Demo extends LitElement {
   static styles = css`

@@ -23,6 +23,7 @@ import {
   DisclaimerPublicConfig,
   CarbonTheme,
   HeaderConfig,
+  HistoryConfig,
   LayoutConfig,
   PublicConfigMessaging,
   InputConfig,
@@ -115,6 +116,9 @@ class ChatContainer extends LitElement {
 
   @property({ type: Object })
   header?: HeaderConfig;
+
+  @property({ type: Object })
+  history?: HistoryConfig;
 
   @property({ type: Object })
   input?: InputConfig;
