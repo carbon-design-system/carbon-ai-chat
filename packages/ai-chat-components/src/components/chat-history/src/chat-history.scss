@@ -81,6 +81,7 @@
 
 :host(#{$prefix}-history-content) {
   display: block;
+  block-size: 100%;
   overflow-y: auto;
 
   .#{$prefix}--history-content__results-count {
@@ -111,10 +112,12 @@
 :host(#{$prefix}-history-panel) {
   display: flex;
   flex-direction: column;
+  block-size: 100%;
 
   .cds--side-nav {
     position: relative;
     background-color: transparent;
+    block-size: 100%;
     inline-size: 100%;
     max-inline-size: 100%;
   }
