@@ -236,6 +236,12 @@ class CDSAIChatMarkdown extends LitElement {
    */
   private lightDomObserver: MutationObserver | null = null;
 
+  /**
+   * Tracks pending Light DOM mutation processing promises.
+   * @internal
+   */
+  private lightDomMutationPromise: Promise<void> | null = null;
+
   connectedCallback() {
     super.connectedCallback();
     this.hasConnected = true;
@@ -276,13 +282,26 @@ class CDSAIChatMarkdown extends LitElement {
     this.lightDomObserver = new MutationObserver(() => {
       // Only update from Light DOM if markdown property still hasn't been explicitly set
       if (!this.markdownPropertyExplicitlySet) {
-        const lightDomMarkdown = this.textContent?.trim() ?? "";
-        // Directly update markdown without triggering the "explicitly set" flag
-        if (this.markdown !== lightDomMarkdown) {
-          this.isInternalMarkdownUpdate = true;
-          this.markdown = lightDomMarkdown;
-          this.isInternalMarkdownUpdate = false;
-        }
+        // Wrap in a promise so updateComplete can wait for it
+        const mutationPromise = Promise.resolve().then(() => {
+          // Read textContent directly - it should be up to date when the callback fires
+          const lightDomMarkdown = this.textContent?.trim() ?? "";
+
+          // Directly update markdown without triggering the "explicitly set" flag
+          if (this.markdown !== lightDomMarkdown) {
+            this.isInternalMarkdownUpdate = true;
+            this.markdown = lightDomMarkdown;
+            this.isInternalMarkdownUpdate = false;
+          }
+        });
+
+        // Track the promise
+        this.lightDomMutationPromise = mutationPromise;
+        mutationPromise.finally(() => {
+          if (this.lightDomMutationPromise === mutationPromise) {
+            this.lightDomMutationPromise = null;
+          }
+        });
       } else {
         // If markdown was explicitly set, stop observing
         this.stopObservingLightDom();
@@ -537,6 +556,26 @@ class CDSAIChatMarkdown extends LitElement {
 
     if (this.renderTask) {
       await this.renderTask;
+    }
+
+    // If a Light DOM mutation is being processed, wait for it and any subsequent render
+    if (this.lightDomMutationPromise) {
+      await this.lightDomMutationPromise;
+
+      // Then flush and wait for any render it triggered
+      const postMutationFlush = (
+        this.scheduleRender as {
+          flush?: () => Promise<void> | void;
+        }
+      ).flush?.();
+
+      if (postMutationFlush instanceof Promise) {
+        await postMutationFlush;
+      }
+
+      if (this.renderTask) {
+        await this.renderTask;
+      }
     }
 
     return result;

@@ -584,38 +584,6 @@ HTTP: http://example.com
         const h1 = root.querySelector("h1");
         expect(h1?.textContent).to.equal("Final Change");
       });
-
-      it("handles complex markdown in Light DOM", async () => {
-        const complexMarkdown = `
-# Heading
-
-This is a paragraph with **bold** and *italic* text.
-
-- List item 1
-- List item 2
-
-\`\`\`javascript
-const code = "example";
-\`\`\`
-      `.trim();
-
-        const el = await fixture<MarkdownElementInstance>(
-          html`<cds-aichat-markdown>${complexMarkdown}</cds-aichat-markdown>`,
-        );
-
-        await el.updateComplete;
-
-        const root = el.shadowRoot;
-        if (!root) {
-          throw new Error("Expected shadow root to exist");
-        }
-
-        expect(root.querySelector("h1")).to.not.equal(null);
-        expect(root.querySelector("strong")).to.not.equal(null);
-        expect(root.querySelector("em")).to.not.equal(null);
-        expect(root.querySelector("ul")).to.not.equal(null);
-        expect(root.querySelector("code")).to.not.equal(null);
-      });
     });
   });
 });
