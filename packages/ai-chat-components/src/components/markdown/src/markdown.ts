@@ -94,10 +94,37 @@ class CDSAIChatMarkdown extends LitElement {
   removeHTML = false;
 
   /**
+   * Internal storage for markdown content.
+   * @internal
+   */
+  private _markdown = "";
+
+  /**
+   * Flag to temporarily allow internal markdown updates without marking as explicitly set.
+   * @internal
+   */
+  private isInternalMarkdownUpdate = false;
+
+  /**
    * Direct markdown source input.
    */
   @property({ type: String })
-  markdown = "";
+  get markdown(): string {
+    return this._markdown;
+  }
+  set markdown(value: string) {
+    const oldValue = this._markdown;
+    this._markdown = value;
+
+    // Track that markdown was explicitly set (not from Light DOM adoption)
+    // Only mark as explicitly set if this is NOT an internal update
+    if (!this.isInternalMarkdownUpdate) {
+      this.markdownPropertyExplicitlySet = true;
+      this.stopObservingLightDom();
+    }
+
+    this.requestUpdate("markdown", oldValue);
+  }
 
   /**
    * If you are actively streaming, setting this to true can help prevent needless UI thrashing when writing
@@ -194,35 +221,102 @@ class CDSAIChatMarkdown extends LitElement {
   private hasRenderedStreamingTableLoadingFrame = false;
   private stagedStreamingTokenTree: TokenTree | null = null;
   private isStreamingTableLoadingMode = false;
-  private hasAdoptedLightDomMarkdown = false;
+  private hasConnected = false;
+
+  /**
+   * Tracks whether the markdown property has been explicitly set by the user.
+   * When false, the component will monitor Light DOM changes.
+   * @internal
+   */
+  private markdownPropertyExplicitlySet = false;
+
+  /**
+   * MutationObserver to monitor Light DOM changes when markdown property isn't explicitly set.
+   * @internal
+   */
+  private lightDomObserver: MutationObserver | null = null;
 
   connectedCallback() {
     super.connectedCallback();
+    this.hasConnected = true;
     this.adoptLightDomMarkdown();
+
+    // Ensure we parse and render on initial mount, even if markdown was set before connection
     this.needsReparse = true;
     this.scheduleRender();
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.stopObservingLightDom();
+  }
+
   private adoptLightDomMarkdown() {
-    if (this.hasAdoptedLightDomMarkdown || this.markdown) {
+    // Backward compatibility: treat static light-DOM text as initial markdown
+    // when the explicit `markdown` property was not provided.
+    if (!this.markdownPropertyExplicitlySet) {
+      const lightDomMarkdown = this.textContent?.trim() ?? "";
+      if (lightDomMarkdown) {
+        // Set markdown without triggering the "explicitly set" flag
+        this.isInternalMarkdownUpdate = true;
+        this.markdown = lightDomMarkdown;
+        this.isInternalMarkdownUpdate = false;
+      }
+
+      // Start observing Light DOM changes only if markdown property wasn't explicitly set
+      this.startObservingLightDom();
+    }
+  }
+
+  private startObservingLightDom() {
+    if (this.lightDomObserver || this.markdownPropertyExplicitlySet) {
       return;
     }
 
-    // Backward compatibility: treat static light-DOM text as initial markdown
-    // when the explicit `markdown` property was not provided.
-    const lightDomMarkdown = this.textContent?.trim() ?? "";
-    if (lightDomMarkdown) {
-      this.markdown = lightDomMarkdown;
-    }
+    this.lightDomObserver = new MutationObserver(() => {
+      // Only update from Light DOM if markdown property still hasn't been explicitly set
+      if (!this.markdownPropertyExplicitlySet) {
+        const lightDomMarkdown = this.textContent?.trim() ?? "";
+        // Directly update markdown without triggering the "explicitly set" flag
+        if (this.markdown !== lightDomMarkdown) {
+          this.isInternalMarkdownUpdate = true;
+          this.markdown = lightDomMarkdown;
+          this.isInternalMarkdownUpdate = false;
+        }
+      } else {
+        // If markdown was explicitly set, stop observing
+        this.stopObservingLightDom();
+      }
+    });
 
-    this.hasAdoptedLightDomMarkdown = true;
+    this.lightDomObserver.observe(this, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  }
+
+  private stopObservingLightDom() {
+    if (this.lightDomObserver) {
+      this.lightDomObserver.disconnect();
+      this.lightDomObserver = null;
+    }
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
-    if (changed.has("removeHTML") || changed.has("markdown")) {
+    // Handle initial render case: if markdown was set before connectedCallback,
+    // Lit won't report it as "changed" but we still need to parse it
+    const isInitialRender = !this.hasConnected && this.markdown;
+
+    if (
+      changed.has("removeHTML") ||
+      changed.has("markdown") ||
+      isInitialRender
+    ) {
       // Properties that affect token tree structure require full reparse
       // - removeHTML: changes which parser is used (html: true vs false)
       // - markdown: updates the source text to parse
+      // - isInitialRender: ensures pre-set markdown gets parsed on first render
       this.needsReparse = true;
       this.scheduleRender();
     } else if (
