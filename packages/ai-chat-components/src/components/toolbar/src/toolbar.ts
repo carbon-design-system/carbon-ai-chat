@@ -113,12 +113,19 @@ class CDSAIChatToolbar extends LitElement {
   }
 
   updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has("actions")) {
+    if (changedProps.has("actions") || changedProps.has("overflow")) {
       this.updateComplete
         .then(() => {
           this.hiddenItems = [];
         })
-        .then(() => this.setupOverflowHandler())
+        .then(() => {
+          // Use double requestAnimationFrame to ensure the browser has painted
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.setupOverflowHandler();
+            });
+          });
+        })
         .then(() => {
           this.measuring = false;
         });
@@ -133,23 +140,22 @@ class CDSAIChatToolbar extends LitElement {
     const containerWidth = Math.round(
       this.container.getBoundingClientRect().width,
     );
+
     if (containerWidth === 0) {
-      if (!this.visibilityObserver) {
-        this.visibilityObserver = new ResizeObserver(() => {
-          const width = Math.round(
-            this.container.getBoundingClientRect().width,
-          );
-          if (width > 0) {
-            this.visibilityObserver?.disconnect();
-            this.visibilityObserver = undefined;
-            // Use requestAnimationFrame to avoid ResizeObserver loop errors
-            requestAnimationFrame(() => {
-              this.setupOverflowHandler();
-            });
-          }
-        });
-        this.visibilityObserver.observe(this.container);
-      }
+      // Disconnect any existing observer before creating a new one
+      this.visibilityObserver?.disconnect();
+      this.visibilityObserver = new ResizeObserver(() => {
+        const width = Math.round(this.container.getBoundingClientRect().width);
+        if (width > 0) {
+          this.visibilityObserver?.disconnect();
+          this.visibilityObserver = undefined;
+          // Use requestAnimationFrame to avoid ResizeObserver loop errors
+          requestAnimationFrame(() => {
+            this.setupOverflowHandler();
+          });
+        }
+      });
+      this.visibilityObserver.observe(this.container);
       return;
     }
 
