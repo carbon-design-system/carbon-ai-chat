@@ -65,7 +65,7 @@ function SelectComponent(props: SelectProps) {
   const [isBeingOpened, setIsBeingOpened] = useState(false);
   const rootRef = useRef<HTMLDivElement>(undefined);
   const pendingSelectionRef = useRef<SingleOption | null>(null);
-
+  const hasSentRef = useRef<boolean>(false);
   // Generate a unique ID that we can use for each instance of our dropdowns.
   const counter = useCounter();
   const id = `${counter}${serviceManager.namespace.suffix}`;
@@ -74,6 +74,8 @@ function SelectComponent(props: SelectProps) {
     const isOpen = e.detail.open;
 
     if (isOpen) {
+      // Reset the sent flag when opening the dropdown
+      hasSentRef.current = false;
       setIsBeingOpened(true);
 
       requestAnimationFrame(() => {
@@ -82,9 +84,11 @@ function SelectComponent(props: SelectProps) {
         }
         setIsBeingOpened(false);
       });
-    } else if (pendingSelectionRef.current) {
-      // Dropdown has closed and we have a pending selection - send it now
+    } else if (pendingSelectionRef.current && !hasSentRef.current) {
+      // Dropdown has closed and we have a pending selection that hasn't been sent yet
       // This ensures autoscroll calculations happen after the dropdown is fully closed
+      // The hasSentRef guard prevents double-send when the Carbon dropdown toggle event fires multiple times
+      hasSentRef.current = true;
       onChange({
         selectedItem: pendingSelectionRef.current,
       });
@@ -98,6 +102,8 @@ function SelectComponent(props: SelectProps) {
 
     // Store the selection but don't send immediately
     // Wait for the dropdown to close (handleToggle will send it)
+    // Reset the sent flag when a new selection is made
+    hasSentRef.current = false;
     pendingSelectionRef.current = {
       label,
       value: { input: { text } },

@@ -8,7 +8,9 @@
  */
 
 import {
+  chunkHasDisplayableContent,
   mergePartialResponseOptions,
+  messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
@@ -186,6 +188,209 @@ describe("streamingUtils", () => {
       tracker.clear("resp-1");
       expect(tracker.getMeta("resp-1")).toBeUndefined();
       expect(tracker.resolveResponseId("item-1")).toBe("item-1");
+    });
+
+    describe("content detection", () => {
+      describe("chunkHasDisplayableContent", () => {
+        it("returns false for non-partial chunks", () => {
+          const chunk = { final_response: { id: "1" } } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(false);
+        });
+
+        it("returns false for chunk without partial_item", () => {
+          const chunk = { complete_item: { response_type: "text" } } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(false);
+        });
+
+        it("returns false for TEXT with empty string", () => {
+          const chunk = {
+            partial_item: { response_type: "text", text: "" },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(false);
+        });
+
+        it("returns false for TEXT with whitespace only", () => {
+          const chunk = {
+            partial_item: { response_type: "text", text: "   \n  \t  " },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(false);
+        });
+
+        it("returns true for TEXT with actual content", () => {
+          const chunk = {
+            partial_item: { response_type: "text", text: "Hello" },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(true);
+        });
+
+        it("returns true for TEXT with content after whitespace", () => {
+          const chunk = {
+            partial_item: { response_type: "text", text: "  Hello  " },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(true);
+        });
+
+        it("returns false for USER_DEFINED without user_defined object", () => {
+          const chunk = {
+            partial_item: { response_type: "user_defined" },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(false);
+        });
+
+        it("returns true for USER_DEFINED with user_defined object", () => {
+          const chunk = {
+            partial_item: {
+              response_type: "user_defined",
+              user_defined: { type: "custom" },
+            },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(true);
+        });
+
+        it("returns true for IMAGE response type", () => {
+          const chunk = {
+            partial_item: { response_type: "image" },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(true);
+        });
+
+        it("returns true for VIDEO response type", () => {
+          const chunk = {
+            partial_item: { response_type: "video" },
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(true);
+        });
+
+        it("returns false for partial_item without response_type", () => {
+          const chunk = {
+            partial_item: {},
+          } as any;
+          expect(chunkHasDisplayableContent(chunk)).toBe(false);
+        });
+      });
+
+      describe("messageHasDisplayableContent", () => {
+        it("returns false for undefined message", () => {
+          expect(messageHasDisplayableContent(undefined)).toBe(false);
+        });
+
+        it("returns false for message without item", () => {
+          const msg = { ui_state: {} } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(false);
+        });
+
+        it("returns false for message without response_type", () => {
+          const msg = { item: {}, ui_state: {} } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(false);
+        });
+
+        it("returns true for TEXT with content in item.text", () => {
+          const msg = {
+            item: { response_type: "text", text: "Hello World" },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("returns false for TEXT with empty item.text and no streaming", () => {
+          const msg = {
+            item: { response_type: "text", text: "" },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(false);
+        });
+
+        it("returns true for TEXT with content in streaming chunks", () => {
+          const msg = {
+            item: { response_type: "text", text: "" },
+            ui_state: {
+              streamingState: {
+                chunks: [{ text: "Hello" }, { text: " " }, { text: "World" }],
+              },
+            },
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("returns false for TEXT with empty streaming chunks", () => {
+          const msg = {
+            item: { response_type: "text", text: "" },
+            ui_state: {
+              streamingState: {
+                chunks: [{ text: "" }, { text: "  " }, { text: "\n" }],
+              },
+            },
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(false);
+        });
+
+        it("prefers item.text over streaming chunks when item.text has content", () => {
+          const msg = {
+            item: { response_type: "text", text: "Final text" },
+            ui_state: {
+              streamingState: {
+                chunks: [{ text: "Streaming" }],
+              },
+            },
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("handles streaming chunks with undefined text", () => {
+          const msg = {
+            item: { response_type: "text", text: "" },
+            ui_state: {
+              streamingState: {
+                chunks: [{ text: undefined }, { text: "Hello" }, {}],
+              },
+            },
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("returns false for USER_DEFINED without user_defined object", () => {
+          const msg = {
+            item: { response_type: "user_defined" },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(false);
+        });
+
+        it("returns true for USER_DEFINED with user_defined object", () => {
+          const msg = {
+            item: {
+              response_type: "user_defined",
+              user_defined: { component: "MyComponent" },
+            },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("returns true for IMAGE response type", () => {
+          const msg = {
+            item: { response_type: "image", source: "url" },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("returns true for VIDEO response type", () => {
+          const msg = {
+            item: { response_type: "video", source: "url" },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+
+        it("returns true for OPTION response type", () => {
+          const msg = {
+            item: { response_type: "option", options: [] },
+            ui_state: {},
+          } as any;
+          expect(messageHasDisplayableContent(msg)).toBe(true);
+        });
+      });
     });
   });
 });
