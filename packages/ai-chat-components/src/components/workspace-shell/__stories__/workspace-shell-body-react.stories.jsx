@@ -29,6 +29,13 @@ export default {
       description: "Type of content to display in the body",
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="workspace-story-container">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export const Default = {
@@ -57,7 +64,7 @@ export const WithCustomContent = {
   render: () => (
     <WorkspaceShell>
       <WorkspaceShellBody>
-        <div style={{ padding: "1rem" }}>
+        <div>
           <h3 style={{ marginBottom: "1rem" }}>Custom Content Example</h3>
           <p style={{ marginBottom: "1rem" }}>
             This body can contain any custom HTML or components. The content

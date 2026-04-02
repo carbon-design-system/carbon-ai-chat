@@ -11,8 +11,51 @@
     <meta charset="utf-8"/>
     <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@carbon/ai-chat - demo</title>
+    <meta name="description" content="Interactive demo and configuration tool for Carbon AI Chat component. Test and customize chat settings, themes, layouts, and features in real-time.">
+    <title>@carbon/ai-chat - functionality demo</title>
     <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/latest/plex.css" />
+    <style>
+      /* Skip to main content link for accessibility */
+      .skip-to-main {
+        position: absolute;
+        left: -9999px;
+        z-index: 10002;
+        padding: 1em;
+        background-color: #161616;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      .skip-to-main:focus {
+        left: 50%;
+        transform: translateX(-50%);
+        top: 0;
+        z-index: 10002;
+      }
+
+      /* Visually hidden but accessible to screen readers */
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      /* Ensure header and header panel appear above chat sidebar */
+      cds-header {
+        z-index: 10000 !important;
+      }
+      
+      cds-header-panel {
+        z-index: 100000 !important;
+      }
+    </style>
 
     <!-- Tealium/GA Set up -->
     <script type="text/javascript">
@@ -43,10 +86,15 @@
       async="async"></script>
   </head>
   <body>
+    <nav aria-label="Skip navigation">
+      <a href="#main-content" class="skip-to-main">Skip to main content</a>
+    </nav>
     <demo-container>
       <div slot="demo-header"><demo-header ></demo-header></div>
-      <demo-body slot="demo-body"></demo-body>
+      <demo-body slot="demo-body">
+        <h1 class="visually-hidden">Carbon AI Chat Demo</h1>
+        <div id="root"></div>
+      </demo-body>
     </demo-container>
-    <div id="root"></div>
   </body>
 </html>

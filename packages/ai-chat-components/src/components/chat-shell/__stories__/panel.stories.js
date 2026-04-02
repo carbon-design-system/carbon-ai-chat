@@ -10,26 +10,20 @@
 import "../src/shell.js";
 import "../src/panel.js";
 import "../../card/src/card-footer.js";
+import "@carbon/web-components/es/components/toggle/index.js";
 import { html, nothing } from "lit";
 import styles from "./story-styles.scss?lit";
 import { cardFooterPresets } from "../../card/__stories__/story-data.js";
 
-const togglePanelOpenState = (panelId) => {
+const togglePanelOpenState = (panelId, checked) => {
   const panel = document.getElementById(panelId);
   if (!panel) {
     return;
   }
-  if (panel.hasAttribute("open")) {
-    panel.removeAttribute("open");
-  } else {
+  if (checked) {
     panel.setAttribute("open", "");
-  }
-
-  // Update button color after toggling
-  const button = document.querySelector(`button[data-panel-id="${panelId}"]`);
-  if (button) {
-    const isOpen = panel.hasAttribute("open");
-    button.style.backgroundColor = isOpen ? "green" : "red";
+  } else {
+    panel.removeAttribute("open");
   }
 };
 
@@ -51,6 +45,7 @@ const panelDefinitions = html`
       show-frame
       animation-on-open="slide-in-from-bottom"
       animation-on-close="slide-out-to-bottom"
+      panel-aria-label="Standard panel"
     >
       <div slot="header"><h4>Standard panel</h4></div>
       <div slot="body" class="panel-sample">
@@ -62,6 +57,7 @@ const panelDefinitions = html`
       id="panel-tertiary-no-header"
       animation-on-open="slide-in-from-bottom"
       animation-on-close="slide-out-to-bottom"
+      panel-aria-label="Standard panel takeover panel"
     >
       <div slot="header"><h4>Standard panel takeover panel</h4></div>
       <div slot="body" class="panel-sample">
@@ -76,6 +72,7 @@ const panelDefinitions = html`
       full-width
       animation-on-open="slide-in-from-bottom"
       animation-on-close="slide-out-to-bottom"
+      panel-aria-label="Fullscreen panel"
     >
       <div slot="header" class="panel-sample">
         <h4>Fullscreen panel</h4>
@@ -92,7 +89,12 @@ const panelDefinitions = html`
         .actions=${cardFooterPresets["secondary primary buttons"]}
       ></cds-aichat-card-footer>
     </cds-aichat-panel>
-    <cds-aichat-panel id="panel-primary-full" priority="2" full-width>
+    <cds-aichat-panel
+      id="panel-primary-full"
+      priority="2"
+      full-width
+      panel-aria-label="Fullscreen takeover panel"
+    >
       <div slot="header">
         <h4>Fullscreen takeover panel. (highest priority)</h4>
       </div>
@@ -105,7 +107,7 @@ const panelDefinitions = html`
 `;
 
 export default {
-  title: "Components/Chat shell/Panels",
+  title: "Preview/Chat shell/Panels",
   args: {
     aiEnabled: false,
     showFrame: true,
@@ -136,19 +138,17 @@ const panelConfigs = [
   { id: "panel-tertiary-no-header", label: "standard panel takeover panel" },
 ];
 
-const createPanelButton = (panelId, label) => {
+const createPanelToggle = (panelId, label) => {
   const panel = document.getElementById(panelId);
   const isOpen = panel?.hasAttribute("open");
-  const backgroundColor = isOpen ? "green" : "red";
 
   return html`
-    <button
-      data-panel-id="${panelId}"
-      @click=${() => togglePanelOpenState(panelId)}
-      style="background-color: ${backgroundColor}; color: white;"
-    >
-      Toggle ${label}
-    </button>
+    <cds-toggle
+      label-text="${label}"
+      ?checked=${isOpen}
+      @cds-toggle-changed=${(e) =>
+        togglePanelOpenState(panelId, e.detail.checked)}
+    ></cds-toggle>
   `;
 };
 
@@ -163,6 +163,7 @@ export const Default = {
     aiEnabled: false,
     animationOnOpen: "slide-in-from-bottom",
     animationOnClose: "slide-out-to-bottom",
+    panelAriaLabel: "Configurable panel",
   },
   argTypes: {
     // Hide shell-level controls
@@ -196,6 +197,7 @@ export const Default = {
         "fade-out",
       ],
     },
+    panelAriaLabel: { control: "text" },
   },
   render: (args) => {
     const {
@@ -207,6 +209,7 @@ export const Default = {
       aiEnabled,
       animationOnOpen,
       animationOnClose,
+      panelAriaLabel,
     } = args;
 
     return html`
@@ -222,6 +225,7 @@ export const Default = {
             ?ai-enabled=${aiEnabled}
             animation-on-open=${animationOnOpen || nothing}
             animation-on-close=${animationOnClose || nothing}
+            panel-aria-label=${panelAriaLabel || nothing}
           >
             <div slot="header"><h4>Panel Header</h4></div>
             <div slot="body" class="panel-sample">
@@ -246,9 +250,10 @@ export const Default = {
 };
 
 export const Embedded = {
-  render: (args) => {
-    const { aiEnabled, showFrame, roundedCorners } = args;
-
+  parameters: {
+    controls: { disable: true },
+  },
+  render: () => {
     return html`
       <div class="panel-controls">
         <p>
@@ -257,13 +262,9 @@ export const Embedded = {
           "priority" attribute, and in the case of a priority tie, on the order
           in which the panels were opened.
         </p>
-        ${panelConfigs.map(({ id, label }) => createPanelButton(id, label))}
+        ${panelConfigs.map(({ id, label }) => createPanelToggle(id, label))}
       </div>
-      <cds-aichat-shell
-        ?ai-enabled=${aiEnabled}
-        ?show-frame=${showFrame}
-        ?rounded-corners=${roundedCorners}
-      >
+      <cds-aichat-shell ai-enabled show-frame rounded-corners>
         ${coreSlotContent} ${panelDefinitions}
       </cds-aichat-shell>
     `;

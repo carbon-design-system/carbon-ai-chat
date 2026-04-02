@@ -135,6 +135,11 @@ interface AppState extends AppStateMessages {
   workspacePanelState: WorkspacePanelState;
 
   /**
+   * The history panel state.
+   */
+  historyPanelState: HistoryPanelState;
+
+  /**
    * The state of the panel surfaced by response types, either with or without user input.
    */
   responsePanelState: MessagePanelState;
@@ -555,6 +560,16 @@ interface WorkspacePanelState {
   additionalData?: unknown;
 }
 
+interface HistoryPanelState {
+  /**
+   * Determines if the history panel should be open.
+   */
+  isOpen: boolean;
+
+  /** Indicates if the history panel should open in chat panel. */
+  isMobile: boolean;
+}
+
 interface MessagePanelState<T extends GenericItem = GenericItem> {
   /**
    * Determines if the show panel is open.
@@ -594,9 +609,15 @@ interface ThemeState {
   originalCarbonTheme: CarbonTheme | null;
 
   /**
-   * This flag is used to disable Carbon AI Chat's rounded corners.
+   * The resolved corners configuration for the chat.
+   * Each corner is individually defined after normalizing the user's configuration.
    */
-  corners: CornersType;
+  corners: {
+    startStart: CornersType;
+    startEnd: CornersType;
+    endStart: CornersType;
+    endEnd: CornersType;
+  };
 }
 
 export {
@@ -614,6 +635,7 @@ export {
   CustomPanelConfigOptions,
   CustomPanelState,
   WorkspacePanelState,
+  HistoryPanelState,
   InputState,
   FileUpload,
   MessagePanelState,

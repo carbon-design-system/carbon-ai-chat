@@ -26,6 +26,7 @@ const RESPONSE_TYPE_TIMEOUT_MS = 20000;
 // These are custom panel ids.
 const DEFAULT_CUSTOM_PANEL_ID = "wac-default-panel";
 const WORKSPACE_CUSTOM_PANEL_ID = "workspace-panel";
+const HISTORY_PANEL_ID = "history-panel";
 
 /**
  * This function serves as a placeholder in places where a functional value is required, but not expected to be
@@ -35,25 +36,16 @@ function THROW_ERROR() {
   throw Error("Not implemented.");
 }
 
-// When we auto-scroll to a message, we want to scroll a bit more than necessary because messages have a lot of
-// padding on the top that we want to cut off when scrolling. This is the extra amount we scroll by. There's 28px of
-// padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
-const AUTO_SCROLL_EXTRA = 28 - 8;
-
-// How much to throttle auto scrolling. When we are in test mode, we set this to zero.
-const AUTO_SCROLL_THROTTLE_TIMEOUT = 200;
-
 export {
-  AUTO_SCROLL_THROTTLE_TIMEOUT,
   WA_CONSOLE_PREFIX,
   RIGHT_TO_LEFT_MARK,
   ENGLISH_US_DATE_FORMAT,
   RESPONSE_TYPE_TIMEOUT_MS,
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
+  HISTORY_PANEL_ID,
   WriteableElementName,
   FileStatusValue,
   THROW_ERROR,
   CornersType,
-  AUTO_SCROLL_EXTRA,
 };

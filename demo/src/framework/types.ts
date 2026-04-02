@@ -9,9 +9,12 @@
 
 interface Settings {
   framework: "react" | "web-component";
-  layout: "float" | "sidebar" | "fullscreen" | "fullscreen-no-gutter";
+  layout: "float" | "sidebar" | "fullscreen";
   writeableElements: "true" | "false";
   direction: "default" | "ltr" | "rtl";
+  showHeader?: boolean;
+  showMenuOptions?: boolean;
+  showSampleActions?: boolean;
 }
 
 interface KeyPairs {

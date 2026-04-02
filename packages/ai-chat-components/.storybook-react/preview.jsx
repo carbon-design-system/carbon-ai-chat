@@ -30,7 +30,28 @@ if (typeof document !== "undefined") {
   }
 }
 
-setCustomElementsManifest(customElements);
+/**
+ * Filter out private members from the custom elements manifest
+ * before passing it to Storybook
+ */
+function filterPrivateMembers(manifest) {
+  const filtered = JSON.parse(JSON.stringify(manifest)); // Deep clone
+
+  filtered.modules.forEach((module) => {
+    (module.declarations || []).forEach((declaration) => {
+      if (declaration.members) {
+        declaration.members = declaration.members.filter(
+          (member) => member.privacy !== "private",
+        );
+      }
+    });
+  });
+
+  return filtered;
+}
+
+const filteredManifest = filterPrivateMembers(customElements);
+setCustomElementsManifest(filteredManifest);
 
 export const globalTypes = {
   theme: {

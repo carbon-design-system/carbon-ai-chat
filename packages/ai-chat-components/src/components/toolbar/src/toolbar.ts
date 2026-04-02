@@ -17,6 +17,7 @@ import { createOverflowHandler } from "@carbon/utilities";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import prefix from "../../../globals/settings.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./toolbar.scss?lit";
 import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
@@ -112,12 +113,19 @@ class CDSAIChatToolbar extends LitElement {
   }
 
   updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has("actions")) {
+    if (changedProps.has("actions") || changedProps.has("overflow")) {
       this.updateComplete
         .then(() => {
           this.hiddenItems = [];
         })
-        .then(() => this.setupOverflowHandler())
+        .then(() => {
+          // Use double requestAnimationFrame to ensure the browser has painted
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.setupOverflowHandler();
+            });
+          });
+        })
         .then(() => {
           this.measuring = false;
         });
@@ -132,23 +140,22 @@ class CDSAIChatToolbar extends LitElement {
     const containerWidth = Math.round(
       this.container.getBoundingClientRect().width,
     );
+
     if (containerWidth === 0) {
-      if (!this.visibilityObserver) {
-        this.visibilityObserver = new ResizeObserver(() => {
-          const width = Math.round(
-            this.container.getBoundingClientRect().width,
-          );
-          if (width > 0) {
-            this.visibilityObserver?.disconnect();
-            this.visibilityObserver = undefined;
-            // Use requestAnimationFrame to avoid ResizeObserver loop errors
-            requestAnimationFrame(() => {
-              this.setupOverflowHandler();
-            });
-          }
-        });
-        this.visibilityObserver.observe(this.container);
-      }
+      // Disconnect any existing observer before creating a new one
+      this.visibilityObserver?.disconnect();
+      this.visibilityObserver = new ResizeObserver(() => {
+        const width = Math.round(this.container.getBoundingClientRect().width);
+        if (width > 0) {
+          this.visibilityObserver?.disconnect();
+          this.visibilityObserver = undefined;
+          // Use requestAnimationFrame to avoid ResizeObserver loop errors
+          requestAnimationFrame(() => {
+            this.setupOverflowHandler();
+          });
+        }
+      });
+      this.visibilityObserver.observe(this.container);
       return;
     }
 
@@ -184,6 +191,7 @@ class CDSAIChatToolbar extends LitElement {
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
+        data-testid=${action.testId || nothing}
         @click=${action.onClick}
         href=${action.href || nothing}
         target=${action.href ? action.target || "_self" : nothing}
@@ -192,7 +200,6 @@ class CDSAIChatToolbar extends LitElement {
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
-        data-testid=${action.testId || nothing}
         ?disabled=${action.disabled}
       >
         ${iconLoader(action.icon, {
@@ -329,7 +336,7 @@ class CDSAIChatToolbar extends LitElement {
     `;
   }
 
-  static styles = styles;
+  static styles = [commonStyles, styles];
 }
 
 export { CDSAIChatToolbar };

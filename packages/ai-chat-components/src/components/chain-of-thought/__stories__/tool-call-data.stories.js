@@ -72,15 +72,15 @@ export const Default = {
       tool-label-text=${args.toolLabelText}
     >
       <div slot="description">
-        <cds-aichat-markdown>
-          Searching knowledge base for password reset guidance.
-        </cds-aichat-markdown>
+        <cds-aichat-markdown
+          .markdown=${"Searching knowledge base for password reset guidance."}
+        ></cds-aichat-markdown>
       </div>
       <div slot="input">
-        <cds-aichat-markdown>${request}</cds-aichat-markdown>
+        <cds-aichat-markdown .markdown=${request}></cds-aichat-markdown>
       </div>
       <div slot="output">
-        <cds-aichat-markdown>${response}</cds-aichat-markdown>
+        <cds-aichat-markdown .markdown=${response}></cds-aichat-markdown>
       </div>
     </cds-aichat-tool-call-data>
   `,

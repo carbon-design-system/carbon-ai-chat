@@ -1,0 +1,29 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+// Layout tokens for AI Chat Components
+// These control structural layout, spacing, and sizing across components
+
+@use "@carbon/layout";
+
+// ============================================================================
+// Layout Tokens - Public Configurable
+// ============================================================================
+// These tokens can be customized by developers to adjust layout dimensions
+
+// Messages area width constraints
+$messages-max-width: 672px !default;
+$messages-min-width: 320px !default;
+
+// Workspace and history panel widths
+$workspace-min-width: 480px !default;
+$history-width: 320px !default;
+
+// Card sizing
+$card-max-width: 424px !default;
+
+// Made with Bob

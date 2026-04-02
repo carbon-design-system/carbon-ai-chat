@@ -15,6 +15,7 @@ import {
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { KeyPairs, Settings } from "./types";
+import { DemoHeaderSwitcher } from "./demo-header-switcher";
 
 function updateQueryParams(items: KeyPairs[]) {
   // Get the current URL's search params
@@ -105,6 +106,13 @@ function getSettings() {
     writeableElements: "false",
     direction: "default",
     ...settings,
+    // Parse header-related settings from URL or use defaults based on config
+    showHeader: settings?.showHeader ?? config.header?.isOn !== false,
+    showMenuOptions:
+      settings?.showMenuOptions ??
+      (config.header?.menuOptions?.length ?? 0) > 0,
+    showSampleActions:
+      settings?.showSampleActions ?? (config.header?.actions?.length ?? 0) > 0,
   };
 
   // Apply direction setting to HTML element
@@ -175,7 +183,6 @@ function getSettings() {
         ...defaultConfig,
         header: {
           ...defaultConfig.header,
-          isOn: false,
           hideMinimizeButton: undefined,
           minimizeButtonIconType: undefined,
         },
@@ -192,32 +199,20 @@ function getSettings() {
       };
       delete defaultConfig.header?.minimizeButtonIconType;
       break;
-    case "fullscreen-no-gutter":
-      defaultConfig = {
-        ...defaultConfig,
-        header: {
-          ...defaultConfig.header,
-          isOn: false,
-          hideMinimizeButton: undefined,
-          minimizeButtonIconType: undefined,
-        },
-        layout: {
-          ...defaultConfig.layout,
-          showFrame: false,
-          hasContentMaxWidth: false,
-          corners: CornersType.SQUARE,
-        },
-        launcher: {
-          ...defaultConfig.launcher,
-          isOn: true,
-        },
-        openChatByDefault: true,
-      };
-      delete defaultConfig.header?.minimizeButtonIconType;
-      break;
   }
 
-  return { defaultConfig, defaultSettings, pageTheme };
+  // Apply header settings to config before returning
+  // This ensures menuOptions and actions are added based on settings without serializing to URL
+  const configWithHeaderSettings = DemoHeaderSwitcher.applySettingsToConfig(
+    defaultConfig,
+    defaultSettings,
+  );
+
+  return {
+    defaultConfig: configWithHeaderSettings,
+    defaultSettings,
+    pageTheme,
+  };
 }
 
 /**

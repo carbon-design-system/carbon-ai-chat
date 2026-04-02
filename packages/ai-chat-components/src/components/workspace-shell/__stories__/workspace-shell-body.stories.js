@@ -40,7 +40,9 @@ export default {
       <style>
         ${styles}
       </style>
-      <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
+      <div class="workspace-story-container">
+        <cds-aichat-workspace-shell>${story()}</cds-aichat-workspace-shell>
+      </div>
     `,
   ],
 };
@@ -70,7 +72,7 @@ export const LongContent = {
 export const WithCustomContent = {
   render: () => html`
     <cds-aichat-workspace-shell-body>
-      <div style="padding: 1rem;">
+      <div>
         <h3 style="margin-bottom: 1rem;">Custom Content Example</h3>
         <p style="margin-bottom: 1rem;">
           This body can contain any custom HTML or components. The content will

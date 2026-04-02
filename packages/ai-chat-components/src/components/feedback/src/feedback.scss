@@ -1,6 +1,6 @@
-/* 
+/*
  *  Copyright IBM Corp. 2025
- *  
+ *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
@@ -14,18 +14,23 @@
 
 :host(#{$prefix}-feedback) {
   @include rounded-modifiers;
-  --cds-aichat-rounded-modifier-radius: var(
-    --cds-aichat-card-border-radius,
-    0.5rem
-  );
+  // Set corner properties so child elements can inherit them
+  // These will be overridden if set from outside (e.g., from shell)
+  --cds-aichat-border-radius-start-start: #{layout.$spacing-03};
+  --cds-aichat-border-radius-start-end: #{layout.$spacing-03};
+  --cds-aichat-border-radius-end-start: #{layout.$spacing-03};
+  --cds-aichat-border-radius-end-end: #{layout.$spacing-03};
 }
 
 .#{$prefix}--container {
   box-sizing: border-box;
   border: 1px solid theme.$chat-bubble-border;
-  border-radius: var(--cds-aichat-rounded-modifier-radius);
   animation: cds-aichat-fade-in 600ms forwards;
   background-color: theme.$chat-shell-background;
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
   container-type: inline-size;
   inline-size: 100%;
   margin-block-start: layout.$spacing-02;
@@ -69,10 +74,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  padding: 0;
-  margin: 0;
   gap: layout.$spacing-03;
-  list-style: none;
 }
 
 .#{$prefix}--feedback-text {

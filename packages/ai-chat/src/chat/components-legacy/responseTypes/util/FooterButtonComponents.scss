@@ -79,9 +79,7 @@ cds-aichat-card {
 
 // Usage inside rounded widget panel, use CSS custom properties for rounded corners
 .cds-aichat--overlay-panel .cds-aichat--footer-button-components {
-  @include footer-button-radius(
-    var(--cds-aichat-rounded-modifier-radius-end-end, 0)
-  );
+  @include footer-button-radius(var(--cds-aichat-border-radius-end-end, 0));
 }
 // Corner rounding styles end
 .cds-aichat--widget--with-branding-banner

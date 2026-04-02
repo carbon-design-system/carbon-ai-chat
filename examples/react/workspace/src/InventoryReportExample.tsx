@@ -12,6 +12,7 @@ import WorkspaceShell, {
   WorkspaceShellBody,
   WorkspaceShellFooter,
 } from "@carbon/ai-chat-components/es/react/workspace-shell.js";
+import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet";
 import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
 
 // Using @carbon/icons-react for all icons
@@ -218,12 +219,12 @@ function InventoryReportExample({
   });
 
   return (
-    <WorkspaceShell>
+    <WorkspaceShell autoCollapsibleHeader={true}>
       <Toolbar slot="toolbar" actions={toolbarActions} overflow>
         <div slot="title" data-fixed>
           Optimizing excess inventory
         </div>
-        <AILabel size="2xs" autoAlign>
+        <AILabel size="2xs" autoAlign={false} align="bottom">
           <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
           <div>
             IBM watsonx is powered by the latest AI models to intelligently
@@ -274,7 +275,9 @@ function InventoryReportExample({
         </p>
         <br />
         <h4>Additional Data from Preview Card:</h4>
-        <pre>{JSON.stringify(additionalData, null, 2)}</pre>
+        <CodeSnippet
+          code={JSON.stringify(additionalData, null, 2)}
+        ></CodeSnippet>
         <br />
         <div>
           <Layer>

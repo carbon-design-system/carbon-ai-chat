@@ -107,11 +107,12 @@ export const Default = {
           onToggle={args.onToggle}
         >
           <ToolCallData toolName="incident_lookup">
-            <Markdown slot="description">
-              Look up recent outages affecting the EU region before escalating.
-            </Markdown>
-            <Markdown slot="input">{request}</Markdown>
-            <Markdown slot="output">{response}</Markdown>
+            <Markdown
+              slot="description"
+              markdown="Look up recent outages affecting the EU region before escalating."
+            />
+            <Markdown slot="input" markdown={request} />
+            <Markdown slot="output" markdown={response} />
           </ToolCallData>
         </ChainOfThoughtStep>
         <ChainOfThoughtStep

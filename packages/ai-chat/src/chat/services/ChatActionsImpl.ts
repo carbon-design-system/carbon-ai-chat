@@ -50,6 +50,7 @@ import {
   createMessageRequestForText,
   createMessageResponseForText,
   createWelcomeRequest,
+  getSpeakerName,
   hasServiceDesk,
   isConnectToHumanAgent,
   isPause,
@@ -85,6 +86,7 @@ import {
   StreamChunk,
 } from "../../types/messaging/Messages";
 import {
+  chunkHasDisplayableContent,
   FinalResponseChunk,
   mergePartialResponseOptions,
   resetStopStreamingButton,
@@ -155,6 +157,18 @@ class ChatActionsImpl {
    * messages that were started before a restart.
    */
   private messageGenerations = new Map<string, number>();
+
+  /**
+   * Tracks which message IDs have had their "streaming start" announced.
+   * Prevents duplicate announcements for the same streaming message.
+   */
+  private announcedStreamingStarts = new Set<string>();
+
+  /**
+   * Tracks which message IDs have had their "reasoning start" announced.
+   * Prevents duplicate announcements for the same reasoning message.
+   */
+  private announcedReasoningStarts = new Set<string>();
 
   /**
    * Queue of received chunks.
@@ -345,6 +359,10 @@ class ChatActionsImpl {
         workspaceID: state.workspacePanelState.workspaceID,
         additionalData: state.workspacePanelState.additionalData,
       },
+      history: {
+        isOpen: Boolean(state.historyPanelState.isOpen),
+        isMobile: Boolean(state.historyPanelState.isMobile),
+      },
     });
 
     const workspace = deepFreeze({
@@ -354,6 +372,11 @@ class ChatActionsImpl {
       },
       workspaceID: state.workspacePanelState.workspaceID,
       additionalData: state.workspacePanelState.additionalData,
+    });
+
+    const history = deepFreeze({
+      isOpen: Boolean(state.historyPanelState.isOpen),
+      isMobile: Boolean(state.historyPanelState.isMobile),
     });
 
     return deepFreeze({
@@ -366,6 +389,7 @@ class ChatActionsImpl {
       input,
       customPanels,
       workspace,
+      history,
     });
   }
 
@@ -462,6 +486,20 @@ class ChatActionsImpl {
       typeof message === "string"
         ? createMessageRequestForText(message)
         : message;
+
+    // Announce that the message is being sent for screen reader users
+    if (this.serviceManager.ariaAnnouncer) {
+      const languagePack =
+        this.serviceManager.store.getState().config.derived.languagePack;
+      this.serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
+    }
+
+    // If focus is not already on the input field, put focus on it before sending
+    // This ensures focus is set for all message sends, including API calls
+    // Only focus on the input field if it's available; don't move focus elsewhere
+    if (this.serviceManager.inputComponent) {
+      this.serviceManager.inputComponent.requestFocus();
+    }
 
     // Clear any currently active response while awaiting the next one (even before hydration).
     this.serviceManager.store.dispatch(actions.setActiveResponseId(null));
@@ -739,10 +777,38 @@ class ChatActionsImpl {
         messageID ||
         ("streaming_metadata" in chunk &&
           chunk.streaming_metadata?.response_id);
+
       this.serviceManager.messageService.markCurrentMessageAsStreaming(
         extractedMessageID,
         chunk.partial_item?.streaming_metadata?.id,
       );
+
+      // Check if this chunk contains reasoning steps
+      const hasReasoning =
+        "partial_response" in chunk &&
+        chunk.partial_response?.message_options?.reasoning;
+
+      // Announce reasoning start on first reasoning chunk for this message
+      if (
+        hasReasoning &&
+        extractedMessageID &&
+        !this.announcedReasoningStarts.has(extractedMessageID)
+      ) {
+        this.announcedReasoningStarts.add(extractedMessageID);
+        this.announceReasoningStart(extractedMessageID, chunk);
+      }
+
+      // Announce streaming start ONLY when we have displayable content
+      // This matches when the UI closes reasoning steps (non-empty text, user_defined, etc.)
+      // (only if we haven't already announced streaming for this message)
+      if (
+        extractedMessageID &&
+        !this.announcedStreamingStarts.has(extractedMessageID) &&
+        chunkHasDisplayableContent(chunk)
+      ) {
+        this.announcedStreamingStarts.add(extractedMessageID);
+        this.announceStreamingStart(extractedMessageID, chunk);
+      }
     }
 
     const chunkPromise = resolvablePromise();
@@ -751,6 +817,99 @@ class ChatActionsImpl {
       this.processChunkQueue();
     }
     return chunkPromise;
+  }
+
+  /**
+   * Announces that streaming has started for a message.
+   * This provides immediate feedback to screen reader users that the assistant is responding.
+   *
+   * @param messageID - The ID of the message being streamed
+   * @param chunk - The first chunk received, which may contain response_user_profile
+   */
+  private announceStreamingStart(messageID: string, chunk: StreamChunk) {
+    const { store } = this.serviceManager;
+    const { config } = store.getState();
+
+    // Get the assistant name from config
+    const assistantName = config.public.assistantName;
+
+    // Try to get response_user_profile from the chunk first (for streaming messages)
+    // This is important because the message might not be in the store yet
+    const chunkProfile = isStreamPartialItem(chunk)
+      ? chunk.partial_response?.message_options?.response_user_profile
+      : undefined;
+
+    // If not in chunk, try to get from stored message (fallback)
+    const message = store.getState().allMessagesByID[messageID] as
+      | MessageResponse
+      | undefined;
+
+    // Create a temporary message object with the profile from chunk if available
+    const messageWithProfile: MessageResponse | undefined = chunkProfile
+      ? ({
+          ...message,
+          message_options: {
+            ...message?.message_options,
+            response_user_profile: chunkProfile,
+          },
+        } as MessageResponse)
+      : message;
+
+    const speakerName = getSpeakerName(messageWithProfile, assistantName);
+
+    store.dispatch(
+      actions.announceMessage({
+        messageID: "messages_streamingStart",
+        messageValues: { sender: speakerName },
+      }),
+    );
+  }
+
+  /**
+   * Announces that reasoning has started for a message.
+   * This provides immediate feedback to screen reader users that the assistant is thinking.
+   *
+   * @param messageID - The ID of the message with reasoning steps
+   * @param chunk - The first reasoning chunk received, which may contain response_user_profile
+   */
+  private announceReasoningStart(messageID: string, chunk: StreamChunk) {
+    const { store } = this.serviceManager;
+    const { config } = store.getState();
+
+    // Get the assistant name from config
+    const assistantName = config.public.assistantName;
+
+    // Try to get response_user_profile from the chunk first (for streaming messages)
+    // This is important because the message might not be in the store yet
+    const chunkProfile =
+      "partial_response" in chunk
+        ? chunk.partial_response?.message_options?.response_user_profile
+        : undefined;
+
+    // If not in chunk, try to get from stored message (fallback)
+    const message = store.getState().allMessagesByID[messageID] as
+      | MessageResponse
+      | undefined;
+
+    // Create a temporary message object with the profile from chunk if available
+    const messageWithProfile: MessageResponse | undefined = chunkProfile
+      ? ({
+          ...message,
+          message_options: {
+            ...message?.message_options,
+            response_user_profile: chunkProfile,
+          },
+        } as MessageResponse)
+      : message;
+
+    const speakerName = getSpeakerName(messageWithProfile, assistantName);
+
+    store.dispatch(
+      actions.announceMessage({
+        messageID: "messages_reasoningStart",
+        messageValues: { sender: speakerName },
+      }),
+    );
   }
 
   async processChunkQueue() {
@@ -1607,6 +1766,12 @@ class ChatActionsImpl {
       // Increment the restart generation to filter out any chunks from the previous conversation
       this.restartGeneration++;
 
+      // Clear streaming start announcements tracking
+      this.announcedStreamingStarts.clear();
+
+      // Clear reasoning start announcements tracking
+      this.announcedReasoningStarts.clear();
+
       // Mark all existing messages as belonging to the OLD generation by keeping them in the map
       // (don't clear - this way we can detect stale chunks from old messages)
 
@@ -1636,7 +1801,6 @@ class ChatActionsImpl {
         await serviceManager.humanAgentService.endChat(true, false, false);
       }
 
-      this.serviceManager.instance.updateInputFieldVisibility(true);
       await this.serviceManager.messageService.cancelAllMessageRequests();
 
       // Hide the stop streaming button since we've cancelled all streams

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -135,7 +135,7 @@ function WorkspaceWriteableElementExample({
   };
 
   return (
-    <WorkspaceShell>
+    <WorkspaceShell autoCollapsibleHeader>
       <Toolbar
         slot="toolbar"
         actions={toolbarActions}
@@ -143,7 +143,7 @@ function WorkspaceWriteableElementExample({
         titleText="Optimizing excess inventory"
       >
         <div slot="decorator">
-          <AILabel size="2xs" autoAlign>
+          <AILabel autoAlign={false} size="2xs" align="bottom">
             <AILabelContent>
               <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
               <div>

@@ -13,6 +13,7 @@ import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators";
 import { tableSkeletonTemplate } from "./table-skeleton.template";
 import { loadTableRuntime } from "./table-loader.js";
+import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./table.scss?lit";
 import prefix from "../../../globals/settings.js";
 
@@ -141,13 +142,14 @@ class CDSAIChatTable extends LitElement {
    * The function used to get the supplemental text for the pagination component.
    */
   @property({ type: Function, attribute: false })
-  getPaginationSupplementalText?: ({ count }: { count: number }) => string;
+  getPaginationSupplementalText = ({ count }: { count: number }) =>
+    `${count} items`;
 
   /**
    * The function used to get the status text for the pagination component.
    */
   @property({ type: Function, attribute: false })
-  getPaginationStatusText?: ({
+  getPaginationStatusText = ({
     start,
     end,
     count,
@@ -155,7 +157,7 @@ class CDSAIChatTable extends LitElement {
     start: number;
     end: number;
     count: number;
-  }) => string;
+  }) => `${start}–${end} of ${count} items`;
 
   /**
    * If the table is valid or not.
@@ -202,6 +204,17 @@ class CDSAIChatTable extends LitElement {
   public _filterVisibleRowIDs: Set<string> = new Set();
 
   /**
+   * Flag to track when row visibility needs to be updated after the DOM has rendered.
+   * This is necessary because _updateVisibleRows() queries the DOM for rendered rows,
+   * which don't exist yet during willUpdate(). Setting this flag defers the visibility
+   * update until the updated() lifecycle method runs after rendering is complete.
+   *
+   * @internal
+   */
+  @state()
+  private _needsVisibilityUpdate = false;
+
+  /**
    * All of the rows for the table with IDs.
    *
    * @internal
@@ -217,7 +230,7 @@ class CDSAIChatTable extends LitElement {
   @state()
   public _allowFiltering = true;
 
-  static styles = styles;
+  static styles = [commonStyles, styles];
 
   /**
    * @internal
@@ -228,6 +241,7 @@ class CDSAIChatTable extends LitElement {
    * @internal
    */
   private tableRuntimePromise: Promise<TableRuntimeModule> | null = null;
+  private hasRenderedLoadingFrame = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -246,6 +260,25 @@ class CDSAIChatTable extends LitElement {
     await this.updateComplete;
     this._updateDefaultPageSize();
     this._setPageSize();
+  }
+
+  /**
+   * While loading we only need to paint the skeleton once. Streaming updates can
+   * mutate rows/headers rapidly, so skip subsequent updates until loading ends.
+   */
+  protected shouldUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("loading")) {
+      if (this.loading) {
+        this.hasRenderedLoadingFrame = false;
+      }
+      return true;
+    }
+
+    if (this.loading && this.hasRenderedLoadingFrame) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -286,11 +319,31 @@ class CDSAIChatTable extends LitElement {
    * @protected
    */
   protected willUpdate(changedProperties: PropertyValues<this>) {
+    // Calculate default page size on first render to ensure correct page size is set.
+    // For streaming tables: happens when loading=true (before skeleton renders)
+    // For non-streaming tables: happens when rows are first set
+    if (
+      (changedProperties.has("loading") && this.loading) ||
+      (changedProperties.has("rows") &&
+        this.rows !== undefined &&
+        !this.loading)
+    ) {
+      this._updateDefaultPageSize();
+    }
+
+    const loadingJustFinished =
+      changedProperties.has("loading") &&
+      changedProperties.get("loading") === true &&
+      this.loading === false;
+
     // If the headers or rows has recently updated and both are defined than we should validate the table
     // data. This will likely only happen on the web components first render cycle when the props go from undefined to
     // defined.
     if (
-      (changedProperties.has("headers") || changedProperties.has("rows")) &&
+      (changedProperties.has("headers") ||
+        changedProperties.has("rows") ||
+        loadingJustFinished) &&
+      !this.loading &&
       this.headers !== undefined &&
       this.rows !== undefined
     ) {
@@ -298,9 +351,42 @@ class CDSAIChatTable extends LitElement {
     }
 
     // If the value of tableRows updated then initialize the internal rows arrays.
-    if (changedProperties.has("rows") && this.rows !== undefined) {
+    if (
+      (changedProperties.has("rows") || loadingJustFinished) &&
+      !this.loading &&
+      this.rows !== undefined
+    ) {
       this._initializeRowsArrays();
-      this._setPageSize();
+      // Set flag to update visibility after DOM renders, rather than calling _setPageSize() here.
+      // This is critical for streaming tables where rows don't exist in the DOM yet during willUpdate().
+      this._needsVisibilityUpdate = true;
+    }
+  }
+
+  /**
+   * Called after the element's DOM has been updated.
+   * Handles deferred visibility updates that require the DOM to be fully rendered.
+   *
+   * This is essential for streaming tables: when loading completes, willUpdate() sets
+   * _needsVisibilityUpdate=true, but the actual row elements don't exist in the DOM yet.
+   * By deferring _updateVisibleRows() to this lifecycle method, we ensure the rows are
+   * rendered and can be properly queried and hidden/shown for pagination.
+   *
+   * We use requestAnimationFrame to ensure Carbon Web Components table rows are fully
+   * rendered in the DOM before attempting to query and hide/show them.
+   *
+   * @param changedProperties - Map of properties that changed during the update
+   * @protected
+   */
+  protected updated(changedProperties: PropertyValues<this>) {
+    super.updated(changedProperties);
+
+    if (this._needsVisibilityUpdate) {
+      this._needsVisibilityUpdate = false;
+      // Use requestAnimationFrame to ensure Carbon table rows are fully rendered
+      requestAnimationFrame(() => {
+        this._updateVisibleRows();
+      });
     }
   }
 
@@ -359,14 +445,18 @@ class CDSAIChatTable extends LitElement {
    * Filtering is enabled when there are more rows than can fit on a single page,
    * allowing users to search and paginate through large datasets.
    *
+   * This method is called from firstUpdated() for non-streaming tables where the DOM
+   * is already rendered. For streaming tables, visibility updates are deferred via the
+   * _needsVisibilityUpdate flag and handled in updated() lifecycle method.
+   *
    * @private
    */
   private _setPageSize() {
     // If there are more rows than the page size then enable filtering.
     // this._allowFiltering = this.rows.length > this._currentPageSize;
 
-    // Update the visible rows in case the page size has changed or this is the first time this web component has
-    // rendered.
+    // Update visible rows. This is safe to call here because _setPageSize() is only
+    // called from firstUpdated(), which runs after the DOM is rendered.
     this._updateVisibleRows();
   }
 
@@ -386,6 +476,11 @@ class CDSAIChatTable extends LitElement {
     try {
       const runtime = await this.tableRuntimePromise;
       this.tableRuntime = runtime;
+      // When runtime loads for the first time, we need to update row visibility
+      // because we're transitioning from skeleton to actual table
+      if (!this.loading && this.rows !== undefined && this.rows.length > 0) {
+        this._needsVisibilityUpdate = true;
+      }
       this.requestUpdate();
       return runtime;
     } catch (error) {
@@ -579,11 +674,13 @@ class CDSAIChatTable extends LitElement {
     // This could be used while we wait for a md stream containing a table to complete.
     const runtime = this.tableRuntime;
     if (this.loading || !runtime) {
+      this.hasRenderedLoadingFrame = true;
       if (!runtime) {
         void this.ensureTableRuntime();
       }
       return tableSkeletonTemplate(this._currentPageSize);
     }
+    this.hasRenderedLoadingFrame = false;
 
     const { tableTemplate, tablePaginationTemplate } = runtime;
 

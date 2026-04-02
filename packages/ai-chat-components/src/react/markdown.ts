@@ -14,12 +14,29 @@ import React from "react";
 import CDSAIChatMarkdown from "../components/markdown/src/markdown.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge";
 
-const Markdown = withWebComponentBridge(
-  createComponent({
-    tagName: "cds-aichat-markdown",
-    elementClass: CDSAIChatMarkdown,
-    react: React,
+const BaseMarkdown = createComponent({
+  tagName: "cds-aichat-markdown",
+  elementClass: CDSAIChatMarkdown,
+  react: React,
+});
+
+const ForwardedMarkdown = React.forwardRef<
+  CDSAIChatMarkdown,
+  React.ComponentProps<typeof BaseMarkdown> & { markdown?: string }
+>(({ children, markdown, ...rest }, forwardedRef) =>
+  React.createElement(BaseMarkdown, {
+    ...rest,
+    ref: forwardedRef,
+    markdown:
+      markdown ??
+      (typeof children === "string" || typeof children === "number"
+        ? String(children)
+        : undefined),
   }),
 );
+
+ForwardedMarkdown.displayName = "Markdown";
+
+const Markdown = withWebComponentBridge(ForwardedMarkdown);
 
 export default Markdown;

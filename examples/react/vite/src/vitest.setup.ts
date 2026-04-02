@@ -8,36 +8,20 @@
  */
 
 import "@testing-library/jest-dom";
-import React from "react";
 import { loadAllLazyDeps } from "@carbon/ai-chat/server";
-import { vi } from "vitest";
+import { vi, expect } from "vitest";
+import { shadowDomSerializer } from "./__tests__/snapshot-serializer";
+
+// Register custom snapshot serializer to handle dynamic content in shadow DOM
+// This normalizes Lit comment markers and UUID-based IDs in snapshots
+expect.addSnapshotSerializer(shadowDomSerializer);
 
 // Preload every lazily imported dependency (CodeMirror, DataTable, Swiper,
-// react-player, Day.js locales, etc.) once before the suite runs. That keeps
+// Day.js locales, etc.) once before the suite runs. That keeps
 // the component code from issuing dynamic import() calls halfway through a
 // test, which would otherwise stall happy-dom while the modules resolve.
 beforeAll(async () => {
   await loadAllLazyDeps();
-});
-
-/**
- * react-player attempts to load remote SDK scripts (YouTube/Vimeo) as soon as
- * the component mounts. That fails under happy-dom because script loading is
- * disabled. We stub the player once here so tests can still exercise the media
- * response types without hitting the network or throwing DOMException errors.
- */
-vi.mock("react-player/lazy/index.js", () => {
-  const MockPlayer = (props: Record<string, unknown>) =>
-    React.createElement(
-      "div",
-      { "data-testid": "mock-react-player", ...props },
-      "Mock React Player",
-    );
-
-  return {
-    __esModule: true,
-    default: MockPlayer,
-  };
 });
 
 /**
@@ -123,9 +107,11 @@ vi.mock(
 
 beforeEach(() => {
   // Mock ResizeObserver which is used by Carbon components
-  (window as any).ResizeObserver = vi.fn().mockImplementation(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }));
+  (window as any).ResizeObserver = vi.fn(function ResizeObserver() {
+    return {
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    };
+  });
 });

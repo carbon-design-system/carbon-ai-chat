@@ -11,6 +11,7 @@ import { CustomPanels, PanelType } from "../../types/instance/apiTypes";
 import {
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
+  HISTORY_PANEL_ID,
 } from "../utils/constants";
 import { PANEL_CONFIG_OPTIONS_BY_TYPE } from "../store/reducerUtils";
 import {
@@ -38,11 +39,16 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
       serviceManger,
       PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.WORKSPACE],
     ),
+    [HISTORY_PANEL_ID]: createCustomPanelInstance(
+      PanelType.HISTORY,
+      serviceManger,
+    ),
   };
 
   const panelByLocation: Record<PanelType, string> = {
     [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_ID,
     [PanelType.WORKSPACE]: WORKSPACE_CUSTOM_PANEL_ID,
+    [PanelType.HISTORY]: HISTORY_PANEL_ID,
   };
 
   return Object.freeze({

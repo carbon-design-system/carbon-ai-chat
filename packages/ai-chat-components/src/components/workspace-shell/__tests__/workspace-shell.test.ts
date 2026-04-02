@@ -320,3 +320,161 @@ describe("CDSAIChatWorkspaceShellFooter - props & events", () => {
     );
   });
 });
+
+describe("CDSAIChatWorkspaceShell - auto-collapsible header", () => {
+  it("should not enable auto-collapsible by default", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShell>(
+      html`<cds-aichat-workspace-shell>
+        <cds-aichat-workspace-shell-header
+          title-text="Title"
+          subtitle-text="Subtitle"
+        >
+        </cds-aichat-workspace-shell-header>
+      </cds-aichat-workspace-shell>`,
+    );
+
+    expect(el.autoCollapsibleHeader).to.be.false;
+    expect(el.hasAttribute("auto-collapsible-header")).to.be.false;
+  });
+
+  it("should enable auto-collapsible when attribute is set", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShell>(
+      html`<cds-aichat-workspace-shell auto-collapsible-header>
+        <cds-aichat-workspace-shell-header
+          title-text="Title"
+          subtitle-text="Subtitle"
+        >
+        </cds-aichat-workspace-shell-header>
+      </cds-aichat-workspace-shell>`,
+    );
+
+    expect(el.autoCollapsibleHeader).to.be.true;
+    expect(el.hasAttribute("auto-collapsible-header")).to.be.true;
+  });
+
+  it("should clean up collapsible attribute when auto-collapsible is disabled", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShell>(
+      html`<cds-aichat-workspace-shell auto-collapsible-header>
+        <cds-aichat-workspace-shell-header
+          title-text="Title"
+          subtitle-text="Subtitle"
+        >
+        </cds-aichat-workspace-shell-header>
+      </cds-aichat-workspace-shell>`,
+    );
+
+    const header = el.querySelector(
+      "cds-aichat-workspace-shell-header",
+    ) as CDSAIChatWorkspaceShellHeader;
+
+    // Wait for initial setup
+    await el.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Disable auto-collapsible
+    el.autoCollapsibleHeader = false;
+    await el.updateComplete;
+
+    // Header should not have collapsible attribute
+    expect(header.hasAttribute("collapsible")).to.be.false;
+  });
+});
+
+describe("CDSAIChatWorkspaceShellHeader - collapsible behavior", () => {
+  it("should not be collapsible by default", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShellHeader>(html`
+      <cds-aichat-workspace-shell-header
+        title-text="Title"
+        subtitle-text="Subtitle"
+      >
+      </cds-aichat-workspace-shell-header>
+    `);
+
+    expect(el.collapsible).to.be.false;
+    expect(el.hasAttribute("collapsible")).to.be.false;
+
+    // Should render without details element
+    const details = el.shadowRoot!.querySelector("details");
+    expect(details).to.not.exist;
+  });
+
+  it("should render with details element when collapsible is true", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShellHeader>(html`
+      <cds-aichat-workspace-shell-header
+        title-text="Title"
+        subtitle-text="Subtitle"
+        collapsible
+      >
+      </cds-aichat-workspace-shell-header>
+    `);
+
+    expect(el.collapsible).to.be.true;
+
+    // Should render with details element
+    const details = el.shadowRoot!.querySelector("details");
+    expect(details).to.exist;
+
+    // Should have summary with title
+    const summary = details!.querySelector("summary");
+    expect(summary).to.exist;
+  });
+
+  it("should toggle details element when collapsible changes", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShellHeader>(html`
+      <cds-aichat-workspace-shell-header
+        title-text="Title"
+        subtitle-text="Subtitle"
+      >
+      </cds-aichat-workspace-shell-header>
+    `);
+
+    // Initially not collapsible
+    let details = el.shadowRoot!.querySelector("details");
+    expect(details).to.not.exist;
+
+    // Make it collapsible
+    el.collapsible = true;
+    await el.updateComplete;
+
+    details = el.shadowRoot!.querySelector("details");
+    expect(details).to.exist;
+
+    // Make it not collapsible again
+    el.collapsible = false;
+    await el.updateComplete;
+
+    details = el.shadowRoot!.querySelector("details");
+    expect(details).to.not.exist;
+  });
+
+  it("should fire workspace-header-toggle event when details is toggled", async () => {
+    const el = await fixture<CDSAIChatWorkspaceShellHeader>(html`
+      <cds-aichat-workspace-shell-header
+        title-text="Title"
+        subtitle-text="Subtitle"
+        collapsible
+      >
+      </cds-aichat-workspace-shell-header>
+    `);
+
+    const eventPromise = new Promise<CustomEvent>((resolve) => {
+      el.addEventListener(
+        "workspace-header-toggle",
+        (e: Event) => resolve(e as CustomEvent),
+        { once: true },
+      );
+    });
+
+    const details = el.shadowRoot!.querySelector(
+      "details",
+    ) as HTMLDetailsElement;
+    expect(details).to.exist;
+
+    // Toggle the details element
+    details.open = true;
+    details.dispatchEvent(new Event("toggle"));
+
+    const event = await eventPromise;
+    expect(event.detail.open).to.be.true;
+  });
+});

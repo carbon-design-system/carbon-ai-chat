@@ -17,6 +17,7 @@ import {
   ChatMessagesState,
   CustomPanelState,
   WorkspacePanelState,
+  HistoryPanelState,
   HumanAgentState,
   IFramePanelState,
   InputState,
@@ -58,6 +59,7 @@ const DEFAULT_HEADER: HeaderConfig = {
   isOn: true,
   minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
   showAiLabel: true,
+  hasContentMaxWidth: false,
 };
 
 deepFreeze(DEFAULT_HEADER);
@@ -114,6 +116,12 @@ const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
   additionalData: undefined,
 };
 deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
+
+const DEFAULT_HISTORY_PANEL_STATE: HistoryPanelState = {
+  isOpen: false,
+  isMobile: false,
+};
+deepFreeze(DEFAULT_HISTORY_PANEL_STATE);
 
 const DEFAULT_IFRAME_PANEL_STATE: IFramePanelState = {
   isOpen: false,
@@ -232,7 +240,12 @@ const DEFAULT_THEME_STATE: ThemeState = {
   derivedCarbonTheme: null,
   originalCarbonTheme: null,
   aiEnabled: true,
-  corners: CornersType.ROUND,
+  corners: {
+    startStart: CornersType.ROUND,
+    startEnd: CornersType.ROUND,
+    endStart: CornersType.ROUND,
+    endEnd: CornersType.ROUND,
+  },
 };
 deepFreeze(DEFAULT_THEME_STATE);
 
@@ -410,6 +423,7 @@ export {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
+  DEFAULT_HISTORY_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
   PANEL_CONFIG_OPTIONS_BY_TYPE,

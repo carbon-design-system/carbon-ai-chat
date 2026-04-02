@@ -12,6 +12,9 @@ import Send16 from "@carbon/icons/es/send/16.js";
 import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
+import { matchesShortcut } from "../../utils/keyboardUtils";
+import { getDeepActiveElement } from "../../utils/domUtils";
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../../types/config/ShortcutConfig";
 import FileUploaderItem, {
   FILE_UPLOADER_ITEM_SIZE,
   FILE_UPLOADER_ITEM_STATE,
@@ -100,11 +103,6 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
   onSendInput: (text: string) => void;
 
   /**
-   * Indicates if the text area should blur when the text is sent.
-   */
-  blurOnSend?: boolean;
-
-  /**
    * An optional placeholder to display in the field. If this is not set, then a default value will be used.
    */
   placeholder?: string;
@@ -175,8 +173,23 @@ interface InputProps extends HasServiceManager, HasLanguagePack {
 interface InputFunctions {
   /**
    * Instructs the text area to take focus.
+   * @deprecated Use requestFocus() instead for consistency with focus management pattern
    */
   takeFocus: () => void;
+
+  /**
+   * Requests focus on the input field.
+   * Follows the generic focus management pattern for web components.
+   * @returns {boolean} True if focus was successfully set, false otherwise
+   */
+  requestFocus: () => boolean;
+
+  /**
+   * Returns true if the input field currently has focus.
+   * Encapsulates internal focus detection logic.
+   * @returns {boolean} True if the input field has focus
+   */
+  hasFocus: () => boolean;
 }
 
 function Input(props: InputProps, ref: Ref<InputFunctions>) {
@@ -192,7 +205,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     showUploadButton,
     onFilesSelectedForUpload,
     onSendInput,
-    blurOnSend,
     serviceManager,
     onUserTyping,
     languagePack,
@@ -207,6 +219,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   // Indicates if the text area currently has focus.
   const [textAreaHasFocus, setTextAreaHasFocus] = useState(false);
+
+  // Track if we've announced the keyboard shortcut to avoid repeating it
+  const [hasAnnouncedShortcut, setHasAnnouncedShortcut] = useState(false);
 
   const trackedInputState = trackInputState
     ? selectInputState(store.getState())
@@ -290,9 +305,29 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   /**
    * This is a callback which is called on each keydown event that occurs on the text area. This is used to capture
-   * the enter key, so we can send the entered text to the server.
+   * the enter key, so we can send the entered text to the server, and to handle keyboard shortcuts.
    */
   function onKeyDown(event: KeyboardEvent) {
+    // Check for focus toggle shortcut first - this should work even when typing
+    const shortcutConfig =
+      serviceManager.store.getState().config.public.keyboardShortcuts
+        ?.messageFocusToggle || DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
+
+    // Check if shortcuts are enabled (default to true if not specified)
+    const shortcutsEnabled = shortcutConfig.is_on !== false;
+
+    // Cast React's KeyboardEvent to native KeyboardEvent for matchesShortcut
+    if (
+      shortcutsEnabled &&
+      matchesShortcut(event.nativeEvent, shortcutConfig)
+    ) {
+      // Prevent browser's default F6 behavior (focus cycling)
+      event.preventDefault();
+      // Let the event bubble up to AppShell's document listener
+      // The AppShell will handle the focus toggle
+      return;
+    }
+
     if (isEnterKey(event)) {
       if (disableSend || isStopStreamingButtonVisible) {
         // If sending is disabled, stop the field from inserting a newline into the field.
@@ -350,11 +385,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           ),
         );
       }
-      if (blurOnSend) {
-        textAreaRef.current?.doBlur();
-      } else {
-        textAreaRef.current?.takeFocus();
-      }
     }
   }
 
@@ -363,6 +393,24 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function onInputFocus() {
     setTextAreaHasFocus(true);
+
+    // Announce keyboard shortcut on first focus if enabled
+    if (!hasAnnouncedShortcut) {
+      const shortcutConfig =
+        serviceManager.store.getState().config.public.keyboardShortcuts
+          ?.messageFocusToggle || DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
+
+      if (shortcutConfig.is_on) {
+        const key = shortcutConfig.key;
+        serviceManager.store.dispatch(
+          actions.announceMessage({
+            messageID: "input_keyboardShortcutAnnouncement",
+            messageValues: { key },
+          }),
+        );
+        setHasAnnouncedShortcut(true);
+      }
+    }
   }
 
   /**
@@ -379,6 +427,41 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     if (!IS_MOBILE && isInputVisible) {
       textAreaRef.current?.takeFocus();
     }
+  }
+
+  /**
+   * Requests focus on the input field.
+   * Follows the generic focus management pattern for web components.
+   * @returns {boolean} True if focus was successfully set, false otherwise
+   */
+  function requestFocus(): boolean {
+    if (!IS_MOBILE && isInputVisible) {
+      textAreaRef.current?.takeFocus();
+      // Verify focus was actually set
+      return hasFocus();
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the input field currently has focus.
+   * Encapsulates internal focus detection logic using shadow DOM traversal.
+   * @returns {boolean} True if the input field has focus
+   */
+  function hasFocus(): boolean {
+    // Get the input container element
+    const inputElement = textAreaRef.current?.getHTMLElement();
+    if (!inputElement) {
+      return false;
+    }
+
+    // Use getDeepActiveElement to traverse shadow DOM boundaries
+    const activeElement = getDeepActiveElement();
+
+    // Check if the active element is the input or within the input
+    return (
+      activeElement === inputElement || inputElement.contains(activeElement)
+    );
   }
 
   /**
@@ -444,6 +527,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   useImperativeHandle(ref, () => ({
     takeFocus,
+    requestFocus,
+    hasFocus,
   }));
 
   const {

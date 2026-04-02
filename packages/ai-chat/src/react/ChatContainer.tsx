@@ -94,6 +94,7 @@ function ChatContainer(props: ChatContainerProps) {
     namespace,
     shouldSanitizeHTML,
     header,
+    history,
     layout,
     messaging,
     isReadonly,
@@ -103,6 +104,7 @@ function ChatContainer(props: ChatContainerProps) {
     homescreen,
     launcher,
     input,
+    keyboardShortcuts,
   } = props;
   // Reconstruct PublicConfig from flattened props
   const config = useMemo(
@@ -119,6 +121,7 @@ function ChatContainer(props: ChatContainerProps) {
       namespace,
       shouldSanitizeHTML,
       header,
+      history,
       layout,
       messaging,
       isReadonly,
@@ -128,6 +131,7 @@ function ChatContainer(props: ChatContainerProps) {
       homescreen,
       launcher,
       input,
+      keyboardShortcuts,
     }),
     [
       onError,
@@ -142,6 +146,7 @@ function ChatContainer(props: ChatContainerProps) {
       namespace,
       shouldSanitizeHTML,
       header,
+      history,
       layout,
       messaging,
       isReadonly,
@@ -151,6 +156,7 @@ function ChatContainer(props: ChatContainerProps) {
       homescreen,
       launcher,
       input,
+      keyboardShortcuts,
     ],
   );
 

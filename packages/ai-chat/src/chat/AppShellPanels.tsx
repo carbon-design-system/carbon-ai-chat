@@ -51,6 +51,7 @@ interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   isHomeScreenActive: boolean;
   customPanelState: AppState["customPanelState"];
   customPanelRef: React.RefObject<HasRequestFocus | null>;
+  historyPanelState: AppState["historyPanelState"];
   publicConfig: AppState["config"]["public"];
   showDisclaimer: boolean;
   disclaimerRef: React.RefObject<CDSButton | null>;
@@ -100,6 +101,7 @@ export function AppShellPanels({
   isHomeScreenActive,
   customPanelState,
   customPanelRef,
+  historyPanelState,
   publicConfig,
   showDisclaimer,
   disclaimerRef,
@@ -153,6 +155,7 @@ export function AppShellPanels({
   return (
     <div slot="panels">
       <ChatPanel
+        panelAriaLabel={languagePack.aria_catastrophicErrorPanel}
         open={Boolean(catastrophicErrorType)}
         aiEnabled={config.public.aiEnabled ? true : false}
         priority={100}
@@ -168,6 +171,7 @@ export function AppShellPanels({
         </div>
       </ChatPanel>
       <ChatPanel
+        panelAriaLabel={languagePack.aria_hydrationPanel}
         open={shouldShowHydrationPanel}
         priority={90}
         aiEnabled={config.public.aiEnabled ? true : false}
@@ -191,6 +195,7 @@ export function AppShellPanels({
       </ChatPanel>
 
       <ChatPanel
+        panelAriaLabel={panelTitle || languagePack.aria_customPanel}
         open={customPanelState.isOpen}
         priority={60}
         fullWidth={
@@ -326,6 +331,7 @@ export function AppShellPanels({
 
       {disclaimerContent && (
         <ChatPanel
+          panelAriaLabel={languagePack.aria_disclaimerPanel}
           open={showDisclaimer}
           priority={80}
           aiEnabled={config.public.aiEnabled ? true : false}
@@ -350,6 +356,10 @@ export function AppShellPanels({
       )}
 
       <ChatPanel
+        panelAriaLabel={
+          (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
+            .title || languagePack.aria_responsePanel
+        }
         open={responsePanelState.isOpen}
         priority={50}
         fullWidth={
@@ -472,6 +482,11 @@ export function AppShellPanels({
       </ChatPanel>
 
       <ChatPanel
+        panelAriaLabel={
+          iFramePanelState.messageItem?.title ||
+          iFramePanelState.messageItem?.source ||
+          languagePack.aria_iframePanel
+        }
         open={iFramePanelState.isOpen}
         priority={40}
         showFrame={true}
@@ -504,6 +519,10 @@ export function AppShellPanels({
       </ChatPanel>
 
       <ChatPanel
+        panelAriaLabel={
+          viewSourcePanelState.citationItem?.title ||
+          languagePack.aria_viewSourcePanel
+        }
         open={viewSourcePanelState.isOpen}
         priority={30}
         showFrame={true}
@@ -538,6 +557,35 @@ export function AppShellPanels({
           }
         />
       </ChatPanel>
+
+      {publicConfig.history?.isOn && historyPanelState.isMobile && (
+        <ChatPanel
+          open={historyPanelState.isOpen}
+          priority={3}
+          fullWidth={true}
+          bodyNoPadding={true}
+          noScroll={true}
+          aiEnabled={config.public.aiEnabled ? true : false}
+          animationOnOpen="slide-in-from-start"
+          animationOnClose="slide-out-to-start"
+          onOpenStart={() => onPanelOpenStart(true)}
+          onOpenEnd={onPanelOpenEnd}
+          onCloseStart={onPanelCloseStart}
+          onCloseEnd={() => {
+            onPanelCloseEnd(true);
+            serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
+          }}
+        >
+          <PanelWithFocus
+            body={
+              <WriteableElement
+                slotName="historyPanelElement"
+                className="cds-aichat--history-panel__content-container"
+              />
+            }
+          />
+        </ChatPanel>
+      )}
     </div>
   );
 }

@@ -17,6 +17,11 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
+import { updateHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
+import { useAriaAnnouncer } from "./hooks/useAriaAnnouncer";
+import { matchesShortcut } from "./utils/keyboardUtils";
+import { getDeepActiveElement } from "./utils/domUtils";
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../types/config/ShortcutConfig";
 
 import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
@@ -44,9 +49,7 @@ import { useMobileViewportLayout } from "./hooks/useMobileViewportLayout";
 import { useOnMount } from "./hooks/useOnMount";
 import { useSelector } from "./hooks/useSelector";
 import { useWindowOpenState } from "./hooks/useWindowOpenState";
-import { useAutoFocusManagement } from "./hooks/useAutoFocusManagement";
 import { useFocusManager } from "./hooks/useFocusManager";
-import { useWorkspaceAnnouncements } from "./hooks/useWorkspaceAnnouncements";
 import { useStyleInjection } from "./hooks/useStyleInjection";
 import { useDerivedState } from "./hooks/useDerivedState";
 import { useHumanAgentCallbacks } from "./hooks/useHumanAgentCallbacks";
@@ -59,17 +62,12 @@ import {
   selectHumanAgentDisplayState,
   selectInputState,
 } from "./store/selectors";
-import {
-  consoleError,
-  createDidCatchErrorData,
-  getAssistantName,
-} from "./utils/miscUtils";
+import { consoleError, createDidCatchErrorData } from "./utils/miscUtils";
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
   isBrowser,
 } from "./utils/browserUtils";
-import { CornersType } from "./utils/constants";
 import { SCROLLBAR_WIDTH } from "./utils/domUtils";
 import { calculateChatWidthBreakpoint } from "./utils/breakpointUtils";
 import {
@@ -83,7 +81,7 @@ import {
   HasDoAutoScroll,
 } from "../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
-import { MessageSendSource } from "../types/events/eventBusTypes";
+import { MessageSendSource, BusEventType } from "../types/events/eventBusTypes";
 import { CarbonTheme } from "../types/config/PublicConfig";
 
 import styles from "./AppShell.scss";
@@ -131,6 +129,13 @@ export default function AppShell({
   renderWriteableElements,
 }: AppShellProps) {
   const intl = useIntl();
+  const ariaAnnouncer = useAriaAnnouncer();
+
+  // Make ariaAnnouncer available to services
+  useEffect(() => {
+    serviceManager.ariaAnnouncer = ariaAnnouncer;
+  }, [serviceManager, ariaAnnouncer]);
+
   const appState = useSelector<AppState, AppState>((state) => state);
   const {
     config,
@@ -139,6 +144,7 @@ export default function AppShell({
     assistantMessageState,
     humanAgentState,
     workspacePanelState,
+    historyPanelState,
     allMessageItemsByID,
     allMessagesByID,
     catastrophicErrorType,
@@ -201,7 +207,7 @@ export default function AppShell({
     [],
   );
   const useCustomHostElement = Boolean(hostElement);
-  const headerDisplayName = header?.name || publicConfig.assistantName;
+  const headerDisplayName = header?.name;
   const inputState = selectInputState(appState);
   const agentDisplayState = selectHumanAgentDisplayState(appState);
 
@@ -233,17 +239,10 @@ export default function AppShell({
     requestFocus: requestFocusCallback,
   });
 
-  // Auto-focus management - must come before useFocusManager
-  const { shouldAutoFocus } = useAutoFocusManagement({
-    shouldTakeFocusIfOpensAutomatically:
-      publicConfig.shouldTakeFocusIfOpensAutomatically,
-    hasSentNonWelcomeMessage:
-      persistedToBrowserStorage.hasSentNonWelcomeMessage,
-    localMessageIDs: assistantMessageState.localMessageIDs,
-    allMessageItemsByID,
-    allMessagesByID,
-    requestFocus: requestFocusCallback,
-  });
+  // Auto-focus is based on config only - no dynamic toggling to avoid
+  // interrupting screen reader announcements when messages arrive
+  const shouldAutoFocus =
+    publicConfig.shouldTakeFocusIfOpensAutomatically ?? true;
 
   // Focus manager - provides requestFocus function
   const requestFocus = useFocusManager({
@@ -266,10 +265,26 @@ export default function AppShell({
     requestFocusRef.current = requestFocus;
   }, [requestFocus]);
 
-  // Workspace announcements - announces when workspace opens/closes
-  useWorkspaceAnnouncements({
-    serviceManager,
-  });
+  // Announce home screen visibility changes
+  useEffect(() => {
+    // Skip announcement on initial mount
+    if (!isHydrated) {
+      return;
+    }
+
+    if (showHomeScreen) {
+      ariaAnnouncer(languagePack.homeScreen_shown);
+    } else if (persistedToBrowserStorage.hasSentNonWelcomeMessage) {
+      // Only announce returning to conversation if user has sent messages
+      ariaAnnouncer(languagePack.homeScreen_hidden);
+    }
+  }, [
+    showHomeScreen,
+    isHydrated,
+    ariaAnnouncer,
+    languagePack,
+    persistedToBrowserStorage.hasSentNonWelcomeMessage,
+  ]);
 
   // Style injection
   useStyleInjection({
@@ -327,6 +342,45 @@ export default function AppShell({
     onPanelCloseEnd,
   } = usePanelCallbacks({ requestFocus });
 
+  // Header config override for mobile history
+  const headerConfigOverride = useMemo(() => {
+    if (!publicConfig.history?.isOn || !historyPanelState.isMobile) {
+      return undefined;
+    }
+
+    return {
+      isOn: true,
+      menuOptions: [
+        {
+          text: languagePack.history_new_chat,
+          handler: () => {
+            serviceManager.fire({
+              type: BusEventType.HISTORY_PANEL_NEW_CHAT,
+            });
+          },
+        },
+        {
+          text: languagePack.history_view_chats,
+          handler: () => {
+            serviceManager.fire({
+              type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+            });
+
+            serviceManager.store.dispatch(actions.setHistoryPanelOpen(true));
+          },
+        },
+        ...(config.derived.header?.menuOptions || []),
+      ],
+    };
+  }, [
+    historyPanelState.isMobile,
+    config.derived.header,
+    serviceManager,
+    languagePack.history_new_chat,
+    languagePack.history_view_chats,
+    publicConfig.history?.isOn,
+  ]);
+
   // Resize observer
   const handleResize = useCallback(() => {
     const container = widgetContainerRef.current;
@@ -343,7 +397,15 @@ export default function AppShell({
     serviceManager.store.dispatch(
       actions.setAppStateValue("chatWidthBreakpoint", breakpoint),
     );
-  }, [serviceManager, widgetContainerRef]);
+
+    // Update history mobile detection
+    updateHistoryMobileDetection({
+      width,
+      container,
+      useCustomHostElement,
+      serviceManager,
+    });
+  }, [widgetContainerRef, useCustomHostElement, serviceManager]);
 
   useResizeObserver({
     containerRef: widgetContainerRef,
@@ -387,6 +449,85 @@ export default function AppShell({
     messagesRef.current?.doScrollToMessage(messageID, animate);
   }, []);
 
+  // Handle keyboard shortcut for toggling focus between message list and input
+  const handleFocusToggle = useCallback(() => {
+    try {
+      // Use the Input component's hasFocus() method to check focus state
+      // This encapsulates the internal focus detection logic
+      const inputHasFocus = inputRef.current?.hasFocus() ?? false;
+
+      if (inputHasFocus) {
+        // Move focus to first item of last message
+        messagesRef.current?.requestFocusOnFirstItemOfLastMessage();
+      } else {
+        // Use requestFocus() for consistency with focus management pattern
+        inputRef.current?.requestFocus();
+      }
+    } catch (error) {
+      consoleError("An error occurred in handleFocusToggle", error);
+    }
+  }, []);
+
+  // Add keyboard event listener for focus toggle shortcut and Escape to exit message navigation
+  useEffect(() => {
+    const shortcutConfig =
+      publicConfig.keyboardShortcuts?.messageFocusToggle ||
+      DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
+
+    // Check if shortcuts are enabled (default to false if not specified)
+    const shortcutsEnabled = shortcutConfig.is_on === true;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (shortcutsEnabled && matchesShortcut(event, shortcutConfig)) {
+        // Always handle the shortcut, even if it originates from the input field
+        event.preventDefault();
+        event.stopPropagation();
+        handleFocusToggle();
+      } else if (event.key === "Escape") {
+        // If focus is in the messages area, return to input field
+        // Use getDeepActiveElement to traverse all shadow DOM levels
+        const activeElement = getDeepActiveElement();
+
+        // Search within containerRef, not the entire document
+        const messagesWrapper = containerRef.current?.querySelector(
+          ".cds-aichat--messages__wrapper",
+        );
+        const messagesContainer = containerRef.current?.querySelector(
+          ".cds-aichat--messages",
+        );
+        const inputContainer =
+          containerRef.current?.querySelector(".cds-aichat--input");
+
+        // Check if focus is in messages area but not in input
+        if (
+          activeElement &&
+          (messagesWrapper?.contains(activeElement) ||
+            messagesContainer?.contains(activeElement)) &&
+          !inputContainer?.contains(activeElement)
+        ) {
+          event.preventDefault();
+          inputRef.current?.requestFocus();
+        }
+      }
+    };
+
+    // Only attach listener when chat is open and container is available
+    if (viewState.mainWindow && containerRef.current) {
+      const container = containerRef.current;
+      container.addEventListener("keydown", handleKeyDown);
+      return () => {
+        container.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+
+    return undefined;
+  }, [
+    publicConfig.keyboardShortcuts,
+    handleFocusToggle,
+    viewState.mainWindow,
+    containerRef,
+  ]);
+
   const mainWindowFunctions = useMemo<MainWindowFunctions>(
     () => ({
       requestFocus,
@@ -401,6 +542,13 @@ export default function AppShell({
     mainWindowRef.current = mainWindowFunctions;
     serviceManager.mainWindow = mainWindowFunctions;
   }, [mainWindowFunctions, serviceManager]);
+
+  // Set the input component reference in the service manager
+  useEffect(() => {
+    if (inputRef.current) {
+      serviceManager.inputComponent = inputRef.current;
+    }
+  }, [inputRef, serviceManager]);
   // Set scrollbar width CSS variable
   useEffect(() => {
     const container = widgetContainerRef.current;
@@ -464,7 +612,7 @@ export default function AppShell({
                 [WIDTH_BREAKPOINT_WIDE]:
                   chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
               })}
-              ref={(el) => {
+              ref={(el: HTMLElement) => {
                 widgetContainerRef.current = el;
                 animationContainerRef.current = el;
               }}
@@ -475,21 +623,42 @@ export default function AppShell({
               }}
               aiEnabled={theme.aiEnabled}
               showFrame={layout?.showFrame}
-              roundedCorners={theme.corners === CornersType.ROUND}
+              cornerAll={
+                theme.corners.startStart === theme.corners.startEnd &&
+                theme.corners.startStart === theme.corners.endStart &&
+                theme.corners.startStart === theme.corners.endEnd
+                  ? theme.corners.startStart
+                  : undefined
+              }
+              cornerStartStart={theme.corners.startStart}
+              cornerStartEnd={theme.corners.startEnd}
+              cornerEndStart={theme.corners.endStart}
+              cornerEndEnd={theme.corners.endEnd}
               contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
+              showHistory={config.public.history?.isOn ?? false}
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
               historyAriaLabel={languagePack.aria_historyRegion}
               messagesAriaLabel={languagePack.aria_messagesRegion}
+              panelOpenedAnnouncement={languagePack.panel_opened}
+              panelClosedAnnouncement={languagePack.panel_closed}
+              workspaceOpenedAnnouncement={
+                workspacePanelState.options.title
+                  ? intl.formatMessage(
+                      { id: "workspace_opened" },
+                      { title: workspacePanelState.options.title },
+                    )
+                  : languagePack.workspace_opened_no_title
+              }
+              workspaceClosedAnnouncement={languagePack.workspace_closed}
+              historyShownAnnouncement={languagePack.history_shown}
+              historyHiddenAnnouncement={languagePack.history_hidden}
             >
               <AppShellPanels
                 serviceManager={serviceManager}
                 languagePack={languagePack}
-                assistantName={getAssistantName(
-                  config.public.aiEnabled,
-                  config,
-                )}
+                assistantName={publicConfig.assistantName}
                 isHydratingComplete={isHydratingComplete}
                 shouldShowHydrationPanel={shouldShowHydrationPanel}
                 onPanelOpenStart={onPanelOpenStart}
@@ -509,6 +678,7 @@ export default function AppShell({
                 responsePanelState={responsePanelState}
                 responsePanelRef={responsePanelRef}
                 requestFocus={requestFocus}
+                historyPanelState={historyPanelState}
                 iFramePanelState={iFramePanelState}
                 iframePanelRef={iframePanelRef}
                 viewSourcePanelState={viewSourcePanelState}
@@ -519,7 +689,7 @@ export default function AppShell({
                 catastrophicErrorType={catastrophicErrorType}
               />
 
-              {config.derived.header?.isOn && (
+              {(config.derived.header?.isOn || headerConfigOverride?.isOn) && (
                 <div slot="header">
                   <Header
                     onClose={onClose}
@@ -527,6 +697,7 @@ export default function AppShell({
                     headerDisplayName={headerDisplayName}
                     onToggleHomeScreen={onToggleHomeScreen}
                     isHomeScreenActive={showHomeScreen}
+                    headerConfigOverride={headerConfigOverride}
                   />
                 </div>
               )}
@@ -608,6 +779,14 @@ export default function AppShell({
                   slotName={WriteableElementName.WORKSPACE_PANEL_ELEMENT}
                   className="cds-aichat--workspace-writeable-element cds-aichat--widget--expand-to-fit"
                   id={`workspacePanelElement${serviceManager.namespace.suffix}`}
+                />
+              </div>
+
+              <div slot="history" className="cds-aichat--widget--expand-to-fit">
+                <WriteableElement
+                  slotName={WriteableElementName.HISTORY_PANEL_ELEMENT}
+                  className="cds-aichat--history-writeable-element cds-aichat--widget--expand-to-fit"
+                  id={`historyPanelElement${serviceManager.namespace.suffix}`}
                 />
               </div>
             </ChatShell>

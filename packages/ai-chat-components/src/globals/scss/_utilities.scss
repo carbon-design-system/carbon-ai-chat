@@ -1,0 +1,32 @@
+/* 
+ *  Copyright IBM Corp. 2025
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+// Configuration for AI Chat Components CSS custom properties and SASS variables
+// Following @carbon/styles patterns for consistent naming and structure
+
+@use "./vars" as *;
+
+// Feature flags for fallback behavior
+$use-fallback-value: true !default;
+
+// Utility functions following Carbon's custom property patterns
+@function get-name($name) {
+  @return --#{$prefix}-#{$name};
+}
+
+@function get-var($name, $fallback: false) {
+  @if $fallback {
+    @return var(--#{$prefix}-#{$name}, #{$fallback});
+  }
+  @return var(--#{$prefix}-#{$name});
+}
+
+@mixin declaration($name, $value) {
+  #{get-name($name)}: #{$value};
+}
+
+// Made with Bob

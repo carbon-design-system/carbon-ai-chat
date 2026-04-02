@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
 import Switcher20 from "@carbon/icons/es/switcher/20.js";
@@ -21,6 +21,16 @@ import type { Settings } from "./types";
  */
 @customElement("demo-header")
 export class DemoHeader extends LitElement {
+  static styles = css`
+    cds-header {
+      z-index: 10000 !important;
+    }
+
+    cds-header-panel {
+      z-index: 100000 !important;
+    }
+  `;
+
   @property({ attribute: false })
   accessor settings: Settings | undefined = undefined;
 
@@ -28,6 +38,12 @@ export class DemoHeader extends LitElement {
   accessor chatInstance: ChatInstance | null = null;
 
   private _clickInProgress = false;
+
+  @state()
+  private accessor _panelExpanded = false;
+
+  @state()
+  private accessor _panelAnnouncement = "";
 
   onClick = async () => {
     if (this.chatInstance) {
@@ -37,6 +53,8 @@ export class DemoHeader extends LitElement {
       } else {
         await this.chatInstance.changeView(ViewType.MAIN_WINDOW);
       }
+      // Request update to refresh aria-label
+      this.requestUpdate();
     }
   };
 
@@ -56,6 +74,22 @@ export class DemoHeader extends LitElement {
     }
   };
 
+  private _handleButtonKeyDown = async (event: KeyboardEvent) => {
+    // Handle Enter and Space keys for keyboard accessibility
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      await this._handleButtonClick();
+    }
+  };
+
+  private _getChatButtonLabel(): string {
+    if (!this.chatInstance) {
+      return "Open AI Chat";
+    }
+    const state = this.chatInstance.getState();
+    return state.viewState.mainWindow ? "Close AI Chat" : "Open AI Chat";
+  }
+
   private _handlePanelToggle = (event: Event) => {
     const target = event.currentTarget as HTMLElement | null;
     if (!target) {
@@ -74,16 +108,34 @@ export class DemoHeader extends LitElement {
 
     if (panel.hasAttribute("expanded")) {
       panel.removeAttribute("expanded");
+      this._panelExpanded = false;
+      this._panelAnnouncement = "Resources Panel closed";
     } else {
       panel.setAttribute("expanded", "");
+      this._panelExpanded = true;
+      this._panelAnnouncement = "Resources Panel opened";
     }
   };
+
+  private _handlePanelKeyDown = (event: KeyboardEvent) => {
+    // Handle Enter and Space keys for keyboard accessibility
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      this._handlePanelToggle(event);
+    }
+  };
+
+  private _getPanelButtonLabel(): string {
+    return this._panelExpanded
+      ? "Close Resources Panel"
+      : "Open Resources Panel";
+  }
 
   render() {
     const chatInstanceReady = this.chatInstance ? true : false;
 
     return html`
-      <cds-header aria-label="Carbon AI Chat">
+      <cds-header aria-label="Carbon AI Chat" role="banner">
         <cds-header-name
           href="https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html"
           prefix="Carbon"
@@ -92,25 +144,34 @@ export class DemoHeader extends LitElement {
         <div class="cds--header__global">
           ${chatInstanceReady
             ? html`<cds-header-global-action
-                aria-label="Open AI Chat"
-                tooltip-text="Open AI Chat"
+                aria-label="${this._getChatButtonLabel()}"
+                tooltip-text="${this._getChatButtonLabel()}"
                 ?disabled=${this._clickInProgress}
                 @click=${this._handleButtonClick}
+                @keydown=${this._handleButtonKeyDown}
               >
                 ${iconLoader(AiLaunch20, { slot: "icon" })}
+                <span slot="tooltip-content">AI Chat</span>
               </cds-header-global-action>`
             : ""}
           <cds-header-global-action
-            aria-label="Open Resources Panel"
-            tooltip-text="Open Resources Panel"
+            aria-label="${this._getPanelButtonLabel()}"
+            tooltip-text="${this._getPanelButtonLabel()}"
             tooltip-alignment="right"
             panel-id="switcher-panel"
             @click=${this._handlePanelToggle}
+            @keydown=${this._handlePanelKeyDown}
           >
             ${iconLoader(Switcher20, { slot: "icon" })}
+            <span slot="tooltip-content">Resources</span>
           </cds-header-global-action>
         </div>
-        <cds-header-panel id="switcher-panel" aria-label="Resources Panel">
+        <cds-header-panel
+          id="switcher-panel"
+          aria-label="Resources Panel"
+          ?inert=${!this._panelExpanded}
+          aria-hidden="${!this._panelExpanded}"
+        >
           <cds-switcher aria-label="Resources">
             <cds-switcher-item
               aria-label="Documentation site"
@@ -130,6 +191,14 @@ export class DemoHeader extends LitElement {
           </cds-switcher>
         </cds-header-panel>
       </cds-header>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;"
+      >
+        ${this._panelAnnouncement}
+      </div>
     `;
   }
 }

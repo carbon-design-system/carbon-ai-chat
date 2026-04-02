@@ -7,38 +7,21 @@
  *  @license
  */
 
-$css--plex: true !default;
-
 @use "@carbon/layout";
-@use "@carbon/styles/scss/reset";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "../../../globals/scss/vars" as *;
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/breakpoint" as *;
 
-.workspace {
-  display: flex;
-  overflow: hidden;
-  flex-direction: row;
-  block-size: 100%;
-  inline-size: 100%;
-  max-block-size: 100%;
-  max-inline-size: 100%;
-}
-
-.body {
-  flex-grow: 1;
-}
-
 /* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
   @include type.type-style("body-01");
 
-  display: grid;
-  overflow: auto;
+  display: flex;
   /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
+  flex-direction: column;
   border: solid rem(1px) theme.$chat-bubble-border;
   border-radius: rem(8px);
   background-color: var(--cds-chat-shell-background);
@@ -47,12 +30,18 @@ $css--plex: true !default;
     -10px 0 100px -24px theme.$ai-popover-shadow-outer-01,
     0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
   color: theme.$text-secondary;
-  grid-template-rows: auto auto auto 1fr auto;
   inline-size: 100%;
+  min-block-size: rem(400px);
 
-  // Allow toolbar slot to shrink within the flex column so overflow handling works.
+  // Prevent toolbar from shrinking - it should maintain its natural height
   slot[name="toolbar"] {
+    flex-shrink: 0;
     min-inline-size: 0;
+  }
+
+  // Prevent notification from shrinking - it should maintain its natural height
+  slot[name="notification"] {
+    flex-shrink: 0;
   }
 
   ::slotted([slot="notification"]) {
@@ -60,10 +49,22 @@ $css--plex: true !default;
     /* stylelint-disable-next-line declaration-no-important */
     max-inline-size: 100% !important;
   }
-}
 
-:host(#{$prefix}-workspace-shell[header-open]) {
-  grid-template-rows: auto auto 1fr 1fr auto;
+  // Prevent header from shrinking - it should maintain its natural height
+  slot[name="header"] {
+    flex-shrink: 0;
+  }
+
+  // Make body slot grow to fill available space and become scrollable when content is large
+  slot[name="body"] {
+    flex: 1 1 auto;
+    min-block-size: 0;
+  }
+
+  // Prevent footer from shrinking - it should maintain its natural height
+  slot[name="footer"] {
+    flex-shrink: 0;
+  }
 }
 
 ::slotted(#{$prefix}-toolbar) {
@@ -87,9 +88,9 @@ $css--plex: true !default;
 }
 
 :host(#{$prefix}-workspace-shell-body) {
-  display: block;
+  display: flex;
   overflow: auto;
+  flex-direction: column;
   padding: rem(24px) rem(32px);
-  block-size: 100%;
   min-block-size: 0;
 }

@@ -12,10 +12,10 @@ import "../src/reasoning-steps";
 import "../../markdown/src/markdown";
 import { html } from "lit";
 
-const defaultBody = html`<cds-aichat-markdown>
-  Validated supporting documents, captured relevant citations, and noted
-  confidence levels before drafting a response.
-</cds-aichat-markdown>`;
+const defaultBody = html`<cds-aichat-markdown
+  .markdown=${`Validated supporting documents, captured relevant citations, and noted
+confidence levels before drafting a response.`}
+></cds-aichat-markdown>`;
 
 export default {
   title: "Components/Reasoning steps/Step",

@@ -10,7 +10,7 @@
 import { ChatInstance } from "../instance/ChatInstance";
 import { CustomSendMessageOptions } from "./MessagingConfig";
 import { MessageRequest } from "../messaging/Messages";
-import { CornersType } from "./CornersType";
+import { CornersType, PerCornerConfig } from "./CornersType";
 import { HomeScreenConfig } from "./HomeScreenConfig";
 import type { LayoutCustomProperties } from "./LayoutCustomProperties";
 import type {
@@ -23,6 +23,7 @@ import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
+import type { KeyboardShortcuts } from "./ShortcutConfig";
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -142,6 +143,11 @@ export interface PublicConfig {
   header?: HeaderConfig;
 
   /**
+   * The config object for chat history.
+   */
+  history?: HistoryConfig;
+
+  /**
    * The config object for changing Carbon AI Chat's layout.
    */
   layout?: LayoutConfig;
@@ -196,6 +202,14 @@ export interface PublicConfig {
    * Optional partial language pack overrides. Values merge with defaults.
    */
   strings?: DeepPartial<LanguagePack>;
+
+  /**
+   * Configuration for keyboard shortcuts in the chat.
+   * Allows customization of keyboard shortcuts for various actions.
+   *
+   * @experimental
+   */
+  keyboardShortcuts?: KeyboardShortcuts;
 }
 
 /**
@@ -263,6 +277,11 @@ export enum MinimizeButtonIconType {
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
   SIDE_PANEL_RIGHT = "side-panel-right",
+
+  /**
+   * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
+   */
+  SIDE_PANEL_DOWN = "side-panel-down",
 }
 
 /**
@@ -340,6 +359,16 @@ export interface HeaderConfig {
   showAiLabel?: boolean;
 
   /**
+   * Controls whether the header should be constrained to the messages max width
+   * (--cds-aichat-messages-max-width) or go full width. When true, the header
+   * will be constrained to match the message width. When false (default), the
+   * header will span the full width of the chat container.
+   *
+   * @default false
+   */
+  hasContentMaxWidth?: boolean;
+
+  /**
    * Custom actions to display in the header toolbar. These actions can overflow
    * into a menu when space is limited.
    *
@@ -351,6 +380,18 @@ export interface HeaderConfig {
    * them with your own.
    */
   actions?: ToolbarAction[];
+}
+
+/**
+ * Configuration for the history panel of the chat.
+ *
+ * @category Config
+ */
+export interface HistoryConfig {
+  /**
+   * Indicates if the history panel should be shown.
+   */
+  isOn?: boolean;
 }
 
 /**
@@ -371,9 +412,26 @@ export interface LayoutConfig {
   hasContentMaxWidth?: boolean;
 
   /**
-   * This flag is used to control Carbon AI Chat's rounded corners.
+   * Controls the corner style of the chat component.
+   *
+   * Can be a simple CornersType value to apply to all corners:
+   * ```typescript
+   * corners: CornersType.ROUND
+   * ```
+   *
+   * Or a PerCornerConfig object to control each corner individually:
+   * ```typescript
+   * corners: {
+   *   startStart: CornersType.ROUND,  // top-left in LTR
+   *   startEnd: CornersType.ROUND,    // top-right in LTR
+   *   endStart: CornersType.SQUARE,   // bottom-left in LTR
+   *   endEnd: CornersType.SQUARE      // bottom-right in LTR
+   * }
+   * ```
+   *
+   * Undefined corners in PerCornerConfig will fall back to CornersType.ROUND.
    */
-  corners?: CornersType;
+  corners?: CornersType | PerCornerConfig;
 
   /**
    * CSS variable overrides for the chat UI. This is a convienience method, you may also set these properties via CSS.

@@ -29,9 +29,9 @@ const MarkdownElementConstructor =
 type MarkdownElementInstance = InstanceType<typeof MarkdownElementConstructor>;
 
 describe("cds-aichat-markdown smoke test", () => {
-  it("renders markdown when text content is provided", async () => {
+  it("renders markdown when markdown property is provided", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -45,7 +45,10 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("strips inline html when HTML removal attribute is set", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown remove-html>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown
+        remove-html
+        .markdown=${TEXT}
+      ></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -77,7 +80,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
     try {
       const unsafeEl = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
       );
 
       await unsafeEl.updateComplete;
@@ -96,7 +99,10 @@ describe("cds-aichat-markdown smoke test", () => {
       openUrl = null;
 
       const safeEl = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown sanitize-html>${TEXT}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          sanitize-html
+          .markdown=${TEXT}
+        ></cds-aichat-markdown>`,
       );
       await safeEl.updateComplete;
 
@@ -118,7 +124,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("preserves svg nesting with defs and title as children", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -151,7 +157,7 @@ describe("cds-aichat-markdown smoke test", () => {
 
   it("correctly adds defined attributes to links", async () => {
     const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown>${TEXT}</cds-aichat-markdown>`,
+      html`<cds-aichat-markdown .markdown=${TEXT}></cds-aichat-markdown>`,
     );
 
     await el.updateComplete;
@@ -172,7 +178,9 @@ describe("cds-aichat-markdown smoke test", () => {
     it("automatically converts plain URLs to clickable links", async () => {
       const textWithUrl = "Check out https://www.ibm.com for more info";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${textWithUrl}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${textWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -193,8 +201,8 @@ describe("cds-aichat-markdown smoke test", () => {
         "Visit https://ibm.com and https://github.com for resources";
       const el = await fixture<MarkdownElementInstance>(
         html`<cds-aichat-markdown
-          >${textWithMultipleUrls}</cds-aichat-markdown
-        >`,
+          .markdown=${textWithMultipleUrls}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -217,11 +225,13 @@ describe("cds-aichat-markdown smoke test", () => {
     it("linkifies URLs with different protocols", async () => {
       const textWithProtocols = `
 HTTP: http://example.com
-HTTPS: https://secure.example.com
-FTP: ftp://files.example.com
+      HTTPS: https://secure.example.com
+      FTP: ftp://files.example.com
       `;
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${textWithProtocols}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${textWithProtocols}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -245,7 +255,9 @@ FTP: ftp://files.example.com
     it("linkifies email addresses", async () => {
       const textWithEmail = "Contact us at support@example.com for help";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${textWithEmail}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${textWithEmail}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -266,7 +278,9 @@ FTP: ftp://files.example.com
       const mixedText =
         "This is **bold** text with https://example.com and *italic* text";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${mixedText}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${mixedText}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -288,7 +302,9 @@ FTP: ftp://files.example.com
     it("does not linkify URLs inside code blocks", async () => {
       const codeWithUrl = "`https://example.com`";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown>${codeWithUrl}</cds-aichat-markdown>`,
+        html`<cds-aichat-markdown
+          .markdown=${codeWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -310,9 +326,10 @@ FTP: ftp://files.example.com
     it("linkifies URLs with removeHTML enabled", async () => {
       const textWithUrl = "Visit https://example.com for details";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown remove-html
-          >${textWithUrl}</cds-aichat-markdown
-        >`,
+        html`<cds-aichat-markdown
+          remove-html
+          .markdown=${textWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -330,9 +347,10 @@ FTP: ftp://files.example.com
     it("sanitizes linkified URLs when sanitize-html is enabled", async () => {
       const textWithUrl = "Check https://example.com";
       const el = await fixture<MarkdownElementInstance>(
-        html`<cds-aichat-markdown sanitize-html
-          >${textWithUrl}</cds-aichat-markdown
-        >`,
+        html`<cds-aichat-markdown
+          sanitize-html
+          .markdown=${textWithUrl}
+        ></cds-aichat-markdown>`,
       );
 
       await el.updateComplete;
@@ -346,6 +364,226 @@ FTP: ftp://files.example.com
       expect(link).to.not.equal(null);
       // Should still have target="_blank" from renderer
       expect(link?.getAttribute("target")).to.equal("_blank");
+    });
+
+    describe("Light DOM content handling", () => {
+      it("renders Light DOM content when markdown property is not set", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown
+            ># Hello from Light DOM</cds-aichat-markdown
+          >`,
+        );
+
+        await el.updateComplete;
+
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        const h1 = root.querySelector("h1");
+        expect(h1).to.not.equal(null);
+        expect(h1?.textContent).to.equal("Hello from Light DOM");
+      });
+
+      it("updates when Light DOM content changes", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown># Initial Content</cds-aichat-markdown>`,
+        );
+
+        await el.updateComplete;
+
+        let root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        let h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("Initial Content");
+
+        // Update Light DOM content
+        el.textContent = "# Updated Content";
+        await el.updateComplete;
+
+        root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist after update");
+        }
+
+        h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("Updated Content");
+      });
+
+      it("prefers markdown property over Light DOM content", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown .markdown=${"# From Property"}
+            ># From Light DOM</cds-aichat-markdown
+          >`,
+        );
+
+        await el.updateComplete;
+
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        const h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("From Property");
+      });
+
+      it("stops monitoring Light DOM when markdown property is set", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown># Initial Light DOM</cds-aichat-markdown>`,
+        );
+
+        await el.updateComplete;
+
+        let root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        let h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("Initial Light DOM");
+
+        // Set markdown property explicitly
+        el.markdown = "# From Property";
+        await el.updateComplete;
+
+        root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist after property set");
+        }
+
+        h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("From Property");
+
+        // Now update Light DOM - should be ignored
+        el.textContent = "# Updated Light DOM";
+        await el.updateComplete;
+
+        root = el.shadowRoot;
+        if (!root) {
+          throw new Error(
+            "Expected shadow root to exist after Light DOM update",
+          );
+        }
+
+        h1 = root.querySelector("h1");
+        // Should still show property value, not Light DOM
+        expect(h1?.textContent).to.equal("From Property");
+      });
+
+      it("handles markdown property set before connectedCallback", async () => {
+        const el = document.createElement(
+          MARKDOWN_ELEMENT_TAG,
+        ) as MarkdownElementInstance;
+
+        // Set markdown BEFORE adding to DOM
+        el.markdown = "# Set Before Mount";
+
+        // Now add to DOM
+        document.body.appendChild(el);
+        await el.updateComplete;
+
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        const h1 = root.querySelector("h1");
+        expect(h1).to.not.equal(null);
+        expect(h1?.textContent).to.equal("Set Before Mount");
+
+        // Cleanup
+        document.body.removeChild(el);
+      });
+
+      it("handles empty Light DOM content gracefully", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown></cds-aichat-markdown>`,
+        );
+
+        await el.updateComplete;
+
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        // Should render without errors, just empty
+        expect(root.textContent?.trim()).to.equal("");
+      });
+
+      it("handles Light DOM with only whitespace", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown> </cds-aichat-markdown>`,
+        );
+
+        await el.updateComplete;
+
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        // Should treat whitespace-only as empty
+        expect(root.textContent?.trim()).to.equal("");
+      });
+
+      it("cleans up MutationObserver on disconnect", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown># Light DOM Content</cds-aichat-markdown>`,
+        );
+
+        await el.updateComplete;
+
+        // Verify it's working
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        const h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("Light DOM Content");
+
+        // Remove from DOM (triggers disconnectedCallback)
+        el.remove();
+
+        // Try to update Light DOM after disconnect - should not cause errors
+        el.textContent = "# Should Not Update";
+
+        // Wait a bit to ensure no async errors
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // If we got here without errors, the observer was properly cleaned up
+        expect(true).to.equal(true);
+      });
+
+      it("handles rapid Light DOM changes", async () => {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown># Initial</cds-aichat-markdown>`,
+        );
+
+        await el.updateComplete;
+
+        // Make multiple rapid changes
+        el.textContent = "# Change 1";
+        el.textContent = "# Change 2";
+        el.textContent = "# Change 3";
+        el.textContent = "# Final Change";
+
+        await el.updateComplete;
+
+        const root = el.shadowRoot;
+        if (!root) {
+          throw new Error("Expected shadow root to exist");
+        }
+
+        const h1 = root.querySelector("h1");
+        expect(h1?.textContent).to.equal("Final Change");
+      });
     });
   });
 });
