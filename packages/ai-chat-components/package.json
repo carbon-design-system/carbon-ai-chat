@@ -88,7 +88,7 @@
     "csv-stringify": "^6.5.2",
     "dompurify": "^3.1.6",
     "lit": "^3.1.0",
-    "lodash-es": "^4.17.0",
+    "lodash-es": "^4.18.1",
     "markdown-it": "^14.1.0",
     "program-language-detector": "^0.0.12",
     "tslib": "^2.6.3"
