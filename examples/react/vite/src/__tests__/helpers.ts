@@ -11,16 +11,42 @@ import { act, waitFor } from "@testing-library/react";
 import { PageObjectId } from "@carbon/ai-chat";
 import { WAIT_FOR_TIMEOUT } from "./constants";
 
+function deepQuerySelector(
+  root: ShadowRoot | Element | Document,
+  selector: string,
+): Element | null {
+  const direct = (root as Element).querySelector(selector);
+  if (direct) {
+    return direct;
+  }
+  for (const el of Array.from(root.querySelectorAll("*"))) {
+    const shadow = (el as HTMLElement).shadowRoot;
+    if (shadow) {
+      const found = deepQuerySelector(shadow, selector);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+}
+
 export async function waitForChatElement(
   container: HTMLElement,
 ): Promise<Element> {
   return waitFor(
     () => {
-      const element = container.querySelector("cds-aichat-react");
-      if (!element) {
-        throw new Error("Chat element not rendered yet");
+      for (const el of Array.from(container.querySelectorAll("*"))) {
+        const shadowRoot = (el as HTMLElement).shadowRoot;
+        if (
+          shadowRoot?.querySelector(
+            `[data-testid="${PageObjectId.CHAT_WIDGET}"]`,
+          )
+        ) {
+          return el;
+        }
       }
-      return element;
+      throw new Error("Chat element not rendered yet");
     },
     {
       timeout: WAIT_FOR_TIMEOUT,
@@ -66,12 +92,11 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
       }
     });
   }
-  await waitFor(() => shadowRoot.querySelector(".cds-aichat--react-app"), {
-    timeout: WAIT_FOR_TIMEOUT,
-  });
-  await waitFor(() => shadowRoot.querySelector(".cds-aichat--widget"), {
-    timeout: WAIT_FOR_TIMEOUT,
-  });
+  await waitFor(
+    () =>
+      shadowRoot.querySelector(`[data-testid="${PageObjectId.CHAT_WIDGET}"]`),
+    { timeout: WAIT_FOR_TIMEOUT },
+  );
   return shadowRoot;
 }
 
@@ -83,33 +108,10 @@ export async function closeChat(customElement: Element) {
 
   const closeButton = await waitFor(
     () => {
-      // Navigate: cds-aichat-react shadow → cds-aichat-shell (light DOM) → cds-aichat-chat-header shadow → cds-aichat-toolbar shadow → cds-icon-button
-      const shell = shadowRoot.querySelector("cds-aichat-shell");
-      if (!shell) {
-        throw new Error("Shell component not found");
-      }
-
-      // The header is slotted into the shell's light DOM
-      const chatHeader = shell.querySelector("cds-aichat-chat-header");
-      if (!chatHeader || !(chatHeader as any).shadowRoot) {
-        throw new Error("Chat header component not ready");
-      }
-
-      const chatHeaderShadow = (chatHeader as any).shadowRoot as ShadowRoot;
-
-      // The toolbar is inside the chat header's shadow DOM
-      const toolbar = chatHeaderShadow.querySelector("cds-aichat-toolbar");
-      if (!toolbar || !(toolbar as any).shadowRoot) {
-        throw new Error("Toolbar component not ready");
-      }
-
-      const toolbarShadow = (toolbar as any).shadowRoot as ShadowRoot;
-
-      // The close button is inside the toolbar's shadow DOM
-      const button = toolbarShadow.querySelector(
-        `cds-icon-button[data-testid="${PageObjectId.CLOSE_CHAT}"]`,
+      const button = deepQuerySelector(
+        shadowRoot,
+        `[data-testid="${PageObjectId.CLOSE_CHAT}"]`,
       ) as HTMLElement | null;
-
       if (!button) {
         throw new Error("Close chat button not ready");
       }

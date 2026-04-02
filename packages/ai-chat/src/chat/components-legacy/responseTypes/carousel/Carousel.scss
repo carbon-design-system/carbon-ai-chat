@@ -7,7 +7,7 @@
 
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
-@use "../../../styles/chat-theme";
+@use "../../../../globals/scss/chat-theme";
 
 button.cds-aichat--carousel-container__navigation-button,
 .cds-aichat--carousel-container__controls {

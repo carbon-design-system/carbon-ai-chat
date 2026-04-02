@@ -635,7 +635,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               <StopStreamingButton
                 label={input_stopResponse}
                 disabled={isStopStreamingButtonDisabled}
-                tooltipAlignment={isRTL ? "top-left" : "top-right"}
+                tooltipAlignment="top-right"
                 onClick={async () => {
                   const { store } = serviceManager;
                   store.dispatch(actions.setStopStreamingButtonDisabled(true));

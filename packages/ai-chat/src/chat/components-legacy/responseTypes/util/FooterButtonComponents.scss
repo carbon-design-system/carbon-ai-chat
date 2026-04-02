@@ -9,7 +9,6 @@
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/utilities/convert" as *;
 @use "@carbon/styles/scss/components/button/tokens" as *;
-@use "../../../styles/chat-theme";
 
 // Mixin to apply proper radius
 @mixin footer-button-radius($radius) {

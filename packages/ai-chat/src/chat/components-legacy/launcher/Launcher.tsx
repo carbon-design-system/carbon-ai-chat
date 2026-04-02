@@ -31,7 +31,6 @@ import Button, {
 } from "../../components/carbon/Button";
 import { doFocusRef } from "../../utils/domUtils";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { AnnounceOnMountComponent } from "../../components/util/AnnounceOnMountComponent";
 import { uuid } from "../../utils/lang/uuid";
 
 const AiLaunch = carbonIconToReact(AiLaunch24);
@@ -107,6 +106,14 @@ function Launcher(props: LauncherProps) {
   const greetingMessageRef = useRef<HTMLDivElement | null>(null);
   const extendedContainerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<CDSButton | null>(null);
+
+  // direction:ltr is forced on these cds-button elements in RTL mode via CSS
+  // (see Launcher.scss) so that Carbon's logical-property tooltip positioning
+  // is physically literal. We then flip the prop here to get the correct side.
+  const tooltipPosition =
+    typeof document !== "undefined" && document.dir === "rtl"
+      ? BUTTON_TOOLTIP_POSITION.RIGHT
+      : BUTTON_TOOLTIP_POSITION.LEFT;
 
   const ariaLabelSuffix =
     unreadMessageCount !== 0
@@ -261,16 +268,16 @@ function Launcher(props: LauncherProps) {
   return (
     <div
       ref={extendedContainerRef}
-      className={cx("cds-aichat--launcher__button-container", {
-        "cds-aichat--launcher__button-container--opening":
+      className={cx("cds-aichat-launcher", {
+        "cds-aichat-launcher--opening":
           callToActionOpenState === LauncherOpenState.Opening,
-        "cds-aichat--launcher__button-container--open":
+        "cds-aichat-launcher--open":
           callToActionOpenState === LauncherOpenState.Open,
-        "cds-aichat--launcher__button-container--closing":
+        "cds-aichat-launcher--closing":
           callToActionOpenState === LauncherOpenState.Closing,
-        "cds-aichat--launcher__button-container--closed":
+        "cds-aichat-launcher--closed":
           callToActionOpenState === LauncherOpenState.Closed,
-        "cds-aichat--launcher__button-container--hidden": launcherHidden,
+        "cds-aichat-launcher--hidden": launcherHidden,
       })}
     >
       <Button
@@ -279,19 +286,12 @@ function Launcher(props: LauncherProps) {
         size={BUTTON_SIZE.EXTRA_SMALL}
         aria-label={closeButtonLabel}
         onClick={handleDismiss}
-        tooltipPosition={
-          document.dir === "rtl"
-            ? BUTTON_TOOLTIP_POSITION.RIGHT
-            : BUTTON_TOOLTIP_POSITION.LEFT
-        }
+        tooltipPosition={tooltipPosition}
         tooltip-text={closeButtonLabel}
       >
         <CloseIcon aria-label={closeButtonLabel} slot="icon" />
       </Button>
       <Button
-        // minor note: role="complementary" is usually for containers/regions,
-        // but leaving as-is since you didn't ask to change semantics
-        role="complementary"
         id={launcherButtonId}
         aria-label={launcherAriaLabel}
         tooltip-text={launcherAriaLabel}
@@ -302,11 +302,7 @@ function Launcher(props: LauncherProps) {
         ref={handleButtonRef}
         tabIndex={buttonTabIndex}
         type={BUTTON_TYPE.BUTTON}
-        tooltipPosition={
-          document.dir === "rtl"
-            ? BUTTON_TOOLTIP_POSITION.RIGHT
-            : BUTTON_TOOLTIP_POSITION.LEFT
-        }
+        tooltipPosition={tooltipPosition}
       >
         <div className="cds-aichat--launcher__wrapper">
           <div
@@ -318,20 +314,9 @@ function Launcher(props: LauncherProps) {
               ref={greetingMessageRef}
             >
               {shouldShowGreeting && (
-                <AnnounceOnMountComponent
-                  announceOnce={launcherGreetingMessage}
-                >
-                  {/* Skip link announced together with the CTA message */}
-                  <a
-                    href={`#${launcherButtonId}`}
-                    className="cds-aichat--launcher__skip-link"
-                  >
-                    Jump to chat launcher
-                  </a>
-                  <div className="cds-aichat--launcher-extended__greeting-text">
-                    {launcherGreetingMessage}
-                  </div>
-                </AnnounceOnMountComponent>
+                <div className="cds-aichat--launcher-extended__greeting-text">
+                  {launcherGreetingMessage}
+                </div>
               )}
             </div>
           </div>

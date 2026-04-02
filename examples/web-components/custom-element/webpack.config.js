@@ -17,7 +17,7 @@ const environment = process.env.ENVIRONMENT
   : "production";
 
 export default () => {
-  const port = process.env.PORT || 3007;
+  const port = process.env.PORT || 3000;
 
   return {
     mode: environment,
@@ -57,6 +57,12 @@ export default () => {
       }),
     ],
     devtool: "source-map",
+    snapshot: {
+      managedPaths: [], // don't treat node_modules as immutable
+    },
+    watchOptions: {
+      ignored: /node_modules\/(?!@carbon\/ai-chat)/, // watch only our packages
+    },
     devServer: {
       static: path.join(__dirname, "dist"),
       compress: true,

@@ -65,6 +65,7 @@ export class NativeVideoProvider extends BaseProvider {
     }
 
     // Add subtitle tracks if provided
+    const videoElement = this.videoElement;
     if (config.subtitleTracks && config.subtitleTracks.length > 0) {
       config.subtitleTracks.forEach((track) => {
         const trackElement = document.createElement("track");
@@ -75,7 +76,7 @@ export class NativeVideoProvider extends BaseProvider {
         if (track.default) {
           trackElement.default = true;
         }
-        this.videoElement!.appendChild(trackElement);
+        videoElement.appendChild(trackElement);
       });
     }
 

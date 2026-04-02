@@ -1,0 +1,44 @@
+<!--
+  Copyright IBM Corp. 2026
+
+  This source code is licensed under the Apache-2.0 license found in the
+  LICENSE file in the root directory of this source tree.
+ -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@carbon/ai-chat - react - custom element as float (lazy load)</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+      main {
+        padding: 2rem;
+        max-width: 60rem;
+        margin: 0 auto;
+      }
+      /* ChatShell overlay — fills the float container during both loading phases
+         (bundle download and ChatCustomElement initialization). Fades out once
+         onAfterRender fires, then unmounts on transitionend. */
+      .chat-float-shell--loaded {
+        opacity: 0;
+        transition: opacity 200ms;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Custom Element as Float (Lazy Load)</h1>
+      <p>
+        Click the launcher button in the bottom-right corner to open the chat
+        widget. The chat bundle is loaded on demand the first time you open it.
+      </p>
+    </main>
+    <div id="root"></div>
+  </body>
+</html>

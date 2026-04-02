@@ -9,7 +9,7 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
-@use "../../styles/chat-theme";
+@use "../../../globals/scss/chat-theme";
 
 // Writeable element styling (used by AppShellWriteableElements)
 // Only apply max-width constraint when header is configured to constrain width

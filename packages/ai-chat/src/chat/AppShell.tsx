@@ -598,10 +598,15 @@ export default function AppShell({
             <ChatShell
               data-testid={PageObjectId.CHAT_WIDGET}
               className={cx("cds-aichat--widget", {
-                "cds-aichat--widget--default-element": !useCustomHostElement,
-                "cds-aichat--widget--launched": !closing,
-                "cds-aichat--widget--closing": closing,
-                "cds-aichat--widget--closed": !open,
+                "cds-aichat-float--open": !useCustomHostElement && open,
+                "cds-aichat-float--opening":
+                  !useCustomHostElement && !closing && open,
+                "cds-aichat-float--closing": !useCustomHostElement && closing,
+                "cds-aichat-float--close": !useCustomHostElement && !open,
+                "cds-aichat-float--mobile":
+                  !useCustomHostElement &&
+                  IS_PHONE &&
+                  !publicConfig.disableCustomElementMobileEnhancements,
                 "cds-aichat--widget--max-width":
                   chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
                   layout.hasContentMaxWidth,
