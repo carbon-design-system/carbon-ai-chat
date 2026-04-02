@@ -1,5 +1,5 @@
 /*! For license information please see 5439.bundle.js.LICENSE.txt */
-"use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return n}}),a(2433),a(7189),a(880),a(5457);var l=a(6707),s=a(7118),c=a(3192),o=a(3967);function n(e){const{tableTitle:t,tableDescription:a,headers:n,filterPlaceholderText:r,downloadLabelText:d,locale:i,_handleDownload:b,_rowsWithIDs:$,_allowFiltering:p,_handleFilterEvent:u}=e;return c.qy`<cds-table
+"use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return n}}),a(2062),a(4555),a(75),a(5457);var l=a(6707),s=a(7118),c=a(3192),o=a(3967);function n(e){const{tableTitle:t,tableDescription:a,headers:n,filterPlaceholderText:r,downloadLabelText:d,locale:i,_handleDownload:b,_rowsWithIDs:$,_allowFiltering:p,_handleFilterEvent:u}=e;return c.qy`<cds-table
     size="md"
     locale=${i}
     is-sortable
