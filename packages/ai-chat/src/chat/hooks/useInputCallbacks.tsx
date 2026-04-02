@@ -74,6 +74,10 @@ export function useInputCallbacks({
         const messageRequest = createMessageRequestForText(text);
         serviceManager.actions.sendWithCatch(messageRequest, source, {
           ...options,
+          // When the user sends with no text (e.g. file-only), mark the message
+          // silent so it is not rendered as an empty bubble in the chat UI.
+          // An explicit silent:true/false from the caller is always preserved.
+          silent: options?.silent ?? !text,
         });
       }
 

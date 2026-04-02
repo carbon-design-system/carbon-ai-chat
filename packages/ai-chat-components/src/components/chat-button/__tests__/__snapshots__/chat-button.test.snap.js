@@ -3,6 +3,7 @@ export const snapshots = {};
 
 snapshots["chat-button should render with cds-aichat-button minimum attributes"] = 
 `<cds-aichat-button
+  danger-description="danger"
   has-main-content=""
   kind="primary"
   size="lg"
