@@ -339,6 +339,9 @@ export class DemoHeaderSwitcher extends LitElement {
           <cds-dropdown-item value="side-panel-right"
             >Side Panel Right</cds-dropdown-item
           >
+          <cds-dropdown-item value="side-panel-down"
+            >Side Panel Down</cds-dropdown-item
+          >
           <cds-dropdown-item value="none">None</cds-dropdown-item>
         </cds-dropdown>
       </div>
