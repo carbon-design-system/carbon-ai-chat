@@ -44,6 +44,7 @@ export {
   IncreaseOrDecrease,
   PublicInputState,
   PublicCustomPanelsState,
+  PublicHistoryPanelState,
   PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,

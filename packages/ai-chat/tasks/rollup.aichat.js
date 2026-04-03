@@ -237,6 +237,34 @@ async function postBuild() {
   // Copy `es` directory to `es-custom`
   await fs.copy(sourceDir, targetDir);
 
+  // Copy SCSS files from src/globals/scss to dist/scss (public exports)
+  const scssSourceDir = path.resolve(__dirname, "../src/globals/scss");
+  const scssTargetDir = path.resolve(__dirname, "../dist/scss");
+  await fs.copy(scssSourceDir, scssTargetDir);
+  console.log("Copied public SCSS files to dist/scss");
+
+  // Compile public SCSS to CSS
+  const sass = await import('sass');
+  const cssTargetDir = path.resolve(__dirname, "../dist/css");
+  await fs.ensureDir(cssTargetDir);
+  const scssEntries = [
+    { input: path.resolve(__dirname, "../src/globals/scss/_chat-float-layout.scss"), output: "chat-float-layout.css" },
+    { input: path.resolve(__dirname, "../src/globals/scss/_chat-launcher-layout.scss"), output: "chat-launcher-layout.css" },
+  ];
+  for (const entry of scssEntries) {
+    const result = sass.compile(entry.input, {
+      loadPaths: [
+        path.resolve(__dirname, "../node_modules"),
+        path.resolve(__dirname, "../../../node_modules"),
+      ],
+      style: "expanded",
+      quietDeps: true,
+      silenceDeprecations: ["legacy-js-api"],
+    });
+    await fs.writeFile(path.resolve(cssTargetDir, entry.output), result.css);
+    console.log(`Compiled ${entry.output}`);
+  }
+
   // Find all files in the `es-custom` directory
   const files = await globby([`${targetDir}/**/*`], { onlyFiles: true });
 

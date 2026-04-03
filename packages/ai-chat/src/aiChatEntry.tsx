@@ -42,6 +42,7 @@ export {
   IncreaseOrDecrease,
   PublicInputState,
   PublicCustomPanelsState,
+  PublicHistoryPanelState,
   PublicDefaultCustomPanelState,
   PublicChatHumanAgentState,
   PublicChatState,
@@ -106,6 +107,8 @@ export {
 } from "./types/events/eventBusTypes";
 
 export { PersistedState } from "./types/state/AppState";
+
+export { readCarbonChatSession } from "./globals/utils/readCarbonChatSession";
 
 export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
 

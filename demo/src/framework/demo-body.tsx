@@ -424,7 +424,8 @@ export class DemoBody extends LitElement {
     // Check if changes require a page refresh
     const frameworkChanged = oldSettings.framework !== newSettings.framework;
     const layoutChanged = oldSettings.layout !== newSettings.layout;
-    const shouldRefresh = frameworkChanged || layoutChanged;
+    const directionChanged = oldSettings.direction !== newSettings.direction;
+    const shouldRefresh = frameworkChanged || layoutChanged || directionChanged;
 
     this.settings = newSettings;
 

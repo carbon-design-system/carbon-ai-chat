@@ -91,7 +91,7 @@ export class NativeAudioProvider extends BaseProvider {
       }
 
       // Use the generic error message from config
-      this.triggerError(new Error(this.config.errorMessage!));
+      this.triggerError(new Error(this.config.errorMessage));
     });
 
     // Append to container

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { type ReactNode } from "react";
+import { type HTMLAttributes, type ReactNode } from "react";
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message, MessageResponse } from "../messaging/Messages";
 import { PublicConfig } from "../config/PublicConfig";
@@ -91,7 +91,8 @@ type RenderWriteableElementResponse = {
  *
  * @category React
  */
-interface ChatContainerProps extends PublicConfig {
+interface ChatContainerProps
+  extends PublicConfig, Omit<HTMLAttributes<HTMLElement>, keyof PublicConfig> {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

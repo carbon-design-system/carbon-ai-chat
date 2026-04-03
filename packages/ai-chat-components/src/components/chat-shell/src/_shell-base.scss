@@ -66,6 +66,7 @@
 
   position: relative;
   display: block;
+  box-sizing: border-box;
   border: 1px solid theme.$border-subtle-00;
   background-color: theme.$chat-shell-background;
   background-image: none;
@@ -91,6 +92,10 @@
   box-shadow: $ai-box-shadow-inner, $ai-box-shadow-outer;
 }
 
+.shell.frameless.ai-theme {
+  background-image: none;
+}
+
 // Shell Modifiers - Frameless
 .shell.frameless,
 .shell.frameless.rounded {
@@ -107,11 +112,6 @@
   box-shadow: none;
 }
 
-// Override ai-theme gradient border when frameless is applied
-.shell.frameless.ai-theme {
-  background-image: none;
-}
-
 // Shell Modifiers - Rounded
 // Base .main-chat styles (less specific, must come before .shell.rounded .main-chat)
 .main-chat {
@@ -126,10 +126,11 @@
 // ============================================================================
 // Initialization State - Prevent Layout Thrashing
 // ============================================================================
-// Hide .main-chat and .panels during initialization to prevent visible
-// layout shifts while calculations are performed
+// Hide children of .main-chat and .panels during initialization to prevent
+// visible layout shifts while calculations are performed. .main-chat itself
+// is left at full opacity so its background (ai-gradient) remains visible.
 .shell.initializing {
-  .main-chat,
+  .main-chat > *,
   .panels {
     opacity: 0;
   }
@@ -137,7 +138,7 @@
 
 // Fade in content after initialization completes
 .shell:not(.initializing) {
-  .main-chat,
+  .main-chat > *,
   .panels {
     opacity: 1;
   }
@@ -145,7 +146,7 @@
 
 // Add smooth transition when motion is preferred
 @media screen and (prefers-reduced-motion: no-preference) {
-  .main-chat,
+  .main-chat > *,
   .panels {
     transition: opacity motion.$duration-fast-02
       motion.motion(entrance, productive);
@@ -155,7 +156,7 @@
 // Instant appearance for users who prefer reduced motion
 @media screen and (prefers-reduced-motion: reduce) {
   .shell.initializing {
-    .main-chat,
+    .main-chat > *,
     .panels {
       opacity: 1;
       transition: none;

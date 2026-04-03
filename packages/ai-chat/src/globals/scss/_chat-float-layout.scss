@@ -1,0 +1,169 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * Float positioning styles for Carbon AI Chat floating widget mode.
+ * Following @carbon/styles component patterns where styles are wrapped in mixins.
+ *
+ * These styles can be applied to both cds-aichat-shell (for lazy loading placeholders)
+ * and the full ChatContainer to ensure consistent positioning and animations.
+ *
+ * Usage (Sass — mixin, for composing into your own stylesheet):
+ * @use "@carbon/ai-chat/scss/chat-float-layout";
+ * @include chat-float-layout.float-positioning;
+ *
+ * Usage (CSS — pre-compiled, no Sass pipeline needed):
+ * @import "@carbon/ai-chat/css/chat-float-layout.css";
+ *
+ * Classes generated:
+ * - .cds-aichat-float--open    — base fixed positioning
+ * - .cds-aichat-float--opening — entrance animation
+ * - .cds-aichat-float--closing — exit animation
+ * - .cds-aichat-float--close   — fully hidden state
+ * - .cds-aichat-float--mobile  — mobile overrides
+ */
+
+@use "@carbon/styles/scss/motion";
+@use "@carbon/layout";
+@use "@carbon/ai-chat-components/scss/utilities" as *;
+@use "./chat-theme";
+
+// Application layout variables (only used in this file)
+$max-height: get-var("max-height", 640px);
+$min-height: get-var("min-height", 150px);
+$width: get-var("width", 380px);
+$height: get-var("height", calc(100vh - (2 * #{layout.$spacing-07})));
+
+// Position variables (only used in this file)
+$bottom-position: get-var("bottom-position", #{layout.$spacing-09});
+$right-position: get-var("right-position", #{layout.$spacing-07});
+$top-position: get-var("top-position", auto);
+$left-position: get-var("left-position", auto);
+
+@mixin float-positioning {
+  /* ============================================================================
+     FLOAT - BASE POSITIONING
+     Fixed positioning for floating widget mode
+     Uses logical properties for automatic RTL support
+     ============================================================================ */
+
+  .#{$prefix}-float--open {
+    position: fixed;
+    z-index: chat-theme.$z-index;
+    block-size: $height;
+    inline-size: $width;
+    inset-block-end: $bottom-position;
+    inset-block-start: $top-position;
+    inset-inline-end: $right-position;
+    inset-inline-start: $left-position;
+    max-block-size: $max-height;
+    max-inline-size: chat-theme.$messages-max-width;
+    min-block-size: $min-height;
+  }
+
+  /* ============================================================================
+     FLOAT - OPENING ANIMATION
+     Animation when chat is opening
+     ============================================================================ */
+
+  .#{$prefix}-float--opening {
+    animation: none;
+  }
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .#{$prefix}-float--opening:not(.#{$prefix}-float--mobile) {
+      animation: cds-aichat-float-in motion.$duration-moderate-02
+        motion.motion(entrance, expressive) both;
+    }
+  }
+
+  /* ============================================================================
+     FLOAT - CLOSING ANIMATION
+     Animation when chat is closing
+     ============================================================================ */
+
+  .#{$prefix}-float--closing {
+    animation: cds-aichat-float-out motion.$duration-fast-02
+      motion.motion(exit, expressive) both;
+  }
+
+  @media screen and (prefers-reduced-motion: reduce) {
+    .#{$prefix}-float--closing {
+      animation: none;
+    }
+  }
+
+  /* ============================================================================
+     FLOAT - CLOSED STATE
+     Styles when chat is fully closed
+     ============================================================================ */
+
+  .#{$prefix}-float--close {
+    display: none;
+    overflow: hidden;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ============================================================================
+     FLOAT - MOBILE RESPONSIVE
+     Mobile-specific positioning and animations
+     ============================================================================ */
+
+  .#{$prefix}-float--mobile {
+    position: fixed;
+    z-index: chat-theme.$z-index;
+    block-size: $height;
+    inline-size: $width;
+    inset-block-end: $bottom-position;
+    inset-block-start: $top-position;
+    inset-inline-end: $right-position;
+    inset-inline-start: $left-position;
+    max-block-size: $max-height;
+    max-inline-size: 100%;
+    min-block-size: $min-height;
+  }
+
+  .#{$prefix}-float--mobile.#{$prefix}-float--opening {
+    inset-block-end: 1px;
+    inset-inline-start: 1px;
+  }
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .#{$prefix}-float--mobile.#{$prefix}-float--opening {
+      animation: cds-aichat-float-in motion.$duration-moderate-02
+        motion.motion(entrance, expressive) both;
+    }
+  }
+
+  /* ============================================================================
+     FLOAT - KEYFRAME ANIMATIONS
+     Animation definitions for opening and closing
+     ============================================================================ */
+
+  @keyframes cds-aichat-float-in {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes cds-aichat-float-out {
+    0% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+@include float-positioning;

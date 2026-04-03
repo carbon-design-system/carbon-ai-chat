@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { ChatInstance } from "../types/instance/ChatInstance";
 import {
@@ -172,9 +172,15 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     launcher,
     input,
     keyboardShortcuts,
+    ...domProps
   } = props;
 
-  const [customElement, setCustomElement] = useState<HTMLDivElement>();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [elementReady, setElementReady] = useState(false);
+
+  useLayoutEffect(() => {
+    setElementReady(true);
+  }, []);
 
   const onBeforeRenderOverride = useCallback(
     async (instance: ChatInstance) => {
@@ -183,13 +189,14 @@ function ChatCustomElement(props: ChatCustomElementProps) {
        * by adding/removing a CSS class that sets the element size to 0x0 when hidden.
        */
       function defaultViewChangeHandler(event: BusEventViewChange) {
-        if (customElement) {
+        const el = containerRef.current;
+        if (el) {
           if (event.newViewState.mainWindow) {
             // Show: remove the hidden class, let the provided className handle sizing
-            customElement.classList.remove("cds-aichat--hidden");
+            el.classList.remove("cds-aichat--hidden");
           } else {
             // Hide: add the hidden class to set size to 0x0
-            customElement.classList.add("cds-aichat--hidden");
+            el.classList.add("cds-aichat--hidden");
           }
         }
       }
@@ -208,12 +215,12 @@ function ChatCustomElement(props: ChatCustomElementProps) {
 
       return onBeforeRender?.(instance);
     },
-    [onViewPreChange, onViewChange, onBeforeRender, customElement],
+    [onViewPreChange, onViewChange, onBeforeRender],
   );
 
   return (
-    <div className={className} id={id} ref={setCustomElement}>
-      {customElement && (
+    <div className={className} id={id} ref={containerRef} {...domProps}>
+      {elementReady && containerRef.current && (
         <ChatContainer
           // Flattened PublicConfig properties
           onError={onError}
@@ -252,7 +259,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderCustomMessageFooter={renderCustomMessageFooter}
           renderWriteableElements={renderWriteableElements}
-          element={customElement}
+          element={containerRef.current}
         />
       )}
     </div>

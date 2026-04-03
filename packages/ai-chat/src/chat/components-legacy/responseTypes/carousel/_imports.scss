@@ -6,7 +6,7 @@
  */
 
 @use "swiper/swiper";
-@use "../../../styles/chat-theme";
+@use "../../../../globals/scss/chat-theme";
 @use "Carousel";
 
 .swiper,
