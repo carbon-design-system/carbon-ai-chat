@@ -777,6 +777,32 @@ class CDSAIChatShell extends LitElement {
         cornerEndEnd: this.cornerEndEnd,
       });
     }
+    // Restart history observer when showHistory changes
+    if (changedProperties.has("showHistory")) {
+      // Re-observe main content body width with new showHistory value
+      this.resizeObserverManager?.observeMainContentBodyWidth(
+        this.showHistory,
+        ({ shouldRenderHistory }) => {
+          if (this.shouldRenderHistory !== shouldRenderHistory) {
+            const wasVisible = this.shouldRenderHistory;
+            this.shouldRenderHistory = shouldRenderHistory;
+
+            // Announce history visibility changes
+            if (shouldRenderHistory && !wasVisible) {
+              this.ariaAnnouncerManager?.announce(
+                this.historyShownAnnouncement,
+              );
+            } else if (!shouldRenderHistory && wasVisible) {
+              this.ariaAnnouncerManager?.announce(
+                this.historyHiddenAnnouncement,
+              );
+            }
+
+            this.requestUpdate();
+          }
+        },
+      );
+    }
 
     // Update workspace manager when relevant properties change
     if (
