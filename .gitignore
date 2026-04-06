@@ -83,6 +83,10 @@ test-results
 # NextJS cache filees
 .next
 
-.bob
-
 packages/ai-chat-components/scss
+.bob/rules-carbon-figma-to-react/4_design_analysis.xml
+.bob/rules-carbon-figma-to-react/3_workflow.xml
+.bob/rules-carbon-figma-to-react/2_working_practices.xml
+.bob/rules-carbon-figma-to-react/1_carbon_essentials.xml
+.bob/mcp.json
+.bob/custom_modes.yaml
