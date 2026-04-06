@@ -1,0 +1,30 @@
+import { ArgTypes, Markdown, Meta, Canvas } from "@storybook/addon-docs/blocks";
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as CarouselStories from "./carousel.stories";
+
+<Meta of={CarouselStories} />
+
+# Carousel
+
+A basic carousel component implementation based on the `@carbon/utilities` carousel utility. For more information on the implementation refer to the [carousel](https://github.com/carbon-design-system/carbon/tree/main/packages/utilities/src/carousel) documentation in carbon core.
+
+## Getting started
+
+Here's a quick example to get you started.
+
+<Canvas of={CarouselStories.Default} />
+
+### JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/carousel/index.js";
+```
+
+<Markdown>{`${cdnJs(["carousel"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Component API
+
+## `cds-aichat-carousel`
+
+<ArgTypes of={CarouselStories.Default} />
