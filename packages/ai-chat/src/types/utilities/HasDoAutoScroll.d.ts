@@ -21,6 +21,8 @@ interface HasDoAutoScroll {
 
 /**
  * Options for controlling how the scrolling occurs.
+ *
+ * @category Instance
  */
 interface AutoScrollOptions {
   /**
