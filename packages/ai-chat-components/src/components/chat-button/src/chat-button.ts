@@ -67,15 +67,22 @@ class CDSAIChatButton extends CDSButton {
   ];
 
   protected willUpdate(changedProps: PropertyValues<this>): void {
-    if (changedProps.has("isQuickAction") || changedProps.has("size")) {
-      this._normalizeButtonState();
+    if (
+      changedProps.has("isQuickAction") ||
+      changedProps.has("size") ||
+      changedProps.has("kind")
+    ) {
+      this._normalizeButtonState(changedProps);
     }
   }
 
-  private _normalizeButtonState(): void {
+  private _normalizeButtonState(changedProps: PropertyValues<this>): void {
     if (this.isQuickAction) {
-      this.kind = CHAT_BUTTON_KIND.GHOST;
       this.size = CHAT_BUTTON_SIZE.SMALL;
+      // Only default to ghost when kind was not explicitly provided in this update.
+      if (!changedProps.has("kind")) {
+        this.kind = CHAT_BUTTON_KIND.GHOST;
+      }
       return;
     }
     // Do not allow size larger than `lg`
