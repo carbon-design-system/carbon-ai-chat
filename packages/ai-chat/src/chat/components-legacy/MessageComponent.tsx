@@ -162,6 +162,11 @@ interface MessageProps
   assistantName: string;
 
   /**
+   * The URL pointing to an avatar image for the assistant.
+   */
+  assistantAvatarUrl: string;
+
+  /**
    * Indicates if any user inputs on this message should be disabled such as buttons or dropdowns.
    */
   disableUserInputs: boolean;
@@ -460,7 +465,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     message: Message,
   ) {
     let avatar;
-    const { languagePack, assistantName, useAITheme, carbonTheme } = this.props;
+    const {
+      languagePack,
+      assistantName,
+      assistantAvatarUrl,
+      useAITheme,
+      carbonTheme,
+    } = this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
 
@@ -517,7 +528,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
         avatar = (
           <ImageWithFallback
-            url={responseUserProfile?.profile_picture_url}
+            url={responseUserProfile?.profile_picture_url ?? assistantAvatarUrl}
             alt={languagePack.agent_ariaGenericAssistantAvatar}
             fallback={icon}
           />

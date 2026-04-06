@@ -730,6 +730,7 @@ export default function AppShell({
                     )}
                     requestInputFocus={requestInputFocus}
                     assistantName={publicConfig.assistantName}
+                    assistantAvatarUrl={publicConfig.assistantAvatarUrl}
                     intl={intl}
                     onEndHumanAgentChat={showConfirmEndChat}
                     locale={publicConfig.locale || "en"}
