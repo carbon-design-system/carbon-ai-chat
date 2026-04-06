@@ -78,6 +78,7 @@ import {
   isSingleItemCarousel,
   renderAsUserDefinedMessage,
 } from "../utils/messageUtils";
+import { messageHasDisplayableContent } from "../utils/streamingUtils";
 import { createDidCatchErrorData } from "../utils/miscUtils";
 import { timestampToTimeString } from "../utils/timeUtils";
 import { type ScrollElementIntoViewFunction } from "./MessagesComponent";
@@ -92,7 +93,6 @@ import {
   ReasoningStepOpenState,
   ReasoningSteps as ReasoningStepsData,
   ResponseUserProfile,
-  TextItem,
   UserType,
 } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
@@ -749,22 +749,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   private shouldCloseReasoning(localMessageItem?: LocalMessageItem) {
-    if (!localMessageItem || !localMessageItem.item?.response_type) {
-      return false;
-    }
-    const { item, ui_state: uiState } = localMessageItem;
-    if (item.response_type === MessageResponseTypes.TEXT) {
-      const textFromStreaming = uiState.streamingState
-        ? uiState.streamingState.chunks
-            .map((chunk) => (chunk as Partial<TextItem>).text ?? "")
-            .join("")
-        : undefined;
-      const text = (item as TextItem).text.length
-        ? (item as TextItem).text
-        : textFromStreaming;
-      return Boolean(text && text.trim());
-    }
-    return true;
+    return messageHasDisplayableContent(localMessageItem);
   }
 
   private getReasoningContainerOpen(reasoning?: ReasoningStepsData) {

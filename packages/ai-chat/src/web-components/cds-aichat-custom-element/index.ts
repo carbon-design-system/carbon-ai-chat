@@ -24,6 +24,7 @@ import {
   DisclaimerPublicConfig,
   CarbonTheme,
   HeaderConfig,
+  HistoryConfig,
   LayoutConfig,
   PublicConfigMessaging,
   LanguagePack,
@@ -161,6 +162,9 @@ class ChatCustomElement extends LitElement {
 
   @property({ type: Object })
   header?: HeaderConfig;
+
+  @property({ type: Object })
+  history?: HistoryConfig;
 
   @property({ type: Object })
   input?: InputConfig;

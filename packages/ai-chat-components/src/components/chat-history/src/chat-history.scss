@@ -17,9 +17,16 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  border: solid convert.rem(1px) theme.$border-subtle-00;
+  border: var(
+    --history-shell-border,
+    solid #{convert.rem(1px)} #{theme.$border-subtle-00}
+  );
   background: theme.$chat-header-background;
   block-size: 100%;
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
   inline-size: 100%;
 }
 
@@ -37,7 +44,7 @@
   min-block-size: convert.rem(40px);
 
   .#{$prefix}--history-header__close-button {
-    padding-inline-end: layout.$spacing-03;
+    padding-inline-end: layout.$spacing-01;
   }
 
   .#{$prefix}--history-header__title {
@@ -61,6 +68,10 @@
     background-color: theme.$chat-header-background;
     border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
   }
+
+  cds-search::part(close-button)::before {
+    content: none;
+  }
 }
 
 :host(#{$prefix}-history-toolbar[search-off]) {
@@ -69,7 +80,9 @@
 }
 
 :host(#{$prefix}-history-content) {
-  display: block;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   overflow-y: auto;
 
   .#{$prefix}--history-content__results-count {
@@ -98,12 +111,12 @@
 }
 
 :host(#{$prefix}-history-panel) {
-  display: flex;
-  flex-direction: column;
+  flex: 1;
 
   .cds--side-nav {
     position: relative;
     background-color: transparent;
+    block-size: 100%;
     inline-size: 100%;
     max-inline-size: 100%;
   }
@@ -119,7 +132,7 @@
 :host(#{$prefix}-history-panel-menu) {
   @extend :host(#{$cds-prefix}-side-nav-menu);
 
-  padding-block-start: layout.$spacing-02;
+  padding-block-start: layout.$spacing-03;
 
   .#{$cds-prefix}--side-nav__submenu {
     padding: 0 1rem 0 layout.$spacing-04;
@@ -127,6 +140,8 @@
 
   .#{$cds-prefix}--side-nav__submenu-title {
     @include type.type-style("label-01");
+
+    padding-inline-start: layout.$spacing-02;
   }
 
   .#{$cds-prefix}--side-nav__icon:not(
@@ -157,7 +172,7 @@
     inline-size: 100%;
     outline: 2px solid transparent;
     outline-offset: -2px;
-    padding-inline-start: layout.$spacing-07;
+    padding-inline-start: layout.$spacing-08;
     text-decoration: none;
   }
 
@@ -283,11 +298,15 @@
   flex-direction: column;
   justify-content: center;
   padding: layout.$spacing-07;
-  block-size: 100%;
+  inset: 0;
 
   &::before {
     position: absolute;
     z-index: -1;
+    border-radius: var(--#{$prefix}-border-radius-start-start, 0)
+      var(--#{$prefix}-border-radius-start-end, 0)
+      var(--#{$prefix}-border-radius-end-end, 0)
+      var(--#{$prefix}-border-radius-end-start, 0);
     background: theme.$background;
     content: "";
     inset: 0;

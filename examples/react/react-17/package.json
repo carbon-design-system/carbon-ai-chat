@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-17",
   "private": true,
-  "version": "1.8.1",
+  "version": "1.9.0",
   "type": "module",
   "description": "A React 17 example using @carbon/ai-chat as a React component.",
   "scripts": {
@@ -13,8 +13,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "*",
-    "@carbon/web-components": "^2.49.0",
+    "@carbon/ai-chat": "^1.10.0",
+    "@carbon/web-components": "^2.51.1",
     "lit": "^3.1.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",

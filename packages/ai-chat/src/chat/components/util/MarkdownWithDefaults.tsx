@@ -118,24 +118,26 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
       markdown={text}
       sanitizeHTML={doSanitize}
       streaming={streaming}
-      highlight={highlight}
       removeHTML={removeHTML}
-      // Table strings
-      filterPlaceholderText={languagePack.table_filterPlaceholder}
-      previousPageText={languagePack.table_previousPage}
-      nextPageText={languagePack.table_nextPage}
-      itemsPerPageText={languagePack.table_itemsPerPage}
-      locale={locale}
-      getPaginationSupplementalText={getPaginationSupplementalText}
-      getPaginationStatusText={getPaginationStatusText}
-      // Code snippet strings
-      feedback={languagePack.codeSnippet_feedback}
-      showLessText={languagePack.codeSnippet_showLessText}
-      showMoreText={languagePack.codeSnippet_showMoreText}
-      tooltipContent={languagePack.codeSnippet_tooltipContent}
-      getLineCountText={getLineCountText}
+      // Code snippet properties
+      codeSnippetHighlight={highlight}
+      codeSnippetShowLessText={languagePack.codeSnippet_showLessText}
+      codeSnippetShowMoreText={languagePack.codeSnippet_showMoreText}
+      codeSnippetCopyButtonTooltipContent={
+        languagePack.codeSnippet_tooltipContent
+      }
+      codeSnippetGetLineCountText={getLineCountText}
       codeSnippetAriaLabelReadOnly={languagePack.codeSnippet_ariaLabelReadOnly}
       codeSnippetAriaLabelEditable={languagePack.codeSnippet_ariaLabelEditable}
+      // Table properties
+      tableFilterPlaceholderText={languagePack.table_filterPlaceholder}
+      tablePreviousPageText={languagePack.table_previousPage}
+      tableNextPageText={languagePack.table_nextPage}
+      tableItemsPerPageText={languagePack.table_itemsPerPage}
+      tableDownloadLabelText={languagePack.table_downloadButton}
+      tableLocale={locale}
+      tableGetPaginationSupplementalText={getPaginationSupplementalText}
+      tableGetPaginationStatusText={getPaginationStatusText}
     />
   );
 }

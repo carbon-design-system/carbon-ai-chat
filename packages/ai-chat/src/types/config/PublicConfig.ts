@@ -143,6 +143,11 @@ export interface PublicConfig {
   header?: HeaderConfig;
 
   /**
+   * The config object for chat history.
+   */
+  history?: HistoryConfig;
+
+  /**
    * The config object for changing Carbon AI Chat's layout.
    */
   layout?: LayoutConfig;
@@ -272,6 +277,11 @@ export enum MinimizeButtonIconType {
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
   SIDE_PANEL_RIGHT = "side-panel-right",
+
+  /**
+   * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
+   */
+  SIDE_PANEL_DOWN = "side-panel-down",
 }
 
 /**
@@ -370,6 +380,18 @@ export interface HeaderConfig {
    * them with your own.
    */
   actions?: ToolbarAction[];
+}
+
+/**
+ * Configuration for the history panel of the chat.
+ *
+ * @category Config
+ */
+export interface HistoryConfig {
+  /**
+   * Indicates if the history panel should be shown.
+   */
+  isOn?: boolean;
 }
 
 /**

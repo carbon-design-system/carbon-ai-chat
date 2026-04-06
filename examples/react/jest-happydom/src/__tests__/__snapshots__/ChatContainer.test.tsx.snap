@@ -38,6 +38,9 @@ exports[`ChatContainer should have a shadow DOM with rendered content 1`] = `
   <div
     slot="workspacePanelElement"
   />
+  <div
+    slot="historyPanelElement"
+  />
 </cds-aichat-react>
 `;
 
@@ -79,6 +82,9 @@ exports[`ChatContainer should open chat when launcher is clicked 1`] = `
   <div
     slot="workspacePanelElement"
   />
+  <div
+    slot="historyPanelElement"
+  />
 </cds-aichat-react>
 `;
 
@@ -119,6 +125,9 @@ exports[`ChatContainer should render PageObjectId elements in shadow DOM 1`] = `
   />
   <div
     slot="workspacePanelElement"
+  />
+  <div
+    slot="historyPanelElement"
   />
 </cds-aichat-react>
 `;
@@ -166,6 +175,9 @@ exports[`ChatContainer should render slotted content 1`] = `
   />
   <div
     slot="workspacePanelElement"
+  />
+  <div
+    slot="historyPanelElement"
   />
 </cds-aichat-react>
 `;

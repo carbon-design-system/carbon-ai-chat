@@ -399,6 +399,94 @@ describe("cds-aichat-shell", function () {
       const historyContainer = el.shadowRoot!.querySelector(".history");
       expect(historyContainer).to.not.exist;
     });
+
+    it("should restart history observer when showHistory changes dynamically", async () => {
+      // Create element with showHistory initially false
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          style="
+            width: 700px;
+            display: block;
+            --cds-aichat-messages-min-width: 320px;
+            --cds-aichat-history-width: 320px;
+          "
+        >
+          <div slot="history">History Content</div>
+        </cds-aichat-shell>`,
+      );
+      await el.updateComplete;
+
+      // History should not be rendered initially
+      let historyContainer = el.shadowRoot!.querySelector(".history");
+      expect(historyContainer).to.not.exist;
+
+      // Enable showHistory
+      el.showHistory = true;
+      await el.updateComplete;
+      await nextFrame(2);
+
+      // History should now be rendered (width 700px > required 640px)
+      historyContainer = el.shadowRoot!.querySelector(".history");
+      expect(historyContainer).to.exist;
+    });
+
+    it("should hide history when container is too narrow after showHistory is enabled", async () => {
+      // Create element with narrow width (less than 640px required)
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          style="
+            width: 500px;
+            display: block;
+            --cds-aichat-messages-min-width: 320px;
+            --cds-aichat-history-width: 320px;
+          "
+        >
+          <div slot="history">History Content</div>
+        </cds-aichat-shell>`,
+      );
+      await el.updateComplete;
+
+      // Enable showHistory
+      el.showHistory = true;
+      await el.updateComplete;
+      await nextFrame(2);
+
+      // History should not be rendered due to insufficient width
+      const historyContainer = el.shadowRoot!.querySelector(".history");
+      expect(historyContainer).to.not.exist;
+    });
+
+    it("should show history when container width increases above threshold", async () => {
+      // Create element with narrow width initially
+      const el = await fixture<CDSAIChatShell>(
+        html`<cds-aichat-shell
+          show-history
+          style="
+            width: 500px;
+            display: block;
+            --cds-aichat-messages-min-width: 320px;
+            --cds-aichat-history-width: 320px;
+          "
+        >
+          <div slot="history">History Content</div>
+        </cds-aichat-shell>`,
+      );
+      await el.updateComplete;
+      await nextFrame(2);
+
+      // History should not be rendered due to insufficient width
+      let historyContainer = el.shadowRoot!.querySelector(".history");
+      expect(historyContainer).to.not.exist;
+
+      // Increase width to above threshold (640px)
+      el.style.width = "700px";
+      await el.updateComplete;
+      await nextFrame(2);
+
+      // History should now be rendered
+      historyContainer = el.shadowRoot!.querySelector(".history");
+      expect(historyContainer).to.exist;
+    });
   });
 
   // ========== COMPREHENSIVE ROUNDED CORNERS TESTS ==========

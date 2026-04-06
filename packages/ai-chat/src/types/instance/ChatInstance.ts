@@ -94,6 +94,19 @@ export interface PublicWorkspaceCustomPanelState {
 }
 
 /**
+ * Represents public state for history panel.
+ *
+ * @category Instance
+ */
+export interface PublicHistoryPanelState {
+  /** Indicates if the history panel is currently open. */
+  isOpen: boolean;
+
+  /** Indicates if the history panel should open in chat panel. */
+  isMobile: boolean;
+}
+
+/**
  * Represents public state for each supported custom panel variant.
  *
  * @category Instance
@@ -108,6 +121,11 @@ export interface PublicCustomPanelsState {
    * @experimental
    */
   workspace: PublicWorkspaceCustomPanelState;
+
+  /**
+   * State for the history panel.
+   */
+  history: PublicHistoryPanelState;
 }
 
 /**
@@ -495,9 +513,14 @@ export enum WriteableElementName {
   CUSTOM_PANEL_ELEMENT = "customPanelElement",
 
   /**
-   * An element to be housed in the custom panel.
+   * An element to be housed in the workspace panel.
    */
   WORKSPACE_PANEL_ELEMENT = "workspacePanelElement",
+
+  /**
+   * An element to be housed in the history panel.
+   */
+  HISTORY_PANEL_ELEMENT = "historyPanelElement",
 }
 
 /**

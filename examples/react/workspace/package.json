@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-workspace",
   "private": true,
-  "version": "1.8.1",
+  "version": "1.9.0",
   "type": "module",
   "description": "An example using @carbon/ai-chat's React workspace feature",
   "scripts": {
@@ -13,11 +13,11 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "*",
-    "@carbon/ai-chat-components": "*",
+    "@carbon/ai-chat": "^1.10.0",
+    "@carbon/ai-chat-components": "^1.0.0",
     "@carbon/icons-react": "^11.53.0",
     "@carbon/react": "^1.68.0",
-    "@carbon/web-components": "^2.49.0",
+    "@carbon/web-components": "^2.51.1",
     "lit": "^3.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

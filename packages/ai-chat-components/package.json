@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "0.11.0",
+  "version": "1.0.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -51,9 +51,9 @@
   "dependencies": {
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^11.53.0",
-    "@carbon/styles": "^1.98.0",
-    "@carbon/utilities": "^0.17.0",
-    "@carbon/web-components": "^2.49.0",
+    "@carbon/styles": "1.103.0",
+    "@carbon/utilities": "^0.18.0",
+    "@carbon/web-components": "^2.51.1",
     "@codemirror/autocomplete": "^6.20.0",
     "@codemirror/commands": "^6.10.1",
     "@codemirror/lang-angular": "^0.1.4",
@@ -88,7 +88,7 @@
     "csv-stringify": "^6.5.2",
     "dompurify": "^3.1.6",
     "lit": "^3.1.0",
-    "lodash-es": "^4.17.0",
+    "lodash-es": "^4.18.1",
     "markdown-it": "^14.1.0",
     "program-language-detector": "^0.0.12",
     "tslib": "^2.6.3"
@@ -106,7 +106,7 @@
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@happy-dom/jest-environment": "^20.0.2",
     "@isaacs/brace-expansion": "^5.0.0",
-    "@mordech/vite-lit-loader": "^0.38.0",
+    "@mordech/vite-lit-loader": "^0.39.0",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",

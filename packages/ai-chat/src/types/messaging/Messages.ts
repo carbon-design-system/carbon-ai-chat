@@ -1168,7 +1168,7 @@ interface MediaTranscript {
  * Accessibility features for raw media files (not embedded platforms).
  * These features only apply when using direct file URLs (e.g., .mp4, .mp3).
  *
- * For embedded platforms (YouTube, Vimeo, SoundCloud, Mixcloud, etc.),
+ * For embedded platforms (YouTube, Vimeo, SoundCloud, etc.),
  * rely on the platform's built-in accessibility features instead.
  *
  * @category Messaging
@@ -1218,7 +1218,7 @@ interface MediaItem<
    *
    * For video this can be a file like an .mp4 or a YouTube, Facebook, Vimeo, Twitch, Streamable, Wistia, or Vidyard url.
    *
-   * For audio this can be a file like an .mp3 or a SoundCloud or Mixcloud url.
+   * For audio this can be a file like an .mp3 or a SoundCloud url.
    */
   source: string;
 
