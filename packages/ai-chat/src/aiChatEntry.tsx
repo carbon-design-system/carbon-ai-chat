@@ -262,6 +262,7 @@ export {
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
+  WCRenderUserDefinedResponse,
 } from "./types/component/ChatContainer";
 
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
