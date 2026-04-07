@@ -590,6 +590,7 @@ export class DemoApp extends LitElement {
             .isReadonly=${this.config.isReadonly ?? undefined}
             .persistFeedback=${this.config.persistFeedback ?? undefined}
             .assistantName=${this.config.assistantName}
+            .assistantAvatarUrl=${this.config.assistantAvatarUrl}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}
             .launcher=${this.config.launcher}
@@ -621,6 +622,7 @@ export class DemoApp extends LitElement {
             .isReadonly=${this.config.isReadonly ?? undefined}
             .persistFeedback=${this.config.persistFeedback ?? undefined}
             .assistantName=${this.config.assistantName}
+            .assistantAvatarUrl=${this.config.assistantAvatarUrl}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}
             .launcher=${this.config.launcher}
@@ -652,6 +654,7 @@ export class DemoApp extends LitElement {
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
             .assistantName=${this.config.assistantName}
+            .assistantAvatarUrl=${this.config.assistantAvatarUrl}
             locale=${this.config.locale}
             .homescreen=${this.config.homescreen}
             .launcher=${this.config.launcher}
