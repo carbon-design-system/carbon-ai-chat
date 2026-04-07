@@ -19,12 +19,12 @@ const actualPath = pathResolve(
 );
 const actualUrl = pathToFileURL(actualPath).href;
 
-export async function resolve(specifier, context, defaultResolve) {
+export async function resolve(specifier, context, nextResolve) {
   if (
     specifier === "@carbon/web-components/es/globals/internal/icon-loader.js"
   ) {
     // We handled it; stop the chain.
     return { url: actualUrl, shortCircuit: true };
   }
-  return defaultResolve(specifier, context);
+  return nextResolve(specifier, context);
 }

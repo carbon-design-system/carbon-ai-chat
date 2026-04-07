@@ -12,6 +12,26 @@ import { loadAllLazyDeps } from "@carbon/ai-chat/server";
 import { vi, expect } from "vitest";
 import { shadowDomSerializer } from "./__tests__/snapshot-serializer";
 
+// Polyfill ShadowRoot.activeElement BEFORE any imports that might use it
+// CodeMirror's EditorView.hasFocus checks shadowRoot.activeElement
+// Happy-dom's implementation tries to access _activeElement.getRootNode() which can be undefined
+if (typeof ShadowRoot !== "undefined") {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(
+    ShadowRoot.prototype,
+    "activeElement",
+  );
+  Object.defineProperty(ShadowRoot.prototype, "activeElement", {
+    get() {
+      try {
+        return originalDescriptor?.get?.call(this) ?? null;
+      } catch {
+        return null;
+      }
+    },
+    configurable: true,
+  });
+}
+
 // Register custom snapshot serializer to handle dynamic content in shadow DOM
 // This normalizes Lit comment markers and UUID-based IDs in snapshots
 expect.addSnapshotSerializer(shadowDomSerializer);

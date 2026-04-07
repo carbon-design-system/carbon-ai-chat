@@ -7,14 +7,14 @@
   "scripts": {
     "start": "webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js --mode production",
-    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js --experimental-loader=./tests/alias-loader.js' playwright test"
+    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js --import ./tests/register-loader.js' playwright test"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "latest",
-    "@carbon/ai-chat-components": "latest",
+    "@carbon/ai-chat": "*",
+    "@carbon/ai-chat-components": "*",
     "@carbon/icons": "^11.53.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.51.1",
