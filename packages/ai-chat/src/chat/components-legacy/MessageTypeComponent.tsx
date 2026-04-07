@@ -98,6 +98,7 @@ import {
 } from "../../types/messaging/Messages";
 import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
+import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
 
 /**
  * This component renders a specific message component based on a message's type.
@@ -589,15 +590,21 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
-      <CarouselItemComponent
-        localMessageItem={message}
-        fullMessage={originalMessage}
-        isMessageForInput={isMessageForInput}
-        requestFocus={requestInputFocus}
-        renderMessageComponent={(childProps) => (
-          <MessageTypeComponent {...childProps} />
-        )}
-      />
+      <div className="carousel-container">
+        <Carousel nextBtnText="Next" previousBtnText="Previous">
+          <div className="carousel-container-inner">
+            <CarouselItemComponent
+              localMessageItem={message}
+              fullMessage={originalMessage}
+              isMessageForInput={isMessageForInput}
+              requestFocus={requestInputFocus}
+              renderMessageComponent={(childProps) => (
+                <MessageTypeComponent {...childProps} />
+              )}
+            />
+          </div>
+        </Carousel>
+      </div>
     );
   }
 
