@@ -140,6 +140,9 @@ class ChatContainer extends LitElement {
   assistantName?: string;
 
   @property({ type: String })
+  assistantAvatarUrl?: string;
+
+  @property({ type: String })
   locale?: string;
 
   @property({ type: Object })
@@ -300,6 +303,9 @@ class ChatContainer extends LitElement {
     }
     if (this.assistantName !== undefined) {
       resolvedConfig.assistantName = this.assistantName;
+    }
+    if (this.assistantAvatarUrl !== undefined) {
+      resolvedConfig.assistantAvatarUrl = this.assistantAvatarUrl;
     }
     if (this.locale !== undefined) {
       resolvedConfig.locale = this.locale;

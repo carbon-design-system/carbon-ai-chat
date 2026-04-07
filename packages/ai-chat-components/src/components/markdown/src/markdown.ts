@@ -136,7 +136,7 @@ class CDSAIChatMarkdown extends LitElement {
   // Code snippet properties
   /** Enable syntax highlighting for any code fence blocks. */
   @property({ type: Boolean, attribute: "code-snippet-highlight" })
-  codeSnippetHighlight = false;
+  codeSnippetHighlight = true;
 
   /** Label for collapsing long code blocks. */
   @property({ type: String, attribute: "code-snippet-show-less-text" })

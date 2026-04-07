@@ -126,6 +126,11 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   assistantName: string;
 
   /**
+   * The URL pointing to an avatar image for the assistant.
+   */
+  assistantAvatarUrl: string;
+
+  /**
    * The callback that is called when the user clicks the "end agent chat" button.
    */
   onEndHumanAgentChat: () => void;
@@ -993,7 +998,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       requestInputFocus,
       persistedToBrowserStorage,
       config: {
-        public: { assistantName },
+        public: { assistantName, assistantAvatarUrl },
         derived: { languagePack },
       },
       messageState,
@@ -1050,6 +1055,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         serviceManager={serviceManager}
         messagesIndex={messagesIndex}
         assistantName={assistantName}
+        assistantAvatarUrl={assistantAvatarUrl}
         disableUserInputs={inputState.isReadonly}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}

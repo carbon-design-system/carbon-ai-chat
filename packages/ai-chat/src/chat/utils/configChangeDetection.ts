@@ -115,6 +115,7 @@ export function detectConfigChanges(
     previousConfig.shouldTakeFocusIfOpensAutomatically !==
       newConfig.shouldTakeFocusIfOpensAutomatically ||
     previousConfig.assistantName !== newConfig.assistantName ||
+    previousConfig.assistantAvatarUrl !== newConfig.assistantAvatarUrl ||
     previousConfig.isReadonly !== newConfig.isReadonly ||
     previousConfig.locale !== newConfig.locale ||
     previousConfig.disableCustomElementMobileEnhancements !==
