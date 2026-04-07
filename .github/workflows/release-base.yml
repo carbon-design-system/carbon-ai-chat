@@ -105,14 +105,14 @@ jobs:
         # even though there are no new changes from last rc
         run: |
           git commit --allow-empty -m "chore(release): graduate prerelease to stable"
-          npx lerna publish minor --conventional-graduate --ignore-changes="packages/ai-chat-components/**" ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish minor --conventional-graduate ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish first minor RC (ie. v1.x.0-rc.0)
         if: |
           github.event.inputs.type == 'first rc' &&
           github.event.inputs.semver-type == 'minor'
         run: |
-          npx lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next --ignore-changes="packages/ai-chat-components/**" ${{ env.PUBLISH }} ${{ env.FORCE }}
+          npx lerna publish preminor --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
       - name: Publish full patch release (ie. v1.0.x)
         if: |
