@@ -51,7 +51,7 @@ The test setup file ([src/jest.setup.ts](src/jest.setup.ts)) provides:
 - `@testing-library/jest-dom` matchers
 - Mocked `ResizeObserver` for browser API compatibility
 - A call to `loadAllLazyDeps()` from `@carbon/ai-chat/server` so every lazily
-  imported dependency (CodeMirror, Carbon DataTable, Swiper,
+  imported dependency (CodeMirror, Carbon DataTable,
   Day.js locales, etc.) is eagerly loaded once before the Jest suite runs.
   This avoids waiting on dynamic `import()` during assertions, which is
   especially important when running in a lightweight DOM environment.
@@ -94,8 +94,7 @@ to exercise the heaviest response types so you can validate their integrations:
 - **Markdown tables + code snippets** – ensures the markdown renderer upgrades
   tables to `<cds-aichat-table>` (Carbon DataTable runtime) and code blocks to
   `<cds-aichat-code-snippet>` (CodeMirror runtime).
-- **Conversational search citations** – opens the citations toggle, waits for
-  the Swiper carousel to render, and verifies citation cards/search results.
+- **Conversational search citations** – opens the citations toggle and verifies citation cards/search results.
 - **Video responses** – renders multiple `MessageResponseTypes.VIDEO` items and
   waits for `.cds-aichat--media-player` instances.
 

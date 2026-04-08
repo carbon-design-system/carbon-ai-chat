@@ -8,7 +8,6 @@
  */
 
 import React, { Suspense, useMemo, useRef, useState } from "react";
-import type { SwiperRef } from "swiper/react";
 
 import { ScrollElementIntoViewFunction } from "../../MessagesComponent";
 import { useLanguagePack } from "../../../hooks/useLanguagePack";
@@ -21,7 +20,7 @@ import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../types/messaging/Messages";
-import Carousel from "../carousel/Carousel";
+import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
 
 interface ConversationalSearchProps {
   /**
@@ -48,7 +47,6 @@ function ConversationalSearch({
   const [selectedCitationIndex, setSelectedCitationIndex] = useState<number>(0);
   const [citationsOpen, setCitationsOpen] = useState(false);
   const scrollIntoViewArea = useRef<HTMLDivElement>(undefined);
-  const swiperRef = useRef<SwiperRef>(undefined);
   const languagePack = useLanguagePack();
 
   const messageItem = localMessageItem.item;
@@ -74,7 +72,6 @@ function ConversationalSearch({
   function onSelectCitation(index: number) {
     setCitationsOpen(true);
     setSelectedCitationIndex(index);
-    setTimeout(() => swiperRef.current?.swiper.slideTo(index));
     scrollCitations();
   }
 
@@ -83,6 +80,11 @@ function ConversationalSearch({
     if (!citationsOpen) {
       scrollCitations();
     }
+  }
+
+  function onChangeHandler(e: CustomEvent) {
+    const { currentIndex } = e.detail;
+    setSelectedCitationIndex(currentIndex);
   }
 
   function renderCitations() {
@@ -107,11 +109,11 @@ function ConversationalSearch({
       <div className="cds-aichat--conversational-search-citations">
         <Suspense fallback={<SkeletonPlaceholder />}>
           <Carousel
-            swiperRef={swiperRef}
-            initialSlide={selectedCitationIndex}
-            onSlideChange={setSelectedCitationIndex}
+            nextBtnText="Next"
+            previousBtnText="Previous"
+            onChange={onChangeHandler}
           >
-            {tiles}
+            <div>{tiles}</div>
           </Carousel>
         </Suspense>
       </div>

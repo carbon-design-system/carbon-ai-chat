@@ -464,17 +464,6 @@ describe("ChatContainer", () => {
           }
         });
 
-        // Once the toggle is active, the carousel becomes visible inside the citations
-        // region. Waiting for the region also verifies that Swiper dependencies loaded.
-        const citationsRegion = await waitFor(
-          () =>
-            shadowRoot.querySelector(
-              ".cds-aichat--conversational-search-citations",
-            ),
-          { timeout: WAIT_FOR_TIMEOUT },
-        );
-        expect(citationsRegion).toBeTruthy();
-        expect(citationsRegion?.querySelector(".swiper")).toBeTruthy();
         await new Promise((resolve) => setTimeout(resolve, 100));
       } finally {
         await closeChat(customElement);

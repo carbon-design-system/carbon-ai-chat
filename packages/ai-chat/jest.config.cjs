@@ -5,25 +5,34 @@ module.exports = {
   testMatch: ["**/spec/**/*_spec.ts", "**/spec/**/*_spec.tsx"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "mjs"],
   transform: {
-    "^.+\\.(ts|tsx)$": ["ts-jest", {
-      useESM: true,
-      tsconfig: {
-        module: "esnext",
-        target: "es2022",
-        lib: ["es2022", "dom", "dom.iterable"],
-        moduleResolution: "node",
-        jsx: "react-jsx"
-      }
-    }],
-    "^.+\\.(js|jsx|mjs)$": ["babel-jest", {
-      presets: [
-        ["@babel/preset-env", {
-          targets: { node: "current" },
-          modules: "commonjs"
-        }],
-        "@babel/preset-react"
-      ],
-    }],
+    "^.+\\.(ts|tsx)$": [
+      "ts-jest",
+      {
+        useESM: true,
+        tsconfig: {
+          module: "esnext",
+          target: "es2022",
+          lib: ["es2022", "dom", "dom.iterable"],
+          moduleResolution: "node",
+          jsx: "react-jsx",
+        },
+      },
+    ],
+    "^.+\\.(js|jsx|mjs)$": [
+      "babel-jest",
+      {
+        presets: [
+          [
+            "@babel/preset-env",
+            {
+              targets: { node: "current" },
+              modules: "commonjs",
+            },
+          ],
+          "@babel/preset-react",
+        ],
+      },
+    ],
     "^.+\\.(css|scss)$": ["<rootDir>/tests/transforms/cssTransform.cjs"],
   },
   moduleNameMapper: {
@@ -31,7 +40,7 @@ module.exports = {
     "\\.(css|less|scss|sass)$": "<rootDir>/tests/transforms/cssTransform.cjs",
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(?:@lit|lit|lit-html|lit-element|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|swiper|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|@formatjs|@codemirror|@lezer|crelt|style-mod|w3c-keyname|flatpickr)/).*\\.js$'
+    "/node_modules/(?!(?:@lit|lit|lit-html|lit-element|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|@formatjs|@codemirror|@lezer|crelt|style-mod|w3c-keyname|flatpickr)/).*\\.js$",
   ],
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
   collectCoverageFrom: [
