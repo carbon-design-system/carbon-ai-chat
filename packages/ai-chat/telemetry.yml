@@ -19,6 +19,7 @@ collect:
         - disclaimer
         - expose-service-manager-for-testing
         - header
+        - history
         - homescreen
         - inject-carbon-theme
         - input

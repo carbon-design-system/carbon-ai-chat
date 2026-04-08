@@ -13,11 +13,11 @@ import {
   BusEventType,
   CarbonTheme,
   type ChatInstance,
-  type MessageResponse,
   type PublicConfig,
+  type RenderUserDefinedState,
   type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { customLoadHistory } from "./customLoadHistory";
@@ -30,6 +30,11 @@ const config: PublicConfig = {
   },
   injectCarbonTheme: CarbonTheme.WHITE,
 };
+
+interface TrackedElementData {
+  text: string;
+  fullMessageId?: string;
+}
 
 @customElement("my-app")
 export class Demo extends LitElement {
@@ -47,10 +52,7 @@ export class Demo extends LitElement {
   @state()
   accessor activeResponseId: string | null = null;
 
-  @state()
-  accessor userDefinedSlotsMap: {
-    [key: string]: { message: UserDefinedItem; fullMessage: MessageResponse };
-  } = {};
+  private _userDefinedElements = new Map<HTMLElement, TrackedElementData>();
 
   onBeforeRender = (instance: ChatInstance) => {
     this.instance = instance;
@@ -58,32 +60,17 @@ export class Demo extends LitElement {
     const initialState = instance.getState();
     this.activeResponseId = initialState.activeResponseId ?? null;
 
-    instance.on([
-      {
-        type: BusEventType.STATE_CHANGE,
-        handler: (event: any) => {
-          if (
-            event.previousState?.activeResponseId !==
-            event.newState?.activeResponseId
-          ) {
-            this.activeResponseId = event.newState.activeResponseId ?? null;
-          }
-        },
+    instance.on({
+      type: BusEventType.STATE_CHANGE,
+      handler: (event: any) => {
+        if (
+          event.previousState?.activeResponseId !==
+          event.newState?.activeResponseId
+        ) {
+          this.activeResponseId = event.newState.activeResponseId ?? null;
+        }
       },
-      {
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: (event: any) => {
-          const { slot, message, fullMessage } = event.data;
-          if (!slot) {
-            return;
-          }
-          this.userDefinedSlotsMap = {
-            ...this.userDefinedSlotsMap,
-            [slot]: { message, fullMessage },
-          };
-        },
-      },
-    ]);
+    });
   };
 
   async injectHistory() {
@@ -109,6 +96,55 @@ export class Demo extends LitElement {
     );
   }
 
+  protected updated(changedProperties: PropertyValues): void {
+    if (changedProperties.has("activeResponseId")) {
+      for (const [el, data] of this._userDefinedElements) {
+        if (!el.isConnected) {
+          this._userDefinedElements.delete(el);
+          continue;
+        }
+        this.updateElementContent(el, data);
+      }
+    }
+  }
+
+  private updateElementContent(el: HTMLElement, data: TrackedElementData) {
+    const isLatest =
+      Boolean(this.activeResponseId) &&
+      data.fullMessageId === this.activeResponseId;
+    el.innerHTML = `
+      ${data.text}
+      <div>Latest response id: ${this.activeResponseId ?? "none yet"}</div>
+      <div>Is this the most recent message? ${isLatest ? "Yes" : "Nope"}</div>
+    `;
+  }
+
+  /**
+   * Callback to render user_defined responses. The library manages event listening, slot tracking,
+   * streaming state, and element lifecycle.
+   */
+  renderUserDefinedCallback = (
+    state: RenderUserDefinedState,
+  ): HTMLElement | null => {
+    const messageItem = state.messageItem as UserDefinedItem | undefined;
+
+    if (
+      messageItem?.user_defined?.user_defined_type === "my_unique_identifier"
+    ) {
+      const el = document.createElement("div");
+      el.className = "external";
+      const data: TrackedElementData = {
+        text: messageItem.user_defined.text as string,
+        fullMessageId: state.fullMessage?.id,
+      };
+      this._userDefinedElements.set(el, data);
+      this.updateElementContent(el, data);
+      return el;
+    }
+
+    return null;
+  };
+
   render() {
     return html`
       ${this.instance
@@ -120,25 +156,8 @@ export class Demo extends LitElement {
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
         .injectCarbonTheme=${config.injectCarbonTheme}
-      >
-        ${Object.entries(this.userDefinedSlotsMap).map(
-          ([slot, { message, fullMessage }]) => {
-            const isLatest =
-              Boolean(this.activeResponseId) &&
-              fullMessage?.id === this.activeResponseId;
-            return html`<div slot=${slot} class="external">
-              ${message.user_defined?.text as string}
-              <div>
-                Latest response id:
-                ${this.activeResponseId ? this.activeResponseId : "none yet"}
-              </div>
-              <div>
-                Is this the most recent message? ${isLatest ? "Yes" : "Nope"}
-              </div>
-            </div>`;
-          },
-        )}
-      </cds-aichat-container>
+        .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+      ></cds-aichat-container>
     `;
   }
 }

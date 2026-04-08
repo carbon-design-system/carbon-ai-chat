@@ -13,11 +13,11 @@ import {
   BusEventType,
   CarbonTheme,
   type ChatInstance,
-  type MessageResponse,
   type PublicConfig,
+  type RenderUserDefinedState,
   type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { html, LitElement, css } from "lit";
+import { html, LitElement, css, PropertyValues } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { customSendMessage } from "./customSendMessage";
@@ -42,6 +42,11 @@ const config: PublicConfig = {
   },
 };
 
+interface TrackedElementData {
+  text: string;
+  fullMessageId?: string;
+}
+
 @customElement("my-app")
 export class Demo extends LitElement {
   static styles = css`
@@ -61,10 +66,7 @@ export class Demo extends LitElement {
   @state()
   accessor activeResponseId: string | null = null;
 
-  @state()
-  accessor userDefinedSlotsMap: {
-    [key: string]: { message: UserDefinedItem; fullMessage: MessageResponse };
-  } = {};
+  private _userDefinedElements = new Map<HTMLElement, TrackedElementData>();
 
   onBeforeRender = (instance: ChatInstance) => {
     // Set the instance in state.
@@ -76,63 +78,74 @@ export class Demo extends LitElement {
     this.activeResponseId = initialState.activeResponseId ?? null;
 
     // Listen for STATE_CHANGE events
-    instance.on([
-      {
-        type: BusEventType.STATE_CHANGE,
-        handler: (event: any) => {
-          const isHomescreen = event.newState.homeScreenState.isHomeScreenOpen;
-          if (
-            event.previousState?.homeScreenState.isHomeScreenOpen !==
-            isHomescreen
-          ) {
-            this.isHomescreenVisible = isHomescreen;
-          }
+    instance.on({
+      type: BusEventType.STATE_CHANGE,
+      handler: (event: any) => {
+        const isHomescreen = event.newState.homeScreenState.isHomeScreenOpen;
+        if (
+          event.previousState?.homeScreenState.isHomeScreenOpen !== isHomescreen
+        ) {
+          this.isHomescreenVisible = isHomescreen;
+        }
 
-          if (
-            event.previousState?.activeResponseId !==
-            event.newState?.activeResponseId
-          ) {
-            this.activeResponseId = event.newState.activeResponseId ?? null;
-          }
-        },
+        if (
+          event.previousState?.activeResponseId !==
+          event.newState?.activeResponseId
+        ) {
+          this.activeResponseId = event.newState.activeResponseId ?? null;
+        }
       },
-      {
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: (event: any) => {
-          const { slot, message, fullMessage } = event.data;
-          if (!slot) {
-            return;
-          }
-          this.userDefinedSlotsMap = {
-            ...this.userDefinedSlotsMap,
-            [slot]: { message, fullMessage },
-          };
-        },
-      },
-    ]);
+    });
   };
 
-  renderUserDefinedSlots() {
-    return Object.entries(this.userDefinedSlotsMap).map(
-      ([slot, { message, fullMessage }]) => {
-        const isLatest =
-          Boolean(this.activeResponseId) &&
-          fullMessage?.id === this.activeResponseId;
-        return html`<div slot=${slot}>
-          <div class="external">
-            ${message.user_defined?.text as string}
-            <div>
-              Latest response id:
-              ${this.activeResponseId ? this.activeResponseId : "none yet"}
-            </div>
-            <div>
-              Is this the most recent message? ${isLatest ? "Yes" : "Nope"}
-            </div>
-          </div>
-        </div>`;
-      },
-    );
+  protected updated(changedProperties: PropertyValues): void {
+    if (changedProperties.has("activeResponseId")) {
+      for (const [el, data] of this._userDefinedElements) {
+        if (!el.isConnected) {
+          this._userDefinedElements.delete(el);
+          continue;
+        }
+        this.updateElementContent(el, data);
+      }
+    }
   }
+
+  private updateElementContent(el: HTMLElement, data: TrackedElementData) {
+    const isLatest =
+      Boolean(this.activeResponseId) &&
+      data.fullMessageId === this.activeResponseId;
+    el.innerHTML = `
+      ${data.text}
+      <div>Latest response id: ${this.activeResponseId ?? "none yet"}</div>
+      <div>Is this the most recent message? ${isLatest ? "Yes" : "Nope"}</div>
+    `;
+  }
+
+  /**
+   * Callback to render user_defined responses. The library manages event listening, slot tracking,
+   * streaming state, and element lifecycle.
+   */
+  renderUserDefinedCallback = (
+    state: RenderUserDefinedState,
+  ): HTMLElement | null => {
+    const messageItem = state.messageItem as UserDefinedItem | undefined;
+
+    if (
+      messageItem?.user_defined?.user_defined_type === "my_unique_identifier"
+    ) {
+      const el = document.createElement("div");
+      el.className = "external";
+      const data: TrackedElementData = {
+        text: messageItem.user_defined.text as string,
+        fullMessageId: state.fullMessage?.id,
+      };
+      this._userDefinedElements.set(el, data);
+      this.updateElementContent(el, data);
+      return el;
+    }
+
+    return null;
+  };
 
   render() {
     return html`
@@ -150,9 +163,8 @@ export class Demo extends LitElement {
         .messaging=${config.messaging}
         .homescreen=${config.homescreen}
         .injectCarbonTheme=${config.injectCarbonTheme}
-      >
-        ${this.renderUserDefinedSlots()}
-      </cds-aichat-container>
+        .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+      ></cds-aichat-container>
     `;
   }
 }

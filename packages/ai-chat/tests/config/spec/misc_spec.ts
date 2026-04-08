@@ -163,6 +163,34 @@ describe("Config Miscellaneous", () => {
     });
   });
 
+  describe("string", () => {
+    it("should store assistantAvatarUrl in Redux state", async () => {
+      const assistantAvatarUrl = "my-avatar-url";
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        assistantAvatarUrl,
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      render(React.createElement(ChatContainer, { ...props, onBeforeRender }));
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+      const state: AppState = store.getState();
+      expect(state.config.public.assistantAvatarUrl).toBe(assistantAvatarUrl);
+    });
+  });
+
   describe("disclaimer", () => {
     it("should store disclaimer config in Redux state", async () => {
       const disclaimer = {

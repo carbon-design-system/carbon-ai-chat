@@ -76,6 +76,25 @@ type RenderUserDefinedResponse = (
 ) => ReactNode;
 
 /**
+ * The type of the render function used to render user defined responses in web components.
+ * This function should return an HTMLElement to display for the given user defined state,
+ * or null to render nothing.
+ *
+ * The callback is invoked on every state update (new chunk, complete item, full message).
+ * If you return the same element reference, the DOM is not disturbed. If you return a
+ * new element, the previous content is replaced.
+ *
+ * @param state The accumulated state for this user defined response slot.
+ * @param instance The current instance of Carbon AI Chat.
+ *
+ * @category Web component
+ */
+type WCRenderUserDefinedResponse = (
+  state: RenderUserDefinedState,
+  instance: ChatInstance,
+) => HTMLElement | null;
+
+/**
  * A map of writeable element keys to a ReactNode to render to them.
  *
  * @category React
@@ -132,4 +151,5 @@ export {
   RenderUserDefinedResponse,
   RenderWriteableElementResponse,
   RenderUserDefinedState,
+  WCRenderUserDefinedResponse,
 };
