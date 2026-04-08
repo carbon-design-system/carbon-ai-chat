@@ -47,6 +47,7 @@ import {
   BusEventViewChange,
   BusEventViewPreChange,
 } from "../../types/events/eventBusTypes";
+import type { WCRenderUserDefinedResponse } from "../../types/component/ChatContainer";
 
 /**
  * cds-aichat-custom-element will is a pass through to cds-aichat-container. It takes any user_defined and writeable element
@@ -258,6 +259,13 @@ class ChatCustomElement extends LitElement {
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
+  /**
+   * Optional callback to render user defined responses. When provided, the inner cds-aichat-container
+   * manages all event listening, slot tracking, and element lifecycle.
+   */
+  @property({ attribute: false })
+  renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
   @state()
   private _userDefinedSlotNames: string[] = [];
 
@@ -392,14 +400,20 @@ class ChatCustomElement extends LitElement {
       type: BusEventType.VIEW_CHANGE,
       handler: this.onViewChange || this.defaultViewChangeHandler,
     });
-    this._instance.on({
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
-    this._instance.on({
-      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
+
+    if (!this.renderUserDefinedResponse) {
+      // Legacy path: custom-element tracks slot names for manual slotting.
+      // When renderUserDefinedResponse is set, the inner cds-aichat-container handles everything.
+      this._instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: this.userDefinedHandler,
+      });
+      this._instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: this.userDefinedHandler,
+      });
+    }
+
     this._instance.on({
       type: BusEventType.CUSTOM_FOOTER_SLOT,
       handler: this.customFooterHandler,
@@ -419,13 +433,16 @@ class ChatCustomElement extends LitElement {
         .onAfterRender=${this.onAfterRender}
         .onBeforeRender=${this.onBeforeRenderOverride}
         .element=${this}
+        .renderUserDefinedResponse=${this.renderUserDefinedResponse}
       >
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
         )}
-        ${this._userDefinedSlotNames.map(
-          (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
-        )}
+        ${this.renderUserDefinedResponse
+          ? null
+          : this._userDefinedSlotNames.map(
+              (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
+            )}
         ${this._customFooterSlotNames.map(
           (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
         )}
@@ -466,6 +483,12 @@ interface CdsAiChatCustomElementAttributes extends PublicConfig {
    * handler will not be updated.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
+
+  /**
+   * Optional callback to render user defined responses. When provided, the inner cds-aichat-container
+   * manages all event listening, slot tracking, streaming state, and element lifecycle.
+   */
+  renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 }
 
 export { CdsAiChatCustomElementAttributes };

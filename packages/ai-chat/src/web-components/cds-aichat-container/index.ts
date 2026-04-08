@@ -44,6 +44,10 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
 } from "../../types/events/eventBusTypes";
+import type {
+  RenderUserDefinedState,
+  WCRenderUserDefinedResponse,
+} from "../../types/component/ChatContainer";
 
 /**
  * The cds-aichat-container managing creating slotted elements for user_defined responses, custom message footers, and writable elements.
@@ -187,6 +191,16 @@ class ChatContainer extends LitElement {
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
 
   /**
+   * Optional callback to render user defined responses. When provided, the library manages all event listening,
+   * slot tracking, streaming state, and element lifecycle. The callback receives the accumulated state and should
+   * return an HTMLElement or null.
+   *
+   * When this property is not set, the existing event + manual slot approach continues to work.
+   */
+  @property({ attribute: false })
+  renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
    * The existing array of slot names for all user_defined components.
    */
   @state()
@@ -209,6 +223,17 @@ class ChatContainer extends LitElement {
    */
   @state()
   _instance: ChatInstance;
+
+  /**
+   * Accumulated state per slot for user_defined responses when renderUserDefinedResponse is provided.
+   */
+  @state()
+  _userDefinedStateBySlot: Record<string, RenderUserDefinedState> = {};
+
+  /**
+   * Tracks the wrapper elements created by the callback rendering path.
+   */
+  private _callbackElements = new Map<string, HTMLElement>();
 
   /**
    * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
@@ -235,6 +260,106 @@ class ChatContainer extends LitElement {
       this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
     }
   };
+
+  /**
+   * Enhanced handler for USER_DEFINED_RESPONSE when renderUserDefinedResponse callback is provided.
+   * Tracks both slot names and full message state per slot.
+   */
+  private enhancedUserDefinedHandler = (event: BusEventUserDefinedResponse) => {
+    const { slot } = event.data;
+    if (!this._userDefinedSlotNames.includes(slot)) {
+      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+    this._userDefinedStateBySlot = {
+      ...this._userDefinedStateBySlot,
+      [slot]: {
+        fullMessage: event.data.fullMessage,
+        messageItem: event.data.message,
+      },
+    };
+  };
+
+  /**
+   * Enhanced handler for CHUNK_USER_DEFINED_RESPONSE when renderUserDefinedResponse callback is provided.
+   * Handles both complete_item and partial_item chunks, accumulating state per slot.
+   */
+  private enhancedUserDefinedChunkHandler = (
+    event: BusEventChunkUserDefinedResponse,
+  ) => {
+    const { slot, chunk } = event.data;
+    if (!this._userDefinedSlotNames.includes(slot)) {
+      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+
+    if ("complete_item" in chunk) {
+      this._userDefinedStateBySlot = {
+        ...this._userDefinedStateBySlot,
+        [slot]: { messageItem: chunk.complete_item },
+      };
+    } else if ("partial_item" in chunk) {
+      const existing = this._userDefinedStateBySlot[slot];
+      this._userDefinedStateBySlot = {
+        ...this._userDefinedStateBySlot,
+        [slot]: {
+          ...existing,
+          partialItems: [...(existing?.partialItems ?? []), chunk.partial_item],
+        },
+      };
+    }
+  };
+
+  /**
+   * Handles RESTART_CONVERSATION when renderUserDefinedResponse callback is provided.
+   * Clears all accumulated state and removes callback-rendered elements from the DOM.
+   */
+  private restartHandler = () => {
+    this._userDefinedStateBySlot = {};
+    this._userDefinedSlotNames = [];
+    for (const el of this._callbackElements.values()) {
+      el.remove();
+    }
+    this._callbackElements.clear();
+  };
+
+  /**
+   * Synchronizes callback-rendered elements in the light DOM based on current state.
+   * Called from render() when renderUserDefinedResponse is provided.
+   */
+  private syncCallbackRenderedElements() {
+    for (const [slot, slotState] of Object.entries(
+      this._userDefinedStateBySlot,
+    )) {
+      const newContent =
+        this.renderUserDefinedResponse?.(slotState, this._instance) ?? null;
+
+      if (!newContent) {
+        const existing = this._callbackElements.get(slot);
+        if (existing) {
+          existing.remove();
+          this._callbackElements.delete(slot);
+        }
+        continue;
+      }
+
+      let wrapper = this._callbackElements.get(slot);
+      if (!wrapper) {
+        wrapper = document.createElement("div");
+        wrapper.setAttribute("slot", slot);
+        this._callbackElements.set(slot, wrapper);
+        this.appendChild(wrapper);
+      }
+
+      wrapper.replaceChildren(newContent);
+    }
+
+    // Clean up wrappers for slots that no longer exist in state
+    for (const [slot, el] of this._callbackElements.entries()) {
+      if (!(slot in this._userDefinedStateBySlot)) {
+        el.remove();
+        this._callbackElements.delete(slot);
+      }
+    }
+  }
 
   private get resolvedConfig(): PublicConfig {
     const baseConfig = this.config ?? {};
@@ -324,14 +449,33 @@ class ChatContainer extends LitElement {
 
   onBeforeRenderOverride = async (instance: ChatInstance) => {
     this._instance = instance;
-    this._instance.on({
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
-    this._instance.on({
-      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
+
+    if (this.renderUserDefinedResponse) {
+      // Enhanced path: library manages full state for callback rendering
+      this._instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: this.enhancedUserDefinedHandler,
+      });
+      this._instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: this.enhancedUserDefinedChunkHandler,
+      });
+      this._instance.on({
+        type: BusEventType.RESTART_CONVERSATION,
+        handler: this.restartHandler,
+      });
+    } else {
+      // Legacy path: container only tracks slot names
+      this._instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: this.userDefinedHandler,
+      });
+      this._instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: this.userDefinedHandler,
+      });
+    }
+
     this._instance.on({
       type: BusEventType.CUSTOM_FOOTER_SLOT,
       handler: this.customFooterHandler,
@@ -374,6 +518,10 @@ class ChatContainer extends LitElement {
    * Renders the template while passing in class functionality
    */
   render() {
+    if (this.renderUserDefinedResponse) {
+      this.syncCallbackRenderedElements();
+    }
+
     return html`<cds-aichat-internal
       .config=${this.resolvedConfig}
       .onAfterRender=${this.onAfterRender}
@@ -417,6 +565,12 @@ interface CdsAiChatContainerAttributes extends PublicConfig {
    * This function is called after the render function of Carbon AI Chat is called.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * Optional callback to render user defined responses. When provided, the library manages all event listening,
+   * slot tracking, streaming state, and element lifecycle.
+   */
+  renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 }
 
 export { CdsAiChatContainerAttributes };
