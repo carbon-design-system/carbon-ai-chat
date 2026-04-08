@@ -173,6 +173,11 @@ export interface PublicConfig {
   assistantName?: string;
 
   /**
+   * Sets the URL pointing to a custom avatar for the response author. This image should be a square. If not provided, the default Watsonx icon will be used.
+   */
+  assistantAvatarUrl?: string;
+
+  /**
    * The locale to use for the widget. This controls the language pack and regional formatting.
    * Example values include: 'en', 'en-us', 'fr', 'es'.
    */

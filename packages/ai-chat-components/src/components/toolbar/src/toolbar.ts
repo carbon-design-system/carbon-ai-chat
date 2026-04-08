@@ -99,6 +99,7 @@ class CDSAIChatToolbar extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.addEventListener("keydown", this._handleToolbarKeydown);
     this.style.visibility = this.overflow ? "hidden" : "visible";
   }
 
@@ -178,8 +179,63 @@ class CDSAIChatToolbar extends LitElement {
     this.overflowHandler?.disconnect();
     this.visibilityObserver?.disconnect();
     this.visibilityObserver = undefined;
+    this.removeEventListener("keydown", this._handleToolbarKeydown);
     super.disconnectedCallback();
   }
+
+  /**
+   * Returns the focused overflow menu item (if exists) by traversing shadow DOM
+   */
+  private findFocusedOverflowMenuItem(activeElem: Element): Element | null {
+    if (activeElem.tagName.toLowerCase() === "cds-overflow-menu-item") {
+      return activeElem;
+    }
+
+    if (activeElem?.shadowRoot?.activeElement) {
+      return this.findFocusedOverflowMenuItem(
+        activeElem.shadowRoot.activeElement,
+      );
+    }
+
+    return null;
+  }
+
+  private _handleToolbarKeydown = (event: KeyboardEvent) => {
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
+      return;
+    }
+
+    let focusedMenuItem: Element | null = null;
+
+    if (document.activeElement) {
+      focusedMenuItem = this.findFocusedOverflowMenuItem(
+        document.activeElement,
+      );
+    }
+
+    if (focusedMenuItem) {
+      event.preventDefault();
+      const menuBody = focusedMenuItem.closest("cds-overflow-menu-body");
+
+      if (!menuBody) {
+        return;
+      }
+
+      const items = Array.from(
+        menuBody.querySelectorAll("cds-overflow-menu-item:not([disabled])"),
+      ) as HTMLElement[];
+
+      const currentIndex = items.indexOf(focusedMenuItem as HTMLElement);
+      if (currentIndex === -1) {
+        return;
+      }
+
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      const nextIndex =
+        (currentIndex + direction + items.length) % items.length;
+      items[nextIndex]?.focus();
+    }
+  };
 
   /**
    * Renders an action as an icon button.

@@ -10,23 +10,41 @@ collect:
         # General
         - actions
         - align
+        - aria-label
         - autoalign
         - closed-label-text
         - collapse-label
         - controlled
         - disabled
+        - error-label
+        - error-message
         - expand-label
+        - expanded
+        - header-title
         - id
+        - language
         - lines
+        - loading-label
+        - loading-status-message
+        - name
         - open
         - open-label-text
         - overflow
         - panel-id
+        - playing
+        - ready-label
+        - ready-status-message
         - size
         - slot
+        - source
         - title
         - type
         - value
+        # cds-aichat-audio-player
+        - oncds-aichat-audio-player-error
+        - oncds-aichat-audio-player-pause
+        - oncds-aichat-audio-player-play
+        - oncds-aichat-audio-player-ready
         # cds-aichat-button
         - is-quick-action
         # cds-aichat-card
@@ -52,7 +70,6 @@ collect:
         - onchain-of-thought-toggle
         # cds-aichat-chat-header
         - header-name
-        - header-title
         - navigation-back-label
         - navigation-overflow-label
         - navigation-type
@@ -69,7 +86,6 @@ collect:
         - hide-copy-button
         - hide-header
         - highlight
-        - language
         - max-collapsed-number-of-rows
         - max-expanded-number-of-rows
         - min-collapsed-number-of-rows
@@ -103,6 +119,43 @@ collect:
         - negative-label
         - onfeedback-buttons-click
         - positive-label
+        # cds-aichat-history-delete-panel
+        - cancel-text
+        - delete-text
+        - onhistory-delete-cancel
+        - onhistory-delete-confirm
+        # cds-aichat-history-header
+        - close-button-label
+        - onhistory-header-close-click
+        - show-close-action
+        # cds-aichat-history-panel
+        - is-not-child-of-header
+        - oncds-header-menu-button-toggled
+        # cds-aichat-history-panel-item
+        - onhistory-item-menu-action
+        - onhistory-item-selected
+        - overflow-menu-label
+        - rename
+        - selected
+        # cds-aichat-history-panel-item-input
+        - cancelLabel
+        - item-id
+        - labelText
+        - onhistory-panel-item-input-cancel
+        - onhistory-panel-item-input-save
+        - placeholder
+        - saveLabel
+        - tooltipAlignment
+        # cds-aichat-history-panel-menu
+        - oncds-side-nav-menu-beingtoggled
+        - oncds-side-nav-menu-toggled
+        # cds-aichat-history-search-item
+        - date
+        - onhistory-search-item-selected
+        # cds-aichat-history-toolbar
+        - new-chat-label
+        - onchat-history-new-chat-click
+        - search-off
         # cds-aichat-markdown
         - code-snippet-aria-label-editable
         - code-snippet-aria-label-readonly
@@ -147,6 +200,19 @@ collect:
         # cds-aichat-toolbar
         - nameText
         - titleText
+        # cds-aichat-transcript
+        - hide-label
+        - label
+        - oncds-aichat-transcript-toggle
+        - show-label
+        - text
+        # cds-aichat-video-player
+        - aspect-ratio-percentage
+        - oncds-aichat-video-player-error
+        - oncds-aichat-video-player-pause
+        - oncds-aichat-video-player-play
+        - oncds-aichat-video-player-ready
+        - subtitle-tracks
         # cds-aichat-workspace-shell
         - auto-collapsible-header
         # cds-aichat-workspace-shell-footer
@@ -171,6 +237,15 @@ collect:
         - back
         - none
         - overflow
+        # cds-aichat-history-panel-item-input - tooltipAlignment
+        - bottom
+        - bottom-left
+        - bottom-right
+        - left
+        - right
+        - top
+        - top-left
+        - top-right
   npm:
     dependencies: null
   js:
