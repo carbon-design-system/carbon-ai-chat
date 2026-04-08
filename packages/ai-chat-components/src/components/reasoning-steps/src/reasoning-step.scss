@@ -81,7 +81,7 @@
 
 .#{$prefix}--reasoning-step__static {
   display: flex;
-  align-items: center;
+  align-items: start;
   gap: layout.$spacing-02;
 }
 
@@ -89,7 +89,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  block-size: layout.$spacing-05;
+  block-size: 1lh;
   inline-size: layout.$spacing-05;
 
   svg {
