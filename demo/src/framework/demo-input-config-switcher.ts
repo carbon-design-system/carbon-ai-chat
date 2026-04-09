@@ -12,6 +12,7 @@ import "@carbon/web-components/es/components/dropdown/index.js";
 import { InputConfig, PublicConfig } from "@carbon/ai-chat";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
 
 const DROPDOWN_DEFAULT = "default";
 const DROPDOWN_TRUE = "true";
@@ -82,6 +83,38 @@ export class DemoInputConfigSwitcher extends LitElement {
     return value ? DROPDOWN_TRUE : DROPDOWN_FALSE;
   }
 
+  private _handleUploadDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    if (value === DROPDOWN_TRUE) {
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: {
+            ...this.config,
+            upload: {
+              is_on: true,
+              onFileUpload: mockOnFileUpload,
+            },
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    } else {
+      // Default or false — remove the upload config entirely.
+      const next = { ...this.config };
+      delete next.upload;
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: next,
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
+  }
+
   private _handleBooleanDropdown(
     event: Event,
     key: "isVisible" | "isDisabled",
@@ -130,10 +163,32 @@ export class DemoInputConfigSwitcher extends LitElement {
     );
   }
 
+  private _uploadDropdownValue(): string {
+    const upload = this.config?.upload;
+    if (!upload) {
+      return DROPDOWN_DEFAULT;
+    }
+    return upload.is_on ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
   render() {
     const input = this.config?.input;
 
     return html`
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._uploadDropdownValue()}"
+          title-text="Enable file uploads"
+          @cds-dropdown-selected=${this._handleUploadDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
+            Default
+          </cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+        </cds-dropdown>
+      </div>
+
       <div class="input-section">
         <cds-dropdown
           value="${this._booleanDropdownValue(input?.isVisible)}"

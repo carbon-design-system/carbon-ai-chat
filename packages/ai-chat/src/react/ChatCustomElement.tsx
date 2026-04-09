@@ -173,6 +173,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
     launcher,
     input,
     keyboardShortcuts,
+    upload,
   } = props;
 
   const [customElement, setCustomElement] = useState<HTMLDivElement>();
@@ -245,6 +246,7 @@ function ChatCustomElement(props: ChatCustomElementProps) {
           launcher={launcher}
           input={input}
           keyboardShortcuts={keyboardShortcuts}
+          upload={upload}
           // Other ChatContainer props
           strings={strings}
           serviceDeskFactory={serviceDeskFactory}

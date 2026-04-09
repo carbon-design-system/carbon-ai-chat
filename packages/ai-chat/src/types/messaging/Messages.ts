@@ -163,6 +163,176 @@ interface EventInputData<TNameType extends string = string> {
 }
 
 /**
+ * The type of a structured field.
+ *
+ * @experimental
+ * @category Messaging
+ */
+type StructuredFieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "boolean"
+  | "select"
+  | "multi_select"
+  | "date"
+  | "datetime"
+  | "file"
+  | "unknown";
+
+/**
+ * Represents an inline file — the actual File object to be uploaded.
+ * Use this when the file needs to be uploaded as part of the message send.
+ * The widget passes this through to customSendMessage unchanged; actual upload
+ * handling is the responsibility of the customSendMessage implementation.
+ *
+ * @experimental
+ * @category Messaging
+ */
+interface InlineFile {
+  /**
+   * Type discriminator.
+   */
+  type: "inline";
+
+  /**
+   * The actual File object.
+   */
+  file: File;
+
+  /**
+   * Optional unique ID for tracking.
+   */
+  id?: string;
+
+  /**
+   * Optional upload status (for UI feedback).
+   */
+  status?: FileStatusValue;
+
+  /**
+   * Optional error information.
+   */
+  error?: {
+    message: string;
+  };
+}
+
+/**
+ * Represents an external file reference — a file already uploaded elsewhere.
+ * Use this when files are uploaded separately and you just need to reference them.
+ *
+ * @experimental
+ * @category Messaging
+ */
+interface ExternalFileReference {
+  /**
+   * Type discriminator.
+   */
+  type: "reference";
+
+  /**
+   * File identifier (could be a database ID, UUID, etc.).
+   */
+  id: string;
+
+  /**
+   * Optional URL to the file.
+   */
+  url?: string;
+
+  /**
+   * Optional filename for display.
+   */
+  name?: string;
+
+  /**
+   * Optional MIME type.
+   */
+  mime_type?: string;
+
+  /**
+   * Optional file size in bytes.
+   */
+  size?: number;
+}
+
+/**
+ * Represents a file value in a structured field. Can be either an inline File
+ * object or a reference to an already-uploaded file.
+ *
+ * @experimental
+ * @category Messaging
+ */
+type FileFieldValue = InlineFile | ExternalFileReference;
+
+/**
+ * The value of a structured field. The actual type depends on the field's
+ * {@link StructuredFieldType}.
+ *
+ * @experimental
+ * @category Messaging
+ */
+type StructuredFieldValue =
+  | string // text, textarea, select, date, datetime
+  | number // number
+  | boolean // boolean
+  | string[] // multi_select
+  | FileFieldValue // file (single)
+  | FileFieldValue[] // file (multiple)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | any; // unknown / user_defined escape hatch
+
+/**
+ * A single typed field within a {@link StructuredData} payload.
+ *
+ * @experimental
+ * @category Messaging
+ */
+interface StructuredField {
+  /**
+   * Unique identifier for this field.
+   */
+  id: string;
+
+  /**
+   * Human-readable label (optional).
+   */
+  label?: string;
+
+  /**
+   * The type of field.
+   */
+  type?: StructuredFieldType;
+
+  /**
+   * The value of the field.
+   */
+  value: StructuredFieldValue;
+}
+
+/**
+ * Structured data that can be sent alongside or instead of plain text input.
+ * Supports typed fields for common input patterns (text, select, multi-select,
+ * file, etc.) as well as an escape hatch for arbitrary user-defined data.
+ *
+ * @experimental
+ * @category Messaging
+ */
+interface StructuredData {
+  /**
+   * Typed fields with known structures (recommended for most use cases).
+   */
+  fields?: StructuredField[];
+
+  /**
+   * Escape hatch: arbitrary key-value data for user-defined implementations.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  user_defined?: Record<string, any>;
+}
+
+/**
  * The default interface for message input that is sent to an assistant in a message request. This represents basic text
  * input.
  *
@@ -178,6 +348,15 @@ interface MessageInput extends BaseMessageInput {
    * For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
    */
   agent_message_type?: HumanAgentMessageType;
+
+  /**
+   * Structured data that can be sent alongside or instead of plain text input.
+   * Supports typed fields (text, select, multi-select, file, etc.) and an
+   * escape hatch for arbitrary user-defined data.
+   *
+   * @experimental
+   */
+  structured_data?: StructuredData;
 }
 
 /**
@@ -2168,4 +2347,11 @@ export {
   ReasoningStep,
   ReasoningStepOpenState,
   PreviewCardItem,
+  StructuredData,
+  StructuredField,
+  StructuredFieldType,
+  StructuredFieldValue,
+  InlineFile,
+  ExternalFileReference,
+  FileFieldValue,
 };
