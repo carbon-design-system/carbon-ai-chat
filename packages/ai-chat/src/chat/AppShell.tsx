@@ -344,7 +344,13 @@ export default function AppShell({
 
   // Header config override for mobile history
   const headerConfigOverride = useMemo(() => {
-    if (!publicConfig.history?.isOn || !historyPanelState.isMobile) {
+    const showMobileMenu = publicConfig.history?.showMobileMenu ?? true;
+
+    if (
+      !publicConfig.history?.isOn ||
+      !historyPanelState.isMobile ||
+      !showMobileMenu
+    ) {
       return undefined;
     }
 
@@ -379,6 +385,7 @@ export default function AppShell({
     languagePack.history_new_chat,
     languagePack.history_view_chats,
     publicConfig.history?.isOn,
+    publicConfig.history?.showMobileMenu,
   ]);
 
   // Resize observer

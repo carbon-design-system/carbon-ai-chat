@@ -397,6 +397,19 @@ export interface HistoryConfig {
    * Indicates if the history panel should be shown.
    */
   isOn?: boolean;
+
+  /**
+   * Controls whether the mobile menu options (New chat, View chats) should be shown
+   * in the header when the history panel is in mobile mode.
+   *
+   * When true (default), the mobile menu will appear in the header on small screens,
+   * providing quick access to start a new chat or view chat history.
+   *
+   * When false, the mobile menu will be hidden even when in mobile mode.
+   *
+   * @default true
+   */
+  showMobileMenu?: boolean;
 }
 
 /**

@@ -48,22 +48,47 @@ export class DemoChatHistorySwitcher extends LitElement {
     );
   }
 
-  private _onChanged = (event: Event) => {
+  private _onHistoryChanged = (event: Event) => {
     const customEvent = event as CustomEvent;
     const checked = customEvent.detail.checked;
 
-    this._updateConfig({ history: { isOn: checked } });
+    this._updateConfig({
+      history: {
+        ...this.config.history,
+        isOn: checked,
+      },
+    });
+  };
+
+  private _onMobileMenuChanged = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const checked = customEvent.detail.checked;
+
+    this._updateConfig({
+      history: {
+        ...this.config.history,
+        showMobileMenu: checked,
+      },
+    });
   };
 
   render() {
     const showHistory = this.config.history?.isOn ?? false;
+    const showMobileMenu = this.config.history?.showMobileMenu ?? true;
 
     return html` <div class="section">
       <cds-checkbox
         ?checked=${showHistory}
-        @cds-checkbox-changed=${this._onChanged}
+        @cds-checkbox-changed=${this._onHistoryChanged}
       >
         Show chat history
+      </cds-checkbox>
+      <cds-checkbox
+        ?checked=${showMobileMenu}
+        ?disabled=${!showHistory}
+        @cds-checkbox-changed=${this._onMobileMenuChanged}
+      >
+        Show mobile menu
       </cds-checkbox>
     </div>`;
   }
