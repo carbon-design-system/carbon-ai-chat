@@ -10,6 +10,7 @@
 import { createComponent } from "@lit/react";
 import { css, LitElement, PropertyValues } from "lit";
 import React, {
+  type HTMLAttributes,
   useCallback,
   useEffect,
   useMemo,
@@ -70,7 +71,10 @@ const ReactChatContainer = React.memo(
  *
  * @category React
  */
-function ChatContainer(props: ChatContainerProps) {
+function ChatContainer(
+  props: ChatContainerProps &
+    Omit<HTMLAttributes<HTMLElement>, keyof ChatContainerProps>,
+) {
   const {
     onBeforeRender,
     onAfterRender,

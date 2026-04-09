@@ -18,6 +18,7 @@ import throttle from "lodash-es/throttle.js";
 import { markdownToTokenTree, TokenTree } from "./markdown-token-tree.js";
 import { renderTokenTree } from "./markdown-renderer.js";
 import { consoleError } from "./utils.js";
+import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
 
 function hasTrailingTableToken(node: TokenTree): boolean {
   if (node.token.tag === "table") {
@@ -245,6 +246,11 @@ class CDSAIChatMarkdown extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.hasConnected = true;
+
+    if (IS_PHONE) {
+      this.setAttribute("phone", "");
+    }
+
     this.adoptLightDomMarkdown();
 
     // Ensure we parse and render on initial mount, even if markdown was set before connection

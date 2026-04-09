@@ -17,9 +17,10 @@ import {
 } from "@carbon/ai-chat";
 
 import { pinnedHistoryItems } from "./chat-history-data";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
-  const randomId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  const randomId = uuid();
   if (isResponse) {
     const messageResponse: MessageResponse = {
       id: randomId,

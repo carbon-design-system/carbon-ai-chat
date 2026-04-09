@@ -135,8 +135,13 @@ export {
   MinimizeButtonIconType,
   OnErrorData,
   OnErrorType,
+  CustomListProps,
   PublicConfig,
   PublicConfigMessaging,
+  SuggestionConfig,
+  SuggestionItem,
+  SuggestionType,
+  ToolbarAction,
   UploadConfig,
 } from "./types/config/PublicConfig";
 

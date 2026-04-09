@@ -17,7 +17,7 @@ import {
   TextItem,
   WithBodyAndFooter,
 } from "../../types/messaging/Messages";
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import {
   createMessageResponseForItem,
   isButtonResponseType,
@@ -48,8 +48,7 @@ function outputItemToLocalItem(
   isLatestWelcomeNode = false,
 ): LocalMessageItem {
   // If the item comes with a streaming id, use that. Otherwise assign a new id.
-  const id =
-    streamItemID(fullMessage.id, messageItem) || uuid(UUIDType.LOCAL_MESSAGE);
+  const id = streamItemID(fullMessage.id, messageItem) || uuid();
 
   // Create the LocalMessage. It will temporarily have the extra "output" property it gets from the original
   // MessageResponse object.

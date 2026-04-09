@@ -27,6 +27,7 @@ import {
   UserDefinedItem,
   UserType,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 interface UserData {
   name: string;
@@ -65,7 +66,7 @@ function createMessageResponseForText(
     text,
   };
   const messageResponse: MessageResponse = {
-    id: crypto.randomUUID(),
+    id: uuid(),
     output: {
       generic: [textItem],
     },

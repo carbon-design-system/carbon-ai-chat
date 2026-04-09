@@ -13,6 +13,7 @@ import {
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -52,7 +53,7 @@ async function doUserDefinedStreaming(
 ) {
   const signal = requestOptions?.signal;
   const WORD_DELAY = 50;
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = FAKE_DATA.split(" ");
   let isCanceled = false;
 

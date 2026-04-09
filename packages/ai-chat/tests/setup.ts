@@ -49,6 +49,12 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// Mock document.execCommand since it's not available in jsdom but is used
+// internally by ProseMirror (e.g. safariShadowSelectionRange)
+if (!document.execCommand) {
+  document.execCommand = jest.fn().mockReturnValue(false);
+}
+
 // Mock ResizeObserver since it's not available in jsdom
 (global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

@@ -9,7 +9,7 @@
 
 import React from "react";
 
-import { uuid } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 interface ErrorMessageProps {
   /**
