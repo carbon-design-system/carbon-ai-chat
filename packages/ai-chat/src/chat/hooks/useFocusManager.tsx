@@ -12,7 +12,7 @@ import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { IS_MOBILE } from "../utils/browserUtils";
 import { doFocusRef } from "../utils/domUtils";
 import { consoleError } from "../utils/miscUtils";
-import type { InputFunctions } from "../components-legacy/input/Input";
+import type { InputFunctions } from "../components/input/Input";
 import type { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 
 interface UseFocusManagerProps {

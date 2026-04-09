@@ -11,10 +11,28 @@ import {
   CornersType,
   MinimizeButtonIconType,
   PublicConfig,
+  SuggestionConfig,
+  SuggestionItem,
+  SuggestionType,
 } from "@carbon/ai-chat";
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+import { RESPONSE_MAP } from "../customSendMessage/responseMap";
+
+const responseMapKeys = Object.keys(RESPONSE_MAP);
+
+const responseMapAutocomplete: SuggestionConfig = {
+  type: SuggestionType.AUTOCOMPLETE,
+  trigger: "",
+  triggerPosition: "start",
+  items: async (query: string): Promise<SuggestionItem[]> => {
+    const q = query.toLowerCase();
+    return responseMapKeys
+      .filter((key) => key.toLowerCase().includes(q))
+      .map((key) => ({ id: key, label: key, value: key }));
+  },
+};
 import { KeyPairs, Settings } from "./types";
 import { DemoHeaderSwitcher } from "./demo-header-switcher";
 
@@ -96,6 +114,10 @@ function getSettings() {
     messaging: {
       customSendMessage,
       ...config.messaging,
+    },
+    input: {
+      ...config.input,
+      suggestions: [responseMapAutocomplete],
     },
     // Expose service manager for testing/demo purposes
     exposeServiceManagerForTesting: true,

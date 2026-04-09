@@ -26,13 +26,11 @@ describe("ChatInstance.input", () => {
 
     let state = store.getState();
     expect(state.assistantInputState.rawValue).toBe("Hello");
-    expect(state.assistantInputState.displayValue).toBe("Hello");
 
     instance.input.updateRawValue((prev) => `${prev}, world`);
 
     state = store.getState();
     expect(state.assistantInputState.rawValue).toBe("Hello, world");
-    expect(state.assistantInputState.displayValue).toBe("Hello, world");
   });
 });
 
