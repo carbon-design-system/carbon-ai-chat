@@ -31,7 +31,7 @@ import Button, {
 } from "../../components/carbon/Button";
 import { doFocusRef } from "../../utils/domUtils";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { uuid } from "../../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 const AiLaunch = carbonIconToReact(AiLaunch24);
 const ChatLaunch = carbonIconToReact(ChatLaunch24);

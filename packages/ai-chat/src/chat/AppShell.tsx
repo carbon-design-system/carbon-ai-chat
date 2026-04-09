@@ -26,7 +26,7 @@ import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../types/config/ShortcutC
 import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
 import { LauncherContainer } from "./components-legacy/launcher/LauncherContainer";
-import { InputFunctions } from "./components-legacy/input/Input";
+import { InputFunctions } from "./components/input/Input";
 import Layer from "./components/carbon/Layer";
 import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
 import { Header } from "./components/header/Header";
@@ -34,7 +34,7 @@ import MessagesComponent, {
   MessagesComponentClass,
 } from "./components-legacy/MessagesComponent";
 import { HomeScreen } from "./components/homeScreen/HomeScreen";
-import { Input } from "./components-legacy/input/Input";
+import { Input } from "./components/input/Input";
 import { AppShellWriteableElements } from "./AppShellWriteableElements";
 import { EndHumanAgentChatModal } from "./components/modals/EndHumanAgentChatModal";
 import { RequestScreenShareModal } from "./components/modals/RequestScreenShareModal";
@@ -825,8 +825,6 @@ function AppShell({
               <div slot="input">
                 <Input
                   ref={inputRef}
-                  languagePack={languagePack}
-                  serviceManager={serviceManager}
                   disableInput={shouldDisableInput()}
                   disableSend={shouldDisableSend()}
                   isInputVisible={inputState.fieldVisible}
@@ -877,6 +875,12 @@ function AppShell({
                   }
                   maxInputChars={config.public.input?.maxInputCharacters}
                   trackInputState
+                  rounded={
+                    chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
+                    layout.hasContentMaxWidth &&
+                    (!IS_PHONE_IN_PORTRAIT_MODE ||
+                      !!publicConfig.disableCustomElementMobileEnhancements)
+                  }
                 />
               </div>
 

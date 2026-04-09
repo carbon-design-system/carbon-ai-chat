@@ -15,6 +15,7 @@ import {
   MessageResponse,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 function generateHistoryItem(
   isResponse: boolean,
@@ -48,7 +49,7 @@ function generateHistoryItem(
   const randomText = isResponse
     ? responseTexts[Math.floor(Math.random() * responseTexts.length)]
     : requestTexts[Math.floor(Math.random() * requestTexts.length)];
-  const randomId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  const randomId = uuid();
 
   if (isResponse) {
     const responseType = useUserDefined

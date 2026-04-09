@@ -15,6 +15,7 @@ import {
   StreamChunk,
 } from "@carbon/ai-chat";
 
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import { WORD_DELAY } from "./constants";
 
 async function sleep(milliseconds: number) {
@@ -82,7 +83,7 @@ async function doConversationalSearchStreaming(
   requestOptions?: CustomSendMessageOptions,
 ) {
   const signal = requestOptions?.signal;
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = text.split(" ");
   let isCanceled = false;
   let lastWordIndex = 0;

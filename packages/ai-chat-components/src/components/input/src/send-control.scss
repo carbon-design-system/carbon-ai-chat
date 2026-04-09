@@ -1,0 +1,37 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+:host {
+  display: flex;
+  flex: 0 1;
+  align-self: flex-start;
+}
+
+cds-button.cds-aichat--input-send-button svg {
+  block-size: layout.$spacing-05;
+  cursor: inherit;
+  fill: theme.$interactive;
+  inline-size: layout.$spacing-05;
+}
+
+cds-button.cds-aichat--input-send-button[disabled] svg {
+  fill: theme.$icon-disabled;
+}
+
+cds-button.cds-aichat--input-send-button:active svg,
+cds-button.cds-aichat--input-send-button:focus svg {
+  fill: theme.$interactive;
+}
+
+// RTL send icon flip — detected via document direction, applied via CSS logical properties
+// where possible. For the icon flip, use :dir() pseudo-class.
+:host(:dir(rtl)) cds-button.cds-aichat--input-send-button svg {
+  transform: scale(-1, 1);
+}

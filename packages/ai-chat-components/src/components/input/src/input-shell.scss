@@ -1,0 +1,200 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button" as button;
+@use "../../../globals/scss/vars" as *;
+
+// -----------------------------------------------------------
+// Host
+// -----------------------------------------------------------
+:host {
+  position: relative;
+  display: block;
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  inline-size: 100%;
+}
+
+// -----------------------------------------------------------
+// Shell (outermost wrapper inside shadow DOM)
+// -----------------------------------------------------------
+.#{$prefix}--input-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+}
+
+// -----------------------------------------------------------
+// Input container (border, background, padding)
+// -----------------------------------------------------------
+.#{$prefix}--input-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  align-items: center;
+  background-color: theme.$chat-prompt-background;
+  border-block-start: button.$button-outline-width solid theme.$border-subtle-01;
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  color: theme.$text-primary;
+  inline-size: 100%;
+  min-block-size: 0;
+  outline: button.$button-border-width solid transparent;
+  outline-offset: -2px;
+  padding-block: layout.$spacing-04;
+  padding-inline: layout.$spacing-05 layout.$spacing-03;
+}
+
+// Focus outline — uses :focus-within so no JS class toggle needed.
+// Kept adjacent to the base rule (ahead of higher-specificity :host variants)
+// so stylelint's no-descending-specificity rule is satisfied.
+.#{$prefix}--input-container:focus-within {
+  outline-color: theme.$focus;
+}
+
+// Rounded container when at max width
+:host([rounded]) .#{$prefix}--input-container {
+  border: button.$button-outline-width solid theme.$border-subtle-00;
+  border-radius: layout.$spacing-03;
+}
+
+// Message actions visible — reduce start padding
+.#{$prefix}--input-container--has-message-actions {
+  padding-inline-start: layout.$spacing-03;
+}
+
+// -----------------------------------------------------------
+// Uploads + autocomplete row
+// Takes the full width of the input container so the field and send-control
+// below wrap onto their own row. Parent `.input-container` already has
+// `flex-wrap: wrap`, so setting `flex-basis: 100%` here is enough to force
+// the row break.
+// -----------------------------------------------------------
+.#{$prefix}--input-uploads-and-autocomplete {
+  flex-basis: 100%;
+  inline-size: 100%;
+}
+
+// -----------------------------------------------------------
+// Field container (text area + char count) — shares a row with the send
+// control. `flex: 1` lets it consume all remaining space next to send.
+// -----------------------------------------------------------
+.#{$prefix}--input-field-container {
+  position: relative;
+  display: flex;
+  flex: 1 0;
+  flex-direction: column;
+  justify-content: center;
+  block-size: 100%;
+}
+
+.#{$prefix}--input-text-and-actions {
+  display: flex;
+  align-items: center;
+  gap: layout.$spacing-03;
+}
+
+::slotted([slot="message-actions"]) {
+  align-self: flex-start;
+}
+
+.#{$prefix}--input-container > *:not(:last-child) {
+  margin-inline-end: layout.$spacing-03;
+}
+
+// -----------------------------------------------------------
+// Text area wrapper (contains slot + placeholder + sizer)
+// -----------------------------------------------------------
+.#{$prefix}--input-text-area {
+  position: relative;
+  display: inline-block;
+  flex: 1 0;
+  inline-size: 100%;
+  min-block-size: 0;
+}
+
+// -----------------------------------------------------------
+// Editor slot (ProseMirror, light DOM)
+// Inner .ProseMirror styles are applied directly via JS in
+// _initProseMirror (CSSOM) — see input-shell.ts.
+// -----------------------------------------------------------
+::slotted([slot="editor"]) {
+  position: relative;
+  z-index: 2;
+  flex: 1 0;
+  inline-size: 100%;
+  max-block-size: 157px;
+  min-block-size: 0;
+  overflow-y: auto;
+}
+
+// -----------------------------------------------------------
+// Placeholder
+// -----------------------------------------------------------
+.#{$prefix}--input-placeholder {
+  position: absolute;
+  z-index: 1;
+  color: theme.$text-secondary;
+  inset: 0;
+  pointer-events: none;
+  @include type.type-style("body-01");
+}
+
+:host([phone]) .#{$prefix}--input-placeholder {
+  @include type.type-style("body-02");
+}
+
+// -----------------------------------------------------------
+// Autocomplete slot (light DOM, positioned above input)
+// -----------------------------------------------------------
+::slotted([slot="autocomplete-content"]) {
+  position: absolute;
+  z-index: 10;
+  inline-size: 100%;
+  inset-block-end: 100%;
+  inset-inline-start: 0;
+}
+
+// -----------------------------------------------------------
+// File uploads slot
+// -----------------------------------------------------------
+::slotted([slot="file-uploads"]) {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  inline-size: 100%;
+  margin-block-start: layout.$spacing-03;
+  max-block-size: 200px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+// -----------------------------------------------------------
+// Send control slot
+// -----------------------------------------------------------
+.#{$prefix}--input-send-control-container {
+  display: flex;
+  flex: 0 1;
+  align-self: flex-start;
+}
+
+// -----------------------------------------------------------
+// Character counter
+// -----------------------------------------------------------
+.#{$prefix}--input-char-count {
+  color: theme.$support-error;
+  padding-block-start: layout.$spacing-03;
+  text-align: end;
+  @include type.type-style("label-01");
+}

@@ -19,49 +19,25 @@ import type {
   FileUploadCapabilities,
 } from "../instance/ChatInstance";
 
+// Canonical type definitions live in @carbon/ai-chat-components.
+import {
+  FileStatusValue,
+  type FileUpload,
+} from "@carbon/ai-chat-components/es/components/input/src/types.js";
+
 /**
  * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
  *
  * @category Service desk
  */
-export enum FileStatusValue {
-  COMPLETE = "complete",
-  EDIT = "edit",
-  UPLOADING = "uploading",
-  SUCCESS = "success",
-}
+export { FileStatusValue };
 
 /**
- * An interface that represents a file to upload and its current upload status.
+ * Represents a file uploaded by the user, including its status and metadata.
  *
  * @category Service desk
  */
-export interface FileUpload {
-  /**
-   * A unique ID for the file.
-   */
-  id: string;
-
-  /**
-   * The file to upload.
-   */
-  file: File;
-
-  /**
-   * The current upload status.
-   */
-  status: FileStatusValue;
-
-  /**
-   * Indicates if the file contains an error or failed to upload.
-   */
-  isError?: boolean;
-
-  /**
-   * If the file failed to upload, this is an optional error message to display.
-   */
-  errorMessage?: string;
-}
+export type { FileUpload };
 
 /**
  * The section of the public config that contains configuration options for service desk integrations.

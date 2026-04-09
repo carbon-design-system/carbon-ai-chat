@@ -1,6 +1,7 @@
 {
     "plugin": [
         "./docs/typedoc/moduleNamePlugin.js",
+        "./docs/typedoc/reexportCommentPlugin.js",
         "./docs/typedoc/carbonThemePlugin.js"
     ],
     "theme": "carbon",
@@ -45,6 +46,7 @@
     "categorizeByGroup": false,
     "hideGenerator": true,
     "validation": {
-        "invalidLink": true
+        "invalidLink": true,
+        "notExported": true
     }
 }

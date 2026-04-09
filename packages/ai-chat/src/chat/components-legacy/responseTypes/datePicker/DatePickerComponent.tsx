@@ -33,7 +33,7 @@ import {
   toAssistantDateFormat,
   toUserDateFormat,
 } from "../../../utils/dateUtils";
-import { uuid, UUIDType } from "../../../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import { loadDayjsLocale } from "../../../utils/languageUtils";
 import { createMessageRequestForDate } from "../../../utils/messageUtils";
 import { consoleError } from "../../../utils/miscUtils";
@@ -76,7 +76,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const originalMessage = useSelector(
     (state: AppState) => state.allMessagesByID[localMessage.fullMessageID],
   ) as MessageResponse;
-  const uuidRef = useRef(uuid(UUIDType.MISCELLANEOUS));
+  const uuidRef = useRef(uuid());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [userDisplayValue, setUserDisplayValue] = useState<string>();
   const [flatpickrFormat, setFlatpickrFormat] = useState<string>();

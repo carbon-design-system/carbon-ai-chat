@@ -22,6 +22,7 @@ import {
   StreamChunk,
   UserType,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 import {
   CHAIN_OF_THOUGHT_TEXT,
@@ -261,7 +262,7 @@ async function doTextStreaming(
   requestOptions?: CustomSendMessageOptions,
 ) {
   const signal = requestOptions?.signal;
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = text.split(" ");
   const totalWords = words.length;
 
@@ -800,7 +801,7 @@ function doTextWithFeedback(instance: ChatInstance) {
 
   const feedback: GenericItemMessageFeedbackOptions = {
     is_on: true,
-    id: crypto.randomUUID(),
+    id: uuid(),
     show_positive_details: false,
     show_negative_details: true,
     show_prompt: true,
@@ -822,7 +823,7 @@ async function doTextWithFeedbackStreaming(
 
   const feedback: GenericItemMessageFeedbackOptions = {
     is_on: true,
-    id: crypto.randomUUID(),
+    id: uuid(),
     show_positive_details: false,
     show_negative_details: true,
     show_prompt: true,
@@ -859,7 +860,7 @@ function doTextWithCustomFooter(instance: ChatInstance) {
             },
             custom_footer_slot: {
               is_on: true,
-              slot_name: `footer-msg-${crypto.randomUUID()}`,
+              slot_name: `footer-msg-${uuid()}`,
               additional_data: {
                 allow_copy: true,
                 custom_action_url: "https://example.com/share",
@@ -880,7 +881,7 @@ async function doTextStreamingEarlyResolve(
   requestOptions?: CustomSendMessageOptions,
 ) {
   const signal = requestOptions?.signal;
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const fullText =
     "Testing showStopButtonImmediately edge case. Please ensure 'Show Stop Button Immediately' is enabled in the demo settings.\n\n" +
     "This test simulates a scenario where the customSendMessage promise resolves after the first chunk, but streaming continues.\n\n" +

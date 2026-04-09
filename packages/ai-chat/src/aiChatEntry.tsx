@@ -138,8 +138,13 @@ export {
   MinimizeButtonIconType,
   OnErrorData,
   OnErrorType,
+  CustomListProps,
   PublicConfig,
   PublicConfigMessaging,
+  SuggestionConfig,
+  SuggestionItem,
+  SuggestionType,
+  ToolbarAction,
   UploadConfig,
 } from "./types/config/PublicConfig";
 
@@ -147,8 +152,6 @@ export {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
-
-export { PendingUpload, PendingUploadStatus } from "./types/state/AppState";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";

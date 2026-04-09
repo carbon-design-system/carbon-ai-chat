@@ -7,7 +7,13 @@
  *  @license
  */
 
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  type HTMLAttributes,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { ChatInstance } from "../types/instance/ChatInstance";
 import {
@@ -134,7 +140,10 @@ if (
  *
  * @category React
  */
-function ChatCustomElement(props: ChatCustomElementProps) {
+function ChatCustomElement(
+  props: ChatCustomElementProps &
+    Omit<HTMLAttributes<HTMLElement>, keyof ChatCustomElementProps>,
+) {
   const {
     strings,
     serviceDeskFactory,

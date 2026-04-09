@@ -267,3 +267,17 @@
     display: none;
   }
 }
+
+// On phones, use larger type style
+:host([phone]) {
+  @include type.type-style("body-02");
+
+  p {
+    @include type.type-style("body-02");
+  }
+
+  ol,
+  ul {
+    @include type.type-style("body-02");
+  }
+}
