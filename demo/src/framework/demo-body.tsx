@@ -641,6 +641,7 @@ export class DemoBody extends LitElement {
                     </div>
                     <demo-chat-history-switcher
                       .config=${this.config}
+                      .instance=${this.chatInstance}
                     ></demo-chat-history-switcher>
                   </div>
                   <div

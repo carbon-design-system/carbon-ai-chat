@@ -474,8 +474,8 @@ const actions = {
     return { type: SET_HISTORY_PANEL_OPEN, isOpen };
   },
 
-  setHistoryPanelOptions(isMobile: boolean) {
-    return { type: SET_HISTORY_PANEL_OPTIONS, isMobile };
+  setHistoryPanelOptions(isMobile: boolean, isOpen?: boolean) {
+    return { type: SET_HISTORY_PANEL_OPTIONS, isMobile, isOpen };
   },
 
   /**

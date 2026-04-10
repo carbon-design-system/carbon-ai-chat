@@ -970,23 +970,14 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_HISTORY_PANEL_OPTIONS]: (
     state: AppState,
-    action: { isMobile: boolean },
+    action: { isMobile: boolean; isOpen?: boolean },
   ): AppState => {
-    if (!action.isMobile) {
-      return {
-        ...state,
-        historyPanelState: {
-          ...state.historyPanelState,
-          isMobile: false,
-        },
-      };
-    }
-
     return {
       ...state,
       historyPanelState: {
         ...state.historyPanelState,
         isMobile: action.isMobile,
+        isOpen: action.isOpen ?? state.historyPanelState.isOpen,
       },
     };
   },

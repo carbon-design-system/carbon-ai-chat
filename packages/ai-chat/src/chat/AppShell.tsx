@@ -17,7 +17,7 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
-import { updateHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
+import { useHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
 import { useAriaAnnouncer } from "./hooks/useAriaAnnouncer";
 import { matchesShortcut } from "./utils/keyboardUtils";
 import { getDeepActiveElement } from "./utils/domUtils";
@@ -388,6 +388,13 @@ export default function AppShell({
     publicConfig.history?.showMobileMenu,
   ]);
 
+  // History mobile detection hook
+  const updateHistoryMobileDetection = useHistoryMobileDetection({
+    container: widgetContainerRef.current,
+    useCustomHostElement,
+    serviceManager,
+  });
+
   // Resize observer
   const handleResize = useCallback(() => {
     const container = widgetContainerRef.current;
@@ -406,13 +413,8 @@ export default function AppShell({
     );
 
     // Update history mobile detection
-    updateHistoryMobileDetection({
-      width,
-      container,
-      useCustomHostElement,
-      serviceManager,
-    });
-  }, [widgetContainerRef, useCustomHostElement, serviceManager]);
+    updateHistoryMobileDetection(width);
+  }, [widgetContainerRef, serviceManager, updateHistoryMobileDetection]);
 
   useResizeObserver({
     containerRef: widgetContainerRef,
@@ -644,7 +646,10 @@ export default function AppShell({
               contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
-              showHistory={config.public.history?.isOn ?? false}
+              showHistory={
+                (config.public.history?.isOn ?? false) &&
+                historyPanelState.isOpen
+              }
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
               historyAriaLabel={languagePack.aria_historyRegion}
               messagesAriaLabel={languagePack.aria_messagesRegion}
