@@ -17,11 +17,107 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/ai-gradient" as *;
-@use "./styles/chat-theme";
+@use "../globals/scss/chat-theme";
+@use "../globals/scss/chat-float-layout";
 
-@use "./styles";
 @use "./components/imports" as components;
 @use "./components-legacy/imports" as legacyComponents;
+
+/*
+Chat custom css properties
+*/
+
+@use "@carbon/colors";
+@use "@carbon/styles/scss/components/button/tokens";
+
+// Import shared tokens from @carbon/ai-chat-components
+// These are the public configurable tokens that are shared across both packages
+@use "@carbon/ai-chat-components/scss/custom-properties" as shared-tokens;
+
+.cds-aichat--container--render {
+  box-sizing: border-box;
+  block-size: 100%;
+  color: theme.$text-primary;
+  inline-size: 100%;
+
+  /* **************************************************************************************************************** */
+
+  /* Shared tokens from @carbon/ai-chat-components */
+  /* These are imported and will be available as CSS custom properties */
+  /* See @carbon/ai-chat-components/scss/_custom-properties.scss for the full list */
+
+  /* **************************************************************************************************************** */
+
+  /* Container-specific properties (ChatContainer floating widget) */
+
+  /* Application sizing and positioning */
+  --cds-aichat-max-height: 640px;
+
+  /* WCAG 2.1 states that the widget must be usable at 320x256 (or the equivalent from zoom happening) https://www.w3.org/WAI/WCAG21/Understanding/reflow.html
+  We make sure the min-height at least 150px (to show at least the header/footer and one line of text) and is the lower of 256px minus the spacing from the bottom of the view port or 100vh - the bottom position. */
+  --cds-aichat-min-height: max(
+    150px,
+    calc(min(256px, 100vh) - var(--cds-aichat-bottom-position))
+  );
+
+  /* Container positioning */
+  --cds-aichat-bottom-position: #{layout.$spacing-09};
+  --cds-aichat-right-position: #{layout.$spacing-07};
+  --cds-aichat-top-position: auto;
+  --cds-aichat-left-position: auto;
+
+  /* Container sizing */
+  /* The smaller of 380px or the available width of the screen. This is to account for zoom levels pushing us to 320px. */
+  --cds-aichat-width: min(380px, var(--cds-aichat-max-width));
+  --cds-aichat-height: calc(100vh - (2 * #{layout.$spacing-07}));
+
+  /* Container z-index */
+  --cds-aichat-z-index: 99999;
+
+  /* **************************************************************************************************************** */
+
+  /* Launcher properties (ChatContainer-specific) */
+  /* These properties control the floating launcher button appearance and behavior */
+
+  /* Launcher sizing and positioning */
+  --cds-aichat-launcher-default-size: 56px;
+  --cds-aichat-launcher-position-bottom: #{layout.$spacing-09};
+  --cds-aichat-launcher-position-right: #{layout.$spacing-07};
+  --cds-aichat-launcher-extended-width: 280px;
+
+  /* Launcher colors */
+  --cds-aichat-launcher-color-background: #{tokens.$button-primary};
+  --cds-aichat-launcher-color-avatar: #{theme.$text-on-color};
+  --cds-aichat-launcher-color-focus-border: #{theme.$text-on-color};
+  --cds-aichat-launcher-mobile-color-text: #{theme.$text-on-color};
+
+  /* Unread indicator colors */
+  --cds-aichat-unread-indicator-color-background: #{theme.$support-error};
+  --cds-aichat-unread-indicator-color-text: #{theme.$text-on-color};
+}
+
+.cds-aichat--container--render .cds-aichat--widget--rounded {
+  --cds-aichat-border-radius: #{layout.$spacing-03};
+}
+
+.cds-aichat--container--render.cds-aichat--is-phone {
+  /* Fallbacks for older browsers */
+  --cds-aichat-width: calc(100vw - 4px);
+  --cds-aichat-height: calc(100vh - 4px);
+  --cds-aichat-left-position: 2;
+  --cds-aichat-top-position: 2;
+  --cds-aichat-max-width: auto;
+  --cds-aichat-max-height: auto;
+  --cds-aichat-min-height: auto;
+  --cds-aichat-right-position: auto;
+}
+
+@supports (height: 100dvh) {
+  .cds-aichat--container--render.cds-aichat--is-phone {
+    --cds-aichat-width: calc(100dvw - 4px);
+    --cds-aichat-height: calc(100dvh - 4px);
+  }
+}
 
 /* ============================================================================
    CARBON THEME INTEGRATION
@@ -126,13 +222,6 @@
    Main container wrapper and accessibility features
    ============================================================================ */
 
-.cds-aichat--container--render {
-  box-sizing: border-box;
-  block-size: 100%;
-  color: theme.$text-primary;
-  inline-size: 100%;
-}
-
 .cds-aichat--container--render[dir="rtl"] {
   direction: rtl;
 }
@@ -168,99 +257,11 @@
 }
 
 /* ============================================================================
-   WIDGET - STATE MANAGEMENT
-   Widget states, animations, and transitions
+   FLOAT POSITIONING
+   Floating widget positioning and animations (following @carbon/styles pattern)
    ============================================================================ */
 
-/* Closed state */
-.cds-aichat--widget.cds-aichat--widget--closed {
-  overflow: hidden;
-}
-
-.cds-aichat--widget.cds-aichat--widget--default-element.cds-aichat--widget--closed {
-  display: none;
-}
-
-.cds-aichat--widget.cds-aichat--widget.cds-aichat--widget--closed,
-.cds-aichat--ai-theme
-  .cds-aichat--widget.cds-aichat--widget.cds-aichat--widget--closed {
-  border: none;
-  box-shadow: none;
-}
-
-/* Launch animation */
-.cds-aichat--widget.cds-aichat--widget--launched.cds-aichat--widget--default-element:not(
-    .cds-aichat--is-phone
-  ) {
-  @media (prefers-reduced-motion: no-preference) {
-    animation: cds-aichat-widget-in motion.$duration-moderate-02
-      motion.motion(entrance, expressive) both;
-  }
-}
-
-/* Close animation */
-.cds-aichat--widget.cds-aichat--widget--closing.cds-aichat--widget--default-element {
-  @media (prefers-reduced-motion: no-preference) {
-    animation: cds-aichat-widget-out motion.$duration-fast-02
-      motion.motion(exit, expressive) both;
-  }
-}
-
-/* ============================================================================
-   WIDGET - POSITIONING
-   Default positioning for floating widget mode
-   ============================================================================ */
-
-.cds-aichat--widget.cds-aichat--widget--default-element {
-  position: fixed;
-  z-index: chat-theme.$z-index;
-  block-size: chat-theme.$height;
-  inline-size: chat-theme.$width;
-  inset: chat-theme.$top-position chat-theme.$right-position
-    chat-theme.$bottom-position chat-theme.$left-position;
-  max-block-size: chat-theme.$max-height;
-  max-inline-size: chat-theme.$messages-max-width;
-  min-block-size: chat-theme.$min-height;
-}
-
-.cds-aichat--container--render[dir="rtl"]
-  .cds-aichat--widget.cds-aichat--widget--default-element {
-  inset-inline: chat-theme.$right-position chat-theme.$left-position;
-}
-
-/* ============================================================================
-   WIDGET - RESPONSIVE (MOBILE)
-   Mobile and phone-specific styles
-   ============================================================================ */
-
-.cds-aichat--is-phone:not(.cds-aichat--container-disable-mobile-enhancements)
-  .cds-aichat--widget {
-  position: fixed;
-  z-index: chat-theme.$z-index;
-  block-size: chat-theme.$height;
-  inline-size: chat-theme.$width;
-  inset: chat-theme.$top-position chat-theme.$right-position
-    chat-theme.$bottom-position chat-theme.$left-position;
-  max-block-size: chat-theme.$max-height;
-  min-block-size: chat-theme.$min-height;
-
-  &.cds-aichat--widget--launched.cds-aichat--widget--default-element {
-    inset-block-end: 1px;
-    inset-inline-start: 1px;
-
-    @media (prefers-reduced-motion: no-preference) {
-      animation: cds-aichat-widget-in-mobile motion.$duration-moderate-02
-        motion.motion(entrance, expressive) both;
-    }
-  }
-}
-
-.cds-aichat--is-phone[dir="rtl"]:not(
-    .cds-aichat--container-disable-mobile-enhancements
-  )
-  .cds-aichat--widget {
-  inset-inline: chat-theme.$right-position chat-theme.$left-position;
-}
+@include chat-float-layout.float-positioning;
 
 /* ============================================================================
    CHAT CONTAINER
@@ -281,31 +282,6 @@
   color: theme.$text-primary;
   inline-size: 100%;
   text-align: start;
-}
-
-/* AI Theme variant */
-.cds-aichat--ai-theme .cds-aichat {
-  @include ai-gradient();
-
-  background-color: theme.$chat-shell-background;
-  box-shadow:
-    inset 0 -80px 70px -65px
-      var(--cds-ai-inner-shadow, #{theme.$ai-inner-shadow}),
-    0 4px 10px 2px var(--cds-ai-drop-shadow, #{theme.$ai-drop-shadow}),
-    -40px 44px 60px -24px
-      var(
-        --cds-ai-popover-shadow-outer-01,
-        #{theme.$ai-popover-shadow-outer-01}
-      ),
-    -56px 64px 64px -24px
-      var(
-        --cds-ai-popover-shadow-outer-02,
-        #{theme.$ai-popover-shadow-outer-02}
-      );
-}
-
-.cds-aichat--ai-theme .cds-aichat--frameless .cds-aichat {
-  box-shadow: none;
 }
 
 /* ============================================================================

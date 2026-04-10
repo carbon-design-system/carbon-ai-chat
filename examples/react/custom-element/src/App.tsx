@@ -19,9 +19,6 @@ const config: PublicConfig = {
   },
   layout: {
     showFrame: false,
-    customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
-    },
   },
   openChatByDefault: true,
   injectCarbonTheme: CarbonTheme.WHITE,

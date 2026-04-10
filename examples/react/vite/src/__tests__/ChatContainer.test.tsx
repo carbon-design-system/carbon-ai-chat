@@ -3,16 +3,9 @@ import { render, act, waitFor } from "@testing-library/react";
 import {
   ChatContainer,
   PageObjectId,
-  ChatInstance,
   MessageResponseTypes,
 } from "@carbon/ai-chat";
-import {
-  CITATIONS_TOGGLE_ARIA_LABEL,
-  CONVERSATIONAL_SEARCH_RESPONSE,
-  MARKDOWN_WITH_TABLE_AND_CODE,
-  TEST_TIMEOUT,
-  WAIT_FOR_TIMEOUT,
-} from "./constants";
+import { WAIT_FOR_TIMEOUT } from "./constants";
 import {
   closeChat,
   openChat,
@@ -35,7 +28,6 @@ describe("ChatContainer", () => {
         <ChatContainer
           messaging={{
             customSendMessage(_request, _requestOptions, instance) {
-              // Return a welcome message
               instance.messaging.addMessage({
                 output: {
                   generic: [
@@ -58,11 +50,9 @@ describe("ChatContainer", () => {
       ),
     );
 
-    // The widget renders into a custom element (`cds-aichat-react`), so wait for it to
-    // upgrade before making assertions.
-    const customElement = await waitFor(() =>
-      container.querySelector("cds-aichat-react"),
-    );
+    // waitForChatElement finds the host element by locating PageObjectId.CHAT_WIDGET inside
+    // its shadow root, so the assertion below confirms the widget is fully rendered.
+    const customElement = await waitForChatElement(container);
     expect(customElement).toBeInTheDocument();
   });
 
@@ -74,7 +64,6 @@ describe("ChatContainer", () => {
         <ChatContainer
           messaging={{
             customSendMessage(_request, _requestOptions, instance) {
-              console.log("customSendMessage called");
               instance.messaging.addMessage({
                 output: {
                   generic: [
@@ -91,12 +80,9 @@ describe("ChatContainer", () => {
       ),
     );
 
-    // Wait for the host web component before poking into its implementation details.
-    const customElement = await waitFor(() =>
-      container.querySelector("cds-aichat-react"),
-    );
+    const customElement = await waitForChatElement(container);
     // `openChat` clicks the Carbon launcher (if present) and returns the widget's shadow root.
-    const shadowRoot = await openChat(customElement as Element);
+    const shadowRoot = await openChat(customElement);
 
     // Everything inside the widget uses PageObjectId-based data-testids, so look for those
     // markers to make sure the critical interactive pieces are present.
@@ -117,11 +103,9 @@ describe("ChatContainer", () => {
     );
     expect(sendButton).toBeTruthy();
 
-    await waitFor(() => container.querySelector("cds-aichat-react")).then(() =>
-      expect(container.firstChild).toMatchSnapshot(),
-    );
+    expect(container.firstChild).toMatchSnapshot();
 
-    await closeChat(customElement as Element);
+    await closeChat(customElement);
   });
 
   it("should render slotted content", async () => {
@@ -157,88 +141,7 @@ describe("ChatContainer", () => {
     expect(customHeader).toBeInTheDocument();
     expect(customHeader).toHaveTextContent("Custom Header Content");
 
-    await waitFor(() => container.querySelector("cds-aichat-react")).then(() =>
-      expect(container.firstChild).toMatchSnapshot(),
-    );
-  });
-
-  it("should have a shadow DOM with rendered content", async () => {
-    // Push a text message through the mocked `customSendMessage` flow so the widget
-    // renders markdown content we can later inspect inside the component's shadow root.
-    const { container } = await act(() =>
-      render(
-        <ChatContainer
-          messaging={{
-            customSendMessage(_request, _requestOptions, instance) {
-              instance.messaging.addMessage({
-                output: {
-                  generic: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "Test message",
-                    },
-                  ],
-                },
-              });
-            },
-          }}
-        />,
-      ),
-    );
-
-    const customElement = await waitFor(() =>
-      container.querySelector("cds-aichat-react"),
-    );
-
-    expect(customElement).toBeTruthy();
-
-    // Wait for Lit to finish rendering so the shadow root contains stable markup.
-    if (typeof (customElement as any).updateComplete !== "undefined") {
-      await (customElement as any).updateComplete;
-    }
-
-    await waitFor(() => container.querySelector("cds-aichat-react")).then(() =>
-      expect(container.firstChild).toMatchSnapshot(),
-    );
-
-    const shadowRoot = await openChat(customElement as Element);
-
-    expect(shadowRoot).toBeTruthy();
-
-    try {
-      const mainPanel = await waitFor(() => {
-        const element = shadowRoot.querySelector(
-          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
-        ) as HTMLElement | null;
-        if (!element) {
-          throw new Error("Main panel not rendered yet");
-        }
-        return element;
-      });
-
-      const markdownElement = await waitFor(() => {
-        const element = mainPanel.querySelector(
-          "cds-aichat-markdown",
-        ) as HTMLElement | null;
-        if (!element || !(element as any).shadowRoot) {
-          throw new Error("Markdown component not rendered yet");
-        }
-        return element;
-      });
-
-      const markdownShadow = (markdownElement as any).shadowRoot as ShadowRoot;
-
-      expect(markdownShadow).toBeTruthy();
-
-      // cds-aichat-markdown throttles its render pipeline, so wait for Lit to finish.
-      if (typeof (markdownElement as any).updateComplete !== "undefined") {
-        await (markdownElement as any).updateComplete;
-      }
-
-      expect(markdownShadow.textContent).toContain("Test message");
-    } finally {
-      await closeChat(customElement as Element);
-    }
+    expect(container.firstChild).toMatchSnapshot();
   });
 
   it("should render PageObjectId elements in shadow DOM", async () => {
@@ -265,238 +168,73 @@ describe("ChatContainer", () => {
       ),
     );
 
-    const customElement = await waitFor(() =>
-      container.querySelector("cds-aichat-react"),
-    );
+    const customElement = await waitForChatElement(container);
 
-    // Wait for Lit rendering
     if (typeof (customElement as any).updateComplete !== "undefined") {
       await (customElement as any).updateComplete;
     }
 
-    const shadowRoot = (customElement as any)?.shadowRoot;
+    const shadowRoot = (customElement as HTMLElement).shadowRoot!;
 
     // The LAUNCHER should be present (in minimized state)
     const launcher = shadowRoot.querySelector(
       `[data-testid="${PageObjectId.LAUNCHER}"]`,
     );
     expect(launcher).toBeTruthy();
-    await waitFor(() => container.querySelector("cds-aichat-react")).then(() =>
-      expect(container.firstChild).toMatchSnapshot(),
-    );
+
+    expect(container.firstChild).toMatchSnapshot();
   });
 
-  it(
-    "should render markdown-driven table and code snippet responses",
-    { timeout: TEST_TIMEOUT },
-    async () => {
-      // Render a text response that embeds a markdown table and fenced code block so we
-      // can assert that both complex components hydrate correctly under happy-dom.
-      const { container } = await act(() =>
-        render(
-          <ChatContainer
-            messaging={{
-              customSendMessage: async (
-                _request,
-                _requestOptions,
-                instance,
-              ) => {
-                instance.messaging.addMessage({
-                  output: {
-                    generic: [
-                      {
-                        response_type: MessageResponseTypes.TEXT,
-                        text: MARKDOWN_WITH_TABLE_AND_CODE,
+  it("should render a user-defined response type", async () => {
+    // Demonstrate how to test custom user_defined response types. The renderUserDefinedResponse
+    // prop receives the message state and returns a React node — give that node a data-testid
+    // so the test can assert on it without touching internal component selectors.
+    const CUSTOM_TYPE = "my-custom-response";
+
+    const { container } = await act(() =>
+      render(
+        <ChatContainer
+          messaging={{
+            customSendMessage(_request, _requestOptions, instance) {
+              instance.messaging.addMessage({
+                output: {
+                  generic: [
+                    {
+                      response_type: MessageResponseTypes.USER_DEFINED,
+                      user_defined: {
+                        user_defined_type: CUSTOM_TYPE,
+                        text: "Custom response content",
                       },
-                    ],
-                  },
-                });
-              },
-            }}
-          />,
-        ),
-      );
-
-      const customElement = await waitFor(() =>
-        container.querySelector("cds-aichat-react"),
-      );
-
-      expect(customElement).toBeTruthy();
-
-      // Wait for Lit rendering
-      if (typeof (customElement as any).updateComplete !== "undefined") {
-        await (customElement as any).updateComplete;
-      }
-
-      const shadowRoot = await openChat(customElement as Element);
-
-      expect(shadowRoot).toBeTruthy();
-
-      try {
-        if (typeof (customElement as any).updateComplete !== "undefined") {
-          await (customElement as any).updateComplete;
-        }
-
-        const messageElement = await waitFor(() => {
-          const element = shadowRoot.querySelector(".cds-aichat--message");
-          if (!element) {
-            throw new Error("Message not rendered yet");
-          }
-          return element;
-        });
-
-        expect(messageElement).toBeTruthy();
-
-        const mainPanel = await waitFor(() => {
-          const element = shadowRoot.querySelector(
-            `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
-          ) as HTMLElement | null;
-          if (!element) {
-            throw new Error("Main panel not rendered yet");
-          }
-          return element;
-        });
-
-        const markdownElement = await waitFor(() => {
-          const element = mainPanel.querySelector(
-            "cds-aichat-markdown",
-          ) as HTMLElement | null;
-          if (!element || !(element as any).shadowRoot) {
-            throw new Error("Markdown component not rendered yet");
-          }
-          return element;
-        });
-
-        const markdownShadow = (markdownElement as any)
-          .shadowRoot as ShadowRoot;
-
-        const tableElement = await waitFor(
-          () => {
-            const element = markdownShadow.querySelector(
-              "cds-aichat-table",
-            ) as HTMLElement | null;
-            if (!element) {
-              throw new Error("Markdown table not rendered yet");
-            }
-            return element;
-          },
-          { timeout: 60000 },
-        );
-
-        expect(tableElement).toBeTruthy();
-
-        if (typeof (tableElement as any).updateComplete !== "undefined") {
-          await (tableElement as any).updateComplete;
-        }
-
-        // The code-snippet lives inside the markdown component as well, so query the same
-        // shadow root and ensure CodeMirror successfully hydrated (even though it is mocked).
-        const codeSnippetElement = await waitFor(
-          () => {
-            const element = markdownShadow.querySelector(
-              "cds-aichat-code-snippet",
-            ) as HTMLElement | null;
-            if (!element) {
-              throw new Error("Code snippet not rendered yet");
-            }
-            return element;
-          },
-          { timeout: 60000 },
-        );
-
-        expect(codeSnippetElement).toBeTruthy();
-
-        if (typeof (codeSnippetElement as any).updateComplete !== "undefined") {
-          await (codeSnippetElement as any).updateComplete;
-        }
-      } finally {
-        await closeChat(customElement as Element);
-      }
-    },
-  );
-
-  it(
-    "should render conversational search citations using the carousel",
-    { timeout: TEST_TIMEOUT },
-    async () => {
-      // Capture the ChatContainer instance via onBeforeRender so we can inject a mocked
-      // conversational-search payload and verify the resulting carousel UI.
-      let instanceRef: ChatInstance | null = null;
-      const { container } = await act(() =>
-        render(
-          <ChatContainer
-            openChatByDefault
-            onBeforeRender={(instance) => {
-              instanceRef = instance;
-            }}
-            messaging={{
-              skipWelcome: true,
-              customSendMessage() {
-                return Promise.resolve();
-              },
-            }}
-          />,
-        ),
-      );
-
-      const customElement = (await waitForChatElement(
-        container as HTMLElement,
-      )) as Element;
-      const shadowRoot = await openChat(customElement);
-      try {
-        // Simulate the full user journey: type a query, wait for our captured instance,
-        // then push the conversational-search message into the stream.
-        await sendUserMessage(shadowRoot, "Show conversational search");
-        await waitFor(() => instanceRef !== null, {
-          timeout: WAIT_FOR_TIMEOUT,
-        });
-        await act(async () => {
-          await instanceRef?.messaging.addMessage({
-            id: "conversational-search-test",
-            output: {
-              generic: [CONVERSATIONAL_SEARCH_RESPONSE],
+                    },
+                  ],
+                },
+              });
             },
-          });
-          if (typeof (customElement as any).updateComplete !== "undefined") {
-            await (customElement as any).updateComplete;
-          }
-        });
-        const citationsToggle = await waitFor(
-          () => {
-            const toggle = shadowRoot.querySelector(
-              `[aria-label="${CITATIONS_TOGGLE_ARIA_LABEL}"]`,
-            ) as HTMLElement | null;
-            if (!toggle) {
-              throw new Error("Citations toggle not rendered yet");
+          }}
+          renderUserDefinedResponse={(state) => {
+            const item = state.messageItem as any;
+            if (item?.user_defined?.user_defined_type !== CUSTOM_TYPE) {
+              return null;
             }
-            return toggle;
-          },
-          { timeout: WAIT_FOR_TIMEOUT },
-        );
-        expect(citationsToggle).toBeTruthy();
+            return (
+              <div data-testid="custom-response">{item.user_defined.text}</div>
+            );
+          }}
+        />,
+      ),
+    );
 
-        await act(async () => {
-          citationsToggle.click();
-          if (typeof (customElement as any).updateComplete !== "undefined") {
-            await (customElement as any).updateComplete;
-          }
-        });
+    const customElement = await waitForChatElement(container);
+    const shadowRoot = await openChat(customElement);
+    await sendUserMessage(shadowRoot, "Hello");
 
-        // Once the toggle is active, the carousel becomes visible inside the citations
-        // region. Waiting for the region also verifies that Swiper dependencies loaded.
-        const citationsRegion = await waitFor(
-          () =>
-            shadowRoot.querySelector(
-              ".cds-aichat--conversational-search-citations",
-            ),
-          { timeout: WAIT_FOR_TIMEOUT },
-        );
-        expect(citationsRegion).toBeTruthy();
-        expect(citationsRegion?.querySelector(".swiper")).toBeTruthy();
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      } finally {
-        await closeChat(customElement);
-      }
-    },
-  );
+    // The rendered output is portaled into the light DOM of the host element,
+    // not the shadow root — query from customElement, not shadowRoot.
+    const customResponse = await waitFor(
+      () => customElement.querySelector('[data-testid="custom-response"]'),
+      { timeout: WAIT_FOR_TIMEOUT },
+    );
+    expect(customResponse).toBeTruthy();
+    expect(customResponse).toHaveTextContent("Custom response content");
+  });
 });

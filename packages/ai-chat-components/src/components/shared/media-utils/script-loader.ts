@@ -24,8 +24,9 @@ export class ScriptLoader {
    */
   static load(url: string): Promise<void> {
     // Return existing promise if script is already loaded or loading
-    if (this.loadedScripts.has(url)) {
-      return this.loadedScripts.get(url)!;
+    const existing = this.loadedScripts.get(url);
+    if (existing) {
+      return existing;
     }
 
     const promise = new Promise<void>((resolve, reject) => {

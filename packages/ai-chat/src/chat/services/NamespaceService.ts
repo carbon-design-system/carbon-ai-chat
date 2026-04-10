@@ -48,4 +48,4 @@ function computeNamespaceName(namespace?: string) {
   return namespace ? namespace.trim() : "";
 }
 
-export { NamespaceService };
+export { NamespaceService, getSuffix };

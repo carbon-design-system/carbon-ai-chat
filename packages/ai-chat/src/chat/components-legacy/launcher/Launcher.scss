@@ -10,36 +10,56 @@
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/components/button";
-@use "../../styles/chat-theme";
-@use "../../styles/chat-config";
+@use "../../../globals/scss/chat-launcher-layout";
+@use "@carbon/ai-chat-components/scss/utilities" as chat-config;
+
+// Web chat widget variables
+$box-shadow: chat-config.get-var("box-shadow", 1px 0 4px hsl(0deg 0% 9% / 30%));
+// Launcher Variables (container-specific sizing/positioning)
+$launcher-default-size: chat-config.get-var("launcher-default-size", 56px);
+$launcher-extended-width: chat-config.get-var("launcher-extended-width", 280px);
+
+$launcher-color-background: chat-config.get-var(
+  "launcher-color-background",
+  button.$button-primary
+);
+$launcher-color-avatar: chat-config.get-var(
+  "launcher-color-avatar",
+  theme.$text-on-color
+);
+$launcher-color-focus-border: chat-config.get-var(
+  "launcher-color-focus-border",
+  theme.$text-on-color
+);
+$launcher-mobile-color-text: chat-config.get-var(
+  "launcher-mobile-color-text",
+  theme.$text-on-color
+);
+
+// Unread indicator colors
+$unread-indicator-color-background: chat-config.get-var(
+  "unread-indicator-color-background",
+  theme.$support-error
+);
+$unread-indicator-color-text: chat-config.get-var(
+  "unread-indicator-color-text",
+  theme.$text-on-color
+);
 
 // Local motion aliases
 $launcher-expand-duration: motion.$duration-moderate-02;
 $launcher-fade-duration: motion.$duration-fast-01;
 $launcher-easing: motion.motion(standard, productive);
 
-.cds-aichat--launcher__button-container {
-  position: fixed;
-  z-index: chat-theme.$z-index;
+.cds-aichat-launcher {
   border-radius: 28px;
   background-color: theme.$background;
-  block-size: chat-theme.$launcher-default-size;
-  box-shadow: chat-theme.$box-shadow;
-  inline-size: chat-theme.$launcher-default-size;
-  inset-block-end: chat-theme.$launcher-position-bottom;
-  inset-inline-end: chat-theme.$launcher-position-right;
+  box-shadow: $box-shadow;
 
   @media (prefers-reduced-motion: no-preference) {
-    animation: #{chat-config.$prefix}-launcher-in motion.$duration-moderate-01
-      motion.motion(entrance, expressive) both;
     // Animate container width so the CTA grows inward from the edge
     transition: inline-size $launcher-expand-duration $launcher-easing;
   }
-}
-
-.cds-aichat--launcher__button-container--hidden {
-  /* Using display:none causes the entrance animation to replay */
-  visibility: hidden;
 }
 
 .cds-aichat--count-indicator {
@@ -49,10 +69,10 @@ $launcher-easing: motion.motion(standard, productive);
   justify-content: center;
   padding: 0 4px;
   border-radius: 10px;
-  background-color: chat-theme.$unread-indicator-color-background;
+  background-color: $unread-indicator-color-background;
 
   box-shadow: 1px layout.$spacing-01 layout.$spacing-01 rgb(23 23 23 / 30%);
-  color: chat-theme.$unread-indicator-color-text;
+  color: $unread-indicator-color-text;
 
   inset-block-start: calc(-1 * #{layout.$spacing-02});
   inset-inline-end: calc(-1 * #{layout.$spacing-02});
@@ -69,9 +89,9 @@ cds-button.cds-aichat--launcher__button {
     justify-content: center;
     padding: 0;
     border-radius: 28px;
-    background-color: chat-theme.$launcher-color-background;
-    block-size: chat-theme.$launcher-default-size;
-    inline-size: chat-theme.$launcher-default-size;
+    background-color: $launcher-color-background;
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
 
     @media (prefers-reduced-motion: no-preference) {
       transition:
@@ -82,14 +102,14 @@ cds-button.cds-aichat--launcher__button {
 
     svg {
       block-size: 24px;
-      fill: chat-theme.$launcher-color-avatar;
+      fill: $launcher-color-avatar;
       inline-size: 24px;
     }
 
     &:focus {
       border-width: button.$button-border-width;
       box-shadow: inset 0 0 0 button.$button-border-width
-        chat-theme.$launcher-color-focus-border;
+        $launcher-color-focus-border;
     }
   }
 }
@@ -126,7 +146,7 @@ cds-button.cds-aichat--launcher__button {
   display: flex;
   align-items: center;
   block-size: 100%;
-  color: chat-theme.$launcher-mobile-color-text;
+  color: $launcher-mobile-color-text;
 
   inline-size: calc(100% - 12px);
   inset-block-end: 0;
@@ -143,32 +163,6 @@ cds-button.cds-aichat--launcher__button {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   text-overflow: ellipsis;
-}
-
-// Hidden link for screen readers when announcement is made.
-.cds-aichat--launcher__skip-link {
-  position: absolute;
-  overflow: hidden;
-  padding: 0;
-  border: 0;
-  margin: -1px;
-  block-size: 1px;
-  clip: rect(0 0 0 0);
-  inline-size: 1px;
-  white-space: nowrap;
-
-  &:focus {
-    position: static;
-    padding: layout.$spacing-01 layout.$spacing-02;
-    border-radius: 999px;
-    margin: 0 0 layout.$spacing-02 0;
-    background: theme.$background-inverse;
-    block-size: auto;
-    clip: auto;
-    color: theme.$text-on-color;
-    inline-size: auto;
-    white-space: normal;
-  }
 }
 
 cds-button.cds-aichat--launcher-extended__close-button {
@@ -194,13 +188,13 @@ cds-button.cds-aichat--launcher-extended__close-button {
   }
 
   to {
-    inline-size: chat-theme.$launcher-extended-width;
+    inline-size: $launcher-extended-width;
   }
 }
 
 @keyframes #{chat-config.$prefix}-launcher-closing-text-holder {
   from {
-    inline-size: chat-theme.$launcher-extended-width;
+    inline-size: $launcher-extended-width;
   }
 
   to {
@@ -237,7 +231,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
  * - React listens to greeting's animationend to set state to "open"
  */
 
-.cds-aichat--launcher__button-container--opening {
+.cds-aichat-launcher--opening {
   @media (prefers-reduced-motion: no-preference) {
     .cds-aichat--launcher-extended__text-holder {
       animation: #{chat-config.$prefix}-launcher-opening-text-holder
@@ -258,9 +252,9 @@ cds-button.cds-aichat--launcher-extended__close-button {
  * - no animations needed; React has already switched state to "open"
  */
 
-.cds-aichat--launcher__button-container--open {
+.cds-aichat-launcher--open {
   .cds-aichat--launcher-extended__text-holder {
-    inline-size: chat-theme.$launcher-extended-width;
+    inline-size: $launcher-extended-width;
   }
 
   .cds-aichat--launcher-extended__greeting {
@@ -275,7 +269,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
  * - React listens to text-holder's animationend to set state to "closed"
  */
 
-.cds-aichat--launcher__button-container--closing {
+.cds-aichat-launcher--closing {
   @media (prefers-reduced-motion: no-preference) {
     .cds-aichat--launcher-extended__greeting {
       animation: #{chat-config.$prefix}-launcher-closing-greeting
@@ -296,7 +290,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
  * - greeting hidden
  */
 
-.cds-aichat--launcher__button-container--closed {
+.cds-aichat-launcher--closed {
   .cds-aichat--launcher-extended__text-holder {
     display: none;
     inline-size: 0;
@@ -314,28 +308,22 @@ cds-button.cds-aichat--launcher-extended__close-button {
 /* ---------- BUTTON & CONTAINER WIDTH ANIMATION (PILL RESIZE) ---------- */
 
 /* Opening + Open: pill and container fully extended */
-.cds-aichat--launcher__button-container--opening,
-.cds-aichat--launcher__button-container--open {
-  inline-size: calc(
-    #{chat-theme.$launcher-extended-width} +
-      #{chat-theme.$launcher-default-size}
-  );
+.cds-aichat-launcher--opening,
+.cds-aichat-launcher--open {
+  inline-size: calc(#{$launcher-extended-width} + #{$launcher-default-size});
 
   cds-button.cds-aichat--launcher__button::part(button) {
-    inline-size: calc(
-      #{chat-theme.$launcher-extended-width} +
-        #{chat-theme.$launcher-default-size}
-    );
+    inline-size: calc(#{$launcher-extended-width} + #{$launcher-default-size});
   }
 }
 
 /* Closing + Closed: pill and container back to default circle size */
-.cds-aichat--launcher__button-container--closing,
-.cds-aichat--launcher__button-container--closed {
-  inline-size: chat-theme.$launcher-default-size;
+.cds-aichat-launcher--closing,
+.cds-aichat-launcher--closed {
+  inline-size: $launcher-default-size;
 
   cds-button.cds-aichat--launcher__button::part(button) {
-    inline-size: chat-theme.$launcher-default-size;
+    inline-size: $launcher-default-size;
   }
 }
 
@@ -347,7 +335,7 @@ cds-button.cds-aichat--launcher-extended__close-button {
   transform: translate(-50%, 50%);
 }
 
-[dir="rtl"] .cds-aichat--launcher__button-container {
+[dir="rtl"] .cds-aichat-launcher {
   .cds-aichat--launcher-extended__wrapper {
     inset-inline: 0 unset;
   }
@@ -357,16 +345,13 @@ cds-button.cds-aichat--launcher-extended__close-button {
   }
 }
 
-@keyframes #{chat-config.$prefix}-launcher-in {
-  0% {
-    inset-block-end: calc(
-      chat-theme.$launcher-position-bottom - #{layout.$spacing-05}
-    );
-    opacity: 0;
-  }
-
-  100% {
-    inset-block-end: chat-theme.$launcher-position-bottom;
-    opacity: 1;
-  }
+// Carbon's cds-button tooltip uses CSS logical properties (inset-inline-*)
+// that auto-flip based on the inherited `direction` value. In RTL mode the
+// shadow DOM inherits direction:rtl from the page, which causes
+// tooltipPosition="right" to resolve to physical LEFT (and vice-versa).
+// Resetting direction:ltr on the host element makes the shadow DOM treat the
+// tooltipPosition prop as physically literal, so JS can flip it for RTL.
+[dir="rtl"] cds-button.cds-aichat--launcher__button,
+[dir="rtl"] cds-button.cds-aichat--launcher-extended__close-button {
+  direction: ltr;
 }

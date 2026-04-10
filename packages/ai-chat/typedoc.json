@@ -18,7 +18,6 @@
         "./docs/CustomServiceDesks.md",
         "./docs/CustomServer.md",
         "./docs/DemoAndExamples.md",
-        "./docs/migration-0.5.1.md",
         "./docs/Migration-1.0.0.md"
     ],
     "sort": [

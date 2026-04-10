@@ -28,7 +28,7 @@ const createPlugins = () => {
 };
 
 export default () => {
-  const port = process.env.PORT || 3019;
+  const port = process.env.PORT || 3000;
 
   return {
     mode: environment,
@@ -65,6 +65,12 @@ export default () => {
     },
     plugins: createPlugins(),
     devtool: "source-map",
+    snapshot: {
+      managedPaths: [], // don't treat node_modules as immutable
+    },
+    watchOptions: {
+      ignored: /node_modules\/(?!@carbon\/ai-chat)/, // watch only our packages @carbon/ai-chat and @carbon/ai-chat-components
+    },
     devServer: {
       static: path.join(__dirname, "dist"),
       compress: true,
