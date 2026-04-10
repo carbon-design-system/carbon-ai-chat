@@ -86,7 +86,7 @@ function isCustomPanelConfigOptions(
 /**
  * Renders all ChatPanel instances inside the `panels` slot of ChatShell.
  */
-export function AppShellPanels({
+export const AppShellPanels = React.memo(function AppShellPanels({
   serviceManager,
   languagePack,
   isHydratingComplete,
@@ -588,4 +588,4 @@ export function AppShellPanels({
       )}
     </div>
   );
-}
+});

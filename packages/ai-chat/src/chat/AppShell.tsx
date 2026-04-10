@@ -63,6 +63,7 @@ import {
   selectHumanAgentDisplayState,
   selectInputState,
 } from "./store/selectors";
+import { shallowEqual } from "./store/appStore";
 import { consoleError, createDidCatchErrorData } from "./utils/miscUtils";
 import {
   IS_PHONE,
@@ -105,6 +106,31 @@ const WIDTH_BREAKPOINT_STANDARD = "cds-aichat--standard-width";
 const WIDTH_BREAKPOINT_NARROW = "cds-aichat--narrow-width";
 const WIDTH_BREAKPOINT_WIDE = "cds-aichat--wide-width";
 
+// Module-level selectors — stable references so useSelector can use Object.is
+// to skip re-renders when the slice hasn't changed.
+const selectConfig = (state: AppState) => state.config;
+const selectPersistedToBrowserStorage = (state: AppState) =>
+  state.persistedToBrowserStorage;
+const selectIsHydrated = (state: AppState) => state.isHydrated;
+const selectAssistantMessageState = (state: AppState) =>
+  state.assistantMessageState;
+const selectHumanAgentStateSlice = (state: AppState) => state.humanAgentState;
+const selectWorkspacePanelState = (state: AppState) =>
+  state.workspacePanelState;
+const selectHistoryPanelState = (state: AppState) => state.historyPanelState;
+const selectAllMessageItemsByID = (state: AppState) =>
+  state.allMessageItemsByID;
+const selectAllMessagesByID = (state: AppState) => state.allMessagesByID;
+const selectCatastrophicErrorType = (state: AppState) =>
+  state.catastrophicErrorType;
+const selectIFramePanelState = (state: AppState) => state.iFramePanelState;
+const selectViewSourcePanelState = (state: AppState) =>
+  state.viewSourcePanelState;
+const selectCustomPanelState = (state: AppState) => state.customPanelState;
+const selectResponsePanelState = (state: AppState) => state.responsePanelState;
+const selectChatWidthBreakpoint = (state: AppState) =>
+  state.chatWidthBreakpoint;
+
 interface AppShellProps extends HasServiceManager {
   hostElement?: Element;
   renderWriteableElements?: RenderWriteableElementResponse;
@@ -130,7 +156,7 @@ export interface MainWindowFunctions extends HasRequestFocus, HasDoAutoScroll {
   getMessagesScrollBottom(): number;
 }
 
-export default function AppShell({
+function AppShell({
   hostElement,
   serviceManager,
   renderWriteableElements,
@@ -143,24 +169,23 @@ export default function AppShell({
     serviceManager.ariaAnnouncer = ariaAnnouncer;
   }, [serviceManager, ariaAnnouncer]);
 
-  const appState = useSelector<AppState, AppState>((state) => state);
-  const {
-    config,
-    persistedToBrowserStorage,
-    isHydrated,
-    assistantMessageState,
-    humanAgentState,
-    workspacePanelState,
-    historyPanelState,
-    allMessageItemsByID,
-    allMessagesByID,
-    catastrophicErrorType,
-    iFramePanelState,
-    viewSourcePanelState,
-    customPanelState,
-    responsePanelState,
-    chatWidthBreakpoint,
-  } = appState;
+  const config = useSelector(selectConfig);
+  const persistedToBrowserStorage = useSelector(
+    selectPersistedToBrowserStorage,
+  );
+  const isHydrated = useSelector(selectIsHydrated);
+  const assistantMessageState = useSelector(selectAssistantMessageState);
+  const humanAgentState = useSelector(selectHumanAgentStateSlice);
+  const workspacePanelState = useSelector(selectWorkspacePanelState);
+  const historyPanelState = useSelector(selectHistoryPanelState);
+  const allMessageItemsByID = useSelector(selectAllMessageItemsByID);
+  const allMessagesByID = useSelector(selectAllMessagesByID);
+  const catastrophicErrorType = useSelector(selectCatastrophicErrorType);
+  const iFramePanelState = useSelector(selectIFramePanelState);
+  const viewSourcePanelState = useSelector(selectViewSourcePanelState);
+  const customPanelState = useSelector(selectCustomPanelState);
+  const responsePanelState = useSelector(selectResponsePanelState);
+  const chatWidthBreakpoint = useSelector(selectChatWidthBreakpoint);
 
   const {
     derived: {
@@ -215,8 +240,11 @@ export default function AppShell({
   );
   const useCustomHostElement = Boolean(hostElement);
   const headerDisplayName = header?.name;
-  const inputState = selectInputState(appState);
-  const agentDisplayState = selectHumanAgentDisplayState(appState);
+  const inputState = useSelector(selectInputState);
+  const agentDisplayState = useSelector(
+    selectHumanAgentDisplayState,
+    shallowEqual,
+  );
 
   // Use derived state hook for memoized calculations
   const {
@@ -318,11 +346,11 @@ export default function AppShell({
     showUploadButtonDisabled,
   } = useInputCallbacks({
     serviceManager,
-    appState,
     inputState,
     agentDisplayState,
     isHydrated,
     messagesRef,
+    humanAgentFileUploadInProgress: humanAgentState.fileUploadInProgress,
   });
 
   // Human agent callbacks
@@ -510,6 +538,12 @@ export default function AppShell({
       consoleError("An error occurred in handleFocusToggle", error);
     }
   }, []);
+
+  // Stable wrapper so <Input> receives a referentially stable onSendInput prop
+  const onSendInputFromInput = useCallback(
+    (text: string) => onSendInput(text, MessageSendSource.MESSAGE_INPUT),
+    [onSendInput],
+  );
 
   // Add keyboard event listener for focus toggle shortcut and Escape to exit message navigation
   useEffect(() => {
@@ -796,9 +830,7 @@ export default function AppShell({
                   disableInput={shouldDisableInput()}
                   disableSend={shouldDisableSend()}
                   isInputVisible={inputState.fieldVisible}
-                  onSendInput={(text: string) =>
-                    onSendInput(text, MessageSendSource.MESSAGE_INPUT)
-                  }
+                  onSendInput={onSendInputFromInput}
                   onUserTyping={onUserTyping}
                   showUploadButton={
                     inputState.allowFileUploads || isAssistantUploadEnabled
@@ -885,3 +917,5 @@ export default function AppShell({
     </div>
   );
 }
+
+export default React.memo(AppShell);
