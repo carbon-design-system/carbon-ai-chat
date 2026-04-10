@@ -11,7 +11,7 @@
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/components/button/tokens";
 @use "@carbon/styles/scss/components/button" as button;
-@use "../../styles/chat-theme";
+@use "../../../globals/scss/chat-theme";
 
 .cds-aichat--input-and-completions {
   position: relative;

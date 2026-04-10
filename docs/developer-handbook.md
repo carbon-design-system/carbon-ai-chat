@@ -5,9 +5,8 @@
 
 - [Getting started](#getting-started)
 - [Common tasks](#common-tasks)
-- [Dependency management](#dependency-management)
-  - [Continuous Integration](#continuous-integration)
-- [Directory Structure](#package-architecture-and-layout)
+- [Development workflow](#development-workflow)
+- [Directory Structure](#directory-structure)
 - [Commit conventions](#commit-conventions)
   - [Commit message format](#commit-message-format)
   - [Type](#type)
@@ -17,9 +16,6 @@
   - [Examples](#examples)
 - [Coding style](#coding-style)
   - [Class names](#class-names)
-  - [Sass documentation](#sass-documentation)
-  - [Start a new `block` or `element`?](#start-a-new-block-or-element)
-  - [Red flags](#red-flags)
 - [Maintainers](#maintainers)
   - [Continuous integration and deployment](#continuous-integration-and-deployment)
   - [Publishing](#publishing)
@@ -56,12 +52,10 @@ This strategy is particularly useful during development, and tooling like Lerna
 will pick up on when packages are linked in this way and will automatically
 update versions when publishing new versions of packages.
 
-Next up, you'll most likely want to build all of the package files so that
-things don't fail while you are working on a package. To do this, you can run
-the following command:
+Next up, you'll want to build the packages before running anything:
 
 ```bash
-npm run build
+npm run aiChat:build
 ```
 
 Afterwards, you should be good to go!
@@ -70,67 +64,88 @@ Afterwards, you should be good to go!
 
 Here are some of the top-level tasks in the root of the project that you might want to run:
 
-| Command                                                           | Usage                                                                                                         |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `npm run build`                                                   | Uses `lerna` to run the `build` script in each package                                                        |
-| `npm run clean`                                                   | Resets the state of the project by removing all `node_modules` and running the `clean` script in each package |
-| `npm run ci-check`                                                | Runs a series of checks (format, license, and linting on all files in the repository)                         |
-| `npm run format`, `npm run format:write`, `npm run format:staged` | Format files using Prettier, check if files have been formatted                                               |
-| `npm run lint`                                                    | Run eslint on files in the project                                                                            |
-| `npm run lint:license`, `npm run lint:license:staged`             | Run a license script on files across the project to ensure all files have the license at the top of the file  |
-| `npm run lint:styles`                                             | Run stylelint on the scss files in the project                                                                |
+| Command                                                           | Usage                                                                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run aiChat:build`                                            | Builds `@carbon/ai-chat-components`, `@carbon/ai-chat`, and the demo in sequence                                                |
+| `npm run aiChat:start`                                            | Builds both packages, then starts watch mode for both + the demo dev server (see [Development workflow](#development-workflow)) |
+| `npm run build`                                                   | Uses `lerna` to run the `build` script in every package in the monorepo                                                         |
+| `npm run test`                                                    | Runs the test suite across all packages via lerna                                                                               |
+| `npm run clean`                                                   | Resets the state of the project by removing all `node_modules` and running the `clean` script in each package                   |
+| `npm run ci-check`                                                | Runs a series of checks (format, license, and linting on all files in the repository)                                           |
+| `npm run format`, `npm run format:write`, `npm run format:staged` | Format files using Prettier, check if files have been formatted                                                                 |
+| `npm run lint`                                                    | Run eslint on files in the project                                                                                              |
+| `npm run lint:license`, `npm run lint:license:staged`             | Run a license script on files across the project to ensure all files have the license at the top of the file                    |
+| `npm run lint:styles`                                             | Run stylelint on the scss files in the project                                                                                  |
 
-### Directory Structure
+## Development workflow
+
+### Building the packages
+
+The examples and demo depend on the compiled output of `@carbon/ai-chat` and
+`@carbon/ai-chat-components`. These packages are linked into `node_modules` via
+npm workspaces, but their `exports` point to built artifacts (`dist/es/` and
+`es/`) that don't exist until you run a build. After a fresh clone, always
+build before starting anything:
+
+```bash
+npm run aiChat:build
+```
+
+### Starting the development environment
+
+`npm run aiChat:start` is the primary command for active development on the
+packages. It first does a full build of both packages, then concurrently starts:
+
+- **`@carbon/ai-chat-components`**: `rollup --watch` (writes to `packages/ai-chat-components/es/`), plus Storybook on ports 6006 and 7007
+- **`@carbon/ai-chat`**: `rollup --watch` (writes to `packages/ai-chat/dist/es/`), plus TypeDoc watcher and a doc server on port 5001
+- **Demo**: the demo dev server
+
+`@carbon/ai-chat`'s rollup watcher also watches `packages/ai-chat-components/es/**`, so a components rebuild automatically triggers an `@carbon/ai-chat` rebuild — you only need the one command.
+
+```bash
+npm run aiChat:start
+```
+
+### Running an example alongside the development environment
+
+Each example in `examples/react/` and `examples/web-components/` has its own
+webpack dev server. To develop against a live package build, run
+`aiChat:start` in one terminal and the example in a second:
+
+```bash
+# Terminal 1
+npm run aiChat:start
+
+# Terminal 2
+npm run start --workspace=@carbon/ai-chat-examples-react-custom-element
+```
+
+When `aiChat:start` rebuilds a package, the example's webpack dev server will
+detect the changed files in `dist/es/` and hot-reload the browser automatically.
+
+All examples default to port 3000. If you need to run more than one example at
+the same time, override the port with the `PORT` environment variable:
+
+```bash
+PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic
+```
+
+## Directory Structure
 
 ```
-web-componentsmonorepo-template/
+carbon-ai-chat/
 ├── packages/
-│   └── web-components/      # Web Components package
-│       ├── src/
-|       |    └── components/
-│       └── package.json
-├── docs/                    # Documentation and guides
-├── .github/                 # GitHub workflows for CI/CD
-├── package.json             # Root package.json with shared dependencies
+│   ├── ai-chat/              # Core React chat package (@carbon/ai-chat)
+│   └── ai-chat-components/   # Lit web components package used for pure components used by @carbon/ai-chat (@carbon/ai-chat-components)
+├── examples/
+│   ├── react/                # React usage examples
+│   └── web-components/       # Web component usage examples
+├── demo/                     # Full demo application
+├── docs/                     # Documentation and guides
+├── .github/                  # GitHub workflows for CI/CD
+├── package.json              # Root package.json with shared scripts and workspaces
 └── README.md
 ```
-
-If a package in elements is shipping Sass-based files, then it will follow a
-certain number of conventions.
-
-The first convention is that each of these packages will have a `scss` folder
-that contains all the Sass files for the package. For example, `@carbon/colors`
-would have a folder at `@carbon/colors/scss` in the import path for Sass.
-
-To include the entire package, there are two options within this `scss` folder:
-the `index.scss` entrypoint for modules and an entrypoint for inline support.
-The `index.scss` entrypoint would be found at `@carbon/colors/scss/index.scss`
-and would work for teams that are using tools like eyeglass or have already
-setup `node-sass`'s `includePaths` option to include `node_modules`.
-
-The other entrypoint option is for inline support. This option will work without
-having to use eyeglass or something like `node-sass`'s `includePaths` option.
-Each package that ships a `scss` folder will include this entrypoint, and the
-name will reflect the package name. For example, `@carbon/colors` would have an
-entrypoint available at `@carbon/colors/scss/colors.scss`.
-
-#### Entrypoint behavior
-
-The entrypoints of our Sass packages will output CSS (side-effects) by default,
-unless there is no corresponding CSS to output. These side-effects help with
-quickly using a package, but sometimes an application developer will want to
-control behavior in order to manage side-effects. For these cases, we expose
-additional files that you can include in your project, most notably a common
-`scss/mixins.scss` file.
-
-For example, in `@carbon/colors` we can import the `carbon--colors` mixin by
-importing `@carbon/colors/scss/mixins.scss`. These types of files are guaranteed
-to have no, or minimal, side-effects. The only side-effects that are emitted are
-global variable initializations as this is required behavior in newer versions
-of Sass.
-
-Using these `mixins.scss` entrypoints allows you as an application developer to
-control when these side-effects are applied in your project.
 
 ## Commit conventions
 
@@ -180,6 +195,7 @@ Must be one of the following:
 - **perf**: A code change that improves performance
 - **refactor**: A code change that neither fixes a bug nor adds a feature
 - **revert**: A code change that reverses a previous commit
+- **style**: Changes that affect only visual styling (CSS/SCSS) without changing logic
 - **test**: Adding missing tests or correcting existing tests
 
 ### Subject
@@ -329,103 +345,6 @@ right-to-left styling out of the box.
 }
 ```
 
-### Sass documentation
-
-[SassDoc](http://sassdoc.com) is used to document the Carbon Sass source.
-SassDoc annotations start each line with `///`; do not use `///` in non-SassDoc
-comments.
-
-For consistency, capitalize types (used in `@type`, `@param`, `@return`) and
-descriptions (used in `@param`, `@return`, `@deprecated`, `@example`, `@link`).
-
-The following annotations are used:
-
-**Required annotations**
-
-- [Description](http://sassdoc.com/annotations/#description) - can be one line
-  or multiple lines
-- [`@access`](http://sassdoc.com/annotations/#access) - `public` or `private`,
-  where public items make up our public API
-- [`@group`](http://sassdoc.com/annotations/#group) - typically a package or
-  component name
-- [`@type`](http://sassdoc.com/annotations/#type) - allowed on **variables**,
-  (e.g. `Map`, `Color`, `Number`)
-- [`@param`](http://sassdoc.com/annotations/#parameter) - allowed on
-  **functions** and **mixins**, include the type, name, and description, with a
-  default value if there is one (e.g.
-  `@param {Map} $breakpoints [$carbon--grid-breakpoints] - A map of breakpoints where the key is the name`)
-- [`@return`](http://sassdoc.com/annotations/#return) - allowed on
-  **functions**, include the type and description (e.g.
-  `@return {Number} In px`)
-- [`@alias`](http://sassdoc.com/annotations/#alias) - do not include the `$` if
-  aliasing a variable
-- [`@content`](http://sassdoc.com/annotations/#content) - allowed on **mixins**,
-  describe the usage of content
-- [`@deprecated`](http://sassdoc.com/annotations/#deprecated) - context around
-  possible replacements or when the item will no longer be available
-
-  **Optional annotations**
-
-- [`@example`](http://sassdoc.com/annotations/#example) - if the usage isn't
-  straight forward or there are multiple use cases
-- [`@link`](http://sassdoc.com/annotations/#link) - if there's a related link to
-  reference
-
-  **Examples**
-
-```scss
-// Variable example
-
-/// Primary interactive color; Primary buttons
-/// @type Color
-/// @access public
-/// @group @carbon/themes
-$interactive-01: map-get($carbon--theme, interactive-01) !default;
-
-// Mixin example
-
-/// Create the container for a grid. Will cause full-bleed for the grid unless
-/// max-width properties are added with `make-container-max-widths`
-/// @param {Map} $breakpoints [$carbon--grid-breakpoints] - A map of breakpoints where the key is the name
-/// @access private
-/// @group @carbon/grid
-@mixin carbon--make-container($breakpoints: $carbon--grid-breakpoints) {
-}
-
-// Function example
-
-/// Compute the type size for the given type scale step
-/// @param {Number} $step - Type scale step
-/// @return {Number} In px
-/// @access public
-/// @group @carbon/type
-@function carbon--get-type-size($step) {
-}
-```
-
-### Start a new `block` or `element`?
-
-A nested element can use a new block name as long as the styles are independent
-of the parent.
-
-```html
-<div class="cds--component">
-  <button class="cds--component-button">Button</button>
-</div>
-```
-
-:point_up: The `#{$prefix}--component-button` class implies that this button has
-independent styles from its parent. Generally, it's preferred to start a new
-block.
-
-### Red flags
-
-Avoid names with multiple `__element` names:
-
-- :x: `.#{$prefix}--card__list__item`
-- :white_check_mark: `.#{$prefix}--card-item`
-- :white_check_mark: `.#{$prefix}--card__item`
-
 ## Maintainers
 
 ### Continuous integration and deployment
@@ -434,21 +353,21 @@ GitHub Actions is used to automate the CI/CD (Continuous Integration and Continu
 
 Actions that are triggered upon opening a PR:
 
-- [CI check](https://github.com/carbon-design-system/web-components-monorepo-template/actions/workflows/ci.yml): Builds, runs styleint, prettier, tests, and license checks on the changes from the PR to ensure no issues are introduced.
-- [Deploy preview](https://github.com/carbon-design-system/web-components-monorepo-template/actions/workflows/deploy-previews.yml): Deploys a preview of the changes utilizing GitHub Pages. The link to the deploy preview will be commented on the PR. Once the PR has been merged, the action will automatically remove the deploy preview artifacts from GitHub Pages.
+- [CI check](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/ci.yml): Builds, runs styleint, prettier, tests, and license checks on the changes from the PR to ensure no issues are introduced.
+- [Deploy preview](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-previews.yml): Deploys a preview of the changes utilizing GitHub Pages. The link to the deploy preview will be commented on the PR. Once the PR has been merged, the action will automatically remove the deploy preview artifacts from GitHub Pages.
 
 Actions triggered upon merging a PR into the `main` branch:
 
-- [Deployment of canary Storybook environment](https://github.com/carbon-design-system/web-components-monorepo-template/actions/workflows/deploy-canary-storybook.yml): Deploys the canary Storybook environment to GitHub Pages to be used for testing.
+- [Deployment of canary Storybook environment](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-canary-storybook.yml): Deploys the canary Storybook environment to GitHub Pages to be used for testing.
   - There are a total of 3 testing environments:
     - Canary: Updated on every change merged to `main`
     - Staging: Updated on every publish of a release candidate
     - Latest: Production environment - updated on every full release
-- [Publish of canary CDN artifacts](https://github.com/carbon-design-system/web-components-monorepo-template/actions/workflows/publish-canary-cdn.yml): Publishes canary CDN artifacts to be used for testing.
+- [Publish of canary CDN artifacts](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-canary-cdn.yml): Publishes canary CDN artifacts to be used for testing.
 
 ### Publishing
 
-Publishing of packages (both to NPM and CDN artifacts) are done within GitHub Actions as well. For more information, view the [publishing-releases.md](https://github.com/carbon-design-system/web-components-monorepo-template/blob/main/docs/publishing-releases.md) documentation.
+Publishing of packages (both to NPM and CDN artifacts) are done within GitHub Actions as well. For more information, view the [publishing-releases.md](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/publishing-releases.md) documentation.
 
 ### Automated dependency updates
 

@@ -9,7 +9,7 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "lib": ["ESNext", "DOM"],
     "types": ["node"],
     "plugins": [

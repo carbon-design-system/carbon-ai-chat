@@ -36,7 +36,7 @@ export class SlotObserver {
    */
   connect(onChangeCallback: () => void): void {
     this.onChangeCallback = onChangeCallback;
-    this.updateSlotStates();
+    this.updateSlotStates(true);
     this.observeSlotChanges();
   }
 
@@ -132,7 +132,7 @@ export class SlotObserver {
   /**
    * Update the state for all observed slots
    */
-  private updateSlotStates(): void {
+  private updateSlotStates(forceCallback = false): void {
     const previousStates = new Map(
       this.observedSlots.map(({ stateKey }) => [
         stateKey,
@@ -148,7 +148,7 @@ export class SlotObserver {
       ({ stateKey }) => previousStates.get(stateKey) !== this.state[stateKey],
     );
 
-    if (hasChanged && this.onChangeCallback) {
+    if ((hasChanged || forceCallback) && this.onChangeCallback) {
       this.onChangeCallback();
     }
   }

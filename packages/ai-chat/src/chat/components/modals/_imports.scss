@@ -6,7 +6,7 @@
  */
 
 @use "ConfirmModal";
-@use "../../styles/chat-theme";
+@use "../../../globals/scss/chat-theme";
 
 /* Modal host container - portal for all modals */
 .cds-aichat--modal-host {

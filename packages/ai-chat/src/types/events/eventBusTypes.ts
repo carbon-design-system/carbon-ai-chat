@@ -725,13 +725,6 @@ export interface BusEventHistoryPanelPreOpen extends BusEvent {
 
 /**
  * @category Events
- */
-export interface BusEventCustomPanelPreOpen extends BusEvent {
-  type: BusEventType.CUSTOM_PANEL_PRE_OPEN;
-}
-
-/**
- * @category Events
  * @experimental
  */
 export interface BusEventWorkspacePreOpen extends BusEvent {

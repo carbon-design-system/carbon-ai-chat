@@ -8,7 +8,6 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/motion";
 @use "@carbon/styles/scss/theme";
-@use "../../../styles/chat-theme";
 
 .cds-aichat--image {
   overflow: hidden;
@@ -47,13 +46,30 @@ cds-skeleton-placeholder.cds-aichat--image__skeleton::part(placeholder) {
   }
 }
 
+@keyframes cds-aichat-fade-in-img {
+  0% {
+    filter: grayscale(100%);
+    opacity: 0;
+  }
+
+  100% {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+}
+
 .cds-aichat--image__image--loaded {
-  animation-duration: motion.$duration-fast-02;
-  animation-iteration-count: 1;
-  animation-name: cds-chat-fade-in-img;
-  animation-timing-function: motion.motion(standard, productive);
   block-size: auto;
   opacity: 1;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--image__image--loaded {
+    animation-duration: motion.$duration-fast-02;
+    animation-iteration-count: 1;
+    animation-name: cds-aichat-fade-in-img;
+    animation-timing-function: motion.motion(standard, productive);
+  }
 }
 
 /* Scoped adjustments when within the image component */
@@ -62,16 +78,18 @@ cds-skeleton-placeholder.cds-aichat--image__skeleton::part(placeholder) {
   margin: auto;
 }
 
-// Keyframes moved to ../../../../styles/_keyframes.scss
 .cds-aichat--image__text-and-icon .cds-aichat--text-holder-tile__url {
   padding-inline-end: calc(#{layout.$spacing-05} + 2px);
 }
 
 .cds-aichat--image__icon-only .cds-aichat--image__icon {
   padding: layout.$spacing-04;
-  border-radius: chat-theme.$card-border-radius;
+  border-radius: layout.$spacing-03;
   background-color: theme.$overlay;
+  block-size: calc(#{layout.$spacing-05} + #{layout.$spacing-04} * 2);
+  color: theme.$icon-on-color;
   fill: theme.$icon-on-color;
+  inline-size: calc(#{layout.$spacing-05} + #{layout.$spacing-04} * 2);
 }
 
 svg.cds-aichat--image__icon {

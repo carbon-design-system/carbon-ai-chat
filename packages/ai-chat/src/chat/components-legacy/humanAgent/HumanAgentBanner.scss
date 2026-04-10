@@ -8,7 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
-@use "../../styles/chat-theme";
+@use "../../../globals/scss/chat-theme";
 
 .cds-aichat--human-agent-banner__body {
   display: flex;

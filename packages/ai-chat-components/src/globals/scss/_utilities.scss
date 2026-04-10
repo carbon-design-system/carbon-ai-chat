@@ -9,6 +9,7 @@
 // Following @carbon/styles patterns for consistent naming and structure
 
 @use "./vars" as *;
+@forward "./vars";
 
 // Feature flags for fallback behavior
 $use-fallback-value: true !default;

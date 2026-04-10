@@ -32,8 +32,10 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
-    "./dist/es/": "./dist/es/",
-    "./dist/es-custom/": "./dist/es-custom/"
+    "./scss/*": "./dist/scss/*",
+    "./css/*": "./dist/css/*",
+    "./dist/es/*": "./dist/es/*",
+    "./dist/es-custom/*": "./dist/es-custom/*"
   },
   "typesVersions": {
     "*": {
@@ -58,6 +60,8 @@
     "dist/es",
     "dist/es-custom",
     "dist/types",
+    "dist/scss",
+    "dist/css",
     "telemetry.yml"
   ],
   "browserslist": [
@@ -69,7 +73,8 @@
     "not IE 11"
   ],
   "sideEffects": [
-    "**/web-components/**/*.js"
+    "**/web-components/**/*.js",
+    "**/*.css"
   ],
   "devDependencies": {
     "@carbon/icons": "^11.53.0",
