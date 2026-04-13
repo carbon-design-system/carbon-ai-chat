@@ -55,6 +55,7 @@ function tableTemplate(tableElement: CDSAIChatTable) {
           @click=${handleDownload}
           tooltip-text=${downloadLabelText}
           tooltip-position=${tooltipPosition}
+          kind="ghost"
         >
           ${iconLoader(Download16)}
           <span slot="tooltip-content">${downloadLabelText}</span>
