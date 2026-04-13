@@ -11,7 +11,7 @@
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities";
 @use "@carbon/styles/scss/components/button/tokens";
-@use "../styles/chat-theme";
+@use "../../globals/scss/chat-theme";
 
 .cds-aichat--typing-indicator--hidden {
   visibility: hidden;
@@ -91,6 +91,16 @@
 
 .cds-aichat--processing-component {
   block-size: 32px;
+}
+
+@keyframes cds-aichat-fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .cds-aichat--processing-label {

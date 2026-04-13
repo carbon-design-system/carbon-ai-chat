@@ -106,6 +106,8 @@ function ChatContainer(props: ChatContainerProps) {
     launcher,
     input,
     keyboardShortcuts,
+    upload,
+    ...domProps
   } = props;
   // Reconstruct PublicConfig from flattened props
   const config = useMemo(
@@ -134,6 +136,7 @@ function ChatContainer(props: ChatContainerProps) {
       launcher,
       input,
       keyboardShortcuts,
+      upload,
     }),
     [
       onError,
@@ -160,6 +163,7 @@ function ChatContainer(props: ChatContainerProps) {
       launcher,
       input,
       keyboardShortcuts,
+      upload,
     ],
   );
 
@@ -274,7 +278,7 @@ function ChatContainer(props: ChatContainerProps) {
 
   return (
     <>
-      <ReactChatContainer ref={wrapperRef} />
+      <ReactChatContainer ref={wrapperRef} {...domProps} />
       {container &&
         createPortal(
           <ChatAppEntry

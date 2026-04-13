@@ -32,8 +32,10 @@
       "types": "./dist/types/aiChatEntry.d.ts",
       "import": "./dist/es/web-components/cds-aichat-custom-element/index.js"
     },
-    "./dist/es/": "./dist/es/",
-    "./dist/es-custom/": "./dist/es-custom/"
+    "./scss/*": "./dist/scss/*",
+    "./css/*": "./dist/css/*",
+    "./dist/es/*": "./dist/es/*",
+    "./dist/es-custom/*": "./dist/es-custom/*"
   },
   "typesVersions": {
     "*": {
@@ -58,6 +60,8 @@
     "dist/es",
     "dist/es-custom",
     "dist/types",
+    "dist/scss",
+    "dist/css",
     "telemetry.yml"
   ],
   "browserslist": [
@@ -69,7 +73,8 @@
     "not IE 11"
   ],
   "sideEffects": [
-    "**/web-components/**/*.js"
+    "**/web-components/**/*.js",
+    "**/*.css"
   ],
   "devDependencies": {
     "@carbon/icons": "^11.53.0",
@@ -102,7 +107,6 @@
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "lit": "^3.1.0",
-    "playwright": "^1.48.1",
     "postcss": "^8.4.41",
     "postcss-discard-comments": "^7.0.4",
     "react": "^19.0.0",
@@ -112,7 +116,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-visualizer": "^6.0.3",
     "sass": "1.99.0",
-    "serve": "^14.2.4",
+    "serve": "^14.2.6",
     "terser": "^5.43.1",
     "ts-jest": "^29.1.5",
     "ts-lit-plugin": "^2.0.2",

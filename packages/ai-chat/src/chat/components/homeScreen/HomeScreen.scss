@@ -10,7 +10,6 @@
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 @use "@carbon/styles/scss/utilities/ai-gradient" as *;
-@use "../../styles/chat-theme";
 
 .cds-aichat--widget--max-width
   .cds-aichat--home-screen__home-screen-bottom-element,
@@ -206,6 +205,21 @@ cds-aichat-button.cds-aichat--home-screen__starter {
   .cds-aichat--home-screen__back-button-content
   .cds-aichat--home-screen__back-button-content-text {
   margin-inline: layout.$spacing-03 unset;
+}
+
+@keyframes cds-aichat-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes cds-aichat-fade-in-up-back-button {

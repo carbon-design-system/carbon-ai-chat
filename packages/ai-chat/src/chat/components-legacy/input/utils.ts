@@ -176,7 +176,7 @@ function extractNormalizedText(
   maxLength: number | undefined,
 ): { rawValue: string; displayValue: string; wasTruncated: boolean } {
   const textValue = normalizeTextValue(element.innerText || "");
-  let nextValue = textValue;
+  let nextValue = textValue.trim();
   let wasTruncated = false;
 
   if (maxLength && nextValue.length > maxLength) {

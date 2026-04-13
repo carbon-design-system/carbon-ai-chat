@@ -200,7 +200,7 @@ async function postBuild() {
     // Find all files in the `es-custom` directory
     const files = await globby([`${targetDir}/**/*`], { onlyFiles: true });
 
-    // Replace "cds" (not "cds-aichat") with "cds-custom" in all files
+    // Replace "cds" with "cds-custom" in all files
     await Promise.all(
       files.map(async (file) => {
         const content = await fs.promises.readFile(file, "utf8");
@@ -210,11 +210,12 @@ async function postBuild() {
             /@carbon\/web-components\/es/g,
             "@carbon/web-components/es-custom",
           )
-          // 2) Replace cds → cds-custom except:
-          //    - cds-aichat (via negative lookahead (?!-aichat))
+          // 2) Replace cds-aichat → cds-custom-aichat (except CSS variables like --cds-aichat-*)
+          .replace(/(?<!-)\bcds-aichat\b/g, "cds-custom-aichat")
+          // 3) Replace cds → cds-custom except:
           //    - CSS variables like --cds-* (via negative lookbehind (?<!-))
           //    - already transformed cds-custom/cds_custom (via negative lookahead (?!-custom|_custom))
-          .replace(/(?<!-)\bcds\b(?!-aichat|-custom|_custom)/g, "cds-custom");
+          .replace(/(?<!-)\bcds\b(?!-custom|_custom)/g, "cds-custom");
         await fs.promises.writeFile(file, updatedContent);
       }),
     );

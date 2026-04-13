@@ -132,11 +132,11 @@ export function createIntl({
 
       try {
         // Get or create cached formatter for this message
-        if (!formatters.has(id)) {
-          formatters.set(id, new IntlMessageFormat(message, locale));
+        let formatter = formatters.get(id);
+        if (!formatter) {
+          formatter = new IntlMessageFormat(message, locale);
+          formatters.set(id, formatter);
         }
-
-        const formatter = formatters.get(id)!;
         const result = formatter.format(values);
 
         // IntlMessageFormat can return string or array of parts

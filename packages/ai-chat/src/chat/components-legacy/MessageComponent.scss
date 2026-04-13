@@ -286,9 +286,19 @@ $message-bar-width: 3px;
   }
 }
 
+@keyframes cds-aichat-fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
 .cds-aichat--sent-container .cds-aichat--message-status-file-success svg {
   animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2000ms
-    cds-chat-fade-out forwards;
+    cds-aichat-fade-out forwards;
   fill: theme.$interactive;
 }
 

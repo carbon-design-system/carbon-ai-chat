@@ -385,7 +385,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         navigationOverflowAriaLabel={overflowMenuAriaLabel}
         navigationOverflowIcon={OverflowMenuVertical16}
         navigationOverflowOnClick={handleOverflowMenuClick}
-        navigationTooltipAlign={isRTL ? "left" : "right"}
+        navigationTooltipAlign="right"
       >
         {/* Decorator slot - AI Label */}
         {showAiSlugContent && (

@@ -8,7 +8,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
-@use "../../../styles/chat-theme";
+@use "../../../../globals/scss/chat-theme";
 
 .cds-aichat--connect-to-human-agent {
   max-inline-size: chat-theme.$card-max-width;
