@@ -145,6 +145,7 @@
     "storybook": "^10.2.8",
     "typescript": "^5.2.2",
     "vite": "^8.0.5",
-    "web-dev-server-plugin-lit-css": "^4.0.0"
+    "web-dev-server-plugin-lit-css": "^4.0.0",
+    "webpack-dev-server": "^5.2.3"
   }
 }
