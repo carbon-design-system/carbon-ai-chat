@@ -11,7 +11,13 @@
 
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { carbonIconToReact } from "./../utils/carbonIcon";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useIntl } from "../hooks/useIntl";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
@@ -165,6 +171,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   useEffect(() => {
     setIsChainOfThoughtOpen(false);
   }, [message.ui_state.id]);
+
+  // Stable callback so children wrapped in React.memo (BodyMessageComponents,
+  // CardItemComponent, GridItemComponent) can actually skip re-renders.
+  const renderMessageComponent = useCallback(
+    (childProps: MessageTypeComponentProps) => (
+      <MessageTypeComponent {...childProps} />
+    ),
+    [],
+  );
 
   /**
    * Returns the appropriate component to render the given message.
@@ -533,9 +548,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         fullMessage={originalMessage}
         isMessageForInput={isMessageForInput}
         requestFocus={requestInputFocus}
-        renderMessageComponent={(childProps) => (
-          <MessageTypeComponent {...childProps} />
-        )}
+        renderMessageComponent={renderMessageComponent}
       />
     );
   }
@@ -598,9 +611,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               fullMessage={originalMessage}
               isMessageForInput={isMessageForInput}
               requestFocus={requestInputFocus}
-              renderMessageComponent={(childProps) => (
-                <MessageTypeComponent {...childProps} />
-              )}
+              renderMessageComponent={renderMessageComponent}
             />
           </div>
         </Carousel>
@@ -616,9 +627,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       <GridItemComponent
         localMessageItem={message}
         originalMessage={originalMessage}
-        renderMessageComponent={(childProps) => (
-          <MessageTypeComponent {...childProps} />
-        )}
+        renderMessageComponent={renderMessageComponent}
       />
     );
   }
