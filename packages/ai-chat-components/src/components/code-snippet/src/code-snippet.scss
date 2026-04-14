@@ -31,6 +31,14 @@
       --cds-#{$token}: #{$value};
     }
   }
+
+  .cm-diff-line-inserted {
+    background-color: var(--cds-tag-background-green, rgba(222, 251, 230));
+  }
+
+  .cm-diff-line-deleted {
+    background-color: var(--cds-tag-background-red, rgba(218, 30, 40));
+  }
 }
 
 // In fill mode, the host needs to fill its container
@@ -67,6 +75,14 @@
     @if string.index($token, "syntax-") == 1 {
       --cds-#{$token}: #{$value};
     }
+  }
+
+  .cm-diff-line-inserted {
+    background-color: var(--cds-tag-background-green, rgba(36, 161, 72, 0.15));
+  }
+
+  .cm-diff-line-deleted {
+    background-color: var(--cds-button-danger-active, rgba(218, 30, 40, 0.15));
   }
 }
 
