@@ -37,7 +37,7 @@ describe("ChatInstance.showCatastrophicErrorPanel", () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
-    // Test catastrophicErrorType is initially false
+    // Test catastrophicErrorType is initially undefined
     let state = store.getState();
     expect(state.catastrophicErrorType).toBe(undefined);
 

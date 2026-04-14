@@ -399,7 +399,7 @@ interface ChatActions {
   scrollToMessage: (messageID: string, animate?: boolean) => void;
 
   /**
-   * Fires an event that will display the Catastophic Error Panel in the chat.
+   * Fires an event that will display the Catastrophic Error Panel in the chat.
    */
   showCatastrophicErrorPanel: () => void;
 
