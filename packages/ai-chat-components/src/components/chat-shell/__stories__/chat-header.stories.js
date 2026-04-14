@@ -16,7 +16,7 @@ import { html } from "lit";
 import { ref, createRef } from "lit/directives/ref.js";
 import Close from "@carbon/icons/es/close/16.js";
 import Restart from "@carbon/icons/es/restart/16.js";
-import OverflowMenuVertical from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import Menu16 from "@carbon/icons/es/menu/16.js";
 import ChevronLeft from "@carbon/icons/es/chevron--left/16.js";
 import styles from "./story-styles.scss?lit";
 
@@ -191,7 +191,7 @@ export const WithOverflowNavigation = {
           .headerName=${args.headerName}
           .actions=${actions}
           navigation-type="overflow"
-          .navigationOverflowIcon=${OverflowMenuVertical}
+          .navigationOverflowIcon=${Menu16}
           navigation-overflow-label=${args.navigationOverflowLabel}
           navigation-overflow-aria-label=${args.navigationOverflowAriaLabel}
           .navigationOverflowItems=${sampleOverflowItems}
