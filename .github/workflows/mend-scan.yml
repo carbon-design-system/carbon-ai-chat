@@ -35,6 +35,6 @@ jobs:
           WS_PROJECTNAME: "GH_carbon-ai-chat"
         run: |
           # Download the latest Mend Unified Agent
-          curl -LJO https://unified-agent.s3.amazonaws.com/wss
+          curl -L https://unified-agent.s3.amazonaws.com/wss-unified-agent.jar -o wss-unified-agent.jar
           # Execute the scan
           java -jar wss-unified-agent.jar
