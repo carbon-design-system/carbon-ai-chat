@@ -192,6 +192,11 @@ function createChatInstance({
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
+    showCatastrophicErrorPanel(): void {
+      debugLog("Called instance.showCatastrophicErrorPanel");
+      serviceManager.store.dispatch(actions.showCatastrophicErrorPanel());
+    },
+
     customPanels: serviceManager.customPanelManager,
 
     restartConversation: async () => {

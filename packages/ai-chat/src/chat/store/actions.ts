@@ -262,6 +262,14 @@ const actions = {
     };
   },
 
+  showCatastrophicErrorPanel() {
+    return {
+      type: SET_APP_STATE_VALUE,
+      key: "catastrophicErrorType",
+      value: true,
+    };
+  },
+
   setActiveResponseId(activeResponseId: string | null) {
     return {
       type: SET_ACTIVE_RESPONSE_ID,
