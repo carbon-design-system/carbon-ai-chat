@@ -9,7 +9,7 @@
 
 import "@carbon/web-components/es/components/data-table/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
-import "@carbon/web-components/es/components/button/index.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -51,15 +51,14 @@ function tableTemplate(tableElement: CDSAIChatTable) {
               aria-label=${filterPlaceholderText}
             ></cds-table-toolbar-search>`
           : ""}
-        <cds-button
+        <cds-icon-button
           @click=${handleDownload}
-          tooltip-text=${downloadLabelText}
-          tooltip-position=${tooltipPosition}
+          align=${tooltipPosition}
           kind="ghost"
         >
-          ${iconLoader(Download16)}
+          ${iconLoader(Download16, { slot: "icon" })}
           <span slot="tooltip-content">${downloadLabelText}</span>
-        </cds-button>
+        </cds-icon-button>
       </cds-table-toolbar-content>
     </cds-table-toolbar>`;
   }
