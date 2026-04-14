@@ -7,12 +7,7 @@
  *  @license
  */
 
-import {
-  CarbonTheme,
-  ChatContainer,
-  ChatInstance,
-  PublicConfig,
-} from "@carbon/ai-chat";
+import { ChatContainer, ChatInstance, PublicConfig } from "@carbon/ai-chat";
 import React, { useCallback, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -24,6 +19,7 @@ import { customSendMessage } from "./customSendMessage";
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 
 import { ChatHistoryExample } from "./ChatHistoryExample";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
@@ -33,7 +29,6 @@ const config: PublicConfig = {
   history: {
     isOn: true,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

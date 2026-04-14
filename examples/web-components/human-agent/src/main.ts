@@ -10,7 +10,6 @@
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
-  CarbonTheme,
   type PublicConfig,
   type ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
@@ -72,7 +71,6 @@ export class Demo extends LitElement {
       <cds-aichat-container
         .messaging=${messagingConfig}
         .serviceDeskFactory=${this.serviceDeskFactory}
-        .injectCarbonTheme=${CarbonTheme.WHITE}
       ></cds-aichat-container>
     `;
   }

@@ -32,6 +32,7 @@
         "Service desk",
         "Messaging",
         "Testing",
+        "Utilities",
         "*"
     ],
     "disableSources": true,

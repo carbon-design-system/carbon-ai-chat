@@ -9,7 +9,7 @@
 
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
-import { CarbonTheme, type PublicConfig } from "@carbon/ai-chat";
+import { type PublicConfig } from "@carbon/ai-chat";
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
@@ -30,7 +30,6 @@ const config: PublicConfig = {
     // Optional: limit the number of files that can be attached at once.
     // maxFiles: 5,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -40,7 +39,6 @@ export class Demo extends LitElement {
       <cds-aichat-container
         .messaging=${config.messaging}
         .upload=${config.upload}
-        .injectCarbonTheme=${config.injectCarbonTheme}
       ></cds-aichat-container>
     `;
   }

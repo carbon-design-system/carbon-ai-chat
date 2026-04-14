@@ -11,7 +11,6 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
   BusEventType,
-  CarbonTheme,
   type ChatInstance,
   FeedbackInteractionType,
   type PublicConfig,
@@ -27,7 +26,6 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 interface TrackedElementData {
@@ -151,7 +149,6 @@ export class Demo extends LitElement {
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
-        .injectCarbonTheme=${config.injectCarbonTheme}
         .renderUserDefinedResponse=${this.renderUserDefinedCallback}
       ></cds-aichat-container>
     `;

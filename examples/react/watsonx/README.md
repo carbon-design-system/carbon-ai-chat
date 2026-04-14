@@ -1,86 +1,48 @@
-# watsonx.ai React Example
+# watsonx.ai
 
-This example demonstrates how to integrate the Carbon AI Chat component with IBM watsonx.ai for streaming text generation. The example includes a React frontend and a Node.js proxy server to handle authentication and API calls.
+Connects `ChatContainer` to IBM watsonx.ai for real streaming text generation, using a small Express proxy to handle IAM auth and CORS.
 
-## Features
+## What this example shows
 
-- **Real-time streaming** from watsonx.ai with typewriter effect
-- **Markdown support** including tables, lists, and formatted content
-- **CORS-free architecture** using Express proxy server
-- **Professional SSE handling** with `@microsoft/fetch-event-source`
-- **Smart token buffering** to preserve markdown structure
-- **Error handling** with graceful fallbacks
+- A `customSendMessage` that streams from watsonx.ai via Server-Sent Events using `@microsoft/fetch-event-source`.
+- A local Express proxy (`server.js`) that mints IAM access tokens and forwards the streaming request (`/api/token`, `/api/watsonx/stream`).
+- Token-boundary buffering on the client so markdown structure survives across SSE chunks.
+- Emitting `partial_item`, `complete_item`, and `final_response` chunks via `instance.messaging.addMessageChunk`.
+- Reading watsonx credentials (`WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_URL`, `WATSONX_MODEL_ID`) from `.env`.
 
-## Prerequisites
+## When to use this pattern
 
-- Node.js 22+ and npm
-- IBM Cloud account with watsonx.ai access
-- watsonx.ai project set up
+- You are integrating watsonx.ai streaming into a Carbon AI Chat UI.
+- You need a minimal reference for an SSE-based `customSendMessage` with real auth.
 
-## Setup Instructions
+## APIs and props demonstrated
 
-### Step 1: Get Your IBM Cloud API Key
+| Symbol                                                      | Package / kind                  | Role in this example                   |
+| ----------------------------------------------------------- | ------------------------------- | -------------------------------------- |
+| `ChatContainer`                                             | `@carbon/ai-chat` component     | Mounts the chat UI.                    |
+| `PublicConfig`                                              | `@carbon/ai-chat` type          | Config shape.                          |
+| `customSendMessage`                                         | `messaging` prop                | Streams from watsonx.ai via SSE proxy. |
+| `MessageRequest`, `MessageResponse`, `MessageResponseTypes` | `@carbon/ai-chat`               | Request/response shapes.               |
+| `PartialItemChunkWithId`                                    | `@carbon/ai-chat` type          | Streaming chunk shape.                 |
+| `instance.messaging.addMessage` / `addMessageChunk`         | `ChatInstance` API              | Welcome + streamed chunks.             |
+| `fetchEventSource`                                          | `@microsoft/fetch-event-source` | SSE client.                            |
 
-1. **Log in to IBM Cloud**: Go to [https://cloud.ibm.com](https://cloud.ibm.com)
-2. **Navigate to API Keys**: Go to [Manage > Access (IAM) > API keys](https://cloud.ibm.com/iam/apikeys)
-3. **Create API Key**:
-   - Click "Create an IBM Cloud API key"
-   - Enter a name and description
-   - Click "Create"
-   - **Important**: Copy and save the API key immediately (you won't be able to see it again)
+## Run it
 
-### Step 2: Set Up watsonx.ai Project
+**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
 
-1. **Access watsonx.ai**: Go to [https://dataplatform.cloud.ibm.com/wx](https://dataplatform.cloud.ibm.com/wx)
-2. **Create or select a project**:
-   - If you don't have a project, create one
-   - Make note of your Project ID (found in project settings)
-3. **Verify your region**: Note which IBM Cloud region your watsonx.ai instance is in (e.g., `us-south`, `eu-de`)
+This example additionally requires an IBM Cloud API key, a watsonx.ai project ID, and a populated `.env` (`WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_URL`, optionally `WATSONX_MODEL_ID`). See the IBM Cloud and watsonx.ai consoles to obtain these values.
 
-### Step 3: Choose Your Model
-
-You can find the complete list of available models in your watsonx.ai project dashboard or in the [IBM watsonx.ai documentation](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models.html). The example is configured to use `ibm/granite-3-8b-instruct` by default, but you can change this by setting the `WATSONX_MODEL_ID` environment variable.
-
-### Step 4: Configure Environment Variables
-
-1. **Copy the example environment file**:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Edit `.env` file** with your credentials:
-
-   ```bash
-   # IBM Cloud API Key (required)
-   WATSONX_API_KEY=your-ibm-cloud-api-key-here
-
-   # watsonx.ai Project ID (required)
-   WATSONX_PROJECT_ID=your-project-id-here
-
-   # watsonx.ai API URL (required)
-   # Replace region with your IBM Cloud region
-   WATSONX_URL=https://us-south.ml.cloud.ibm.com
-
-   # Model ID (optional, defaults to ibm/granite-3-8b-instruct)
-   WATSONX_MODEL_ID=ibm/granite-3-8b-instruct
-   ```
-
-### Step 5: Install Dependencies
-
-From the repository root, install all workspace dependencies (run once after cloning):
+From the repository root:
 
 ```bash
 npm install
-```
+npm run build --workspace=@carbon/ai-chat-components
+npm run build --workspace=@carbon/ai-chat
 
-### Step 6: Run from the Monorepo Root
-
-Install dependencies once and start this workspace directly from the repository root:
-
-```bash
-npm install
 npm run start --workspace=@carbon/ai-chat-examples-react-watsonx
 ```
 
-> The `start` script launches both the local proxy server and React development server for this example.
+The `start` script runs both the Express proxy (`start:server`) and the webpack dev server (`start:client`) via `concurrently`.
+
+See [../README.md](../README.md) for the full setup walkthrough.

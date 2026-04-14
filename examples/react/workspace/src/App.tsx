@@ -13,7 +13,6 @@ import {
   BusEventWorkspacePreOpen,
   BusEventWorkspaceOpen,
   BusEventWorkspaceClose,
-  CarbonTheme,
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
@@ -51,7 +50,6 @@ const config: PublicConfig = {
     },
   },
   openChatByDefault: true,
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
