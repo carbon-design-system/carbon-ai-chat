@@ -14,6 +14,8 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   testDir: "./tests",
+  // Set timeout for each test (including beforeEach/afterEach hooks)
+  timeout: 60 * 1000, // 60 seconds per test
   // automatically start your dev server before running tests:
   webServer: {
     command: "PORT=3001 npm run start", // or whatever starts localhost
