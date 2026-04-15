@@ -28,6 +28,7 @@ import {
   selectInputState,
 } from "../store/selectors";
 import { AppState, ChatMessagesState } from "../../types/state/AppState";
+import { shallowEqual } from "../store/appStore";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import HasIntl from "../../types/utilities/HasIntl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
@@ -151,7 +152,19 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   carbonTheme: CarbonTheme;
 }
 
-interface MessagesProps extends MessagesOwnProps, AppState {}
+/**
+ * Only the AppState slices that MessagesComponent actually reads.
+ * Keeping this narrow avoids re-renders caused by unrelated state changes.
+ */
+interface MessagesInjectedState {
+  config: AppState["config"];
+  allMessagesByID: AppState["allMessagesByID"];
+  humanAgentState: AppState["humanAgentState"];
+  persistedToBrowserStorage: AppState["persistedToBrowserStorage"];
+  assistantInputState: AppState["assistantInputState"];
+}
+
+interface MessagesProps extends MessagesOwnProps, MessagesInjectedState {}
 
 interface MessagesState {
   /**
@@ -1006,8 +1019,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       useAITheme,
     } = this.props;
 
-    const inputState = selectInputState(this.props);
-    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
+    const propsAsState = this.props as unknown as AppState;
+    const inputState = selectInputState(propsAsState);
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(propsAsState);
     const { isMessageLoadingCounter } = messageState;
     const { disclaimersAccepted } = persistedToBrowserStorage;
 
@@ -1271,7 +1285,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       },
     } = this.props;
     const { isMessageLoadingCounter, isMessageLoadingText } = messageState;
-    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(
+      this.props as unknown as AppState,
+    );
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = getMessageIDForUserInput(
@@ -1348,12 +1364,21 @@ function debugAutoScroll(message: string, ...args: any[]) {
   }
 }
 
-// Functional wrapper to supply AppState via hooks
+// Module-level selector — only the slices MessagesComponent actually reads.
+const selectMessagesState = (state: AppState): MessagesInjectedState => ({
+  config: state.config,
+  allMessagesByID: state.allMessagesByID,
+  humanAgentState: state.humanAgentState,
+  persistedToBrowserStorage: state.persistedToBrowserStorage,
+  assistantInputState: state.assistantInputState,
+});
+
+// Functional wrapper to supply the narrow state slice via hooks
 const MessagesStateInjector = React.forwardRef<
   MessagesComponent,
   MessagesOwnProps
 >((props, ref) => {
-  const state = useSelector<AppState, AppState>((s) => s);
+  const state = useSelector(selectMessagesState, shallowEqual);
   return (
     <MessagesComponent ref={ref} {...(props as MessagesOwnProps)} {...state} />
   );

@@ -89,53 +89,55 @@ const ELEMENT_CONFIGS: ElementConfig[] = [
 /**
  * Renders WriteableElement slots that live directly under ChatShell.
  */
-export function AppShellWriteableElements({
-  serviceManager,
-  showHomeScreen,
-  renderWriteableElements,
-}: AppShellWriteableElementsProps) {
-  const suffix = serviceManager.namespace.suffix;
-  const hasContentMaxWidth = useSelector(
-    (state: AppState) =>
-      state.config.derived.header.hasContentMaxWidth ?? false,
-  );
+export const AppShellWriteableElements = React.memo(
+  function AppShellWriteableElements({
+    serviceManager,
+    showHomeScreen,
+    renderWriteableElements,
+  }: AppShellWriteableElementsProps) {
+    const suffix = serviceManager.namespace.suffix;
+    const hasContentMaxWidth = useSelector(
+      (state: AppState) =>
+        state.config.derived.header.hasContentMaxWidth ?? false,
+    );
 
-  const elements = useMemo(
-    () =>
-      ELEMENT_CONFIGS.map((config) => {
-        const baseClassName = resolveValue(config.className, showHomeScreen);
-        // Add constrain-width class to header-bottom-element if configured
-        const isHeaderBottomElement =
-          baseClassName === "cds-aichat--header-bottom-element";
-        const className =
-          isHeaderBottomElement && hasContentMaxWidth
-            ? `${baseClassName} cds-aichat--header-constrain-width`
-            : baseClassName;
+    const elements = useMemo(
+      () =>
+        ELEMENT_CONFIGS.map((config) => {
+          const baseClassName = resolveValue(config.className, showHomeScreen);
+          // Add constrain-width class to header-bottom-element if configured
+          const isHeaderBottomElement =
+            baseClassName === "cds-aichat--header-bottom-element";
+          const className =
+            isHeaderBottomElement && hasContentMaxWidth
+              ? `${baseClassName} cds-aichat--header-constrain-width`
+              : baseClassName;
 
-        return {
-          wrapperSlot: config.wrapperSlot,
-          slotName: resolveValue(config.slotName, showHomeScreen),
-          id: `${resolveValue(config.idSuffix, showHomeScreen)}${suffix}`,
-          className,
-        };
-      }).filter((element) => {
-        // Only render the element if content exists in renderWriteableElements
-        // If renderWriteableElements is not provided, render all elements (backward compatibility)
-        if (!renderWriteableElements) {
-          return true;
-        }
-        return !!renderWriteableElements[
-          element.slotName as WriteableElementName
-        ];
-      }),
-    [showHomeScreen, suffix, renderWriteableElements, hasContentMaxWidth],
-  );
+          return {
+            wrapperSlot: config.wrapperSlot,
+            slotName: resolveValue(config.slotName, showHomeScreen),
+            id: `${resolveValue(config.idSuffix, showHomeScreen)}${suffix}`,
+            className,
+          };
+        }).filter((element) => {
+          // Only render the element if content exists in renderWriteableElements
+          // If renderWriteableElements is not provided, render all elements (backward compatibility)
+          if (!renderWriteableElements) {
+            return true;
+          }
+          return !!renderWriteableElements[
+            element.slotName as WriteableElementName
+          ];
+        }),
+      [showHomeScreen, suffix, renderWriteableElements, hasContentMaxWidth],
+    );
 
-  return (
-    <>
-      {elements.map((props) => (
-        <WriteableElement key={props.wrapperSlot} {...props} />
-      ))}
-    </>
-  );
-}
+    return (
+      <>
+        {elements.map((props) => (
+          <WriteableElement key={props.wrapperSlot} {...props} />
+        ))}
+      </>
+    );
+  },
+);

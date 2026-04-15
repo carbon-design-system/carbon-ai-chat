@@ -10,12 +10,7 @@ import {
   AILabel,
   AILabelContent,
 } from "@carbon/react";
-import {
-  Close,
-  Restart,
-  OverflowMenuVertical,
-  ChevronLeft,
-} from "@carbon/icons-react";
+import { Close, Restart, Menu, ChevronLeft } from "@carbon/icons-react";
 import "./story-styles.scss";
 
 const sampleActions = [
@@ -185,7 +180,7 @@ export const WithOverflowNavigation = {
           headerName={args.headerName}
           actions={actions}
           navigationType="overflow"
-          navigationOverflowIcon={OverflowMenuVertical}
+          navigationOverflowIcon={Menu}
           navigationOverflowLabel={args.navigationOverflowLabel}
           navigationOverflowAriaLabel={args.navigationOverflowAriaLabel}
           navigationOverflowItems={sampleOverflowItems}
