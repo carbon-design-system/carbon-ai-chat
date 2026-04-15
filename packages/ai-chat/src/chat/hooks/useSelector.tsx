@@ -8,23 +8,16 @@
  */
 
 /**
- * Basic selector using `useSyncExternalStore`.
- * Pure snapshot returns previous ref when values are equal. Caches last value...comparator defaults to `Object.is`.
+ * Basic selector backed by `useSyncExternalStoreWithSelector` — the same
+ * utility `react-redux` uses internally. This delegates selector identity,
+ * equality-check, and snapshot-purity handling.
  *
- * For object/array outputs, pass `shallowEqual` or a custom comparator.
+ * For object/array outputs, pass `shallowEqual` or a custom comparator as
+ * `equalityFn`.
  */
 
-import React, { useCallback, useRef } from "react";
-import { useSyncExternalStore as useSyncExternalStoreShim } from "use-sync-external-store/shim/index.js";
+import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector.js";
 import { useStore } from "./useStore";
-
-/** Choose the right `useSyncExternalStore` (React 17 uses the shim). */
-const useSyncExternalStore: typeof React.useSyncExternalStore =
-  (
-    React as unknown as {
-      useSyncExternalStore?: typeof React.useSyncExternalStore;
-    }
-  ).useSyncExternalStore ?? useSyncExternalStoreShim;
 
 /**
  * Select a slice and subscribe to changes.
@@ -36,32 +29,11 @@ export function useSelector<RootState, Selected>(
   equalityFn?: (left: Selected, right: Selected) => boolean,
 ): Selected {
   const store = useStore<RootState>();
-
-  // Cache the last selected value to ensure `getSnapshot` returns a stable
-  // reference when the selected slice is equal, preventing infinite loops.
-  const lastSelectedRef = useRef<Selected | symbol>(UNINITIALIZED);
-  const compare = equalityFn ?? Object.is;
-
-  // Pure snapshot returns previous ref when values compare equal.
-  const computeSelected = useCallback((): Selected => {
-    const nextSelected = selector(store.getState());
-    const lastSelected = lastSelectedRef.current;
-    if (
-      lastSelected !== UNINITIALIZED &&
-      compare(nextSelected as Selected, lastSelected as Selected)
-    ) {
-      return lastSelected as Selected;
-    }
-    lastSelectedRef.current = nextSelected as Selected;
-    return nextSelected;
-  }, [store, selector, compare]);
-
-  return useSyncExternalStore(
+  return useSyncExternalStoreWithSelector(
     store.subscribe,
-    computeSelected,
-    computeSelected,
+    store.getState,
+    store.getState,
+    selector,
+    equalityFn,
   );
 }
-
-// Sentinel to distinguish “no cached value yet” from valid falsy values.
-const UNINITIALIZED = Symbol("useSelector.uninitialized");
