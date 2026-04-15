@@ -10,7 +10,7 @@
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import Home16 from "@carbon/icons/es/home/16.js";
-import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
+import Menu16 from "@carbon/icons/es/menu/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import RightPanelOpen16 from "@carbon/icons/es/right-panel--open/16.js";
 import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
@@ -383,7 +383,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         navigationOverflowItems={navigationOverflowItemsWithHandlers}
         navigationOverflowLabel={overflowMenuTooltip}
         navigationOverflowAriaLabel={overflowMenuAriaLabel}
-        navigationOverflowIcon={OverflowMenuVertical16}
+        navigationOverflowIcon={Menu16}
         navigationOverflowOnClick={handleOverflowMenuClick}
         navigationTooltipAlign="right"
       >
