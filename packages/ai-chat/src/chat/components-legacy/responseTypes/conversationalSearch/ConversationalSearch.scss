@@ -30,6 +30,7 @@
 .cds-aichat--conversational-search-citations {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
     cds-aichat-fade-in both;
+  max-inline-size: 400px;
   padding-block-start: 16px;
 }
 
