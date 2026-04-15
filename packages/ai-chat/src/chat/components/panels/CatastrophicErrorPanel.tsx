@@ -25,24 +25,34 @@ import { useIntl } from "../../hooks/useIntl";
 interface CatastrophicErrorPanelProps {
   assistantName: string;
   languagePack: LanguagePack;
+  title?: string;
+  bodyText?: string;
   onRestart: () => void;
 }
 
 const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
   assistantName,
   languagePack,
+  title,
+  bodyText,
   onRestart,
 }) => {
   const intl = useIntl();
   const { isDarkTheme } = useCarbonTheme();
 
+  const errorTitle = useMemo(
+    () => title ?? languagePack.errors_somethingWrong,
+    [title, languagePack],
+  );
+
   const errorBodyText = useMemo(
     () =>
+      bodyText ??
       intl.formatMessage(
         { id: "errors_communicating" as keyof LanguagePack },
         { assistantName },
       ),
-    [intl, assistantName],
+    [bodyText, intl, assistantName],
   );
 
   const Restart = carbonIconToReact(Restart16);
@@ -57,7 +67,7 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
       <div className="cds-aichat--catastrophic-error__error-text-container">
         <ErrorMessage theme={isDarkTheme ? "dark" : "light"} />
         <div className="cds-aichat--catastrophic-error__error-heading">
-          {languagePack.errors_somethingWrong}
+          {errorTitle}
         </div>
         <div className="cds-aichat--catastrophic-error__error-body">
           <MarkdownWithDefaults text={errorBodyText} highlight={true} />
