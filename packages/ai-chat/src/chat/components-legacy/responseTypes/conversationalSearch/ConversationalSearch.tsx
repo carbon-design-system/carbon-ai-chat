@@ -109,8 +109,8 @@ function ConversationalSearch({
       <div className="cds-aichat--conversational-search-citations">
         <Suspense fallback={<SkeletonPlaceholder />}>
           <Carousel
-            nextBtnText="Next"
-            previousBtnText="Previous"
+            nextBtnText={languagePack.carousel_nextNavButton}
+            previousBtnText={languagePack.carousel_prevNavButton}
             onChange={onChangeHandler}
           >
             <div>{tiles}</div>
