@@ -1,5 +1,5 @@
 /*! For license information please see 5439.bundle.js.LICENSE.txt */
-"use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return o}}),a(2062),a(4555),a(5956),a(5457);var l=a(6707),s=a(7118),c=a(3192),n=a(3967);function o(e){const{tableTitle:t,tableDescription:a,headers:o,filterPlaceholderText:r,downloadLabelText:d,locale:i,_handleDownload:b,_rowsWithIDs:$,_allowFiltering:h,_handleFilterEvent:p}=e;return c.qy`<cds-table
+"use strict";(self.webpackChunk_carbon_ai_chat_examples_demo=self.webpackChunk_carbon_ai_chat_examples_demo||[]).push([[5439],{5439:function(e,t,a){a.r(t),a.d(t,{tablePaginationTemplate:function(){return i},tableTemplate:function(){return o}}),a(8621),a(4555),a(5956),a(5457);var l=a(6707),s=a(7118),c=a(3192),n=a(3967);function o(e){const{tableTitle:t,tableDescription:a,headers:o,filterPlaceholderText:r,downloadLabelText:d,locale:i,_handleDownload:b,_rowsWithIDs:$,_allowFiltering:h,_handleFilterEvent:p}=e;return c.qy`<cds-table
     size="md"
     locale=${i}
     is-sortable
@@ -41,7 +41,7 @@
               >`)}</cds-table-row
           >`)}
     </cds-table-body>`}
-  </cds-table>`}a(4355),a(8871);var r=a(8969);const d=[5,10,15,20,50];function i(e){const{_currentPageSize:t,_currentPageNumber:a,_filterVisibleRowIDs:l,rows:s,previousPageText:n,nextPageText:o,itemsPerPageText:i,getPaginationSupplementalText:b,getPaginationStatusText:$,_handlePageChangeEvent:h,_handlePageSizeChangeEvent:p}=e;if(!l||!l.size)return c.qy``;const u=l.size,g=s.length,m=d.filter(e=>e<g);return c.qy`<cds-pagination
+  </cds-table>`}a(4607),a(8871);var r=a(8969);const d=[5,10,15,20,50];function i(e){const{_currentPageSize:t,_currentPageNumber:a,_filterVisibleRowIDs:l,rows:s,previousPageText:n,nextPageText:o,itemsPerPageText:i,getPaginationSupplementalText:b,getPaginationStatusText:$,_handlePageChangeEvent:h,_handlePageSizeChangeEvent:p}=e;if(!l||!l.size)return c.qy``;const u=l.size,g=s.length,m=d.filter(e=>e<g);return c.qy`<cds-pagination
     page-size=${t}
     page=${a}
     total-items=${u}
