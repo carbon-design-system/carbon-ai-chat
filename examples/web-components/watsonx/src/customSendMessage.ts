@@ -17,6 +17,7 @@ import {
 } from "@carbon/ai-chat";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { getWatsonxConfig } from "./watsonxConfig";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 const WELCOME_TEXT = `Welcome to the watsonx.ai Web Components Example! This demo connects the Carbon AI Chat web component to IBM watsonx.ai for streaming text generation. Ask me anything to get started!`;
 
@@ -66,9 +67,7 @@ async function streamWatsonxResponse(
     const accessToken = await getAccessToken();
 
     // Generate stable IDs for this streaming session (response + item)
-    const responseId = `watsonx-${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2, 11)}`;
+    const responseId = uuid();
     const itemId = "1";
 
     // Use local proxy server for streaming

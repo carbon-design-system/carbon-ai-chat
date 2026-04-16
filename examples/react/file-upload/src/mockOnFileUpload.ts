@@ -15,6 +15,7 @@ import {
   StructuredData,
   StructuredField,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 /**
  * Mock `UploadConfig.onFileUpload` handler.
@@ -46,7 +47,7 @@ async function mockOnFileUpload(
   // Build a mock external reference as if the server stored the file.
   const reference: ExternalFileReference = {
     type: "reference",
-    id: crypto.randomUUID(),
+    id: uuid(),
     name: file.name,
     mime_type: file.type || "application/octet-stream",
     size: file.size,

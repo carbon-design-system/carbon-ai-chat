@@ -13,26 +13,18 @@
 
 import { memoizeFunction } from "./memoizerUtils";
 
+// Device detection — canonical definitions live in @carbon/ai-chat-components
+export {
+  IS_IOS,
+  IS_ANDROID,
+  IS_MOBILE,
+  IS_PHONE,
+  IS_PHONE_IN_PORTRAIT_MODE,
+} from "@carbon/ai-chat-components/es/globals/utils/browser-utils.js";
+
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof navigator !== "undefined";
 }
-
-let screenWidth = 0;
-let screenHeight = 0;
-
-if (isBrowser()) {
-  screenWidth = window.screen.width;
-  screenHeight = window.screen.height;
-}
-
-const IS_IOS = isBrowser() && /iPad|iPhone|iPod/.test(navigator.userAgent);
-const IS_ANDROID = isBrowser() && /Android/.test(navigator.userAgent);
-const IS_MOBILE = IS_IOS || IS_ANDROID;
-// The width and height checks here are how we differentiate between mobile android devices and tablets. Eventually new
-// phones may get wide enough that the width check needs to be increased.
-const IS_PHONE = IS_MOBILE && (screenWidth < 500 || screenHeight < 500);
-// Assume the phone is in portrait mode if the width is small.
-const IS_PHONE_IN_PORTRAIT_MODE = IS_PHONE && screenWidth < 500;
 
 /**
  * In some conditions (iFrames) window.sessionStorage is DEFINED, but not accessible.
@@ -85,12 +77,4 @@ function conditionalSetTimeout(
   return null;
 }
 
-export {
-  isBrowser,
-  IS_MOBILE,
-  IS_PHONE,
-  IS_PHONE_IN_PORTRAIT_MODE,
-  IS_SESSION_STORAGE,
-  getURLHostName,
-  conditionalSetTimeout,
-};
+export { isBrowser, IS_SESSION_STORAGE, getURLHostName, conditionalSetTimeout };

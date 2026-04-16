@@ -297,6 +297,14 @@ export enum MinimizeButtonIconType {
   SIDE_PANEL_DOWN = "side-panel-down",
 }
 
+// Canonical type definitions live in @carbon/ai-chat-components.
+import type {
+  SuggestionItem,
+  CustomListProps,
+  SuggestionConfig,
+} from "@carbon/ai-chat-components/es/components/input/src/types.js";
+import { SuggestionType } from "@carbon/ai-chat-components/es/components/input/src/types.js";
+
 /**
  * Configuration for the input field in the main chat and homescreen.
  *
@@ -319,6 +327,14 @@ export interface InputConfig {
    * Equivalent to {@link PublicConfig.isReadonly}, but scoped just to the assistant input.
    */
   isDisabled?: boolean;
+
+  /**
+   * Configuration for input suggestions (mentions, commands, autocomplete).
+   * Enables token-based autocomplete with configurable triggers and items.
+   *
+   * @experimental
+   */
+  suggestions?: SuggestionConfig[];
 }
 
 /**
@@ -689,3 +705,47 @@ export interface OnErrorData {
    */
   catastrophicErrorType?: boolean;
 }
+
+/**
+ * A single action to render in the chat header toolbar. Used by
+ * {@link HeaderConfig.actions} to add custom buttons to the header.
+ *
+ * @category Config
+ */
+export type { ToolbarAction };
+
+/**
+ * Represents an individual item in the autocomplete suggestion list.
+ * Each item can optionally include a description, avatar, or icon.
+ *
+ * @category Config
+ * @experimental
+ */
+export type { SuggestionItem };
+
+/**
+ * Props passed to a custom autocomplete list renderer via
+ * {@link SuggestionConfig.renderCustomList}. Includes filtered items,
+ * the current query, and callbacks for selection and dismissal.
+ *
+ * @category Config
+ * @experimental
+ */
+export type { CustomListProps };
+
+/**
+ * Configuration for a single suggestion trigger (mention, command, or autocomplete).
+ * Defines the trigger character, item source, and optional custom renderers.
+ *
+ * @category Config
+ * @experimental
+ */
+export type { SuggestionConfig };
+
+/**
+ * The category of a suggestion trigger, which determines rendering and insertion behavior.
+ *
+ * @category Config
+ * @experimental
+ */
+export { SuggestionType };

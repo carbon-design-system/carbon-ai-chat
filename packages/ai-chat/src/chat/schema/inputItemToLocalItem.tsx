@@ -12,7 +12,7 @@ import {
   MessageRequest,
   MessageResponseTypes,
 } from "../../types/messaging/Messages";
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 /**
  * Takes data from {@link MessageRequest} and transforms into something usable by the chat internally.
@@ -27,7 +27,7 @@ import { uuid, UUIDType } from "../utils/lang/uuid";
 function inputItemToLocalItem(
   message: MessageRequest,
   originalUserText: string,
-  id: string = uuid(UUIDType.LOCAL_MESSAGE),
+  id: string = uuid(),
 ): LocalMessageItem {
   const localMessage: LocalMessageItem = {
     // The individual message in the format of an item from output.generic in the docs above.

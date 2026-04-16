@@ -19,7 +19,7 @@ import {
 } from "../../types/messaging/LocalMessageItem";
 import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
-import { uuid, UUIDType } from "./lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import {
   HumanAgentMessageType,
   ButtonItem,
@@ -79,7 +79,7 @@ function addDefaultsToMessage<T extends MessageResponse | MessageRequest>(
   fullMessage: T,
 ): T {
   if (!fullMessage.id) {
-    fullMessage.id = uuid(UUIDType.MESSAGE);
+    fullMessage.id = uuid();
   }
   if (!fullMessage.thread_id) {
     fullMessage.thread_id = THREAD_ID_MAIN;
@@ -192,7 +192,7 @@ function createMessageRequestForChoice(
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
   const messageRequest: MessageRequest = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: THREAD_ID_MAIN,
     ...cloneDeep(choice.value),
   };
@@ -218,7 +218,7 @@ function createMessageRequestForButtonItemOption(
 ) {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   const messageRequest: MessageRequest = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: THREAD_ID_MAIN,
     input: null,
   };
@@ -239,7 +239,7 @@ function createMessageRequestForButtonItemOption(
  */
 function createWelcomeRequest(): MessageRequest {
   return addDefaultsToMessage<MessageRequest>({
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     input: {
       text: "",
     },
@@ -314,7 +314,7 @@ function createMessageResponseForText(
     text,
   };
   const messageResponse: MessageResponse = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: threadID,
     output: {
       generic: [textItem],

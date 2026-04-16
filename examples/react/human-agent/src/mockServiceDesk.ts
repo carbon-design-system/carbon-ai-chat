@@ -27,6 +27,7 @@ import {
   UserDefinedItem,
   UserType,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 const MARKDOWN = `Carbon is a **chemical element** with the *atomic number* 6 and symbol **C**. \`C + O₂ → CO₂\` represents one of carbon's most fundamental reactions.
 
@@ -60,7 +61,7 @@ function createMessageResponseForText(
     text,
   };
   const messageResponse: MessageResponse = {
-    id: crypto.randomUUID(),
+    id: uuid(),
     output: {
       generic: [textItem],
     },

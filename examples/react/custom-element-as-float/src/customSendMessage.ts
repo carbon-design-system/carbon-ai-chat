@@ -14,6 +14,7 @@ import {
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -86,7 +87,7 @@ async function doFakeTextStreaming(
   instance: ChatInstance,
   signal?: AbortSignal,
 ) {
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = TEXT.split(" ");
   let isCanceled = false;
   const timeouts: number[] = [];

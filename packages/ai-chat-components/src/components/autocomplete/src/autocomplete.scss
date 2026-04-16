@@ -1,0 +1,70 @@
+/*
+ *  Copyright IBM Corp. 2025
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+:host {
+  display: block;
+}
+
+.cds-aichat--autocomplete {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid theme.$border-subtle-01;
+  border-radius: 4px;
+  background: theme.$layer-01;
+  box-shadow: 0 2px 6px var(--cds-shadow, #{theme.$shadow});
+  max-block-size: 300px;
+  overflow-y: auto;
+}
+
+.cds-aichat--autocomplete-item {
+  display: flex;
+  align-items: center;
+  padding: layout.$spacing-03 layout.$spacing-04;
+  border-block-end: 1px solid theme.$border-subtle-01;
+  cursor: pointer;
+
+  &:last-child {
+    border-block-end: none;
+  }
+
+  &:hover {
+    background: theme.$layer-hover-01;
+  }
+
+  &--focused {
+    background: theme.$layer-selected-01;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.cds-aichat--autocomplete-item-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: layout.$spacing-01;
+}
+
+.cds-aichat--autocomplete-item-label {
+  @include type.type-style("body-compact-01");
+
+  color: theme.$text-primary;
+}
+
+.cds-aichat--autocomplete-item-description {
+  @include type.type-style("label-01");
+
+  color: theme.$text-secondary;
+}

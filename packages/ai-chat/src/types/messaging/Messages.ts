@@ -178,6 +178,8 @@ type StructuredFieldType =
   | "date"
   | "datetime"
   | "file"
+  | "mention"
+  | "command"
   | "unknown";
 
 /**

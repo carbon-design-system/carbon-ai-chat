@@ -211,7 +211,7 @@ export enum PendingUploadStatus {
 
 /**
  * Internal state for a single file that is being (or has been) uploaded via
- * {@link UploadConfig.onFileUpload}.  Stored in {@link InputState.pendingUploads}.
+ * {@link UploadConfig.onFileUpload}.
  *
  * This type is **internal** — it is not part of the public API surface.
  *
@@ -251,13 +251,10 @@ export interface PendingUpload {
 interface InputState extends FileUploadCapabilities {
   /**
    * The canonical raw text value currently inside the input field.
+   * ProseMirror's document is the internal source of truth; this is the
+   * serialized output.
    */
   rawValue: string;
-
-  /**
-   * The formatted/markup value currently rendered inside the input field.
-   */
-  displayValue: string;
 
   /**
    * Indicates if the input field is configured to be visible. This is only interpreted as the custom setting defined
