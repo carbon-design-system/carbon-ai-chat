@@ -19,10 +19,6 @@ import { loadAllLazyDeps as loadComponentLazyDeps } from "@carbon/ai-chat-compon
 import { normalizeModuleInterop } from "../chat/utils/moduleInterop.js";
 import { localeLoaders } from "../chat/utils/languageUtils.js";
 
-async function preloadSwiper() {
-  await Promise.all([import("swiper/react"), import("swiper/modules")]);
-}
-
 async function preloadColor() {
   const colorModule = await import("color");
   normalizeModuleInterop(colorModule);
@@ -43,7 +39,6 @@ async function preloadDayjsLocales() {
 async function loadAllLazyDeps(): Promise<void> {
   await Promise.all([
     loadComponentLazyDeps(),
-    preloadSwiper(),
     preloadColor(),
     preloadDayjsLocales(),
   ]);

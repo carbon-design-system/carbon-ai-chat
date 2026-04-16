@@ -19,11 +19,7 @@ export default defineConfig({
     include: ["src/__tests__/**/*.test.{ts,tsx}"],
     server: {
       deps: {
-        inline: [
-          "@carbon/ai-chat-components",
-          "@carbon/web-components",
-          "swiper",
-        ],
+        inline: ["@carbon/ai-chat-components", "@carbon/web-components"],
       },
     },
     testTimeout: 15000,

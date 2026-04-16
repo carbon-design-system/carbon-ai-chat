@@ -4,10 +4,14 @@ export const snapshots = {};
 snapshots["carousel should render with cds-aichat-carousel minimum attributes"] = 
 `<cds-aichat-carousel>
   <div class="carousel-wrapper carousel__view-stack">
-    <div class="carousel__itemsWrapper">
+    <div
+      class="carousel__itemsWrapper"
+      style="block-size: 64px;"
+    >
       <div
         class="carousel__view carousel__view-active"
         data-index="0"
+        style="position: absolute;"
       >
         slide 1
       </div>
@@ -16,6 +20,7 @@ snapshots["carousel should render with cds-aichat-carousel minimum attributes"] 
         class="carousel__view"
         data-index="1"
         inert=""
+        style="position: absolute;"
       >
         slide 2
       </div>
@@ -24,6 +29,7 @@ snapshots["carousel should render with cds-aichat-carousel minimum attributes"] 
         class="carousel__view"
         data-index="2"
         inert=""
+        style="position: absolute;"
       >
         slide 3
       </div>
