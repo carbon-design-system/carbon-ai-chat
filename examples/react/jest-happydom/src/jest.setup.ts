@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { loadAllLazyDeps } from "@carbon/ai-chat/server";
 
-// Preload every lazily imported dependency (CodeMirror, DataTable, Swiper,
+// Preload every lazily imported dependency (CodeMirror, DataTable,
 // Day.js locales, etc.) once before the suite runs. That keeps
 // the component code from issuing dynamic import() calls halfway through a
 // test, which would otherwise stall happy-dom while the modules resolve.

@@ -2,8 +2,14 @@ module.exports = {
   roots: ["<rootDir>/src/react"],
   testEnvironment: "@happy-dom/jest-environment",
   transform: {
-    "^.+\\.(ts|tsx)$": ["babel-jest", { configFile: "./babel.config.jest.cjs" }],
-    "^.+\\.(js|jsx|mjs)$": ["babel-jest", { configFile: "./babel.config.jest.cjs" }],
+    "^.+\\.(ts|tsx)$": [
+      "babel-jest",
+      { configFile: "./babel.config.jest.cjs" },
+    ],
+    "^.+\\.(js|jsx|mjs)$": [
+      "babel-jest",
+      { configFile: "./babel.config.jest.cjs" },
+    ],
   },
   testRegex: "/__tests__/.*\\.test\\.(tsx?|jsx?)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
@@ -13,7 +19,7 @@ module.exports = {
   },
   setupFilesAfterEnv: ["<rootDir>/src/react/__tests__/jest.setup.ts"],
   transformIgnorePatterns: [
-    "node_modules/(?!(?:@lit|lit|lit-html|lit-element|@lit-labs|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|swiper|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|@codemirror|@lezer|crelt|style-mod|w3c-keyname)/)",
+    "node_modules/(?!(?:@lit|lit|lit-html|lit-element|@lit-labs|@carbon|lodash-es|@floating-ui|uuid|csv-stringify|compute-scroll-into-view|@ibm|classnames|tabbable|dayjs|dompurify|focus-trap-react|intl-messageformat|markdown-it|@codemirror|@lezer|crelt|style-mod|w3c-keyname)/)",
   ],
   clearMocks: true,
   resetMocks: true,

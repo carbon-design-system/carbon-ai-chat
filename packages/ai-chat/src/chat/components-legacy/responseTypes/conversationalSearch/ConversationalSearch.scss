@@ -30,11 +30,8 @@
 .cds-aichat--conversational-search-citations {
   animation: motion.$duration-slow-01 motion.motion(entrance, expressive)
     cds-aichat-fade-in both;
+  max-inline-size: 400px;
   padding-block-start: 16px;
-}
-
-.cds-aichat--conversational-search-citations .swiper-slide {
-  block-size: unset;
 }
 
 .cds-aichat--conversational-search .cds-aichat--carousel-container__controls {

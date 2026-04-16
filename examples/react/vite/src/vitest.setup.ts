@@ -16,7 +16,7 @@ import { shadowDomSerializer } from "./__tests__/snapshot-serializer";
 // This normalizes Lit comment markers and UUID-based IDs in snapshots
 expect.addSnapshotSerializer(shadowDomSerializer);
 
-// Preload every lazily imported dependency (CodeMirror, DataTable, Swiper,
+// Preload every lazily imported dependency (CodeMirror, DataTable,
 // Day.js locales, etc.) once before the suite runs. That keeps
 // the component code from issuing dynamic import() calls halfway through a
 // test, which would otherwise stall happy-dom while the modules resolve.
