@@ -16,6 +16,7 @@ import {
   AnnounceMessage,
   AppState,
   AppStateMessages,
+  CatastrophicErrorPanelState,
   ChatMessagesState,
   FileUpload,
   InputState,
@@ -89,6 +90,7 @@ import {
   STREAMING_MERGE_MESSAGE_OPTIONS,
   STREAMING_START,
   TOGGLE_HOME_SCREEN,
+  UPDATE_CATASTROPHIC_ERROR_PANEL,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_INPUT_STATE,
   UPDATE_LOCAL_MESSAGE_ITEM,
@@ -264,6 +266,10 @@ const reducers: { [key: string]: ReducerType } = {
       },
       isHydrated: false,
       catastrophicErrorType: null,
+      catastrophicErrorPanelState: {
+        ...state.catastrophicErrorPanelState,
+        isOpen: false,
+      },
     };
 
     if (newState.config.public.homescreen?.isOn) {
@@ -645,6 +651,17 @@ const reducers: { [key: string]: ReducerType } = {
   ): AppState => ({
     ...state,
     [action.key]: action.value,
+  }),
+
+  [UPDATE_CATASTROPHIC_ERROR_PANEL]: (
+    state: AppState,
+    action: { panelState: Partial<CatastrophicErrorPanelState> },
+  ): AppState => ({
+    ...state,
+    catastrophicErrorPanelState: {
+      ...state.catastrophicErrorPanelState,
+      ...action.panelState,
+    },
   }),
 
   [UPDATE_PERSISTED_STATE]: (

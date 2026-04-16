@@ -117,6 +117,11 @@ interface AppState extends AppStateMessages {
   catastrophicErrorType?: boolean;
 
   /**
+   * The state information of a catastrophic error panel.
+   */
+  catastrophicErrorPanelState?: CatastrophicErrorPanelState;
+
+  /**
    * The state of the iframe panel.
    */
   iFramePanelState: IFramePanelState;
@@ -439,6 +444,26 @@ interface ChatMessagesState {
 }
 
 /**
+ * The state information for a catastrophic error panel.
+ */
+interface CatastrophicErrorPanelState {
+  /**
+   * Whether the catastrophic error panel is currently open.
+   */
+  isOpen: boolean;
+
+  /**
+   * The error title to be displayed in the `CatastrophicErrorPanel`.
+   */
+  title?: string;
+
+  /**
+   * The error body text to be displayed in the `CatastrophicErrorPanel`. Will render markdown if provided.
+   */
+  bodyText?: string;
+}
+
+/**
  * This piece of state contains information about any connection to a human agent system.
  */
 interface HumanAgentState {
@@ -708,6 +733,7 @@ export {
   AppState,
   HumanAgentDisplayState,
   HumanAgentState,
+  CatastrophicErrorPanelState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,

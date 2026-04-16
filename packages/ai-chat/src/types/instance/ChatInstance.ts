@@ -15,7 +15,10 @@ import {
 } from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
-import type { PersistedState } from "../state/AppState";
+import type {
+  CatastrophicErrorPanelState,
+  PersistedState,
+} from "../state/AppState";
 import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { MessageRequest, StructuredData } from "../messaging/Messages";
 import type { ServiceManager } from "../../chat/services/ServiceManager";
@@ -397,6 +400,16 @@ interface ChatActions {
    * @param animate Whether or not the scroll should be animated. Defaults to true.
    */
   scrollToMessage: (messageID: string, animate?: boolean) => void;
+
+  /**
+   * Fires an event that will open or close the Catastrophic Error Panel in the chat. This also accepts a
+   * custom title and body text (markdown supported) to be displayed in the Catastrophic Error Panel.
+   *
+   * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
+   */
+  updateCatastrophicErrorPanel: (
+    panelState: CatastrophicErrorPanelState,
+  ) => void;
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
