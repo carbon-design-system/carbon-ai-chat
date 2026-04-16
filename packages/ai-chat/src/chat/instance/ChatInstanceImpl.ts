@@ -17,7 +17,11 @@
 import { ServiceManager } from "../services/ServiceManager";
 import actions from "../store/actions";
 import { selectInputState } from "../store/selectors";
-import { ViewState, ViewType } from "../../types/state/AppState";
+import {
+  CatastrophicErrorPanelState,
+  ViewState,
+  ViewType,
+} from "../../types/state/AppState";
 
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import { HistoryItem } from "../../types/messaging/History";
@@ -192,9 +196,25 @@ function createChatInstance({
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
-    showCatastrophicErrorPanel: () => {
-      debugLog("Called instance.showCatastrophicErrorPanel");
-      serviceManager.store.dispatch(actions.showCatastrophicErrorPanel());
+    updateCatastrophicErrorPanel: (
+      panelState: Partial<CatastrophicErrorPanelState>,
+    ) => {
+      debugLog("Called instance.updateCatastrophicPanel");
+
+      if (
+        panelState.isOpen &&
+        serviceManager.store.getState().catastrophicErrorType !== true
+      ) {
+        serviceManager.store.dispatch({
+          type: "SET_APP_STATE_VALUE",
+          key: "catastrophicErrorType",
+          value: true,
+        });
+      }
+
+      serviceManager.store.dispatch(
+        actions.updateCatastrophicErrorPanel(panelState),
+      );
     },
 
     customPanels: serviceManager.customPanelManager,

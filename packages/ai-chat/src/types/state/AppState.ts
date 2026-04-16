@@ -112,9 +112,14 @@ interface AppState extends AppStateMessages {
   chatHeight: number;
 
   /**
-   * The state of an error that Carbon AI Chat can not recover from.
+   * Has thrown an error that Carbon AI Chat can not recover from.
    */
-  catastrophicErrorState?: CatastrophicErrorState;
+  catastrophicErrorType?: boolean;
+
+  /**
+   * The state information of a catastrophic error panel.
+   */
+  catastrophicErrorPanelState?: CatastrophicErrorPanelState;
 
   /**
    * The state of the iframe panel.
@@ -439,10 +444,9 @@ interface ChatMessagesState {
 }
 
 /**
- * The state information for a catastrophic error, including the error title and body text to be displayed in the 
- * `CatastrophicErrorPanel`.
+ * The state information for a catastrophic error panel.
  */
-interface CatastrophicErrorState {
+interface CatastrophicErrorPanelState {
   /**
    * Whether the catastrophic error panel is currently open.
    */
@@ -454,9 +458,9 @@ interface CatastrophicErrorState {
   title?: string;
 
   /**
-   * The error body text or markdown to be displayed in the `CatastrophicErrorPanel`.
+   * The error body text to be displayed in the `CatastrophicErrorPanel`. Will render markdown if provided.
    */
-  bodyText?: string
+  bodyText?: string;
 }
 
 /**
@@ -729,6 +733,7 @@ export {
   AppState,
   HumanAgentDisplayState,
   HumanAgentState,
+  CatastrophicErrorPanelState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,

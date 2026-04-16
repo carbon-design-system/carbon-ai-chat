@@ -393,7 +393,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   private _handleShowCatastrophicError = () => {
     this._withInstance((instance) => {
-      instance.showCatastrophicErrorPanel?.();
+      instance.updateCatastrophicErrorPanel?.({ isOpen: true });
     });
   };
 

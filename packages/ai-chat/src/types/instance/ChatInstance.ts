@@ -15,7 +15,10 @@ import {
 } from "./apiTypes";
 import { BusEvent, BusEventType } from "../events/eventBusTypes";
 import { ChatInstanceMessaging } from "../config/MessagingConfig";
-import type { PersistedState } from "../state/AppState";
+import type {
+  CatastrophicErrorPanelState,
+  PersistedState,
+} from "../state/AppState";
 import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { MessageRequest, StructuredData } from "../messaging/Messages";
 import type { ServiceManager } from "../../chat/services/ServiceManager";
@@ -399,9 +402,11 @@ interface ChatActions {
   scrollToMessage: (messageID: string, animate?: boolean) => void;
 
   /**
-   * Fires an event that will display the Catastrophic Error Panel in the chat.
+   * Fires an event that will update the Catastrophic Error Panel in the chat.
    */
-  showCatastrophicErrorPanel: () => void;
+  updateCatastrophicErrorPanel: (
+    panelState: CatastrophicErrorPanelState,
+  ) => void;
 
   /**
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
