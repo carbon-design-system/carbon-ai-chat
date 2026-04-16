@@ -6,9 +6,13 @@
  */
 
 import { CarbonTheme } from "./theme/index.js";
+import { ParameterType } from "typedoc";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
 import { promises as fs } from "fs";
+
+const require = createRequire(import.meta.url);
 
 const CARBON_ASSETS = [
   "carbonSearch.js",
@@ -22,6 +26,12 @@ const CARBON_ASSETS = [
 
 export function load(app) {
   app.renderer.defineTheme("carbon", CarbonTheme);
+
+  app.options.addDeclaration({
+    name: "versionsFile",
+    help: "Path to a versions.js file to copy to the docs output root. Resolved relative to typedoc.json. Omit to skip.",
+    type: ParameterType.Path,
+  });
 
   const themeDir = dirname(fileURLToPath(import.meta.url));
   const assetDir = join(themeDir, "theme", "assets");
@@ -43,17 +53,8 @@ export function load(app) {
       }),
     );
 
-    // Copy Carbon styles from node_modules
-    const carbonStylesSource = join(
-      process.cwd(),
-      "..",
-      "..",
-      "node_modules",
-      "@carbon",
-      "styles",
-      "css",
-      "styles.min.css",
-    );
+    const carbonStylesSource =
+      require.resolve("@carbon/styles/css/styles.min.css");
     const carbonStylesTarget = join(
       event.outputDirectory,
       "assets",
@@ -67,14 +68,14 @@ export function load(app) {
       app.logger.warn(`Failed to copy Carbon styles: ${error.message}`);
     }
 
-    // Copy versions.js from root
-    const versionsSource = join(process.cwd(), "..", "..", "versions.js");
-    const versionsTarget = join(event.outputDirectory, "versions.js");
-
-    try {
-      await fs.copyFile(versionsSource, versionsTarget);
-    } catch (error) {
-      app.logger.warn(`Failed to copy versions.js: ${error.message}`);
+    const versionsFile = app.options.getValue("versionsFile");
+    if (versionsFile) {
+      const versionsTarget = join(event.outputDirectory, "versions.js");
+      try {
+        await fs.copyFile(versionsFile, versionsTarget);
+      } catch (error) {
+        app.logger.warn(`Failed to copy versions.js: ${error.message}`);
+      }
     }
   });
 }

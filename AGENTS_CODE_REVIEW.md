@@ -60,3 +60,13 @@ Cross-reference against [AGENTS.md](AGENTS.md) and the nearest package-level `AG
 - List findings grouped by severity (**Blocker**, **Important**, **Nit**), each with a `file:line` reference and a concrete suggested fix (code snippet when useful).
 - End with a **Test / verification gaps** section if the diff lacks coverage for changed behavior.
 - Maintain a polite, constructive tone. Balance critical analysis with acknowledgement of what the change does well — but do not pad with praise that obscures real blockers.
+
+## Related Guidance
+
+For context on conventions being enforced:
+
+- **General conventions**: [AGENTS.md](AGENTS.md) - Monorepo-wide rules
+- **Package-specific rules**: See AGENTS.md in each package directory
+- **PR workflow**: [AGENTS_PR.md](AGENTS_PR.md) - How to draft PR descriptions
+
+When reviewing, cross-reference these docs to understand the "why" behind conventions.

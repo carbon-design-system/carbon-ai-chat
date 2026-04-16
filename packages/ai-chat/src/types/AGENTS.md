@@ -75,8 +75,7 @@ Rules:
 
 1. **JSDoc lives with the declaration**, in `@carbon/ai-chat-components`. TypeDoc picks it up from there. The re-export in [../aiChatEntry.tsx](../aiChatEntry.tsx) is a bare `export { X }` with no JSDoc of its own — a comment on the re-export line is ignored.
 2. **`@category` values are owned by this package.** Even though the tag is written in the components package, the allowed values are the `categoryOrder` list in [../../typedoc.json](../../typedoc.json). Cross-package categories that don't match fall into `*`.
-3. **No unexported symbols in the public surface.** If a type from `@carbon/ai-chat-components` is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — it must also be re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) so TypeDoc produces a page for it. Today's gap: `ToolbarAction` ([config/PublicConfig.ts](config/PublicConfig.ts)) and `CHAT_BUTTON_KIND` / `CHAT_BUTTON_SIZE` ([messaging/Messages.ts](messaging/Messages.ts)) are referenced but not re-exported — closing these is the correct move when touching the relevant files.
-4. **Scope covers everything exported from `@carbon/ai-chat-components`.** That package is independently published and any of its exports can become re-exported here at any time; treat all of its exported types as if they're in the public docs already. The rules above apply equally when editing there.
+3. **No unexported symbols in the public surface.** If a type from `@carbon/ai-chat-components` is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — it must also be re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) so TypeDoc produces a page for it.
 
 ## Property-level JSDoc
 
@@ -146,3 +145,9 @@ When you change anything under [.](.) (or a type in `@carbon/ai-chat-components`
 1. `npm run build --workspace=@carbon/ai-chat` — rollup + TypeDoc. The build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).
 3. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
+
+## Related Guidance
+
+- **Parent guidance**: [packages/ai-chat/AGENTS.md](../../AGENTS.md)
+- **Store patterns**: [../chat/store/AGENTS.md](../chat/store/AGENTS.md) - For action/state types
+- **Documentation**: [../docs/AGENTS.md](../docs/AGENTS.md) - For public API docs

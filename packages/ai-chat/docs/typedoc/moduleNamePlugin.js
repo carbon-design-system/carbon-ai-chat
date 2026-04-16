@@ -7,7 +7,13 @@
 
 import { Converter } from "typedoc";
 
-/** @type {import("typedoc").PluginHost} */
+/**
+ * Renames the entry-file module reflection from "aiChatEntry" (derived from
+ * the `aiChatEntry.tsx` entry point) to "Type reference" so that label is what
+ * users see in the generated sidebar.
+ *
+ * @type {import("typedoc").PluginHost}
+ */
 export function load(app) {
   app.converter.on(Converter.EVENT_RESOLVE_END, (context) => {
     const project = context.project;

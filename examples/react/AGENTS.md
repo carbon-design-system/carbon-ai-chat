@@ -18,3 +18,7 @@ A sufficient spec mounts root, asserts no error, and exercises the main claimed 
 ## APIs-and-props table headers
 
 `Symbol | Package / kind | Role in this example`. Example row: `\`ChatContainer\` | \`@carbon/ai-chat\` component | Mounts the chat UI.`
+
+## Related Guidance
+
+- **Parent guidance**: [examples/AGENTS.md](../AGENTS.md) - Shared example rules

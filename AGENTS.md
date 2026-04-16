@@ -8,6 +8,7 @@ This file provides guidance to agents when working with code in this repository.
 - Each package has its own `AGENTS.md` with package-specific rules. Read the relevant one before your first edit:
   - [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md) — `@carbon/ai-chat` (the chat app). Includes [src/chat/store/AGENTS.md](packages/ai-chat/src/chat/store/AGENTS.md), [src/types/AGENTS.md](packages/ai-chat/src/types/AGENTS.md), and [docs/AGENTS.md](packages/ai-chat/docs/AGENTS.md).
   - [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md) — `@carbon/ai-chat-components` (Lit components).
+  - [packages/typedoc-theme/AGENTS.md](packages/typedoc-theme/AGENTS.md) — `@carbon/typedoc-theme` (Carbon-themed TypeDoc theme for the docs site).
   - [demo/AGENTS.md](demo/AGENTS.md) — full demo / integration-test harness.
   - [examples/AGENTS.md](examples/AGENTS.md) — shared example rules; flavor deltas in [examples/react/AGENTS.md](examples/react/AGENTS.md) / [examples/web-components/AGENTS.md](examples/web-components/AGENTS.md).
 - Do not read or edit generated output: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `storybook-react-static/`, `node_modules/`, `packages/ai-chat-components/src/react/`, `packages/ai-chat-components/custom-elements.json`, `packages/ai-chat/dist/docs/`.
@@ -21,6 +22,7 @@ Lerna + npm-workspaces monorepo.
 
 - `packages/ai-chat` — `@carbon/ai-chat`: React + web-component chat app.
 - `packages/ai-chat-components` — `@carbon/ai-chat-components`: Lit web components consumed by `@carbon/ai-chat`.
+- `packages/typedoc-theme` — `@carbon/typedoc-theme`: Carbon-themed TypeDoc theme used by the `@carbon/ai-chat` docs build.
 - `demo/` — full demo app (`@carbon/ai-chat-examples-demo`); Playwright tests under `tests/`.
 - `examples/react/*` and `examples/web-components/*` — webpack dev-server examples; default port 3000 (override with `PORT=`).
 - `docs/` — developer handbook, peer-dep history. Not the consumer-facing site (that lives in `packages/ai-chat/docs/`).

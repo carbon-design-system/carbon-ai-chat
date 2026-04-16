@@ -4,6 +4,8 @@ Guidance for authoring inside [packages/ai-chat-components/](.). Read this befor
 
 A library of Lit-based custom elements plus auto-generated React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs and Storybook ports.
 
+** Before running any build commands**: Ask the user if `npm run aiChat:start` is already running. Most developers keep it running continuously. Running a parallel build will cause race conditions and intermittent failures.
+
 ## Component directory shape
 
 Every component under [src/components/](src/components/) follows this layout:
@@ -20,7 +22,12 @@ component-name/
     component-name.stories.js         # Lit stories
     component-name-react.mdx          # React wrapper docs
     component-name-react.stories.jsx  # React stories (uses the wrapper from src/react/)
-    preview-*.stories.*               # "preview" variants used by upstream @carbon/ai-chat
+    preview-*.stories.*               # preview variants (experimental components not yet stable)
+                                      # - Components here are under active development
+                                      # - APIs may change without deprecation warnings
+                                      # - Not recommended for production use
+                                      # - Will graduate to main directory when stable
+                                      # - Example: preview/cds-aichat-experimental-feature.ts
     story-data.js, story-styles.scss  # shared story fixtures
   __tests__/
     component-name.test.ts      # @web/test-runner, with __snapshots__/
@@ -74,6 +81,13 @@ npm run test:react -- src/react/__tests__/<file>.test.ts
 - **Two test runners**: Lit components use `@web/test-runner` (`npm run test:web-components`); React wrappers use Jest (`npm run test:react`). `npm test` runs both. Use the right runner for the right file.
 - **New ESM-only dep?** Add its package name to `transformIgnorePatterns` in the Jest config. The existing list already covers lit, @carbon packages, lodash-es, @floating-ui, uuid, @formatjs, @codemirror, etc. — missing entries cause cryptic "Unexpected token 'export'" failures in React tests.
 - **ESM `.js` extensions** apply here too: relative imports use `.js` even for `.ts` source.
+
+## Related Guidance
+
+- **Parent guidance**: [Root AGENTS.md](../../AGENTS.md)
+- **Consumer package**: [../ai-chat/AGENTS.md](../ai-chat/AGENTS.md) - How React app uses these components
+- **Code reviews**: [../../AGENTS_CODE_REVIEW.md](../../AGENTS_CODE_REVIEW.md)
+- **Troubleshooting**: [../../AGENTS_TROUBLESHOOTING.md](../../AGENTS_TROUBLESHOOTING.md)
 
 ## Definition of done
 
