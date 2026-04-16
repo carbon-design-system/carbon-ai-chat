@@ -402,7 +402,10 @@ interface ChatActions {
   scrollToMessage: (messageID: string, animate?: boolean) => void;
 
   /**
-   * Fires an event that will update the Catastrophic Error Panel in the chat.
+   * Fires an event that will open or close the Catastrophic Error Panel in the chat. This also accepts a
+   * custom title and body text (markdown supported) to be displayed in the Catastrophic Error Panel.
+   *
+   * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
    */
   updateCatastrophicErrorPanel: (
     panelState: CatastrophicErrorPanelState,
