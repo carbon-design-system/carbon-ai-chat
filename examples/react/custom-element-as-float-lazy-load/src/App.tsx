@@ -12,7 +12,6 @@ import "@carbon/ai-chat/css/chat-launcher-layout.css";
 
 import {
   BusEventViewChange,
-  CarbonTheme,
   ChatInstance,
   PublicConfig,
   ViewType,
@@ -25,6 +24,7 @@ import React, { Suspense, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
+import "@carbon/styles/css/styles.css";
 
 // Check once at page load whether the chat was open in the previous session.
 // If so, auto-mount immediately (no launcher click required); otherwise wait.
@@ -49,7 +49,6 @@ const config: PublicConfig = {
   },
   // Suppress the built-in launcher — our custom Button acts as the launcher.
   launcher: { isOn: false },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

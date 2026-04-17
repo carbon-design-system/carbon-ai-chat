@@ -1,78 +1,51 @@
-# React File Upload Example
+# File Upload
 
-This example demonstrates how to integrate file uploads into a Carbon AI Chat React application using the `UploadConfig.onFileUpload` API.
+`ChatContainer` with file attachments enabled, using a mock `onFileUpload` handler that simulates a server upload and echoes back file metadata.
 
-## What it shows
+## What this example shows
 
-- Enabling the file attachment button in the chat input via `upload.is_on: true`
-- Implementing a mock `onFileUpload` handler that simulates a 1-second server upload and returns an `ExternalFileReference`
-- Handling abort signals so in-flight uploads are cancelled when the user removes a pending file
-- Echoing back uploaded file metadata (name, type, size, server ID) in the assistant response — mirroring what a real backend might return
+- Enabling attachments with `upload.is_on: true` and providing an `onFileUpload` handler.
+- Simulating a 1-second upload with `AbortSignal` support and returning an `ExternalFileReference` wrapped in `StructuredData`.
+- Echoing attached file metadata back as a text message via `instance.messaging.addMessage` and `MessageResponseTypes.TEXT`.
+- Documenting the optional `accept`, `maxFileSizeBytes`, and `maxFiles` config knobs (commented in source).
 
-## Running in development
+## When to use this pattern
 
-Install dependencies once from the repository root:
+- You need a reference for wiring file uploads into a Carbon AI Chat React app.
+- You want to see how server-assigned file references flow back to the chat as `StructuredData`.
+
+## APIs and props demonstrated
+
+| Symbol                                 | Package / kind              | Role in this example                                        |
+| -------------------------------------- | --------------------------- | ----------------------------------------------------------- |
+| `ChatContainer`                        | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
+| `PublicConfig`                         | `@carbon/ai-chat` type      | Types the config.                                           |
+| `ExternalFileReference`                | `@carbon/ai-chat` type      | Server-assigned file reference returned by the mock upload. |
+| `StructuredData`                       | `@carbon/ai-chat` type      | Wraps the file reference returned from `onFileUpload`.      |
+| `StructuredField`                      | `@carbon/ai-chat` type      | Typed entry inside `StructuredData.fields`.                 |
+| `MessageRequest`                       | `@carbon/ai-chat` type      | Inspected for `structured_data` to echo files.              |
+| `ChatInstance`                         | `@carbon/ai-chat` type      | Used by the mock server response helper.                    |
+| `MessageResponseTypes`                 | `@carbon/ai-chat` enum      | `TEXT` used to echo file metadata.                          |
+| `upload.is_on`                         | config prop                 | Enables attachments.                                        |
+| `upload.onFileUpload`                  | config prop                 | Mock upload handler returning `StructuredData`.             |
+| `upload.accept` (documented)           | config prop                 | Optional MIME/extension allowlist.                          |
+| `upload.maxFileSizeBytes` (documented) | config prop                 | Optional per-file size cap.                                 |
+| `upload.maxFiles` (documented)         | config prop                 | Optional per-message file count cap.                        |
+| `messaging.customSendMessage`          | config prop                 | Mock backend; forwards file messages to the echo helper.    |
+| `instance.messaging.addMessage`        | instance method             | Injects the echoed text response.                           |
+
+## Run it
+
+**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+
+From the repository root:
 
 ```bash
 npm install
-```
+npm run build --workspace=@carbon/ai-chat-components
+npm run build --workspace=@carbon/ai-chat
 
-Start the dev server:
-
-```bash
 npm run start --workspace=@carbon/ai-chat-examples-react-file-upload
 ```
 
-This opens the example on `localhost:3023`.
-
-## Building for production
-
-```bash
-npm run build --workspace=@carbon/ai-chat-examples-react-file-upload
-```
-
-## Key files
-
-| File                                                     | Purpose                                                                              |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [`src/App.tsx`](./src/App.tsx)                           | Configures `PublicConfig` with `upload.onFileUpload` and renders `<ChatContainer />` |
-| [`src/mockOnFileUpload.ts`](./src/mockOnFileUpload.ts)   | Mock `onFileUpload` handler + `doFileUploadResponse` helper                          |
-| [`src/customSendMessage.ts`](./src/customSendMessage.ts) | Custom send message handler that echoes file metadata back                           |
-
-## Replacing the mock with a real backend
-
-Swap out `mockOnFileUpload` in `src/App.tsx` with your own implementation:
-
-```ts
-async function myOnFileUpload(
-  file: File,
-  abortSignal: AbortSignal,
-): Promise<StructuredData> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch("/api/upload", {
-    method: "POST",
-    body: formData,
-    signal: abortSignal,
-  });
-
-  const { id } = await response.json();
-
-  return {
-    fields: [
-      {
-        id: "file",
-        type: "file",
-        value: {
-          type: "reference",
-          id,
-          name: file.name,
-          mime_type: file.type,
-          size: file.size,
-        },
-      },
-    ],
-  };
-}
-```
+See [../README.md](../README.md) for the full setup walkthrough.

@@ -1,87 +1,43 @@
-# watsonx.ai Web Components Example
+# watsonx.ai
 
-This example demonstrates how to integrate the Carbon AI Chat web component with IBM watsonx.ai for streaming text generation. The example includes a vanilla JavaScript frontend using web components and a Node.js proxy server to handle authentication and API calls.
+Connects the chat to IBM watsonx.ai via a local Express proxy that streams tokens back with `@microsoft/fetch-event-source`.
 
-## Features
+## What this example shows
 
-- **Real-time streaming** from watsonx.ai with typewriter effect
-- **Markdown support** including tables, lists, and formatted content
-- **CORS-free architecture** using Express proxy server
-- **Professional SSE handling** with `@microsoft/fetch-event-source`
-- **Smart token buffering** to preserve markdown structure
-- **Error handling** with graceful fallbacks
-- **Web Components** using Lit for framework-agnostic implementation
+- Wiring `customSendMessage` to a watsonx.ai streaming endpoint fronted by a Node/Express proxy (`server.js`).
+- Real-time SSE streaming with token buffering so markdown (tables, lists) renders cleanly.
+- Running the dev server and proxy server together via `concurrently`.
+- Configuring model/project via `.env` (WATSONX_API_KEY, WATSONX_PROJECT_ID, WATSONX_URL, WATSONX_MODEL_ID).
 
-## Prerequisites
+## When to use this pattern
 
-- Node.js 22+ and npm
-- IBM Cloud account with watsonx.ai access
-- watsonx.ai project set up
+- Production-style integrations with IBM watsonx.ai that need server-side credential handling.
+- Any SSE-based LLM where browsers cannot hold the API key directly.
 
-## Setup Instructions
+## APIs and props demonstrated
 
-### Step 1: Get Your IBM Cloud API Key
+| Symbol                        | Kind           | Role in this example                      |
+| ----------------------------- | -------------- | ----------------------------------------- |
+| `<cds-aichat-container>`      | custom element | Mounts the chat UI.                       |
+| `messaging.customSendMessage` | property       | Streams tokens from the watsonx.ai proxy. |
+| `PublicConfig`                | type           | Types the chat configuration object.      |
 
-1. **Log in to IBM Cloud**: Go to [https://cloud.ibm.com](https://cloud.ibm.com)
-2. **Navigate to API Keys**: Go to [Manage > Access (IAM) > API keys](https://cloud.ibm.com/iam/apikeys)
-3. **Create API Key**:
-   - Click "Create an IBM Cloud API key"
-   - Enter a name and description
-   - Click "Create"
-   - **Important**: Copy and save the API key immediately (you won't be able to see it again)
+## Run it
 
-### Step 2: Set Up watsonx.ai Project
+**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
 
-1. **Access watsonx.ai**: Go to [https://dataplatform.cloud.ibm.com/wx](https://dataplatform.cloud.ibm.com/wx)
-2. **Create or select a project**:
-   - If you don't have a project, create one
-   - Make note of your Project ID (found in project settings)
-3. **Verify your region**: Note which IBM Cloud region your watsonx.ai instance is in (e.g., `us-south`, `eu-de`)
+Copy `.env.example` to `.env` and fill in your `WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_URL`, and optional `WATSONX_MODEL_ID` before starting.
 
-### Step 3: Choose Your Model
-
-You can find the complete list of available models in your watsonx.ai project dashboard or in the [IBM watsonx.ai documentation](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models.html). The example is configured to use `ibm/granite-3-8b-instruct` by default, but you can change this by setting the `WATSONX_MODEL_ID` environment variable.
-
-### Step 4: Configure Environment Variables
-
-1. **Copy the example environment file**:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Edit `.env` file** with your credentials:
-
-   ```bash
-   # IBM Cloud API Key (required)
-   WATSONX_API_KEY=your-ibm-cloud-api-key-here
-
-   # watsonx.ai Project ID (required)
-   WATSONX_PROJECT_ID=your-project-id-here
-
-   # watsonx.ai API URL (required)
-   # Replace region with your IBM Cloud region
-   WATSONX_URL=https://us-south.ml.cloud.ibm.com
-
-   # Model ID (optional, defaults to ibm/granite-3-8b-instruct)
-   WATSONX_MODEL_ID=ibm/granite-3-8b-instruct
-   ```
-
-### Step 5: Install Dependencies
-
-From the repository root, install all workspace dependencies (run once after cloning):
+From the repository root:
 
 ```bash
 npm install
-```
+npm run build --workspace=@carbon/ai-chat-components
+npm run build --workspace=@carbon/ai-chat
 
-### Step 6: Run from the Monorepo Root
-
-Install dependencies once and start this workspace directly from the repository root:
-
-```bash
-npm install
 npm run start --workspace=@carbon/ai-chat-examples-web-components-watsonx
 ```
 
-> The `start` script launches both the local proxy server and web components development server for this example.
+The `start` script launches the proxy server and the webpack dev server together via `concurrently`.
+
+See [../README.md](../README.md) for the full setup walkthrough.

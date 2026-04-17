@@ -206,7 +206,7 @@ interface AppState extends AppStateMessages {
  * - `COMPLETE` — the upload finished successfully; `contributedData` is populated.
  * - `ERROR` — the upload failed; `errorMessage` is populated.
  *
- * @experimental
+ * @internal
  */
 export enum PendingUploadStatus {
   UPLOADING = "uploading",
@@ -220,7 +220,7 @@ export enum PendingUploadStatus {
  * in-flight or completed upload and uses them to build the
  * `pendingStructuredData` attached to the outgoing message.
  *
- * @experimental
+ * @internal
  */
 export interface PendingUpload {
   /**

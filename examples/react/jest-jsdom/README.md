@@ -1,93 +1,45 @@
-# Jest Testing Example (jsdom)
+# Jest (jsdom)
 
-This example demonstrates how to test `@carbon/ai-chat` React components using Jest, React Testing Library, and **jsdom**.
+Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mounts its web-component wrapper. Kept intentionally simple because jsdom does not support shadow DOM.
 
-## Getting Started
+## What this example shows
 
-Install dependencies:
+- Running `@carbon/ai-chat` React components under Jest with the default jsdom environment.
+- Asserting the `cds-aichat-react` custom element mounts via `container.querySelector`.
+- Rendering `ChatContainer` with an inline `customSendMessage` stub.
+- Using `renderWriteableElements.headerBottomElement` with a `data-testid` to confirm React-rendered slot content.
+
+## When to use this pattern
+
+- You only need to assert that the chat mounts correctly (no shadow-DOM introspection).
+- You prefer the default Jest DOM environment without extra dependencies.
+
+## APIs and props demonstrated
+
+| Symbol                                        | Package / kind              | Role in this example                                          |
+| --------------------------------------------- | --------------------------- | ------------------------------------------------------------- |
+| `ChatContainer`                               | `@carbon/ai-chat` component | Mounted under test.                                           |
+| `messaging.customSendMessage`                 | config prop                 | Inline no-op mock.                                            |
+| `renderWriteableElements.headerBottomElement` | component prop              | React node inserted into the header bottom writeable element. |
+| `data-testid`                                 | component prop              | Passed through to the root element for querying.              |
+| `@testing-library/react`                      | test util                   | `render`, `act`, `waitFor`.                                   |
+| `@testing-library/jest-dom`                   | test util                   | DOM matchers.                                                 |
+| `jest-environment-jsdom`                      | jest env                    | Default Jest DOM environment (no shadow-DOM support).         |
+
+## Run it
+
+**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+
+From the repository root:
 
 ```bash
 npm install
+npm run build --workspace=@carbon/ai-chat-components
+npm run build --workspace=@carbon/ai-chat
+
+npm run test --workspace=@carbon/ai-chat-examples-react-jest-jsdom
 ```
 
-Run tests:
+(Use `npm run test:watch --workspace=@carbon/ai-chat-examples-react-jest-jsdom` for watch mode.)
 
-```bash
-npm test
-```
-
-Run tests in watch mode:
-
-```bash
-npm run test:watch
-```
-
-## Configuration
-
-### Jest Configuration
-
-The Jest configuration ([jest.config.js](jest.config.js)) includes:
-
-- **jsdom environment** for DOM testing
-- **Babel transformation** for TypeScript/JSX files
-- **CSS module mocking** using identity-obj-proxy
-- **Transform patterns** for ES modules (lodash-es, lit libraries, @carbon packages)
-
-### Babel Configuration
-
-The Babel configuration ([babel.config.js](babel.config.js)) uses:
-
-- `@babel/preset-env` targeting the current Node version
-- `@babel/preset-react` with automatic JSX runtime
-- `@babel/preset-typescript` for TypeScript support
-
-### Test Setup
-
-The test setup file ([src/jest.setup.ts](src/jest.setup.ts)) provides:
-
-- `@testing-library/jest-dom` matchers
-- Mocked `ResizeObserver` for browser API compatibility
-- A call to `loadAllLazyDeps()` from `@carbon/ai-chat/server`, which eagerly
-  loads the CodeMirror runtime, Carbon table dependencies,
-  Day.js locales, and media helpers before any tests execute. Even though
-  jsdom cannot render the shadow DOM, preloading the lazy imports prevents
-  Jest from tripping over queued dynamic `import()` calls during setup or
-  when you snapshot the custom element wrapper.
-
-#### jsdom vs happy-dom: Understanding shadow DOM Support
-
-This example uses **jsdom**, the traditional and most widely-used DOM implementation for Jest testing.
-
-##### Critical Limitation: NO shadow DOM Support
-
-**jsdom does NOT support shadow DOM.** Since `@carbon/ai-chat` components are built with web components that use shadow DOM, you **cannot**:
-
-- ❌ Query elements inside the shadow DOM (e.g., input fields, buttons, panels)
-- ❌ Use `PageObjectId` selectors to find elements within the component
-- ❌ Test internal component behavior that requires accessing shadow DOM elements
-- ❌ Interact with form elements or buttons inside the component
-
-**What you CAN do with jsdom:**
-
-- ✅ Verify the custom element wrapper renders (`<cds-aichat-react>`)
-- ✅ Test React component props and configuration
-- ✅ Test component mounting and unmounting
-
-##### When to Use jsdom vs happy-dom
-
-**Use [happy-dom](../jest-happydom) if you want to be able to run more detailed tests inside the Carbon AI Chat.**
-
-##### Learn More About happy-dom
-
-For better shadow DOM support, see:
-
-- [happy-dom GitHub](https://github.com/capricorn86/happy-dom) - Modern DOM implementation with shadow DOM support
-- [jest-happydom example](../jest-happydom) - This project's happy-dom example with `PageObjectId` usage
-
-## Keeping Transform Settings in Sync
-
-Both Jest examples rely on the same `transformIgnorePatterns` allowlist so Babel
-transpiles select ESM packages inside `node_modules` (Lit, CodeMirror,
-etc.). If you add new lazy dependencies to Carbon AI Chat, update
-that allowlist and the preload helper once—then copy the changes to both the
-jsdom and happy-dom workspaces to keep their configurations aligned.
+See [../README.md](../README.md) for the full setup walkthrough.

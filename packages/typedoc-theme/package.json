@@ -1,0 +1,30 @@
+{
+  "name": "@carbon/typedoc-theme",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Custom TypeDoc theme for Carbon AI Chat documentation.",
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "carbonThemePlugin.js",
+    "theme"
+  ],
+  "peerDependencies": {
+    "typedoc": "^0.28.0"
+  },
+  "dependencies": {
+    "@carbon/styles": "^1.103.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carbon-design-system/carbon-ai-chat.git",
+    "directory": "packages/typedoc-theme"
+  }
+}

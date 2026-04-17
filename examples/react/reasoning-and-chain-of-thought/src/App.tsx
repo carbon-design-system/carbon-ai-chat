@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { CarbonTheme, ChatContainer, PublicConfig } from "@carbon/ai-chat";
+import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { customSendMessage } from "./customSendMessage";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

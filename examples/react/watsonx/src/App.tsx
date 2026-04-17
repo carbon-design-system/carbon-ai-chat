@@ -7,12 +7,13 @@
  *  @license
  */
 
-import { CarbonTheme, ChatContainer, PublicConfig } from "@carbon/ai-chat";
+import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
 // These functions hook up to your back-end.
 import { customSendMessage } from "./customSendMessage";
+import "@carbon/styles/css/styles.css";
 
 /**
  * It is preferable to create your configuration object outside of your React functions. You can also make use of
@@ -25,7 +26,6 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
