@@ -215,10 +215,10 @@ export enum PendingUploadStatus {
 }
 
 /**
- * Internal state for a single file that is being (or has been) uploaded via
- * {@link UploadConfig.onFileUpload}.  Stored in {@link InputState.pendingUploads}.
- *
- * This type is **internal** — it is not part of the public API surface.
+ * State for a single file that is being (or has been) uploaded via
+ * {@link UploadConfig.onFileUpload}. The chat widget tracks one of these per
+ * in-flight or completed upload and uses them to build the
+ * `pendingStructuredData` attached to the outgoing message.
  *
  * @experimental
  */
