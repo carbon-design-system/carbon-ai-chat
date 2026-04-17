@@ -106,7 +106,10 @@ export {
   ViewChangeReason,
 } from "./types/events/eventBusTypes";
 
-export { PersistedState } from "./types/state/AppState";
+export {
+  CatastrophicErrorPanelState,
+  PersistedState,
+} from "./types/state/AppState";
 
 export { readCarbonChatSession } from "./globals/utils/readCarbonChatSession";
 
