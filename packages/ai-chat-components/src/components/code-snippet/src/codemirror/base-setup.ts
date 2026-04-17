@@ -24,10 +24,12 @@ import {
   carbonFoldMarkerKeyHandler,
 } from "./marker-utils.js";
 import { createCarbonHighlightStyle } from "./theme.js";
+import { createDiffDecorator } from "./diff-decorator.js";
 
 export interface BaseCodeMirrorSetupOptions {
   foldCollapseLabel?: string;
   foldExpandLabel?: string;
+  enableDiffDecorator?: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export function baseCodeMirrorSetup(
   const {
     foldCollapseLabel = "Collapse code block",
     foldExpandLabel = "Expand code block",
+    enableDiffDecorator = false,
   } = options;
 
   return [
@@ -73,5 +76,7 @@ export function baseCodeMirrorSetup(
       ...foldKeymap,
       ...lintKeymap,
     ]),
+    // Conditionally add diff line decorator for diff language
+    ...(enableDiffDecorator ? [createDiffDecorator()] : []),
   ];
 }
