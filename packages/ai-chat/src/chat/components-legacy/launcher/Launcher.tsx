@@ -30,8 +30,15 @@ import Button, {
   BUTTON_TYPE,
 } from "../../components/carbon/Button";
 import { doFocusRef } from "../../utils/domUtils";
+import { prefersReducedMotion } from "../../utils/prefersReducedMotion";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { uuid } from "../../utils/lang/uuid";
+
+// Upper bound for the launcher extended open/close animations
+// (`$duration-moderate-01` = 150ms, plus a fade stage) with a generous buffer.
+// Used as a safety net in case `animationend` never fires — most often under
+// `prefers-reduced-motion: reduce`, where the CSS animation is never declared.
+const LAUNCHER_ANIMATION_TIMEOUT_MS = 600;
 
 const AiLaunch = carbonIconToReact(AiLaunch24);
 const ChatLaunch = carbonIconToReact(ChatLaunch24);
@@ -208,8 +215,10 @@ function Launcher(props: LauncherProps) {
     if (callToActionOpenState === LauncherOpenState.Opening) {
       const element = greetingMessageRef.current;
 
-      if (!element) {
-        // Fail-safe: if no element, just snap to open
+      // Snap straight to Open when the element is missing or when reduced
+      // motion is active (the CSS animation is not declared, so `animationend`
+      // will never fire — see Launcher.scss `prefers-reduced-motion` gating).
+      if (!element || prefersReducedMotion()) {
         setCallToActionOpenState(LauncherOpenState.Open);
       } else {
         const handleAnimationEnd = (event: AnimationEvent) => {
@@ -220,10 +229,17 @@ function Launcher(props: LauncherProps) {
 
         element.addEventListener("animationend", handleAnimationEnd);
         element.addEventListener("animationcancel", handleAnimationEnd);
+        // Safety net: if `animationend` is never dispatched (e.g. element
+        // re-parented, display hidden mid-animation, future CSS edit drops
+        // the animation), still advance the state machine.
+        const timeoutId = setTimeout(() => {
+          setCallToActionOpenState(LauncherOpenState.Open);
+        }, LAUNCHER_ANIMATION_TIMEOUT_MS);
 
         cleanup = () => {
           element.removeEventListener("animationend", handleAnimationEnd);
           element.removeEventListener("animationcancel", handleAnimationEnd);
+          clearTimeout(timeoutId);
         };
       }
     }
@@ -238,8 +254,9 @@ function Launcher(props: LauncherProps) {
     if (callToActionOpenState === LauncherOpenState.Closing) {
       const element = textHolderRef.current;
 
-      if (!element) {
-        // Fail-safe: if no element, just snap to closed
+      // See Opening branch above — same rationale for the reduced-motion and
+      // null-element short-circuits.
+      if (!element || prefersReducedMotion()) {
         setCallToActionOpenState(LauncherOpenState.Closed);
       } else {
         const handleAnimationEnd = (event: AnimationEvent) => {
@@ -250,10 +267,14 @@ function Launcher(props: LauncherProps) {
 
         element.addEventListener("animationend", handleAnimationEnd);
         element.addEventListener("animationcancel", handleAnimationEnd);
+        const timeoutId = setTimeout(() => {
+          setCallToActionOpenState(LauncherOpenState.Closed);
+        }, LAUNCHER_ANIMATION_TIMEOUT_MS);
 
         cleanup = () => {
           element.removeEventListener("animationend", handleAnimationEnd);
           element.removeEventListener("animationcancel", handleAnimationEnd);
+          clearTimeout(timeoutId);
         };
       }
     }

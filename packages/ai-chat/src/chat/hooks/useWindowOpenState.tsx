@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePrevious } from "./usePrevious";
+import { prefersReducedMotion } from "../utils/prefersReducedMotion";
 
 interface UseWindowOpenStateProps {
   viewStateMainWindow: boolean;
@@ -25,6 +26,12 @@ interface UseWindowOpenStateReturn {
   widgetContainerRef: React.MutableRefObject<HTMLElement | null>;
 }
 
+// Upper bound for the widget close animation (`$duration-fast-02` = 110ms) plus
+// a generous buffer. Used as a safety net in case `animationend` never fires —
+// e.g. when the browser reports `prefers-reduced-motion: reduce` and the CSS
+// `animation` is never declared, or if the element is re-parented mid-animation.
+const CLOSE_ANIMATION_TIMEOUT_MS = 500;
+
 /**
  * Custom hook to manage window open/close state and animations
  */
@@ -39,6 +46,7 @@ export function useWindowOpenState({
   const [isHydrationAnimationComplete, setIsHydrationAnimationComplete] =
     useState(isHydrated);
   const widgetContainerRef = useRef<HTMLElement | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevIsHydrated = usePrevious(isHydrated);
   const prevViewState = usePrevious({ mainWindow: viewStateMainWindow });
 
@@ -46,6 +54,10 @@ export function useWindowOpenState({
     const widgetEl = widgetContainerRef.current;
     if (widgetEl) {
       widgetEl.removeEventListener("animationend", removeChatFromDom);
+    }
+    if (closeTimeoutRef.current !== null) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
     }
     setOpen(false);
     setClosing(false);
@@ -69,12 +81,18 @@ export function useWindowOpenState({
       requestFocus();
     } else if (!viewStateMainWindow && previouslyOpen && open) {
       setClosing(true);
-      if (useCustomHostElement) {
+      const widgetEl = widgetContainerRef.current;
+      // When the user's OS has reduced motion enabled, the SCSS close animation
+      // is gated behind `prefers-reduced-motion: no-preference` and never
+      // declares an `animation`. That means `animationend` will never fire, so
+      // fall back to an immediate snap. Mirrors the custom-host-element path.
+      if (useCustomHostElement || prefersReducedMotion() || !widgetEl) {
         removeChatFromDom();
       } else {
-        widgetContainerRef.current?.addEventListener(
-          "animationend",
+        widgetEl.addEventListener("animationend", removeChatFromDom);
+        closeTimeoutRef.current = setTimeout(
           removeChatFromDom,
+          CLOSE_ANIMATION_TIMEOUT_MS,
         );
         requestFocus();
       }
