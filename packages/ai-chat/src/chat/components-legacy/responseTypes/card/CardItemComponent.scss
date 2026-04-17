@@ -8,4 +8,17 @@
 .cds-aichat--card-message-component {
   overflow: hidden;
   padding: 0;
+  max-inline-size: var(--cds-aichat-card-max-width, auto);
+}
+
+.cds-aichat--card-message-component.cds-aichat--max-width-small {
+  max-inline-size: min(291px, var(--cds-aichat-card-max-width, 291px));
+}
+
+.cds-aichat--card-message-component.cds-aichat--max-width-medium {
+  max-inline-size: min(438px, var(--cds-aichat-card-max-width, 438px));
+}
+
+.cds-aichat--card-message-component.cds-aichat--max-width-large {
+  max-inline-size: min(585px, var(--cds-aichat-card-max-width, 585px));
 }
