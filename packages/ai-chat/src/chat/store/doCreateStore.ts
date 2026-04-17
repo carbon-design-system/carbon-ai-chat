@@ -183,7 +183,12 @@ function createInitialState(config: AppConfig): AppState {
     viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
     workspacePanelState: DEFAULT_WORKSPACE_PANEL_STATE,
-    historyPanelState: DEFAULT_HISTORY_PANEL_STATE,
+    historyPanelState: {
+      ...DEFAULT_HISTORY_PANEL_STATE,
+      // If startClosed is true, start closed everywhere
+      // Otherwise, start open (will be adjusted by mobile detection)
+      isOpen: config.public.history?.startClosed ? false : true,
+    },
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
   };
 
