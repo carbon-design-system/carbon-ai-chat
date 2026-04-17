@@ -83,6 +83,9 @@ export class HistoryWriteableElementExample extends LitElement {
   accessor itemToDelete: string | null = null;
 
   @state()
+  accessor itemToDeleteElement: HTMLElement | null = null;
+
+  @state()
   accessor selectedChatId: string | undefined = findSelectedItemId(
     pinnedHistoryItems,
     historyItems,
@@ -230,6 +233,7 @@ export class HistoryWriteableElementExample extends LitElement {
   _handleDeleteCancel = () => {
     this.showDeletePanel = false;
     this.itemToDelete = null;
+    this.itemToDeleteElement = null;
     this.requestUpdate();
   };
 
@@ -250,6 +254,7 @@ export class HistoryWriteableElementExample extends LitElement {
 
     this.showDeletePanel = false;
     this.itemToDelete = null;
+    this.itemToDeleteElement = null;
     this.requestUpdate();
   };
 
@@ -288,6 +293,7 @@ export class HistoryWriteableElementExample extends LitElement {
     switch (action) {
       case "Delete":
         this.itemToDelete = event.detail.itemId;
+        this.itemToDeleteElement = event.detail.element;
         this.showDeletePanel = true;
         break;
       case "Rename":
@@ -483,6 +489,7 @@ export class HistoryWriteableElementExample extends LitElement {
         ${this.showDeletePanel
           ? html`
               <cds-aichat-history-delete-panel
+                .triggeringElement=${this.itemToDeleteElement}
                 @history-delete-cancel=${this._handleDeleteCancel}
                 @history-delete-confirm=${this._handleDeleteConfirm}
               >
