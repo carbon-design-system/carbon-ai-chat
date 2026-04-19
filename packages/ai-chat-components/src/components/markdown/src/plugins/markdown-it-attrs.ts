@@ -35,99 +35,221 @@
  *
  *  ---
  *
- *  This file has been rewritten to be fully ESM-compliant and TypeScript-compatible
- *  for use in Carbon AI Chat.
+ *  This file has been rewritten for Carbon AI Chat to cover only the documented
+ *  attribute syntax:
+ *
+ *    [link](url){{target=_blank rel=noopener}}
+ *    # Heading {{id=foo}}
+ *    Paragraph {{class=bar}}
+ *
+ *  Delimiters are fixed to `{{`/`}}` and only `target`, `rel`, `class`, `id`
+ *  are applied; any other attribute key is silently dropped.
  */
 
 import type MarkdownIt from "markdown-it";
 import type StateCore from "markdown-it/lib/rules_core/state_core.mjs";
-import type { MarkdownItAttrsOptions } from "./markdownItAttrs/types.js";
-import { test } from "./markdownItAttrs/core.js";
-import { createPatterns } from "./markdownItAttrs/patterns/index.js";
+import type { Token } from "markdown-it";
 
-const defaultOptions: Required<MarkdownItAttrsOptions> = {
-  leftDelimiter: "{",
-  rightDelimiter: "}",
-  allowedAttributes: [],
-};
+const LEFT = "{{";
+const RIGHT = "}}";
+const ALLOWED = new Set(["target", "rel", "class", "id"]);
+
+type AttrPair = [string, string];
 
 /**
- * Markdown-it plugin that adds support for applying attributes to markdown elements using curly brace syntax.
+ * Parses the body between `{{` and `}}` into a list of allowed attribute pairs.
+ * Supports `key=value` and `key="quoted value"`, space-separated. Disallowed
+ * keys and malformed fragments are dropped silently.
  */
-export function markdownItAttrs(
-  md: MarkdownIt,
-  options_?: MarkdownItAttrsOptions,
-): void {
-  const options: Required<MarkdownItAttrsOptions> = Object.assign(
-    {},
-    defaultOptions,
-    options_,
+function parseAttrs(body: string): AttrPair[] {
+  const attrs: AttrPair[] = [];
+  let key = "";
+  let value = "";
+  let parsingKey = true;
+  let inQuotes = false;
+
+  const commit = () => {
+    if (key !== "" && ALLOWED.has(key)) {
+      attrs.push([key, value]);
+    }
+    key = "";
+    value = "";
+    parsingKey = true;
+  };
+
+  for (let i = 0; i < body.length; i++) {
+    const ch = body.charAt(i);
+
+    if (ch === "=" && parsingKey) {
+      parsingKey = false;
+      continue;
+    }
+    if (ch === '"' && !parsingKey) {
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (ch === " " && !inQuotes) {
+      commit();
+      continue;
+    }
+    if (parsingKey) {
+      key += ch;
+    } else {
+      value += ch;
+    }
+  }
+  commit();
+
+  return attrs;
+}
+
+/**
+ * Applies parsed attributes to a token, merging `class` with any pre-existing
+ * class and pushing the rest.
+ */
+function applyAttrs(token: Token, attrs: AttrPair[]): void {
+  for (const [key, value] of attrs) {
+    if (key === "class") {
+      token.attrJoin("class", value);
+    } else {
+      token.attrPush([key, value]);
+    }
+  }
+}
+
+/**
+ * Walks backwards to find the `*_open` token matching the close token at
+ * `closeIndex` (same level, matching type). Returns `null` when no match is
+ * found, which causes the handler to silently bail.
+ */
+function findMatchingOpen(tokens: Token[], closeIndex: number): Token | null {
+  const close = tokens[closeIndex];
+  const openType = close.type.replace(/_close$/, "_open");
+  for (let i = closeIndex - 1; i >= 0; i--) {
+    if (tokens[i].type === openType && tokens[i].level === close.level) {
+      return tokens[i];
+    }
+  }
+  return null;
+}
+
+/**
+ * Looks for a `*_close` child (e.g. `link_close`) immediately followed by a
+ * text child starting with `{{…}}`. When matched, applies the attributes to
+ * the matching opening token and rewrites/removes the text child. Returns
+ * true if a mutation occurred so the caller can rescan for additional
+ * link-attribute pairs on the same inline token.
+ */
+function handleInlineAttributes(inlineToken: Token): boolean {
+  const children = inlineToken.children;
+  if (!children) {
+    return false;
+  }
+
+  for (let i = 1; i < children.length; i++) {
+    const prev = children[i - 1];
+    const curr = children[i];
+    if (prev.nesting !== -1 || curr.type !== "text") {
+      continue;
+    }
+    if (!curr.content.startsWith(LEFT)) {
+      continue;
+    }
+    const closeIdx = curr.content.indexOf(RIGHT, LEFT.length);
+    if (closeIdx === -1) {
+      continue;
+    }
+
+    const openToken = findMatchingOpen(children, i - 1);
+    if (!openToken) {
+      continue;
+    }
+
+    const body = curr.content.slice(LEFT.length, closeIdx);
+    applyAttrs(openToken, parseAttrs(body));
+
+    const remainder = curr.content.slice(closeIdx + RIGHT.length);
+    if (remainder.length === 0) {
+      children.splice(i, 1);
+    } else {
+      curr.content = remainder;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * When the last text child of an `inline` token ends with `}}`, apply the
+ * attributes to the matching block's opening token (heading_open /
+ * paragraph_open / etc.) and strip them from the rendered text.
+ */
+function handleEndOfBlock(tokens: Token[], inlineIndex: number): void {
+  const children = tokens[inlineIndex].children;
+  if (!children || children.length === 0) {
+    return;
+  }
+  const last = children[children.length - 1];
+  if (last.type !== "text" || !last.content.endsWith(RIGHT)) {
+    return;
+  }
+  const openIdx = last.content.lastIndexOf(LEFT);
+  if (openIdx === -1) {
+    return;
+  }
+
+  // Find the closing block token that follows this inline.
+  let closeIdx = -1;
+  for (let i = inlineIndex + 1; i < tokens.length; i++) {
+    if (tokens[i].nesting === -1) {
+      closeIdx = i;
+      break;
+    }
+  }
+  if (closeIdx === -1) {
+    return;
+  }
+
+  const openToken = findMatchingOpen(tokens, closeIdx);
+  if (!openToken) {
+    return;
+  }
+
+  const body = last.content.slice(
+    openIdx + LEFT.length,
+    last.content.length - RIGHT.length,
   );
+  applyAttrs(openToken, parseAttrs(body));
 
-  // Create an array of pattern matchers that detect and transform different markdown
-  // elements with attribute syntax (e.g., {.class #id key=val}). Each pattern defines
-  // rules for matching specific token sequences and transforming them by extracting
-  // and applying the attributes. Different patterns are needed because attributes appear
-  // in different positions for different elements:
-  //   - Links: attributes after closing: [text](url){target="_blank"}
-  //   - Inline elements: attributes after closing: **bold**{.class}
-  //   - Code blocks: attributes at end of info string: ```js{.highlight}
-  //   - Tables: attributes in paragraph after table_close
-  //   - Lists: attributes on softbreak or at item end
-  // Each pattern knows where to look for attributes and which token to apply them to.
-  const patterns = createPatterns(options);
+  // Strip `{{…}}` and a single trailing space between the content and the
+  // attribute block, so `# Heading {{id=foo}}` does not render as
+  // `<h1>Heading </h1>`.
+  let trimmed = last.content.slice(0, openIdx);
+  if (trimmed.endsWith(" ")) {
+    trimmed = trimmed.slice(0, -1);
+  }
+  last.content = trimmed;
+}
 
-  /**
-   * Core processing function that walks through all tokens in the markdown document
-   * and applies attribute transformations when patterns match.
-   */
+/**
+ * Markdown-it plugin that applies a fixed set of HTML attributes to links,
+ * headings, and paragraphs using `{{key=value}}` syntax.
+ */
+export function markdownItAttrs(md: MarkdownIt): void {
   function curlyAttrs(state: StateCore): void {
     const tokens = state.tokens;
-
-    // Iterate through each token in the document
-    for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
-      // Test each pattern against the current token position
-      for (
-        let patternIndex = 0;
-        patternIndex < patterns.length;
-        patternIndex++
-      ) {
-        const pattern = patterns[patternIndex];
-        let childIndex: number | null = null;
-
-        // Check if all tests in the pattern match
-        const patternMatches = pattern.tests.every((rule) => {
-          const result = test(tokens, tokenIndex, rule);
-          if (result.j !== null) {
-            childIndex = result.j; // Store child token index if matched within children
-          }
-          return result.match;
-        });
-
-        // If pattern matched, apply the transformation
-        if (patternMatches) {
-          try {
-            pattern.transform(tokens, tokenIndex, childIndex ?? undefined);
-
-            // For inline patterns, re-check the same position since tokens may have changed
-            if (
-              pattern.name === "inline attributes" ||
-              pattern.name === "inline nesting 0"
-            ) {
-              patternIndex--;
-            }
-          } catch (error) {
-            console.error(
-              `markdown-it-attrs: Error in pattern '${pattern.name}': ${(error as Error).message}`,
-            );
-            console.error((error as Error).stack);
-          }
-        }
+    for (let i = 0; i < tokens.length; i++) {
+      if (tokens[i].type !== "inline") {
+        continue;
       }
+      while (handleInlineAttributes(tokens[i])) {
+        // Loop until no more link-attribute pairs remain on this inline token.
+      }
+      handleEndOfBlock(tokens, i);
     }
   }
 
-  // Register the curlyAttrs function to run before linkify in the markdown-it processing pipeline
   md.core.ruler.before("linkify", "curly_attributes", curlyAttrs);
 }
 
