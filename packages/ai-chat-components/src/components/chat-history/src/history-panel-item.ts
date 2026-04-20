@@ -53,7 +53,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   /**
    * id of chat history item element
    */
-  @property({ type: String })
+  @property({ type: String, reflect: true })
   id;
 
   /**
