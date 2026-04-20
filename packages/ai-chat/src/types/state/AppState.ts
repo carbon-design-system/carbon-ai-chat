@@ -117,6 +117,11 @@ interface AppState extends AppStateMessages {
   catastrophicErrorType?: boolean;
 
   /**
+   * The state information of a catastrophic error panel.
+   */
+  catastrophicErrorPanelState?: CatastrophicErrorPanelState;
+
+  /**
    * The state of the iframe panel.
    */
   iFramePanelState: IFramePanelState;
@@ -210,10 +215,10 @@ export enum PendingUploadStatus {
 }
 
 /**
- * Internal state for a single file that is being (or has been) uploaded via
- * {@link UploadConfig.onFileUpload}.  Stored in {@link InputState.pendingUploads}.
- *
- * This type is **internal** — it is not part of the public API surface.
+ * State for a single file that is being (or has been) uploaded via
+ * {@link UploadConfig.onFileUpload}. The chat widget tracks one of these per
+ * in-flight or completed upload and uses them to build the
+ * `pendingStructuredData` attached to the outgoing message.
  *
  * @experimental
  */
@@ -436,6 +441,26 @@ interface ChatMessagesState {
    * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
    */
   isHydratingCounter: number;
+}
+
+/**
+ * The state information for a catastrophic error panel.
+ */
+interface CatastrophicErrorPanelState {
+  /**
+   * Whether the catastrophic error panel is currently open.
+   */
+  isOpen: boolean;
+
+  /**
+   * The error title to be displayed in the `CatastrophicErrorPanel`.
+   */
+  title?: string;
+
+  /**
+   * The error body text to be displayed in the `CatastrophicErrorPanel`. Will render markdown if provided.
+   */
+  bodyText?: string;
 }
 
 /**
@@ -708,6 +733,7 @@ export {
   AppState,
   HumanAgentDisplayState,
   HumanAgentState,
+  CatastrophicErrorPanelState,
   ChatMessagesState,
   AnnounceMessage,
   ViewState,

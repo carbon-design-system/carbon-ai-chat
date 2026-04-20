@@ -279,6 +279,10 @@
   visibility: hidden;
 }
 
+:host(#{$prefix}-history-panel-item[selected]) #{$cds-prefix}-overflow-menu {
+  visibility: visible;
+}
+
 :host(#{$prefix}-history-panel-item:hover) #{$cds-prefix}-overflow-menu,
 :host(#{$prefix}-history-panel-item:focus) #{$cds-prefix}-overflow-menu,
 :host(#{$prefix}-history-panel-item:focus-within) #{$cds-prefix}-overflow-menu,

@@ -64,7 +64,8 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const isSidebarLayout = settings.layout === "sidebar";
 
   useEffect(() => {
-    setInterval(() => setStateText(Date.now().toString()), 2000);
+    const id = setInterval(() => setStateText(Date.now().toString()), 2000);
+    return () => clearInterval(id);
   }, []);
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
@@ -119,27 +120,26 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   /**
    * Handler for custom footer slot.
    */
-  const renderCustomMessageFooter: RenderCustomMessageFooter = (
-    slotName,
-    message,
-    messageItem,
-    instance,
-    additionalData,
-  ) => {
-    return (
-      <CustomFooterExample
-        slotName={slotName}
-        message={message}
-        messageItem={messageItem}
-        instance={instance}
-        additionalData={additionalData}
-      />
-    );
-  };
+  const renderCustomMessageFooter: RenderCustomMessageFooter = useCallback(
+    (slotName, message, messageItem, instance, additionalData) => {
+      return (
+        <CustomFooterExample
+          slotName={slotName}
+          message={message}
+          messageItem={messageItem}
+          instance={instance}
+          additionalData={additionalData}
+        />
+      );
+    },
+    [],
+  );
 
   /**
    * You can return a React element for each writeable element.
    */
+  const historyIsMobile =
+    instance?.getState().customPanels.history.isMobile ?? false;
   const allWriteableElements = useMemo(
     () => ({
       headerBottomElement: (
@@ -213,12 +213,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         <HistoryWriteableElementExample
           instance={instance as ChatInstance}
           parentStateText={stateText}
-          isMobile={instance?.getState().customPanels.history.isMobile ?? false}
+          isMobile={historyIsMobile}
         />
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [instance, instance?.getState().customPanels.history.isMobile],
+    [instance, historyIsMobile, stateText],
   );
 
   /**

@@ -13,6 +13,7 @@ import {
   AnnounceMessage,
   AppState,
   AppStateMessages,
+  CatastrophicErrorPanelState,
   ChatMessagesState,
   FileUpload,
   InputState,
@@ -70,6 +71,7 @@ const SET_CHAT_MESSAGES_PROPERTY = "SET_CHAT_MESSAGES_PROPERTY";
 const RESTART_CONVERSATION = "RESTART_CONVERSATION";
 const ACCEPTED_DISCLAIMER = "ACCEPTED_DISCLAIMER";
 const ADD_MESSAGE = "ADD_MESSAGE";
+const UPDATE_CATASTROPHIC_ERROR_PANEL = "UPDATE_CATASTROPHIC_ERROR_PANEL";
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
   "UPDATE_HAS_SENT_NON_WELCOME_MESSAGE";
 const UPDATE_PERSISTED_STATE = "UPDATE_PERSISTED_STATE";
@@ -210,6 +212,15 @@ const actions = {
       type: MESSAGE_SET_OPTION_SELECTED,
       messageID,
       sentMessage,
+    };
+  },
+
+  updateCatastrophicErrorPanel(
+    panelState: Partial<CatastrophicErrorPanelState>,
+  ) {
+    return {
+      type: UPDATE_CATASTROPHIC_ERROR_PANEL,
+      panelState,
     };
   },
 
@@ -717,6 +728,7 @@ export {
   RESTART_CONVERSATION,
   ACCEPTED_DISCLAIMER,
   ADD_MESSAGE,
+  UPDATE_CATASTROPHIC_ERROR_PANEL,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,
   UPDATE_PERSISTED_STATE,
   SET_HOME_SCREEN_IS_OPEN,

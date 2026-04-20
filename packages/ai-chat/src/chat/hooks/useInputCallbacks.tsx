@@ -19,13 +19,12 @@ import {
   MessageSendSource,
 } from "../../types/events/eventBusTypes";
 import type { ServiceManager } from "../services/ServiceManager";
-import type { AppState, InputState } from "../../types/state/AppState";
+import type { InputState } from "../../types/state/AppState";
 import type { SendOptions } from "../../types/instance/ChatInstance";
 import type { MessagesComponentClass } from "../components-legacy/MessagesComponent";
 
 interface UseInputCallbacksProps {
   serviceManager: ServiceManager;
-  appState: AppState;
   inputState: InputState;
   agentDisplayState: {
     isConnectingOrConnected: boolean;
@@ -33,6 +32,7 @@ interface UseInputCallbacksProps {
   };
   isHydrated: boolean;
   messagesRef: React.RefObject<MessagesComponentClass | null>;
+  humanAgentFileUploadInProgress: boolean;
 }
 
 interface UseInputCallbacksReturn {
@@ -56,17 +56,18 @@ interface UseInputCallbacksReturn {
  */
 export function useInputCallbacks({
   serviceManager,
-  appState,
   inputState,
   agentDisplayState,
   isHydrated,
   messagesRef,
+  humanAgentFileUploadInProgress,
 }: UseInputCallbacksProps): UseInputCallbacksReturn {
   const onSendInput = useCallback(
     async (text: string, source: MessageSendSource, options?: SendOptions) => {
-      const isInputToHumanAgent = selectIsInputToHumanAgent(appState);
-      const state = serviceManager.store.getState();
-      const { files } = selectInputState(state);
+      // Read fresh state at call time — avoids closing over a stale render snapshot
+      const currentState = serviceManager.store.getState();
+      const isInputToHumanAgent = selectIsInputToHumanAgent(currentState);
+      const { files } = selectInputState(currentState);
 
       if (isInputToHumanAgent) {
         serviceManager.humanAgentService.sendMessageToAgent(text, files);
@@ -87,7 +88,7 @@ export function useInputCallbacks({
         );
       }
     },
-    [appState, serviceManager],
+    [serviceManager],
   );
 
   const onRestart = useCallback(async () => {
@@ -158,13 +159,12 @@ export function useInputCallbacks({
 
   const showUploadButtonDisabled = useMemo(() => {
     const numFiles = inputState.files?.length ?? 0;
-    const anyCurrentFiles =
-      numFiles > 0 || appState.humanAgentState.fileUploadInProgress;
+    const anyCurrentFiles = numFiles > 0 || humanAgentFileUploadInProgress;
     return anyCurrentFiles && !inputState.allowMultipleFileUploads;
   }, [
     inputState.files,
     inputState.allowMultipleFileUploads,
-    appState.humanAgentState.fileUploadInProgress,
+    humanAgentFileUploadInProgress,
   ]);
 
   return {

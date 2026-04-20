@@ -11,7 +11,13 @@
 
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { carbonIconToReact } from "./../utils/carbonIcon";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useIntl } from "../hooks/useIntl";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
@@ -98,6 +104,7 @@ import {
 } from "../../types/messaging/Messages";
 import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
+import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
 
 /**
  * This component renders a specific message component based on a message's type.
@@ -164,6 +171,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   useEffect(() => {
     setIsChainOfThoughtOpen(false);
   }, [message.ui_state.id]);
+
+  // Stable callback so children wrapped in React.memo (BodyMessageComponents,
+  // CardItemComponent, GridItemComponent) can actually skip re-renders.
+  const renderMessageComponent = useCallback(
+    (childProps: MessageTypeComponentProps) => (
+      <MessageTypeComponent {...childProps} />
+    ),
+    [],
+  );
 
   /**
    * Returns the appropriate component to render the given message.
@@ -532,9 +548,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         fullMessage={originalMessage}
         isMessageForInput={isMessageForInput}
         requestFocus={requestInputFocus}
-        renderMessageComponent={(childProps) => (
-          <MessageTypeComponent {...childProps} />
-        )}
+        renderMessageComponent={renderMessageComponent}
       />
     );
   }
@@ -589,15 +603,19 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
-      <CarouselItemComponent
-        localMessageItem={message}
-        fullMessage={originalMessage}
-        isMessageForInput={isMessageForInput}
-        requestFocus={requestInputFocus}
-        renderMessageComponent={(childProps) => (
-          <MessageTypeComponent {...childProps} />
-        )}
-      />
+      <div className="carousel-container">
+        <Carousel nextBtnText="Next" previousBtnText="Previous">
+          <div className="carousel-container-inner">
+            <CarouselItemComponent
+              localMessageItem={message}
+              fullMessage={originalMessage}
+              isMessageForInput={isMessageForInput}
+              requestFocus={requestInputFocus}
+              renderMessageComponent={renderMessageComponent}
+            />
+          </div>
+        </Carousel>
+      </div>
     );
   }
 
@@ -609,9 +627,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       <GridItemComponent
         localMessageItem={message}
         originalMessage={originalMessage}
-        renderMessageComponent={(childProps) => (
-          <MessageTypeComponent {...childProps} />
-        )}
+        renderMessageComponent={renderMessageComponent}
       />
     );
   }

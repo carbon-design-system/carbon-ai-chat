@@ -20,7 +20,6 @@ import {
   CarouselItem,
   MessageResponse,
 } from "../../../../types/messaging/Messages";
-import Carousel from "./Carousel";
 
 interface CarouselItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<CarouselItem>;
@@ -52,23 +51,20 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
 
   return (
     <Suspense fallback={<SkeletonPlaceholder />}>
-      <Carousel>
-        {itemsLocalMessageItemIDs.map((nestedLocalMessageItemID) => {
-          const localMessageItem =
-            allMessageItemsByID[nestedLocalMessageItemID];
-          return (
-            <CardItemComponent
-              key={nestedLocalMessageItemID}
-              localMessageItem={localMessageItem}
-              fullMessage={fullMessage}
-              isMessageForInput={isMessageForInput}
-              ignoreMaxWidth
-              requestFocus={requestFocus}
-              renderMessageComponent={renderMessageComponent}
-            />
-          );
-        })}
-      </Carousel>
+      {itemsLocalMessageItemIDs.map((nestedLocalMessageItemID) => {
+        const localMessageItem = allMessageItemsByID[nestedLocalMessageItemID];
+        return (
+          <CardItemComponent
+            key={nestedLocalMessageItemID}
+            localMessageItem={localMessageItem}
+            fullMessage={fullMessage}
+            isMessageForInput={isMessageForInput}
+            ignoreMaxWidth
+            requestFocus={requestFocus}
+            renderMessageComponent={renderMessageComponent}
+          />
+        );
+      })}
     </Suspense>
   );
 }

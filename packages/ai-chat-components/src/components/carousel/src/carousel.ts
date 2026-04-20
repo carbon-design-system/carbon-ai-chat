@@ -79,8 +79,10 @@ class CDSAICarousel extends LitElement {
     );
   }
 
-  firstUpdated() {
+  async firstUpdated() {
     if (this.container) {
+      // temp solution to account for image load time
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
       const config: Config = {
         onViewChangeEnd: (endData) => {
           this._currentIndex = endData.currentIndex;
