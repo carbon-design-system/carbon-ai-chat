@@ -5,8 +5,6 @@ import * as ChatHistoryStories from "./chat-history-react.stories";
 <Meta of={ChatHistoryStories} />
 
 # AI Chat History
-
-
 ## Getting started
 
 Here's a quick example to get you started.
@@ -129,6 +127,28 @@ function ChatHistory() {
     <div slot="results-count">No available chats</div>
   </HistoryContent>
 </HistoryShell>
+```
+
+### Delete confirmation panel
+
+Render **`HistoryDeletePanel`** when the user chooses **Delete** from a chat item’s overflow menu. Pass **`itemId`** (maps to **`item-id`** on the host) for the chat item being removed. 
+Combined with **`HistoryShell`**, focus moves to the next chat item after delete, and **`history-item-selected`** fires on that chat item when the deleted chat item was the active one.
+
+Use **`onCancel`** to dismiss the panel without deleting, and **`onConfirm`** to remove the chat from your state and hide the panel.
+
+```jsx
+{showDeletePanel && (
+  <HistoryDeletePanel
+    itemId={itemToDelete ?? ""}
+    onCancel={handleDeleteCancel}
+    onConfirm={handleDeleteConfirm}
+  >
+    <div slot="title">Confirm Delete</div>
+    <div slot="description">
+      This conversation will be permanently deleted.
+    </div>
+  </HistoryDeletePanel>
+)}
 ```
 
 ## Custom Events
@@ -454,7 +474,9 @@ function ChatHistory() {
       <td><code>onConfirm</code></td>
       <td><code>history-delete-confirm</code></td>
       <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
-      <td>None</td>
+      <td>
+        When <code>itemId</code> is set: <code>itemId</code>, optional <code>nextItemId</code>, and <code>deletedItemWasSelected</code>.
+      </td>
     </tr>
   </tbody>
 </table>
@@ -463,12 +485,12 @@ function ChatHistory() {
 ```jsx
 function ChatHistory() {
   const [showDeletePanel, setShowDeletePanel] = useState(false);
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const handleDeleteAction = (event) => {
     const { action, itemId } = event.detail;
     if (action === 'Delete') {
-      setSelectedChatId(itemId);
+      setItemToDelete(itemId);
       setShowDeletePanel(true);
     }
   };
@@ -476,15 +498,14 @@ function ChatHistory() {
   const handleDeleteCancel = () => {
     console.log('Delete cancelled');
     setShowDeletePanel(false);
-    setSelectedChatId(null);
+    setItemToDelete(null);
   };
 
   const handleDeleteConfirm = () => {
-    console.log('Delete confirmed for chat:', selectedChatId);
-    // Delete the selected chat item
-    deleteChat(selectedChatId);
+    console.log('Delete confirmed for chat:', itemToDelete);
+    deleteChat(itemToDelete);
     setShowDeletePanel(false);
-    setSelectedChatId(null);
+    setItemToDelete(null);
   };
 
   return (
@@ -507,6 +528,7 @@ function ChatHistory() {
 
         {showDeletePanel && (
           <HistoryDeletePanel
+            itemId={itemToDelete ?? ''}
             onCancel={handleDeleteCancel}
             onConfirm={handleDeleteConfirm}
           >

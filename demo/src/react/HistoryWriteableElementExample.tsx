@@ -445,6 +445,7 @@ function HistoryWriteableElementExample({
       </HistoryContent>
       {showDeletePanel && (
         <HistoryDeletePanel
+          itemId={itemToDelete ?? ""}
           onCancel={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         >

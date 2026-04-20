@@ -421,6 +421,7 @@ export const Default = {
         </HistoryContent>
         {showDeletePanel && (
           <HistoryDeletePanel
+            itemId={itemToDelete ?? ""}
             onCancel={handleDeleteCancel}
             onConfirm={handleDeleteConfirm}
           >
@@ -548,7 +549,7 @@ export const DeleteFlow = {
             </HistoryPanelItems>
           </HistoryPanel>
         </HistoryContent>
-        <HistoryDeletePanel>
+        <HistoryDeletePanel itemId="today-0">
           <div slot="title">Confirm Delete</div>
           <div slot="description">
             This conversation will be permanently deleted.

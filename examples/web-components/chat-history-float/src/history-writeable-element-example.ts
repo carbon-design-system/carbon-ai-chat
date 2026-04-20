@@ -465,6 +465,7 @@ export class HistoryWriteableElementExample extends LitElement {
         ${this.showDeletePanel
           ? html`
               <cds-aichat-history-delete-panel
+                item-id=${this.itemToDelete ?? ""}
                 @history-delete-cancel=${this._handleDeleteCancel}
                 @history-delete-confirm=${this._handleDeleteConfirm}
               >

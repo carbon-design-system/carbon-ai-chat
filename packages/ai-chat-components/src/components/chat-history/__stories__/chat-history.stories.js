@@ -424,7 +424,9 @@ class ChatHistoryDemo extends LitElement {
         </cds-aichat-history-content>
         ${this.showDeletePanel
           ? html`
-              <cds-aichat-history-delete-panel></cds-aichat-history-delete-panel>
+              <cds-aichat-history-delete-panel
+                item-id=${this.itemToDelete ?? ""}
+              ></cds-aichat-history-delete-panel>
             `
           : ""}
       </cds-aichat-history-shell>
@@ -606,7 +608,9 @@ export const DeleteFlow = {
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
         </cds-aichat-history-content>
-        <cds-aichat-history-delete-panel></cds-aichat-history-delete-panel>
+        <cds-aichat-history-delete-panel
+          item-id="today-0"
+        ></cds-aichat-history-delete-panel>
       </cds-aichat-history-shell>
     `;
   },

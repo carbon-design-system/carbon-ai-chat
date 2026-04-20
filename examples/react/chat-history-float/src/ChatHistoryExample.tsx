@@ -426,6 +426,7 @@ function ChatHistoryExample({
       </HistoryContent>
       {showDeletePanel && (
         <HistoryDeletePanel
+          itemId={itemToDelete ?? ""}
           onCancel={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         >
