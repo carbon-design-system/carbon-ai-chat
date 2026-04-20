@@ -15,6 +15,7 @@ import {
   tryFocus,
   walkComposedTree,
   getFirstAndLastFocusableChildren,
+  focusElementAfterRepaint,
 } from "../focus-utils.js";
 
 /**
@@ -731,6 +732,44 @@ describe("focus-utils", function () {
       expect(last).to.not.be.null;
       expect(first?.id).to.equal("first");
       expect(last?.id).to.equal("last");
+    });
+  });
+
+  describe("focusElementAfterRepaint", function () {
+    it("should focus the matching element after paint", async function () {
+      const root = await fixture(html`
+        <div>
+          <button id="other">Other</button>
+          <button id="target">Target</button>
+        </div>
+      `);
+      (root.querySelector("#other") as HTMLElement).focus();
+      expect(document.activeElement?.id).to.equal("other");
+
+      focusElementAfterRepaint(root, "#target");
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => resolve());
+        });
+      });
+
+      expect(document.activeElement?.id).to.equal("target");
+    });
+
+    it("should leave focus unchanged when selector matches nothing", async function () {
+      const root = await fixture(
+        html`<div><button id="stay">Stay</button></div>`,
+      );
+      (root.querySelector("#stay") as HTMLElement).focus();
+
+      focusElementAfterRepaint(root, "#nope");
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => resolve());
+        });
+      });
+
+      expect(document.activeElement?.id).to.equal("stay");
     });
   });
 });

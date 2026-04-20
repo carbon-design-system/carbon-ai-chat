@@ -9,6 +9,7 @@
 import "../index";
 import { LitElement, html, css } from "lit";
 import styles from "./story-styles.scss?lit";
+import { focusElementAfterRepaint } from "../../../globals/utils/focus-utils";
 
 import {
   historyItemActions,
@@ -159,6 +160,11 @@ class ChatHistoryDemo extends LitElement {
         ...this.pinnedItems,
       ];
       this.requestUpdate();
+
+      focusElementAfterRepaint(
+        this.renderRoot,
+        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`,
+      );
     }
   };
 
@@ -201,6 +207,11 @@ class ChatHistoryDemo extends LitElement {
 
       this.regularItems = newRegularItems;
       this.requestUpdate();
+
+      focusElementAfterRepaint(
+        this.renderRoot,
+        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`,
+      );
     }
   };
 

@@ -48,10 +48,6 @@ The **`<cds-aichat-history-shell>`** component provides a structured layout for 
 Each of these slots can accept **any element or component**, allowing users to freely construct and customize the chat history layout as needed.
 Alternatively, adopters can use the **provided subcomponents**, which are designed specifically for each section. These subcomponents offer consistent styling and default behaviors that align with the AI Chat design patterns.
 
-When you use **`<cds-aichat-history-delete-panel>`** inside **`<cds-aichat-history-shell>`**, set the **`item-id`** attribute to the id of the chat row being deleted. The shell listens for **`history-delete-confirm`**, then restores 
-keyboard focus to the next or previous chat item after your handler removes the item. If the deleted chat item was **selected** / active, the shell also dispatches **`history-item-selected`** on the target row so your existing selection handler can update state.
-
-
 <table style={{width: '100%'}}>
   <thead>
     <tr>
@@ -253,7 +249,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 ### Delete confirmation panel
 
 Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**) 
-to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that row when the deleted chat item was the active/selected one.
+to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that item when the deleted chat item was the active/selected one.
 
 Listen for **`history-delete-cancel`** to dismiss the panel without changes, and **`history-delete-confirm`** to remove the chat from your data store and hide the panel.
 
