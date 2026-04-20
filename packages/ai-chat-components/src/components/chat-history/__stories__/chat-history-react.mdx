@@ -133,7 +133,7 @@ function ChatHistory() {
 
 ### Delete confirmation panel
 
-Render **`HistoryDeletePanel`** when the user chooses **Delete** from a chat item’s overflow menu. Pass **`itemId`** (maps to **`item-id`** on the host) for the chat item being removed. 
+Render **`HistoryDeletePanel`** when the user chooses **Delete** from a chat item’s overflow menu. Pass **`itemId`** for the chat item being removed.
 Combined with **`HistoryShell`**, focus moves to the next chat item after delete, and **`history-item-selected`** fires on that chat item when the deleted chat item was the active one.
 
 Use **`onCancel`** to dismiss the panel without deleting, and **`onConfirm`** to remove the chat from your state and hide the panel.
