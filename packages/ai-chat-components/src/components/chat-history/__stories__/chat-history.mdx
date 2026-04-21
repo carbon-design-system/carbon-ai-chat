@@ -248,7 +248,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ### Delete confirmation panel
 
-Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**) 
+Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**)
 to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that item when the deleted chat item was the active/selected one.
 
 Listen for **`history-delete-cancel`** to dismiss the panel without changes, and **`history-delete-confirm`** to remove the chat from your data store and hide the panel.
@@ -332,6 +332,36 @@ document.addEventListener('history-item-action', (event) => {
     case 'Pin':
       console.log(`Pinning chat: ${itemName}`);
       break;
+  }
+});
+```
+
+#### Focus Management Utility
+
+When performing actions that reorder or move history items (such as pinning/unpinning), you may need to restore focus to the item after the DOM updates for accessibility reasons. Use the `focusElementAfterRepaint` utility to handle this:
+
+```javascript
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+```
+
+**Example with Pin/Unpin:**
+```javascript
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+
+// Listen for pin action
+document.addEventListener('history-item-action', (event) => {
+  const { action, itemId } = event.detail;
+
+  if (action === 'Pin') {
+    // Move item from regular to pinned list in your data
+    const itemToPin = regularItems.find(chat => chat.id === itemId);
+    pinnedItems.unshift(itemToPin);
+    regularItems = regularItems.filter(chat => chat.id !== itemId);
+
+    focusElementAfterRepaint(
+      this.renderRoot,
+      `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
+    );
   }
 });
 ```

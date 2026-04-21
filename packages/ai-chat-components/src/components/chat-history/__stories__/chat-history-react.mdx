@@ -232,6 +232,42 @@ function ChatHistory() {
 }
 ```
 
+#### Focus Management Utility
+
+When performing actions that reorder or move history items (such as pinning/unpinning), you may need to restore focus to the item after the DOM updates for accessibility reasons. Use the `focusElementAfterRepaint` utility to handle this:
+
+```javascript
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+```
+
+**Example with Pin/Unpin:**
+```jsx
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+
+function ChatHistory() {
+  const historyShellRef = useRef(null);
+
+  const handlePin = (itemId) => {
+    // Move item from regular to pinned list
+    const itemToPin = regularItems.find(chat => chat.id === itemId);
+    setPinnedItems(prev => [itemToPin, ...prev]);
+    setRegularItems(prev => prev.filter(chat => chat.id !== itemId));
+
+    // Restore focus to the item after DOM updates
+    focusElementAfterRepaint(
+      historyShellRef.current ?? document,
+      `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
+    );
+  };
+
+  return (
+    <HistoryShell ref={historyShellRef}>
+      {/* ... history content */}
+    </HistoryShell>
+  );
+}
+```
+
 ### `<HistorySearchItem>` Events
 
 <table style={{width: '100%'}}>

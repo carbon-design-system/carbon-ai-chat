@@ -41,8 +41,9 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
   _deleteButton;
 
   /**
-   * Next panel item id after deleting `itemId`, and whether the removed row was selected.
-   * Call before updating data so the DOM still reflects the row being removed.
+   * Finds the next chat item id after deleting `itemId`, and whether the removed chat item was * selected / active.
+   *
+   * Call before updating data so the DOM still reflects the chat item being removed.
    */
   private _getFocusDetailForDeletedItem(itemId: string) {
     const shell = this.closest(`${prefix}-history-shell`);
