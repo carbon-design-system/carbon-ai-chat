@@ -66,7 +66,7 @@ interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   allMessagesByID: AppState["allMessagesByID"];
   inputState: AppState["assistantInputState"];
   config: AppState["config"];
-  catastrophicErrorType: AppState["catastrophicErrorType"];
+  catastrophicErrorPanelState: AppState["catastrophicErrorPanelState"];
   assistantName: string;
 }
 
@@ -116,7 +116,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   allMessagesByID,
   inputState,
   config,
-  catastrophicErrorType,
+  catastrophicErrorPanelState,
   assistantName,
 }: AppShellPanelsProps) {
   // Call DisclaimerPanel hook at component level (not inside render)
@@ -156,7 +156,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
     <div slot="panels">
       <ChatPanel
         panelAriaLabel={languagePack.aria_catastrophicErrorPanel}
-        open={Boolean(catastrophicErrorType)}
+        open={Boolean(catastrophicErrorPanelState?.isOpen)}
         aiEnabled={config.public.aiEnabled ? true : false}
         priority={100}
         fullWidth={false}
@@ -166,6 +166,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
           <CatastrophicErrorPanel
             assistantName={assistantName}
             languagePack={languagePack}
+            title={catastrophicErrorPanelState?.title}
+            bodyText={catastrophicErrorPanelState?.bodyText}
             onRestart={onRestart}
           />
         </div>

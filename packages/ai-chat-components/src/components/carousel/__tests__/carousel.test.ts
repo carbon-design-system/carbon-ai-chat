@@ -35,6 +35,9 @@ describe("carousel", function async() {
     const el = await fixture<Carousel>(template);
     await el.updateComplete;
 
+    // temp solution to account for image load time
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
+
     expect(el).to.be.instanceOf(Carousel);
 
     const root = el.shadowRoot;

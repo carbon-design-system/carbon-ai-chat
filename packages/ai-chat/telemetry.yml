@@ -14,6 +14,7 @@ collect:
         - ai-disabled
         - ai-enabled
         - assistant-name
+        - assistantAvatarUrl
         - debug
         - disable-custom-element-mobile-enhancements
         - disclaimer

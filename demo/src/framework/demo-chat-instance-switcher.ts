@@ -393,19 +393,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   private _handleShowCatastrophicError = () => {
     this._withInstance((instance) => {
-      const instanceWithManager = instance as any;
-      if (instanceWithManager.serviceManager) {
-        // Dispatch action directly to set catastrophicErrorType
-        instanceWithManager.serviceManager.store.dispatch({
-          type: "SET_APP_STATE_VALUE",
-          key: "catastrophicErrorType",
-          value: true,
-        });
-      } else {
-        alert(
-          "serviceManager is not available. Set exposeServiceManagerForTesting: true in PublicConfig.",
-        );
-      }
+      instance.updateCatastrophicErrorPanel?.({ isOpen: true });
     });
   };
 

@@ -123,6 +123,8 @@ const selectAllMessageItemsByID = (state: AppState) =>
 const selectAllMessagesByID = (state: AppState) => state.allMessagesByID;
 const selectCatastrophicErrorType = (state: AppState) =>
   state.catastrophicErrorType;
+const selectCatastrophicErrorPanelState = (state: AppState) =>
+  state.catastrophicErrorPanelState;
 const selectIFramePanelState = (state: AppState) => state.iFramePanelState;
 const selectViewSourcePanelState = (state: AppState) =>
   state.viewSourcePanelState;
@@ -181,6 +183,9 @@ function AppShell({
   const allMessageItemsByID = useSelector(selectAllMessageItemsByID);
   const allMessagesByID = useSelector(selectAllMessagesByID);
   const catastrophicErrorType = useSelector(selectCatastrophicErrorType);
+  const catastrophicErrorPanelState = useSelector(
+    selectCatastrophicErrorPanelState,
+  );
   const iFramePanelState = useSelector(selectIFramePanelState);
   const viewSourcePanelState = useSelector(selectViewSourcePanelState);
   const customPanelState = useSelector(selectCustomPanelState);
@@ -768,7 +773,7 @@ function AppShell({
                 allMessagesByID={allMessagesByID}
                 inputState={inputState}
                 config={config}
-                catastrophicErrorType={catastrophicErrorType}
+                catastrophicErrorPanelState={catastrophicErrorPanelState}
               />
 
               {(config.derived.header?.isOn || headerConfigOverride?.isOn) && (
