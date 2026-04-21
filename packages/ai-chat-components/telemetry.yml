@@ -55,6 +55,10 @@ collect:
         - oncds-aichat-card-footer-action
         # cds-aichat-card-steps
         - steps
+        # cds-aichat-carousel
+        - nextBtnText
+        - oncds-aichat-carousel-onchange
+        - previousBtnText
         # cds-aichat-chain-of-thought
         - onchain-of-thought-toggled
         # cds-aichat-chain-of-thought-step

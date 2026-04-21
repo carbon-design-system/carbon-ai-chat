@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-custom-element-as-float-lazy-load",
   "private": true,
-  "version": "1.11.0-rc.1",
+  "version": "1.11.0",
   "type": "module",
   "description": "Example using React.lazy to code-split ChatCustomElement as a floating widget, with a custom icon launcher and float layout classes from @carbon/ai-chat.",
   "scripts": {
@@ -12,8 +12,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.11.0-rc.1",
-    "@carbon/ai-chat-components": "^1.1.0-rc.0",
+    "@carbon/ai-chat": "^1.11.0",
+    "@carbon/ai-chat-components": "^1.1.0",
     "@carbon/icons-react": "^11.53.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.49.0",
