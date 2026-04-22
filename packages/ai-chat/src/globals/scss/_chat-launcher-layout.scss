@@ -67,7 +67,9 @@ $launcher-position-right: get-var(
      ============================================================================ */
 
   [dir="rtl"] .#{$prefix}-launcher {
-    inset-inline: $launcher-position-right unset;
+    /* stylelint-disable-next-line csstools/use-logical */
+    right: unset;
+    left: $launcher-position-right;
   }
 
   /* ============================================================================
