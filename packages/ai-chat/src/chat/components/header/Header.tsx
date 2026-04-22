@@ -144,7 +144,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const backButtonRef = useRef<CDSButton>(undefined);
   const chatHeaderRef = useRef<any>(null);
-  const isRTL = document.dir === "rtl";
+  const isRTL =
+    document.dir === "rtl" || document.documentElement.dir === "rtl";
 
   const showRestartButton = headerConfig?.showRestartButton;
   const showAiLabel = headerConfig?.showAiLabel;
@@ -374,6 +375,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         ref={chatHeaderRef}
         actions={actions}
         overflow={true}
+        isRTL={isRTL}
         headerTitle={headerTitle}
         headerName={chatHeaderDisplayName}
         navigationType={navigationType}
