@@ -23,6 +23,64 @@ import styles from "./chat-history.scss?lit";
  */
 @carbonElement(`${prefix}-history-shell`)
 class CDSAIChatHistoryShell extends LitElement {
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(
+      "history-delete-confirm",
+      this._handleHistoryDeleteConfirm,
+    );
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener(
+      "history-delete-confirm",
+      this._handleHistoryDeleteConfirm,
+    );
+    super.disconnectedCallback();
+  }
+
+  /**
+   * After the app removes the deleted row, move focus to the next row and optionally fire `history-item-selected`
+   * when the deleted row was selected (detail from `cds-aichat-history-delete-panel` with `item-id` set).
+   */
+  private _handleHistoryDeleteConfirm = (event: Event) => {
+    const detail = (event as CustomEvent).detail ?? {};
+    const { nextItemId, deletedItemWasSelected } = detail;
+
+    if (!nextItemId) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const tag = `${prefix}-history-panel-item`;
+        const nextHost = Array.from(this.querySelectorAll(tag)).find(
+          (el) => (el as HTMLElement).id === nextItemId,
+        ) as HTMLElement | undefined;
+
+        if (!nextHost) {
+          return;
+        }
+
+        if (deletedItemWasSelected) {
+          nextHost.dispatchEvent(
+            new CustomEvent("history-item-selected", {
+              bubbles: true,
+              composed: true,
+              detail: {
+                itemId: nextHost.id,
+                itemName: (nextHost as any).name,
+                element: nextHost,
+              },
+            }),
+          );
+        }
+
+        nextHost.focus();
+      });
+    });
+  };
+
   render() {
     return html` <slot name="header"></slot>
       <slot name="toolbar"></slot>

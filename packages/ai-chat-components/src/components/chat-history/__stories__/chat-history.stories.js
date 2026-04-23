@@ -9,6 +9,7 @@
 import "../index";
 import { LitElement, html, css } from "lit";
 import styles from "./story-styles.scss?lit";
+import { focusElementAfterRepaint } from "../../../globals/utils/focus-utils";
 
 import {
   historyItemActions,
@@ -159,6 +160,11 @@ class ChatHistoryDemo extends LitElement {
         ...this.pinnedItems,
       ];
       this.requestUpdate();
+
+      focusElementAfterRepaint(
+        this.renderRoot,
+        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`,
+      );
     }
   };
 
@@ -201,6 +207,11 @@ class ChatHistoryDemo extends LitElement {
 
       this.regularItems = newRegularItems;
       this.requestUpdate();
+
+      focusElementAfterRepaint(
+        this.renderRoot,
+        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`,
+      );
     }
   };
 
@@ -424,7 +435,9 @@ class ChatHistoryDemo extends LitElement {
         </cds-aichat-history-content>
         ${this.showDeletePanel
           ? html`
-              <cds-aichat-history-delete-panel></cds-aichat-history-delete-panel>
+              <cds-aichat-history-delete-panel
+                item-id=${this.itemToDelete ?? ""}
+              ></cds-aichat-history-delete-panel>
             `
           : ""}
       </cds-aichat-history-shell>
@@ -606,7 +619,9 @@ export const DeleteFlow = {
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
         </cds-aichat-history-content>
-        <cds-aichat-history-delete-panel></cds-aichat-history-delete-panel>
+        <cds-aichat-history-delete-panel
+          item-id="today-0"
+        ></cds-aichat-history-delete-panel>
       </cds-aichat-history-shell>
     `;
   },

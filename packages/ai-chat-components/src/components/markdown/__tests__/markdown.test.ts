@@ -586,4 +586,83 @@ HTTP: http://example.com
       });
     });
   });
+
+  describe("custom attribute syntax", () => {
+    async function renderMarkdown(markdown: string) {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown .markdown=${markdown}></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+      return root;
+    }
+
+    it("applies id to a heading and strips the attribute syntax from rendered text", async () => {
+      const root = await renderMarkdown("# Heading {{id=foo}}");
+      const h1 = root.querySelector("h1");
+      expect(h1).to.not.equal(null);
+      expect(h1?.getAttribute("id")).to.equal("foo");
+      expect(h1?.textContent).to.equal("Heading");
+    });
+
+    it("applies class to a paragraph", async () => {
+      const root = await renderMarkdown("A paragraph {{class=bar}}");
+      const p = root.querySelector("p");
+      expect(p).to.not.equal(null);
+      expect(p?.getAttribute("class")).to.equal("bar");
+      expect(p?.textContent).to.equal("A paragraph");
+    });
+
+    it("applies multiple attributes to a single link", async () => {
+      const root = await renderMarkdown(
+        "[link](https://example.com){{target=_blank rel=noopener}}",
+      );
+      const link = root.querySelector("a");
+      expect(link).to.not.equal(null);
+      expect(link?.getAttribute("target")).to.equal("_blank");
+      expect(link?.getAttribute("rel")).to.equal("noopener");
+    });
+
+    it("supports unquoted attribute values on links", async () => {
+      const root = await renderMarkdown(
+        "[link](https://example.com){{target=_blank}}",
+      );
+      const link = root.querySelector('a[href="https://example.com"]');
+      expect(link).to.not.equal(null);
+      expect(link?.getAttribute("target")).to.equal("_blank");
+    });
+
+    it("rejects disallowed attributes while still applying allowed ones", async () => {
+      const root = await renderMarkdown(
+        `[link](https://example.com){{onclick=alert(1) target=_blank}}`,
+      );
+      const link = root.querySelector('a[href="https://example.com"]');
+      expect(link).to.not.equal(null);
+      expect(link?.getAttribute("target")).to.equal("_blank");
+      expect(link?.getAttribute("onclick")).to.equal(null);
+    });
+
+    it("applies attributes independently to multiple links on the same line", async () => {
+      const root = await renderMarkdown(
+        "[a](https://a.example){{target=_self}} and [b](https://b.example){{rel=noopener}}",
+      );
+      const linkA = root.querySelector('a[href="https://a.example"]');
+      const linkB = root.querySelector('a[href="https://b.example"]');
+      expect(linkA?.getAttribute("target")).to.equal("_self");
+      expect(linkA?.getAttribute("rel")).to.equal(null);
+      expect(linkB?.getAttribute("rel")).to.equal("noopener");
+    });
+
+    it("renders unclosed attribute syntax literally without applying attributes", async () => {
+      const root = await renderMarkdown("Some {{not closed text");
+      const p = root.querySelector("p");
+      expect(p).to.not.equal(null);
+      expect(p?.getAttribute("class")).to.equal(null);
+      expect(p?.getAttribute("id")).to.equal(null);
+      expect(p?.textContent).to.equal("Some {{not closed text");
+    });
+  });
 });

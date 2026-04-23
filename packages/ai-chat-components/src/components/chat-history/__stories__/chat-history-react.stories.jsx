@@ -8,7 +8,7 @@
  */
 
 /* eslint-disable */
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   HistoryShell,
   HistoryHeader,
@@ -30,6 +30,7 @@ import {
   pinnedHistoryItems,
   historyItems,
 } from "./story-data";
+import { focusElementAfterRepaint } from "../../../globals/utils/focus-utils";
 
 import { PinFilled, Search, Time } from "@carbon/icons-react";
 
@@ -83,6 +84,7 @@ export const Default = {
     showCloseAction: true,
   },
   render: (args) => {
+    const historyShellRef = useRef(null);
     const [searchResults, setSearchResults] = useState([]);
     const [searchTotalCount, setSearchTotalCount] = useState(0);
     const [searchValue, setSearchValue] = useState("");
@@ -163,6 +165,11 @@ export const Default = {
 
           // Add to start of pinned items
           setPinnedItems((prev) => [{ ...itemToPin, isPinned: true }, ...prev]);
+
+          focusElementAfterRepaint(
+            historyShellRef.current ?? document,
+            `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+          );
         }
       },
       [regularItems],
@@ -207,6 +214,11 @@ export const Default = {
               return item;
             });
           });
+
+          focusElementAfterRepaint(
+            historyShellRef.current ?? document,
+            `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+          );
         }
       },
       [pinnedItems],
@@ -335,7 +347,7 @@ export const Default = {
     const noSearchResults = searchTotalCount === 0 && searchValue;
 
     return (
-      <HistoryShell>
+      <HistoryShell ref={historyShellRef}>
         <HistoryHeader
           headerTitle={args.HeaderTitle}
           showCloseAction={args.showCloseAction}
@@ -421,6 +433,7 @@ export const Default = {
         </HistoryContent>
         {showDeletePanel && (
           <HistoryDeletePanel
+            itemId={itemToDelete ?? ""}
             onCancel={handleDeleteCancel}
             onConfirm={handleDeleteConfirm}
           >
@@ -548,7 +561,7 @@ export const DeleteFlow = {
             </HistoryPanelItems>
           </HistoryPanel>
         </HistoryContent>
-        <HistoryDeletePanel>
+        <HistoryDeletePanel itemId="today-0">
           <div slot="title">Confirm Delete</div>
           <div slot="description">
             This conversation will be permanently deleted.

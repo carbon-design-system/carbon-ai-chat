@@ -37,11 +37,7 @@ const htmlMarkdown = new MarkdownIt("commonmark", {
   .enable("table")
   .enable("strikethrough")
   .enable("linkify")
-  .use(markdownItAttrs, {
-    leftDelimiter: "{{",
-    rightDelimiter: "}}",
-    allowedAttributes: ["target", "rel", "class", "id"],
-  })
+  .use(markdownItAttrs)
   .use(markdownItHighlight)
   .use(markdownItTaskLists);
 
@@ -57,11 +53,7 @@ const noHtmlMarkdown = new MarkdownIt("commonmark", {
   .enable("table")
   .enable("strikethrough")
   .enable("linkify")
-  .use(markdownItAttrs, {
-    leftDelimiter: "{{",
-    rightDelimiter: "}}",
-    allowedAttributes: ["target", "rel", "class", "id"],
-  })
+  .use(markdownItAttrs)
   .use(markdownItHighlight)
   .use(markdownItTaskLists);
 

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   HistoryShell,
   HistoryHeader,
@@ -20,6 +20,7 @@ import {
   HistorySearchItem,
   HistoryDeletePanel,
 } from "@carbon/ai-chat-components/es/react/history";
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
 import {
   historyItemActions,
   pinnedHistoryItemActions,
@@ -73,6 +74,7 @@ function ChatHistoryExample({
   isMobile,
   loadChat,
 }: ChatHistoryExampleProps) {
+  const historyShellRef = useRef<HTMLElement | null>(null);
   const [searchResults, setSearchResults] = useState<resultItem[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState<string | undefined>(
@@ -171,6 +173,11 @@ function ChatHistoryExample({
 
         // Add to start of pinned items
         setPinnedItems((prev) => [{ ...itemToPin, isPinned: true }, ...prev]);
+
+        focusElementAfterRepaint(
+          historyShellRef.current ?? document,
+          `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+        );
       }
     },
     [regularItems],
@@ -353,7 +360,7 @@ function ChatHistoryExample({
   const noSearchResults = searchResults.length === 0 && searchValue;
 
   return (
-    <HistoryShell>
+    <HistoryShell ref={historyShellRef}>
       <HistoryHeader
         headerTitle="Conversations"
         onClose={handleHistoryClose}
@@ -438,6 +445,7 @@ function ChatHistoryExample({
       </HistoryContent>
       {showDeletePanel && (
         <HistoryDeletePanel
+          itemId={itemToDelete ?? ""}
           onCancel={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         >

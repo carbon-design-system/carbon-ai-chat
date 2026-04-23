@@ -48,7 +48,6 @@ The **`<cds-aichat-history-shell>`** component provides a structured layout for 
 Each of these slots can accept **any element or component**, allowing users to freely construct and customize the chat history layout as needed.
 Alternatively, adopters can use the **provided subcomponents**, which are designed specifically for each section. These subcomponents offer consistent styling and default behaviors that align with the AI Chat design patterns.
 
-
 <table style={{width: '100%'}}>
   <thead>
     <tr>
@@ -247,6 +246,31 @@ Using these subcomponents ensures visual consistency and predictable structure w
 </script>
 ```
 
+### Delete confirmation panel
+
+Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**)
+to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that item when the deleted chat item was the active/selected one.
+
+Listen for **`history-delete-cancel`** to dismiss the panel without changes, and **`history-delete-confirm`** to remove the chat from your data store and hide the panel.
+
+```html
+<cds-aichat-history-shell>
+  <cds-aichat-history-header header-title="Chats"></cds-aichat-history-header>
+  <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
+  <cds-aichat-history-content>
+    <cds-aichat-history-panel aria-label="Chat history">
+      <cds-aichat-history-panel-items>
+        <!-- Panel items; overflow Delete opens the delete panel -->
+      </cds-aichat-history-panel-items>
+    </cds-aichat-history-panel>
+  </cds-aichat-history-content>
+  <cds-aichat-history-delete-panel item-id="chat-to-delete">
+    <div slot="title">Confirm Delete</div>
+    <div slot="description">This conversation will be permanently deleted.</div>
+  </cds-aichat-history-delete-panel>
+</cds-aichat-history-shell>
+```
+
 ### Custom Events
 
 The chat history components emit several custom events that you can listen for to handle user interactions. Below are tables documenting all available events for each component:
@@ -308,6 +332,36 @@ document.addEventListener('history-item-action', (event) => {
     case 'Pin':
       console.log(`Pinning chat: ${itemName}`);
       break;
+  }
+});
+```
+
+#### Focus Management Utility
+
+When performing actions that reorder or move history items (such as pinning/unpinning), you may need to restore focus to the item after the DOM updates for accessibility reasons. Use the `focusElementAfterRepaint` utility to handle this:
+
+```javascript
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+```
+
+**Example with Pin/Unpin:**
+```javascript
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+
+// Listen for pin action
+document.addEventListener('history-item-action', (event) => {
+  const { action, itemId } = event.detail;
+
+  if (action === 'Pin') {
+    // Move item from regular to pinned list in your data
+    const itemToPin = regularItems.find(chat => chat.id === itemId);
+    pinnedItems.unshift(itemToPin);
+    regularItems = regularItems.filter(chat => chat.id !== itemId);
+
+    focusElementAfterRepaint(
+      this.renderRoot,
+      `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
+    );
   }
 });
 ```
@@ -479,10 +533,17 @@ document.addEventListener('history-panel-item-input-cancel', () => {
     <tr>
       <td><code>history-delete-confirm</code></td>
       <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
-      <td>None</td>
+      <td>
+        When <code>item-id</code> is set, includes:<br/>
+        • <code>itemId</code> (string) - The chat item being removed<br/>
+        • <code>nextItemId</code> (string, optional) - Next chat item to move focus to after delete<br/>
+        • <code>deletedItemWasSelected</code> (boolean) - Whether that chat item was selected before removal
+      </td>
     </tr>
   </tbody>
 </table>
+
+Set the **`item-id`** attribute (or `itemId` property) whenever the delete panel is shown so **`cds-aichat-history-shell`** can restore focus (and fire **`history-item-selected`** when appropriate).
 
 **Example:**
 ```javascript
@@ -494,11 +555,11 @@ document.addEventListener('history-delete-cancel', () => {
 });
 
 // Listen for delete confirmation
-document.addEventListener('history-delete-confirm', () => {
-  console.log('Delete confirmed');
-  // Delete the selected chat item
-  deleteSelectedChat();
-  // Hide the delete panel
+document.addEventListener('history-delete-confirm', (event) => {
+  const { itemId, nextItemId, deletedItemWasSelected } = event.detail ?? {};
+  console.log('Delete confirmed', { itemId, nextItemId, deletedItemWasSelected });
+  // Remove the chat item from your data store; the shell handles focus if item-id was set
+  deleteChatFromStore(itemId);
   document.querySelector('cds-aichat-history-delete-panel').remove();
 });
 ```
@@ -514,7 +575,7 @@ document.addEventListener('history-delete-confirm', () => {
     </cds-aichat-history-panel>
 
     <!-- Delete confirmation panel (shown when delete action is triggered) -->
-    <cds-aichat-history-delete-panel>
+    <cds-aichat-history-delete-panel item-id="chat-item-to-delete">
       <div slot="title">Confirm Delete</div>
       <div slot="description">This conversation will be permanently deleted.</div>
     </cds-aichat-history-delete-panel>

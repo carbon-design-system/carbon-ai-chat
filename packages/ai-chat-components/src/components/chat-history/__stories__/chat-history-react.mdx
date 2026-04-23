@@ -131,6 +131,28 @@ function ChatHistory() {
 </HistoryShell>
 ```
 
+### Delete confirmation panel
+
+Render **`HistoryDeletePanel`** when the user chooses **Delete** from a chat item’s overflow menu. Pass **`itemId`** for the chat item being removed.
+Combined with **`HistoryShell`**, focus moves to the next chat item after delete, and **`history-item-selected`** fires on that chat item when the deleted chat item was the active one.
+
+Use **`onCancel`** to dismiss the panel without deleting, and **`onConfirm`** to remove the chat from your state and hide the panel.
+
+```jsx
+{showDeletePanel && (
+  <HistoryDeletePanel
+    itemId={itemToDelete ?? ""}
+    onCancel={handleDeleteCancel}
+    onConfirm={handleDeleteConfirm}
+  >
+    <div slot="title">Confirm Delete</div>
+    <div slot="description">
+      This conversation will be permanently deleted.
+    </div>
+  </HistoryDeletePanel>
+)}
+```
+
 ## Custom Events
 
 The chat history React components emit several custom events that you can listen for to handle user interactions. Below are tables documenting all available events for each component:
@@ -206,6 +228,42 @@ function ChatHistory() {
       onSelected={handleItemSelected}
       onMenuAction={handleItemAction}
     />
+  );
+}
+```
+
+#### Focus Management Utility
+
+When performing actions that reorder or move history items (such as pinning/unpinning), you may need to restore focus to the item after the DOM updates for accessibility reasons. Use the `focusElementAfterRepaint` utility to handle this:
+
+```javascript
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+```
+
+**Example with Pin/Unpin:**
+```jsx
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+
+function ChatHistory() {
+  const historyShellRef = useRef(null);
+
+  const handlePin = (itemId) => {
+    // Move item from regular to pinned list
+    const itemToPin = regularItems.find(chat => chat.id === itemId);
+    setPinnedItems(prev => [itemToPin, ...prev]);
+    setRegularItems(prev => prev.filter(chat => chat.id !== itemId));
+
+    // Restore focus to the item after DOM updates
+    focusElementAfterRepaint(
+      historyShellRef.current ?? document,
+      `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
+    );
+  };
+
+  return (
+    <HistoryShell ref={historyShellRef}>
+      {/* ... history content */}
+    </HistoryShell>
   );
 }
 ```
@@ -454,7 +512,9 @@ function ChatHistory() {
       <td><code>onConfirm</code></td>
       <td><code>history-delete-confirm</code></td>
       <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
-      <td>None</td>
+      <td>
+        When <code>itemId</code> is set: <code>itemId</code>, optional <code>nextItemId</code>, and <code>deletedItemWasSelected</code>.
+      </td>
     </tr>
   </tbody>
 </table>
@@ -463,12 +523,12 @@ function ChatHistory() {
 ```jsx
 function ChatHistory() {
   const [showDeletePanel, setShowDeletePanel] = useState(false);
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const handleDeleteAction = (event) => {
     const { action, itemId } = event.detail;
     if (action === 'Delete') {
-      setSelectedChatId(itemId);
+      setItemToDelete(itemId);
       setShowDeletePanel(true);
     }
   };
@@ -476,15 +536,14 @@ function ChatHistory() {
   const handleDeleteCancel = () => {
     console.log('Delete cancelled');
     setShowDeletePanel(false);
-    setSelectedChatId(null);
+    setItemToDelete(null);
   };
 
   const handleDeleteConfirm = () => {
-    console.log('Delete confirmed for chat:', selectedChatId);
-    // Delete the selected chat item
-    deleteChat(selectedChatId);
+    console.log('Delete confirmed for chat:', itemToDelete);
+    deleteChat(itemToDelete);
     setShowDeletePanel(false);
-    setSelectedChatId(null);
+    setItemToDelete(null);
   };
 
   return (
@@ -507,6 +566,7 @@ function ChatHistory() {
 
         {showDeletePanel && (
           <HistoryDeletePanel
+            itemId={itemToDelete ?? ''}
             onCancel={handleDeleteCancel}
             onConfirm={handleDeleteConfirm}
           >
