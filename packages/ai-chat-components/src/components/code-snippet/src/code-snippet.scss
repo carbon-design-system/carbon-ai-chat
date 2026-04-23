@@ -31,14 +31,6 @@
       --cds-#{$token}: #{$value};
     }
   }
-
-  .cm-diff-line-inserted {
-    background-color: var(--cds-syntax-inserted);
-  }
-
-  .cm-diff-line-deleted {
-    background-color: var(--cds-syntax-deleted);
-  }
 }
 
 // In fill mode, the host needs to fill its container
@@ -76,14 +68,14 @@
       --cds-#{$token}: #{$value};
     }
   }
+}
 
-  .cm-diff-line-inserted {
-    background-color: var(--cds-syntax-inserted);
-  }
+.cm-diff-line-inserted {
+  background-color: var(--cds-syntax-inserted);
+}
 
-  .cm-diff-line-deleted {
-    background-color: var(--cds-syntax-deleted);
-  }
+.cm-diff-line-deleted {
+  background-color: var(--cds-syntax-deleted);
 }
 
 :host([disabled]) {
