@@ -33,11 +33,11 @@
   }
 
   .cm-diff-line-inserted {
-    background-color: var(--cds-tag-background-green, rgba(222, 251, 230));
+    background-color: var(--cds-syntax-inserted);
   }
 
   .cm-diff-line-deleted {
-    background-color: var(--cds-tag-background-red, rgba(218, 30, 40));
+    background-color: var(--cds-syntax-deleted);
   }
 }
 
@@ -78,11 +78,11 @@
   }
 
   .cm-diff-line-inserted {
-    background-color: rgba(25, 128, 56, 1);
+    background-color: var(--cds-syntax-inserted);
   }
 
   .cm-diff-line-deleted {
-    background-color: rgba(162, 25, 31, 1);
+    background-color: var(--cds-syntax-deleted);
   }
 }
 
