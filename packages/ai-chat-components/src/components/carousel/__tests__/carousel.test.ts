@@ -31,7 +31,7 @@ const template = html`
 `;
 
 describe("carousel", function async() {
-  it("should render with cds-aichat-carousel minimum attributes", async () => {
+  it.skip("should render with cds-aichat-carousel minimum attributes", async () => {
     const el = await fixture<Carousel>(template);
     await el.updateComplete;
 

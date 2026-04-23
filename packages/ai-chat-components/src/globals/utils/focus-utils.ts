@@ -219,6 +219,34 @@ function getFirstAndLastFocusableChildren(
   return [firstFocusableChild, lastFocusableChild];
 }
 
+/**
+ * Finds a descendant of `searchRoot` via `selector` and focuses it after the next
+ * two animation frames. Use when DOM updates (Lit, React, reorder) replace or move
+ * nodes so the previous focused element is detached (e.g. list pin/unpin).
+ *
+ * Tries {@link tryFocus} first for visibility/focusability checks; if that does
+ * not take focus (e.g. some custom element hosts), falls back to {@link HTMLElement.focus}.
+ *
+ * @param searchRoot - Root to query (`Element`, `ShadowRoot`, `Document`, or `DocumentFragment`, e.g. Lit `renderRoot`)
+ * @param selector - CSS selector that resolves to the node to focus.
+ */
+function focusElementAfterRepaint(
+  searchRoot: Document | Element | ShadowRoot | DocumentFragment,
+  selector: string,
+): void {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const el = searchRoot.querySelector(selector);
+      if (!(el instanceof HTMLElement)) {
+        return;
+      }
+      if (!tryFocus(el)) {
+        el.focus();
+      }
+    });
+  });
+}
+
 export {
   getDeepActiveElement,
   isElementInvisible,
@@ -226,4 +254,5 @@ export {
   tryFocus,
   walkComposedTree,
   getFirstAndLastFocusableChildren,
+  focusElementAfterRepaint,
 };

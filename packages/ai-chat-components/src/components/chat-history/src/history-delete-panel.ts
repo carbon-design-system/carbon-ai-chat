@@ -31,8 +31,45 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
   @property({ type: String, attribute: "delete-text", reflect: true })
   deleteText = "Delete";
 
+  /**
+   * Id of the chat item being deleted.
+   */
+  @property({ type: String, attribute: "item-id", reflect: true })
+  itemId = "";
+
   @query('cds-aichat-button[kind="danger"]')
   _deleteButton;
+
+  /**
+   * Finds the next chat item id after deleting `itemId`, and whether the removed chat item was * selected / active.
+   *
+   * Call before updating data so the DOM still reflects the chat item being removed.
+   */
+  private _getFocusDetailForDeletedItem(itemId: string) {
+    const shell = this.closest(`${prefix}-history-shell`);
+    const scope = shell ?? document;
+    const tag = `${prefix}-history-panel-item`;
+    const nodes = Array.from(scope.querySelectorAll(tag));
+    const index = nodes.findIndex((el) => el.id === itemId);
+    const deletedHost = index === -1 ? undefined : nodes[index];
+    const deletedItemWasSelected =
+      deletedHost !== undefined && (deletedHost as any).selected === true;
+
+    let nextItemId;
+    if (index !== -1) {
+      const next =
+        nodes[index + 1] ?? (index > 0 ? nodes[index - 1] : undefined);
+      const nextId = next?.id;
+      nextItemId =
+        typeof nextId === "string" && nextId.length > 0 ? nextId : undefined;
+    }
+
+    return {
+      itemId,
+      nextItemId,
+      deletedItemWasSelected,
+    };
+  }
 
   // auto focus on delete button when delete panel first renders.
   async firstUpdated() {
@@ -56,10 +93,18 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
    * Handles delete button click event
    */
   _handleDeleteClick = () => {
+    const focusDetail =
+      this.itemId.length > 0
+        ? this._getFocusDetailForDeletedItem(this.itemId)
+        : {};
+
     this.dispatchEvent(
       new CustomEvent("history-delete-confirm", {
         bubbles: true,
         composed: true,
+        detail: {
+          ...focusDetail,
+        },
       }),
     );
   };

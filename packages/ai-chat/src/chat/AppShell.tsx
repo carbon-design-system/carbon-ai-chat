@@ -17,7 +17,7 @@ import React, {
 import cx from "classnames";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { useIntl } from "./hooks/useIntl";
-import { updateHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
+import { useHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
 import { useAriaAnnouncer } from "./hooks/useAriaAnnouncer";
 import { matchesShortcut } from "./utils/keyboardUtils";
 import { getDeepActiveElement } from "./utils/domUtils";
@@ -420,7 +420,13 @@ function AppShell({
 
   // Header config override for mobile history
   const headerConfigOverride = useMemo(() => {
-    if (!publicConfig.history?.isOn || !historyPanelState.isMobile) {
+    const showMobileMenu = publicConfig.history?.showMobileMenu ?? true;
+
+    if (
+      !publicConfig.history?.isOn ||
+      !historyPanelState.isMobile ||
+      !showMobileMenu
+    ) {
       return undefined;
     }
 
@@ -455,7 +461,15 @@ function AppShell({
     languagePack.history_new_chat,
     languagePack.history_view_chats,
     publicConfig.history?.isOn,
+    publicConfig.history?.showMobileMenu,
   ]);
+
+  // History mobile detection hook
+  const updateHistoryMobileDetection = useHistoryMobileDetection({
+    container: widgetContainerRef.current,
+    useCustomHostElement,
+    serviceManager,
+  });
 
   // Resize observer
   const handleResize = useCallback(() => {
@@ -475,13 +489,8 @@ function AppShell({
     );
 
     // Update history mobile detection
-    updateHistoryMobileDetection({
-      width,
-      container,
-      useCustomHostElement,
-      serviceManager,
-    });
-  }, [widgetContainerRef, useCustomHostElement, serviceManager]);
+    updateHistoryMobileDetection(width);
+  }, [widgetContainerRef, serviceManager, updateHistoryMobileDetection]);
 
   useResizeObserver({
     containerRef: widgetContainerRef,
@@ -724,7 +733,10 @@ function AppShell({
               contentMaxWidth={layout.hasContentMaxWidth}
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
-              showHistory={config.public.history?.isOn ?? false}
+              showHistory={
+                (config.public.history?.isOn ?? false) &&
+                historyPanelState.isOpen
+              }
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
               historyAriaLabel={languagePack.aria_historyRegion}
               messagesAriaLabel={languagePack.aria_messagesRegion}

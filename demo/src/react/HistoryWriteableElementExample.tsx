@@ -29,9 +29,10 @@ import {
   resultItemSection,
 } from "../fixtures/history/chatHistoryData";
 import { customLoadHistory } from "../fixtures/history/customLoadHistory";
+import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
 
 import { PinFilled, Search, Time } from "@carbon/icons-react";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
 interface HistoryExampleProps {
@@ -84,6 +85,7 @@ function HistoryWriteableElementExample({
   parentStateText: _parentStateText,
   isMobile,
 }: HistoryExampleProps) {
+  const historyShellRef = useRef<HTMLElement | null>(null);
   const [searchResults, setSearchResults] = useState<resultItem[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedId, setSelectedId] = useState<string | undefined>(
@@ -166,6 +168,11 @@ function HistoryWriteableElementExample({
 
         // Add to start of pinned items
         setPinnedItems((prev) => [{ ...itemToPin, isPinned: true }, ...prev]);
+
+        focusElementAfterRepaint(
+          historyShellRef.current ?? document,
+          `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+        );
       }
     },
     [regularItems],
@@ -211,6 +218,11 @@ function HistoryWriteableElementExample({
             return item;
           });
         });
+
+        focusElementAfterRepaint(
+          historyShellRef.current ?? document,
+          `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+        );
       }
     },
     [pinnedItems],
@@ -356,7 +368,7 @@ function HistoryWriteableElementExample({
   const noSearchResults = searchResults.length === 0 && searchValue;
 
   return (
-    <HistoryShell>
+    <HistoryShell ref={historyShellRef}>
       <HistoryHeader
         headerTitle="Chats"
         onClose={handleHistoryClose}
@@ -445,6 +457,7 @@ function HistoryWriteableElementExample({
       </HistoryContent>
       {showDeletePanel && (
         <HistoryDeletePanel
+          itemId={itemToDelete ?? ""}
           onCancel={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         >
