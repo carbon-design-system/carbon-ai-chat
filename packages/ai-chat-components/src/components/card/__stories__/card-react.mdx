@@ -88,6 +88,232 @@ function CardExample() {
 }
 ```
 
+## Examples
+
+### Card with Footer Actions
+
+Add interactive buttons to your card using the `CardFooter` component. The footer supports various button kinds and handles click events through the `onFooterAction` callback.
+
+```jsx
+import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
+import { Launch16 } from "@carbon/icons";
+
+function CardWithFooter() {
+  const handleAction = (event) => {
+    console.log("Action clicked:", event.detail);
+    // event.detail contains: { id, label, kind, payload }
+  };
+
+  return (
+    <Card>
+      <div slot="body" className="standard-card">
+        <h4>Carbon Design System</h4>
+        <p>
+          Explore comprehensive documentation and guidelines for building
+          accessible, consistent user experiences.
+        </p>
+      </div>
+      <CardFooter
+        actions={[
+          {
+            id: "view-docs",
+            label: "View docs",
+            kind: "ghost",
+            icon: Launch16,
+            payload: { url: "https://carbondesignsystem.com" },
+          },
+        ]}
+        onFooterAction={handleAction}
+      />
+    </Card>
+  );
+}
+```
+
+### Card with Image
+
+Display media content with proper corner rounding using the `media` slot and `data-rounded` attribute.
+
+```jsx
+import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
+import { Launch16 } from "@carbon/icons";
+
+function CardWithImage() {
+  return (
+    <Card>
+      <div slot="media" data-rounded="top">
+        <img
+          src="https://via.placeholder.com/600x300"
+          alt="Placeholder"
+          style={{ width: "100%", display: "block" }}
+        />
+      </div>
+      <div slot="body" className="standard-card">
+        <h4>Image Card Example</h4>
+        <p>
+          Cards can include images or other media content with automatic corner
+          rounding to match the card's border radius.
+        </p>
+      </div>
+      <CardFooter
+        actions={[
+          {
+            id: "view-more",
+            label: "View more",
+            kind: "ghost",
+            icon: Launch16,
+          },
+        ]}
+        onFooterAction={(e) => console.log(e.detail)}
+      />
+    </Card>
+  );
+}
+```
+
+### Card with Flush Padding
+
+Remove the default tile padding using `isFlush={true}` for full-width content like images or custom layouts.
+
+```jsx
+import { Card } from "@carbon/ai-chat-components/es/react/card.js";
+
+function FlushCard() {
+  return (
+    <Card isFlush={true}>
+      <div slot="media" data-rounded="">
+        <img
+          src="https://via.placeholder.com/600x400"
+          alt="Full width image"
+          style={{ width: "100%", display: "block" }}
+        />
+      </div>
+    </Card>
+  );
+}
+```
+
+### Card with Multiple Actions
+
+Display multiple action buttons in the footer. Buttons are arranged horizontally and support different kinds (primary, secondary, ghost, danger).
+
+```jsx
+import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
+
+function CardWithMultipleActions() {
+  const handleAction = (event) => {
+    const { id, label } = event.detail;
+    console.log(`${label} button clicked (id: ${id})`);
+  };
+
+  return (
+    <Card>
+      <div slot="body" className="standard-card">
+        <h4>Confirm Your Action</h4>
+        <p>
+          This operation will update your settings. Would you like to proceed?
+        </p>
+      </div>
+      <CardFooter
+        actions={[
+          {
+            id: "cancel",
+            label: "Cancel",
+            kind: "secondary",
+          },
+          {
+            id: "confirm",
+            label: "Confirm",
+            kind: "primary",
+          },
+        ]}
+        onFooterAction={handleAction}
+      />
+    </Card>
+  );
+}
+```
+
+### Card with Steps (Progress Tracking)
+
+Use `CardSteps` to display multi-step processes with status indicators.
+
+```jsx
+import { Card, CardSteps, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
+import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
+
+function CardWithSteps() {
+  const steps = [
+    {
+      label: "Step 1",
+      kind: ICON_INDICATOR_KIND.SUCCEEDED,
+      title: "Data collection",
+      description: "Completed successfully",
+    },
+    {
+      label: "Step 2",
+      kind: ICON_INDICATOR_KIND["IN-PROGRESS"],
+      title: "Analysis in progress",
+      description: "Processing data...",
+    },
+    {
+      label: "Step 3",
+      kind: ICON_INDICATOR_KIND["NOT-STARTED"],
+      title: "Generate report",
+      description: "Not started",
+    },
+  ];
+
+  return (
+    <Card isFlush={true}>
+      <div slot="header" className="preview-card">
+        <h4>Task Progress</h4>
+        <p>Status: In progress</p>
+      </div>
+      <div slot="body">
+        <CardSteps steps={steps} />
+      </div>
+      <CardFooter
+        actions={[
+          {
+            id: "view-details",
+            label: "View details",
+            kind: "ghost",
+          },
+        ]}
+        onFooterAction={(e) => console.log(e.detail)}
+      />
+    </Card>
+  );
+}
+```
+
+**Available step kinds:**
+- `ICON_INDICATOR_KIND.SUCCEEDED` - Completed step
+- `ICON_INDICATOR_KIND["IN-PROGRESS"]` - Currently active step
+- `ICON_INDICATOR_KIND["NOT-STARTED"]` - Pending step
+- `ICON_INDICATOR_KIND.FAILED` - Failed step
+
+### Image-Only Card
+
+```jsx
+import { Card } from "@carbon/ai-chat-components/es/react/card.js";
+
+function ImageOnlyCard() {
+  return (
+    <Card isFlush={true}>
+      <div slot="media" data-rounded="">
+        <img
+          src="https://via.placeholder.com/400x300"
+          alt="Gallery image"
+          style={{ width: "100%", display: "block" }}
+        />
+      </div>
+    </Card>
+  );
+}
+```
+
 ## Component API
 
 ## `<Card>`

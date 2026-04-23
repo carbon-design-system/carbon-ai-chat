@@ -79,6 +79,228 @@ import "@carbon/ai-chat-components/es/components/card/index.js";
 <Markdown>{`${cdnJs(["card"])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
+## Examples
+
+### Card with Footer Actions
+
+Add interactive buttons to your card using the `<cds-aichat-card-footer>` component. The footer supports various button kinds and emits events when actions are clicked.
+
+```html
+<cds-aichat-card>
+  <div slot="body" class="standard-card">
+    <h4>Carbon Design System</h4>
+    <p>
+      Explore comprehensive documentation and guidelines for building
+      accessible, consistent user experiences.
+    </p>
+  </div>
+  <cds-aichat-card-footer id="footer-1"></cds-aichat-card-footer>
+</cds-aichat-card>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+import { Launch16 } from "@carbon/icons";
+
+const footer = document.querySelector("#footer-1");
+footer.actions = [
+  {
+    id: "view-docs",
+    label: "View docs",
+    kind: "ghost",
+    icon: Launch16,
+    payload: { url: "https://carbondesignsystem.com" },
+  },
+];
+
+footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+  console.log("Action clicked:", event.detail);
+  // event.detail contains: { id, label, kind, payload }
+});
+```
+
+### Card with Image
+
+Display media content with proper corner rounding using the `media` slot and `data-rounded` attribute.
+
+```html
+<cds-aichat-card>
+  <div slot="media" data-rounded="top">
+    <img
+      src="https://via.placeholder.com/600x300"
+      alt="Placeholder"
+      style="width: 100%; display: block;"
+    />
+  </div>
+  <div slot="body" class="standard-card">
+    <h4>Image Card Example</h4>
+    <p>
+      Cards can include images or other media content with automatic corner
+      rounding to match the card's border radius.
+    </p>
+  </div>
+  <cds-aichat-card-footer id="footer-2"></cds-aichat-card-footer>
+</cds-aichat-card>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+import { Launch16 } from "@carbon/icons";
+
+const footer = document.querySelector("#footer-2");
+footer.actions = [
+  {
+    id: "view-more",
+    label: "View more",
+    kind: "ghost",
+    icon: Launch16,
+  },
+];
+
+footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+  console.log(event.detail);
+});
+```
+
+### Card with Flush Padding
+
+Remove the default tile padding using `is-flush="true"` for full-width content like images or custom layouts.
+
+```html
+<cds-aichat-card is-flush="true">
+  <div slot="media" data-rounded="">
+    <img
+      src="https://via.placeholder.com/600x400"
+      alt="Full width image"
+      style="width: 100%; display: block;"
+    />
+  </div>
+</cds-aichat-card>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+```
+
+### Card with Multiple Actions
+
+Display multiple action buttons in the footer. Buttons are arranged horizontally and support different kinds (primary, secondary, ghost, danger).
+
+```html
+<cds-aichat-card>
+  <div slot="body" class="standard-card">
+    <h4>Confirm Your Action</h4>
+    <p>
+      This operation will update your settings. Would you like to proceed?
+    </p>
+  </div>
+  <cds-aichat-card-footer id="footer-3"></cds-aichat-card-footer>
+</cds-aichat-card>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+
+const footer = document.querySelector("#footer-3");
+footer.actions = [
+  {
+    id: "cancel",
+    label: "Cancel",
+    kind: "secondary",
+  },
+  {
+    id: "confirm",
+    label: "Confirm",
+    kind: "primary",
+  },
+];
+
+footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+  const { id, label } = event.detail;
+  console.log(`${label} button clicked (id: ${id})`);
+});
+```
+
+### Card with Steps (Progress Tracking)
+
+Use `<cds-aichat-card-steps>` to display multi-step processes with status indicators.
+
+```html
+<cds-aichat-card is-flush="true">
+  <div slot="header" class="preview-card">
+    <h4>Task Progress</h4>
+    <p>Status: In progress</p>
+  </div>
+  <div slot="body">
+    <cds-aichat-card-steps id="steps-1"></cds-aichat-card-steps>
+  </div>
+  <cds-aichat-card-footer id="footer-4"></cds-aichat-card-footer>
+</cds-aichat-card>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
+
+const steps = document.querySelector("#steps-1");
+steps.steps = [
+  {
+    label: "Step 1",
+    kind: ICON_INDICATOR_KIND.SUCCEEDED,
+    title: "Data collection",
+    description: "Completed successfully",
+  },
+  {
+    label: "Step 2",
+    kind: ICON_INDICATOR_KIND["IN-PROGRESS"],
+    title: "Analysis in progress",
+    description: "Processing data...",
+  },
+  {
+    label: "Step 3",
+    kind: ICON_INDICATOR_KIND["NOT-STARTED"],
+    title: "Generate report",
+    description: "Not started",
+  },
+];
+
+const footer = document.querySelector("#footer-4");
+footer.actions = [
+  {
+    id: "view-details",
+    label: "View details",
+    kind: "ghost",
+  },
+];
+
+footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+  console.log(event.detail);
+});
+```
+
+**Available step kinds:**
+- `ICON_INDICATOR_KIND.SUCCEEDED` - Completed step
+- `ICON_INDICATOR_KIND["IN-PROGRESS"]` - Currently active step
+- `ICON_INDICATOR_KIND["NOT-STARTED"]` - Pending step
+- `ICON_INDICATOR_KIND.FAILED` - Failed step
+
+### Image-Only Card
+
+```html
+<cds-aichat-card is-flush="true">
+  <div slot="media" data-rounded="">
+    <img
+      src="https://via.placeholder.com/400x300"
+      alt="Gallery image"
+      style="width: 100%; display: block;"
+    />
+  </div>
+</cds-aichat-card>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/card/index.js";
+```
 
 ## Component API
 
