@@ -7,12 +7,7 @@
  *  @license
  */
 
-import {
-  CarbonTheme,
-  ChatContainer,
-  ChatInstance,
-  PublicConfig,
-} from "@carbon/ai-chat";
+import { ChatContainer, ChatInstance, PublicConfig } from "@carbon/ai-chat";
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -21,13 +16,13 @@ import { customSendMessage } from "./customSendMessage";
 // This function returns a React component for user defined responses.
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 import { Button } from "@carbon/react";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
     customLoadHistory,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

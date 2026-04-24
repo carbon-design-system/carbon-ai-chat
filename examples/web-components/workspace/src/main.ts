@@ -11,7 +11,6 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.j
 
 import {
   BusEventType,
-  CarbonTheme,
   PanelType,
   type ChatInstance,
   type PublicConfig,
@@ -39,7 +38,6 @@ const config: PublicConfig = {
     },
   },
   openChatByDefault: true,
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -221,7 +219,6 @@ export class Demo extends LitElement {
         .messaging=${config.messaging}
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
-        .injectCarbonTheme=${config.injectCarbonTheme}
         .renderUserDefinedResponse=${this.renderUserDefinedCallback}
         class="chat-custom-element"
       >

@@ -151,8 +151,6 @@ export {
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
 
-export { PendingUpload, PendingUploadStatus } from "./types/state/AppState";
-
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
 

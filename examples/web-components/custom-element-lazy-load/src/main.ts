@@ -9,11 +9,7 @@
 
 import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
 
-import {
-  CarbonTheme,
-  type ChatInstance,
-  type PublicConfig,
-} from "@carbon/ai-chat";
+import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
 import { LitElement, html, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
@@ -29,7 +25,6 @@ const config: PublicConfig = {
   openChatByDefault: true,
   launcher: { isOn: false },
   header: { hideMinimizeButton: true },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -76,7 +71,6 @@ export class Demo extends LitElement {
               .openChatByDefault=${config.openChatByDefault}
               .launcher=${config.launcher}
               .header=${config.header}
-              .injectCarbonTheme=${config.injectCarbonTheme}
               .onAfterRender=${this._onAfterRender}
             ></cds-aichat-custom-element>
           `

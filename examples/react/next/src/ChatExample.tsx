@@ -12,7 +12,6 @@
 
 import {
   BusEventType,
-  CarbonTheme,
   ChatContainer,
   ChatInstance,
   FeedbackInteractionType,
@@ -22,12 +21,12 @@ import React, { useCallback } from "react";
 
 import { customSendMessage } from "./customSendMessage";
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 export function ChatExample() {

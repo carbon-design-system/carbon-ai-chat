@@ -9,7 +9,6 @@
 
 import {
   BusEventType,
-  CarbonTheme,
   ChatContainer,
   ChatInstance,
   FeedbackInteractionType,
@@ -22,6 +21,7 @@ import ReactDOM from "react-dom";
 import { customSendMessage } from "./customSendMessage";
 // This function returns a React component for user defined responses.
 import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
+import "@carbon/styles/css/styles.css";
 
 /**
  * It is preferable to create your configuration object outside of your React functions. You can also make use of
@@ -34,7 +34,6 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
@@ -88,4 +87,5 @@ function App() {
   );
 }
 
+// eslint-disable-next-line react/no-deprecated -- this example intentionally demonstrates React 17's legacy render API
 ReactDOM.render(<App />, document.querySelector("#root"));

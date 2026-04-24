@@ -8,7 +8,6 @@
  */
 
 import {
-  CarbonTheme,
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
@@ -25,6 +24,7 @@ import { customSendMessage } from "./customSendMessage";
 import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
 
 import { ChatHistoryExample } from "./ChatHistoryExample";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   history: {
@@ -41,7 +41,6 @@ const config: PublicConfig = {
     },
   },
   openChatByDefault: true,
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

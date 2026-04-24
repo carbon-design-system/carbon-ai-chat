@@ -12,7 +12,6 @@ import "@carbon/ai-chat/css/chat-launcher-layout.css";
 
 import {
   BusEventViewChange,
-  CarbonTheme,
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
@@ -24,6 +23,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
+import "@carbon/styles/css/styles.css";
 
 type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
 
@@ -33,7 +33,6 @@ const config: PublicConfig = {
   },
   // Suppress the built-in launcher — our custom ChatButton acts as the launcher.
   launcher: { isOn: false },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

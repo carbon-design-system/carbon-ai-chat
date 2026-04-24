@@ -80,6 +80,7 @@
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.103.0",
     "@carbon/themes": "^11.58.0",
+    "@carbon/typedoc-theme": "^0.0.0",
     "@carbon/web-components": "^2.51.1",
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-babel": "^7.0.0",

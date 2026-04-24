@@ -11,7 +11,6 @@ import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
   BusEventType,
-  CarbonTheme,
   type ChatInstance,
   type PublicConfig,
   type RenderUserDefinedState,
@@ -26,7 +25,6 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
   homescreen: {
     isOn: true,
     greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
@@ -162,7 +160,6 @@ export class Demo extends LitElement {
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
         .homescreen=${config.homescreen}
-        .injectCarbonTheme=${config.injectCarbonTheme}
         .renderUserDefinedResponse=${this.renderUserDefinedCallback}
       ></cds-aichat-container>
     `;

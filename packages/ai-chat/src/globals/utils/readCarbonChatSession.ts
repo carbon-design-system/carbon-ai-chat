@@ -19,6 +19,8 @@ import { getSuffix } from "../../chat/services/NamespaceService";
  *
  * Pass the same namespace value as {@link PublicConfig.namespace} (if any).
  *
+ * @category Utilities
+ *
  * @example
  * const session = readCarbonChatSession();
  * const wasOpen = session?.viewState.mainWindow === true;

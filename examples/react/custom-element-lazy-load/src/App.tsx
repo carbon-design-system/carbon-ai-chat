@@ -7,12 +7,13 @@
  *  @license
  */
 
-import { CarbonTheme, PublicConfig } from "@carbon/ai-chat";
+import { PublicConfig } from "@carbon/ai-chat";
 import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
 import React, { Suspense, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
+import "@carbon/styles/css/styles.css";
 
 // Adding a fake 3000ms timeout here to make the lazy loading behavior obvious when running on localhost.
 // That timeout should be removed in a real implementation.
@@ -32,7 +33,6 @@ const config: PublicConfig = {
   openChatByDefault: true,
   launcher: { isOn: false },
   header: { hideMinimizeButton: true },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {

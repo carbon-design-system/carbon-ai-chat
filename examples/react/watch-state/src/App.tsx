@@ -9,7 +9,6 @@
 
 import {
   BusEventType,
-  CarbonTheme,
   ChatContainer,
   ChatInstance,
   PublicConfig,
@@ -19,12 +18,12 @@ import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
 import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
   homescreen: {
     isOn: true,
     greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",

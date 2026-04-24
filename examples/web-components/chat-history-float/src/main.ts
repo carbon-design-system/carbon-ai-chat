@@ -12,7 +12,6 @@ import "./history-writeable-element-example";
 
 import {
   BusEventType,
-  CarbonTheme,
   type ChatInstance,
   type MessageResponse,
   type PublicConfig,
@@ -41,7 +40,6 @@ const config: PublicConfig = {
     customSendMessage,
     customLoadHistory,
   },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")

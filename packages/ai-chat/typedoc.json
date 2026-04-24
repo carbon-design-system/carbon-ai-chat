@@ -1,9 +1,10 @@
 {
     "plugin": [
         "./docs/typedoc/moduleNamePlugin.js",
-        "./docs/typedoc/carbonThemePlugin.js"
+        "@carbon/typedoc-theme"
     ],
     "theme": "carbon",
+    "versionsFile": "../../versions.js",
     "entryPoints": [
         "./src/aiChatEntry.tsx"
     ],
@@ -32,6 +33,7 @@
         "Service desk",
         "Messaging",
         "Testing",
+        "Utilities",
         "*"
     ],
     "disableSources": true,

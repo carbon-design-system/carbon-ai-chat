@@ -35,8 +35,10 @@ describe("carousel", function async() {
     const el = await fixture<Carousel>(template);
     await el.updateComplete;
 
-    // temp solution to account for image load time
-    await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
+    // temp solution to account for image load time and the component's own
+    // 100ms wait inside firstUpdated before initCarousel runs (plus the
+    // setTimeout-scheduled style writes inside @carbon/utilities)
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 300));
 
     expect(el).to.be.instanceOf(Carousel);
 

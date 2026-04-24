@@ -8,7 +8,6 @@
  */
 
 import {
-  CarbonTheme,
   ChatContainer,
   PublicConfig,
   ServiceDesk,
@@ -19,6 +18,7 @@ import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
 import { MockServiceDesk } from "./mockServiceDesk";
+import "@carbon/styles/css/styles.css";
 
 /**
  * The serviceDeskFactory is a special property. If its value changes, the service desk must be restarted and any
@@ -60,7 +60,6 @@ function Chat(props: ChatProps) {
       customSendMessage,
     },
     serviceDeskFactory,
-    injectCarbonTheme: CarbonTheme.WHITE,
   };
 
   return <ChatContainer {...config} />;

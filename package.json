@@ -28,7 +28,7 @@
     "aiChat:start:storybook": "npm run storybook --workspace=@carbon/ai-chat-components",
     "aiChat:start:storybook:react": "npm run storybook:react --workspace=@carbon/ai-chat-components",
     "build": "lerna run build --stream",
-    "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run test",
+    "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run validate:agents && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
     "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
     "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
@@ -39,6 +39,7 @@
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
     "test": "lerna run test --stream",
+    "validate:agents": "node tools/validate-agents-docs.js",
     "postinstall": "husky"
   },
   "devDependencies": {

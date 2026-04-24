@@ -13,7 +13,6 @@ import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
 import "@carbon/ai-chat-components/es/components/chat-button/index.js";
 
 import {
-  CarbonTheme,
   type BusEventViewChange,
   type ChatInstance,
   type PublicConfig,
@@ -40,7 +39,6 @@ const config: PublicConfig = {
   },
   // Suppress the built-in launcher — our custom cds-aichat-button acts as the launcher.
   launcher: { isOn: false },
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 @customElement("my-app")
@@ -197,7 +195,6 @@ export class Demo extends LitElement {
                     class=${this._getFloatClass()}
                     .messaging=${config.messaging}
                     .launcher=${config.launcher}
-                    .injectCarbonTheme=${config.injectCarbonTheme}
                     .onAfterRender=${this._onAfterRender}
                     .onViewChange=${this._onViewChange}
                     @animationend=${this._onAnimationEnd}

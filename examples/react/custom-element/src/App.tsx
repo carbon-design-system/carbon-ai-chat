@@ -7,11 +7,12 @@
  *  @license
  */
 
-import { CarbonTheme, ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
+import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
+import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
@@ -21,7 +22,6 @@ const config: PublicConfig = {
     showFrame: false,
   },
   openChatByDefault: true,
-  injectCarbonTheme: CarbonTheme.WHITE,
 };
 
 function App() {
