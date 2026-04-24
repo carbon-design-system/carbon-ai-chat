@@ -20,7 +20,7 @@
   --chat-sidebar-closed-left: auto;
 }
 
-[dir="rtl"] {
+:dir(rtl) {
   --chat-position-right: auto;
   --chat-position-left: 0;
   --chat-sidebar-transition-property: left;
