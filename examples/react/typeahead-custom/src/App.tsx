@@ -29,15 +29,10 @@ function App() {
         suggestions: [
           {
             type: SuggestionType.AUTOCOMPLETE,
-            trigger: "",
-            items: async (query: string) => {
-              if (!query.trim()) {
-                return [];
-              }
-              return CANNED_SUGGESTIONS.filter((s) =>
+            items: async (query: string) =>
+              CANNED_SUGGESTIONS.filter((s) =>
                 s.label.toLowerCase().includes(query.toLowerCase()),
-              );
-            },
+              ),
             debounceMs: 150,
             renderCustomList: ({ items, query, onSelect, onDismiss }) => (
               <CustomSuggestionList

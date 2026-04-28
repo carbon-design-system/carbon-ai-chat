@@ -29,7 +29,6 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `suggestion.renderCustomToken`        | config prop                 | Returns a React node rendered in place of the default chip.              |
 | `suggestion.trigger`                  | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
 | `suggestion.triggerPosition`          | config prop                 | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.initialItems`             | config prop                 | Items shown immediately on trigger before the user types.                |
 | `suggestion.items`                    | config prop                 | Async filter narrowing items as the user types.                          |
 | `suggestion.onSelect`                 | config prop                 | Hook that runs when the user picks a suggestion.                         |
 | `Tag`                                 | `@carbon/react` component   | Visual chip used inside the custom token renderer.                       |

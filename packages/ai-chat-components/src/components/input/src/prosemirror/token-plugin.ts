@@ -13,6 +13,8 @@ import type { Node as PMNode } from "prosemirror-model";
 import {
   type SuggestionConfig,
   type SuggestionItem,
+  type MentionConfig,
+  type CommandConfig,
   SuggestionType,
 } from "../types.js";
 import { createDefaultChip } from "./schema.js";
@@ -50,7 +52,9 @@ export function createTokenPlugin(configsRef: SuggestionConfigsRef): Plugin {
   });
 }
 
-type TokenRenderer = NonNullable<SuggestionConfig["renderCustomToken"]>;
+type TokenRenderer = NonNullable<
+  (MentionConfig | CommandConfig)["renderCustomToken"]
+>;
 
 class TokenNodeView implements NodeView {
   dom: HTMLElement;
@@ -101,7 +105,16 @@ function resolveRenderer(
   configs: SuggestionConfig[],
   tokenType: SuggestionType,
 ): TokenRenderer | undefined {
-  const match = configs.find((c) => (c.type ?? "autocomplete") === tokenType);
+  if (
+    tokenType !== SuggestionType.MENTION &&
+    tokenType !== SuggestionType.COMMAND
+  ) {
+    return undefined;
+  }
+  const match = configs.find((c) => c.type === tokenType) as
+    | MentionConfig
+    | CommandConfig
+    | undefined;
   return match?.renderCustomToken;
 }
 

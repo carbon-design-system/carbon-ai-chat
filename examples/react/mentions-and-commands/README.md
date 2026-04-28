@@ -6,7 +6,7 @@
 
 - Configuring two suggestion entries on `input.suggestions`: a `MENTION` triggered by `@` and a `COMMAND` triggered by `/`.
 - Restricting commands to the beginning of the line via `triggerPosition: "start"`.
-- Showing all candidates immediately on trigger by supplying `initialItems`, then narrowing them as the user types via the async `items` filter.
+- Showing all candidates immediately on trigger and narrowing them as the user types via the async `items` filter (returning the full list when the query is empty).
 - Persisting selected mentions and commands as `StructuredData` fields by calling `instance.input.updateStructuredData` inside `onSelect`.
 - Reading `request.input.structured_data?.fields` in `customSendMessage` to surface which mentions and commands the user attached to the outgoing message.
 
@@ -29,7 +29,6 @@
 | `input.suggestions`                   | config prop                 | Registers two suggestion configurations on the input.                    |
 | `suggestion.trigger`                  | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
 | `suggestion.triggerPosition`          | config prop                 | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.initialItems`             | config prop                 | Items shown immediately on trigger before the user types.                |
 | `suggestion.items`                    | config prop                 | Async filter narrowing items as the user types.                          |
 | `suggestion.onSelect`                 | config prop                 | Hook that runs when the user picks a suggestion.                         |
 | `onBeforeRender`                      | component prop              | Captures the `ChatInstance` ref used in `onSelect`.                      |

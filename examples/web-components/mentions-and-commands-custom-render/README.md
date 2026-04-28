@@ -30,7 +30,6 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `suggestion.renderCustomToken`        | property       | Returns an `HTMLElement` rendered in place of the default chip.          |
 | `suggestion.trigger`                  | property       | Character (`@` or `/`) that opens the suggestion list.                   |
 | `suggestion.triggerPosition`          | property       | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.initialItems`             | property       | Items shown immediately on trigger before the user types.                |
 | `suggestion.items`                    | property       | Async filter narrowing items as the user types.                          |
 | `suggestion.onSelect`                 | property       | Hook that runs when the user picks a suggestion.                         |
 | `.onBeforeRender`                     | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |

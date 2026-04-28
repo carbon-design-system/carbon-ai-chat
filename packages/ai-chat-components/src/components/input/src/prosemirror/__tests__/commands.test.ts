@@ -17,7 +17,12 @@ import {
   triggerPluginKey,
   type SuggestionConfigsRef,
 } from "../trigger-plugin.js";
-import type { SuggestionConfig, SuggestionItem } from "../../types.js";
+import {
+  SuggestionType,
+  type MentionConfig,
+  type SuggestionConfig,
+  type SuggestionItem,
+} from "../../types.js";
 import { EditorViewManager } from "../../editor-view-manager.js";
 
 function makeView(rawText: string, configs: SuggestionConfig[]) {
@@ -62,13 +67,21 @@ describe("prosemirror/commands", function () {
     it("returns false when no trigger is active", () => {
       const { view, manager, cleanup } = makeView("hello", []);
       const item: SuggestionItem = { id: "1", label: "Jane" };
-      const config: SuggestionConfig = { trigger: "@", type: "mention" };
+      const config: MentionConfig = {
+        type: SuggestionType.MENTION,
+        trigger: "@",
+        items: [],
+      };
       expect(insertToken(view, item, config, manager)).to.equal(false);
       cleanup();
     });
 
     it("replaces the trigger+query with a token node and dismisses the trigger", () => {
-      const config: SuggestionConfig = { trigger: "@", type: "mention" };
+      const config: MentionConfig = {
+        type: SuggestionType.MENTION,
+        trigger: "@",
+        items: [],
+      };
       const { view, manager, cleanup } = makeView("hi @Ja", [config]);
 
       // Trigger plugin should have picked up the @Ja
