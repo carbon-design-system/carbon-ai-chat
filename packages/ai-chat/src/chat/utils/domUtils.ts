@@ -413,6 +413,20 @@ function trimAndPush(value: string, strings: string[]) {
   }
 }
 
+/**
+ * Determines if the document is in RTL (right-to-left) mode.
+ * Checks both document.dir and document.documentElement.dir for maximum compatibility.
+ *
+ * @returns true if the document is in RTL mode, false otherwise
+ */
+function isDirectionRTL(): boolean {
+  if (!document) {
+    return false;
+  }
+
+  return document.dir === "rtl" || document.documentElement.dir === "rtl";
+}
+
 export {
   SCROLLBAR_WIDTH,
   doScrollElement,
@@ -430,4 +444,5 @@ export {
   getScrollBottom,
   getDeepActiveElement,
   nodeToText,
+  isDirectionRTL,
 };

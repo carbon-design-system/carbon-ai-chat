@@ -37,7 +37,7 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { shallowEqual } from "../../store/appStore";
 import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { WriteableElementName } from "../../utils/constants";
-import { doFocusRef } from "../../utils/domUtils";
+import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
 import {
   HeaderConfig,
   MinimizeButtonIconType,
@@ -144,8 +144,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const backButtonRef = useRef<CDSButton>(undefined);
   const chatHeaderRef = useRef<any>(null);
-  const isRTL =
-    document.dir === "rtl" || document.documentElement.dir === "rtl";
+  const isRTL = isDirectionRTL();
 
   const showRestartButton = headerConfig?.showRestartButton;
   const showAiLabel = headerConfig?.showAiLabel;

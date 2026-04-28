@@ -20,6 +20,7 @@ import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./feedback-buttons.scss?lit";
+import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 
 const DEFAULT_POSITIVE_LABEL = "Good response";
 const DEFAULT_NEGATIVE_LABEL = "Bad response";
@@ -122,8 +123,7 @@ class CDSAIChatFeedbackButtons extends LitElement {
 
   render() {
     // Detect RTL mode from document direction
-    this.isRTL =
-      document.dir === "rtl" || document.documentElement.dir === "rtl";
+    this.isRTL = isDirectionRTL();
 
     const handleButtonClick = (isPositive: boolean) => {
       this.handleButtonClick(isPositive);
