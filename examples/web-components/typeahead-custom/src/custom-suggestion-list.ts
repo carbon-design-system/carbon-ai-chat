@@ -66,13 +66,13 @@ export class CustomSuggestionList extends LitElement {
   `;
 
   @property({ type: Array })
-  items: SuggestionItem[] = [];
+  accessor items: SuggestionItem[] = [];
 
   @property({ type: String })
-  query = "";
+  accessor query = "";
 
   @state()
-  private _selectedIndex = 0;
+  private accessor _selectedIndex = 0;
 
   private _onSelect?: (item: SuggestionItem) => void;
   private _onDismiss?: () => void;
