@@ -16,10 +16,11 @@ import {
   insertAutocompleteItem,
   insertTokenWithRawValue,
 } from "../autocomplete-insert.js";
-import type {
-  SuggestionConfig,
-  SuggestionItem,
-  TriggerChangeEventDetail,
+import {
+  SuggestionType,
+  type SuggestionConfig,
+  type SuggestionItem,
+  type TriggerChangeEventDetail,
 } from "../types.js";
 
 function makeView(text: string) {
@@ -93,10 +94,27 @@ describe("insertAutocompleteItem", () => {
   it("is a no-op when triggerState is null", () => {
     const { view, cleanup } = makeView("hello");
     const configs: SuggestionConfig[] = [
-      { trigger: "@", type: "mention" } as SuggestionConfig,
+      { type: SuggestionType.MENTION, trigger: "@", items: [] },
     ];
     insertAutocompleteItem(view, { id: "1", label: "Jane" }, null, configs);
     expect(view.state.doc.textContent).to.equal("hello");
+    cleanup();
+  });
+
+  it("replaces entire text for STARTER triggers using item.value", () => {
+    const { view, cleanup } = makeView("");
+    const trigger: TriggerChangeEventDetail = {
+      type: SuggestionType.STARTER,
+      query: "",
+      triggerOffset: 0,
+    };
+    const item: SuggestionItem = {
+      id: "1",
+      label: "Brainstorm ideas",
+      value: "Brainstorm ideas for ",
+    };
+    insertAutocompleteItem(view, item, trigger, []);
+    expect(view.state.doc.textContent).to.equal("Brainstorm ideas for ");
     cleanup();
   });
 });

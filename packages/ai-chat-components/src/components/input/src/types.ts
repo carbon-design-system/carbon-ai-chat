@@ -79,9 +79,11 @@ export interface CustomListProps {
 }
 
 /**
- * The category of a suggestion trigger, which determines rendering and insertion behavior.
+ * The category of a suggestion, which determines activation and insertion behavior.
  */
 export enum SuggestionType {
+  /** Shown when the input is empty and focused, before the user types. */
+  STARTER = "starter",
   /** Inserts a styled mention token (e.g. @user). */
   MENTION = "mention",
   /** Inserts a styled command token (e.g. /search). */
@@ -91,42 +93,17 @@ export enum SuggestionType {
 }
 
 /**
- * Configuration for a single suggestion trigger (mention, command, or autocomplete).
+ * Fields shared by every suggestion config kind.
  */
-export interface SuggestionConfig {
-  /**
-   * Drives default rendering and insertion behavior:
-   * - "mention"      → inserts a styled mention token
-   * - "command"      → inserts a styled command token
-   * - "autocomplete" → completes the typed text (no token created)
-   */
-  type?: SuggestionType;
-
-  /**
-   * Character that activates this suggestion (e.g. "@", "/", "#").
-   * Use an empty string for autocomplete (fires on all input text).
-   */
-  trigger: string;
-
-  /**
-   * Whether the trigger must appear at the start of the input/line,
-   * or anywhere. Defaults to "anywhere".
-   * Use "start" for command-style triggers.
-   */
-  triggerPosition?: "start" | "anywhere";
-
+interface BaseSuggestionConfig {
   /**
    * Static item list or async function called with the current query string.
    */
   items: SuggestionItem[] | ((query: string) => Promise<SuggestionItem[]>);
 
   /**
-   * Items shown immediately when the trigger fires, before any query is typed.
-   */
-  initialItems?: SuggestionItem[];
-
-  /**
-   * Minimum characters typed after the trigger before items() is called. Defaults to 0.
+   * Minimum query length before items() is called. Defaults to 0.
+   * Not meaningful for STARTER (query is always empty).
    */
   minQueryLength?: number;
 
@@ -152,6 +129,43 @@ export interface SuggestionConfig {
    * When omitted, the built-in list renders above the input.
    */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
+}
+
+/**
+ * Suggestions surfaced when the input is empty and focused — prompt seeds.
+ * Click inserts the value into the input as plain text. Closes as soon as the
+ * user types; pair with an `AutocompleteConfig` to keep showing suggestions
+ * once typing starts.
+ */
+export interface StarterConfig extends BaseSuggestionConfig {
+  type: SuggestionType.STARTER;
+}
+
+/**
+ * Live autocomplete: matches whenever the input has any non-empty text.
+ * Selection inserts the value inline (no token chip).
+ */
+export interface AutocompleteConfig extends BaseSuggestionConfig {
+  type: SuggestionType.AUTOCOMPLETE;
+}
+
+/**
+ * Mention-style suggestions activated by a trigger character (e.g. "@").
+ * Selection inserts a styled mention token.
+ */
+export interface MentionConfig extends BaseSuggestionConfig {
+  type: SuggestionType.MENTION;
+
+  /**
+   * Character that activates the suggestion (e.g. "@", "#").
+   */
+  trigger: string;
+
+  /**
+   * Whether the trigger must appear at the start of the input/line,
+   * or anywhere. Defaults to "anywhere".
+   */
+  triggerPosition?: "start" | "anywhere";
 
   /**
    * Replace the visual element rendered inside the token chip.
@@ -159,13 +173,53 @@ export interface SuggestionConfig {
    * (portaled automatically when using the React adapter).
    *
    * When omitted, the built-in styled chip renders.
-   * Not used when type is "autocomplete".
    */
   renderCustomToken?: (
     item: SuggestionItem,
     type: SuggestionType,
   ) => HTMLElement | unknown;
 }
+
+/**
+ * Command-style suggestions activated by a trigger character (e.g. "/").
+ * Selection inserts a styled command token.
+ */
+export interface CommandConfig extends BaseSuggestionConfig {
+  type: SuggestionType.COMMAND;
+
+  /**
+   * Character that activates the suggestion (e.g. "/").
+   */
+  trigger: string;
+
+  /**
+   * Whether the trigger must appear at the start of the input/line,
+   * or anywhere. Defaults to "anywhere".
+   * Use "start" for command-style triggers.
+   */
+  triggerPosition?: "start" | "anywhere";
+
+  /**
+   * Replace the visual element rendered inside the token chip.
+   * Return an HTMLElement (works everywhere) or a React element
+   * (portaled automatically when using the React adapter).
+   *
+   * When omitted, the built-in styled chip renders.
+   */
+  renderCustomToken?: (
+    item: SuggestionItem,
+    type: SuggestionType,
+  ) => HTMLElement | unknown;
+}
+
+/**
+ * Discriminated union of all suggestion config kinds.
+ */
+export type SuggestionConfig =
+  | StarterConfig
+  | AutocompleteConfig
+  | MentionConfig
+  | CommandConfig;
 
 /**
  * Detail payload for the input change event, emitted when the editor content changes.

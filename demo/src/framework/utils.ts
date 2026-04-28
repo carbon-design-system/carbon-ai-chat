@@ -24,8 +24,6 @@ const responseMapKeys = Object.keys(RESPONSE_MAP);
 
 const responseMapAutocomplete: SuggestionConfig = {
   type: SuggestionType.AUTOCOMPLETE,
-  trigger: "",
-  triggerPosition: "start",
   items: async (query: string): Promise<SuggestionItem[]> => {
     const q = query.toLowerCase();
     return responseMapKeys

@@ -48,7 +48,6 @@ export class Demo extends LitElement {
                 m.label.toLowerCase().includes(query.toLowerCase()),
               );
             },
-            initialItems: mentionItems,
             onSelect: (item: SuggestionItem) => {
               this.instance?.input.updateStructuredData((prev) => ({
                 ...prev,

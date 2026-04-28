@@ -47,7 +47,6 @@ function App() {
                 m.label.toLowerCase().includes(query.toLowerCase()),
               );
             },
-            initialItems: mentionItems,
             onSelect: (item: SuggestionItem) => {
               instanceRef.current?.input.updateStructuredData((prev) => ({
                 ...prev,

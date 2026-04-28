@@ -8,9 +8,25 @@
  */
 
 import { expect } from "@open-wc/testing";
+import { EditorState, TextSelection } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
 import { inputSchema } from "../schema.js";
-import { buildTextBefore, matchConfig } from "../trigger-plugin.js";
-import type { SuggestionConfig } from "../../types.js";
+import {
+  buildTextBefore,
+  createTriggerPlugin,
+  detectTrigger,
+  matchConfig,
+  triggerPluginKey,
+  type SuggestionConfigsRef,
+} from "../trigger-plugin.js";
+import {
+  SuggestionType,
+  type AutocompleteConfig,
+  type CommandConfig,
+  type MentionConfig,
+  type StarterConfig,
+  type SuggestionConfig,
+} from "../../types.js";
 
 function paragraphWith(...children: Parameters<typeof Array.prototype.concat>) {
   return inputSchema.nodes.paragraph.create(null, children as never);
@@ -63,13 +79,25 @@ describe("prosemirror/trigger-plugin", function () {
   });
 
   describe("matchConfig", function () {
-    const mention: SuggestionConfig = { trigger: "@", type: "mention" };
-    const command: SuggestionConfig = {
-      trigger: "/",
-      type: "command",
-      triggerPosition: "start",
+    const mention: MentionConfig = {
+      type: SuggestionType.MENTION,
+      trigger: "@",
+      items: [],
     };
-    const auto: SuggestionConfig = { trigger: "", type: "autocomplete" };
+    const command: CommandConfig = {
+      type: SuggestionType.COMMAND,
+      trigger: "/",
+      triggerPosition: "start",
+      items: [],
+    };
+    const auto: AutocompleteConfig = {
+      type: SuggestionType.AUTOCOMPLETE,
+      items: [],
+    };
+    const starter: StarterConfig = {
+      type: SuggestionType.STARTER,
+      items: [],
+    };
 
     it("returns null when the trigger character is absent", () => {
       expect(matchConfig(mention, "hello world")).to.equal(null);
@@ -118,7 +146,7 @@ describe("prosemirror/trigger-plugin", function () {
       });
     });
 
-    it("empty trigger returns the whole textBefore as query", () => {
+    it("autocomplete returns the whole textBefore as query", () => {
       expect(matchConfig(auto, "hello")).to.deep.equal({
         type: "autocomplete",
         query: "hello",
@@ -126,8 +154,136 @@ describe("prosemirror/trigger-plugin", function () {
       });
     });
 
-    it("empty trigger returns null when there is no text", () => {
+    it("autocomplete returns null when there is no text", () => {
       expect(matchConfig(auto, "")).to.equal(null);
+    });
+
+    it("starter never matches via matchConfig (handled by detectTrigger)", () => {
+      expect(matchConfig(starter, "")).to.equal(null);
+      expect(matchConfig(starter, "hello")).to.equal(null);
+    });
+  });
+
+  describe("detectTrigger / STARTER", function () {
+    function makeState(text: string, configs: SuggestionConfig[]) {
+      const doc = inputSchema.nodes.doc.create(null, [
+        inputSchema.nodes.paragraph.create(
+          null,
+          text.length > 0 ? inputSchema.text(text) : undefined,
+        ),
+      ]);
+      const state = EditorState.create({
+        doc,
+        selection: TextSelection.atEnd(doc),
+      });
+      return { state, configs };
+    }
+
+    const starter: StarterConfig = {
+      type: SuggestionType.STARTER,
+      items: [],
+    };
+    const mention: MentionConfig = {
+      type: SuggestionType.MENTION,
+      trigger: "@",
+      items: [],
+    };
+    const auto: AutocompleteConfig = {
+      type: SuggestionType.AUTOCOMPLETE,
+      items: [],
+    };
+
+    it("fires synthetic STARTER on empty + focused + editable", () => {
+      const { state, configs } = makeState("", [starter]);
+      const result = detectTrigger(state, configs, true, true);
+      expect(result).to.deep.equal({
+        type: SuggestionType.STARTER,
+        query: "",
+        triggerOffset: 1,
+      });
+    });
+
+    it("does not fire on empty when no STARTER config is registered", () => {
+      const { state, configs } = makeState("", [auto, mention]);
+      expect(detectTrigger(state, configs, true, true)).to.equal(null);
+    });
+
+    it("does not fire on empty when blurred", () => {
+      const { state, configs } = makeState("", [starter]);
+      expect(detectTrigger(state, configs, false, true)).to.equal(null);
+    });
+
+    it("does not fire on empty when not editable", () => {
+      const { state, configs } = makeState("", [starter]);
+      expect(detectTrigger(state, configs, true, false)).to.equal(null);
+    });
+
+    it("STARTER closes once text is typed (autocomplete takes over if registered)", () => {
+      const { state, configs } = makeState("h", [starter, auto]);
+      const result = detectTrigger(state, configs, true, true);
+      expect(result).to.deep.equal({
+        type: SuggestionType.AUTOCOMPLETE,
+        query: "h",
+        triggerOffset: 1,
+      });
+    });
+
+    it("STARTER closes once text is typed (no other config -> null)", () => {
+      const { state, configs } = makeState("h", [starter]);
+      expect(detectTrigger(state, configs, true, true)).to.equal(null);
+    });
+  });
+
+  describe("createTriggerPlugin / focus + blur", function () {
+    function makeView(text: string, configs: SuggestionConfig[]) {
+      const doc = inputSchema.nodes.doc.create(null, [
+        inputSchema.nodes.paragraph.create(
+          null,
+          text.length > 0 ? inputSchema.text(text) : undefined,
+        ),
+      ]);
+      const configsRef: SuggestionConfigsRef = { current: configs };
+      const state = EditorState.create({
+        doc,
+        plugins: [createTriggerPlugin(configsRef)],
+        selection: TextSelection.atEnd(doc),
+      });
+      const mount = document.createElement("div");
+      document.body.appendChild(mount);
+      const view = new EditorView(mount, { state });
+      return {
+        view,
+        cleanup: () => {
+          view.destroy();
+          mount.remove();
+        },
+      };
+    }
+
+    const starter: StarterConfig = {
+      type: SuggestionType.STARTER,
+      items: [],
+    };
+
+    it("emits synthetic STARTER state when the editor receives focus on an empty doc", () => {
+      const { view, cleanup } = makeView("", [starter]);
+      view.focus();
+      const triggerState = triggerPluginKey.getState(view.state);
+      expect(triggerState).to.deep.equal({
+        type: SuggestionType.STARTER,
+        query: "",
+        triggerOffset: 1,
+      });
+      cleanup();
+    });
+
+    it("clears synthetic STARTER state on blur", () => {
+      const { view, cleanup } = makeView("", [starter]);
+      view.focus();
+      expect(triggerPluginKey.getState(view.state)).to.not.equal(null);
+      view.dom.blur();
+      expect(triggerPluginKey.getState(view.state)).to.equal(null);
+      cleanup();
     });
   });
 });
