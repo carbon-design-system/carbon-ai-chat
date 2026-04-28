@@ -87,7 +87,6 @@ npm run test:react -- src/react/__tests__/<file>.test.ts
 - **Parent guidance**: [Root AGENTS.md](../../AGENTS.md)
 - **Consumer package**: [../ai-chat/AGENTS.md](../ai-chat/AGENTS.md) - How React app uses these components
 - **Code reviews**: [../../AGENTS_CODE_REVIEW.md](../../AGENTS_CODE_REVIEW.md)
-- **Troubleshooting**: [../../AGENTS_TROUBLESHOOTING.md](../../AGENTS_TROUBLESHOOTING.md)
 
 ## Definition of done
 

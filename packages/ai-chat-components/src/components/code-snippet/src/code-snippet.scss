@@ -70,6 +70,14 @@
   }
 }
 
+.cm-diff-line-inserted {
+  background-color: var(--cds-syntax-inserted);
+}
+
+.cm-diff-line-deleted {
+  background-color: var(--cds-syntax-deleted);
+}
+
 :host([disabled]) {
   .#{$prefix}--snippet {
     background-color: theme.$layer;

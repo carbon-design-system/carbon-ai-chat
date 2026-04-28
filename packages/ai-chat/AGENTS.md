@@ -299,8 +299,8 @@ expect(screen.getByText('expected')).toBeInTheDocument();
 
 #### 2. Service Tests
 
-**Location**: `tests/services/spec/`  
-**Purpose**: Validate service orchestration and side effects  
+**Location**: `tests/services/spec/`
+**Purpose**: Validate service orchestration and side effects
 **Pattern**: Stub `ServiceManager`, instantiate service directly, assert method calls and state
 
 **Example**: `MessageService_spec.ts`
@@ -325,8 +325,8 @@ expect(mockManager.actions.addMessage).toHaveBeenCalled();
 
 #### 3. Component Tests
 
-**Location**: `tests/components/spec/`  
-**Purpose**: Validate React component rendering and interactions  
+**Location**: `tests/components/spec/`
+**Purpose**: Validate React component rendering and interactions
 **Pattern**: Render with Testing Library, simulate user interactions, assert DOM state
 
 **When to add**:
@@ -337,8 +337,8 @@ expect(mockManager.actions.addMessage).toHaveBeenCalled();
 
 #### 4. Integration Tests
 
-**Location**: `demo/tests/` (Playwright)  
-**Purpose**: Validate end-to-end user flows across the full stack  
+**Location**: `demo/tests/` (Playwright)
+**Purpose**: Validate end-to-end user flows across the full stack
 **Pattern**: See `demo/AGENTS.md` for Playwright patterns
 
 **When to add**:
@@ -466,7 +466,6 @@ See root [AGENTS.md](../../AGENTS.md#definition-of-done) for the gate. Additiona
 - **Documentation**: [docs/AGENTS.md](docs/AGENTS.md) - Consumer-facing docs guidelines
 - **Component library**: [../ai-chat-components/AGENTS.md](../ai-chat-components/AGENTS.md) - Lit component authoring
 - **Code reviews**: [../../AGENTS_CODE_REVIEW.md](../../AGENTS_CODE_REVIEW.md)
-- **Troubleshooting**: [../../AGENTS_TROUBLESHOOTING.md](../../AGENTS_TROUBLESHOOTING.md)
 
 ## Troubleshooting
 
@@ -475,8 +474,6 @@ See root [AGENTS.md](../../AGENTS.md#definition-of-done) for the gate. Additiona
 **TypeDoc errors**: Verify all `@param` tags in JSDoc match actual function parameters
 
 **React portal not rendering**: Check browser console for shadow DOM errors; verify `window.chatInstance` exists
-
-For more issues, see [AGENTS_TROUBLESHOOTING.md](../../AGENTS_TROUBLESHOOTING.md)
 
 ## Authoring rules
 

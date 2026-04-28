@@ -580,6 +580,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         editable: this.editable,
         disabled: this.disabled,
         ariaLabel: this._getAriaLabel(),
+        detectedLanguage: this._detectedLanguage,
         onDocChanged: ({ content, lineCount }) => {
           this._lineCount = lineCount;
 

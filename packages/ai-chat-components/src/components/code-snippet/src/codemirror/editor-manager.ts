@@ -32,6 +32,7 @@ interface EditorCreationOptions {
   editable: boolean;
   disabled: boolean;
   ariaLabel: string;
+  detectedLanguage?: string | null;
   onDocChanged?(payload: EditorDocChangePayload): void;
   setupOptions?: BaseCodeMirrorSetupOptions;
 }
@@ -49,6 +50,7 @@ export function createEditorView({
   editable,
   disabled,
   ariaLabel,
+  detectedLanguage,
   onDocChanged,
   setupOptions,
 }: EditorCreationOptions): EditorView {
@@ -67,10 +69,16 @@ export function createEditorView({
 
   const wrapTheme = createCarbonTheme();
 
+  // Enable diff decorator only for diff language
+  const isDiffLanguage = detectedLanguage === "diff";
+
   const state = EditorState.create({
     doc,
     extensions: [
-      baseCodeMirrorSetup(setupOptions),
+      baseCodeMirrorSetup({
+        ...setupOptions,
+        enableDiffDecorator: isDiffLanguage,
+      }),
       languageCompartment.of(languageExtensions),
       readOnlyCompartment.of(readOnlyExtensions),
       wrapCompartment.of(wrapTheme),
