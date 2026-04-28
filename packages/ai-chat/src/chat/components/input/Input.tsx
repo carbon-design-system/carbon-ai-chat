@@ -13,6 +13,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -597,15 +598,18 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     },
   }));
 
+  const hasValidInput = useMemo(
+    () =>
+      Boolean(rawInputValue?.trim()) ||
+      (pendingUploads != null &&
+        pendingUploads.length > 0 &&
+        !pendingUploads.every((u) => u.isError)),
+    [rawInputValue, pendingUploads],
+  );
+
   if (!isInputVisible) {
     return null;
   }
-
-  const hasValidInput =
-    Boolean(rawInputValue?.trim()) ||
-    (pendingUploads != null &&
-      pendingUploads.length > 0 &&
-      !pendingUploads.every((u) => u.isError));
 
   const showUploadButtonDisabled = disableUploadButton || disableInput;
 
