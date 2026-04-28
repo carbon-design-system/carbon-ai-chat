@@ -18,6 +18,7 @@ import {
   type SuggestionConfigsRef,
 } from "../trigger-plugin.js";
 import type { SuggestionConfig, SuggestionItem } from "../../types.js";
+import { EditorViewManager } from "../../editor-view-manager.js";
 
 function makeView(rawText: string, configs: SuggestionConfig[]) {
   const doc = inputSchema.nodes.doc.create(null, [
@@ -40,8 +41,15 @@ function makeView(rawText: string, configs: SuggestionConfig[]) {
   view.dispatch(
     view.state.tr.setSelection(TextSelection.atEnd(view.state.doc)),
   );
+
+  // Create a mock EditorViewManager for testing
+  const mockManager = {
+    focus: () => true,
+  } as EditorViewManager;
+
   return {
     view,
+    manager: mockManager,
     cleanup: () => {
       view.destroy();
       mount.remove();
@@ -52,16 +60,16 @@ function makeView(rawText: string, configs: SuggestionConfig[]) {
 describe("prosemirror/commands", function () {
   describe("insertToken", function () {
     it("returns false when no trigger is active", () => {
-      const { view, cleanup } = makeView("hello", []);
+      const { view, manager, cleanup } = makeView("hello", []);
       const item: SuggestionItem = { id: "1", label: "Jane" };
       const config: SuggestionConfig = { trigger: "@", type: "mention" };
-      expect(insertToken(view, item, config)).to.equal(false);
+      expect(insertToken(view, item, config, manager)).to.equal(false);
       cleanup();
     });
 
     it("replaces the trigger+query with a token node and dismisses the trigger", () => {
       const config: SuggestionConfig = { trigger: "@", type: "mention" };
-      const { view, cleanup } = makeView("hi @Ja", [config]);
+      const { view, manager, cleanup } = makeView("hi @Ja", [config]);
 
       // Trigger plugin should have picked up the @Ja
       const triggerState = triggerPluginKey.getState(view.state);
@@ -72,7 +80,7 @@ describe("prosemirror/commands", function () {
         label: "Jane",
         value: "@Jane Smith",
       };
-      const ok = insertToken(view, item, config);
+      const ok = insertToken(view, item, config, manager);
       expect(ok).to.equal(true);
 
       const p = view.state.doc.firstChild!;
@@ -91,8 +99,8 @@ describe("prosemirror/commands", function () {
 
   describe("replaceWithText", function () {
     it("replaces the entire document with the given text", () => {
-      const { view, cleanup } = makeView("old content", []);
-      const ok = replaceWithText(view, "new content");
+      const { view, manager, cleanup } = makeView("old content", []);
+      const ok = replaceWithText(view, "new content", manager);
       expect(ok).to.equal(true);
       expect(view.state.doc.textContent).to.equal("new content");
       expect(view.state.doc.childCount).to.equal(1);
@@ -100,8 +108,8 @@ describe("prosemirror/commands", function () {
     });
 
     it("replacing with an empty string leaves an empty paragraph", () => {
-      const { view, cleanup } = makeView("something", []);
-      replaceWithText(view, "");
+      const { view, manager, cleanup } = makeView("something", []);
+      replaceWithText(view, "", manager);
       expect(view.state.doc.childCount).to.equal(1);
       expect(view.state.doc.firstChild!.childCount).to.equal(0);
       cleanup();

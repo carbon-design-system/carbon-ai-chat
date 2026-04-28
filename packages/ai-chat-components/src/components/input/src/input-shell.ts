@@ -521,7 +521,7 @@ class InputShellElement extends LitElement {
     event: CustomEvent<{ item: SuggestionItem }>,
   ) => {
     const view = this._editorViewManager?.view;
-    if (!view) {
+    if (!view || !this._editorViewManager) {
       return;
     }
     insertAutocompleteItem(
@@ -529,6 +529,7 @@ class InputShellElement extends LitElement {
       event.detail.item,
       this._triggerState,
       this.suggestionConfigs,
+      this._editorViewManager,
     );
   };
 
@@ -552,7 +553,7 @@ class InputShellElement extends LitElement {
   /** Insert a token at the current cursor position. */
   insertToken(item: SuggestionItem, rawValue: string) {
     const view = this._editorViewManager?.view;
-    if (!view) {
+    if (!view || !this._editorViewManager) {
       return;
     }
     insertTokenWithRawValue(
@@ -561,6 +562,7 @@ class InputShellElement extends LitElement {
       rawValue,
       this._triggerState,
       this.suggestionConfigs,
+      this._editorViewManager,
     );
   }
 

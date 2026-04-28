@@ -9,17 +9,24 @@
 
 import { Selection } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
+import type { EditorViewManager } from "../editor-view-manager.js";
 import type { SuggestionItem, SuggestionConfig } from "../types.js";
 import { triggerPluginKey } from "./trigger-plugin.js";
 
 /**
  * Insert a token node at the current trigger position, replacing the trigger
  * character and query text. Dismisses the trigger after insertion.
+ *
+ * @param view - The ProseMirror EditorView
+ * @param item - The suggestion item to insert
+ * @param config - The suggestion configuration
+ * @param manager - EditorViewManager for proper focus handling
  */
 export function insertToken(
   view: EditorView,
   item: SuggestionItem,
   config: SuggestionConfig,
+  manager: EditorViewManager,
 ): boolean {
   const triggerState = triggerPluginKey.getState(view.state);
   if (!triggerState) {
@@ -54,15 +61,23 @@ export function insertToken(
   tr.setSelection(Selection.near(tr.doc.resolve(newCursorPos)));
 
   view.dispatch(tr);
-  view.focus();
+  manager.focus();
   return true;
 }
 
 /**
  * Replace the entire input text with a value (used for autocomplete type
  * where selecting an item replaces the typed text, not inserts a token).
+ *
+ * @param view - The ProseMirror EditorView
+ * @param text - The text to replace the entire input with
+ * @param manager - EditorViewManager for proper focus handling
  */
-export function replaceWithText(view: EditorView, text: string): boolean {
+export function replaceWithText(
+  view: EditorView,
+  text: string,
+  manager: EditorViewManager,
+): boolean {
   const { schema, doc } = view.state;
 
   const newDoc =
@@ -78,6 +93,6 @@ export function replaceWithText(view: EditorView, text: string): boolean {
   tr.setSelection(Selection.near(tr.doc.resolve(tr.doc.content.size - 1)));
 
   view.dispatch(tr);
-  view.focus();
+  manager.focus();
   return true;
 }

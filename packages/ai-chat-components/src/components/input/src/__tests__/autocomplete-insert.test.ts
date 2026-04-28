@@ -16,6 +16,7 @@ import {
   insertAutocompleteItem,
   insertTokenWithRawValue,
 } from "../autocomplete-insert.js";
+import type { EditorViewManager } from "../editor-view-manager.js";
 import type {
   SuggestionConfig,
   SuggestionItem,
@@ -37,8 +38,15 @@ function makeView(text: string) {
       selection: TextSelection.atEnd(doc),
     }),
   });
+
+  // Create a mock EditorViewManager for testing
+  const mockManager = {
+    focus: () => true,
+  } as EditorViewManager;
+
   return {
     view,
+    manager: mockManager,
     cleanup: () => {
       view.destroy();
       mount.remove();
@@ -48,7 +56,7 @@ function makeView(text: string) {
 
 describe("insertAutocompleteItem", () => {
   it("replaces entire text for autocomplete-type triggers using item.value", () => {
-    const { view, cleanup } = makeView("old text");
+    const { view, manager, cleanup } = makeView("old text");
     const trigger: TriggerChangeEventDetail = {
       type: "autocomplete",
       query: "",
@@ -60,42 +68,60 @@ describe("insertAutocompleteItem", () => {
       value: "canonical value",
     };
 
-    insertAutocompleteItem(view, item, trigger, []);
+    insertAutocompleteItem(view, item, trigger, [], manager);
 
     expect(view.state.doc.textContent).to.equal("canonical value");
     cleanup();
   });
 
   it("falls back to item.label when value is missing (autocomplete)", () => {
-    const { view, cleanup } = makeView("x");
+    const { view, manager, cleanup } = makeView("x");
     const trigger: TriggerChangeEventDetail = {
       type: "autocomplete",
       query: "",
       triggerOffset: 0,
     };
-    insertAutocompleteItem(view, { id: "1", label: "only-label" }, trigger, []);
+    insertAutocompleteItem(
+      view,
+      { id: "1", label: "only-label" },
+      trigger,
+      [],
+      manager,
+    );
     expect(view.state.doc.textContent).to.equal("only-label");
     cleanup();
   });
 
   it("is a no-op for mention-type when no matching config exists", () => {
-    const { view, cleanup } = makeView("hello");
+    const { view, manager, cleanup } = makeView("hello");
     const trigger: TriggerChangeEventDetail = {
       type: "mention",
       query: "",
       triggerOffset: 0,
     };
-    insertAutocompleteItem(view, { id: "1", label: "Jane" }, trigger, []);
+    insertAutocompleteItem(
+      view,
+      { id: "1", label: "Jane" },
+      trigger,
+      [],
+      manager,
+    );
     expect(view.state.doc.textContent).to.equal("hello");
     cleanup();
   });
 
   it("is a no-op when triggerState is null", () => {
-    const { view, cleanup } = makeView("hello");
+    const { view, manager, cleanup } = makeView("hello");
     const configs: SuggestionConfig[] = [
       { trigger: "@", type: "mention" } as SuggestionConfig,
     ];
-    insertAutocompleteItem(view, { id: "1", label: "Jane" }, null, configs);
+    insertAutocompleteItem(
+      view,
+      { id: "1", label: "Jane" },
+      null,
+      configs,
+      manager,
+    );
     expect(view.state.doc.textContent).to.equal("hello");
     cleanup();
   });
@@ -103,13 +129,14 @@ describe("insertAutocompleteItem", () => {
 
 describe("insertTokenWithRawValue", () => {
   it("is a no-op when no matching config exists", () => {
-    const { view, cleanup } = makeView("hello");
+    const { view, manager, cleanup } = makeView("hello");
     insertTokenWithRawValue(
       view,
       { id: "1", label: "Jane" },
       "@Jane",
       null,
       [],
+      manager,
     );
     expect(view.state.doc.textContent).to.equal("hello");
     cleanup();

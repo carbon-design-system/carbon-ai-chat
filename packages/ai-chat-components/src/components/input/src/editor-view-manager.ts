@@ -94,12 +94,14 @@ export class EditorViewManager {
       handleDOMEvents: {
         focus: (view) => {
           // Outline is only desired for keyboard focus. `_focusFromMouse` was
-          // flipped on by either a preceding mousedown or our own focus() call.
+          // flipped on by either a preceding pointer interaction or our own
+          // programmatic focus() call.
           if (!this._focusFromMouse) {
             view.dom.style.outline = "";
           }
+          const wasMouseFocus = this._focusFromMouse;
           this._focusFromMouse = false;
-          callbacks.onFocus(false);
+          callbacks.onFocus(wasMouseFocus);
           return false;
         },
         blur: (view) => {
@@ -195,11 +197,19 @@ export class EditorViewManager {
     container.setAttribute("aria-label", ariaLabel);
     container.setAttribute("aria-multiline", "true");
     container.setAttribute("spellcheck", "true");
-    // mousedown fires before focus; flip the flag so the upcoming focus event
-    // knows not to show the keyboard-focus outline.
-    container.addEventListener("mousedown", () => {
+
+    // Pointer/touch/mouse interactions fire before focus; flip the flag so the
+    // upcoming focus event knows not to show the keyboard-focus outline.
+    // Using pointerdown covers mouse, touch, and pen input in modern browsers.
+    const setMouseFlag = () => {
       this._focusFromMouse = true;
-    });
+    };
+
+    container.addEventListener("pointerdown", setMouseFlag);
+    // Fallback for older browsers that don't support pointer events
+    container.addEventListener("mousedown", setMouseFlag);
+    container.addEventListener("touchstart", setMouseFlag);
+
     return container;
   }
 }
