@@ -294,6 +294,7 @@ export class DemoBody extends LitElement {
     // Listen for config and settings changes
     this.addEventListener("config-changed", this._onConfigChanged);
     this.addEventListener("settings-changed", this._onSettingsChanged);
+    this.addEventListener("autocomplete-toggle", this._onAutocompleteToggle);
 
     // Expose the setChatConfig function globally for external use
     window.setChatConfig = this._setChatConfig;
@@ -454,6 +455,64 @@ export class DemoBody extends LitElement {
     if (this.settings.framework === "react") {
       this._renderReactApp();
     }
+  };
+
+  /**
+   * Handle autocomplete toggle event from demo-autocomplete-switcher
+   */
+  private _onAutocompleteToggle = async (event: Event) => {
+    event.stopPropagation();
+    const customEvent = event as CustomEvent<{ enabled: boolean }>;
+    const { enabled } = customEvent.detail;
+
+    // Import the responseMapAutocomplete from utils
+    const { SuggestionType } = await import("@carbon/ai-chat");
+    const { RESPONSE_MAP } = await import("../customSendMessage/responseMap");
+    const responseMapKeys = Object.keys(RESPONSE_MAP);
+
+    const responseMapAutocomplete = {
+      type: SuggestionType.AUTOCOMPLETE,
+      trigger: "",
+      triggerPosition: "start" as const,
+      items: async (query: string) => {
+        const q = query.toLowerCase();
+        return responseMapKeys
+          .filter((key) => key.toLowerCase().includes(q))
+          .map((key) => ({ id: key, label: key, value: key }));
+      },
+    };
+
+    const newConfig = { ...this.config };
+
+    if (enabled) {
+      // Add autocomplete to suggestions
+      const currentSuggestions = newConfig.input?.suggestions || [];
+      newConfig.input = {
+        ...newConfig.input,
+        suggestions: [...currentSuggestions, responseMapAutocomplete],
+      };
+    } else {
+      // Remove autocomplete from suggestions (already handled by switcher)
+      // This branch shouldn't be reached, but kept for completeness
+      if (newConfig.input?.suggestions) {
+        newConfig.input.suggestions = newConfig.input.suggestions.filter(
+          (suggestion) =>
+            !(
+              suggestion.type === "autocomplete" &&
+              suggestion.trigger === "" &&
+              suggestion.triggerPosition === "start"
+            ),
+        );
+      }
+    }
+
+    // Dispatch config-changed event
+    const configEvent = new CustomEvent<PublicConfig>("config-changed", {
+      detail: newConfig,
+    });
+    await this._processConfigChange(configEvent, {
+      triggerSetChatConfigMode: true,
+    });
   };
 
   /**
