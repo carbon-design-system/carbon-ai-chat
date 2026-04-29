@@ -171,6 +171,73 @@ export class DemoInputConfigSwitcher extends LitElement {
     return upload.is_on ? DROPDOWN_TRUE : DROPDOWN_FALSE;
   }
 
+  private _autocompleteDropdownValue(): string {
+    const suggestions = this.config?.input?.suggestions;
+
+    // Check if autocomplete is explicitly enabled
+    if (suggestions && Array.isArray(suggestions)) {
+      const hasAutocomplete = suggestions.some(
+        (suggestion) =>
+          suggestion.type === "autocomplete" &&
+          suggestion.trigger === "" &&
+          suggestion.triggerPosition === "start",
+      );
+      return hasAutocomplete ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+    }
+
+    // Default is off (false)
+    return DROPDOWN_FALSE;
+  }
+
+  private _handleAutocompleteDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    if (value === DROPDOWN_TRUE) {
+      // Enable autocomplete - dispatch event to let parent handle it
+      this.dispatchEvent(
+        new CustomEvent("autocomplete-toggle", {
+          detail: { enabled: true },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    } else {
+      // Disable autocomplete
+      const newConfig = { ...this.config };
+
+      if (newConfig.input?.suggestions) {
+        // Remove autocomplete suggestions but keep other suggestions
+        newConfig.input.suggestions = newConfig.input.suggestions.filter(
+          (suggestion) =>
+            !(
+              suggestion.type === "autocomplete" &&
+              suggestion.trigger === "" &&
+              suggestion.triggerPosition === "start"
+            ),
+        );
+
+        // If no suggestions left, remove the suggestions array
+        if (newConfig.input.suggestions.length === 0) {
+          delete newConfig.input.suggestions;
+        }
+
+        // If input config is empty, remove it
+        if (Object.keys(newConfig.input).length === 0) {
+          delete newConfig.input;
+        }
+      }
+
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: newConfig,
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
+  }
+
   render() {
     const input = this.config?.input;
 
@@ -248,6 +315,17 @@ export class DemoInputConfigSwitcher extends LitElement {
           <cds-dropdown-item value="${DROPDOWN_FALSE}"
             >Disable auto focus</cds-dropdown-item
           >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._autocompleteDropdownValue()}"
+          title-text="Enable autocomplete suggestions"
+          @cds-dropdown-selected=${this._handleAutocompleteDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
         </cds-dropdown>
       </div>
     `;

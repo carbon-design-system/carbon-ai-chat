@@ -9,7 +9,7 @@
 
 import { useRef } from "react";
 
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 /**
  * A hook that returns a UUID that lives for the life of the component.
@@ -17,7 +17,7 @@ import { uuid, UUIDType } from "../utils/lang/uuid";
 function useUUID() {
   const ref = useRef<string>(undefined);
   if (ref.current === undefined) {
-    ref.current = uuid(UUIDType.COMPONENT);
+    ref.current = uuid();
   }
 
   return ref.current;

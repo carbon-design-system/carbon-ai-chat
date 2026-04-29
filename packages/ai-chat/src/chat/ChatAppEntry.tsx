@@ -23,12 +23,13 @@ import {
   mergePublicConfig,
   performInitialViewChange,
 } from "./utils/chatBoot";
-import { UserDefinedResponsePortalsContainer } from "./components/UserDefinedResponsePortalsContainer";
+import { UserDefinedResponsePortalsContainer } from "./components/portals/UserDefinedResponsePortalsContainer";
 import {
   CustomFooterSlotState,
   CustomFooterPortalsContainer,
-} from "./components/CustomFooterPortalsContainer";
-import { WriteableElementsPortalsContainer } from "./components/WriteableElementsPortalsContainer";
+} from "./components/portals/CustomFooterPortalsContainer";
+import { WriteableElementsPortalsContainer } from "./components/portals/WriteableElementsPortalsContainer";
+import { TokenPortalsContainer } from "./components/portals/TokenPortalsContainer";
 
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";
@@ -372,6 +373,8 @@ export function ChatAppEntry({
                     renderResponseMap={renderWriteableElements}
                   />
                 )}
+
+                <TokenPortalsContainer chatWrapper={chatWrapper} />
               </AriaAnnouncerProvider>
             </LanguagePackProvider>
           </IntlProvider>

@@ -127,6 +127,7 @@ class ChatContainerInternal extends LitElement {
         onAfterRender={this.onAfterRender}
         container={container}
         element={this.element}
+        chatWrapper={this}
       />,
     );
   }

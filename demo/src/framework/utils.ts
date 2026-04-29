@@ -97,6 +97,11 @@ function getSettings() {
       customSendMessage,
       ...config.messaging,
     },
+    input: {
+      ...config.input,
+      // Don't add autocomplete by default - let it be controlled via the switcher
+      // Only preserve suggestions if they were explicitly set in config
+    },
     // Expose service manager for testing/demo purposes
     exposeServiceManagerForTesting: true,
   };

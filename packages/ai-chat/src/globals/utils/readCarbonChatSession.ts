@@ -29,6 +29,8 @@ import { getSuffix } from "../../chat/services/NamespaceService";
  * // With a namespace matching PublicConfig.namespace
  * const session = readCarbonChatSession("myapp");
  * const wasOpen = session?.viewState.mainWindow === true;
+ *
+ * @category Utilities
  */
 function readCarbonChatSession(namespace?: string): PersistedState | null {
   try {

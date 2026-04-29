@@ -17,6 +17,7 @@ import { waitFor } from "@testing-library/react";
 import type { StructuredData } from "../../../src/types/messaging/Messages";
 import type { PublicConfig } from "../../../src/types/config/PublicConfig";
 import { PendingUploadStatus } from "../../../src/types/state/AppState";
+import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -28,7 +29,10 @@ function makeFile(name = "test.pdf"): File {
 
 function queryFileUploaderItem(): Element | null {
   const chatElement = document.querySelector("cds-aichat-react");
-  return chatElement?.shadowRoot?.querySelector("cds-file-uploader-item");
+  if (!chatElement?.shadowRoot) {
+    return null;
+  }
+  return deepQuerySelector(chatElement.shadowRoot, "cds-file-uploader-item");
 }
 
 /**
