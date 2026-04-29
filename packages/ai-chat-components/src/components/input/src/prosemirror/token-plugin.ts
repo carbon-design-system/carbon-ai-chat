@@ -13,10 +13,30 @@ import type { Node as PMNode } from "prosemirror-model";
 import {
   type SuggestionConfig,
   type SuggestionItem,
+  type MentionConfig,
+  type CommandConfig,
   SuggestionType,
 } from "../types.js";
 import { createDefaultChip } from "./schema.js";
 import type { SuggestionConfigsRef } from "./trigger-plugin.js";
+import { setVarsForSelector } from "../../../shared/dynamic-css-var-sheet.js";
+
+let tokenStyleRulesInstalled = false;
+
+/**
+ * Install token-chip rules on the shared dynamic stylesheet. The token sits
+ * in the PM editor's light DOM so we can't reach it from the shell's shadow
+ * DOM. PM sets `white-space: pre-wrap` on the editor, which inherits into
+ * custom token content and breaks layout (e.g. cds-definition-tooltip);
+ * resetting via a class-based rule is CSP-safe.
+ */
+function ensureTokenStyleRules(): void {
+  if (tokenStyleRulesInstalled) {
+    return;
+  }
+  setVarsForSelector(".cds-aichat--token", { "white-space": "normal" });
+  tokenStyleRulesInstalled = true;
+}
 
 /**
  * Creates the token plugin that provides a NodeView factory for rendering
@@ -50,7 +70,9 @@ export function createTokenPlugin(configsRef: SuggestionConfigsRef): Plugin {
   });
 }
 
-type TokenRenderer = NonNullable<SuggestionConfig["renderCustomToken"]>;
+type TokenRenderer = NonNullable<
+  (MentionConfig | CommandConfig)["renderCustomToken"]
+>;
 
 class TokenNodeView implements NodeView {
   dom: HTMLElement;
@@ -83,6 +105,7 @@ class TokenNodeView implements NodeView {
 }
 
 function createTokenContainer(node: PMNode): HTMLElement {
+  ensureTokenStyleRules();
   const dom = document.createElement("span");
   dom.setAttribute("contenteditable", "false");
   dom.setAttribute("data-token-type", node.attrs.type);
@@ -90,10 +113,6 @@ function createTokenContainer(node: PMNode): HTMLElement {
   dom.setAttribute("role", "img");
   dom.setAttribute("aria-label", node.attrs.label || node.attrs.value);
   dom.className = "cds-aichat--token";
-  // ProseMirror sets white-space:pre-wrap on its editor which inherits
-  // through shadow DOM into custom token content and breaks layout of
-  // components like cds-definition-tooltip. Reset it here.
-  dom.style.whiteSpace = "normal";
   return dom;
 }
 
@@ -101,7 +120,16 @@ function resolveRenderer(
   configs: SuggestionConfig[],
   tokenType: SuggestionType,
 ): TokenRenderer | undefined {
-  const match = configs.find((c) => (c.type ?? "autocomplete") === tokenType);
+  if (
+    tokenType !== SuggestionType.MENTION &&
+    tokenType !== SuggestionType.COMMAND
+  ) {
+    return undefined;
+  }
+  const match = configs.find((c) => c.type === tokenType) as
+    | MentionConfig
+    | CommandConfig
+    | undefined;
   return match?.renderCustomToken;
 }
 

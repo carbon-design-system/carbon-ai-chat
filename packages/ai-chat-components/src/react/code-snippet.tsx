@@ -121,5 +121,3 @@ const CodeSnippet = React.forwardRef<any, any>((props, ref) => {
 CodeSnippet.displayName = "CodeSnippet";
 
 export default CodeSnippet;
-
-// Made with Bob

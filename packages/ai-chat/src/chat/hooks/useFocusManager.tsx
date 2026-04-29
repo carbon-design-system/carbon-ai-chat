@@ -89,5 +89,3 @@ export function useFocusManager({
 
   return requestFocus;
 }
-
-// Made with Bob

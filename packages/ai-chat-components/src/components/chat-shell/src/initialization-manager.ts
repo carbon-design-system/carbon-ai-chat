@@ -87,5 +87,3 @@ export class InitializationManager {
     }
   }
 }
-
-// Made with Bob

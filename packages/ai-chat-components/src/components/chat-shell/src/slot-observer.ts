@@ -175,5 +175,3 @@ export class SlotObserver {
     this.updateSlotStates();
   };
 }
-
-// Made with Bob

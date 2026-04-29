@@ -95,5 +95,3 @@ export function useHumanAgentCallbacks({
     onFilesSelectedForUpload,
   };
 }
-
-// Made with Bob

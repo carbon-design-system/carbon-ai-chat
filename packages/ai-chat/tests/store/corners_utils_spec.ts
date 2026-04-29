@@ -157,5 +157,3 @@ describe("Corner Utility Functions", () => {
     });
   });
 });
-
-// Made with Bob

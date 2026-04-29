@@ -203,5 +203,3 @@ export function isValidFormatter(formatter: any): formatter is IntlShape {
     typeof formatter.messages === "object"
   );
 }
-
-// Made with Bob

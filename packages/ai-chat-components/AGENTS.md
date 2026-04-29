@@ -2,9 +2,7 @@
 
 Guidance for authoring inside [packages/ai-chat-components/](.). Read this before adding or editing components.
 
-A library of Lit-based custom elements plus auto-generated React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs and Storybook ports.
-
-** Before running any build commands**: Ask the user if `npm run aiChat:start` is already running. Most developers keep it running continuously. Running a parallel build will cause race conditions and intermittent failures.
+A library of Lit-based custom elements plus auto-generated React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs, Storybook ports, and the `aiChat:start` watcher rule.
 
 ## Component directory shape
 
@@ -39,10 +37,9 @@ Shared pieces: [src/components/shared/](src/components/shared/); design tokens /
 
 ## Authoring rules
 
-- **Prefix via tokens, never literals**: class names go through the `$prefix` / `prefix` helpers in SCSS and TS so both the `es` and `es-custom` builds work. A literal `cds-` or `cds--` in source is a bug.
-- **Tag naming**: Lit tags are `cds-<thing>` in the default build; don't hand-write the tag string in multiple places — read it from the shared prefix constant so the `es-custom` rewrite applies.
+- **Prefix discipline**: see root [AGENTS.md Conventions](../../AGENTS.md#conventions). Package-specific addition — **tag naming**: Lit tags are `cds-<thing>` in the default build; don't hand-write the tag string in multiple places, read it from the shared prefix constant so the `es-custom` rewrite applies.
 - **One element per file** under `src/`, re-exported from `index.ts`. Sub-parts (footer, step, etc.) get their own file and `import` line.
-- **Styles**: co-locate `.scss` next to the `.ts`. Use Carbon tokens from `@carbon/styles`; don't hardcode colors, spacing, or type. Use logical properties for RTL.
+- **Styles**: co-locate `.scss` next to the `.ts`. Use Carbon tokens from `@carbon/styles`; don't hardcode colors, spacing, or type. SCSS/RTL conventions (BEM, logical properties) live in root [AGENTS.md Conventions](../../AGENTS.md#conventions).
 - **Custom elements manifest**: after changing JSDoc, props, slots, events, or CSS parts, run `npm run custom-elements`. Storybook docs and the generated React wrappers read from it — stale manifests produce confusing Storybook output.
 - **Stories**: every new element needs a Lit `.stories.js` + `.mdx`, and its React wrapper needs `-react.stories.jsx` + `-react.mdx`. Co-locate shared fixtures in `<component>/__stories__/story-data.js` (see `card/__stories__/story-data.js` for the pattern).
 - **Props / events / slots**: use kebab-case attribute names on Lit elements (`has-footer`, not `hasFooter`); the CEM analyzer + React wrapper generator handle camelCase conversion. Custom events follow `cds-<thing>-<verb>` (e.g. `cds-card-expand`). Slots use plain names; reserve `default` for primary content.
@@ -52,6 +49,18 @@ Shared pieces: [src/components/shared/](src/components/shared/); design tokens /
 - **Types are public docs**: every exported type here ships through `@carbon/ai-chat`'s TypeDoc to the docs site, Elasticsearch index, and MCP server. Follow the full rules in [packages/ai-chat/src/types/AGENTS.md](../ai-chat/src/types/AGENTS.md). One package-specific rule: `@category` tags must use a value from `categoryOrder` in [packages/ai-chat/typedoc.json](../ai-chat/typedoc.json) — categories are owned by the ai-chat docs site, not this package.
 - **React wrappers are generated-style code**: keep them minimal — no behavior beyond `createComponent`. Behavior belongs in the Lit element.
 - **Telemetry**: regenerate with `npm run telemetry:config` after adding new components; don't hand-edit `telemetry.yml`.
+
+## Accessibility
+
+Every Lit element shipped here must hold WCAG 2.1 AA — see [root AGENTS_ACCESSIBILITY.md](../../AGENTS_ACCESSIBILITY.md) for the full checklist, politeness rules, and pitfalls (don't combine `role="status"` with `aria-live="polite"`; default `aria-atomic` off).
+
+Package-specific points:
+
+- **Shadow DOM hides implicit semantics** from some assistive tech. Declare `role` and labels on the host element explicitly rather than relying on the browser to infer from internals.
+- **Announcements** go through [`AriaAnnouncerManager`](src/globals/utils/aria-announcer-manager.ts) (also consumed by `@carbon/ai-chat`'s React announcer). Render visually-hidden regions in `render()`, call `connect(regions)` in `firstUpdated`, `announce(text)` to speak, and `disconnect()` in `disconnectedCallback`. Don't roll your own `aria-live` regions.
+- **Icon-only buttons need `aria-label`**; decorative slotted content needs `aria-hidden="true"`.
+
+When the component announces or has dynamic state changes, verify with NVDA + VoiceOver before marking done.
 
 ## Build, test, Storybook
 

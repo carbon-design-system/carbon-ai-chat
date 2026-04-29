@@ -61,5 +61,3 @@ declare global {
     "demo-stop-button-immediate-switcher": DemoStopButtonImmediateSwitcher;
   }
 }
-
-// Made with Bob

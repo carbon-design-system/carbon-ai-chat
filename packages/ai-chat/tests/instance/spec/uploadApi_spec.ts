@@ -458,5 +458,3 @@ describe("upload API – Redux store lifecycle", () => {
     expect(instance.getState().input.hasInFlightUploads).toBe(false);
   });
 });
-
-// Made with Bob

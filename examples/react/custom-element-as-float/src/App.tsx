@@ -7,6 +7,23 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Custom element as float (React)
+ *
+ * Demonstrates: replicating the built-in float / launcher view using
+ * `ChatCustomElement` styled with the shipped float-layout CSS plus a
+ * custom `ChatButton` launcher controlled via `VIEW_CHANGE`. Useful when
+ * you need full control over launcher animations, accessibility, or
+ * positioning that the built-in `ChatContainer` does not expose.
+ *
+ * APIs exercised:
+ *   - `ChatCustomElement` styled with float-layout + launcher-layout CSS
+ *   - `BusEventType.VIEW_CHANGE` for the open/closed phase machine
+ *   - `PublicConfig.launcher.isOn` (disabled to use a custom launcher)
+ *
+ * Start reading at: `App()` and the `VIEW_CHANGE` handler.
+ */
+
 import "@carbon/ai-chat/css/chat-float-layout.css";
 import "@carbon/ai-chat/css/chat-launcher-layout.css";
 

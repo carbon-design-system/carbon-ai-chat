@@ -10,7 +10,7 @@ The Carbon AI Chat allows you to provide your own server for the chat to interac
 
 The Carbon AI Chat provides a {@link MessageRequest} when someone sends a message. The Carbon AI Chat expects a {@link MessageResponse} to be returned. You can stream the `MessageResponse`. See {@link ChatInstanceMessaging.addMessageChunk} for an explanation of the streaming format.
 
-For more information, see [the examples page](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic/src/customSendMessage.ts).
+For more information, see [the examples page](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic-float/src/customSendMessage.ts).
 
 Inside the `MessageResponse` the Carbon AI Chat can accept `response_types`. You can navigate to the properties for each `response_type` by visiting the base {@link GenericItem} type.
 
@@ -453,4 +453,4 @@ async function switchToConversation(conversationId: string) {
 
 #### Example history implementation
 
-For a complete example, see the [history example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/history).
+For a complete example, see the [history example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/history-host-driven).

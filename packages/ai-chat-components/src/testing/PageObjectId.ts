@@ -32,5 +32,3 @@ export enum PageObjectId {
  * Ids used for data-testid.
  */
 export type TestId = PageObjectId;
-
-// Made with Bob

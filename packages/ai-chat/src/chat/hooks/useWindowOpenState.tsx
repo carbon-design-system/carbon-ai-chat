@@ -114,5 +114,3 @@ export function useWindowOpenState({
     widgetContainerRef,
   };
 }
-
-// Made with Bob

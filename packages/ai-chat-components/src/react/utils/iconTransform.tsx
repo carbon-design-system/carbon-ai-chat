@@ -204,5 +204,3 @@ function extractIconName(props: any): string {
   // Try various properties that might contain the icon name
   return props["data-icon-name"] || props["aria-label"] || props.name || "icon";
 }
-
-// Made with Bob

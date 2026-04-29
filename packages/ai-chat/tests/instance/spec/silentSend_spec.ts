@@ -193,5 +193,3 @@ describe("silent send – file-only messages are not shown in the UI", () => {
     expect(messagesAfter).toBeGreaterThan(messagesBefore);
   });
 });
-
-// Made with Bob

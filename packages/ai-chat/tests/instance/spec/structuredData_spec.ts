@@ -347,5 +347,3 @@ describe("structured_data merge on send", () => {
     expect(sentMessage.input.structured_data).toEqual(structuredData);
   });
 });
-
-// Made with Bob

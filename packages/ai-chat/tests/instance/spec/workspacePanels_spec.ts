@@ -577,5 +577,3 @@ describe("ChatInstance.customPanels - Workspace Panels", () => {
     });
   });
 });
-
-// Made with Bob

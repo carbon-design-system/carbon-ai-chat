@@ -142,5 +142,3 @@ export function shouldSkipWorkspaceUpdate(
     !config.showWorkspace || !state.containerVisible || state.isContracting
   );
 }
-
-// Made with Bob

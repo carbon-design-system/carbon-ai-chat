@@ -249,5 +249,3 @@ export const Collapsible = {
     </cds-aichat-workspace-shell-body>
   `,
 };
-
-// Made with Bob

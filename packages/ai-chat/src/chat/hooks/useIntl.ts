@@ -44,5 +44,3 @@ export function useIntl(): IntlShape {
 
   return formatter;
 }
-
-// Made with Bob

@@ -139,5 +139,3 @@ export const EmptyState = {
     </WorkspaceShell>
   ),
 };
-
-// Made with Bob

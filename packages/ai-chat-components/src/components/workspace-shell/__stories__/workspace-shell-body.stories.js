@@ -119,5 +119,3 @@ export const EmptyState = {
     </cds-aichat-workspace-shell-body>
   `,
 };
-
-// Made with Bob

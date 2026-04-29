@@ -78,5 +78,3 @@ export const actionLists = {
   ],
   None: [],
 };
-
-// Made with Bob

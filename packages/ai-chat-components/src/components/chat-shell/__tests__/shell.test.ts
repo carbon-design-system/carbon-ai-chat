@@ -880,5 +880,3 @@ describe("cds-aichat-shell", function () {
     });
   });
 });
-
-// Made with Bob

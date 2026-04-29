@@ -348,5 +348,3 @@ export const Embedded = {
     );
   },
 };
-
-// Made with Bob

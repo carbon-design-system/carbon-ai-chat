@@ -1007,5 +1007,3 @@ export class WorkspaceManager {
     }
   }
 }
-
-// Made with Bob

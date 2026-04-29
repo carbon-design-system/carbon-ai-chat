@@ -114,5 +114,3 @@ export const DangerActions = {
     </cds-aichat-workspace-shell-footer>
   `,
 };
-
-// Made with Bob

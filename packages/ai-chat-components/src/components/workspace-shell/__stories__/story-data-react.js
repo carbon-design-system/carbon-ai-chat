@@ -223,5 +223,3 @@ export const FooterActionList = {
     },
   ],
 };
-
-// Made with Bob

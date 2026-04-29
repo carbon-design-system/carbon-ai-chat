@@ -148,5 +148,3 @@ const ChatHeader = React.forwardRef<any, any>((props, ref) => {
 ChatHeader.displayName = "ChatHeader";
 
 export default ChatHeader;
-
-// Made with Bob

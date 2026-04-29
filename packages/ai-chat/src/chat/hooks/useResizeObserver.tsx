@@ -41,5 +41,3 @@ export function useResizeObserver({
     return () => observer.disconnect();
   }, [containerRef, onResize]);
 }
-
-// Made with Bob

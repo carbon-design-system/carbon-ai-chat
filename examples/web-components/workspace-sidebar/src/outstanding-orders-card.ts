@@ -7,6 +7,22 @@
  *  @license
  */
 
+/**
+ * OutstandingOrdersCard preview component.
+ *
+ * Demonstrates: a USER_DEFINED message rendered inline in the chat
+ * transcript that previews outstanding orders and exposes a Maximize
+ * action. Maximize invokes the `onMaximize` callback wired by main.ts,
+ * which calls `instance.customPanels.getPanel(PanelType.WORKSPACE).open()`
+ * with the card's `workspaceId` and `additionalData`.
+ *
+ * APIs exercised:
+ *   - `<cds-aichat-card>` and `<cds-aichat-toolbar>`
+ *   - User-defined response slot wiring via `onMaximize`
+ *
+ * Start reading at: `handleMaximize` and the `toolbarActions` array.
+ */
+
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@carbon/ai-chat-components/es/components/card/index.js";
@@ -84,10 +100,12 @@ export class OutstandingOrdersCard extends LitElement {
   ];
 
   private handleMaximize() {
+    // Debug log so integrators can confirm the workspaceId being forwarded to customPanels.getPanel().open().
     console.log(
       "Maximize clicked, opening workspace with ID:",
       this.workspaceId,
     );
+    // Defer to the parent-supplied onMaximize so the host owns the customPanels.getPanel(PanelType.WORKSPACE).open() call.
     if (this.onMaximize) {
       this.onMaximize();
     }
@@ -130,5 +148,3 @@ export class OutstandingOrdersCard extends LitElement {
     `;
   }
 }
-
-// Made with Bob

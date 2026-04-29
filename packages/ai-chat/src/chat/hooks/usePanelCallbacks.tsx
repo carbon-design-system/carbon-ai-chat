@@ -52,5 +52,3 @@ export function usePanelCallbacks({
     onPanelCloseEnd,
   };
 }
-
-// Made with Bob

@@ -75,5 +75,3 @@ export const PanelWithFocus = forwardRef<HasRequestFocus, PanelWithFocusProps>(
 );
 
 PanelWithFocus.displayName = "PanelWithFocus";
-
-// Made with Bob

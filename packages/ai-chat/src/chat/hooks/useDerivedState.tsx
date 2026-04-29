@@ -76,5 +76,3 @@ export function useDerivedState({
     viewStateMainWindow,
   ]);
 }
-
-// Made with Bob

@@ -1,4 +1,4 @@
-# Custom Element (Lazy Load)
+# Custom element / Lazy load
 
 Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat-shell>` as a crossfade fallback until the chat is ready.
 

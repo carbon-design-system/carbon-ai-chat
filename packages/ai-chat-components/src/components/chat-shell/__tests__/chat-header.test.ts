@@ -557,5 +557,3 @@ describe("cds-aichat-chat-header", function () {
     });
   });
 });
-
-// Made with Bob

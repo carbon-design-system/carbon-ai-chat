@@ -337,5 +337,3 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     );
   });
 });
-
-// Made with Bob

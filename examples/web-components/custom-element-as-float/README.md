@@ -1,4 +1,4 @@
-# Custom Element as Float
+# Custom element / As float
 
 Replicates the built-in float view by combining `<cds-aichat-custom-element>` with the shipped float/launcher CSS classes and a `<cds-aichat-button>` custom launcher.
 

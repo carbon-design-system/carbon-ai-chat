@@ -156,5 +156,3 @@ function doFileUploadResponse(
 }
 
 export { mockOnFileUpload, doFileUploadResponse };
-
-// Made with Bob

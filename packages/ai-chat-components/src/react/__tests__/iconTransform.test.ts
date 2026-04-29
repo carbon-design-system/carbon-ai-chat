@@ -231,5 +231,3 @@ describe("Icon Transformation Utility", () => {
     });
   });
 });
-
-// Made with Bob

@@ -112,5 +112,3 @@ Toolbar.displayName = "Toolbar";
 export type { Action };
 
 export default Toolbar;
-
-// Made with Bob

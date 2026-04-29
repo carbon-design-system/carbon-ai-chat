@@ -29,5 +29,3 @@ import { IntlShape } from "../utils/i18n";
 export const IntlContext = createContext<IntlShape | null>(null);
 
 IntlContext.displayName = "IntlContext";
-
-// Made with Bob

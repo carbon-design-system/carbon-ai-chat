@@ -270,5 +270,3 @@ export class ResizeObserverManager {
     });
   }
 }
-
-// Made with Bob

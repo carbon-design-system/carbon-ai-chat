@@ -179,5 +179,3 @@ export function useInputCallbacks({
     showUploadButtonDisabled,
   };
 }
-
-// Made with Bob

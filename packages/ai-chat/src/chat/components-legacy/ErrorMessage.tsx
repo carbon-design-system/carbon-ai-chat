@@ -175,5 +175,3 @@ function ErrorMessage({ theme }: ErrorMessageProps) {
 }
 
 export { ErrorMessage };
-
-// Made with Bob

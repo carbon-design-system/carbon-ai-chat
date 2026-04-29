@@ -7,6 +7,23 @@
  *  @license
  */
 
+/**
+ * Mock backend for the workspace example.
+ *
+ * Demonstrates: routing user input to scripted `instance.messaging.addMessage`
+ * payloads that produce `OPTION`, `PREVIEW_CARD`, and `USER_DEFINED` responses
+ * carrying `workspace_id` plus `additional_data.type`, which `App.tsx` reads to
+ * decide which writeable element to mount in the workspace panel.
+ *
+ * APIs exercised:
+ *   - `customSendMessage`
+ *   - `instance.messaging.addMessage`
+ *   - `MessageResponseTypes.OPTION` / `PREVIEW_CARD` / `TEXT` / `USER_DEFINED`
+ *   - `OptionItemPreference.BUTTON`
+ *
+ * Start reading at: `customSendMessage` at the bottom of the file.
+ */
+
 import {
   ChatInstance,
   CustomSendMessageOptions,
@@ -20,6 +37,7 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
  * Sends the inventory type selection options to the user.
  */
 function sendInventoryOptions(instance: ChatInstance) {
+  // addMessage in response to user input replays the option menu when the input does not match a scripted branch.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -52,6 +70,7 @@ function sendInventoryOptions(instance: ChatInstance) {
  * Sends the excess inventory response with a preview card that opens the workspace panel.
  */
 function sendExcessInventoryResponse(instance: ChatInstance) {
+  // addMessage in response to user input emits a PREVIEW_CARD; clicking it triggers WORKSPACE_OPEN with type "inventory_report".
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -78,6 +97,7 @@ function sendExcessInventoryResponse(instance: ChatInstance) {
  * Sends the current inventory response with a simple text message.
  */
 function sendCurrentInventoryResponse(instance: ChatInstance) {
+  // addMessage in response to user input emits a PREVIEW_CARD whose additional_data.type "inventory_status" routes to the inventory_status writeable element.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -104,7 +124,7 @@ function sendCurrentInventoryResponse(instance: ChatInstance) {
  * Sends the outstanding orders response with a user-defined card that has a toolbar and maximize action.
  */
 function sendOutstandingOrdersResponse(instance: ChatInstance) {
-  // Generate 25 rows of dummy order data
+  // Replace with a real production implementation.
   const orders = [
     {
       id: "ORD-1001",
@@ -333,6 +353,7 @@ function sendOutstandingOrdersResponse(instance: ChatInstance) {
     },
   ];
 
+  // addMessage in response to user input emits a USER_DEFINED card; renderUserDefinedResponse renders OutstandingOrdersCard whose Maximize action opens the workspace panel.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -361,9 +382,10 @@ async function customSendMessage(
   requestOptions: CustomSendMessageOptions,
   instance: ChatInstance,
 ) {
+  // Replace with a real production implementation.
   const userInput = request.input.text?.trim();
 
-  // Handle option selections
+  // Branches on the literal label values from sendInventoryOptions so option button taps map deterministically to a scripted response.
   if (userInput === "Excess Inventory") {
     sendExcessInventoryResponse(instance);
   } else if (userInput === "Current Inventory") {
@@ -371,7 +393,7 @@ async function customSendMessage(
   } else if (userInput === "Outstanding Orders") {
     sendOutstandingOrdersResponse(instance);
   } else {
-    // Show options for any other input
+    // Falls back to the option menu so unknown input always returns the user to a known choice set.
     sendInventoryOptions(instance);
   }
 }

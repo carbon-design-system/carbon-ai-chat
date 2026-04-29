@@ -29,5 +29,3 @@ $use-fallback-value: true !default;
 @mixin declaration($name, $value) {
   #{get-name($name)}: #{$value};
 }
-
-// Made with Bob

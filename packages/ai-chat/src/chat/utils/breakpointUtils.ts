@@ -24,5 +24,3 @@ export function calculateChatWidthBreakpoint(
   }
   return ChatWidthBreakpoint.NARROW;
 }
-
-// Made with Bob

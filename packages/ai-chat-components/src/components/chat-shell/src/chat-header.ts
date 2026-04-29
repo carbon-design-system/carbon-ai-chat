@@ -488,5 +488,3 @@ declare global {
 
 export { CdsAiChatChatHeader };
 export default CdsAiChatChatHeader;
-
-// Made with Bob

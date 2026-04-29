@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-workspace-sidebar",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "private": true,
   "type": "module",
   "description": "An example using @carbon/ai-chat's Web Component workspace feature with sidebar layout",

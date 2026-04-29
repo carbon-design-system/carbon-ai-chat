@@ -114,5 +114,3 @@ export const DangerActions = {
     </WorkspaceShell>
   ),
 };
-
-// Made with Bob

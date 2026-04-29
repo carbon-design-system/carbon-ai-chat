@@ -77,5 +77,3 @@ beforeEach(() => {
     };
   }
 });
-
-// Made with Bob

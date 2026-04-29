@@ -250,5 +250,3 @@ export const Collapsible = {
     </WorkspaceShell>
   ),
 };
-
-// Made with Bob
