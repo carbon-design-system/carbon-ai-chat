@@ -150,7 +150,7 @@ All code examples in documentation must be tested to ensure accuracy.
 
 **Inline examples** (small snippets):
 
-- Copy into relevant example project (e.g., `examples/react/basic/`)
+- Copy into relevant example project (e.g., `examples/react/basic-float/`)
 - Verify it compiles without errors
 - Run and verify expected behavior
 - If example shows error handling, verify error is caught correctly

@@ -10,7 +10,8 @@
 import { Plugin, PluginKey } from "prosemirror-state";
 import type { EditorState } from "prosemirror-state";
 import type { Node as PMNode } from "prosemirror-model";
-import type { SuggestionConfig } from "../types.js";
+import type { EditorView } from "prosemirror-view";
+import { SuggestionType, type SuggestionConfig } from "../types.js";
 
 export interface TriggerPluginState {
   type: string;
@@ -30,15 +31,22 @@ export interface SuggestionConfigsRef {
  * Creates a plugin that detects trigger characters at the cursor position
  * and manages suggestion state.
  *
- * When the cursor is positioned after a configured trigger character (e.g.
- * `@`, `/`, or empty string for autocomplete-on-all-text), the plugin
- * activates with the matching config type, query text, and trigger offset.
+ * Activates in two ways:
+ * - When the cursor is positioned after a configured trigger character (e.g.
+ *   `@`, `/`) or any non-empty text (for autocomplete configs), the plugin
+ *   reports the matching config type, query text, and trigger offset.
+ * - When the input is empty and focused (and editable), and a `STARTER` config
+ *   is registered, a synthetic trigger fires with `query: ""` so prompt-seed
+ *   ideas can be surfaced before the user has typed anything.
  *
  * State is dismissed via meta: `tr.setMeta(triggerPluginKey, { dismiss: true })`
  */
 export function createTriggerPlugin(
   configsRef: SuggestionConfigsRef,
 ): Plugin<TriggerPluginState | null> {
+  let focused = false;
+  let editable = true;
+
   return new Plugin<TriggerPluginState | null>({
     key: triggerPluginKey,
 
@@ -48,24 +56,44 @@ export function createTriggerPlugin(
       },
 
       apply(tr, prevState, _oldState, newState) {
-        // Explicit dismiss via meta
         const meta = tr.getMeta(triggerPluginKey);
         if (meta?.dismiss) {
           return null;
         }
 
-        // Only re-evaluate on doc or selection changes
-        if (!tr.docChanged && !tr.selectionSet) {
+        if (!tr.docChanged && !tr.selectionSet && !meta?.focusChanged) {
           return prevState;
         }
 
-        return detectTrigger(newState, configsRef.current);
+        return detectTrigger(newState, configsRef.current, focused, editable);
       },
     },
 
-    view() {
+    view(view: EditorView) {
+      focused = view.hasFocus();
+      editable = view.editable;
+
+      const handleFocus = () => {
+        focused = true;
+        editable = view.editable;
+        view.dispatch(
+          view.state.tr.setMeta(triggerPluginKey, { focusChanged: true }),
+        );
+      };
+      const handleBlur = () => {
+        focused = false;
+        view.dispatch(
+          view.state.tr.setMeta(triggerPluginKey, { focusChanged: true }),
+        );
+      };
+
+      view.dom.addEventListener("focus", handleFocus);
+      view.dom.addEventListener("blur", handleBlur);
+
       return {
         update(view, prevState) {
+          editable = view.editable;
+
           const prev = triggerPluginKey.getState(prevState);
           const curr = triggerPluginKey.getState(view.state);
 
@@ -80,6 +108,10 @@ export function createTriggerPlugin(
               composed: true,
             }),
           );
+        },
+        destroy() {
+          view.dom.removeEventListener("focus", handleFocus);
+          view.dom.removeEventListener("blur", handleBlur);
         },
       };
     },
@@ -102,11 +134,16 @@ function sameTriggerState(
 
 /**
  * Detect if the cursor is in a trigger position relative to any configured
- * suggestion trigger.
+ * suggestion. Handles the synthetic STARTER case (empty + focused + editable)
+ * and falls through to per-config matching for typed triggers.
+ *
+ * Exported for unit testing.
  */
-function detectTrigger(
+export function detectTrigger(
   state: EditorState,
   configs: SuggestionConfig[],
+  focused: boolean,
+  editable: boolean,
 ): TriggerPluginState | null {
   if (configs.length === 0) {
     return null;
@@ -123,13 +160,31 @@ function detectTrigger(
     $from.parentOffset,
   );
 
+  // Phase A: synthetic STARTER trigger on empty + focused + editable.
+  if (textBefore.length === 0) {
+    if (!focused || !editable) {
+      return null;
+    }
+    const hasStarter = configs.some(
+      (config) => config.type === SuggestionType.STARTER,
+    );
+    if (hasStarter) {
+      return {
+        type: SuggestionType.STARTER,
+        query: "",
+        triggerOffset: $from.start(),
+      };
+    }
+    return null;
+  }
+
+  // Phase B: typed triggers.
   for (const config of configs) {
     const match = matchConfig(config, textBefore);
     if (match == null) {
       continue;
     }
 
-    // Translate the text-space trigger index to a real doc offset using posMap
     const blockStartPos = $from.start();
     const triggerParentOffset =
       posMap[match.triggerOffsetInText] ?? match.triggerOffsetInText;
@@ -200,13 +255,11 @@ export function buildTextBefore(
  * Returns a match with the resolved type, query, and trigger position within
  * `textBefore`, or null if this config does not match.
  *
- * Handles three cases:
- * - Empty trigger: autocomplete on the whole text.
- * - Char trigger with `triggerPosition: "start"`: only matches when the
- *   trigger is at the start of the line (after optional leading whitespace).
- * - Char trigger with `triggerPosition: "anywhere"` (default): the trigger
- *   must be at the start or preceded by whitespace, and the query after the
- *   trigger must not contain whitespace.
+ * - STARTER: never matches here; handled by the synthetic-trigger phase.
+ * - AUTOCOMPLETE: matches whenever `textBefore` is non-empty.
+ * - MENTION / COMMAND: char-trigger logic with optional `triggerPosition`
+ *   ("start" requires line start; "anywhere" requires preceding whitespace).
+ *   Queries containing whitespace reject.
  *
  * Exported for unit testing.
  */
@@ -214,37 +267,46 @@ export function matchConfig(
   config: SuggestionConfig,
   textBefore: string,
 ): { type: string; query: string; triggerOffsetInText: number } | null {
-  const type = config.type ?? "autocomplete";
-  const trigger = config.trigger;
-
-  if (trigger === "") {
-    if (textBefore.length === 0) {
+  switch (config.type) {
+    case SuggestionType.STARTER:
       return null;
+
+    case SuggestionType.AUTOCOMPLETE:
+      if (textBefore.length === 0) {
+        return null;
+      }
+      return {
+        type: SuggestionType.AUTOCOMPLETE,
+        query: textBefore,
+        triggerOffsetInText: 0,
+      };
+
+    case SuggestionType.MENTION:
+    case SuggestionType.COMMAND: {
+      const trigger = config.trigger;
+      const triggerPos = textBefore.lastIndexOf(trigger);
+      if (triggerPos === -1) {
+        return null;
+      }
+
+      if (config.triggerPosition === "start") {
+        const beforeTrigger = textBefore.slice(0, triggerPos);
+        if (beforeTrigger.trim().length > 0) {
+          return null;
+        }
+      } else if (triggerPos > 0) {
+        const charBefore = textBefore[triggerPos - 1];
+        if (!/\s/.test(charBefore)) {
+          return null;
+        }
+      }
+
+      const query = textBefore.slice(triggerPos + trigger.length);
+      if (/\s/.test(query)) {
+        return null;
+      }
+
+      return { type: config.type, query, triggerOffsetInText: triggerPos };
     }
-    return { type, query: textBefore, triggerOffsetInText: 0 };
   }
-
-  const triggerPos = textBefore.lastIndexOf(trigger);
-  if (triggerPos === -1) {
-    return null;
-  }
-
-  if (config.triggerPosition === "start") {
-    const beforeTrigger = textBefore.slice(0, triggerPos);
-    if (beforeTrigger.trim().length > 0) {
-      return null;
-    }
-  } else if (triggerPos > 0) {
-    const charBefore = textBefore[triggerPos - 1];
-    if (!/\s/.test(charBefore)) {
-      return null;
-    }
-  }
-
-  const query = textBefore.slice(triggerPos + trigger.length);
-  if (/\s/.test(query)) {
-    return null;
-  }
-
-  return { type, query, triggerOffsetInText: triggerPos };
 }

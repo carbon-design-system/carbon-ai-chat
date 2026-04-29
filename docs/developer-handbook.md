@@ -117,7 +117,7 @@ webpack dev server. To develop against a live package build, run
 npm run aiChat:start
 
 # Terminal 2
-npm run start --workspace=@carbon/ai-chat-examples-react-custom-element
+npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
 When `aiChat:start` rebuilds a package, the example's webpack dev server will
@@ -127,7 +127,7 @@ All examples default to port 3000. If you need to run more than one example at
 the same time, override the port with the `PORT` environment variable:
 
 ```bash
-PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic
+PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 ```
 
 ## Directory Structure

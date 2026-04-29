@@ -111,16 +111,22 @@ describe("EditorViewManager", () => {
 });
 
 describe("applyEditorStyles", () => {
-  it("writes desktop-sized typography onto the element's style", () => {
+  it("tags the element with the desktop content class on non-phone viewports", () => {
     const el = document.createElement("div");
     applyEditorStyles(el, false);
-    expect(el.style.margin).to.equal("0px");
-    expect(el.style.fontSize).to.contain("0.875rem");
+    expect(el.classList.contains("cds-aichat--input-pm-content")).to.equal(
+      true,
+    );
+    expect(
+      el.classList.contains("cds-aichat--input-pm-content--phone"),
+    ).to.equal(false);
   });
 
-  it("overrides typography for phone viewports", () => {
+  it("adds the phone modifier class on phone viewports", () => {
     const el = document.createElement("div");
     applyEditorStyles(el, true);
-    expect(el.style.fontSize).to.contain("1rem");
+    expect(
+      el.classList.contains("cds-aichat--input-pm-content--phone"),
+    ).to.equal(true);
   });
 });

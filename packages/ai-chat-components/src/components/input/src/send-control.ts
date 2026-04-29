@@ -9,6 +9,7 @@
 
 import { css, html, LitElement, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
@@ -179,7 +180,7 @@ class InputSendControlElement extends LitElement {
         tooltip-position="${BUTTON_TOOLTIP_POSITION.TOP}"
         @click="${this._handleSendClick}"
         aria-label="${this.buttonLabel}"
-        data-testid="${this.testId ? this.testId : ""}"
+        data-testid="${ifDefined(this.testId)}"
       >
         ${this.hasValidInput
           ? iconLoader(SendFilled16, { slot: "icon" })

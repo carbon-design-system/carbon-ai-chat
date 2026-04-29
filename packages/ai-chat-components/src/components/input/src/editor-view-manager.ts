@@ -13,6 +13,48 @@ import { EditorView } from "prosemirror-view";
 import prefix from "../../../globals/settings.js";
 import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
 import { inputSchema } from "./prosemirror/schema.js";
+import { setVarsForSelector } from "../../shared/dynamic-css-var-sheet.js";
+
+const PM_CONTENT_CLASS = "cds-aichat--input-pm-content";
+const PM_PHONE_CLASS = "cds-aichat--input-pm-content--phone";
+const PM_KEYBOARD_FOCUS_CLASS = "cds-aichat--input-pm-content--keyboard-focus";
+let pmStyleRulesInstalled = false;
+
+/**
+ * Install the editor's typography and reset rules on the shared dynamic
+ * stylesheet. The PM contenteditable lives in light DOM (so `::slotted()`
+ * can't reach it), and we want a CSP-compliant alternative to inline-style
+ * writes — constructable stylesheet mutations are governed by `style-src`
+ * (not `style-src-attr`) and pass without `'unsafe-inline'`.
+ */
+function ensurePmContentStyleRules(): void {
+  if (pmStyleRulesInstalled) {
+    return;
+  }
+  setVarsForSelector(`.${PM_CONTENT_CLASS}`, {
+    border: "none",
+    margin: "0",
+    background: "transparent",
+    color: "var(--cds-text-primary, #161616)",
+    outline: "none",
+    "white-space": "pre-wrap",
+    "word-wrap": "break-word",
+    "font-size": "var(--cds-body-01-font-size, 0.875rem)",
+    "font-weight": "var(--cds-body-01-font-weight, 400)",
+    "letter-spacing": "var(--cds-body-01-letter-spacing, 0.16px)",
+    "line-height": "var(--cds-body-01-line-height, 1.42857)",
+  });
+  setVarsForSelector(`.${PM_PHONE_CLASS}`, {
+    "font-size": "var(--cds-body-02-font-size, 1rem)",
+    "font-weight": "var(--cds-body-02-font-weight, 400)",
+    "letter-spacing": "var(--cds-body-02-letter-spacing, 0)",
+    "line-height": "var(--cds-body-02-line-height, 1.5)",
+  });
+  setVarsForSelector(`.${PM_KEYBOARD_FOCUS_CLASS}`, {
+    outline: "revert",
+  });
+  pmStyleRulesInstalled = true;
+}
 
 /**
  * Callbacks invoked by the manager in response to editor DOM events. Kept as
@@ -97,7 +139,7 @@ export class EditorViewManager {
           // flipped on by either a preceding pointer interaction or our own
           // programmatic focus() call.
           if (!this._focusFromMouse) {
-            view.dom.style.outline = "";
+            view.dom.classList.add(PM_KEYBOARD_FOCUS_CLASS);
           }
           const wasMouseFocus = this._focusFromMouse;
           this._focusFromMouse = false;
@@ -105,7 +147,7 @@ export class EditorViewManager {
           return false;
         },
         blur: (view) => {
-          view.dom.style.outline = "none";
+          view.dom.classList.remove(PM_KEYBOARD_FOCUS_CLASS);
           callbacks.onBlur();
           return false;
         },
@@ -215,37 +257,18 @@ export class EditorViewManager {
 }
 
 /**
- * Apply the editor's intrinsic typography and reset styles directly to the PM
- * content node via CSSOM.
- *
- * These can't live in the shell's shadow DOM because `::slotted()` only
- * reaches the top-level slotted node, not PM's inner contenteditable div. We
- * could inject a `<style>` element next to the container, but that interacts
- * poorly with strict CSP policies consumers may have in place. CSSOM writes
- * are equivalent to inline styles and don't need a style-src allowance.
+ * Apply the editor's intrinsic typography and reset styles to the PM content
+ * node. The PM contenteditable lives in light DOM (so `::slotted()` can't
+ * reach it from the shell's shadow DOM), so we install a class-based rule
+ * on the shared dynamic stylesheet (constructable, document-scoped) and add
+ * the corresponding classes to the element. This is CSP-safe: stylesheet
+ * mutations are governed by `style-src` (not `style-src-attr`) and don't
+ * require `'unsafe-inline'`.
  *
  * Exported for unit testing.
  */
 export function applyEditorStyles(pmDom: HTMLElement, isPhone: boolean): void {
-  Object.assign(pmDom.style, {
-    border: "none",
-    margin: "0",
-    background: "transparent",
-    color: "var(--cds-text-primary, #161616)",
-    outline: "none",
-    whiteSpace: "pre-wrap",
-    wordWrap: "break-word",
-    fontSize: "var(--cds-body-01-font-size, 0.875rem)",
-    fontWeight: "var(--cds-body-01-font-weight, 400)",
-    letterSpacing: "var(--cds-body-01-letter-spacing, 0.16px)",
-    lineHeight: "var(--cds-body-01-line-height, 1.42857)",
-  });
-  if (isPhone) {
-    Object.assign(pmDom.style, {
-      fontSize: "var(--cds-body-02-font-size, 1rem)",
-      fontWeight: "var(--cds-body-02-font-weight, 400)",
-      letterSpacing: "var(--cds-body-02-letter-spacing, 0)",
-      lineHeight: "var(--cds-body-02-line-height, 1.5)",
-    });
-  }
+  ensurePmContentStyleRules();
+  pmDom.classList.add(PM_CONTENT_CLASS);
+  pmDom.classList.toggle(PM_PHONE_CLASS, isPhone);
 }

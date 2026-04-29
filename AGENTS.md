@@ -52,8 +52,8 @@ Run from repo root unless noted. **Ask first** if the user has `npm run aiChat:s
 Build the packages first, then from the root:
 
 ```bash
-npm run start --workspace=@carbon/ai-chat-examples-react-basic
-PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-custom-element
+npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
+PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
 When `aiChat:start` is running in another terminal, example webpack servers hot-reload on package rebuilds.
