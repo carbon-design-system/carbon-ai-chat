@@ -126,7 +126,7 @@ export async function sendUserMessage(
     () => {
       const field = shadowRoot.querySelector(
         `[data-testid="${PageObjectId.INPUT}"]`,
-      ) as HTMLInputElement | null;
+      ) as HTMLElement | null;
       if (!field) {
         throw new Error("Input not ready");
       }
@@ -135,23 +135,32 @@ export async function sendUserMessage(
     { timeout: WAIT_FOR_TIMEOUT },
   );
 
+  // The input lives inside a ProseMirror-backed web component
+  // (cds-aichat-input-shell). We can't drive it via `.value =` like a native
+  // <input>; instead we simulate the change event the editor emits, which
+  // updates React's input state and enables the send button.
+  await act(async () => {
+    input.dispatchEvent(
+      new CustomEvent("cds-aichat-input-change", {
+        detail: { rawValue: text },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  });
+
   const sendButton = await waitFor(
     () => {
       const button = shadowRoot.querySelector(
         `[data-testid="${PageObjectId.INPUT_SEND}"]`,
       ) as HTMLElement | null;
-      if (!button) {
+      if (!button || (button as HTMLButtonElement).disabled) {
         throw new Error("Send button not ready");
       }
       return button;
     },
     { timeout: WAIT_FOR_TIMEOUT },
   );
-
-  await act(async () => {
-    input.value = text;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  });
 
   await act(async () => {
     sendButton.click();

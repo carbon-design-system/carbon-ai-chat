@@ -179,7 +179,7 @@ class InputSendControlElement extends LitElement {
         tooltip-position="${BUTTON_TOOLTIP_POSITION.TOP}"
         @click="${this._handleSendClick}"
         aria-label="${this.buttonLabel}"
-        data-testid="${this.testId ? `${this.testId}-send` : ""}"
+        data-testid="${this.testId ? this.testId : ""}"
       >
         ${this.hasValidInput
           ? iconLoader(SendFilled16, { slot: "icon" })

@@ -627,7 +627,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         suggestionConfigs={suggestionConfigs}
         autocompleteItems={autocompleteItems}
         renderCustomList={activeSuggestionConfig?.renderCustomList}
-        data-testid={PageObjectId.INPUT}
+        testId={PageObjectId.INPUT}
         rounded={rounded}
         onChange={handleInputChange}
         onSend={handleSend}
@@ -687,7 +687,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
           buttonLabel={languagePack.input_buttonLabel}
           stopResponseLabel={languagePack.input_stopResponse}
-          testId={PageObjectId.INPUT}
+          testId={PageObjectId.INPUT_SEND}
           onStopStreaming={handleStopStreaming}
         />
       </InputShell>

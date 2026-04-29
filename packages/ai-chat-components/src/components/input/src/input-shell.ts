@@ -129,6 +129,15 @@ class InputShellElement extends LitElement {
   @property({ type: String, attribute: "aria-label" })
   ariaLabel = "Message";
 
+  /**
+   * Test id forwarded onto the inner ProseMirror contenteditable element.
+   * Set this instead of `data-testid` on the host so that
+   * `page.getByTestId(...)` resolves to the actual editable surface — the
+   * host element is a custom element and isn't fillable by Playwright.
+   */
+  @property({ type: String, attribute: "test-id" })
+  testId = "";
+
   // -----------------------------------------------------------------------
   // Internal state
   // -----------------------------------------------------------------------
@@ -267,6 +276,10 @@ class InputShellElement extends LitElement {
         view,
         this.rawValue,
       );
+    }
+
+    if (changedProperties.has("testId") && view) {
+      this._applyTestIdToEditor();
     }
 
     // Recompute over-max on any length-relevant input change and notify
@@ -427,6 +440,20 @@ class InputShellElement extends LitElement {
     // If the consumer set `rawValue` before the editor mounted, push it in.
     if (this.rawValue && manager.view) {
       controllers.valueSync.setExternalRawValue(manager.view, this.rawValue);
+    }
+
+    this._applyTestIdToEditor();
+  }
+
+  private _applyTestIdToEditor() {
+    const editorDom = this._editorViewManager?.view?.dom;
+    if (!editorDom) {
+      return;
+    }
+    if (this.testId) {
+      editorDom.setAttribute("data-testid", this.testId);
+    } else {
+      editorDom.removeAttribute("data-testid");
     }
   }
 
