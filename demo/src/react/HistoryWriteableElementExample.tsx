@@ -142,12 +142,12 @@ function HistoryWriteableElementExample({
 
         loadChat(event, instance);
 
-        if (instance?.customPanels) {
+        if (isMobile && instance?.customPanels) {
           instance.customPanels.getPanel(PanelType.HISTORY)?.close();
         }
       }
     },
-    [selectedId, pinnedItems, regularItems, instance],
+    [selectedId, pinnedItems, regularItems, instance, isMobile],
   );
 
   // Handle pin chat
