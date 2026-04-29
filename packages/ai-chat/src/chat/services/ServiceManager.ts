@@ -28,7 +28,7 @@ import { BusEvent } from "../../types/events/eventBusTypes";
 import { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import type { InputFunctions } from "../components-legacy/input/Input";
+import type { InputFunctions } from "../components/input/Input";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;

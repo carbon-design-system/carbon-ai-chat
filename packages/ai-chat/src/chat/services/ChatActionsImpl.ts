@@ -32,7 +32,6 @@ import {
 import {
   AppState,
   AppStateMessages,
-  InputState,
   PendingUploadStatus,
   ViewState,
   ViewType,
@@ -45,7 +44,7 @@ import { HistoryItem, HistoryNote } from "../../types/messaging/History";
 import { asyncForEach } from "../utils/lang/arrayUtils";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { sleep } from "../utils/lang/promiseUtils";
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import {
   addDefaultsToMessage,
   createMessageRequestForText,
@@ -410,7 +409,44 @@ class ChatActionsImpl {
   }
 
   updateRawInputValue(updater: (previous: string) => string) {
-    this.updateInputValue("rawValue", updater);
+    if (typeof updater !== "function") {
+      consoleError("Input updater must be a function");
+      return;
+    }
+
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const inputState = selectInputState(state);
+    let previousValue = (inputState.rawValue ?? "") as string;
+
+    // Normalize: treat "\n" as empty string
+    if (previousValue === "\n") {
+      previousValue = "";
+    }
+
+    let nextValue: string;
+    try {
+      nextValue = updater(previousValue);
+    } catch (error) {
+      consoleError("An error occurred while updating the input value", error);
+      return;
+    }
+
+    if (typeof nextValue !== "string") {
+      nextValue =
+        nextValue === undefined || nextValue === null ? "" : String(nextValue);
+    }
+
+    if (nextValue === previousValue) {
+      return;
+    }
+
+    store.dispatch(
+      actions.updateInputState(
+        { rawValue: nextValue },
+        selectIsInputToHumanAgent(state),
+      ),
+    );
   }
 
   /**
@@ -498,7 +534,7 @@ class ChatActionsImpl {
       return;
     }
 
-    const uploadId = uuid(UUIDType.FILE);
+    const uploadId = uuid();
     const controller = new AbortController();
     this.uploadAbortControllers.set(uploadId, controller);
 
@@ -541,57 +577,6 @@ class ChatActionsImpl {
     } finally {
       this.uploadAbortControllers.delete(uploadId);
     }
-  }
-
-  private updateInputValue(
-    field: "rawValue" | "displayValue",
-    updater: (previous: string) => string,
-  ) {
-    if (typeof updater !== "function") {
-      consoleError("Input updater must be a function");
-      return;
-    }
-
-    const { store } = this.serviceManager;
-    const state = store.getState();
-    const inputState = selectInputState(state);
-    let previousValue = (inputState[field] ?? "") as string;
-
-    // Normalize the previous value: treat "\n" as empty string
-    // This handles the case where the user manually deleted all input,
-    // leaving behind a newline character that should be treated as empty.
-    if (field === "rawValue" && previousValue === "\n") {
-      previousValue = "";
-    }
-
-    let nextValue: string;
-    try {
-      nextValue = updater(previousValue);
-    } catch (error) {
-      consoleError("An error occurred while updating the input value", error);
-      return;
-    }
-
-    if (typeof nextValue !== "string") {
-      nextValue =
-        nextValue === undefined || nextValue === null ? "" : String(nextValue);
-    }
-
-    if (nextValue === previousValue) {
-      return;
-    }
-
-    const payload: Partial<InputState> = { [field]: nextValue };
-
-    // When updating rawValue, always sync displayValue to keep them consistent.
-    // The component will re-render and apply any custom rendering (e.g., toDisplayHTML conversion).
-    if (field === "rawValue") {
-      payload.displayValue = nextValue;
-    }
-
-    store.dispatch(
-      actions.updateInputState(payload, selectIsInputToHumanAgent(state)),
-    );
   }
 
   /**
@@ -792,7 +777,7 @@ class ChatActionsImpl {
 
     // Received messages should be given an id if they don't have one.
     if (!message.id) {
-      message.id = uuid(UUIDType.MESSAGE);
+      message.id = uuid();
     }
 
     const preReceiveEvent: BusEventPreReceive = {
@@ -1739,7 +1724,7 @@ class ChatActionsImpl {
    * Inserts a locally created {@link MessageResponse} message into the message system.
    */
   public async insertLocalMessageResponse(message: MessageResponse) {
-    message.id = uuid(UUIDType.MESSAGE);
+    message.id = uuid();
     await this.processMessageResponse(message, false, null);
   }
 

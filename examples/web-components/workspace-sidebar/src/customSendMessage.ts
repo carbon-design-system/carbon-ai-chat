@@ -14,6 +14,7 @@ import {
   MessageResponseTypes,
   OptionItemPreference,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 /**
  * Sends the inventory type selection options to the user.
@@ -62,7 +63,7 @@ function sendExcessInventoryResponse(instance: ChatInstance) {
           title: "Optimizing excess inventory",
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
-          workspace_id: crypto.randomUUID(),
+          workspace_id: uuid(),
           additional_data: {
             type: "inventory_report",
             data: "some additional data for the workspace",
@@ -88,7 +89,7 @@ function sendCurrentInventoryResponse(instance: ChatInstance) {
           title: "Current inventory status",
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
-          workspace_id: crypto.randomUUID(),
+          workspace_id: uuid(),
           additional_data: {
             type: "inventory_status",
             data: "some additional data for the workspace",
@@ -114,7 +115,7 @@ function sendOutstandingOrdersResponse(instance: ChatInstance) {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
             user_defined_type: "outstanding_orders_card",
-            workspace_id: crypto.randomUUID(),
+            workspace_id: uuid(),
             additional_data: {
               type: "outstanding_orders",
               data: "Outstanding orders data",
