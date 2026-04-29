@@ -138,7 +138,7 @@ if (historyPanel?.isOpen) {
 
 See [`ChatHistoryExample.tsx`](../chat-history-fullscreen/src/ChatHistoryExample.tsx) for a full implementation. Key patterns:
 
-```typescript
+````typescript
 // 1. Configure history in PublicConfig
 const config: PublicConfig = {
   history: {
@@ -154,14 +154,6 @@ const handleHistoryClose = useCallback(() => {
     instance.customPanels.getPanel(PanelType.HISTORY)?.close();
   }
 }, [instance]);
-
-// 3. Use the handler in your history UI
-<HistoryHeader
-  headerTitle="Conversations"
-  onClose={handleHistoryClose}
-  showCloseAction={true}
-/>
-```
 
 ### When to use `startClosed: true`
 
@@ -189,6 +181,6 @@ npm run build --workspace=@carbon/ai-chat-components
 npm run build --workspace=@carbon/ai-chat
 
 npm run start --workspace=@carbon/ai-chat-examples-react-chat-history-fullscreen
-```
+````
 
 See [../README.md](../README.md) for the full setup walkthrough.
