@@ -156,7 +156,7 @@ export class HistoryWriteableElementExample extends LitElement {
 
       this._loadChat(event, this.instance);
 
-      if (this.instance?.customPanels) {
+      if (this.isMobile && this.instance?.customPanels) {
         this.instance.customPanels.getPanel(PanelType.HISTORY)?.close();
       }
     }
