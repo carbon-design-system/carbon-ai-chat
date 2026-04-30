@@ -13,7 +13,32 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat.js";
 import merge from "lodash-es/merge.js";
 import isEqual from "lodash-es/isEqual.js";
 
+import { setVarsForSelector } from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+
 import { createServiceManager } from "../services/loadServices";
+
+let bootContainerRulesInstalled = false;
+
+/**
+ * Install boot-container size rules on the shared dynamic stylesheet so a
+ * strict CSP can drop style-src-attr 'unsafe-inline'. The container fills
+ * the host element when one is provided and otherwise stays collapsed
+ * (0×0) until the chat floats out.
+ */
+function ensureBootContainerStyleRules(): void {
+  if (bootContainerRulesInstalled) {
+    return;
+  }
+  setVarsForSelector(".cds-aichat--boot-container--filled", {
+    width: "100% !important",
+    height: "100% !important",
+  });
+  setVarsForSelector(".cds-aichat--boot-container--collapsed", {
+    width: "0 !important",
+    height: "0 !important",
+  });
+  bootContainerRulesInstalled = true;
+}
 import { ServiceManager } from "../services/ServiceManager";
 import { createChatInstance } from "../instance/ChatInstanceImpl";
 import { createAppConfig } from "../store/doCreateStore";
@@ -83,13 +108,16 @@ export async function initServiceManagerAndInstance(options: {
   serviceManager.container = container;
   serviceManager.customHostElement = customHostElement;
 
-  if (serviceManager.customHostElement) {
-    container.style.setProperty("width", "100%", "important");
-    container.style.setProperty("height", "100%", "important");
-  } else {
-    container.style.setProperty("width", "0", "important");
-    container.style.setProperty("height", "0", "important");
-  }
+  ensureBootContainerStyleRules();
+  container.classList.add("cds-aichat--boot-container");
+  container.classList.toggle(
+    "cds-aichat--boot-container--filled",
+    !!serviceManager.customHostElement,
+  );
+  container.classList.toggle(
+    "cds-aichat--boot-container--collapsed",
+    !serviceManager.customHostElement,
+  );
 
   // Load language and locale
   const languagePack =

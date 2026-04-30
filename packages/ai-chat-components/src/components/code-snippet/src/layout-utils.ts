@@ -18,7 +18,9 @@ interface ContainerStyleConfig {
 
 /**
  * Container style properties as CSS custom properties.
- * CSP-compliant: returns property names/values to be set via element.style.setProperty()
+ * Applied via the shared dynamic stylesheet (`setVarsForSelector`), not
+ * `element.style.setProperty`, so a strict CSP can drop
+ * `style-src-attr 'unsafe-inline'`.
  */
 export interface ContainerStyleProperties {
   "--cds-snippet-max-height"?: string;

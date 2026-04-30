@@ -47,17 +47,13 @@ export class NativeVideoProvider extends BaseProvider {
       throw new Error("Container element is required");
     }
 
-    // Create video element
+    // Create video element. Sizing/positioning is handled by the
+    // .cds-aichat--video-player__provider video SCSS rule.
     this.videoElement = document.createElement("video");
     this.videoElement.controls = true;
     this.videoElement.setAttribute("controlsList", "nodownload");
     this.videoElement.playsInline = true;
     this.videoElement.crossOrigin = "anonymous";
-    this.videoElement.style.width = "100%";
-    this.videoElement.style.height = "100%";
-    this.videoElement.style.position = "absolute";
-    this.videoElement.style.top = "0";
-    this.videoElement.style.left = "0";
 
     // Set initial ARIA attributes for loading state
     if (config.ariaLabel) {

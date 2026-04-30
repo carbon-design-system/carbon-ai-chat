@@ -16,6 +16,10 @@ import { AppState } from "../../../../types/state/AppState";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { THROW_ERROR } from "../../../utils/constants";
 import {
+  applyDynamicStyles,
+  clearDynamicStyles,
+} from "../../../utils/cspStyleUtils";
+import {
   GenericItem,
   GridItem,
   HorizontalCellAlignment,
@@ -62,25 +66,27 @@ function GridItemCell({
   const cellRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    if (cellRef) {
-      const width = isPixelValue ? columnWidthString : undefined;
-      const flex = isPixelValue ? undefined : Number(columnWidthString);
-      const alignItems = getFlexAlignment(
-        cellData?.horizontal_alignment || horizontal_alignment,
-      );
-      const justifyContent = getFlexAlignment(
-        cellData?.vertical_alignment || vertical_alignment,
-      );
-
-      cellRef.current.style.setProperty("inline-size", width);
-      cellRef.current.style.setProperty("flex", `${flex}`);
-      cellRef.current.style.setProperty("align-items", alignItems);
-      cellRef.current.style.setProperty(
-        "text-align",
-        cellData?.horizontal_alignment || horizontal_alignment,
-      );
-      cellRef.current.style.setProperty("justify-content", justifyContent);
+    const node = cellRef.current;
+    if (!node) {
+      return undefined;
     }
+    const horizontal = cellData?.horizontal_alignment || horizontal_alignment;
+    const declarations: Record<string, string> = {
+      "align-items": getFlexAlignment(horizontal),
+      "justify-content": getFlexAlignment(
+        cellData?.vertical_alignment || vertical_alignment,
+      ),
+    };
+    if (isPixelValue) {
+      declarations["inline-size"] = columnWidthString;
+    } else {
+      declarations.flex = `${Number(columnWidthString)}`;
+    }
+    if (horizontal) {
+      declarations["text-align"] = horizontal;
+    }
+    applyDynamicStyles(node, "grid-cell", declarations);
+    return () => clearDynamicStyles(node, "grid-cell");
   }, [
     isPixelValue,
     columnWidthString,

@@ -111,15 +111,15 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     const containerRect = parentContainer.getBoundingClientRect();
     const spaceBelow = containerRect.bottom - menuRect.bottom;
     const spaceAbove = menuRect.top - containerRect.top;
-    const menuTriggerHeight = 32; // height of the menu trigger
 
-    // Use actual height for comparison
-    if (spaceBelow < actualMenuHeight && spaceAbove > spaceBelow) {
-      this.overflowMenuBody.style.transform = `translateY(calc(-100% - ${menuTriggerHeight}px))`;
-    } else {
-      // Default: open downward
-      this.overflowMenuBody.style.transform = " ";
-    }
+    // Class-based flip (paired with a rule in chat-history.scss) so a strict
+    // CSP can drop style-src-attr 'unsafe-inline'. The trigger height is
+    // hardcoded in the rule to match this branch's geometry.
+    const flipUp = spaceBelow < actualMenuHeight && spaceAbove > spaceBelow;
+    this.overflowMenuBody.classList.toggle(
+      `${prefix}--history-overflow-menu-body--flipped`,
+      flipUp,
+    );
   }
 
   /**

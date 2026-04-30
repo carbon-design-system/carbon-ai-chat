@@ -7,6 +7,7 @@
  *  @license
  */
 
+import "./index.css";
 import "@carbon/web-components/es/components/ui-shell/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";

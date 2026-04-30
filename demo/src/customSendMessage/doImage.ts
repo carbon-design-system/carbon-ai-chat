@@ -86,11 +86,11 @@ function doImage(instance: ChatInstance) {
               },
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: '#### $59.99\n<span style="color:#fdcc0d;">&#9733;&#9733;&#9733;&#9733;&#9734;</span>&#160;&#160;<span style="color:gray;">3 review(s)</span>',
+                text: "#### $59.99\n&#9733;&#9733;&#9733;&#9733;&#9734;&#160;&#160;3 review(s)",
               },
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: '<span style="color: var(--cds-text-secondary)">I\'m baby listicle synth migas air plant DSA cardigan helvetica fanny pack fit chillwave forage. Umami tacos subway tile sriracha skateboard activated charcoal roof party pinterest adaptogen ennui brunch bitters. Helvetica dreamcatcher viral fashion axe, coloring book four dollar toast vexillologist bushwick stumptown mumblecore slow-carb. Tote bag vinyl.</span>',
+                text: "I'm baby listicle synth migas air plant DSA cardigan helvetica fanny pack fit chillwave forage. Umami tacos subway tile sriracha skateboard activated charcoal roof party pinterest adaptogen ennui brunch bitters. Helvetica dreamcatcher viral fashion axe, coloring book four dollar toast vexillologist bushwick stumptown mumblecore slow-carb. Tote bag vinyl.",
               },
             ],
             title: "Tanya panel",

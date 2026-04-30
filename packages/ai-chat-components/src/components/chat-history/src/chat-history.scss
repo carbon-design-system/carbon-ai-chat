@@ -342,3 +342,11 @@
     }
   }
 }
+
+// Flip the overflow menu upward when there isn't enough room below the
+// trigger. -100% rotates around the trigger; the additional 32px is the
+// trigger's own block-size (kept in sync with `actualMenuHeight` math in
+// history-panel-item.ts::_adjustMenuPosition).
+cds-overflow-menu-body.#{$prefix}--history-overflow-menu-body--flipped {
+  transform: translateY(calc(-100% - 32px));
+}

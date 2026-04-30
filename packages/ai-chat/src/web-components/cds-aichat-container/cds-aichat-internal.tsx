@@ -12,7 +12,7 @@
  * custom element and then renders the React Carbon AI Chat application while passing in properties.
  */
 
-import { LitElement, PropertyValues } from "lit";
+import { css, LitElement, PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
@@ -31,6 +31,16 @@ import type {
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      z-index: var(--cds-aichat-z-index, auto);
+    }
+  `;
+
   /**
    * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
    * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
@@ -73,18 +83,6 @@ class ChatContainerInternal extends LitElement {
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
 
   firstUpdated() {
-    // Render the React component with any updated properties if necessary
-    const style = document.createElement("style");
-    style.textContent = `
-      :host {
-        display: block;
-        width: 100%;
-        height: 100%;
-        box-sizing: border-box;
-        ${this.element ? "" : "z-index: var(--cds-aichat-z-index);"}
-      }
-    `;
-    this.appendChild(style);
     if (this.config) {
       this.renderReactApp();
     }

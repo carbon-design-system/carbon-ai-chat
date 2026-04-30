@@ -71,6 +71,13 @@ import {
   isBrowser,
 } from "./utils/browserUtils";
 import { SCROLLBAR_WIDTH } from "./utils/domUtils";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+} from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+
+const SCROLLBAR_WIDTH_ATTR = "data-cds-aichat-widget-id";
+let scrollbarWidthCounter = 0;
 import { calculateChatWidthBreakpoint } from "./utils/breakpointUtils";
 import {
   convertCSSVariablesToString,
@@ -98,8 +105,6 @@ import { PageObjectId } from "../testing/PageObjectId";
 const applicationStylesheet =
   typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
 const cssVariableOverrideStylesheet =
-  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
-const visualViewportStylesheet =
   typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
 
 const WIDTH_BREAKPOINT_STANDARD = "cds-aichat--standard-width";
@@ -219,11 +224,6 @@ function AppShell({
   );
   const useMobileEnhancements =
     IS_PHONE && !publicConfig.disableCustomElementMobileEnhancements;
-  const { style: visualViewportStyles } = useMobileViewportLayout({
-    enabled: useMobileEnhancements,
-    isOpen: viewState.mainWindow,
-    margin: 4,
-  });
   const dir = isBrowser() ? document.dir || "auto" : "auto";
   const mainWindowRef = useRef<MainWindowFunctions | null>(null);
   const [modalPortalHostElement, setModalPortalHostElement] =
@@ -237,6 +237,12 @@ function AppShell({
   const responsePanelRef = useRef<HasRequestFocus | null>(null);
   const messagesRef = useRef<MessagesComponentClass | null>(null);
   const inputRef = useRef<InputFunctions | null>(null);
+
+  useMobileViewportLayout({
+    enabled: useMobileEnhancements,
+    containerRef,
+    margin: 4,
+  });
 
   // Memoizer for messages array
   const messagesToArray = useMemo(
@@ -331,11 +337,9 @@ function AppShell({
     containerRef,
     hostElement,
     cssVariableOverrideString,
-    visualViewportStyles,
     appStyles: styles,
     applicationStylesheet,
     cssVariableOverrideStylesheet,
-    visualViewportStylesheet,
   });
 
   // Input callbacks
@@ -640,15 +644,25 @@ function AppShell({
       serviceManager.inputComponent = inputRef.current;
     }
   }, [inputRef, serviceManager]);
-  // Set scrollbar width CSS variable
+  // Set scrollbar width CSS variable. Written via the shared dynamic
+  // stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
   useEffect(() => {
     const container = widgetContainerRef.current;
-    if (container) {
-      container.style.setProperty(
-        "--cds-aichat-scrollbar-width",
-        `${SCROLLBAR_WIDTH()}px`,
-      );
+    if (!container) {
+      return;
     }
+    let id = container.getAttribute(SCROLLBAR_WIDTH_ATTR);
+    if (!id) {
+      id = `widget-${++scrollbarWidthCounter}`;
+      container.setAttribute(SCROLLBAR_WIDTH_ATTR, id);
+    }
+    const root = container.getRootNode();
+    if (root instanceof Document || root instanceof ShadowRoot) {
+      adoptOnRoot(root);
+    }
+    setVarsForSelector(`[${SCROLLBAR_WIDTH_ATTR}="${id}"]`, {
+      "--cds-aichat-scrollbar-width": `${SCROLLBAR_WIDTH()}px`,
+    });
   }, [widgetContainerRef]);
 
   return (

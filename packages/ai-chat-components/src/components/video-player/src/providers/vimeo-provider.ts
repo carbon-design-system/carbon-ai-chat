@@ -66,13 +66,10 @@ export class VimeoProvider extends BaseProvider {
       throw new Error("Container element is required");
     }
 
-    // Create container for Vimeo player
+    // Create container for Vimeo player. Sizing/positioning of the wrapper
+    // and the iframe Vimeo inserts inside it are handled by the
+    // .cds-aichat--video-player__provider SCSS rules in video-player.scss.
     this.playerContainer = document.createElement("div");
-    this.playerContainer.style.width = "100%";
-    this.playerContainer.style.height = "100%";
-    this.playerContainer.style.position = "absolute";
-    this.playerContainer.style.top = "0";
-    this.playerContainer.style.left = "0";
     this.container.appendChild(this.playerContainer);
 
     // Load Vimeo Player API
@@ -136,18 +133,12 @@ export class VimeoProvider extends BaseProvider {
       // Wait for player to be ready
       await this.player.ready();
 
-      // Style the iframe and set initial loading state
+      // Track the SDK-created iframe for ARIA updates. Its sizing is handled
+      // by the .cds-aichat--video-player__provider iframe SCSS rule.
       this.iframe = this.playerContainer.querySelector(
         "iframe",
       ) as HTMLIFrameElement;
       if (this.iframe) {
-        this.iframe.style.width = "100%";
-        this.iframe.style.height = "100%";
-        this.iframe.style.position = "absolute";
-        this.iframe.style.top = "0";
-        this.iframe.style.left = "0";
-
-        // Set initial loading aria attributes
         this.updateAriaAttributes(this.iframe, "loading");
       }
 

@@ -42,6 +42,7 @@ import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
 import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../types/config/ShortcutConfig";
 import {
   applySafariScrollAnchoringRestore,
+  applySpacerDeficit,
   cleanupMessageResizeObserver,
   createMessageResizeObserver,
   getMessageArrayChangeFlags,
@@ -302,7 +303,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Inverse delta: content grows (+delta) → spacer shrinks (-delta)
           //                content shrinks (-delta) → spacer grows (+delta)
           this.domSpacerHeight = Math.max(0, this.domSpacerHeight - delta);
-          spacerElem.style.minBlockSize = `${this.domSpacerHeight}px`;
+          applySpacerDeficit(spacerElem, this.domSpacerHeight);
 
           // Restore scrollTop if user is near the pin, or if browser capped scrollTop.
           const scrollDelta = Math.abs(
@@ -698,7 +699,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const savedScrollTop = scrollTopForDecision;
         const spacerElem = this.bottomSpacerRef.current;
         if (spacerElem) {
-          spacerElem.style.minBlockSize = "0px";
+          applySpacerDeficit(spacerElem, 0);
         }
         this.domSpacerHeight = 0;
         if (scrollElement.scrollTop < savedScrollTop) {

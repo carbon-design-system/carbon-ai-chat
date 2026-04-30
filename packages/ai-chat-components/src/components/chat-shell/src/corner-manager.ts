@@ -8,17 +8,32 @@
  */
 
 import { CornerConfig, CornerStyle, CornerPosition } from "./types.js";
+import {
+  setVarsForSelector,
+  clearVarsForSelector,
+} from "../../shared/dynamic-css-var-sheet.js";
+
+const CORNER_PROPS = [
+  "--cds-aichat-border-radius-start-start-base",
+  "--cds-aichat-border-radius-start-end-base",
+  "--cds-aichat-border-radius-end-start-base",
+  "--cds-aichat-border-radius-end-end-base",
+  "--cds-aichat-border-radius-start-start",
+  "--cds-aichat-border-radius-start-end",
+  "--cds-aichat-border-radius-end-start",
+  "--cds-aichat-border-radius-end-end",
+];
 
 /**
  * Manages rounded corner calculations and CSS variable updates for the chat shell.
  * Handles the logic for determining effective corner styles and applying them
- * to CSS custom properties.
+ * to CSS custom properties via the shared dynamic stylesheet (CSP-safe).
  */
 export class CornerManager {
   private config: CornerConfig;
 
   constructor(
-    private readonly shellRoot: HTMLElement,
+    private readonly shellSelector: string,
     config: CornerConfig,
   ) {
     this.config = config;
@@ -31,6 +46,13 @@ export class CornerManager {
   updateCorners(config: CornerConfig): void {
     this.config = config;
     this.updateCornerCSSVariables();
+  }
+
+  /**
+   * Drop the shell's corner-radius rules from the dynamic stylesheet.
+   */
+  destroy(): void {
+    clearVarsForSelector(this.shellSelector, CORNER_PROPS);
   }
 
   /**
@@ -66,54 +88,25 @@ export class CornerManager {
    * Updates CSS custom properties for corner radii based on corner configuration
    */
   private updateCornerCSSVariables(): void {
-    if (!this.shellRoot) {
-      return;
-    }
-
     const radiusValue = (corner: CornerStyle) =>
       corner === "round" ? "0.5rem" : "0";
 
-    // Calculate effective values for each corner
     const startStartValue = radiusValue(this.getEffectiveCorner("start-start"));
     const startEndValue = radiusValue(this.getEffectiveCorner("start-end"));
     const endStartValue = radiusValue(this.getEffectiveCorner("end-start"));
     const endEndValue = radiusValue(this.getEffectiveCorner("end-end"));
 
-    // Set -base variables (source of truth for per-corner control)
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-start-start-base",
-      startStartValue,
-    );
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-start-end-base",
-      startEndValue,
-    );
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-end-start-base",
-      endStartValue,
-    );
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-end-end-base",
-      endEndValue,
-    );
-
-    // Also set regular variables for direct usage (backward compatibility)
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-start-start",
-      startStartValue,
-    );
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-start-end",
-      startEndValue,
-    );
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-end-start",
-      endStartValue,
-    );
-    this.shellRoot.style.setProperty(
-      "--cds-aichat-border-radius-end-end",
-      endEndValue,
-    );
+    setVarsForSelector(this.shellSelector, {
+      "--cds-aichat-border-radius-start-start-base": startStartValue,
+      "--cds-aichat-border-radius-start-end-base": startEndValue,
+      "--cds-aichat-border-radius-end-start-base": endStartValue,
+      "--cds-aichat-border-radius-end-end-base": endEndValue,
+      // Also set regular variables for direct usage (backward compatibility)
+      "--cds-aichat-border-radius-start-start": startStartValue,
+      "--cds-aichat-border-radius-start-end": startEndValue,
+      "--cds-aichat-border-radius-end-start": endStartValue,
+      "--cds-aichat-border-radius-end-end": endEndValue,
+    });
   }
 }
 

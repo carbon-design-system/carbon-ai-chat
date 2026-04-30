@@ -13,10 +13,11 @@
 
 import UserAvatar32 from "@carbon/icons/es/user--avatar/32.js";
 import { carbonIconToReact } from "../utils/carbonIcon";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import { ResponseUserProfile } from "../../types/messaging/Messages";
+import { applyDynamicStyles, clearDynamicStyles } from "../utils/cspStyleUtils";
 
 interface ResponseUserAvatarProps extends HasLanguagePack {
   /**
@@ -45,15 +46,19 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
   const [hasError, setHasError] = useState(false);
   let component;
 
-  const setAvatarRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (node && width && height) {
-        node.style.inlineSize = width;
-        node.style.blockSize = height;
-      }
-    },
-    [width, height],
-  );
+  const avatarRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    const node = avatarRef.current;
+    if (!node || !width || !height) {
+      return undefined;
+    }
+    applyDynamicStyles(node, "avatar", {
+      "inline-size": width,
+      "block-size": height,
+    });
+    return () => clearDynamicStyles(node, "avatar");
+  }, [width, height]);
 
   // If the avatar Url changes, then hasError should reset to allow an attempt at loading the new avatar url.
   useEffect(() => {
@@ -78,7 +83,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
       <div
         aria-label={languagePack.agent_ariaResponseUserAvatar}
         className="cds-aichat--response-user-avatar__circle"
-        ref={setAvatarRef}
+        ref={avatarRef}
       >
         <div className="cds-aichat--response-user-avatar__letter">
           {agentName.charAt(0)}

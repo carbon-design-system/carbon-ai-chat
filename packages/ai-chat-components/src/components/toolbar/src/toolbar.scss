@@ -15,6 +15,10 @@
 $block-class: #{$prefix}-toolbar;
 
 /* Toolbar styles */
+:host([data-measuring]) {
+  visibility: hidden;
+}
+
 :host {
   @include rounded-modifiers;
 
