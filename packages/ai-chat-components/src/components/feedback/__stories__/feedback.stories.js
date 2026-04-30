@@ -51,6 +51,14 @@ export default {
       control: "text",
       description: "Placeholder for the text area",
     },
+    disclaimer: {
+      control: "text",
+      description: "Legal disclaimer text",
+    },
+    disclaimerCheckbox: {
+      control: "text",
+      description: "Label text to display with disclaimer checkbox",
+    },
     categoriesLabel: {
       control: "text",
       description: "Accessible label for the categories listbox",
@@ -163,6 +171,10 @@ export const WithDisclaimer = {
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
+    disclaimer:
+      "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
+    disclaimerCheckbox:
+      "I agree to IBM collecting information related to my feedback.",
   },
   render: (args) => html`
     <div style="padding: 1rem; max-width: 24rem;">
@@ -176,8 +188,8 @@ export const WithDisclaimer = {
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
         .categories=${positiveCategories}
-        disclaimer="To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model."
-        disclaimer-checkbox="I agree to IBM collecting information related to my feedback."
+        disclaimer=${args.disclaimer}
+        disclaimer-checkbox=${args.disclaimerCheckbox}
         @feedback-submit=${(event) => {
           const details = event.detail;
           console.log("Feedback submitted:", details);

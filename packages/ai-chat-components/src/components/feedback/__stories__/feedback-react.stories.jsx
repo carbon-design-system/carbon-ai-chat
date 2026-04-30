@@ -39,6 +39,16 @@ export default {
       control: "text",
       description: "Body text for the user",
     },
+    disclaimer: {
+      control: "text",
+      description: "Legal disclaimer text",
+      table: { type: { summary: "string" } },
+    },
+    disclaimerCheckbox: {
+      control: "text",
+      description: "Label text to display with disclaimer checkbox",
+      table: { type: { summary: "string" } },
+    },
     placeholder: {
       control: "text",
       description: "Placeholder for the text area",
@@ -89,8 +99,8 @@ const renderFeedback = (args, options) => {
         showTextArea={args.showTextArea}
         showBody={args.showBody}
         categories={options?.categories}
-        disclaimer={options?.disclaimer}
-        disclaimerCheckbox={options?.disclaimerCheckbox}
+        disclaimer={args.disclaimer}
+        disclaimerCheckbox={args.disclaimerCheckbox}
         initialValues={options?.initialValues}
         onSubmit={(event) => {
           const details = event.detail;
@@ -170,6 +180,10 @@ export const WithDisclaimer = {
     title: "Additional feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Your feedback...",
+    disclaimer:
+      "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
+    disclaimerCheckbox:
+      "I agree to IBM collecting information related to my feedback.",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -177,10 +191,6 @@ export const WithDisclaimer = {
   render: (args) =>
     renderFeedback(args, {
       categories: positiveCategories,
-      disclaimer:
-        "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
-      disclaimerCheckbox:
-        "I agree to IBM collecting information related to my feedback.",
       onSubmit: (details) => {
         console.log("Feedback submitted:", details);
         if (typeof window !== "undefined") {
