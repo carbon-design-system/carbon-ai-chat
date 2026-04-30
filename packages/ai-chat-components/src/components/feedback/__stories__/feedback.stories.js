@@ -55,10 +55,6 @@ export default {
       control: "text",
       description: "Accessible label for the categories listbox",
     },
-    secondaryLabel: {
-      control: "text",
-      description: "Label for the secondary button",
-    },
     primaryLabel: {
       control: "text",
       description: "Label for the primary button",
@@ -85,7 +81,6 @@ export const Default = {
     title: "Provide feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Tell us more...",
-    secondaryLabel: "Cancel",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -98,7 +93,6 @@ export const Default = {
         title=${args.title}
         body=${args.body}
         text-area-placeholder=${args.placeholder}
-        secondary-label=${args.secondaryLabel}
         primary-label=${args.primaryLabel}
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
@@ -126,8 +120,7 @@ export const WithCategories = {
     body: "Select all that apply and provide details",
     placeholder: "Please describe the issue...",
     categoriesLabel: "Feedback categories",
-    secondaryLabel: "Cancel",
-    primaryLabel: "Submit feedback",
+    primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
   },
@@ -140,7 +133,6 @@ export const WithCategories = {
         body=${args.body}
         text-area-placeholder=${args.placeholder}
         categories-label=${args.categoriesLabel}
-        secondary-label=${args.secondaryLabel}
         primary-label=${args.primaryLabel}
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
@@ -165,10 +157,9 @@ export const WithDisclaimer = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Share your feedback",
+    title: "Additional feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Your feedback...",
-    secondaryLabel: "Cancel",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -181,12 +172,12 @@ export const WithDisclaimer = {
         title=${args.title}
         body=${args.body}
         text-area-placeholder=${args.placeholder}
-        secondary-label=${args.secondaryLabel}
         primary-label=${args.primaryLabel}
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
         .categories=${positiveCategories}
-        disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy). Your feedback may be used to improve our services."
+        disclaimer="To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model."
+        disclaimer-checkbox="I agree to IBM collecting information related to my feedback."
         @feedback-submit=${(event) => {
           const details = event.detail;
           console.log("Feedback submitted:", details);

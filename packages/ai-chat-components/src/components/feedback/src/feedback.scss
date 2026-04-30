@@ -23,6 +23,7 @@
 }
 
 .#{$prefix}--container {
+  position: relative;
   box-sizing: border-box;
   border: 1px solid theme.$chat-bubble-border;
   animation: cds-aichat-fade-in 600ms forwards;
@@ -33,41 +34,48 @@
   border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
   container-type: inline-size;
   inline-size: 100%;
-  margin-block-start: layout.$spacing-02;
 }
 
 .#{$prefix}--is-closed {
   display: none;
 }
 
+.#{$prefix}--close {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+
 .#{$prefix}--title-row {
   display: flex;
   margin-block-start: layout.$spacing-04;
-  margin-inline: layout.$spacing-05 layout.$spacing-03;
+  margin-inline: layout.$spacing-05;
 }
 
 .#{$prefix}--title {
-  @include type.type-style("heading-compact-01");
+  @include type.type-style("heading-03");
 
   flex: 1;
 }
 
-.#{$prefix}--close {
-  margin-inline-start: layout.$spacing-03;
+.#{$prefix}--body-content {
+  display: flex;
+  flex-direction: column;
+  gap: layout.$spacing-05;
+  margin-block-start: layout.$spacing-05;
+  margin-inline: layout.$spacing-05;
 }
 
-.#{$prefix}--disclaimer,
+.#{$prefix}--prompt-categories {
+  display: flex;
+  flex-direction: column;
+  gap: layout.$spacing-03;
+}
+
 .#{$prefix}--prompt {
-  @include type.type-style("body-compact-01");
+  @include type.type-style("label-01");
 
   color: theme.$text-secondary;
-  margin-block-start: layout.$spacing-03;
-  margin-inline: layout.$spacing-05;
-}
-
-.#{$prefix}--categories {
-  margin-block-start: layout.$spacing-03;
-  margin-inline: layout.$spacing-05;
 }
 
 .#{$prefix}--tag-list-container {
@@ -78,8 +86,15 @@
 }
 
 .#{$prefix}--feedback-text {
-  margin-block-start: layout.$spacing-03;
-  margin-inline: layout.$spacing-05;
+  display: flex;
+  flex-direction: column;
+  gap: layout.$spacing-02;
+}
+
+.#{$prefix}--disclaimer {
+  @include type.type-style("helper-text-01");
+
+  color: theme.$text-secondary;
 }
 
 .#{$prefix}--buttons {
@@ -88,25 +103,16 @@
   margin-block-start: layout.$spacing-05;
 }
 
-.#{$prefix}--submit,
-.#{$prefix}--cancel {
+.#{$prefix}--submit {
   display: flex;
   overflow: hidden;
   flex: 1;
   align-items: stretch;
+  margin-inline-start: 50%;
   min-inline-size: 0;
 }
 
-.#{$prefix}--submit {
-  border-end-end-radius: layout.$spacing-03;
-}
-
-.#{$prefix}--cancel {
-  border-end-start-radius: layout.$spacing-03;
-}
-
-.#{$prefix}--submit cds-button,
-.#{$prefix}--cancel cds-button {
+.#{$prefix}--submit cds-button {
   flex: 1;
   inline-size: 100%;
 }

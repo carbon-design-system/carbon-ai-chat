@@ -9,11 +9,14 @@
 
 import "../../markdown/index.js";
 import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/chat-button/index.js";
+import "@carbon/web-components/es/components/checkbox/index.js";
+import "@carbon/web-components/es/components/tag/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 import "@carbon/web-components/es/components/layer/index.js";
 import "@carbon/web-components/es/components/textarea/index.js";
 
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import Close16 from "@carbon/icons/es/close/16.js";
 import { html, LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
@@ -89,16 +92,16 @@ class CDSAIChatFeedback extends LitElement {
   disclaimer?: string;
 
   /**
+   * The label text to display with the disclaimer checkbox. If this value is not provided, no checkbox or label text will be displayed.
+   */
+  @property({ type: String, attribute: "disclaimer-checkbox", reflect: true })
+  disclaimerCheckbox?: string;
+
+  /**
    * The placeholder to show in the text area. A default value will be used if no value is provided here.
    */
   @property({ type: String, attribute: "text-area-placeholder", reflect: true })
   placeholder = "Provide additional feedback...";
-
-  /**
-   * The label for the secondary button. A default value will be used if no value is provided here.
-   */
-  @property({ type: String, attribute: "secondary-label", reflect: true })
-  secondaryLabel?: string;
 
   /**
    * The label for the primary button. A default value will be used if no value is provided here.
@@ -141,12 +144,30 @@ class CDSAIChatFeedback extends LitElement {
   _selectedCategories: Set<string> = new Set();
 
   /**
+   * Indicates if the submit feedback button is disabled.
+   */
+  @state()
+  _isSubmitDisabled = false;
+
+  /**
    * Called when the properties of the component have changed.
    */
   protected updated(changedProperties: PropertyValues<this>) {
     if (changedProperties.has("initialValues")) {
       this._setInitialValues(this.initialValues);
     }
+
+    if (changedProperties.has("disclaimerCheckbox")) {
+      this._isSubmitDisabled = Boolean(this.disclaimerCheckbox);
+    }
+  }
+
+  /**
+   * Called when the component is connected to the document.
+   */
+  connectedCallback() {
+    super.connectedCallback();
+    this._isSubmitDisabled = Boolean(this.disclaimerCheckbox);
   }
 
   /**
@@ -221,6 +242,13 @@ class CDSAIChatFeedback extends LitElement {
     this._selectedCategories = nextSelection;
   }
 
+  /**
+   * Called when the disclaimer checkbox state changes.
+   */
+  _handleDisclaimerCheckboxChange(event: Event) {
+    this._isSubmitDisabled = !(event.currentTarget as HTMLInputElement).checked;
+  }
+
   render() {
     const containerClasses = {
       [`${prefix}--container`]: true,
@@ -228,80 +256,94 @@ class CDSAIChatFeedback extends LitElement {
     };
 
     return html`<div class="${classMap(containerClasses)}">
+      <div class="${prefix}--close" data-rounded="top-right">
+        <cds-icon-button
+          size="lg"
+          align="top-right"
+          kind="ghost"
+          ?disabled=${this.isReadonly}
+          @click=${this._handleCancel}
+        >
+          <span slot="icon">${iconLoader(Close16)}</span>
+          <span slot="tooltip-content">Close</span>
+        </cds-icon-button>
+      </div>
       <div class="${prefix}--title-row">
         <div class="${prefix}--title">${this.title}</div>
       </div>
-      ${this.showBody
-        ? html`<div class="${prefix}--prompt">${this.body}</div>`
-        : ""}
-      ${this.categories?.length
-        ? html`<div class="${prefix}--categories">
-            <div
-              class="${prefix}--tag-list-container"
-              role="group"
-              aria-label="${this.categoriesLabel || "Feedback categories"}"
-            >
-              ${this.categories.map(
-                (value) =>
-                  html`<cds-chat-button
-                    class="${prefix}--tag-list-button"
-                    kind="primary"
-                    size="sm"
-                    type="button"
-                    is-quick-action
-                    aria-pressed="${this._selectedCategories.has(value)}"
-                    ?is-selected=${this._selectedCategories.has(value)}
-                    data-content="${value}"
-                    ?disabled=${this.isReadonly}
-                    @click=${this._handleCategoryClick}
+      <div class="${prefix}--body">
+        <div class="${prefix}--body-content">
+          <div class="${prefix}--prompt-categories">
+            ${this.showBody
+              ? html`<div class="${prefix}--prompt">${this.body}</div>`
+              : ""}
+            ${this.categories?.length
+              ? html`<div class="${prefix}--categories">
+                  <div
+                    class="${prefix}--tag-list-container"
+                    role="group"
+                    aria-label="${this.categoriesLabel ||
+                    "Feedback categories"}"
                   >
-                    ${value}
-                  </cds-chat-button>`,
-              )}
-            </div>
-          </div>`
-        : ""}
-      ${this.showTextArea
-        ? html`<div class="${prefix}--feedback-text">
-            <cds-textarea
-              id="${this.id}-text-area"
-              value="${this._textInput}"
-              class="${prefix}--feedback-text-area"
-              ?disabled=${this.isReadonly}
-              placeholder="${this.placeholder}"
-              rows="3"
-              max-count="${MAX_TEXT_COUNT}"
-              @input=${this._handleTextInput}
-            ></cds-textarea>
-          </div>`
-        : ""}
-      ${this.disclaimer
-        ? html`<div class="${prefix}--disclaimer">
-            <cds-aichat-markdown
-              .markdown=${this.disclaimer}
-            ></cds-aichat-markdown>
-          </div>`
-        : ""}
-      <div class="${prefix}--buttons">
-        <div class="${prefix}--cancel" data-rounded="bottom-left">
-          <cds-button
-            ?disabled=${this.isReadonly}
-            size="lg"
-            kind="secondary"
-            @click=${this._handleCancel}
-          >
-            ${this.secondaryLabel || "Cancel"}
-          </cds-button>
+                    ${this.categories.map(
+                      (value) =>
+                        html`<cds-selectable-tag
+                          class="${prefix}--tag-list-button"
+                          size="md"
+                          text="${value}"
+                          ?selected=${this._selectedCategories.has(value)}
+                          ?disabled=${this.isReadonly}
+                          @click=${this._handleCategoryClick}
+                        ></cds-selectable-tag>`,
+                    )}
+                  </div>
+                </div>`
+              : ""}
+          </div>
+          <div class="${prefix}--feedback-text">
+            ${this.showTextArea
+              ? html`<div class="${prefix}--feedback-input">
+                  <cds-textarea
+                    id="${this.id}-text-area"
+                    value="${this._textInput}"
+                    class="${prefix}--feedback-text-area"
+                    ?disabled=${this.isReadonly}
+                    placeholder="${this.placeholder}"
+                    rows="3"
+                    max-count="${MAX_TEXT_COUNT}"
+                    @input=${this._handleTextInput}
+                  ></cds-textarea>
+                </div>`
+              : ""}
+            ${this.disclaimer
+              ? html`<div class="${prefix}--disclaimer">
+                  <cds-aichat-markdown
+                    .markdown=${this.disclaimer}
+                  ></cds-aichat-markdown>
+                </div>`
+              : ""}
+          </div>
+          ${this.disclaimerCheckbox
+            ? html`<cds-checkbox
+                class="${prefix}--disclaimer-checkbox"
+                ?disabled=${this.isReadonly}
+                @cds-checkbox-changed=${this._handleDisclaimerCheckboxChange}
+              >
+                ${this.disclaimerCheckbox}
+              </cds-checkbox>`
+            : ""}
         </div>
-        <div class="${prefix}--submit" data-rounded="bottom-right">
-          <cds-button
-            ?disabled=${this.isReadonly}
-            size="lg"
-            kind="primary"
-            @click=${this._handleSubmit}
-          >
-            ${this.primaryLabel || "Submit"}
-          </cds-button>
+        <div class="${prefix}--buttons">
+          <div class="${prefix}--submit" data-rounded="bottom-right">
+            <cds-button
+              ?disabled=${this.isReadonly || this._isSubmitDisabled}
+              size="lg"
+              kind="primary"
+              @click=${this._handleSubmit}
+            >
+              ${this.primaryLabel || "Submit"}
+            </cds-button>
+          </div>
         </div>
       </div>
     </div>`;
