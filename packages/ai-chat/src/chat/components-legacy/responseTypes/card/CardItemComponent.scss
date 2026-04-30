@@ -6,9 +6,15 @@
  */
 
 .cds-aichat--card-message-component {
+  display: flex;
   overflow: hidden;
+  flex-direction: column;
   padding: 0;
   max-inline-size: var(--cds-aichat-card-max-width, auto);
+
+  [slot="body"] {
+    flex: 1;
+  }
 }
 
 .cds-aichat--card-message-component.cds-aichat--max-width-small {
