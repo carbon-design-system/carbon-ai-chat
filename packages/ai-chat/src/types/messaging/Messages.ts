@@ -841,6 +841,12 @@ export interface GenericItemMessageFeedbackOptions {
    * value is not provided, no text will be shown.
    */
   disclaimer?: string;
+
+  /**
+   * The label text to display with the legal disclaimer checkbox. If this value is not provided, no disclaimer checkbox
+   * or label text will be displayed.
+   */
+  disclaimerCheckbox?: string;
 }
 
 /**

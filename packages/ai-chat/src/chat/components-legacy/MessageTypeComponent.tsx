@@ -937,7 +937,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           placeholder={placeholder || languagePack.feedback_defaultPlaceholder}
           disclaimer={disclaimer}
           primaryLabel={languagePack.feedback_submitLabel}
-          secondaryLabel={languagePack.feedback_cancelLabel}
         />
       );
     }
