@@ -173,7 +173,60 @@ export function getNavigationGroups(context, props) {
     }
   });
 
-  return { regularItems, typeItems, migrationItems };
+  // Build a map of document title -> order based on the order specified in
+  // the typedoc config's `projectDocuments` option. By the time we see them,
+  // both `project.documents` and the navigation tree have been alphabetized
+  // by TypeDoc's sort, so we recover the intended order by walking
+  // `project.documents`, looking up each one's source-file path via the
+  // project's file registry, and matching against the configured
+  // `projectDocuments` list by basename. The DocumentReflection's `name` is
+  // the frontmatter title, which matches the navigation item's `text`, so
+  // we key the map by title.
+  const projectDocumentPaths =
+    context.options.getValue("projectDocuments") || [];
+  const projectDocumentBasenames = projectDocumentPaths.map((p) =>
+    p.split("/").pop(),
+  );
+  const documentOrderMap = new Map();
+  (props.project.documents || []).forEach((doc) => {
+    const sourcePath = props.project.files?.getReflectionPath(doc);
+    if (!sourcePath) {
+      return;
+    }
+    const sourceBasename = sourcePath.split("/").pop();
+    const orderIndex = projectDocumentBasenames.indexOf(sourceBasename);
+    if (orderIndex !== -1) {
+      documentOrderMap.set(doc.name, orderIndex);
+    }
+  });
+
+  // Separate documents (items with defined order) from API items (no defined order)
+  const documents = [];
+  const apiItems = [];
+
+  regularItems.forEach((item) => {
+    if (documentOrderMap.has(item.text)) {
+      documents.push(item);
+    } else {
+      apiItems.push(item);
+    }
+  });
+
+  // Sort documents by their projectDocuments order
+  documents.sort((a, b) => {
+    const orderA = documentOrderMap.get(a.text);
+    const orderB = documentOrderMap.get(b.text);
+    return orderA - orderB;
+  });
+
+  // Combine: documents first (in specified order), then API items (alphabetically sorted by TypeDoc)
+  const sortedRegularItems = [...documents, ...apiItems];
+
+  return {
+    regularItems: sortedRegularItems,
+    typeItems,
+    migrationItems,
+  };
 }
 
 function renderVersionsDropdown() {
