@@ -1096,8 +1096,8 @@ interface SystemMessageItem<
 
   /**
    * How the system line is presented when the message renders as a **standalone** system line
-   * (response contains only system items): default body text, date separator with rules, or
-   * agent-joined with a rule above and smaller text. When system items render **inline** inside a
+   * (response contains only system items): default helper text, date separator with rules, or
+   * agent with a rule above and helper text. When system items render **inline** inside a
    * bubble, `variant` is ignored and the default inline style is used.
    * @default 'default'
    */
