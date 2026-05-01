@@ -34,19 +34,17 @@ function SystemMessage({ message, standalone = true }: SystemMessageProps) {
     return null;
   }
 
-  // System message response
-  const systemItems = message.output.generic.filter(
+  // System message response - find the single system message item
+  const systemItem = message.output.generic.find(
     (item) => item.response_type === MessageResponseTypes.SYSTEM,
-  ) as SystemMessageItem[];
+  ) as SystemMessageItem | undefined;
 
-  if (systemItems.length === 0) {
+  if (!systemItem) {
     return null;
   }
 
-  const explicitVariant: SystemMessageVariant | undefined = systemItems.find(
-    (item) => item.variant !== undefined && item.variant !== "default",
-  )?.variant;
-  const variant: SystemMessageVariant = explicitVariant ?? "default";
+  const title = systemItem.title;
+  const variant: SystemMessageVariant = systemItem.variant ?? "default";
 
   const className = standalone
     ? "cds-aichat--system-message-standalone"

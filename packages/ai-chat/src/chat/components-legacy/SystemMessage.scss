@@ -51,12 +51,6 @@
   &::after {
     margin-inline-start: layout.$spacing-05;
   }
-
-  .cds-aichat--system-message-standalone-text {
-    @include type.type-style("helper-text-01");
-
-    font-style: normal;
-  }
 }
 
 // Standalone: agent (rule above, smaller text)
@@ -64,11 +58,4 @@
   border-block-start: 1px solid theme.$border-subtle;
   margin-block-start: layout.$spacing-07;
   padding-block-start: layout.$spacing-05;
-
-  .cds-aichat--system-message-standalone-text {
-    @include type.type-style("helper-text-01");
-
-    color: theme.$text-secondary;
-    font-style: normal;
-  }
 }
