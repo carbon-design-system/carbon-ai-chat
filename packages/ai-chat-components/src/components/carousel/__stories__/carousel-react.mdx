@@ -1,0 +1,44 @@
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as CarouselReactStories from "./carousel-react.stories";
+
+<Meta of={CarouselReactStories} />
+
+# Carousel
+
+A basic carousel component implementation based on the `@carbon/utilities` carousel utility. For more information on the implementation refer to the [carousel](https://github.com/carbon-design-system/carbon/tree/main/packages/utilities/src/carousel) documentation in carbon core.
+
+## Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import { Carousel } from "@carbon/ai-chat-components/es/react/carousel.js";
+import { Card } from "@carbon/ai-chat-components/es/react/card.js";
+
+function CarouselExample() {
+  const cards = Array(8)
+    .fill(null)
+    .map((_, idx) => `Card ${idx + 1}`);
+
+  return (
+    <Carousel nextBtnText="Next" previousBtnText="Previous">
+      <div>
+        {cards.map((card, idx) => (
+          <Card key={idx}>
+            <div slot="body">
+              <div className="carousel-card">{card}</div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </Carousel>
+  );
+}
+```
+
+## Component API
+
+## `<Carousel>`
+
+<ArgTypes of={CarouselReactStories.Default} />
