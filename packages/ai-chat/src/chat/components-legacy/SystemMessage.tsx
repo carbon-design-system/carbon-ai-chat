@@ -25,7 +25,8 @@ interface SystemMessageProps {
 }
 
 /**
- * Component for rendering system messages. Can render either standalone (centered, no bubble)
+ * Component for rendering system messages. Can render either standalone (centered
+ * outside of message bubble)
  * or inline (within a message bubble).
  */
 function SystemMessage({ message, standalone = true }: SystemMessageProps) {
@@ -41,9 +42,6 @@ function SystemMessage({ message, standalone = true }: SystemMessageProps) {
   if (systemItems.length === 0) {
     return null;
   }
-
-  // If multiple system messages, join them with a separator
-  const title = systemItems.map((item) => item.title).join(" • ");
 
   const explicitVariant: SystemMessageVariant | undefined = systemItems.find(
     (item) => item.variant !== undefined && item.variant !== "default",
