@@ -44,17 +44,19 @@ class CDSAIChatHistoryContent extends LitElement {
 
   render() {
     return html`
-      ${this._hasResultsCount
-        ? html`<span class="${prefix}--history-content__results-count">
-            <slot
+      <div class="${prefix}--history-content__container" aria-live="polite">
+        ${this._hasResultsCount
+          ? html`<span class="${prefix}--history-content__results-count">
+              <slot
+                name="results-count"
+                @slotchange=${this._handleResultsCountSlotChange}
+              ></slot>
+            </span>`
+          : html`<slot
               name="results-count"
               @slotchange=${this._handleResultsCountSlotChange}
-            ></slot>
-          </span>`
-        : html`<slot
-            name="results-count"
-            @slotchange=${this._handleResultsCountSlotChange}
-          ></slot>`}
+            ></slot>`}
+      </div>
       <slot></slot>
     `;
   }
