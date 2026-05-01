@@ -103,7 +103,6 @@ function createHumanAgentLocalMessageForType(
     HumanAgentMessageType.HUMAN_AGENT_ENDED_CHAT,
     HumanAgentMessageType.USER_ENDED_CHAT,
     HumanAgentMessageType.CHAT_WAS_ENDED,
-    HumanAgentMessageType.DISCONNECTED,
     HumanAgentMessageType.RECONNECTED,
   ];
 
@@ -116,7 +115,6 @@ function createHumanAgentLocalMessageForType(
     HumanAgentMessageType.SHARING_CANCELLED,
     HumanAgentMessageType.SHARING_ENDED,
     HumanAgentMessageType.SYSTEM,
-    HumanAgentMessageType.INLINE_ERROR,
   ];
 
   // For agent-related message types, create a SystemMessageItem with 'agent' variant
@@ -153,7 +151,7 @@ function createHumanAgentLocalMessageForType(
     return { localMessage, originalMessage };
   }
 
-  // For all other types, create a TextItem (existing behavior)
+  // For all other types, create a TextItem
   const messageItem: GenericItem = {
     response_type: MessageResponseTypes.TEXT,
     agent_message_type: agentMessageType,
