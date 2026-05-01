@@ -44,6 +44,9 @@ class CDSAIChatHistoryToolbar extends LitElement {
   @property({ type: Boolean, attribute: "search-off", reflect: true })
   searchOff;
 
+  @property({ type: String, attribute: "close-button-label-text" })
+  closeButtonLabelText = "Clear search";
+
   /**
    * Handles new chat button click event
    */
@@ -58,13 +61,18 @@ class CDSAIChatHistoryToolbar extends LitElement {
 
   render() {
     const {
+      closeButtonLabelText,
       newChatLabel,
       searchOff,
       _handleNewChatButtonClick: handleNewChatButtonClick,
     } = this;
 
     return html` <slot name="actions-start"></slot>
-      ${!searchOff ? html`<cds-search></cds-search>` : nothing}
+      ${!searchOff
+        ? html`<cds-search
+            close-button-label-text=${closeButtonLabelText}
+          ></cds-search>`
+        : nothing}
       <slot name="actions-end"></slot>
       <cds-icon-button align="top-right" @click=${handleNewChatButtonClick}>
         ${iconLoader(AddComment16, {
