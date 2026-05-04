@@ -91,3 +91,17 @@ jobs:
         run: npm ci --prefer-offline
       - name: License check
         run: npm run lint:license
+
+  validate-agents-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+      - name: Validate agents files
+        run: npm run validate:agents

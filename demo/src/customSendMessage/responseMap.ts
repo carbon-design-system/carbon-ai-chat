@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -90,7 +90,12 @@ const RESPONSE_MAP: Record<
   "option list": (instance) => doOption(instance),
   "ordered list": (instance) => doOrderedList(instance),
   "system message (inline)": (instance) => doSystemMessage(instance, true),
-  "system message (stand alone)": (instance) => doSystemMessage(instance),
+  "system message (stand alone, default variant)": (instance) =>
+    doSystemMessage(instance, false, "default"),
+  "system message (stand alone, date variant)": (instance) =>
+    doSystemMessage(instance, false, "date"),
+  "system message (stand alone, agent variant)": (instance) =>
+    doSystemMessage(instance, false, "agent"),
   table: (instance) => doTable(instance),
   "table (stream)": (instance, requestOptions) =>
     doTableStreaming(instance, requestOptions),
