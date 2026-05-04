@@ -356,10 +356,12 @@ export const Default = {
           searchOff={args.searchOff}
           onSearchInput={handleSearchInput}
         />
-        <HistoryContent>
-          {(showSearchResults || noSearchResults) && (
-            <div slot="results-count">Results: {searchTotalCount}</div>
-          )}
+        <HistoryContent
+          resultsLabel="Results"
+          resultsCount={
+            showSearchResults || noSearchResults ? searchTotalCount : ""
+          }
+        >
           <HistoryPanel aria-label="Chat history">
             <HistoryPanelItems>
               {noSearchResults && (
@@ -457,8 +459,7 @@ export const SearchResults = {
       <HistoryShell>
         <HistoryHeader headerTitle={args.HeaderTitle} />
         <HistoryToolbar />
-        <HistoryContent>
-          <div slot="results-count">Results: 4</div>
+        <HistoryContent resultsLabel="Results" resultsCount="4">
           <HistoryPanel aria-label="Search results">
             <HistoryPanelItems>
               <HistoryPanelMenu expanded title="Search results">
@@ -509,9 +510,7 @@ export const EmptyState = {
       <HistoryShell>
         <HistoryHeader headerTitle={args.HeaderTitle} />
         <HistoryToolbar />
-        <HistoryContent>
-          <div slot="results-count">No available chats</div>
-        </HistoryContent>
+        <HistoryContent></HistoryContent>
       </HistoryShell>
     );
   },

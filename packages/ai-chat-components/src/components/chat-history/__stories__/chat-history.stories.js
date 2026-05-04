@@ -337,12 +337,12 @@ class ChatHistoryDemo extends LitElement {
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar ?search-off=${this.searchOff}>
         </cds-aichat-history-toolbar>
-        <cds-aichat-history-content>
-          ${showSearchResults || noSearchResults
-            ? html`<div slot="results-count">
-                Results: ${this.searchTotalCount}
-              </div>`
-            : ""}
+        <cds-aichat-history-content
+          results-label="Results"
+          results-count="${showSearchResults || noSearchResults
+            ? this.searchTotalCount
+            : ""}"
+        >
           <cds-aichat-history-panel aria-label="Chat history">
             <cds-aichat-history-panel-items>
               ${noSearchResults
@@ -501,8 +501,10 @@ export const SearchResults = {
         header-title="Chats"
       ></cds-aichat-history-header>
       <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
-      <cds-aichat-history-content>
-        <div slot="results-count">Results: 4</div>
+      <cds-aichat-history-content
+        results-label="Results"
+        results-count="4"
+      >
         <cds-aichat-history-panel aria-label="Search results">
         <cds-aichat-history-panel-items>
           <cds-aichat-history-panel-menu expanded title="Search results">
@@ -559,9 +561,7 @@ export const EmptyState = {
           header-title="${args.HeaderTitle}"
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
-        <cds-aichat-history-content>
-          <div slot="results-count">No available chats</div>
-        </cds-aichat-history-content>
+        <cds-aichat-history-content> </cds-aichat-history-content>
       </cds-aichat-history-shell>
     `;
   },

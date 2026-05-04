@@ -9,7 +9,7 @@
 
 import { LitElement, html } from "lit";
 import prefix from "../../../globals/settings.js";
-import { property, state } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 
 import styles from "./chat-history.scss?lit";
@@ -29,33 +29,30 @@ class CDSAIChatHistoryContent extends LitElement {
   slot = "content";
 
   /**
-   * Tracks whether the results-count slot has content
+   * Label to display before the results count
    */
-  @state()
-  private _hasResultsCount = false;
+  @property({ type: String, attribute: "results-label" })
+  resultsLabel = "Results";
 
   /**
-   * Handle slot change to detect if results-count has content
+   * The results count to display
    */
-  private _handleResultsCountSlotChange(e: Event) {
-    const slot = e.target as HTMLSlotElement;
-    this._hasResultsCount = slot.assignedNodes().length > 0;
-  }
+  @property({ type: Number, attribute: "results-count" })
+  resultsCount?: number;
 
   render() {
+    const displayText =
+      this.resultsCount !== undefined && this.resultsLabel
+        ? `${this.resultsLabel}: ${this.resultsCount}`
+        : this.resultsCount;
+
     return html`
       <div class="${prefix}--history-content__container" aria-live="polite">
-        ${this._hasResultsCount
+        ${this.resultsCount !== undefined
           ? html`<span class="${prefix}--history-content__results-count">
-              <slot
-                name="results-count"
-                @slotchange=${this._handleResultsCountSlotChange}
-              ></slot>
+              ${displayText}
             </span>`
-          : html`<slot
-              name="results-count"
-              @slotchange=${this._handleResultsCountSlotChange}
-            ></slot>`}
+          : ""}
       </div>
       <slot></slot>
     `;
