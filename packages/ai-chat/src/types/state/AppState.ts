@@ -445,6 +445,8 @@ interface ChatMessagesState {
 
 /**
  * The state information for a catastrophic error panel.
+ *
+ * @category Instance
  */
 interface CatastrophicErrorPanelState {
   /**
