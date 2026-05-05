@@ -328,8 +328,8 @@ class CDSAIChatFeedback extends LitElement {
                 class="${prefix}--disclaimer-checkbox"
                 ?disabled=${this.isReadonly}
                 @cds-checkbox-changed=${this._handleDisclaimerCheckboxChange}
+                label-text=${this.disclaimerCheckbox}
               >
-                ${this.disclaimerCheckbox}
               </cds-checkbox>`
             : ""}
         </div>
