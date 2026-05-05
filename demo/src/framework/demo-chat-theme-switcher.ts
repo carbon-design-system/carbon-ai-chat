@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -40,11 +40,11 @@ export class DemoChatThemeSwitcher extends LitElement {
   render() {
     return html`<cds-dropdown
       value="${String(this.config?.aiEnabled ?? true)}"
-      title-text="Use AI theme"
+      title-text="AI theme"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
-      <cds-dropdown-item value="${AI_ON}">On</cds-dropdown-item>
-      <cds-dropdown-item value="${AI_OFF}">Off</cds-dropdown-item>
+      <cds-dropdown-item value="${AI_ON}">Enable AI theme</cds-dropdown-item>
+      <cds-dropdown-item value="${AI_OFF}">Disable AI theme</cds-dropdown-item>
     </cds-dropdown>`;
   }
 }

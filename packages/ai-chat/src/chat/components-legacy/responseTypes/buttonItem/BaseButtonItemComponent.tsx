@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -126,40 +126,33 @@ function BaseButtonItemComponent({
   }
   const RenderIcon = renderIcon; // todo: enable passing custom icon
   const buttonKind = getButtonKind(kind) || "primary";
+  const isStandard = is === "standard-button";
+
+  const commonBtnProps = {
+    className: cx("cds-aichat--button-item", className),
+    disabled,
+    href: url,
+    kind: isStandard
+      ? (buttonKind as BUTTON_KIND)
+      : (buttonKind as CHAT_BUTTON_KIND),
+    onclick,
+    rel: url ? "noopener noreferrer" : undefined,
+    size: isStandard ? (size as BUTTON_SIZE) : (size as CHAT_BUTTON_SIZE),
+    target: linkTarget,
+  };
+
+  const body = (
+    <>
+      {renderIcon && <RenderIcon slot="icon" aria-label={text} />}
+      {text}
+    </>
+  );
 
   if (is === "standard-button") {
-    return (
-      <Button
-        className={cx("cds-aichat--button-item", className)}
-        kind={buttonKind as BUTTON_KIND}
-        size={size as BUTTON_SIZE}
-        href={url}
-        target={linkTarget}
-        rel={url ? "noopener noreferrer" : undefined}
-        disabled={disabled}
-        onClick={onClick}
-      >
-        {renderIcon && <RenderIcon slot="icon" />}
-        {text}
-      </Button>
-    );
+    return <Button {...commonBtnProps}>{body}</Button>;
   }
 
-  return (
-    <ChatButton
-      className={cx("cds-aichat--button-item", className)}
-      kind={buttonKind as CHAT_BUTTON_KIND}
-      size={size as CHAT_BUTTON_SIZE}
-      href={url}
-      target={linkTarget}
-      rel={url ? "noopener noreferrer" : undefined}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      {renderIcon && <RenderIcon slot="icon" />}
-      {text}
-    </ChatButton>
-  );
+  return <ChatButton {...commonBtnProps}>{body}</ChatButton>;
 }
 
 function getButtonKind(style: BUTTON_KIND | "LINK"): BUTTON_KIND {
