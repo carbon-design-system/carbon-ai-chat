@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -72,7 +72,7 @@ function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
  * Note: A negative value will leave more of the previous message visible above the target message.
  * For example, -60 will show approximately 60px of the previous conversation above the new message.
  */
-const AUTO_SCROLL_EXTRA = -60; 
+const AUTO_SCROLL_EXTRA = -60;
 
 /**
  * The visible portion (in pixels) to show at the bottom of a tall message when auto-scrolling.
