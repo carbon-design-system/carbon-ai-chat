@@ -35,7 +35,7 @@ import { focusElementAfterRepaint } from "../../../globals/utils/focus-utils";
 import { PinFilled, Search, Time } from "@carbon/icons-react";
 
 export default {
-  title: "Unstable/Chat History",
+  title: "Preview/Chat History",
   component: HistoryShell,
   decorators: [
     (Story) => (
