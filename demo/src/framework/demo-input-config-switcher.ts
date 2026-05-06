@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -178,44 +178,56 @@ export class DemoInputConfigSwitcher extends LitElement {
       <div class="input-section">
         <cds-dropdown
           value="${this._uploadDropdownValue()}"
-          title-text="Enable file uploads"
+          title-text="File uploads"
           @cds-dropdown-selected=${this._handleUploadDropdown}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable file uploads</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable file uploads</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 
       <div class="input-section">
         <cds-dropdown
           value="${this._booleanDropdownValue(input?.isVisible)}"
-          title-text="Show input field"
+          title-text="Input field visibility"
           @cds-dropdown-selected=${(event: Event) =>
             this._handleBooleanDropdown(event, "isVisible")}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Show input field</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Hide input field</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 
       <div class="input-section">
         <cds-dropdown
           value="${this._booleanDropdownValue(input?.isDisabled)}"
-          title-text="Disable input field"
+          title-text="Input field state"
           @cds-dropdown-selected=${(event: Event) =>
             this._handleBooleanDropdown(event, "isDisabled")}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable input field</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable input field</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 
@@ -224,14 +236,18 @@ export class DemoInputConfigSwitcher extends LitElement {
           value="${this._booleanDropdownValue(
             this.config?.shouldTakeFocusIfOpensAutomatically,
           )}"
-          title-text="Take focus if opens automatically"
+          title-text="Auto focus"
           @cds-dropdown-selected=${this._handleFocusDropdown}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable auto focus</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable auto focus</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
     `;

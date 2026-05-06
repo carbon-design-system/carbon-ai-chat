@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -206,30 +206,38 @@ export class DemoLayoutConfigSwitcher extends LitElement {
       <div class="layout-section">
         <cds-dropdown
           value="${this._getBooleanDropdownValue(layout?.showFrame)}"
-          title-text="Show frame"
+          title-text="Frame visibility"
           @cds-dropdown-selected=${(event: Event) =>
             this._handleBooleanDropdown(event, "showFrame")}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Show frame</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Hide frame</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 
       <div class="layout-section">
         <cds-dropdown
           value="${this._getBooleanDropdownValue(layout?.hasContentMaxWidth)}"
-          title-text="Has content max width"
+          title-text="Content max width"
           @cds-dropdown-selected=${(event: Event) =>
             this._handleBooleanDropdown(event, "hasContentMaxWidth")}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable max width</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable max width</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -34,7 +34,7 @@ export class DemoLayoutSwitcher extends LitElement {
   render() {
     return html`<cds-dropdown
       value="${this.settings.layout}"
-      title-text="Layout"
+      title-text="Layout (requires restart)"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="fullscreen">Fullscreen</cds-dropdown-item>
