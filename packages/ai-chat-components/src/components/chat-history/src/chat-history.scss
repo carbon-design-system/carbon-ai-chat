@@ -290,6 +290,11 @@
   visibility: visible;
 }
 
+:host(#{$prefix}-history-panel-item[show-actions])
+  #{$cds-prefix}-overflow-menu {
+  visibility: visible;
+}
+
 :host(#{$prefix}-history-panel-item[parent-has-icon])
   button.#{$prefix}--side-nav__link {
   padding-inline-start: 4.5rem;

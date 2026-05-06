@@ -77,11 +77,16 @@ export const Default = {
       control: "boolean",
       description: "renders close chat history action in header.",
     },
+    showActions: {
+      control: "boolean",
+      description: "Show actions on all history panel items.",
+    },
   },
   args: {
     HeaderTitle: "Chats",
     searchOff: false,
     showCloseAction: true,
+    showActions: false,
   },
   render: (args) => {
     const historyShellRef = useRef(null);
@@ -362,7 +367,10 @@ export const Default = {
             showSearchResults || noSearchResults ? searchTotalCount : ""
           }
         >
-          <HistoryPanel aria-label="Chat history">
+          <HistoryPanel
+            showActions={args.showActions}
+            aria-label="Chat history"
+          >
             <HistoryPanelItems>
               {noSearchResults && (
                 <HistoryPanelMenu expanded title="Search results">

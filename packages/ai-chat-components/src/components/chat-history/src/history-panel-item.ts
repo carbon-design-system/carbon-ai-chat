@@ -80,10 +80,23 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   @property({ type: String, attribute: "overflow-menu-label" })
   overflowMenuLabel = "Options";
 
+  /**
+   * `true` to always show the actions menu for this item.
+   * When set, the actions menu will be visible without requiring hover or selection.
+   * Can be set directly on the item or inherited from the parent panel's `show-actions` attribute.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "show-actions" })
+  showActions = false;
+
   @query(`${prefix}-history-panel-item-input`) input!: HTMLElement;
 
   @query("cds-overflow-menu") overflowMenu!: HTMLElement;
   @query("cds-overflow-menu-body") overflowMenuBody!: HTMLElement;
+
+  /**
+   * MutationObserver to watch for changes to parent panel's always-show-actions attribute
+   */
+  private _parentObserver?: MutationObserver;
 
   /**
    *
@@ -265,7 +278,36 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     }
   };
 
-  updated() {
+  connectedCallback() {
+    super.connectedCallback();
+
+    // Inherit show-actions from parent panel if not explicitly set on this item
+    const parentPanel = this.closest(`${prefix}-history-panel`);
+    if (parentPanel && !this.hasAttribute("show-actions")) {
+      // Set initial value
+      this.showActions = parentPanel.hasAttribute("show-actions");
+
+      // Watch for changes to parent's show-actions attribute
+      this._parentObserver = new MutationObserver(() => {
+        const parentHasAttribute = parentPanel.hasAttribute("show-actions");
+        this.showActions = parentHasAttribute;
+      });
+
+      this._parentObserver.observe(parentPanel, {
+        attributes: true,
+        attributeFilter: ["show-actions"],
+      });
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._parentObserver?.disconnect();
+  }
+
+  updated(changedProperties: Map<string, any>) {
+    super.updated(changedProperties);
+
     if (this.input) {
       this.input.addEventListener("history-panel-item-input-cancel", () => {
         this.rename = false;

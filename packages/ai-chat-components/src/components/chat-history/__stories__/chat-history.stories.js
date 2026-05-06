@@ -58,6 +58,7 @@ class ChatHistoryDemo extends LitElement {
     searchOff: { type: Boolean, attribute: "search-off" },
     selectedId: { type: String },
     showCloseAction: { type: Boolean, attribute: "show-close-action" },
+    showActions: { type: Boolean, attribute: "show-actions" },
     showDeletePanel: { type: Boolean },
     itemToDelete: { type: String },
     pinnedItems: { type: Array },
@@ -76,6 +77,7 @@ class ChatHistoryDemo extends LitElement {
     this.headerTitle = "Chats";
     this.searchOff = false;
     this.showCloseAction = true;
+    this.showActions = false;
     this.startPanel = false;
     this.searchResults = [];
     this.searchTotalCount = 0;
@@ -343,7 +345,10 @@ class ChatHistoryDemo extends LitElement {
             ? this.searchTotalCount
             : ""}"
         >
-          <cds-aichat-history-panel aria-label="Chat history">
+          <cds-aichat-history-panel
+            ?show-actions=${this.showActions}
+            aria-label="Chat history"
+          >
             <cds-aichat-history-panel-items>
               ${noSearchResults
                 ? html`
@@ -478,17 +483,23 @@ export const Default = {
       control: "boolean",
       description: "renders close chat history action in header.",
     },
+    showActions: {
+      control: "boolean",
+      description: "Show actions on all history panel items.",
+    },
   },
   args: {
     HeaderTitle: "Chats",
     searchOff: false,
     showCloseAction: true,
+    showActions: false,
   },
   render: (args) => html`
     <cds-aichat-history-demo
       header-title="${args.HeaderTitle}"
       ?search-off=${args.searchOff}
       ?show-close-action=${args.showCloseAction}
+      ?show-actions=${args.showActions}
     ></cds-aichat-history-demo>
   `,
 };

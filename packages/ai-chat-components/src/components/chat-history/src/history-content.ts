@@ -37,18 +37,23 @@ class CDSAIChatHistoryContent extends LitElement {
   /**
    * The results count to display
    */
-  @property({ type: Number, attribute: "results-count" })
-  resultsCount?: number;
+  @property({ type: String, attribute: "results-count" })
+  resultsCount?: string | number;
 
   render() {
+    const shouldDisplay =
+      this.resultsCount !== undefined &&
+      this.resultsCount !== null &&
+      this.resultsCount !== "";
+
     const displayText =
-      this.resultsCount !== undefined && this.resultsLabel
+      shouldDisplay && this.resultsLabel
         ? `${this.resultsLabel}: ${this.resultsCount}`
         : this.resultsCount;
 
     return html`
       <div class="${prefix}--history-content__container" aria-live="polite">
-        ${this.resultsCount !== undefined
+        ${shouldDisplay
           ? html`<span class="${prefix}--history-content__results-count">
               ${displayText}
             </span>`

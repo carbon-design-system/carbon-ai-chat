@@ -34,6 +34,14 @@ class CDSAIChatHistoryPanel extends CDSSideNav {
   @property({ type: Boolean })
   expanded = true;
 
+  /**
+   * `true` to always show the actions menu on all child history panel items.
+   * When set, the actions menu will be visible without requiring hover or selection.
+   * Individual items can override this with their own `show-actions` attribute.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "show-actions" })
+  showActions = false;
+
   connectedCallback() {
     this.setAttribute("collapse-mode", "fixed");
     super.connectedCallback();
