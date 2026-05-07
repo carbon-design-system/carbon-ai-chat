@@ -141,12 +141,8 @@ export {
   MinimizeButtonIconType,
   OnErrorData,
   OnErrorType,
-  CustomListProps,
   PublicConfig,
   PublicConfigMessaging,
-  SuggestionConfig,
-  SuggestionItem,
-  SuggestionType,
   ToolbarAction,
   UploadConfig,
 } from "./types/config/PublicConfig";
@@ -155,6 +151,36 @@ export {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
+
+// Tiptap escape-hatch types and Carbon Tiptap factories / helpers. Local
+// re-declarations live in `./types/utilities/tiptapReexports` so we own the
+// JSDoc + `@category` placement; see [src/types/AGENTS.md](./types/AGENTS.md)
+// for the cross-package re-export rule.
+export type {
+  Editor,
+  Extension,
+  JSONContent,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+  SuggestionItem,
+  CustomListProps,
+  InputChangeEventDetail,
+  TriggerChangeEventDetail,
+} from "./types/utilities/tiptapReexports";
+
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  buildCarbonExtensions,
+  setHostOriginMeta,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+} from "./types/utilities/tiptapReexports";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";

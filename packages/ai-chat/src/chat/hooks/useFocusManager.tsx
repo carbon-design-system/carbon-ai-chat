@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -66,7 +66,7 @@ export function useFocusManager({
           responsePanelRef.current?.requestFocus();
         } else if (inputRef.current) {
           // Focus main input for both homescreen and messages view
-          inputRef.current.takeFocus();
+          inputRef.current.requestFocus();
         }
       }
     } catch (error) {

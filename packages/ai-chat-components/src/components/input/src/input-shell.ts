@@ -7,58 +7,44 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { Editor, Extension, type JSONContent } from "@tiptap/core";
 import { css, html, LitElement, nothing, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
-import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
 
 import "../../autocomplete/src/autocomplete.js";
+// Side-effect import: registers <cds-aichat-prompt-line> so the slot's
+// fallback content upgrades correctly even when consumers import this
+// shell module directly (bypassing the public barrel).
+import "./prompt-line.js";
 import "./stop-streaming-button.js";
 
 import styles from "./input-shell.scss?lit";
 
-import {
-  createAllPlugins,
-  type PluginRefs,
-  type PluginControllers,
-} from "./prosemirror/plugin-factory.js";
-import {
-  triggerPluginKey,
-  type TriggerPluginState,
-} from "./prosemirror/trigger-plugin.js";
-
-import type {
-  SuggestionItem,
-  SuggestionConfig,
-  CustomListProps,
-  SendEventDetail,
-  TriggerChangeEventDetail,
-} from "./types.js";
-
 import { AutocompleteListManager } from "./autocomplete-list-manager.js";
-import { EditorViewManager } from "./editor-view-manager.js";
-import {
-  insertAutocompleteItem,
-  insertTokenWithRawValue,
-} from "./autocomplete-insert.js";
+import { buildCarbonExtensions } from "./tiptap/build-extensions.js";
+import { projectRawValue } from "./tiptap/json-utils.js";
+import type {
+  AutocompleteConfig,
+  SuggestionItem,
+  TriggerSuggestionConfig,
+} from "./tiptap/types.js";
+import type { SendEventDetail, TriggerChangeEventDetail } from "./types.js";
+import PromptLineElement from "./prompt-line.js";
 
 /**
- * Input shell component for AI Chat — a composable orchestrator.
- *
- * Uses ProseMirror for the editor, with the editor element living in light DOM
- * (slotted into shadow DOM layout) so that custom token renderers and all
- * editor content remain styleable via page CSS.
+ * Composer chrome for the chat input — wraps a `<cds-aichat-prompt-line>`
+ * with file uploads, the send control, the autocomplete overlay, and the
+ * char counter. Forwards every editor method to the inner prompt-line.
  *
  * Consumers compose child components into named slots:
  * - `message-actions` — action icons to the left of the text area
  * - `file-uploads` — visual list of files being uploaded
  * - `send-control` — send button / stop streaming button
- * - `autocomplete-content` — suggestion overlay above input
- *
- * The editor element is created internally — consumers do NOT provide it.
+ * - `autocomplete-content` — suggestion overlay above input (driven internally)
  *
  * @element cds-aichat-input-shell
  */
@@ -69,7 +55,7 @@ class InputShellElement extends LitElement {
   `;
 
   // -----------------------------------------------------------------------
-  // Properties
+  // Properties — chrome
   // -----------------------------------------------------------------------
 
   /** Disables editing and send. The editor remains mounted but non-editable. */
@@ -82,44 +68,28 @@ class InputShellElement extends LitElement {
 
   /**
    * Canonical raw text value of the editor. Setting this externally (e.g. to
-   * clear the editor after send) is mirrored into the PM document via the
-   * ValueSync controller.
+   * clear the editor after send) is mirrored into the inner prompt-line via
+   * `setContent`. Changes inside the editor flow back via the prompt-line's
+   * `cds-aichat-prompt-change` event.
    */
   @property({ type: String, attribute: "raw-value" })
   rawValue = "";
 
   /**
-   * Optional character cap. Typing and pasting past the limit is allowed, but
-   * submission is blocked while the serialized length exceeds this value — see
-   * `overMaxLength`. The character counter reveals itself within 10 characters
-   * of the limit and stays visible while over.
+   * Optional character cap. Typing past the limit is allowed, but submission
+   * is blocked while `rawValue.length > maxLength` (see `overMaxLength`).
    */
   @property({ type: Number, attribute: "max-length" })
   maxLength?: number;
 
   /**
    * Reflects as `over-max-length` on the host when `rawValue.length` exceeds
-   * `maxLength`. Read-only contract: treat as output. Slotted components and
-   * consumer CSS can key off this attribute; the built-in send-control
-   * auto-disables itself by subscribing to the companion event below.
+   * `maxLength`. Read-only contract.
    *
-   * @fires cds-aichat-input-over-max-change — detail `{ overMax: boolean }`,
-   *   bubbles and composed, dispatched on every transition.
+   * @fires cds-aichat-input-over-max-change — `{ overMax: boolean }`
    */
   @property({ type: Boolean, reflect: true, attribute: "over-max-length" })
   overMaxLength = false;
-
-  /** Items to render in the built-in autocomplete list. */
-  @property({ type: Array, attribute: false })
-  autocompleteItems: SuggestionItem[] = [];
-
-  /** Optional custom renderer for the autocomplete list. */
-  @property({ attribute: false })
-  renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
-
-  /** Suggestion configs that define trigger characters (e.g. `@`, `/`). */
-  @property({ type: Array, attribute: false })
-  suggestionConfigs: SuggestionConfig[] = [];
 
   /** Reflects to attribute so consumer CSS can target rounded variant. */
   @property({ type: Boolean, reflect: true })
@@ -127,40 +97,82 @@ class InputShellElement extends LitElement {
 
   /** Accessible label applied to the editor's textbox role. */
   @property({ type: String, attribute: "aria-label" })
-  ariaLabel = "Message";
+  override ariaLabel = "Message";
 
-  /**
-   * Test id forwarded onto the inner ProseMirror contenteditable element.
-   * Set this instead of `data-testid` on the host so that
-   * `page.getByTestId(...)` resolves to the actual editable surface — the
-   * host element is a custom element and isn't fillable by Playwright.
-   */
+  /** Test id forwarded to the editor's contenteditable host. */
   @property({ type: String, attribute: "test-id" })
   testId = "";
+
+  // -----------------------------------------------------------------------
+  // Properties — chat-domain configs (PR 3)
+  // -----------------------------------------------------------------------
+
+  /** `@`-style mention trigger config. */
+  @property({ attribute: false })
+  mention?: TriggerSuggestionConfig;
+
+  /** `/`-style command trigger config. */
+  @property({ attribute: false })
+  command?: TriggerSuggestionConfig;
+
+  /** Live-typeahead autocomplete config (no trigger character). */
+  @property({ attribute: false })
+  autocomplete?: AutocompleteConfig;
+
+  /** Starter prompts shown when the editor is empty + focused + editable. */
+  @property({ type: Array, attribute: false })
+  starters?: SuggestionItem[];
+
+  /** Host-supplied Tiptap extensions appended to the curated bundle. */
+  @property({ type: Array, attribute: false })
+  extensions?: Extension[];
+
+  /**
+   * When true, the send button renders disabled and the
+   * `cds-aichat-prompt-send-intent` → `cds-aichat-input-send` re-dispatch is
+   * suppressed. Orthogonal to `disabled`: the editor stays editable.
+   */
+  @property({ type: Boolean, attribute: "is-send-disabled" })
+  isSendDisabled = false;
 
   // -----------------------------------------------------------------------
   // Internal state
   // -----------------------------------------------------------------------
 
-  /** Current active trigger (e.g. user just typed `@`). `null` when no trigger. */
   @state()
   private _triggerState: TriggerChangeEventDetail | null = null;
 
-  /** Tracks whether the message-actions slot has content (for layout padding). */
   @state()
   private _hasMessageActions = false;
 
-  /** Manages the EditorView lifecycle and its light-DOM container. */
-  private _editorViewManager: EditorViewManager | null = null;
+  @query('slot[name="editor"]')
+  private _editorSlot!: HTMLSlotElement;
 
-  /** Mutable refs consumed by PM plugins so we can push property updates. */
-  private _pluginRefs: PluginRefs | null = null;
+  /**
+   * The currently-active prompt-line — either the slot's fallback element or
+   * a consumer-provided child assigned to `slot="editor"`. Resolved by
+   * `_resolveActivePromptLine()` on `firstUpdated` and on every `slotchange`.
+   * Calls during the brief upgrade window (resolver hasn't run yet) silently
+   * no-op — consumers shouldn't be calling shell methods before mount.
+   */
+  private _activePromptLine: PromptLineElement | null = null;
 
-  /** Imperative controllers returned by plugins (value sync, typing reset, …). */
-  private _pluginControllers: PluginControllers | null = null;
+  /**
+   * Reference cache for the last `extensions` array forwarded into the
+   * active prompt-line. The prompt-line tears down and rebuilds its editor
+   * on `extensions` reference change, so we only forward when the reference
+   * actually differs to avoid spurious recreates on unrelated shell updates.
+   */
+  private _lastForwardedExtensions: Extension[] | null = null;
 
-  /** Manages the autocomplete/custom list DOM outside the shadow root. */
   private _autocompleteListManager: AutocompleteListManager | null = null;
+
+  /** Cached extension list — recomputed on chat-domain prop changes. */
+  @state()
+  private _computedExtensions: Extension[] = [];
+
+  /** Cached chat-Enter binding so its identity is stable across renders. */
+  private readonly _chatEnterExtension: Extension = buildChatEnterSends();
 
   // -----------------------------------------------------------------------
   // Computed
@@ -171,11 +183,6 @@ class InputShellElement extends LitElement {
     return Boolean(this.rawValue?.trim());
   }
 
-  /**
-   * True when the character counter should be visible — within 10 characters
-   * of the cap, or already over it. Hidden otherwise to avoid drawing
-   * attention at low counts.
-   */
   private _shouldShowCharCount(): boolean {
     if (this.maxLength == null) {
       return false;
@@ -183,11 +190,73 @@ class InputShellElement extends LitElement {
     return this.rawValue.length >= this.maxLength;
   }
 
+  private _recomputeExtensions(): void {
+    const carbon = buildCarbonExtensions({
+      mention: this.mention,
+      command: this.command,
+      autocomplete: this.autocomplete,
+      starters: this.starters,
+    });
+    this._computedExtensions = [
+      this._chatEnterExtension,
+      ...carbon,
+      ...(this.extensions ?? []),
+    ];
+  }
+
   // -----------------------------------------------------------------------
   // Lit lifecycle
   // -----------------------------------------------------------------------
 
-  render() {
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (this._computedExtensions.length === 0) {
+      this._recomputeExtensions();
+    }
+  }
+
+  override firstUpdated(): void {
+    this._initAutocompleteListManager();
+    void this._resolveActivePromptLine();
+  }
+
+  override updated(changedProperties: Map<string, unknown>): void {
+    super.updated(changedProperties);
+
+    // Recompute the curated extensions list when any chat-domain config or
+    // host-supplied extensions array reference changes. The prompt-line
+    // recreates its editor on `extensions` reference change; the diff-check
+    // in `_forwardPromptLineProps()` keeps unrelated shell updates from
+    // propagating a new reference.
+    if (
+      changedProperties.has("mention") ||
+      changedProperties.has("command") ||
+      changedProperties.has("autocomplete") ||
+      changedProperties.has("starters") ||
+      changedProperties.has("extensions")
+    ) {
+      this._recomputeExtensions();
+    }
+
+    this._forwardPromptLineProps();
+
+    if (changedProperties.has("rawValue")) {
+      this._syncRawValueIntoEditor();
+    }
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._autocompleteListManager?.disconnect();
+    this._autocompleteListManager = null;
+    if (this._activePromptLine) {
+      this._unbindPromptLineListeners(this._activePromptLine);
+      this._activePromptLine = null;
+    }
+    this._lastForwardedExtensions = null;
+  }
+
+  override render() {
     const containerClasses = {
       [`${prefix}--input-container`]: true,
       [`${prefix}--input-container--has-message-actions`]:
@@ -200,21 +269,16 @@ class InputShellElement extends LitElement {
       <div class="${prefix}--input-shell">
         <div class=${classMap(containerClasses)}>
           <div class="${prefix}--input-uploads-and-autocomplete">
-            <!-- File uploads slot -->
             <slot name="file-uploads"></slot>
-            <!-- Autocomplete slot (light DOM, positioned above input) -->
             <slot name="autocomplete-content"></slot>
           </div>
-          <!-- Left container: message-actions + editor + file-uploads -->
           <div class="${prefix}--input-field-container">
             <div class="${prefix}--input-text-and-actions">
-              <!-- Message actions slot (upload button, future overflow menu) -->
               <slot
                 name="message-actions"
                 @slotchange=${this._handleMessageActionsSlotChange}
               ></slot>
 
-              <!-- Text area wrapper — editor is slotted from light DOM -->
               <div class="${prefix}--input-text-area">
                 ${usePlaceholder
                   ? html`<div
@@ -224,10 +288,11 @@ class InputShellElement extends LitElement {
                       ${this.placeholder}
                     </div>`
                   : nothing}
-                <slot name="editor"></slot>
+                <slot name="editor" @slotchange=${this._handleEditorSlotChange}>
+                  <cds-aichat-prompt-line></cds-aichat-prompt-line>
+                </slot>
               </div>
             </div>
-            <!-- Character counter: shown only when the user is at or greater than the limit.  -->
             ${this._shouldShowCharCount()
               ? html`
                   <div class="${prefix}--input-char-count">
@@ -237,7 +302,6 @@ class InputShellElement extends LitElement {
               : nothing}
           </div>
 
-          <!-- Send control slot -->
           <div class="${prefix}--input-send-control-container">
             <slot
               name="send-control"
@@ -249,52 +313,93 @@ class InputShellElement extends LitElement {
     `;
   }
 
-  firstUpdated() {
-    this._initProseMirror();
-    this._initAutocompleteListManager();
+  // -----------------------------------------------------------------------
+  // Public methods (forwarders)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Returns the live Tiptap editor or `null` if unmounted. Returns `null`
+   * during the brief upgrade window before the editor slot is resolved.
+   */
+  getEditor(): Editor | null {
+    return this._activePromptLine?.getEditor() ?? null;
   }
 
-  updated(changedProperties: Map<string, unknown>) {
-    super.updated(changedProperties);
+  setContent(
+    next: JSONContent | string | ((prev: JSONContent) => JSONContent),
+  ): void {
+    this._activePromptLine?.setContent(next);
+  }
 
-    // Property sync: keep plugin refs, editor editable state, and doc contents
-    // aligned with the latest reactive inputs. Each `if` is independent —
-    // grouping them would only obscure which inputs drive which effect.
-    const view = this._editorViewManager?.view;
-    const refs = this._pluginRefs;
+  insertContent(content: JSONContent | string, opts?: { at?: number }): void {
+    this._activePromptLine?.insertContent(content, opts);
+  }
 
-    if (refs && changedProperties.has("suggestionConfigs")) {
-      refs.suggestionConfigs.current = this.suggestionConfigs;
+  /** Returns true when the editor was successfully focused. */
+  requestFocus(): boolean {
+    const promptLine = this._activePromptLine;
+    if (!promptLine) {
+      return false;
     }
+    promptLine.focus();
+    return true;
+  }
 
-    if (changedProperties.has("disabled")) {
-      this._editorViewManager?.setDisabled(this.disabled);
-    }
+  hasFocus(): boolean {
+    return this.getEditor()?.isFocused ?? false;
+  }
 
-    if (changedProperties.has("rawValue") && view) {
-      this._pluginControllers?.valueSync.setExternalRawValue(
-        view,
-        this.rawValue,
-      );
-    }
+  override blur(): void {
+    this._activePromptLine?.blur();
+  }
 
-    if (changedProperties.has("testId") && view) {
-      this._applyTestIdToEditor();
-    }
+  clearContent(): void {
+    this._activePromptLine?.clearContent();
+  }
 
-    // Recompute over-max on any length-relevant input change and notify
-    // listeners (e.g. the built-in send-control) on transitions.
-    if (
-      changedProperties.has("rawValue") ||
-      changedProperties.has("maxLength")
-    ) {
-      const next =
-        this.maxLength != null && this.rawValue.length > this.maxLength;
-      if (next !== this.overMaxLength) {
-        this.overMaxLength = next;
+  setTextSelection(pos: number | { from: number; to: number }): void {
+    this._activePromptLine?.setTextSelection(pos);
+  }
+
+  selectAll(): void {
+    this._activePromptLine?.selectAll();
+  }
+
+  undo(): boolean {
+    return this._activePromptLine?.undo() ?? false;
+  }
+
+  redo(): boolean {
+    return this._activePromptLine?.redo() ?? false;
+  }
+
+  /** Dismiss any active suggestion / starter list. */
+  dismissTrigger(): void {
+    this._dismissTrigger();
+  }
+
+  // -----------------------------------------------------------------------
+  // Prompt-line event handlers
+  // -----------------------------------------------------------------------
+
+  private _handlePromptChange = (event: Event): void => {
+    const detail = (
+      event as CustomEvent<{
+        rawValue: string;
+        content: JSONContent;
+      }>
+    ).detail;
+    event.stopPropagation();
+
+    const wasOver = this.overMaxLength;
+    this.rawValue = detail.rawValue;
+    if (this.maxLength != null) {
+      const isOver = detail.rawValue.length > this.maxLength;
+      this.overMaxLength = isOver;
+      if (isOver !== wasOver) {
         this.dispatchEvent(
           new CustomEvent("cds-aichat-input-over-max-change", {
-            detail: { overMax: next },
+            detail: { overMax: isOver },
             bubbles: true,
             composed: true,
           }),
@@ -302,175 +407,135 @@ class InputShellElement extends LitElement {
       }
     }
 
-    if (
-      changedProperties.has("autocompleteItems") ||
-      changedProperties.has("renderCustomList") ||
-      changedProperties.has("_triggerState")
-    ) {
-      this._autocompleteListManager?.update(
-        this,
-        this._triggerState,
-        this.autocompleteItems,
-        this.renderCustomList,
-      );
-    }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    if (IS_PHONE) {
-      this.setAttribute("phone", "");
-    }
-
-    // Re-initialize on re-adoption: a consumer may detach and reattach the
-    // element (common in some React/portal setups). `disconnectedCallback`
-    // tore down PM, so rebuild it — but only after the first `firstUpdated`
-    // has already run, otherwise let the normal bootstrap path handle it.
-    if (!this._editorViewManager && this.hasUpdated) {
-      this._initProseMirror();
-      this._initAutocompleteListManager();
-    }
-
-    this.addEventListener(
-      "cds-aichat-autocomplete-select",
-      this._handleAutocompleteSelect as EventListener,
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-input-change", {
+        detail: { rawValue: detail.rawValue, content: detail.content },
+        bubbles: true,
+        composed: true,
+      }),
     );
-    this.addEventListener(
-      "cds-aichat-autocomplete-dismiss",
-      this._handleAutocompleteDismiss,
+  };
+
+  private _handlePromptFocus = (event: Event): void => {
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-input-focus", {
+        bubbles: true,
+        composed: true,
+      }),
     );
-  }
+  };
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-
-    this.removeEventListener(
-      "cds-aichat-autocomplete-select",
-      this._handleAutocompleteSelect as EventListener,
+  private _handlePromptBlur = (event: Event): void => {
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-input-blur", {
+        bubbles: true,
+        composed: true,
+      }),
     );
-    this.removeEventListener(
-      "cds-aichat-autocomplete-dismiss",
-      this._handleAutocompleteDismiss,
+  };
+
+  private _handlePromptTyping = (event: Event): void => {
+    const detail = (event as CustomEvent<{ isTyping: boolean }>).detail;
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-input-typing", {
+        detail,
+        bubbles: true,
+        composed: true,
+      }),
     );
+  };
 
-    // Tear down PM before removing autocomplete DOM; the PM view's destructor
-    // may still dispatch events that the autocomplete manager listens for.
-    this._editorViewManager?.destroy();
-    this._editorViewManager = null;
+  private _handlePromptKeydown = (event: Event): void => {
+    const detail = (event as CustomEvent<{ originalEvent: KeyboardEvent }>)
+      .detail;
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-input-keydown", {
+        detail,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  };
 
-    this._autocompleteListManager?.disconnect();
-  }
-
-  // -----------------------------------------------------------------------
-  // ProseMirror initialization
-  // -----------------------------------------------------------------------
-
-  private _initProseMirror() {
-    const { plugins, refs, controllers } = createAllPlugins();
-
-    // Seed mutable refs from current reactive properties so plugins observe
-    // the right values on their very first tick.
-    refs.suggestionConfigs.current = this.suggestionConfigs;
-    refs.autocompleteKeyForwarder.current = (event: KeyboardEvent) => {
-      this._forwardKeyToAutocomplete(event);
-    };
-
-    this._pluginRefs = refs;
-    this._pluginControllers = controllers;
-
-    const manager = new EditorViewManager({
-      host: this,
-      ariaLabel: this.ariaLabel,
-      disabled: this.disabled,
-      plugins,
-      callbacks: {
-        onFocus: () => {
-          this.dispatchEvent(
-            new CustomEvent("cds-aichat-input-focus", {
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        },
-        onBlur: () => {
-          this.dispatchEvent(
-            new CustomEvent("cds-aichat-input-blur", {
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        },
-        onKeydown: (event) => {
-          // Re-emit keydown at the shell so consumers can wire global
-          // shortcuts (F6, Escape, etc.) without reaching into the editor.
-          this.dispatchEvent(
-            new CustomEvent("cds-aichat-input-keydown", {
-              detail: { originalEvent: event },
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        },
-      },
-    });
-    manager.mount();
-    this._editorViewManager = manager;
-
-    // Forward PM-emitted events from the editor container up through the
-    // shell's reactive state. These listeners are disposed with the manager.
-    manager.addContainerEventListener("cds-aichat-input-change", (event) => {
-      this.rawValue = (
-        event as CustomEvent<{ rawValue: string }>
-      ).detail.rawValue;
-    });
-    manager.addContainerEventListener("cds-aichat-trigger-change", (event) => {
-      this._triggerState = (
-        event as CustomEvent<TriggerPluginState | null>
-      ).detail;
-    });
-    manager.addContainerEventListener("cds-aichat-input-send", (event) => {
-      // PM emits a generic send; the shell decides whether the payload is
-      // valid and re-emits with the shell's own event. Stop propagation so
-      // the raw PM event never escapes the light-DOM container.
-      event.stopPropagation();
-      this._handleSend();
-    });
-
-    // If the consumer set `rawValue` before the editor mounted, push it in.
-    if (this.rawValue && manager.view) {
-      controllers.valueSync.setExternalRawValue(manager.view, this.rawValue);
-    }
-
-    this._applyTestIdToEditor();
-  }
-
-  private _applyTestIdToEditor() {
-    const editorDom = this._editorViewManager?.view?.dom;
-    if (!editorDom) {
+  private _handleSendIntent = (event: Event): void => {
+    event.stopPropagation();
+    if (this.isSendDisabled) {
       return;
     }
-    if (this.testId) {
-      editorDom.setAttribute("data-testid", this.testId);
-    } else {
-      editorDom.removeAttribute("data-testid");
+    if (this.overMaxLength) {
+      return;
     }
+    if (!this.rawValue.trim()) {
+      return;
+    }
+    this._dispatchSend();
+  };
+
+  private _handleTriggerChange = (event: Event): void => {
+    const detail = (event as CustomEvent<TriggerChangeEventDetail | null>)
+      .detail;
+    event.stopPropagation();
+    this._triggerState = detail;
+    void this._updateAutocompleteList();
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-trigger-change", {
+        detail,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  };
+
+  // -----------------------------------------------------------------------
+  // Send-control handler
+  // -----------------------------------------------------------------------
+
+  private _handleSendControlSend = (event: Event): void => {
+    if (this.isSendDisabled || this.overMaxLength) {
+      event.stopPropagation();
+      return;
+    }
+    if (!this.rawValue.trim()) {
+      event.stopPropagation();
+      return;
+    }
+    // Augment the bubbling event with the latest rawValue so consumers don't
+    // have to read it from the shell themselves.
+    event.stopPropagation();
+    this._dispatchSend();
+  };
+
+  private _dispatchSend(): void {
+    const detail: SendEventDetail = { text: this.rawValue };
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-input-send", {
+        detail,
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
-  private _initAutocompleteListManager() {
+  // -----------------------------------------------------------------------
+  // Autocomplete list management
+  // -----------------------------------------------------------------------
+
+  private _initAutocompleteListManager(): void {
     this._autocompleteListManager = new AutocompleteListManager({
       onAutocompleteSelect: (item) => {
-        this._handleAutocompleteSelect({
-          detail: { item },
-        } as CustomEvent<{ item: SuggestionItem }>);
+        this._handleSelection(item);
       },
       onAutocompleteDismiss: () => {
-        this._handleAutocompleteDismiss();
+        this._dismissTrigger();
       },
-      onCustomListRender: (detail) => {
+      onCustomListRender: (renderDetail) => {
         this.dispatchEvent(
           new CustomEvent("cds-aichat-custom-list-render", {
-            detail,
+            detail: renderDetail,
             bubbles: true,
             composed: true,
           }),
@@ -479,129 +544,332 @@ class InputShellElement extends LitElement {
     });
   }
 
-  // -----------------------------------------------------------------------
-  // Keyboard forwarding for autocomplete
-  // -----------------------------------------------------------------------
-
-  private _forwardKeyToAutocomplete(event: KeyboardEvent) {
-    // The autocomplete element lives in our light-DOM children; dispatch a
-    // synthetic keydown so it can handle arrow navigation without stealing
-    // focus from the editor.
-    const autocompleteEl = this.querySelector("cds-aichat-autocomplete");
-    if (autocompleteEl) {
-      autocompleteEl.dispatchEvent(
-        new KeyboardEvent("keydown", {
-          key: event.key,
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
+  private async _updateAutocompleteList(): Promise<void> {
+    const trigger = this._triggerState;
+    const manager = this._autocompleteListManager;
+    if (!manager) {
+      return;
     }
+    if (!trigger) {
+      manager.update(this, null, [], undefined);
+      return;
+    }
+    const items = await this._resolveItems(trigger);
+    const renderCustomList = this._resolveRenderCustomList(trigger.type);
+    manager.update(this, trigger, items, renderCustomList);
+  }
+
+  private async _resolveItems(
+    trigger: TriggerChangeEventDetail,
+  ): Promise<SuggestionItem[]> {
+    if (trigger.type === "starter") {
+      return this.starters ?? [];
+    }
+    const config =
+      trigger.type === "mention"
+        ? this.mention
+        : trigger.type === "command"
+          ? this.command
+          : trigger.type === "autocomplete"
+            ? this.autocomplete
+            : undefined;
+    if (!config) {
+      return [];
+    }
+    return await resolveConfigItems(config, trigger.query);
+  }
+
+  private _resolveRenderCustomList(triggerType: string) {
+    if (triggerType === "starter") {
+      return undefined;
+    }
+    const config =
+      triggerType === "mention"
+        ? this.mention
+        : triggerType === "command"
+          ? this.command
+          : triggerType === "autocomplete"
+            ? this.autocomplete
+            : undefined;
+    return config?.renderCustomList;
+  }
+
+  private _handleSelection(item: SuggestionItem): void {
+    const trigger = this._triggerState;
+    const editor = this.getEditor();
+    if (!trigger || !editor) {
+      return;
+    }
+
+    if (trigger.type === "starter") {
+      // Insert the starter's text into the editor and (unless gated) auto-send.
+      const text = item.value ?? item.label;
+      editor.commands.insertContent(text);
+      this.rawValue = projectRawValue(editor);
+      // Fire onSelect callback for analytics / side-effects.
+      // Starters don't have a config object, so no callback to fire.
+      this._dismissTrigger();
+      if (!this.isSendDisabled) {
+        this._dispatchSend();
+      }
+      return;
+    }
+
+    if (trigger.type === "mention" || trigger.type === "command") {
+      const config = trigger.type === "mention" ? this.mention : this.command;
+      const nodeName = trigger.type;
+      const range = {
+        from: trigger.triggerOffset,
+        to: editor.state.selection.from,
+      };
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(range, [
+          {
+            type: nodeName,
+            attrs: {
+              id: item.id,
+              label: item.label,
+              value: item.value ?? item.label,
+            },
+          },
+          { type: "text", text: " " },
+        ])
+        .run();
+      config?.onSelect?.(item);
+    } else if (trigger.type === "autocomplete") {
+      const text = item.value ?? item.label;
+      const range = {
+        from: trigger.triggerOffset,
+        to: editor.state.selection.from,
+      };
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(range, [
+          { type: "text", text },
+          { type: "text", text: " " },
+        ])
+        .run();
+      this.autocomplete?.onSelect?.(item);
+    }
+
+    this.dispatchEvent(
+      new CustomEvent("cds-aichat-autocomplete-select", {
+        detail: { item },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+
+    this._dismissTrigger();
+  }
+
+  private _dismissTrigger(): void {
+    this._triggerState = null;
+    this._autocompleteListManager?.update(this, null, [], undefined);
   }
 
   // -----------------------------------------------------------------------
-  // Slot observation
+  // Internal helpers
   // -----------------------------------------------------------------------
 
-  private _handleMessageActionsSlotChange = (event: Event) => {
+  private _syncRawValueIntoEditor(): void {
+    const promptLine = this._activePromptLine;
+    const editor = promptLine?.getEditor();
+    if (!promptLine || !editor) {
+      return;
+    }
+    const currentText = projectRawValue(editor);
+    if (currentText === this.rawValue) {
+      return;
+    }
+    promptLine.setContent(this.rawValue);
+  }
+
+  private _handleMessageActionsSlotChange = (event: Event): void => {
     const slot = event.target as HTMLSlotElement;
     this._hasMessageActions = slot.assignedElements().length > 0;
   };
 
   // -----------------------------------------------------------------------
-  // Send
+  // Editor slot composition
   // -----------------------------------------------------------------------
 
-  private _handleSendControlSend = (event: Event) => {
-    event.stopPropagation();
-    this._handleSend();
+  private _handleEditorSlotChange = (): void => {
+    void this._resolveActivePromptLine();
   };
 
-  private _handleSend = () => {
-    if (this.disabled || !this._editorViewManager?.view) {
+  /**
+   * Resolve the prompt-line projected into `slot[name="editor"]`. Picks the
+   * first `PromptLineElement` from `slot.assignedElements({ flatten: true })`
+   * — `flatten: true` returns fallback content when nothing is light-DOM-
+   * assigned. Filters by `instanceof PromptLineElement` so consumers can
+   * wrap the prompt-line in extra markup without breaking resolution.
+   *
+   * On every transition (initial resolution, slot reassignment, unassign-
+   * ment), unbinds events from the previous element and rebinds on the new
+   * one. Treats "no longer my active" as a logical disconnect — the prompt-
+   * line's `disconnectedCallback` only fires on DOM removal, not on slot
+   * unassignment.
+   */
+  private async _resolveActivePromptLine(): Promise<void> {
+    const slot = this._editorSlot;
+    if (!slot) {
       return;
     }
-    if (this.overMaxLength) {
-      return;
+    const assigned = slot.assignedElements({ flatten: true });
+    let next =
+      (assigned.find((el) => el instanceof PromptLineElement) as
+        | PromptLineElement
+        | undefined) ?? null;
+    // Per spec, `flatten: true` returns fallback content when nothing is
+    // light-DOM-assigned; some DOM implementations (notably happy-dom) skip
+    // fallback. Fall back to the slot's own children — when nothing is
+    // assigned, those ARE the rendered fallback nodes.
+    if (!next) {
+      next =
+        (Array.from(slot.children).find(
+          (el) => el instanceof PromptLineElement,
+        ) as PromptLineElement | undefined) ?? null;
     }
-    const text = this.rawValue?.trim() ?? "";
-    if (!text) {
+
+    if (next === this._activePromptLine) {
       return;
     }
 
-    this._pluginControllers?.typingIndicator.reset();
+    if (this._activePromptLine) {
+      this._unbindPromptLineListeners(this._activePromptLine);
+    }
+    this._activePromptLine = next;
+    this._lastForwardedExtensions = null;
 
-    this.dispatchEvent(
-      new CustomEvent<SendEventDetail>("cds-aichat-input-send", {
-        detail: { text },
-        bubbles: true,
-        composed: true,
-      }),
+    if (next) {
+      this._bindPromptLineListeners(next);
+      this._forwardPromptLineProps();
+      // Wait for the prompt-line's first update so its editor is mounted
+      // before we sync any pending rawValue into it.
+      await next.updateComplete;
+      if (this._activePromptLine === next && this.rawValue) {
+        this._syncRawValueIntoEditor();
+      }
+    }
+  }
+
+  private _bindPromptLineListeners(el: PromptLineElement): void {
+    el.addEventListener("cds-aichat-prompt-change", this._handlePromptChange);
+    el.addEventListener("cds-aichat-prompt-focus", this._handlePromptFocus);
+    el.addEventListener("cds-aichat-prompt-blur", this._handlePromptBlur);
+    el.addEventListener("cds-aichat-prompt-typing", this._handlePromptTyping);
+    el.addEventListener("cds-aichat-prompt-keydown", this._handlePromptKeydown);
+    el.addEventListener(
+      "cds-aichat-prompt-send-intent",
+      this._handleSendIntent,
     );
-  };
-
-  // -----------------------------------------------------------------------
-  // Autocomplete
-  // -----------------------------------------------------------------------
-
-  private _handleAutocompleteSelect = (
-    event: CustomEvent<{ item: SuggestionItem }>,
-  ) => {
-    const view = this._editorViewManager?.view;
-    if (!view || !this._editorViewManager) {
-      return;
-    }
-    insertAutocompleteItem(
-      view,
-      event.detail.item,
-      this._triggerState,
-      this.suggestionConfigs,
-      this._editorViewManager,
-    );
-  };
-
-  private _handleAutocompleteDismiss = () => {
-    this.dismissTrigger();
-  };
-
-  // -----------------------------------------------------------------------
-  // Public API
-  // -----------------------------------------------------------------------
-
-  /** Dismiss the active trigger/autocomplete. */
-  dismissTrigger() {
-    const view = this._editorViewManager?.view;
-    if (view) {
-      view.dispatch(view.state.tr.setMeta(triggerPluginKey, { dismiss: true }));
-    }
-    this._triggerState = null;
+    el.addEventListener("cds-aichat-trigger-change", this._handleTriggerChange);
   }
 
-  /** Insert a token at the current cursor position. */
-  insertToken(item: SuggestionItem, rawValue: string) {
-    const view = this._editorViewManager?.view;
-    if (!view || !this._editorViewManager) {
-      return;
-    }
-    insertTokenWithRawValue(
-      view,
-      item,
-      rawValue,
-      this._triggerState,
-      this.suggestionConfigs,
-      this._editorViewManager,
+  private _unbindPromptLineListeners(el: PromptLineElement): void {
+    el.removeEventListener(
+      "cds-aichat-prompt-change",
+      this._handlePromptChange,
+    );
+    el.removeEventListener("cds-aichat-prompt-focus", this._handlePromptFocus);
+    el.removeEventListener("cds-aichat-prompt-blur", this._handlePromptBlur);
+    el.removeEventListener(
+      "cds-aichat-prompt-typing",
+      this._handlePromptTyping,
+    );
+    el.removeEventListener(
+      "cds-aichat-prompt-keydown",
+      this._handlePromptKeydown,
+    );
+    el.removeEventListener(
+      "cds-aichat-prompt-send-intent",
+      this._handleSendIntent,
+    );
+    el.removeEventListener(
+      "cds-aichat-trigger-change",
+      this._handleTriggerChange,
     );
   }
 
-  /** Focus the editor input. Returns true if focus succeeded. */
-  requestFocus(): boolean {
-    return this._editorViewManager?.focus() ?? false;
+  private _forwardPromptLineProps(): void {
+    const target = this._activePromptLine;
+    if (!target) {
+      return;
+    }
+    target.disabled = this.disabled;
+    target.ariaLabel = this.ariaLabel;
+    target.testId = this.testId;
+    if (this._computedExtensions !== this._lastForwardedExtensions) {
+      target.extensions = this._computedExtensions;
+      this._lastForwardedExtensions = this._computedExtensions;
+    }
   }
+}
 
-  /** Returns true if the editor currently has focus. */
-  hasFocus(): boolean {
-    return this.matches(":focus-within");
+// ---------------------------------------------------------------------------
+// Module helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the chat-shell-only Tiptap extension that binds plain Enter to fire
+ * `cds-aichat-prompt-send-intent` (matching legacy chat UX). The prompt-line
+ * itself stays generic and only binds Mod-Enter; the shell layers in this
+ * binding so chat composers using the shell get Enter-sends without
+ * configuring it themselves.
+ */
+function buildChatEnterSends(): Extension {
+  return Extension.create({
+    name: "carbonShellChatEnter",
+    addKeyboardShortcuts() {
+      return {
+        Enter: ({ editor }) => {
+          if (editor.isEmpty) {
+            return false;
+          }
+          editor.view.dom.dispatchEvent(
+            new CustomEvent("cds-aichat-prompt-send-intent", {
+              bubbles: true,
+              composed: true,
+            }),
+          );
+          return true;
+        },
+      };
+    },
+  });
+}
+
+/**
+ * Resolve a `BaseSuggestionConfig`'s `items` field — array or async resolver
+ * — to a flat list, applying `minQueryLength` filtering.
+ */
+async function resolveConfigItems(
+  config: {
+    items:
+      | SuggestionItem[]
+      | ((query: string) => Promise<SuggestionItem[]> | SuggestionItem[]);
+    minQueryLength?: number;
+  },
+  query: string,
+): Promise<SuggestionItem[]> {
+  const minQueryLength = config.minQueryLength ?? 0;
+  if (query.length < minQueryLength) {
+    return [];
   }
+  if (typeof config.items === "function") {
+    return await Promise.resolve(config.items(query));
+  }
+  if (!query) {
+    return config.items;
+  }
+  const lower = query.toLowerCase();
+  return config.items.filter((item) =>
+    item.label.toLowerCase().includes(lower),
+  );
 }
 
 declare global {
@@ -610,5 +878,4 @@ declare global {
   }
 }
 
-export { InputShellElement };
 export default InputShellElement;

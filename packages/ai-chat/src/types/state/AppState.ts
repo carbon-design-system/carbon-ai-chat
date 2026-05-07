@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,6 +17,7 @@ import {
 import { LanguagePack } from "../config/PublicConfig";
 import { type FileUpload } from "../config/ServiceDeskConfig";
 import type { StructuredData } from "../messaging/Messages";
+import type { JSONContent } from "../utilities/tiptapReexports";
 
 import type { FileUploadCapabilities } from "../instance/ChatInstance";
 import type { CornersType } from "../../chat/utils/constants";
@@ -260,6 +261,15 @@ interface InputState extends FileUploadCapabilities {
    * serialized output.
    */
   rawValue: string;
+
+  /**
+   * Tiptap-native JSONContent projection of the editor doc — kept in
+   * lockstep with `rawValue` (both update from the same input-change
+   * event).
+   *
+   * @experimental
+   */
+  content: JSONContent;
 
   /**
    * Indicates if the input field is configured to be visible. This is only interpreted as the custom setting defined

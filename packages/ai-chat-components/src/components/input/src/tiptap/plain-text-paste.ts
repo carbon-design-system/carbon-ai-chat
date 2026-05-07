@@ -7,15 +7,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Plugin } from "prosemirror-state";
-import type { Schema } from "prosemirror-model";
-
 /**
- * Creates a plugin that enforces plain-text-only paste.
- * Intercepts paste and drop events, extracts plain text, and inserts
- * it as paragraph nodes split on newlines.
+ * Tiptap plain-text-paste extension. Intercepts paste/drop events,
+ * extracts plain text, and inserts it as paragraph nodes split on
+ * newlines. Schema-agnostic — only requires `paragraph` and `text`
+ * nodes.
  */
-export function createPastePlugin(): Plugin {
+
+import { Extension } from "@tiptap/core";
+import type { Schema } from "@tiptap/pm/model";
+import { Plugin } from "@tiptap/pm/state";
+
+function linesToNodes(schema: Schema, lines: string[]) {
+  return lines.map((line) => {
+    if (line.length === 0) {
+      return schema.nodes.paragraph.create();
+    }
+    return schema.nodes.paragraph.create(null, schema.text(line));
+  });
+}
+
+function createPastePlugin(): Plugin {
   return new Plugin({
     props: {
       handlePaste(view, event, _slice) {
@@ -67,11 +79,10 @@ export function createPastePlugin(): Plugin {
   });
 }
 
-function linesToNodes(schema: Schema, lines: string[]) {
-  return lines.map((line) => {
-    if (line.length === 0) {
-      return schema.nodes.paragraph.create();
-    }
-    return schema.nodes.paragraph.create(null, schema.text(line));
-  });
-}
+export const PlainTextPaste = Extension.create({
+  name: "carbonPlainTextPaste",
+
+  addProseMirrorPlugins() {
+    return [createPastePlugin()];
+  },
+});

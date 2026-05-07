@@ -211,6 +211,8 @@ function shouldSkipDocReference(referencePath) {
     referencePath.includes("path/to/") ||
     referencePath.includes("issue #") ||
     referencePath === "PR.md" ||
+    referencePath === "PLAN.md" ||
+    /^PLAN-\d+.*\.md$/.test(referencePath) || // PLAN-1-title.md, PLAN-1.md, etc.
     referencePath === "src/foo/Bar.ts" ||
     referencePath === "../AGENTS.md" ||
     referencePath === "../docs/AGENTS.md" ||

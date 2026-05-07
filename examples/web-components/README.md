@@ -321,30 +321,29 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 
 ### [Input / Mentions & commands](./input-mentions-and-commands/README.md)
 
-`<cds-aichat-container>` configured with two suggestion entries: `@mentions` for picking team members anywhere in the message, and `/commands` constrained to the start of the line.
+`<cds-aichat-container>` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-mentions-and-commands`
 
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                                | Kind           | Role in this example                                                     |
-| ------------------------------------- | -------------- | ------------------------------------------------------------------------ |
-| `<cds-aichat-container>`              | custom element | Mounts the chat UI.                                                      |
-| `PublicConfig`                        | type           | Types the config bound to the element's properties.                      |
-| `ChatInstance`                        | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                      | type           | Shape of each entry returned from `items`.                               |
-| `SuggestionType.MENTION`              | enum           | Selects the mention suggestion behavior.                                 |
-| `SuggestionType.COMMAND`              | enum           | Selects the command suggestion behavior.                                 |
-| `.input` (`input.suggestions`)        | property       | Registers two suggestion configurations on the input.                    |
-| `suggestion.trigger`                  | property       | Character (`@` or `/`) that opens the suggestion list.                   |
-| `suggestion.triggerPosition`          | property       | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.items`                    | property       | Async filter narrowing items as the user types.                          |
-| `suggestion.onSelect`                 | property       | Hook that runs when the user picks a suggestion.                         |
-| `.onBeforeRender`                     | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData` | method         | Appends mention/command picks to the outgoing message's structured data. |
-| `.messaging.customSendMessage`        | property       | Reads `request.input.structured_data` and echoes the picks.              |
-| `.injectCarbonTheme`                  | property       | Applies the white Carbon theme.                                          |
+| Symbol                                  | Kind           | Role in this example                                                     |
+| --------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| `<cds-aichat-container>`                | custom element | Mounts the chat UI.                                                      |
+| `PublicConfig`                          | type           | Types the config bound to the element's properties.                      |
+| `ChatInstance`                          | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | type           | Shape of each entry returned from `items`.                               |
+| `.input` (`input.mention`)              | property       | Registers the `@`-mention trigger config on the input.                   |
+| `.input` (`input.command`)              | property       | Registers the `/`-command trigger config on the input.                   |
+| `mention.trigger` / `command.trigger`   | property       | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
+| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |
+| `instance.input.updateStructuredData`   | method         | Appends mention/command picks to the outgoing message's structured data. |
+| `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
+| `.injectCarbonTheme`                    | property       | Applies the white Carbon theme.                                          |
 
 </details>
 
@@ -357,75 +356,71 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                                | Kind           | Role in this example                                                     |
-| ------------------------------------- | -------------- | ------------------------------------------------------------------------ |
-| `<cds-aichat-container>`              | custom element | Mounts the chat UI.                                                      |
-| `<cds-definition-tooltip>`            | custom element | Carbon component used inside the custom token renderer.                  |
-| `PublicConfig`                        | type           | Types the config bound to the element's properties.                      |
-| `ChatInstance`                        | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                      | type           | Shape of each entry; passed to `renderCustomToken`.                      |
-| `SuggestionType.MENTION`              | enum           | Selects the mention suggestion behavior.                                 |
-| `SuggestionType.COMMAND`              | enum           | Selects the command suggestion behavior.                                 |
-| `.input` (`input.suggestions`)        | property       | Registers two suggestion configurations on the input.                    |
-| `suggestion.renderCustomToken`        | property       | Returns an `HTMLElement` rendered in place of the default chip.          |
-| `suggestion.trigger`                  | property       | Character (`@` or `/`) that opens the suggestion list.                   |
-| `suggestion.triggerPosition`          | property       | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.items`                    | property       | Async filter narrowing items as the user types.                          |
-| `suggestion.onSelect`                 | property       | Hook that runs when the user picks a suggestion.                         |
-| `.onBeforeRender`                     | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData` | method         | Appends mention/command picks to the outgoing message's structured data. |
-| `.messaging.customSendMessage`        | property       | Reads `request.input.structured_data` and echoes the picks.              |
-| `.injectCarbonTheme`                  | property       | Applies the white Carbon theme.                                          |
+| Symbol                                  | Kind           | Role in this example                                                     |
+| --------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| `<cds-aichat-container>`                | custom element | Mounts the chat UI.                                                      |
+| `<cds-definition-tooltip>`              | custom element | Carbon component used inside the custom token renderer.                  |
+| `PublicConfig`                          | type           | Types the config bound to the element's properties.                      |
+| `ChatInstance`                          | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | type           | Shape of each entry; passed to `renderCustomToken`.                      |
+| `.input` (`input.mention`)              | property       | Registers the `@`-mention trigger config on the input.                   |
+| `.input` (`input.command`)              | property       | Registers the `/`-command trigger config on the input.                   |
+| `mention.renderCustomToken`             | property       | Returns an `HTMLElement` rendered in place of the default mention chip.  |
+| `mention.trigger` / `command.trigger`   | property       | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
+| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |
+| `instance.input.updateStructuredData`   | method         | Appends mention/command picks to the outgoing message's structured data. |
+| `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
+| `.injectCarbonTheme`                    | property       | Applies the white Carbon theme.                                          |
 
 </details>
 
 ### [Input / Typeahead](./input-typeahead/README.md)
 
-`<cds-aichat-container>` configured with an `AUTOCOMPLETE` suggestion that filters a canned list as the user types and renders the matches in a dropdown above the input.
+`<cds-aichat-container>` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-typeahead`
 
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                         | Kind           | Role in this example                                  |
-| ------------------------------ | -------------- | ----------------------------------------------------- |
-| `<cds-aichat-container>`       | custom element | Mounts the chat UI.                                   |
-| `PublicConfig`                 | type           | Types the config bound to the element's properties.   |
-| `SuggestionType.AUTOCOMPLETE`  | enum           | Selects the autocomplete suggestion behavior.         |
-| `SuggestionItem`               | type           | Shape of each entry returned from `items`.            |
-| `.input` (`input.suggestions`) | property       | Registers the typeahead behavior on the input.        |
-| `suggestion.trigger`           | property       | Empty string fires `items` on every keystroke.        |
-| `suggestion.items`             | property       | Async filter that returns matching `SuggestionItem`s. |
-| `suggestion.debounceMs`        | property       | Coalesces keystrokes before calling `items`.          |
-| `.messaging.customSendMessage` | property       | Mock backend echoing the user's message.              |
-| `.injectCarbonTheme`           | property       | Applies the white Carbon theme.                       |
+| Symbol                          | Kind           | Role in this example                                  |
+| ------------------------------- | -------------- | ----------------------------------------------------- |
+| `<cds-aichat-container>`        | custom element | Mounts the chat UI.                                   |
+| `PublicConfig`                  | type           | Types the config bound to the element's properties.   |
+| `SuggestionItem`                | type           | Shape of each entry returned from `items`.            |
+| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.        |
+| `autocomplete.items`            | property       | Async filter that returns matching `SuggestionItem`s. |
+| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.          |
+| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.              |
+| `.injectCarbonTheme`            | property       | Applies the white Carbon theme.                       |
 
 </details>
 
 ### [Input / Typeahead (custom list)](./input-typeahead-custom/README.md)
 
-`<cds-aichat-container>` with an `AUTOCOMPLETE` suggestion whose dropdown is replaced by a fully custom Lit element supplied through `renderCustomList`.
+`<cds-aichat-container>` with `input.autocomplete` whose dropdown is replaced by a fully custom Lit element supplied through `renderCustomList`.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-typeahead-custom`
 
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                         | Kind           | Role in this example                                                            |
-| ------------------------------ | -------------- | ------------------------------------------------------------------------------- |
-| `<cds-aichat-container>`       | custom element | Mounts the chat UI.                                                             |
-| `<custom-suggestion-list>`     | custom element | Lit element returned from `renderCustomList`.                                   |
-| `PublicConfig`                 | type           | Types the config bound to the element's properties.                             |
-| `SuggestionType.AUTOCOMPLETE`  | enum           | Selects the autocomplete suggestion behavior.                                   |
-| `SuggestionItem`               | type           | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
-| `CustomListProps`              | type           | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
-| `.input` (`input.suggestions`) | property       | Registers the typeahead behavior on the input.                                  |
-| `suggestion.renderCustomList`  | property       | Returns an `HTMLElement` that replaces the default dropdown.                    |
-| `suggestion.items`             | property       | Async filter providing entries to the custom list.                              |
-| `suggestion.debounceMs`        | property       | Coalesces keystrokes before calling `items`.                                    |
-| `.messaging.customSendMessage` | property       | Mock backend echoing the user's message.                                        |
-| `.injectCarbonTheme`           | property       | Applies the white Carbon theme.                                                 |
+| Symbol                          | Kind           | Role in this example                                                            |
+| ------------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `<cds-aichat-container>`        | custom element | Mounts the chat UI.                                                             |
+| `<custom-suggestion-list>`      | custom element | Lit element returned from `renderCustomList`.                                   |
+| `PublicConfig`                  | type           | Types the config bound to the element's properties.                             |
+| `SuggestionItem`                | type           | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
+| `CustomListProps`               | type           | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
+| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.                                  |
+| `autocomplete.renderCustomList` | property       | Returns an `HTMLElement` that replaces the default dropdown.                    |
+| `autocomplete.items`            | property       | Async filter providing entries to the custom list.                              |
+| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.                                    |
+| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.                                        |
+| `.injectCarbonTheme`            | property       | Applies the white Carbon theme.                                                 |
 
 </details>
 

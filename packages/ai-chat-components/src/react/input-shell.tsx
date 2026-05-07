@@ -13,11 +13,11 @@ import React from "react";
 import InputShellElement from "../components/input/src/input-shell.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
-
 import type {
   SuggestionItem,
-  SuggestionConfig,
-} from "../components/input/src/types.js";
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+} from "../components/input/src/tiptap/types.js";
 
 const ICON_SIZE = 16;
 
@@ -35,26 +35,29 @@ function transformItemIcon(item: SuggestionItem): SuggestionItem {
   };
 }
 
-/**
- * Transforms all suggestion configs, converting React icon components in
- * items to CarbonIcon format.
- */
-function transformSuggestionConfigs(
-  configs: SuggestionConfig[],
-): SuggestionConfig[] {
-  return configs.map((config) => {
-    if (Array.isArray(config.items)) {
-      return { ...config, items: config.items.map(transformItemIcon) };
-    }
-    const asyncFn = config.items;
-    return {
-      ...config,
-      items: async (query: string) => {
-        const items = await asyncFn(query);
-        return items.map(transformItemIcon);
-      },
-    };
-  });
+type SuggestionItemsField =
+  | SuggestionItem[]
+  | ((query: string) => Promise<SuggestionItem[]> | SuggestionItem[]);
+
+function transformItemsField(
+  items: SuggestionItemsField,
+): SuggestionItemsField {
+  if (Array.isArray(items)) {
+    return items.map(transformItemIcon);
+  }
+  return async (query: string) => {
+    const resolved = await items(query);
+    return resolved.map(transformItemIcon);
+  };
+}
+
+function transformSuggestionConfig<
+  T extends TriggerSuggestionConfig | AutocompleteConfig,
+>(config: T | undefined): T | undefined {
+  if (!config) {
+    return config;
+  }
+  return { ...config, items: transformItemsField(config.items) } as T;
 }
 
 // Base input shell component from @lit/react
@@ -79,26 +82,38 @@ const BaseInputShell = withWebComponentBridge(
 );
 
 /**
- * Input shell component with automatic icon transformation support.
- *
- * Accepts suggestion configs with either CarbonIcon objects or React icon components
- * from `@carbon/icons-react`. React icons are automatically transformed to the
- * CarbonIcon format expected by the web component.
+ * Input shell component with automatic icon transformation for suggestion
+ * items. Accepts either CarbonIcon objects or React icon components from
+ * `@carbon/icons-react`; React icons are converted to the CarbonIcon format
+ * expected by the web component.
  */
 const InputShell = React.forwardRef<any, any>((props, ref) => {
-  const { suggestionConfigs, ...restProps } = props;
+  const { mention, command, autocomplete, starters, ...restProps } = props;
 
-  const transformedConfigs = React.useMemo(() => {
-    if (!suggestionConfigs) {
-      return undefined;
-    }
-    return transformSuggestionConfigs(suggestionConfigs);
-  }, [suggestionConfigs]);
+  const transformedMention = React.useMemo(
+    () => transformSuggestionConfig(mention),
+    [mention],
+  );
+  const transformedCommand = React.useMemo(
+    () => transformSuggestionConfig(command),
+    [command],
+  );
+  const transformedAutocomplete = React.useMemo(
+    () => transformSuggestionConfig(autocomplete),
+    [autocomplete],
+  );
+  const transformedStarters = React.useMemo<SuggestionItem[] | undefined>(
+    () => (starters ? starters.map(transformItemIcon) : undefined),
+    [starters],
+  );
 
   return (
     <BaseInputShell
       ref={ref}
-      suggestionConfigs={transformedConfigs}
+      mention={transformedMention}
+      command={transformedCommand}
+      autocomplete={transformedAutocomplete}
+      starters={transformedStarters}
       {...restProps}
     />
   );

@@ -7,12 +7,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { AutocompleteListCallbacks } from "./types.js";
 import type {
-  SuggestionItem,
   CustomListProps,
+  SuggestionItem,
   TriggerChangeEventDetail,
-  AutocompleteListCallbacks,
-} from "./types.js";
+} from "./tiptap/types.js";
 import type AutocompleteElement from "../../autocomplete/src/autocomplete.js";
 
 /**

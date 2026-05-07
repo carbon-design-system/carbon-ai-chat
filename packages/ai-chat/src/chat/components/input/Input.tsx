@@ -10,24 +10,18 @@
 import React, {
   forwardRef,
   Ref,
-  useCallback,
   useEffect,
-  useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from "react";
-import ReactDOM from "react-dom";
 import InputShell from "@carbon/ai-chat-components/es/react/input-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
-import type {
-  FileUpload,
-  SuggestionConfig,
-  SuggestionItem,
-} from "@carbon/ai-chat-components/es/components/input/src/types.js";
+import type { FileUpload } from "@carbon/ai-chat-components/es/components/input/src/types.js";
 import { FileStatusValue } from "@carbon/ai-chat-components/es/components/input/src/types.js";
 import type { InputShellElement } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { Editor, JSONContent } from "@tiptap/core";
 import actions from "../../store/actions";
 import {
   selectInputState,
@@ -149,35 +143,57 @@ interface InputProps {
  */
 interface InputFunctions {
   /**
-   * Instructs the text area to take focus.
-   * @deprecated Use requestFocus() instead for consistency with focus management pattern
-   */
-  takeFocus: () => void;
-
-  /**
    * Requests focus on the input field.
-   * Follows the generic focus management pattern for web components.
-   * @returns {boolean} True if focus was successfully set, false otherwise
    */
   requestFocus: () => boolean;
 
   /**
    * Returns true if the input field currently has focus.
-   * Encapsulates internal focus detection logic.
-   * @returns {boolean} True if the input field has focus
    */
   hasFocus: () => boolean;
+
+  /**
+   * Replace the entire input content. Throws if the editor is not currently
+   * rendered.
+   *
+   * @experimental
+   */
+  setContent: (
+    next: JSONContent | string | ((prev: JSONContent) => JSONContent),
+  ) => void;
+
+  /**
+   * Insert content at the cursor or at `options.at` (a PM document offset).
+   * Throws if the editor is not currently rendered.
+   *
+   * @experimental
+   */
+  insertContent: (
+    content: JSONContent | string,
+    options?: { at?: number },
+  ) => void;
+
+  /**
+   * Probe-style access to the live Tiptap editor. Returns `null` when the
+   * editor is not mounted.
+   *
+   * @experimental
+   */
+  getEditor: () => Editor | null;
 }
 
 /**
  * Input - Redux-connected container component for the input field.
  *
- * This component composes child components into the InputShell's named slots:
+ * Composes child components into the InputShell's named slots:
  * - `message-actions` — upload button (future: overflow menu)
  * - `file-uploads` — pending file upload status display
  * - `send-control` — send button / stop streaming button
  *
- * The editor element is created internally by InputShell using ProseMirror.
+ * The editor is owned by the inner `<cds-aichat-prompt-line>` slotted into
+ * the shell. Mention/command/autocomplete/starters/extensions are forwarded
+ * to the shell as discrete props; the shell builds the curated Tiptap
+ * extension list internally.
  */
 function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const {
@@ -205,49 +221,58 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const languagePack = useLanguagePack();
   const store = serviceManager.store;
 
-  // Subscribe to suggestion configs from store so runtime changes are picked up
-  const [suggestionConfigs, setSuggestionConfigs] = useState<
-    SuggestionConfig[]
-  >(() => store.getState().config.public.input?.suggestions || []);
+  // Subscribe to inputConfig fields the shell needs as discrete props.
+  // Memoized snapshots keep prop reference equality stable across renders
+  // (the shell rebuilds the editor on extension-array reference change).
+  const initialInputConfig = store.getState().config.public.input;
+
+  const [mention, setMention] = useState(() => initialInputConfig?.mention);
+  const [command, setCommand] = useState(() => initialInputConfig?.command);
+  const [autocomplete, setAutocomplete] = useState(
+    () => initialInputConfig?.autocomplete,
+  );
+  const [starters, setStarters] = useState(() => initialInputConfig?.starters);
+  const [hostExtensions, setHostExtensions] = useState(
+    () => initialInputConfig?.tiptap?.extensions,
+  );
+  const [isSendDisabledFromConfig, setIsSendDisabledFromConfig] = useState(() =>
+    Boolean(initialInputConfig?.isSendDisabled),
+  );
 
   useEffect(() => {
     const unsubscribe = store.subscribe(() => {
-      const next = store.getState().config.public.input?.suggestions || [];
-      setSuggestionConfigs((prev) => (prev !== next ? next : prev));
+      const next = store.getState().config.public.input;
+      setMention((prev) => (prev !== next?.mention ? next?.mention : prev));
+      setCommand((prev) => (prev !== next?.command ? next?.command : prev));
+      setAutocomplete((prev) =>
+        prev !== next?.autocomplete ? next?.autocomplete : prev,
+      );
+      setStarters((prev) => (prev !== next?.starters ? next?.starters : prev));
+      setHostExtensions((prev) =>
+        prev !== next?.tiptap?.extensions ? next?.tiptap?.extensions : prev,
+      );
+      setIsSendDisabledFromConfig((prev) => {
+        const flag = Boolean(next?.isSendDisabled);
+        return prev !== flag ? flag : prev;
+      });
     });
     return unsubscribe;
   }, [store]);
 
+  // OR isSendDisabled from config into the locally-computed disableSend so
+  // the existing overMaxLength / in-flight-uploads / streaming gates still
+  // apply on top.
+  const effectiveDisableSend = disableSend || isSendDisabledFromConfig;
+
   // Track if we've announced the keyboard shortcut to avoid repeating it
   const [hasAnnouncedShortcut, setHasAnnouncedShortcut] = useState(false);
-
-  // State for managing autocomplete items
-  const [autocompleteItems, setAutocompleteItems] = useState<SuggestionItem[]>(
-    [],
-  );
-  const [activeSuggestionConfig, setActiveSuggestionConfig] =
-    useState<SuggestionConfig | null>(null);
-
-  // State for custom list React portal (two-level slot projection)
-  const [customListPortal, setCustomListPortal] = useState<{
-    reactNode: React.ReactNode;
-    hostElement: HTMLDivElement;
-  } | null>(null);
-  const customListSlotRef = useRef<HTMLSlotElement | null>(null);
-  const customListHostRef = useRef<HTMLDivElement | null>(null);
-
-  // Refs for debouncing and tracking
-  const fetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fetchGenerationRef = useRef(0);
-  // Sentinel value ("\0") distinguishes "never queried" from "empty query"
-  const lastQueryRef = useRef<string>("\0");
 
   // Get tracked input state from Redux if enabled
   const trackedInputState = trackInputState
     ? selectInputState(store.getState())
     : null;
 
-  // Local state for input value (rawValue only — PM doc is internal source of truth)
+  // Local state for input value (rawValue only — JSONContent doc is internal).
   const [rawInputValue, setRawInputValue] = useState(
     trackedInputState?.rawValue ?? "",
   );
@@ -273,50 +298,24 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     return unsubscribe;
   }, [store, trackInputState]);
 
-  // Clean up pending fetch timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Clean up custom list portal when suggestion list is dismissed
-  useEffect(() => {
-    const shouldShow =
-      activeSuggestionConfig?.renderCustomList && autocompleteItems.length > 0;
-
-    if (!shouldShow && customListPortal) {
-      setCustomListPortal(null);
-      customListSlotRef.current?.remove();
-      customListHostRef.current?.remove();
-    }
-  }, [activeSuggestionConfig, autocompleteItems, customListPortal]);
-
-  // Clean up custom list slot + host elements on unmount
-  useEffect(() => {
-    const slotRef = customListSlotRef;
-    const hostRef = customListHostRef;
-    return () => {
-      slotRef.current?.remove();
-      hostRef.current?.remove();
-    };
-  }, []);
-
   /**
-   * Handle input value changes from the shell.
-   * Dispatches to Redux if tracking is enabled.
+   * Handle input value changes from the shell. Dispatches to Redux if
+   * tracking is enabled. `content` is Tiptap JSONContent.
    */
-  const handleInputChange = (event: CustomEvent<{ rawValue: string }>) => {
-    const { rawValue } = event.detail;
+  const handleInputChange = (
+    event: CustomEvent<{ rawValue: string; content?: JSONContent }>,
+  ) => {
+    const { rawValue, content } = event.detail;
 
     setRawInputValue(rawValue);
 
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
       store.dispatch(
-        actions.updateInputState({ rawValue }, isInputToHumanAgent),
+        actions.updateInputState(
+          { rawValue, content: content ?? { type: "doc", content: [] } },
+          isInputToHumanAgent,
+        ),
       );
     }
   };
@@ -328,7 +327,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     const { text } = event.detail;
     onSendInput(text);
 
-    // Reset the value of the field
     setRawInputValue("");
 
     if (trackInputState) {
@@ -416,183 +414,47 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onUserTyping?.(isTyping);
   };
 
-  /**
-   * Handle trigger state changes from the shell.
-   * Finds matching suggestion config and fetches items.
-   */
-  const handleTriggerChange = useCallback(
-    (
-      event: CustomEvent<{
-        type: string | null;
-        query: string;
-        triggerOffset: number;
-      } | null>,
-    ) => {
-      const type = event.detail?.type ?? null;
-      const query = event.detail?.query ?? "";
-
-      // Clear any pending fetch
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-        fetchTimeoutRef.current = null;
-      }
-
-      // If no trigger is active, clear items and config
-      if (!type) {
-        setAutocompleteItems([]);
-        setActiveSuggestionConfig(null);
-        lastQueryRef.current = "\0";
-        return;
-      }
-
-      // Find matching suggestion config by type
-      const matchingConfig = suggestionConfigs.find(
-        (config: SuggestionConfig) => config.type === type,
-      );
-
-      if (!matchingConfig) {
-        setAutocompleteItems([]);
-        setActiveSuggestionConfig(null);
-        return;
-      }
-
-      setActiveSuggestionConfig(matchingConfig);
-
-      // If query hasn't changed, don't refetch
-      if (query === lastQueryRef.current) {
-        return;
-      }
-      lastQueryRef.current = query;
-
-      // Check minQueryLength
-      const minLength = matchingConfig.minQueryLength ?? 0;
-      if (query.length < minLength) {
-        setAutocompleteItems([]);
-        return;
-      }
-
-      // Handle static items
-      if (Array.isArray(matchingConfig.items)) {
-        const filtered = matchingConfig.items.filter((item: SuggestionItem) =>
-          item.label.toLowerCase().includes(query.toLowerCase()),
-        );
-        setAutocompleteItems(filtered);
-        return;
-      }
-
-      // Handle async items with debouncing
-      const debounceMs = matchingConfig.debounceMs ?? 200;
-      const gen = ++fetchGenerationRef.current;
-      fetchTimeoutRef.current = setTimeout(async () => {
-        try {
-          if (typeof matchingConfig.items === "function") {
-            const items = await matchingConfig.items(query);
-            // Only apply results if this is still the latest fetch
-            if (gen === fetchGenerationRef.current) {
-              setAutocompleteItems(items);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching suggestion items:", error);
-          if (gen === fetchGenerationRef.current) {
-            setAutocompleteItems([]);
-          }
-        }
-      }, debounceMs);
-    },
-    [suggestionConfigs],
-  );
-
-  /**
-   * Handle autocomplete item selection.
-   */
-  const handleAutocompleteSelect = useCallback(
-    (event: CustomEvent<{ item: SuggestionItem }>) => {
-      const { item } = event.detail;
-
-      if (activeSuggestionConfig?.onSelect) {
-        activeSuggestionConfig.onSelect(item);
-      }
-
-      setAutocompleteItems([]);
-      setActiveSuggestionConfig(null);
-      lastQueryRef.current = "\0";
-    },
-    [activeSuggestionConfig],
-  );
-
-  /**
-   * Handle custom list render events from InputShell.
-   * When renderCustomList returns a React node (not HTMLElement),
-   * AutocompleteListManager emits this event so we can portal-render it.
-   *
-   * Uses two-level slot projection so the portal host lives in chatWrapper's
-   * light DOM (where page CSS applies) while visually appearing inside
-   * InputShell's autocomplete-content slot.
-   */
-  const handleCustomListRender = useCallback(
-    (event: CustomEvent<{ reactNode: unknown }>) => {
-      const { reactNode } = event.detail;
-      const shell = inputShellRef.current;
-      if (!shell) {
-        return;
-      }
-
-      // Navigate to chatWrapper (cds-aichat-react) via shadow root host
-      const rootNode = shell.getRootNode();
-      const chatWrapper = rootNode instanceof ShadowRoot ? rootNode.host : null;
-      if (!chatWrapper) {
-        return;
-      }
-
-      // Create slot + host pair on first render, reuse thereafter
-      if (!customListSlotRef.current || !customListHostRef.current) {
-        const slotName = `cds-aichat-custom-list-${Date.now()}`;
-
-        // Slot lives in InputShell's light DOM, projected via autocomplete-content
-        const slotEl = document.createElement("slot");
-        slotEl.setAttribute("name", slotName);
-        slotEl.setAttribute("slot", "autocomplete-content");
-        customListSlotRef.current = slotEl;
-
-        // Host lives in chatWrapper's light DOM — page CSS applies here
-        const hostEl = document.createElement("div");
-        hostEl.setAttribute("slot", slotName);
-        customListHostRef.current = hostEl;
-      }
-
-      // Ensure both elements are in the DOM
-      if (!customListSlotRef.current.parentElement) {
-        shell.appendChild(customListSlotRef.current);
-      }
-      if (!customListHostRef.current.parentElement) {
-        chatWrapper.appendChild(customListHostRef.current);
-      }
-
-      setCustomListPortal({
-        reactNode: reactNode as React.ReactNode,
-        hostElement: customListHostRef.current,
-      });
-    },
-    [],
-  );
-
   // Create a ref to the shell element
   const inputShellRef = useRef<InputShellElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Expose the InputFunctions interface via ref
-  useImperativeHandle(ref, () => ({
-    takeFocus: () => {
-      inputShellRef.current?.requestFocus();
-    },
-    requestFocus: () => {
-      return inputShellRef.current?.requestFocus() ?? false;
-    },
-    hasFocus: () => {
-      return inputShellRef.current?.hasFocus?.() ?? false;
-    },
-  }));
+  const inputFunctions = useMemo<InputFunctions>(
+    () => ({
+      requestFocus: () => {
+        return inputShellRef.current?.requestFocus() ?? false;
+      },
+      hasFocus: () => {
+        return inputShellRef.current?.hasFocus?.() ?? false;
+      },
+      setContent: (next) => {
+        const shell = inputShellRef.current;
+        if (!shell) {
+          throw new Error("Input is not currently rendered");
+        }
+        shell.setContent(next);
+      },
+      insertContent: (content, options) => {
+        const shell = inputShellRef.current;
+        if (!shell) {
+          throw new Error("Input is not currently rendered");
+        }
+        shell.insertContent(content, options);
+      },
+      getEditor: () => {
+        return inputShellRef.current?.getEditor?.() ?? null;
+      },
+    }),
+    [],
+  );
+
+  React.useImperativeHandle(ref, () => inputFunctions, [inputFunctions]);
+
+  useEffect(() => {
+    serviceManager.setInputFunctionsRef(inputFunctions);
+    return () => {
+      serviceManager.setInputFunctionsRef(null);
+    };
+  }, [serviceManager, inputFunctions]);
 
   const hasValidInput = useMemo(
     () =>
@@ -610,89 +472,82 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const showUploadButtonDisabled = disableUploadButton || disableInput;
 
   return (
-    <>
-      <InputShell
-        ref={inputShellRef}
-        disabled={disableInput}
-        rawValue={disableInput ? "" : rawInputValue}
-        placeholder={
-          placeholder ||
-          (disableInput ? undefined : languagePack.input_placeholder)
-        }
-        maxLength={maxInputChars}
-        suggestionConfigs={suggestionConfigs}
-        autocompleteItems={autocompleteItems}
-        renderCustomList={activeSuggestionConfig?.renderCustomList}
-        testId={PageObjectId.INPUT}
-        rounded={rounded}
-        onChange={handleInputChange}
-        onSend={handleSend}
-        onFocus={handleInputFocus}
-        onTyping={handleTyping}
-        onTriggerChange={handleTriggerChange}
-        onAutocompleteSelect={handleAutocompleteSelect}
-        onCustomListRender={handleCustomListRender}
-      >
-        {/* Editor is created internally by InputShell via ProseMirror */}
+    <InputShell
+      ref={inputShellRef}
+      disabled={disableInput}
+      rawValue={disableInput ? "" : rawInputValue}
+      placeholder={
+        placeholder ||
+        (disableInput ? undefined : languagePack.input_placeholder)
+      }
+      maxLength={maxInputChars}
+      mention={mention}
+      command={command}
+      autocomplete={autocomplete}
+      starters={starters}
+      extensions={hostExtensions}
+      isSendDisabled={isSendDisabledFromConfig}
+      testId={PageObjectId.INPUT}
+      rounded={rounded}
+      onChange={handleInputChange}
+      onSend={handleSend}
+      onFocus={handleInputFocus}
+      onTyping={handleTyping}
+    >
+      {/* Editor is created internally by InputShell (slots a prompt-line). */}
 
-        {/* Message actions — upload button (future: overflow menu) */}
-        {showUploadButton && (
-          <div slot="message-actions">
-            <input
-              type="file"
-              ref={fileInputRef}
-              hidden
-              tabIndex={-1}
-              accept={allowedFileUploadTypes || ""}
-              multiple={allowMultipleFileUploads}
-              disabled={showUploadButtonDisabled}
-              onChange={handleFileSelect}
-            />
-            <IconButton
-              kind={BUTTON_KIND.GHOST}
-              size="sm"
-              disabled={showUploadButtonDisabled}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <AddIcon slot="icon" />
-              <span slot="tooltip-content">
-                {languagePack.input_uploadButtonLabel}
-              </span>
-            </IconButton>
-          </div>
-        )}
-
-        {/* File uploads — pending file status display */}
-        {pendingUploads && pendingUploads.length > 0 && (
-          <FileUploads
-            slot="file-uploads"
-            uploads={pendingUploads}
-            removeFileLabel={languagePack.fileSharing_removeButtonTitle}
-            uploadingFileLabel={languagePack.fileSharing_statusUploading}
-            onFileRemove={handleRemoveFile}
+      {/* Message actions — upload button (future: overflow menu) */}
+      {showUploadButton && (
+        <div slot="message-actions">
+          <input
+            type="file"
+            ref={fileInputRef}
+            hidden
+            tabIndex={-1}
+            accept={allowedFileUploadTypes || ""}
+            multiple={allowMultipleFileUploads}
+            disabled={showUploadButtonDisabled}
+            onChange={handleFileSelect}
           />
-        )}
+          <IconButton
+            kind={BUTTON_KIND.GHOST}
+            size="sm"
+            disabled={showUploadButtonDisabled}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <AddIcon slot="icon" />
+            <span slot="tooltip-content">
+              {languagePack.input_uploadButtonLabel}
+            </span>
+          </IconButton>
+        </div>
+      )}
 
-        {/* Send control — send button / stop streaming button */}
-        <InputSendControl
-          slot="send-control"
-          hasValidInput={hasValidInput}
-          disabled={disableInput}
-          disableSend={disableSend}
-          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
-          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
-          buttonLabel={languagePack.input_buttonLabel}
-          stopResponseLabel={languagePack.input_stopResponse}
-          testId={PageObjectId.INPUT_SEND}
-          onStopStreaming={handleStopStreaming}
+      {/* File uploads — pending file status display */}
+      {pendingUploads && pendingUploads.length > 0 && (
+        <FileUploads
+          slot="file-uploads"
+          uploads={pendingUploads}
+          removeFileLabel={languagePack.fileSharing_removeButtonTitle}
+          uploadingFileLabel={languagePack.fileSharing_statusUploading}
+          onFileRemove={handleRemoveFile}
         />
-      </InputShell>
-      {customListPortal &&
-        ReactDOM.createPortal(
-          customListPortal.reactNode,
-          customListPortal.hostElement,
-        )}
-    </>
+      )}
+
+      {/* Send control — send button / stop streaming button */}
+      <InputSendControl
+        slot="send-control"
+        hasValidInput={hasValidInput}
+        disabled={disableInput}
+        disableSend={effectiveDisableSend}
+        isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+        isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+        buttonLabel={languagePack.input_buttonLabel}
+        stopResponseLabel={languagePack.input_stopResponse}
+        testId={PageObjectId.INPUT_SEND}
+        onStopStreaming={handleStopStreaming}
+      />
+    </InputShell>
   );
 }
 

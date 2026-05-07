@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -22,8 +22,16 @@ import { HistoryItem } from "../messaging/History";
 import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
-import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
+import type { ToolbarAction as _ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
 import type { KeyboardShortcuts } from "./ShortcutConfig";
+
+/**
+ * A single action to render in the chat header toolbar. Used by
+ * {@link HeaderConfig.actions} to add custom buttons to the header.
+ *
+ * @category Config
+ */
+export type ToolbarAction = _ToolbarAction;
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -297,13 +305,16 @@ export enum MinimizeButtonIconType {
   SIDE_PANEL_DOWN = "side-panel-down",
 }
 
-// Canonical type definitions live in @carbon/ai-chat-components.
+// Local re-declarations of these tiptap-related types live in
+// `../utilities/tiptapReexports`; importing through the local module keeps
+// TypeDoc resolution pointed at our JSDoc + `@category` placement instead of
+// the upstream declarations.
 import type {
+  TriggerSuggestionConfig,
   SuggestionItem,
-  CustomListProps,
-  SuggestionConfig,
-} from "@carbon/ai-chat-components/es/components/input/src/types.js";
-import { SuggestionType } from "@carbon/ai-chat-components/es/components/input/src/types.js";
+  AutocompleteConfig,
+  Extension,
+} from "../utilities/tiptapReexports";
 
 /**
  * Configuration for the input field in the main chat and homescreen.
@@ -329,12 +340,68 @@ export interface InputConfig {
   isDisabled?: boolean;
 
   /**
-   * Configuration for input suggestions (mentions, commands, autocomplete).
-   * Enables token-based autocomplete with configurable triggers and items.
+   * If true, the send button renders disabled and Enter-driven send is
+   * gated. Orthogonal to {@link InputConfig.isDisabled}: the editor stays
+   * editable, only the send path is suppressed.
+   *
+   * Programmatic `instance.send(...)` is NOT gated by this flag.
    *
    * @experimental
    */
-  suggestions?: SuggestionConfig[];
+  isSendDisabled?: boolean;
+
+  /**
+   * `@`-style mention trigger config. The chat layer wires this into a
+   * `carbonMention` Tiptap extension; the editor inserts a `mention` node on
+   * selection and surfaces token chip rendering via the
+   * `cds-aichat-token-render` event.
+   *
+   * @experimental
+   */
+  mention?: TriggerSuggestionConfig;
+
+  /**
+   * `/`-style command trigger config. Same shape as {@link InputConfig.mention};
+   * inserts a `command` node on selection.
+   *
+   * @experimental
+   */
+  command?: TriggerSuggestionConfig;
+
+  /**
+   * Live-typeahead autocomplete config. Selection inserts plain text; no
+   * token chip is rendered.
+   *
+   * @experimental
+   */
+  autocomplete?: AutocompleteConfig;
+
+  /**
+   * Starter prompts shown while the editor is empty + focused + editable.
+   * Selection inserts the item's `value` (or `label`) AND auto-sends in
+   * the same turn (gated by {@link InputConfig.isSendDisabled}).
+   *
+   * @experimental
+   */
+  starters?: SuggestionItem[];
+
+  /**
+   * Tiptap-shaped configuration. The `tiptap` namespace signals "you're
+   * stepping into Tiptap's API directly" — use {@link InputConfig.mention} /
+   * `command` / `autocomplete` / `starters` for Carbon-curated chat features.
+   *
+   * @experimental
+   */
+  tiptap?: {
+    /**
+     * Host-supplied Tiptap extensions appended after the curated bundle.
+     * Use to add custom marks, nodes, keymaps, paste rules, input rules,
+     * or any other Tiptap extension. Reference equality on the array
+     * short-circuits — memoize so the editor doesn't recreate on every
+     * render.
+     */
+    extensions?: Extension[];
+  };
 }
 
 /**
@@ -734,47 +801,3 @@ export interface OnErrorData {
    */
   catastrophicErrorType?: boolean;
 }
-
-/**
- * A single action to render in the chat header toolbar. Used by
- * {@link HeaderConfig.actions} to add custom buttons to the header.
- *
- * @category Config
- */
-export type { ToolbarAction };
-
-/**
- * Represents an individual item in the autocomplete suggestion list.
- * Each item can optionally include a description, avatar, or icon.
- *
- * @category Config
- * @experimental
- */
-export type { SuggestionItem };
-
-/**
- * Props passed to a custom autocomplete list renderer via
- * {@link SuggestionConfig.renderCustomList}. Includes filtered items,
- * the current query, and callbacks for selection and dismissal.
- *
- * @category Config
- * @experimental
- */
-export type { CustomListProps };
-
-/**
- * Configuration for a single suggestion trigger (mention, command, or autocomplete).
- * Defines the trigger character, item source, and optional custom renderers.
- *
- * @category Config
- * @experimental
- */
-export type { SuggestionConfig };
-
-/**
- * The category of a suggestion trigger, which determines rendering and insertion behavior.
- *
- * @category Config
- * @experimental
- */
-export { SuggestionType };

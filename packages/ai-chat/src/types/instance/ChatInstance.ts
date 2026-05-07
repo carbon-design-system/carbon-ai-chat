@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -23,6 +23,7 @@ import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState
 import { MessageRequest, StructuredData } from "../messaging/Messages";
 import type { ServiceManager } from "../../chat/services/ServiceManager";
 import { AutoScrollOptions } from "../utilities/HasDoAutoScroll";
+import type { Editor, JSONContent } from "../utilities/tiptapReexports";
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -60,6 +61,21 @@ export interface PublicInputState {
    * @experimental Raw text currently queued in the input before being sent to customSendMessage.
    */
   rawValue: string;
+
+  /**
+   * Tiptap-native JSON projection of the editor doc. Updated on every doc
+   * change: user typing, paste, trigger-driven mentions/commands, host-pushed
+   * `setContent` / `insertContent` writes, and any host-dispatched
+   * transactions. Always consistent with `rawValue` (both derive from the
+   * same underlying document; no extra storage).
+   *
+   * Hosts persisting this value should serialize through `editor.getJSON()`
+   * (canonical) rather than partial walks; the JSONContent shape is
+   * governed by Tiptap's stability guarantees.
+   *
+   * @experimental
+   */
+  content: JSONContent;
 
   /**
    * A snapshot of the pending structured data currently queued in the input. This data will be merged
@@ -209,16 +225,65 @@ export type PublicChatState = Readonly<
  */
 export interface ChatInstanceInput {
   /**
-   * @experimental Updates the raw text queued in the input before it is sent to customSendMessage.
-   * Use this when you want to manipulate the canonical value while leaving presentation up to the default renderer or,
-   * in the future, a custom slot implementation.
+   * @deprecated Use {@link ChatInstanceInput.setContent} instead. For a
+   * string updater on a plain-text-only document, the equivalent call is:
+   *
+   * ```ts
+   * const current = instance.getState().input.rawValue;
+   * instance.input.setContent(updater(current));
+   * ```
+   *
+   * Throws if the editor doc contains any node type other than
+   * `paragraph`, `text`, or `hardBreak`, or if any text node carries
+   * marks. Empty paragraphs pass through; `hardBreak` renders as `\n` in
+   * the rawValue projection. Emits one deprecation warning per session.
+   */
+  updateRawValue: (updater: (previous: string) => string) => void;
+
+  /**
+   * Replace the entire input content with a Tiptap JSONContent doc (or a
+   * plain string for the simple plain-text case), or with the result of
+   * a reducer that receives the current JSONContent and returns the next.
+   *
+   * Throws "Input is not currently rendered" when called before the
+   * input is mounted.
    *
    * @example
    * ```ts
-   * instance.input.updateRawValue((prev) => `${prev} @celeste`);
+   * instance.input.setContent({
+   *   type: "doc",
+   *   content: [{
+   *     type: "paragraph",
+   *     content: [
+   *       { type: "text", text: "Hi " },
+   *       { type: "mention", attrs: { id: "1", label: "Alice", value: "@alice" } },
+   *     ],
+   *   }],
+   * });
+   *
+   * instance.input.setContent("Hi @alice");
    * ```
+   *
+   * @experimental
    */
-  updateRawValue: (updater: (previous: string) => string) => void;
+  setContent: (
+    next: JSONContent | string | ((previous: JSONContent) => JSONContent),
+  ) => void;
+
+  /**
+   * Insert content at the current cursor position, or at `options.at`
+   * (a ProseMirror document offset — NOT a JSONContent array index).
+   * Accepts a JSONContent fragment or a plain string.
+   *
+   * Throws "Input is not currently rendered" when called before the
+   * input is mounted.
+   *
+   * @experimental
+   */
+  insertContent: (
+    content: JSONContent | string,
+    options?: { at?: number },
+  ) => void;
 
   /**
    * Updates the pending structured data that will be merged into the next outgoing {@link MessageRequest}
@@ -256,6 +321,64 @@ export interface ChatInstanceInput {
       previous: StructuredData | undefined,
     ) => StructuredData | undefined,
   ) => void;
+
+  /**
+   * Returns the live Tiptap {@link Editor} instance, or `null` when the
+   * input is not currently rendered. Probe semantics — safe to call
+   * repeatedly; never throws.
+   *
+   * Sole escape hatch from the curated public surface. Use it for direct
+   * Tiptap operations the facade doesn't cover:
+   * - `editor.commands.*` for imperative actions (focus, blur,
+   *   clearContent, setTextSelection, selectAll, undo, redo, plus
+   *   everything else Tiptap exposes — toggleBold, insertContentAt, etc.)
+   * - `editor.chain()` for command chaining
+   * - `editor.view` for the live PM `EditorView`
+   * - `editor.view.dispatch(setHostOriginMeta(tr))` for raw transaction
+   *   dispatch — the host owns the `aichatOrigin` meta tagging
+   * - `editor.state.doc` for the live PMNode
+   * - `editor.getJSON()` for a JSONContent snapshot (equivalent to
+   *   `getState().input.content` but live, not the immutable store copy)
+   * - `editor.extensionStorage` for per-extension state
+   * - `editor.on(...)` for low-level event subscriptions
+   *
+   * **Working with `getEditor()` from React** — three patterns:
+   *
+   * 1. **Subscribe via WC events when possible.** The shell-level
+   *    `cds-aichat-input-*` events (`-change`, `-focus`, `-blur`,
+   *    `-typing`) are re-emitted from the prompt-line and survive editor
+   *    recreate. Reach for `getEditor().on(...)` only when the WC events
+   *    don't cover what you need.
+   *
+   * 2. **Don't capture in state.** `useState(getEditor())` retains a
+   *    stale reference after recreate; the editor is destroyed when
+   *    `tiptap.extensions` (or any chat-domain config) changes. Call
+   *    `getEditor()` inside handlers, or use a `useEffect` keyed on the
+   *    configs that trigger recreate:
+   *    ```ts
+   *    useEffect(() => {
+   *      const editor = chat.instance.input.getEditor();
+   *      if (!editor) return;
+   *      const handler = () => { ... };
+   *      editor.on("update", handler);
+   *      return () => editor.off("update", handler);
+   *    }, [extensions, mention, command]);
+   *    ```
+   *
+   * 3. **Memoize the configs.** `tiptap.extensions` (and the chat-domain
+   *    configs) must be reference-stable across renders. The editor
+   *    recreates on every reference change; an unmemoized array
+   *    re-creates the editor on every host render, losing selection
+   *    mid-edit.
+   *
+   * Hosts wanting a throw-on-unmount contract write the three-line guard
+   * themselves: `const ed = instance.input.getEditor(); if (!ed) throw
+   * new Error("input not mounted"); ed.commands.focus();`. No Carbon
+   * helper.
+   *
+   * @experimental
+   */
+  getEditor: () => Editor | null;
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -135,12 +135,8 @@ export {
   MinimizeButtonIconType,
   OnErrorData,
   OnErrorType,
-  CustomListProps,
   PublicConfig,
   PublicConfigMessaging,
-  SuggestionConfig,
-  SuggestionItem,
-  SuggestionType,
   ToolbarAction,
   UploadConfig,
 } from "./types/config/PublicConfig";
@@ -149,6 +145,35 @@ export {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
+
+// Tiptap escape-hatch types and Carbon Tiptap factories / helpers. Local
+// re-declarations live in `./types/utilities/tiptapReexports`; see
+// [src/types/AGENTS.md](./types/AGENTS.md) for the cross-package re-export rule.
+export type {
+  Editor,
+  Extension,
+  JSONContent,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+  SuggestionItem,
+  CustomListProps,
+  InputChangeEventDetail,
+  TriggerChangeEventDetail,
+} from "./types/utilities/tiptapReexports";
+
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  buildCarbonExtensions,
+  setHostOriginMeta,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+} from "./types/utilities/tiptapReexports";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
