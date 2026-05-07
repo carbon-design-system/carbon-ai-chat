@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -37,11 +37,11 @@ function doCarousel(instance: ChatInstance) {
                 },
                 {
                   response_type: "text",
-                  text: '<span style="color: var(--cds-text-secondary)">I\'m baby beard cornhole gatekeep, lyft hoodie disrupt locavore raw denim meggings.</span>',
+                  text: "I'm baby beard cornhole gatekeep, lyft hoodie disrupt locavore raw denim meggings.",
                 },
                 {
                   response_type: "text",
-                  text: '#### $59.99\n<span style="color:#fdcc0d;">&#9733;&#9733;&#9733;&#9733;&#9734;</span>&#160;&#160;<span style="color:gray;">3 review(s)</span>',
+                  text: "#### $59.99\n&#9733;&#9733;&#9733;&#9733;&#9734;&#160;&#160;3 review(s)",
                 },
               ],
               footer: [

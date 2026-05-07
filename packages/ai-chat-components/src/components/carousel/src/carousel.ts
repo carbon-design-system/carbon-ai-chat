@@ -88,6 +88,7 @@ class CDSAICarousel extends LitElement {
           this._currentIndex = endData.currentIndex;
           this._dispatchChange(endData);
         },
+        useMaxHeight: true,
       };
       this.carousel = initCarousel(this.container[0], config);
       this._lastIndex = Object.keys(this.carousel.allViews).length - 1;

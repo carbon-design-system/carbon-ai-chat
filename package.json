@@ -112,12 +112,18 @@
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
+      "tools/check-license.js -w",
       "prettier --cache --write",
       "eslint"
     ],
     "**/*.scss": [
+      "tools/check-license.js -w",
       "prettier --cache --write",
       "stylelint --report-needless-disables --report-invalid-scope-disables --allow-empty-input"
+    ],
+    "**/*.html": [
+      "tools/check-license.js -w",
+      "prettier --cache --write"
     ],
     "!(*sass).md": [
       "prettier --cache --write"

@@ -32,6 +32,10 @@
 | `instance.messaging.clearConversation`        | instance method             | Clears the current conversation before inserting history.    |
 | `instance.messaging.insertHistory`            | instance method             | Inserts the loaded history payload.                          |
 
+## Chat history configuration
+
+For information on how to set up chat history view the [chat-history-fullscreen/README.md](../chat-history-fullscreen/README.md) guide.
+
 ## Run it
 
 **Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.

@@ -22,11 +22,13 @@ collect:
         - expanded
         - header-title
         - id
+        - item-id
         - language
         - lines
         - loading-label
         - loading-status-message
         - name
+        - onhistory-item-selected
         - open
         - open-label-text
         - overflow
@@ -137,13 +139,11 @@ collect:
         - oncds-header-menu-button-toggled
         # cds-aichat-history-panel-item
         - onhistory-item-menu-action
-        - onhistory-item-selected
         - overflow-menu-label
         - rename
         - selected
         # cds-aichat-history-panel-item-input
         - cancelLabel
-        - item-id
         - labelText
         - onhistory-panel-item-input-cancel
         - onhistory-panel-item-input-save

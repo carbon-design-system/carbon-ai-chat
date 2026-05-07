@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -24,6 +24,7 @@ import {
   Message,
   MessageResponseTypes,
   TextItem,
+  SystemMessageItem,
 } from "../../../types/messaging/Messages";
 import { LanguagePack } from "../../../types/config/PublicConfig";
 
@@ -60,7 +61,13 @@ async function createHumanAgentLocalMessage(
   const result = createHumanAgentLocalMessageForType(agentMessageType);
   const { originalMessage, localMessage } = result;
 
-  localMessage.item.text = text;
+  // Set the text/title based on item type
+  if (localMessage.item.response_type === MessageResponseTypes.SYSTEM) {
+    (localMessage.item as SystemMessageItem).title = text;
+  } else {
+    (localMessage.item as TextItem).text = text;
+  }
+
   if (responseUserProfile) {
     originalMessage.message_options = originalMessage.message_options || {};
     originalMessage.message_options.response_user_profile = responseUserProfile;
@@ -89,15 +96,71 @@ async function createHumanAgentLocalMessage(
 function createHumanAgentLocalMessageForType(
   agentMessageType: HumanAgentMessageType,
 ) {
+  // Define message types that should use SystemMessageItem with 'agent' variant
+  const agentVariantTypes = [
+    HumanAgentMessageType.HUMAN_AGENT_JOINED,
+    HumanAgentMessageType.HUMAN_AGENT_LEFT_CHAT,
+    HumanAgentMessageType.HUMAN_AGENT_ENDED_CHAT,
+    HumanAgentMessageType.USER_ENDED_CHAT,
+    HumanAgentMessageType.CHAT_WAS_ENDED,
+    HumanAgentMessageType.RECONNECTED,
+  ];
+
+  // Define message types that should use SystemMessageItem with 'default' variant
+  const defaultVariantTypes = [
+    HumanAgentMessageType.TRANSFER_TO_HUMAN_AGENT,
+    HumanAgentMessageType.SHARING_REQUESTED,
+    HumanAgentMessageType.SHARING_ACCEPTED,
+    HumanAgentMessageType.SHARING_DECLINED,
+    HumanAgentMessageType.SHARING_CANCELLED,
+    HumanAgentMessageType.SHARING_ENDED,
+    HumanAgentMessageType.SYSTEM,
+  ];
+
+  // For agent-related message types, create a SystemMessageItem with 'agent' variant
+  if (agentVariantTypes.includes(agentMessageType)) {
+    const messageItem: SystemMessageItem = {
+      response_type: MessageResponseTypes.SYSTEM,
+      agent_message_type: agentMessageType,
+      variant: "agent",
+      title: "", // Will be set by createHumanAgentLocalMessage
+    };
+    const originalMessage = createMessageResponseForItem(messageItem);
+    const localMessage = outputItemToLocalItem(
+      messageItem,
+      originalMessage,
+    ) as LocalMessageItem<SystemMessageItem>;
+
+    return { localMessage, originalMessage };
+  }
+
+  // For system/sharing message types, create a SystemMessageItem with 'default' variant
+  if (defaultVariantTypes.includes(agentMessageType)) {
+    const messageItem: SystemMessageItem = {
+      response_type: MessageResponseTypes.SYSTEM,
+      agent_message_type: agentMessageType,
+      variant: "default",
+      title: "", // Will be set by createHumanAgentLocalMessage
+    };
+    const originalMessage = createMessageResponseForItem(messageItem);
+    const localMessage = outputItemToLocalItem(
+      messageItem,
+      originalMessage,
+    ) as LocalMessageItem<SystemMessageItem>;
+
+    return { localMessage, originalMessage };
+  }
+
+  // For all other types, create a TextItem
   const messageItem: GenericItem = {
     response_type: MessageResponseTypes.TEXT,
     agent_message_type: agentMessageType,
   };
   const originalMessage = createMessageResponseForItem(messageItem);
-  const localMessage: LocalMessageItem<TextItem> = outputItemToLocalItem(
+  const localMessage = outputItemToLocalItem(
     messageItem,
     originalMessage,
-  );
+  ) as LocalMessageItem<TextItem>;
 
   return { localMessage, originalMessage };
 }
@@ -117,7 +180,7 @@ function createAssistantReturnMessage(languagePack: LanguagePack) {
 
   const { originalMessage, localMessage } =
     createHumanAgentLocalMessageForType(null);
-  localMessage.item.text = agent_assistantReturned;
+  (localMessage.item as TextItem).text = agent_assistantReturned;
 
   return { originalMessage, localMessage };
 }

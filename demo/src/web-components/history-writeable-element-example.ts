@@ -156,7 +156,7 @@ export class HistoryWriteableElementExample extends LitElement {
 
       this._loadChat(event, this.instance);
 
-      if (this.instance?.customPanels) {
+      if (this.isMobile && this.instance?.customPanels) {
         this.instance.customPanels.getPanel(PanelType.HISTORY)?.close();
       }
     }
@@ -387,12 +387,12 @@ export class HistoryWriteableElementExample extends LitElement {
           @chat-history-new-chat-click=${this._handleNewChat}
           @cds-search-input=${this._handleSearchInput}
         ></cds-aichat-history-toolbar>
-        <cds-aichat-history-content>
-          ${this.showSearchResults || this.noSearchResults
-            ? html`<div slot="results-count">
-                Results: ${this.searchResults.length}
-              </div>`
-            : ""}
+        <cds-aichat-history-content
+          results-label="Results"
+          results-count="${this.showSearchResults || this.noSearchResults
+            ? this.searchResults.length
+            : ""}"
+        >
           <cds-aichat-history-panel aria-label="Chat history">
             <cds-aichat-history-panel-items>
               ${this.noSearchResults

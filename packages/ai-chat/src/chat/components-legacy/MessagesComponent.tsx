@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -42,6 +42,7 @@ import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
 import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../types/config/ShortcutConfig";
 import {
   applySafariScrollAnchoringRestore,
+  applySpacerDeficit,
   cleanupMessageResizeObserver,
   createMessageResizeObserver,
   getMessageArrayChangeFlags,
@@ -302,7 +303,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Inverse delta: content grows (+delta) → spacer shrinks (-delta)
           //                content shrinks (-delta) → spacer grows (+delta)
           this.domSpacerHeight = Math.max(0, this.domSpacerHeight - delta);
-          spacerElem.style.minBlockSize = `${this.domSpacerHeight}px`;
+          applySpacerDeficit(spacerElem, this.domSpacerHeight);
 
           // Restore scrollTop if user is near the pin, or if browser capped scrollTop.
           const scrollDelta = Math.abs(
@@ -698,7 +699,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         const savedScrollTop = scrollTopForDecision;
         const spacerElem = this.bottomSpacerRef.current;
         if (spacerElem) {
-          spacerElem.style.minBlockSize = "0px";
+          applySpacerDeficit(spacerElem, 0);
         }
         this.domSpacerHeight = 0;
         if (scrollElement.scrollTop < savedScrollTop) {
@@ -1335,7 +1336,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
               preferAnimate: true,
             })
           }
-          icon={<DownToBottom slot="icon" />}
+          icon={
+            <DownToBottom
+              slot="icon"
+              aria-label={languagePack.messages_scrollMoreButton}
+            />
+          }
         />
       ) : null;
 

@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Be sure to review the [chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html).",
   "author": "IBM Corp",
   "license": "Apache-2.0",
@@ -80,8 +80,10 @@
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.105.0",
     "@carbon/themes": "^11.58.0",
-    "@carbon/typedoc-theme": "^0.0.0",
-    "@carbon/web-components": "^2.54.0",
+
+    "@carbon/typedoc-theme": "^0.1.0",
+    "@carbon/web-components": "^2.51.1",
+
     "@open-wc/testing": "4.0.0",
     "@rollup/plugin-babel": "^7.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
@@ -131,7 +133,7 @@
     "react-dom": ">=17.0.0 <20.0.0"
   },
   "dependencies": {
-    "@carbon/ai-chat-components": "^1.1.0",
+    "@carbon/ai-chat-components": "^1.2.0",
     "@carbon/icons": "^11.53.0",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",
@@ -139,7 +141,7 @@
     "color": "^4.2.3",
     "compute-scroll-into-view": "^3.1.0",
     "dayjs": "^1.11.10",
-    "focus-trap-react": "^10.2.3",
+    "focus-trap-react": "^12.0.0",
     "intl-messageformat": "^11.0.0",
     "lit": "^3.1.0",
     "lodash-es": "^4.18.1",

@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -535,22 +535,22 @@ describe("cds-aichat-shell", function () {
         await el.updateComplete;
         const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-start-base",
           ),
         ).to.equal("0.5rem");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-end-base",
           ),
         ).to.equal("0.5rem");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-start-base",
           ),
         ).to.equal("0.5rem");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-end-base",
           ),
         ).to.equal("0.5rem");
@@ -563,22 +563,22 @@ describe("cds-aichat-shell", function () {
         await el.updateComplete;
         const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-start-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-end-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-start-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-end-base",
           ),
         ).to.equal("0");
@@ -594,22 +594,22 @@ describe("cds-aichat-shell", function () {
         await el.updateComplete;
         const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-start-base",
           ),
         ).to.equal("0.5rem");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-end-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-start-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-end-base",
           ),
         ).to.equal("0");
@@ -627,22 +627,22 @@ describe("cds-aichat-shell", function () {
         await el.updateComplete;
         const shell = el.shadowRoot!.querySelector<HTMLElement>(".shell");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-start-base",
           ),
         ).to.equal("0.5rem");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-start-end-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-start-base",
           ),
         ).to.equal("0");
         expect(
-          shell!.style.getPropertyValue(
+          getComputedStyle(shell!).getPropertyValue(
             "--cds-aichat-border-radius-end-end-base",
           ),
         ).to.equal("0.5rem");

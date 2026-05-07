@@ -70,13 +70,10 @@ export class YouTubeProvider extends BaseProvider {
       throw new Error("Container element is required");
     }
 
-    // Create container for YouTube player
+    // Create container for YouTube player. The YT IFrame API replaces this
+    // element with an iframe; sizing/positioning is handled by the
+    // .cds-aichat--video-player__provider SCSS rules in video-player.scss.
     this.playerContainer = document.createElement("div");
-    this.playerContainer.style.width = "100%";
-    this.playerContainer.style.height = "100%";
-    this.playerContainer.style.position = "absolute";
-    this.playerContainer.style.top = "0";
-    this.playerContainer.style.left = "0";
     this.container.appendChild(this.playerContainer);
 
     // Load YouTube IFrame API

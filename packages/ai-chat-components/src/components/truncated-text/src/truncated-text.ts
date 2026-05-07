@@ -17,11 +17,19 @@ import "@carbon/web-components/es/components/button/button.js";
 import "@carbon/web-components/es/components/link/index.js";
 
 import styles from "./truncated-text.scss?lit";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+  clearSelector,
+} from "../../shared/dynamic-css-var-sheet.js";
 
 const componentName = "truncated-text";
 export const blockClass = `${prefix}--${componentName}`;
 const elementName = `${prefix}-${componentName}`; // cds-aichat-truncated-text
 const carbonPrefix = "cds";
+
+const TRUNCATED_INSTANCE_ATTR = "data-cds-aichat-truncated-text-id";
+let truncatedInstanceCounter = 0;
 
 /**
  * TruncatedText.
@@ -87,6 +95,18 @@ class CDSAIChatTruncatedText extends LitElement {
   private _lineHeight = 0;
   private _isLayered = false;
   private _resizeObserver?: ResizeObserver;
+  private readonly _truncatedInstanceId = `tt-${++truncatedInstanceCounter}`;
+
+  private get _truncatedSelector(): string {
+    return `[${TRUNCATED_INSTANCE_ATTR}="${this._truncatedInstanceId}"]`;
+  }
+
+  private _syncTruncatedVars() {
+    setVarsForSelector(this._truncatedSelector, {
+      "--line-clamp-value": String(this.lines),
+      "--max-height-value": this._maxHeight || "none",
+    });
+  }
 
   static styles = styles;
 
@@ -98,10 +118,19 @@ class CDSAIChatTruncatedText extends LitElement {
 
   disconnectedCallback() {
     this._resizeObserver?.disconnect();
+    clearSelector(this._truncatedSelector);
     super.disconnectedCallback();
   }
 
   protected firstUpdated() {
+    if (this._textElement) {
+      this._textElement.setAttribute(
+        TRUNCATED_INSTANCE_ATTR,
+        this._truncatedInstanceId,
+      );
+      adoptOnRoot(this.renderRoot as ShadowRoot);
+      this._syncTruncatedVars();
+    }
     requestAnimationFrame(() => {
       const computedStyle = getComputedStyle(this._textElement);
       this._lineHeight = parseFloat(computedStyle.lineHeight);
@@ -118,6 +147,9 @@ class CDSAIChatTruncatedText extends LitElement {
         this._updateOverflowStatus();
         this._updateMaxHeight();
       });
+    }
+    if (this._textElement) {
+      this._syncTruncatedVars();
     }
   }
 
@@ -244,14 +276,7 @@ class CDSAIChatTruncatedText extends LitElement {
     });
 
     const valueBody = html`
-      <div
-        id=${this.id}
-        class=${contentClasses}
-        style="--line-clamp-value: ${this.lines}; --max-height-value: ${this
-          ._maxHeight}"
-      >
-        ${content}
-      </div>
+      <div id=${this.id} class=${contentClasses}>${content}</div>
     `;
 
     // For tooltip, show plain text in tooltip content

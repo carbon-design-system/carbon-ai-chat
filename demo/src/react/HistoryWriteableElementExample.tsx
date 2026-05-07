@@ -142,12 +142,12 @@ function HistoryWriteableElementExample({
 
         loadChat(event, instance);
 
-        if (instance?.customPanels) {
+        if (isMobile && instance?.customPanels) {
           instance.customPanels.getPanel(PanelType.HISTORY)?.close();
         }
       }
     },
-    [selectedId, pinnedItems, regularItems, instance],
+    [selectedId, pinnedItems, regularItems, instance, isMobile],
   );
 
   // Handle pin chat
@@ -378,10 +378,14 @@ function HistoryWriteableElementExample({
         onNewChatClick={handleNewChat}
         onSearchInput={handleSearchInput}
       />
-      <HistoryContent>
-        {(showSearchResults || noSearchResults) && (
-          <div slot="results-count">Results: {searchResults.length}</div>
-        )}
+      <HistoryContent
+        resultsLabel="Results"
+        resultsCount={
+          showSearchResults || noSearchResults
+            ? searchResults.length
+            : undefined
+        }
+      >
         <HistoryPanel aria-label="Chat history">
           <HistoryPanelItems>
             {noSearchResults && (

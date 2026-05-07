@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -44,12 +44,12 @@ export class DemoDirectionSwitcher extends LitElement {
   render() {
     return html`<cds-dropdown
       value="${this.settings.direction}"
-      title-text="Direction"
+      title-text="Direction (requires restart)"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
       <cds-dropdown-item value="default">Default</cds-dropdown-item>
-      <cds-dropdown-item value="ltr">LTR</cds-dropdown-item>
-      <cds-dropdown-item value="rtl">RTL</cds-dropdown-item>
+      <cds-dropdown-item value="ltr">LTR (Left-To-Right)</cds-dropdown-item>
+      <cds-dropdown-item value="rtl">RTL (Right-To-left)</cds-dropdown-item>
     </cds-dropdown>`;
   }
 }

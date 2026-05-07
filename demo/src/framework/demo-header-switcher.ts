@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -403,12 +403,12 @@ export class DemoHeaderSwitcher extends LitElement {
       <div class="header-section">
         <cds-dropdown
           value="${this._getHasContentMaxWidthValue()}"
-          title-text="Has content max width"
+          title-text="Content max width"
           @cds-dropdown-selected=${this._onHasContentMaxWidthChanged}
         >
           <cds-dropdown-item value="default">Default</cds-dropdown-item>
-          <cds-dropdown-item value="true">True</cds-dropdown-item>
-          <cds-dropdown-item value="false">False</cds-dropdown-item>
+          <cds-dropdown-item value="true">Enable max width</cds-dropdown-item>
+          <cds-dropdown-item value="false">Disable max width</cds-dropdown-item>
         </cds-dropdown>
       </div>
     `;

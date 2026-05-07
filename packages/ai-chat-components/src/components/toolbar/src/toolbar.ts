@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -105,7 +105,9 @@ class CDSAIChatToolbar extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleToolbarKeydown);
-    this.style.visibility = this.overflow ? "hidden" : "visible";
+    if (this.overflow) {
+      this.toggleAttribute("data-measuring", true);
+    }
   }
 
   firstUpdated() {
@@ -114,7 +116,7 @@ class CDSAIChatToolbar extends LitElement {
     }
     this.updateComplete.then(() => {
       this.setupOverflowHandler();
-      this.style.removeProperty("visibility");
+      this.removeAttribute("data-measuring");
     });
   }
 

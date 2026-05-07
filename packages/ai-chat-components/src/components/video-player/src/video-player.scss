@@ -40,9 +40,20 @@
 
   @include rounded-child-positions;
 
+  // Direct children (provider mount divs for YouTube/Vimeo) fill the
+  // container without the providers writing inline styles.
+  > * {
+    position: absolute;
+    block-size: 100%;
+    inline-size: 100%;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+  }
+
   // Ensure iframes fill the container and get rounded corners
   iframe,
   video {
+    border: 0;
     block-size: 100%;
     inline-size: 100%;
     opacity: 0;

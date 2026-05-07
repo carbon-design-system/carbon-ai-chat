@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-chat-history-float",
   "private": true,
-  "version": "1.9.0",
+  "version": "1.10.0",
   "type": "module",
   "description": "An example using @carbon/ai-chat React chat history feature with float layout",
   "scripts": {
@@ -14,7 +14,7 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
     "@carbon/ai-chat": "^1.12.0",
-    "@carbon/ai-chat-components": "^1.1.0",
+    "@carbon/ai-chat-components": "^1.2.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.54.0",
     "lit": "^3.1.0",

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -101,9 +101,14 @@ describe("chatBoot utils", () => {
       expect(serviceManager.container).toBe(container);
       expect(serviceManager.customHostElement).toBe(host);
 
-      // Container styles should be set to 100% when hosted element provided
-      expect(container.style.getPropertyValue("width")).toBe("100%");
-      expect(container.style.getPropertyValue("height")).toBe("100%");
+      // Container should be tagged with the boot-container fill class. The
+      // matching dynamic-stylesheet rule applies width/height: 100% !important.
+      expect(
+        container.classList.contains("cds-aichat--boot-container--filled"),
+      ).toBe(true);
+      expect(
+        container.classList.contains("cds-aichat--boot-container--collapsed"),
+      ).toBe(false);
     });
 
     it("initializes with default container styles when no host element provided", async () => {
@@ -121,9 +126,14 @@ describe("chatBoot utils", () => {
       expect(instance).toBeTruthy();
       expect(serviceManager.customHostElement).toBeUndefined();
 
-      // Container styles should be 0 when no custom host is used
-      expect(container.style.getPropertyValue("width")).toBe("0px");
-      expect(container.style.getPropertyValue("height")).toBe("0px");
+      // Container should be tagged with the boot-container collapsed class.
+      // The matching dynamic-stylesheet rule applies width/height: 0 !important.
+      expect(
+        container.classList.contains("cds-aichat--boot-container--collapsed"),
+      ).toBe(true);
+      expect(
+        container.classList.contains("cds-aichat--boot-container--filled"),
+      ).toBe(false);
     });
   });
 
