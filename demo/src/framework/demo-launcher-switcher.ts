@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -245,15 +245,19 @@ export class DemoLauncherSwitcher extends LitElement {
         <div class="section-title">${label}</div>
         <cds-dropdown
           value="${this._booleanDropdownValue(config?.isOn)}"
-          title-text="Show call to action"
+          title-text="Call to action"
           @cds-dropdown-selected=${(event: Event) =>
             this._handleCTAVisibility(event, key)}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Show call to action</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Hide call to action</cds-dropdown-item
+          >
         </cds-dropdown>
         <div class="cta-inputs">
           <cds-text-input
@@ -286,22 +290,30 @@ export class DemoLauncherSwitcher extends LitElement {
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">On</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">Off</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Show launcher</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Hide launcher</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 
       <div class="launcher-section">
         <cds-dropdown
           value="${this._booleanDropdownValue(launcher?.showUnreadIndicator)}"
-          title-text="Show custom unread indicator"
+          title-text="Custom unread indicator visibility"
           @cds-dropdown-selected=${this._handleUnreadIndicator}
         >
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Show unread indicator</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Hide unread indicator</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
 

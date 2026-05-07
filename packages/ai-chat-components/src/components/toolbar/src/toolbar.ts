@@ -100,7 +100,9 @@ class CDSAIChatToolbar extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleToolbarKeydown);
-    this.style.visibility = this.overflow ? "hidden" : "visible";
+    if (this.overflow) {
+      this.toggleAttribute("data-measuring", true);
+    }
   }
 
   firstUpdated() {
@@ -109,7 +111,7 @@ class CDSAIChatToolbar extends LitElement {
     }
     this.updateComplete.then(() => {
       this.setupOverflowHandler();
-      this.style.removeProperty("visibility");
+      this.removeAttribute("data-measuring");
     });
   }
 

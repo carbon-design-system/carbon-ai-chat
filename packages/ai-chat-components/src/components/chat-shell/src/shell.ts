@@ -23,6 +23,14 @@ import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 import type { StartOrEnd, SlotConfig } from "./types.js";
 import "./panel.js";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+  clearSelector,
+} from "../../shared/dynamic-css-var-sheet.js";
+
+const INSTANCE_ATTR = "data-cds-aichat-shell-id";
+let shellInstanceCounter = 0;
 
 @carbonElement(`${prefix}-shell`)
 class CDSAIChatShell extends LitElement {
@@ -194,6 +202,16 @@ class CDSAIChatShell extends LitElement {
    * @internal
    */
   private cornerManager?: CornerManager;
+
+  /**
+   * @internal Per-instance identifier used to scope dynamic CSS rules to
+   * this shell's `.shell` element via the shared dynamic stylesheet.
+   */
+  private readonly _shellInstanceId = `shell-${++shellInstanceCounter}`;
+
+  private get _shellSelector(): string {
+    return `.shell[${INSTANCE_ATTR}="${this._shellInstanceId}"]`;
+  }
 
   /**
    * @internal
@@ -618,6 +636,11 @@ class CDSAIChatShell extends LitElement {
       return;
     }
 
+    // Tag the shell root and adopt the shared dynamic stylesheet on this
+    // shadow root so subsequent rules scoped to `_shellSelector` apply here.
+    widgetRoot.setAttribute(INSTANCE_ATTR, this._shellInstanceId);
+    adoptOnRoot(this.renderRoot as ShadowRoot);
+
     // Initialize aria announcer manager
     const ariaLiveRegions = this.renderRoot.querySelectorAll<HTMLDivElement>(
       '[aria-live="polite"]',
@@ -632,7 +655,7 @@ class CDSAIChatShell extends LitElement {
     this.addEventListener("closeend", this.handlePanelClose);
 
     // Initialize corner manager
-    this.cornerManager = new CornerManager(widgetRoot, {
+    this.cornerManager = new CornerManager(this._shellSelector, {
       cornerAll: this.cornerAll,
       cornerStartStart: this.cornerStartStart,
       cornerStartEnd: this.cornerStartEnd,
@@ -678,7 +701,9 @@ class CDSAIChatShell extends LitElement {
 
     // Observe header height
     this.resizeObserverManager.observeHeaderHeight((height) => {
-      widgetRoot.style.setProperty("--cds-aichat-header-height", `${height}px`);
+      setVarsForSelector(this._shellSelector, {
+        "--cds-aichat-header-height": `${height}px`,
+      });
     });
 
     // Observe input and messages width
@@ -833,6 +858,8 @@ class CDSAIChatShell extends LitElement {
     this.slotObserver?.disconnect();
     this.resizeObserverManager?.disconnect();
     this.ariaAnnouncerManager?.disconnect();
+    this.cornerManager?.destroy();
+    clearSelector(this._shellSelector);
     this.cancelWorkspacePanelOpenSchedule();
 
     // Clean up event listeners

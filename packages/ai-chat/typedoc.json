@@ -15,6 +15,7 @@
         "./docs/Overview.md",
         "./docs/React.md",
         "./docs/WebComponent.md",
+        "./docs/Angular.md",
         "./docs/Customization.md",
         "./docs/CustomServiceDesks.md",
         "./docs/CustomServer.md",

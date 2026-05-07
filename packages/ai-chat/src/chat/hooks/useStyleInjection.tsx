@@ -9,70 +9,77 @@
 
 import { useEffect } from "react";
 import type React from "react";
+import { setVarsForSelector } from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+
+let hostFillRuleInstalled = false;
+
+/**
+ * Install the "fill the host element" rule on the shared dynamic stylesheet
+ * so a strict CSP can drop style-src-attr 'unsafe-inline'.
+ */
+function ensureHostFillRule(): void {
+  if (hostFillRuleInstalled) {
+    return;
+  }
+  setVarsForSelector(".cds-aichat--container-host-fill", {
+    height: "100% !important",
+    width: "100% !important",
+  });
+  hostFillRuleInstalled = true;
+}
 
 interface UseStyleInjectionProps {
   containerRef: React.RefObject<HTMLDivElement>;
   hostElement?: Element;
   cssVariableOverrideString: string;
-  visualViewportStyles:
-    | Record<string, string | number>
-    | React.CSSProperties
-    | null;
   appStyles: string;
   applicationStylesheet: CSSStyleSheet | null;
   cssVariableOverrideStylesheet: CSSStyleSheet | null;
-  visualViewportStylesheet: CSSStyleSheet | null;
 }
 
 /**
- * Custom hook to inject styles into the container, handling both ShadowRoot and regular DOM
+ * Custom hook to inject styles into the container, handling both ShadowRoot
+ * and regular DOM. Visual-viewport sizing has moved to
+ * `useMobileViewportLayout`, which writes directly to the shared dynamic
+ * stylesheet.
  */
 export function useStyleInjection({
   containerRef,
   hostElement,
   cssVariableOverrideString,
-  visualViewportStyles,
   appStyles,
   applicationStylesheet,
   cssVariableOverrideStylesheet,
-  visualViewportStylesheet,
 }: UseStyleInjectionProps): void {
   useEffect(() => {
     if (!containerRef.current) {
       return;
     }
 
-    // Set container dimensions for custom host elements
+    // Set container dimensions for custom host elements via class + shared
+    // dynamic stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
     if (hostElement) {
-      containerRef.current.style.setProperty("height", "100%", "important");
-      containerRef.current.style.setProperty("width", "100%", "important");
+      ensureHostFillRule();
+      containerRef.current.classList.add("cds-aichat--container-host-fill");
+    } else {
+      containerRef.current.classList.remove("cds-aichat--container-host-fill");
     }
 
     const rootNode = containerRef.current.getRootNode();
     const cssVariableStyles = cssVariableOverrideString || "";
-    const visualViewportCSS = Object.keys(visualViewportStyles || {}).length
-      ? `.cds-aichat--container--render { ${Object.entries(
-          visualViewportStyles || {},
-        )
-          .map(([key, value]) => `${key}: ${value};`)
-          .join(" ")} }`
-      : "";
 
     if (rootNode instanceof ShadowRoot) {
       // Use Constructable Stylesheets if available
       if (
         applicationStylesheet &&
         "replaceSync" in applicationStylesheet &&
-        cssVariableOverrideStylesheet &&
-        visualViewportStylesheet
+        cssVariableOverrideStylesheet
       ) {
         applicationStylesheet.replaceSync(appStyles);
         cssVariableOverrideStylesheet.replaceSync(cssVariableStyles);
-        visualViewportStylesheet.replaceSync(visualViewportCSS);
         rootNode.adoptedStyleSheets = [
           applicationStylesheet,
           cssVariableOverrideStylesheet,
-          visualViewportStylesheet,
         ];
       } else {
         // Fallback to style elements
@@ -88,42 +95,15 @@ export function useStyleInjection({
           variableCustomStyles.textContent = cssVariableStyles;
           rootNode.appendChild(variableCustomStyles);
         }
-        const viewportStyle = rootNode.querySelector(
-          "style[data-visual-viewport-styles]",
-        );
-        if (viewportStyle) {
-          viewportStyle.textContent = visualViewportCSS;
-        } else {
-          const visualViewportStyle = document.createElement("style");
-          visualViewportStyle.dataset.visualViewportStyles = "true";
-          visualViewportStyle.textContent = visualViewportCSS;
-          rootNode.appendChild(visualViewportStyle);
-        }
-      }
-    } else if (
-      visualViewportStyles &&
-      Object.keys(visualViewportStyles).length &&
-      containerRef.current
-    ) {
-      // Apply styles directly to the render element in regular DOM
-      const renderEl = containerRef.current.querySelector<HTMLElement>(
-        ".cds-aichat--container--render",
-      );
-      if (renderEl) {
-        Object.entries(visualViewportStyles).forEach(([key, value]) => {
-          renderEl.style.setProperty(key, String(value));
-        });
       }
     }
   }, [
     containerRef,
     hostElement,
     cssVariableOverrideString,
-    visualViewportStyles,
     appStyles,
     applicationStylesheet,
     cssVariableOverrideStylesheet,
-    visualViewportStylesheet,
   ]);
 }
 

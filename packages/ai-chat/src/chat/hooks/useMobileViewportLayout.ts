@@ -7,7 +7,13 @@
  *  @license
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import type React from "react";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+  clearSelector,
+} from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
 
 interface VisualViewportMetrics {
   width: number;
@@ -17,200 +23,112 @@ interface VisualViewportMetrics {
 
 interface UseMobileViewportLayoutArgs {
   /**
-   * Whether mobile-specific enhancements (like dvh + scroll locking) are enabled.
+   * Whether mobile-specific enhancements (visual-viewport sizing) are
+   * enabled. Typically `IS_PHONE && !disableCustomElementMobileEnhancements`.
    */
   enabled: boolean;
   /**
-   * Whether the chat window is currently open; scroll locking only applies when true.
+   * The container element the chat renders into. Used to discover the root
+   * (document or shadow root) on which the dynamic stylesheet must be
+   * adopted so the CSS variables reach `.cds-aichat--container--render`.
    */
-  isOpen: boolean;
+  containerRef: React.RefObject<HTMLElement>;
   /**
-   * Optional padding (in px) to subtract from width/height when setting CSS vars.
+   * Optional padding (in px) to subtract from width/height when setting
+   * CSS variables.
    */
   margin?: number;
 }
 
-interface MobileViewportLayoutResult {
-  style: React.CSSProperties;
-}
+const VIEWPORT_SELECTOR = ".cds-aichat--container--render";
 
 /**
- * This hook handles two behaviors needed on mobile Safari:
- * 1) Sizing the chat to the live visual viewport via custom properties.
- * 2) Locking body/html scroll while the chat is open to prevent background pulling.
+ * Sizes the chat to the live visual viewport on mobile Safari by writing
+ * `--cds-aichat-{height,width,top-position}` to the chat container via the
+ * shared dynamic stylesheet. CSP-safe: no inline-style writes, so a strict
+ * CSP can drop `style-src-attr 'unsafe-inline'`.
+ *
+ * Note: an earlier version of this hook also locked `document.body` and
+ * `document.documentElement` scrolling while the chat was open. That was
+ * removed because the chat is embedded on third-party host pages and
+ * mutating host body styles is brittle (it had to save/restore prior inline
+ * styles, which trampled host intent on restore). The chat panel is now
+ * responsible for trapping its own scroll/touch via panel-local CSS
+ * (overscroll-behavior, touch-action). On iOS Safari edge cases the host
+ * page may still scroll behind the chat — accepted in exchange for never
+ * touching host body/html state.
  */
 function useMobileViewportLayout({
   enabled,
-  isOpen,
+  containerRef,
   margin = 4,
-}: UseMobileViewportLayoutArgs): MobileViewportLayoutResult {
-  const [visualViewportMetrics, setVisualViewportMetrics] =
-    useState<VisualViewportMetrics | null>(null);
-  const previousBodyStyles = useRef<{
-    bodyOverflow: string;
-    bodyPosition: string;
-    bodyTop: string;
-    bodyWidth: string;
-    bodyHeight: string;
-    bodyOverscrollBehavior: string;
-    bodyTouchAction: string;
-    htmlOverflow: string;
-    htmlPosition: string;
-    htmlWidth: string;
-    htmlHeight: string;
-    htmlOverscrollBehavior: string;
-    htmlTouchAction: string;
-    scrollY: number;
-  } | null>(null);
+}: UseMobileViewportLayoutArgs): void {
+  const [metrics, setMetrics] = useState<VisualViewportMetrics | null>(null);
 
   useEffect(() => {
     if (!enabled || typeof window === "undefined") {
-      setVisualViewportMetrics(null);
+      setMetrics(null);
       return undefined;
     }
 
     const visualViewport = window.visualViewport;
-
     if (!visualViewport) {
-      setVisualViewportMetrics(null);
+      setMetrics(null);
       return undefined;
     }
 
-    const updateVisualViewportMetrics = () => {
-      setVisualViewportMetrics({
+    const update = () => {
+      setMetrics({
         width: visualViewport.width,
         height: visualViewport.height,
         offsetTop: visualViewport.offsetTop ?? 0,
       });
     };
 
-    updateVisualViewportMetrics();
-
-    visualViewport.addEventListener("resize", updateVisualViewportMetrics);
-    visualViewport.addEventListener("scroll", updateVisualViewportMetrics);
+    update();
+    visualViewport.addEventListener("resize", update);
+    visualViewport.addEventListener("scroll", update);
 
     return () => {
-      visualViewport.removeEventListener("resize", updateVisualViewportMetrics);
-      visualViewport.removeEventListener("scroll", updateVisualViewportMetrics);
+      visualViewport.removeEventListener("resize", update);
+      visualViewport.removeEventListener("scroll", update);
     };
   }, [enabled]);
 
   useEffect(() => {
-    if (typeof document === "undefined" || typeof window === "undefined") {
-      return () => {};
+    if (!enabled || !metrics) {
+      clearSelector(VIEWPORT_SELECTOR);
+      return undefined;
+    }
+    const container = containerRef.current;
+    if (!container) {
+      return undefined;
+    }
+    const root = container.getRootNode();
+    if (root instanceof Document || root instanceof ShadowRoot) {
+      adoptOnRoot(root);
     }
 
-    const shouldLock = enabled && isOpen;
-    const body = document.body;
-    const html = document.documentElement;
-
-    if (shouldLock) {
-      if (previousBodyStyles.current === null) {
-        previousBodyStyles.current = {
-          bodyOverflow: body.style.overflow || "",
-          bodyPosition: body.style.position || "",
-          bodyTop: body.style.top || "",
-          bodyWidth: body.style.width || "",
-          bodyHeight: body.style.height || "",
-          bodyOverscrollBehavior: (body.style as any).overscrollBehavior || "",
-          bodyTouchAction: (body.style as any).touchAction || "",
-          htmlOverflow: html.style.overflow || "",
-          htmlPosition: html.style.position || "",
-          htmlWidth: html.style.width || "",
-          htmlHeight: html.style.height || "",
-          htmlOverscrollBehavior: (html.style as any).overscrollBehavior || "",
-          htmlTouchAction: (html.style as any).touchAction || "",
-          scrollY: window.scrollY,
-        };
-      }
-
-      body.style.overflow = "hidden";
-      body.style.position = "fixed";
-      body.style.top = `-${previousBodyStyles.current.scrollY}px`;
-      body.style.width = "100%";
-      body.style.height = "100%";
-      (body.style as any).overscrollBehavior = "contain";
-      (body.style as any).touchAction = "none";
-
-      html.style.overflow = "hidden";
-      html.style.position = "fixed";
-      html.style.width = "100%";
-      html.style.height = "100%";
-      (html.style as any).overscrollBehavior = "contain";
-      (html.style as any).touchAction = "none";
-    } else if (previousBodyStyles.current !== null) {
-      body.style.overflow = previousBodyStyles.current.bodyOverflow;
-      body.style.position = previousBodyStyles.current.bodyPosition;
-      body.style.top = previousBodyStyles.current.bodyTop;
-      body.style.width = previousBodyStyles.current.bodyWidth;
-      body.style.height = previousBodyStyles.current.bodyHeight;
-      (body.style as any).overscrollBehavior =
-        previousBodyStyles.current.bodyOverscrollBehavior;
-      (body.style as any).touchAction =
-        previousBodyStyles.current.bodyTouchAction;
-
-      html.style.overflow = previousBodyStyles.current.htmlOverflow;
-      html.style.position = previousBodyStyles.current.htmlPosition;
-      html.style.width = previousBodyStyles.current.htmlWidth;
-      html.style.height = previousBodyStyles.current.htmlHeight;
-      (html.style as any).overscrollBehavior =
-        previousBodyStyles.current.htmlOverscrollBehavior;
-      (html.style as any).touchAction =
-        previousBodyStyles.current.htmlTouchAction;
-      window.scrollTo(0, previousBodyStyles.current.scrollY);
-      previousBodyStyles.current = null;
+    const vars: Record<string, string> = {};
+    if (metrics.height) {
+      vars["--cds-aichat-height"] = `calc(${metrics.height}px - ${margin}px)`;
     }
+    if (metrics.width) {
+      vars["--cds-aichat-width"] = `calc(${metrics.width}px - ${margin}px)`;
+    }
+    if (metrics.offsetTop) {
+      vars["--cds-aichat-top-position"] = `${metrics.offsetTop}px`;
+    }
+    if (Object.keys(vars).length === 0) {
+      clearSelector(VIEWPORT_SELECTOR);
+      return undefined;
+    }
+    setVarsForSelector(VIEWPORT_SELECTOR, vars);
 
     return () => {
-      if (previousBodyStyles.current !== null) {
-        body.style.overflow = previousBodyStyles.current.bodyOverflow;
-        body.style.position = previousBodyStyles.current.bodyPosition;
-        body.style.top = previousBodyStyles.current.bodyTop;
-        body.style.width = previousBodyStyles.current.bodyWidth;
-        body.style.height = previousBodyStyles.current.bodyHeight;
-        (body.style as any).overscrollBehavior =
-          previousBodyStyles.current.bodyOverscrollBehavior;
-        (body.style as any).touchAction =
-          previousBodyStyles.current.bodyTouchAction;
-
-        html.style.overflow = previousBodyStyles.current.htmlOverflow;
-        html.style.position = previousBodyStyles.current.htmlPosition;
-        html.style.width = previousBodyStyles.current.htmlWidth;
-        html.style.height = previousBodyStyles.current.htmlHeight;
-        (html.style as any).overscrollBehavior =
-          previousBodyStyles.current.htmlOverscrollBehavior;
-        (html.style as any).touchAction =
-          previousBodyStyles.current.htmlTouchAction;
-        window.scrollTo(0, previousBodyStyles.current.scrollY);
-        previousBodyStyles.current = null;
-      }
+      clearSelector(VIEWPORT_SELECTOR);
     };
-  }, [enabled, isOpen]);
-
-  const style = useMemo<React.CSSProperties>(() => {
-    if (!enabled || !visualViewportMetrics) {
-      return {};
-    }
-
-    const styleOverrides: React.CSSProperties = {};
-
-    if (visualViewportMetrics.height) {
-      (styleOverrides as any)["--cds-aichat-height"] =
-        `calc(${visualViewportMetrics.height}px - ${margin}px)`;
-    }
-    if (visualViewportMetrics.width) {
-      (styleOverrides as any)["--cds-aichat-width"] =
-        `calc(${visualViewportMetrics.width}px - ${margin}px)`;
-    }
-    if (visualViewportMetrics.offsetTop) {
-      (styleOverrides as any)["--cds-aichat-top-position"] =
-        `${visualViewportMetrics.offsetTop}px`;
-    }
-
-    return styleOverrides;
-  }, [enabled, margin, visualViewportMetrics]);
-
-  return { style };
+  }, [enabled, metrics, margin, containerRef]);
 }
 
 export { useMobileViewportLayout };

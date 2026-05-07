@@ -21,6 +21,7 @@ import {
   resolveStreamEndAction,
   type AutoScrollAction,
 } from "../../../src/chat/utils/messagesAutoScrollController";
+import * as cspStyleUtils from "../../../src/chat/utils/cspStyleUtils";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared mock factories
@@ -57,11 +58,16 @@ function createMockScrollElement(
 }
 
 /**
- * Creates a minimal spacer element mock with writable style.minBlockSize.
+ * Creates a minimal spacer element mock. Spacer height is now applied via
+ * the shared dynamic stylesheet (CSP-safe), so the spec verifies the deficit
+ * via the controller's return value rather than `style.minBlockSize`.
  */
 function createMockSpacer(rectTop = 400) {
+  const attrs = new Map<string, string>();
   return {
-    style: { minBlockSize: "" },
+    setAttribute: (name: string, value: string) => attrs.set(name, value),
+    getAttribute: (name: string) => attrs.get(name) ?? null,
+    getRootNode: () => document,
     getBoundingClientRect: () => ({ top: rectTop }) as DOMRect,
   };
 }
@@ -299,6 +305,16 @@ describe("resolveAutoScrollAction", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// pinMessageAndScroll & recalculatePinnedMessageSpacer shared spy
+// ─────────────────────────────────────────────────────────────────────────────
+
+const applyDynamicStylesSpy = jest.spyOn(cspStyleUtils, "applyDynamicStyles");
+
+beforeEach(() => {
+  applyDynamicStylesSpy.mockClear();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // pinMessageAndScroll
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -355,7 +371,12 @@ describe("pinMessageAndScroll", () => {
       spacerElem,
     });
 
-    expect(spacerElem.style.minBlockSize).toBe("220px");
+    expect(applyDynamicStylesSpy).toHaveBeenCalledWith(spacerElem, "spacer", {
+      "min-block-size": "220px",
+    });
+    expect(spacerElem.getAttribute("data-cds-aichat-spacer-id")).toBe(
+      "spacer-1",
+    );
     expect(scrollElement.scrollTop).toBe(120);
     expect(result).not.toBeNull();
     expect(result.currentSpacerHeight).toBe(220);
@@ -390,7 +411,12 @@ describe("pinMessageAndScroll", () => {
       spacerElem,
     });
 
-    expect(spacerElem.style.minBlockSize).toBe("270px");
+    expect(applyDynamicStylesSpy).toHaveBeenCalledWith(spacerElem, "spacer", {
+      "min-block-size": "270px",
+    });
+    expect(spacerElem.getAttribute("data-cds-aichat-spacer-id")).toBe(
+      "spacer-2",
+    );
     expect(scrollElement.scrollTop).toBe(170);
     expect(result.currentSpacerHeight).toBe(270);
     expect(result.scrollTop).toBe(170);
@@ -448,7 +474,12 @@ describe("recalculatePinnedMessageSpacer", () => {
     // visibleBottom = scrollTop (0) + clientHeight (500) = 500
     // spacerOffset = spacerRect.top (400) - scrollerRect.top (0) + scrollTop (0) = 400
     // deficit = max(0, ceil(500 - 400)) = 100
-    expect(spacerElem.style.minBlockSize).toBe("100px");
+    expect(applyDynamicStylesSpy).toHaveBeenCalledWith(spacerElem, "spacer", {
+      "min-block-size": "100px",
+    });
+    expect(spacerElem.getAttribute("data-cds-aichat-spacer-id")).toBe(
+      "spacer-3",
+    );
     expect(result).toEqual({ deficit: 100, scrollTop: 0 });
     // scrollTop is preserved (not updated) - function only ensures spacer is large enough
     expect(scrollElement.scrollTop).toBe(0);

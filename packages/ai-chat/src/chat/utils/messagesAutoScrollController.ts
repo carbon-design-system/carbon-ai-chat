@@ -11,7 +11,18 @@ import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { Message, MessageRequest } from "../../types/messaging/Messages";
 import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
 import { MessageClass } from "../components-legacy/MessageComponent";
+import { applyDynamicStyles } from "./cspStyleUtils";
 import { isRequest, isResponse } from "./messageUtils";
+
+/**
+ * Write `min-block-size` for the bottom spacer via the shared dynamic
+ * stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
+ */
+function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
+  applyDynamicStyles(spacerElem, "spacer", {
+    "min-block-size": `${deficit}px`,
+  });
+}
 
 /**
  * Auto-scroll controller for MessagesComponent.
@@ -477,7 +488,7 @@ function pinMessageAndScroll({
   );
 
   // Spacer must be written before setting scrollTop so the target position is reachable.
-  spacerElem.style.minBlockSize = `${deficit}px`;
+  applySpacerDeficit(spacerElem, deficit);
   scrollElement.scrollTop = scrollTop;
 
   return {
@@ -526,7 +537,7 @@ function recalculatePinnedMessageSpacer({
   const deficit = Math.max(0, Math.ceil(visibleBottom - spacerOffset));
 
   // Write spacer (no need to set scrollTop - we're preserving it)
-  spacerElem.style.minBlockSize = `${deficit}px`;
+  applySpacerDeficit(spacerElem, deficit);
 
   return { deficit, scrollTop: currentScrollTop };
 }
@@ -957,6 +968,7 @@ function applySafariScrollAnchoringRestore(
 
 export {
   applySafariScrollAnchoringRestore,
+  applySpacerDeficit,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,

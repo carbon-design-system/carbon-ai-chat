@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -51,13 +51,17 @@ export default {
       control: "text",
       description: "Placeholder for the text area",
     },
+    disclaimer: {
+      control: "text",
+      description: "Legal disclaimer text",
+    },
+    disclaimerCheckbox: {
+      control: "text",
+      description: "Label text to display with disclaimer checkbox",
+    },
     categoriesLabel: {
       control: "text",
       description: "Accessible label for the categories listbox",
-    },
-    secondaryLabel: {
-      control: "text",
-      description: "Label for the secondary button",
     },
     primaryLabel: {
       control: "text",
@@ -85,7 +89,6 @@ export const Default = {
     title: "Provide feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Tell us more...",
-    secondaryLabel: "Cancel",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -98,7 +101,6 @@ export const Default = {
         title=${args.title}
         body=${args.body}
         text-area-placeholder=${args.placeholder}
-        secondary-label=${args.secondaryLabel}
         primary-label=${args.primaryLabel}
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
@@ -126,8 +128,7 @@ export const WithCategories = {
     body: "Select all that apply and provide details",
     placeholder: "Please describe the issue...",
     categoriesLabel: "Feedback categories",
-    secondaryLabel: "Cancel",
-    primaryLabel: "Submit feedback",
+    primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
   },
@@ -140,7 +141,6 @@ export const WithCategories = {
         body=${args.body}
         text-area-placeholder=${args.placeholder}
         categories-label=${args.categoriesLabel}
-        secondary-label=${args.secondaryLabel}
         primary-label=${args.primaryLabel}
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
@@ -165,13 +165,16 @@ export const WithDisclaimer = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Share your feedback",
+    title: "Additional feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Your feedback...",
-    secondaryLabel: "Cancel",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
+    disclaimer:
+      "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
+    disclaimerCheckbox:
+      "I agree to IBM collecting information related to my feedback.",
   },
   render: (args) => html`
     <div style="padding: 1rem; max-width: 24rem;">
@@ -181,12 +184,12 @@ export const WithDisclaimer = {
         title=${args.title}
         body=${args.body}
         text-area-placeholder=${args.placeholder}
-        secondary-label=${args.secondaryLabel}
         primary-label=${args.primaryLabel}
         .showTextArea=${args.showTextArea}
         ?show-body=${args.showBody}
         .categories=${positiveCategories}
-        disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy). Your feedback may be used to improve our services."
+        disclaimer=${args.disclaimer}
+        disclaimer-checkbox=${args.disclaimerCheckbox}
         @feedback-submit=${(event) => {
           const details = event.detail;
           console.log("Feedback submitted:", details);

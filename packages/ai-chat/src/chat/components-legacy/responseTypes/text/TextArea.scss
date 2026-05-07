@@ -48,6 +48,11 @@
   resize: none;
 }
 
+.cds-aichat--text-area.cds-aichat--text-area--auto-size
+  .cds-aichat--text-area-textarea.cds-aichat--text-area-textarea--scrollable {
+  overflow: auto;
+}
+
 /*
  * For some reason I can't explain, the textarea wants to scroll by 1px with this setup on Firefox. If we add 1px of
  * padding to the sizer, that'll give the textarea the 1 extra pixel needed to not scroll.

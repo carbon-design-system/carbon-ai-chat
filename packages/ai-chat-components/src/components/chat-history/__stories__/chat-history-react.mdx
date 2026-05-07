@@ -55,8 +55,7 @@ function ChatHistory() {
     <HistoryShell>
       <HistoryHeader headerTitle="Chats" />
       <HistoryToolbar onSearchInput={handleSearchInput} />
-      <HistoryContent>
-        <div slot="results-count">Results: 10</div>
+      <HistoryContent resultsLabel="Results" resultsCount="10">
         <HistoryPanel aria-label="Chat history">
           <HistoryPanelItems>
             <HistoryPanelMenu expanded title="Pinned">
@@ -102,8 +101,7 @@ function ChatHistory() {
 <HistoryShell>
   <HistoryHeader headerTitle="Chats" />
   <HistoryToolbar />
-  <HistoryContent>
-    <div slot="results-count">Results: 4</div>
+  <HistoryContent resultsLabel="Results" resultsCount="4">
     <HistoryPanel aria-label="Search results">
       <HistoryPanelItems>
         <HistoryPanelMenu expanded title="Search results">
@@ -126,7 +124,6 @@ function ChatHistory() {
   <HistoryHeader headerTitle="Chats" />
   <HistoryToolbar />
   <HistoryContent>
-    <div slot="results-count">No available chats</div>
   </HistoryContent>
 </HistoryShell>
 ```

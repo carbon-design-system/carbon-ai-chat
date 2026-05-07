@@ -30,6 +30,10 @@ Float-layout chat that exposes a custom history panel slot backed by `customLoad
 | `historyPanelElement`                  | slot           | Writeable-element slot hosting the custom history panel.         |
 | `history-panel-load-chat`              | custom event   | Dispatched by the slot element when a user picks a conversation. |
 
+## Chat history configuration
+
+For information on how to set up chat history view the [chat-history-fullscreen/README.md](../chat-history-fullscreen/README.md) guide.
+
 ## Run it
 
 **Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.

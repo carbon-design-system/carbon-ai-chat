@@ -6,6 +6,7 @@
  */
 
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 import portfinder from "portfinder";
@@ -13,6 +14,22 @@ import { promises as fs } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Strict CSP applied to both the meta tag in index.html and the dev-server header.
+// Dev needs ws:/wss: in connect-src for HMR; the meta tag (production) does not.
+const CSP_BASE =
+  "default-src 'self'; " +
+  "script-src 'self' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; " +
+  "style-src 'self' https://1.www.s81c.com; " +
+  "img-src 'self' data: blob: https://1.www.s81c.com https://live.staticflickr.com; " +
+  "font-src 'self' https://1.www.s81c.com; " +
+  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://w.soundcloud.com https://cdnapisec.kaltura.com https://web-chat.assistant.test.watson.cloud.ibm.com; " +
+  "media-src https://web-chat.assistant.test.watson.cloud.ibm.com; " +
+  "object-src 'none'; " +
+  "base-uri 'self'; " +
+  "form-action 'self'; " +
+  "frame-ancestors 'none';";
+const CSP_DEV = `${CSP_BASE} connect-src 'self' https://1.www.s81c.com ws: wss:;`;
 
 // Simple plugin to copy versions.js from root to dist
 class CopyVersionsPlugin {
@@ -26,6 +43,30 @@ class CopyVersionsPlugin {
         console.log("Copied versions.js to dist/");
       } catch (error) {
         console.warn("Failed to copy versions.js:", error.message);
+      }
+    });
+  }
+}
+
+// Copy demo/public/* into dist/ so files like analytics-init.js are reachable
+// from same-origin (required by strict CSP — no 'unsafe-inline' for scripts).
+class CopyPublicPlugin {
+  apply(compiler) {
+    compiler.hooks.afterEmit.tapPromise("CopyPublicPlugin", async () => {
+      const sourceDir = path.resolve(__dirname, "public");
+      const destDir = path.resolve(__dirname, "dist");
+
+      try {
+        const entries = await fs.readdir(sourceDir);
+        await Promise.all(
+          entries.map((entry) =>
+            fs.copyFile(path.join(sourceDir, entry), path.join(destDir, entry)),
+          ),
+        );
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          console.warn("Failed to copy public/:", error.message);
+        }
       }
     });
   }
@@ -78,7 +119,7 @@ export default async (_env, args) => {
         },
         {
           test: /\.css$/,
-          use: ["style-loader", "css-loader"],
+          use: [MiniCssExtractPlugin.loader, "css-loader"],
         },
       ],
     },
@@ -88,7 +129,9 @@ export default async (_env, args) => {
         template: "./index.html",
         inject: "body",
       }),
+      new MiniCssExtractPlugin({ filename: "[name].css" }),
       new CopyVersionsPlugin(),
+      new CopyPublicPlugin(),
     ],
 
     devtool: "source-map",
@@ -109,6 +152,9 @@ export default async (_env, args) => {
             allowedHosts: "all",
             hot: true,
             open: true,
+            headers: {
+              "Content-Security-Policy": CSP_DEV,
+            },
 
             // Watch external build output and wait until writes settle
             watchFiles: {

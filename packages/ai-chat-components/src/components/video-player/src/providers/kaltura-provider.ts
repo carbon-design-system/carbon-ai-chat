@@ -59,14 +59,9 @@ export class KalturaProvider extends BaseProvider {
       throw new Error("Container element is required");
     }
 
-    // Create iframe for Kaltura player
+    // Create iframe for Kaltura player. Sizing/positioning is handled by the
+    // .cds-aichat--video-player__provider iframe SCSS rule.
     this.iframe = document.createElement("iframe");
-    this.iframe.style.width = "100%";
-    this.iframe.style.height = "100%";
-    this.iframe.style.position = "absolute";
-    this.iframe.style.top = "0";
-    this.iframe.style.left = "0";
-    this.iframe.style.border = "none";
     this.iframe.setAttribute("frameborder", "0");
     this.iframe.setAttribute("scrolling", "no");
     this.iframe.setAttribute("allow", "encrypted-media; autoplay; fullscreen;");

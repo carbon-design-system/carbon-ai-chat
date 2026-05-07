@@ -182,11 +182,10 @@ class TextArea extends PureComponent<TextAreaProps> {
     const sizerHeight = this.sizerRef.current.scrollHeight;
     const maxHeight = 157; // max-block-size from Input.scss lines 187-188
 
-    if (sizerHeight > maxHeight) {
-      this.textAreaRef.current.style.overflow = "auto";
-    } else {
-      this.textAreaRef.current.style.overflow = "hidden";
-    }
+    this.textAreaRef.current.classList.toggle(
+      "cds-aichat--text-area-textarea--scrollable",
+      sizerHeight > maxHeight,
+    );
   }
 
   componentDidUpdate() {

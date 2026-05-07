@@ -28,6 +28,11 @@ import {
   evaluateShowMoreButton,
   type ContainerStyleProperties,
 } from "./layout-utils.js";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+  clearSelector,
+} from "../../shared/dynamic-css-var-sheet.js";
 import { StreamingManager } from "./streaming-manager.js";
 import { defaultLineCountText, type LineCountFormatter } from "./formatters.js";
 import type { EditorView } from "@codemirror/view";
@@ -38,6 +43,29 @@ import "../../toolbar/src/toolbar.js";
 import type { Action } from "../../toolbar/src/toolbar.js";
 
 type CodeMirrorRuntime = Awaited<ReturnType<typeof loadCodeMirrorRuntime>>;
+
+const SNIPPET_INSTANCE_ATTR = "data-cds-aichat-snippet-id";
+const CLIPBOARD_HELPER_SELECTOR = ".cds-aichat--clipboard-helper";
+let snippetInstanceCounter = 0;
+let clipboardHelperRuleInstalled = false;
+
+/**
+ * Install the off-screen clipboard-helper textarea rule on the shared
+ * dynamic stylesheet so the legacy execCommand fallback in
+ * `_handleCopyClick` doesn't need to write inline styles.
+ */
+function ensureClipboardHelperRule(): void {
+  if (clipboardHelperRuleInstalled) {
+    return;
+  }
+  setVarsForSelector(CLIPBOARD_HELPER_SELECTOR, {
+    position: "fixed",
+    left: "-999999px",
+    top: "-999999px",
+    opacity: "0",
+  });
+  clipboardHelperRuleInstalled = true;
+}
 
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./code-snippet.scss?lit";
@@ -239,6 +267,16 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   private snippetContainer = createRef<HTMLDivElement>();
 
   /**
+   * @internal Per-instance identifier used to scope dynamic CSS rules for
+   * this snippet's container via the shared dynamic stylesheet.
+   */
+  private readonly _snippetInstanceId = `snippet-${++snippetInstanceCounter}`;
+
+  private get _snippetSelector(): string {
+    return `[${SNIPPET_INSTANCE_ATTR}="${this._snippetInstanceId}"]`;
+  }
+
+  /**
    * @internal
    */
   private languageCompartment: Compartment | null = null;
@@ -355,13 +393,13 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
-        // Fallback for HTTP or older browsers
+        // Fallback for HTTP or older browsers. The off-screen positioning is
+        // applied via a class + dynamic stylesheet rule so a strict CSP can
+        // drop style-src-attr 'unsafe-inline'.
+        ensureClipboardHelperRule();
         const textArea = document.createElement("textarea");
         textArea.value = textToCopy;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        textArea.style.opacity = "0";
+        textArea.className = "cds-aichat--clipboard-helper";
         textArea.setAttribute("aria-hidden", "true");
         textArea.setAttribute("tabindex", "-1");
         document.body.appendChild(textArea);
@@ -635,7 +673,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   /**
    * Calculates the CSS custom properties for the snippet container based on expanded state and min/max row constraints.
-   * CSP-compliant: returns properties to be set via element.style.setProperty()
+   * Returned by reference for `_applyContainerStyles`, which writes them via the shared dynamic stylesheet
+   * (see `dynamic-css-var-sheet`) so a strict CSP can drop `style-src-attr 'unsafe-inline'`.
    */
   private _getContainerStyles(expandedCode: boolean): ContainerStyleProperties {
     return buildContainerStyles({
@@ -649,8 +688,10 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   }
 
   /**
-   * Applies CSS custom properties to the snippet container element.
-   * CSP-compliant: uses setProperty() instead of inline style attribute.
+   * Applies CSS custom properties to the snippet container element via the
+   * shared dynamic stylesheet so a strict CSP can drop
+   * style-src-attr 'unsafe-inline'. The container is tagged with a
+   * per-instance data attribute so each snippet's rule is independent.
    */
   private _applyContainerStyles() {
     const container = this.snippetContainer.value;
@@ -658,14 +699,17 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       return;
     }
 
-    const properties = this._getContainerStyles(this._expandedCode);
+    container.setAttribute(SNIPPET_INSTANCE_ATTR, this._snippetInstanceId);
+    adoptOnRoot(this.renderRoot as ShadowRoot);
 
-    // Apply each custom property
+    const properties = this._getContainerStyles(this._expandedCode);
+    const declarations: Record<string, string> = {};
     for (const [property, value] of Object.entries(properties)) {
       if (value !== undefined) {
-        container.style.setProperty(property, value);
+        declarations[property] = value;
       }
     }
+    setVarsForSelector(this._snippetSelector, declarations);
   }
 
   /**
@@ -771,6 +815,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     this.streamingManager?.dispose();
     this.languageController?.dispose();
     this.destroyEditor();
+    clearSelector(this._snippetSelector);
   }
 
   /**

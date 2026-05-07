@@ -11,6 +11,25 @@ import { compute } from "compute-scroll-into-view";
 import { memoizeFunction } from "./memoizerUtils";
 import { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
 import { tabbable } from "tabbable";
+import { setVarsForSelector } from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+
+let scrollbarMeasureRuleInstalled = false;
+
+/**
+ * Install the off-screen scrollbar-measure container rule on the shared
+ * dynamic stylesheet so the temp element used by `getScrollbarWidth`
+ * doesn't need inline styles. CSP-safe.
+ */
+function ensureScrollbarMeasureRule(): void {
+  if (scrollbarMeasureRuleInstalled) {
+    return;
+  }
+  setVarsForSelector(".cds-aichat--scrollbar-measure", {
+    visibility: "hidden",
+    overflow: "scroll",
+  });
+  scrollbarMeasureRuleInstalled = true;
+}
 
 /**
  * The calculated size of scrollbars in the application. Note that this value can vary by browser and operating
@@ -79,10 +98,10 @@ function doScrollElement(
  * a div inside and then measure the difference in size of the element.
  */
 function getScrollbarWidth(): number {
+  ensureScrollbarMeasureRule();
   // Creating invisible container
   const outer = document.createElement("div");
-  outer.style.visibility = "hidden";
-  outer.style.overflow = "scroll";
+  outer.className = "cds-aichat--scrollbar-measure";
   document.body.appendChild(outer);
 
   // Creating inner element and placing it in the container.

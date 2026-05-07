@@ -1,3 +1,12 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
 /* eslint-disable */
 import React from "react";
 
@@ -39,13 +48,19 @@ export default {
       control: "text",
       description: "Body text for the user",
     },
+    disclaimer: {
+      control: "text",
+      description: "Legal disclaimer text",
+      table: { type: { summary: "string" } },
+    },
+    disclaimerCheckbox: {
+      control: "text",
+      description: "Label text to display with disclaimer checkbox",
+      table: { type: { summary: "string" } },
+    },
     placeholder: {
       control: "text",
       description: "Placeholder for the text area",
-    },
-    secondaryLabel: {
-      control: "text",
-      description: "Label for the secondary button",
     },
     primaryLabel: {
       control: "text",
@@ -89,12 +104,12 @@ const renderFeedback = (args, options) => {
         title={args.title}
         body={args.body}
         placeholder={args.placeholder}
-        secondaryLabel={args.secondaryLabel}
         primaryLabel={args.primaryLabel}
         showTextArea={args.showTextArea}
         showBody={args.showBody}
         categories={options?.categories}
-        disclaimer={options?.disclaimer}
+        disclaimer={args.disclaimer}
+        disclaimerCheckbox={args.disclaimerCheckbox}
         initialValues={options?.initialValues}
         onSubmit={(event) => {
           const details = event.detail;
@@ -115,7 +130,6 @@ export const Default = {
     title: "Provide feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Tell us more...",
-    secondaryLabel: "Cancel",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -145,8 +159,7 @@ export const WithCategories = {
     title: "What went wrong?",
     body: "Select all that apply and provide details",
     placeholder: "Please describe the issue...",
-    secondaryLabel: "Cancel",
-    primaryLabel: "Submit feedback",
+    primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
   },
@@ -173,10 +186,13 @@ export const WithDisclaimer = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Share your feedback",
+    title: "Additional feedback",
     body: "Help us improve by sharing your thoughts",
     placeholder: "Your feedback...",
-    secondaryLabel: "Cancel",
+    disclaimer:
+      "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
+    disclaimerCheckbox:
+      "I agree to IBM collecting information related to my feedback.",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -184,8 +200,6 @@ export const WithDisclaimer = {
   render: (args) =>
     renderFeedback(args, {
       categories: positiveCategories,
-      disclaimer:
-        "By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy). Your feedback may be used to improve our services.",
       onSubmit: (details) => {
         console.log("Feedback submitted:", details);
         if (typeof window !== "undefined") {

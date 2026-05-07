@@ -17,9 +17,13 @@ import {
 import { DATE_PICKER_INPUT_KIND } from "@carbon/web-components/es/components/date-picker/defs.js";
 import dayjs from "dayjs";
 import { BaseOptions } from "flatpickr/dist/types/options";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
+import {
+  applyDynamicStyles,
+  clearDynamicStyles,
+} from "../../../utils/cspStyleUtils";
 
 import { ScrollElementIntoViewFunction } from "../../MessagesComponent";
 import { useOnMount } from "../../../hooks/useOnMount";
@@ -86,6 +90,13 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const [dayjsLocale, setDayjsLocale] = useState<string>();
   const datePickerRef = useRef<any>(null);
   const valueForAssistantRef = useRef<string>(undefined);
+  // Track elements styled via the dynamic stylesheet so we can drop the
+  // rules on unmount and avoid leaking dead selectors.
+  const styledElementsRef = useRef<{
+    calendar: HTMLElement | null;
+    container: HTMLElement | null;
+    datePicker: HTMLElement | null;
+  }>({ calendar: null, container: null, datePicker: null });
   const inputLabel = formatMessage(
     { id: "datePicker_chooseDate" },
     {
@@ -151,8 +162,18 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       ".cds--date-picker__calendar",
     ) as HTMLElement | null;
 
-    calendar && (calendar.style.position = "unset");
-    container && (container.style.position = "unset");
+    if (calendar) {
+      applyDynamicStyles(calendar, "date-picker-calendar", {
+        position: "unset",
+      });
+      styledElementsRef.current.calendar = calendar;
+    }
+    if (container) {
+      applyDynamicStyles(container, "date-picker-container", {
+        position: "unset",
+      });
+      styledElementsRef.current.container = container;
+    }
 
     if (calendar) {
       const onAnimationEnd = () => {
@@ -162,11 +183,26 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       calendar.addEventListener("animationend", onAnimationEnd);
     }
 
-    Object.assign(datePicker.style, {
+    applyDynamicStyles(datePicker, "date-picker-host", {
       display: "flex",
-      flexDirection: "column",
+      "flex-direction": "column",
     });
+    styledElementsRef.current.datePicker = datePicker;
   }, [scrollElementIntoView]);
+
+  useEffect(() => {
+    // styledElementsRef is a manual container populated by handleOpen, not
+    // a JSX-attached ref — React doesn't reset it on unmount, so reading
+    // .current in cleanup is intentional. The exhaustive-deps lint can't
+    // distinguish the two cases.
+    const styled = styledElementsRef;
+    return () => {
+      const { calendar, container, datePicker } = styled.current;
+      clearDynamicStyles(calendar, "date-picker-calendar");
+      clearDynamicStyles(container, "date-picker-container");
+      clearDynamicStyles(datePicker, "date-picker-host");
+    };
+  }, []);
 
   useOnMount(() => {
     const localeFromMessage = webChatLocale;

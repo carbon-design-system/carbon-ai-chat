@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -843,6 +843,12 @@ export interface GenericItemMessageFeedbackOptions {
    * value is not provided, no text will be shown.
    */
   disclaimer?: string;
+
+  /**
+   * The label text to display with the legal disclaimer checkbox. If this value is not provided, no disclaimer checkbox
+   * or label text will be displayed.
+   */
+  disclaimerCheckbox?: string;
 }
 
 /**
@@ -936,7 +942,8 @@ type GenericItem<TUserDefinedType = Record<string, unknown>> =
   | ButtonItem<TUserDefinedType>
   | GridItem<TUserDefinedType>
   | ConversationalSearchItem<TUserDefinedType>
-  | PreviewCardItem<TUserDefinedType>;
+  | PreviewCardItem<TUserDefinedType>
+  | SystemMessageItem<TUserDefinedType>;
 
 /**
  * A user defined item returned in a message response from an assistant.
@@ -1067,6 +1074,13 @@ interface TextItem<
 }
 
 /**
+ * Visual layout for a {@link SystemMessageItem}.
+ *
+ * @category Messaging
+ */
+export type SystemMessageVariant = "default" | "date" | "agent";
+
+/**
  * A system message item that can be returned in a message response. System messages are used for
  * status updates, progress indicators, or informational notices.
  *
@@ -1087,6 +1101,15 @@ interface SystemMessageItem<
    * The title text to display in the system message.
    */
   title: string;
+
+  /**
+   * How the system line is presented when the message renders as a **standalone** system line
+   * (response contains only system items): default helper text, date separator with rules, or
+   * agent with a rule above and helper text. When system items render **inline** inside a
+   * bubble, `variant` is ignored and the default inline style is used.
+   * @default 'default'
+   */
+  variant?: SystemMessageVariant;
 }
 
 /**

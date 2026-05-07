@@ -21,8 +21,16 @@ import { NativeVideoProvider } from "./providers/native-video-provider.js";
 import { YouTubeProvider } from "./providers/youtube-provider.js";
 import { VimeoProvider } from "./providers/vimeo-provider.js";
 import { KalturaProvider } from "./providers/kaltura-provider.js";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+  clearSelector,
+} from "../../shared/dynamic-css-var-sheet.js";
 
 const LOADING_TIMEOUT_MS = 10000; // 10 seconds
+
+const INSTANCE_ATTR = "data-cds-aichat-video-player-id";
+let instanceCounter = 0;
 
 /**
  * Video player component that supports multiple video sources
@@ -141,6 +149,17 @@ class VideoPlayer extends LitElement {
   private provider: BaseProvider | null = null;
   private loadingTimeout: ReturnType<typeof setTimeout> | null = null;
   private isLoadingVideo = false;
+  private readonly instanceId = `vp-${++instanceCounter}`;
+
+  private get instanceSelector(): string {
+    return `cds-aichat-video-player[${INSTANCE_ATTR}="${this.instanceId}"]`;
+  }
+
+  private syncAspectRatioVar(): void {
+    setVarsForSelector(this.instanceSelector, {
+      "--video-player-aspect-ratio": `${this.aspectRatioPercentage}%`,
+    });
+  }
 
   /**
    * Create the appropriate provider based on the video source
@@ -316,6 +335,9 @@ class VideoPlayer extends LitElement {
    */
   connectedCallback(): void {
     super.connectedCallback();
+    this.setAttribute(INSTANCE_ATTR, this.instanceId);
+    adoptOnRoot(this.getRootNode() as Document | ShadowRoot);
+    this.syncAspectRatioVar();
   }
 
   /**
@@ -336,6 +358,10 @@ class VideoPlayer extends LitElement {
    */
   updated(changedProperties: Map<string, any>): void {
     super.updated(changedProperties);
+
+    if (changedProperties.has("aspectRatioPercentage")) {
+      this.syncAspectRatioVar();
+    }
 
     // Reload video if source changes (but not on first update, which is handled by firstUpdated)
     if (
@@ -372,6 +398,8 @@ class VideoPlayer extends LitElement {
       this.provider.destroy();
       this.provider = null;
     }
+
+    clearSelector(this.instanceSelector);
   }
 
   /**
@@ -400,7 +428,6 @@ class VideoPlayer extends LitElement {
         class="${prefix}--video-player"
         role="region"
         aria-label=${this.ariaLabel}
-        style="--video-player-aspect-ratio: ${this.aspectRatioPercentage}%"
       >
         ${this.statusMessage
           ? html`

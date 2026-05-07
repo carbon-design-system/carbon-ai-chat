@@ -363,10 +363,12 @@ function ChatHistoryExample({
         onNewChatClick={handleNewChat}
         onSearchInput={handleSearchInput}
       />
-      <HistoryContent>
-        {(showSearchResults || noSearchResults) && (
-          <div slot="results-count">Results: {searchResults.length}</div>
-        )}
+      <HistoryContent
+        resultsLabel="Results"
+        resultsCount={
+          showSearchResults || noSearchResults ? searchResults.length : ""
+        }
+      >
         <HistoryPanel aria-label="Chat history">
           <HistoryPanelItems>
             {noSearchResults && (
