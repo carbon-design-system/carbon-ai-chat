@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -22,10 +22,8 @@ import {
   SystemMessageItem,
 } from "../../types/messaging/Messages";
 import { CustomSendMessageOptions } from "../../types/config/MessagingConfig";
-import {
-  OnErrorType,
-  PublicConfigMessaging,
-} from "../../types/config/PublicConfig";
+import { OnErrorType } from "../../types/config/ErrorConfig";
+import { PublicConfigMessaging } from "../../types/config/PublicConfigMessaging";
 import { ServiceManager } from "./ServiceManager";
 import { PendingMessageRequest } from "./MessageService";
 import cloneDeep from "lodash-es/cloneDeep.js";

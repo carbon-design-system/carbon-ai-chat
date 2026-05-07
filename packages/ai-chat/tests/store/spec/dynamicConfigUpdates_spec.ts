@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,10 +17,8 @@ import {
 import { reducers } from "../../../src/chat/store/reducers";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 import { AppState } from "../../../src/types/state/AppState";
-import {
-  PublicConfig,
-  enLanguagePack,
-} from "../../../src/types/config/PublicConfig";
+import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import { enLanguagePack } from "../../../src/types/config/LanguagePack";
 
 // Mock ServiceManager for testing
 const createMockServiceManager = (initialState: AppState): ServiceManager => {

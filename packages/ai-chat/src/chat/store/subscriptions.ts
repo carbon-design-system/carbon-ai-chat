@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,7 +13,7 @@
 
 import { ServiceManager } from "../services/ServiceManager";
 import { BusEventType } from "../../types/events/eventBusTypes";
-import { PublicChatState } from "../../types/instance/ChatInstance";
+import { PublicChatState } from "../../types/instance/PublicChatState";
 import isEqual from "lodash-es/isEqual.js";
 
 /**
@@ -47,7 +47,6 @@ function fireStateChangeEvent(serviceManager: ServiceManager) {
   return () => {
     const newState = serviceManager.actions.getPublicChatState();
 
-    // Use deep equality check to detect any changes in the state
     if (!isEqual(previousState, newState)) {
       serviceManager.eventBus.fireSync(
         {

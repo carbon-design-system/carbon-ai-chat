@@ -14,7 +14,10 @@ This file provides guidance to agents when working with code in this repository.
 - Do not read or edit generated output: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `storybook-react-static/`, `node_modules/`, `packages/ai-chat-components/src/react/`, `packages/ai-chat-components/custom-elements.json`, `packages/ai-chat/dist/docs/`.
 - If you are not Bob, don't read `.bob/` (IBM Bob mode rules — not general guidance).
 - **Accessibility** is a repo-wide concern: every UI change in any package must hold WCAG 2.1 AA. Load [AGENTS_ACCESSIBILITY.md](AGENTS_ACCESSIBILITY.md) for the checklist, live-region patterns, and the centralized announcer utilities.
+- **Figma → code** (translating a design, calling the Carbon MCP server, or using the `carbon-builder` skill): load [AGENTS_FIGMA.md](AGENTS_FIGMA.md). The two primary packages are Web Components only — always pass `filters.component_type: "Web Components"` to Carbon MCP unless you are editing [demo/](demo/), [examples/react/](examples/react/), or a `-react.stories.jsx` / `-react.mdx` file.
 - **Code reviews** (user-requested or self-review before marking a task done) follow the rubric in [AGENTS_CODE_REVIEW.md](AGENTS_CODE_REVIEW.md).
+- **Writing a plan** (when the user asks you to draft a multi-PR plan, design doc, or implementation plan before code is written) follow the rubric in [AGENTS_PLAN_AUTHORING.md](AGENTS_PLAN_AUTHORING.md). Plan files (`PLAN.md`, `PLAN-{N}-{title}.md`) live at the repo root and are git-ignored.
+- **Plan reviews** (when the user asks you to review PLAN.md, a design doc, or a multi-PR series before any code is written) follow the rubric in [AGENTS_PLAN_REVIEW.md](AGENTS_PLAN_REVIEW.md).
 - **Writing a PR description**: when asked to draft or write up a PR, follow [AGENTS_PR.md](AGENTS_PR.md).
 
 ## Repository layout

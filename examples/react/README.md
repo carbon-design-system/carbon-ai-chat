@@ -412,30 +412,29 @@ React example that rehydrates a conversation containing multiple `user_defined` 
 
 ### [Input / Mentions & commands](./input-mentions-and-commands/README.md)
 
-`ChatContainer` configured with two suggestion entries: `@mentions` for picking team members anywhere in the message, and `/commands` constrained to the start of the line.
+`ChatContainer` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-mentions-and-commands`
 
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                                | Package / kind              | Role in this example                                                     |
-| ------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| `ChatContainer`                       | `@carbon/ai-chat` component | Mounts the chat UI.                                                      |
-| `PublicConfig`                        | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.                       |
-| `ChatInstance`                        | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                      | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.                               |
-| `SuggestionType.MENTION`              | `@carbon/ai-chat` enum      | Selects the mention suggestion behavior.                                 |
-| `SuggestionType.COMMAND`              | `@carbon/ai-chat` enum      | Selects the command suggestion behavior.                                 |
-| `input.suggestions`                   | config prop                 | Registers two suggestion configurations on the input.                    |
-| `suggestion.trigger`                  | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
-| `suggestion.triggerPosition`          | config prop                 | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.items`                    | config prop                 | Async filter narrowing items as the user types.                          |
-| `suggestion.onSelect`                 | config prop                 | Hook that runs when the user picks a suggestion.                         |
-| `onBeforeRender`                      | component prop              | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData` | instance method             | Appends mention/command picks to the outgoing message's structured data. |
-| `messaging.customSendMessage`         | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
-| `injectCarbonTheme`                   | config prop                 | Applies the white Carbon theme.                                          |
+| Symbol                                  | Package / kind              | Role in this example                                                     |
+| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `ChatContainer`                         | `@carbon/ai-chat` component | Mounts the chat UI.                                                      |
+| `PublicConfig`                          | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.                       |
+| `ChatInstance`                          | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.                               |
+| `input.mention`                         | config prop                 | Registers the `@`-mention trigger config on the input.                   |
+| `input.command`                         | config prop                 | Registers the `/`-command trigger config on the input.                   |
+| `mention.trigger` / `command.trigger`   | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
+| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect`.                      |
+| `instance.input.updateStructuredData`   | instance method             | Appends mention/command picks to the outgoing message's structured data. |
+| `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
+| `injectCarbonTheme`                     | config prop                 | Applies the white Carbon theme.                                          |
 
 </details>
 
@@ -448,32 +447,31 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                                | Package / kind              | Role in this example                                                     |
-| ------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| `ChatContainer`                       | `@carbon/ai-chat` component | Mounts the chat UI.                                                      |
-| `PublicConfig`                        | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.                       |
-| `ChatInstance`                        | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                      | `@carbon/ai-chat` type      | Shape of each entry; passed to `renderCustomToken`.                      |
-| `SuggestionType.MENTION`              | `@carbon/ai-chat` enum      | Selects the mention suggestion behavior.                                 |
-| `SuggestionType.COMMAND`              | `@carbon/ai-chat` enum      | Selects the command suggestion behavior.                                 |
-| `input.suggestions`                   | config prop                 | Registers two suggestion configurations on the input.                    |
-| `suggestion.renderCustomToken`        | config prop                 | Returns a React node rendered in place of the default chip.              |
-| `suggestion.trigger`                  | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
-| `suggestion.triggerPosition`          | config prop                 | `"start"` constrains commands to the beginning of the line.              |
-| `suggestion.items`                    | config prop                 | Async filter narrowing items as the user types.                          |
-| `suggestion.onSelect`                 | config prop                 | Hook that runs when the user picks a suggestion.                         |
-| `Tag`                                 | `@carbon/react` component   | Visual chip used inside the custom token renderer.                       |
-| `Tooltip`                             | `@carbon/react` component   | Hover affordance wrapping the custom mention chip.                       |
-| `onBeforeRender`                      | component prop              | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData` | instance method             | Appends mention/command picks to the outgoing message's structured data. |
-| `messaging.customSendMessage`         | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
-| `injectCarbonTheme`                   | config prop                 | Applies the white Carbon theme.                                          |
+| Symbol                                  | Package / kind              | Role in this example                                                     |
+| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `ChatContainer`                         | `@carbon/ai-chat` component | Mounts the chat UI.                                                      |
+| `PublicConfig`                          | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.                       |
+| `ChatInstance`                          | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | `@carbon/ai-chat` type      | Shape of each entry; passed to `renderCustomToken`.                      |
+| `input.mention`                         | config prop                 | Registers the `@`-mention trigger config on the input.                   |
+| `input.command`                         | config prop                 | Registers the `/`-command trigger config on the input.                   |
+| `mention.renderCustomToken`             | config prop                 | Returns a React node rendered in place of the default mention chip.      |
+| `mention.trigger` / `command.trigger`   | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
+| `Tag`                                   | `@carbon/react` component   | Visual chip used inside the custom token renderer.                       |
+| `Tooltip`                               | `@carbon/react` component   | Hover affordance wrapping the custom mention chip.                       |
+| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect`.                      |
+| `instance.input.updateStructuredData`   | instance method             | Appends mention/command picks to the outgoing message's structured data. |
+| `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
+| `injectCarbonTheme`                     | config prop                 | Applies the white Carbon theme.                                          |
 
 </details>
 
 ### [Input / Typeahead](./input-typeahead/README.md)
 
-`ChatContainer` configured with an `AUTOCOMPLETE` suggestion that filters a canned list as the user types and renders the matches in a dropdown above the input.
+`ChatContainer` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-typeahead`
 
@@ -484,12 +482,10 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | ----------------------------- | --------------------------- | ----------------------------------------------------- |
 | `ChatContainer`               | `@carbon/ai-chat` component | Mounts the chat UI.                                   |
 | `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.    |
-| `SuggestionType.AUTOCOMPLETE` | `@carbon/ai-chat` enum      | Selects the autocomplete suggestion behavior.         |
 | `SuggestionItem`              | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.            |
-| `input.suggestions`           | config prop                 | Registers the typeahead behavior on the input.        |
-| `suggestion.trigger`          | config prop                 | Empty string fires `items` on every keystroke.        |
-| `suggestion.items`            | config prop                 | Async filter that returns matching `SuggestionItem`s. |
-| `suggestion.debounceMs`       | config prop                 | Coalesces keystrokes before calling `items`.          |
+| `input.autocomplete`          | config prop                 | Registers the typeahead behavior on the input.        |
+| `autocomplete.items`          | config prop                 | Async filter that returns matching `SuggestionItem`s. |
+| `autocomplete.debounceMs`     | config prop                 | Coalesces keystrokes before calling `items`.          |
 | `messaging.customSendMessage` | config prop                 | Mock backend echoing the user's message.              |
 | `injectCarbonTheme`           | config prop                 | Applies the white Carbon theme.                       |
 
@@ -497,26 +493,25 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 
 ### [Input / Typeahead (custom list)](./input-typeahead-custom/README.md)
 
-`ChatContainer` with an `AUTOCOMPLETE` suggestion whose dropdown is replaced by a fully custom React component supplied through `renderCustomList`.
+`ChatContainer` with `input.autocomplete` whose dropdown is replaced by a fully custom React component supplied through `renderCustomList`.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-typeahead-custom`
 
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                        | Package / kind              | Role in this example                                                            |
-| ----------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
-| `ChatContainer`               | `@carbon/ai-chat` component | Mounts the chat UI.                                                             |
-| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.                              |
-| `SuggestionType.AUTOCOMPLETE` | `@carbon/ai-chat` enum      | Selects the autocomplete suggestion behavior.                                   |
-| `SuggestionItem`              | `@carbon/ai-chat` type      | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
-| `CustomListProps`             | `@carbon/ai-chat` type      | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
-| `input.suggestions`           | config prop                 | Registers the typeahead behavior on the input.                                  |
-| `suggestion.renderCustomList` | config prop                 | Returns a React node that replaces the default dropdown.                        |
-| `suggestion.items`            | config prop                 | Async filter providing entries to the custom list.                              |
-| `suggestion.debounceMs`       | config prop                 | Coalesces keystrokes before calling `items`.                                    |
-| `messaging.customSendMessage` | config prop                 | Mock backend echoing the user's message.                                        |
-| `injectCarbonTheme`           | config prop                 | Applies the white Carbon theme.                                                 |
+| Symbol                          | Package / kind              | Role in this example                                                            |
+| ------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| `ChatContainer`                 | `@carbon/ai-chat` component | Mounts the chat UI.                                                             |
+| `PublicConfig`                  | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.                              |
+| `SuggestionItem`                | `@carbon/ai-chat` type      | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
+| `CustomListProps`               | `@carbon/ai-chat` type      | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
+| `input.autocomplete`            | config prop                 | Registers the typeahead behavior on the input.                                  |
+| `autocomplete.renderCustomList` | config prop                 | Returns a React node that replaces the default dropdown.                        |
+| `autocomplete.items`            | config prop                 | Async filter providing entries to the custom list.                              |
+| `autocomplete.debounceMs`       | config prop                 | Coalesces keystrokes before calling `items`.                                    |
+| `messaging.customSendMessage`   | config prop                 | Mock backend echoing the user's message.                                        |
+| `injectCarbonTheme`             | config prop                 | Applies the white Carbon theme.                                                 |
 
 </details>
 

@@ -8,31 +8,49 @@
  */
 
 import "./src/input-shell.js";
+import "./src/prompt-line.js";
 import "./src/send-control.js";
 import "./src/stop-streaming-button.js";
 
 export { default as InputShellElement } from "./src/input-shell.js";
+export { default as PromptLineElement } from "./src/prompt-line.js";
 export { default as InputSendControlElement } from "./src/send-control.js";
 export { default as StopStreamingButton } from "./src/stop-streaming-button.js";
 
-// Re-export types for consumers
+// Carbon Tiptap factories, helpers, and JSONContent walking utilities.
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  dispatchTriggerChange,
+  setHostOriginMeta,
+  isHostOrigin,
+  buildCarbonExtensions,
+  projectRawValue,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+} from "./src/tiptap/index.js";
+
 export type {
-  SuggestionItem,
-  SuggestionConfig,
-  StarterConfig,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
   AutocompleteConfig,
-  MentionConfig,
-  CommandConfig,
-  FileUpload,
-  FileStatusValue,
+  SuggestionItem,
   CustomListProps,
+  TriggerChangeEventDetail,
+} from "./src/tiptap/index.js";
+
+// Curated runtime / event-detail types.
+export type {
+  FileUpload,
   InputChangeEventDetail,
   SendEventDetail,
   FileSelectEventDetail,
   FileRemoveEventDetail,
-  TriggerChangeEventDetail,
   TypingEventDetail,
 } from "./src/types.js";
 
-export { FileStatusValue as FileStatusValueEnum } from "./src/types.js";
-export { SuggestionType } from "./src/types.js";
+export { FileStatusValue } from "./src/types.js";

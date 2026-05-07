@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
-import type { SuggestionItem } from "@carbon/ai-chat-components/es/components/input/src/types.js";
+import type { SuggestionItem } from "@carbon/ai-chat-components/es/components/input/src/tiptap/types.js";
 
 /**
  * Tracked state for a single token portal.
@@ -34,17 +34,21 @@ interface TokenPortalsContainerProps {
 let tokenSlotCounter = 0;
 
 /**
- * Manages React portals for custom token renderers (mentions/commands) so that
- * the rendered content lives in the page's light DOM where external CSS applies.
+ * Manages React portals for custom token renderers (mention / command
+ * tokens via `renderCustomToken`) so the rendered content lives in the
+ * page's light DOM where external CSS applies.
  *
- * This follows the same architectural pattern as {@link UserDefinedResponsePortalsContainer}
- * and {@link WriteableElementsPortalsContainer}: content is appended to `chatWrapper`'s
- * light DOM with a `slot` attribute, and a matching `<slot>` element inside the shadow
- * tree projects it into the correct visual position (inline in the ProseMirror editor).
+ * Same architectural pattern as {@link UserDefinedResponsePortalsContainer} and
+ * {@link WriteableElementsPortalsContainer}: content is appended to
+ * `chatWrapper`'s light DOM with a `slot` attribute, and a matching `<slot>`
+ * element inside the shadow tree projects it into the correct visual position
+ * (inline in the editor).
  *
- * The token plugin (`token-plugin.ts`) dispatches a `cds-aichat-token-render` event
- * when a `renderCustomToken` returns a React node. This component intercepts that event,
- * sets up the slot projection, and portal-renders the React content.
+ * The Carbon Tiptap factories (`carbonMention` / `carbonCommand`) dispatch
+ * `cds-aichat-token-render` from the TokenNodeView when a `renderCustomToken`
+ * returns a React node. With the Carbon-baked block schema gone, no
+ * `cds-aichat-block-render` handling lives here — host-authored block
+ * extensions own their own render lifecycle.
  */
 function TokenPortalsContainer({ chatWrapper }: TokenPortalsContainerProps) {
   const [portals, setPortals] = useState<TokenPortalEntry[]>([]);
