@@ -447,7 +447,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
       // Find matching suggestion config by type
       const matchingConfig = suggestionConfigs.find(
-        (config: SuggestionConfig) => (config.type ?? "autocomplete") === type,
+        (config: SuggestionConfig) => config.type === type,
       );
 
       if (!matchingConfig) {
@@ -467,11 +467,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       // Check minQueryLength
       const minLength = matchingConfig.minQueryLength ?? 0;
       if (query.length < minLength) {
-        if (matchingConfig.initialItems) {
-          setAutocompleteItems(matchingConfig.initialItems);
-        } else {
-          setAutocompleteItems([]);
-        }
+        setAutocompleteItems([]);
         return;
       }
 

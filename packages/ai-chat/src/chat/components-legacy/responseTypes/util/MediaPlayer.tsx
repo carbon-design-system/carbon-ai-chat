@@ -232,5 +232,3 @@ function MediaPlayerComponent({
 const MediaPlayerExport = React.memo(MediaPlayerComponent);
 
 export { MediaPlayerContentConfig, MediaPlayerExport as MediaPlayer };
-
-// Made with Bob

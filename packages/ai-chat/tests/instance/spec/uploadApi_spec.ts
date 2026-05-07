@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -458,5 +458,3 @@ describe("upload API – Redux store lifecycle", () => {
     expect(instance.getState().input.hasInFlightUploads).toBe(false);
   });
 });
-
-// Made with Bob

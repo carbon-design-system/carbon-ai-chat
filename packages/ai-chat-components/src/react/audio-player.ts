@@ -30,5 +30,3 @@ const AudioPlayer = withWebComponentBridge(
 
 export { AudioPlayer };
 export default AudioPlayer;
-
-// Made with Bob

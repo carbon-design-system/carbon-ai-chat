@@ -81,5 +81,3 @@ export class ScriptLoader {
     this.loadedScripts.clear();
   }
 }
-
-// Made with Bob

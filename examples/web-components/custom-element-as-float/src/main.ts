@@ -7,6 +7,24 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Custom element as float (Web components)
+ *
+ * Demonstrates: replicating the built-in float / launcher view using
+ * `<cds-aichat-custom-element>` styled with the shipped float-layout CSS
+ * plus a `<cds-aichat-button>` custom launcher controlled via
+ * `VIEW_CHANGE`. Useful when you need full control over launcher
+ * behavior, accessibility, or positioning.
+ *
+ * APIs exercised:
+ *   - `<cds-aichat-custom-element>` styled with float-layout + launcher CSS
+ *   - `<cds-aichat-button>` (custom launcher)
+ *   - `BusEventType.VIEW_CHANGE` for the open/closed phase machine
+ *   - `PublicConfig.launcher.isOn` (disabled to use a custom launcher)
+ *
+ * Start reading at: the `Demo` element below and the `VIEW_CHANGE` handler.
+ */
+
 import "@carbon/ai-chat/css/chat-float-layout.css";
 import "@carbon/ai-chat/css/chat-launcher-layout.css";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
@@ -29,6 +47,8 @@ type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
 
 const config: PublicConfig = {
   messaging: {
+    // Route every outbound message through a local mock so the example runs
+    // with no back-end. Replace with a real production implementation.
     customSendMessage,
   },
   // Suppress the built-in launcher — our custom cds-aichat-button acts as the launcher.
@@ -71,6 +91,9 @@ export class Demo extends LitElement {
   }
 
   _onAfterRender = (instance: ChatInstance) => {
+    // Cache the ChatInstance so the custom launcher can call changeView, and
+    // flip _chatReady to render the launcher only after the chat has finished
+    // its first render — this guarantees changeView is callable on click.
     this._instance = instance;
     this._chatReady = true;
   };
@@ -88,6 +111,9 @@ export class Demo extends LitElement {
   };
 
   _onAnimationEnd = () => {
+    // Advance the phase machine when the float-layout CSS transition finishes;
+    // moving out of "opening"/"closing" drops the animation class so the next
+    // open/close cycle replays the animation cleanly.
     if (this._phase === "opening") {
       this._phase = "open";
     } else if (this._phase === "closing") {
@@ -96,6 +122,8 @@ export class Demo extends LitElement {
   };
 
   _handleLauncherClick = () => {
+    // The non-null assertion is safe because the launcher only renders after
+    // _chatReady flips true in _onAfterRender, which assigns _instance.
     void this._instance!.changeView(ViewType.MAIN_WINDOW);
   };
 

@@ -1,10 +1,27 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock backend for the human-agent example.
+ *
+ * Demonstrates: a `customSendMessage` handler that fakes a backend by
+ * branching on user input and pushing canned messages back through
+ * `instance.messaging.addMessage`, including a `CONNECT_TO_HUMAN_AGENT`
+ * response that triggers the service desk handoff.
+ *
+ * APIs exercised:
+ *   - `PublicConfig.messaging.customSendMessage`
+ *   - `ChatInstance.messaging.addMessage`
+ *   - `MessageResponseTypes.TEXT`
+ *   - `MessageResponseTypes.CONNECT_TO_HUMAN_AGENT`
+ *
+ * Start reading at: `customSendMessage`.
  */
 
 import {
@@ -26,6 +43,7 @@ const TEXT = `Lorem ipsum odor amet, consectetuer adipiscing elit. \`Inline Code
 
 Quam scelerisque platea ridiculus sem placerat pharetra sed. Porttitor per massa venenatis fusce fusce ad cras. Vel congue semper, rhoncus tempus nisl nam. Purus molestie tristique diam himenaeos sapien lacus.`;
 
+// Replace with a real production implementation.
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
@@ -57,6 +75,7 @@ async function customSendMessage(
         });
         break;
       case "human":
+        // CONNECT_TO_HUMAN_AGENT triggers the configured serviceDeskFactory and starts the agent session.
         instance.messaging.addMessage({
           output: {
             generic: [

@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -18,7 +18,7 @@ import { CornerManager } from "./corner-manager.js";
 import { SlotObserver } from "./slot-observer.js";
 import { InitializationManager } from "./initialization-manager.js";
 import { ResizeObserverManager } from "./resize-observer-manager.js";
-import { AriaAnnouncerManager } from "./aria-announcer-manager.js";
+import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 import type { StartOrEnd, SlotConfig } from "./types.js";
@@ -647,7 +647,7 @@ class CDSAIChatShell extends LitElement {
     );
     if (ariaLiveRegions.length >= 2) {
       this.ariaAnnouncerManager = new AriaAnnouncerManager();
-      this.ariaAnnouncerManager.connect(ariaLiveRegions[0], ariaLiveRegions[1]);
+      this.ariaAnnouncerManager.connect(Array.from(ariaLiveRegions));
     }
 
     // Listen for panel open/close events

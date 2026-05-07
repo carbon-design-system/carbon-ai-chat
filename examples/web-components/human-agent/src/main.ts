@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,13 +7,28 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+/**
+ * Example: Carbon AI Chat — Human agent (Web components)
+ *
+ * Demonstrates: handing the conversation off to a live agent through
+ * `serviceDeskFactory`, including the pattern for keeping the factory
+ * reference stable so the active session is not torn down unnecessarily.
+ *
+ * APIs exercised:
+ *   - `<cds-aichat-custom-element>`
+ *   - `PublicConfig.serviceDeskFactory`
+ *   - `ServiceDesk` (see `./mockServiceDesk.ts`)
+ *
+ * Start reading at: `createServiceDeskFactory()` and `willUpdate()`.
+ */
+
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
 
 import {
   type PublicConfig,
   type ServiceDeskFactoryParameters,
 } from "@carbon/ai-chat";
-import { html, LitElement, type PropertyValues } from "lit";
+import { css, html, LitElement, type PropertyValues } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { customSendMessage } from "./customSendMessage";
@@ -24,24 +39,28 @@ interface UserData {
   id: string;
 }
 
+// Routes outgoing user messages through the local mock instead of a real back-end.
 const messagingConfig: PublicConfig["messaging"] = {
   customSendMessage,
 };
 
 @customElement("my-app")
 export class Demo extends LitElement {
+  static styles = css`
+    .chat-custom-element {
+      height: 100vh;
+      width: 100vw;
+    }
+  `;
+
   @state()
   accessor userData: UserData | undefined = undefined;
 
-  /**
-   * serviceDeskFactory is special: when its reference changes, cds-aichat-container must restart
-   * the service desk and any live human-agent conversation will be disconnected. Keep it stable
-   * by default, and only swap in a new factory when user data truly changes.
-   */
+  // Cache the factory on the instance so its identity stays stable across renders and the active service desk session is not torn down on every update.
   serviceDeskFactory = this.createServiceDeskFactory();
 
-  // Stable factory for normal renders; captures the current user data snapshot.
   private createServiceDeskFactory() {
+    // Capture the current userData by value so the closure does not observe later mutations and surprise the running session.
     const currentUserData = this.userData;
     return (parameters: ServiceDeskFactoryParameters) =>
       Promise.resolve(new MockServiceDesk(parameters, currentUserData));
@@ -49,29 +68,32 @@ export class Demo extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    // Mock updating user data after mount to mirror the React example behavior.
+    // Simulates async user data arriving after mount to exercise the factory rebuild path in willUpdate.
     setTimeout(() => {
       this.userData = { name: "Bob", id: "1234" };
     }, 5000);
   }
 
   protected willUpdate(changedProperties: PropertyValues<this>): void {
+    // Rebuild the factory only when userData actually changes so an in-flight session is preserved across unrelated re-renders.
     if (changedProperties.has("userData")) {
-      // Changing the factory reference signals the container to rebuild the service desk with
-      // the new user data; this will reset any active human-agent chat session. You should avoid
-      // this unless you have to (for instance, you don't have the userData guaranteed on mount).
-      // Alernatively, you could just wait to render the chat until you have all the information
-      // you need.
       this.serviceDeskFactory = this.createServiceDeskFactory();
     }
   }
 
   render() {
+    // messaging wires the mock customSendMessage into the chat.
+    // serviceDeskFactory produces the MockServiceDesk used for the human agent hand-off.
+    // layout.showFrame is disabled so the chat fills the full-viewport host element instead of rendering the default rounded frame.
+    // openChatByDefault is enabled so the demo is immediately usable on load.
     return html`
-      <cds-aichat-container
+      <cds-aichat-custom-element
+        class="chat-custom-element"
         .messaging=${messagingConfig}
         .serviceDeskFactory=${this.serviceDeskFactory}
-      ></cds-aichat-container>
+        .layout=${{ showFrame: false }}
+        .openChatByDefault=${true}
+      ></cds-aichat-custom-element>
     `;
   }
 }

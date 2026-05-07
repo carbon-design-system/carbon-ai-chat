@@ -1,6 +1,6 @@
-# Human Agent
+# Human agent
 
-`ChatContainer` wired to a mock service desk via `serviceDeskFactory`, demonstrating how to hand off to a live agent while keeping the factory stable across re-renders.
+`ChatCustomElement` wired to a mock service desk via `serviceDeskFactory`, demonstrating how to hand off to a live agent while keeping the factory stable across re-renders.
 
 ## What this example shows
 
@@ -18,7 +18,7 @@
 
 | Symbol                                                                  | Package / kind              | Role in this example                                        |
 | ----------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------- |
-| `ChatContainer`                                                         | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
+| `ChatCustomElement`                                                     | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
 | `PublicConfig`                                                          | `@carbon/ai-chat` type      | Types the config.                                           |
 | `ServiceDesk`                                                           | `@carbon/ai-chat` interface | Contract implemented by `MockServiceDesk`.                  |
 | `ServiceDeskFactoryParameters`                                          | `@carbon/ai-chat` type      | Parameters passed to the factory.                           |

@@ -1,35 +1,31 @@
-# Watch State
+# Watch state
 
-Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibility and active-response id into the host UI, and keeps `user_defined` response elements updated when `activeResponseId` changes.
+Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibility into the host UI.
 
 ## What this example shows
 
 - Capturing the `ChatInstance` via `onBeforeRender`, reading `instance.getState()`, and subscribing to `BusEventType.STATE_CHANGE`.
-- Reflecting `homeScreenState.isHomeScreenOpen` and `activeResponseId` into Lit `@state` accessors displayed above the chat.
+- Reflecting `homeScreenState.isHomeScreenOpen` into a Lit `@state` accessor displayed alongside the floating chat launcher.
 - Configuring a homescreen with greeting and starter buttons.
-- Rendering a `user_defined` response via `renderUserDefinedResponse` and updating its DOM when the active response changes.
 
 ## When to use this pattern
 
 - Hosts that need to react to chat view/state changes (e.g. toggle external panels when the homescreen closes).
-- User-defined response elements whose content must stay in sync with which message is currently active.
+- You want a minimal reference for the `STATE_CHANGE` bus event.
 
 ## APIs and props demonstrated
 
 | Symbol                        | Kind           | Role in this example                                  |
 | ----------------------------- | -------------- | ----------------------------------------------------- |
-| `<cds-aichat-container>`      | custom element | Mounts the chat UI.                                   |
+| `<cds-aichat-container>`      | custom element | Mounts the chat UI as a float launcher.               |
 | `messaging.customSendMessage` | property       | Mock backend.                                         |
 | `homescreen.isOn`             | property       | Enables the homescreen.                               |
 | `homescreen.greeting`         | property       | Greeting text on the homescreen.                      |
 | `homescreen.starters`         | property       | Starter buttons.                                      |
 | `onBeforeRender`              | property       | Captures the `ChatInstance` and subscribes to events. |
-| `renderUserDefinedResponse`   | property       | Renders the `my_unique_identifier` user-defined item. |
-| `instance.getState`           | method         | Reads initial homescreen and active-response state.   |
+| `instance.getState`           | method         | Reads initial homescreen state.                       |
 | `instance.on`                 | method         | Subscribes to `STATE_CHANGE`.                         |
 | `BusEventType.STATE_CHANGE`   | enum           | Event type observed for state diffs.                  |
-| `RenderUserDefinedState`      | type           | Argument passed to the render callback.               |
-| `UserDefinedItem`             | type           | Shape of user-defined message items.                  |
 | `ChatInstance`                | type           | Type of the instance handle.                          |
 | `PublicConfig`                | type           | Types the chat configuration object.                  |
 

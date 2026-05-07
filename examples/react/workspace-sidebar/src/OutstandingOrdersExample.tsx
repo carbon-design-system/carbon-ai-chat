@@ -7,6 +7,24 @@
  *  @license
  */
 
+/**
+ * Workspace component for the workspace-sidebar example (outstanding_orders).
+ *
+ * Demonstrates: rendering inside the `workspacePanelElement` WriteableElement
+ * slot when the user maximizes the outstanding-orders user-defined card. The
+ * component receives `workspaceId` and `additionalData` from the originating
+ * message and calls `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`
+ * from the toolbar Close action to dismiss the panel.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.customPanels.getPanel`
+ *   - `PanelType.WORKSPACE`
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody`
+ *   - `Toolbar`
+ *
+ * Start reading at: `OutstandingOrdersExample`.
+ */
+
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 import WorkspaceShell, {
@@ -33,7 +51,7 @@ interface OutstandingOrdersExampleProps {
   additionalData?: any;
 }
 
-// Generate 25 rows of dummy order data
+// Replace with a real production implementation.
 const orders = [
   {
     id: "ORD-1001",
@@ -274,6 +292,7 @@ export function OutstandingOrdersExample({
     additionalData,
   });
 
+  // customPanels.getPanel(PanelType.WORKSPACE): grab a handle to the hosting panel so the toolbar Close action can dismiss it from inside the writeable element.
   const panel = instance.customPanels?.getPanel(PanelType.WORKSPACE);
 
   const handleClose = () => {
@@ -343,5 +362,3 @@ export function OutstandingOrdersExample({
     </WorkspaceShell>
   );
 }
-
-// Made with Bob

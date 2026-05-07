@@ -241,5 +241,3 @@ export class YouTubeProvider extends BaseProvider {
     super.destroy();
   }
 }
-
-// Made with Bob

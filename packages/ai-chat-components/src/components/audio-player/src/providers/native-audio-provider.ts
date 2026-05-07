@@ -162,5 +162,3 @@ export class NativeAudioProvider extends BaseProvider {
     super.destroy();
   }
 }
-
-// Made with Bob

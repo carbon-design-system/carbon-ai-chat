@@ -12,5 +12,3 @@ import "./src/transcript.js";
 
 export { default as AudioPlayer } from "./src/audio-player.js";
 export { default as Transcript } from "./src/transcript.js";
-
-// Made with Bob
