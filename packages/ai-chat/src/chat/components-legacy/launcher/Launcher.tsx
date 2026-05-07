@@ -114,9 +114,6 @@ function Launcher(props: LauncherProps) {
   const extendedContainerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<CDSButton | null>(null);
 
-  // direction:ltr is forced on these cds-button elements in RTL mode via CSS
-  // (see Launcher.scss) so that Carbon's logical-property tooltip positioning
-  // is physically literal. We then flip the prop here to get the correct side.
   const tooltipPosition = isDirectionRTL()
     ? BUTTON_TOOLTIP_POSITION.RIGHT
     : BUTTON_TOOLTIP_POSITION.LEFT;

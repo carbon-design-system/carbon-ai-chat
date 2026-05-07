@@ -344,14 +344,3 @@ cds-button.cds-aichat--launcher-extended__close-button {
     padding: layout.$spacing-04 layout.$spacing-04 layout.$spacing-04 0;
   }
 }
-
-// Carbon's cds-button tooltip uses CSS logical properties (inset-inline-*)
-// that auto-flip based on the inherited `direction` value. In RTL mode the
-// shadow DOM inherits direction:rtl from the page, which causes
-// tooltipPosition="right" to resolve to physical LEFT (and vice-versa).
-// Resetting direction:ltr on the host element makes the shadow DOM treat the
-// tooltipPosition prop as physically literal, so JS can flip it for RTL.
-[dir="rtl"] cds-button.cds-aichat--launcher__button,
-[dir="rtl"] cds-button.cds-aichat--launcher-extended__close-button {
-  direction: ltr;
-}
