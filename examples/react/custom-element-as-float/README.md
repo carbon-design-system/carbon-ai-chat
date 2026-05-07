@@ -1,4 +1,4 @@
-# Custom Element as Float
+# Custom element / As float
 
 `ChatCustomElement` styled with the float layout CSS and driven by a custom `ChatButton` launcher, replicating `ChatContainer`'s built-in float experience with full control over animations and launcher behavior.
 

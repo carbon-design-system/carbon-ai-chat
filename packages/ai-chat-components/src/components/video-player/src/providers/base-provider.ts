@@ -209,5 +209,3 @@ export abstract class BaseProvider {
     }
   }
 }
-
-// Made with Bob

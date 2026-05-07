@@ -7,6 +7,23 @@
  *  @license
  */
 
+/**
+ * Inline message card: OutstandingOrdersCard.
+ *
+ * Demonstrates: the `user_defined` response card returned by
+ * `renderUserDefinedCallback` in `main.ts` for
+ * `user_defined_type === "outstanding_orders_card"`. The toolbar's Maximize
+ * action invokes the host-supplied `onMaximize` callback, which the host
+ * uses to call `instance.customPanels.getPanel(PanelType.WORKSPACE).open()`
+ * with this card's `workspaceId` and `additionalData`.
+ *
+ * APIs exercised:
+ *   - `cds-aichat-card` / `cds-aichat-toolbar`
+ *   - host-injected `onMaximize` flowing into `customPanels.getPanel(...).open()`
+ *
+ * Start reading at: `handleMaximize`.
+ */
+
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@carbon/ai-chat-components/es/components/card/index.js";
@@ -84,10 +101,12 @@ export class OutstandingOrdersCard extends LitElement {
   ];
 
   private handleMaximize() {
+    // Debug wiring so the workspaceId can be traced from the card click into panel.open().
     console.log(
       "Maximize clicked, opening workspace with ID:",
       this.workspaceId,
     );
+    // Delegate to the host's onMaximize so this card stays decoupled from the customPanels API.
     if (this.onMaximize) {
       this.onMaximize();
     }
@@ -130,5 +149,3 @@ export class OutstandingOrdersCard extends LitElement {
     `;
   }
 }
-
-// Made with Bob

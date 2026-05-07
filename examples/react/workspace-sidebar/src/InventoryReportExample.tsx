@@ -6,6 +6,26 @@
  *
  *  @license
  */
+
+/**
+ * Workspace component for the workspace-sidebar example (inventory_report).
+ *
+ * Demonstrates: rendering inside the `workspacePanelElement` WriteableElement
+ * slot from a `PREVIEW_CARD` message whose `additional_data.type` is
+ * `inventory_report`. Receives `workspaceId` and `additionalData` props so the
+ * panel can echo them back, and uses
+ * `instance.customPanels.getPanel(PanelType.WORKSPACE).close()` to dismiss
+ * itself when the user picks Close or Cancel.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.customPanels.getPanel`
+ *   - `PanelType.WORKSPACE`
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody` / `WorkspaceShellFooter`
+ *   - `Toolbar`
+ *
+ * Start reading at: `InventoryReportExample`.
+ */
+
 import "./WorkspaceWriteableElementExample.css";
 import WorkspaceShell, {
   WorkspaceShellHeader,
@@ -181,6 +201,7 @@ function InventoryReportExample({
     },
   ];
 
+  // customPanels.getPanel(PanelType.WORKSPACE): grab a handle to the hosting panel so toolbar / footer actions can close it from inside the writeable element.
   const panel = instance?.customPanels?.getPanel(PanelType.WORKSPACE);
 
   const handleWorkspaceFooterClick = (event: any) => {

@@ -19,6 +19,10 @@ export { default as StopStreamingButton } from "./src/stop-streaming-button.js";
 export type {
   SuggestionItem,
   SuggestionConfig,
+  StarterConfig,
+  AutocompleteConfig,
+  MentionConfig,
+  CommandConfig,
   FileUpload,
   FileStatusValue,
   CustomListProps,

@@ -220,5 +220,3 @@ export class VimeoProvider extends BaseProvider {
     super.destroy();
   }
 }
-
-// Made with Bob

@@ -1,10 +1,27 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock service desk for the human-agent example.
+ *
+ * Demonstrates: an in-browser implementation of the `ServiceDesk` contract that
+ * scripts queue position, agent-typing indicators, transfers between agents,
+ * file upload validation, and end-of-chat surveys via timed step callbacks.
+ *
+ * APIs exercised:
+ *   - `ServiceDesk` (startChat, endChat, sendMessageToAgent, userTyping, areAnyAgentsOnline, reconnect)
+ *   - `ServiceDeskCallback` (agentJoined, agentTyping, sendMessageToUser, updateAgentAvailability, beginTransferToAnotherAgent, agentEndedChat, agentLeftChat, setErrorStatus, setFileUploadStatus, screenShareRequest, screenShareEnded, updateCapabilities)
+ *   - `ServiceDeskFactoryParameters`
+ *   - `ChatInstance.serviceDesk.updateIsSuspended`
+ *   - `MessageResponseTypes.TEXT`, `MessageResponseTypes.VIDEO`, `MessageResponseTypes.USER_DEFINED`
+ *
+ * Start reading at: `MockServiceDesk` and `runSteps`.
  */
 
 import {
@@ -199,6 +216,7 @@ const MOCK_AGENT_PROFILE_EMPTY: ResponseUserProfile = {
 
 // The agent we're currently talking to.
 
+// Replace with a real production implementation.
 class MockServiceDesk implements ServiceDesk {
   /**
    * The current internal state for the mock service desk. This object is exported by this module and these values may
@@ -247,6 +265,7 @@ class MockServiceDesk implements ServiceDesk {
     this.factoryParameters = parameters;
     this.chatInstance = parameters.instance;
     this.callback = parameters.callback;
+    // Advertise file-upload support to the chat UI; values flow into the upload affordances shown to the user.
     this.callback.updateCapabilities({
       allowFileUploads: true,
       allowedFileUploadTypes: "image/*,.txt",

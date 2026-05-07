@@ -7,6 +7,24 @@
  *  @license
  */
 
+/**
+ * Mock customSendMessage for the workspace example.
+ *
+ * Demonstrates: how the host wires the `messaging.customSendMessage` hook to
+ * dispatch preview cards and a `user_defined` outstanding-orders card whose
+ * maximize action flows back to `customPanels.getPanel(PanelType.WORKSPACE)`
+ * in `main.ts`. Each branch produces a different `additional_data.type`
+ * (`inventory_report`, `inventory_status`, `outstanding_orders`) so the
+ * workspace slot in `main.ts` can pick the right child element.
+ *
+ * APIs exercised:
+ *   - `instance.messaging.addMessage`
+ *   - `MessageResponseTypes.OPTION` / `PREVIEW_CARD` / `USER_DEFINED` / `TEXT`
+ *   - `OptionItemPreference.BUTTON`
+ *
+ * Start reading at: `customSendMessage`.
+ */
+
 import {
   ChatInstance,
   CustomSendMessageOptions,
@@ -20,6 +38,7 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
  * Sends the inventory type selection options to the user.
  */
 function sendInventoryOptions(instance: ChatInstance) {
+  // Replace with a real production implementation.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -52,6 +71,7 @@ function sendInventoryOptions(instance: ChatInstance) {
  * Sends the excess inventory response with a preview card that opens the workspace panel.
  */
 function sendExcessInventoryResponse(instance: ChatInstance) {
+  // Replace with a real production implementation.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -63,8 +83,10 @@ function sendExcessInventoryResponse(instance: ChatInstance) {
           title: "Optimizing excess inventory",
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
+          // PREVIEW_CARD's built-in maximize action targets this workspace_id when opening the panel.
           workspace_id: uuid(),
           additional_data: {
+            // type drives renderWorkspaceElement's switch in main.ts.
             type: "inventory_report",
             data: "some additional data for the workspace",
           },
@@ -78,6 +100,7 @@ function sendExcessInventoryResponse(instance: ChatInstance) {
  * Sends the current inventory response with a simple text message.
  */
 function sendCurrentInventoryResponse(instance: ChatInstance) {
+  // Replace with a real production implementation.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -89,8 +112,10 @@ function sendCurrentInventoryResponse(instance: ChatInstance) {
           title: "Current inventory status",
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
+          // PREVIEW_CARD's built-in maximize action targets this workspace_id when opening the panel.
           workspace_id: uuid(),
           additional_data: {
+            // type drives renderWorkspaceElement's switch in main.ts.
             type: "inventory_status",
             data: "some additional data for the workspace",
           },
@@ -104,7 +129,7 @@ function sendCurrentInventoryResponse(instance: ChatInstance) {
  * Sends the outstanding orders response with a user-defined card that has a toolbar and maximize action.
  */
 function sendOutstandingOrdersResponse(instance: ChatInstance) {
-  // Generate 25 rows of dummy order data
+  // Inline mock dataset stands in for a backend response so the demo runs offline.
   const orders = [
     {
       id: "ORD-1001",
@@ -333,6 +358,7 @@ function sendOutstandingOrdersResponse(instance: ChatInstance) {
     },
   ];
 
+  // Replace with a real production implementation.
   instance.messaging.addMessage({
     output: {
       generic: [
@@ -343,9 +369,12 @@ function sendOutstandingOrdersResponse(instance: ChatInstance) {
         {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
+            // user_defined_type is matched by renderUserDefinedCallback in main.ts to mount outstanding-orders-card.
             user_defined_type: "outstanding_orders_card",
+            // workspace_id is forwarded to panel.open() when the card's maximize action fires.
             workspace_id: uuid(),
             additional_data: {
+              // type drives renderWorkspaceElement's switch in main.ts.
               type: "outstanding_orders",
               orders: orders,
             },
@@ -363,7 +392,7 @@ async function customSendMessage(
 ) {
   const userInput = request.input.text?.trim();
 
-  // Handle option selections
+  // Branch on the OPTION button labels emitted by sendInventoryOptions so each path picks a distinct workspace type.
   if (userInput === "Excess Inventory") {
     sendExcessInventoryResponse(instance);
   } else if (userInput === "Current Inventory") {
@@ -371,7 +400,7 @@ async function customSendMessage(
   } else if (userInput === "Outstanding Orders") {
     sendOutstandingOrdersResponse(instance);
   } else {
-    // Show options for any other input
+    // Free-form input falls back to the option picker so the user can always reach a workspace path.
     sendInventoryOptions(instance);
   }
 }

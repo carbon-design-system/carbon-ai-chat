@@ -1,4 +1,4 @@
-# Workspace Sidebar
+# Workspace (sidebar)
 
 Same workspace payloads as `workspace`, but the chat is mounted inside a collapsible app sidebar that expands when a workspace opens and contracts when it closes.
 

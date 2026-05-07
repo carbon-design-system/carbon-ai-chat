@@ -275,5 +275,3 @@ export class HeaderCollapsibleManager {
     }
   }
 }
-
-// Made with Bob

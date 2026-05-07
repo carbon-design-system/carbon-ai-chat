@@ -23,5 +23,3 @@ const Transcript = createComponent({
 
 export { Transcript };
 export default Transcript;
-
-// Made with Bob

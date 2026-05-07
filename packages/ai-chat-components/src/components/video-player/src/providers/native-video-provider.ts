@@ -169,5 +169,3 @@ export class NativeVideoProvider extends BaseProvider {
     super.destroy();
   }
 }
-
-// Made with Bob

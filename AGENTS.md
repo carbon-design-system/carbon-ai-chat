@@ -6,13 +6,14 @@ This file provides guidance to agents when working with code in this repository.
 - **Before starting any build/watch yourself, ask the user whether `npm run aiChat:start` is already running.** Most developers keep it running; a parallel `npm run build` races the watcher.
 - Node ≥ 22, npm ≥ 10.
 - Each package has its own `AGENTS.md` with package-specific rules. Read the relevant one before your first edit:
-  - [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md) — `@carbon/ai-chat` (the chat app). Includes [src/chat/store/AGENTS.md](packages/ai-chat/src/chat/store/AGENTS.md), [src/types/AGENTS.md](packages/ai-chat/src/types/AGENTS.md), and [docs/AGENTS.md](packages/ai-chat/docs/AGENTS.md).
+  - [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md) — `@carbon/ai-chat` (the chat app). Topic siblings (load only what you need): [AGENTS_ARCHITECTURE.md](packages/ai-chat/AGENTS_ARCHITECTURE.md), [AGENTS_SERVICES.md](packages/ai-chat/AGENTS_SERVICES.md), [AGENTS_TESTS.md](packages/ai-chat/AGENTS_TESTS.md). Sub-areas: [src/chat/store/AGENTS.md](packages/ai-chat/src/chat/store/AGENTS.md), [src/types/AGENTS.md](packages/ai-chat/src/types/AGENTS.md), [docs/AGENTS.md](packages/ai-chat/docs/AGENTS.md) (with [docs/AGENTS_DOC_STYLE.md](packages/ai-chat/docs/AGENTS_DOC_STYLE.md)).
   - [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md) — `@carbon/ai-chat-components` (Lit components).
   - [packages/typedoc-theme/AGENTS.md](packages/typedoc-theme/AGENTS.md) — `@carbon/typedoc-theme` (Carbon-themed TypeDoc theme for the docs site).
   - [demo/AGENTS.md](demo/AGENTS.md) — full demo / integration-test harness.
-  - [examples/AGENTS.md](examples/AGENTS.md) — shared example rules; flavor deltas in [examples/react/AGENTS.md](examples/react/AGENTS.md) / [examples/web-components/AGENTS.md](examples/web-components/AGENTS.md).
+  - [examples/AGENTS.md](examples/AGENTS.md) — shared example rules (with [AGENTS_INDEXER_CONTRACT.md](examples/AGENTS_INDEXER_CONTRACT.md) for README format); flavor deltas in [examples/react/AGENTS.md](examples/react/AGENTS.md) / [examples/web-components/AGENTS.md](examples/web-components/AGENTS.md).
 - Do not read or edit generated output: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `storybook-react-static/`, `node_modules/`, `packages/ai-chat-components/src/react/`, `packages/ai-chat-components/custom-elements.json`, `packages/ai-chat/dist/docs/`.
 - If you are not Bob, don't read `.bob/` (IBM Bob mode rules — not general guidance).
+- **Accessibility** is a repo-wide concern: every UI change in any package must hold WCAG 2.1 AA. Load [AGENTS_ACCESSIBILITY.md](AGENTS_ACCESSIBILITY.md) for the checklist, live-region patterns, and the centralized announcer utilities.
 - **Code reviews** (user-requested or self-review before marking a task done) follow the rubric in [AGENTS_CODE_REVIEW.md](AGENTS_CODE_REVIEW.md).
 - **Writing a PR description**: when asked to draft or write up a PR, follow [AGENTS_PR.md](AGENTS_PR.md).
 
@@ -52,8 +53,8 @@ Run from repo root unless noted. **Ask first** if the user has `npm run aiChat:s
 Build the packages first, then from the root:
 
 ```bash
-npm run start --workspace=@carbon/ai-chat-examples-react-basic
-PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-custom-element
+npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
+PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
 When `aiChat:start` is running in another terminal, example webpack servers hot-reload on package rebuilds.
@@ -96,8 +97,23 @@ Before declaring a task done, self-review the diff against [AGENTS_CODE_REVIEW.m
 
 ## Conventions
 
+This section is the canonical home for repo-wide rules. Package-level `AGENTS.md` files should link here, not restate.
+
 - **Commits**: conventional-commits, enforced by commitlint. Types: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`. Header ≤ 72 chars, body lines ≤ 90. Subject uses imperative present tense, lowercase, no trailing period.
 - **Branches**: kebab-case, descriptive. PR title follows the same Conventional Commit format as the eventual squash commit.
-- **SCSS**: BEM with `#{$prefix}--` prefix (resolves to `cds--`). No descendant nesting; `&:hover`, `&--modifier`, and media queries are fine. Use CSS logical properties (`padding-block-start`, `inset-inline-end`, etc.) for RTL support.
+- **Prefix discipline (build-breaking)**: never hardcode `cds--` in SCSS or TSX class strings. Use `#{$prefix}--` in SCSS and the prefix helpers in TS — otherwise the `es-custom` build breaks. Lit tag strings come from the shared prefix constant for the same reason.
+- **SCSS**: BEM with the `#{$prefix}--` prefix (resolves to `cds--`). No descendant nesting; `&:hover`, `&--modifier`, and media queries are fine. Use CSS logical properties (`padding-block-start`, `inset-inline-end`, etc.) for RTL support.
 - **License headers**: every source file needs the Apache-2.0 header. Enforced by `npm run lint:license` (part of `ci-check`) — **not** by a commit hook, so it can still fail CI even after a clean commit.
 - **Commit hooks**: `.husky/pre-commit` runs `lint-staged` only — prettier (+ eslint) on `*.{js,jsx,ts,tsx}`, prettier (+ stylelint) on `*.scss`, prettier on `*.md`. `.husky/commit-msg` runs commitlint.
+
+## Authoring AGENTS.md files
+
+Rules for keeping these guidance files lean — agents (especially smaller-context ones) load them top-down, so total tokens matter.
+
+- **Per-file budget**: ~200 lines max. Beyond that, split into `AGENTS_<TOPIC>.md` siblings and link from the parent.
+- **One topic per file**: if a leaf file has two unrelated H2 sections, the second one is its own file.
+- **Front-load a TL;DR or pointer index**: agents scan from the top; bury nothing important.
+- **Prefer tables and bullets over prose**: same information density, fewer tokens, easier to scan.
+- **Cross-reference, don't restate**: when a rule is repo-wide (prefix discipline, license headers, `aiChat:start` watcher, conventional commits), link to its canonical home here instead of inlining.
+- **Trim human-onboarding prose**: drop "we chose this because…" framing unless the _why_ changes how an agent applies the rule.
+- **Each leaf file ends with a "Related guidance" section** so an agent landing cold can navigate to neighbors without re-reading the parent.

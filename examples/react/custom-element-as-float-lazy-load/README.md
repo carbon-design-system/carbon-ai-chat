@@ -1,4 +1,4 @@
-# Custom Element as Float (Lazy Load)
+# Custom element / As float (lazy load)
 
 Code-split `ChatCustomElement` rendered as a floating widget with a custom launcher, a `ChatShell` overlay covering both bundle-download and initialization phases, and session-based auto-mount.
 
