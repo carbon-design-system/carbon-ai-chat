@@ -93,15 +93,6 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   private _overflowMenuBodyFlippedClass = `${prefix}--history-overflow-menu-body--flipped`;
   private _overflowMenuBodyFlippedSelector = `cds-overflow-menu-body.${this._overflowMenuBodyFlippedClass}`;
 
-  connectedCallback() {
-    super.connectedCallback();
-
-    const menuTriggerHeight = 32;
-    setVarsForSelector(this._overflowMenuBodyFlippedSelector, {
-      transform: `translateY(calc(-100% - ${menuTriggerHeight}px))`,
-    });
-  }
-
   disconnectedCallback() {
     this._overflowMenuBodyElement?.classList.remove(
       this._overflowMenuBodyFlippedClass,
@@ -142,6 +133,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     this._adoptOverflowMenuBodyStyles(overflowMenuBody);
 
     const menuRect = this.overflowMenu.getBoundingClientRect();
+    const menuTriggerHeight = menuRect.height;
+    setVarsForSelector(this._overflowMenuBodyFlippedSelector, {
+      transform: `translateY(calc(-100% - ${menuTriggerHeight}px))`,
+    });
     const menuBodyRect = overflowMenuBody.getBoundingClientRect();
     const actualMenuHeight = menuBodyRect.height || this.actions.length * 40; // fallback
 
