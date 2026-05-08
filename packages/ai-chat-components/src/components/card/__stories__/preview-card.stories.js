@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -188,7 +188,7 @@ export const WithToolbar = {
           ?is-layered=${args.isLayered}
           ?is-flush=${args.isFlush}
         >
-          <div slot="header" class="preview-card preview-card-toolbar">
+          <div slot="header" class="preview-card">
             <cds-aichat-toolbar
               class="preview-card-toolbar"
               overflow
@@ -324,7 +324,7 @@ export const WithSteps = {
           ?is-layered=${args.isLayered}
           ?is-flush=${args.isFlush}
         >
-          <div slot="header" class="preview-card preview-card-toolbar">
+          <div slot="header" class="preview-card">
             <cds-aichat-toolbar class="preview-card-toolbar">
               <div slot="title">
                 <div class="title-container">
