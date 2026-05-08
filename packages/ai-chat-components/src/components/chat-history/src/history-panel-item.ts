@@ -23,6 +23,10 @@ import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import "@carbon/web-components/es/components/overflow-menu/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
+import {
+  adoptOnRoot,
+  setVarsForSelector,
+} from "../../shared/dynamic-css-var-sheet.js";
 
 import styles from "./chat-history.scss?lit";
 
@@ -85,6 +89,41 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   @query("cds-overflow-menu") overflowMenu!: HTMLElement;
   @query("cds-overflow-menu-body") overflowMenuBody!: HTMLElement;
 
+  private _overflowMenuBodyElement?: HTMLElement;
+  private _overflowMenuBodyFlippedClass = `${prefix}--history-overflow-menu-body--flipped`;
+  private _overflowMenuBodyFlippedSelector = `cds-overflow-menu-body.${this._overflowMenuBodyFlippedClass}`;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    const menuTriggerHeight = 32;
+    setVarsForSelector(this._overflowMenuBodyFlippedSelector, {
+      transform: `translateY(calc(-100% - ${menuTriggerHeight}px))`,
+    });
+  }
+
+  disconnectedCallback() {
+    this._overflowMenuBodyElement?.classList.remove(
+      this._overflowMenuBodyFlippedClass,
+    );
+    super.disconnectedCallback();
+  }
+
+  private _adoptOverflowMenuBodyStyles(overflowMenuBody: HTMLElement) {
+    const root = overflowMenuBody.getRootNode();
+    if (root instanceof Document || root instanceof ShadowRoot) {
+      adoptOnRoot(root);
+    }
+  }
+
+  private _adoptOverflowMenuBodyStylesAfterPortal(
+    overflowMenuBody: HTMLElement,
+  ) {
+    requestAnimationFrame(() => {
+      this._adoptOverflowMenuBodyStyles(overflowMenuBody);
+    });
+  }
+
   /**
    *
    * The current cds-overflow-menu doesn't support opening the menu body in different
@@ -98,9 +137,12 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     if (!this.overflowMenu || !this.overflowMenuBody) {
       return;
     }
+    const overflowMenuBody = this.overflowMenuBody;
+    this._overflowMenuBodyElement = overflowMenuBody;
+    this._adoptOverflowMenuBodyStyles(overflowMenuBody);
 
     const menuRect = this.overflowMenu.getBoundingClientRect();
-    const menuBodyRect = this.overflowMenuBody.getBoundingClientRect();
+    const menuBodyRect = overflowMenuBody.getBoundingClientRect();
     const actualMenuHeight = menuBodyRect.height || this.actions.length * 40; // fallback
 
     const parentContainer = this.closest(`${prefix}-history-content`);
@@ -112,14 +154,13 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     const spaceBelow = containerRect.bottom - menuRect.bottom;
     const spaceAbove = menuRect.top - containerRect.top;
 
-    // Class-based flip (paired with a rule in chat-history.scss) so a strict
-    // CSP can drop style-src-attr 'unsafe-inline'. The trigger height is
-    // hardcoded in the rule to match this branch's geometry.
+    // Class-based flip so a strict CSP can drop style-src-attr 'unsafe-inline'.
     const flipUp = spaceBelow < actualMenuHeight && spaceAbove > spaceBelow;
-    this.overflowMenuBody.classList.toggle(
-      `${prefix}--history-overflow-menu-body--flipped`,
+    overflowMenuBody.classList.toggle(
+      this._overflowMenuBodyFlippedClass,
       flipUp,
     );
+    this._adoptOverflowMenuBodyStylesAfterPortal(overflowMenuBody);
   }
 
   /**
