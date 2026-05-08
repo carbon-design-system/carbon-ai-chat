@@ -1,0 +1,35 @@
+/* 
+ *  Copyright IBM Corp. 2026
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/* CSS Custom Properties for RTL support */
+:root {
+  --chat-position-right: 0;
+  --chat-position-left: auto;
+  --chat-sidebar-transition-property: right;
+  --chat-sidebar-transition-duration: 240ms;
+  --chat-sidebar-transition-timing-function: cubic-bezier(0.2, 0, 0.38, 0.9);
+  --chat-sidebar-expanding-transition-timing-function: cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+  --chat-sidebar-contracting-transition-timing-function: cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+  --chat-sidebar-closing-right: calc(calc(320px + 1rem) * -1);
+  --chat-sidebar-closing-left: auto;
+  --chat-sidebar-closed-right: calc(calc(320px + 1rem) * -1);
+  --chat-sidebar-closed-left: auto;
+}
+
+:dir(rtl) {
+  --chat-position-right: auto;
+  --chat-position-left: 0;
+  --chat-sidebar-transition-property: left;
+  --chat-sidebar-transition-duration: 70ms;
+  --chat-sidebar-transition-timing-function: cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
+  --chat-sidebar-expanding-transition-timing-function: cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
+  --chat-sidebar-contracting-transition-timing-function: cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
+  --chat-sidebar-closing-right: auto;
+  --chat-sidebar-closing-left: calc(calc(320px + 1rem) * -1);
+  --chat-sidebar-closed-right: auto;
+  --chat-sidebar-closed-left: calc(calc(320px + 1rem) * -1);
+}

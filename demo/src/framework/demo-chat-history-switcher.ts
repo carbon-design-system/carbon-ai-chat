@@ -120,22 +120,22 @@ export class DemoChatHistorySwitcher extends LitElement {
       <cds-checkbox
         ?checked=${showHistory}
         @cds-checkbox-changed=${this._onHistoryChanged}
+        label-text="Enable chat history"
       >
-        Enable chat history
       </cds-checkbox>
       <cds-checkbox
         ?checked=${showMobileMenu}
         ?disabled=${!showHistory}
         @cds-checkbox-changed=${this._onMobileMenuChanged}
+        label-text="Show mobile menu"
       >
-        Show mobile menu
       </cds-checkbox>
       <cds-checkbox
         ?checked=${startClosed}
         ?disabled=${!showHistory}
         @cds-checkbox-changed=${this._onStartClosedChanged}
+        label-text="Start closed & preserve state across desktop/mobile"
       >
-        Start closed & preserve state across desktop/mobile
       </cds-checkbox>
       <cds-button
         kind="secondary"

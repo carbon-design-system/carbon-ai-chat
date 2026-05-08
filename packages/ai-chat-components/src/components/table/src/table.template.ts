@@ -18,6 +18,7 @@ import { html } from "lit";
 import { repeat } from "lit-html/directives/repeat.js";
 
 import type { CDSAIChatTable } from "./table.js";
+import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 
 /**
  * Table view logic.
@@ -38,8 +39,7 @@ function tableTemplate(tableElement: CDSAIChatTable) {
 
   function toolbarElement() {
     // Check if RTL direction is set
-    const isRTL =
-      document.dir === "rtl" || document.documentElement.dir === "rtl";
+    const isRTL = isDirectionRTL();
     const tooltipPosition = isRTL ? "right-start" : "left-start";
 
     return html`<cds-table-toolbar slot="toolbar">

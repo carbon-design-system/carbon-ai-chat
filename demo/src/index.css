@@ -5,6 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+/* Prevent horizontal scroll in RTL mode */
+html {
+  overflow-x: hidden;
+}
+
 /* Skip to main content link for accessibility */
 .skip-to-main {
   position: absolute;
