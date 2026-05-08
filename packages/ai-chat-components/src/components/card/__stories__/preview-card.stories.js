@@ -23,7 +23,8 @@ import { previewCardFooterPresets, toolbarActions } from "./story-data";
 
 const aiContent = html`
   <div slot="body-text" class="ai-label-body">
-    <h4>Powered by IBM watsonx</h4>
+    <div>Powered by IBM watsonx</div>
+    <br />
     <div>
       IBM watsonx is powered by the latest AI models to intelligently process
       conversations and provide help whenever and wherever you may need it.
