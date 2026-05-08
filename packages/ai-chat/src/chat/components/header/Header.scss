@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -52,4 +52,10 @@
 
 .cds-aichat--header__slug-title {
   padding-block-end: layout.$spacing-04;
+}
+
+// Hide default content when explainabilityPopoverContent slot has content
+[role="dialog"]:has(slot[name="explainabilityPopoverContent"]::slotted(*))
+  .cds-aichat--header__slug-default-content {
+  display: none;
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -243,6 +243,12 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
+  const explainabilityPopoverContentElement = (
+    <WriteableElement
+      slotName={WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
+      id={`explainabilityPopoverContent${serviceManager.namespace.suffix}`}
+    />
+  );
   const aiSlugAfterDescriptionElement = (
     <WriteableElement
       slotName={WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
@@ -256,7 +262,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       aiSlugLabel ||
       aiSlugTitle ||
       aiSlugDescription ||
-      aiSlugAfterDescriptionElement
+      aiSlugAfterDescriptionElement ||
+      explainabilityPopoverContentElement
     );
   const useHideCloseButton = hideCloseButton ?? false;
 
@@ -403,17 +410,22 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             }
           >
             <div role="dialog" slot="body-text">
-              {aiSlugLabel && (
-                <p className="cds-aichat--header__slug-label">{aiSlugLabel}</p>
-              )}
-              {aiSlugTitle && (
-                <h4 className="cds-aichat--header__slug-title">
-                  {aiSlugTitle}
-                </h4>
-              )}
-              <div className="cds-aichat--header__slug-description">
-                <div>{aiSlugDescription}</div>
-                {aiSlugAfterDescriptionElement}
+              {explainabilityPopoverContentElement}
+              <div className="cds-aichat--header__slug-default-content">
+                {aiSlugLabel && (
+                  <p className="cds-aichat--header__slug-label">
+                    {aiSlugLabel}
+                  </p>
+                )}
+                {aiSlugTitle && (
+                  <h4 className="cds-aichat--header__slug-title">
+                    {aiSlugTitle}
+                  </h4>
+                )}
+                <div className="cds-aichat--header__slug-description">
+                  <div>{aiSlugDescription}</div>
+                  {aiSlugAfterDescriptionElement}
+                </div>
               </div>
             </div>
           </AISlug>
