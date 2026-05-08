@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,7 +11,7 @@ const TABLE = `
 | Element      | Symbol | Atomic Number | Group | Period | Atomic Mass (u) | Electron Config | Bonding | Melting Point (°C) | Boiling Point (°C) |
 |--------------|--------|---------------|-------|--------|-----------------|-----------------|---------|--------------------|--------------------|
 | [Carbon](https://www.ibm.com)      | C      | 6             | 14    | 2      | 12.011          | [He] 2s² 2p²    | Covalent| 3550               | 4027               |
-| Silicon      | Si     | 14            | 14    | 3      | 28.085          | [Ne] 3s² 3p²    | Covalent| 1414               | 3265               |
+| <a href="https://www.ibm.com">Silicon</a>      | Si     | 14            | 14    | 3      | 28.085          | [Ne] 3s² 3p²    | Covalent| 1414               | 3265               |
 | Germanium    | Ge     | 32            | 14    | 4      | 72.630          | [Ar] 3d¹⁰ 4s² 4p²| Covalent| 938                | 2833               |
 | Tin          | Sn     | 50            | 14    | 5      | 118.710         | [Kr] 4d¹⁰ 5s² 5p²| Metallic| 232                | 2602               |
 | Lead         | Pb     | 82            | 14    | 6      | 207.200         | [Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²| Metallic| 327          | 1749               |
