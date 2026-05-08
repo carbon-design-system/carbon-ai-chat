@@ -43,7 +43,7 @@ import { FileUpload } from "../../../types/config/ServiceDeskConfig";
 import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
 import { IS_MOBILE } from "../../utils/browserUtils";
 import { FileStatusValue } from "../../utils/constants";
-import { isEnterKey } from "../../utils/domUtils";
+import { isEnterKey, isDirectionRTL } from "../../utils/domUtils";
 import { uuid, UUIDType } from "../../utils/lang/uuid";
 import { isValidForUpload } from "../../utils/miscUtils";
 import {
@@ -568,7 +568,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const showDisabledSend = !hasValidInput || disableInput || disableSend;
   const showUploadButtonDisabled = disableUploadButton || disableInput;
   const uploadButtonID = `cds-aichat--input-container__upload-input-${inputID}`;
-  const isRTL = document.dir === "rtl";
+  const isRTL = isDirectionRTL();
 
   // If the input field is disabled, don't show a placeholder (unless one is provided).
   const usePlaceHolder =

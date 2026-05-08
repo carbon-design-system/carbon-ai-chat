@@ -321,8 +321,8 @@ export class DemoHeaderSwitcher extends LitElement {
           <cds-checkbox
             ?checked=${this.settings?.showHeader === false}
             @cds-checkbox-changed=${this._onIsOnChanged}
+            label-text="Hide chat header"
           >
-            Hide chat header
           </cds-checkbox>
         </div>
         <cds-dropdown
@@ -368,8 +368,8 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${header?.showRestartButton}
           @cds-checkbox-changed=${this._onShowRestartButtonChanged}
+          label-text="Show restart button"
         >
-          Show restart button
         </cds-checkbox>
       </div>
 
@@ -377,8 +377,8 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${this.settings?.showMenuOptions === true}
           @cds-checkbox-changed=${this._onMenuOptionsChanged}
+          label-text="Add menu options"
         >
-          Add menu options
         </cds-checkbox>
       </div>
 
@@ -386,8 +386,8 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${header?.showAiLabel !== false}
           @cds-checkbox-changed=${this._onShowAiLabelChanged}
+          label-text="Show AI label"
         >
-          Show AI label
         </cds-checkbox>
       </div>
 
@@ -395,8 +395,8 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${this.settings?.showSampleActions === true}
           @cds-checkbox-changed=${this._onSampleActionsChanged}
+          label-text="Add menu actions"
         >
-          Add menu actions
         </cds-checkbox>
       </div>
 

@@ -15,11 +15,12 @@ import ThumbsDownFilled16 from "@carbon/icons/es/thumbs-down--filled/16.js";
 import ThumbsUp16 from "@carbon/icons/es/thumbs-up/16.js";
 import ThumbsUpFilled16 from "@carbon/icons/es/thumbs-up--filled/16.js";
 import { html, LitElement, nothing } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./feedback-buttons.scss?lit";
+import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 
 const DEFAULT_POSITIVE_LABEL = "Good response";
 const DEFAULT_NEGATIVE_LABEL = "Bad response";
@@ -31,6 +32,12 @@ const DEFAULT_NEGATIVE_LABEL = "Bad response";
 @carbonElement(`${prefix}-feedback-buttons`)
 class CDSAIChatFeedbackButtons extends LitElement {
   static styles = [commonStyles, styles];
+
+  /**
+   * Whether the component is in RTL mode.
+   * @internal
+   */
+  @state() private isRTL = false;
 
   /**
    * Indicates if the details panel for the positive feedback is open.
@@ -115,6 +122,9 @@ class CDSAIChatFeedbackButtons extends LitElement {
   }
 
   render() {
+    // Detect RTL mode from document direction
+    this.isRTL = isDirectionRTL();
+
     const handleButtonClick = (isPositive: boolean) => {
       this.handleButtonClick(isPositive);
     };
@@ -126,11 +136,14 @@ class CDSAIChatFeedbackButtons extends LitElement {
       ? `${this.panelID}-feedback-negative`
       : undefined;
 
+    // Flip tooltip alignment in RTL mode
+    const tooltipAlign = this.isRTL ? "top-end" : "top-start";
+
     return html`<div class="${prefix}--feedback-buttons">
       <cds-icon-button
         class="${prefix}--feedback-buttons-positive"
         size="sm"
-        align="top-left"
+        align=${tooltipAlign}
         kind="ghost"
         role="button"
         ?disabled=${this.isPositiveDisabled}
@@ -153,7 +166,7 @@ class CDSAIChatFeedbackButtons extends LitElement {
       <cds-icon-button
         class="${prefix}--feedback-buttons-negative"
         size="sm"
-        align="top-left"
+        align=${tooltipAlign}
         kind="ghost"
         role="button"
         ?disabled=${this.isNegativeDisabled}

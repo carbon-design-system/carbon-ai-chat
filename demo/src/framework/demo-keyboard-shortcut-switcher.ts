@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -50,8 +50,8 @@ export class DemoKeyboardShortcutSwitcher extends LitElement {
       ?checked=${isEnabled}
       @cds-checkbox-changed=${this.checkboxChanged}
       helper-text="Use F6 to toggle focus between message list and input field (enabled by default)"
+      label-text="Enable F6 keyboard shortcut"
     >
-      Enable F6 keyboard shortcut
     </cds-checkbox>`;
   }
 }

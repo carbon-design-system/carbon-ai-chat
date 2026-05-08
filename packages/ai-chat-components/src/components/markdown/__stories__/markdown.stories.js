@@ -166,6 +166,29 @@ Regular markdown works fine:
 
 > Markdown blockquote`;
 
+const checkboxMarkdown = `# Checkbox Examples
+
+This demonstrates the custom checkbox rendering in markdown.
+
+## Task Lists
+
+- [x] Completed task
+- [ ] Incomplete task
+- [x] Another completed task
+- [ ] Another incomplete task
+
+## Custom Checkboxes
+
+You can also use custom checkbox syntax:
+
+<cds-checkbox checked="true">This checkbox is checked</cds-checkbox>
+
+<cds-checkbox checked="false">This checkbox is unchecked</cds-checkbox>
+
+<cds-checkbox checked="true" disabled="true">This checkbox is checked and disabled</cds-checkbox>
+
+<cds-checkbox checked="false" disabled="false">This checkbox is unchecked and enabled</cds-checkbox>`;
+
 class StreamingDemo extends LitElement {
   static properties = {
     streamedContent: { type: String },
@@ -384,6 +407,31 @@ export const WithHTMLSanitization = {
         <strong>Note:</strong> With \`sanitize-html\` enabled, dangerous HTML
         like \`&lt;script&gt;\` tags and \`onclick\` attributes are removed
         while safe HTML is preserved.
+      </p>
+      <cds-aichat-markdown
+        ?streaming=${args.streaming}
+        ?sanitize-html=${args.sanitizeHTML}
+        ?remove-html=${args.removeHTML}
+        ?code-snippet-highlight=${args.codeSnippetHighlight}
+        .markdown=${args.markdown}
+      ></cds-aichat-markdown>
+    </div>
+  `,
+};
+
+export const WithCheckboxes = {
+  args: {
+    markdown: checkboxMarkdown,
+    streaming: false,
+    sanitizeHTML: false,
+    removeHTML: false,
+    codeSnippetHighlight: false,
+  },
+  render: (args) => html`
+    <div>
+      <p style="margin-bottom: 1rem; padding: 0.5rem; background: #f4f4f4;">
+        <strong>Note:</strong> This story demonstrates checkbox rendering in
+        markdown, including task lists and custom checkbox elements.
       </p>
       <cds-aichat-markdown
         ?streaming=${args.streaming}

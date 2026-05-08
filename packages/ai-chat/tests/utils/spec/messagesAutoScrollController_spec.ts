@@ -327,11 +327,11 @@ describe("pinMessageAndScroll", () => {
    *   spacer:    top=400
    *
    *   targetOffsetWithinScroller = 100 - 0 + 0 = 100
-   *   baseScrollTop = floor(100 + 20) = 120     (AUTO_SCROLL_EXTRA = 20)
-   *   finalScrollTop = 120                      (no tall adjustment)
+   *   baseScrollTop = floor(100 + (-60)) = 40   (AUTO_SCROLL_EXTRA = -60)
+   *   finalScrollTop = 40                       (no tall adjustment)
    *   spacerOffset = 400 - 0 + 0 = 400
-   *   visibleBottom = 120 + 500 = 620
-   *   deficit = ceil(620 - 400) = 220
+   *   visibleBottom = 40 + 500 = 540
+   *   deficit = ceil(540 - 400) = 140
    */
   it("returns null when spacerElem is null", () => {
     const scrollElement = createMockScrollElement() as any;
@@ -372,15 +372,15 @@ describe("pinMessageAndScroll", () => {
     });
 
     expect(applyDynamicStylesSpy).toHaveBeenCalledWith(spacerElem, "spacer", {
-      "min-block-size": "220px",
+      "min-block-size": "140px",
     });
     expect(spacerElem.getAttribute("data-cds-aichat-spacer-id")).toBe(
       "spacer-1",
     );
-    expect(scrollElement.scrollTop).toBe(120);
+    expect(scrollElement.scrollTop).toBe(40);
     expect(result).not.toBeNull();
-    expect(result.currentSpacerHeight).toBe(220);
-    expect(result.scrollTop).toBe(120);
+    expect(result.currentSpacerHeight).toBe(140);
+    expect(result.scrollTop).toBe(40);
     expect(result.pinnedMessageComponent).toBe(messageComponent);
     // lastScrollHeight reflects the scrollElement.scrollHeight at time of call.
     expect(result.lastScrollHeight).toBe(scrollElement.scrollHeight);
@@ -390,12 +390,12 @@ describe("pinMessageAndScroll", () => {
     /**
      *   message: top=50, height=200    (200 > 500 * 0.25 = 125 → TALL)
      *
-     *   baseScrollTop = floor(50 + 20) = 70
+     *   baseScrollTop = floor(50 + (-60)) = -10 → max(0, -10) = 0
      *   tallAdjustment = max(0, 200 - 100) = 100   (VISIBLE_BOTTOM_PORTION_PX = 100)
-     *   finalScrollTop = 70 + 100 = 170
+     *   finalScrollTop = 0 + 100 = 100
      *   spacerOffset = 400
-     *   visibleBottom = 170 + 500 = 670
-     *   deficit = ceil(670 - 400) = 270
+     *   visibleBottom = 100 + 500 = 600
+     *   deficit = ceil(600 - 400) = 200
      */
     const scrollElement = createMockScrollElement({
       scrollTop: 0,
@@ -412,14 +412,14 @@ describe("pinMessageAndScroll", () => {
     });
 
     expect(applyDynamicStylesSpy).toHaveBeenCalledWith(spacerElem, "spacer", {
-      "min-block-size": "270px",
+      "min-block-size": "200px",
     });
     expect(spacerElem.getAttribute("data-cds-aichat-spacer-id")).toBe(
       "spacer-2",
     );
-    expect(scrollElement.scrollTop).toBe(170);
-    expect(result.currentSpacerHeight).toBe(270);
-    expect(result.scrollTop).toBe(170);
+    expect(scrollElement.scrollTop).toBe(100);
+    expect(result.currentSpacerHeight).toBe(200);
+    expect(result.scrollTop).toBe(100);
   });
 });
 
