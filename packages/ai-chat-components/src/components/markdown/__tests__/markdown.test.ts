@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -172,6 +172,39 @@ describe("cds-aichat-markdown smoke test", () => {
     if (!link) {
       throw new Error(`Link did not get target="_self" applied`);
     }
+  });
+
+  it("keeps raw HTML anchor text inside the link in a table cell", async () => {
+    const markdown = `| Name |
+| ---- |
+| <a href="https://www.ibm.com">Carbon</a> |`;
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown .markdown=${markdown}></cds-aichat-markdown>`,
+    );
+
+    await el.updateComplete;
+
+    const root = el.shadowRoot;
+    if (!root) {
+      throw new Error("Expected shadow root to exist");
+    }
+
+    const table = root.querySelector("cds-aichat-table");
+    expect(table).to.not.equal(null);
+    if (!table) {
+      throw new Error("Expected cds-aichat-table");
+    }
+
+    await table.updateComplete;
+
+    const tableShadow = table.shadowRoot;
+    if (!tableShadow) {
+      throw new Error("Expected table shadow root");
+    }
+
+    const link = tableShadow.querySelector('a[href="https://www.ibm.com"]');
+    expect(link).to.not.equal(null);
+    expect(link?.textContent?.trim()).to.equal("Carbon");
   });
 
   describe("linkify functionality", () => {

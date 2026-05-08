@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -10,21 +10,8 @@
 const TABLE = `
 | Element      | Symbol | Atomic Number | Group | Period | Atomic Mass (u) | Electron Config | Bonding | Melting Point (°C) | Boiling Point (°C) |
 |--------------|--------|---------------|-------|--------|-----------------|-----------------|---------|--------------------|--------------------|
-| [Carbon](https://www.ibm.com)      | C      | 6             | 14    | 2      | 12.011          | [He] 2s² 2p²    | Covalent| 3550               | 4027               |
-| Silicon      | Si     | 14            | 14    | 3      | 28.085          | [Ne] 3s² 3p²    | Covalent| 1414               | 3265               |
-| Germanium    | Ge     | 32            | 14    | 4      | 72.630          | [Ar] 3d¹⁰ 4s² 4p²| Covalent| 938                | 2833               |
-| Tin          | Sn     | 50            | 14    | 5      | 118.710         | [Kr] 4d¹⁰ 5s² 5p²| Metallic| 232                | 2602               |
-| Lead         | Pb     | 82            | 14    | 6      | 207.200         | [Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²| Metallic| 327          | 1749               |
-| Flerovium    | Fl     | 114           | 14    | 7      | 289             | [Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²| Unknown | Unknown      | Unknown            |
-| Hydrogen     | H      | 1             | 1     | 1      | 1.008           | 1s¹             | Covalent| -259               | -253               |
-| Helium       | He     | 2             | 18    | 1      | 4.003           | 1s²             | Noble   | -272               | -269               |
-| Lithium      | Li     | 3             | 1     | 2      | 6.940           | [He] 2s¹        | Metallic| 180                | 1342               |
-| Beryllium    | Be     | 4             | 2     | 2      | 9.012           | [He] 2s²        | Metallic| 1287               | 2468               |
-| Boron        | B      | 5             | 13    | 2      | 10.810          | [He] 2s² 2p¹    | Covalent| 2075               | 4000               |
-| Nitrogen     | N      | 7             | 15    | 2      | 14.007          | [He] 2s² 2p³    | Covalent| -210               | -196               |
-| Oxygen       | O      | 8             | 16    | 2      | 15.999          | [He] 2s² 2p⁴    | Covalent| -218               | -183               |
-| Fluorine     | F      | 9             | 17    | 2      | 18.998          | [He] 2s² 2p⁵    | Covalent| -220               | -188               |
-| Neon         | Ne     | 10            | 18    | 2      | 20.180          | [He] 2s² 2p⁶    | Noble   | -249               | -246               |`;
+| <a href="https://www.ibm.com">Carbon</a>     | C      | 6             | 14    | 2      | 12.011          | [He] 2s² 2p²    | Covalent| 3550               | 4027               |
+| [covalent bonds](https://ibm.com)      | Si     | 14            | 14    | 3      | 28.085          | [Ne] 3s² 3p²    | Covalent| 1414               | 3265               |`;
 
 const UNORDERED_LIST = `
 - Carbon allotropes
@@ -50,7 +37,7 @@ const ORDERED_LIST = `
 4. Metallic carbides
 `;
 
-const TEXT = `Carbon is a **chemical element** with the *atomic number* 6 and symbol **C**. \`C + O₂ → CO₂\` represents one of carbon's most fundamental reactions.
+const TEXT = `Carbon is a **chemical element** with <a href="https://www.ibm.com">Carbon</a> the *atomic number* 6</a> and symbol **C**. \`C + O₂ → CO₂\` represents one of carbon's most fundamental reactions.
 
 Carbon forms [covalent bonds](https://ibm.com) through electron sharing and creates [carbon chains](https://ibm.com){{target="_self"}} that are essential for organic molecules.
 `;
