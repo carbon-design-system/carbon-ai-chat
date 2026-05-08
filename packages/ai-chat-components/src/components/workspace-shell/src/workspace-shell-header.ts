@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -96,9 +96,9 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
     const headerContent = html`
       ${subTitleText &&
       html`
-        <h3 class="${prefix}-workspace-shell__header-sub-title">
+        <h2 class="${prefix}-workspace-shell__header-sub-title">
           ${subTitleText}
-        </h3>
+        </h2>
       `}
       <slot name="header-description"></slot>
       <slot name="header-action"></slot>
