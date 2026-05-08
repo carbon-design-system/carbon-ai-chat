@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { expect, fixture, html } from "@open-wc/testing";
+import { expect, fixture, html, waitUntil } from "@open-wc/testing";
 import CDSAIChatMarkdownElement from "../src/markdown.js";
 const MARKDOWN_ELEMENT_TAG = "cds-aichat-markdown";
 
@@ -196,13 +196,14 @@ describe("cds-aichat-markdown smoke test", () => {
     }
 
     await table.updateComplete;
+    await waitUntil(
+      () => !!table.shadowRoot?.querySelector('a[href="https://www.ibm.com"]'),
+      "Expected table link to render",
+    );
 
-    const tableShadow = table.shadowRoot;
-    if (!tableShadow) {
-      throw new Error("Expected table shadow root");
-    }
-
-    const link = tableShadow.querySelector('a[href="https://www.ibm.com"]');
+    const link = table.shadowRoot?.querySelector(
+      'a[href="https://www.ibm.com"]',
+    );
     expect(link).to.not.equal(null);
     expect(link?.textContent?.trim()).to.equal("Carbon");
   });

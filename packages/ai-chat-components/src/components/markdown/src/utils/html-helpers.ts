@@ -173,8 +173,7 @@ export function combineConsecutiveHtmlInline(
     }
 
     if (!success) {
-      combinedChildren.push(startNode);
-      continue;
+      return combinedChildren;
     }
 
     if (stack.length === 0 && endIndex > index) {
