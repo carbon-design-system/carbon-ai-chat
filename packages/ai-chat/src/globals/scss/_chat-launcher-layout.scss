@@ -66,8 +66,9 @@ $launcher-position-right: get-var(
      may not reflect a dir="rtl" set on a sub-element of the page.
      ============================================================================ */
 
-  [dir="rtl"] .#{$prefix}-launcher {
-    inset-inline: $launcher-position-right unset;
+  .#{$prefix}-launcher:dir(rtl) {
+    right: unset;
+    left: $launcher-position-right;
   }
 
   /* ============================================================================

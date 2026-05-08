@@ -29,7 +29,7 @@ import Button, {
   BUTTON_TOOLTIP_POSITION,
   BUTTON_TYPE,
 } from "../../components/carbon/Button";
-import { doFocusRef } from "../../utils/domUtils";
+import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
 import { prefersReducedMotion } from "../../utils/prefersReducedMotion";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { uuid } from "../../utils/lang/uuid";
@@ -114,13 +114,9 @@ function Launcher(props: LauncherProps) {
   const extendedContainerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<CDSButton | null>(null);
 
-  // direction:ltr is forced on these cds-button elements in RTL mode via CSS
-  // (see Launcher.scss) so that Carbon's logical-property tooltip positioning
-  // is physically literal. We then flip the prop here to get the correct side.
-  const tooltipPosition =
-    typeof document !== "undefined" && document.dir === "rtl"
-      ? BUTTON_TOOLTIP_POSITION.RIGHT
-      : BUTTON_TOOLTIP_POSITION.LEFT;
+  const tooltipPosition = isDirectionRTL()
+    ? BUTTON_TOOLTIP_POSITION.RIGHT
+    : BUTTON_TOOLTIP_POSITION.LEFT;
 
   const ariaLabelSuffix =
     unreadMessageCount !== 0

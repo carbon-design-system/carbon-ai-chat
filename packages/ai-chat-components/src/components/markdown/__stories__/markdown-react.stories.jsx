@@ -1,3 +1,12 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
 /* eslint-disable */
 import React, {
   useCallback,
@@ -162,6 +171,29 @@ Regular markdown works fine:
 <blockquote>HTML blockquote</blockquote>
 
 > Markdown blockquote`;
+
+const checkboxMarkdown = `# Checkbox Examples
+
+This demonstrates the custom checkbox rendering in markdown.
+
+## Task Lists
+
+- [x] Completed task
+- [ ] Incomplete task
+- [x] Another completed task
+- [ ] Another incomplete task
+
+## Custom Checkboxes
+
+You can also use custom checkbox syntax:
+
+<cds-checkbox checked="true">This checkbox is checked</cds-checkbox>
+
+<cds-checkbox checked="false">This checkbox is unchecked</cds-checkbox>
+
+<cds-checkbox checked="true" disabled="true">This checkbox is checked and disabled</cds-checkbox>
+
+<cds-checkbox checked="false" disabled="false">This checkbox is unchecked and enabled</cds-checkbox>`;
 
 const chunkMarkdownBySpaces = (markdown) => {
   const chunks = [];
@@ -362,6 +394,31 @@ export const WithHTMLSanitization = {
         dangerous HTML like <code>&lt;script&gt;</code> tags and{" "}
         <code>onclick</code> attributes are removed while safe HTML is
         preserved.
+      </p>
+      <Markdown {...args} markdown={args.markdown} />
+    </div>
+  ),
+};
+
+export const WithCheckboxes = {
+  args: {
+    markdown: checkboxMarkdown,
+    streaming: false,
+    sanitizeHTML: false,
+    removeHTML: false,
+    codeSnippetHighlight: false,
+  },
+  render: (args) => (
+    <div>
+      <p
+        style={{
+          marginBottom: "1rem",
+          padding: "0.5rem",
+          background: "#f4f4f4",
+        }}
+      >
+        <strong>Note:</strong> This story demonstrates checkbox rendering in
+        markdown, including task lists and custom checkbox elements.
       </p>
       <Markdown {...args} markdown={args.markdown} />
     </div>

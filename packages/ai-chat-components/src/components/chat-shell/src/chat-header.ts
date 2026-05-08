@@ -8,7 +8,7 @@
  */
 
 import { LitElement, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import "@carbon/web-components/es/components/button/index.js";
@@ -42,6 +42,12 @@ export type NavigationOverflowItem = BaseOverflowMenuItem;
 @carbonElement(`${prefix}-chat-header`)
 class CdsAiChatChatHeader extends LitElement {
   static styles = styles;
+
+  /**
+   * Whether the component is in RTL mode.
+   * @internal
+   */
+  @state() private isRTL = false;
 
   /**
    * Selector strings for finding focusable elements.
@@ -360,13 +366,9 @@ class CdsAiChatChatHeader extends LitElement {
    * @returns Template result for overflow menu
    */
   private renderOverflowNavigation() {
-    // Check if RTL direction is set
-    const isRTL =
-      document.dir === "rtl" || document.documentElement.dir === "rtl";
-
     // For LTR: menu opens right
     // For RTL: menu opens left
-    const menuAlignment = isRTL ? "left" : "right";
+    const menuAlignment = this.isRTL ? "left" : "right";
 
     return html`
       <div
@@ -389,7 +391,7 @@ class CdsAiChatChatHeader extends LitElement {
               )
             : nothing}
           <span slot="tooltip-content">${this.navigationOverflowLabel}</span>
-          <cds-overflow-menu-body>
+          <cds-overflow-menu-body ?flipped=${this.isRTL}>
             ${this.renderOverflowMenuItems()}
           </cds-overflow-menu-body>
         </cds-overflow-menu>
@@ -466,6 +468,7 @@ class CdsAiChatChatHeader extends LitElement {
     return html`
       <cds-aichat-toolbar
         .actions=${this.actions}
+        .isRTL=${this.isRTL}
         ?overflow=${this.overflow}
         titleText=${this.headerTitle || nothing}
         nameText=${this.headerName || nothing}

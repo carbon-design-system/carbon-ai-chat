@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -68,10 +68,11 @@ function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
 
 /**
  * When we auto-scroll to a message, we want to scroll a bit more than necessary because messages have a lot of
- * padding on the top that we want to cut off when scrolling. This is the extra amount we scroll by. There's 28px of
- * padding above the message and we want to cut that down to just 8 so we scroll an extra 20px (28 - 8).
+ * padding on the top that we want to cut off when scrolling. This is the extra amount we scroll by.
+ * Note: A negative value will leave more of the previous message visible above the target message.
+ * For example, -60 will show approximately 60px of the previous conversation above the new message.
  */
-const AUTO_SCROLL_EXTRA = 28 - 8;
+const AUTO_SCROLL_EXTRA = -60;
 
 /**
  * The visible portion (in pixels) to show at the bottom of a tall message when auto-scrolling.

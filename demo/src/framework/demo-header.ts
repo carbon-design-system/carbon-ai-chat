@@ -13,6 +13,7 @@ import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-load
 import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
 import Switcher20 from "@carbon/icons/es/switcher/20.js";
 import { ViewType, type ChatInstance } from "@carbon/ai-chat";
+import { isDirectionRTL } from "@carbon/ai-chat-components/es/globals/utils/rtl-utils.js";
 
 import type { Settings } from "./types";
 
@@ -157,7 +158,7 @@ export class DemoHeader extends LitElement {
           <cds-header-global-action
             aria-label="${this._getPanelButtonLabel()}"
             tooltip-text="${this._getPanelButtonLabel()}"
-            tooltip-alignment="right"
+            tooltip-alignment="${isDirectionRTL() ? "left" : "right"}"
             panel-id="switcher-panel"
             @click=${this._handlePanelToggle}
             @keydown=${this._handlePanelKeyDown}

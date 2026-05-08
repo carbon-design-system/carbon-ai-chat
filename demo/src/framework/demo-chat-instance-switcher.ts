@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -570,8 +570,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._hideBackButton = e.target.checked;
                 }}
+                label-text="Hide back button"
               >
-                Hide back button
               </cds-checkbox>
 
               <cds-checkbox
@@ -579,8 +579,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._disableAnimation = e.target.checked;
                 }}
+                label-text="Disable animation"
               >
-                Disable animation
               </cds-checkbox>
 
               <cds-checkbox
@@ -588,8 +588,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._aiEnabled = e.target.checked;
                 }}
+                label-text="Enable AI gradient"
               >
-                Enable AI gradient
               </cds-checkbox>
 
               <cds-checkbox
@@ -597,8 +597,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._showFrame = e.target.checked;
                 }}
+                label-text="Show frame border"
               >
-                Show frame border
               </cds-checkbox>
 
               <cds-checkbox
@@ -606,8 +606,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._fullWidth = e.target.checked;
                 }}
+                label-text="Full width layout"
               >
-                Full width layout
               </cds-checkbox>
             </div>
 
