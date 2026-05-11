@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -469,9 +469,12 @@ function renderWithStaticTag(
         isLoading = !hasNodesAfterTable;
       }
 
-      const renderCellTokens = (tokens: TokenTree[], contextOverrides = {}) =>
-        html`${repeat(
-          tokens,
+      const renderCellTokens = (tokens: TokenTree[], contextOverrides = {}) => {
+        // Same as block/inline rendering: merge split raw HTML (e.g. `<a>…</a>`)
+        // so each cell is not rendered as separate unsafeHTML + text chunks.
+        const normalizedTokens = combineConsecutiveHtmlInline(tokens);
+        return html`${repeat(
+          normalizedTokens,
           (child, index) =>
             `cell-${index}:${child.token.type}:${child.token.tag}`,
           (child, index) =>
@@ -480,11 +483,12 @@ function renderWithStaticTag(
               context: {
                 ...options.context,
                 ...contextOverrides,
-                parentChildren: tokens,
+                parentChildren: normalizedTokens,
                 currentIndex: index,
               },
             }),
         )}`;
+      };
 
       const createCellContent = (
         cell: TableCellData,
