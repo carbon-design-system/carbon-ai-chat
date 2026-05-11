@@ -53,9 +53,3 @@
 .cds-aichat--header__slug-title {
   padding-block-end: layout.$spacing-04;
 }
-
-// Hide default content when explainabilityPopoverContent slot has content
-[role="dialog"]:has(slot[name="explainabilityPopoverContent"]::slotted(*))
-  .cds-aichat--header__slug-default-content {
-  display: none;
-}

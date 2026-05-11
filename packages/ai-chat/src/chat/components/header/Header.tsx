@@ -26,6 +26,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { AISlug } from "../../components/carbon/AISlug";
 import WriteableElement from "../../components/util/WriteableElement";
@@ -243,11 +244,78 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
+  const [hasExplainabilityContent, setHasExplainabilityContent] =
+    useState(false);
+
+  const explainabilitySlotRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) {
+      return undefined;
+    }
+
+    const checkSlotContent = () => {
+      const slotElement = node.querySelector("slot");
+
+      if (!slotElement) {
+        setHasExplainabilityContent(false);
+        return;
+      }
+
+      // Check if slot has assigned nodes (web component mode)
+      if (
+        "assignedNodes" in slotElement &&
+        typeof (slotElement as HTMLSlotElement).assignedNodes === "function"
+      ) {
+        const assigned = (slotElement as HTMLSlotElement).assignedNodes();
+
+        // Check if assigned nodes have actual content
+        const hasContent = assigned.some((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            return (node.textContent?.trim().length ?? 0) > 0;
+          }
+          // For element nodes, check if they have any content (children or text)
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            const hasChildren = element.children.length > 0;
+            const hasText = (element.textContent?.trim().length ?? 0) > 0;
+            return hasChildren || hasText;
+          }
+          return false;
+        });
+        setHasExplainabilityContent(hasContent);
+      } else {
+        // React mode - the slot element itself will have children when content is provided
+        // In React, content is rendered as children of the slot element, not assigned nodes
+        const hasContent = Array.from(slotElement.childNodes).some((child) => {
+          if (child.nodeType === Node.TEXT_NODE) {
+            return (child.textContent?.trim().length ?? 0) > 0;
+          }
+          return child.nodeType === Node.ELEMENT_NODE;
+        });
+        setHasExplainabilityContent(hasContent);
+      }
+    };
+
+    // Initial check
+    checkSlotContent();
+
+    // Listen for slotchange events
+    const slotElement = node.querySelector("slot");
+    if (slotElement) {
+      slotElement.addEventListener("slotchange", checkSlotContent);
+      return () =>
+        slotElement.removeEventListener("slotchange", checkSlotContent);
+    }
+
+    return undefined;
+  }, []);
+
   const explainabilityPopoverContentElement = (
-    <WriteableElement
-      slotName={WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
-      id={`explainabilityPopoverContent${serviceManager.namespace.suffix}`}
-    />
+    <div ref={explainabilitySlotRef}>
+      <WriteableElement
+        slotName={WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
+        id={`explainabilityPopoverContent${serviceManager.namespace.suffix}`}
+      />
+    </div>
   );
   const aiSlugAfterDescriptionElement = (
     <WriteableElement
@@ -262,8 +330,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       aiSlugLabel ||
       aiSlugTitle ||
       aiSlugDescription ||
-      aiSlugAfterDescriptionElement ||
-      explainabilityPopoverContentElement
+      aiSlugAfterDescriptionElement
     );
   const useHideCloseButton = hideCloseButton ?? false;
 
@@ -411,22 +478,24 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
           >
             <div role="dialog" slot="body-text">
               {explainabilityPopoverContentElement}
-              <div className="cds-aichat--header__slug-default-content">
-                {aiSlugLabel && (
-                  <p className="cds-aichat--header__slug-label">
-                    {aiSlugLabel}
-                  </p>
-                )}
-                {aiSlugTitle && (
-                  <h4 className="cds-aichat--header__slug-title">
-                    {aiSlugTitle}
-                  </h4>
-                )}
-                <div className="cds-aichat--header__slug-description">
-                  <div>{aiSlugDescription}</div>
-                  {aiSlugAfterDescriptionElement}
-                </div>
-              </div>
+              {!hasExplainabilityContent && (
+                <>
+                  {aiSlugLabel && (
+                    <p className="cds-aichat--header__slug-label">
+                      {aiSlugLabel}
+                    </p>
+                  )}
+                  {aiSlugTitle && (
+                    <h4 className="cds-aichat--header__slug-title">
+                      {aiSlugTitle}
+                    </h4>
+                  )}
+                  <div className="cds-aichat--header__slug-description">
+                    <div>{aiSlugDescription}</div>
+                    {aiSlugAfterDescriptionElement}
+                  </div>
+                </>
+              )}
             </div>
           </AISlug>
         )}
