@@ -102,3 +102,62 @@ describe("history delete focus restore", () => {
     shell.removeEventListener("history-item-selected", onSelected);
   });
 });
+
+describe("history panel item overflow menu positioning", () => {
+  it("flips the overflow menu body upward when there is not enough space below", async () => {
+    const createRect = (rect: Partial<DOMRect>): DOMRect =>
+      ({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        toJSON: () => rect,
+        ...rect,
+      }) as DOMRect;
+
+    const host = await fixture(html`
+      <cds-aichat-history-content>
+        <cds-aichat-history-panel-item
+          id="with-menu"
+          name="With menu"
+        ></cds-aichat-history-panel-item>
+      </cds-aichat-history-content>
+    `);
+    const item = host.querySelector(
+      "cds-aichat-history-panel-item",
+    ) as HTMLElement & {
+      actions: unknown[];
+      updateComplete: Promise<boolean>;
+      _adjustMenuPosition: () => void;
+    };
+    item.actions = [{ text: "Delete" }, { text: "Rename" }];
+    await item.updateComplete;
+
+    const overflowMenu = item.shadowRoot?.querySelector(
+      "cds-overflow-menu",
+    ) as HTMLElement;
+    const overflowMenuBody = item.shadowRoot?.querySelector(
+      "cds-overflow-menu-body",
+    ) as HTMLElement;
+    const flippedClass = "cds-aichat--history-overflow-menu-body--flipped";
+
+    host.getBoundingClientRect = () => createRect({ top: 0, bottom: 120 });
+    overflowMenu.getBoundingClientRect = () =>
+      createRect({ top: 80, bottom: 112 });
+    overflowMenuBody.getBoundingClientRect = () => createRect({ height: 80 });
+
+    item._adjustMenuPosition();
+
+    expect(overflowMenuBody.classList.contains(flippedClass)).to.be.true;
+
+    host.getBoundingClientRect = () => createRect({ top: 0, bottom: 240 });
+
+    item._adjustMenuPosition();
+
+    expect(overflowMenuBody.classList.contains(flippedClass)).to.be.false;
+  });
+});

@@ -71,6 +71,11 @@ class CDSAIChatToolbar extends LitElement {
    */
   @state() private hiddenItems: Action[] = [];
 
+  /** Whether the component is in RTL mode.
+   *  @internal
+   */
+  @state() private isRTL = false;
+
   /** The list of actions. */
   @property({ type: Array, attribute: false, reflect: false })
   actions: Action[] = [];
@@ -246,6 +251,8 @@ class CDSAIChatToolbar extends LitElement {
    * - divider: Only applicable in menu context
    */
   private renderIconButton = (action: Action) => {
+    const tooltipAlign = this.isRTL ? "bottom-start" : "bottom-end";
+
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
@@ -254,7 +261,7 @@ class CDSAIChatToolbar extends LitElement {
         href=${action.href || nothing}
         target=${action.href ? action.target || "_self" : nothing}
         size=${action.size || BUTTON_SIZE.MEDIUM}
-        align="bottom-end"
+        align=${tooltipAlign}
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
@@ -300,7 +307,7 @@ class CDSAIChatToolbar extends LitElement {
                     <cds-aichat-truncated-text
                       lines="1"
                       type="tooltip"
-                      align="bottom-start"
+                      align=${this.isRTL ? "bottom-end" : "bottom-start"}
                       value="${[this.titleText, this.nameText]
                         .filter(Boolean)
                         .join(" ")}"
@@ -342,7 +349,7 @@ class CDSAIChatToolbar extends LitElement {
                 <div data-floating-menu-container>
                   <cds-overflow-menu
                     size=${this.getOverflowMenuSize()}
-                    align="bottom-end"
+                    align=${this.isRTL ? "bottom-start" : "bottom-end"}
                     data-offset
                     ?data-hidden=${this.hiddenItems.length === 0}
                     kind="ghost"
@@ -357,7 +364,7 @@ class CDSAIChatToolbar extends LitElement {
                     <span slot="tooltip-content"
                       >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
                     >
-                    <cds-overflow-menu-body flipped>
+                    <cds-overflow-menu-body ?flipped=${!this.isRTL}>
                       ${repeat(
                         this.hiddenItems,
                         (item) => item.text,

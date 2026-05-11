@@ -7,6 +7,7 @@
  *  @license
  */
 
+import "./DemoApp.css";
 import "@carbon/web-components/es/components/ai-skeleton/index.js";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
@@ -69,7 +70,8 @@ export class DemoApp extends LitElement {
     .fullScreen {
       position: fixed;
       bottom: 0;
-      right: 0;
+      right: var(--chat-position-right);
+      left: var(--chat-position-left);
       height: calc(100vh - 48px);
       width: calc(100vw - 320px - 2rem);
       z-index: 9999;
@@ -77,13 +79,16 @@ export class DemoApp extends LitElement {
 
     .sidebar {
       position: fixed;
-      right: 0;
+      right: var(--chat-position-right);
+      left: var(--chat-position-left);
       top: 48px;
       height: calc(100vh - 48px);
       width: 320px;
       z-index: 9999;
-      /* Carbon motion token: motion.$duration-moderate-01 (240ms) with motion.motion(standard, productive) */
-      transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
+      /* Carbon motion token: motion.$duration-moderate-01 (240ms) or motion.$duration-fast-01 (70ms) for RTL with motion.motion(standard, productive) */
+      transition: var(--chat-sidebar-transition-property)
+        var(--chat-sidebar-transition-duration)
+        var(--chat-sidebar-transition-timing-function);
       visibility: visible;
     }
 
@@ -92,74 +97,30 @@ export class DemoApp extends LitElement {
     }
 
     .sidebar--expanding {
-      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-      transition:
-        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) or motion.$duration-fast-01 (70ms) for RTL, and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+      transition: var(--chat-sidebar-transition-property)
+        var(--chat-sidebar-transition-duration)
+        var(--chat-sidebar-expanding-transition-timing-function);
     }
 
     .sidebar--contracting {
-      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-      transition:
-        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) or motion.$duration-fast-01 (70ms) for RTL, and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
+      transition: var(--chat-sidebar-transition-property)
+        var(--chat-sidebar-transition-duration)
+        var(--chat-sidebar-contracting-transition-timing-function);
     }
 
     .sidebar--closing {
-      right: calc(calc(320px + 1rem) * -1);
+      right: var(--chat-sidebar-closing-right);
+      left: var(--chat-sidebar-closing-left);
       width: 320px;
     }
 
     .sidebar--closed {
-      right: calc(calc(320px + 1rem) * -1);
+      right: var(--chat-sidebar-closed-right);
+      left: var(--chat-sidebar-closed-left);
       width: 320px;
       visibility: hidden;
-    }
-
-    /* RTL support */
-    [dir="rtl"] .sidebar {
-      right: auto;
-      left: 0;
-      /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    [dir="rtl"] .sidebar--expanded {
-      left: 0;
-      right: auto;
-    }
-
-    [dir="rtl"] .sidebar--expanding {
-      /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    [dir="rtl"] .sidebar--contracting {
-      /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    [dir="rtl"] .sidebar--closing {
-      left: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-    }
-
-    [dir="rtl"] .sidebar--closed {
-      right: auto;
-      left: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-      /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 0s;
     }
   `;
 
