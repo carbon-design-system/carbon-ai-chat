@@ -55,6 +55,7 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
     "babel-preset-carbon": "^0.8.0",
+    "chromatic": "^16.10.0",
     "commander": "^14.0.0",
     "concurrently": "^9.2.0",
     "cross-env": "^10.0.0",
