@@ -173,7 +173,9 @@ export function combineConsecutiveHtmlInline(
     }
 
     if (!success) {
-      return combinedChildren;
+      // If we couldn't successfully combine, just add the original token and continue
+      combinedChildren.push(startNode);
+      continue;
     }
 
     if (stack.length === 0 && endIndex > index) {
