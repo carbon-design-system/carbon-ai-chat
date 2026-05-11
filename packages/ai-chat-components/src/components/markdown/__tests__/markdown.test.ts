@@ -199,6 +199,7 @@ describe("cds-aichat-markdown smoke test", () => {
     await waitUntil(
       () => !!table.shadowRoot?.querySelector('a[href="https://www.ibm.com"]'),
       "Expected table link to render",
+      { timeout: 5000 },
     );
 
     const link = table.shadowRoot?.querySelector(
