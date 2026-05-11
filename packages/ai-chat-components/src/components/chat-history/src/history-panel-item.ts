@@ -101,13 +101,6 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   private _overflowMenuBodyFlippedClass = `${prefix}--history-overflow-menu-body--flipped`;
   private _overflowMenuBodyFlippedSelector = `cds-overflow-menu-body.${this._overflowMenuBodyFlippedClass}`;
 
-  disconnectedCallback() {
-    this._overflowMenuBodyElement?.classList.remove(
-      this._overflowMenuBodyFlippedClass,
-    );
-    super.disconnectedCallback();
-  }
-
   private _adoptOverflowMenuBodyStyles(overflowMenuBody: HTMLElement) {
     const root = overflowMenuBody.getRootNode();
     if (root instanceof Document || root instanceof ShadowRoot) {
@@ -337,6 +330,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   }
 
   disconnectedCallback() {
+    this._overflowMenuBodyElement?.classList.remove(
+      this._overflowMenuBodyFlippedClass,
+    );
+
     super.disconnectedCallback();
     this._parentObserver?.disconnect();
   }
