@@ -8,7 +8,7 @@
  */
 
 import { css, html, LitElement, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
@@ -34,12 +34,6 @@ import styles from "./send-control.scss?lit";
 
 /**
  * Send control component — renders the send button or stop streaming button.
- *
- * When slotted inside a `cds-aichat-input-shell`, the send button is also
- * automatically disabled whenever the shell reports that the input is over
- * its `maxLength`. The element subscribes to the shell's
- * `cds-aichat-input-over-max-change` event on connect; consumers who compose
- * this outside of an input-shell are unaffected.
  *
  * @element cds-aichat-input-send-control
  * @fires {CustomEvent} cds-aichat-input-send - Fired when the send button is clicked
@@ -83,50 +77,8 @@ class InputSendControlElement extends LitElement {
   @property({ type: String, attribute: "test-id" })
   testId?: string;
 
-  /**
-   * Mirrors the parent input-shell's `over-max-length` state. Set via event
-   * subscription in `connectedCallback`; treated as part of the disabled
-   * condition for the send button.
-   */
-  @state()
-  private _overMax = false;
-
-  /** Shell element we're subscribed to, for clean unsubscription on disconnect. */
-  private _subscribedShell: Element | null = null;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    const shell = this.closest("cds-aichat-input-shell");
-    if (shell) {
-      this._overMax = shell.hasAttribute("over-max-length");
-      shell.addEventListener(
-        "cds-aichat-input-over-max-change",
-        this._handleOverMaxChange,
-      );
-      this._subscribedShell = shell;
-    }
-  }
-
-  disconnectedCallback(): void {
-    this._subscribedShell?.removeEventListener(
-      "cds-aichat-input-over-max-change",
-      this._handleOverMaxChange,
-    );
-    this._subscribedShell = null;
-    super.disconnectedCallback();
-  }
-
-  private _handleOverMaxChange = (event: Event) => {
-    this._overMax = (event as CustomEvent<{ overMax: boolean }>).detail.overMax;
-  };
-
   private _handleSendClick = () => {
-    if (
-      this.disabled ||
-      this.disableSend ||
-      this._overMax ||
-      !this.hasValidInput
-    ) {
+    if (this.disabled || this.disableSend || !this.hasValidInput) {
       return;
     }
 
@@ -153,7 +105,7 @@ class InputSendControlElement extends LitElement {
       document.dir === "rtl" || document.documentElement.dir === "rtl";
 
     const showDisabledSend =
-      !this.hasValidInput || this.disabled || this.disableSend || this._overMax;
+      !this.hasValidInput || this.disabled || this.disableSend;
 
     if (this.isStopStreamingButtonVisible) {
       return html`

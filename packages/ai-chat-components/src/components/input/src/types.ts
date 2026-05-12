@@ -97,17 +97,3 @@ export interface TypingEventDetail {
   /** Whether the user is currently typing. */
   isTyping: boolean;
 }
-
-/**
- * Internal callbacks used by the autocomplete list manager.
- */
-export interface AutocompleteListCallbacks {
-  /** Called when the user selects an autocomplete item. */
-  onAutocompleteSelect: (
-    item: import("./tiptap/types.js").SuggestionItem,
-  ) => void;
-  /** Called when the autocomplete list is dismissed. */
-  onAutocompleteDismiss: () => void;
-  /** Called when a custom list renderer produces a React node that needs portal rendering. */
-  onCustomListRender: (detail: { reactNode: unknown }) => void;
-}

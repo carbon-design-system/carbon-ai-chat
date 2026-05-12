@@ -144,7 +144,7 @@ export {
   ToolbarAction,
 } from "./types/config/HeaderConfig";
 export { HistoryConfig } from "./types/config/HistoryConfig";
-export { InputConfig } from "./types/config/InputConfig";
+export { InputConfig, InputMenuOption } from "./types/config/InputConfig";
 export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
 export { LayoutConfig } from "./types/config/LayoutConfig";
 export { OnErrorData, OnErrorType } from "./types/config/ErrorConfig";

@@ -18,35 +18,36 @@ import {
 import { BusEventType } from "../../../src/types/events/eventBusTypes";
 
 /**
- * Walks the nested shadow roots looking for the rendered input-shell,
+ * Walks the nested shadow roots looking for the rendered prompt-line,
  * waiting for it to mount if necessary. The chat host uses Lit shadow
  * boundaries so a top-level `document.querySelector` cannot reach inside.
  */
-async function findShell(): Promise<Element> {
+async function findPromptLine(): Promise<Element> {
   return waitFor(
     () => {
-      const shell = deepQuerySelector(document, "cds-aichat-input-shell");
-      if (!shell) {
-        throw new Error("input shell not mounted");
+      const promptLine = deepQuerySelector(document, "cds-aichat-prompt-line");
+      if (!promptLine) {
+        throw new Error("prompt-line not mounted");
       }
-      return shell;
+      return promptLine;
     },
     { timeout: 5000 },
   );
 }
 
 /**
- * Dispatches a `cds-aichat-input-focus` / `cds-aichat-input-blur` event on
- * the input-shell element exactly the way the prompt-line → shell pipeline
- * does in production. The React wrapper attaches an event listener that
- * routes these to the `onFocus` / `onBlur` props the Input container
- * subscribes to.
+ * Dispatches a `cds-aichat-prompt-focus` / `cds-aichat-prompt-blur` event on
+ * the slotted prompt-line. Input.tsx's React `onFocus`/`onBlur` listeners are
+ * attached to the prompt-line element, so dispatching at this layer drives
+ * the same focus-tracking pipeline as a real focus event.
  */
-async function dispatchShellFocusEvent(
-  type: "cds-aichat-input-focus" | "cds-aichat-input-blur",
+async function dispatchPromptFocusEvent(
+  type: "cds-aichat-prompt-focus" | "cds-aichat-prompt-blur",
 ): Promise<void> {
-  const shell = await findShell();
-  shell.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true }));
+  const promptLine = await findPromptLine();
+  promptLine.dispatchEvent(
+    new CustomEvent(type, { bubbles: true, composed: true }),
+  );
 }
 
 describe("ChatInstance.input.focused (PublicInputState)", () => {
@@ -65,14 +66,14 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    await dispatchShellFocusEvent("cds-aichat-input-focus");
+    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
 
     await waitFor(() => {
       expect(store.getState().assistantInputState.focused).toBe(true);
     });
     expect(instance.getState().input.focused).toBe(true);
 
-    await dispatchShellFocusEvent("cds-aichat-input-blur");
+    await dispatchPromptFocusEvent("cds-aichat-prompt-blur");
 
     await waitFor(() => {
       expect(store.getState().assistantInputState.focused).toBe(false);
@@ -99,12 +100,12 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
       },
     });
 
-    await dispatchShellFocusEvent("cds-aichat-input-focus");
+    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
     await waitFor(() => {
       expect(transitions).toContainEqual({ prev: false, next: true });
     });
 
-    await dispatchShellFocusEvent("cds-aichat-input-blur");
+    await dispatchPromptFocusEvent("cds-aichat-prompt-blur");
     await waitFor(() => {
       expect(transitions).toContainEqual({ prev: true, next: false });
     });
@@ -126,8 +127,8 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
       },
     });
 
-    await dispatchShellFocusEvent("cds-aichat-input-focus");
-    await dispatchShellFocusEvent("cds-aichat-input-focus");
+    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
+    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
 
     await waitFor(() => {
       expect(focusFlips).toEqual([true]);

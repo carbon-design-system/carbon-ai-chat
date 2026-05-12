@@ -43,6 +43,20 @@ function ensurePmContentStyleRules(): void {
     "letter-spacing": "var(--cds-body-02-letter-spacing, 0)",
     "line-height": "var(--cds-body-02-line-height, 1.5)",
   });
+  // Tiptap's Placeholder extension only tags empty textblocks with
+  // `is-editor-empty` + `data-placeholder` — the host renders the text. The
+  // ::before float/height-0 pair keeps the placeholder in flow without
+  // displacing the caret onto a second line. Standard Tiptap pattern.
+  setVarsForSelector(
+    `.${PM_CONTENT_CLASS} p.is-editor-empty:first-child::before`,
+    {
+      content: "attr(data-placeholder)",
+      color: "var(--cds-text-secondary, #525252)",
+      float: "left",
+      height: "0",
+      "pointer-events": "none",
+    },
+  );
   pmStyleRulesInstalled = true;
 }
 

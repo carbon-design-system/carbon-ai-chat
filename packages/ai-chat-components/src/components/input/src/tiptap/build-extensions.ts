@@ -21,6 +21,7 @@
 import type { Extension } from "@tiptap/core";
 
 import { carbonAutocomplete } from "./carbon-autocomplete.js";
+import { carbonChatEnter } from "./chat-enter.js";
 import { carbonCommand, carbonMention } from "./carbon-mention.js";
 import { carbonStarterTrigger } from "./carbon-starter-trigger.js";
 import type {
@@ -39,7 +40,7 @@ export interface BuildCarbonExtensionsConfig {
 export function buildCarbonExtensions(
   configs: BuildCarbonExtensionsConfig,
 ): Extension[] {
-  const out: Extension[] = [];
+  const out: Extension[] = [carbonChatEnter()];
   if (configs.mention) {
     out.push(carbonMention(configs.mention) as unknown as Extension);
   }

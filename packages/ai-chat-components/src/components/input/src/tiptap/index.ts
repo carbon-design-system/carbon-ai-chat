@@ -17,6 +17,7 @@
 export { carbonMention, carbonCommand } from "./carbon-mention.js";
 export { carbonAutocomplete } from "./carbon-autocomplete.js";
 export { carbonStarterTrigger } from "./carbon-starter-trigger.js";
+export { carbonChatEnter } from "./chat-enter.js";
 export { dispatchTriggerChange } from "./trigger-utils.js";
 export { setHostOriginMeta, isHostOrigin } from "./origin-meta.js";
 export {

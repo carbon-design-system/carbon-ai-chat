@@ -18,9 +18,11 @@ import React, {
 import InputShell from "@carbon/ai-chat-components/es/react/input-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
+import PromptLine from "@carbon/ai-chat-components/es/react/prompt-line.js";
 import type { FileUpload } from "@carbon/ai-chat-components/es/components/input/src/types.js";
 import { FileStatusValue } from "@carbon/ai-chat-components/es/components/input/src/types.js";
-import type { InputShellElement } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/input/index.js";
+import { useChatAutocomplete } from "@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import actions from "../../store/actions";
 import {
@@ -30,6 +32,9 @@ import {
 import { BusEventType } from "../../../types/events/eventBusTypes";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
+import { useIntl } from "../../hooks/useIntl";
+import { useInputConfig } from "../../hooks/useInputConfig";
+import { useInputExtensions } from "../../hooks/useInputExtensions";
 import { PageObjectId } from "../../../testing/PageObjectId";
 import { consoleError } from "../../utils/miscUtils";
 import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
@@ -38,7 +43,10 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import IconButton from "../carbon/IconButton";
 import { BUTTON_KIND } from "../carbon/Button";
 import Add16 from "@carbon/icons/es/add--large/16.js";
+import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
+import { InputActionsMenu } from "./InputActionsMenu";
+import type { InputMenuOption } from "../../../types/config/InputConfig";
 
 const AddIcon = carbonIconToReact(Add16);
 
@@ -185,15 +193,10 @@ interface InputFunctions {
 /**
  * Input - Redux-connected container component for the input field.
  *
- * Composes child components into the InputShell's named slots:
- * - `message-actions` — upload button (future: overflow menu)
- * - `file-uploads` — pending file upload status display
- * - `send-control` — send button / stop streaming button
- *
- * The editor is owned by the inner `<cds-aichat-prompt-line>` slotted into
- * the shell. Mention/command/autocomplete/starters/extensions are forwarded
- * to the shell as discrete props; the shell builds the curated Tiptap
- * extension list internally.
+ * Slots a `<PromptLine>` editor into the layout-only `<InputShell>`, builds
+ * the curated Tiptap extension list from the chat-domain configs in Redux,
+ * wires up the autocomplete overlay, and gates the send button. The shell
+ * itself carries no chat logic — this component owns it all.
  */
 function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const {
@@ -219,50 +222,32 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
+  const intl = useIntl();
   const store = serviceManager.store;
 
-  // Subscribe to inputConfig fields the shell needs as discrete props.
-  // Memoized snapshots keep prop reference equality stable across renders
-  // (the shell rebuilds the editor on extension-array reference change).
-  const initialInputConfig = store.getState().config.public.input;
+  const {
+    mention,
+    command,
+    autocomplete,
+    starters,
+    hostExtensions,
+    isSendDisabledFromConfig,
+    menuOptions,
+  } = useInputConfig();
 
-  const [mention, setMention] = useState(() => initialInputConfig?.mention);
-  const [command, setCommand] = useState(() => initialInputConfig?.command);
-  const [autocomplete, setAutocomplete] = useState(
-    () => initialInputConfig?.autocomplete,
-  );
-  const [starters, setStarters] = useState(() => initialInputConfig?.starters);
-  const [hostExtensions, setHostExtensions] = useState(
-    () => initialInputConfig?.tiptap?.extensions,
-  );
-  const [isSendDisabledFromConfig, setIsSendDisabledFromConfig] = useState(() =>
-    Boolean(initialInputConfig?.isSendDisabled),
-  );
-
-  useEffect(() => {
-    const unsubscribe = store.subscribe(() => {
-      const next = store.getState().config.public.input;
-      setMention((prev) => (prev !== next?.mention ? next?.mention : prev));
-      setCommand((prev) => (prev !== next?.command ? next?.command : prev));
-      setAutocomplete((prev) =>
-        prev !== next?.autocomplete ? next?.autocomplete : prev,
-      );
-      setStarters((prev) => (prev !== next?.starters ? next?.starters : prev));
-      setHostExtensions((prev) =>
-        prev !== next?.tiptap?.extensions ? next?.tiptap?.extensions : prev,
-      );
-      setIsSendDisabledFromConfig((prev) => {
-        const flag = Boolean(next?.isSendDisabled);
-        return prev !== flag ? flag : prev;
-      });
-    });
-    return unsubscribe;
-  }, [store]);
-
-  // OR isSendDisabled from config into the locally-computed disableSend so
-  // the existing overMaxLength / in-flight-uploads / streaming gates still
-  // apply on top.
-  const effectiveDisableSend = disableSend || isSendDisabledFromConfig;
+  const {
+    normalizedMention,
+    normalizedCommand,
+    normalizedAutocomplete,
+    normalizedStarters,
+    extensions,
+  } = useInputExtensions({
+    mention,
+    command,
+    autocomplete,
+    starters,
+    hostExtensions,
+  });
 
   // Track if we've announced the keyboard shortcut to avoid repeating it
   const [hasAnnouncedShortcut, setHasAnnouncedShortcut] = useState(false);
@@ -280,6 +265,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const rawInputValueRef = useRef(rawInputValue);
   rawInputValueRef.current = rawInputValue;
 
+  const promptLineRef = useRef<PromptLineElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   // Subscribe to Redux state changes if tracking is enabled
   useEffect(() => {
     if (!trackInputState) {
@@ -292,14 +280,24 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
       if (nextRawValue !== rawInputValueRef.current) {
         setRawInputValue(nextRawValue);
+        // Push the Redux-driven value into the editor to keep them aligned.
+        const promptLine = promptLineRef.current;
+        if (promptLine) {
+          const editor = promptLine.getEditor();
+          if (editor && editor.getText() !== nextRawValue) {
+            promptLine.setContent(nextRawValue);
+          }
+        }
       }
     });
 
     return unsubscribe;
   }, [store, trackInputState]);
 
+  const overMaxLength = rawInputValue.length > maxInputChars;
+
   /**
-   * Handle input value changes from the shell. Dispatches to Redux if
+   * Handle input value changes from the prompt-line. Dispatches to Redux if
    * tracking is enabled. `content` is Tiptap JSONContent.
    */
   const handleInputChange = (
@@ -320,14 +318,30 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     }
   };
 
-  /**
-   * Handle send action - clears input and dispatches to Redux if tracking is enabled.
-   */
-  const handleSend = (event: CustomEvent<{ text: string }>) => {
-    const { text } = event.detail;
+  const hasValidInput = useMemo(
+    () =>
+      Boolean(rawInputValue?.trim()) ||
+      (pendingUploads != null &&
+        pendingUploads.length > 0 &&
+        !pendingUploads.every((u) => u.isError)),
+    [rawInputValue, pendingUploads],
+  );
+
+  const effectiveDisableSend =
+    disableSend || isSendDisabledFromConfig || overMaxLength;
+
+  const sendCurrentValue = () => {
+    const text = rawInputValueRef.current;
+    if (!text.trim()) {
+      return;
+    }
+    if (effectiveDisableSend) {
+      return;
+    }
     onSendInput(text);
 
     setRawInputValue("");
+    promptLineRef.current?.clearContent();
 
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
@@ -335,6 +349,15 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         actions.updateInputState({ rawValue: "" }, isInputToHumanAgent),
       );
     }
+  };
+
+  const handleSendControlSend = () => {
+    sendCurrentValue();
+  };
+
+  const handlePromptSendIntent = (event: CustomEvent) => {
+    event.stopPropagation();
+    sendCurrentValue();
   };
 
   /**
@@ -427,42 +450,55 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   };
 
   /**
-   * Handle typing events from the shell.
+   * Handle typing events from the prompt-line.
    */
   const handleTyping = (event: CustomEvent<{ isTyping: boolean }>) => {
     const { isTyping } = event.detail;
     onUserTyping?.(isTyping);
   };
 
-  // Create a ref to the shell element
-  const inputShellRef = useRef<InputShellElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
+    mention: normalizedMention,
+    command: normalizedCommand,
+    autocomplete: normalizedAutocomplete,
+    starters: normalizedStarters,
+    promptLineRef,
+    isSendDisabled: isSendDisabledFromConfig,
+    onStarterSelected: (text) => {
+      // Reflect the inserted text into local state so send-gating reads it,
+      // then run the same send path used elsewhere.
+      setRawInputValue(text);
+      rawInputValueRef.current = text;
+      sendCurrentValue();
+    },
+  });
 
   const inputFunctions = useMemo<InputFunctions>(
     () => ({
       requestFocus: () => {
-        return inputShellRef.current?.requestFocus() ?? false;
+        const promptLine = promptLineRef.current;
+        if (!promptLine) {
+          return false;
+        }
+        promptLine.focus();
+        return true;
       },
-      hasFocus: () => {
-        return inputShellRef.current?.hasFocus?.() ?? false;
-      },
+      hasFocus: () => promptLineRef.current?.getEditor()?.isFocused ?? false,
       setContent: (next) => {
-        const shell = inputShellRef.current;
-        if (!shell) {
+        const promptLine = promptLineRef.current;
+        if (!promptLine) {
           throw new Error("Input is not currently rendered");
         }
-        shell.setContent(next);
+        promptLine.setContent(next);
       },
       insertContent: (content, options) => {
-        const shell = inputShellRef.current;
-        if (!shell) {
+        const promptLine = promptLineRef.current;
+        if (!promptLine) {
           throw new Error("Input is not currently rendered");
         }
-        shell.insertContent(content, options);
+        promptLine.insertContent(content, options);
       },
-      getEditor: () => {
-        return inputShellRef.current?.getEditor?.() ?? null;
-      },
+      getEditor: () => promptLineRef.current?.getEditor() ?? null,
     }),
     [],
   );
@@ -476,71 +512,96 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     };
   }, [serviceManager, inputFunctions]);
 
-  const hasValidInput = useMemo(
-    () =>
-      Boolean(rawInputValue?.trim()) ||
-      (pendingUploads != null &&
-        pendingUploads.length > 0 &&
-        !pendingUploads.every((u) => u.isError)),
-    [rawInputValue, pendingUploads],
-  );
+  const effectiveMenuOptions = useMemo<InputMenuOption[] | undefined>(() => {
+    if (!menuOptions) {
+      return undefined;
+    }
+    if (!showUploadButton) {
+      return menuOptions;
+    }
+    const uploadOption: InputMenuOption = {
+      text: languagePack.input_uploadButtonLabel,
+      icon: Attachment16,
+      handler: () => fileInputRef.current?.click(),
+    };
+    return [uploadOption, ...menuOptions];
+  }, [menuOptions, showUploadButton, languagePack.input_uploadButtonLabel]);
 
   if (!isInputVisible) {
     return null;
   }
 
   const showUploadButtonDisabled = disableUploadButton || disableInput;
+  const editorPlaceholder =
+    placeholder ||
+    (disableInput ? undefined : languagePack.input_placeholder) ||
+    "";
+  const charCountMessage = overMaxLength
+    ? intl.formatMessage(
+        { id: "input_maxCharCountExceeded" },
+        { max: maxInputChars, current: rawInputValue.length },
+      )
+    : null;
 
   return (
-    <InputShell
-      ref={inputShellRef}
-      disabled={disableInput}
-      rawValue={disableInput ? "" : rawInputValue}
-      placeholder={
-        placeholder ||
-        (disableInput ? undefined : languagePack.input_placeholder)
-      }
-      maxLength={maxInputChars}
-      mention={mention}
-      command={command}
-      autocomplete={autocomplete}
-      starters={starters}
-      extensions={hostExtensions}
-      isSendDisabled={isSendDisabledFromConfig}
-      testId={PageObjectId.INPUT}
-      rounded={rounded}
-      onChange={handleInputChange}
-      onSend={handleSend}
-      onFocus={handleInputFocus}
-      onBlur={handleInputBlur}
-      onTyping={handleTyping}
-    >
-      {/* Editor is created internally by InputShell (slots a prompt-line). */}
+    <InputShell rounded={rounded}>
+      <PromptLine
+        slot="editor"
+        ref={promptLineRef}
+        extensions={extensions}
+        disabled={disableInput}
+        placeholder={editorPlaceholder}
+        aria-label={languagePack.input_ariaLabel}
+        testId={PageObjectId.INPUT}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        onTyping={handleTyping}
+        onSendIntent={handlePromptSendIntent}
+        onTriggerChange={onTriggerChange}
+      />
 
-      {/* Message actions — upload button (future: overflow menu) */}
-      {showUploadButton && (
+      {autocompleteContent}
+
+      {charCountMessage && (
+        <div slot="field-messaging" role="status" aria-live="polite">
+          {charCountMessage}
+        </div>
+      )}
+
+      {(showUploadButton || effectiveMenuOptions) && (
         <div slot="message-actions">
-          <input
-            type="file"
-            ref={fileInputRef}
-            hidden
-            tabIndex={-1}
-            accept={allowedFileUploadTypes || ""}
-            multiple={allowMultipleFileUploads}
-            disabled={showUploadButtonDisabled}
-            onChange={handleFileSelect}
-          />
-          <IconButton
-            kind={BUTTON_KIND.GHOST}
-            size="sm"
-            disabled={showUploadButtonDisabled}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <AddIcon slot="icon" />
-            <span slot="tooltip-content">
-              {languagePack.input_uploadButtonLabel}
-            </span>
-          </IconButton>
+          {showUploadButton && (
+            <input
+              type="file"
+              ref={fileInputRef}
+              hidden
+              tabIndex={-1}
+              accept={allowedFileUploadTypes || ""}
+              multiple={allowMultipleFileUploads}
+              disabled={showUploadButtonDisabled}
+              onChange={handleFileSelect}
+            />
+          )}
+          {effectiveMenuOptions ? (
+            <InputActionsMenu
+              disabled={disableInput}
+              menuOptions={effectiveMenuOptions}
+              menuLabel={languagePack.input_actionsMenuLabel}
+            />
+          ) : showUploadButton ? (
+            <IconButton
+              kind={BUTTON_KIND.GHOST}
+              size="sm"
+              disabled={showUploadButtonDisabled}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <AddIcon slot="icon" />
+              <span slot="tooltip-content">
+                {languagePack.input_uploadButtonLabel}
+              </span>
+            </IconButton>
+          ) : null}
         </div>
       )}
 
@@ -566,6 +627,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         buttonLabel={languagePack.input_buttonLabel}
         stopResponseLabel={languagePack.input_stopResponse}
         testId={PageObjectId.INPUT_SEND}
+        onSend={handleSendControlSend}
         onStopStreaming={handleStopStreaming}
       />
     </InputShell>

@@ -1,5 +1,5 @@
 module.exports = {
-  roots: ["<rootDir>/src/react"],
+  roots: ["<rootDir>/src/react", "<rootDir>/src/globals"],
   testEnvironment: "@happy-dom/jest-environment",
   transform: {
     "^.+\\.(ts|tsx)$": [
@@ -12,6 +12,11 @@ module.exports = {
     ],
   },
   testRegex: "/__tests__/.*\\.test\\.(tsx?|jsx?)$",
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/src/globals/utils/__tests__/aria-announcer-manager\\.test\\.",
+    "/src/globals/utils/__tests__/focus-utils\\.test\\.",
+  ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   moduleNameMapper: {
     // Map .js imports to .ts/.tsx files for TypeScript source files

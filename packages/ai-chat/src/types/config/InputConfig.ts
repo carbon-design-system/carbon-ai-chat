@@ -7,6 +7,9 @@
  *  @license
  */
 
+import type { ComponentType } from "react";
+import type { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+
 // Local re-declarations of these tiptap-related types live in
 // `../utilities/tiptapReexports`; importing through the local module keeps
 // TypeDoc resolution pointed at our JSDoc + `@category` placement instead of
@@ -17,6 +20,24 @@ import type {
   AutocompleteConfig,
   Extension,
 } from "../utilities/tiptapReexports";
+import type { CustomMenuOption } from "./HeaderConfig";
+
+/**
+ * A menu option rendered inside the chat input's message-actions popover.
+ * Extends {@link CustomMenuOption} with a required icon, which may be either
+ * a `CarbonIcon` descriptor (from `@carbon/icons` or `@carbon/web-components`)
+ * or a React icon component (from `@carbon/icons-react`). Normalized at
+ * render time via the shared `iconTransform` utility.
+ *
+ * @category Config
+ */
+export interface InputMenuOption extends CustomMenuOption {
+  /**
+   * Icon to render alongside the option's text. Accepts a `CarbonIcon`
+   * descriptor or a React component icon.
+   */
+  icon: CarbonIcon | ComponentType<unknown>;
+}
 
 /**
  * Configuration for the input field in the main chat and homescreen.
@@ -104,4 +125,13 @@ export interface InputConfig {
      */
     extensions?: Extension[];
   };
+
+  /**
+   * Custom actions surfaced in the chat input's message-actions popover.
+   * When provided, an Add ("+") button appears in the input that opens a
+   * Carbon popover containing these options. If file uploads are also
+   * enabled, an "Add files" entry is automatically prepended; the
+   * standalone upload button is not rendered.
+   */
+  menuOptions?: InputMenuOption[];
 }

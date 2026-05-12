@@ -11,11 +11,18 @@ import "./src/input-shell.js";
 import "./src/prompt-line.js";
 import "./src/send-control.js";
 import "./src/stop-streaming-button.js";
+import "./src/autocomplete-controller.js";
 
 export { default as InputShellElement } from "./src/input-shell.js";
 export { default as PromptLineElement } from "./src/prompt-line.js";
 export { default as InputSendControlElement } from "./src/send-control.js";
 export { default as StopStreamingButton } from "./src/stop-streaming-button.js";
+export {
+  default as AutocompleteControllerElement,
+  AutocompleteController,
+  type AutocompleteControllerOptions,
+  type AutocompleteControllerState,
+} from "./src/autocomplete-controller.js";
 
 // Carbon Tiptap factories, helpers, and JSONContent walking utilities.
 export {
@@ -23,6 +30,7 @@ export {
   carbonCommand,
   carbonAutocomplete,
   carbonStarterTrigger,
+  carbonChatEnter,
   dispatchTriggerChange,
   setHostOriginMeta,
   isHostOrigin,

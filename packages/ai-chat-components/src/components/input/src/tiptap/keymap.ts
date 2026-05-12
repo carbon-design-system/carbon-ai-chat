@@ -18,10 +18,14 @@
  *   wanting "Enter sends, Shift-Enter newlines" wire that at the shell layer
  *   in PR 3.
  *
- * Undo / redo come from the `UndoRedo` extension. The legacy `keymap.ts`'s
- * trigger-key forwarding (`ArrowUp`/`ArrowDown` to autocomplete-list-manager)
- * is gone: Tiptap's Mention extension handles its own keys via the
- * suggestion-render `onKeyDown`; the autocomplete factory does the same.
+ * Undo / redo come from the `UndoRedo` extension. ArrowUp / ArrowDown /
+ * Enter / Escape forwarding to the active autocomplete list is **not** done
+ * here — the `AutocompleteController` (see ../autocomplete-controller.ts)
+ * installs its own capture-phase keydown listener on the editor view DOM
+ * when a trigger is active and a list element is registered, and
+ * re-dispatches those keys on the list. The Tiptap suggestion factories
+ * (`carbonMention`, `carbonAutocomplete`) deliberately return `false` from
+ * `onKeyDown` so they don't consume those keys either.
  */
 
 import { Extension } from "@tiptap/core";
