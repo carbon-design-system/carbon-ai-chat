@@ -17,6 +17,9 @@ import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
 import BottomPanelClose16 from "@carbon/icons/es/bottom-panel--close/16.js";
 import BottomPanelOpen16 from "@carbon/icons/es/bottom-panel--open/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
+import View16 from "@carbon/icons/es/view/16.js";
+import FolderOpen16 from "@carbon/icons/es/folder--open/16.js";
+import Folders16 from "@carbon/icons/es/folders/16.js";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
 import React, {
@@ -29,7 +32,11 @@ import React, {
   useState,
 } from "react";
 import { AISlug } from "../../components/carbon/AISlug";
+import AILabelActionButton from "../../components/carbon/AILabelActionButton";
+import IconButton from "../../components/carbon/IconButton";
+import Tag from "../../components/carbon/Tag";
 import WriteableElement from "../../components/util/WriteableElement";
+import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
 import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -38,6 +45,7 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { shallowEqual } from "../../store/appStore";
 import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { WriteableElementName } from "../../utils/constants";
+import { carbonIconToReact } from "../../utils/carbonIcon";
 import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
 import {
   HeaderConfig,
@@ -160,10 +168,19 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const overflowMenuTooltip = languagePack.header_overflowMenu_options;
   const overflowMenuAriaLabel = languagePack.components_overflow_ariaLabel;
   const restartButtonLabel = languagePack.buttons_restart;
-  const aiSlugLabel = languagePack.ai_slug_label;
-  const aiSlugTitle = languagePack.ai_slug_title;
-  const aiSlugDescription = languagePack.ai_slug_description;
-
+  const viewActionLabel = languagePack.actions_view;
+  const openFolderActionLabel = languagePack.actions_openFolder;
+  const foldersActionLabel = languagePack.actions_folders;
+  const viewDetailsActionLabel = languagePack.actions_viewDetails;
+  const aiExplainabilityPopoverLabel =
+    languagePack.aiExplainabilityPopover_label;
+  const aiExplainabilityPopoverTitle =
+    languagePack.aiExplainabilityPopover_title;
+  const aiExplainabilityPopoverDescription =
+    languagePack.aiExplainabilityPopover_description;
+  const ViewIcon = carbonIconToReact(View16);
+  const OpenFolderIcon = carbonIconToReact(FolderOpen16);
+  const FoldersIcon = carbonIconToReact(Folders16);
   // We can't allow the user to return to the home screen if the user is connecting or connected to an agent.
   // Also don't show the back button if we're already on the homescreen
   const allowHomeScreen =
@@ -327,9 +344,9 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const showAiSlugContent =
     shouldShowAiLabel &&
     !!(
-      aiSlugLabel ||
-      aiSlugTitle ||
-      aiSlugDescription ||
+      aiExplainabilityPopoverLabel ||
+      aiExplainabilityPopoverTitle ||
+      aiExplainabilityPopoverDescription ||
       aiSlugAfterDescriptionElement
     );
   const useHideCloseButton = hideCloseButton ?? false;
@@ -468,7 +485,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             slot="decorator"
             className="cds-aichat--header__slug"
             size={AI_LABEL_SIZE.EXTRA_SMALL}
-            aria-label={aiSlugLabel}
+            aria-label={aiExplainabilityPopoverLabel}
             role="button"
             alignment={
               isRTL
@@ -480,23 +497,72 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               {explainabilityPopoverContentElement}
               {!hasExplainabilityContent && (
                 <>
-                  {aiSlugLabel && (
+                  {aiExplainabilityPopoverLabel && (
                     <p className="cds-aichat--header__slug-label">
-                      {aiSlugLabel}
+                      {aiExplainabilityPopoverLabel}
                     </p>
                   )}
-                  {aiSlugTitle && (
+                  {languagePack.aiExplainabilityPopover_confidenceScore && (
+                    <Tag className="cds-aichat--header__slug-confidence">
+                      {languagePack.aiExplainabilityPopover_confidenceScore}
+                    </Tag>
+                  )}
+                  {aiExplainabilityPopoverTitle && (
                     <h4 className="cds-aichat--header__slug-title">
-                      {aiSlugTitle}
+                      {aiExplainabilityPopoverTitle}
                     </h4>
                   )}
                   <div className="cds-aichat--header__slug-description">
-                    <div>{aiSlugDescription}</div>
-                    {aiSlugAfterDescriptionElement}
+                    <div>{aiExplainabilityPopoverDescription}</div>
                   </div>
+                  {languagePack.aiExplainabilityPopover_keyDetails && (
+                    <div className="cds-aichat--header__slug-content">
+                      <MarkdownWithDefaults
+                        text={languagePack.aiExplainabilityPopover_keyDetails}
+                      />
+                    </div>
+                  )}
+                  {languagePack.aiExplainabilityPopover_aIModelSection && (
+                    <div className="cds-aichat--header__slug-content">
+                      <MarkdownWithDefaults
+                        text={
+                          languagePack.aiExplainabilityPopover_aIModelSection
+                        }
+                      />
+                    </div>
+                  )}
+                  {languagePack.aiExplainabilityPopover_trainingDatasetSection && (
+                    <div className="cds-aichat--header__slug-content">
+                      <MarkdownWithDefaults
+                        text={
+                          languagePack.aiExplainabilityPopover_trainingDatasetSection
+                        }
+                      />
+                    </div>
+                  )}
+                  {aiSlugAfterDescriptionElement}
                 </>
               )}
             </div>
+            {!hasExplainabilityContent && (
+              <>
+                <IconButton slot="actions" size={BUTTON_SIZE.LARGE}>
+                  <ViewIcon slot="icon" />
+                  <span slot="tooltip-content">{viewActionLabel}</span>
+                </IconButton>
+                <IconButton slot="actions" size={BUTTON_SIZE.LARGE}>
+                  <OpenFolderIcon slot="icon" />
+                  <span slot="tooltip-content">{openFolderActionLabel}</span>
+                </IconButton>
+                <IconButton slot="actions" size={BUTTON_SIZE.LARGE}>
+                  <FoldersIcon slot="icon" />
+                  <span slot="tooltip-content">{foldersActionLabel}</span>
+                </IconButton>
+                <AILabelActionButton slot="actions">
+                  {viewDetailsActionLabel}
+                </AILabelActionButton>
+              </>
+            )}
           </AISlug>
         )}
         {/* Fixed actions slot - Custom actions before close/minimize */}
