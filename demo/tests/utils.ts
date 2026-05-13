@@ -58,7 +58,27 @@ export const installTestCsp = async (page: Page) => {
       // than passing through to the network unconditionally.
       return route.fallback();
     }
-    const response = await route.fetch();
+    // webpack-dev-server closes idle keep-alive sockets after ~5s. Playwright's
+    // APIRequestContext can reuse a socket that the server has already closed,
+    // surfacing as `read ECONNRESET` on the next request between tests. Force a
+    // fresh connection per document fetch to avoid the stale-socket window, and
+    // retry once on transient socket errors as defense in depth.
+    const fetchHeaders = { ...request.headers(), connection: "close" };
+    let response;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        response = await route.fetch({ headers: fetchHeaders });
+        break;
+      } catch (err) {
+        const message = (err as Error).message ?? "";
+        if (attempt === 1 || !/ECONNRESET|socket hang up/i.test(message)) {
+          throw err;
+        }
+      }
+    }
+    if (!response) {
+      throw new Error("route.fetch did not produce a response");
+    }
     const status = response.status();
     if (status >= 300 && status < 400) {
       return route.fulfill({ response });

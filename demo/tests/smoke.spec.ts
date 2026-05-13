@@ -154,6 +154,10 @@ test("smoke react custom element", async ({ page }) => {
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
+  // Regression guard for issue #1382: clicking the send button must clear the
+  // input field. The bug only reproduces on React 17/18 hosts, but we assert
+  // here too to catch any future regression on React 19.
+  await expect(input).toHaveText("");
 });
 
 test("smoke web component custom element", async ({ page }) => {
@@ -181,4 +185,8 @@ test("smoke web component custom element", async ({ page }) => {
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
+  // Regression guard for issue #1382: clicking the send button must clear the
+  // input field. The bug only reproduces on React 17/18 hosts, but we assert
+  // here too to catch any future regression on React 19.
+  await expect(input).toHaveText("");
 });
