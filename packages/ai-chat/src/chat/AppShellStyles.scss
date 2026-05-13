@@ -19,6 +19,7 @@
 @use "@carbon/styles/scss/utilities/ai-gradient" as *;
 @use "../globals/scss/chat-theme";
 @use "../globals/scss/chat-float-layout";
+@use "../globals/scss/chat-explainability-popover";
 
 @use "./components/imports" as components;
 @use "./components-legacy/imports" as legacyComponents;

@@ -1,0 +1,127 @@
+/*
+ *  Copyright IBM Corp. 2026, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * AI Explainability Popover content styles for Carbon AI Chat.
+ * Following @carbon/styles component patterns where styles are wrapped in mixins.
+ *
+ * These styles provide consistent typography and spacing for AI explainability
+ * popover content used in AI Chat.
+ *
+ * Usage (Sass — mixin, for composing into your own stylesheet):
+ * @use "@carbon/ai-chat/scss/chat-explainability-popover";
+ * @include chat-explainability-popover.explainability-popover-content;
+ *
+ * Usage (CSS — pre-compiled, no Sass pipeline needed):
+ * @import "@carbon/ai-chat/css/chat-explainability-popover.css";
+ *
+ * Classes generated:
+ * - .cds-aichat-explainability-popover--content                — container wrapper
+ * - .cds-aichat-explainability-popover--content__eyebrow-row   — top row with label and tag
+ * - .cds-aichat-explainability-popover--content__label         — eyebrow label text
+ * - .cds-aichat-explainability-popover--content__title         — main heading
+ * - .cds-aichat-explainability-popover--content__description   — body description text
+ * - .cds-aichat-explainability-popover--content__section       — content section with spacing
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/ai-chat-components/scss/utilities" as *;
+
+@mixin explainability-popover-content {
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - CONTENT WRAPPER
+     Container for all explainability popover content
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content {
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - HEADER
+     Header section containing eyebrow row, title, and description
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__header {
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-03;
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - EYEBROW ROW
+     Top row containing label and optional tag/badge
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__eyebrow-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - LABEL
+     Secondary text label (eyebrow text)
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__label {
+    @include type.type-style("label-02");
+    color: theme.$text-secondary;
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - TITLE
+     Main heading for the explainability content
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__title {
+    @include type.type-style("heading-04");
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - DESCRIPTION
+     Body text description
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__description {
+    @include type.type-style("body-01");
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - CONTENT SECTION
+     Reusable section container for markdown or other content blocks
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__section {
+    // Sections can be used for markdown content or other structured content
+    // Spacing is intentionally minimal to allow content to control its own spacing
+    padding-bottom: layout.$spacing-06;
+  }
+
+  // Add top spacing to all sections except the first one
+  .#{$prefix}-explainability-popover--content__section:not(:first-child) {
+    border-top: 1px solid theme.$border-subtle-00;
+    padding-top: layout.$spacing-06;
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-06;
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - H5 HEADINGS
+     Subheadings within explainability content sections
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--content__section h5,
+  .#{$prefix}-explainability-popover--content__section h6 {
+    @include type.type-style("body-01");
+    color: theme.$text-secondary;
+  }
+}
+
+@include explainability-popover-content;

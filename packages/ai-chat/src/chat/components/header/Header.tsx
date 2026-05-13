@@ -10,6 +10,7 @@
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import Home16 from "@carbon/icons/es/home/16.js";
+import Launch16 from "@carbon/icons/es/launch/16.js";
 import Menu16 from "@carbon/icons/es/menu/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import RightPanelOpen16 from "@carbon/icons/es/right-panel--open/16.js";
@@ -34,6 +35,7 @@ import React, {
 import { AISlug } from "../../components/carbon/AISlug";
 import AILabelActionButton from "../../components/carbon/AILabelActionButton";
 import IconButton from "../../components/carbon/IconButton";
+import Link from "../../components/carbon/Link";
 import Tag from "../../components/carbon/Tag";
 import WriteableElement from "../../components/util/WriteableElement";
 import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
@@ -59,7 +61,14 @@ import {
   BusEventType,
   HeaderMenuClickType,
 } from "../../../types/events/eventBusTypes";
-import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/button.js";
+import {
+  BUTTON_SIZE,
+  BUTTON_KIND,
+} from "@carbon/web-components/es/components/button/button.js";
+import {
+  TAG_SIZE,
+  TAG_TYPE,
+} from "@carbon/web-components/es/components/tag/tag.js";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -168,16 +177,11 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const overflowMenuTooltip = languagePack.header_overflowMenu_options;
   const overflowMenuAriaLabel = languagePack.components_overflow_ariaLabel;
   const restartButtonLabel = languagePack.buttons_restart;
-  const viewActionLabel = languagePack.actions_view;
-  const openFolderActionLabel = languagePack.actions_openFolder;
-  const foldersActionLabel = languagePack.actions_folders;
-  const viewDetailsActionLabel = languagePack.actions_viewDetails;
-  const aiExplainabilityPopoverLabel =
-    languagePack.aiExplainabilityPopover_label;
-  const aiExplainabilityPopoverTitle =
-    languagePack.aiExplainabilityPopover_title;
-  const aiExplainabilityPopoverDescription =
-    languagePack.aiExplainabilityPopover_description;
+  const aiSlugLabel = languagePack.ai_slug_label;
+  const aiSlugTitle = languagePack.ai_slug_title;
+  const aiSlugDescription = languagePack.ai_slug_description;
+
+  const LaunchIcon = carbonIconToReact(Launch16);
   const ViewIcon = carbonIconToReact(View16);
   const OpenFolderIcon = carbonIconToReact(FolderOpen16);
   const FoldersIcon = carbonIconToReact(Folders16);
@@ -344,9 +348,9 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const showAiSlugContent =
     shouldShowAiLabel &&
     !!(
-      aiExplainabilityPopoverLabel ||
-      aiExplainabilityPopoverTitle ||
-      aiExplainabilityPopoverDescription ||
+      aiSlugLabel ||
+      aiSlugTitle ||
+      aiSlugDescription ||
       aiSlugAfterDescriptionElement
     );
   const useHideCloseButton = hideCloseButton ?? false;
@@ -485,7 +489,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             slot="decorator"
             className="cds-aichat--header__slug"
             size={AI_LABEL_SIZE.EXTRA_SMALL}
-            aria-label={aiExplainabilityPopoverLabel}
+            aria-label={aiSlugLabel}
             role="button"
             alignment={
               isRTL
@@ -496,70 +500,121 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             <div role="dialog" slot="body-text">
               {explainabilityPopoverContentElement}
               {!hasExplainabilityContent && (
-                <>
-                  {aiExplainabilityPopoverLabel && (
-                    <p className="cds-aichat--header__slug-label">
-                      {aiExplainabilityPopoverLabel}
-                    </p>
-                  )}
-                  {languagePack.aiExplainabilityPopover_confidenceScore && (
-                    <Tag className="cds-aichat--header__slug-confidence">
-                      {languagePack.aiExplainabilityPopover_confidenceScore}
-                    </Tag>
-                  )}
-                  {aiExplainabilityPopoverTitle && (
-                    <h4 className="cds-aichat--header__slug-title">
-                      {aiExplainabilityPopoverTitle}
-                    </h4>
-                  )}
-                  <div className="cds-aichat--header__slug-description">
-                    <div>{aiExplainabilityPopoverDescription}</div>
+                <div className="cds-aichat-explainability-popover--content">
+                  <div className="cds-aichat-explainability-popover--content__section">
+                    <div className="cds-aichat-explainability-popover--content__header">
+                      <div className="cds-aichat-explainability-popover--content__eyebrow-row">
+                        <span className="cds-aichat-explainability-popover--content__label">
+                          AI explained
+                        </span>
+                        <Tag
+                          className="cds-aichat--header__slug-confidence"
+                          size={TAG_SIZE.SMALL}
+                          type={"outline" as TAG_TYPE}
+                        >
+                          Confidence: 89%
+                        </Tag>
+                      </div>
+                      <h4 className="cds-aichat-explainability-popover--content__title">
+                        Name of feature
+                      </h4>
+                      <p className="cds-aichat-explainability-popover--content__description">
+                        High level 1-2 sentence description of how the AI is
+                        being used in the UI.
+                      </p>
+                    </div>
                   </div>
-                  {languagePack.aiExplainabilityPopover_keyDetails && (
-                    <div className="cds-aichat--header__slug-content">
-                      <MarkdownWithDefaults
-                        text={languagePack.aiExplainabilityPopover_keyDetails}
-                      />
-                    </div>
-                  )}
-                  {languagePack.aiExplainabilityPopover_aIModelSection && (
-                    <div className="cds-aichat--header__slug-content">
+                  <div className="cds-aichat-explainability-popover--content__section">
+                    <div className="cds-aichat-explainability-popover--content__list">
+                      <h5>How it works</h5>
                       <MarkdownWithDefaults
                         text={
-                          languagePack.aiExplainabilityPopover_aIModelSection
+                          "1. **Key word.** Description of key word.\n2. **Key word.** Description of key word.\n3. **Key word.** Description of key word."
                         }
                       />
                     </div>
-                  )}
-                  {languagePack.aiExplainabilityPopover_trainingDatasetSection && (
-                    <div className="cds-aichat--header__slug-content">
+                    <div className="cds-aichat-explainability-popover--content__list">
+                      <h5>Data types used</h5>
                       <MarkdownWithDefaults
                         text={
-                          languagePack.aiExplainabilityPopover_trainingDatasetSection
+                          "- **Data type 1.** Explain how it's used.\n- **Data type 2.** Explain how it's used.\n- **Data type 3.** Explain how it's used."
                         }
                       />
                     </div>
-                  )}
+                  </div>
+                  <div className="cds-aichat-explainability-popover--content__section">
+                    <div>
+                      <h5>AI model</h5>
+                      <Link
+                        href="https://example.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <LaunchIcon
+                          slot="icon"
+                          className="icon"
+                          aria-label="Launch"
+                        />
+                        granite.13b.v2.instruct
+                      </Link>
+                    </div>
+                    <div>
+                      <h6>Additional details</h6>
+                      <p>
+                        Additional information about data used to fine tune
+                        and/or train the model
+                      </p>
+                    </div>
+                  </div>
+                  <div className="cds-aichat-explainability-popover--content__section">
+                    <div>
+                      <h5>Training data set</h5>
+                      <Link
+                        href="https://example.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <LaunchIcon
+                          slot="icon"
+                          className="icon"
+                          aria-label="Launch"
+                        />
+                        IBM Security data piles
+                      </Link>
+                    </div>
+                  </div>
                   {aiSlugAfterDescriptionElement}
-                </>
+                </div>
               )}
             </div>
             {!hasExplainabilityContent && (
               <>
-                <IconButton slot="actions" size={BUTTON_SIZE.LARGE}>
-                  <ViewIcon slot="icon" />
-                  <span slot="tooltip-content">{viewActionLabel}</span>
-                </IconButton>
-                <IconButton slot="actions" size={BUTTON_SIZE.LARGE}>
-                  <OpenFolderIcon slot="icon" />
-                  <span slot="tooltip-content">{openFolderActionLabel}</span>
-                </IconButton>
-                <IconButton slot="actions" size={BUTTON_SIZE.LARGE}>
+                <IconButton
+                  slot="actions"
+                  size={BUTTON_SIZE.LARGE}
+                  kind={BUTTON_KIND.GHOST}
+                >
                   <FoldersIcon slot="icon" />
-                  <span slot="tooltip-content">{foldersActionLabel}</span>
+                  <span slot="tooltip-content">Folders</span>
+                </IconButton>
+                <IconButton
+                  slot="actions"
+                  size={BUTTON_SIZE.LARGE}
+                  kind={BUTTON_KIND.GHOST}
+                >
+                  <OpenFolderIcon slot="icon" />
+                  <span slot="tooltip-content">Open Folder</span>
+                </IconButton>
+                <IconButton
+                  slot="actions"
+                  size={BUTTON_SIZE.LARGE}
+                  kind={BUTTON_KIND.GHOST}
+                >
+                  <ViewIcon slot="icon" />
+                  <span slot="tooltip-content">View</span>
                 </IconButton>
                 <AILabelActionButton slot="actions">
-                  {viewDetailsActionLabel}
+                  View details
                 </AILabelActionButton>
               </>
             )}
