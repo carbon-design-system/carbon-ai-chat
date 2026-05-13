@@ -17,6 +17,7 @@ import {
 import { LanguagePack } from "../config/LanguagePack";
 import { type FileUpload } from "../config/ServiceDeskConfig";
 import type { StructuredData } from "../messaging/Messages";
+import type { JSONContent } from "@tiptap/core";
 
 import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
 import type { CornersType } from "../../chat/utils/constants";
@@ -260,6 +261,24 @@ interface InputState extends FileUploadCapabilities {
    * serialized output.
    */
   rawValue: string;
+
+  /**
+   * Tiptap-native JSONContent projection of the editor doc — kept in
+   * lockstep with `rawValue` (both update from the same input-change
+   * event).
+   *
+   * @experimental
+   */
+  content: JSONContent;
+
+  /**
+   * Whether the input editor currently has focus. Mirrors the
+   * `cds-aichat-input-focus` / `cds-aichat-input-blur` events emitted by
+   * the input web component.
+   *
+   * @experimental
+   */
+  focused: boolean;
 
   /**
    * Indicates if the input field is configured to be visible. This is only interpreted as the custom setting defined

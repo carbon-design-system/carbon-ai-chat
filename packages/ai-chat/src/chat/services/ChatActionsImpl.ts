@@ -112,6 +112,54 @@ import { SendOptions } from "../../types/instance/ChatInstance";
 import { PublicChatState } from "../../types/instance/PublicChatState";
 import { OnErrorData, OnErrorType } from "../../types/config/ErrorConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
+import type { Editor, JSONContent } from "@tiptap/core";
+import { getRawText } from "@carbon/ai-chat-components/es/components/input/index.js";
+
+/**
+ * Module-scoped flag so the deprecation warning for `updateRawValue` is
+ * emitted at most once per browser session, regardless of how many
+ * times the host calls it.
+ */
+let hasWarnedAboutUpdateRawValueDeprecation = false;
+
+/**
+ * Returns true if the given JSONContent doc only contains `paragraph`,
+ * `text`, and `hardBreak` nodes, with no marks on any text node. Used to
+ * gate the deprecated `updateRawValue` path post-segment-drop: legacy
+ * docs that grew tokens / blocks throw; plain-text docs (including ones
+ * with `\n` from Shift+Enter) pass through.
+ */
+function isPlainTextDoc(json: JSONContent): boolean {
+  const allowed = new Set(["doc", "paragraph", "text", "hardBreak"]);
+  let ok = true;
+  const walk = (node: JSONContent | undefined): void => {
+    if (!ok || !node) {
+      return;
+    }
+    if (typeof node.type === "string" && !allowed.has(node.type)) {
+      ok = false;
+      return;
+    }
+    if (
+      node.type === "text" &&
+      Array.isArray(node.marks) &&
+      node.marks.length > 0
+    ) {
+      ok = false;
+      return;
+    }
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) {
+        walk(child);
+        if (!ok) {
+          return;
+        }
+      }
+    }
+  };
+  walk(json);
+  return ok;
+}
 
 /**
  * This class is responsible for handling various "actions" that the system can perform including actions that can
@@ -186,6 +234,15 @@ class ChatActionsImpl {
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
   }[] = [];
+
+  /**
+   * Reference-equality cache for the deep-cloned `input.content` returned by
+   * `getPublicChatState()`. The Redux content reference only changes when the
+   * editor emits a doc-changing transaction, so on Redux dispatches that
+   * leave it untouched we return the previous frozen clone unchanged.
+   */
+  private cachedInputContentSource: JSONContent | undefined = undefined;
+  private cachedInputContentClone: JSONContent | undefined = undefined;
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -349,8 +406,32 @@ class ChatActionsImpl {
     });
 
     const inputState = selectInputState(state);
+    // `content` is mirrored into Redux on every input-change event as
+    // Tiptap-native JSONContent so it reads quickly without traversing
+    // the live editor. Cache the cloned-and-frozen result keyed on the
+    // Redux reference so unrelated dispatches don't pay the deep-clone cost.
+    let inputContent: JSONContent;
+    if (inputState.content) {
+      if (
+        this.cachedInputContentSource === inputState.content &&
+        this.cachedInputContentClone
+      ) {
+        inputContent = this.cachedInputContentClone;
+      } else {
+        inputContent = deepFreeze(cloneDeep(inputState.content));
+        this.cachedInputContentSource = inputState.content;
+        this.cachedInputContentClone = inputContent;
+      }
+    } else {
+      inputContent = {
+        type: "doc",
+        content: [{ type: "paragraph" }],
+      } as JSONContent;
+    }
     const input = deepFreeze({
       rawValue: inputState.rawValue ?? "",
+      content: inputContent,
+      focused: Boolean(inputState.focused),
       structuredData: inputState.pendingStructuredData
         ? cloneDeep(inputState.pendingStructuredData)
         : undefined,
@@ -412,6 +493,51 @@ class ChatActionsImpl {
       return;
     }
 
+    // When the input is mounted, route through the JSONContent write
+    // pipeline so the deprecation policy applies (throw on docs that
+    // carry anything other than paragraph/text/hardBreak or marked text;
+    // one warning per session). When the input is not mounted, fall
+    // through to the legacy Redux path so server-side / pre-mount writes
+    // continue to work with the rawValue prop seed.
+    const ref = this.serviceManager.getInputFunctionsRef();
+    const editor = ref?.getEditor();
+    if (ref && editor) {
+      const currentJson = editor.getJSON();
+      if (!isPlainTextDoc(currentJson)) {
+        throw new Error(
+          "ChatInstance.input.updateRawValue cannot be used while the input contains non-text nodes or marked text. Use updateContent instead.",
+        );
+      }
+      if (!hasWarnedAboutUpdateRawValueDeprecation) {
+        hasWarnedAboutUpdateRawValueDeprecation = true;
+        consoleWarn(
+          "ChatInstance.input.updateRawValue is deprecated. Use updateContent.",
+        );
+      }
+      let previousRaw = getRawText(currentJson);
+      if (previousRaw === "\n") {
+        previousRaw = "";
+      }
+      let nextValue: string;
+      try {
+        nextValue = updater(previousRaw);
+      } catch (error) {
+        consoleError("An error occurred while updating the input value", error);
+        return;
+      }
+      if (typeof nextValue !== "string") {
+        nextValue =
+          nextValue === undefined || nextValue === null
+            ? ""
+            : String(nextValue);
+      }
+      if (nextValue === previousRaw) {
+        return;
+      }
+      ref.setContent(nextValue);
+      return;
+    }
+
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
@@ -445,6 +571,46 @@ class ChatActionsImpl {
         selectIsInputToHumanAgent(state),
       ),
     );
+  }
+
+  /**
+   * Replace the input content with the result of an updater that receives
+   * the current JSONContent doc. Throws when the input is not currently
+   * rendered.
+   */
+  updateInputContent(updater: (previous: JSONContent) => JSONContent): void {
+    if (typeof updater !== "function") {
+      consoleError("Input content updater must be a function");
+      return;
+    }
+
+    const ref = this.serviceManager.getInputFunctionsRef();
+    if (!ref) {
+      throw new Error("Input is not currently rendered");
+    }
+    const editor = ref.getEditor();
+    const previous: JSONContent = editor
+      ? editor.getJSON()
+      : { type: "doc", content: [] };
+
+    let next: JSONContent;
+    try {
+      next = updater(previous);
+    } catch (error) {
+      consoleError("An error occurred while updating the input content", error);
+      return;
+    }
+
+    ref.setContent(next);
+  }
+
+  /**
+   * Returns the live Tiptap `Editor`, or `null` when the input is
+   * not currently rendered. Probe-style; never throws.
+   */
+  getInputEditor(): Editor | null {
+    const ref = this.serviceManager.getInputFunctionsRef();
+    return ref?.getEditor() ?? null;
   }
 
   /**

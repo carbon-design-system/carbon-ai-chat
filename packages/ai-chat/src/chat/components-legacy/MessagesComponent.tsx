@@ -13,12 +13,12 @@ import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
-import LatestWelcomeNodes from "./LatestWelcomeNodes";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
 import { MessagesTypingIndicator } from "./MessagesTypingIndicator";
 import { MessagesView } from "./MessagesView";
 import { SystemMessage } from "./SystemMessage";
+import WriteableElement from "../components/util/WriteableElement";
 import {
   HasServiceManager,
   withServiceManager,
@@ -1088,16 +1088,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     if (showBeforeWelcomeNodeElement) {
       return (
-        <LatestWelcomeNodes
-          welcomeNodeBeforeElement={
-            serviceManager.writeableElements[
-              WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT
-            ]
-          }
-          key={messageItemID}
-        >
+        <Fragment key={messageItemID}>
+          <WriteableElement
+            slotName={WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT}
+            id={`welcomeNodeBeforeElement${serviceManager.namespace.suffix}`}
+          />
           {message}
-        </LatestWelcomeNodes>
+        </Fragment>
       );
     }
 

@@ -140,22 +140,6 @@
 }
 
 // -----------------------------------------------------------
-// Placeholder
-// -----------------------------------------------------------
-.#{$prefix}--input-placeholder {
-  position: absolute;
-  z-index: 1;
-  color: theme.$text-secondary;
-  inset: 0;
-  pointer-events: none;
-  @include type.type-style("body-01");
-}
-
-:host([phone]) .#{$prefix}--input-placeholder {
-  @include type.type-style("body-02");
-}
-
-// -----------------------------------------------------------
 // Autocomplete slot (light DOM, positioned above input)
 // -----------------------------------------------------------
 ::slotted([slot="autocomplete-content"]) {
@@ -164,6 +148,17 @@
   inline-size: 100%;
   inset-block-end: 100%;
   inset-inline-start: 0;
+}
+
+// -----------------------------------------------------------
+// Field messaging slot (inline error / status content beneath
+// the autocomplete row — char-count exceeded, etc.)
+// -----------------------------------------------------------
+::slotted([slot="field-messaging"]) {
+  display: block;
+  color: theme.$support-error;
+  padding-block-start: layout.$spacing-03;
+  @include type.type-style("label-01");
 }
 
 // -----------------------------------------------------------
@@ -187,14 +182,4 @@
   display: flex;
   flex: 0 1;
   align-self: flex-start;
-}
-
-// -----------------------------------------------------------
-// Character counter
-// -----------------------------------------------------------
-.#{$prefix}--input-char-count {
-  color: theme.$support-error;
-  padding-block-start: layout.$spacing-03;
-  text-align: end;
-  @include type.type-style("label-01");
 }

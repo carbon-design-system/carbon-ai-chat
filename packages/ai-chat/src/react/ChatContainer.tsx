@@ -82,6 +82,7 @@ function ChatContainer(
     serviceDeskFactory,
     serviceDesk,
     renderUserDefinedResponse,
+    renderUserDefinedInputNode,
     renderCustomMessageFooter,
     renderWriteableElements,
     element,
@@ -295,6 +296,7 @@ function ChatContainer(
             key="stable-chat-instance"
             config={config}
             renderUserDefinedResponse={renderUserDefinedResponse}
+            renderUserDefinedInputNode={renderUserDefinedInputNode}
             renderCustomMessageFooter={renderCustomMessageFooter}
             renderWriteableElements={renderWriteableElements}
             onBeforeRender={onBeforeRenderOverride}

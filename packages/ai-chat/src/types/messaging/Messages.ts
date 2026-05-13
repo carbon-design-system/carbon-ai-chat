@@ -26,6 +26,7 @@ import {
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
 import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
 import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
+import type { JSONContent } from "@tiptap/core";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -359,6 +360,20 @@ interface MessageInput extends BaseMessageInput {
    * @experimental
    */
   structured_data?: StructuredData;
+
+  /**
+   * TipTap JSONContent captured when the user sent the message. When present,
+   * the user message bubble renders structurally; mention / command / custom
+   * nodes render via their respective renderers. Absent on plain-text /
+   * legacy messages — the bubble falls back to `text`.
+   *
+   * Snapshot semantics: this reflects what the user typed at send time. If a
+   * `pre:send` handler rewrites `input.text`, `display_content` does NOT
+   * auto-update.
+   *
+   * @experimental
+   */
+  display_content?: JSONContent;
 }
 
 /**

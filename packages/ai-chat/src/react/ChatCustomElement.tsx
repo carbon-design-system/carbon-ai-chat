@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -151,6 +151,7 @@ function ChatCustomElement(
     onBeforeRender,
     onAfterRender,
     renderUserDefinedResponse,
+    renderUserDefinedInputNode,
     renderCustomMessageFooter,
     renderWriteableElements,
     className,
@@ -270,6 +271,7 @@ function ChatCustomElement(
           onBeforeRender={onBeforeRenderOverride}
           onAfterRender={onAfterRender}
           renderUserDefinedResponse={renderUserDefinedResponse}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
           renderCustomMessageFooter={renderCustomMessageFooter}
           renderWriteableElements={renderWriteableElements}
           element={containerRef.current}

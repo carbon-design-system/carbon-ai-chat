@@ -185,6 +185,16 @@ function createChatInstance({
         debugLog("Called instance.input.updateStructuredData");
         serviceManager.actions.updateStructuredData(updater);
       },
+
+      updateContent: (updater) => {
+        debugLog("Called instance.input.updateContent");
+        serviceManager.actions.updateInputContent(updater);
+      },
+
+      getEditor: () => {
+        debugLog("Called instance.input.getEditor()");
+        return serviceManager.actions.getInputEditor();
+      },
     },
 
     getState: () => serviceManager.actions.getPublicChatState(),

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -71,7 +71,7 @@ test("smoke React", async ({ page }) => {
   const close = page.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible({ timeout: 10000 });
   await page.getByTestId(PageObjectId.INPUT).click();
-  await page.getByTestId(PageObjectId.INPUT).fill("text");
+  await page.keyboard.type("text");
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
@@ -107,7 +107,7 @@ test("smoke web component", async ({ page }) => {
   const close = page.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible();
   await page.getByTestId(PageObjectId.INPUT).click();
-  await page.getByTestId(PageObjectId.INPUT).fill("text");
+  await page.keyboard.type("text");
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
@@ -136,7 +136,7 @@ test("smoke react custom element", async ({ page }) => {
 
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.click();
-  await input.fill("text");
+  await page.keyboard.type("text");
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
@@ -163,7 +163,7 @@ test("smoke web component custom element", async ({ page }) => {
 
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.click();
-  await input.fill("text");
+  await page.keyboard.type("text");
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
