@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -27,11 +27,11 @@ import {
   ResolvablePromise,
   resolvablePromise,
 } from "../utils/resolvablePromise";
+import { ChatInstance } from "../../types/instance/ChatInstance";
 import {
-  ChatInstance,
   EventBusHandler,
   TypeAndHandler,
-} from "../../types/instance/ChatInstance";
+} from "../../types/instance/EventHandlers";
 
 const HANDLER_NOT_FUNCTION = "The event handler is not a function.";
 

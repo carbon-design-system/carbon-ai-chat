@@ -66,7 +66,7 @@ export function useFocusManager({
           responsePanelRef.current?.requestFocus();
         } else if (inputRef.current) {
           // Focus main input for both homescreen and messages view
-          inputRef.current.takeFocus();
+          inputRef.current.requestFocus();
         }
       }
     } catch (error) {

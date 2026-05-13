@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -45,17 +45,9 @@ import {
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
-import type {
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
-  ServiceDeskPublicConfig,
-} from "../types/config/ServiceDeskConfig";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
-import { enLanguagePack, LanguagePack } from "../types/config/PublicConfig";
-import { DeepPartial } from "../types/utilities/DeepPartial";
 import { Dimension } from "../types/utilities/Dimension";
-import { setIntl } from "./utils/intlUtils";
 import AppShell from "./AppShell";
 
 /**
@@ -65,7 +57,6 @@ import AppShell from "./AppShell";
  */
 interface AppProps {
   config: PublicConfig;
-  strings?: DeepPartial<LanguagePack>;
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
@@ -75,10 +66,6 @@ interface AppProps {
   element?: HTMLElement;
   setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
   chatWrapper?: HTMLElement;
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-  serviceDesk?: ServiceDeskPublicConfig;
 }
 
 /**
@@ -90,7 +77,6 @@ interface AppProps {
  */
 export function ChatAppEntry({
   config,
-  strings,
   onBeforeRender,
   onAfterRender,
   renderUserDefinedResponse,
@@ -100,8 +86,6 @@ export function ChatAppEntry({
   setParentInstance,
   element,
   chatWrapper,
-  serviceDeskFactory,
-  serviceDesk,
 }: AppProps) {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [serviceManager, setServiceManager] = useState<ServiceManager | null>(
@@ -138,14 +122,7 @@ export function ChatAppEntry({
      */
     const initializeChat = async () => {
       try {
-        // Merge top-level service desk props into an effective config used internally
         const publicConfig = mergePublicConfig(config);
-        if (serviceDeskFactory) {
-          publicConfig.serviceDeskFactory = serviceDeskFactory;
-        }
-        if (serviceDesk) {
-          publicConfig.serviceDesk = serviceDesk;
-        }
         // Seed the previous config immediately to avoid dynamic updates during boot.
         previousConfigRef.current = publicConfig;
 
@@ -155,23 +132,6 @@ export function ChatAppEntry({
             container,
             customHostElement: element,
           });
-
-        // Apply strings overrides before initial render, if provided
-        if (strings && Object.keys(strings).length) {
-          const merged: LanguagePack = {
-            ...enLanguagePack,
-            ...strings,
-          };
-          const locale =
-            serviceManager.store.getState().config.public.locale || "en";
-          setIntl(serviceManager, locale, merged);
-          // Keep Redux language pack in sync so selectors/components read overrides
-          serviceManager.store.dispatch(
-            appActions.changeState({
-              config: { derived: { languagePack: merged } },
-            }),
-          );
-        }
 
         attachUserDefinedResponseHandlers(
           instance,
@@ -212,14 +172,7 @@ export function ChatAppEntry({
       return;
     }
 
-    // Build effective configs that include top-level service desk props for change detection.
     const nextEffective = mergePublicConfig(config);
-    if (serviceDeskFactory) {
-      nextEffective.serviceDeskFactory = serviceDeskFactory;
-    }
-    if (serviceDesk) {
-      nextEffective.serviceDesk = serviceDesk;
-    }
 
     const previousEffective = previousConfigRef.current;
     if (!previousEffective) {
@@ -248,34 +201,7 @@ export function ChatAppEntry({
     };
     handleDynamicUpdate();
     previousConfigRef.current = nextEffective;
-  }, [
-    config,
-    serviceDeskFactory,
-    serviceDesk,
-    instance,
-    serviceManager,
-    beforeRenderComplete,
-  ]);
-
-  // Dynamically apply strings overrides on prop change
-  useEffect(() => {
-    if (!serviceManager) {
-      return;
-    }
-    const overrides = strings as DeepPartial<LanguagePack> | undefined;
-    if (overrides) {
-      const merged: LanguagePack = { ...enLanguagePack, ...overrides };
-      const locale =
-        serviceManager.store.getState().config.public.locale || "en";
-      setIntl(serviceManager, locale, merged);
-      // Update Redux language pack so state reflects overrides
-      serviceManager.store.dispatch(
-        appActions.changeState({
-          config: { derived: { languagePack: merged } },
-        }),
-      );
-    }
-  }, [strings, serviceManager]);
+  }, [config, instance, serviceManager, beforeRenderComplete]);
 
   /**
    * Defers the `onAfterRender` callback until after the initial render commits
