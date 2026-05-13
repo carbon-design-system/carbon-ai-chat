@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,6 +16,7 @@ import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
 import { consoleDebug, consoleError } from "./miscUtils";
 import { createAppConfig } from "../store/doCreateStore";
 import { isBrowser } from "./browserUtils";
+import { setIntl } from "./intlUtils";
 
 /**
  * Applies config changes dynamically without requiring a full reboot.
@@ -40,6 +41,15 @@ export async function applyConfigChangesDynamically(
 
   // Update Redux store with complete config (public + derived)
   store.dispatch(actions.changeState({ config: newAppConfig }));
+
+  // Handle language pack overrides — keep the intl formatter aligned with the
+  // newly derived languagePack on the store. The store dispatch above already
+  // updates `config.derived.languagePack`; setIntl mirrors it onto
+  // `serviceManager.intl` for non-React consumers.
+  if (changes.languagePackChanged) {
+    const locale = newConfig.locale || "en";
+    setIntl(serviceManager, locale, newAppConfig.derived.languagePack);
+  }
 
   if (changes.homescreenChanged) {
     // If homescreen is going from off to on, make it open as long as there are not any messages in the message list.

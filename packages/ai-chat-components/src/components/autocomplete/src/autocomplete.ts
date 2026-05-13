@@ -15,8 +15,8 @@ import prefix from "../../../globals/settings.js";
 
 import styles from "./autocomplete.scss?lit";
 
-import type { SuggestionItem } from "../../input/src/types.js";
-export type { SuggestionItem } from "../../input/src/types.js";
+import type { SuggestionItem } from "../../input/src/tiptap/types.js";
+export type { SuggestionItem } from "../../input/src/tiptap/types.js";
 
 /**
  * Custom event detail for autocomplete select events
@@ -173,7 +173,7 @@ class AutocompleteElement extends LitElement {
       <div
         class="cds-aichat--autocomplete"
         role="listbox"
-        aria-label="Suggestions"
+        aria-label="Autocomplete options"
       >
         <!-- TODO: Render item.icon (CarbonIcon) via iconLoader when autocomplete is improved -->
         ${this.items.map(

@@ -69,11 +69,20 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
   }
   const { launcher, alreadyOpen } = await waitFor(
     () => {
-      const button = shadowRoot.querySelector(
+      // The launcher button (and main panel) live behind nested shadow
+      // boundaries — Carbon `cds-button`, `cds-layer`, and the chat's own
+      // sub-components each open their own shadow root. `deepQuerySelector`
+      // walks every one; a plain `shadowRoot.querySelector` would only see
+      // the outermost shadow tree.
+      const button = deepQuerySelector(
+        shadowRoot,
         `[data-testid="${PageObjectId.LAUNCHER}"]`,
       ) as HTMLElement | null;
       const isMainPanelVisible = Boolean(
-        shadowRoot.querySelector(`[data-testid="${PageObjectId.MAIN_PANEL}"]`),
+        deepQuerySelector(
+          shadowRoot,
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+        ),
       );
 
       if (button) {
@@ -104,7 +113,10 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
   }
   await waitFor(
     () =>
-      shadowRoot.querySelector(`[data-testid="${PageObjectId.CHAT_WIDGET}"]`),
+      deepQuerySelector(
+        shadowRoot,
+        `[data-testid="${PageObjectId.CHAT_WIDGET}"]`,
+      ),
     { timeout: WAIT_FOR_TIMEOUT },
   );
   return shadowRoot;
@@ -155,7 +167,12 @@ export async function sendUserMessage(
   //     event up to React's `onSend`, which calls customSendMessage.
   const input = await waitFor(
     () => {
-      const field = shadowRoot.querySelector(
+      // INPUT (the editor div) and INPUT_SEND (a `cds-button` inside the
+      // send-control's shadow root) both live behind shadow-root boundaries
+      // — `deepQuerySelector` walks every one. See `openChat` for the same
+      // pattern.
+      const field = deepQuerySelector(
+        shadowRoot,
         `[data-testid="${PageObjectId.INPUT}"]`,
       ) as HTMLElement | null;
       if (!field) {
@@ -166,24 +183,34 @@ export async function sendUserMessage(
     { timeout: WAIT_FOR_TIMEOUT },
   );
 
-  await act(async () => {
-    input.dispatchEvent(
-      new CustomEvent("cds-aichat-input-change", {
-        detail: { rawValue: text },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-    input.dispatchEvent(
-      new CustomEvent("cds-aichat-input-send", {
-        detail: { text },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  });
-
-  if (typeof (shadowRoot.host as any).updateComplete !== "undefined") {
-    await (shadowRoot.host as any).updateComplete;
+  // The input is a ProseMirror-backed web component (cds-aichat-input-shell).
+  // The editor div above lives a couple of light-DOM levels under the shell
+  // host (PM wraps `view.dom` inside its own container element). Walk up
+  // with `closest` to reach the shell — they share the same shadow scope
+  // because `view.dom` is a light-DOM descendant — and call its public
+  // `setContent` to drive the doc.
+  //
+  // Driving the rest of the send flow from the UI under happy-dom is
+  // unreliable: `setContent` correctly dispatches `cds-aichat-input-change`
+  // synchronously, but `@lit/react`'s `onChange` listener never fires under
+  // happy-dom in this harness, so React's `rawInputValue` state never
+  // updates and the send button stays disabled. Tests that need to send a
+  // message should capture the chat instance via `onBeforeRender` and call
+  // `instance.send(...)` (or `instance.messaging.addMessage(...)`) directly
+  // — `sendUserMessage` is left in place for future tests that only need
+  // to populate the input doc.
+  const inputShell = input.closest("cds-aichat-input-shell") as
+    | (HTMLElement & {
+        setContent?: (segments: Array<{ type: "text"; text: string }>) => void;
+      })
+    | null;
+  if (typeof inputShell?.setContent !== "function") {
+    throw new Error("Input shell `setContent` not available");
   }
+  await act(async () => {
+    inputShell.setContent!([{ type: "text", text }]);
+    if (typeof (shadowRoot.host as any).updateComplete !== "undefined") {
+      await (shadowRoot.host as any).updateComplete;
+    }
+  });
 }
