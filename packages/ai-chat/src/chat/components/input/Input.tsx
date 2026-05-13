@@ -43,7 +43,10 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import IconButton from "../carbon/IconButton";
 import { BUTTON_KIND } from "../carbon/Button";
 import Add16 from "@carbon/icons/es/add--large/16.js";
+import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { carbonIconToReact } from "../../utils/carbonIcon";
+import { InputActionsMenu } from "./InputActionsMenu";
+import type { InputMenuOption } from "../../../types/config/InputConfig";
 
 const AddIcon = carbonIconToReact(Add16);
 
@@ -229,6 +232,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     starters,
     hostExtensions,
     isSendDisabledFromConfig,
+    menuOptions,
   } = useInputConfig();
 
   const {
@@ -508,6 +512,21 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     };
   }, [serviceManager, inputFunctions]);
 
+  const effectiveMenuOptions = useMemo<InputMenuOption[] | undefined>(() => {
+    if (!menuOptions) {
+      return undefined;
+    }
+    if (!showUploadButton) {
+      return menuOptions;
+    }
+    const uploadOption: InputMenuOption = {
+      text: languagePack.input_uploadButtonLabel,
+      icon: Attachment16,
+      handler: () => fileInputRef.current?.click(),
+    };
+    return [uploadOption, ...menuOptions];
+  }, [menuOptions, showUploadButton, languagePack.input_uploadButtonLabel]);
+
   if (!isInputVisible) {
     return null;
   }
@@ -550,29 +569,39 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         </div>
       )}
 
-      {showUploadButton && (
+      {(showUploadButton || effectiveMenuOptions) && (
         <div slot="message-actions">
-          <input
-            type="file"
-            ref={fileInputRef}
-            hidden
-            tabIndex={-1}
-            accept={allowedFileUploadTypes || ""}
-            multiple={allowMultipleFileUploads}
-            disabled={showUploadButtonDisabled}
-            onChange={handleFileSelect}
-          />
-          <IconButton
-            kind={BUTTON_KIND.GHOST}
-            size="sm"
-            disabled={showUploadButtonDisabled}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <AddIcon slot="icon" />
-            <span slot="tooltip-content">
-              {languagePack.input_uploadButtonLabel}
-            </span>
-          </IconButton>
+          {showUploadButton && (
+            <input
+              type="file"
+              ref={fileInputRef}
+              hidden
+              tabIndex={-1}
+              accept={allowedFileUploadTypes || ""}
+              multiple={allowMultipleFileUploads}
+              disabled={showUploadButtonDisabled}
+              onChange={handleFileSelect}
+            />
+          )}
+          {effectiveMenuOptions ? (
+            <InputActionsMenu
+              disabled={disableInput}
+              menuOptions={effectiveMenuOptions}
+              menuLabel={languagePack.input_actionsMenuLabel}
+            />
+          ) : showUploadButton ? (
+            <IconButton
+              kind={BUTTON_KIND.GHOST}
+              size="sm"
+              disabled={showUploadButtonDisabled}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <AddIcon slot="icon" />
+              <span slot="tooltip-content">
+                {languagePack.input_uploadButtonLabel}
+              </span>
+            </IconButton>
+          ) : null}
         </div>
       )}
 

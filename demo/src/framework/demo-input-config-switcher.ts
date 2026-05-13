@@ -9,10 +9,43 @@
 
 import "@carbon/web-components/es/components/dropdown/index.js";
 
-import { InputConfig, PublicConfig } from "@carbon/ai-chat";
+import { InputConfig, InputMenuOption, PublicConfig } from "@carbon/ai-chat";
+import Document16 from "@carbon/icons/es/document/16.js";
+import Language16 from "@carbon/icons/es/language/16.js";
+import Idea16 from "@carbon/icons/es/idea/16.js";
+import Edit16 from "@carbon/icons/es/edit/16.js";
+import MagicWand16 from "@carbon/icons/es/magic-wand/16.js";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+
+const DEMO_MENU_OPTIONS: InputMenuOption[] = [
+  {
+    text: "Summarize conversation",
+    icon: Document16,
+    handler: () => window.alert("Summarize conversation"),
+  },
+  {
+    text: "Translate last message",
+    icon: Language16,
+    handler: () => window.alert("Translate last message"),
+  },
+  {
+    text: "Brainstorm ideas",
+    icon: Idea16,
+    handler: () => window.alert("Brainstorm ideas"),
+  },
+  {
+    text: "Refine my writing",
+    icon: Edit16,
+    handler: () => window.alert("Refine my writing"),
+  },
+  {
+    text: "Suggest a follow-up",
+    icon: MagicWand16,
+    handler: () => window.alert("Suggest a follow-up"),
+  },
+];
 
 const DROPDOWN_DEFAULT = "default";
 const DROPDOWN_TRUE = "true";
@@ -189,6 +222,33 @@ export class DemoInputConfigSwitcher extends LitElement {
     return DROPDOWN_FALSE;
   }
 
+  private _menuOptionsDropdownValue(): string {
+    const menuOptions = this.config?.input?.menuOptions;
+    if (menuOptions === undefined) {
+      return DROPDOWN_DEFAULT;
+    }
+    return menuOptions.length > 0 ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
+  private _handleMenuOptionsDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (value === DROPDOWN_TRUE) {
+        next.menuOptions = DEMO_MENU_OPTIONS;
+      } else if (value === DROPDOWN_FALSE) {
+        next.menuOptions = [];
+      } else {
+        delete next.menuOptions;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
   private _handleAutocompleteDropdown(event: Event) {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
@@ -326,6 +386,24 @@ export class DemoInputConfigSwitcher extends LitElement {
         >
           <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
           <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._menuOptionsDropdownValue()}"
+          title-text="Additional actions menu"
+          @cds-dropdown-selected=${this._handleMenuOptionsDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
+            Default
+          </cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable dummy menu options</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable menu options</cds-dropdown-item
+          >
         </cds-dropdown>
       </div>
     `;

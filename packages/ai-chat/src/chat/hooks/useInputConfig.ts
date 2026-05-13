@@ -14,6 +14,7 @@ import type {
   SuggestionItem,
   AutocompleteConfig,
 } from "../../types/utilities/tiptapReexports";
+import type { InputMenuOption } from "../../types/config/InputConfig";
 import { useServiceManager } from "./useServiceManager";
 
 interface InputConfigSlice {
@@ -23,6 +24,7 @@ interface InputConfigSlice {
   starters: SuggestionItem[] | undefined;
   hostExtensions: Extension[] | undefined;
   isSendDisabledFromConfig: boolean;
+  menuOptions: InputMenuOption[] | undefined;
 }
 
 /**
@@ -46,6 +48,9 @@ function useInputConfig(): InputConfigSlice {
   const [isSendDisabledFromConfig, setIsSendDisabledFromConfig] = useState(() =>
     Boolean(initial?.isSendDisabled),
   );
+  const [menuOptions, setMenuOptions] = useState<InputMenuOption[] | undefined>(
+    () => initial?.menuOptions,
+  );
 
   useEffect(() => {
     const unsubscribe = store.subscribe(() => {
@@ -63,6 +68,9 @@ function useInputConfig(): InputConfigSlice {
         const flag = Boolean(next?.isSendDisabled);
         return prev !== flag ? flag : prev;
       });
+      setMenuOptions((prev) =>
+        prev !== next?.menuOptions ? next?.menuOptions : prev,
+      );
     });
     return unsubscribe;
   }, [store]);
@@ -74,6 +82,7 @@ function useInputConfig(): InputConfigSlice {
     starters,
     hostExtensions,
     isSendDisabledFromConfig,
+    menuOptions,
   };
 }
 
