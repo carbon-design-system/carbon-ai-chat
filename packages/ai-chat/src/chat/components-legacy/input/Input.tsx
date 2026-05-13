@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -382,10 +382,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       doTypingStopped();
 
       const text = rawInputValue.trim();
-      onSendInput(text);
-      // Reset the value of the field.
-      setRawInputValue("");
-      setDisplayInputValue("");
+
+      // Clear the Redux input state BEFORE onSendInput so the store
+      // subscriber (see useEffect above) can never observe Redux holding
+      // the old value while React state is "". onSendInput dispatches
+      // downstream actions (sendWithCatch, etc.) — in React 17 those run
+      // through unbatched renders whose layout effects can synchronously
+      // fire the subscriber, which would otherwise revert the React state
+      // back to the just-sent text. See issue #1382.
       if (trackInputState) {
         const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
         store.dispatch(
@@ -395,6 +399,16 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           ),
         );
       }
+
+      onSendInput(text);
+
+      // Reset the value of the field.
+      setRawInputValue("");
+      setDisplayInputValue("");
+      // Belt-and-suspenders: imperatively clear the contenteditable DOM in
+      // case the state-driven useLayoutEffect path is short-circuited by a
+      // stale skipNextDomSync flag or batching quirk. See issue #1382.
+      textAreaRef.current?.clear();
     }
   }
 

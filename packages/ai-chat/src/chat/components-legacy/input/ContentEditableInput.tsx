@@ -117,6 +117,17 @@ export interface ContentEditableInputHandle {
   takeFocus: () => void;
   /** Programmatically blur (unfocus) the input */
   doBlur: () => void;
+  /**
+   * Imperatively clear the editor's DOM and internal sync trackers.
+   *
+   * The DOM sync is driven by a `useLayoutEffect` whose execution depends on
+   * React's batching/scheduling. On host React 17/18 the send-button click
+   * arrives through `@lit/react`'s native event listener, and the resulting
+   * state updates can interleave such that the effect skips the clear. This
+   * imperative path runs synchronously on the click call stack regardless of
+   * React version.
+   */
+  clear: () => void;
 }
 
 /**
@@ -385,6 +396,15 @@ const ContentEditableInput = forwardRef<
       },
       doBlur: () => {
         editorRef.current?.blur();
+      },
+      clear: () => {
+        if (!editorRef.current) {
+          return;
+        }
+        editorRef.current.innerHTML = "";
+        lastDisplayValue.current = "";
+        skipNextDomSync.current = false;
+        updateContentAttribute(editorRef.current, "");
       },
     }));
 
