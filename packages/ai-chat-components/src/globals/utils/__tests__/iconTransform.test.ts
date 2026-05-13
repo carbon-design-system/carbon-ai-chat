@@ -7,10 +7,7 @@
  *  @license
  */
 
-import {
-  transformReactIconToCarbonIcon,
-  isCarbonIcon,
-} from "../utils/iconTransform";
+import { transformReactIconToCarbonIcon, isCarbonIcon } from "../iconTransform";
 
 // Import a representative sample of React icons to test
 import Edit from "@carbon/icons-react/es/Edit";

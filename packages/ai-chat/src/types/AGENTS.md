@@ -18,7 +18,7 @@ In scope: anything exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) or [..
 
 Quick check: after a build, the rendered TypeDoc page for the symbol should exist under `dist/docs/carbon-tsdocs/` or the symbol name should appear in the rendered shape of something that does.
 
-**Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and re-exported here. TypeDoc reads the JSDoc at the **declaration site**, not the re-export, so the bar below applies wherever the type is written — see [Cross-package re-exports](#cross-package-re-exports).
+**Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) (or third-party packages like `@tiptap/core`) and surfaced here through a **local re-declaration**, not a transparent re-export. TypeDoc reads the JSDoc at the declaration site it sees — and the declaration site we want it to see is the local alias in this package, not the upstream source. The bar below therefore applies at the local declaration site you control. See [Cross-package re-exports](#cross-package-re-exports).
 
 ## Required tags
 
@@ -65,17 +65,89 @@ Prefer a `{@link}` over a plain backtick reference when the target is itself pub
 
 ## Cross-package re-exports
 
-Some public types are declared in [@carbon/ai-chat-components](../../../ai-chat-components/) and re-exported unchanged through [../aiChatEntry.tsx](../aiChatEntry.tsx). Concrete example:
+Some public types are declared in [@carbon/ai-chat-components](../../../ai-chat-components/) or third-party packages like `@tiptap/core`. JSDoc + `@category` live **here**, in `@carbon/ai-chat`, via a local re-declaration — not a transparent re-export. This way upstream packages don't need to carry our category vocabulary, and tiptap's types don't need us to claim editorial ownership over their shape.
 
-- Declaration: [../../../ai-chat-components/src/components/chain-of-thought/defs.ts](../../../ai-chat-components/src/components/chain-of-thought/defs.ts) declares `ChainOfThoughtStepStatus` with `@category Messaging` and per-member JSDoc.
-- Used through: [messaging/Messages.ts](messaging/Messages.ts) imports it from `@carbon/ai-chat-components/es/components/chain-of-thought/defs.js`.
-- Re-exported: [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts) list it in the public export block.
+### Anti-pattern (silently broken)
 
-Rules:
+`export type { X } from 'pkg'` and `export { X } from 'pkg'` are **not** category-applying. TypeDoc resolves through to the upstream source and reads its JSDoc — any comment block above your `export type {` line is ignored. Symbols re-exported this way without a `@category` tag in their upstream declaration land in TypeDoc's `*` ("Other types") catchall.
 
-1. **JSDoc lives with the declaration**, in `@carbon/ai-chat-components`. TypeDoc picks it up from there. The re-export in [../aiChatEntry.tsx](../aiChatEntry.tsx) is a bare `export { X }` with no JSDoc of its own — a comment on the re-export line is ignored.
-2. **`@category` values are owned by this package.** Even though the tag is written in the components package, the allowed values are the `categoryOrder` list in [../../typedoc.json](../../typedoc.json). Cross-package categories that don't match fall into `*`.
-3. **No unexported symbols in the public surface.** If a type from `@carbon/ai-chat-components` is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — it must also be re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) so TypeDoc produces a page for it.
+### The pattern
+
+Re-declare upstream symbols at a local site you own, then re-export from [../aiChatEntry.tsx](../aiChatEntry.tsx) / [../serverEntry.ts](../serverEntry.ts) using the local alias.
+
+For sibling-package symbols (`@carbon/ai-chat-components`) — write **full** consumer-facing JSDoc:
+
+```ts
+import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/input/index.js";
+
+/**
+ * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
+ * Selection inserts plain text rather than a schema node; no chip is
+ * rendered.
+ *
+ * @category Config
+ */
+export type AutocompleteConfig = _AutocompleteConfig;
+```
+
+For runtime values, use `export const`:
+
+```ts
+import { buildCarbonExtensions as _buildCarbonExtensions } from "@carbon/ai-chat-components/es/components/input/index.js";
+
+/**
+ * Translate the Carbon-curated configs surfaced on {@link InputConfig} into
+ * a Tiptap {@link Extension} list. ...
+ *
+ * @category Utilities
+ */
+export const buildCarbonExtensions = _buildCarbonExtensions;
+```
+
+For an enum (need both runtime + type), declare both:
+
+```ts
+export const FileStatusValue = _FileStatusValue;
+export type FileStatusValue = _FileStatusValue;
+```
+
+For third-party symbols (e.g. `@tiptap/core`) — write a **brief, pointer-style** JSDoc only. Don't re-document shape; link to the upstream's own docs as the canonical reference:
+
+```ts
+import type { Editor as _Editor } from "@tiptap/core";
+
+/**
+ * The Tiptap editor instance returned by {@link ChatInstanceInput.getEditor}.
+ * Re-exported from `@tiptap/core` for ergonomic typing — see the
+ * [Tiptap Editor docs](https://tiptap.dev/api/editor) for the full API.
+ *
+ * @category Utilities
+ */
+export type Editor = _Editor;
+```
+
+### Where local re-declarations live
+
+Co-locate by topic:
+
+- Tiptap-related symbols → [utilities/tiptapReexports.ts](utilities/tiptapReexports.ts) (the canonical example).
+- Service-desk-related symbols → [config/ServiceDeskConfig.ts](config/ServiceDeskConfig.ts) (e.g. `FileUpload`, `FileStatusValue`).
+- Header / toolbar symbols → [config/HeaderConfig.ts](config/HeaderConfig.ts) (e.g. `ToolbarAction`).
+
+### Internal imports use the local alias too
+
+When a property type inside this package references a cross-package symbol (e.g. `extensions?: Extension[]`), import the **local alias**, not the upstream source. This keeps TypeDoc's symbol resolution pointed at our JSDoc + `@category`:
+
+```ts
+// In PublicConfig.ts
+import type { Extension } from "../utilities/tiptapReexports"; // ✓
+// import type { Extension } from "@tiptap/core";                // ✗ resolves past our alias
+```
+
+### Other rules
+
+- **No unexported symbols in the public surface.** If a type from an upstream package is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — it must have a local alias here that gets re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx). `validation.notExported: true` in [../../typedoc.json](../../typedoc.json) fails the build if you forget.
+- **`@category` values come from `categoryOrder`** in [../../typedoc.json](../../typedoc.json). A category outside that list lands in the `*` catchall.
 
 ## Property-level JSDoc
 
@@ -124,6 +196,40 @@ enum ChainOfThoughtStepStatus {
 ```
 
 Why it fails: no `@category` (lands in `*`), no member-level JSDoc, note-form rather than sentences, internal ticket reference, TODO in public copy.
+
+### Good — cross-package re-export (sibling)
+
+```ts
+import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/input/index.js";
+
+/**
+ * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
+ * Selection inserts plain text rather than a schema node; no chip is
+ * rendered.
+ *
+ * @category Config
+ */
+export type AutocompleteConfig = _AutocompleteConfig;
+```
+
+Why it works: full consumer-facing JSDoc lives at the local declaration TypeDoc reads, the upstream `@carbon/ai-chat-components` source carries no `@category` of ours, and `{@link}` resolves to our local `InputConfig`.
+
+### Good — cross-package re-export (third-party)
+
+```ts
+import type { Editor as _Editor } from "@tiptap/core";
+
+/**
+ * The Tiptap editor instance returned by {@link ChatInstanceInput.getEditor}.
+ * Re-exported from `@tiptap/core` for ergonomic typing — see the
+ * [Tiptap Editor docs](https://tiptap.dev/api/editor) for the full API.
+ *
+ * @category Utilities
+ */
+export type Editor = _Editor;
+```
+
+Why it works: the JSDoc tells the reader what `Editor` is in _our_ context and points back to tiptap's own docs as the canonical reference. No editorial claim over a type whose shape we can't change.
 
 ### Good — property referencing another public symbol
 

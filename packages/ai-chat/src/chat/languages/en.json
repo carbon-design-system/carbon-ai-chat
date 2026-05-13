@@ -35,6 +35,7 @@
   "input_uploadButtonLabel": "Add files to upload",
   "input_sendingMessage": "Sending message...",
   "input_keyboardShortcutAnnouncement": "Press {key} to toggle focus between the message list and input field.",
+  "input_maxCharCountExceeded": "Maximum character count of {max} exceeded. {current} characters, currently.",
   "window_title": "Chat window",
   "window_ariaChatRegion": "Chat",
   "window_ariaChatRegionNamespace": "Chat {namespace}",

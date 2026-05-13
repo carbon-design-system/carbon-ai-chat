@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -465,15 +465,10 @@ export class DemoBody extends LitElement {
     const customEvent = event as CustomEvent<{ enabled: boolean }>;
     const { enabled } = customEvent.detail;
 
-    // Import the responseMapAutocomplete from utils
-    const { SuggestionType } = await import("@carbon/ai-chat");
     const { RESPONSE_MAP } = await import("../customSendMessage/responseMap");
     const responseMapKeys = Object.keys(RESPONSE_MAP);
 
     const responseMapAutocomplete = {
-      type: SuggestionType.AUTOCOMPLETE,
-      trigger: "",
-      triggerPosition: "start" as const,
       items: async (query: string) => {
         const q = query.toLowerCase();
         return responseMapKeys
@@ -485,25 +480,13 @@ export class DemoBody extends LitElement {
     const newConfig = { ...this.config };
 
     if (enabled) {
-      // Add autocomplete to suggestions
-      const currentSuggestions = newConfig.input?.suggestions || [];
       newConfig.input = {
         ...newConfig.input,
-        suggestions: [...currentSuggestions, responseMapAutocomplete],
+        autocomplete: responseMapAutocomplete,
       };
-    } else {
-      // Remove autocomplete from suggestions (already handled by switcher)
-      // This branch shouldn't be reached, but kept for completeness
-      if (newConfig.input?.suggestions) {
-        newConfig.input.suggestions = newConfig.input.suggestions.filter(
-          (suggestion) =>
-            !(
-              suggestion.type === "autocomplete" &&
-              suggestion.trigger === "" &&
-              suggestion.triggerPosition === "start"
-            ),
-        );
-      }
+    } else if (newConfig.input?.autocomplete) {
+      const { autocomplete: _autocomplete, ...rest } = newConfig.input;
+      newConfig.input = rest;
     }
 
     // Dispatch config-changed event

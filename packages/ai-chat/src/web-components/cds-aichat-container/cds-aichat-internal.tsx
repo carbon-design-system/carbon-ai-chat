@@ -21,13 +21,6 @@ import ChatAppEntry from "../../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/config/LanguagePack";
-import type {
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
-  ServiceDeskPublicConfig,
-} from "../../types/config/ServiceDeskConfig";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -44,23 +37,13 @@ class ChatContainerInternal extends LitElement {
   /**
    * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
    * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
+   *
+   * `serviceDeskFactory`, `serviceDesk`, and `strings` flow through this object —
+   * they live on `PublicConfig` and are populated by the parent web component's
+   * `resolvedConfig` getter.
    */
   @property({ type: Object })
   config: PublicConfig;
-
-  /** Optional partial language pack overrides */
-  @property({ type: Object })
-  strings?: DeepPartial<LanguagePack>;
-
-  /** A factory for the {@link ServiceDesk} integration. */
-  @property({ attribute: false })
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-
-  /** Public configuration for the service desk integration. */
-  @property({ type: Object })
-  serviceDesk?: ServiceDeskPublicConfig;
 
   /**
    * The optional HTML element to mount the chat to.
@@ -93,9 +76,6 @@ class ChatContainerInternal extends LitElement {
     if (
       this.config &&
       (changedProperties.has("config") ||
-        changedProperties.has("strings") ||
-        changedProperties.has("serviceDeskFactory") ||
-        changedProperties.has("serviceDesk") ||
         changedProperties.has("onBeforeRender") ||
         changedProperties.has("onAfterRender") ||
         changedProperties.has("element"))
@@ -120,9 +100,6 @@ class ChatContainerInternal extends LitElement {
     this.root.render(
       <ChatAppEntry
         config={this.config}
-        strings={this.strings}
-        serviceDeskFactory={this.serviceDeskFactory}
-        serviceDesk={this.serviceDesk}
         onBeforeRender={this.onBeforeRender}
         onAfterRender={this.onAfterRender}
         container={container}
