@@ -7,6 +7,22 @@
  *  @license
  */
 
+/**
+ * Workspace child: OutstandingOrdersExample.
+ *
+ * Demonstrates: the data-table workspace path mounted into the
+ * `workspacePanelElement` slot when `additional_data.type ===
+ * "outstanding_orders"`. Reads the `orders` array off `additionalData`
+ * (forwarded from the user_defined card via `panel.open()` in `main.ts`)
+ * and closes through `instance.customPanels.getPanel(PanelType.WORKSPACE)`.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`
+ *   - `cds-aichat-workspace-shell` / `cds-aichat-toolbar`
+ *
+ * Start reading at: `handleClose` and `render`.
+ */
+
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { ChatInstance } from "@carbon/ai-chat";
@@ -51,6 +67,7 @@ export class OutstandingOrdersExample extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // Debug wiring so payload shape from panel.open() is observable when the workspace mounts.
     console.log("OutstandingOrdersExample rendered", {
       location: this.location,
       workspaceId: this.workspaceId,
@@ -59,12 +76,13 @@ export class OutstandingOrdersExample extends LitElement {
   }
 
   handleClose() {
+    // Closing through customPanels fires WORKSPACE_CLOSE so the host in main.ts can clear its slot state.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
 
   render() {
-    // Get orders from additionalData, fallback to empty array
+    // additionalData.orders is forwarded from sendOutstandingOrdersResponse via panel.open().
     const orders = this.additionalData?.orders || [];
 
     return html`
@@ -126,5 +144,3 @@ export class OutstandingOrdersExample extends LitElement {
     `;
   }
 }
-
-// Made with Bob

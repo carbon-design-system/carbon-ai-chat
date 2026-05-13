@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,16 +7,34 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Watch state (Web components)
+ *
+ * Demonstrates: subscribing to `BusEventType.STATE_CHANGE` to mirror chat
+ * state into the host UI. Tracks `homeScreenState.isHomeScreenOpen` and
+ * reflects it in a status panel that sits next to the floating chat
+ * launcher — the panel is the primary host surface so state transitions
+ * are observable as the user opens the chat.
+ *
+ * APIs exercised:
+ *   - `<cds-aichat-container>`
+ *   - `BusEventType.STATE_CHANGE`
+ *   - `instance.getState()` for the initial snapshot
+ *   - `PublicConfig.homescreen` (drives view transitions used in the demo)
+ *
+ * Start reading at: `onBeforeRender` and the `STATE_CHANGE` handler.
+ */
+
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 
 import {
   BusEventType,
+  type BusEvent,
+  type BusEventStateChange,
   type ChatInstance,
   type PublicConfig,
-  type RenderUserDefinedState,
-  type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { html, LitElement, css, PropertyValues } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { customSendMessage } from "./customSendMessage";
@@ -26,32 +44,29 @@ const config: PublicConfig = {
     customSendMessage,
   },
   homescreen: {
+    // Enable the homescreen so the demo has two distinct view states for
+    // `homeScreenState.isHomeScreenOpen` to toggle between.
     isOn: true,
+    // Greeting copy is what the user sees while `isHomeScreenOpen === true`.
     greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
     starters: {
+      // Render conversation starter buttons so a click trivially flips the
+      // homescreen state and triggers a STATE_CHANGE event.
       isOn: true,
       buttons: [
         { label: "What can you help me with?" },
         { label: "Tell me about state management" },
         { label: "How do I use the STATE_CHANGE event?" },
-        { label: "Show me a user_defined response" },
       ],
     },
   },
 };
 
-interface TrackedElementData {
-  text: string;
-  fullMessageId?: string;
-}
-
 @customElement("my-app")
 export class Demo extends LitElement {
   static styles = css`
-    .external {
-      background: green;
-      color: #fff;
-      padding: 1rem;
+    .watch-state-host {
+      padding: 16px;
     }
   `;
 
@@ -61,106 +76,44 @@ export class Demo extends LitElement {
   @state()
   accessor isHomescreenVisible: boolean = true;
 
-  @state()
-  accessor activeResponseId: string | null = null;
-
-  private _userDefinedElements = new Map<HTMLElement, TrackedElementData>();
-
   onBeforeRender = (instance: ChatInstance) => {
-    // Set the instance in state.
     this.instance = instance;
 
-    // Get initial state
+    // Seed the mirror from `instance.getState()` because STATE_CHANGE only
+    // fires on transitions; without this the panel would render empty until
+    // the user first interacts with the chat.
     const initialState = instance.getState();
     this.isHomescreenVisible = initialState.homeScreenState.isHomeScreenOpen;
-    this.activeResponseId = initialState.activeResponseId ?? null;
 
-    // Listen for STATE_CHANGE events
+    // Subscribe to BusEventType.STATE_CHANGE to mirror chat state into the
+    // host UI; this is the canonical hook for observing every public state
+    // mutation emitted by ChatInstance.
     instance.on({
       type: BusEventType.STATE_CHANGE,
-      handler: (event: any) => {
-        const isHomescreen = event.newState.homeScreenState.isHomeScreenOpen;
-        if (
-          event.previousState?.homeScreenState.isHomeScreenOpen !== isHomescreen
-        ) {
+      handler: (event: BusEvent) => {
+        const { previousState, newState } = event as BusEventStateChange;
+        const isHomescreen = newState.homeScreenState.isHomeScreenOpen;
+        // STATE_CHANGE fires for every state slice; gate the mirror update
+        // on a real `isHomeScreenOpen` transition to avoid redundant Lit
+        // re-renders on unrelated state changes.
+        if (previousState?.homeScreenState.isHomeScreenOpen !== isHomescreen) {
           this.isHomescreenVisible = isHomescreen;
-        }
-
-        if (
-          event.previousState?.activeResponseId !==
-          event.newState?.activeResponseId
-        ) {
-          this.activeResponseId = event.newState.activeResponseId ?? null;
         }
       },
     });
   };
 
-  protected updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has("activeResponseId")) {
-      for (const [el, data] of this._userDefinedElements) {
-        if (!el.isConnected) {
-          this._userDefinedElements.delete(el);
-          continue;
-        }
-        this.updateElementContent(el, data);
-      }
-    }
-  }
-
-  private updateElementContent(el: HTMLElement, data: TrackedElementData) {
-    const isLatest =
-      Boolean(this.activeResponseId) &&
-      data.fullMessageId === this.activeResponseId;
-    el.innerHTML = `
-      ${data.text}
-      <div>Latest response id: ${this.activeResponseId ?? "none yet"}</div>
-      <div>Is this the most recent message? ${isLatest ? "Yes" : "Nope"}</div>
-    `;
-  }
-
-  /**
-   * Callback to render user_defined responses. The library manages event listening, slot tracking,
-   * streaming state, and element lifecycle.
-   */
-  renderUserDefinedCallback = (
-    state: RenderUserDefinedState,
-  ): HTMLElement | null => {
-    const messageItem = state.messageItem as UserDefinedItem | undefined;
-
-    if (
-      messageItem?.user_defined?.user_defined_type === "my_unique_identifier"
-    ) {
-      const el = document.createElement("div");
-      el.className = "external";
-      const data: TrackedElementData = {
-        text: messageItem.user_defined.text as string,
-        fullMessageId: state.fullMessage?.id,
-      };
-      this._userDefinedElements.set(el, data);
-      this.updateElementContent(el, data);
-      return el;
-    }
-
-    return null;
-  };
-
   render() {
     return html`
-      <div>
+      <div class="watch-state-host">
         <h4>Current View State (via getState()):</h4>
         <p>${this.isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
         <p>Watching state via STATE_CHANGE event</p>
-        <p>
-          Active response id:
-          ${this.activeResponseId ? this.activeResponseId : "none yet"}
-        </p>
       </div>
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
         .homescreen=${config.homescreen}
-        .renderUserDefinedResponse=${this.renderUserDefinedCallback}
       ></cds-aichat-container>
     `;
   }

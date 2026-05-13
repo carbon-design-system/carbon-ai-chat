@@ -1,10 +1,30 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock implementation of the `ServiceDesk` contract.
+ *
+ * Demonstrates: a fully scripted service desk that drives the
+ * `ServiceDeskCallback` surface (agent join, typing, transfers, file uploads,
+ * availability, errors) so the human-agent hand-off can be exercised without
+ * a real back-end.
+ *
+ * APIs exercised:
+ *   - `ServiceDesk` lifecycle: `startChat` / `endChat` / `reconnect`
+ *   - `ServiceDeskCallback`: `agentJoined`, `agentTyping`, `agentReadMessages`,
+ *     `sendMessageToUser`, `updateAgentAvailability`, `setErrorStatus`,
+ *     `beginTransferToAnotherAgent`, `agentLeftChat`, `agentEndedChat`,
+ *     `setFileUploadStatus`, `screenShareRequest` / `screenShareEnded`,
+ *     `updateCapabilities`
+ *   - `ChatInstance.serviceDesk.updateIsSuspended`
+ *
+ * Start reading at: `MockServiceDesk` and `runSteps`.
  */
 
 import {
@@ -204,6 +224,7 @@ const MOCK_AGENT_PROFILE_EMPTY: ResponseUserProfile = {
 
 // The agent we're currently talking to.
 
+// Replace with a real production implementation.
 class MockServiceDesk implements ServiceDesk {
   /**
    * The current internal state for the mock service desk. This object is exported by this module and these values may
@@ -249,6 +270,7 @@ class MockServiceDesk implements ServiceDesk {
   userData?: UserData;
 
   constructor(parameters: ServiceDeskFactoryParameters, userData?: UserData) {
+    // Debug wiring so the demo surfaces service desk creation in the console.
     console.log("Creating MockServiceDesk");
     this.preStartChatPayload = {
       userName: userData?.name ?? "",
@@ -257,6 +279,7 @@ class MockServiceDesk implements ServiceDesk {
     this.factoryParameters = parameters;
     this.chatInstance = parameters.instance;
     this.callback = parameters.callback;
+    // Advertise file upload support so the chat composer renders the attach button while talking to a human agent.
     this.callback.updateCapabilities({
       allowFileUploads: true,
       allowedFileUploadTypes: "image/*,.txt",
@@ -273,6 +296,7 @@ class MockServiceDesk implements ServiceDesk {
     connectMessage: MessageResponse,
     startChatOptions: StartChatOptions,
   ): Promise<void> {
+    // Debug wiring so the connect flow can be inspected during the demo.
     console.log(`MockServiceDesk [startChat]: connectMessage`, connectMessage);
     console.log(
       `MockServiceDesk [startChat]: startChatOptions`,
@@ -312,6 +336,7 @@ class MockServiceDesk implements ServiceDesk {
   }
 
   endChat(passedInfo: EndChatInfo<unknown>): Promise<void> {
+    // Debug wiring so the end-chat payload can be inspected during the demo.
     console.log(`MockServiceDesk [endChat]`, passedInfo);
 
     const info = passedInfo as EndChatInfo<MockPreEndChatPayload>;
@@ -335,6 +360,7 @@ class MockServiceDesk implements ServiceDesk {
   }
 
   userTyping(isTyping: boolean): Promise<void> {
+    // Debug wiring so user typing notifications surface in the console.
     console.log(`MockServiceDesk [userTyping]: isTyping=${isTyping}`);
     return Promise.resolve();
   }
@@ -344,6 +370,7 @@ class MockServiceDesk implements ServiceDesk {
     _messageID: string,
     additionalData: AdditionalDataToAgent,
   ): Promise<void> {
+    // Debug wiring so each user-to-agent message is visible while authoring scripts.
     console.log(
       `MockServiceDesk [sendMessageToAgent]`,
       message,
@@ -404,6 +431,7 @@ class MockServiceDesk implements ServiceDesk {
     // Handle any file uploads we may have.
     if (additionalData.filesToUpload) {
       additionalData.filesToUpload.forEach((file) => {
+        // Replace with a real production implementation.
         // Use a setTimeout to simulate a random amount of time it takes to upload a file.
         setTimeout(
           () => {
@@ -426,6 +454,7 @@ class MockServiceDesk implements ServiceDesk {
   }
 
   filesSelectedForUpload(uploads: FileUpload[]): void {
+    // Debug wiring so the selected files are visible before they are sent.
     console.log(`MockServiceDesk [filesSelectedForUpload]`, uploads);
     uploads.forEach((file) => {
       if (file.file.name.toLowerCase().startsWith("a")) {
@@ -439,6 +468,7 @@ class MockServiceDesk implements ServiceDesk {
   }
 
   userReadMessages(): Promise<void> {
+    // Debug wiring so user read receipts are visible in the console.
     console.log(`MockServiceDesk [userReadMessages]`);
     return Promise.resolve();
   }
@@ -473,8 +503,10 @@ class MockServiceDesk implements ServiceDesk {
 /**
  * This function will run a series of steps to simulate some interaction between the agent and a user.
  */
+// Replace with a real production implementation.
 function runSteps(instance: MockServiceDesk, steps: MockStep[]): Promise<void> {
   if (steps) {
+    // Step delays are cumulative, so each scheduled timeout fires relative to the start of the sequence rather than the previous step.
     let totalTime = 0;
     steps.forEach((step) => {
       totalTime += step.delay || 0;

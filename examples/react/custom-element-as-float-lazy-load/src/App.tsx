@@ -7,6 +7,24 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Custom element as float (lazy load) (React)
+ *
+ * Demonstrates: code-splitting `ChatCustomElement` so it is fetched on
+ * first launcher click, with `<cds-aichat-shell>` (via `ChatShell`)
+ * acting as a crossfade fallback covering both the network bundle
+ * download and chat initialization. Uses `readCarbonChatSession` to
+ * auto-mount when an existing session is found.
+ *
+ * APIs exercised:
+ *   - `React.lazy` + `Suspense` to defer the chat bundle
+ *   - `ChatShell` (overlay during bundle + init)
+ *   - `BusEventType.VIEW_CHANGE` (phase machine)
+ *   - `readCarbonChatSession` for auto-mount
+ *
+ * Start reading at: `App()` and the lazy import below.
+ */
+
 import "@carbon/ai-chat/css/chat-float-layout.css";
 import "@carbon/ai-chat/css/chat-launcher-layout.css";
 
@@ -45,6 +63,7 @@ type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
 
 const config: PublicConfig = {
   messaging: {
+    // Routes outbound user messages to the in-memory mock backend instead of a real service.
     customSendMessage,
   },
   // Suppress the built-in launcher — our custom Button acts as the launcher.
@@ -100,11 +119,12 @@ function App() {
     });
   }
 
-  // Passed to LazyChatCustomElement to suppress its default behavior of
-  // collapsing the container to 0×0 via cds-aichat--hidden (which conflicts
-  // with our float CSS animations). We drive all visual state through phase
-  // instead. hasEverOpenedRef guards against the initial boot
-  // VIEW_CHANGE(mainWindow: false) that fires before the chat has ever opened.
+  // BusEventType.VIEW_CHANGE handler: passed to LazyChatCustomElement to
+  // suppress its default behavior of collapsing the container to 0×0 via
+  // cds-aichat--hidden (which conflicts with our float CSS animations). We
+  // drive all visual state through phase instead. hasEverOpenedRef guards
+  // against the initial boot VIEW_CHANGE(mainWindow: false) that fires before
+  // the chat has ever opened.
   function onViewChange(event: BusEventViewChange) {
     if (event.newViewState.mainWindow) {
       hasEverOpenedRef.current = true;
@@ -170,8 +190,7 @@ function App() {
       {phase !== "idle" && (
         <>
           {/* Suspense fallback is null because ChatShell (below) covers the
-              float area during both phases — bundle loading AND initialization.
-              This mirrors the pattern in custom-element-lazy-load. */}
+              float area during both phases — bundle loading AND initialization. */}
           <Suspense fallback={null}>
             <LazyChatCustomElement
               className={getFloatClass()}

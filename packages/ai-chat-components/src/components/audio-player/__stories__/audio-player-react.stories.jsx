@@ -266,5 +266,3 @@ export const ErrorState = {
     );
   },
 };
-
-// Made with Bob

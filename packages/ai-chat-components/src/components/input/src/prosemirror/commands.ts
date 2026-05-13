@@ -10,7 +10,7 @@
 import { Selection } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { EditorViewManager } from "../editor-view-manager.js";
-import type { SuggestionItem, SuggestionConfig } from "../types.js";
+import type { SuggestionItem, MentionConfig, CommandConfig } from "../types.js";
 import { triggerPluginKey } from "./trigger-plugin.js";
 
 /**
@@ -25,7 +25,7 @@ import { triggerPluginKey } from "./trigger-plugin.js";
 export function insertToken(
   view: EditorView,
   item: SuggestionItem,
-  config: SuggestionConfig,
+  config: MentionConfig | CommandConfig,
   manager: EditorViewManager,
 ): boolean {
   const triggerState = triggerPluginKey.getState(view.state);
@@ -34,7 +34,7 @@ export function insertToken(
   }
 
   const { schema } = view.state;
-  const tokenType = config.type ?? "mention";
+  const tokenType = config.type;
   const triggerChar = config.trigger;
   const rawValue = item.value ?? `${triggerChar}${item.label}`;
 

@@ -1,0 +1,164 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * Example: Carbon AI Chat — Mentions and commands (custom render) (React)
+ *
+ * Demonstrates: the same mention/command suggestion configuration as the
+ * `input-mentions-and-commands` example, plus a `renderCustomToken` for
+ * mentions that swaps the default chip for a Carbon `Tag` wrapped in a
+ * `Tooltip`. Commands keep the default chip rendering.
+ *
+ * APIs exercised:
+ *   - `ChatCustomElement`
+ *   - `PublicConfig.layout.showFrame`
+ *   - `PublicConfig.openChatByDefault`
+ *   - `PublicConfig.input.suggestions` + `SuggestionType.MENTION` /
+ *     `COMMAND`
+ *   - `renderCustomToken` for mention chip rendering
+ *
+ * Start reading at: `App()` and the `renderCustomToken` callback.
+ */
+
+import {
+  CarbonTheme,
+  ChatCustomElement,
+  ChatInstance,
+  PublicConfig,
+  SuggestionItem,
+  SuggestionType,
+} from "@carbon/ai-chat";
+import "@carbon/styles/css/styles.css";
+import { Tag, Tooltip } from "@carbon/react";
+import React, { useCallback, useMemo, useRef } from "react";
+import { createRoot } from "react-dom/client";
+
+import { customSendMessage } from "./customSendMessage";
+import { mentionItems, commandItems } from "./suggestions";
+
+function App() {
+  const instanceRef = useRef<ChatInstance | null>(null);
+
+  // capture the ChatInstance early so suggestion onSelect handlers
+  // (created inside a memoized config) can reach the live instance via
+  // ref instead of capturing a stale closure.
+  const onBeforeRender = useCallback((instance: ChatInstance) => {
+    instanceRef.current = instance;
+  }, []);
+
+  const config: PublicConfig = useMemo(
+    () => ({
+      // route outbound user messages through the local handler
+      // instead of opening a network connection to a real backend.
+      messaging: { customSendMessage },
+      // force the WHITE Carbon theme so the example renders
+      // consistently regardless of the host page's theme.
+      injectCarbonTheme: CarbonTheme.WHITE,
+      layout: {
+        // hide the default chat frame so the custom element fills its
+        // host container — required for the canonical fullscreen surface.
+        showFrame: false,
+      },
+      // auto-open the conversation so readers land on the input area
+      // the example exists to showcase, not a launcher.
+      openChatByDefault: true,
+      input: {
+        // declare the two suggestion sources that this example
+        // exists to demonstrate — @-mentions and /-commands.
+        suggestions: [
+          {
+            type: SuggestionType.MENTION,
+            trigger: "@",
+            items: async (query: string) => {
+              if (!query) {
+                return mentionItems;
+              }
+              return mentionItems.filter((m) =>
+                m.label.toLowerCase().includes(query.toLowerCase()),
+              );
+            },
+            onSelect: (item: SuggestionItem) => {
+              // write the selected mention into the structured-data
+              // sidecar so customSendMessage can read it alongside the
+              // free-form text on submit.
+              instanceRef.current?.input.updateStructuredData((prev) => ({
+                ...prev,
+                fields: [
+                  ...(prev?.fields ?? []),
+                  {
+                    id: item.id,
+                    label: item.label,
+                    type: SuggestionType.MENTION,
+                    value: item.id,
+                  },
+                ],
+              }));
+            },
+            // replace the default mention chip with a Carbon Tag
+            // wrapped in a Tooltip — this is the entire point of the
+            // example. autoAlign uses floating-ui with strategy:'fixed'
+            // so the tooltip escapes the editor's scroll/overflow
+            // clipping rather than being hidden behind it.
+            renderCustomToken: (item: SuggestionItem) => (
+              <Tooltip
+                label={item.description ?? item.label}
+                align="top"
+                autoAlign
+              >
+                <Tag size="sm" type="purple">
+                  @{item.label}
+                </Tag>
+              </Tooltip>
+            ),
+          },
+          {
+            type: SuggestionType.COMMAND,
+            trigger: "/",
+            // commands only make sense at the start of the input,
+            // so suppress the picker when "/" appears mid-line.
+            triggerPosition: "start" as const,
+            items: commandItems,
+            onSelect: (item: SuggestionItem) => {
+              // mirror the mention path so commands also land in
+              // structured_data and can be inspected by the backend.
+              instanceRef.current?.input.updateStructuredData((prev) => ({
+                ...prev,
+                fields: [
+                  ...(prev?.fields ?? []),
+                  {
+                    id: item.id,
+                    label: item.label,
+                    type: SuggestionType.COMMAND,
+                    value: item.id,
+                  },
+                ],
+              }));
+            },
+            // intentionally omit renderCustomToken so commands
+            // keep the default chip — this contrast with the mention
+            // path is what the example demonstrates.
+          },
+        ],
+      },
+    }),
+    [],
+  );
+
+  return (
+    <ChatCustomElement
+      className="chat-custom-element"
+      {...config}
+      onBeforeRender={onBeforeRender}
+    />
+  );
+}
+
+const root = createRoot(document.querySelector("#root") as Element);
+
+root.render(<App />);

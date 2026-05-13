@@ -36,30 +36,24 @@ function transformItemIcon(item: SuggestionItem): SuggestionItem {
 }
 
 /**
- * Transforms all suggestion configs, converting React icon components
- * in items and initialItems to CarbonIcon format.
+ * Transforms all suggestion configs, converting React icon components in
+ * items to CarbonIcon format.
  */
 function transformSuggestionConfigs(
   configs: SuggestionConfig[],
 ): SuggestionConfig[] {
   return configs.map((config) => {
-    const transformed: SuggestionConfig = { ...config };
-
     if (Array.isArray(config.items)) {
-      transformed.items = config.items.map(transformItemIcon);
-    } else {
-      const asyncFn = config.items;
-      transformed.items = async (query: string) => {
+      return { ...config, items: config.items.map(transformItemIcon) };
+    }
+    const asyncFn = config.items;
+    return {
+      ...config,
+      items: async (query: string) => {
         const items = await asyncFn(query);
         return items.map(transformItemIcon);
-      };
-    }
-
-    if (config.initialItems) {
-      transformed.initialItems = config.initialItems.map(transformItemIcon);
-    }
-
-    return transformed;
+      },
+    };
   });
 }
 

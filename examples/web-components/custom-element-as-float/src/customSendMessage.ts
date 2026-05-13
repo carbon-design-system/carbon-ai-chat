@@ -1,10 +1,26 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock customSendMessage handler for the float-layout example.
+ *
+ * Demonstrates: a fully client-side back-end that returns canned text,
+ * markdown, and a fake streaming response so the example can run with
+ * no network dependency.
+ *
+ * APIs exercised:
+ *   - `PublicConfig.messaging.customSendMessage`
+ *   - `instance.messaging.addMessage`
+ *   - `instance.messaging.addMessageChunk` (partial / complete / final)
+ *   - `CustomSendMessageOptions.signal` for stop-streaming + clear/restart
+ *
+ * Start reading at: the exported `customSendMessage` function below.
  */
 
 import {
@@ -92,10 +108,14 @@ async function doFakeTextStreaming(
   let isCanceled = false;
   const timeouts: number[] = [];
 
-  // Listen to abort signal (handles both stop button and restart/clear)
+  // Replace with a real production implementation. The abort signal fires for
+  // both the stop-streaming button and full chat restart/clear, so the handler
+  // must cancel any in-flight word emission to avoid posting chunks for a
+  // response the user has already dismissed.
   const abortHandler = () => {
     isCanceled = true;
-    // Clear all pending timeouts
+    // Pending setTimeout callbacks would otherwise still fire and call
+    // addMessageChunk after cancellation, leaving stale partial text on screen.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener("abort", abortHandler);
@@ -150,7 +170,9 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker
+      // Emit a truncated complete_item with stream_stopped: true so the chat
+      // renders the partial text as a finalized, non-streaming message instead
+      // of leaving it stuck in a streaming state after the user pressed stop.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
@@ -176,6 +198,9 @@ async function customSendMessage(
   requestOptions: CustomSendMessageOptions,
   instance: ChatInstance,
 ) {
+  // Replace with a real production implementation. The chat treats the first
+  // turn (empty input.text) as a hello/welcome trigger, so we emit the menu of
+  // demo prompts here instead of forwarding to a back-end.
   if (request.input.text === "") {
     instance.messaging.addMessage({
       output: {

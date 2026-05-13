@@ -7,6 +7,22 @@
  *  @license
  */
 
+/**
+ * OutstandingOrdersExample workspace component.
+ *
+ * Demonstrates: the `workspacePanelElement` slot rendered when
+ * `additionalData.type === "outstanding_orders"`. Reached by clicking the
+ * Maximize action on `outstanding-orders-card`, which fires the host's
+ * `instance.customPanels.getPanel(PanelType.WORKSPACE).open()` call. Uses
+ * its own toolbar Close action to call `panel.close()` from the slot.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *   - `<cds-aichat-workspace-shell>` with a data-table body
+ *
+ * Start reading at: `handleClose` and the orders table render block.
+ */
+
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { ChatInstance } from "@carbon/ai-chat";
@@ -24,7 +40,7 @@ import "@carbon/web-components/es/components/data-table/table-header-title.js";
 import "@carbon/web-components/es/components/data-table/table-header-description.js";
 import Close16 from "@carbon/icons/es/close/16.js";
 
-// Generate 25 rows of dummy order data
+// Replace with a real production implementation; this hard-coded array stands in for a fetched orders dataset.
 const orders = [
   {
     id: "ORD-1001",
@@ -280,6 +296,7 @@ export class OutstandingOrdersExample extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // Debug log surfaces the data flowed in from the preview-card maximize handler so integrators can verify the payload.
     console.log("OutstandingOrdersExample rendered", {
       location: this.location,
       workspaceId: this.workspaceId,
@@ -288,6 +305,7 @@ export class OutstandingOrdersExample extends LitElement {
   }
 
   handleClose() {
+    // getPanel(PanelType.WORKSPACE) returns the workspace handle so the workspace can dismiss itself from inside the slot.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
@@ -352,5 +370,3 @@ export class OutstandingOrdersExample extends LitElement {
     `;
   }
 }
-
-// Made with Bob
