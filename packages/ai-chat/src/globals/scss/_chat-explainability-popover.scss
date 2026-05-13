@@ -21,10 +21,11 @@
  *
  * Classes generated:
  * - .cds-aichat-explainability-popover--content                — container wrapper
- * - .cds-aichat-explainability-popover--content__eyebrow-row   — top row with label and tag
+ * - .cds-aichat-explainability-popover--content__header        — header section
+ * - .cds-aichat-explainability-popover--content__eyebrow-row   — top header row with label and tag
  * - .cds-aichat-explainability-popover--content__label         — eyebrow label text
  * - .cds-aichat-explainability-popover--content__title         — main heading
- * - .cds-aichat-explainability-popover--content__description   — body description text
+ * - .cds-aichat-explainability-popover--content__description   — description text below title
  * - .cds-aichat-explainability-popover--content__section       — content section with spacing
  */
 
@@ -40,11 +41,15 @@
      ============================================================================ */
 
   .#{$prefix}-explainability-popover--content {
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-06;
+    padding-block-start: layout.$spacing-03;
   }
 
   /* ============================================================================
      EXPLAINABILITY POPOVER - HEADER
-     Header section containing eyebrow row, title, and description
+     Header containing eyebrow label, confidence score, title, and description
      ============================================================================ */
 
   .#{$prefix}-explainability-popover--content__header {
@@ -71,6 +76,7 @@
 
   .#{$prefix}-explainability-popover--content__label {
     @include type.type-style("label-02");
+
     color: theme.$text-secondary;
   }
 
@@ -85,7 +91,7 @@
 
   /* ============================================================================
      EXPLAINABILITY POPOVER - DESCRIPTION
-     Body text description
+     Text description below header title
      ============================================================================ */
 
   .#{$prefix}-explainability-popover--content__description {
@@ -97,29 +103,26 @@
      Reusable section container for markdown or other content blocks
      ============================================================================ */
 
-  .#{$prefix}-explainability-popover--content__section {
-    // Sections can be used for markdown content or other structured content
-    // Spacing is intentionally minimal to allow content to control its own spacing
-    padding-bottom: layout.$spacing-06;
-  }
-
   // Add top spacing to all sections except the first one
-  .#{$prefix}-explainability-popover--content__section:not(:first-child) {
-    border-top: 1px solid theme.$border-subtle-00;
-    padding-top: layout.$spacing-06;
+  .#{$prefix}-explainability-popover--content__section {
     display: flex;
     flex-direction: column;
+    border-block-start: 1px solid theme.$border-subtle-00;
     gap: layout.$spacing-06;
+    padding-block-start: layout.$spacing-06;
   }
 
   /* ============================================================================
-     EXPLAINABILITY POPOVER - H5 HEADINGS
+     EXPLAINABILITY POPOVER - SECTION HEADINGS
      Subheadings within explainability content sections
      ============================================================================ */
 
+  .#{$prefix}-explainability-popover--content__section h3,
+  .#{$prefix}-explainability-popover--content__section h4,
   .#{$prefix}-explainability-popover--content__section h5,
   .#{$prefix}-explainability-popover--content__section h6 {
     @include type.type-style("body-01");
+
     color: theme.$text-secondary;
   }
 }

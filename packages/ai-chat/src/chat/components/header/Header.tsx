@@ -501,50 +501,51 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               {explainabilityPopoverContentElement}
               {!hasExplainabilityContent && (
                 <div className="cds-aichat-explainability-popover--content">
-                  <div className="cds-aichat-explainability-popover--content__section">
-                    <div className="cds-aichat-explainability-popover--content__header">
-                      <div className="cds-aichat-explainability-popover--content__eyebrow-row">
-                        <span className="cds-aichat-explainability-popover--content__label">
-                          AI explained
-                        </span>
-                        <Tag
-                          className="cds-aichat--header__slug-confidence"
-                          size={TAG_SIZE.SMALL}
-                          type={"outline" as TAG_TYPE}
-                        >
-                          Confidence: 89%
-                        </Tag>
-                      </div>
-                      <h4 className="cds-aichat-explainability-popover--content__title">
-                        Name of feature
-                      </h4>
-                      <p className="cds-aichat-explainability-popover--content__description">
-                        High level 1-2 sentence description of how the AI is
-                        being used in the UI.
-                      </p>
+                  <header className="cds-aichat-explainability-popover--content__header">
+                    <div className="cds-aichat-explainability-popover--content__eyebrow-row">
+                      <span className="cds-aichat-explainability-popover--content__label">
+                        AI explained
+                      </span>
+                      <Tag
+                        className="cds-aichat--header__slug-confidence"
+                        size={TAG_SIZE.SMALL}
+                        type={"outline" as TAG_TYPE}
+                      >
+                        Confidence: 89%
+                      </Tag>
                     </div>
-                  </div>
-                  <div className="cds-aichat-explainability-popover--content__section">
-                    <div className="cds-aichat-explainability-popover--content__list">
-                      <h5>How it works</h5>
+                    <h2 className="cds-aichat-explainability-popover--content__title">
+                      Name of feature
+                    </h2>
+                    <p className="cds-aichat-explainability-popover--content__description">
+                      High level 1-2 sentence description of how the AI is being
+                      used in the UI.
+                    </p>
+                  </header>
+                  <section className="cds-aichat-explainability-popover--content__section">
+                    <div>
+                      <h3>How it works</h3>
                       <MarkdownWithDefaults
                         text={
                           "1. **Key word.** Description of key word.\n2. **Key word.** Description of key word.\n3. **Key word.** Description of key word."
                         }
                       />
                     </div>
-                    <div className="cds-aichat-explainability-popover--content__list">
-                      <h5>Data types used</h5>
+                    <div>
+                      <h3>Data types used</h3>
                       <MarkdownWithDefaults
                         text={
                           "- **Data type 1.** Explain how it's used.\n- **Data type 2.** Explain how it's used.\n- **Data type 3.** Explain how it's used."
                         }
                       />
                     </div>
-                  </div>
-                  <div className="cds-aichat-explainability-popover--content__section">
+                  </section>
+                  <section
+                    className="cds-aichat-explainability-popover--content__section"
+                    aria-labelledby="explainability-ai-model"
+                  >
                     <div>
-                      <h5>AI model</h5>
+                      <h3>AI model</h3>
                       <Link
                         href="https://example.com"
                         target="_blank"
@@ -559,16 +560,19 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                       </Link>
                     </div>
                     <div>
-                      <h6>Additional details</h6>
+                      <h4>Additional details</h4>
                       <p>
                         Additional information about data used to fine tune
                         and/or train the model
                       </p>
                     </div>
-                  </div>
-                  <div className="cds-aichat-explainability-popover--content__section">
+                  </section>
+                  <section
+                    className="cds-aichat-explainability-popover--content__section"
+                    aria-labelledby="explainability-training-data"
+                  >
                     <div>
-                      <h5>Training data set</h5>
+                      <h3>Training data set</h3>
                       <Link
                         href="https://example.com"
                         target="_blank"
@@ -582,7 +586,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                         IBM Security data piles
                       </Link>
                     </div>
-                  </div>
+                  </section>
                   {aiSlugAfterDescriptionElement}
                 </div>
               )}
