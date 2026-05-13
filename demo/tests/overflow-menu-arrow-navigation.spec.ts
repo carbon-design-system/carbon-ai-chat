@@ -10,6 +10,7 @@ import { PageObjectId } from "@carbon/ai-chat/server";
 import {
   prepareDemoPage,
   destroyChatSession,
+  expectNoCspViolations,
   openChatWindow,
   waitForChatReady,
   waitForSetChatConfigApplied,
@@ -24,8 +25,12 @@ test.beforeEach(async ({ page }) => {
   await prepareDemoPage(page, { setChatConfig: true });
 });
 
-// Clear session between all tests to ensure clean state
+// Clear session between all tests to ensure clean state, and assert that the
+// page rendered without tripping the test-time strict CSP. Run the CSP check
+// before destroyChatSession so the assertion fires against the test's own
+// interactions, not the cleanup tear-down.
 test.afterEach(async ({ page }) => {
+  await expectNoCspViolations(page);
   await destroyChatSession(page);
 });
 

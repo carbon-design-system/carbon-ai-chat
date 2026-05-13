@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -21,6 +21,10 @@ import React, {
 } from "react";
 
 import { doFocusRef } from "../../utils/domUtils";
+import {
+  applyDynamicStyles,
+  clearDynamicStyles,
+} from "../../utils/cspStyleUtils";
 import {
   calculateAvailableLength,
   escapeHTML,
@@ -398,15 +402,15 @@ const ContentEditableInput = forwardRef<
      */
     useLayoutEffect(() => {
       if (!autoSize || !editorRef.current || !sizerRef.current) {
-        return;
+        return undefined;
       }
 
+      const editor = editorRef.current;
       const sizerHeight = sizerRef.current.scrollHeight;
-      if (sizerHeight > MAX_AUTO_RESIZE_HEIGHT) {
-        editorRef.current.style.overflowY = "auto";
-      } else {
-        editorRef.current.style.overflowY = "hidden";
-      }
+      applyDynamicStyles(editor, "editor-autoresize", {
+        "overflow-y": sizerHeight > MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
+      });
+      return () => clearDynamicStyles(editor, "editor-autoresize");
     }, [autoSize, displayValue]);
 
     /**
