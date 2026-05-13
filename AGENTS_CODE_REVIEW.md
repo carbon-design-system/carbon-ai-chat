@@ -44,9 +44,6 @@ This rubric governs every code review in this repo — both reviews the user exp
 
 Cross-reference against [AGENTS.md](AGENTS.md) and the nearest package-level `AGENTS.md`. Flag any of:
 
-- **License headers** missing on new source files. Enforced by `npm run lint:license`, which is part of `ci-check` but **not** the pre-commit hook — easy to miss.
-- **Release notes** not updated in [docs/release-notes.md](docs/release-notes.md) for a user-facing change.
-- **Hand-edits to generated output**: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `packages/ai-chat-components/react/`, `packages/ai-chat-components/custom-elements.json`, `telemetry.yml` files. These are regenerated (`npm run custom-elements`, `npm run telemetry:config`).
 - **New components added under `packages/ai-chat/src/chat/components-legacy/`** — that directory is closed to new components; new UI belongs in `components/` or lifted to `@carbon/ai-chat-components`.
 - **SCSS violations**: missing `#{$prefix}--` prefix, descendant nesting, physical properties (`padding-left`, `right`, etc.) instead of logical properties (`padding-inline-start`, `inset-inline-end`) that are required for RTL.
 - **Conventional-commit format** on the PR title / squash commit (`build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test`, header ≤ 72 chars, imperative lowercase subject, no trailing period).

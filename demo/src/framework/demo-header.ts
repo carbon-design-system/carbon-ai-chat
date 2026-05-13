@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -29,6 +29,18 @@ export class DemoHeader extends LitElement {
 
     cds-header-panel {
       z-index: 100000 !important;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
     }
   `;
 
@@ -196,7 +208,7 @@ export class DemoHeader extends LitElement {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;"
+        class="visually-hidden"
       >
         ${this._panelAnnouncement}
       </div>

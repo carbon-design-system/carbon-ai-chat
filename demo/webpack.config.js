@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,22 +14,6 @@ import { promises as fs } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Strict CSP applied to both the meta tag in index.html and the dev-server header.
-// Dev needs ws:/wss: in connect-src for HMR; the meta tag (production) does not.
-const CSP_BASE =
-  "default-src 'self'; " +
-  "script-src 'self' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; " +
-  "style-src 'self' https://1.www.s81c.com; " +
-  "img-src 'self' data: blob: https://1.www.s81c.com https://live.staticflickr.com; " +
-  "font-src 'self' https://1.www.s81c.com; " +
-  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://w.soundcloud.com https://cdnapisec.kaltura.com https://web-chat.assistant.test.watson.cloud.ibm.com; " +
-  "media-src https://web-chat.assistant.test.watson.cloud.ibm.com; " +
-  "object-src 'none'; " +
-  "base-uri 'self'; " +
-  "form-action 'self'; " +
-  "frame-ancestors 'none';";
-const CSP_DEV = `${CSP_BASE} connect-src 'self' https://1.www.s81c.com ws: wss:;`;
 
 // Simple plugin to copy versions.js from root to dist
 class CopyVersionsPlugin {
@@ -49,7 +33,9 @@ class CopyVersionsPlugin {
 }
 
 // Copy demo/public/* into dist/ so files like analytics-init.js are reachable
-// from same-origin (required by strict CSP — no 'unsafe-inline' for scripts).
+// from same-origin so the demo can reference them via relative paths in
+// index.html (analytics-init.js, etc.) and the test-time strict CSP can
+// pass them under script-src 'self'.
 class CopyPublicPlugin {
   apply(compiler) {
     compiler.hooks.afterEmit.tapPromise("CopyPublicPlugin", async () => {
@@ -152,9 +138,6 @@ export default async (_env, args) => {
             allowedHosts: "all",
             hot: true,
             open: true,
-            headers: {
-              "Content-Security-Policy": CSP_DEV,
-            },
 
             // Watch external build output and wait until writes settle
             watchFiles: {

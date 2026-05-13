@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,6 +11,174 @@ import * as aChecker from "accessibility-checker";
 
 // Import types for window globals used in evaluated browser context.
 import type {} from "../types/window";
+
+/**
+ * Strict Content-Security-Policy that tests enforce against the demo. The
+ * production demo ships without any CSP (ibm-common.js + Tealium + TrustArc
+ * need broad inline-style and origin access that's not worth maintaining in
+ * a meta-tag allowlist for a GitHub Pages demo). Tests route-abort
+ * ibm-common.js, so the third-party noise is isolated and we can hold the
+ * demo's own code to this strict policy. `ws:`/`wss:` are allowed in
+ * connect-src for webpack-dev-server HMR. `frame-ancestors` is omitted —
+ * browsers ignore it when delivered via <meta>.
+ */
+const TEST_CSP =
+  "default-src 'self'; " +
+  "script-src 'self' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; " +
+  "style-src 'self' https://1.www.s81c.com; " +
+  "img-src 'self' data: blob: https://1.www.s81c.com https://live.staticflickr.com; " +
+  "font-src 'self' https://1.www.s81c.com; " +
+  "connect-src 'self' https://1.www.s81c.com ws: wss:; " +
+  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://w.soundcloud.com https://cdnapisec.kaltura.com https://web-chat.assistant.test.watson.cloud.ibm.com; " +
+  "media-src https://web-chat.assistant.test.watson.cloud.ibm.com; " +
+  "object-src 'none'; " +
+  "base-uri 'self'; " +
+  "form-action 'self';";
+
+const cspInstalledPages = new WeakSet<Page>();
+
+/**
+ * Route-rewrites the demo's document response to inject a strict
+ * Content-Security-Policy meta tag. The production demo ships with no CSP
+ * enforcement; this brings strict enforcement back at test time so the
+ * Playwright suite can catch CSP regressions in our own code. Must be called
+ * BEFORE `page.goto` so the route handler is registered when the document is
+ * fetched. Idempotent per page so beforeEach + prepareDemoPage callers don't
+ * stack duplicate route handlers.
+ */
+export const installTestCsp = async (page: Page) => {
+  if (cspInstalledPages.has(page)) {
+    return;
+  }
+  cspInstalledPages.add(page);
+  await page.route("**/*", async (route) => {
+    const request = route.request();
+    if (request.resourceType() !== "document") {
+      // Defer to other route handlers (e.g. the ibm-common.js abort) rather
+      // than passing through to the network unconditionally.
+      return route.fallback();
+    }
+    const response = await route.fetch();
+    const status = response.status();
+    if (status >= 300 && status < 400) {
+      return route.fulfill({ response });
+    }
+    const body = await response.text();
+    const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${TEST_CSP}">`;
+    // Match `<head>` with or without attributes so e.g. `<head data-foo>`
+    // doesn't silently no-op the CSP injection.
+    const injected = body.replace(
+      /<head\b[^>]*>/i,
+      (match) => `${match}${cspMeta}`,
+    );
+    const headers = { ...response.headers() };
+    delete headers["content-length"];
+    await route.fulfill({
+      status,
+      headers,
+      body: injected,
+    });
+  });
+};
+
+/**
+ * Shape of a captured Content-Security-Policy violation. Mirrors the fields on
+ * `SecurityPolicyViolationEvent` that are useful for reporting which directive
+ * blocked what.
+ */
+export interface CspViolation {
+  blockedURI: string;
+  violatedDirective: string;
+  effectiveDirective: string;
+  sourceFile: string;
+  lineNumber: number;
+  columnNumber: number;
+  sample: string;
+}
+
+/**
+ * Installs a `securitypolicyviolation` event listener via `page.addInitScript`
+ * so it is in place BEFORE any inline script, inline style, or external
+ * resource on the page is evaluated. Violations accumulate on
+ * `window.__cspViolations`. Playwright re-applies init scripts on every
+ * navigation, so the array resets per navigation — the guard captures
+ * violations against whatever page the test is currently exercising.
+ *
+ * Call this before `page.goto` (prepareDemoPage handles that automatically).
+ */
+export const installCspGuard = async (page: Page) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __cspViolations?: CspViolation[] };
+    if (w.__cspViolations) {
+      return;
+    }
+    const violations: CspViolation[] = [];
+    w.__cspViolations = violations;
+    window.addEventListener("securitypolicyviolation", (event) => {
+      violations.push({
+        blockedURI: event.blockedURI,
+        violatedDirective: event.violatedDirective,
+        effectiveDirective: event.effectiveDirective,
+        sourceFile: event.sourceFile,
+        lineNumber: event.lineNumber,
+        columnNumber: event.columnNumber,
+        sample: event.sample,
+      });
+    });
+  });
+};
+
+/**
+ * Reads the CSP violations accumulated since the most recent navigation.
+ * Returns an empty array if `installCspGuard` was not called or the page
+ * has not yet finished its first navigation.
+ */
+export const getCspViolations = async (page: Page): Promise<CspViolation[]> => {
+  return page.evaluate(() => {
+    const w = window as unknown as { __cspViolations?: CspViolation[] };
+    return w.__cspViolations ?? [];
+  });
+};
+
+export interface ExpectNoCspViolationsOptions {
+  /**
+   * Directives to ignore when asserting. Pass an empty array (default) to
+   * fail on any captured violation.
+   */
+  ignoreDirectives?: string[];
+}
+
+/**
+ * Fails the test if any CSP violations have been recorded since the most
+ * recent navigation, with a readable summary of each violation. Pair with
+ * `installCspGuard` in beforeEach (or rely on `prepareDemoPage`, which
+ * installs the guard automatically).
+ */
+export const expectNoCspViolations = async (
+  page: Page,
+  options: ExpectNoCspViolationsOptions = {},
+) => {
+  const ignored = new Set(options.ignoreDirectives ?? []);
+  const violations = (await getCspViolations(page)).filter(
+    (v) => !ignored.has(v.effectiveDirective || v.violatedDirective),
+  );
+  if (violations.length === 0) {
+    return;
+  }
+  const summary = violations
+    .map((v) => {
+      const directive = v.effectiveDirective || v.violatedDirective;
+      const target = v.blockedURI || v.sample || "<inline>";
+      const location = v.sourceFile
+        ? ` at ${v.sourceFile}:${v.lineNumber}:${v.columnNumber}`
+        : "";
+      return `  - ${directive}: ${target}${location}`;
+    })
+    .join("\n");
+  throw new Error(
+    `Expected no CSP violations, but ${violations.length} were recorded:\n${summary}`,
+  );
+};
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -51,12 +219,19 @@ interface PrepareDemoPageOptions {
 /**
  * Blocks the analytics script before navigating to the demo so tests avoid cookie consent popups.
  * When `setChatConfig` is true, the page is loaded with the query param that activates setChatConfig mode.
+ *
+ * Also injects a strict CSP into the document response and installs a
+ * CSP-violation guard before navigation so tests can call
+ * `expectNoCspViolations(page)` to assert the page rendered without tripping
+ * the test-time CSP.
  */
 export const prepareDemoPage = async (
   page: Page,
   { setChatConfig = false }: PrepareDemoPageOptions = {},
 ) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+  await installTestCsp(page);
+  await installCspGuard(page);
   const targetPath = setChatConfig ? "/?config=setChatConfig" : "/";
   await page.goto(targetPath);
 };

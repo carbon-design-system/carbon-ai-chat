@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { type HTMLAttributes, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message, MessageResponse } from "../messaging/Messages";
 import { PublicConfig } from "../config/PublicConfig";
@@ -108,10 +108,13 @@ type RenderWriteableElementResponse = {
  * {@link PublicConfig} with additional component-specific props, flattening all
  * config properties as top-level props for better TypeScript IntelliSense.
  *
+ * Any additional DOM attributes passed to the component (for example
+ * `className`, `id`, `style`, or `aria-*`) are forwarded to the underlying
+ * host element.
+ *
  * @category React
  */
-interface ChatContainerProps
-  extends PublicConfig, Omit<HTMLAttributes<HTMLElement>, keyof PublicConfig> {
+interface ChatContainerProps extends PublicConfig {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
