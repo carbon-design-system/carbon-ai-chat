@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,14 +14,14 @@ import {
   ViewType,
   DefaultCustomPanelConfigOptions,
 } from "../instance/apiTypes";
-import { LanguagePack } from "../config/PublicConfig";
+import { LanguagePack } from "../config/LanguagePack";
 import { type FileUpload } from "../config/ServiceDeskConfig";
 import type { StructuredData } from "../messaging/Messages";
 
-import type { FileUploadCapabilities } from "../instance/ChatInstance";
+import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
 import type { CornersType } from "../../chat/utils/constants";
 import type { AppConfig } from "./AppConfig";
-import type { CarbonTheme } from "../config/PublicConfig";
+import type { CarbonTheme } from "../config/CarbonTheme";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
 import ObjectMap from "../utilities/ObjectMap";
 import { HomeScreenState } from "../config/HomeScreenConfig";

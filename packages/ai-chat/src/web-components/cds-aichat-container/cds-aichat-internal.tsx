@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -22,7 +22,7 @@ import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,12 +7,10 @@
  *  @license
  */
 
-import {
-  HeaderConfig,
-  LanguagePack,
-  LayoutConfig,
-  PublicConfig,
-} from "../config/PublicConfig";
+import { PublicConfig } from "../config/PublicConfig";
+import { HeaderConfig } from "../config/HeaderConfig";
+import { LanguagePack } from "../config/LanguagePack";
+import { LayoutConfig } from "../config/LayoutConfig";
 import { ThemeState } from "./AppState";
 import ObjectMap from "../utilities/ObjectMap";
 import { LauncherConfig } from "../config/LauncherConfig";

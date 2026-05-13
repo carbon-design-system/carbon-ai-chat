@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -41,7 +41,7 @@ import { doFocusRef } from "../../utils/domUtils";
 import {
   HeaderConfig,
   MinimizeButtonIconType,
-} from "../../../types/config/PublicConfig";
+} from "../../../types/config/HeaderConfig";
 import { AppState } from "../../../types/state/AppState";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { PageObjectId } from "../../../testing/PageObjectId";
@@ -51,6 +51,7 @@ import {
   HeaderMenuClickType,
 } from "../../../types/events/eventBusTypes";
 import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/button.js";
+import { isBrowser } from "../../utils/browserUtils";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -144,7 +145,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const backButtonRef = useRef<CDSButton>(undefined);
   const chatHeaderRef = useRef<any>(null);
-  const isRTL = document.dir === "rtl";
+  const isRTL = isBrowser() ? document.dir === "rtl" : false;
 
   const showRestartButton = headerConfig?.showRestartButton;
   const showAiLabel = headerConfig?.showAiLabel;

@@ -34,12 +34,18 @@ export {
 export {
   ChangeFunction,
   ChatInstance,
-  ChatInstanceInput,
-  ChatInstanceServiceDeskActions,
+  IncreaseOrDecrease,
+  SendOptions,
+} from "./types/instance/ChatInstance";
+export { ChatInstanceInput } from "./types/instance/ChatInstanceInput";
+export { ChatInstanceServiceDeskActions } from "./types/instance/ChatInstanceServiceDeskActions";
+export {
   EventBusHandler,
   EventHandlers,
-  FileUploadCapabilities,
-  IncreaseOrDecrease,
+  TypeAndHandler,
+} from "./types/instance/EventHandlers";
+export { FileUploadCapabilities } from "./types/instance/FileUploadCapabilities";
+export {
   PublicInputState,
   PublicCustomPanelsState,
   PublicHistoryPanelState,
@@ -47,11 +53,11 @@ export {
   PublicChatHumanAgentState,
   PublicChatState,
   PublicWorkspaceCustomPanelState,
-  SendOptions,
-  TypeAndHandler,
+} from "./types/instance/PublicChatState";
+export {
   WriteableElementName,
   WriteableElements,
-} from "./types/instance/ChatInstance";
+} from "./types/instance/WriteableElements";
 export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
@@ -128,28 +134,28 @@ export {
   CustomSendMessageOptions,
 } from "./types/config/MessagingConfig";
 
+export { PublicConfig } from "./types/config/PublicConfig";
+export { CarbonTheme } from "./types/config/CarbonTheme";
+export { DisclaimerPublicConfig } from "./types/config/DisclaimerConfig";
 export {
-  CarbonTheme,
   CustomMenuOption,
-  DisclaimerPublicConfig,
-  enLanguagePack,
   HeaderConfig,
-  HistoryConfig,
-  InputConfig,
-  LanguagePack,
-  LayoutConfig,
   MinimizeButtonIconType,
-  OnErrorData,
-  OnErrorType,
-  CustomListProps,
-  PublicConfig,
-  PublicConfigMessaging,
+  ToolbarAction,
+} from "./types/config/HeaderConfig";
+export { HistoryConfig } from "./types/config/HistoryConfig";
+export {
+  InputConfig,
   SuggestionConfig,
   SuggestionItem,
   SuggestionType,
-  ToolbarAction,
-  UploadConfig,
-} from "./types/config/PublicConfig";
+  CustomListProps,
+} from "./types/config/InputConfig";
+export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
+export { LayoutConfig } from "./types/config/LayoutConfig";
+export { OnErrorData, OnErrorType } from "./types/config/ErrorConfig";
+export { PublicConfigMessaging } from "./types/config/PublicConfigMessaging";
+export { UploadConfig } from "./types/config/UploadConfig";
 
 export {
   ChatShortcutConfig,

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,7 +11,7 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { CarbonTheme } from "../../../src/types/config/PublicConfig";
+import { CarbonTheme } from "../../../src/types/config/CarbonTheme";
 import { CornersType } from "../../../src/types/config/CornersType";
 import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
@@ -277,6 +277,7 @@ describe("Config Theme", () => {
           disclaimerChanged: false,
           homescreenChanged: false,
           lightweightUIChanged: false,
+          languagePackChanged: false,
         },
         { aiEnabled: false }, // New config
         serviceManager,

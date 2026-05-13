@@ -64,8 +64,8 @@ import MessageComponent, {
   MoveFocusType,
 } from "./MessageComponent";
 import { Message } from "../../types/messaging/Messages";
-import { LanguagePack } from "../../types/config/PublicConfig";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
 import { carbonIconToReact } from "../utils/carbonIcon";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);

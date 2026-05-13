@@ -48,7 +48,7 @@ export function useHumanAgentCallbacks({
   const hideConfirmEndChat = useCallback(() => {
     setShowEndChatConfirmation(false);
     setTimeout(() => {
-      inputRef.current?.takeFocus();
+      inputRef.current?.requestFocus();
     });
   }, [inputRef]);
 

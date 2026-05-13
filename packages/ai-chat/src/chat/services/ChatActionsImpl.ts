@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -108,11 +108,9 @@ import {
   MessageSendSource,
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
-import {
-  PublicChatState,
-  SendOptions,
-} from "../../types/instance/ChatInstance";
-import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
+import { SendOptions } from "../../types/instance/ChatInstance";
+import { PublicChatState } from "../../types/instance/PublicChatState";
+import { OnErrorData, OnErrorType } from "../../types/config/ErrorConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 
 /**
