@@ -11,6 +11,7 @@ interface Settings {
   framework: "react" | "web-component";
   layout: "float" | "sidebar" | "fullscreen";
   writeableElements: "true" | "false";
+  hideDefaultAiLabelContent?: "true" | "false";
   direction: "default" | "ltr" | "rtl";
   showHeader?: boolean;
   showMenuOptions?: boolean;

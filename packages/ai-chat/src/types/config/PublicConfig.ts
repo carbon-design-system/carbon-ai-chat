@@ -429,6 +429,20 @@ export interface HeaderConfig {
   showAiLabel?: boolean;
 
   /**
+   * Controls whether the default AI label content should be hidden.
+   * The default content is only meant to serve as a placeholder and should be 
+   * replaced with custom content using:
+   * {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT} and 
+   * {@link WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS}.
+   * When set to true, all the default ai label content including the deprecated
+   * {@link WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
+   * writeable element will be removed.
+   *
+   * @default false
+   */
+  hideDefaultAiLabelContent?: boolean;
+
+  /**
    * Controls whether the header should be constrained to the messages max width
    * (--cds-aichat-messages-max-width) or go full width. When true, the header
    * will be constrained to match the message width. When false (default), the

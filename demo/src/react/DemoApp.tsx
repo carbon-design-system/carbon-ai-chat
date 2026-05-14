@@ -381,9 +381,15 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
+  const headerConfig = {
+    ...config.header,
+    hideDefaultAiLabelContent: true,
+  };
+
   return settings.layout === "float" ? (
     <ChatContainer
       {...config}
+      header={headerConfig}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -394,6 +400,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     <div onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
         {...config}
+        header={headerConfig}
         className={className as string}
         onViewPreChange={onViewPreChange}
         onViewChange={onViewChange}

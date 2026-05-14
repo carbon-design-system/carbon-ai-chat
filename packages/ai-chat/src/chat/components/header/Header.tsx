@@ -152,7 +152,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const backButtonRef = useRef<CDSButton>(undefined);
   const chatHeaderRef = useRef<any>(null);
   const isRTL = isDirectionRTL();
-
   const showRestartButton = headerConfig?.showRestartButton;
   const showAiLabel = headerConfig?.showAiLabel;
   const minimizeButtonIconType =
@@ -250,11 +249,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
-  // Check if explainability content exists using the same pattern as AppShellWriteableElements
-  const hasExplainabilityContent = !!(
-    renderWriteableElements &&
-    renderWriteableElements[WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT]
-  );
+  const hideDefaultAiLabelContent =
+    headerConfig?.hideDefaultAiLabelContent ?? false;
 
   const explainabilityPopoverContentElement = (
     <WriteableElement
@@ -279,15 +275,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       id={`aiTooltipAfterDescription${serviceManager.namespace.suffix}`}
     />
   );
-  const shouldShowAiLabel = showAiLabel !== undefined ? showAiLabel : true;
-  const showAiSlugContent =
-    shouldShowAiLabel &&
-    !!(
-      aiSlugLabel ||
-      aiSlugTitle ||
-      aiSlugDescription ||
-      aiSlugAfterDescriptionElement
-    );
+  const showAiSlugContent = showAiLabel !== undefined ? showAiLabel : true;
   const useHideCloseButton = hideCloseButton ?? false;
 
   // Build actions array for ChatHeader (can overflow)
@@ -432,17 +420,11 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 : POPOVER_ALIGNMENT.BOTTOM_RIGHT
             }
           >
-            {hasExplainabilityContent ? (
-              <>
-                {explainabilityPopoverContentElement}
-                {explainabilityPopoverActionsElement}
-              </>
-            ) : (
+            {explainabilityPopoverContentElement}
+            {!hideDefaultAiLabelContent && (
               <div role="dialog" slot="body-text">
                 {aiSlugLabel && (
-                  <p className="cds-aichat--header__slug-label">
-                    {aiSlugLabel}
-                  </p>
+                  <p className="cds-aichat--header__slug-label">{aiSlugLabel}</p>
                 )}
                 {aiSlugTitle && (
                   <h4 className="cds-aichat--header__slug-title">
@@ -454,7 +436,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                   {aiSlugAfterDescriptionElement}
                 </div>
               </div>
-            )}
+            )} 
+            {explainabilityPopoverActionsElement}
           </AISlug>
         )}
         {/* Fixed actions slot - Custom actions before close/minimize */}
