@@ -10,7 +10,6 @@
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import Home16 from "@carbon/icons/es/home/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
 import Menu16 from "@carbon/icons/es/menu/16.js";
 import Restart16 from "@carbon/icons/es/restart/16.js";
 import RightPanelOpen16 from "@carbon/icons/es/right-panel--open/16.js";
@@ -18,9 +17,6 @@ import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
 import BottomPanelClose16 from "@carbon/icons/es/bottom-panel--close/16.js";
 import BottomPanelOpen16 from "@carbon/icons/es/bottom-panel--open/16.js";
 import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
-import View16 from "@carbon/icons/es/view/16.js";
-import FolderOpen16 from "@carbon/icons/es/folder--open/16.js";
-import Folders16 from "@carbon/icons/es/folders/16.js";
 import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
 import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
 import React, {
@@ -30,15 +26,9 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import { AISlug } from "../../components/carbon/AISlug";
-import AILabelActionButton from "../../components/carbon/AILabelActionButton";
-import IconButton from "../../components/carbon/IconButton";
-import Link from "../../components/carbon/Link";
-import Tag from "../../components/carbon/Tag";
 import WriteableElement from "../../components/util/WriteableElement";
-import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
 import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -47,7 +37,6 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { shallowEqual } from "../../store/appStore";
 import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { WriteableElementName } from "../../utils/constants";
-import { carbonIconToReact } from "../../utils/carbonIcon";
 import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
 import {
   HeaderConfig,
@@ -61,14 +50,8 @@ import {
   BusEventType,
   HeaderMenuClickType,
 } from "../../../types/events/eventBusTypes";
-import {
-  BUTTON_SIZE,
-  BUTTON_KIND,
-} from "@carbon/web-components/es/components/button/button.js";
-import {
-  TAG_SIZE,
-  TAG_TYPE,
-} from "@carbon/web-components/es/components/tag/tag.js";
+import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/button.js";
+import { RenderWriteableElementResponse } from "../../../types/component/ChatContainer";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -104,6 +87,11 @@ interface HeaderProps {
    * Optional header config overrides, merged with derived defaults.
    */
   headerConfigOverride?: Partial<HeaderConfig>;
+
+  /**
+   * Optional map of writeable elements to check for content.
+   */
+  renderWriteableElements?: RenderWriteableElementResponse;
 }
 
 function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
@@ -114,6 +102,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     headerDisplayName,
     isHomeScreenActive,
     headerConfigOverride,
+    renderWriteableElements,
   } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
@@ -181,10 +170,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const aiSlugTitle = languagePack.ai_slug_title;
   const aiSlugDescription = languagePack.ai_slug_description;
 
-  const LaunchIcon = carbonIconToReact(Launch16);
-  const ViewIcon = carbonIconToReact(View16);
-  const OpenFolderIcon = carbonIconToReact(FolderOpen16);
-  const FoldersIcon = carbonIconToReact(Folders16);
   // We can't allow the user to return to the home screen if the user is connecting or connected to an agent.
   // Also don't show the back button if we're already on the homescreen
   const allowHomeScreen =
@@ -265,79 +250,29 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
-  const [hasExplainabilityContent, setHasExplainabilityContent] =
-    useState(false);
-
-  const explainabilitySlotRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) {
-      return undefined;
-    }
-
-    const checkSlotContent = () => {
-      const slotElement = node.querySelector("slot");
-
-      if (!slotElement) {
-        setHasExplainabilityContent(false);
-        return;
-      }
-
-      // Check if slot has assigned nodes (web component mode)
-      if (
-        "assignedNodes" in slotElement &&
-        typeof (slotElement as HTMLSlotElement).assignedNodes === "function"
-      ) {
-        const assigned = (slotElement as HTMLSlotElement).assignedNodes();
-
-        // Check if assigned nodes have actual content
-        const hasContent = assigned.some((node) => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            return (node.textContent?.trim().length ?? 0) > 0;
-          }
-          // For element nodes, check if they have any content (children or text)
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element;
-            const hasChildren = element.children.length > 0;
-            const hasText = (element.textContent?.trim().length ?? 0) > 0;
-            return hasChildren || hasText;
-          }
-          return false;
-        });
-        setHasExplainabilityContent(hasContent);
-      } else {
-        // React mode - the slot element itself will have children when content is provided
-        // In React, content is rendered as children of the slot element, not assigned nodes
-        const hasContent = Array.from(slotElement.childNodes).some((child) => {
-          if (child.nodeType === Node.TEXT_NODE) {
-            return (child.textContent?.trim().length ?? 0) > 0;
-          }
-          return child.nodeType === Node.ELEMENT_NODE;
-        });
-        setHasExplainabilityContent(hasContent);
-      }
-    };
-
-    // Initial check
-    checkSlotContent();
-
-    // Listen for slotchange events
-    const slotElement = node.querySelector("slot");
-    if (slotElement) {
-      slotElement.addEventListener("slotchange", checkSlotContent);
-      return () =>
-        slotElement.removeEventListener("slotchange", checkSlotContent);
-    }
-
-    return undefined;
-  }, []);
+  // Check if explainability content exists using the same pattern as AppShellWriteableElements
+  const hasExplainabilityContent = !!(
+    renderWriteableElements &&
+    renderWriteableElements[WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT]
+  );
 
   const explainabilityPopoverContentElement = (
-    <div ref={explainabilitySlotRef}>
-      <WriteableElement
-        slotName={WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
-        id={`explainabilityPopoverContent${serviceManager.namespace.suffix}`}
-      />
-    </div>
+    <WriteableElement
+      slotName={WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
+      id={`explainabilityPopoverContent${serviceManager.namespace.suffix}`}
+      className="cds-aichat--header__slug-explainability-content"
+      wrapperSlot="body-text"
+    />
   );
+  const explainabilityPopoverActionsElement = (
+    <WriteableElement
+      slotName={WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS}
+      id={`explainabilityPopoverActions${serviceManager.namespace.suffix}`}
+      className="cds-aichat--header__slug-explainability-actions"
+      wrapperSlot="actions"
+    />
+  );
+
   const aiSlugAfterDescriptionElement = (
     <WriteableElement
       slotName={WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
@@ -497,130 +432,28 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 : POPOVER_ALIGNMENT.BOTTOM_RIGHT
             }
           >
-            <div role="dialog" slot="body-text">
-              {explainabilityPopoverContentElement}
-              {!hasExplainabilityContent && (
-                <div className="cds-aichat-explainability-popover--content">
-                  <header className="cds-aichat-explainability-popover--content__header">
-                    <div className="cds-aichat-explainability-popover--content__eyebrow-row">
-                      <span className="cds-aichat-explainability-popover--content__label">
-                        AI explained
-                      </span>
-                      <Tag
-                        className="cds-aichat--header__slug-confidence"
-                        size={TAG_SIZE.SMALL}
-                        type={"outline" as TAG_TYPE}
-                      >
-                        Confidence: 89%
-                      </Tag>
-                    </div>
-                    <h2 className="cds-aichat-explainability-popover--content__title">
-                      Name of feature
-                    </h2>
-                    <p className="cds-aichat-explainability-popover--content__description">
-                      High level 1-2 sentence description of how the AI is being
-                      used in the UI.
-                    </p>
-                  </header>
-                  <section className="cds-aichat-explainability-popover--content__section">
-                    <div>
-                      <h3>How it works</h3>
-                      <MarkdownWithDefaults
-                        text={
-                          "1. **Key word.** Description of key word.\n2. **Key word.** Description of key word.\n3. **Key word.** Description of key word."
-                        }
-                      />
-                    </div>
-                    <div>
-                      <h3>Data types used</h3>
-                      <MarkdownWithDefaults
-                        text={
-                          "- **Data type 1.** Explain how it's used.\n- **Data type 2.** Explain how it's used.\n- **Data type 3.** Explain how it's used."
-                        }
-                      />
-                    </div>
-                  </section>
-                  <section
-                    className="cds-aichat-explainability-popover--content__section"
-                    aria-labelledby="explainability-ai-model"
-                  >
-                    <div>
-                      <h3>AI model</h3>
-                      <Link
-                        href="https://example.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <LaunchIcon
-                          slot="icon"
-                          className="icon"
-                          aria-label="Launch"
-                        />
-                        granite.13b.v2.instruct
-                      </Link>
-                    </div>
-                    <div>
-                      <h4>Additional details</h4>
-                      <p>
-                        Additional information about data used to fine tune
-                        and/or train the model
-                      </p>
-                    </div>
-                  </section>
-                  <section
-                    className="cds-aichat-explainability-popover--content__section"
-                    aria-labelledby="explainability-training-data"
-                  >
-                    <div>
-                      <h3>Training data set</h3>
-                      <Link
-                        href="https://example.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <LaunchIcon
-                          slot="icon"
-                          className="icon"
-                          aria-label="Launch"
-                        />
-                        IBM Security data piles
-                      </Link>
-                    </div>
-                  </section>
+            {hasExplainabilityContent ? (
+              <>
+                {explainabilityPopoverContentElement}
+                {explainabilityPopoverActionsElement}
+              </>
+            ) : (
+              <div role="dialog" slot="body-text">
+                {aiSlugLabel && (
+                  <p className="cds-aichat--header__slug-label">
+                    {aiSlugLabel}
+                  </p>
+                )}
+                {aiSlugTitle && (
+                  <h4 className="cds-aichat--header__slug-title">
+                    {aiSlugTitle}
+                  </h4>
+                )}
+                <div className="cds-aichat--header__slug-description">
+                  <div>{aiSlugDescription}</div>
                   {aiSlugAfterDescriptionElement}
                 </div>
-              )}
-            </div>
-            {!hasExplainabilityContent && (
-              <>
-                <IconButton
-                  slot="actions"
-                  size={BUTTON_SIZE.LARGE}
-                  kind={BUTTON_KIND.GHOST}
-                >
-                  <FoldersIcon slot="icon" />
-                  <span slot="tooltip-content">Folders</span>
-                </IconButton>
-                <IconButton
-                  slot="actions"
-                  size={BUTTON_SIZE.LARGE}
-                  kind={BUTTON_KIND.GHOST}
-                >
-                  <OpenFolderIcon slot="icon" />
-                  <span slot="tooltip-content">Open Folder</span>
-                </IconButton>
-                <IconButton
-                  slot="actions"
-                  size={BUTTON_SIZE.LARGE}
-                  kind={BUTTON_KIND.GHOST}
-                >
-                  <ViewIcon slot="icon" />
-                  <span slot="tooltip-content">View</span>
-                </IconButton>
-                <AILabelActionButton slot="actions">
-                  View details
-                </AILabelActionButton>
-              </>
+              </div>
             )}
           </AISlug>
         )}

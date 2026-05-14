@@ -92,6 +92,8 @@ function createServiceManager(appConfig: AppConfig) {
         document.createElement("div"),
       [WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT]:
         document.createElement("div"),
+      [WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS]:
+        document.createElement("div"),
       [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
         document.createElement("div"),
       [WriteableElementName.HEADER_BOTTOM_ELEMENT]:

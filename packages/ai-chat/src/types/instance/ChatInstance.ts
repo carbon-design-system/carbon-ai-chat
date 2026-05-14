@@ -531,11 +531,15 @@ export enum WriteableElementName {
   AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT = "aiTooltipAfterDescriptionElement",
 
   /**
-   * An element that appears in the header's AI label popover. When content is provided to this slot, it hides all
-   * other default content and aiTooltipAfterDescriptionElement, providing complete control over the popover
-   * content.
+   * An element that appears in the header's AI label popover body. When content is provided to this slot, it hides the
+   * default body content and aiTooltipAfterDescriptionElement.
    */
   EXPLAINABILITY_POPOVER_CONTENT = "explainabilityPopoverContent",
+
+  /**
+   * An element that appears in the header's AI label popover actions area.
+   */
+  EXPLAINABILITY_POPOVER_ACTIONS = "explainabilityPopoverActions",
 
   /**
    * An element that appears in the main message body directly above the welcome node.

@@ -38,6 +38,10 @@ import { WriteableElementExample } from "./WriteableElementExample";
 import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
 import { CustomFooterExample } from "./CustomFooterExample";
 import { HistoryWriteableElementExample } from "./HistoryWriteableElementExample";
+import {
+  ExplainabilityPopoverActions,
+  ExplainabilityPopoverContent,
+} from "./ExplainabilityPopoverExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -202,12 +206,8 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
-      explainabilityPopoverContent: (
-        <WriteableElementExample
-          location="explainabilityPopoverContent"
-          parentStateText={stateText}
-        />
-      ),
+      explainabilityPopoverContent: <ExplainabilityPopoverContent />,
+      explainabilityPopoverActions: <ExplainabilityPopoverActions />,
       workspacePanelElement: (
         <WorkspaceWriteableElementExample
           location="workspacePanelElement"
@@ -241,7 +241,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     let elements;
 
     if (showAllWriteableElements) {
-      elements = allWriteableElements;
+      const {
+        explainabilityPopoverContent: _explainabilityPopoverContent,
+        explainabilityPopoverActions: _explainabilityPopoverActions,
+        ...writeableElements
+      } = allWriteableElements;
+      elements = writeableElements;
     } else if (showHomeScreenElements) {
       elements = {
         homeScreenHeaderBottomElement:
@@ -257,6 +262,10 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       ...elements,
       workspacePanelElement: allWriteableElements.workspacePanelElement,
       historyPanelElement: allWriteableElements.historyPanelElement,
+      explainabilityPopoverContent:
+        allWriteableElements.explainabilityPopoverContent,
+      explainabilityPopoverActions:
+        allWriteableElements.explainabilityPopoverActions,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
 

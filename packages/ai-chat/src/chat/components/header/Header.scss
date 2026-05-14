@@ -38,3 +38,18 @@
     margin-inline-start: layout.$spacing-05;
   }
 }
+
+// AI Label (slug) styling in decorator slot
+.cds-aichat--header__slug-description {
+  @include type.type-style("body-01");
+}
+
+.cds-aichat--header__slug-label {
+  color: theme.$text-secondary;
+  padding-block-end: layout.$spacing-04;
+  @include type.type-style("body-compact-01");
+}
+
+.cds-aichat--header__slug-title {
+  padding-block-end: layout.$spacing-04;
+}
