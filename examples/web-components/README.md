@@ -46,6 +46,29 @@ Fullscreen chat driven by `<cds-aichat-custom-element>`, letting the host elemen
 
 </details>
 
+### [Basic / Custom element sidebar](./basic-custom-element-sidebar/README.md)
+
+Docked-sidebar chat driven by `<cds-aichat-custom-element>` that hosts the chat as a 320px side panel with a host header bar and an open/close toggle.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-sidebar`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                         | Kind            | Role in this example                                                      |
+| ------------------------------ | --------------- | ------------------------------------------------------------------------- |
+| `<cds-aichat-custom-element>`  | custom element  | Hosts the chat UI inside a host element styled as a sidebar.              |
+| `onBeforeRender`               | property        | Captures the `ChatInstance` and subscribes to the view-change bus events. |
+| `BusEventType.VIEW_CHANGE`     | bus event       | Reports the resting open/closed view state to update the host class.      |
+| `BusEventType.VIEW_PRE_CHANGE` | bus event       | Delays the view change so the slide-out animation can finish first.       |
+| `ChatInstance.changeView`      | instance method | Opens or closes the chat from the header toggle button.                   |
+| `ViewType`                     | enum            | Selects `MAIN_WINDOW` or `LAUNCHER` when toggling the view.               |
+| `layout.corners`               | property        | Squares the chat corners to fit the sidebar chrome.                       |
+| `openChatByDefault`            | property        | Opens the chat on mount.                                                  |
+| `messaging.customSendMessage`  | property        | Mock backend that echoes user input.                                      |
+
+</details>
+
 ### [Basic / Float](./basic-float/README.md)
 
 Minimal Lit example of the float / launcher layout: mounts `<cds-aichat-container>` with a mock streaming `customSendMessage` backend. This is the canonical reference for the float chat shape.
@@ -297,6 +320,37 @@ Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFac
 | `messaging.customSendMessage`  | property       | Mock backend that routes between bot replies and desk handoff.               |
 | `serviceDeskFactory`           | property       | Async factory returning a `MockServiceDesk`; rebuilt when user data changes. |
 | `ServiceDeskFactoryParameters` | type           | Parameters passed to each factory call.                                      |
+
+</details>
+
+### [Input / Custom render](./input-custom-render/README.md)
+
+The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-custom-render`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                | Kind                | Role in this example                                                         |
+| ------------------------------------- | ------------------- | ---------------------------------------------------------------------------- |
+| `<cds-aichat-custom-element>`         | custom element      | Mounts the chat UI inside the docked sidebar container.                      |
+| `<cds-clickable-tile>` / `<cds-tile>` | custom element      | Carbon tiles — the page grid, and the tile injected into the input / bubble. |
+| `PublicConfig`                        | type                | Types the config bound to the element's properties.                          |
+| `ChatInstance`                        | type                | Captured in `.onBeforeRender` so the tile handler can drive the input.       |
+| `WCRenderUserDefinedInputNode`        | type                | Types the `renderUserDefinedInputNode` callback.                             |
+| `Extension`                           | `@tiptap/core` type | Types the custom Tiptap node registered on the input.                        |
+| `renderInLightDom`                    | helper              | Bridges the node view's `<cds-tile>` into the page's light DOM.              |
+| `.renderUserDefinedInputNode`         | property            | Renders the custom `tileChip` node inside the sent user message bubble.      |
+| `.input` (`input.tiptap.extensions`)  | property            | Registers the host-authored `tileChip` Tiptap node on the input.             |
+| `instance.input.updateContent`        | method              | Clears the input and injects the clicked tile as a custom node.              |
+| `instance.input.updateStructuredData` | method              | Replaces the pending structured data with metadata describing the tile.      |
+| `.onBeforeRender`                     | property            | Captures the `ChatInstance` used by the tile-click handler.                  |
+| `.layout` (`layout.showFrame`)        | property            | Hides the default frame so the chat fills the sidebar.                       |
+| `.openChatByDefault`                  | property            | Mounts straight into the conversation, no launcher.                          |
+| `.injectCarbonTheme`                  | property            | Applies the white Carbon theme.                                              |
+| `.messaging.customSendMessage`        | property            | Reads `request.input.structured_data` and echoes the submitted tile.         |
+| `Node.create`                         | `@tiptap/core` API  | Authors the custom `tileChip` inline atom node.                              |
 
 </details>
 

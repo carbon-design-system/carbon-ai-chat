@@ -29,7 +29,8 @@ import {
   CustomFooterPortalsContainer,
 } from "./components/portals/CustomFooterPortalsContainer";
 import { WriteableElementsPortalsContainer } from "./components/portals/WriteableElementsPortalsContainer";
-import { TokenPortalsContainer } from "./components/portals/TokenPortalsContainer";
+import { LightDomPortalsContainer } from "./components/portals/LightDomPortalsContainer";
+import { InputNodePortalsContainer } from "./components/portals/InputNodePortalsContainer";
 
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";
@@ -42,6 +43,7 @@ import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
 import {
   RenderUserDefinedState,
   RenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
@@ -60,6 +62,7 @@ interface AppProps {
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
+  renderUserDefinedInputNode?: RenderUserDefinedInputNode;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
   container: HTMLElement;
@@ -80,6 +83,7 @@ export function ChatAppEntry({
   onBeforeRender,
   onAfterRender,
   renderUserDefinedResponse,
+  renderUserDefinedInputNode,
   renderCustomMessageFooter,
   renderWriteableElements,
   container,
@@ -300,7 +304,15 @@ export function ChatAppEntry({
                   />
                 )}
 
-                <TokenPortalsContainer chatWrapper={chatWrapper} />
+                <LightDomPortalsContainer chatWrapper={chatWrapper} />
+
+                {renderUserDefinedInputNode && (
+                  <InputNodePortalsContainer
+                    chatInstance={instance}
+                    renderUserDefinedInputNode={renderUserDefinedInputNode}
+                    chatWrapper={chatWrapper}
+                  />
+                )}
               </AriaAnnouncerProvider>
             </LanguagePackProvider>
           </IntlProvider>

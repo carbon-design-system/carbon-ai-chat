@@ -40,6 +40,9 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
+  renderTokenChip,
+  renderInLightDom,
+  LIGHT_DOM_PORTAL_EVENT,
 } from "./src/tiptap/index.js";
 
 export type {
@@ -49,6 +52,11 @@ export type {
   SuggestionItem,
   CustomListProps,
   TriggerChangeEventDetail,
+  RenderTokenChipArgs,
+  TokenChipAttrs,
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+  LightDomPortalEventDetail,
 } from "./src/tiptap/index.js";
 
 // Curated runtime / event-detail types.

@@ -7,16 +7,69 @@
  *  @license
  */
 
-// Local re-declarations of these tiptap-related types live in
-// `../utilities/tiptapReexports`; importing through the local module keeps
-// TypeDoc resolution pointed at our JSDoc + `@category` placement instead of
-// the upstream declarations.
+// Raw `@tiptap/core` types come from `@tiptap/core` directly. The Carbon
+// suggestion-config types are re-declared below (rather than imported from
+// the upstream symbols directly) so TypeDoc resolution stays pointed at our
+// JSDoc + `@category` placement; see [../AGENTS.md](../AGENTS.md) for the
+// cross-package re-export rule.
+import type { Extension } from "@tiptap/core";
 import type {
-  TriggerSuggestionConfig,
-  SuggestionItem,
-  AutocompleteConfig,
-  Extension,
-} from "../utilities/tiptapReexports";
+  BaseSuggestionConfig as _BaseSuggestionConfig,
+  TriggerSuggestionConfig as _TriggerSuggestionConfig,
+  AutocompleteConfig as _AutocompleteConfig,
+  SuggestionItem as _SuggestionItem,
+  CustomListProps as _CustomListProps,
+} from "@carbon/ai-chat-components/es/components/input/index.js";
+
+/**
+ * Fields shared by every Carbon suggestion config (mention, command,
+ * autocomplete). Provides the item source, debounce, minimum query length,
+ * selection callback, and an optional custom list renderer.
+ *
+ * @category Config
+ */
+export type BaseSuggestionConfig = _BaseSuggestionConfig;
+
+/**
+ * Trigger-character-driven suggestion config consumed by
+ * {@link InputConfig.mention} and {@link InputConfig.command}. Adds the
+ * trigger character, an optional `triggerPosition`, an optional schema-node
+ * `name` override, and a custom-token renderer on top of
+ * {@link BaseSuggestionConfig}.
+ *
+ * @category Config
+ */
+export type TriggerSuggestionConfig = _TriggerSuggestionConfig;
+
+/**
+ * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
+ * Selection inserts plain text rather than a schema node; no chip is
+ * rendered.
+ *
+ * @category Config
+ */
+export type AutocompleteConfig = _AutocompleteConfig;
+
+/**
+ * Single list-item shape used by every Carbon suggestion surface
+ * (mention, command, autocomplete, starters). Carries the id, label,
+ * optional value override, optional description / avatar / icon, and a
+ * disabled flag.
+ *
+ * @category Config
+ */
+export type SuggestionItem = _SuggestionItem;
+
+/**
+ * Props passed to a custom suggestion-list renderer (the `renderCustomList`
+ * field on {@link BaseSuggestionConfig}). Includes the filtered
+ * {@link SuggestionItem} array, the current `query`, and `onSelect` /
+ * `onDismiss` callbacks.
+ *
+ * @category Config
+ * @experimental
+ */
+export type CustomListProps = _CustomListProps;
 
 /**
  * Configuration for the input field in the main chat and homescreen.
@@ -55,8 +108,8 @@ export interface InputConfig {
   /**
    * `@`-style mention trigger config. The chat layer wires this into a
    * `carbonMention` Tiptap extension; the editor inserts a `mention` node on
-   * selection and surfaces token chip rendering via the
-   * `cds-aichat-token-render` event.
+   * selection and surfaces token chip rendering via the light-DOM portal
+   * handshake.
    *
    * @experimental
    */

@@ -21,6 +21,7 @@ import ChatAppEntry from "../../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
+import type { RenderUserDefinedInputNode } from "../../types/component/ChatContainer";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -65,6 +66,14 @@ class ChatContainerInternal extends LitElement {
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
 
+  /**
+   * Internal renderer for custom TipTap node types in user message bubbles.
+   * The outer cds-aichat-container converts its WC-style callback (returns
+   * HTMLElement) to this React-style callback before passing it down.
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: RenderUserDefinedInputNode;
+
   firstUpdated() {
     if (this.config) {
       this.renderReactApp();
@@ -78,7 +87,8 @@ class ChatContainerInternal extends LitElement {
       (changedProperties.has("config") ||
         changedProperties.has("onBeforeRender") ||
         changedProperties.has("onAfterRender") ||
-        changedProperties.has("element"))
+        changedProperties.has("element") ||
+        changedProperties.has("renderUserDefinedInputNode"))
     ) {
       this.renderReactApp();
     }
@@ -102,6 +112,7 @@ class ChatContainerInternal extends LitElement {
         config={this.config}
         onBeforeRender={this.onBeforeRender}
         onAfterRender={this.onAfterRender}
+        renderUserDefinedInputNode={this.renderUserDefinedInputNode}
         container={container}
         element={this.element}
         chatWrapper={this}

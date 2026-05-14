@@ -605,7 +605,7 @@ class ChatActionsImpl {
   }
 
   /**
-   * Returns the live Tiptap {@link Editor}, or `null` when the input is
+   * Returns the live Tiptap `Editor`, or `null` when the input is
    * not currently rendered. Probe-style; never throws.
    */
   getInputEditor(): Editor | null {

@@ -97,7 +97,7 @@ import { buildCarbonExtensions as _buildCarbonExtensions } from "@carbon/ai-chat
 
 /**
  * Translate the Carbon-curated configs surfaced on {@link InputConfig} into
- * a Tiptap {@link Extension} list. ...
+ * a Tiptap `Extension` list. ...
  *
  * @category Utilities
  */
@@ -111,42 +111,32 @@ export const FileStatusValue = _FileStatusValue;
 export type FileStatusValue = _FileStatusValue;
 ```
 
-For third-party symbols (e.g. `@tiptap/core`) — write a **brief, pointer-style** JSDoc only. Don't re-document shape; link to the upstream's own docs as the canonical reference:
-
-```ts
-import type { Editor as _Editor } from "@tiptap/core";
-
-/**
- * The Tiptap editor instance returned by {@link ChatInstanceInput.getEditor}.
- * Re-exported from `@tiptap/core` for ergonomic typing — see the
- * [Tiptap Editor docs](https://tiptap.dev/api/editor) for the full API.
- *
- * @category Utilities
- */
-export type Editor = _Editor;
-```
+Raw third-party types — `@tiptap/core`'s `Editor`, `Extension`, `JSONContent`, `Node`, etc. — are **not** re-declared or re-exported. Import them from `@tiptap/core` directly, both in this package's internal code and in consumer apps. Anyone reaching into the Tiptap editor already depends on `@tiptap/core`, so a single source keeps imports consistent. Only re-declare symbols from Carbon's own packages (e.g. `@carbon/ai-chat-components`).
 
 ### Where local re-declarations live
 
-Co-locate by topic:
+Co-locate by topic — each re-declaration sits next to the public type that uses it:
 
-- Tiptap-related symbols → [utilities/tiptapReexports.ts](utilities/tiptapReexports.ts) (the canonical example).
+- Carbon input extension factories + JSONContent / light-DOM helpers → [utilities/inputUtils.ts](utilities/inputUtils.ts).
+- Carbon suggestion-config types (`SuggestionItem`, `TriggerSuggestionConfig`, ...) → [config/InputConfig.ts](config/InputConfig.ts), alongside `InputConfig`.
 - Service-desk-related symbols → [config/ServiceDeskConfig.ts](config/ServiceDeskConfig.ts) (e.g. `FileUpload`, `FileStatusValue`).
 - Header / toolbar symbols → [config/HeaderConfig.ts](config/HeaderConfig.ts) (e.g. `ToolbarAction`).
 
 ### Internal imports use the local alias too
 
-When a property type inside this package references a cross-package symbol (e.g. `extensions?: Extension[]`), import the **local alias**, not the upstream source. This keeps TypeDoc's symbol resolution pointed at our JSDoc + `@category`:
+When a property type inside this package references a **Carbon cross-package symbol**, import the **local re-declaration**, not the upstream source. This keeps TypeDoc's symbol resolution pointed at our JSDoc + `@category`:
 
 ```ts
-// In PublicConfig.ts
-import type { Extension } from "../utilities/tiptapReexports"; // ✓
-// import type { Extension } from "@tiptap/core";                // ✗ resolves past our alias
+// In a consumer of InputConfig.ts (e.g. useInputConfig.ts)
+import type { TriggerSuggestionConfig } from "../../types/config/InputConfig"; // ✓
+// import { TriggerSuggestionConfig } from "@carbon/ai-chat-components/...";    // ✗ resolves past our alias
 ```
+
+Raw `@tiptap/core` types are the exception — import those straight from `@tiptap/core` (they are not re-declared).
 
 ### Other rules
 
-- **No unexported symbols in the public surface.** If a type from an upstream package is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — it must have a local alias here that gets re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx). `validation.notExported: true` in [../../typedoc.json](../../typedoc.json) fails the build if you forget.
+- **Unexported Carbon symbols in the public surface produce a TypeDoc warning.** If a Carbon type is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — but isn't re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx), `validation.notExported: true` in [../../typedoc.json](../../typedoc.json) warns. Raw `@tiptap/core` types referenced by public API are fine to import directly — they show as external references; only `{@link}`-ing one warns (add it to `externalSymbolLinkMappings`, or use plain `` `code` `` formatting instead).
 - **`@category` values come from `categoryOrder`** in [../../typedoc.json](../../typedoc.json). A category outside that list lands in the `*` catchall.
 
 ## Property-level JSDoc

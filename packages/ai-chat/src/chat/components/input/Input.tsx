@@ -69,8 +69,10 @@ interface InputProps {
 
   /**
    * The callback to call when the user enters some text into the field and it needs to be sent.
+   * `displayContent` is the editor's JSONContent at send time when available — present for UI sends,
+   * absent for programmatic ones.
    */
-  onSendInput: (text: string) => void;
+  onSendInput: (text: string, displayContent?: JSONContent) => void;
 
   /**
    * An optional placeholder to display in the field.
@@ -261,6 +263,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const rawInputValueRef = useRef(rawInputValue);
   rawInputValueRef.current = rawInputValue;
 
+  // Snapshot of the editor's last-known JSONContent. The send path forwards this verbatim so the
+  // user message bubble can render structurally (mention chips, custom nodes).
+  const displayContentRef = useRef<JSONContent | null>(null);
+
   const promptLineRef = useRef<PromptLineElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -302,6 +308,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     const { rawValue, content } = event.detail;
 
     setRawInputValue(rawValue);
+    displayContentRef.current = content ?? null;
 
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
@@ -334,9 +341,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     if (effectiveDisableSend) {
       return;
     }
-    onSendInput(text);
+    onSendInput(text, displayContentRef.current ?? undefined);
 
     setRawInputValue("");
+    displayContentRef.current = null;
     promptLineRef.current?.clearContent();
 
     if (trackInputState) {

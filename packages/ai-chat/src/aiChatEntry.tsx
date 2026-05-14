@@ -144,7 +144,14 @@ export {
   ToolbarAction,
 } from "./types/config/HeaderConfig";
 export { HistoryConfig } from "./types/config/HistoryConfig";
-export { InputConfig } from "./types/config/InputConfig";
+export type {
+  InputConfig,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+  SuggestionItem,
+  CustomListProps,
+} from "./types/config/InputConfig";
 export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
 export { LayoutConfig } from "./types/config/LayoutConfig";
 export { OnErrorData, OnErrorType } from "./types/config/ErrorConfig";
@@ -156,22 +163,17 @@ export {
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
 
-// Tiptap escape-hatch types and Carbon Tiptap factories / helpers. Local
-// re-declarations live in `./types/utilities/tiptapReexports` so we own the
+// Carbon Tiptap extension factories and JSONContent / light-DOM helpers.
+// Local re-declarations live in `./types/utilities/inputUtils` so we own the
 // JSDoc + `@category` placement; see [src/types/AGENTS.md](./types/AGENTS.md)
-// for the cross-package re-export rule.
+// for the cross-package re-export rule. Raw `@tiptap/core` types (`Editor`,
+// `Extension`, `JSONContent`, `Node`, ...) are not re-exported — import those
+// from `@tiptap/core` directly. The Carbon suggestion-config types are
+// exported from `./types/config/InputConfig` alongside `InputConfig`.
 export type {
-  Editor,
-  Extension,
-  JSONContent,
-  BaseSuggestionConfig,
-  TriggerSuggestionConfig,
-  AutocompleteConfig,
-  SuggestionItem,
-  CustomListProps,
-  InputChangeEventDetail,
-  TriggerChangeEventDetail,
-} from "./types/utilities/tiptapReexports";
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+} from "./types/utilities/inputUtils";
 
 export {
   carbonMention,
@@ -184,7 +186,9 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
-} from "./types/utilities/tiptapReexports";
+  renderTokenChip,
+  renderInLightDom,
+} from "./types/utilities/inputUtils";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -314,6 +318,9 @@ export {
   RenderUserDefinedState,
   RenderWriteableElementResponse,
   WCRenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+  WCRenderUserDefinedInputNode,
 } from "./types/component/ChatContainer";
 
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";

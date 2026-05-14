@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,18 +16,18 @@ import { Directive, directive } from "lit/directive.js";
 import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
-import "../../code-snippet/index.js";
-import "../../card/index.js";
-import "../../table/index.js";
-import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
+import "../../../components/code-snippet/index.js";
+import "../../../components/card/index.js";
+import "../../../components/table/index.js";
+import { defaultLineCountText } from "../../../components/code-snippet/src/formatters.js";
 
 import type {
   TableCellContent,
   TableRowContent,
-} from "../../table/src/table.js";
-import { extractTableData } from "./utils/table-helpers.js";
-import type { TableCellData } from "./utils/table-helpers.js";
-import { combineConsecutiveHtmlInline } from "./utils/html-helpers.js";
+} from "../../../components/table/src/table.js";
+import { extractTableData } from "../../../components/markdown/src/utils/table-helpers.js";
+import type { TableCellData } from "../../../components/markdown/src/utils/table-helpers.js";
+import { combineConsecutiveHtmlInline } from "../../../components/markdown/src/utils/html-helpers.js";
 import type { TokenTree } from "./markdown-token-tree.js";
 
 // Generic attribute spread for Lit templates

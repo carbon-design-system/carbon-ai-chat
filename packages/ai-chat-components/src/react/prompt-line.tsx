@@ -38,7 +38,7 @@ const PromptLine = withWebComponentBridge(
       onKeyDown: "cds-aichat-prompt-keydown",
       onSendIntent: "cds-aichat-prompt-send-intent",
       onTriggerChange: "cds-aichat-trigger-change",
-      onTokenRender: "cds-aichat-token-render",
+      onLightDomPortal: "cds-aichat-light-dom-portal",
     },
   }),
 );

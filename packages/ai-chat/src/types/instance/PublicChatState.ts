@@ -11,7 +11,7 @@ import { WorkspaceCustomPanelConfigOptions } from "./apiTypes";
 import type { PersistedState } from "../state/AppState";
 import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { StructuredData } from "../messaging/Messages";
-import type { JSONContent } from "../utilities/tiptapReexports";
+import type { JSONContent } from "@tiptap/core";
 
 /**
  * This is the state made available by calling {@link ChatInstance.getState}. This is a public method that returns immutable values.

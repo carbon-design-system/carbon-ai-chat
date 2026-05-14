@@ -95,6 +95,7 @@ import {
 } from "../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
 import { MessageSendSource, BusEventType } from "../types/events/eventBusTypes";
+import type { JSONContent } from "@tiptap/core";
 import { CarbonTheme } from "../types/config/CarbonTheme";
 import { FileStatusValue } from "./utils/constants";
 import type { FileUpload } from "../types/config/ServiceDeskConfig";
@@ -559,7 +560,13 @@ function AppShell({
 
   // Stable wrapper so <Input> receives a referentially stable onSendInput prop
   const onSendInputFromInput = useCallback(
-    (text: string) => onSendInput(text, MessageSendSource.MESSAGE_INPUT),
+    (text: string, displayContent?: JSONContent) =>
+      onSendInput(
+        text,
+        MessageSendSource.MESSAGE_INPUT,
+        undefined,
+        displayContent,
+      ),
     [onSendInput],
   );
 

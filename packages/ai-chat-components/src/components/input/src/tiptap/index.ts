@@ -43,6 +43,20 @@ export type {
 
 export { CarbonTokenNodeView } from "./token-node-view.js";
 export type { CarbonTokenNodeViewOptions } from "./token-node-view.js";
+export { renderTokenChip } from "./render-token-chip.js";
+export type {
+  RenderTokenChipArgs,
+  TokenChipAttrs,
+} from "./render-token-chip.js";
+export {
+  renderInLightDom,
+  LIGHT_DOM_PORTAL_EVENT,
+} from "./render-in-light-dom.js";
+export type {
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+  LightDomPortalEventDetail,
+} from "./render-in-light-dom.js";
 
 // Helper extensions are exposed for advanced hosts wanting to compose their
 // own prompt-line equivalent. The prompt-line itself bundles them internally.

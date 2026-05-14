@@ -138,7 +138,14 @@ export {
   ToolbarAction,
 } from "./types/config/HeaderConfig";
 export { HistoryConfig } from "./types/config/HistoryConfig";
-export { InputConfig } from "./types/config/InputConfig";
+export type {
+  InputConfig,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+  SuggestionItem,
+  CustomListProps,
+} from "./types/config/InputConfig";
 export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
 export { LayoutConfig } from "./types/config/LayoutConfig";
 export { OnErrorData, OnErrorType } from "./types/config/ErrorConfig";
@@ -150,22 +157,12 @@ export {
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
 
-// Tiptap escape-hatch types and Carbon Tiptap factories / helpers. Local
-// re-declarations live in `./types/utilities/tiptapReexports`; see
-// [src/types/AGENTS.md](./types/AGENTS.md) for the cross-package re-export rule.
-export type {
-  Editor,
-  Extension,
-  JSONContent,
-  BaseSuggestionConfig,
-  TriggerSuggestionConfig,
-  AutocompleteConfig,
-  SuggestionItem,
-  CustomListProps,
-  InputChangeEventDetail,
-  TriggerChangeEventDetail,
-} from "./types/utilities/tiptapReexports";
-
+// Carbon Tiptap extension factories and JSONContent helpers. Local
+// re-declarations live in `./types/utilities/inputUtils`; see
+// [src/types/AGENTS.md](./types/AGENTS.md) for the cross-package re-export
+// rule. Raw `@tiptap/core` types are not re-exported — import those from
+// `@tiptap/core` directly. The Carbon suggestion-config types are exported
+// from `./types/config/InputConfig` alongside `InputConfig`.
 export {
   carbonMention,
   carbonCommand,
@@ -177,7 +174,7 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
-} from "./types/utilities/tiptapReexports";
+} from "./types/utilities/inputUtils";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -20,6 +20,7 @@ import {
 import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
 import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import type { JSONContent } from "@tiptap/core";
 import {
   HumanAgentMessageType,
   ButtonItem,
@@ -254,8 +255,15 @@ function createWelcomeRequest(): MessageRequest {
 /**
  * Generates a {@link MessageRequest} for the given text message sent by the user. This is used for generating the
  * request to send to the server when the user has typed something into the input field.
+ *
+ * When the user sent the message via the TipTap-backed prompt-line, pass the editor's JSONContent as
+ * `displayContent` so the user bubble can render structurally (mention chips, custom nodes). Programmatic
+ * sends omit it and the bubble falls back to plain text.
  */
-function createMessageRequestForText(text: string): MessageRequest {
+function createMessageRequestForText(
+  text: string,
+  displayContent?: JSONContent,
+): MessageRequest {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
   return addDefaultsToMessage<MessageRequest>({
@@ -263,6 +271,7 @@ function createMessageRequestForText(text: string): MessageRequest {
       // The assistant will choke if we send it text with line breaks in it, so we have to remove them first.
       text,
       message_type: MessageInputType.TEXT,
+      ...(displayContent ? { display_content: displayContent } : {}),
     },
   });
 }

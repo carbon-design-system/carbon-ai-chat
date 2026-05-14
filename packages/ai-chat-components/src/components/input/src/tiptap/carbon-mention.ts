@@ -10,8 +10,8 @@
 /**
  * `carbonMention` and `carbonCommand` factories. Both wrap
  * `@tiptap/extension-mention` with carbon-specific:
- * - chip rendering via `CarbonTokenNodeView` (preserves the legacy
- *   `cds-aichat-token-render` event so React portal consumers keep working).
+ * - chip rendering via `CarbonTokenNodeView` (uses the light-DOM portal
+ *   handshake so React portal consumers render in light DOM).
  * - extra schema attrs (`value`, `data`) layered on top of Mention's default
  *   `id` + `label`.
  * - direct `cds-aichat-trigger-change` dispatch from the suggestion-render

@@ -18,7 +18,7 @@ import type {
   TriggerSuggestionConfig,
   SuggestionItem,
   AutocompleteConfig,
-} from "../../types/utilities/tiptapReexports";
+} from "../../types/config/InputConfig";
 
 interface UseInputExtensionsArgs {
   mention: TriggerSuggestionConfig | undefined;

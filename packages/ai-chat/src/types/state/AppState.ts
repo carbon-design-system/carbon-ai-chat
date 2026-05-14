@@ -17,7 +17,7 @@ import {
 import { LanguagePack } from "../config/LanguagePack";
 import { type FileUpload } from "../config/ServiceDeskConfig";
 import type { StructuredData } from "../messaging/Messages";
-import type { JSONContent } from "../utilities/tiptapReexports";
+import type { JSONContent } from "@tiptap/core";
 
 import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
 import type { CornersType } from "../../chat/utils/constants";

@@ -46,7 +46,10 @@ import {
 import type {
   RenderUserDefinedState,
   WCRenderUserDefinedResponse,
+  WCRenderUserDefinedInputNode,
+  RenderUserDefinedInputNode,
 } from "../../types/component/ChatContainer";
+import { adaptWCRenderUserDefinedInputNode } from "./adapt-wc-input-node-renderer";
 
 /**
  * The cds-aichat-container managing creating slotted elements for user_defined responses, custom message footers, and writable elements.
@@ -203,6 +206,17 @@ class ChatContainer extends LitElement {
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 
   /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Called with `{ node, message }` plus the
+   * chat instance and should return an `HTMLElement` (or `null`). The
+   * library mounts the element inside the bubble via a slot.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
+
+  /**
    * The existing array of slot names for all user_defined components.
    */
   @state()
@@ -236,6 +250,25 @@ class ChatContainer extends LitElement {
    * Tracks the wrapper elements created by the callback rendering path.
    */
   private _callbackElements = new Map<string, HTMLElement>();
+
+  /**
+   * Cached adapter so each container update doesn't churn a new React
+   * function down into ChatAppEntry. Keyed on the WC function identity.
+   */
+  private _inputNodeRendererCache:
+    | { wc: WCRenderUserDefinedInputNode; react: RenderUserDefinedInputNode }
+    | undefined;
+
+  private _inputNodeReactRendererFor(
+    wc: WCRenderUserDefinedInputNode,
+  ): RenderUserDefinedInputNode {
+    if (this._inputNodeRendererCache?.wc === wc) {
+      return this._inputNodeRendererCache.react;
+    }
+    const react = adaptWCRenderUserDefinedInputNode(wc);
+    this._inputNodeRendererCache = { wc, react };
+    return react;
+  }
 
   /**
    * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
@@ -527,11 +560,21 @@ class ChatContainer extends LitElement {
       this.syncCallbackRenderedElements();
     }
 
+    // Convert the WC-style renderer (returns HTMLElement) into the React-
+    // style renderer (returns ReactNode) the React infrastructure expects.
+    // Memoization is by reference: as long as the consumer hands us the
+    // same function we hand the same adapter down to the React tree, so
+    // ChatAppEntry doesn't re-render on every container update.
+    const inputNodeReactRenderer = this.renderUserDefinedInputNode
+      ? this._inputNodeReactRendererFor(this.renderUserDefinedInputNode)
+      : undefined;
+
     return html`<cds-aichat-internal
       .config=${this.resolvedConfig}
       .onAfterRender=${this.onAfterRender}
       .onBeforeRender=${this.onBeforeRenderOverride}
       .element=${this.element}
+      .renderUserDefinedInputNode=${inputNodeReactRenderer}
     >
       ${this._writeableElementSlots.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
@@ -576,6 +619,14 @@ interface CdsAiChatContainerAttributes extends PublicConfig {
    * slot tracking, streaming state, and element lifecycle.
    */
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content).
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 }
 
 export { CdsAiChatContainerAttributes };

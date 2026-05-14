@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,9 +9,9 @@
 
 import MarkdownIt, { Token } from "markdown-it";
 
-import { markdownItAttrs } from "./plugins/markdown-it-attrs";
-import { markdownItHighlight } from "./plugins/markdown-it-highlight";
-import { markdownItTaskLists } from "./plugins/markdown-it-task-lists";
+import { markdownItAttrs } from "../../../components/markdown/src/plugins/markdown-it-attrs.js";
+import { markdownItHighlight } from "../../../components/markdown/src/plugins/markdown-it-highlight.js";
+import { markdownItTaskLists } from "../../../components/markdown/src/plugins/markdown-it-task-lists.js";
 
 /**
  * Represents a node in the token tree structure.

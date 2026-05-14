@@ -10,48 +10,50 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
-import type { SuggestionItem } from "@carbon/ai-chat-components/es/components/input/src/tiptap/types.js";
+import {
+  LIGHT_DOM_PORTAL_EVENT,
+  type LightDomPortalEventDetail,
+} from "@carbon/ai-chat-components/es/components/input/src/tiptap/render-in-light-dom.js";
 
 /**
- * Tracked state for a single token portal.
+ * Tracked state for a single light-DOM portal.
  */
-interface TokenPortalEntry {
+interface LightDomPortalEntry {
   /** Unique key for React reconciliation. */
   key: string;
-  /** The `<slot>` element inserted into the token span inside the shadow DOM. */
+  /** The `<slot>` element inserted into the shadow-side container. */
   slotElement: HTMLSlotElement;
   /** The `<span slot="...">` element appended to `chatWrapper` (page light DOM). */
   hostElement: HTMLSpanElement;
-  /** The React node returned by the renderCustomToken callback (if React). */
+  /** The React node the caller passed (if any). */
   reactNode: React.ReactNode | null;
 }
 
-interface TokenPortalsContainerProps {
+interface LightDomPortalsContainerProps {
   /** The chat wrapper element (`<cds-aichat-react>`) whose light DOM hosts portal targets. */
   chatWrapper?: HTMLElement;
 }
 
-let tokenSlotCounter = 0;
+let lightDomSlotCounter = 0;
 
 /**
- * Manages React portals for custom token renderers (mention / command
- * tokens via `renderCustomToken`) so the rendered content lives in the
- * page's light DOM where external CSS applies.
+ * Manages React portals for the generic light-DOM portal handshake
+ * ({@link LIGHT_DOM_PORTAL_EVENT}) so content built inside the shadow-DOM
+ * editor — mention/command custom tokens *and* host-authored `addNodeView`
+ * nodes — renders in the page's light DOM where external CSS applies.
  *
  * Same architectural pattern as {@link UserDefinedResponsePortalsContainer} and
  * {@link WriteableElementsPortalsContainer}: content is appended to
  * `chatWrapper`'s light DOM with a `slot` attribute, and a matching `<slot>`
- * element inside the shadow tree projects it into the correct visual position
- * (inline in the editor).
+ * element inside the shadow tree projects it into the correct visual position.
  *
- * The Carbon Tiptap factories (`carbonMention` / `carbonCommand`) dispatch
- * `cds-aichat-token-render` from the TokenNodeView when a `renderCustomToken`
- * returns a React node. With the Carbon-baked block schema gone, no
- * `cds-aichat-block-render` handling lives here — host-authored block
- * extensions own their own render lifecycle.
+ * `renderInLightDom` (and its token-specific wrapper `renderTokenChip`)
+ * dispatches the event; this container does the slot + light-DOM host wiring.
  */
-function TokenPortalsContainer({ chatWrapper }: TokenPortalsContainerProps) {
-  const [portals, setPortals] = useState<TokenPortalEntry[]>([]);
+function LightDomPortalsContainer({
+  chatWrapper,
+}: LightDomPortalsContainerProps) {
+  const [portals, setPortals] = useState<LightDomPortalEntry[]>([]);
   const portalsRef = useRef(portals);
   portalsRef.current = portals;
 
@@ -60,38 +62,23 @@ function TokenPortalsContainer({ chatWrapper }: TokenPortalsContainerProps) {
       return undefined;
     }
 
-    const handleTokenRender = (evt: Event) => {
-      const event = evt as CustomEvent<{
-        container: HTMLElement;
-        item: SuggestionItem;
-        type: string;
-        reactNode?: React.ReactNode;
-        htmlElement?: HTMLElement;
-      }>;
+    const handlePortalRender = (evt: Event) => {
+      const event = evt as CustomEvent<LightDomPortalEventDetail>;
+      const { container, fallback, reactNode, htmlElement } = event.detail;
 
-      const { container, item, type, reactNode, htmlElement } = event.detail;
-
-      // Generate a unique slot name for this token
-      const slotName = `cds-aichat-token-${++tokenSlotCounter}`;
+      // Generate a unique slot name for this portal.
+      const slotName = `cds-aichat-light-dom-${++lightDomSlotCounter}`;
       const key = slotName;
 
-      // 1. Create a <slot> inside the token container (shadow tree).
-      //    The slot's fallback content is a default chip that shows until
-      //    the portal renders on the next frame.
+      // 1. Create a <slot> inside the shadow-side container. The optional
+      //    fallback shows until the portal commits on the next frame.
       const slotEl = document.createElement("slot");
       slotEl.setAttribute("name", slotName);
-
-      const fallback = document.createElement("cds-tag");
-      fallback.setAttribute("size", "sm");
-      if (type === "mention") {
-        fallback.setAttribute("type", "blue");
-      } else if (type === "command") {
-        fallback.setAttribute("type", "gray");
+      if (fallback) {
+        slotEl.appendChild(fallback);
       }
-      fallback.textContent = item.label || "";
-      slotEl.appendChild(fallback);
 
-      // Replace any existing content in the container with the slot
+      // Replace any existing content in the container with the slot.
       container.textContent = "";
       container.appendChild(slotEl);
 
@@ -105,7 +92,7 @@ function TokenPortalsContainer({ chatWrapper }: TokenPortalsContainerProps) {
       //    For React nodes, track the entry so createPortal renders into hostEl.
       if (htmlElement) {
         hostEl.appendChild(htmlElement);
-        // Still track for cleanup when the token is deleted
+        // Still track for cleanup when the node is deleted.
         setPortals((prev) => [
           ...prev,
           { key, slotElement: slotEl, hostElement: hostEl, reactNode: null },
@@ -123,17 +110,17 @@ function TokenPortalsContainer({ chatWrapper }: TokenPortalsContainerProps) {
       }
     };
 
-    chatWrapper.addEventListener("cds-aichat-token-render", handleTokenRender);
+    chatWrapper.addEventListener(LIGHT_DOM_PORTAL_EVENT, handlePortalRender);
     return () => {
       chatWrapper.removeEventListener(
-        "cds-aichat-token-render",
-        handleTokenRender,
+        LIGHT_DOM_PORTAL_EVENT,
+        handlePortalRender,
       );
     };
   }, [chatWrapper]);
 
   // Prune portals whose slot element has been removed from the DOM
-  // (e.g. user deleted a mention token via backspace or sent the message).
+  // (e.g. user deleted a token/node via backspace or sent the message).
   useEffect(() => {
     if (portals.length === 0 || !chatWrapper) {
       return undefined;
@@ -190,5 +177,5 @@ function TokenPortalsContainer({ chatWrapper }: TokenPortalsContainerProps) {
   );
 }
 
-const TokenPortalsContainerExport = React.memo(TokenPortalsContainer);
-export { TokenPortalsContainerExport as TokenPortalsContainer };
+const LightDomPortalsContainerExport = React.memo(LightDomPortalsContainer);
+export { LightDomPortalsContainerExport as LightDomPortalsContainer };

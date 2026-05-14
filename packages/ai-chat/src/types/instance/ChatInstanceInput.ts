@@ -8,7 +8,7 @@
  */
 
 import { StructuredData } from "../messaging/Messages";
-import type { Editor, JSONContent } from "../utilities/tiptapReexports";
+import type { Editor, JSONContent } from "@tiptap/core";
 
 /**
  * Methods for controlling the input field.
@@ -103,7 +103,7 @@ export interface ChatInstanceInput {
   ) => void;
 
   /**
-   * Returns the live Tiptap {@link Editor} instance, or `null` when the
+   * Returns the live Tiptap `Editor` instance, or `null` when the
    * input is not currently rendered. Probe semantics — safe to call
    * repeatedly; never throws.
    *
