@@ -80,12 +80,7 @@ export const Small = {
       </div>
       {args.aiLabel && (
         <div slot="decorator">
-          <AILabel
-            size="mini"
-            autoalign
-            alignment="bottom-right"
-            slot="decorator"
-          >
+          <AILabel size="mini" autoalign alignment="bottom-right">
             {aiContent}
           </AILabel>
         </div>
