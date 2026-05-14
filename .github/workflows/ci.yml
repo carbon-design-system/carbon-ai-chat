@@ -1,9 +1,9 @@
 name: ci-check
 on:
   push:
-    branches: [ main, release/v*, feat/integrate-chat-history ]
+    branches: [ main, release/v*, feat/prompt-line ]
   pull_request:
-    branches: [ main, release/v*, feat/integrate-chat-history ]
+    branches: [ main, release/v*, feat/prompt-line ]
   merge_group:
     types: [checks_requested]
 
@@ -15,9 +15,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -29,9 +29,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -49,9 +49,9 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -67,9 +67,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -81,9 +81,9 @@ jobs:
   license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -95,9 +95,9 @@ jobs:
   validate-agents-files:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -105,3 +105,60 @@ jobs:
         run: npm ci --prefer-offline
       - name: Validate agents files
         run: npm run validate:agents
+
+  chromatic-wc-storybook:
+    if:
+      ${{ github.repository == 'carbon-design-system/carbon-ai-chat' &&
+      github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    outputs:
+      buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
+      storybookUrl: ${{ steps.chromatic.outputs.storybookUrl }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          # 👇 Tells the checkout which commit hash to reference
+          # https://www.chromatic.com/docs/github-actions/#recommended-configuration-for-build-events
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: "npm"
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key:
+            ${{ runner.os }}-npm-${{ hashFiles('package-lock.json',
+            'packages/**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+      - name: Build @carbon/ai-chat-components package
+        run: npm run build --workspace=@carbon/ai-chat-components
+      - name: Build storybook
+        run: npm run storybook:build --workspace=@carbon/ai-chat-components
+      - id: chromatic
+        name: Run Chromatic
+        uses: chromaui/action@e3eb8ec36101d8f0253c7c3ae66e5a2b4e2197ba # v16.10.0
+        with:
+          # 👇 Token is intentionally plaintext
+          # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
+          projectToken: chpt_bdf649378875471
+          workingDir: packages/ai-chat-components
+          buildScriptName: storybook:build
+          zip: true # Runs Chromatic with the option to compress the build output
+          autoAcceptChanges: 'main' # Option to accept all changes on main
+          onlyChanged: true # 👈 Required option to enable TurboSnap
+        env:
+          # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
+          CHROMATIC_BRANCH:
+            ${{ github.event.pull_request.head.ref || github.ref_name }}
+          # 👇 Set to the PR head commit if it's a PR; otherwise to the ref (which typically resolves to the latest commit SHA)
+          CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
+          # 👇 Makes sure this is always set to the corect owner/repo
+          CHROMATIC_SLUG: ${{ github.repository }}

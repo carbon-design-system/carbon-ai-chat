@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -85,10 +85,6 @@
 
   .preview-card-toolbar {
     border-block-end: to-rem(1px) solid theme.$chat-bubble-border;
-  }
-
-  .ai-label-body h4 {
-    margin-block-end: layout.$spacing-05;
   }
 
   .title-container {

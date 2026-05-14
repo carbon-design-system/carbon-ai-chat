@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -23,7 +23,8 @@ import { previewCardFooterPresets, toolbarActions } from "./story-data";
 
 const aiContent = html`
   <div slot="body-text" class="ai-label-body">
-    <h4>Powered by IBM watsonx</h4>
+    <div>Powered by IBM watsonx</div>
+    <br />
     <div>
       IBM watsonx is powered by the latest AI models to intelligently process
       conversations and provide help whenever and wherever you may need it.
@@ -188,7 +189,7 @@ export const WithToolbar = {
           ?is-layered=${args.isLayered}
           ?is-flush=${args.isFlush}
         >
-          <div slot="header" class="preview-card preview-card-toolbar">
+          <div slot="header" class="preview-card">
             <cds-aichat-toolbar
               class="preview-card-toolbar"
               overflow
@@ -324,7 +325,7 @@ export const WithSteps = {
           ?is-layered=${args.isLayered}
           ?is-flush=${args.isFlush}
         >
-          <div slot="header" class="preview-card preview-card-toolbar">
+          <div slot="header" class="preview-card">
             <cds-aichat-toolbar class="preview-card-toolbar">
               <div slot="title">
                 <div class="title-container">
