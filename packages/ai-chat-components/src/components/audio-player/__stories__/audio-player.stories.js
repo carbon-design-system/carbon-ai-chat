@@ -10,6 +10,7 @@
 import "../index";
 import "../../card/index.js";
 import { html } from "lit";
+import { waitForAudioReadyForSnapshot } from "./audio-player-story-helpers.js";
 
 export default {
   title: "Preview/Audio player",
@@ -235,6 +236,9 @@ export const WithTranscript = {
         </div>
       </cds-aichat-card>
     `;
+  },
+  play: async ({ canvasElement }) => {
+    await waitForAudioReadyForSnapshot(canvasElement);
   },
 };
 
