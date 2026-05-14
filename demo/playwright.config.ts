@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,6 +16,12 @@ export default defineConfig({
   testDir: "./tests",
   // Set timeout for each test (including beforeEach/afterEach hooks)
   timeout: 60 * 1000, // 60 seconds per test
+  // Most "flakes" we see in CI are timing-sensitive races under parallel CPU
+  // contention (chromium + firefox sharing the dev server). One automatic
+  // retry lets them self-heal while still surfacing genuine failures —
+  // anything that fails twice in a row is a real bug, not a race. Local
+  // runs get 0 retries so devs see flakes immediately.
+  retries: process.env.CI ? 1 : 0,
   // automatically start your dev server before running tests:
   webServer: {
     command: "PORT=3001 npm run start", // or whatever starts localhost

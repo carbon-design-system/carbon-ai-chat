@@ -1,6 +1,7 @@
 {
     "plugin": [
         "./docs/typedoc/moduleNamePlugin.js",
+        "./docs/typedoc/demoteValidationWarningsPlugin.js",
         "@carbon/typedoc-theme"
     ],
     "theme": "carbon",
@@ -49,5 +50,6 @@
     "hideGenerator": true,
     "validation": {
         "invalidLink": true
-    }
+    },
+    "treatValidationWarningsAsErrors": true
 }

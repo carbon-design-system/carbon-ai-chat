@@ -143,7 +143,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
         <div>
           <h3>Basic deprecated panel</h3>
           <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
-          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p><strong>⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</strong></p>
           <p>This demonstrates the basic usage of the deprecated CustomPanelConfigOptions interface.</p>
           <ul>
             <li><code>title</code>: <strong>"Basic deprecated panel"</strong></li>
@@ -167,7 +167,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
         <div>
           <h3>Panel without close button</h3>
           <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
-          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p><strong>⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</strong></p>
           <p>The close/minimize button in the header is hidden. Users must use the back button or this close button.</p>
           <ul>
             <li><code>title</code>: <strong>"Panel without close button"</strong></li>
@@ -192,7 +192,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
         <div>
           <h3>Panel without back button</h3>
           <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
-          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p><strong>⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</strong></p>
           <p>The back button in the header is hidden. Users are stuck interacting with the panel.</p>
           <ul>
             <li><code>title</code>: <strong>"Panel without back button"</strong></li>
@@ -216,7 +216,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
         <div>
           <h3>Panel with hidden header</h3>
           <p><strong>API:</strong> CustomPanelConfigOptions (Deprecated)</p>
-          <p style="color: #da1e28;">⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</p>
+          <p><strong>⚠️ This API is deprecated. Use DefaultCustomPanelConfigOptions instead.</strong></p>
           <p>The entire panel header is hidden, including title, AI slug, minimize button, and back button.</p>
           <ul>
             <li><code>hidePanelHeader</code>: <strong>true</strong></li>

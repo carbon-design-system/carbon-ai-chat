@@ -1,5 +1,5 @@
 <!--
-  Copyright IBM Corp. 2025
+  Copyright IBM Corp. 2025, 2026
 
   This source code is licensed under the Apache-2.0 license found in the
   LICENSE file in the root directory of this source tree.
@@ -8,28 +8,42 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <!-- Strict CSP: blocks inline <script> and inline <style>, so all demo CSS is in src/index.css and analytics globals are in public/analytics-init.js. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; style-src 'self' https://1.www.s81c.com; img-src 'self' data: blob: https://1.www.s81c.com https://live.staticflickr.com; font-src 'self' https://1.www.s81c.com; connect-src 'self' https://1.www.s81c.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://w.soundcloud.com https://cdnapisec.kaltura.com https://web-chat.assistant.test.watson.cloud.ibm.com; media-src https://web-chat.assistant.test.watson.cloud.ibm.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
-    <meta name="robots" content="noindex">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Interactive demo and configuration tool for Carbon AI Chat component. Test and customize chat settings, themes, layouts, and features in real-time.">
+    <meta charset="utf-8" />
+    <!--
+      No production CSP enforcement on the demo: ibm-common.js (and the cascade
+      it kicks off — Tealium, TrustArc, etc.) needs broad origin/inline-style
+      access that's not worth maintaining in a meta-tag allowlist for a
+      GitHub Pages demo. Strict CSP is enforced at test time only via
+      `installTestCsp` in demo/tests/utils.ts, which route-rewrites this
+      document response to inject a strict policy. ibm-common.js is route-
+      aborted in tests so it doesn't run under the strict policy.
+    -->
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive demo and configuration tool for Carbon AI Chat component. Test and customize chat settings, themes, layouts, and features in real-time."
+    />
     <title>@carbon/ai-chat - functionality demo</title>
-    <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/latest/plex.css" />
+    <link
+      rel="stylesheet"
+      href="https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/latest/plex.css"
+    />
 
     <!-- Tealium/GA set up: globals must exist before ibm-common.js loads, so this <script src> precedes it. -->
     <script src="analytics-init.js"></script>
     <script
       src="https://1.www.s81c.com/common/stats/ibm-common.js"
       type="text/javascript"
-      async="async"></script>
+      async="async"
+    ></script>
   </head>
   <body>
     <nav aria-label="Skip navigation">
       <a href="#main-content" class="skip-to-main">Skip to main content</a>
     </nav>
     <demo-container>
-      <div slot="demo-header"><demo-header ></demo-header></div>
+      <div slot="demo-header"><demo-header></demo-header></div>
       <demo-body slot="demo-body">
         <h1 class="visually-hidden">Carbon AI Chat Demo</h1>
         <div id="root"></div>
