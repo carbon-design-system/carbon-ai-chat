@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -70,11 +70,11 @@ function doCarousel(instance: ChatInstance) {
                 },
                 {
                   response_type: "text",
-                  text: '<span style="color: var(--cds-text-secondary)">Street art banjo vaporware, hot chicken marxism art party neutra quinoa sustainable activated charcoal.</span>',
+                  text: "Street art banjo vaporware, hot chicken marxism art party neutra quinoa sustainable activated charcoal.",
                 },
                 {
                   response_type: "text",
-                  text: '<h4><s>$179.99</s> $29.99</h4>\n<span style="color:#fdcc0d;">&#9733;&#9733;&#9733;&#9733;&#9733;</span>&#160;&#160;<span style="color:gray;">10 review(s)</span>',
+                  text: "<h4><s>$179.99</s> $29.99</h4>\n&#9733;&#9733;&#9733;&#9733;&#9733;&#160;&#160;10 review(s)",
                 },
               ],
               footer: [
@@ -103,11 +103,11 @@ function doCarousel(instance: ChatInstance) {
                 },
                 {
                   response_type: "text",
-                  text: '<span style="color: var(--cds-text-secondary)">Succulents skateboard adaptogen solarpunk semiotics, viral locavore palo santo.</span>',
+                  text: "Succulents skateboard adaptogen solarpunk semiotics, viral locavore palo santo.",
                 },
                 {
                   response_type: "text",
-                  text: '#### $29.99\n<span style="color:#fdcc0d;">&#9733;&#9733;&#9733;&#9734;&#9734;</span>&#160;&#160;<span style="color:gray;">5 review(s)</span>',
+                  text: "#### $29.99\n&#9733;&#9733;&#9733;&#9734;&#9734;&#160;&#160;5 review(s)",
                 },
               ],
               footer: [
