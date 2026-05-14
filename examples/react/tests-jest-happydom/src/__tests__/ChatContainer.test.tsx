@@ -37,7 +37,6 @@ import {
   closeChat,
   openChat,
   renderChatContainer,
-  sendUserMessage,
   waitForChatElement,
 } from "./helpers";
 
@@ -104,26 +103,36 @@ describe("ChatContainer", () => {
     // `openChat` clicks the Carbon launcher (if present) and returns the widget's shadow root.
     const shadowRoot = await openChat(customElement);
 
-    // Everything inside the widget uses PageObjectId-based data-testids, so look for those
-    // markers to make sure the critical interactive pieces are present.
+    // Everything inside the widget uses PageObjectId-based data-testids,
+    // but several of the targets (MAIN_PANEL, INPUT, INPUT_SEND) live behind
+    // nested shadow-root boundaries from Carbon's `cds-button` / `cds-layer`
+    // / `cds-aichat-input-send-control` etc. `deepQuerySelector` walks every
+    // shadow root; a plain `shadowRoot.querySelector` only sees the
+    // outermost tree.
     const mainPanel = await waitFor(
       () =>
-        shadowRoot.querySelector(`[data-testid="${PageObjectId.MAIN_PANEL}"]`),
+        deepQuerySelector(
+          shadowRoot,
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+        ),
       { timeout: WAIT_FOR_TIMEOUT },
     );
     expect(mainPanel).toBeTruthy();
 
-    const inputField = shadowRoot.querySelector(
-      `[data-testid="${PageObjectId.INPUT}"]`,
+    const inputField = await waitFor(
+      () =>
+        deepQuerySelector(shadowRoot, `[data-testid="${PageObjectId.INPUT}"]`),
+      { timeout: WAIT_FOR_TIMEOUT },
     );
     expect(inputField).toBeTruthy();
 
-    // INPUT_SEND lives inside the cds-aichat-input-send-control element's own
-    // shadow tree, so a flat shadowRoot.querySelector won't find it. Use
-    // deepQuerySelector to walk through the nested shadow roots.
-    const sendButton = deepQuerySelector(
-      shadowRoot,
-      `[data-testid="${PageObjectId.INPUT_SEND}"]`,
+    const sendButton = await waitFor(
+      () =>
+        deepQuerySelector(
+          shadowRoot,
+          `[data-testid="${PageObjectId.INPUT_SEND}"]`,
+        ),
+      { timeout: WAIT_FOR_TIMEOUT },
     );
     expect(sendButton).toBeTruthy();
 
@@ -199,8 +208,11 @@ describe("ChatContainer", () => {
 
     const shadowRoot = (customElement as HTMLElement).shadowRoot!;
 
-    // The LAUNCHER should be present (in minimized state)
-    const launcher = shadowRoot.querySelector(
+    // The LAUNCHER lives inside Carbon's `cds-button` shadow tree, which is
+    // itself nested inside `cds-aichat-shell`'s shadow root. Use
+    // `deepQuerySelector` to walk every boundary.
+    const launcher = deepQuerySelector(
+      shadowRoot,
       `[data-testid="${PageObjectId.LAUNCHER}"]`,
     );
     expect(launcher).toBeTruthy();
@@ -211,13 +223,27 @@ describe("ChatContainer", () => {
   it(
     "should render a user-defined response type",
     async () => {
-      // Demonstrate how to test custom user_defined response types. The renderUserDefinedResponse
-      // prop receives the message state and returns a React node — give that node a data-testid
-      // so the test can assert on it without touching internal component selectors.
+      // Demonstrate how to test custom user_defined response types. The
+      // renderUserDefinedResponse prop receives the message state and returns
+      // a React node — give that node a data-testid so the test can assert
+      // on it without touching internal component selectors.
+      //
+      // Note: instead of driving the chat through the input UI to fire the
+      // send flow, this test captures the chat instance via `onBeforeRender`
+      // and calls `instance.send(...)` directly. Driving the input through
+      // the UI under happy-dom is unreliable (`@lit/react`'s onChange
+      // listener does not fire there, so the send button stays disabled);
+      // the public instance API exercises the same customSendMessage path
+      // without that dependency.
       const CUSTOM_TYPE = "my-custom-response";
+
+      let chatInstance: any = null;
 
       const { container } = await renderChatContainer(
         <ChatContainer
+          onBeforeRender={(instance) => {
+            chatInstance = instance;
+          }}
           messaging={{
             customSendMessage(_request, _requestOptions, instance) {
               instance.messaging.addMessage({
@@ -248,8 +274,19 @@ describe("ChatContainer", () => {
       );
 
       const customElement = await waitForChatElement(container);
-      const shadowRoot = await openChat(customElement);
-      await sendUserMessage(shadowRoot, "Hello");
+
+      // Wait for `onBeforeRender` to run and capture the instance.
+      await waitFor(
+        () => {
+          if (!chatInstance) {
+            throw new Error("Chat instance not yet captured");
+          }
+          return chatInstance;
+        },
+        { timeout: WAIT_FOR_TIMEOUT },
+      );
+
+      await chatInstance.send("Hello");
 
       // The rendered output is portaled into the light DOM of the host element,
       // not the shadow root — query from customElement, not shadowRoot.

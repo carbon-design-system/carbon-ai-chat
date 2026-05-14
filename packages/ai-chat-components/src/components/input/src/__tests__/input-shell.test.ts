@@ -7,100 +7,111 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/**
+ * Layout-only smoke tests for `<cds-aichat-input-shell>`. The shell is
+ * pure chrome — five named slots, the `rounded` reflection, and a
+ * `--has-message-actions` class toggled by the `message-actions` slot's
+ * occupancy. Editor / autocomplete / send-gating behaviors are covered by
+ * the prompt-line, send-control, and consumer-level tests.
+ */
+
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../input-shell.js";
-import type { InputShellElement } from "../input-shell.js";
-import type { SendEventDetail } from "../types.js";
+import type InputShellElement from "../input-shell.js";
 
-async function makeShell(
-  props: Partial<{ disabled: boolean; rawValue: string }> = {},
-): Promise<InputShellElement> {
-  const el = await fixture<InputShellElement>(
-    html`<cds-aichat-input-shell
-      ?disabled=${props.disabled ?? false}
-      .rawValue=${props.rawValue ?? ""}
-    ></cds-aichat-input-shell>`,
-  );
-  return el;
-}
+describe("<cds-aichat-input-shell>", () => {
+  it("renders the layout chrome with named slots", async () => {
+    const el: InputShellElement = await fixture(html`
+      <cds-aichat-input-shell></cds-aichat-input-shell>
+    `);
+    await el.updateComplete;
 
-describe("cds-aichat-input-shell", () => {
-  it("renders with default properties", async () => {
-    const el = await makeShell();
-    expect(el.disabled).to.equal(false);
-    expect(el.rawValue).to.equal("");
-    expect(el.hasValidInput).to.equal(false);
+    const slotNames = Array.from(
+      el.shadowRoot?.querySelectorAll("slot") ?? [],
+    ).map((s) => s.getAttribute("name"));
+
+    expect(slotNames).to.include("editor");
+    expect(slotNames).to.include("message-actions");
+    expect(slotNames).to.include("file-uploads");
+    expect(slotNames).to.include("autocomplete-content");
+    expect(slotNames).to.include("field-messaging");
+    expect(slotNames).to.include("send-control");
   });
 
-  it("creates an editor container in light DOM", async () => {
-    const el = await makeShell();
-    // Editor container is appended as a light-DOM child with slot="editor".
-    const editor = el.querySelector('[slot="editor"]');
-    expect(editor).to.not.equal(null);
+  it("does not render a fallback prompt-line in the editor slot", async () => {
+    const el: InputShellElement = await fixture(html`
+      <cds-aichat-input-shell></cds-aichat-input-shell>
+    `);
+    await el.updateComplete;
+
+    const fallback = el.shadowRoot?.querySelector("cds-aichat-prompt-line");
+    expect(fallback).to.equal(null);
   });
 
-  it("hasValidInput reflects trimmed rawValue", async () => {
-    const el = await makeShell({ rawValue: "  hi  " });
-    expect(el.hasValidInput).to.equal(true);
-    el.rawValue = "   ";
-    expect(el.hasValidInput).to.equal(false);
+  it("reflects the `rounded` boolean property to attribute", async () => {
+    const el: InputShellElement = await fixture(html`
+      <cds-aichat-input-shell></cds-aichat-input-shell>
+    `);
+    await el.updateComplete;
+    expect(el.hasAttribute("rounded")).to.equal(false);
+
+    el.rounded = true;
+    await el.updateComplete;
+    expect(el.hasAttribute("rounded")).to.equal(true);
   });
 
-  it("does not emit send when input is empty", async () => {
-    const el = await makeShell();
-    let fired = 0;
-    el.addEventListener("cds-aichat-input-send", () => {
-      fired += 1;
-    });
-    (el as any)._handleSend();
-    expect(fired).to.equal(0);
+  it("toggles the `--has-message-actions` class when message-actions slot is filled", async () => {
+    const el: InputShellElement = await fixture(html`
+      <cds-aichat-input-shell></cds-aichat-input-shell>
+    `);
+    await el.updateComplete;
+
+    const container = el.shadowRoot?.querySelector(
+      ".cds-aichat--input-container",
+    ) as HTMLElement;
+    expect(
+      container.classList.contains(
+        "cds-aichat--input-container--has-message-actions",
+      ),
+    ).to.equal(false);
+
+    const action = document.createElement("button");
+    action.setAttribute("slot", "message-actions");
+    el.appendChild(action);
+    // slotchange is async — wait one microtask.
+    await Promise.resolve();
+    await el.updateComplete;
+
+    expect(
+      container.classList.contains(
+        "cds-aichat--input-container--has-message-actions",
+      ),
+    ).to.equal(true);
+
+    el.removeChild(action);
+    await Promise.resolve();
+    await el.updateComplete;
+
+    expect(
+      container.classList.contains(
+        "cds-aichat--input-container--has-message-actions",
+      ),
+    ).to.equal(false);
   });
 
-  it("does not emit send when disabled", async () => {
-    const el = await makeShell({ disabled: true, rawValue: "hello" });
-    let fired = 0;
-    el.addEventListener("cds-aichat-input-send", () => {
-      fired += 1;
-    });
-    (el as any)._handleSend();
-    expect(fired).to.equal(0);
-  });
+  it("renders consumer-slotted children inside their named slots", async () => {
+    const el: InputShellElement = await fixture(html`
+      <cds-aichat-input-shell>
+        <div slot="editor" id="my-editor"></div>
+        <div slot="send-control" id="my-send"></div>
+        <div slot="field-messaging" id="my-msg"></div>
+      </cds-aichat-input-shell>
+    `);
+    await el.updateComplete;
 
-  it("emits send with trimmed text on valid input", async () => {
-    const el = await makeShell({ rawValue: "  hello world  " });
-    let detail: SendEventDetail | null = null;
-    el.addEventListener("cds-aichat-input-send", (e) => {
-      detail = (e as CustomEvent<SendEventDetail>).detail;
-    });
-    (el as any)._handleSend();
-    expect(detail).to.deep.equal({ text: "hello world" });
-  });
-
-  it("hasFocus() reflects :focus-within on the host", async () => {
-    const el = await makeShell();
-    expect(el.hasFocus()).to.equal(false);
-    el.requestFocus();
-    expect(el.hasFocus()).to.equal(true);
-    (document.activeElement as HTMLElement | null)?.blur();
-    expect(el.hasFocus()).to.equal(false);
-  });
-
-  it("dismissTrigger clears the active trigger state", async () => {
-    const el = await makeShell();
-    (el as any)._triggerState = {
-      type: "mention",
-      query: "",
-      triggerOffset: 0,
-    };
-    el.dismissTrigger();
-    expect((el as any)._triggerState).to.equal(null);
-  });
-
-  it("tears down the editor on disconnect", async () => {
-    const el = await makeShell();
-    expect(el.querySelector('[slot="editor"]')).to.not.equal(null);
-    el.remove();
-    expect(el.querySelector('[slot="editor"]')).to.equal(null);
+    expect(el.querySelector("#my-editor")).to.not.equal(null);
+    expect(el.querySelector("#my-send")).to.not.equal(null);
+    expect(el.querySelector("#my-msg")).to.not.equal(null);
   });
 });

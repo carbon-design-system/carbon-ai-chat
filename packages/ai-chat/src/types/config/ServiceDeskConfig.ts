@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,30 +14,35 @@ import {
   MessageRequest,
   MessageResponse,
 } from "../messaging/Messages";
-import type {
-  ChatInstance,
-  FileUploadCapabilities,
-} from "../instance/ChatInstance";
+import type { ChatInstance } from "../instance/ChatInstance";
+import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
 
-// Canonical type definitions live in @carbon/ai-chat-components.
+// Canonical declarations live in @carbon/ai-chat-components; local
+// re-declarations here own the consumer-facing JSDoc + `@category` so
+// TypeDoc reads them at the local site. See [../AGENTS.md](../AGENTS.md)
+// for the cross-package re-export rule.
 import {
-  FileStatusValue,
-  type FileUpload,
+  FileStatusValue as _FileStatusValue,
+  type FileUpload as _FileUpload,
 } from "@carbon/ai-chat-components/es/components/input/src/types.js";
 
 /**
- * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
+ * Lifecycle status for a {@link FileUpload}. Values:
+ * `EDIT` (selected but not yet sent), `UPLOADING` (transfer in progress),
+ * `COMPLETE` (processing finished), `SUCCESS` (upload finished cleanly).
  *
  * @category Service desk
  */
-export { FileStatusValue };
+export const FileStatusValue = _FileStatusValue;
+export type FileStatusValue = _FileStatusValue;
 
 /**
- * Represents a file uploaded by the user, including its status and metadata.
+ * Represents a file the user has selected for upload, including its current
+ * {@link FileStatusValue} and any error metadata.
  *
  * @category Service desk
  */
-export type { FileUpload };
+export type FileUpload = _FileUpload;
 
 /**
  * The section of the public config that contains configuration options for service desk integrations.

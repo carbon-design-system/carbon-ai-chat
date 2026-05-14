@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -18,19 +18,17 @@ import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import {
-  PublicConfig,
-  OnErrorData,
-  DisclaimerPublicConfig,
-  CarbonTheme,
-  HeaderConfig,
-  HistoryConfig,
-  LayoutConfig,
-  PublicConfigMessaging,
-  LanguagePack,
-  InputConfig,
-  UploadConfig,
-} from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { OnErrorData } from "../../types/config/ErrorConfig";
+import { DisclaimerPublicConfig } from "../../types/config/DisclaimerConfig";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
+import { HeaderConfig } from "../../types/config/HeaderConfig";
+import { HistoryConfig } from "../../types/config/HistoryConfig";
+import { LayoutConfig } from "../../types/config/LayoutConfig";
+import { PublicConfigMessaging } from "../../types/config/PublicConfigMessaging";
+import { LanguagePack } from "../../types/config/LanguagePack";
+import { InputConfig } from "../../types/config/InputConfig";
+import { UploadConfig } from "../../types/config/UploadConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
 import { LauncherConfig } from "../../types/config/LauncherConfig";
@@ -48,7 +46,10 @@ import {
   BusEventViewChange,
   BusEventViewPreChange,
 } from "../../types/events/eventBusTypes";
-import type { WCRenderUserDefinedResponse } from "../../types/component/ChatContainer";
+import type {
+  WCRenderUserDefinedResponse,
+  WCRenderUserDefinedInputNode,
+} from "../../types/component/ChatContainer";
 
 /**
  * cds-aichat-custom-element will is a pass through to cds-aichat-container. It takes any user_defined and writeable element
@@ -270,6 +271,15 @@ class ChatCustomElement extends LitElement {
   @property({ attribute: false })
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
+
   @state()
   private _userDefinedSlotNames: string[] = [];
 
@@ -441,6 +451,7 @@ class ChatCustomElement extends LitElement {
         .onBeforeRender=${this.onBeforeRenderOverride}
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
+        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}
       >
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
@@ -496,6 +507,14 @@ interface CdsAiChatCustomElementAttributes extends PublicConfig {
    * manages all event listening, slot tracking, streaming state, and element lifecycle.
    */
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 }
 
 export { CdsAiChatCustomElementAttributes };

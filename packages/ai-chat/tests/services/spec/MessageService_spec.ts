@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,7 +17,7 @@ import {
 } from "../../../src/types/messaging/Messages";
 import { MessageSendSource } from "../../../src/types/events/eventBusTypes";
 import { resolvablePromise } from "../../../src/chat/utils/resolvablePromise";
-import { OnErrorType } from "../../../src/types/config/PublicConfig";
+import { OnErrorType } from "../../../src/types/config/ErrorConfig";
 import { CancellationReason } from "../../../src/types/config/MessagingConfig";
 
 const createMessage = (id: string): MessageRequest<any> => ({
@@ -374,7 +374,8 @@ describe("MessageService", () => {
 
       await expect(sendMessagePromise).resolves.toBeUndefined();
 
-      // Verify no additional system message was created (ResponseStopped handles it)
+      // Verify no additional system message was created
+      // (MessageTypeComponent renders the stopped message inline via stream_stopped metadata)
       const finalDispatchCount = (serviceManager.store.dispatch as jest.Mock)
         .mock.calls.length;
       const newDispatches = finalDispatchCount - initialDispatchCount;

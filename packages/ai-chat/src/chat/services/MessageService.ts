@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -53,8 +53,9 @@ import {
   BusEventType,
   MessageSendSource,
 } from "../../types/events/eventBusTypes";
-import { OnErrorType, PublicConfig } from "../../types/config/PublicConfig";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { OnErrorType } from "../../types/config/ErrorConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
 import { CancellationReason } from "../../types/config/MessagingConfig";
 
@@ -796,8 +797,8 @@ class MessageService {
           });
         }
       } else if (pendingRequest.isStreaming) {
-        // If we're cancelling during streaming, the ResponseStopped component will handle
-        // displaying the "Response stopped" message via the stream_stopped metadata flag.
+        // If we're cancelling during streaming, MessageTypeComponent renders the
+        // "Response stopped" message via the stream_stopped metadata flag.
         // We don't need to create a system message here.
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();

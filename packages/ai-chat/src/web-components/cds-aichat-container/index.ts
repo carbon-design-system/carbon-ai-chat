@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,20 +17,18 @@ import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import {
-  PublicConfig,
-  OnErrorData,
-  DisclaimerPublicConfig,
-  CarbonTheme,
-  HeaderConfig,
-  HistoryConfig,
-  LayoutConfig,
-  PublicConfigMessaging,
-  InputConfig,
-  UploadConfig,
-} from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { OnErrorData } from "../../types/config/ErrorConfig";
+import { DisclaimerPublicConfig } from "../../types/config/DisclaimerConfig";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
+import { HeaderConfig } from "../../types/config/HeaderConfig";
+import { HistoryConfig } from "../../types/config/HistoryConfig";
+import { LayoutConfig } from "../../types/config/LayoutConfig";
+import { PublicConfigMessaging } from "../../types/config/PublicConfigMessaging";
+import { InputConfig } from "../../types/config/InputConfig";
+import { UploadConfig } from "../../types/config/UploadConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
 import { LauncherConfig } from "../../types/config/LauncherConfig";
 import type {
@@ -48,7 +46,10 @@ import {
 import type {
   RenderUserDefinedState,
   WCRenderUserDefinedResponse,
+  WCRenderUserDefinedInputNode,
+  RenderUserDefinedInputNode,
 } from "../../types/component/ChatContainer";
+import { adaptWCRenderUserDefinedInputNode } from "./adapt-wc-input-node-renderer";
 
 /**
  * The cds-aichat-container managing creating slotted elements for user_defined responses, custom message footers, and writable elements.
@@ -205,6 +206,17 @@ class ChatContainer extends LitElement {
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 
   /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Called with `{ node, message }` plus the
+   * chat instance and should return an `HTMLElement` (or `null`). The
+   * library mounts the element inside the bubble via a slot.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
+
+  /**
    * The existing array of slot names for all user_defined components.
    */
   @state()
@@ -238,6 +250,25 @@ class ChatContainer extends LitElement {
    * Tracks the wrapper elements created by the callback rendering path.
    */
   private _callbackElements = new Map<string, HTMLElement>();
+
+  /**
+   * Cached adapter so each container update doesn't churn a new React
+   * function down into ChatAppEntry. Keyed on the WC function identity.
+   */
+  private _inputNodeRendererCache:
+    | { wc: WCRenderUserDefinedInputNode; react: RenderUserDefinedInputNode }
+    | undefined;
+
+  private _inputNodeReactRendererFor(
+    wc: WCRenderUserDefinedInputNode,
+  ): RenderUserDefinedInputNode {
+    if (this._inputNodeRendererCache?.wc === wc) {
+      return this._inputNodeRendererCache.react;
+    }
+    const react = adaptWCRenderUserDefinedInputNode(wc);
+    this._inputNodeRendererCache = { wc, react };
+    return react;
+  }
 
   /**
    * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
@@ -529,11 +560,21 @@ class ChatContainer extends LitElement {
       this.syncCallbackRenderedElements();
     }
 
+    // Convert the WC-style renderer (returns HTMLElement) into the React-
+    // style renderer (returns ReactNode) the React infrastructure expects.
+    // Memoization is by reference: as long as the consumer hands us the
+    // same function we hand the same adapter down to the React tree, so
+    // ChatAppEntry doesn't re-render on every container update.
+    const inputNodeReactRenderer = this.renderUserDefinedInputNode
+      ? this._inputNodeReactRendererFor(this.renderUserDefinedInputNode)
+      : undefined;
+
     return html`<cds-aichat-internal
       .config=${this.resolvedConfig}
       .onAfterRender=${this.onAfterRender}
       .onBeforeRender=${this.onBeforeRenderOverride}
       .element=${this.element}
+      .renderUserDefinedInputNode=${inputNodeReactRenderer}
     >
       ${this._writeableElementSlots.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
@@ -578,6 +619,14 @@ interface CdsAiChatContainerAttributes extends PublicConfig {
    * slot tracking, streaming state, and element lifecycle.
    */
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content).
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 }
 
 export { CdsAiChatContainerAttributes };
