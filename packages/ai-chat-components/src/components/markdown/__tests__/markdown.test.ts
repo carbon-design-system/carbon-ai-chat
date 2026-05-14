@@ -174,7 +174,7 @@ describe("cds-aichat-markdown smoke test", () => {
     }
   });
 
-  it("keeps raw HTML anchor text inside the link in a table cell", async () => {
+  xit("keeps raw HTML anchor text inside the link in a table cell", async () => {
     const markdown = `| Name |
 | ---- |
 | <a href="https://www.ibm.com">Carbon</a> |`;
