@@ -62,31 +62,31 @@ function ExplainabilityPopoverContent() {
       <section className="cds-aichat-explainability-popover--content__section">
         <div>
           <h3>How it works</h3>
-          <div>
-            <p>
+          <ol>
+            <li>
               1. <strong>Key word.</strong> Description of key word.
-            </p>
-            <p>
+            </li>
+            <li>
               2. <strong>Key word.</strong> Description of key word.
-            </p>
-            <p>
+            </li>
+            <li>
               3. <strong>Key word.</strong> Description of key word.
-            </p>
-          </div>
+            </li>
+          </ol>
         </div>
         <div>
           <h3>Data types used</h3>
-          <div>
-            <p>
+          <ul>
+            <li>
               — <strong>Data type 1.</strong> Explain how it&apos;s used.
-            </p>
-            <p>
+            </li>
+            <li>
               — <strong>Data type 2.</strong> Explain how it&apos;s used.
-            </p>
-            <p>
+            </li>
+            <li>
               — <strong>Data type 3.</strong> Explain how it&apos;s used.
-            </p>
-          </div>
+            </li>
+          </ul>
         </div>
       </section>
       <section className="cds-aichat-explainability-popover--content__section">

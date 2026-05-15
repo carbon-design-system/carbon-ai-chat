@@ -14,28 +14,20 @@ import WorkspaceShell, {
   WorkspaceShellBody,
   WorkspaceShellFooter,
 } from "../../../react/workspace-shell";
-import { Edit } from "@carbon/icons-react";
-import { AILabel, InlineNotification, Button } from "@carbon/react";
+import { Edit, Folders, FolderOpen, Launch, View } from "@carbon/icons-react";
+import {
+  AILabel,
+  InlineNotification,
+  Button,
+  IconButton,
+  Link,
+  Tag,
+} from "@carbon/react";
 import { action } from "storybook/actions";
 import { getHeaderDescription, getBodyContent } from "./story-helper-react";
 import { actionLists, FooterActionList } from "./story-data-react";
-import { Launch } from "@carbon/icons-react";
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
-import AILabelActionButton from "../../../packages/ai-chat/src/chat/components/carbon/AILabelActionButton";
-import IconButton from "../../../packages/ai-chat/src/chat/components/carbon/IconButton";
-import Link from "../../../packages/ai-chat/src/chat/components/carbon/Link";
-import Tag from "../../../packages/ai-chat/src/chat/components/carbon/Tag";
-import { carbonIconToReact } from "../../../packages/ai-chat/src/chat/utils/carbonIcon";
-import Folders16 from "@carbon/icons/es/folders/16.js";
-import FolderOpen16 from "@carbon/icons/es/folder--open/16.js";
-import View16 from "@carbon/icons/es/view/16.js";
-
-import "@carbon/ai-chat/css/chat-explainability-popover.css";
 import "./story-styles.scss";
-
-const FoldersIcon = carbonIconToReact(Folders16);
-const OpenFolderIcon = carbonIconToReact(FolderOpen16);
-const ViewIcon = carbonIconToReact(View16);
+import "@carbon/ai-chat/css/chat-explainability-popover.css";
 
 export default {
   title: "Components/Workspace shell",
@@ -188,25 +180,37 @@ export const Default = {
               <section className="cds-aichat-explainability-popover--content__section">
                 <div>
                   <h3>How it works</h3>
-                  <Markdown
-                    markdown={
-                      "1. **Key word.** Description of key word.\n2. **Key word.** Description of key word.\n3. **Key word.** Description of key word."
-                    }
-                  />
+                  <ol>
+                    <li>
+                      1. <strong>Key word.</strong> Description of key word.
+                    </li>
+                    <li>
+                      2. <strong>Key word.</strong> Description of key word.
+                    </li>
+                    <li>
+                      3. <strong>Key word.</strong> Description of key word.
+                    </li>
+                  </ol>
                 </div>
                 <div>
                   <h3>Data types used</h3>
-                  <Markdown
-                    markdown={
-                      "- **Data type 1.** Explain how it's used.\n- **Data type 2.** Explain how it's used.\n- **Data type 3.** Explain how it's used."
-                    }
-                  />
+                  <ul>
+                    <li>
+                      — <strong>Data type 1.</strong> Explain how it&apos;s
+                      used.
+                    </li>
+                    <li>
+                      — <strong>Data type 2.</strong> Explain how it&apos;s
+                      used.
+                    </li>
+                    <li>
+                      — <strong>Data type 3.</strong> Explain how it&apos;s
+                      used.
+                    </li>
+                  </ul>
                 </div>
               </section>
-              <section
-                className="cds-aichat-explainability-popover--content__section"
-                aria-labelledby="explainability-ai-model"
-              >
+              <section className="cds-aichat-explainability-popover--content__section">
                 <div>
                   <h3>AI model</h3>
                   <Link
@@ -225,10 +229,7 @@ export const Default = {
                   </p>
                 </div>
               </section>
-              <section
-                className="cds-aichat-explainability-popover--content__section"
-                aria-labelledby="explainability-training-data"
-              >
+              <section className="cds-aichat-explainability-popover--content__section">
                 <div>
                   <h3>Training data set</h3>
                   <Link
@@ -241,23 +242,21 @@ export const Default = {
                 </div>
               </section>
             </div>
-            <>
+            <div className="cds-aichat-explainability-popover--actions">
               <IconButton slot="actions" size="lg" kind="ghost">
-                <FoldersIcon slot="icon" />
+                <Folders slot="icon" />
                 <span slot="tooltip-content">Folders</span>
               </IconButton>
               <IconButton slot="actions" size="lg" kind="ghost">
-                <OpenFolderIcon slot="icon" />
+                <FolderOpen slot="icon" />
                 <span slot="tooltip-content">Open Folder</span>
               </IconButton>
               <IconButton slot="actions" size="lg" kind="ghost">
-                <ViewIcon slot="icon" />
+                <View slot="icon" />
                 <span slot="tooltip-content">View</span>
               </IconButton>
-              <AILabelActionButton slot="actions">
-                View details
-              </AILabelActionButton>
-            </>
+              <Button slot="actions">View details</Button>
+            </div>
           </AILabel>
         </Toolbar>
         <InlineNotification

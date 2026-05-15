@@ -131,19 +131,19 @@ class ExplainabilityPopoverContent extends LitElement {
         <section class="cds-aichat-explainability-popover--content__section">
           <div>
             <h3>How it works</h3>
-            <div>
-              <p>1. <strong>Key word.</strong> Description of key word.</p>
-              <p>2. <strong>Key word.</strong> Description of key word.</p>
-              <p>3. <strong>Key word.</strong> Description of key word.</p>
-            </div>
+            <ol>
+              <li>1. <strong>Key word.</strong> Description of key word.</li>
+              <li>2. <strong>Key word.</strong> Description of key word.</li>
+              <li>3. <strong>Key word.</strong> Description of key word.</li>
+            </ol>
           </div>
           <div>
             <h3>Data types used</h3>
-            <div>
-              <p>— <strong>Data type 1.</strong> Explain how it's used.</p>
-              <p>— <strong>Data type 2.</strong> Explain how it's used.</p>
-              <p>— <strong>Data type 3.</strong> Explain how it's used.</p>
-            </div>
+            <ul>
+              <li>— <strong>Data type 1.</strong> Explain how it's used.</li>
+              <li>— <strong>Data type 2.</strong> Explain how it's used.</li>
+              <li>— <strong>Data type 3.</strong> Explain how it's used.</li>
+            </ul>
           </div>
         </section>
         <section class="cds-aichat-explainability-popover--content__section">
