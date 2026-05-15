@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -19,6 +19,7 @@
   @include type.type-style("body-01");
 
   display: flex;
+  overflow: auto;
   /* stylelint-disable-next-line declaration-no-important */
   box-sizing: border-box !important;
   flex-direction: column;
@@ -31,7 +32,6 @@
     0 10px 40px -24px theme.$ai-popover-shadow-outer-02;
   color: theme.$text-secondary;
   inline-size: 100%;
-  min-block-size: rem(400px);
 
   // Prevent toolbar from shrinking - it should maintain its natural height
   slot[name="toolbar"] {
@@ -89,8 +89,6 @@
 
 :host(#{$prefix}-workspace-shell-body) {
   display: flex;
-  overflow: auto;
   flex-direction: column;
   padding: rem(24px) rem(32px);
-  min-block-size: 0;
 }
