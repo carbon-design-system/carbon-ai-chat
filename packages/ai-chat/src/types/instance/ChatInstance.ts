@@ -526,18 +526,19 @@ export enum WriteableElementName {
    * An element that appears in the AI theme only and is shown beneath the title and description in the AI tooltip
    * content.
    *
-   * @deprecated Use EXPLAINABILITY_POPOVER_CONTENT instead for full control over AI label popover content.
+   * @deprecated Use {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
+   * and {@link WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS} for full control over AI label popover content.
    */
   AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT = "aiTooltipAfterDescriptionElement",
 
   /**
-   * An element that appears in the header's AI label popover body. When content is provided to this slot, it hides the
-   * default body content and aiTooltipAfterDescriptionElement.
+   * An element that appears in the header's AI label popover body. When content is provided to this slot,
+   * `HeaderConfig.hideDefaultAiLabelContent` should be set to true.
    */
   EXPLAINABILITY_POPOVER_CONTENT = "explainabilityPopoverContent",
 
   /**
-   * An element that appears in the header's AI label popover actions area.
+   * An element that appears in the header's AI label popover actions footer area.
    */
   EXPLAINABILITY_POPOVER_ACTIONS = "explainabilityPopoverActions",
 
