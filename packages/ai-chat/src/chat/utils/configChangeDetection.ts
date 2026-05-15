@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -59,6 +59,11 @@ export interface ConfigChanges {
    * True if any lightweight UI configuration has changed
    */
   lightweightUIChanged: boolean;
+
+  /**
+   * True if the language pack overrides (`strings`) have changed
+   */
+  languagePackChanged: boolean;
 }
 
 /**
@@ -83,6 +88,7 @@ export function detectConfigChanges(
       headerChanged: Boolean(newConfig.header),
       homescreenChanged: Boolean(newConfig.homescreen),
       lightweightUIChanged: true,
+      languagePackChanged: Boolean(newConfig.strings),
     };
   }
 
@@ -126,6 +132,11 @@ export function detectConfigChanges(
       newConfig.launcher?.showUnreadIndicator ||
     !isEqual(previousConfig.serviceDesk, newConfig.serviceDesk);
 
+  const languagePackChanged = !isEqual(
+    previousConfig.strings,
+    newConfig.strings,
+  );
+
   return {
     humanAgentFactoryChanged,
     themingChanged,
@@ -136,6 +147,7 @@ export function detectConfigChanges(
     headerChanged,
     homescreenChanged,
     lightweightUIChanged,
+    languagePackChanged,
   };
 }
 
