@@ -24,7 +24,6 @@ import styles from "./story-styles.scss?lit";
 
 export default {
   title: "Components/Workspace shell",
-  layout: "fullscreen",
   component: "cds-aichat-workspace-shell",
   argTypes: {
     toolbarTitle: {
@@ -123,7 +122,7 @@ export default {
       <style>
         ${styles}
       </style>
-      ${story()}
+      <div class="workspace-story-container">${story()}</div>
     `,
   ],
 };

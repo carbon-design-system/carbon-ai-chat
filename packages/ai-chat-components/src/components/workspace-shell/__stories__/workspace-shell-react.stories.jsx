@@ -23,7 +23,6 @@ import "./story-styles.scss";
 
 export default {
   title: "Components/Workspace shell",
-  layout: "fullscreen",
   component: WorkspaceShell,
   argTypes: {
     toolbarTitle: {
