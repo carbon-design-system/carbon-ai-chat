@@ -19,11 +19,7 @@ import Close16 from "@carbon/icons-react/es/Close.js";
 
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
-import { AILabel, AILabelContent, Tag } from "@carbon/react";
-import {
-  ExplainabilityPopoverContent,
-  ExplainabilityPopoverActions,
-} from "./ExplainabilityPopoverExample";
+import { AILabel, Tag } from "@carbon/react";
 
 interface InventoryStatusExampleProps {
   location: string;
@@ -103,10 +99,12 @@ function InventoryStatusExample({
           Current inventory status
         </div>
         <AILabel size="2xs" autoAlign={false} align="bottom">
-          <AILabelContent>
-            <ExplainabilityPopoverContent />
-            <ExplainabilityPopoverActions />
-          </AILabelContent>
+          <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
+          <div>
+            IBM watsonx is powered by the latest AI models to intelligently
+            process conversations and provide help whenever and wherever you may
+            need it.
+          </div>
         </AILabel>
       </Toolbar>
       <WorkspaceShellHeader
