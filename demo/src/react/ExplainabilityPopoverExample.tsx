@@ -18,7 +18,6 @@ import {
   TAG_SIZE,
   TAG_TYPE,
 } from "@carbon/web-components/es/components/tag/tag.js";
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 import AILabelActionButton from "../../../packages/ai-chat/src/chat/components/carbon/AILabelActionButton";
 import IconButton from "../../../packages/ai-chat/src/chat/components/carbon/IconButton";
 import Link from "../../../packages/ai-chat/src/chat/components/carbon/Link";
@@ -63,25 +62,34 @@ function ExplainabilityPopoverContent() {
       <section className="cds-aichat-explainability-popover--content__section">
         <div>
           <h3>How it works</h3>
-          <Markdown
-            markdown={
-              "1. **Key word.** Description of key word.\n2. **Key word.** Description of key word.\n3. **Key word.** Description of key word."
-            }
-          />
+          <div>
+            <p>
+              1. <strong>Key word.</strong> Description of key word.
+            </p>
+            <p>
+              2. <strong>Key word.</strong> Description of key word.
+            </p>
+            <p>
+              3. <strong>Key word.</strong> Description of key word.
+            </p>
+          </div>
         </div>
         <div>
           <h3>Data types used</h3>
-          <Markdown
-            markdown={
-              "- **Data type 1.** Explain how it's used.\n- **Data type 2.** Explain how it's used.\n- **Data type 3.** Explain how it's used."
-            }
-          />
+          <div>
+            <p>
+              — <strong>Data type 1.</strong> Explain how it&apos;s used.
+            </p>
+            <p>
+              — <strong>Data type 2.</strong> Explain how it&apos;s used.
+            </p>
+            <p>
+              — <strong>Data type 3.</strong> Explain how it&apos;s used.
+            </p>
+          </div>
         </div>
       </section>
-      <section
-        className="cds-aichat-explainability-popover--content__section"
-        aria-labelledby="explainability-ai-model"
-      >
+      <section className="cds-aichat-explainability-popover--content__section">
         <div>
           <h3>AI model</h3>
           <Link
@@ -100,10 +108,7 @@ function ExplainabilityPopoverContent() {
           </p>
         </div>
       </section>
-      <section
-        className="cds-aichat-explainability-popover--content__section"
-        aria-labelledby="explainability-training-data"
-      >
+      <section className="cds-aichat-explainability-popover--content__section">
         <div>
           <h3>Training data set</h3>
           <Link
@@ -121,7 +126,10 @@ function ExplainabilityPopoverContent() {
 
 function ExplainabilityPopoverActions() {
   return (
-    <>
+    <div
+      slot="explainabilityPopoverActions"
+      className="cds-aichat-explainability-popover--actions"
+    >
       <IconButton
         slot="actions"
         size={BUTTON_SIZE.LARGE}
@@ -147,7 +155,7 @@ function ExplainabilityPopoverActions() {
         <span slot="tooltip-content">View</span>
       </IconButton>
       <AILabelActionButton slot="actions">View details</AILabelActionButton>
-    </>
+    </div>
   );
 }
 

@@ -37,7 +37,6 @@ import HasLanguagePack from "../types/utilities/HasLanguagePack";
 import { BusEventType } from "../types/events/eventBusTypes";
 import WriteableElement from "./components/util/WriteableElement";
 import { PageObjectId } from "../testing/PageObjectId";
-import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 
 interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   isHydratingComplete: boolean;
@@ -69,7 +68,6 @@ interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   config: AppState["config"];
   catastrophicErrorPanelState: AppState["catastrophicErrorPanelState"];
   assistantName: string;
-  renderWriteableElements?: RenderWriteableElementResponse;
 }
 
 function isCustomPanelConfigOptions(
@@ -120,7 +118,6 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   config,
   catastrophicErrorPanelState,
   assistantName,
-  renderWriteableElements,
 }: AppShellPanelsProps) {
   // Call DisclaimerPanel hook at component level (not inside render)
   const disclaimerContent = publicConfig.disclaimer?.isOn
@@ -288,7 +285,6 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                     onToggleHomeScreen={onToggleHomeScreen}
                     isHomeScreenActive={isHomeScreenActive}
                     headerConfigOverride={headerConfigOverride}
-                    renderWriteableElements={renderWriteableElements}
                   />
                 )}
                 <div

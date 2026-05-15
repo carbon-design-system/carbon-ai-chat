@@ -10,7 +10,6 @@
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 import "@carbon/web-components/es/components/link/index.js";
-import "@carbon/ai-chat-components/es/components/markdown/index.js";
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -22,12 +21,16 @@ import View16 from "@carbon/icons/es/view/16.js";
 @customElement("explainability-popover-content")
 class ExplainabilityPopoverContent extends LitElement {
   static styles = css`
-    /* Explainability popover content styles */
     .cds-aichat-explainability-popover--content {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
       padding-block-start: 0.5rem;
+    }
+
+    .cds-aichat-explainability-popover--content * {
+      margin-block-start: 0;
+      margin-block-end: 0;
     }
 
     .cds-aichat-explainability-popover--content__header {
@@ -43,44 +46,57 @@ class ExplainabilityPopoverContent extends LitElement {
     }
 
     .cds-aichat-explainability-popover--content__label {
-      font-size: var(--cds-label-02-font-size, 0.875rem);
-      font-weight: var(--cds-label-02-font-weight, 400);
-      line-height: var(--cds-label-02-line-height, 1.28572);
-      letter-spacing: var(--cds-label-02-letter-spacing, 0.16px);
-      color: var(--cds-text-secondary, #525252);
+      font-size: var(--cds-label-02-font-size);
+      font-weight: var(--cds-label-02-font-weight);
+      line-height: var(--cds-label-02-line-height);
+      letter-spacing: var(--cds-label-02-letter-spacing);
+      color: var(--cds-text-secondary);
     }
 
     .cds-aichat-explainability-popover--content__title {
-      font-size: var(--cds-heading-04-font-size, 1.75rem);
-      font-weight: var(--cds-heading-04-font-weight, 400);
-      line-height: var(--cds-heading-04-line-height, 1.28572);
-      letter-spacing: var(--cds-heading-04-letter-spacing, 0);
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 400;
+      line-height: 2.25rem;
+      letter-spacing: 0;
     }
 
     .cds-aichat-explainability-popover--content__description {
-      font-size: var(--cds-body-01-font-size, 0.875rem);
-      font-weight: var(--cds-body-01-font-weight, 400);
-      line-height: var(--cds-body-01-line-height, 1.42857);
-      letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
+      font-size: var(--cds-body-01-font-size);
+      font-weight: var(--cds-body-01-font-weight);
+      line-height: var(--cds-body-01-line-height);
+      letter-spacing: var(--cds-body-01-letter-spacing);
+      color: var(--cds-text-secondary);
     }
 
     .cds-aichat-explainability-popover--content__section {
       display: flex;
       flex-direction: column;
-      border-block-start: 1px solid var(--cds-border-subtle-00, #e0e0e0);
       gap: 1.5rem;
       padding-block-start: 1.5rem;
+      border-block-start: 1px solid var(--cds-border-subtle-00);
+    }
+
+    .cds-aichat-explainability-popover--content__section:last-of-type {
+      padding-block-end: 1.5rem;
     }
 
     .cds-aichat-explainability-popover--content__section h3,
     .cds-aichat-explainability-popover--content__section h4,
     .cds-aichat-explainability-popover--content__section h5,
     .cds-aichat-explainability-popover--content__section h6 {
-      font-size: var(--cds-body-01-font-size, 0.875rem);
-      font-weight: var(--cds-body-01-font-weight, 400);
-      line-height: var(--cds-body-01-line-height, 1.42857);
-      letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
-      color: var(--cds-text-secondary, #525252);
+      font-size: var(--cds-body-01-font-size);
+      font-weight: var(--cds-body-01-font-weight);
+      line-height: var(--cds-body-01-line-height);
+      letter-spacing: var(--cds-body-01-letter-spacing);
+      color: var(--cds-text-secondary);
+    }
+
+    .cds-aichat-explainability-popover--content__section p {
+      font-size: var(--cds-body-01-font-size);
+      font-weight: var(--cds-body-01-font-weight);
+      line-height: var(--cds-body-01-line-height);
+      letter-spacing: var(--cds-body-01-letter-spacing);
     }
   `;
 
@@ -115,21 +131,22 @@ class ExplainabilityPopoverContent extends LitElement {
         <section class="cds-aichat-explainability-popover--content__section">
           <div>
             <h3>How it works</h3>
-            <cds-aichat-markdown
-              markdown="1. **Key word.** Description of key word.\n2. **Key word.** Description of key word.\n3. **Key word.** Description of key word."
-            ></cds-aichat-markdown>
+            <div>
+              <p>1. <strong>Key word.</strong> Description of key word.</p>
+              <p>2. <strong>Key word.</strong> Description of key word.</p>
+              <p>3. <strong>Key word.</strong> Description of key word.</p>
+            </div>
           </div>
           <div>
             <h3>Data types used</h3>
-            <cds-aichat-markdown
-              markdown="- **Data type 1.** Explain how it's used.\n- **Data type 2.** Explain how it's used.\n- **Data type 3.** Explain how it's used."
-            ></cds-aichat-markdown>
+            <div>
+              <p>— <strong>Data type 1.</strong> Explain how it's used.</p>
+              <p>— <strong>Data type 2.</strong> Explain how it's used.</p>
+              <p>— <strong>Data type 3.</strong> Explain how it's used.</p>
+            </div>
           </div>
         </section>
-        <section
-          class="cds-aichat-explainability-popover--content__section"
-          aria-labelledby="explainability-ai-model"
-        >
+        <section class="cds-aichat-explainability-popover--content__section">
           <div>
             <h3>AI model</h3>
             <cds-link
@@ -149,10 +166,7 @@ class ExplainabilityPopoverContent extends LitElement {
             </p>
           </div>
         </section>
-        <section
-          class="cds-aichat-explainability-popover--content__section"
-          aria-labelledby="explainability-training-data"
-        >
+        <section class="cds-aichat-explainability-popover--content__section">
           <div>
             <h3>Training data set</h3>
             <cds-link
@@ -172,29 +186,23 @@ class ExplainabilityPopoverContent extends LitElement {
 
 @customElement("explainability-popover-actions")
 class ExplainabilityPopoverActions extends LitElement {
+  static styles = css`
+    :host {
+      display: flex;
+    }
+  `;
+
   render() {
     return html`
-      <cds-icon-button
-        slot="actions"
-        size="lg"
-        kind="ghost"
-      >
+      <cds-icon-button slot="actions" size="lg" kind="ghost">
         <span slot="icon">${iconLoader(Folders16)}</span>
         <span slot="tooltip-content">Folders</span>
       </cds-icon-button>
-      <cds-icon-button
-        slot="actions"
-        size="lg"
-        kind="ghost"
-      >
+      <cds-icon-button slot="actions" size="lg" kind="ghost">
         <span slot="icon">${iconLoader(FolderOpen16)}</span>
         <span slot="tooltip-content">Open Folder</span>
       </cds-icon-button>
-      <cds-icon-button
-        slot="actions"
-        size="lg"
-        kind="ghost"
-      >
+      <cds-icon-button slot="actions" size="lg" kind="ghost">
         <span slot="icon">${iconLoader(View16)}</span>
         <span slot="tooltip-content">View</span>
       </cds-icon-button>

@@ -51,7 +51,6 @@ import {
   HeaderMenuClickType,
 } from "../../../types/events/eventBusTypes";
 import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/button.js";
-import { RenderWriteableElementResponse } from "../../../types/component/ChatContainer";
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -87,11 +86,6 @@ interface HeaderProps {
    * Optional header config overrides, merged with derived defaults.
    */
   headerConfigOverride?: Partial<HeaderConfig>;
-
-  /**
-   * Optional map of writeable elements to check for content.
-   */
-  renderWriteableElements?: RenderWriteableElementResponse;
 }
 
 function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
@@ -102,7 +96,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     headerDisplayName,
     isHomeScreenActive,
     headerConfigOverride,
-    renderWriteableElements,
   } = props;
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
@@ -424,7 +417,9 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
             {!hideDefaultAiLabelContent && (
               <div role="dialog" slot="body-text">
                 {aiSlugLabel && (
-                  <p className="cds-aichat--header__slug-label">{aiSlugLabel}</p>
+                  <p className="cds-aichat--header__slug-label">
+                    {aiSlugLabel}
+                  </p>
                 )}
                 {aiSlugTitle && (
                   <h4 className="cds-aichat--header__slug-title">
@@ -436,7 +431,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                   {aiSlugAfterDescriptionElement}
                 </div>
               </div>
-            )} 
+            )}
             {explainabilityPopoverActionsElement}
           </AISlug>
         )}

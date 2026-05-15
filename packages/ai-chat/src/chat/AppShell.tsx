@@ -798,7 +798,6 @@ function AppShell({
                 viewSourcePanelRef={viewSourcePanelRef}
                 allMessagesByID={allMessagesByID}
                 inputState={inputState}
-                renderWriteableElements={renderWriteableElements}
                 config={config}
                 catastrophicErrorPanelState={catastrophicErrorPanelState}
               />
@@ -812,7 +811,6 @@ function AppShell({
                     onToggleHomeScreen={onToggleHomeScreen}
                     isHomeScreenActive={showHomeScreen}
                     headerConfigOverride={headerConfigOverride}
-                    renderWriteableElements={renderWriteableElements}
                   />
                 </div>
               )}

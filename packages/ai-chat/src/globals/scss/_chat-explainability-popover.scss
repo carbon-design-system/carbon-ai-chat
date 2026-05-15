@@ -96,6 +96,8 @@
 
   .#{$prefix}-explainability-popover--content__description {
     @include type.type-style("body-01");
+
+    color: theme.$text-secondary;
   }
 
   /* ============================================================================
@@ -112,11 +114,12 @@
     padding-block-start: layout.$spacing-06;
   }
 
-  /* ============================================================================
-     EXPLAINABILITY POPOVER - SECTION HEADINGS
-     Subheadings within explainability content sections
-     ============================================================================ */
+  // Extra padding after last section
+  .#{$prefix}-explainability-popover--content__section:last-of-type {
+    padding-block-end: layout.$spacing-06;
+  }
 
+  // Subheadings within explainability content sections
   .#{$prefix}-explainability-popover--content__section h3,
   .#{$prefix}-explainability-popover--content__section h4,
   .#{$prefix}-explainability-popover--content__section h5,
@@ -124,6 +127,19 @@
     @include type.type-style("body-01");
 
     color: theme.$text-secondary;
+  }
+
+  .#{$prefix}-explainability-popover--content__section p {
+    @include type.type-style("body-01");
+  }
+
+  /* ============================================================================
+     EXPLAINABILITY POPOVER - ACTIONS
+     Container for action buttons in the popover
+     ============================================================================ */
+
+  .#{$prefix}-explainability-popover--actions {
+    display: flex;
   }
 }
 
