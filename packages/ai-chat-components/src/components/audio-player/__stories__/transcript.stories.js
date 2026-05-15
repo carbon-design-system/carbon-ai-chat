@@ -9,7 +9,10 @@
 
 import "../index";
 import { html } from "lit";
-import { waitForAudioReadyForSnapshot } from "./audio-player-story-helpers.js";
+import isChromatic from "chromatic/isChromatic";
+
+const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
+  "data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA";
 
 export default {
   title: "Preview/Audio player/Transcript",
@@ -73,8 +76,9 @@ This makes it ideal for providing detailed transcripts of audio content without 
 
 export const WithAudioPlayer = {
   args: {
-    audioSource:
-      "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
+    audioSource: isChromatic()
+      ? WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI
+      : "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
     audioTitle: "Your own mp3 file with transcript",
     audioDescription: "This example includes a transcript for accessibility.",
     text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
@@ -123,9 +127,6 @@ export const WithAudioPlayer = {
         </div>
       </cds-aichat-card>
     `;
-  },
-  play: async ({ canvasElement }) => {
-    await waitForAudioReadyForSnapshot(canvasElement);
   },
 };
 
