@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,6 +11,9 @@ import {
   setupAccessibilityChecker,
   checkAccessibility,
   destroyChatSession,
+  expectNoCspViolations,
+  installCspGuard,
+  installTestCsp,
   openChatViaLauncher,
 } from "./utils";
 
@@ -26,6 +29,12 @@ import type {} from "../types/window";
 test.beforeEach(async ({ page }) => {
   // Block analytics script BEFORE navigation to avoid cookie consent issues
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
+
+  // Inject a strict CSP into the document and install the violation guard
+  // BEFORE navigation so the guard captures violations from the very first
+  // resources the strict policy evaluates.
+  await installTestCsp(page);
+  await installCspGuard(page);
 
   // Navigate to demo page first to get chatInstance
   await page.goto("/");
@@ -45,8 +54,12 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-// Clear session between all tests to ensure clean state
+// Clear session between all tests to ensure clean state, and assert that the
+// page rendered without tripping the demo's strict CSP. Run the CSP check
+// before destroyChatSession so the assertion fires against the test's own
+// interactions, not the cleanup tear-down.
 test.afterEach(async ({ page }) => {
+  await expectNoCspViolations(page);
   await destroyChatSession(page);
 });
 
@@ -141,6 +154,10 @@ test("smoke react custom element", async ({ page }) => {
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
+  // Regression guard for issue #1382: clicking the send button must clear the
+  // input field. The bug only reproduces on React 17/18 hosts, but we assert
+  // here too to catch any future regression on React 19.
+  await expect(input).toHaveText("");
 });
 
 test("smoke web component custom element", async ({ page }) => {
@@ -168,4 +185,8 @@ test("smoke web component custom element", async ({ page }) => {
   await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
     "Carbon",
   );
+  // Regression guard for issue #1382: clicking the send button must clear the
+  // input field. The bug only reproduces on React 17/18 hosts, but we assert
+  // here too to catch any future regression on React 19.
+  await expect(input).toHaveText("");
 });

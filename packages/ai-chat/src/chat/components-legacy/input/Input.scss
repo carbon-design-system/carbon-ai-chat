@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -267,4 +267,51 @@ cds-button.cds-aichat--input-container__send-button:focus svg {
 .cds-aichat--before-input-element {
   margin: auto;
   max-inline-size: chat-theme.$messages-max-width;
+}
+
+.cds-aichat--text-area {
+  position: relative;
+  block-size: fit-content;
+
+  .cds-aichat--text-area-textarea,
+  .cds-aichat--text-area-sizer {
+    @include type.type-style("body-02");
+
+    padding: 0;
+    border: button.$button-border-width solid transparent;
+    margin: 0;
+    block-size: 100%;
+    inline-size: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+}
+
+.cds-aichat--text-area .cds-aichat--text-area-textarea:focus {
+  border: button.$button-border-width solid theme.$focus;
+  border-radius: 0;
+  outline: 0;
+}
+
+.cds-aichat--text-area .cds-aichat--text-area-textarea::-moz-focus-inner {
+  border: button.$button-border-width solid theme.$focus;
+  border-radius: 0;
+  outline: 0;
+}
+
+.cds-aichat--text-area.cds-aichat--text-area--auto-size
+  .cds-aichat--text-area-textarea {
+  position: absolute;
+  // overflow-y is owned by ContentEditableInput's autoresize effect.
+  inset-block-start: 0;
+  overflow-x: hidden;
+  resize: none;
+}
+
+// Firefox: 1px of sizer padding prevents the textarea from scrolling by 1px.
+.cds-aichat--text-area .cds-aichat--text-area-sizer {
+  padding-block-end: 1px;
+  visibility: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }

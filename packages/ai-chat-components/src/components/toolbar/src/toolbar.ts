@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -332,7 +332,7 @@ class CDSAIChatToolbar extends LitElement {
           </div>
         </div>
 
-        <div data-fixed class="${blockClass}__end">
+        <div data-fixed class="${blockClass}__end" data-rounded="top-right">
           <div data-fixed class="${blockClass}__fixed-actions">
             <slot name="fixed-actions"></slot>
           </div>

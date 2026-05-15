@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -21,6 +21,10 @@ import React, {
 } from "react";
 
 import { doFocusRef } from "../../utils/domUtils";
+import {
+  applyDynamicStyles,
+  clearDynamicStyles,
+} from "../../utils/cspStyleUtils";
 import {
   calculateAvailableLength,
   escapeHTML,
@@ -113,6 +117,17 @@ export interface ContentEditableInputHandle {
   takeFocus: () => void;
   /** Programmatically blur (unfocus) the input */
   doBlur: () => void;
+  /**
+   * Imperatively clear the editor's DOM and internal sync trackers.
+   *
+   * The DOM sync is driven by a `useLayoutEffect` whose execution depends on
+   * React's batching/scheduling. On host React 17/18 the send-button click
+   * arrives through `@lit/react`'s native event listener, and the resulting
+   * state updates can interleave such that the effect skips the clear. This
+   * imperative path runs synchronously on the click call stack regardless of
+   * React version.
+   */
+  clear: () => void;
 }
 
 /**
@@ -382,6 +397,15 @@ const ContentEditableInput = forwardRef<
       doBlur: () => {
         editorRef.current?.blur();
       },
+      clear: () => {
+        if (!editorRef.current) {
+          return;
+        }
+        editorRef.current.innerHTML = "";
+        lastDisplayValue.current = "";
+        skipNextDomSync.current = false;
+        updateContentAttribute(editorRef.current, "");
+      },
     }));
 
     /**
@@ -398,15 +422,15 @@ const ContentEditableInput = forwardRef<
      */
     useLayoutEffect(() => {
       if (!autoSize || !editorRef.current || !sizerRef.current) {
-        return;
+        return undefined;
       }
 
+      const editor = editorRef.current;
       const sizerHeight = sizerRef.current.scrollHeight;
-      if (sizerHeight > MAX_AUTO_RESIZE_HEIGHT) {
-        editorRef.current.style.overflowY = "auto";
-      } else {
-        editorRef.current.style.overflowY = "hidden";
-      }
+      applyDynamicStyles(editor, "editor-autoresize", {
+        "overflow-y": sizerHeight > MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
+      });
+      return () => clearDynamicStyles(editor, "editor-autoresize");
     }, [autoSize, displayValue]);
 
     /**

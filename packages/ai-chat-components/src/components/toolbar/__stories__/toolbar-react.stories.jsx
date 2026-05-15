@@ -1,3 +1,12 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025, 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
 import React from "react";
 import Toolbar from "../../../react/toolbar";
@@ -48,8 +57,9 @@ export default {
       options: ["home", "back", "custom 1", "custom 2", "none"],
       mapping: {
         home: (
-          <div slot="navigation" data-rounded="top-left">
+          <div slot="navigation">
             <IconButton
+              data-rounded="top-left"
               size="md"
               kind="ghost"
               align="bottom-start"
@@ -63,8 +73,9 @@ export default {
           </div>
         ),
         back: (
-          <div slot="navigation" data-rounded="top-left">
+          <div slot="navigation">
             <IconButton
+              data-rounded="top-left"
               size="md"
               kind="ghost"
               align="bottom-start"

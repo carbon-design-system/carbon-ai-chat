@@ -104,11 +104,16 @@ function rewrite(): void {
 
 /**
  * Adopt the shared dynamic stylesheet on a root so its rules apply within
- * that tree. Idempotent per root.
+ * that tree. Idempotent per root: subsequent calls for the same root are a
+ * no-op so we don't spuriously create a fallback `<style>` element on top of
+ * an already-adopted CSSStyleSheet (which trips strict CSP).
  */
 function adoptOnRoot(root: Document | ShadowRoot): void {
+  if (adoptedRoots.has(root)) {
+    return;
+  }
   const s = ensureSheet();
-  if (s && !adoptedRoots.has(root)) {
+  if (s) {
     // Some environments (older browsers, jsdom) don't implement
     // adoptedStyleSheets; fall back to a <style> element in that case.
     const current = (root as any).adoptedStyleSheets;
