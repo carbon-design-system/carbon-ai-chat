@@ -28,6 +28,7 @@ import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 import {
   AILabel,
+  AILabelContent,
   Button,
   InlineNotification,
   Layer,
@@ -43,6 +44,10 @@ import {
   TableToolbarContent,
   TableToolbarSearch,
 } from "@carbon/react";
+import {
+  ExplainabilityPopoverContent,
+  ExplainabilityPopoverActions,
+} from "./ExplainabilityPopoverExample";
 
 interface InventoryReportExampleProps {
   location: string;
@@ -225,12 +230,10 @@ function InventoryReportExample({
           Optimizing excess inventory
         </div>
         <AILabel size="2xs" autoAlign={false} align="bottom">
-          <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
-          <div>
-            IBM watsonx is powered by the latest AI models to intelligently
-            process conversations and provide help whenever and wherever you may
-            need it.
-          </div>
+          <AILabelContent>
+            <ExplainabilityPopoverContent />
+            <ExplainabilityPopoverActions />
+          </AILabelContent>
         </AILabel>
       </Toolbar>
       <InlineNotification

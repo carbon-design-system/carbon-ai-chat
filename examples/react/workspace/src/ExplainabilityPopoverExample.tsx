@@ -9,27 +9,8 @@
 
 import "@carbon/ai-chat/css/chat-explainability-popover.css";
 import React from "react";
-import { Launch } from "@carbon/icons-react";
-import {
-  BUTTON_KIND,
-  BUTTON_SIZE,
-} from "@carbon/web-components/es/components/button/button.js";
-import {
-  TAG_SIZE,
-  TAG_TYPE,
-} from "@carbon/web-components/es/components/tag/tag.js";
-import AILabelActionButton from "@carbon/ai-chat-components/es/react/ai-label-action-button.js";
-import IconButton from "../../../packages/ai-chat/src/chat/components/carbon/IconButton";
-import Link from "../../../packages/ai-chat/src/chat/components/carbon/Link";
-import Tag from "../../../packages/ai-chat/src/chat/components/carbon/Tag";
-import { carbonIconToReact } from "../../../packages/ai-chat/src/chat/utils/carbonIcon";
-import Folders16 from "@carbon/icons/es/folders/16.js";
-import FolderOpen16 from "@carbon/icons/es/folder--open/16.js";
-import View16 from "@carbon/icons/es/view/16.js";
-
-const FoldersIcon = carbonIconToReact(Folders16);
-const OpenFolderIcon = carbonIconToReact(FolderOpen16);
-const ViewIcon = carbonIconToReact(View16);
+import { Launch, Folders, FolderOpen, View } from "@carbon/icons-react";
+import { AILabelActions, Button, IconButton, Link, Tag } from "@carbon/react";
 
 function ExplainabilityPopoverContent() {
   return (
@@ -45,8 +26,8 @@ function ExplainabilityPopoverContent() {
           </span>
           <Tag
             className="cds-aichat--header__slug-confidence"
-            size={TAG_SIZE.SMALL}
-            type={"outline" as TAG_TYPE}
+            size="sm"
+            type="outline"
           >
             Confidence: 89%
           </Tag>
@@ -97,7 +78,7 @@ function ExplainabilityPopoverContent() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Launch slot="icon" size={16} /> granite.13b.v2.instruct
+            <Launch size={16} /> granite.13b.v2.instruct
           </Link>
         </div>
         <div>
@@ -116,7 +97,7 @@ function ExplainabilityPopoverContent() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Launch slot="icon" size={16} /> IBM Security data piles
+            <Launch size={16} /> IBM Security data piles
           </Link>
         </div>
       </section>
@@ -126,36 +107,18 @@ function ExplainabilityPopoverContent() {
 
 function ExplainabilityPopoverActions() {
   return (
-    <div
-      slot="explainabilityPopoverActions"
-      className="cds-aichat-explainability-popover--actions"
-    >
-      <IconButton
-        slot="actions"
-        size={BUTTON_SIZE.LARGE}
-        kind={BUTTON_KIND.GHOST}
-      >
-        <FoldersIcon slot="icon" />
-        <span slot="tooltip-content">Folders</span>
+    <AILabelActions>
+      <IconButton size="lg" kind="ghost" label="Folders">
+        <Folders />
       </IconButton>
-      <IconButton
-        slot="actions"
-        size={BUTTON_SIZE.LARGE}
-        kind={BUTTON_KIND.GHOST}
-      >
-        <OpenFolderIcon slot="icon" />
-        <span slot="tooltip-content">Open Folder</span>
+      <IconButton size="lg" kind="ghost" label="Open Folder">
+        <FolderOpen />
       </IconButton>
-      <IconButton
-        slot="actions"
-        size={BUTTON_SIZE.LARGE}
-        kind={BUTTON_KIND.GHOST}
-      >
-        <ViewIcon slot="icon" />
-        <span slot="tooltip-content">View</span>
+      <IconButton size="lg" kind="ghost" label="View">
+        <View />
       </IconButton>
-      <AILabelActionButton slot="actions">View details</AILabelActionButton>
-    </div>
+      <Button>View details</Button>
+    </AILabelActions>
   );
 }
 
